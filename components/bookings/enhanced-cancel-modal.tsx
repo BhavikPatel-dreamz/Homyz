@@ -94,7 +94,7 @@ export function EnhancedCancelModal({
           onClick={onClose}
           disabled={submitting}
           aria-label="Close dialog"
-          className="absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-full text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800 disabled:opacity-50"
+          className="absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-full text-[#727272] hover:bg-zinc-100 hover:text-zinc-800 disabled:opacity-50"
         >
           <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -111,7 +111,7 @@ export function EnhancedCancelModal({
             <h2 id="cancel-title" className="text-xl font-semibold text-[#1F1F1F]">
               Cancel reservation?
             </h2>
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-[#727272]">
               Reference #{bookingId.slice(-8).toUpperCase()}
             </p>
           </div>
@@ -125,10 +125,10 @@ export function EnhancedCancelModal({
         {/* Cancellation policy & Refund Breakdown */}
         <div className="mt-5 space-y-3">
           <div className="rounded-xl border border-zinc-200 bg-white p-4">
-            <h4 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+            <h4 className="text-xs font-semibold text-[#727272] uppercase tracking-wider">
               Cancellation Policy & Terms
             </h4>
-            <p className="mt-1 text-sm font-medium text-zinc-900">
+            <p className="mt-1 text-sm font-medium text-[#1F1F1F]">
               {isNonRefundable
                 ? "Non-refundable Rate"
                 : `${cancellationPolicy.charAt(0).toUpperCase() + cancellationPolicy.slice(1).toLowerCase()} Policy`}
@@ -141,7 +141,7 @@ export function EnhancedCancelModal({
           </div>
 
           <div className="rounded-xl border border-zinc-200 bg-white p-4">
-            <h4 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2">
+            <h4 className="text-xs font-semibold text-[#727272] uppercase tracking-wider mb-2">
               Refund Summary
             </h4>
             <dl className="space-y-2 text-xs sm:text-sm">
@@ -159,7 +159,7 @@ export function EnhancedCancelModal({
                   </dd>
                 </div>
               )}
-              <div className="flex justify-between border-t border-zinc-200 pt-2 font-semibold text-zinc-900">
+              <div className="flex justify-between border-t border-zinc-200 pt-2 font-semibold text-[#1F1F1F]">
                 <dt>Expected refund</dt>
                 <dd className={expectedRefund > 0 ? "text-emerald-700" : "text-zinc-700"}>
                   <CurrencyPrice amountMinorUnits={expectedRefund} sourceCurrency={currency} fractionDigits={2} />
@@ -168,7 +168,7 @@ export function EnhancedCancelModal({
             </dl>
           </div>
 
-          <p className="text-xs text-zinc-500 leading-relaxed">
+          <p className="text-xs text-[#727272] leading-relaxed">
             By confirming cancellation, your dates will be immediately released to other guests and this reservation will be closed.
           </p>
         </div>

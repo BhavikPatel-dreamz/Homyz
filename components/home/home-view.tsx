@@ -423,12 +423,12 @@ export function HomeView({
                   🏡
                 </div>
                 <div className="space-y-1">
-                  <h3 className="text-lg font-semibold text-zinc-900">
+                  <h3 className="text-lg font-semibold text-[#1F1F1F]">
                     {mode === "SEARCH"
                       ? `No stays found matching your search in ${searchContext?.displayName ?? "this location"}`
                       : "Discover hand-picked stays on Homyz"}
                   </h3>
-                  <p className="text-xs text-zinc-500 leading-relaxed font-normal">
+                  <p className="text-xs text-[#727272] leading-relaxed font-normal">
                     {mode === "SEARCH"
                       ? "Try expanding your date range, adjusting guest count, or exploring nearby destinations."
                       : "Search destinations, check-in dates, and guest capacity above to browse available vacation rentals and accommodations."}

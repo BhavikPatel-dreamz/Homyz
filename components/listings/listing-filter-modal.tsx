@@ -265,25 +265,25 @@ export function ListingFilterModal({ open, onClose, onApply, initialFilters, ava
         {selectedFilters.length > 0 && (
           <section aria-label="Selected filters" className="shrink-0 border-b border-zinc-200 px-5 py-4 sm:px-6">
             <div className="mb-3 flex items-center justify-between gap-4">
-              <h3 className="text-sm font-semibold text-zinc-900">Selected</h3>
+              <h3 className="text-sm font-semibold text-[#1F1F1F]">Selected</h3>
               <button type="button" onClick={clearAll} className="text-xs font-semibold underline underline-offset-2 hover:text-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950">Clear all</button>
             </div>
             <div className="flex max-h-28 flex-wrap gap-2 overflow-y-auto pr-1">
-              {selectedFilters.map((filter) => <button key={filter.id} type="button" onClick={filter.clear} aria-label={`Remove ${filter.label} filter`} className="inline-flex min-h-9 items-center gap-2 rounded-full border border-zinc-950 px-3 text-xs font-semibold text-zinc-900 transition hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"><span>{filter.label}</span><span aria-hidden="true">×</span></button>)}
+              {selectedFilters.map((filter) => <button key={filter.id} type="button" onClick={filter.clear} aria-label={`Remove ${filter.label} filter`} className="inline-flex min-h-9 items-center gap-2 rounded-full border border-zinc-950 px-3 text-xs font-semibold text-[#1F1F1F] transition hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"><span>{filter.label}</span><span aria-hidden="true">×</span></button>)}
             </div>
           </section>
         )}
 
         <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-8 sm:px-6">
           <div className="border-b border-zinc-200 py-7">
-            <h3 className="mb-4 text-base font-semibold text-zinc-900">Type of place</h3>
+            <h3 className="mb-4 text-base font-semibold text-[#1F1F1F]">Type of place</h3>
             <div className="grid grid-cols-3 rounded-xl border border-zinc-300 p-1" role="radiogroup" aria-label="Type of place">
               {([ ["", "Any type"], ["ROOM", "Room"], ["ENTIRE_PLACE", "Entire home"] ] as const).map(([value, label]) => <button key={value || "any"} type="button" role="radio" aria-checked={draft.listingType === value} onClick={() => setDraft((previous) => ({ ...previous, listingType: value }))} className={`min-h-10 rounded-lg px-2 text-xs font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 ${draft.listingType === value ? "border border-zinc-950 bg-white shadow-sm" : "border border-transparent hover:bg-zinc-50"}`}>{label}</button>)}
             </div>
           </div>
 
           <div className="border-b border-zinc-200 py-7">
-            <h3 className="text-base font-semibold text-zinc-900">Price range</h3>
+            <h3 className="text-base font-semibold text-[#1F1F1F]">Price range</h3>
             <p className="mt-1 text-xs text-zinc-600">Nightly price, before taxes and fees</p>
             {hasPriceRange ? <>
               <div className="mt-7 h-14 border-b border-zinc-300" aria-hidden="true"><div className="flex h-full items-end gap-1">{Array.from({ length: 32 }, (_, index) => <span key={index} className="flex-1 rounded-t bg-zinc-300" style={{ height: `${18 + Math.round(70 * Math.sin((index / 31) * Math.PI))}%` }} />)}</div></div>
@@ -294,7 +294,7 @@ export function ListingFilterModal({ open, onClose, onApply, initialFilters, ava
                 <input type="range" min={availableMin} max={availableMax} step={Math.max(1, Math.round((availableMax - availableMin) / 200))} value={normalisedDraft.maxPrice} onChange={(event) => updatePrice("maxPrice", event.target.value)} aria-label="Maximum price" className="pointer-events-none absolute inset-0 z-20 h-9 w-full appearance-none bg-transparent [&::-webkit-slider-runnable-track]:h-1 [&::-webkit-slider-runnable-track]:bg-transparent [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:mt-[-6px] [&::-webkit-slider-thumb]:size-5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border [&::-webkit-slider-thumb]:border-zinc-300 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-md [&::-moz-range-track]:h-1 [&::-moz-range-track]:bg-transparent [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:size-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border [&::-moz-range-thumb]:border-zinc-300 [&::-moz-range-thumb]:bg-white" />
               </div>
               <div className="mt-5 grid grid-cols-2 gap-3">
-                {([ ["minPrice", "Minimum"], ["maxPrice", "Maximum"] ] as const).map(([key, label]) => <label key={key} className="rounded-xl border border-zinc-300 px-3 py-2 focus-within:border-zinc-950 focus-within:ring-1 focus-within:ring-zinc-950"><span className="block text-[11px] font-medium text-zinc-500">{label}</span><span className="mt-0.5 flex items-center gap-1"><span className="text-sm text-zinc-500">{currencySymbol}</span><input inputMode="numeric" value={normalisedDraft[key]} onChange={(event) => updatePrice(key, event.target.value.replace(/[^0-9]/g, ""))} className="min-w-0 w-full bg-transparent text-sm font-semibold outline-none" /></span></label>)}
+                {([ ["minPrice", "Minimum"], ["maxPrice", "Maximum"] ] as const).map(([key, label]) => <label key={key} className="rounded-xl border border-zinc-300 px-3 py-2 focus-within:border-zinc-950 focus-within:ring-1 focus-within:ring-zinc-950"><span className="block text-[11px] font-medium text-[#727272]">{label}</span><span className="mt-0.5 flex items-center gap-1"><span className="text-sm text-[#727272]">{currencySymbol}</span><input inputMode="numeric" value={normalisedDraft[key]} onChange={(event) => updatePrice(key, event.target.value.replace(/[^0-9]/g, ""))} className="min-w-0 w-full bg-transparent text-sm font-semibold outline-none" /></span></label>)}
               </div>
             </> : <p className="mt-5 rounded-xl bg-zinc-50 p-4 text-sm text-zinc-600">Price controls become available when matching homes have prices.</p>}
           </div>

@@ -17,7 +17,7 @@ export function ReviewStats({ averageRating, totalReviews, className = "", layou
 
   const summary = (
     <>
-      <ReviewIcon name="star" className="h-4 w-4 fill-zinc-900 text-zinc-900" />
+      <ReviewIcon name="star" className="h-4 w-4 fill-zinc-900 text-[#1F1F1F]" />
       <span>{averageRating.toFixed(1)}</span>
       <span aria-hidden="true">·</span>
       <span>{totalReviews} {totalReviews === 1 ? "review" : "reviews"}</span>
@@ -25,10 +25,10 @@ export function ReviewStats({ averageRating, totalReviews, className = "", layou
   );
 
   return layout === "vertical" ? (
-    <div className={`${className} flex flex-col items-center gap-1 text-sm font-semibold text-zinc-900`}>
+    <div className={`${className} flex flex-col items-center gap-1 text-sm font-semibold text-[#1F1F1F]`}>
       <div className="flex items-center gap-1.5">{summary}</div>
     </div>
   ) : (
-    <span className={`${className} inline-flex items-center gap-1.5 text-sm font-semibold text-zinc-900`}>{summary}</span>
+    <span className={`${className} inline-flex items-center gap-1.5 text-sm font-semibold text-[#1F1F1F]`}>{summary}</span>
   );
 }

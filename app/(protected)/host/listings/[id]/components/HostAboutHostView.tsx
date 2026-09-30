@@ -458,7 +458,7 @@ export function HostAboutHostView({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <div className="text-xs leading-relaxed text-zinc-600 dark:text-zinc-400 sm:text-sm">
+          <div className="text-xs leading-relaxed text-zinc-600 dark:text-[#727272] sm:text-sm">
             <p>
               {t("host_about_community_notice") || "Your host profile is visible to guests throughout Homyz to build trust and authenticity. Any updates you make here automatically sync across all properties you host."}
             </p>
@@ -548,7 +548,7 @@ export function HostAboutHostView({
                   </span>
                 </div>
                 {(hostProfile.email || session?.user?.email) && (
-                  <p className="wordbreak-all whitespace-normal mt-0.5 text-sm text-[#727272] dark:text-zinc-400">{hostProfile.email || session?.user?.email}</p>
+                  <p className="wordbreak-all whitespace-normal mt-0.5 text-sm text-[#727272] dark:text-[#727272]">{hostProfile.email || session?.user?.email}</p>
                 )}
               </div>
 
@@ -559,7 +559,7 @@ export function HostAboutHostView({
                   <span>{hostRating}</span>
                 </div>
                 <div className="inline-flex items-center gap-1.5 rounded-full border border-[#727272] dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 px-3 py-1.5 text-sm font-medium text-zinc-800 dark:text-zinc-200">
-                  <svg className="size-3.5 text-zinc-500 dark:text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="size-3.5 text-[#727272] dark:text-[#727272]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                   <span>{hostingTenure}</span>
@@ -573,7 +573,7 @@ export function HostAboutHostView({
         <section className="rounded-xl border border-white dark:border-zinc-700 bg-[#F3F4F5] dark:bg-zinc-800/90 p-4 shadow-[0px_2px_4px_0px_#00000040] sm:p-6 mt-15">
           <div className="border-b border-[#727272] dark:border-zinc-700 pb-4">
             <h2 className="text-lg font-medium text-[#1f1f1f] dark:text-zinc-100">{t("host_about_section_about_me") || "About me"}</h2>
-            <p className="mt-0.5 text-sm font-normal text-[#727272] dark:text-zinc-400">
+            <p className="mt-0.5 text-sm font-normal text-[#727272] dark:text-[#727272]">
               {t("host_about_section_about_me_desc") || "Introduce yourself to prospective guests. This appears at the top of your host profile."}
             </p>
           </div>
@@ -585,7 +585,7 @@ export function HostAboutHostView({
                 <label htmlFor="host-biography" className="block text-base font-normal text-[#1f1f1f] dark:text-zinc-100">
                   {t("host_about_bio_headline_label") || "My biography headline"}
                 </label>
-                <span className="text-xs text-[#727272] dark:text-zinc-400">{biography.length} / 500</span>
+                <span className="text-xs text-[#727272] dark:text-[#727272]">{biography.length} / 500</span>
               </div>
               <input
                 id="host-biography"
@@ -594,7 +594,7 @@ export function HostAboutHostView({
                 value={biography}
                 onChange={(e) => setBiography(e.target.value)}
                 placeholder={t("host_about_bio_headline_placeholder") || "e.g., Architect & design enthusiast welcoming travelers to Milan"}
-                className="mt-1.5 w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-base text-[#1f1f1f] dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 outline-none transition-all focus:border-zinc-900 dark:focus:border-amber-400 sm:min-h-[56px] min-h-[45px]"
+                className="mt-1.5 w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-base text-[#1f1f1f] dark:text-zinc-100 placeholder:text-[#727272] dark:placeholder:text-[#727272] outline-none transition-all focus:border-zinc-900 dark:focus:border-amber-400 sm:min-h-[56px] min-h-[45px]"
               />
             </div>
 
@@ -604,7 +604,7 @@ export function HostAboutHostView({
                 <label htmlFor="host-bio" className="block text-base font-normal text-[#1f1f1f] dark:text-zinc-100">
                   {t("host_about_bio_desc_label") || "Biography / Description"}
                 </label>
-                <span className="text-xs text-[#727272] dark:text-zinc-400">{bio.length} / 2,000</span>
+                <span className="text-xs text-[#727272] dark:text-[#727272]">{bio.length} / 2,000</span>
               </div>
               <textarea
                 id="host-bio"
@@ -613,7 +613,7 @@ export function HostAboutHostView({
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
                 placeholder={t("host_about_bio_desc_placeholder") || "Tell guests about your background, why you enjoy hosting, your passions, or your personal philosophy on hospitality..."}
-                className="mt-1.5 w-full resize-y rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-base text-[#1f1f1f] dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 outline-none transition-all focus:border-zinc-900 dark:focus:border-amber-400"
+                className="mt-1.5 w-full resize-y rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-base text-[#1f1f1f] dark:text-zinc-100 placeholder:text-[#727272] dark:placeholder:text-[#727272] outline-none transition-all focus:border-zinc-900 dark:focus:border-amber-400"
               />
             </div>
           </div>
@@ -623,7 +623,7 @@ export function HostAboutHostView({
         <section className="rounded-xl border border-white dark:border-zinc-700 bg-white dark:bg-zinc-800/90 p-4 shadow-[0px_2px_4px_0px_#00000040] sm:p-6">
           <div className="border-b border-[#727272] dark:border-zinc-700 pb-4">
             <h2 className="text-lg font-medium text-[#1f1f1f] dark:text-zinc-100">{t("host_about_prompts_title") || "Host details & prompts"}</h2>
-            <p className="mt-0.5 text-sm font-normal text-[#727272] dark:text-zinc-400">
+            <p className="mt-0.5 text-sm font-normal text-[#727272] dark:text-[#727272]">
               {t("host_about_prompts_desc") || "Answer structured prompts to give guests helpful insights into your home and hospitality style."}
             </p>
           </div>
@@ -636,11 +636,11 @@ export function HostAboutHostView({
                   <label htmlFor="prompt-home-unique" className="text-base font-normal text-[#1f1f1f] dark:text-zinc-100">
                     {t("host_about_prompt_home_unique_label") || "What makes your home unique"}
                   </label>
-                  <p className="text-xs text-[#727272] dark:text-zinc-400">
+                  <p className="text-xs text-[#727272] dark:text-[#727272]">
                     {t("host_about_prompt_home_unique_hint") || "Special architecture, scenic views, cozy garden, or interior styling."}
                   </p>
                 </div>
-                <span className="text-xs text-[#727272] dark:text-zinc-400">{homeUnique.length} / 500</span>
+                <span className="text-xs text-[#727272] dark:text-[#727272]">{homeUnique.length} / 500</span>
               </div>
               <input
                 id="prompt-home-unique"
@@ -649,7 +649,7 @@ export function HostAboutHostView({
                 value={homeUnique}
                 onChange={(e) => setHomeUnique(e.target.value)}
                 placeholder={t("host_about_prompt_home_unique_placeholder") || "e.g., Restored mid-century flat with floor-to-ceiling windows and sun terrace"}
-                className="mt-2 w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 outline-none transition-all focus:border-zinc-900 dark:focus:border-amber-400 sm:min-h-[56px] min-h-[45px]"
+                className="mt-2 w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-sm text-[#1F1F1F] dark:text-zinc-100 placeholder:text-[#727272] dark:placeholder:text-[#727272] outline-none transition-all focus:border-zinc-900 dark:focus:border-amber-400 sm:min-h-[56px] min-h-[45px]"
               />
             </div>
 
@@ -660,11 +660,11 @@ export function HostAboutHostView({
                   <label htmlFor="prompt-guests-should-know" className="text-base font-normal text-[#1f1f1f] dark:text-zinc-100">
                     {t("host_about_prompt_guests_should_know_label") || "What guests should know"}
                   </label>
-                  <p className="text-xs text-[#727272] dark:text-zinc-400">
+                  <p className="text-xs text-[#727272] dark:text-[#727272]">
                     {t("host_about_prompt_guests_should_know_hint") || "Your hosting style, check-in approach, and communication preferences."}
                   </p>
                 </div>
-                <span className="text-xs text-[#727272] dark:text-zinc-400">{guestsShouldKnow.length} / 500</span>
+                <span className="text-xs text-[#727272] dark:text-[#727272]">{guestsShouldKnow.length} / 500</span>
               </div>
               <input
                 id="prompt-guests-should-know"
@@ -673,7 +673,7 @@ export function HostAboutHostView({
                 value={guestsShouldKnow}
                 onChange={(e) => setGuestsShouldKnow(e.target.value)}
                 placeholder={t("host_about_prompt_guests_should_know_placeholder") || "e.g., Always reachable via the app for insider tips, but I respect your complete privacy"}
-                className="mt-2 w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 outline-none transition-all focus:border-zinc-900 dark:focus:border-amber-400 sm:min-h-[56px] min-h-[45px]"
+                className="mt-2 w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-sm text-[#1F1F1F] dark:text-zinc-100 placeholder:text-[#727272] dark:placeholder:text-[#727272] outline-none transition-all focus:border-zinc-900 dark:focus:border-amber-400 sm:min-h-[56px] min-h-[45px]"
               />
             </div>
 
@@ -684,11 +684,11 @@ export function HostAboutHostView({
                   <label htmlFor="prompt-education" className="text-base font-normal text-[#1f1f1f] dark:text-zinc-100">
                     {t("host_about_prompt_education_label") || "Where I went to school / Education & background"}
                   </label>
-                  <p className="text-xs text-[#727272] dark:text-zinc-400">
+                  <p className="text-xs text-[#727272] dark:text-[#727272]">
                     {t("host_about_prompt_education_hint") || "Your alma mater, studies, or career background."}
                   </p>
                 </div>
-                <span className="text-xs text-[#727272] dark:text-zinc-400">{education.length} / 300</span>
+                <span className="text-xs text-[#727272] dark:text-[#727272]">{education.length} / 300</span>
               </div>
               <input
                 id="prompt-education"
@@ -697,7 +697,7 @@ export function HostAboutHostView({
                 value={education}
                 onChange={(e) => setEducation(e.target.value)}
                 placeholder={t("host_about_prompt_education_placeholder") || "e.g., Studied Architecture at Politecnico di Milano"}
-                className="mt-2 w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 outline-none transition-all focus:border-zinc-900 dark:focus:border-amber-400 sm:min-h-[56px] min-h-[45px]"
+                className="mt-2 w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-sm text-[#1F1F1F] dark:text-zinc-100 placeholder:text-[#727272] dark:placeholder:text-[#727272] outline-none transition-all focus:border-zinc-900 dark:focus:border-amber-400 sm:min-h-[56px] min-h-[45px]"
               />
             </div>
 
@@ -708,11 +708,11 @@ export function HostAboutHostView({
                   <label htmlFor="prompt-perfect-guest" className="text-base font-normal text-[#1f1f1f] dark:text-zinc-100">
                     {t("host_about_prompt_perfect_guest_label") || "My perfect guest"}
                   </label>
-                  <p className="text-xs text-[#727272] dark:text-zinc-400">
+                  <p className="text-xs text-[#727272] dark:text-[#727272]">
                     {t("host_about_prompt_perfect_guest_hint") || "Who loves staying at your property or matches your house vibe."}
                   </p>
                 </div>
-                <span className="text-xs text-[#727272] dark:text-zinc-400">{perfectGuest.length} / 300</span>
+                <span className="text-xs text-[#727272] dark:text-[#727272]">{perfectGuest.length} / 300</span>
               </div>
               <input
                 id="prompt-perfect-guest"
@@ -721,7 +721,7 @@ export function HostAboutHostView({
                 value={perfectGuest}
                 onChange={(e) => setPerfectGuest(e.target.value)}
                 placeholder={t("host_about_prompt_perfect_guest_placeholder") || "e.g., Respectful travelers, culture seekers, and remote creatives"}
-                className="mt-2 w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 outline-none transition-all focus:border-zinc-900 dark:focus:border-amber-400 sm:min-h-[56px] min-h-[45px]"
+                className="mt-2 w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-sm text-[#1F1F1F] dark:text-zinc-100 placeholder:text-[#727272] dark:placeholder:text-[#727272] outline-none transition-all focus:border-zinc-900 dark:focus:border-amber-400 sm:min-h-[56px] min-h-[45px]"
               />
             </div>
           </div>
@@ -733,7 +733,7 @@ export function HostAboutHostView({
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-medium text-[#1f1f1f] dark:text-zinc-100">{t("host_about_languages_title") || "Languages you speak"}</h2>
-                <p className="mt-0.5 text-sm text-[#727272] dark:text-zinc-400">
+                <p className="mt-0.5 text-sm text-[#727272] dark:text-[#727272]">
                   {t("host_about_languages_desc") || "Help international guests know which languages you can communicate in."}
                 </p>
               </div>
@@ -757,14 +757,14 @@ export function HostAboutHostView({
                       type="button"
                       onClick={() => handleToggleLanguage(langId)}
                       aria-label={`Remove ${getLanguageNameById(langId)}`}
-                      className="size-4 rounded-full text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-200"
+                      className="size-4 rounded-full text-[#727272] dark:text-[#727272] hover:text-zinc-700 dark:hover:text-zinc-200"
                     >
                       ×
                     </button>
                   </span>
                 ))
               ) : (
-                <p className="text-xs text-zinc-400 dark:text-zinc-500">{t("host_about_no_languages_selected") || "No languages selected yet. Add languages below."}</p>
+                <p className="text-xs text-[#727272] dark:text-[#727272]">{t("host_about_no_languages_selected") || "No languages selected yet. Add languages below."}</p>
               )}
             </div>
 
@@ -781,13 +781,13 @@ export function HostAboutHostView({
                       setIsLanguageDropdownOpen(true);
                     }}
                     placeholder={t("host_about_languages_search_placeholder") || "Search and add a language (e.g., English, French, Spanish)..."}
-                    className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-sm text-[#1f1f1f] dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 outline-none transition-all focus:border-zinc-900 dark:focus:border-amber-400 sm:min-h-[56px] min-h-[45px]"
+                    className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-sm text-[#1f1f1f] dark:text-zinc-100 placeholder:text-[#727272] dark:placeholder:text-[#727272] outline-none transition-all focus:border-zinc-900 dark:focus:border-amber-400 sm:min-h-[56px] min-h-[45px]"
                   />
                   {languageSearch && (
                     <button
                       type="button"
                       onClick={() => setLanguageSearch("")}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-[#727272] dark:text-[#727272] hover:text-zinc-600 dark:hover:text-zinc-300"
                     >
                       ✕
                     </button>
@@ -836,7 +836,7 @@ export function HostAboutHostView({
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-medium text-[#1f1f1f] dark:text-zinc-100">{t("host_about_hobbies_title") || "Hobbies & passions"}</h2>
-                <p className="mt-0.5 text-sm text-[#727272] dark:text-zinc-400">
+                <p className="mt-0.5 text-sm text-[#727272] dark:text-[#727272]">
                   {t("host_about_hobbies_desc") || "Share what you enjoy doing outside of hosting to spark conversations with guests."}
                 </p>
               </div>
@@ -860,14 +860,14 @@ export function HostAboutHostView({
                       type="button"
                       onClick={() => handleRemoveHobby(hobby)}
                       aria-label={`Remove ${hobby}`}
-                      className="size-4 rounded-full text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-200"
+                      className="size-4 rounded-full text-[#727272] dark:text-[#727272] hover:text-zinc-700 dark:hover:text-zinc-200"
                     >
                       ×
                     </button>
                   </span>
                 ))
               ) : (
-                <p className="text-xs text-zinc-400 dark:text-zinc-500">{t("host_about_no_hobbies_added") || "No hobbies added yet. Type below or pick suggestions."}</p>
+                <p className="text-xs text-[#727272] dark:text-[#727272]">{t("host_about_no_hobbies_added") || "No hobbies added yet. Type below or pick suggestions."}</p>
               )}
             </div>
 
@@ -884,7 +884,7 @@ export function HostAboutHostView({
                   }
                 }}
                 placeholder={t("host_about_hobbies_input_placeholder") || "Add a hobby or obsession (e.g., Trail running, Baking sourdough, Vinyl records)..."}
-                className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-sm text-[#1f1f1f] dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 outline-none transition-all focus:border-zinc-900 dark:focus:border-amber-400 sm:min-h-[56px] min-h-[45px]"
+                className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-sm text-[#1f1f1f] dark:text-zinc-100 placeholder:text-[#727272] dark:placeholder:text-[#727272] outline-none transition-all focus:border-zinc-900 dark:focus:border-amber-400 sm:min-h-[56px] min-h-[45px]"
               />
               <button
                 type="button"
@@ -924,7 +924,7 @@ export function HostAboutHostView({
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-medium text-[#1f1f1f] dark:text-zinc-100">{t("host_about_interests_title") || "My interests"}</h2>
-                <p className="mt-0.5 text-sm text-[#727272] dark:text-zinc-400">
+                <p className="mt-0.5 text-sm text-[#727272] dark:text-[#727272]">
                   {t("host_about_interests_desc") || "Choose topics you care about to connect with guests who share similar passions."}
                 </p>
               </div>
@@ -948,14 +948,14 @@ export function HostAboutHostView({
                       type="button"
                       onClick={() => handleRemoveInterest(interest)}
                       aria-label={`Remove ${interest}`}
-                      className="size-4 rounded-full text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-200"
+                      className="size-4 rounded-full text-[#727272] dark:text-[#727272] hover:text-zinc-700 dark:hover:text-zinc-200"
                     >
                       ×
                     </button>
                   </span>
                 ))
               ) : (
-                <p className="text-xs text-zinc-400 dark:text-zinc-500">{t("host_about_no_interests_added") || "No interests added yet. Pick from reference interests below."}</p>
+                <p className="text-xs text-[#727272] dark:text-[#727272]">{t("host_about_no_interests_added") || "No interests added yet. Pick from reference interests below."}</p>
               )}
             </div>
 
@@ -972,7 +972,7 @@ export function HostAboutHostView({
                   }
                 }}
                 placeholder={t("host_about_interests_input_placeholder") || "Add a custom interest (e.g., Ceramic art, Cycling, Modern literature)..."}
-                className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-sm text-[#1f1f1f] dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 outline-none transition-all focus:border-zinc-900 dark:focus:border-amber-400 sm:min-h-[56px] min-h-[45px]"
+                className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-sm text-[#1f1f1f] dark:text-zinc-100 placeholder:text-[#727272] dark:placeholder:text-[#727272] outline-none transition-all focus:border-zinc-900 dark:focus:border-amber-400 sm:min-h-[56px] min-h-[45px]"
               />
               <button
                 type="button"
@@ -985,7 +985,7 @@ export function HostAboutHostView({
 
             {/* Reference Interests List */}
             <div>
-              <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">{t("host_about_popular_interests_label") || "Popular interests:"}</p>
+              <p className="text-xs font-semibold text-[#727272] dark:text-[#727272]">{t("host_about_popular_interests_label") || "Popular interests:"}</p>
               <div className="mt-2 flex flex-wrap items-center gap-2">
                 {REFERENCE_INTERESTS.map((ref) => {
                   const isSelected = interests.some((i) => i.toLowerCase() === ref.toLowerCase());

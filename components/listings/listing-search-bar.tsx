@@ -731,7 +731,7 @@ export function ListingSearchBar() {
             <span className="block text-[14px] font-semibold text-[#1f1f1f] leading-tight">
               {isLocating ? "Detecting location..." : "Use current location"}
             </span>
-            <span className="block text-[11px] text-zinc-500 font-medium">Discover verified stays near you</span>
+            <span className="block text-[11px] text-[#727272] font-medium">Discover verified stays near you</span>
           </div>
         </div>
         <span className="shrink-0 rounded-full bg-blue-100/80 px-2 py-0.5 text-[10px] font-semibold text-blue-800">
@@ -742,7 +742,7 @@ export function ListingSearchBar() {
       {/* Recent Searches */}
       {!destination.trim() && recentSearches.length > 0 && (
         <div className="mb-3">
-          <p className="px-2 pb-1.5 text-[11px] font-bold uppercase tracking-wider text-zinc-400">
+          <p className="px-2 pb-1.5 text-[11px] font-bold uppercase tracking-wider text-[#727272]">
             Recent Searches
           </p>
           <div className="space-y-1">
@@ -773,7 +773,7 @@ export function ListingSearchBar() {
       {/* Primary City Result */}
       {primaryCity && (
         <div className="mb-2">
-          <p className="px-2 pb-1.5 text-[11px] font-bold uppercase tracking-wider text-zinc-400">
+          <p className="px-2 pb-1.5 text-[11px] font-bold uppercase tracking-wider text-[#727272]">
             City
           </p>
           <button
@@ -790,10 +790,10 @@ export function ListingSearchBar() {
                 🏙️
               </div>
               <div className="min-w-0">
-                <div className="text-[14px] font-bold text-zinc-900 truncate">
+                <div className="text-[14px] font-bold text-[#1F1F1F] truncate">
                   {highlightMatch(primaryCity.name || primaryCity.city, destination)}
                 </div>
-                <div className="text-[11px] text-zinc-500 truncate">{primaryCity.fullLabel}</div>
+                <div className="text-[11px] text-[#727272] truncate">{primaryCity.fullLabel}</div>
               </div>
             </div>
             <span className="shrink-0 rounded-full bg-amber-200/80 px-2 py-0.5 text-[10px] font-bold text-amber-900">
@@ -806,7 +806,7 @@ export function ListingSearchBar() {
       {/* Places & Landmarks */}
       {places.length > 0 && (
         <div>
-          <p className="px-2 pt-1 pb-1.5 text-[11px] font-bold uppercase tracking-wider text-zinc-400">
+          <p className="px-2 pt-1 pb-1.5 text-[11px] font-bold uppercase tracking-wider text-[#727272]">
             {primaryCity?.name ? `Places in ${primaryCity.name}` : "Places & Areas"}
           </p>
           <div className="space-y-1">
@@ -826,10 +826,10 @@ export function ListingSearchBar() {
                 <div className="flex items-center gap-3 min-w-0">
                   <LocationIcon type={p.locationType || p.type} />
                   <div className="min-w-0">
-                    <div className="text-[13px] font-semibold text-zinc-900 truncate">
+                    <div className="text-[13px] font-semibold text-[#1F1F1F] truncate">
                       {highlightMatch(p.name || p.city, destination)}
                     </div>
-                    <div className="text-[11px] text-zinc-500 truncate">{p.subtitle || p.fullLabel}</div>
+                    <div className="text-[11px] text-[#727272] truncate">{p.subtitle || p.fullLabel}</div>
                   </div>
                 </div>
                 <span className="shrink-0 rounded-full bg-amber-100/70 px-2 py-0.5 text-[10px] font-semibold text-amber-900">
@@ -844,7 +844,7 @@ export function ListingSearchBar() {
       {/* Districts */}
       {districts.length > 0 && (
         <div>
-          <p className="px-2 pt-1 pb-1.5 text-[11px] font-bold uppercase tracking-wider text-zinc-400">
+          <p className="px-2 pt-1 pb-1.5 text-[11px] font-bold uppercase tracking-wider text-[#727272]">
             Districts & Areas
           </p>
           <div className="space-y-1">
@@ -862,10 +862,10 @@ export function ListingSearchBar() {
                 <div className="flex items-center gap-3 min-w-0">
                   <LocationIcon type="district" />
                   <div className="min-w-0">
-                    <div className="text-[13px] font-semibold text-zinc-900 truncate">
+                    <div className="text-[13px] font-semibold text-[#1F1F1F] truncate">
                       {highlightMatch(d.name || d.city, destination)}
                     </div>
-                    <div className="text-[11px] text-zinc-500 truncate">{d.subtitle || d.fullLabel}</div>
+                    <div className="text-[11px] text-[#727272] truncate">{d.subtitle || d.fullLabel}</div>
                   </div>
                 </div>
                 <span className="shrink-0 rounded-full bg-blue-100/70 px-2 py-0.5 text-[10px] font-semibold text-blue-900">
@@ -894,10 +894,10 @@ export function ListingSearchBar() {
               <div className="flex items-center gap-3 min-w-0">
                 <LocationIcon type="city" />
                 <div className="min-w-0">
-                  <div className="text-[13px] font-semibold text-zinc-900 truncate">
+                  <div className="text-[13px] font-semibold text-[#1F1F1F] truncate">
                     {highlightMatch(c.name || c.city, destination)}
                   </div>
-                  <div className="text-[11px] text-zinc-500 truncate">{c.fullLabel || c.country || ""}</div>
+                  <div className="text-[11px] text-[#727272] truncate">{c.fullLabel || c.country || ""}</div>
                 </div>
               </div>
             </button>
@@ -916,8 +916,8 @@ export function ListingSearchBar() {
         return (
           <div key={key} className="flex items-center justify-between gap-3 py-4 first:pt-1 last:pb-1">
             <div className="min-w-0">
-              <p className="text-[14px] font-semibold text-zinc-900">{label}</p>
-              <p className="text-[12px] text-zinc-500">{description}</p>
+              <p className="text-[14px] font-semibold text-[#1F1F1F]">{label}</p>
+              <p className="text-[12px] text-[#727272]">{description}</p>
             </div>
             <div className="flex shrink-0 items-center gap-2.5">
               <button
@@ -973,7 +973,7 @@ export function ListingSearchBar() {
           </span>
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#FCDF9C] text-[#1f1f1f]">
             {isSearching ? (
-              <svg className="h-4.5 w-4.5 animate-spin text-zinc-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <svg className="h-4.5 w-4.5 animate-spin text-[#1F1F1F]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
                 <path className="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
               </svg>
@@ -1062,7 +1062,7 @@ export function ListingSearchBar() {
                 <button
                   type="button"
                   onClick={handleClearDestination}
-                  className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-200/80 hover:bg-zinc-300 text-zinc-600 hover:text-zinc-900 text-xs transition-colors cursor-pointer"
+                  className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-200/80 hover:bg-zinc-300 text-zinc-600 hover:text-[#1F1F1F] text-xs transition-colors cursor-pointer"
                   aria-label="Clear destination"
                 >
                   ✕
@@ -1147,10 +1147,10 @@ export function ListingSearchBar() {
               type="submit"
               disabled={isSearching}
               aria-label={isSearching ? "Searching..." : t("home_search_btn", undefined, "Search")}
-              className="ml-1 flex h-[48px] w-[48px] shrink-0 items-center justify-center rounded-full bg-[#fcdf9c] text-zinc-900 shadow-sm transition-all hover:bg-[#f3cf77] hover:scale-105 active:scale-95 cursor-pointer disabled:opacity-90 disabled:cursor-not-allowed"
+              className="ml-1 flex h-[48px] w-[48px] shrink-0 items-center justify-center rounded-full bg-[#fcdf9c] text-[#1F1F1F] shadow-sm transition-all hover:bg-[#f3cf77] hover:scale-105 active:scale-95 cursor-pointer disabled:opacity-90 disabled:cursor-not-allowed"
             >
               {isSearching ? (
-                <svg className="h-5 w-5 animate-spin text-zinc-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <svg className="h-5 w-5 animate-spin text-[#1F1F1F]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
                   <path className="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                 </svg>
@@ -1224,7 +1224,7 @@ export function ListingSearchBar() {
           >
             {/* Close Button at top right */}
             <div className="flex justify-between items-center mb-3">
-              <h2 className="text-base font-bold text-zinc-900">
+              <h2 className="text-base font-bold text-[#1F1F1F]">
                 {t("home_find_your_stay", undefined, "Find your stay")}
               </h2>
               <button
@@ -1248,16 +1248,16 @@ export function ListingSearchBar() {
                 aria-expanded={false}
                 className="flex w-full items-center justify-between gap-3 rounded-[22px] border border-zinc-200 bg-zinc-50 hover:bg-zinc-100/80 px-5 py-3.5 text-left transition-colors cursor-pointer mb-3"
               >
-                <span className="text-[13px] font-semibold text-zinc-500 uppercase tracking-wider">
+                <span className="text-[13px] font-semibold text-[#727272] uppercase tracking-wider">
                   {t("home_search_where", undefined, "Where")}
                 </span>
-                <span className="truncate text-[15px] font-semibold text-zinc-900">
+                <span className="truncate text-[15px] font-semibold text-[#1F1F1F]">
                   {destination || t("home_search_where_placeholder", undefined, "Search destinations")}
                 </span>
               </button>
             ) : (
               <div className="rounded-[24px] bg-white border border-zinc-200/90 p-4 shadow-xs mb-3">
-                <h3 className="text-[18px] font-bold text-zinc-900 mb-3">
+                <h3 className="text-[18px] font-bold text-[#1F1F1F] mb-3">
                   {t("home_where_to", undefined, "Where to?")}
                 </h3>
 
@@ -1289,14 +1289,14 @@ export function ListingSearchBar() {
                         }
                       }
                     }}
-                    className="w-full bg-transparent text-[14px] font-medium text-zinc-900 placeholder:text-zinc-400 focus:outline-none"
+                    className="w-full bg-transparent text-[14px] font-medium text-[#1F1F1F] placeholder:text-[#727272] focus:outline-none"
                     autoFocus
                   />
                   {destination && (
                     <button
                       type="button"
                       onClick={handleClearDestination}
-                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-zinc-200 hover:bg-zinc-300 text-zinc-600 hover:text-zinc-900 text-xs mr-1 transition-colors cursor-pointer"
+                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-zinc-200 hover:bg-zinc-300 text-zinc-600 hover:text-[#1F1F1F] text-xs mr-1 transition-colors cursor-pointer"
                       aria-label="Clear destination"
                     >
                       ✕
@@ -1306,11 +1306,11 @@ export function ListingSearchBar() {
                     type="button"
                     disabled={isSearching}
                     onClick={executeSearch}
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#FCDF9C] text-zinc-900 transition-transform active:scale-95 cursor-pointer hover:brightness-95 disabled:opacity-90 disabled:cursor-not-allowed"
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#FCDF9C] text-[#1F1F1F] transition-transform active:scale-95 cursor-pointer hover:brightness-95 disabled:opacity-90 disabled:cursor-not-allowed"
                     aria-label={isSearching ? "Searching..." : "Search"}
                   >
                     {isSearching ? (
-                      <svg className="h-4 w-4 animate-spin text-zinc-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <svg className="h-4 w-4 animate-spin text-[#1F1F1F]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
                         <path className="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                       </svg>
@@ -1323,7 +1323,7 @@ export function ListingSearchBar() {
                   </button>
                 </div>
 
-                <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 mb-2">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-[#727272] mb-2">
                   {t("home_search_where", undefined, "Where")}
                 </p>
                 {destinationSuggestions}
@@ -1340,11 +1340,11 @@ export function ListingSearchBar() {
                 }`}
                 onClick={() => setActiveStep(activeStep === "when" ? "where" : "when")}
               >
-                <span className={activeStep === "when" ? "text-[18px] font-bold text-zinc-900" : "text-[13px] font-semibold text-zinc-500 uppercase tracking-wider"}>
+                <span className={activeStep === "when" ? "text-[18px] font-bold text-[#1F1F1F]" : "text-[13px] font-semibold text-[#727272] uppercase tracking-wider"}>
                   {activeStep === "when" ? t("home_when_trip", undefined, "When's your trip?") : t("home_search_when", undefined, "When")}
                 </span>
                 {activeStep !== "when" && (
-                  <span className="text-right text-[15px] font-semibold text-zinc-900">
+                  <span className="text-right text-[15px] font-semibold text-[#1F1F1F]">
                     {datePreferences.mode !== "dates"
                       ? "Flexible"
                       : checkIn
@@ -1376,11 +1376,11 @@ export function ListingSearchBar() {
                 className="flex w-full items-center justify-between gap-3 text-left cursor-pointer"
                 onClick={() => setActiveStep(activeStep === "who" ? "where" : "who")}
               >
-                <span className={activeStep === "who" ? "text-[18px] font-bold text-zinc-900" : "text-[13px] font-semibold text-zinc-500 uppercase tracking-wider"}>
+                <span className={activeStep === "who" ? "text-[18px] font-bold text-[#1F1F1F]" : "text-[13px] font-semibold text-[#727272] uppercase tracking-wider"}>
                   {activeStep === "who" ? t("home_whos_coming", undefined, "Who's coming?") : t("home_search_who", undefined, "Who")}
                 </span>
                 {activeStep !== "who" && (
-                  <span className="text-right text-[15px] font-semibold text-zinc-900">
+                  <span className="text-right text-[15px] font-semibold text-[#1F1F1F]">
                     {mobileGuestSummary || t("home_search_add_guests", undefined, "Add guests")}
                   </span>
                 )}
@@ -1408,11 +1408,11 @@ export function ListingSearchBar() {
                 type="button"
                 disabled={isSearching}
                 onClick={handleMobileNext}
-                className="flex items-center justify-center gap-2 rounded-full bg-[#fcdf9c] px-6 py-2.5 text-[14px] font-bold text-zinc-900 shadow-sm transition-all hover:bg-[#f5d580] active:scale-95 cursor-pointer disabled:opacity-90 disabled:cursor-not-allowed"
+                className="flex items-center justify-center gap-2 rounded-full bg-[#fcdf9c] px-6 py-2.5 text-[14px] font-bold text-[#1F1F1F] shadow-sm transition-all hover:bg-[#f5d580] active:scale-95 cursor-pointer disabled:opacity-90 disabled:cursor-not-allowed"
               >
                 {isSearching && activeStep === "who" ? (
                   <>
-                    <svg className="h-4 w-4 animate-spin text-zinc-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <svg className="h-4 w-4 animate-spin text-[#1F1F1F]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
                       <path className="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                     </svg>

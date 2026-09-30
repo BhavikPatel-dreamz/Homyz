@@ -53,7 +53,7 @@ export function StepDescription({
             <label htmlFor="property-description" className="text-lg font-medium text-[#1F1F1F] mb-2">
               {t("host_your_description")}
             </label>
-            <span className="text-xs font-semibold text-zinc-400 mb-3">
+            <span className="text-xs font-semibold text-[#727272] mb-3">
               {description.length}/{maxChars}
             </span>
           </div>

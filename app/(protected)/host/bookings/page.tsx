@@ -8,5 +8,5 @@ import { bookingService } from "@/services/booking.service";
 export default async function HostBookingApprovalsPage() {
   const actor = await requirePageRole([Role.HOST]);
   const bookings = await bookingService.listPendingForHost(actor);
-  return <div className="flex min-h-screen flex-col bg-white text-zinc-900"><HostHeader /><main className="flex-1 px-4 sm:px-6"><HostBookingApprovals bookings={bookings.map((booking) => ({ ...booking, startDate: booking.startDate.toISOString(), endDate: booking.endDate.toISOString(), createdAt: booking.createdAt.toISOString() }))} /></main><Footer /></div>;
+  return <div className="flex min-h-screen flex-col bg-white text-[#1F1F1F]"><HostHeader /><main className="flex-1 px-4 sm:px-6"><HostBookingApprovals bookings={bookings.map((booking) => ({ ...booking, startDate: booking.startDate.toISOString(), endDate: booking.endDate.toISOString(), createdAt: booking.createdAt.toISOString() }))} /></main><Footer /></div>;
 }

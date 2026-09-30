@@ -108,7 +108,7 @@ export function ListingGallery({ photos, listingTitle, onShare, onSave, isSaved 
   };
 
   const renderFallback = () => (
-    <div className="w-full h-full bg-zinc-100 flex items-center justify-center text-zinc-400">
+    <div className="w-full h-full bg-zinc-100 flex items-center justify-center text-[#727272]">
       <svg className="w-16 h-16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
         <rect x="3" y="3" width="18" height="14" rx="2" />
         <path d="M3 17l3-3 3 3 4-5 5 6" />
@@ -119,7 +119,7 @@ export function ListingGallery({ photos, listingTitle, onShare, onSave, isSaved 
   if (total === 0) {
     return (
       <div className="relative mb-8">
-        <div className="aspect-[21/9] w-full bg-zinc-100 flex flex-col items-center justify-center text-zinc-400">
+        <div className="aspect-[21/9] w-full bg-zinc-100 flex flex-col items-center justify-center text-[#727272]">
           <span className="text-4xl mb-2">🏡</span>
           <span className="text-xs font-medium">No property photos uploaded</span>
         </div>
@@ -197,7 +197,7 @@ export function ListingGallery({ photos, listingTitle, onShare, onSave, isSaved 
           <button
             type="button"
             onClick={handleOpenLightbox}
-            className="absolute bottom-4 right-4 z-10 flex items-center gap-2 rounded-full border border-zinc-200 bg-white/95 px-3.5 py-1.5 text-xs font-semibold text-zinc-900 shadow-sm transition hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f]"
+            className="absolute bottom-4 right-4 z-10 flex items-center gap-2 rounded-full border border-zinc-200 bg-white/95 px-3.5 py-1.5 text-xs font-semibold text-[#1F1F1F] shadow-sm transition hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f]"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="size-3.5" aria-hidden="true">
               <rect x="3" y="3" width="7" height="7" rx="1" />
@@ -250,7 +250,7 @@ export function ListingGallery({ photos, listingTitle, onShare, onSave, isSaved 
                 onError={() => handleImgError(i)}
               />
             ) : (
-              <div className="w-full h-full bg-zinc-100 flex items-center justify-center text-zinc-400">—</div>
+              <div className="w-full h-full bg-zinc-100 flex items-center justify-center text-[#727272]">—</div>
             )}
           </button>
         ))}
@@ -300,7 +300,7 @@ export function ListingGallery({ photos, listingTitle, onShare, onSave, isSaved 
                     {!failed[ii] ? (
                       <Image src={pp} alt={`Photo ${ii + 1}`} fill style={{ objectFit: "cover" }} sizes="80px" loading="lazy" onError={() => handleImgError(ii)} />
                     ) : (
-                      <div className="w-full h-full bg-zinc-100 flex items-center justify-center text-zinc-400">—</div>
+                      <div className="w-full h-full bg-zinc-100 flex items-center justify-center text-[#727272]">—</div>
                     )}
                   </button>
                 ))}

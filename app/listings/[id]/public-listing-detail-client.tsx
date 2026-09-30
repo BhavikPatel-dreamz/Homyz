@@ -443,7 +443,7 @@ function ListingAvailabilityCalendar({
     return (
       <div key={`${calendarMonth.getFullYear()}-${calendarMonth.getMonth()}`} className="min-w-0">
         <h4 className="mb-4 text-center text-base font-medium text-[#1C1C1C]">{title}</h4>
-        <div className="grid grid-cols-7 gap-y-2 text-center text-[10px] font-medium text-zinc-400">
+        <div className="grid grid-cols-7 gap-y-2 text-center text-[10px] font-medium text-[#727272]">
           {weekdays.map((day) => <span key={day} aria-hidden="true">{day.slice(0, 1)}</span>)}
         </div>
         <div className="mt-2 grid grid-cols-7 gap-y-1" role="grid" aria-label={`${title} availability calendar`}>
@@ -514,11 +514,11 @@ function ListingAvailabilityCalendar({
         <div className="max-w-[608px] rounded-2xl bg-[#F3F4F5] p-3 sm:p-4">
           <div className="rounded-2xl bg-white px-3 py-5 sm:px-5 sm:py-6">
             <div className="grid grid-cols-[2rem_minmax(0,1fr)_2rem] items-start gap-1 sm:gap-3">
-              <button type="button" aria-label="Previous two months" disabled={!canGoBack || isLoading} onClick={() => onMonthChange(new Date(month.getFullYear(), month.getMonth() - 1, 1))} className="mt-0.5 flex size-8 items-center justify-center rounded-full text-lg text-zinc-500 hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-30 cursor-pointer"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="size-6"><path d="m15 18-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" /></svg></button>
+              <button type="button" aria-label="Previous two months" disabled={!canGoBack || isLoading} onClick={() => onMonthChange(new Date(month.getFullYear(), month.getMonth() - 1, 1))} className="mt-0.5 flex size-8 items-center justify-center rounded-full text-lg text-[#727272] hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-30 cursor-pointer"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="size-6"><path d="m15 18-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" /></svg></button>
               <div className="grid min-w-0 grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-6">
                 {displayedMonths.map(renderMonth)}
               </div>
-              <button type="button" aria-label="Next two months" disabled={isLoading} onClick={() => onMonthChange(new Date(month.getFullYear(), month.getMonth() + 1, 1))} className="mt-0.5 flex size-8 items-center justify-center rounded-full text-lg text-zinc-500 hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-30 cursor-pointer"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="size-6"><path d="m9 18 6-6-6-6" strokeLinecap="round" strokeLinejoin="round" /></svg></button>
+              <button type="button" aria-label="Next two months" disabled={isLoading} onClick={() => onMonthChange(new Date(month.getFullYear(), month.getMonth() + 1, 1))} className="mt-0.5 flex size-8 items-center justify-center rounded-full text-lg text-[#727272] hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-30 cursor-pointer"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="size-6"><path d="m9 18 6-6-6-6" strokeLinecap="round" strokeLinejoin="round" /></svg></button>
             </div>
           </div>
           <div className="flex flex-wrap items-center justify-between gap-2 px-1 pt-3 text-sm text-[#727272]">
@@ -1686,7 +1686,7 @@ export function PublicListingDetailClient({
                 <div className="mt-7.5 order-1 space-y-5 border-b border-zinc-200/80 pb-7.5">
                   <h3 className="text-[20px] font-normal text-[#1f1f1f]">What this place offers</h3>
                   {categorizedAmenities.length === 0 ? (
-                    <p className="text-xs text-zinc-500">This host has not listed any amenities yet.</p>
+                    <p className="text-xs text-[#727272]">This host has not listed any amenities yet.</p>
                   ) : <>
                     <div className="grid grid-cols-1 gap-x-12 gap-y-2.5 text-[#1f1f1f] sm:grid-cols-2">
                       {categorizedAmenities.slice(0, 6).map((am) => (
@@ -1761,7 +1761,7 @@ export function PublicListingDetailClient({
                           ✓
                         </div>
                         <h3 className="text-[20px] font-normal text-[#1f1f1f]">{listing.instantBook ? "Reservation confirmed" : "Reservation request submitted"}</h3>
-                        <p className="text-xs text-zinc-500 leading-relaxed font-normal">
+                        <p className="text-xs text-[#727272] leading-relaxed font-normal">
                           Your stay has been recorded. You can manage your bookings in your trips dashboard.
                         </p>
                         <div className="pt-2">
@@ -1872,7 +1872,7 @@ export function PublicListingDetailClient({
 
 
 
-                                <div className="border-t border-zinc-200/80 pt-2 text-sm text-zinc-500">
+                                <div className="border-t border-zinc-200/80 pt-2 text-sm text-[#727272]">
                                   {totalCapacityGuests >= maximumGuests ? (
                                     <p className="font-sm font-medium text-amber-700">Maximum property capacity of {maximumGuests} {maximumGuests === 1 ? "guest" : "guests"} reached.</p>
                                   ) : (
@@ -1920,7 +1920,7 @@ export function PublicListingDetailClient({
 
                         {/* Live Quote Breakdown */}
                         {isQuoteLoading && (
-                          <div className="py-4 text-center text-xs text-zinc-400 animate-pulse font-medium">
+                          <div className="py-4 text-center text-xs text-[#727272] animate-pulse font-medium">
                             Calculating price breakdown...
                           </div>
                         )}
@@ -1951,7 +1951,7 @@ export function PublicListingDetailClient({
                             )}
 
                             {quote.weekendNights > 0 && quote.weekendNightlyPrice && (
-                              <div className="flex items-center justify-between text-zinc-500 text-sm">
+                              <div className="flex items-center justify-between text-[#727272] text-sm">
                                 <span>Includes {quote.weekendNights} weekend nights</span>
                                 <span>{formatPrice(quote.weekendNightlyPrice, currencyCode)} / night</span>
                               </div>
@@ -2034,7 +2034,7 @@ export function PublicListingDetailClient({
                           onClick={handleReserve}
                           className={`w-full rounded-full py-3.5 text-lg font-medium transition-all shadow-xs ${hasValidQuote && !isBookingSubmitting
                             ? "border border-[#1f1f1f] bg-[#FCDF9C] text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] cursor-pointer"
-                            : "border border-zinc-200 bg-zinc-100 text-zinc-400 hover:border-zinc-300 hover:text-[#727272] cursor-pointer"
+                            : "border border-zinc-200 bg-zinc-100 text-[#727272] hover:border-zinc-300 hover:text-[#727272] cursor-pointer"
                             }`}
                           aria-disabled={!hasValidQuote || isBookingSubmitting}
                         >
@@ -2226,7 +2226,7 @@ export function PublicListingDetailClient({
                   <div className="pt-5 border-t border-zinc-200/80 space-y-3">
                     <div className="flex items-center justify-between">
                       <h4 className="font-bold text-sm text-[#1f1f1f]">Local Host Guidebook</h4>
-                      <span className="text-[11px] text-zinc-400">Curated recommendations</span>
+                      <span className="text-[11px] text-[#727272]">Curated recommendations</span>
                     </div>
                     <div className="space-y-2.5">
                       {guidebooks.map((gb) => (
@@ -2372,7 +2372,7 @@ export function PublicListingDetailClient({
                   <div className="space-y-3">{amenities.map((am) => <AmenityRow key={am.id} amenity={am} />)}</div>
                 </section>
               ))}
-              {filteredModalAmenities.length === 0 && <p className="py-5 text-center text-xs text-zinc-500">No matching amenities.</p>}
+              {filteredModalAmenities.length === 0 && <p className="py-5 text-center text-xs text-[#727272]">No matching amenities.</p>}
             </div>
           </div>
         </ModalOverlay>
@@ -2472,7 +2472,7 @@ export function PublicListingDetailClient({
                   ? formatPrice((quote.guestTotal ?? quote.totalPrice) || 0, currencyCode)
                   : displayPrice ?? "Price unavailable"}
               </span>
-              <span className="text-xs font-normal text-zinc-500">
+              <span className="text-xs font-normal text-[#727272]">
                 {quote?.nights ? `total · ${quote.nights} ${quote.nights === 1 ? "night" : "nights"}` : "/ night"}
               </span>
             </div>
@@ -2505,7 +2505,7 @@ export function PublicListingDetailClient({
                 onClick={handleReserve}
                 className={`rounded-2xl px-5 py-2.5 text-xs font-bold transition-all shadow-xs ${hasValidQuote && !isBookingSubmitting
                   ? "border border-amber-400 bg-[#fee09a] text-[#1f1f1f] hover:bg-[#fbd775] active:scale-[0.98] cursor-pointer"
-                  : "border border-zinc-200 bg-zinc-100 text-zinc-400 cursor-not-allowed"
+                  : "border border-zinc-200 bg-zinc-100 text-[#727272] cursor-not-allowed"
                   }`}
                 aria-disabled={!hasValidQuote || isBookingSubmitting}
               >

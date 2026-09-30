@@ -377,7 +377,7 @@ export function RealMap({
       <div ref={mapContainerRef} className="w-full h-full z-0" role="img" aria-label={ariaLabel} aria-busy={!shouldLoadMap} />
 
       {!shouldLoadMap && !mapLoadError && (
-        <div className="absolute inset-0 flex items-center justify-center bg-zinc-100 text-xs text-zinc-500">
+        <div className="absolute inset-0 flex items-center justify-center bg-zinc-100 text-xs text-[#727272]">
           Loading map…
         </div>
       )}

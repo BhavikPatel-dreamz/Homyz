@@ -98,7 +98,7 @@ async function runDarkModeBackButtonTests() {
   const pricingContent = fs.readFileSync(pricingFile, "utf-8");
 
   assert(
-    pricingContent.includes("dark:text-zinc-400") &&
+    pricingContent.includes("dark:text-[#727272]") &&
     pricingContent.includes("dark:text-zinc-100") &&
     pricingContent.includes("dark:hover:text-amber-400"),
     "Pricing & Availability description note and 'Learn more' button include dark mode classes"
@@ -108,7 +108,7 @@ async function runDarkModeBackButtonTests() {
   const propDetailsContent = fs.readFileSync(propDetailsFile, "utf-8");
 
   assert(
-    propDetailsContent.includes("dark:text-zinc-400") &&
+    propDetailsContent.includes("dark:text-[#727272]") &&
     propDetailsContent.includes("dark:text-zinc-100") &&
     propDetailsContent.includes("dark:hover:text-amber-400"),
     "PropertyDetails Description note and 'Learn more' link include dark mode classes"
@@ -145,7 +145,7 @@ async function runDarkModeBackButtonTests() {
     hostLocationViewsContent.includes("dark:bg-zinc-800") &&
     hostLocationViewsContent.includes("dark:border-zinc-700") &&
     hostLocationViewsContent.includes("dark:text-zinc-100") &&
-    hostLocationViewsContent.includes("dark:text-zinc-400") &&
+    hostLocationViewsContent.includes("dark:text-[#727272]") &&
     hostLocationViewsContent.includes("dark:bg-amber-400"),
     "HostAndLocationViews Location sharing card, features, accordion titles, and save buttons include dark mode classes"
   );
@@ -202,7 +202,7 @@ async function runDarkModeBackButtonTests() {
 
   assert(
     hostAboutHostContent.includes("dark:text-zinc-100") &&
-    hostAboutHostContent.includes("dark:text-zinc-400") &&
+    hostAboutHostContent.includes("dark:text-[#727272]") &&
     hostAboutHostContent.includes("dark:bg-zinc-800/90") &&
     hostAboutHostContent.includes("dark:border-zinc-700") &&
     hostAboutHostContent.includes("dark:bg-amber-400"),
@@ -216,7 +216,7 @@ async function runDarkModeBackButtonTests() {
 
   assert(
     adminAboutHostContent.includes("dark:text-zinc-100") &&
-    adminAboutHostContent.includes("dark:text-zinc-400") &&
+    adminAboutHostContent.includes("dark:text-[#727272]") &&
     adminAboutHostContent.includes("dark:bg-zinc-800") &&
     adminAboutHostContent.includes("dark:border-zinc-700") &&
     adminAboutHostContent.includes("dark:bg-indigo-950/60") &&
@@ -261,7 +261,7 @@ async function runDarkModeBackButtonTests() {
 
   assert(
     houseRulesContent.includes("dark:text-zinc-100") &&
-    houseRulesContent.includes("dark:text-zinc-400") &&
+    houseRulesContent.includes("dark:text-[#727272]") &&
     houseRulesContent.includes("dark:bg-zinc-800/60") &&
     houseRulesContent.includes("dark:border-zinc-700") &&
     houseRulesContent.includes("dark:bg-zinc-900") &&
@@ -277,7 +277,7 @@ async function runDarkModeBackButtonTests() {
 
   assert(
     guestsSafetyContent.includes("dark:text-zinc-100") &&
-    guestsSafetyContent.includes("dark:text-zinc-400") &&
+    guestsSafetyContent.includes("dark:text-[#727272]") &&
     guestsSafetyContent.includes("dark:bg-zinc-900") &&
     guestsSafetyContent.includes("dark:border-zinc-800") &&
     guestsSafetyContent.includes("dark:bg-zinc-800/80") &&
@@ -292,7 +292,7 @@ async function runDarkModeBackButtonTests() {
 
   assert(
     localLawsContent.includes("dark:text-zinc-100") &&
-    localLawsContent.includes("dark:text-zinc-400") &&
+    localLawsContent.includes("dark:text-[#727272]") &&
     localLawsContent.includes("dark:bg-zinc-900") &&
     localLawsContent.includes("dark:border-zinc-800") &&
     localLawsContent.includes("dark:bg-amber-400") &&
@@ -307,7 +307,7 @@ async function runDarkModeBackButtonTests() {
 
   assert(
     taxesContent.includes("dark:text-zinc-100") &&
-    taxesContent.includes("dark:text-zinc-400") &&
+    taxesContent.includes("dark:text-[#727272]") &&
     taxesContent.includes("dark:bg-zinc-900") &&
     taxesContent.includes("dark:border-zinc-800") &&
     taxesContent.includes("dark:bg-zinc-800") &&
@@ -322,7 +322,7 @@ async function runDarkModeBackButtonTests() {
 
   assert(
     orgStaysContent.includes("dark:text-zinc-100") &&
-    orgStaysContent.includes("dark:text-zinc-400") &&
+    orgStaysContent.includes("dark:text-[#727272]") &&
     orgStaysContent.includes("dark:bg-zinc-900") &&
     orgStaysContent.includes("dark:border-zinc-800") &&
     orgStaysContent.includes("dark:bg-amber-400") &&
@@ -340,7 +340,7 @@ async function runDarkModeBackButtonTests() {
     freshEditorClientContent.includes("dark:bg-zinc-900") &&
     freshEditorClientContent.includes("dark:border-zinc-800") &&
     freshEditorClientContent.includes("dark:text-zinc-100") &&
-    freshEditorClientContent.includes("dark:text-zinc-400") &&
+    freshEditorClientContent.includes("dark:text-[#727272]") &&
     freshEditorClientContent.includes("dark:border-zinc-700") &&
     removeListingContent.includes("dark:bg-zinc-900") &&
     removeListingContent.includes("dark:border-zinc-800") &&
@@ -372,7 +372,7 @@ async function runDarkModeBackButtonTests() {
   assert(
     customLinkPricingContent.includes("dark:text-zinc-300") &&
     customLinkPricingContent.includes("dark:text-zinc-100") &&
-    customLinkPricingContent.includes("dark:text-zinc-400") &&
+    customLinkPricingContent.includes("dark:text-[#727272]") &&
     customLinkPricingContent.includes("dark:placeholder:text-zinc-600") &&
     customLinkPricingContent.includes("dark:text-red-400") &&
     customLinkPricingContent.includes("dark:text-emerald-400") &&

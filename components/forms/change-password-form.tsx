@@ -55,7 +55,7 @@ export function ChangePasswordForm() {
           <button
             type="button"
             onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700 transition-colors"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#727272] hover:text-zinc-700 transition-colors"
             aria-label="Toggle current password visibility"
           >
             {showCurrentPassword ? (
@@ -87,7 +87,7 @@ export function ChangePasswordForm() {
           <button
             type="button"
             onClick={() => setShowNewPassword(!showNewPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700 transition-colors"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#727272] hover:text-zinc-700 transition-colors"
             aria-label="Toggle new password visibility"
           >
             {showNewPassword ? (

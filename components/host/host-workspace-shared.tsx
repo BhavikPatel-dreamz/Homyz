@@ -48,7 +48,7 @@ export function PropertyPhoto({
     />
   ) : (
     <span
-      className={`flex items-center justify-center bg-zinc-100 text-zinc-400 ${className}`}
+      className={`flex items-center justify-center bg-zinc-100 text-[#727272] ${className}`}
       aria-label="No property photo"
     >
       <svg
@@ -209,9 +209,9 @@ export function ReservationDetails({
               </div>
             )}
             <div className="min-w-0 flex-1">
-              <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">{booking.guestName}</h3>
+              <h3 className="text-xl font-bold text-[#1F1F1F] dark:text-zinc-100">{booking.guestName}</h3>
               <p className="text-xs text-zinc-600 dark:text-zinc-300 mt-0.5 truncate">{listing.title}</p>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">{[listing.city, listing.country].filter(Boolean).join(", ")}</p>
+              <p className="text-xs text-[#727272] dark:text-[#727272]">{[listing.city, listing.country].filter(Boolean).join(", ")}</p>
               <p className="mt-2 text-xs font-medium text-zinc-800 dark:text-zinc-200">
                 {shortDate(booking.startDate)} – {shortDate(booking.endDate)} ({nights} {nights === 1 ? "night" : "nights"}) • 2 guests
               </p>
@@ -221,7 +221,7 @@ export function ReservationDetails({
 
         {/* About Guest Card */}
         <div className="rounded-2xl border border-zinc-200 dark:border-zinc-700 p-4 space-y-2">
-          <h4 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+          <h4 className="text-xs font-semibold uppercase tracking-wider text-[#727272] dark:text-[#727272]">
             About {booking.guestName}
           </h4>
           <div className="space-y-1.5 text-xs text-zinc-700 dark:text-zinc-300">
@@ -234,11 +234,11 @@ export function ReservationDetails({
               <span>Identity verified</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-zinc-400">📅</span>
+              <span className="text-[#727272]">📅</span>
               <span>Joined Homyz in 2022</span>
             </div>
           </div>
-          <button type="button" className="text-xs font-medium text-zinc-900 dark:text-zinc-100 underline pt-1 cursor-pointer">
+          <button type="button" className="text-xs font-medium text-[#1F1F1F] dark:text-zinc-100 underline pt-1 cursor-pointer">
             Show profile
           </button>
         </div>
@@ -248,13 +248,13 @@ export function ReservationDetails({
           <button
             type="button"
             onClick={onMoney}
-            className="w-full rounded-full border border-zinc-900 dark:border-zinc-700 px-4 py-3 font-medium text-xs text-zinc-900 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors shadow-2xs cursor-pointer"
+            className="w-full rounded-full border border-zinc-900 dark:border-zinc-700 px-4 py-3 font-medium text-xs text-[#1F1F1F] dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors shadow-2xs cursor-pointer"
           >
             Send or request money
           </button>
           <a
             href="/host/messages"
-            className="w-full rounded-full bg-[#1F1F1F] dark:bg-zinc-100 px-4 py-3 text-center text-xs font-medium text-white dark:text-zinc-900 hover:bg-black dark:hover:bg-white transition-colors shadow-2xs"
+            className="w-full rounded-full bg-[#1F1F1F] dark:bg-zinc-100 px-4 py-3 text-center text-xs font-medium text-white dark:text-[#1F1F1F] hover:bg-black dark:hover:bg-white transition-colors shadow-2xs"
           >
             Message
           </a>
@@ -262,89 +262,89 @@ export function ReservationDetails({
 
         {/* Booking Details */}
         <div>
-          <h4 className="font-semibold text-zinc-900 dark:text-zinc-100 text-sm mb-3">Booking details</h4>
+          <h4 className="font-semibold text-[#1F1F1F] dark:text-zinc-100 text-sm mb-3">Booking details</h4>
           <dl className="divide-y divide-zinc-100 dark:divide-zinc-800 text-xs">
             <div className="py-2.5 flex justify-between">
-              <dt className="text-zinc-500 dark:text-zinc-400">Guests</dt>
+              <dt className="text-[#727272] dark:text-[#727272]">Guests</dt>
               <dd className="font-medium text-zinc-800 dark:text-zinc-200">2 Adults</dd>
             </div>
             <div className="py-2.5 flex justify-between">
-              <dt className="text-zinc-500 dark:text-zinc-400">Check-in</dt>
+              <dt className="text-[#727272] dark:text-[#727272]">Check-in</dt>
               <dd className="font-medium text-zinc-800 dark:text-zinc-200">{shortDate(booking.startDate)} ({listing.checkInStart || "15:00"})</dd>
             </div>
             <div className="py-2.5 flex justify-between">
-              <dt className="text-zinc-500 dark:text-zinc-400">Check-out</dt>
+              <dt className="text-[#727272] dark:text-[#727272]">Check-out</dt>
               <dd className="font-medium text-zinc-800 dark:text-zinc-200">{shortDate(booking.endDate)} ({listing.checkOutTime || "11:00"})</dd>
             </div>
             <div className="py-2.5 flex justify-between">
-              <dt className="text-zinc-500 dark:text-zinc-400">Booking date</dt>
+              <dt className="text-[#727272] dark:text-[#727272]">Booking date</dt>
               <dd className="font-medium text-zinc-800 dark:text-zinc-200">{shortDate(booking.createdAt)}</dd>
             </div>
             <div className="py-2.5 flex justify-between">
-              <dt className="text-zinc-500 dark:text-zinc-400">Confirmation code</dt>
+              <dt className="text-[#727272] dark:text-[#727272]">Confirmation code</dt>
               <dd className="font-mono text-zinc-800 dark:text-zinc-200">{booking.id.slice(-8).toUpperCase()}</dd>
             </div>
             <div className="py-2.5 flex justify-between">
-              <dt className="text-zinc-500 dark:text-zinc-400">Cancellation policy</dt>
+              <dt className="text-[#727272] dark:text-[#727272]">Cancellation policy</dt>
               <dd className="font-medium capitalize text-zinc-800 dark:text-zinc-200">
                 {listing.cancellationPolicy.replaceAll("_", " ").toLowerCase()}
               </dd>
             </div>
           </dl>
-          <a href="/host/calendar" className="inline-block text-xs font-medium text-zinc-900 dark:text-zinc-100 underline mt-2">
+          <a href="/host/calendar" className="inline-block text-xs font-medium text-[#1F1F1F] dark:text-zinc-100 underline mt-2">
             Show calendar
           </a>
         </div>
 
         {/* Financial Breakdown: Guest Paid */}
         <div className="border-t border-zinc-200 dark:border-zinc-800 pt-4">
-          <h4 className="font-semibold text-zinc-900 dark:text-zinc-100 text-sm mb-3">Guest paid</h4>
+          <h4 className="font-semibold text-[#1F1F1F] dark:text-zinc-100 text-sm mb-3">Guest paid</h4>
           <dl className="space-y-2 text-xs">
             <div className="flex justify-between">
-              <dt className="text-zinc-500 dark:text-zinc-400">{formatPrice(nightlyRate, sourceCurrency, 2)} × {nights} {nights === 1 ? "night" : "nights"}</dt>
+              <dt className="text-[#727272] dark:text-[#727272]">{formatPrice(nightlyRate, sourceCurrency, 2)} × {nights} {nights === 1 ? "night" : "nights"}</dt>
               <dd className="text-zinc-800 dark:text-zinc-200">{formatPrice(roomFee, sourceCurrency, 2)}</dd>
             </div>
             <div className="flex justify-between">
-              <dt className="text-zinc-500 dark:text-zinc-400">Cleaning fee</dt>
+              <dt className="text-[#727272] dark:text-[#727272]">Cleaning fee</dt>
               <dd className="text-zinc-800 dark:text-zinc-200">{formatPrice(cleaningFee, sourceCurrency, 2)}</dd>
             </div>
             <div className="flex justify-between">
-              <dt className="text-zinc-500 dark:text-zinc-400">Guest service fee ({hostServiceFeePercentage}%)</dt>
+              <dt className="text-[#727272] dark:text-[#727272]">Guest service fee ({hostServiceFeePercentage}%)</dt>
               <dd className="text-zinc-800 dark:text-zinc-200">{formatPrice(hostServiceFee, sourceCurrency, 2)}</dd>
             </div>
             {taxes > 0 && (
               <div className="flex justify-between">
-                <dt className="text-zinc-500 dark:text-zinc-400">Taxes</dt>
+                <dt className="text-[#727272] dark:text-[#727272]">Taxes</dt>
                 <dd className="text-zinc-800 dark:text-zinc-200">{formatPrice(taxes, sourceCurrency, 2)}</dd>
               </div>
             )}
             <div className="flex justify-between border-t border-zinc-100 dark:border-zinc-800 pt-2 font-semibold text-sm">
-              <dt className="text-zinc-900 dark:text-zinc-100">Total ({currency})</dt>
-              <dd className="text-zinc-900 dark:text-zinc-100">{formatPrice(guestTotal, sourceCurrency, 2)}</dd>
+              <dt className="text-[#1F1F1F] dark:text-zinc-100">Total ({currency})</dt>
+              <dd className="text-[#1F1F1F] dark:text-zinc-100">{formatPrice(guestTotal, sourceCurrency, 2)}</dd>
             </div>
           </dl>
         </div>
 
         {/* Financial Breakdown: Host Payout */}
         <div className="border-t border-zinc-200 dark:border-zinc-800 pt-4">
-          <h4 className="font-semibold text-zinc-900 dark:text-zinc-100 text-sm mb-3">Host payout</h4>
+          <h4 className="font-semibold text-[#1F1F1F] dark:text-zinc-100 text-sm mb-3">Host payout</h4>
           <dl className="space-y-2 text-xs">
             <div className="flex justify-between">
-              <dt className="text-zinc-500 dark:text-zinc-400">{nights} {nights === 1 ? "night" : "nights"} room fee</dt>
+              <dt className="text-[#727272] dark:text-[#727272]">{nights} {nights === 1 ? "night" : "nights"} room fee</dt>
               <dd className="text-zinc-800 dark:text-zinc-200">{formatPrice(roomFee, sourceCurrency, 2)}</dd>
             </div>
             {cleaningFee > 0 && (
               <div className="flex justify-between">
-                <dt className="text-zinc-500 dark:text-zinc-400">Cleaning fee</dt>
+                <dt className="text-[#727272] dark:text-[#727272]">Cleaning fee</dt>
                 <dd className="text-zinc-800 dark:text-zinc-200">{formatPrice(cleaningFee, sourceCurrency, 2)}</dd>
               </div>
             )}
             <div className="flex justify-between">
-              <dt className="text-zinc-500 dark:text-zinc-400">Guest service fee ({hostServiceFeePercentage}%)</dt>
+              <dt className="text-[#727272] dark:text-[#727272]">Guest service fee ({hostServiceFeePercentage}%)</dt>
               <dd className="text-rose-600 dark:text-rose-400">- {formatPrice(hostServiceFee, sourceCurrency, 2)}</dd>
             </div>
             <div className="flex justify-between border-t border-zinc-100 dark:border-zinc-800 pt-2 font-semibold text-sm">
-              <dt className="text-zinc-900 dark:text-zinc-100">Total payout ({currency})</dt>
+              <dt className="text-[#1F1F1F] dark:text-zinc-100">Total payout ({currency})</dt>
               <dd className="text-emerald-700 dark:text-emerald-400">{formatPrice(hostPayout, sourceCurrency, 2)}</dd>
             </div>
           </dl>
@@ -381,15 +381,15 @@ export function MoneyDialog({
     <WorkspaceDialog title="Send or request money" onClose={onClose} maxWidth="max-w-md">
       <div className="space-y-5 text-sm">
         <div className="rounded-xl bg-zinc-50 dark:bg-zinc-800/80 p-4 border border-zinc-100 dark:border-zinc-700">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">From</p>
-          <p className="my-1 font-bold text-base text-zinc-900 dark:text-zinc-100">{booking.guestName}</p>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-[#727272]">From</p>
+          <p className="my-1 font-bold text-base text-[#1F1F1F] dark:text-zinc-100">{booking.guestName}</p>
+          <p className="text-xs text-[#727272] dark:text-[#727272]">
             {shortDate(booking.startDate)} – {shortDate(booking.endDate)} ({nights} {nights === 1 ? "night" : "nights"}) • 2 guests
           </p>
         </div>
 
         <fieldset className="space-y-3">
-          <legend className="mb-2 font-semibold text-zinc-900 dark:text-zinc-100 text-sm">What would you like to do?</legend>
+          <legend className="mb-2 font-semibold text-[#1F1F1F] dark:text-zinc-100 text-sm">What would you like to do?</legend>
           <label className="flex items-center gap-3 p-3 rounded-xl border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 cursor-pointer transition-colors">
             <input type="radio" name="money-action" defaultChecked className="size-4 accent-[#1F1F1F] dark:accent-amber-400" />
             <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">Send money</span>
@@ -408,13 +408,13 @@ export function MoneyDialog({
           <button
             type="button"
             onClick={onClose}
-            className="text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 underline"
+            className="text-sm font-medium text-zinc-600 dark:text-[#727272] hover:text-[#1F1F1F] dark:hover:text-zinc-100 underline"
           >
             Cancel
           </button>
           <a
             href="/host/messages"
-            className="rounded-full bg-[#1F1F1F] dark:bg-zinc-100 px-6 py-2.5 text-xs font-semibold text-white dark:text-zinc-900 hover:bg-black dark:hover:bg-white transition-colors"
+            className="rounded-full bg-[#1F1F1F] dark:bg-zinc-100 px-6 py-2.5 text-xs font-semibold text-white dark:text-[#1F1F1F] hover:bg-black dark:hover:bg-white transition-colors"
           >
             Next
           </a>

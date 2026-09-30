@@ -120,7 +120,7 @@ export function LocalLawsView({
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in max-w-2xl pb-16 font-sans text-zinc-900 dark:text-zinc-100">
+    <div className="space-y-6 animate-in fade-in max-w-2xl pb-16 font-sans text-[#1F1F1F] dark:text-zinc-100">
       {/* 1. Header & Back Button */}
       <div className="flex items-center gap-6">
         <BackButton onClick={() => setActiveSection("arrival-guide")} />
@@ -128,7 +128,7 @@ export function LocalLawsView({
       </div>
 
       {/* 2. Intro Paragraph */}
-      <p className="text-sm leading-5 text-[#727272] dark:text-zinc-400 max-w-[491px]">
+      <p className="text-sm leading-5 text-[#727272] dark:text-[#727272] max-w-[491px]">
         {t("host_local_laws_intro")}
       </p>
 
@@ -162,13 +162,13 @@ export function LocalLawsView({
 
         {/* Content */}
         <div className="flex-1 min-w-0 space-y-1">
-          <span className="text-xs text-zinc-500 dark:text-zinc-400 font-normal block">
+          <span className="text-xs text-[#727272] dark:text-[#727272] font-normal block">
             {t("host_local_laws_read_time_3min")}
           </span>
           <h2 className="text-sm sm:text-[15px] font-semibold text-[#1F1F1F] dark:text-zinc-100 flex items-center gap-1.5 group-hover:text-zinc-700 dark:group-hover:text-zinc-300 transition-colors">
             {t("host_local_laws_learn_regulations_title")}
             <svg
-              className="w-4 h-4 text-zinc-500 dark:text-zinc-400 transition-transform group-hover:translate-x-0.5"
+              className="w-4 h-4 text-[#727272] dark:text-[#727272] transition-transform group-hover:translate-x-0.5"
               fill="none"
               stroke="currentColor"
               strokeWidth="2.2"
@@ -183,12 +183,12 @@ export function LocalLawsView({
       </div>
 
       {/* 4. Body Paragraph 1 */}
-      <p className="text-xs sm:text-sm text-[#727272] dark:text-zinc-400 font-normal leading-relaxed max-w-xl">
+      <p className="text-xs sm:text-sm text-[#727272] dark:text-[#727272] font-normal leading-relaxed max-w-xl">
         {t("host_local_laws_body_p1")}
       </p>
 
       {/* 5. Body Paragraph 2 */}
-      <p className="text-xs sm:text-sm text-[#727272] dark:text-zinc-400 font-normal leading-relaxed max-w-xl">
+      <p className="text-xs sm:text-sm text-[#727272] dark:text-[#727272] font-normal leading-relaxed max-w-xl">
         {t("host_local_laws_body_p2")}
       </p>
 
@@ -201,7 +201,7 @@ export function LocalLawsView({
               setActiveArticleId("hosting-regulations");
               setShowResourceDrawer(true);
             }}
-            className="text-xs sm:text-sm font-normal text-zinc-600 dark:text-zinc-400 underline underline-offset-3 hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors cursor-pointer text-left"
+            className="text-xs sm:text-sm font-normal text-zinc-600 dark:text-[#727272] underline underline-offset-3 hover:text-[#1F1F1F] dark:hover:text-zinc-200 transition-colors cursor-pointer text-left"
           >
             {t("host_local_laws_link_regulations_apply")}
           </button>
@@ -213,7 +213,7 @@ export function LocalLawsView({
               setActiveArticleId("hosting-regulations");
               setShowResourceDrawer(true);
             }}
-            className="text-xs sm:text-sm font-normal text-zinc-600 dark:text-zinc-400 underline underline-offset-3 hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors cursor-pointer text-left"
+            className="text-xs sm:text-sm font-normal text-zinc-600 dark:text-[#727272] underline underline-offset-3 hover:text-[#1F1F1F] dark:hover:text-zinc-200 transition-colors cursor-pointer text-left"
           >
             {t("host_local_laws_link_responsible_hosting")}
           </button>
@@ -221,7 +221,7 @@ export function LocalLawsView({
       </div>
 
       {/* 7. Legal Terms Disclaimer */}
-      <p className="text-sm text-zinc-500 dark:text-zinc-400 font-normal leading-relaxed max-w-xl pt-2 border-t border-zinc-100 dark:border-zinc-800">
+      <p className="text-sm text-[#727272] dark:text-[#727272] font-normal leading-relaxed max-w-xl pt-2 border-t border-zinc-100 dark:border-zinc-800">
         {t("host_local_laws_legal_disclaimer")}
       </p>
 
@@ -291,7 +291,7 @@ export function LocalLawsView({
               <button
                 type="button"
                 onClick={() => setShowResourceDrawer(false)}
-                className="w-8 h-8 rounded-full flex items-center justify-center text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-[#727272] dark:text-[#727272] hover:text-[#1F1F1F] dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                 aria-label={t("host_local_laws_close_resource_centre")}
               >
                 <svg
@@ -315,7 +315,7 @@ export function LocalLawsView({
                 <button
                   type="button"
                   onClick={() => setActiveArticleId("hosting-regulations")}
-                  className="text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 flex items-center gap-1 cursor-pointer mb-2"
+                  className="text-xs font-semibold text-zinc-600 dark:text-[#727272] hover:text-[#1F1F1F] dark:hover:text-zinc-200 flex items-center gap-1 cursor-pointer mb-2"
                 >
                   {t("host_local_laws_back_to_hosting_regulations")}
                 </button>
@@ -326,10 +326,10 @@ export function LocalLawsView({
                 <h2 id="resource-centre-title">
                   {activeArticle.title}
                 </h2>
-                <p className="text-base sm:text-lg text-zinc-600 dark:text-zinc-400 font-normal mt-1.5 leading-snug">
+                <p className="text-base sm:text-lg text-zinc-600 dark:text-[#727272] font-normal mt-1.5 leading-snug">
                   {activeArticle.subtitle}
                 </p>
-                <p className="text-xs text-zinc-400 dark:text-zinc-500 font-normal mt-2">
+                <p className="text-xs text-[#727272] dark:text-[#727272] font-normal mt-2">
                   {t("host_local_laws_by_author_date", { author: activeArticle.author, date: activeArticle.date })}
                 </p>
               </div>
@@ -342,7 +342,7 @@ export function LocalLawsView({
                   onClick={handleCopyLink}
                   title={t("host_local_laws_copy_link")}
                   aria-label={t("host_local_laws_copy_link")}
-                  className="w-8 h-8 rounded-full border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 flex items-center justify-center text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors cursor-pointer relative"
+                  className="w-8 h-8 rounded-full border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 flex items-center justify-center text-zinc-600 dark:text-zinc-300 hover:text-[#1F1F1F] dark:hover:text-zinc-100 transition-colors cursor-pointer relative"
                 >
                   {copiedLink ? (
                     <svg
@@ -382,7 +382,7 @@ export function LocalLawsView({
                   href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(activeArticle.title)}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-8 h-8 rounded-full border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 flex items-center justify-center text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+                  className="w-8 h-8 rounded-full border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 flex items-center justify-center text-zinc-600 dark:text-zinc-300 hover:text-[#1F1F1F] dark:hover:text-zinc-100 transition-colors"
                   aria-label={t("host_local_laws_share_on_x")}
                 >
                   <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
@@ -395,7 +395,7 @@ export function LocalLawsView({
                   href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent("https://homyz.app/resource-center")}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-8 h-8 rounded-full border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 flex items-center justify-center text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+                  className="w-8 h-8 rounded-full border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 flex items-center justify-center text-zinc-600 dark:text-zinc-300 hover:text-[#1F1F1F] dark:hover:text-zinc-100 transition-colors"
                   aria-label={t("host_local_laws_share_on_facebook")}
                 >
                   <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
@@ -425,12 +425,12 @@ export function LocalLawsView({
 
                   {/* Section 1: Visit the Help Centre */}
                   <div className="space-y-2 pt-2">
-                    <h3 className="text-base sm:text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+                    <h3 className="text-base sm:text-lg font-semibold text-[#1F1F1F] dark:text-zinc-100">
                       {t("host_local_laws_art1_sec1_title")}
                     </h3>
                     <p>
                       {t("host_local_laws_art1_sec1_text1")}{" "}
-                      <span className="text-zinc-900 dark:text-zinc-100 font-semibold underline underline-offset-2 cursor-pointer hover:text-zinc-700 dark:hover:text-zinc-300">
+                      <span className="text-[#1F1F1F] dark:text-zinc-100 font-semibold underline underline-offset-2 cursor-pointer hover:text-zinc-700 dark:hover:text-zinc-300">
                         {t("host_local_laws_art1_sec1_link")}
                       </span>{" "}
                       {t("host_local_laws_art1_sec1_text2")}
@@ -439,7 +439,7 @@ export function LocalLawsView({
 
                   {/* Section 2: Connect locally */}
                   <div className="space-y-2 pt-2">
-                    <h3 className="text-base sm:text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+                    <h3 className="text-base sm:text-lg font-semibold text-[#1F1F1F] dark:text-zinc-100">
                       {t("host_local_laws_art1_sec2_title")}
                     </h3>
                     <p>{t("host_local_laws_art1_sec2_text")}</p>
@@ -447,28 +447,28 @@ export function LocalLawsView({
 
                   {/* Section 3: Contact hosts */}
                   <div className="space-y-2 pt-2">
-                    <h3 className="text-base sm:text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+                    <h3 className="text-base sm:text-lg font-semibold text-[#1F1F1F] dark:text-zinc-100">
                       {t("host_local_laws_art1_sec3_title")}
                     </h3>
                     <p>
                       {t("host_local_laws_art1_sec3_text1")}{" "}
-                      <span className="text-zinc-900 dark:text-zinc-100 font-semibold underline underline-offset-2 cursor-pointer hover:text-zinc-700 dark:hover:text-zinc-300">
+                      <span className="text-[#1F1F1F] dark:text-zinc-100 font-semibold underline underline-offset-2 cursor-pointer hover:text-zinc-700 dark:hover:text-zinc-300">
                         {t("host_local_laws_art1_sec3_link1")}
                       </span>{" "}
                       {t("host_local_laws_art1_sec3_text2")}{" "}
-                      <span className="text-zinc-900 dark:text-zinc-100 font-semibold underline underline-offset-2 cursor-pointer hover:text-zinc-700 dark:hover:text-zinc-300">
+                      <span className="text-[#1F1F1F] dark:text-zinc-100 font-semibold underline underline-offset-2 cursor-pointer hover:text-zinc-700 dark:hover:text-zinc-300">
                         {t("host_local_laws_art1_sec3_link2")}
                       </span>{" "}
                       {t("host_local_laws_art1_sec3_text3")}
                     </p>
-                    <p className="text-zinc-600 dark:text-zinc-400">
+                    <p className="text-zinc-600 dark:text-[#727272]">
                       {t("host_local_laws_art1_sec3_text4")}
                     </p>
                   </div>
 
                   {/* Section 4: Consult a professional */}
                   <div className="space-y-2 pt-2">
-                    <h3 className="text-base sm:text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+                    <h3 className="text-base sm:text-lg font-semibold text-[#1F1F1F] dark:text-zinc-100">
                       {t("host_local_laws_art1_sec4_title")}
                     </h3>
                     <p>{t("host_local_laws_art1_sec4_text")}</p>
@@ -476,7 +476,7 @@ export function LocalLawsView({
 
                   {/* Section 5: Learn more with AI */}
                   <div className="space-y-3 pt-2">
-                    <h3 className="text-base sm:text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+                    <h3 className="text-base sm:text-lg font-semibold text-[#1F1F1F] dark:text-zinc-100">
                       {t("host_local_laws_art1_sec5_title")}
                     </h3>
                     <p>{t("host_local_laws_art1_sec5_intro")}</p>
@@ -484,7 +484,7 @@ export function LocalLawsView({
                       <li className="flex items-start gap-2.5">
                         <span className="w-1.5 h-1.5 rounded-full bg-zinc-900 dark:bg-zinc-300 mt-2 shrink-0" />
                         <div>
-                          <strong className="font-semibold text-zinc-900 dark:text-zinc-100">
+                          <strong className="font-semibold text-[#1F1F1F] dark:text-zinc-100">
                             {t("host_local_laws_art1_sec5_tip1_bold")}
                           </strong>{" "}
                           {t("host_local_laws_art1_sec5_tip1_text", { city: cityDisplay })}
@@ -493,7 +493,7 @@ export function LocalLawsView({
                       <li className="flex items-start gap-2.5">
                         <span className="w-1.5 h-1.5 rounded-full bg-zinc-900 dark:bg-zinc-300 mt-2 shrink-0" />
                         <div>
-                          <strong className="font-semibold text-zinc-900 dark:text-zinc-100">
+                          <strong className="font-semibold text-[#1F1F1F] dark:text-zinc-100">
                             {t("host_local_laws_art1_sec5_tip2_bold")}
                           </strong>{" "}
                           {t("host_local_laws_art1_sec5_tip2_text")}
@@ -502,7 +502,7 @@ export function LocalLawsView({
                       <li className="flex items-start gap-2.5">
                         <span className="w-1.5 h-1.5 rounded-full bg-zinc-900 dark:bg-zinc-300 mt-2 shrink-0" />
                         <div>
-                          <strong className="font-semibold text-zinc-900 dark:text-zinc-100">
+                          <strong className="font-semibold text-[#1F1F1F] dark:text-zinc-100">
                             {t("host_local_laws_art1_sec5_tip3_bold")}
                           </strong>{" "}
                           {t("host_local_laws_art1_sec5_tip3_text")}
@@ -515,7 +515,7 @@ export function LocalLawsView({
                       <button
                         type="button"
                         onClick={() => setShowAiPromptHelper(!showAiPromptHelper)}
-                        className="rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-900 font-semibold text-xs px-5 py-2.5 transition-colors cursor-pointer shadow-2xs"
+                        className="rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-[#1F1F1F] font-semibold text-xs px-5 py-2.5 transition-colors cursor-pointer shadow-2xs"
                       >
                         {showAiPromptHelper ? t("host_local_laws_hide_prompt") : t("host_local_laws_get_started")}
                       </button>
@@ -550,7 +550,7 @@ export function LocalLawsView({
               {activeArticleId === "disruptive-events" && (
                 <div className="space-y-4 text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
                   <p>{t("host_local_laws_art2_p1")}</p>
-                  <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100 pt-2">
+                  <h3 className="text-base font-bold text-[#1F1F1F] dark:text-zinc-100 pt-2">
                     {t("host_local_laws_art2_heading")}
                   </h3>
                   <ul className="list-disc pl-5 space-y-1 text-xs sm:text-sm">
@@ -565,7 +565,7 @@ export function LocalLawsView({
               {activeArticleId === "aircover" && (
                 <div className="space-y-4 text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
                   <p>{t("host_local_laws_art3_p1")}</p>
-                  <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100 pt-2">
+                  <h3 className="text-base font-bold text-[#1F1F1F] dark:text-zinc-100 pt-2">
                     {t("host_local_laws_art3_heading")}
                   </h3>
                   <ul className="list-disc pl-5 space-y-1 text-xs sm:text-sm">
@@ -580,7 +580,7 @@ export function LocalLawsView({
               {activeArticleId === "safety-guidelines" && (
                 <div className="space-y-4 text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
                   <p>{t("host_local_laws_art4_p1")}</p>
-                  <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100 pt-2">
+                  <h3 className="text-base font-bold text-[#1F1F1F] dark:text-zinc-100 pt-2">
                     {t("host_local_laws_art4_heading")}
                   </h3>
                   <ul className="list-disc pl-5 space-y-1 text-xs sm:text-sm">
@@ -593,7 +593,7 @@ export function LocalLawsView({
 
               {/* Footnote & Timestamp */}
               <div className="pt-4 border-t border-zinc-100 dark:border-zinc-800 space-y-3">
-                <p className="text-xs italic text-zinc-400 dark:text-zinc-500">
+                <p className="text-xs italic text-[#727272] dark:text-[#727272]">
                   {t("host_local_laws_footnote")}
                 </p>
 
@@ -604,22 +604,22 @@ export function LocalLawsView({
                       H
                     </div>
                     <div>
-                      <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 block">
+                      <span className="text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100 block">
                         {activeArticle.author}
                       </span>
-                      <span className="text-xs text-[#1f1f1f] dark:text-zinc-500">{activeArticle.date}</span>
+                      <span className="text-xs text-[#1f1f1f] dark:text-[#727272]">{activeArticle.date}</span>
                     </div>
                   </div>
 
                   {/* Feedback Thumb Icons */}
-                  <div className="flex items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
+                  <div className="flex items-center gap-2 text-xs text-zinc-600 dark:text-[#727272]">
                     {feedbackGiven ? (
                       <span className="text-emerald-600 dark:text-emerald-400 font-medium animate-in fade-in">
                         {t("host_local_laws_feedback_thanks")}
                       </span>
                     ) : (
                       <>
-                        <span className="text-zinc-500 dark:text-zinc-400">
+                        <span className="text-[#727272] dark:text-[#727272]">
                           {t("host_local_laws_was_this_helpful")}
                         </span>
                         <button
@@ -646,7 +646,7 @@ export function LocalLawsView({
 
               {/* "You might also like" Section (Matching reference footer) */}
               <div className="pt-6 border-t border-zinc-100 dark:border-zinc-800 space-y-4">
-                <h4 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                <h4 className="text-sm font-bold text-[#1F1F1F] dark:text-zinc-100">
                   {t("host_local_laws_you_might_also_like")}
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -668,10 +668,10 @@ export function LocalLawsView({
                       {t("host_local_laws_policy_badge")}
                     </div>
                     <div>
-                      <h5 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 group-hover:underline line-clamp-2">
+                      <h5 className="text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100 group-hover:underline line-clamp-2">
                         {t("host_local_laws_art2_title")}
                       </h5>
-                      <p className="text-[11px] text-zinc-500 dark:text-zinc-400 line-clamp-2 mt-1">
+                      <p className="text-[11px] text-[#727272] dark:text-[#727272] line-clamp-2 mt-1">
                         {t("host_local_laws_art2_subtitle")}
                       </p>
                     </div>
@@ -701,10 +701,10 @@ export function LocalLawsView({
                       />
                     </div>
                     <div>
-                      <h5 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 group-hover:underline line-clamp-2">
+                      <h5 className="text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100 group-hover:underline line-clamp-2">
                         {t("host_local_laws_art3_title")}
                       </h5>
-                      <p className="text-[11px] text-zinc-500 dark:text-zinc-400 line-clamp-2 mt-1">
+                      <p className="text-[11px] text-[#727272] dark:text-[#727272] line-clamp-2 mt-1">
                         {t("host_local_laws_art3_card_sub")}
                       </p>
                     </div>
@@ -734,10 +734,10 @@ export function LocalLawsView({
                       />
                     </div>
                     <div>
-                      <h5 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 group-hover:underline line-clamp-2">
+                      <h5 className="text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100 group-hover:underline line-clamp-2">
                         {t("host_local_laws_art4_title")}
                       </h5>
-                      <p className="text-[11px] text-zinc-500 dark:text-zinc-400 line-clamp-2 mt-1">
+                      <p className="text-[11px] text-[#727272] dark:text-[#727272] line-clamp-2 mt-1">
                         {t("host_local_laws_art4_card_sub")}
                       </p>
                     </div>

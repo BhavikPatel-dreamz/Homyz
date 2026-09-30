@@ -395,7 +395,7 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
       {/* Notification Items List */}
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-zinc-200 bg-zinc-50/50 py-16 text-center my-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100 text-zinc-400 mb-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100 text-[#727272] mb-3">
             <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
               <path d="M13.73 21a2 2 0 0 1-3.46 0" />
@@ -455,7 +455,7 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
                       </h3>
                     </div>
 
-                    <span className="shrink-0 text-xs text-zinc-400">
+                    <span className="shrink-0 text-xs text-[#727272]">
                       {formatRelativeTime(item.createdAt)}
                     </span>
                   </div>
@@ -478,7 +478,7 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
                     <button
                       type="button"
                       onClick={(e) => handleToggleRead(e, item)}
-                      className="text-xs text-zinc-400 hover:text-zinc-700 transition-colors ml-auto cursor-pointer"
+                      className="text-xs text-[#727272] hover:text-zinc-700 transition-colors ml-auto cursor-pointer"
                       title={item.isRead ? "Mark as unread" : "Mark as read"}
                     >
                       {item.isRead ? "Mark as unread" : "Mark as read"}

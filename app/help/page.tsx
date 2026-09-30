@@ -43,7 +43,7 @@ export default function HelpCentrePage() {
         <Container>
           <div className="mx-auto max-w-4xl space-y-10">
             <div className="text-center space-y-3">
-              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-900">
+              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#1F1F1F]">
                 How can we help you?
               </h1>
               <p className="text-sm sm:text-base text-zinc-600 max-w-xl mx-auto">
@@ -60,8 +60,8 @@ export default function HelpCentrePage() {
                 >
                   <span className="text-3xl shrink-0" aria-hidden="true">{cat.icon}</span>
                   <div>
-                    <h2 className="text-base font-semibold text-zinc-900">{cat.title}</h2>
-                    <p className="mt-1 text-xs text-zinc-500 leading-relaxed">{cat.description}</p>
+                    <h2 className="text-base font-semibold text-[#1F1F1F]">{cat.title}</h2>
+                    <p className="mt-1 text-xs text-[#727272] leading-relaxed">{cat.description}</p>
                   </div>
                 </Link>
               ))}
@@ -69,7 +69,7 @@ export default function HelpCentrePage() {
 
             <div className="rounded-3xl border border-amber-200 bg-amber-50/60 p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6">
               <div className="space-y-1 text-center sm:text-left">
-                <h3 className="text-lg font-bold text-zinc-900">Need personalized support?</h3>
+                <h3 className="text-lg font-bold text-[#1F1F1F]">Need personalized support?</h3>
                 <p className="text-xs text-zinc-600">
                   Our customer experience specialists are ready to assist you any time.
                 </p>

@@ -523,7 +523,7 @@ export function SearchMap({
         role="alert"
       >
         <span className="text-3xl" aria-hidden="true">🗺️</span>
-        <p className="text-xs text-zinc-500 text-center px-6 font-medium max-w-[220px]">
+        <p className="text-xs text-[#727272] text-center px-6 font-medium max-w-[220px]">
           {mapError}
         </p>
       </div>
@@ -565,7 +565,7 @@ export function SearchMap({
           <button
             type="button"
             onClick={triggerBoundsSearch}
-            className="flex items-center gap-2 bg-white hover:bg-zinc-50 text-zinc-900 font-semibold px-4 py-2.5 rounded-full shadow-lg border border-zinc-200 transition-all text-xs cursor-pointer hover:shadow-xl active:scale-95"
+            className="flex items-center gap-2 bg-white hover:bg-zinc-50 text-[#1F1F1F] font-semibold px-4 py-2.5 rounded-full shadow-lg border border-zinc-200 transition-all text-xs cursor-pointer hover:shadow-xl active:scale-95"
           >
             <svg
               className="w-3.5 h-3.5 text-zinc-700"
@@ -595,7 +595,7 @@ export function SearchMap({
             setSearchAsMove(e.target.checked);
             if (e.target.checked && hasMoved) triggerBoundsSearch();
           }}
-          className="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900 cursor-pointer"
+          className="rounded border-zinc-300 text-[#1F1F1F] focus:ring-zinc-900 cursor-pointer"
         />
         <label htmlFor="search-as-move" className="cursor-pointer select-none text-[11px] font-semibold text-zinc-700">
           Search as I move the map

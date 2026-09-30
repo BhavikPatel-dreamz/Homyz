@@ -129,7 +129,7 @@ export function BecomeHostModal({
             <button
               type="button"
               onClick={onClose}
-              className="flex h-10 w-10 items-center justify-center rounded-full text-zinc-400 hover:bg-[#E9EBFF] hover:text-zinc-700 transition-colors cursor-pointer"
+              className="flex h-10 w-10 items-center justify-center rounded-full text-[#727272] hover:bg-[#E9EBFF] hover:text-zinc-700 transition-colors cursor-pointer"
               aria-label="Close modal"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="#1A1A1A" strokeWidth={2}>
@@ -158,7 +158,7 @@ export function BecomeHostModal({
               className="w-full flex items-center justify-between py-4 px-2 text-left group hover:bg-zinc-50/80 transition-colors cursor-pointer disabled:opacity-50"
             >
               <div className="flex items-center gap-4">
-                <div className="w-9 h-9 rounded-full border border-zinc-300 flex items-center justify-center text-zinc-500 group-hover:border-zinc-900 group-hover:text-[#1F1F1F] transition-colors shrink-0">
+                <div className="w-9 h-9 rounded-full border border-zinc-300 flex items-center justify-center text-[#727272] group-hover:border-zinc-900 group-hover:text-[#1F1F1F] transition-colors shrink-0">
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                   </svg>
@@ -180,7 +180,7 @@ export function BecomeHostModal({
               className="w-full flex items-center justify-between py-4 px-2 text-left group hover:bg-zinc-50/80 transition-colors cursor-pointer disabled:opacity-50"
             >
               <div className="flex items-center gap-4">
-                <div className="w-9 h-9 rounded-full border border-zinc-300 flex items-center justify-center text-zinc-500 group-hover:border-zinc-900 group-hover:text-[#1F1F1F] transition-colors shrink-0">
+                <div className="w-9 h-9 rounded-full border border-zinc-300 flex items-center justify-center text-[#727272] group-hover:border-zinc-900 group-hover:text-[#1F1F1F] transition-colors shrink-0">
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                   </svg>
@@ -211,7 +211,7 @@ export function BecomeHostModal({
             <button
               type="button"
               onClick={onClose}
-              className="flex h-10 w-10 items-center justify-center rounded-full text-zinc-400 hover:bg-[#E9EBFF] hover:text-zinc-700 transition-colors cursor-pointer dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+              className="flex h-10 w-10 items-center justify-center rounded-full text-[#727272] hover:bg-[#E9EBFF] hover:text-zinc-700 transition-colors cursor-pointer dark:text-[#727272] dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
               aria-label="Close modal"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -340,7 +340,7 @@ export function BecomeHostModal({
               className={`px-4 py-3 rounded-full text-sm hover:bg-[#1F1F1F] text-[#1F1F1F] hover:text-white font-medium shadow-xs transition-colors delay-300 duration-300 flex items-center justify-center gap-2 min-w-[100px] border border-transparent hover:border-[#1F1F1F] ${
                 selectedType && isTypeSupported && !isNavigating
                 ? "bg-[#FCDF9C] cursor-pointer"
-                : "bg-[#F3F4F5] text-zinc-400 cursor-not-allowed"
+                : "bg-[#F3F4F5] text-[#727272] cursor-not-allowed"
               }`}
             >
               {isNavigating ? t("host_loading") : t("host_next")}

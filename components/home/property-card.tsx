@@ -172,15 +172,15 @@ function PropertyCardComponent({
             loading="lazy"
           />
         ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center text-zinc-400 bg-zinc-50">
+          <div className="w-full h-full flex flex-col items-center justify-center text-[#727272] bg-zinc-50">
             <span className="text-3xl mb-1">🏡</span>
-            <span className="text-xs font-medium text-zinc-400">Photo preview</span>
+            <span className="text-xs font-medium text-[#727272]">Photo preview</span>
           </div>
         )}
 
         {/* Badges: Only rendered when qualified by backend formula */}
         {showFeatured && (
-          <span className="absolute left-2.5 top-2.5 sm:left-3 sm:top-3 inline-flex items-center gap-1 rounded-full bg-white/60 backdrop-blur-md px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10.5px] sm:text-xs font-medium text-zinc-900 shadow-xs border border-white/60">
+          <span className="absolute left-2.5 top-2.5 sm:left-3 sm:top-3 inline-flex items-center gap-1 rounded-full bg-white/60 backdrop-blur-md px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10.5px] sm:text-xs font-medium text-[#1F1F1F] shadow-xs border border-white/60">
             {t("home_featured")}
           </span>
         )}
@@ -211,15 +211,15 @@ function PropertyCardComponent({
             🗓️ {alternativeDates}
           </p>
         ) : (
-          <p className="truncate text-[11px] sm:text-xs font-normal text-zinc-500 leading-normal mt-0.5 sm:mt-1">
+          <p className="truncate text-[11px] sm:text-xs font-normal text-[#727272] leading-normal mt-0.5 sm:mt-1">
             {displaySubtitle}
           </p>
         )}
         <div className="flex items-center justify-between text-[11px] sm:text-xs font-normal text-[#1f1f1f] leading-normal mt-0.5 whitespace-nowrap truncate">
           {/* Price per night */}
-          <span className="font-semibold text-zinc-900">
+          <span className="font-semibold text-[#1F1F1F]">
             {formattedPrice}
-            <span className="font-normal text-zinc-500 text-[11px] sm:text-xs"> / night</span>
+            <span className="font-normal text-[#727272] text-[11px] sm:text-xs"> / night</span>
           </span>
 
           {/* Rating: Star icon + average rating + review count (zero fake ratings) */}
@@ -236,12 +236,12 @@ function PropertyCardComponent({
               <span>
                 {numericRating.toFixed(1)}
                 {resolvedReviews != null && resolvedReviews > 0 ? (
-                  <span className="text-zinc-500 font-normal"> ({resolvedReviews})</span>
+                  <span className="text-[#727272] font-normal"> ({resolvedReviews})</span>
                 ) : null}
               </span>
             </span>
           ) : (
-            <span className="text-[10px] text-zinc-400 font-normal">
+            <span className="text-[10px] text-[#727272] font-normal">
               {guests ? t("home_up_to_guests", { count: guests }) : propertyType || "Stay"}
             </span>
           )}

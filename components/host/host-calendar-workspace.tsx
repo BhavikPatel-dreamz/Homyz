@@ -124,7 +124,7 @@ function MonthGrid({
                   ? "border-zinc-900 dark:border-zinc-700 bg-zinc-900 text-white shadow-xs"
                   : blocked
                     ? "border-zinc-200 dark:border-zinc-800 bg-zinc-100/60 dark:bg-zinc-900/60 opacity-60"
-                    : "border-transparent bg-[#F3F4F5] dark:bg-zinc-800/80 hover:border-zinc-300 dark:hover:border-zinc-600 text-zinc-900 dark:text-zinc-100"
+                    : "border-transparent bg-[#F3F4F5] dark:bg-zinc-800/80 hover:border-zinc-300 dark:hover:border-zinc-600 text-[#1F1F1F] dark:text-zinc-100"
               }`}
             >
               {/* Day Number */}
@@ -135,11 +135,11 @@ function MonthGrid({
                     : "size-6 text-xs sm:size-7 sm:text-xs"
                 } ${
                   isToday
-                    ? "bg-[#FDE29B] dark:bg-amber-400 text-zinc-900 dark:text-zinc-950 font-bold shadow-xs"
+                    ? "bg-[#FDE29B] dark:bg-amber-400 text-[#1F1F1F] dark:text-zinc-950 font-bold shadow-xs"
                     : reservation
                       ? "bg-zinc-800 text-white"
                       : "text-zinc-800 dark:text-zinc-200 bg-white dark:bg-zinc-700 group-hover:bg-zinc-200 dark:group-hover:bg-zinc-600"
-                } ${blocked ? "line-through text-zinc-400" : ""}`}
+                } ${blocked ? "line-through text-[#727272]" : ""}`}
               >
                 {i + 1}
               </span>
@@ -150,7 +150,7 @@ function MonthGrid({
                   reservation
                     ? "text-zinc-300"
                     : blocked
-                    ? "text-[#1F1F1F] dark:text-zinc-400 line-through"
+                    ? "text-[#1F1F1F] dark:text-[#727272] line-through"
                     : customPrice !== null
                     ? "text-amber-600 dark:text-amber-400 font-bold"
                     : "text-[#1F1F1F] dark:text-zinc-100"
@@ -169,7 +169,7 @@ function MonthGrid({
                 <div
                   className={`${compact ? "hidden" : "flex"} w-full items-center gap-1.5 truncate rounded-md bg-zinc-800/90 px-1.5 py-0.5 text-[10px] font-medium text-white`}
                 >
-                  <span className="flex size-3.5 shrink-0 items-center justify-center rounded-full bg-amber-300 text-[8px] font-bold text-zinc-900">
+                  <span className="flex size-3.5 shrink-0 items-center justify-center rounded-full bg-amber-300 text-[8px] font-bold text-[#1F1F1F]">
                     {reservation.guestName[0]}
                   </span>
                   <span className="truncate">{reservation.guestName}</span>
@@ -311,7 +311,7 @@ export function HostCalendarWorkspace({
 
       <main className="mx-auto w-full max-w-[1600px] flex-1 px-6 pb-24 pt-8 sm:px-8 sm:pt-10">
         {/* Mobile Title */}
-        <h1 className="mb-6 text-2xl font-medium text-zinc-900 dark:text-zinc-100 sm:hidden">
+        <h1 className="mb-6 text-2xl font-medium text-[#1F1F1F] dark:text-zinc-100 sm:hidden">
           Calendars
         </h1>
 
@@ -323,7 +323,7 @@ export function HostCalendarWorkspace({
               <button
                 type="button"
                 onClick={() => setShowMonthDropdown(!showMonthDropdown)}
-                className="flex items-center gap-2 text-2xl sm:text-3xl font-medium tracking-tight text-zinc-900 dark:text-zinc-100"
+                className="flex items-center gap-2 text-2xl sm:text-3xl font-medium tracking-tight text-[#1F1F1F] dark:text-zinc-100"
               >
                 <span>
                   {view === "year"
@@ -355,7 +355,7 @@ export function HostCalendarWorkspace({
                       }}
                       className={`rounded-xl py-2 text-xs font-semibold transition-colors ${
                         month.getMonth() === idx
-                          ? "bg-[#FDE29B] dark:bg-amber-400 text-zinc-900 dark:text-zinc-950 font-bold"
+                          ? "bg-[#FDE29B] dark:bg-amber-400 text-[#1F1F1F] dark:text-zinc-950 font-bold"
                           : "hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300"
                       }`}
                     >
@@ -417,7 +417,7 @@ export function HostCalendarWorkspace({
             <button
               type="button"
               onClick={() => setMobileSettingsOpen(true)}
-              className="rounded-full bg-[#1F1F1F] dark:bg-zinc-100 px-4 py-2 text-xs font-semibold text-white dark:text-zinc-900 lg:hidden"
+              className="rounded-full bg-[#1F1F1F] dark:bg-zinc-100 px-4 py-2 text-xs font-semibold text-white dark:text-[#1F1F1F] lg:hidden"
             >
               Settings
             </button>
@@ -501,7 +501,7 @@ export function HostCalendarWorkspace({
                             setMonth(d);
                             setView("month");
                           }}
-                          className="mb-5 text-sm font-medium text-zinc-900 dark:text-zinc-100 hover:text-amber-700 dark:hover:text-amber-400 flex items-center justify-between w-full"
+                          className="mb-5 text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 hover:text-amber-700 dark:hover:text-amber-400 flex items-center justify-between w-full"
                         >
                           <span>{monthName(d)}</span>
                         </button>
@@ -604,7 +604,7 @@ export function HostCalendarWorkspace({
                           : [...listing.blockedDates, selectedDay],
                       })
                     }
-                    className="rounded-full bg-white px-4 py-1.5 text-xs font-bold text-zinc-900 transition-colors hover:bg-zinc-100 disabled:opacity-50 cursor-pointer"
+                    className="rounded-full bg-white px-4 py-1.5 text-xs font-bold text-[#1F1F1F] transition-colors hover:bg-zinc-100 disabled:opacity-50 cursor-pointer"
                   >
                     {saving
                       ? "Saving…"
@@ -625,7 +625,7 @@ export function HostCalendarWorkspace({
                         : "Weekday Base Rate"}
                     </span>
                     {hasCustom && (
-                      <span className="text-[10px] bg-amber-400 text-zinc-900 px-2 py-0.5 rounded-full font-bold">
+                      <span className="text-[10px] bg-amber-400 text-[#1F1F1F] px-2 py-0.5 rounded-full font-bold">
                         OVERRIDE
                       </span>
                     )}
@@ -635,7 +635,7 @@ export function HostCalendarWorkspace({
                       {formatPrice(currentRate, sourceCurrency, 2)}
                     </span>
                     {hasCustom && (
-                      <span className="text-xs text-zinc-400 line-through">
+                      <span className="text-xs text-[#727272] line-through">
                         {formatPrice(isWeekendDay && listing.weekendPrice ? listing.weekendPrice : weekdayBase, sourceCurrency, 2)}
                       </span>
                     )}
@@ -668,7 +668,7 @@ export function HostCalendarWorkspace({
                         step="1"
                         placeholder={String(currentRate / 100)}
                         defaultValue={hasCustom ? currentRate / 100 : ""}
-                        className="flex-1 rounded-lg bg-white/15 px-3 py-1.5 text-xs text-white placeholder:text-zinc-400 outline-none focus:ring-1 focus:ring-amber-400"
+                        className="flex-1 rounded-lg bg-white/15 px-3 py-1.5 text-xs text-white placeholder:text-[#727272] outline-none focus:ring-1 focus:ring-amber-400"
                       />
                       <button
                         type="submit"
@@ -729,7 +729,7 @@ export function HostCalendarWorkspace({
           >
             <div className="space-y-4 text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
               <div className="rounded-xl bg-amber-50 dark:bg-amber-950/40 p-4 border border-amber-200/60 dark:border-amber-900/60">
-                <h4 className="font-bold text-zinc-900 dark:text-zinc-100 text-sm mb-1">
+                <h4 className="font-bold text-[#1F1F1F] dark:text-zinc-100 text-sm mb-1">
                   Local demand is rising
                 </h4>
                 <p className="text-xs text-amber-900 dark:text-amber-300">
@@ -737,7 +737,7 @@ export function HostCalendarWorkspace({
                   rates on weekends and during seasonal holidays.
                 </p>
               </div>
-              <ul className="space-y-2 text-xs text-zinc-600 dark:text-zinc-400 list-disc list-inside">
+              <ul className="space-y-2 text-xs text-zinc-600 dark:text-[#727272] list-disc list-inside">
                 <li>
                   Turn on Smart Pricing to automatically optimize rates based on
                   real-time search trends.
@@ -754,7 +754,7 @@ export function HostCalendarWorkspace({
                 <button
                   type="button"
                   onClick={() => setTips(false)}
-                  className="rounded-full bg-[#1F1F1F] dark:bg-zinc-100 px-6 py-2 text-xs font-semibold text-white dark:text-zinc-900 hover:bg-black dark:hover:bg-white transition-colors cursor-pointer"
+                  className="rounded-full bg-[#1F1F1F] dark:bg-zinc-100 px-6 py-2 text-xs font-semibold text-white dark:text-[#1F1F1F] hover:bg-black dark:hover:bg-white transition-colors cursor-pointer"
                 >
                   Got it
                 </button>

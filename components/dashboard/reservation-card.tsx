@@ -94,7 +94,7 @@ export function ReservationCard({
               className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.035]"
             />
           ) : (
-            <span className="flex h-full w-full items-center justify-center text-xs sm:text-sm text-zinc-400 bg-zinc-100">
+            <span className="flex h-full w-full items-center justify-center text-xs sm:text-sm text-[#727272] bg-zinc-100">
               Photo unavailable
             </span>
           )}

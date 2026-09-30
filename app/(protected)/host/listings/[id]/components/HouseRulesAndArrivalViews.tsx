@@ -47,7 +47,7 @@ function AllowDenyButtons({
         onClick={() => onChange(false)}
         className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition-all cursor-pointer ${value === false
           ? "border border-[#1f1f1f] bg-[#1f1f1f] text-white shadow-xs"
-          : "border border-[#727272] bg-white text-zinc-500 hover:bg-zinc-200/80"
+          : "border border-[#727272] bg-white text-[#727272] hover:bg-zinc-200/80"
           }`}
       >
         <CloseIcon className="size-4 stroke-[2.5]" />
@@ -59,7 +59,7 @@ function AllowDenyButtons({
         onClick={() => onChange(true)}
         className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition-all cursor-pointer ${value === true
           ? "border border-[#1f1f1f] bg-[#1f1f1f] text-white shadow-xs"
-          : "border border-[#727272] bg-white text-zinc-500 hover:bg-zinc-200/80"
+          : "border border-[#727272] bg-white text-[#727272] hover:bg-zinc-200/80"
           }`}
       >
         <Image
@@ -313,7 +313,7 @@ export function HouseRulesAndArrivalViews({
                   <div className="flex items-start justify-between gap-4">
                     <div className="space-y-1">
                       <span className="font-normal text-base text-[#1F1F1F] dark:text-[#1f1f1f] block">{t("host_pets_allowed") || "Pets allowed"}</span>
-                      <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed max-w-md">
+                      <p className="text-sm text-[#727272] dark:text-[#727272] leading-relaxed max-w-md">
                         {t("host_pets_allowed_desc") || "You can refuse pets, but must reasonably accommodate service animals."}{" "}
                         <a
                           href="#service-animals"
@@ -392,7 +392,7 @@ export function HouseRulesAndArrivalViews({
                           value={petFee ?? ""}
                           onChange={(e) => setPetFee?.(e.target.value)}
                           placeholder={t("host_pet_fee_placeholder") || "e.g. 50"}
-                          className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2.5 text-xs text-zinc-800 dark:text-zinc-100 outline-none focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs placeholder:text-zinc-400 dark:placeholder:text-zinc-500 font-medium"
+                          className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2.5 text-xs text-zinc-800 dark:text-zinc-100 outline-none focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs placeholder:text-[#727272] dark:placeholder:text-[#727272] font-medium"
                         />
                       </div>
 
@@ -405,7 +405,7 @@ export function HouseRulesAndArrivalViews({
                           value={petRestrictions || ""}
                           onChange={(e) => setPetRestrictions?.(e.target.value)}
                           placeholder={t("host_pet_restrictions_placeholder") || "e.g. Under 20kg only, house-trained, please bring own bed"}
-                          className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2.5 text-xs text-zinc-800 dark:text-zinc-100 outline-none focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs placeholder:text-zinc-400 dark:placeholder:text-zinc-500 font-medium"
+                          className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2.5 text-xs text-zinc-800 dark:text-zinc-100 outline-none focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs placeholder:text-[#727272] dark:placeholder:text-[#727272] font-medium"
                         />
                       </div>
                     </div>
@@ -453,9 +453,9 @@ export function HouseRulesAndArrivalViews({
                   {quietHours === true && (
                     <div className="rounded-2xl border border-zinc-400 dark:border-zinc-700 bg-white dark:bg-zinc-800 grid grid-cols-2 overflow-hidden shadow-2xs">
                       <div className="p-3 relative group hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors">
-                        <span className="block text-xs font-medium text-zinc-500 dark:text-zinc-400">{t("host_quiet_hours_start_time") || "Start time"}</span>
+                        <span className="block text-xs font-medium text-[#727272] dark:text-[#727272]">{t("host_quiet_hours_start_time") || "Start time"}</span>
                         <div className="flex items-center justify-between mt-0.5 pointer-events-none">
-                          <span className="text-sm font-normal text-zinc-900 dark:text-zinc-100">
+                          <span className="text-sm font-normal text-[#1F1F1F] dark:text-zinc-100">
                             {formatTimeDisplay(quietHoursStart, "11:00 pm")}
                           </span>
                           <svg className="w-4 h-4 text-zinc-700 dark:text-zinc-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -475,9 +475,9 @@ export function HouseRulesAndArrivalViews({
                       </div>
 
                       <div className="p-3 border-l border-zinc-400 dark:border-zinc-700 relative group hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors">
-                        <span className="block text-xs font-medium text-zinc-500 dark:text-zinc-400">{t("host_quiet_hours_end_time") || "End time"}</span>
+                        <span className="block text-xs font-medium text-[#727272] dark:text-[#727272]">{t("host_quiet_hours_end_time") || "End time"}</span>
                         <div className="flex items-center justify-between mt-0.5 pointer-events-none">
-                          <span className="text-sm font-normal text-zinc-900 dark:text-zinc-100">
+                          <span className="text-sm font-normal text-[#1F1F1F] dark:text-zinc-100">
                             {formatTimeDisplay(quietHoursEnd, "7:00 am")}
                           </span>
                           <svg className="w-4 h-4 text-zinc-700 dark:text-zinc-300" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -547,14 +547,14 @@ export function HouseRulesAndArrivalViews({
                 >
                   <div className="space-y-0.5">
                     <span className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">{t("host_check_in_out_times_title") || "Check-in and checkout times"}</span>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 font-normal">
+                    <p className="text-xs text-[#727272] dark:text-[#727272] font-normal">
                       {t("host_arrive_between", { start: formatTimeDisplay(checkInStart, "3:00 pm"), end: checkInEnd && checkInEnd !== "Flexible" ? formatTimeDisplay(checkInEnd) : (t("host_flexible") || "Flexible") }) || `Arrive between ${formatTimeDisplay(checkInStart, "3:00 pm")} and ${checkInEnd && checkInEnd !== "Flexible" ? formatTimeDisplay(checkInEnd) : "Flexible"}`}
                     </p>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 font-normal">
+                    <p className="text-xs text-[#727272] dark:text-[#727272] font-normal">
                       {t("host_leave_before", { time: formatTimeDisplay(checkOutTime, "6:00 pm") }) || `Leave before ${formatTimeDisplay(checkOutTime, "6:00 pm")}`}
                     </p>
                   </div>
-                  <svg className="w-5 h-5 text-zinc-600 dark:text-zinc-400 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-zinc-600 dark:text-[#727272] group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
                   </svg>
                 </button>
@@ -567,11 +567,11 @@ export function HouseRulesAndArrivalViews({
                 >
                   <div className="space-y-0.5 max-w-md">
                     <span className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">{t("host_additional_rules_title") || "Additional rules"}</span>
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 font-normal line-clamp-2">
+                    <p className="text-xs text-[#727272] dark:text-[#727272] font-normal line-clamp-2">
                       {additionalHouseRules?.trim() || (t("host_add_rules_placeholder") || "Add rules")}
                     </p>
                   </div>
-                  <svg className="w-5 h-5 text-zinc-600 dark:text-zinc-400 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-zinc-600 dark:text-[#727272] group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
                   </svg>
                 </button>
@@ -606,7 +606,7 @@ export function HouseRulesAndArrivalViews({
                   type="button"
                   disabled={isSaving}
                   onClick={() => setIsCheckInOutModalOpen(false)}
-                  className="absolute top-6 right-6 text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white font-semibold text-sm cursor-pointer p-1"
+                  className="absolute top-6 right-6 text-zinc-600 dark:text-[#727272] hover:text-zinc-950 dark:hover:text-white font-semibold text-sm cursor-pointer p-1"
                 >
                   <CloseIcon className="size-5" />
                 </button>
@@ -615,7 +615,7 @@ export function HouseRulesAndArrivalViews({
                   <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">
                     {t("host_check_in_out_times_title") || "Check-in and checkout times"}
                   </h3>
-                  <p className="text-sm text-[#727272] dark:text-zinc-400 font-normal">
+                  <p className="text-sm text-[#727272] dark:text-[#727272] font-normal">
                     {t("host_check_in_out_times_desc") || "Set arrival windows and checkout times for your guests."}
                   </p>
                 </div>
@@ -626,7 +626,7 @@ export function HouseRulesAndArrivalViews({
                     <label className="text-base font-semibold text-[#1f1f1f] dark:text-zinc-100 block">{t("host_check_in_window_label") || "Check-in window"}</label>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <span className="text-sm font-normal text-[#1f1f1f] dark:text-zinc-400 block mb-1">{t("host_check_in_start_time") || "Start time"}</span>
+                        <span className="text-sm font-normal text-[#1f1f1f] dark:text-[#727272] block mb-1">{t("host_check_in_start_time") || "Start time"}</span>
                         <div className="relative">
                           <select
                             value={formatTimeDisplay(checkInStart, "3:00 pm")}
@@ -637,13 +637,13 @@ export function HouseRulesAndArrivalViews({
                               <option key={t} value={t}>{t}</option>
                             ))}
                           </select>
-                          <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600 dark:text-zinc-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600 dark:text-[#727272]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
                           </svg>
                         </div>
                       </div>
                       <div>
-                        <span className="text-sm font-normal text-[#1f1f1f] dark:text-zinc-400 block mb-1">{t("host_check_in_end_time") || "End time"}</span>
+                        <span className="text-sm font-normal text-[#1f1f1f] dark:text-[#727272] block mb-1">{t("host_check_in_end_time") || "End time"}</span>
                         <div className="relative">
                           <select
                             value={checkInEnd && !/flexible/i.test(checkInEnd) ? formatTimeDisplay(checkInEnd) : "Flexible"}
@@ -655,7 +655,7 @@ export function HouseRulesAndArrivalViews({
                               <option key={t} value={t}>{t}</option>
                             ))}
                           </select>
-                          <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600 dark:text-zinc-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600 dark:text-[#727272]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
                           </svg>
                         </div>
@@ -667,7 +667,7 @@ export function HouseRulesAndArrivalViews({
                   <div className="rounded-lg border border-[#727272] dark:border-zinc-700 bg-zinc-50/60 dark:bg-zinc-800/60 p-4 space-y-2">
                     <label className="text-base font-semibold text-[#1f1f1f] dark:text-zinc-100 block">{t("host_checkout_time_label") || "Checkout time"}</label>
                     <div>
-                      <span className="text-sm font-normal text-[#1f1f1f] dark:text-zinc-400 block mb-1">{t("host_guests_must_leave_before") || "Guests must leave before"}</span>
+                      <span className="text-sm font-normal text-[#1f1f1f] dark:text-[#727272] block mb-1">{t("host_guests_must_leave_before") || "Guests must leave before"}</span>
                       <div className="relative">
                         <select
                           value={formatTimeDisplay(checkOutTime, "11:00 am")}
@@ -678,7 +678,7 @@ export function HouseRulesAndArrivalViews({
                             <option key={t} value={t}>{t}</option>
                           ))}
                         </select>
-                        <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600 dark:text-zinc-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600 dark:text-[#727272]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
                         </svg>
                       </div>
@@ -722,7 +722,7 @@ export function HouseRulesAndArrivalViews({
             <BackButton onClick={() => setActiveSection("arrival-guide")} className="mt-2" />
             <div>
               <h1>{t("host_parking_instructions_and_details") || "Parking instructions & details"}</h1>
-              <p className="text-sm leading-5 text-[#727272] dark:text-zinc-400 max-w-[491px]">
+              <p className="text-sm leading-5 text-[#727272] dark:text-[#727272] max-w-[491px]">
                 {t("host_parking_subtext") || "Let guests know if parking is available, where to park, and any permit or reservation requirements."}
               </p>
             </div>
@@ -733,7 +733,7 @@ export function HouseRulesAndArrivalViews({
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-base font-normal text-[#1f1f1f] dark:text-zinc-100">{t("host_parking_available_premises") || "Parking available on premises"}</h3>
-                <p className="text-sm text-[#727272] dark:text-zinc-400">{t("host_parking_available_subtext") || "Do guests have dedicated or shared parking?"}</p>
+                <p className="text-sm text-[#727272] dark:text-[#727272]">{t("host_parking_available_subtext") || "Do guests have dedicated or shared parking?"}</p>
               </div>
               <div className="flex items-center gap-1.5">
                 <button
@@ -846,7 +846,7 @@ export function HouseRulesAndArrivalViews({
                     value={parkingInstructions}
                     onChange={(e) => setParkingInstructions?.(e.target.value)}
                     placeholder={t("host_parking_instructions_placeholder") || "e.g. Park in space #4B in underground garage. Access gate code is 1234."}
-                    className="w-full rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-3.5 text-sm font-normal text-[#727272] dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 outline-none focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs leading-relaxed transition-colors"
+                    className="w-full rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-3.5 text-sm font-normal text-[#727272] dark:text-zinc-100 placeholder:text-[#727272] dark:placeholder:text-[#727272] outline-none focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs leading-relaxed transition-colors"
                   />
                 </div>
               </div>
@@ -979,7 +979,7 @@ export function HouseRulesAndArrivalViews({
             <BackButton onClick={() => setActiveSection("check-in-out")} className="mt-2" />
             <div>
               <h1>{t("host_house_manual") || "House manual"}</h1>
-              <p className="text-sm leading-5 text-[#727272] dark:text-zinc-400 max-w-[491px]">
+              <p className="text-sm leading-5 text-[#727272] dark:text-[#727272] max-w-[491px]">
                 {t("host_house_manual_desc") || "Share details about AC controls, appliances, trash disposal, or parking spots."}
               </p>
             </div>
@@ -1210,7 +1210,7 @@ function CheckOutInstructionsView({
         <div>
           <h1>{t("host_checkout_instructions_page_title") || "Check-out instructions"}</h1>
           {/* Description text */}
-          <p className="text-sm leading-5 text-[#727272] dark:text-zinc-400 max-w-[491px]">
+          <p className="text-sm leading-5 text-[#727272] dark:text-[#727272] max-w-[491px]">
             {t("host_checkout_instructions_subtext") || "Let guests know what to do before they leave. Guests will see these instructions 24 hours before check-out time."}
           </p>
         </div>
@@ -1229,7 +1229,7 @@ function CheckOutInstructionsView({
               </svg>
             </div>
             <div>
-              <span className="text-sm font-medium text-[#727272] dark:text-zinc-400 block">{t("host_checkout_time_label_title") || "Check-out time"}</span>
+              <span className="text-sm font-medium text-[#727272] dark:text-[#727272] block">{t("host_checkout_time_label_title") || "Check-out time"}</span>
               <span className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 block">{formattedCheckOut}</span>
             </div>
           </div>
@@ -1248,7 +1248,7 @@ function CheckOutInstructionsView({
         <div className="rounded-2xl border border-zinc-200/90 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-5 space-y-4 shadow-2xs">
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-3 min-w-0 flex-1">
-              <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 block">{t("host_instructions_for_guests") || "Instructions for guests"}</span>
+              <span className="text-xs font-semibold text-[#727272] dark:text-[#727272] block">{t("host_instructions_for_guests") || "Instructions for guests"}</span>
               <p className="text-xs text-zinc-800 dark:text-zinc-200 font-medium whitespace-pre-line leading-relaxed">
                 {checkOutInstructions}
               </p>
@@ -1269,7 +1269,7 @@ function CheckOutInstructionsView({
           </div>
 
           <div className="pt-3 border-t border-zinc-100 dark:border-zinc-700 flex items-center justify-between">
-            <div className="flex items-center gap-1.5 text-xs text-[#1f1f1f] dark:text-zinc-500">
+            <div className="flex items-center gap-1.5 text-xs text-[#1f1f1f] dark:text-[#727272]">
               <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <circle cx="12" cy="12" r="9" />
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 7v5l3 3" />
@@ -1288,14 +1288,14 @@ function CheckOutInstructionsView({
         </div>
       ) : (
         <div className="rounded-2xl border border-dashed border-zinc-200 dark:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-800/40 p-6 text-center space-y-3">
-          <div className="mx-auto w-10 h-10 rounded-full bg-white dark:bg-zinc-800 border border-[#727272] dark:border-zinc-700 flex items-center justify-center text-zinc-500 dark:text-zinc-400 shadow-2xs">
+          <div className="mx-auto w-10 h-10 rounded-full bg-white dark:bg-zinc-800 border border-[#727272] dark:border-zinc-700 flex items-center justify-center text-[#727272] dark:text-[#727272] shadow-2xs">
             <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.75" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
             </svg>
           </div>
           <div className="space-y-0.5">
             <h3 className="text-base font-normal text-[#1F1F1F] dark:text-zinc-100">{t("host_no_checkout_instructions_yet") || "No check-out instructions yet"}</h3>
-            <p className="text-sm text-[#727272] dark:text-zinc-400 max-w-sm mx-auto">
+            <p className="text-sm text-[#727272] dark:text-[#727272] max-w-sm mx-auto">
               {t("host_no_checkout_instructions_desc") || "Add details about returning keys, taking out trash, or locking doors before leaving."}
             </p>
           </div>
@@ -1342,7 +1342,7 @@ function CheckOutInstructionsView({
               type="button"
               disabled={isSaving}
               onClick={() => setIsModalOpen(false)}
-              className="absolute top-6 right-6  bg-white dark:bg-zinc-800 text-[#1f1f1f] dark:text-zinc-400 transition-colors cursor-pointer disabled:opacity-50"
+              className="absolute top-6 right-6  bg-white dark:bg-zinc-800 text-[#1f1f1f] dark:text-[#727272] transition-colors cursor-pointer disabled:opacity-50"
             >
               <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -1353,14 +1353,14 @@ function CheckOutInstructionsView({
               <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">
                 {checkOutInstructions ? (t("host_edit_checkout_instructions_title") || "Edit check-out instructions") : (t("host_add_checkout_instructions_title") || "Add check-out instructions")}
               </h3>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 font-normal leading-relaxed">
+              <p className="text-xs text-[#727272] dark:text-[#727272] font-normal leading-relaxed">
                 {t("host_checkout_instructions_subtext") || "Guests will see these instructions 24 hours before check-out time."}
               </p>
             </div>
 
             {/* Quick Suggestions */}
             <div className="mb-4 space-y-2">
-              <span className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 block">{t("host_quick_suggestions_label") || "Quick suggestions (click to add)"}</span>
+              <span className="text-[11px] font-semibold text-[#727272] dark:text-[#727272] block">{t("host_quick_suggestions_label") || "Quick suggestions (click to add)"}</span>
               <div className="flex flex-wrap gap-1.5">
                 {suggestionChips.map((chip) => (
                   <button
@@ -1385,9 +1385,9 @@ function CheckOutInstructionsView({
                 value={draftInstructions}
                 onChange={(e) => setDraftInstructions(e.target.value)}
                 placeholder={t("host_checkout_instructions_placeholder") || "e.g. Please take all bagged trash to the outdoor bins, place used towels in the hamper, turn off the AC, and lock the door behind you."}
-                className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2.5 text-xs font-medium text-[#1F1F1F] dark:text-zinc-100 outline-none focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs placeholder:text-zinc-400 dark:placeholder:text-zinc-500 leading-relaxed resize-none"
+                className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2.5 text-xs font-medium text-[#1F1F1F] dark:text-zinc-100 outline-none focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs placeholder:text-[#727272] dark:placeholder:text-[#727272] leading-relaxed resize-none"
               />
-              <div className="flex items-center justify-between text-xs text-[#1f1f1f] dark:text-zinc-500 pt-1">
+              <div className="flex items-center justify-between text-xs text-[#1f1f1f] dark:text-[#727272] pt-1">
                 <span className="flex items-center gap-1.5">
                   <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                     <circle cx="12" cy="12" r="9" />
@@ -1465,7 +1465,7 @@ function GuidebooksView({
 
       {/* Subtext & Content Policy Link */}
       <div className="space-y-1">
-        <p className="text-xs text-zinc-500 font-normal leading-relaxed">
+        <p className="text-xs text-[#727272] font-normal leading-relaxed">
           Create a guidebook to easily share local tips with guests.
         </p>
         <a
@@ -1526,7 +1526,7 @@ function GuidebooksView({
             </div>
             <div>
               <h4 className="text-xs font-semibold text-[#1F1F1F] line-clamp-2">{gb.title}</h4>
-              <p className="text-[10px] text-zinc-500 font-medium">{gb.itemsCount} recommendations</p>
+              <p className="text-[10px] text-[#727272] font-medium">{gb.itemsCount} recommendations</p>
             </div>
           </div>
         ))}
@@ -1588,14 +1588,14 @@ function InteractionPreferencesView({
         <BackButton onClick={() => setActiveSection("arrival-guide")} className="mt-2" />
         <div>
           <h1>{t("host_guest_interaction_title") || "Interaction with guests"}</h1>
-          <p className="text-sm leading-5 text-[#727272] dark:text-zinc-400 max-w-[491px]">
+          <p className="text-sm leading-5 text-[#727272] dark:text-[#727272] max-w-[491px]">
             {t("host_interaction_preferences_subtext") || "Set expectations before guests arrive."}
           </p>
         </div>
       </div>
 
       {/* Description */}
-      <p className="max-w-xl text-sm font-normal leading-relaxed text-[#727272] dark:text-zinc-400">
+      <p className="max-w-xl text-sm font-normal leading-relaxed text-[#727272] dark:text-[#727272]">
         {t("host_interaction_preferences_desc") || "Let guests know how much interaction you will have during their stay, from in-person greetings to full self check-in privacy."}
       </p>
 
@@ -1610,7 +1610,7 @@ function InteractionPreferencesView({
               type="button"
               onClick={() => onChange?.(item.value)}
               className={`flex w-full items-center justify-between gap-4 rounded-lg border p-4 text-left shadow-2xs transition-all cursor-pointer ${isActive
-                ? "border-zinc-900 dark:border-zinc-100 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
+                ? "border-zinc-900 dark:border-zinc-100 bg-zinc-50 dark:bg-zinc-800 text-[#1F1F1F] dark:text-zinc-100"
                 : "border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/60 text-zinc-800 dark:text-zinc-200 hover:border-zinc-400 dark:hover:border-zinc-500"
                 }`}
               role="radio"
@@ -1698,14 +1698,14 @@ function LanguagesView({
         <h1>{t("host_languages_title") || "Languages"}</h1>
       </div>
 
-      <p className="text-base font-normal leading-5 text-[#727272] dark:text-zinc-400 max-w-[491px] pt-1">
+      <p className="text-base font-normal leading-5 text-[#727272] dark:text-[#727272] max-w-[491px] pt-1">
         {t("host_languages_subtext") || "Select the languages you and your co-hosts can speak with guests during their stay or via messaging."}
       </p>
 
       {/* List of currently selected languages */}
       <div className="flex flex-wrap gap-2 pt-2">
         {selectedLanguageIds.length === 0 && (
-          <p className="text-base text-[#727272] dark:text-zinc-400">{t("host_no_languages_selected_yet") || "No languages selected yet."}</p>
+          <p className="text-base text-[#727272] dark:text-[#727272]">{t("host_no_languages_selected_yet") || "No languages selected yet."}</p>
         )}
         {selectedLanguageIds.map((languageId) => {
           const languageName = getLanguageDisplayNames([languageId])[0] ?? languageId;
@@ -1722,7 +1722,7 @@ function LanguagesView({
                   if (!setSelectedLanguageIds) return;
                   setSelectedLanguageIds(selectedLanguageIds.filter((id) => id !== languageId));
                 }}
-                className="text-zinc-400 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 font-semibold"
+                className="text-[#727272] dark:text-[#727272] hover:text-zinc-700 dark:hover:text-zinc-200 font-semibold"
               >
                 ✕
               </button>
@@ -1737,12 +1737,12 @@ function LanguagesView({
           <div className="flex items-center justify-between gap-3">
             <div>
               <h3 className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">{t("host_select_languages_heading") || "Select languages"}</h3>
-              <p className="mt-0.5 text-sm text-[#727272] dark:text-zinc-400">{t("host_languages_available_count", { count: LANGUAGE_OPTIONS.length }) || `${LANGUAGE_OPTIONS.length} languages available`}</p>
+              <p className="mt-0.5 text-sm text-[#727272] dark:text-[#727272]">{t("host_languages_available_count", { count: LANGUAGE_OPTIONS.length }) || `${LANGUAGE_OPTIONS.length} languages available`}</p>
             </div>
             <button
               type="button"
               onClick={() => setIsAdding(false)}
-              className="text-zinc-400 dark:text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 font-medium text-base cursor-pointer"
+              className="text-[#727272] dark:text-[#727272] hover:text-zinc-600 dark:hover:text-zinc-200 font-medium text-base cursor-pointer"
             >
               ✕
             </button>
@@ -1753,7 +1753,7 @@ function LanguagesView({
             value={searchLang}
             onChange={(e) => setSearchLang(e.target.value)}
             placeholder={t("host_search_language_placeholder") || "Search language..."}
-            className="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-3 text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 outline-none focus:border-zinc-400 dark:focus:border-zinc-500 shadow-2xs"
+            className="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-3 text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 placeholder:text-[#727272] dark:placeholder:text-[#727272] outline-none focus:border-zinc-400 dark:focus:border-zinc-500 shadow-2xs"
           />
 
           <div className="modal-content-scrollbar max-h-80 overflow-y-auto space-y-1 pr-1" role="listbox" aria-multiselectable="true">
@@ -1779,7 +1779,7 @@ function LanguagesView({
                   <span>
                     <span className="block">{lang.name}</span>
                     {lang.nativeName && lang.nativeName !== lang.name && (
-                      <span className="mt-0.5 block text-[11px] font-normal text-zinc-500 dark:text-zinc-400">{lang.nativeName}</span>
+                      <span className="mt-0.5 block text-[11px] font-normal text-[#727272] dark:text-[#727272]">{lang.nativeName}</span>
                     )}
                   </span>
                   <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border ${isSelected ? "border-[#1f1f1f] bg-[#FCDF9C] dark:border-amber-400 dark:bg-amber-400" : "border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800"}`}>
@@ -1868,7 +1868,7 @@ function GuestRequirementsView({
       <div className="flex items-start justify-between gap-6 pt-1">
         <div className="space-y-1 max-w-md">
           <h3 className="text-[#1F1F1F] font-medium">{t("host_require_profile_photo_title") || "Require a profile photo"}</h3>
-          <p className="text-sm leading-5 text-[#727272] dark:text-zinc-400">
+          <p className="text-sm leading-5 text-[#727272] dark:text-[#727272]">
             {t("host_require_profile_photo_desc") || "Ask guests to upload a confirmed profile photo before booking your place."}
           </p>
         </div>
@@ -1895,17 +1895,17 @@ function GuestRequirementsView({
         <h3 className="text-[#1F1F1F] font-medium">
           {t("host_all_guests_required_to_title") || "All Homyz guests are required to:"}
         </h3>
-        <ul className="space-y-2 text-xs text-zinc-500 dark:text-zinc-400 font-normal">
+        <ul className="space-y-2 text-xs text-[#727272] dark:text-[#727272] font-normal">
           <li className="flex items-start gap-2">
-            <span className="text-sm text-[#727272] dark:text-zinc-500 font-medium">•</span>
+            <span className="text-sm text-[#727272] dark:text-[#727272] font-medium">•</span>
             <span className="text-sm">{t("host_guest_req_bullet_1") || "Provide a confirmed email address and phone number"}</span>
           </li>
           <li className="flex items-start gap-2">
-            <span className="text-sm text-[#727272] dark:text-zinc-500 font-medium">•</span>
+            <span className="text-sm text-[#727272] dark:text-[#727272] font-medium">•</span>
             <span className="text-sm">{t("host_guest_req_bullet_2") || "Provide payment information"}</span>
           </li>
           <li className="flex items-start gap-2">
-            <span className="text-sm text-[#727272] dark:text-zinc-500 font-medium">•</span>
+            <span className="text-sm text-[#727272] dark:text-[#727272] font-medium">•</span>
             <span className="text-sm">{t("host_guest_req_bullet_3") || "Agree to your house rules"}</span>
           </li>
         </ul>
@@ -1992,10 +1992,10 @@ function CheckInCheckOutView({
             className="flex items-center justify-between cursor-pointer"
           >
             <div className="space-y-0.5">
-              <span className="text-sm leading-5 text-[#727272] dark:text-zinc-400">{t("host_start_time") || "Start time"}</span>
+              <span className="text-sm leading-5 text-[#727272] dark:text-[#727272]">{t("host_start_time") || "Start time"}</span>
               <span className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 block">{checkInStart === "Flexible" ? (t("host_flexible") || "Flexible") : (checkInStart || "3:00 PM")}</span>
             </div>
-            <svg className={`w-4 h-4 text-zinc-600 dark:text-zinc-400 transition-transform duration-200 ${editingStart ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <svg className={`w-4 h-4 text-zinc-600 dark:text-[#727272] transition-transform duration-200 ${editingStart ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
             </svg>
           </div>
@@ -2018,7 +2018,7 @@ function CheckInCheckOutView({
                     </option>
                   ))}
                 </select>
-                <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600 dark:text-zinc-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600 dark:text-[#727272]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
                 </svg>
               </div>
@@ -2033,10 +2033,10 @@ function CheckInCheckOutView({
             className="flex items-center justify-between cursor-pointer"
           >
             <div className="space-y-0.5">
-              <span className="text-sm leading-5 text-[#727272] dark:text-zinc-400">{t("host_end_time") || "End time"}</span>
+              <span className="text-sm leading-5 text-[#727272] dark:text-[#727272]">{t("host_end_time") || "End time"}</span>
               <span className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 block">{checkInEnd === "Flexible" || !checkInEnd ? (t("host_flexible") || "Flexible") : checkInEnd}</span>
             </div>
-            <svg className={`w-4 h-4 text-zinc-600 dark:text-zinc-400 transition-transform duration-200 ${editingEnd ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <svg className={`w-4 h-4 text-zinc-600 dark:text-[#727272] transition-transform duration-200 ${editingEnd ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
             </svg>
           </div>
@@ -2059,7 +2059,7 @@ function CheckInCheckOutView({
                     </option>
                   ))}
                 </select>
-                <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600 dark:text-zinc-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600 dark:text-[#727272]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
                 </svg>
               </div>
@@ -2070,7 +2070,7 @@ function CheckInCheckOutView({
 
       {/* Group 2: Check-out time */}
       <div className="space-y-3 pt-4">
-        <span className="text-base font-normal text-[#1f1f1f] dark:text-zinc-400 block">
+        <span className="text-base font-normal text-[#1f1f1f] dark:text-[#727272] block">
           {t("host_checkout_time_heading") || "Check-out time"}
         </span>
 
@@ -2081,10 +2081,10 @@ function CheckInCheckOutView({
             className="flex items-center justify-between cursor-pointer"
           >
             <div className="space-y-0.5">
-              <span className="text-sm leading-5 text-[#727272] dark:text-zinc-400">{t("host_select_time") || "Select time"}</span>
+              <span className="text-sm leading-5 text-[#727272] dark:text-[#727272]">{t("host_select_time") || "Select time"}</span>
               <span className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 block">{checkOutTime === "Flexible" ? (t("host_flexible") || "Flexible") : (checkOutTime || "12:00 PM")}</span>
             </div>
-            <svg className={`w-4 h-4 text-zinc-600 dark:text-zinc-400 transition-transform duration-200 ${editingCheckOut ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <svg className={`w-4 h-4 text-zinc-600 dark:text-[#727272] transition-transform duration-200 ${editingCheckOut ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
             </svg>
           </div>
@@ -2107,7 +2107,7 @@ function CheckInCheckOutView({
                     </option>
                   ))}
                 </select>
-                <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600 dark:text-zinc-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600 dark:text-[#727272]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
                 </svg>
               </div>
@@ -2145,7 +2145,7 @@ function DirectionsView({
           <BackButton onClick={() => setActiveSection("check-in-out")} className="mt-2" />
           <div>
             <h1>{t("host_directions_to_property_title") || "Directions to property"}</h1>
-            <p className="text-sm leading-5 text-[#727272] dark:text-zinc-400 max-w-[491px]">
+            <p className="text-sm leading-5 text-[#727272] dark:text-[#727272] max-w-[491px]">
               {t("host_directions_subtext") || "Provide clear directions on how to reach your property. Include details that navigation apps might miss."}
             </p>
           </div>
@@ -2168,7 +2168,7 @@ function DirectionsView({
             <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5">
               {t("host_driving_directions_title") || "Driving directions"}
             </span>
-            <p className="text-xs text-[#727272] dark:text-zinc-400 leading-snug font-normal">
+            <p className="text-xs text-[#727272] dark:text-[#727272] leading-snug font-normal">
               {t("host_driving_directions_desc") || "Key highway exits, turns, or community gate codes."}
             </p>
           </div>
@@ -2176,7 +2176,7 @@ function DirectionsView({
             <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5">
               {t("host_parking_instructions_title") || "Parking instructions"}
             </span>
-            <p className="text-xs text-[#727272] dark:text-zinc-400 leading-snug font-normal">
+            <p className="text-xs text-[#727272] dark:text-[#727272] leading-snug font-normal">
               {t("host_parking_instructions_desc") || "Designated stall number, garage ramp, or street spots."}
             </p>
           </div>
@@ -2184,7 +2184,7 @@ function DirectionsView({
             <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5">
               {t("host_public_transportation_title") || "Public transportation"}
             </span>
-            <p className="text-xs text-[#727272] dark:text-zinc-400 leading-snug font-normal">
+            <p className="text-xs text-[#727272] dark:text-[#727272] leading-snug font-normal">
               {t("host_public_transportation_desc") || "Nearby metro or bus stations and walking path."}
             </p>
           </div>
@@ -2192,7 +2192,7 @@ function DirectionsView({
             <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5">
               {t("host_landmarks_entrance_title") || "Landmarks & entrance"}
             </span>
-            <p className="text-xs text-[#727272] dark:text-zinc-400 leading-snug font-normal">
+            <p className="text-xs text-[#727272] dark:text-[#727272] leading-snug font-normal">
               {t("host_landmarks_entrance_desc") || "Notable buildings, shops, or signs to find the door."}
             </p>
           </div>
@@ -2203,7 +2203,7 @@ function DirectionsView({
       <div className="space-y-1.5 pt-1">
         <div className="flex items-center justify-between">
           <label className="text-base font-normal text-[#1f1f1f] dark:text-zinc-300 block">{t("host_directions_arrival_notes_label") || "Directions & arrival notes"}</label>
-          <span className={`text-[11px] ${(directions || "").length > 4800 ? "text-amber-600 dark:text-amber-400 font-semibold" : "text-zinc-400 dark:text-zinc-500"}`}>
+          <span className={`text-[11px] ${(directions || "").length > 4800 ? "text-amber-600 dark:text-amber-400 font-semibold" : "text-[#727272] dark:text-[#727272]"}`}>
             {t("host_characters_limit", { count: (directions || "").length }) || `${(directions || "").length} / 5000 characters`}
           </span>
         </div>
@@ -2213,7 +2213,7 @@ function DirectionsView({
           value={directions}
           onChange={(e) => setDirections?.(e.target.value)}
           placeholder={t("host_directions_placeholder") || "e.g. From King Khalid Airport or the Northern Ring Road, take Exit 4 towards the Diplomatic Quarter. Turn right after the grand mosque. The building is beige stone with dark bronze balconies next to Al-Nakheel Pharmacy. Park in slot #14 on level B1."}
-          className="w-full rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4 text-sm font-normal text-[#727272] dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 outline-none focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs leading-relaxed transition-colors"
+          className="w-full rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4 text-sm font-normal text-[#727272] dark:text-zinc-100 placeholder:text-[#727272] dark:placeholder:text-[#727272] outline-none focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs leading-relaxed transition-colors"
         />
       </div>
 
@@ -2509,10 +2509,10 @@ function CheckInMethodView({
             }}
             className="mt-4 w-full flex items-center justify-between border-t border-zinc-100 dark:border-zinc-700 pt-4 group cursor-pointer"
           >
-            <span className={`text-sm font-medium truncate max-w-[80%] ${codeValue ? "text-[#727272] dark:text-zinc-300" : "text-[#727272] dark:text-zinc-500"}`}>
+            <span className={`text-sm font-medium truncate max-w-[80%] ${codeValue ? "text-[#727272] dark:text-zinc-300" : "text-[#727272] dark:text-[#727272]"}`}>
               {codeValue || (t("host_add_access_code") || "Add access code")}
             </span>
-            <svg className="w-4 h-4 text-[#727272] dark:text-zinc-500 group-hover:translate-x-0.5 transition-transform shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 text-[#727272] dark:text-[#727272] group-hover:translate-x-0.5 transition-transform shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
             </svg>
           </button>
@@ -2522,7 +2522,7 @@ function CheckInMethodView({
       {/* Section: Check-in instructions */}
       <div className="space-y-3">
         <h2 className="text-base font-semibold text-[#1F1F1F] dark:text-zinc-100">{t("host_checkin_instructions_heading") || "Check-in instructions"}</h2>
-        <p className="text-sm text-[#727272] dark:text-zinc-400 font-normal leading-relaxed">
+        <p className="text-sm text-[#727272] dark:text-[#727272] font-normal leading-relaxed">
           {t("host_checkin_instructions_subtext") || "Help guests have a smooth arrival. Share tips for how to get inside – you can also add photos."}
         </p>
 
@@ -2534,11 +2534,11 @@ function CheckInMethodView({
           >
             <div className="flex items-center justify-between gap-3">
               <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300 truncate">{checkInInstructions}</span>
-              <svg className="w-4 h-4 text-[#727272] dark:text-zinc-500 group-hover:translate-x-0.5 transition-transform shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-[#727272] dark:text-[#727272] group-hover:translate-x-0.5 transition-transform shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
               </svg>
             </div>
-            <div className="flex items-center gap-1.5 text-xs text-zinc-400 dark:text-zinc-500">
+            <div className="flex items-center gap-1.5 text-xs text-[#727272] dark:text-[#727272]">
               <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <circle cx="12" cy="12" r="9" />
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 7v5l3 3" />
@@ -2567,7 +2567,7 @@ function CheckInMethodView({
             <button
               type="button"
               onClick={() => setIsSelectModalOpen(false)}
-              className="absolute top-6 right-6  bg-white dark:bg-zinc-800 text-[#1f1f1f] hover:text-[#727272] dark:text-zinc-400 transition-colors cursor-pointer disabled:opacity-50"
+              className="absolute top-6 right-6  bg-white dark:bg-zinc-800 text-[#1f1f1f] hover:text-[#727272] dark:text-[#727272] transition-colors cursor-pointer disabled:opacity-50"
             >
               <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -2592,7 +2592,7 @@ function CheckInMethodView({
                     </div>
                     <div className="min-w-0">
                       <span className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100 mb-0.5">{method.label}</span>
-                      <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed font-normal">{method.description}</p>
+                      <p className="text-sm text-[#727272] dark:text-[#727272] leading-relaxed font-normal">{method.description}</p>
                     </div>
                   </button>
                 );
@@ -2612,7 +2612,7 @@ function CheckInMethodView({
               type="button"
               disabled={isSaving}
               onClick={() => setIsDetailModalOpen(false)}
-              className="absolute top-6 right-6  bg-white dark:bg-zinc-800 text-[#1f1f1f] hover:text-[#727272] dark:text-zinc-400 transition-colors cursor-pointer disabled:opacity-50 disabled:opacity-50"
+              className="absolute top-6 right-6  bg-white dark:bg-zinc-800 text-[#1f1f1f] hover:text-[#727272] dark:text-[#727272] transition-colors cursor-pointer disabled:opacity-50 disabled:opacity-50"
             >
               <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -2624,16 +2624,16 @@ function CheckInMethodView({
               </div>
               <div>
                 <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">{selectedDetailMethod.label}</h3>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400 font-normal mt-0.5">{selectedDetailMethod.description}</p>
+                <p className="text-xs text-[#727272] dark:text-[#727272] font-normal mt-0.5">{selectedDetailMethod.description}</p>
               </div>
             </div>
             {selectedDetailMethod.hasCode && (
               <div className="rounded-2xl border border-zinc-200/90 dark:border-zinc-700 bg-zinc-50/60 dark:bg-zinc-800/60 p-4 space-y-2 mb-6">
                 <label className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">
                   {selectedDetailMethod.codeLabel}{" "}
-                  <span className="font-normal text-zinc-400 dark:text-zinc-500">{t("host_confidential_tag") || "(Confidential)"}</span>
+                  <span className="font-normal text-[#727272] dark:text-[#727272]">{t("host_confidential_tag") || "(Confidential)"}</span>
                 </label>
-                <p className="text-xs text-[#1f1f1f] dark:text-zinc-500 leading-relaxed">
+                <p className="text-xs text-[#1f1f1f] dark:text-[#727272] leading-relaxed">
                   {t("host_code_confidential_info") || "This code is only shared with confirmed booked guests 48 hours before check-in."}
                 </p>
                 <input
@@ -2641,7 +2641,7 @@ function CheckInMethodView({
                   value={draftCode}
                   onChange={(e) => setDraftCode(e.target.value)}
                   placeholder={selectedDetailMethod.codePlaceholder}
-                  className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2.5 text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs placeholder:text-zinc-400 dark:placeholder:text-zinc-500"
+                  className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2.5 text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs placeholder:text-[#727272] dark:placeholder:text-[#727272]"
                 />
               </div>
             )}
@@ -2677,7 +2677,7 @@ function CheckInMethodView({
               type="button"
               disabled={isSaving}
               onClick={() => setIsInstructionModalOpen(false)}
-              className="absolute top-6 right-6  bg-white dark:bg-zinc-800 text-[#1f1f1f] hover:text-[#727272] dark:text-zinc-400 transition-colors cursor-pointer disabled:opacity-50 disabled:opacity-50"
+              className="absolute top-6 right-6  bg-white dark:bg-zinc-800 text-[#1f1f1f] hover:text-[#727272] dark:text-[#727272] transition-colors cursor-pointer disabled:opacity-50 disabled:opacity-50"
             >
               <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -2685,7 +2685,7 @@ function CheckInMethodView({
             </button>
             <div className="mb-6 space-y-1">
               <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">{t("host_checkin_instructions_heading") || "Check-in instructions"}</h3>
-              <p className="text-sm text-[#727272] dark:text-zinc-400 font-normal leading-relaxed">
+              <p className="text-sm text-[#727272] dark:text-[#727272] font-normal leading-relaxed">
                 {t("host_checkin_instructions_modal_desc") || "Help guests have a smooth arrival. Share step-by-step tips to get inside."}
               </p>
             </div>
@@ -2696,9 +2696,9 @@ function CheckInMethodView({
                 value={checkInInstructions || ""}
                 onChange={(e) => setCheckInInstructions?.(e.target.value)}
                 placeholder={t("host_instructions_for_guests_placeholder") || "e.g. Take the elevator to the 3rd floor. The lockbox is on the door handle. Enter code 8842 and turn the knob clockwise."}
-                className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2.5 text-sm font-normal text-[#727272] dark:text-zinc-100 outline-none focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs placeholder:text-zinc-400 dark:placeholder:text-zinc-500 leading-relaxed resize-none"
+                className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2.5 text-sm font-normal text-[#727272] dark:text-zinc-100 outline-none focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs placeholder:text-[#727272] dark:placeholder:text-[#727272] leading-relaxed resize-none"
               />
-              <p className="text-xs text-[#727272] dark:text-zinc-500 flex items-center gap-1.5">
+              <p className="text-xs text-[#727272] dark:text-[#727272] flex items-center gap-1.5">
                 <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <circle cx="12" cy="12" r="9" />
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 7v5l3 3" />
@@ -2781,13 +2781,13 @@ function RegulationsView({
               <h1>
                 {t("host_regulations_all_set_title")}
               </h1>
-              <p className="text-sm text-[#727272] dark:text-zinc-400 font-normal leading-relaxed max-w-md">
+              <p className="text-sm text-[#727272] dark:text-[#727272] font-normal leading-relaxed max-w-md">
                 {t("host_regulations_all_set_desc")}
               </p>
               <button
                 type="button"
                 onClick={() => setIsEditingReg(!isEditingReg)}
-                className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-200 underline underline-offset-4 hover:text-zinc-600 dark:hover:text-zinc-400 transition-colors pt-1 block cursor-pointer"
+                className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-200 underline underline-offset-4 hover:text-zinc-600 dark:hover:text-[#727272] transition-colors pt-1 block cursor-pointer"
               >
                 {isEditingReg ? t("host_regulations_done_editing") : t("host_regulations_edit_details")}
               </button>
@@ -2798,7 +2798,7 @@ function RegulationsView({
               <h2 className="text-xl font-semibold tracking-tight text-[#1F1F1F] dark:text-zinc-100">
                 {t("host_regulations_details_heading")}
               </h2>
-              <p className="text-sm text-[#727272] dark:text-zinc-400 font-normal leading-relaxed max-w-md">
+              <p className="text-sm text-[#727272] dark:text-[#727272] font-normal leading-relaxed max-w-md">
                 {t("host_regulations_details_sub")}
               </p>
 
@@ -2852,12 +2852,12 @@ function RegulationsView({
               )}
 
               {/* Bottom Paragraph with Customer Support Link */}
-              <p className="text-sm text-[#727272] dark:text-zinc-400 font-normal leading-relaxed pt-2 max-w-md">
+              <p className="text-sm text-[#727272] dark:text-[#727272] font-normal leading-relaxed pt-2 max-w-md">
                 {t("host_regulations_support_text")}{" "}
                 <a
                   href="#support"
                   onClick={(e) => e.preventDefault()}
-                  className="underline text-[#1F1F1F] dark:text-zinc-200 font-semibold hover:text-[#727272] dark:hover:text-zinc-400 transition-colors"
+                  className="underline text-[#1F1F1F] dark:text-zinc-200 font-semibold hover:text-[#727272] dark:hover:text-[#727272] transition-colors"
                 >
                   {t("host_regulations_support_link")}
                 </a>
@@ -2941,14 +2941,14 @@ function RegulationsView({
       </div>
 
       {/* Top Description Paragraph */}
-      <p className="text-sm text-[#727272] dark:text-zinc-400 font-normal leading-relaxed pt-1 max-w-lg">
+      <p className="text-sm text-[#727272] dark:text-[#727272] font-normal leading-relaxed pt-1 max-w-lg">
         {t("host_regulations_desc")}
       </p>
 
       {/* Registration Status Block */}
       <div className="space-y-3 pt-2">
         <h3 className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">{t("host_regulations_status_complete")}</h3>
-        <p className="text-sm text-[#727272] dark:text-zinc-400 font-normal leading-relaxed max-w-lg">
+        <p className="text-sm text-[#727272] dark:text-[#727272] font-normal leading-relaxed max-w-lg">
           {t("host_regulations_all_set_summary", { regNumber: regNumber })}
         </p>
       </div>
@@ -2988,13 +2988,13 @@ function TaxesView({
         <h1>Taxes</h1>
       </div>
 
-      <p className="text-xs text-zinc-500 font-normal leading-relaxed pt-1">
+      <p className="text-xs text-[#727272] font-normal leading-relaxed pt-1">
         Learn how local occupancy taxes and value-added tax (VAT) apply to your host earnings and how Homyz helps collect and remit taxes on eligible bookings.
       </p>
 
       <div className="rounded-2xl border border-zinc-200/90 bg-white p-5 space-y-3 shadow-2xs">
         <h3 className="text-xs font-semibold text-[#1F1F1F]">Occupancy Tax Collection</h3>
-        <p className="text-xs text-zinc-500 font-normal leading-relaxed">
+        <p className="text-xs text-[#727272] font-normal leading-relaxed">
           Depending on your jurisdiction, occupancy tax may automatically be included at checkout for guest reservations.
         </p>
       </div>
@@ -3046,13 +3046,13 @@ function HomyzStaysView({
         <h1>Homyz.com stays</h1>
       </div>
 
-      <p className="text-xs text-zinc-500 font-normal leading-relaxed pt-1">
+      <p className="text-xs text-[#727272] font-normal leading-relaxed pt-1">
         Learn how host contributions and community hosting initiatives help support local stays, emergency relief housing, and community experiences.
       </p>
 
       <div className="rounded-2xl border border-zinc-200/90 bg-white p-5 space-y-3 shadow-2xs">
         <h3 className="text-xs font-semibold text-[#1F1F1F]">Community Housing Network</h3>
-        <p className="text-xs text-zinc-500 font-normal leading-relaxed">
+        <p className="text-xs text-[#727272] font-normal leading-relaxed">
           Opt in to share emergency housing or offer discounted stays for non-profit and community partners.
         </p>
       </div>

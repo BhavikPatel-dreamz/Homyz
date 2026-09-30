@@ -350,7 +350,7 @@ export function StepPhotoManagement({
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="rounded-2xl border-2 border-dashed border-zinc-300 bg-zinc-50 hover:bg-zinc-100/80 flex flex-col items-center justify-center aspect-square text-zinc-500 cursor-pointer transition-colors"
+                    className="rounded-2xl border-2 border-dashed border-zinc-300 bg-zinc-50 hover:bg-zinc-100/80 flex flex-col items-center justify-center aspect-square text-[#727272] cursor-pointer transition-colors"
                   >
                     <span className="text-2xl font-semibold mb-1">+</span>
                     <span className="text-[11px] font-semibold">Add photo</span>

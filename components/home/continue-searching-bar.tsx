@@ -216,12 +216,12 @@ export function ContinueSearchingBar({
             {locationName ? ` ${preposition} ${locationName}` : ""}
           </span>
           {dateRange && (
-            <span className="font-normal text-zinc-500 whitespace-nowrap">
+            <span className="font-normal text-[#727272] whitespace-nowrap">
               {dateRange}
             </span>
           )}
           <span
-            className="inline-block text-zinc-900 transition-transform duration-200 group-hover:translate-x-1 ml-0.5 font-medium"
+            className="inline-block text-[#1F1F1F] transition-transform duration-200 group-hover:translate-x-1 ml-0.5 font-medium"
             aria-hidden="true"
           >
             →

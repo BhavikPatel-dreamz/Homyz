@@ -49,14 +49,14 @@ export function BookingHostCard({
             </div>
           )}
           <div>
-            <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+            <span className="text-xs font-semibold uppercase tracking-wider text-[#727272]">
               Property Host
             </span>
             <h2 id="host-heading" className="text-lg font-semibold text-[#1F1F1F]">
               Hosted by {displayName}
             </h2>
             {memberYear && (
-              <p className="text-xs text-zinc-500 mt-0.5">
+              <p className="text-xs text-[#727272] mt-0.5">
                 Hosting on Homyz since {memberYear}
               </p>
             )}

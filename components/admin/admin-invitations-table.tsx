@@ -446,7 +446,7 @@ export function AdminInvitationsTable({
           </span>
         );
       default:
-        return <span className="text-xs text-zinc-500">{status}</span>;
+        return <span className="text-xs text-[#727272]">{status}</span>;
     }
   }
 
@@ -564,7 +564,7 @@ export function AdminInvitationsTable({
           <div className="flex items-center justify-between text-[var(--muted-foreground)]">
             <span className="text-xs font-semibold uppercase tracking-wider">Expired / Revoked</span>
             <span className="p-1.5 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700">
-              <svg className="w-4 h-4 text-zinc-600 dark:text-zinc-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-zinc-600 dark:text-[#727272]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
               </svg>
             </span>

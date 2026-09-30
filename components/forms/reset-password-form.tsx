@@ -74,7 +74,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
           <h2 className="text-2xl font-semibold text-zinc-950">
             {t("auth_reset_success_title")}
           </h2>
-          <p className="text-xs text-zinc-500 mt-1.5 leading-relaxed">
+          <p className="text-xs text-[#727272] mt-1.5 leading-relaxed">
             {t("auth_reset_success_body")}
           </p>
         </div>
@@ -115,13 +115,13 @@ export function ResetPasswordForm({ token }: { token: string }) {
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 pr-10 text-sm text-[#1F1F1F] placeholder:text-zinc-400 outline-none transition-colors focus:border-zinc-900"
+            className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 pr-10 text-sm text-[#1F1F1F] placeholder:text-[#727272] outline-none transition-colors focus:border-zinc-900"
             placeholder="••••••••••••"
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700 transition-colors p-1"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#727272] hover:text-zinc-700 transition-colors p-1"
             aria-label="Toggle password visibility"
           >
             {showPassword ? (
@@ -151,7 +151,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
           required
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
-          className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm text-[#1F1F1F] placeholder:text-zinc-400 outline-none transition-colors focus:border-zinc-900"
+          className="w-full rounded-xl border border-zinc-300 bg-white px-4 py-3 text-sm text-[#1F1F1F] placeholder:text-[#727272] outline-none transition-colors focus:border-zinc-900"
           placeholder="••••••••••••"
         />
       </div>
@@ -166,7 +166,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
             className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl border text-[11px] font-medium transition-colors ${
               minLength
                 ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                : "bg-white text-zinc-500 border-zinc-200"
+                : "bg-white text-[#727272] border-zinc-200"
             }`}
           >
             <span className="font-semibold">{minLength ? "✓" : "○"}</span> {t("auth_pwd_min_length")}
@@ -175,7 +175,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
             className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl border text-[11px] font-medium transition-colors ${
               hasUpper
                 ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                : "bg-white text-zinc-500 border-zinc-200"
+                : "bg-white text-[#727272] border-zinc-200"
             }`}
           >
             <span className="font-semibold">{hasUpper ? "✓" : "○"}</span> {t("auth_pwd_uppercase")}
@@ -184,7 +184,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
             className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl border text-[11px] font-medium transition-colors ${
               hasNumber
                 ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                : "bg-white text-zinc-500 border-zinc-200"
+                : "bg-white text-[#727272] border-zinc-200"
             }`}
           >
             <span className="font-semibold">{hasNumber ? "✓" : "○"}</span> {t("auth_pwd_number")}
@@ -200,7 +200,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
               <span className="font-semibold">{matches ? "✓" : "✕"}</span> {t("auth_passwords_match")}
             </div>
           ) : (
-            <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl border border-zinc-200 bg-white text-zinc-400 text-[11px]">
+            <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl border border-zinc-200 bg-white text-[#727272] text-[11px]">
               <span>○</span> {t("auth_match_confirmation")}
             </div>
           )}

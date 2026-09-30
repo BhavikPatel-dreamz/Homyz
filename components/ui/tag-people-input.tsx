@@ -143,7 +143,7 @@ export function TagPeopleInput({
             <button
               type="button"
               onClick={(e) => handleRemoveUser(user.id, e)}
-              className="w-3.5 h-3.5 rounded-full hover:bg-zinc-300 text-zinc-500 hover:text-[#1F1F1F] flex items-center justify-center text-[11px] leading-none transition-colors cursor-pointer"
+              className="w-3.5 h-3.5 rounded-full hover:bg-zinc-300 text-[#727272] hover:text-[#1F1F1F] flex items-center justify-center text-[11px] leading-none transition-colors cursor-pointer"
               title="Remove tag"
             >
               ✕
@@ -182,15 +182,15 @@ export function TagPeopleInput({
       {isOpen && (
         <div className="absolute left-0 right-0 top-full mt-1 z-50 max-h-60 overflow-y-auto rounded-2xl bg-white border border-zinc-200 shadow-xl py-1.5 animate-in fade-in">
           {loading ? (
-            <div className="px-4 py-3 text-xs text-zinc-500 flex items-center gap-2">
-              <svg className="w-3.5 h-3.5 animate-spin text-zinc-400" viewBox="0 0 24 24" fill="none">
+            <div className="px-4 py-3 text-xs text-[#727272] flex items-center gap-2">
+              <svg className="w-3.5 h-3.5 animate-spin text-[#727272]" viewBox="0 0 24 24" fill="none">
                 <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" className="opacity-25" />
                 <path fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" className="opacity-75" />
               </svg>
               <span>Searching people...</span>
             </div>
           ) : suggestions.length === 0 ? (
-            <div className="px-4 py-3 text-xs text-zinc-400 italic text-center">
+            <div className="px-4 py-3 text-xs text-[#727272] italic text-center">
               No people found
             </div>
           ) : (
@@ -223,7 +223,7 @@ export function TagPeopleInput({
                     <div className="min-w-0">
                       <p className="font-semibold text-[#1F1F1F] truncate">{user.name || "Guest Member"}</p>
                       {user.email && (
-                        <p className="text-[11px] text-zinc-400 truncate">
+                        <p className="text-[11px] text-[#727272] truncate">
                           @{user.email.split("@")[0]}
                         </p>
                       )}
@@ -231,7 +231,7 @@ export function TagPeopleInput({
                   </div>
 
                   {isSelected && (
-                    <span className="text-[11px] font-semibold text-zinc-400 bg-zinc-100 px-2 py-0.5 rounded-full">
+                    <span className="text-[11px] font-semibold text-[#727272] bg-zinc-100 px-2 py-0.5 rounded-full">
                       Tagged
                     </span>
                   )}

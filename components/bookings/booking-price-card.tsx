@@ -74,7 +74,7 @@ export function BookingPriceCard({
             />{" "}
             × {pricing.nights} {pricing.nights === 1 ? "night" : "nights"}
           </dt>
-          <dd className="font-medium text-zinc-900">
+          <dd className="font-medium text-[#1F1F1F]">
             <CurrencyPrice
               amountMinorUnits={pricing.nightlySubtotal}
               sourceCurrency={pricing.currency}
@@ -86,7 +86,7 @@ export function BookingPriceCard({
         {pricing.extraGuestFee > 0 && (
           <div className="flex justify-between gap-4">
             <dt className="text-zinc-600">Extra guest fee</dt>
-            <dd className="font-medium text-zinc-900">
+            <dd className="font-medium text-[#1F1F1F]">
               <CurrencyPrice
                 amountMinorUnits={pricing.extraGuestFee}
                 sourceCurrency={pricing.currency}
@@ -99,7 +99,7 @@ export function BookingPriceCard({
         {pricing.cleaningFee > 0 && (
           <div className="flex justify-between gap-4">
             <dt className="text-zinc-600">Cleaning fee</dt>
-            <dd className="font-medium text-zinc-900">
+            <dd className="font-medium text-[#1F1F1F]">
               <CurrencyPrice
                 amountMinorUnits={pricing.cleaningFee}
                 sourceCurrency={pricing.currency}
@@ -112,7 +112,7 @@ export function BookingPriceCard({
         {pricing.serviceFee > 0 && (
           <div className="flex justify-between gap-4">
             <dt className="text-zinc-600">Service fee</dt>
-            <dd className="font-medium text-zinc-900">
+            <dd className="font-medium text-[#1F1F1F]">
               <CurrencyPrice
                 amountMinorUnits={pricing.serviceFee}
                 sourceCurrency={pricing.currency}
@@ -141,7 +141,7 @@ export function BookingPriceCard({
             <dt className="text-zinc-600">
               {pricing.taxes.length === 1 ? pricing.taxes[0].name : "Taxes"}
             </dt>
-            <dd className="font-medium text-zinc-900">
+            <dd className="font-medium text-[#1F1F1F]">
               <CurrencyPrice
                 amountMinorUnits={pricing.taxTotal}
                 sourceCurrency={pricing.currency}
@@ -154,7 +154,7 @@ export function BookingPriceCard({
         {pricing.otherCharges !== 0 && (
           <div className="flex justify-between gap-4 text-zinc-600">
             <dt>Other charges</dt>
-            <dd className="font-medium text-zinc-900">
+            <dd className="font-medium text-[#1F1F1F]">
               <CurrencyPrice
                 amountMinorUnits={pricing.otherCharges}
                 sourceCurrency={pricing.currency}
@@ -164,7 +164,7 @@ export function BookingPriceCard({
           </div>
         )}
 
-        <div className="flex justify-between gap-4 border-t border-zinc-200 pt-4 text-base font-bold text-zinc-900">
+        <div className="flex justify-between gap-4 border-t border-zinc-200 pt-4 text-base font-bold text-[#1F1F1F]">
           <dt>Total paid ({pricing.currency})</dt>
           <dd className="text-lg text-emerald-800">
             <CurrencyPrice
@@ -196,7 +196,7 @@ export function BookingPriceCard({
                 ✓ Review submitted · View reviews
               </Link>
             ) : (
-              <div className="rounded-xl bg-zinc-100 px-4 py-2.5 text-center text-xs text-zinc-500 font-medium">
+              <div className="rounded-xl bg-zinc-100 px-4 py-2.5 text-center text-xs text-[#727272] font-medium">
                 {actions.reviewDisabledReason || "Review period has ended"}
               </div>
             )}
@@ -246,7 +246,7 @@ export function BookingPriceCard({
                 Cancel reservation
               </button>
             ) : (
-              <p className="text-center text-xs text-zinc-500 pt-1">
+              <p className="text-center text-xs text-[#727272] pt-1">
                 {actions.cancelDisabledReason || "Reservation cannot be cancelled."}
               </p>
             )}

@@ -93,7 +93,7 @@ export function AcceptInvitationForm({
           <h2 className="text-2xl font-semibold text-zinc-950 font-['Poppins']">
             Account Activated!
           </h2>
-          <p className="text-sm text-zinc-500 mt-1.5 leading-relaxed font-['Poppins']">
+          <p className="text-sm text-[#727272] mt-1.5 leading-relaxed font-['Poppins']">
             Your administrator password has been set. You can now sign in to access the Homyz Admin Console.
           </p>
         </div>
@@ -121,8 +121,8 @@ export function AcceptInvitationForm({
       {/* Account Info Pill */}
       <div className="rounded-lg bg-zinc-50 border border-zinc-200/80 p-3 flex items-center justify-between gap-3 text-xs sm:text-sm font-['Poppins']">
         <div className="min-w-0 truncate">
-          <span className="text-zinc-500">Account for: </span>
-          <strong className="text-zinc-900 font-semibold">{name ? `${name} (${email})` : email}</strong>
+          <span className="text-[#727272]">Account for: </span>
+          <strong className="text-[#1F1F1F] font-semibold">{name ? `${name} (${email})` : email}</strong>
         </div>
         <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-900 border border-amber-300 shrink-0">
           {roleName}
@@ -152,7 +152,7 @@ export function AcceptInvitationForm({
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700 transition-colors"
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-[#727272] hover:text-zinc-700 transition-colors"
             aria-label="Toggle password visibility"
           >
             {showPassword ? (
@@ -175,26 +175,26 @@ export function AcceptInvitationForm({
         <div className="rounded-lg bg-zinc-50 border border-zinc-200/80 p-3 text-zinc-600 flex flex-col gap-1 mt-1 font-['Poppins']">
           <div className="font-semibold text-zinc-800 mb-0.5 text-xs sm:text-sm">Password Requirements:</div>
           <div className="flex items-center gap-2 text-xs sm:text-sm">
-            <span className={hasMinLength ? "text-emerald-600 font-semibold" : "text-zinc-400"}>
+            <span className={hasMinLength ? "text-emerald-600 font-semibold" : "text-[#727272]"}>
               {hasMinLength ? "✓" : "○"}
             </span>
-            <span className={hasMinLength ? "text-[#1F1F1F] font-medium" : "text-zinc-500"}>
+            <span className={hasMinLength ? "text-[#1F1F1F] font-medium" : "text-[#727272]"}>
               Minimum 8 characters
             </span>
           </div>
           <div className="flex items-center gap-2 text-xs sm:text-sm">
-            <span className={hasUppercase ? "text-emerald-600 font-semibold" : "text-zinc-400"}>
+            <span className={hasUppercase ? "text-emerald-600 font-semibold" : "text-[#727272]"}>
               {hasUppercase ? "✓" : "○"}
             </span>
-            <span className={hasUppercase ? "text-[#1F1F1F] font-medium" : "text-zinc-500"}>
+            <span className={hasUppercase ? "text-[#1F1F1F] font-medium" : "text-[#727272]"}>
               At least one uppercase letter (A-Z)
             </span>
           </div>
           <div className="flex items-center gap-2 text-xs sm:text-sm">
-            <span className={hasNumber ? "text-emerald-600 font-semibold" : "text-zinc-400"}>
+            <span className={hasNumber ? "text-emerald-600 font-semibold" : "text-[#727272]"}>
               {hasNumber ? "✓" : "○"}
             </span>
-            <span className={hasNumber ? "text-[#1F1F1F] font-medium" : "text-zinc-500"}>
+            <span className={hasNumber ? "text-[#1F1F1F] font-medium" : "text-[#727272]"}>
               At least one number (0-9)
             </span>
           </div>
@@ -223,7 +223,7 @@ export function AcceptInvitationForm({
           <button
             type="button"
             onClick={() => setShowRepeatPassword(!showRepeatPassword)}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700 transition-colors"
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-[#727272] hover:text-zinc-700 transition-colors"
             aria-label="Toggle repeat password visibility"
           >
             {showRepeatPassword ? (
