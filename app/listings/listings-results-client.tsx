@@ -279,6 +279,19 @@ function SelectedPreviewCard({
   );
 }
 
+function deduplicateListings<T extends { id: string }>(items: T[]): T[] {
+  if (!Array.isArray(items)) return [];
+  const seen = new Set<string>();
+  const result: T[] = [];
+  for (const item of items) {
+    if (item && item.id && !seen.has(item.id)) {
+      seen.add(item.id);
+      result.push(item);
+    }
+  }
+  return result;
+}
+
 // ─────────────────────────────────────────────
 // Main Component
 // ─────────────────────────────────────────────
@@ -374,7 +387,9 @@ export function ListingsResultsClient({
       : 12;
 
   // All listings accumulated (for infinite scroll)
-  const [allListings, setAllListings] = useState<PublicListingCardDTO[]>(() => dedupeListings(initialListings));
+  const [allListings, setAllListings] = useState<PublicListingCardDTO[]>(() =>
+    deduplicateListings(initialListings)
+  );
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [hasMore, setHasMore] = useState(initialPage < initialTotalPages);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -855,11 +870,7 @@ export function ListingsResultsClient({
       if (res.ok) {
         const data = await res.json();
         const newItems: PublicListingCardDTO[] = data.items ?? data.data ?? [];
-        setAllListings((prev) => {
-          const seen = new Set(prev.map((l) => l.id));
-          const unique = newItems.filter((item) => item?.id && !seen.has(item.id));
-          return [...prev, ...unique];
-        });
+        setAllListings((prev) => deduplicateListings([...prev, ...newItems]));
         setCurrentPage(nextPage);
         const totalPages = data.pagination?.totalPages ?? data.totalPages ?? initialTotalPages;
         setHasMore(nextPage < totalPages);
@@ -878,7 +889,7 @@ export function ListingsResultsClient({
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
-    setAllListings(dedupeListings(initialListings));
+    setAllListings(deduplicateListings(initialListings));
     setCurrentPage(initialPage);
     setHasMore(initialPage < initialTotalPages);
     setTotal(initialTotal);
