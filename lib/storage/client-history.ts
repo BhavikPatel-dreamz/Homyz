@@ -63,9 +63,10 @@ export function validateSearchContext(raw: unknown): PersistedSearchContext | nu
   if (!raw || typeof raw !== "object") return null;
   const obj = raw as Record<string, any>;
 
-  const query = typeof obj.query === "string" ? obj.query.trim() : "";
+  const rawLocation = typeof obj.location === "string" ? obj.location.trim() : "";
+  const query = typeof obj.query === "string" ? obj.query.trim() : rawLocation;
   const displayName = typeof obj.displayName === "string" ? obj.displayName.trim() : query;
-  const city = typeof obj.city === "string" ? obj.city.trim() : null;
+  const city = typeof obj.city === "string" ? obj.city.trim() : rawLocation || null;
 
   const lat =
     typeof obj.latitude === "number" && Number.isFinite(obj.latitude) && Math.abs(obj.latitude) <= 90
@@ -76,8 +77,22 @@ export function validateSearchContext(raw: unknown): PersistedSearchContext | nu
       ? obj.longitude
       : null;
 
-  // Must have either a valid query/city or coordinates
-  if (!query && !displayName && !city && (lat === null || lng === null)) {
+  // Dates
+  const checkIn =
+    typeof obj.checkIn === "string" && obj.checkIn.trim()
+      ? obj.checkIn.trim()
+      : typeof obj.checkin === "string" && obj.checkin.trim()
+      ? obj.checkin.trim()
+      : null;
+  const checkOut =
+    typeof obj.checkOut === "string" && obj.checkOut.trim()
+      ? obj.checkOut.trim()
+      : typeof obj.checkout === "string" && obj.checkout.trim()
+      ? obj.checkout.trim()
+      : null;
+
+  // Must have either a valid query/city, coordinates, or travel dates
+  if (!query && !displayName && !city && (lat === null || lng === null) && !checkIn && !checkOut) {
     return null;
   }
 
@@ -103,10 +118,6 @@ export function validateSearchContext(raw: unknown): PersistedSearchContext | nu
     typeof obj.guests === "number" && Number.isFinite(obj.guests) && obj.guests >= 1
       ? Math.floor(obj.guests)
       : 1;
-
-  // Dates
-  const checkIn = typeof obj.checkIn === "string" && obj.checkIn.trim() ? obj.checkIn.trim() : null;
-  const checkOut = typeof obj.checkOut === "string" && obj.checkOut.trim() ? obj.checkOut.trim() : null;
 
   // Place type
   const placeType = typeof obj.placeType === "string" ? obj.placeType : "general";
@@ -217,7 +228,7 @@ export function shouldShowContinueSearching(lastSearch: PersistedSearchContext |
 }
 
 export function saveLastSearch(
-  ctx: SearchContext | PersistedSearchContext,
+  ctx: SearchContext | PersistedSearchContext | (Partial<PersistedSearchContext> & { checkIn?: string | null; checkOut?: string | null }),
 ): PersistedSearchContext | null {
   const normalized = validateSearchContext({
     ...ctx,
@@ -439,4 +450,164 @@ export function clearRecentSearchContexts(): void {
     localStorage.removeItem(LEGACY_RECENT_KEY);
     deleteClientCookie(RECENT_SEARCHES_COOKIE);
   } catch {}
+}
+
+// ─────────────────────────────────────────────
+// Canonical Travel / Search Context Helpers
+// ─────────────────────────────────────────────
+
+export interface CanonicalTravelParams {
+  location?: string | null;
+  checkIn?: string | null;
+  checkOut?: string | null;
+  guests: number;
+  adults?: number;
+  children?: number;
+  infants?: number;
+  pets?: number;
+  specialOfferId?: string | null;
+}
+
+export function isDateKey(v?: string | null): v is string {
+  return Boolean(v && /^\d{4}-\d{2}-\d{2}$/.test(v.trim()) && !isNaN(new Date(v.trim()).getTime()));
+}
+
+/**
+ * Universal safe parser that extracts validated travel dates, guests, and destination
+ * from URLSearchParams, route searchParams, or generic dictionary.
+ */
+export function parseSearchQueryParams(
+  params?: URLSearchParams | Record<string, string | string[] | undefined | null> | null,
+): CanonicalTravelParams {
+  const get = (key: string): string | null => {
+    if (!params) return null;
+    if (params instanceof URLSearchParams) {
+      return params.get(key);
+    }
+    const val = (params as Record<string, any>)[key];
+    if (Array.isArray(val)) return val[0] ?? null;
+    return typeof val === "string" ? val : null;
+  };
+
+  const rawLocation = get("location") || get("destination") || get("city") || get("placeName") || get("query");
+  const rawCheckIn = get("checkIn") || get("checkin") || get("startDate");
+  const rawCheckOut = get("checkOut") || get("checkout") || get("endDate");
+  const rawGuests = get("guests");
+  const rawAdults = get("adults");
+  const rawChildren = get("children");
+  const rawInfants = get("infants");
+  const rawPets = get("pets");
+  const rawSpecialOfferId = get("specialOfferId");
+
+  const checkIn = isDateKey(rawCheckIn) ? rawCheckIn.trim() : null;
+  const checkOut = isDateKey(rawCheckOut) ? rawCheckOut.trim() : null;
+
+  const parsedGuests = rawGuests ? parseInt(rawGuests, 10) : NaN;
+  const parsedAdults = rawAdults ? parseInt(rawAdults, 10) : NaN;
+  const parsedChildren = rawChildren ? parseInt(rawChildren, 10) : 0;
+  const parsedInfants = rawInfants ? parseInt(rawInfants, 10) : 0;
+  const parsedPets = rawPets ? parseInt(rawPets, 10) : 0;
+
+  const guests = !isNaN(parsedGuests) && parsedGuests >= 1 ? parsedGuests : 1;
+  const adults = !isNaN(parsedAdults) && parsedAdults >= 0 ? parsedAdults : undefined;
+
+  return {
+    location: rawLocation?.trim() || null,
+    checkIn,
+    checkOut,
+    guests,
+    adults,
+    children: isNaN(parsedChildren) || parsedChildren < 0 ? 0 : parsedChildren,
+    infants: isNaN(parsedInfants) || parsedInfants < 0 ? 0 : parsedInfants,
+    pets: isNaN(parsedPets) || parsedPets < 0 ? 0 : parsedPets,
+    specialOfferId: rawSpecialOfferId?.trim() || null,
+  };
+}
+
+/**
+ * Builds standard URLSearchParams encoding travel context. Generated URLs use
+ * canonical camel-case date keys; readers continue accepting legacy aliases.
+ */
+export function buildTravelQueryParams(
+  context?: Partial<SearchContext> | CanonicalTravelParams | null,
+  extra?: Record<string, string | number | boolean | null | undefined>,
+): URLSearchParams {
+  const sp = new URLSearchParams();
+  const c = context as Record<string, any> | undefined | null;
+  if (!c) {
+    if (extra) {
+      for (const [k, v] of Object.entries(extra)) {
+        if (v !== undefined && v !== null && v !== "") sp.set(k, String(v));
+      }
+    }
+    return sp;
+  }
+
+  const inDate = c.checkIn || c.checkin;
+  const outDate = c.checkOut || c.checkout;
+  if (inDate) {
+    sp.set("checkIn", inDate);
+  }
+  if (outDate) {
+    sp.set("checkOut", outDate);
+  }
+
+  const guests = typeof c.guests === "number" && c.guests >= 1 ? c.guests : 1;
+  sp.set("guests", String(guests));
+
+  if (typeof c.adults === "number" && c.adults > 0) {
+    sp.set("adults", String(c.adults));
+  }
+  if (typeof c.children === "number" && c.children > 0) {
+    sp.set("children", String(c.children));
+  }
+  if (typeof c.infants === "number" && c.infants > 0) {
+    sp.set("infants", String(c.infants));
+  }
+  if (typeof c.pets === "number" && c.pets > 0) {
+    sp.set("pets", String(c.pets));
+  }
+
+  const loc = c.location || c.city || c.destination || c.query || c.displayName;
+  if (loc && typeof loc === "string" && loc.trim() && loc !== "Stays") {
+    sp.set("location", loc.trim());
+  }
+
+  if (c.specialOfferId && typeof c.specialOfferId === "string" && c.specialOfferId.trim()) {
+    sp.set("specialOfferId", c.specialOfferId.trim());
+  }
+
+  if (extra) {
+    for (const [k, v] of Object.entries(extra)) {
+      if (v !== undefined && v !== null && v !== "") sp.set(k, String(v));
+    }
+  }
+
+  return sp;
+}
+
+/**
+ * Constructs a safe, context-preserving property details URL.
+ */
+export function buildListingDetailUrl(
+  idOrSlug: string,
+  context?: Partial<SearchContext> | CanonicalTravelParams | null,
+  extra?: Record<string, string | number | boolean | null | undefined>,
+): string {
+  const sp = buildTravelQueryParams(context, extra);
+  const qs = sp.toString();
+  return `/listings/${idOrSlug}${qs ? `?${qs}` : ""}`;
+}
+
+/**
+ * Constructs a safe, context-preserving checkout URL.
+ */
+export function buildBookingCheckoutUrl(
+  idOrSlug: string,
+  context?: Partial<SearchContext> | CanonicalTravelParams | null,
+  extra?: Record<string, string | number | boolean | null | undefined>,
+): string {
+  const sp = buildTravelQueryParams(context, extra);
+  const qs = sp.toString();
+  return `/book/${idOrSlug}${qs ? `?${qs}` : ""}`;
 }

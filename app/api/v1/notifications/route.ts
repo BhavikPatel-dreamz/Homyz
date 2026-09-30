@@ -21,7 +21,8 @@ export const GET = apiHandler(async (req) => {
   const skip = searchParams.get("skip") ? parseInt(searchParams.get("skip")!, 10) : undefined;
   const take = searchParams.get("take") ? parseInt(searchParams.get("take")!, 10) : undefined;
 
-  const result = await notificationService.listForUser(actor.id, {
+  const userId = actor.id;
+  const result = await notificationService.listForUser(userId, {
     type,
     unreadOnly,
     skip,

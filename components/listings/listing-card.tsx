@@ -9,6 +9,7 @@ import { getCurrencyForCountry } from "@/lib/currency";
 import { useCurrency } from "@/lib/currency-context";
 import type { PublicListingDTO } from "@/services/mappers";
 import { trackListingEvent } from "@/lib/analytics/listing-analytics";
+import { buildListingDetailUrl, getLastSearch } from "@/lib/storage/client-history";
 
 // ─── Discount Helpers ──────────────────────────────────────────────────────────
 type DiscountEntry =
@@ -97,6 +98,14 @@ export interface ListingCardProps {
   checkIn?: string;
   /** Optional check-out date from search filters */
   checkOut?: string;
+  /** Optional guest count from search filters */
+  guests?: number;
+  /** Optional adults count */
+  adults?: number;
+  /** Optional children count */
+  children?: number;
+  /** Optional pets count */
+  pets?: number;
   /** Choose which favorite control to render: heart (toggle) or remove (cross) */
   favoriteVariant?: "heart" | "remove";
   /** Compact bordered card treatment used by the search-results grid. */
@@ -113,6 +122,10 @@ export function ListingCard({
   priority = false,
   checkIn,
   checkOut,
+  guests,
+  adults,
+  children,
+  pets,
   favoriteVariant = "heart",
   variant = "default",
 }: ListingCardProps) {
@@ -310,7 +323,43 @@ export function ListingCard({
   // Navigation target — prefer customSlug when available
   // Compatibility static contract reference: href={`/listings/${listing.id}`}
   const slug = (listing as { customSlug?: string | null }).customSlug;
-  const targetHref = slug ? `/listings/${slug}` : `/listings/${listing.id}`;
+  const targetIdOrSlug = slug || listing.id;
+
+  const [activeContext, setActiveContext] = useState(() => ({
+    checkIn: checkIn || undefined,
+    checkOut: checkOut || undefined,
+    guests: guests || undefined,
+    adults: adults || undefined,
+    children: children || undefined,
+    pets: pets || undefined,
+  }));
+
+  useEffect(() => {
+    if (checkIn || checkOut || guests) {
+      setActiveContext({
+        checkIn: checkIn || undefined,
+        checkOut: checkOut || undefined,
+        guests: guests || undefined,
+        adults: adults || undefined,
+        children: children || undefined,
+        pets: pets || undefined,
+      });
+    } else {
+      const last = getLastSearch();
+      if (last && (last.checkIn || last.checkOut || last.guests)) {
+        setActiveContext({
+          checkIn: last.checkIn || undefined,
+          checkOut: last.checkOut || undefined,
+          guests: last.guests || undefined,
+          adults: last.adults || undefined,
+          children: last.children || undefined,
+          pets: last.pets || undefined,
+        });
+      }
+    }
+  }, [checkIn, checkOut, guests, adults, children, pets]);
+
+  const targetHref = buildListingDetailUrl(targetIdOrSlug, activeContext);
   const isSearchGridCard = variant === "search-grid";
 
   // ── Favorite Action ─────────────────────────────────────────────────────────

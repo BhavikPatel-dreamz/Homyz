@@ -15,6 +15,8 @@ import { AppError } from "@/lib/api/errors";
 import type { AuthUser } from "@/lib/auth/types";
 import { notificationService } from "./notification.service";
 import { savePrivateMedia, readPrivateMedia, deletePrivateMedia } from "@/lib/storage/media";
+import { HOST_MESSAGE_MAX_LENGTH } from "@/lib/booking/host-message";
+import { bookingDateKey, parseBookingDate } from "@/lib/booking/booking-date";
 
 export type MessageAttachmentDTO = {
   id: string;
@@ -161,8 +163,8 @@ function toSpecialOfferDTO(o: any): SpecialOfferDTO {
     hostId: o.hostId,
     guestId: o.guestId,
     listingId: o.listingId,
-    startDate: o.startDate.toISOString(),
-    endDate: o.endDate.toISOString(),
+    startDate: bookingDateKey(o.startDate),
+    endDate: bookingDateKey(o.endDate),
     guests: o.guests,
     subtotalPrice: o.subtotalPrice,
     currency: o.currency,
@@ -229,8 +231,8 @@ function toConversationDTO(c: any, currentUserId: string, unreadCount = 0): Conv
       ? {
           id: c.booking.id,
           status: c.booking.status,
-          startDate: c.booking.startDate.toISOString(),
-          endDate: c.booking.endDate.toISOString(),
+          startDate: bookingDateKey(c.booking.startDate),
+          endDate: bookingDateKey(c.booking.endDate),
           guests: c.booking.guests,
           totalPrice: c.booking.totalPrice,
           nightlyPrice: c.booking.nightlyPrice,
@@ -1064,17 +1066,23 @@ async function getOrCreateBookingConversation(params: {
   messageContent?: string;
   isConfirmed?: boolean;
   guestName?: string;
+  db?: Prisma.TransactionClient;
 }): Promise<{ conversationId: string; messageId?: string }> {
   const now = new Date();
+  const db = params.db ?? prisma;
+  const checkoutMessage = params.messageContent?.trim();
+  if (checkoutMessage && checkoutMessage.length > HOST_MESSAGE_MAX_LENGTH) {
+    throw AppError.badRequest(`Message cannot exceed ${HOST_MESSAGE_MAX_LENGTH} characters`);
+  }
 
   // Look for conversation with this bookingId first
-  let conversation = await prisma.conversation.findFirst({
+  let conversation = await db.conversation.findFirst({
     where: { bookingId: params.bookingId },
   });
 
   if (!conversation) {
     // Look for an existing inquiry conversation between this guest, host, listing without bookingId
-    conversation = await prisma.conversation.findFirst({
+    conversation = await db.conversation.findFirst({
       where: {
         guestId: params.guestId,
         hostId: params.hostId,
@@ -1085,7 +1093,7 @@ async function getOrCreateBookingConversation(params: {
     });
 
     if (conversation) {
-      conversation = await prisma.conversation.update({
+      conversation = await db.conversation.update({
         where: { id: conversation.id },
         data: {
           bookingId: params.bookingId,
@@ -1095,7 +1103,7 @@ async function getOrCreateBookingConversation(params: {
         },
       });
     } else {
-      conversation = await prisma.conversation.create({
+      conversation = await db.conversation.create({
         data: {
           guestId: params.guestId,
           hostId: params.hostId,
@@ -1112,13 +1120,13 @@ async function getOrCreateBookingConversation(params: {
   let createdMessageId: string | undefined;
 
   // If checkout included a message to host, insert it into the conversation
-  if (params.messageContent && params.messageContent.trim()) {
-    const msg = await prisma.message.create({
+  if (checkoutMessage) {
+    const msg = await db.message.create({
       data: {
         conversationId: conversation.id,
         senderId: params.guestId,
         type: MessageType.BOOKING_REQUEST,
-        content: params.messageContent.trim(),
+        content: checkoutMessage,
         metadata: {
           bookingId: params.bookingId,
           isRequestToBook: !params.isConfirmed,
@@ -1128,7 +1136,7 @@ async function getOrCreateBookingConversation(params: {
     });
     createdMessageId = msg.id;
 
-    await prisma.conversation.update({
+    await db.conversation.update({
       where: { id: conversation.id },
       data: { lastMessageAt: now },
     });
@@ -1275,8 +1283,8 @@ async function sendSpecialOffer(
     throw AppError.badRequest("Special offer subtotal price must be greater than 0");
   }
 
-  const start = new Date(input.startDate);
-  const end = new Date(input.endDate);
+  const start = parseBookingDate(input.startDate);
+  const end = parseBookingDate(input.endDate);
   if (isNaN(start.getTime()) || isNaN(end.getTime()) || end <= start) {
     throw AppError.badRequest("Invalid stay dates for special offer");
   }
@@ -1407,9 +1415,9 @@ async function acceptSpecialOffer(
     throw AppError.badRequest("This special offer has expired");
   }
 
-  const checkinStr = offer.startDate.toISOString().split("T")[0];
-  const checkoutStr = offer.endDate.toISOString().split("T")[0];
-  const checkoutUrl = `/book/${offer.listingId}?checkin=${checkinStr}&checkout=${checkoutStr}&guests=${offer.guests}&specialOfferId=${offer.id}`;
+  const checkinStr = bookingDateKey(offer.startDate);
+  const checkoutStr = bookingDateKey(offer.endDate);
+  const checkoutUrl = `/book/${offer.listingId}?checkIn=${checkinStr}&checkOut=${checkoutStr}&guests=${offer.guests}&specialOfferId=${offer.id}`;
 
   // If already accepted, return checkoutUrl idempotently
   if (offer.status === SpecialOfferStatus.ACCEPTED) {

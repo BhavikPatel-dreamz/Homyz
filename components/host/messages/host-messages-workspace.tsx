@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
+import { bookingDateKey, formatBookingDateRange } from "@/lib/booking/booking-date";
 import type {
   ConversationDTO,
   MessageDTO,
@@ -240,8 +241,8 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
       // Pre-populate modal dates if available from conversation
       const conv = conversations.find((c) => c.id === selectedId);
       if (conv?.booking) {
-        setOfferStartDate(conv.booking.startDate.split("T")[0]);
-        setOfferEndDate(conv.booking.endDate.split("T")[0]);
+        setOfferStartDate(bookingDateKey(conv.booking.startDate));
+        setOfferEndDate(bookingDateKey(conv.booking.endDate));
         setOfferGuests(conv.booking.guests || 1);
         if (conv.booking.totalPrice) {
           setOfferSubtotal((conv.booking.totalPrice / 100).toFixed(0));
@@ -933,7 +934,10 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
                                 <div>
                                   <span className="text-zinc-500 block">Dates:</span>
                                   <span className="font-semibold text-zinc-800">
-                                    {String(m.metadata.startDate || "")} - {String(m.metadata.endDate || "")}
+                                    {formatBookingDateRange(
+                                      String(m.metadata.startDate || ""),
+                                      String(m.metadata.endDate || ""),
+                                    )}
                                   </span>
                                 </div>
                                 <div>
@@ -1375,7 +1379,7 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
                     <div className="flex justify-between py-1 border-b border-zinc-100">
                       <span className="text-zinc-500">Dates</span>
                       <span className="font-semibold text-zinc-800">
-                        {new Date(selectedConversation.booking.startDate).toLocaleDateString([], { month: "short", day: "numeric" })} - {new Date(selectedConversation.booking.endDate).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })}
+                        {formatBookingDateRange(selectedConversation.booking.startDate, selectedConversation.booking.endDate)}
                       </span>
                     </div>
                     <div className="flex justify-between py-1 border-b border-zinc-100">
@@ -1678,4 +1682,3 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
     </div>
   );
 }
-

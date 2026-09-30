@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCurrency } from "@/lib/currency-context";
 import { useLanguage } from "@/lib/i18n/language-context";
+import { buildListingDetailUrl, getLastSearch } from "@/lib/storage/client-history";
 
 export interface PropertyCardData {
   id: string;
@@ -155,7 +156,16 @@ function PropertyCardComponent({
   const showSuperhost = !showGuestFavorite && (isSuperhost ?? (badge === "superhost"));
   const showFeatured = !showGuestFavorite && !showSuperhost && badge === "featured";
 
-  const targetHref = `/listings/${slug || id}`;
+  const [targetHref, setTargetHref] = useState(() => `/listings/${slug || id}`);
+
+  useEffect(() => {
+    const last = getLastSearch();
+    if (last && (last.checkIn || last.checkOut || last.guests)) {
+      setTargetHref(buildListingDetailUrl(slug || id, last));
+    } else {
+      setTargetHref(`/listings/${slug || id}`);
+    }
+  }, [slug, id]);
 
   return (
     <Link

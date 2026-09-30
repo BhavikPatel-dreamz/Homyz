@@ -128,7 +128,7 @@ interface EditorSidebarProps {
   showExactLocation: boolean;
   listing: any;
   coHosts: Array<{ id: string; email: string | null; status: string; user: { name: string | null; image: string | null } | null }>;
-  bookingMethod: "first-three" | "instant" | "approve";
+  bookingMethod: "instant" | "approve";
   requireGoodTrackRecord?: boolean;
   checkInStart: string;
   checkOutTime: string;
@@ -1348,11 +1348,9 @@ export function EditorSidebar({
                     {t("host_booking_settings_title")}
                   </span>
                   <p className="text-base text-[#727272] font-normal">
-                    {bookingMethod === "first-three"
-                      ? t("host_approve_first_3")
-                      : bookingMethod === "instant"
-                        ? requireGoodTrackRecord ? t("host_instant_track_record") : t("host_use_instant_book")
-                        : t("host_approve_all")}
+                    {bookingMethod === "instant"
+                      ? requireGoodTrackRecord ? t("host_instant_track_record") : t("host_use_instant_book")
+                      : t("host_approve_all")}
                   </p>
                 </div>
 

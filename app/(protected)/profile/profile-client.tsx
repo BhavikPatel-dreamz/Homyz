@@ -411,12 +411,14 @@ export function ProfileClient({
             {(activeTab === "upcoming_trips" || activeTab === "upcoming") && (
               <div className="flex flex-col animate-in fade-in">
                 <ReservationDashboard
+                  key={searchParams.get("bookingView") === "all" ? "upcoming-all" : "upcoming"}
                   initialReservations={initialReservations}
                   initialTab="upcoming"
                   reviews={initialReviews}
                   onTabChange={(filterTab) => {
                     if (filterTab === "past") handleSelectTab("past_bookings");
                     else if (filterTab === "upcoming") handleSelectTab("upcoming_trips");
+                    else if (filterTab === "all") router.push("/profile/tab/upcoming?bookingView=all", { scroll: false });
                   }}
                 />
               </div>

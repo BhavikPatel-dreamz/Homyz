@@ -165,13 +165,20 @@ export function BookingPriceCard({
         )}
 
         <div className="flex justify-between gap-4 border-t border-zinc-200 pt-4 text-base font-bold text-zinc-900">
-          <dt>Total paid ({pricing.currency})</dt>
+          <dt>Total ({pricing.currency})</dt>
           <dd className="text-lg text-emerald-800">
             <CurrencyPrice
               amountMinorUnits={pricing.totalPrice}
               sourceCurrency={pricing.currency}
               fractionDigits={2}
             />
+          </dd>
+        </div>
+
+        <div className="flex items-center justify-between gap-4 border-t border-zinc-100 pt-3 text-xs text-zinc-600">
+          <dt className="font-medium">Payment</dt>
+          <dd className="font-semibold text-amber-900 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full">
+            Pending / Deferred
           </dd>
         </div>
       </dl>

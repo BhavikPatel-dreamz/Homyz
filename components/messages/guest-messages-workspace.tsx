@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
+import { bookingDateKey, formatBookingDateRange } from "@/lib/booking/booking-date";
 import type {
   ConversationDTO,
   MessageDTO,
@@ -740,8 +741,10 @@ export function GuestMessagesWorkspace({ initialConversationId }: GuestMessagesW
                       <span className="font-semibold text-amber-950 truncate">
                         Special Offer: {selectedConversation.activeSpecialOffer.currency}{" "}
                         {(selectedConversation.activeSpecialOffer.subtotalPrice / 100).toFixed(2)} (
-                        {selectedConversation.activeSpecialOffer.startDate.split("T")[0]} to{" "}
-                        {selectedConversation.activeSpecialOffer.endDate.split("T")[0]})
+                        {formatBookingDateRange(
+                          selectedConversation.activeSpecialOffer.startDate,
+                          selectedConversation.activeSpecialOffer.endDate,
+                        )})
                       </span>
                       <span className="text-[11px] text-amber-800 shrink-0 hidden sm:inline">
                         • {selectedConversation.activeSpecialOffer.status === "ACCEPTED" ? "Accepted by you" : "Ready to accept"}
@@ -751,10 +754,10 @@ export function GuestMessagesWorkspace({ initialConversationId }: GuestMessagesW
                       type="button"
                       disabled={acceptingOffer}
                       onClick={() => {
-                        const start = selectedConversation.activeSpecialOffer!.startDate.split("T")[0];
-                        const end = selectedConversation.activeSpecialOffer!.endDate.split("T")[0];
+                        const start = bookingDateKey(selectedConversation.activeSpecialOffer!.startDate);
+                        const end = bookingDateKey(selectedConversation.activeSpecialOffer!.endDate);
                         const guests = selectedConversation.activeSpecialOffer!.guests;
-                        const fallbackUrl = `/book/${selectedConversation.listing.id}?checkin=${encodeURIComponent(start)}&checkout=${encodeURIComponent(end)}&guests=${guests}&specialOfferId=${encodeURIComponent(selectedConversation.activeSpecialOffer!.id)}`;
+                        const fallbackUrl = `/book/${selectedConversation.listing.id}?checkIn=${encodeURIComponent(start)}&checkOut=${encodeURIComponent(end)}&guests=${guests}&specialOfferId=${encodeURIComponent(selectedConversation.activeSpecialOffer!.id)}`;
                         handleAcceptSpecialOffer(selectedConversation.activeSpecialOffer!.id, fallbackUrl);
                       }}
                       className="shrink-0 px-3.5 py-1 rounded-full bg-[#1F1F1F] text-white text-xs font-semibold hover:bg-black transition-colors shadow-2xs flex items-center gap-1 disabled:opacity-50"
@@ -795,8 +798,8 @@ export function GuestMessagesWorkspace({ initialConversationId }: GuestMessagesW
                     if (m.type === "SPECIAL_OFFER") {
                       const offerId = (m.metadata?.specialOfferId as string) || "";
                       const matchingOffer = selectedConversation.specialOffers?.find((so) => so.id === offerId);
-                      const startDate = String(matchingOffer?.startDate || m.metadata?.startDate || "").split("T")[0];
-                      const endDate = String(matchingOffer?.endDate || m.metadata?.endDate || "").split("T")[0];
+                      const startDate = bookingDateKey(String(matchingOffer?.startDate || m.metadata?.startDate || ""));
+                      const endDate = bookingDateKey(String(matchingOffer?.endDate || m.metadata?.endDate || ""));
                       const guestsCount = Number(matchingOffer?.guests || m.metadata?.guests || 1);
                       const currency = String(matchingOffer?.currency || m.metadata?.currency || "SAR");
                       const subtotalPrice = Number(matchingOffer?.subtotalPrice ?? m.metadata?.subtotalPrice ?? 0);
@@ -816,7 +819,7 @@ export function GuestMessagesWorkspace({ initialConversationId }: GuestMessagesW
                       );
                       const isAccepted = matchingOffer?.status === "ACCEPTED" || isAcceptedSystemMsg;
 
-                      const checkoutUrl = `/book/${selectedConversation.listing.id}?checkin=${encodeURIComponent(startDate)}&checkout=${encodeURIComponent(endDate)}&guests=${guestsCount}&specialOfferId=${encodeURIComponent(offerId)}`;
+                      const checkoutUrl = `/book/${selectedConversation.listing.id}?checkIn=${encodeURIComponent(startDate)}&checkOut=${encodeURIComponent(endDate)}&guests=${guestsCount}&specialOfferId=${encodeURIComponent(offerId)}`;
 
                       return (
                         <div key={m.id} className="flex justify-center my-3">
@@ -858,7 +861,7 @@ export function GuestMessagesWorkspace({ initialConversationId }: GuestMessagesW
                                 <div>
                                   <span className="text-zinc-500 block">Dates:</span>
                                   <span className="font-semibold text-zinc-800">
-                                    {startDate || "Dates on request"} {endDate ? `- ${endDate}` : ""}
+                                    {startDate && endDate ? formatBookingDateRange(startDate, endDate) : "Dates on request"}
                                   </span>
                                 </div>
                                 <div>
@@ -1297,4 +1300,3 @@ export function GuestMessagesWorkspace({ initialConversationId }: GuestMessagesW
     </div>
   );
 }
-

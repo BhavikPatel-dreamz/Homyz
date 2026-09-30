@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- Prisma JSON DTO boundary retains deliberately generic structured content. */
 import type { Booking, Listing, Prisma, User, Review } from "@/generated/prisma/client";
 import { getMissingProfileFields } from "@/lib/auth/profile-completion";
+import { resolveBookingMode } from "@/lib/booking/booking-mode";
+import { bookingDateKey } from "@/lib/booking/booking-date";
 
 function getPublicCoordinates(
   latitude: number | null | undefined,
@@ -166,9 +168,10 @@ export function toListingDTO(l: Listing) {
     requireProfilePhoto: l.requireProfilePhoto ?? false,
     requireGoodTrackRecord: l.requireGoodTrackRecord ?? false,
     bookingApprovalMode: l.bookingApprovalMode ?? (l.instantBook ? "INSTANT" : "MANUAL"),
+    bookingMode: resolveBookingMode(l),
     minNights: l.minNights ?? 1,
     maxNights: l.maxNights ?? 365,
-    instantBook: l.instantBook ?? true,
+    instantBook: resolveBookingMode(l) === "INSTANT_BOOK",
     isPaused: l.isPaused ?? false,
     customSlug: (l as any).customSlug ?? null,
     blockedDates: l.blockedDates || [],
@@ -303,9 +306,10 @@ export function toPublicListingDTO(l: Listing | ListingDTO) {
     requireProfilePhoto: l.requireProfilePhoto ?? false,
     requireGoodTrackRecord: l.requireGoodTrackRecord ?? false,
     bookingApprovalMode: l.bookingApprovalMode ?? (l.instantBook ? "INSTANT" : "MANUAL"),
+    bookingMode: resolveBookingMode(l),
     minNights: l.minNights ?? 1,
     maxNights: l.maxNights ?? 365,
-    instantBook: l.instantBook ?? true,
+    instantBook: resolveBookingMode(l) === "INSTANT_BOOK",
     customSlug: (l as any).customSlug ?? null,
     cleaningFee: l.cleaningFee ?? 0,
     securityDeposit: l.securityDeposit ?? 0,
@@ -436,8 +440,8 @@ export function toBookingDTO(b: BookingDTOInput) {
     userId: b.userId,
     listingId: b.listingId,
     status: b.status,
-    startDate: b.startDate,
-    endDate: b.endDate,
+    startDate: bookingDateKey(b.startDate),
+    endDate: bookingDateKey(b.endDate),
     guests: b.guests,
     totalPrice: b.totalPrice,
     nightlyPrice: b.nightlyPrice,
@@ -512,8 +516,8 @@ export function revivePublicListingDTO(l: PublicListingDTO): PublicListingDTO {
 export function reviveBookingDTO(b: BookingDTO): BookingDTO {
   return {
     ...b,
-    startDate: new Date(b.startDate),
-    endDate: new Date(b.endDate),
+    startDate: bookingDateKey(b.startDate),
+    endDate: bookingDateKey(b.endDate),
     createdAt: new Date(b.createdAt),
   };
 }

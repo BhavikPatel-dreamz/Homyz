@@ -10,7 +10,7 @@ import { ListingSearchBar } from "@/components/listings/listing-search-bar";
 import { ResultsSummaryBar } from "@/components/listings/results-summary-bar";
 import type { PublicListingCardDTO } from "@/services/mappers";
 import type { SortBy } from "@/services/listing.service";
-import { saveLastSearch, saveRecentSearchContext } from "@/lib/storage/client-history";
+import { saveLastSearch, saveRecentSearchContext, buildListingDetailUrl } from "@/lib/storage/client-history";
 import { getCurrencyForCountry, getCurrencySymbol } from "@/lib/currency";
 import { useCurrency } from "@/lib/currency-context";
 import { trackListingEvent } from "@/lib/analytics/listing-analytics";
@@ -160,11 +160,19 @@ function SelectedPreviewCard({
   onClose,
   checkIn,
   checkOut,
+  guests,
+  adults,
+  children,
+  pets,
 }: {
   listing: PublicListingCardDTO;
   onClose: () => void;
   checkIn?: string;
   checkOut?: string;
+  guests?: number;
+  adults?: number;
+  children?: number;
+  pets?: number;
 }) {
   const { formatPrice } = useCurrency();
   const currency = getCurrencyForCountry(listing.country);
@@ -182,7 +190,15 @@ function SelectedPreviewCard({
   return (
     <div className="relative flex items-center gap-3 bg-white/95 backdrop-blur-md rounded-2xl p-2.5 shadow-xl border border-zinc-200">
       <Link
-        href={`/listings/${listing.customSlug || listing.id}`}
+        href={buildListingDetailUrl(listing.customSlug || listing.id, {
+          location: listing.city || undefined,
+          checkIn,
+          checkOut,
+          guests,
+          adults,
+          children,
+          pets,
+        })}
         className="flex items-center gap-3 flex-1 min-w-0 group"
       >
         <div className="relative h-16 w-20 shrink-0 rounded-xl overflow-hidden bg-zinc-100">
@@ -290,6 +306,7 @@ export function ListingsResultsClient({
   // Synchronize active search URL/filter state into lastSearch context
   useEffect(() => {
     const destination =
+      searchParams.get("location") ||
       searchParams.get("destination") ||
       currentFilters.placeName ||
       currentFilters.city ||
@@ -298,8 +315,11 @@ export function ListingsResultsClient({
     const city = currentFilters.city || searchParams.get("city") || destination || null;
     const lat = typeof currentFilters.lat === "number" ? currentFilters.lat : targetCoords?.lat ?? null;
     const lng = typeof currentFilters.lng === "number" ? currentFilters.lng : targetCoords?.lng ?? null;
+    const checkIn = currentFilters.checkIn || searchParams.get("checkIn") || searchParams.get("checkin") || null;
+    const checkOut = currentFilters.checkOut || searchParams.get("checkOut") || searchParams.get("checkout") || null;
+    const guests = currentFilters.guests || Number(searchParams.get("guests")) || 1;
 
-    if (destination || city || (lat !== null && lng !== null)) {
+    if (destination || city || (lat !== null && lng !== null) || checkIn || checkOut) {
       const searchContext = {
         query: destination || city || "Stays",
         displayName: locationContextName || destination || city || "Stays",
@@ -308,9 +328,13 @@ export function ListingsResultsClient({
         latitude: lat,
         longitude: lng,
         city: city,
-        checkIn: currentFilters.checkIn || searchParams.get("checkIn") || null,
-        checkOut: currentFilters.checkOut || searchParams.get("checkOut") || null,
-        guests: currentFilters.guests || Number(searchParams.get("guests")) || 1,
+        checkIn,
+        checkOut,
+        guests,
+        adults: currentFilters.adults || (guests > 0 ? guests : 1),
+        children: currentFilters.children || 0,
+        infants: currentFilters.infants || 0,
+        pets: currentFilters.pets || 0,
         radiusKm: currentFilters.radiusKm || Number(searchParams.get("radius")) || undefined,
         filters: {
           minPrice: currentFilters.minPrice,
@@ -973,6 +997,10 @@ export function ListingsResultsClient({
                 onClose={() => setSelectedPropertyId(null)}
                 checkIn={currentFilters.checkIn}
                 checkOut={currentFilters.checkOut}
+                guests={currentFilters.guests}
+                adults={currentFilters.adults}
+                children={currentFilters.children}
+                pets={currentFilters.pets}
               />
             </div>
           )}
@@ -1211,6 +1239,10 @@ export function ListingsResultsClient({
                       priority={index < (isDesktop ? 4 : 2)}
                       checkIn={currentFilters.checkIn}
                       checkOut={currentFilters.checkOut}
+                      guests={currentFilters.guests}
+                      adults={currentFilters.adults}
+                      children={currentFilters.children}
+                      pets={currentFilters.pets}
                       variant="search-grid"
                     />
                   </div>
@@ -1256,6 +1288,10 @@ export function ListingsResultsClient({
                   onClose={() => setSelectedPropertyId(null)}
                   checkIn={currentFilters.checkIn}
                   checkOut={currentFilters.checkOut}
+                  guests={currentFilters.guests}
+                  adults={currentFilters.adults}
+                  children={currentFilters.children}
+                  pets={currentFilters.pets}
                 />
               </div>
             )}
@@ -1329,6 +1365,10 @@ export function ListingsResultsClient({
                   onClose={() => setSelectedPropertyId(null)}
                   checkIn={currentFilters.checkIn}
                   checkOut={currentFilters.checkOut}
+                  guests={currentFilters.guests}
+                  adults={currentFilters.adults}
+                  children={currentFilters.children}
+                  pets={currentFilters.pets}
                 />
               </div>
             )}

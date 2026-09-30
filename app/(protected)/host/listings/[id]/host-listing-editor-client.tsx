@@ -426,16 +426,17 @@ export function HostListingEditorClient({
   const normalizedListingAmenities = (listing.amenities || []).map(normalizeAmenityId);
 
   // Booking Settings State (Matches Figma Screenshots 1 & 2)
-  const [bookingMethod, setBookingMethod] = useState<"first-three" | "instant" | "approve">(
-    listing.bookingApprovalMode === "FIRST_THREE" ? "first-three"
-      : listing.bookingApprovalMode === "MANUAL" || listing.instantBook === false ? "approve" : "instant"
+  const [bookingMethod, setBookingMethod] = useState<"instant" | "approve">(
+    listing.bookingApprovalMode === "MANUAL" || listing.bookingApprovalMode === "FIRST_THREE" || listing.instantBook === false
+      ? "approve"
+      : "instant"
   );
   const [customBookingMessage, setCustomBookingMessage] = useState(listing.bookingMessage || "");
   const [customBookingMessageDraft, setCustomBookingMessageDraft] = useState(listing.bookingMessage || "");
   const [requireProfilePhoto, setRequireProfilePhoto] = useState(listing.requireProfilePhoto ?? false);
   const [requireGoodTrackRecord, setRequireGoodTrackRecord] = useState(listing.requireGoodTrackRecord ?? false);
   const [isTurnOffInstantBookModalOpen, setIsTurnOffInstantBookModalOpen] = useState(false);
-  const [pendingInstantBookMethod, setPendingInstantBookMethod] = useState<"first-three" | "approve">("approve");
+  const [pendingInstantBookMethod, setPendingInstantBookMethod] = useState<"approve">("approve");
   const [isCustomMessageModalOpen, setIsCustomMessageModalOpen] = useState(false);
   const [listingStatusSetting, setListingStatusSetting] = useState<"listed" | "unlisted">(
     listing.published && listing.status === "ACTIVE" && !listing.isPaused ? "listed" : "unlisted"
@@ -1003,7 +1004,7 @@ export function HostListingEditorClient({
         instantBook: bookingMethod === "instant",
         bookingMessage: customBookingMessage.trim() || null,
         requireGoodTrackRecord,
-        bookingApprovalMode: bookingMethod === "first-three" ? "FIRST_THREE" : bookingMethod === "instant" ? "INSTANT" : "MANUAL",
+        bookingApprovalMode: bookingMethod === "instant" ? "INSTANT" : "MANUAL",
       };
     } else if (sectionToSave === "house-rules") {
       const rules: string[] = [];
@@ -1238,7 +1239,7 @@ export function HostListingEditorClient({
   }
 
   async function saveBookingSettings(next: {
-    bookingMethod: "first-three" | "instant" | "approve";
+    bookingMethod: "instant" | "approve";
     requireGoodTrackRecord: boolean;
     bookingMessage?: string;
   }) {
@@ -1246,9 +1247,9 @@ export function HostListingEditorClient({
 
     const nextMessage = next.bookingMessage ?? customBookingMessage;
     const previous = { bookingMethod, requireGoodTrackRecord, bookingMessage: customBookingMessage };
-    const bookingApprovalMode: NonNullable<HostListingData["bookingApprovalMode"]> = next.bookingMethod === "first-three"
-      ? "FIRST_THREE"
-      : next.bookingMethod === "instant" ? "INSTANT" : "MANUAL";
+    const bookingApprovalMode: NonNullable<HostListingData["bookingApprovalMode"]> = next.bookingMethod === "instant"
+      ? "INSTANT"
+      : "MANUAL";
     const payload = {
       instantBook: next.bookingMethod === "instant",
       requireGoodTrackRecord: next.requireGoodTrackRecord,
@@ -1286,7 +1287,7 @@ export function HostListingEditorClient({
     }
   }
 
-  function requestInstantBookOff(bookingMethod: "first-three" | "approve") {
+  function requestInstantBookOff(bookingMethod: "approve") {
     setPendingInstantBookMethod(bookingMethod);
     setIsTurnOffInstantBookModalOpen(true);
   }

@@ -2,6 +2,8 @@ import React from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { listingService } from "@/services/listing.service";
+import { cookies } from "next/headers";
+import { LAST_SEARCH_COOKIE, parseServerLastSearch } from "@/lib/storage/client-history";
 import { BookingCheckoutClient } from "./booking-checkout-client";
 
 interface BookPageProps {
@@ -14,6 +16,9 @@ interface BookPageProps {
     startDate?: string;
     endDate?: string;
     guests?: string;
+    adults?: string;
+    children?: string;
+    infants?: string;
     pets?: string;
     nonRefundable?: string;
     specialOfferId?: string;
@@ -27,12 +32,12 @@ export async function generateMetadata({ params }: BookPageProps): Promise<Metad
   try {
     const listing = await listingService.getPublicListingById(id);
     return {
-      title: `Request to book — ${listing.title} — Homyz`,
+      title: `${listing.bookingMode === "INSTANT_BOOK" ? "Confirm booking" : "Request to book"} — ${listing.title} — Homyz`,
       description: `Complete your reservation for ${listing.title} on Homyz.`,
     };
   } catch {
     return {
-      title: "Request to book — Homyz",
+      title: "Booking checkout — Homyz",
     };
   }
 }
@@ -52,19 +57,34 @@ export default async function BookListingPage({ params, searchParams }: BookPage
     }
   }
 
-  const checkIn = sp.checkIn || sp.checkin || sp.startDate;
-  const checkOut = sp.checkOut || sp.checkout || sp.endDate;
+  const cookieStore = await cookies();
+  const serverLastSearch = parseServerLastSearch(cookieStore.get(LAST_SEARCH_COOKIE)?.value);
+
+  const checkIn = sp.checkIn || sp.checkin || sp.startDate || serverLastSearch?.checkIn || undefined;
+  const checkOut = sp.checkOut || sp.checkout || sp.endDate || serverLastSearch?.checkOut || undefined;
+  const parseCount = (value: string | number | null | undefined, fallback: number, minimum: number) => {
+    const parsed = typeof value === "number" ? value : Number.parseInt(value || "", 10);
+    return Number.isInteger(parsed) && parsed >= minimum ? parsed : fallback;
+  };
+  const guests = parseCount(sp.guests ?? serverLastSearch?.guests, 1, 1);
+  const adults = parseCount(sp.adults ?? serverLastSearch?.adults, guests, 1);
+  const children = parseCount(sp.children ?? serverLastSearch?.children, 0, 0);
+  const infants = parseCount(sp.infants ?? serverLastSearch?.infants, 0, 0);
+  const pets = parseCount(sp.pets ?? serverLastSearch?.pets, 0, 0);
+  const specialOfferId = sp.specialOfferId || serverLastSearch?.specialOfferId || undefined;
 
   return (
     <BookingCheckoutClient
       listing={listing}
       initialCheckIn={checkIn}
       initialCheckOut={checkOut}
-      initialGuests={sp.guests ? parseInt(sp.guests, 10) : 1}
-      initialPets={sp.pets ? parseInt(sp.pets, 10) : 0}
+      initialGuests={guests}
+      initialAdults={adults}
+      initialChildren={children}
+      initialInfants={infants}
+      initialPets={pets}
       initialNonRefundable={sp.nonRefundable === "true"}
-      initialSpecialOfferId={sp.specialOfferId}
+      initialSpecialOfferId={specialOfferId}
     />
   );
 }
-

@@ -4,20 +4,15 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CancelBookingModal, ReceiptModal, ContactHostModal } from "@/components/dashboard/trip-modals";
 import type { ReservationCardData } from "@/components/dashboard/reservation-card";
+import { compareBookingDates } from "@/lib/booking/booking-date";
 
 interface BookingDetailsActionsProps {
   booking: ReservationCardData;
 }
 
-/** Returns true if the UTC calendar start date is strictly after today's UTC calendar date. */
+/** Returns true if the calendar start date is strictly after today's calendar date. */
 function isStartDateInFuture(startDate: Date | string): boolean {
-  const d = new Date(startDate);
-  if (Number.isNaN(d.getTime())) return false;
-  const now = new Date();
-  // Compare calendar dates in UTC — matching backend logic
-  const todayUtc = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
-  const startUtc = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
-  return startUtc > todayUtc;
+  return compareBookingDates(startDate, new Date()) > 0;
 }
 
 export function BookingDetailsActions({ booking }: BookingDetailsActionsProps) {

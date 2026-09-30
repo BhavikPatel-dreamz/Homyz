@@ -76,9 +76,9 @@ export function ListingHeaderSearch() {
   const searchParams = useSearchParams();
 
   // URL Query parameter values
-  const urlDestination = searchParams.get("destination") || searchParams.get("city") || searchParams.get("placeName") || "";
-  const urlCheckIn = searchParams.get("checkIn") || searchParams.get("startDate") || "";
-  const urlCheckOut = searchParams.get("checkOut") || searchParams.get("endDate") || "";
+  const urlDestination = searchParams.get("location") || searchParams.get("destination") || searchParams.get("city") || searchParams.get("placeName") || "";
+  const urlCheckIn = searchParams.get("checkIn") || searchParams.get("checkin") || searchParams.get("startDate") || "";
+  const urlCheckOut = searchParams.get("checkOut") || searchParams.get("checkout") || searchParams.get("endDate") || "";
   const urlGuests = parseInt(searchParams.get("guests") || "0", 10);
   const urlAdults = parseInt(searchParams.get("adults") || "0", 10);
   const urlChildren = parseInt(searchParams.get("children") || "0", 10);
@@ -344,10 +344,20 @@ export function ListingHeaderSearch() {
     }
 
     // Dates
-    if (finalIn) currentParams.set("checkIn", finalIn);
-    else currentParams.delete("checkIn");
-    if (finalOut) currentParams.set("checkOut", finalOut);
-    else currentParams.delete("checkOut");
+    if (finalIn) {
+      currentParams.set("checkIn", finalIn);
+      currentParams.delete("checkin");
+    } else {
+      currentParams.delete("checkin");
+      currentParams.delete("checkIn");
+    }
+    if (finalOut) {
+      currentParams.set("checkOut", finalOut);
+      currentParams.delete("checkout");
+    } else {
+      currentParams.delete("checkout");
+      currentParams.delete("checkOut");
+    }
 
     // Guests
     const count = guests.adults + guests.children;
@@ -1098,4 +1108,3 @@ export function ListingHeaderSearch() {
     </div>
   );
 }
-

@@ -157,6 +157,7 @@ export function HomeView({
     const staticValues = new Set(["Recent searches", "Nearby", "Suggested destinations"]);
     const resolvedDestination = (params.destination || params.city || params.placeName || "").trim();
     if (resolvedDestination && !staticValues.has(resolvedDestination)) {
+      sp.set("location", resolvedDestination);
       sp.set("destination", resolvedDestination);
       sp.set("city", (params.city || resolvedDestination).trim());
     } else if (params.city && !staticValues.has(params.city)) {
@@ -170,8 +171,12 @@ export function HomeView({
     if (params.placeId) sp.set("placeId", params.placeId);
     if (params.locationType) sp.set("locationType", params.locationType);
 
-    if (params.checkIn) sp.set("checkIn", params.checkIn);
-    if (params.checkOut) sp.set("checkOut", params.checkOut);
+    if (params.checkIn) {
+      sp.set("checkIn", params.checkIn);
+    }
+    if (params.checkOut) {
+      sp.set("checkOut", params.checkOut);
+    }
 
     const normalizedGuestCount = Math.max(
       1,

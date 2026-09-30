@@ -6,6 +6,7 @@ import { CloseButton } from "@/components/ui/close-button";
 import type { ListingDTO } from "@/services/mappers";
 import { useCurrency } from "@/lib/currency-context";
 import { getCurrencyForCountry } from "@/lib/currency";
+import { differenceInBookingNights, formatBookingDate } from "@/lib/booking/booking-date";
 
 export type HostReservation = {
   id: string;
@@ -23,13 +24,7 @@ export type HostWorkspaceProps = {
 };
 export const dateKey = (date: Date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-export const shortDate = (date: string) =>
-  new Date(date).toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    timeZone: "UTC",
-  });
+export const shortDate = (date: string) => formatBookingDate(date, { locale: "en-GB" });
 
 export function PropertyPhoto({
   listing,
@@ -169,9 +164,7 @@ export function ReservationDetails({
 }) {
   const { currency, formatPrice } = useCurrency();
   const sourceCurrency = getCurrencyForCountry(listing.country);
-  const start = new Date(booking.startDate);
-  const end = new Date(booking.endDate);
-  const nights = Math.max(1, Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)));
+  const nights = Math.max(1, differenceInBookingNights(booking.startDate, booking.endDate));
   const nightlyRate = listing.price;
   const roomFee = nights * nightlyRate;
   const cleaningFee = listing.cleaningFee || Math.round(nightlyRate * 0.35);
@@ -373,9 +366,7 @@ export function MoneyDialog({
   booking: HostReservation;
   onClose: () => void;
 }) {
-  const start = new Date(booking.startDate);
-  const end = new Date(booking.endDate);
-  const nights = Math.max(1, Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)));
+  const nights = Math.max(1, differenceInBookingNights(booking.startDate, booking.endDate));
 
   return (
     <WorkspaceDialog title="Send or request money" onClose={onClose} maxWidth="max-w-md">

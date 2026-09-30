@@ -1,6 +1,7 @@
 import { apiHandler } from "@/lib/api/handler";
 import { ok } from "@/lib/api/response";
 import { prisma } from "@/lib/db/prisma";
+import { getExpiryThresholdDate } from "@/lib/booking/booking-expiry";
 
 /**
  * GET /api/v1/listings/[id]/booked-dates
@@ -19,13 +20,17 @@ export const GET = apiHandler(
     const rangeStart = Number.isNaN(requestedStart.getTime()) ? today : requestedStart;
     const rangeEnd = requestedEnd && requestedEnd > rangeStart ? requestedEnd : null;
 
+    const expiryThreshold = getExpiryThresholdDate();
     const [bookings, listing] = await Promise.all([
       prisma.booking.findMany({
         where: {
           listingId: id,
-          status: { in: ["CONFIRMED", "PENDING"] },
           endDate: { gt: rangeStart },
           ...(rangeEnd ? { startDate: { lt: rangeEnd } } : {}),
+          OR: [
+            { status: "CONFIRMED" },
+            { status: "PENDING", createdAt: { gt: expiryThreshold } },
+          ],
         },
         select: { startDate: true, endDate: true },
         orderBy: { startDate: "asc" },

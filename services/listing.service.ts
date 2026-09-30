@@ -3,6 +3,7 @@ import type { AuthUser } from "@/lib/auth/types";
 import { assertOwnership, authorize } from "@/lib/permissions/authorize";
 import { assertHostPermission } from "@/lib/permissions/host-permissions-server";
 import { prisma } from "@/lib/db/prisma";
+import { bookingDateKey, parseBookingDate } from "@/lib/booking/booking-date";
 import { deleteCache, getCache, getCounter, getOrSetCache, incrCounter, setCache } from "@/lib/redis/cache";
 import { hashFilters, keys } from "@/lib/redis/keys";
 import type {
@@ -11,6 +12,7 @@ import type {
 } from "@/lib/validation/listing";
 import { BookingStatus, ListingCoHostStatus, ListingStatus, Role } from "@/generated/prisma/enums";
 import { Prisma } from "@/generated/prisma/client";
+import { getExpiryThresholdDate } from "@/lib/booking/booking-expiry";
 
 import { auditService } from "./audit.service";
 import { qualificationService } from "./qualification.service";
@@ -31,6 +33,7 @@ import { LANGUAGE_OPTIONS } from "@/lib/utils/language-options";
 import { normalizeSlug } from "@/lib/utils/slug";
 import { deleteManagedMediaUrl, deleteManagedMediaUrls } from "@/lib/storage/media";
 import { normalizePhotoRoomAssignments } from "@/lib/listing/photo-room-assignments";
+import { bookingModePersistence, resolveBookingMode } from "@/lib/booking/booking-mode";
 import { calculateDistance } from "@/lib/location/places-search";
 import { forwardGeocodeQuery } from "@/lib/location/places-provider";
 import {
@@ -520,7 +523,7 @@ async function searchPublicListings(
     baseClauses.push({ beds: { gte: filters.beds } });
   }
   if (filters.instantBook === true) {
-    baseClauses.push({ instantBook: true });
+    baseClauses.push({ instantBook: true, bookingApprovalMode: "INSTANT" });
   }
   if (filters.featured === true) {
     baseClauses.push({ isFeatured: true });
@@ -537,15 +540,19 @@ async function searchPublicListings(
 
   // Availability: exclude listings with overlapping bookings + blockedDates
   if (filters.checkIn && filters.checkOut) {
-    const cIn = new Date(filters.checkIn);
-    const cOut = new Date(filters.checkOut);
+    const cIn = parseBookingDate(filters.checkIn);
+    const cOut = parseBookingDate(filters.checkOut);
     if (!isNaN(cIn.getTime()) && !isNaN(cOut.getTime()) && cOut > cIn) {
-      // 1. Confirmed / Pending bookings
+      // 1. Confirmed / Active Pending bookings (unexpired date holds)
+      const expiryThreshold = getExpiryThresholdDate();
       const conflicts = await prisma.booking.findMany({
         where: {
-          status: { in: [BookingStatus.PENDING, BookingStatus.CONFIRMED] },
           startDate: { lt: cOut },
           endDate: { gt: cIn },
+          OR: [
+            { status: BookingStatus.CONFIRMED },
+            { status: BookingStatus.PENDING, createdAt: { gt: expiryThreshold } },
+          ],
         },
         select: { listingId: true },
         distinct: ["listingId"],
@@ -559,8 +566,8 @@ async function searchPublicListings(
       const requestedNights: string[] = [];
       const cur = new Date(cIn);
       while (cur < cOut) {
-        requestedNights.push(cur.toISOString().split("T")[0]);
-        cur.setDate(cur.getDate() + 1);
+        requestedNights.push(bookingDateKey(cur));
+        cur.setUTCDate(cur.getUTCDate() + 1);
       }
       if (requestedNights.length > 0) {
         baseClauses.push({
@@ -1202,6 +1209,8 @@ async function create(
     });
   }
 
+  const bookingSettings = bookingModePersistence(resolveBookingMode(input));
+
   // Ensure published is strictly false on creation unless Admin approves
   const listing = await prisma.listing.create({
     data: {
@@ -1304,12 +1313,14 @@ async function create(
       longTermCancellationPolicy: input.longTermCancellationPolicy || "FIRM",
       bookingMessage: input.bookingMessage ?? null,
       requireProfilePhoto: input.requireProfilePhoto ?? false,
+      requireGoodTrackRecord: input.requireGoodTrackRecord ?? false,
+      bookingApprovalMode: bookingSettings.bookingApprovalMode,
       minNights: input.minNights ?? 1,
       maxNights: input.maxNights ?? 365,
       advanceNotice: input.advanceNotice ?? "Same day",
       sameDayCutoff: input.sameDayCutoff ?? "12:00 AM",
       allowSameDayRequests: input.allowSameDayRequests ?? true,
-      instantBook: input.instantBook ?? true,
+      instantBook: bookingSettings.instantBook,
       isPaused: input.isPaused ?? false,
       blockedDates: input.blockedDates || [],
       cleaningFee: input.cleaningFee ?? 0,
@@ -1371,6 +1382,14 @@ async function update(
 
   // Hosts cannot directly change status to ACTIVE or published to true
   const dataToUpdate = { ...input };
+  if (dataToUpdate.bookingApprovalMode !== undefined || dataToUpdate.instantBook !== undefined) {
+    const nextMode = dataToUpdate.bookingApprovalMode !== undefined && dataToUpdate.instantBook !== undefined
+      ? resolveBookingMode(dataToUpdate)
+      : dataToUpdate.bookingApprovalMode !== undefined
+        ? dataToUpdate.bookingApprovalMode === "INSTANT" ? "INSTANT_BOOK" : "REQUEST_TO_BOOK"
+        : dataToUpdate.instantBook ? "INSTANT_BOOK" : "REQUEST_TO_BOOK";
+    Object.assign(dataToUpdate, bookingModePersistence(nextMode));
+  }
   if (actor.role !== Role.ADMIN) {
     delete dataToUpdate.published;
   }

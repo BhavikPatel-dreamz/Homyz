@@ -1,70 +1,749 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 
-type PendingBooking = {
+import { formatExpiryCountdown } from "@/lib/booking/booking-expiry";
+import { formatBookingDate } from "@/lib/booking/booking-date";
+
+export type PendingBooking = {
   id: string;
   startDate: string;
   endDate: string;
   guests: number;
+  totalPrice?: number | null;
+  currency?: string;
+  status?: string;
   createdAt: string;
+  expiresAt?: string;
+  isExpired?: boolean;
   guest: { name: string | null; image: string | null };
   listing: { title: string; city: string | null; country: string | null; photos: string[] };
 };
 
-function formatDate(date: string): string {
-  return new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
+export type HostBookingRequestDetails = {
+  id: string;
+  startDate: string;
+  endDate: string;
+  guests: number;
+  totalPrice: number | null;
+  nightlyPrice: number | null;
+  cleaningFee: number | null;
+  currency: string;
+  status: string;
+  cancellationPolicy: string | null;
+  isNonRefundable: boolean;
+  createdAt: string;
+  expiresAt: string;
+  isExpired: boolean;
+  guest: {
+    id: string;
+    name: string | null;
+    image: string | null;
+    email: string | null;
+    createdAt: string;
+  };
+  listing: {
+    id: string;
+    title: string;
+    city: string | null;
+    country: string | null;
+    address: string | null;
+    photos: string[];
+    price: number;
+  };
+  guestMessage: string | null;
+  conversationId: string | null;
+  priceBreakdown: any;
+};
+
+function formatMoney(amountCents: number | null | undefined, currency: string = "SAR"): string {
+  if (amountCents == null) return "—";
+  return `${currency} ${(amountCents / 100).toLocaleString("en-US", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  })}`;
 }
 
-export function HostBookingApprovals({ bookings }: { bookings: PendingBooking[] }) {
-  const router = useRouter();
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+function formatTimeAgo(dateStr: string): string {
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diffSec = Math.max(0, Math.floor((now.getTime() - date.getTime()) / 1000));
+  if (diffSec < 60) return "Just now";
+  const diffMin = Math.floor(diffSec / 60);
+  if (diffMin < 60) return `${diffMin}m ago`;
+  const diffHours = Math.floor(diffMin / 60);
+  if (diffHours < 24) return `${diffHours}h ago`;
+  const diffDays = Math.floor(diffHours / 24);
+  return `${diffDays}d ago`;
+}
 
+function formatDeadlineCountdown(createdAtStr: string): { text: string; isExpired: boolean; isUrgent: boolean } {
+  return formatExpiryCountdown(createdAtStr);
+}
+
+export function HostBookingApprovals({ bookings: initialBookings }: { bookings: PendingBooking[] }) {
+  const router = useRouter();
+  const [bookings, setBookings] = useState<PendingBooking[]>(initialBookings);
+
+  // Sync state if initialBookings updates
+  useEffect(() => {
+    setBookings(initialBookings);
+  }, [initialBookings]);
+
+  // Bulk confirmation state
+  const [isBulkConfirmOpen, setIsBulkConfirmOpen] = useState(false);
+  const [isBulkSubmitting, setIsBulkSubmitting] = useState(false);
+
+  // Single request details modal state
+  const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
+  const [details, setDetails] = useState<HostBookingRequestDetails | null>(null);
+  const [detailsLoading, setDetailsLoading] = useState(false);
+  const [detailsError, setDetailsError] = useState<string | null>(null);
+
+  // Action states
+  const [isRejectOpen, setIsRejectOpen] = useState(false);
+  const [rejectReason, setRejectReason] = useState("");
+  const [isRejecting, setIsRejecting] = useState(false);
+  const [isAccepting, setIsAccepting] = useState(false);
+  const [acceptPaymentNotice, setAcceptPaymentNotice] = useState<string | null>(null);
+
+  // General alert feedback
+  const [globalError, setGlobalError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // Open detail modal and fetch full request details
+  const openRequestDetails = async (booking: PendingBooking) => {
+    setSelectedBookingId(booking.id);
+    setDetails(null);
+    setDetailsError(null);
+    setAcceptPaymentNotice(null);
+    setDetailsLoading(true);
+
+    try {
+      const res = await fetch(`/api/v1/host/bookings/${booking.id}`);
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        throw new Error(data?.error?.message || "Failed to load booking request details.");
+      }
+      setDetails(data.data || data);
+    } catch (err) {
+      setDetailsError(err instanceof Error ? err.message : "Failed to load booking request details.");
+    } finally {
+      setDetailsLoading(false);
+    }
+  };
+
+  const closeDetailsModal = () => {
+    setSelectedBookingId(null);
+    setDetails(null);
+    setDetailsError(null);
+    setAcceptPaymentNotice(null);
+    setIsRejectOpen(false);
+    setRejectReason("");
+  };
+
+  // Accept action: fail-closed payment authorization gate
+  const handleAccept = async () => {
+    if (!selectedBookingId) return;
+    setIsAccepting(true);
+    setAcceptPaymentNotice(null);
+    setDetailsError(null);
+
+    try {
+      const res = await fetch(`/api/v1/host/bookings/${selectedBookingId}/accept`, {
+        method: "POST",
+      });
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok) {
+        // Payment gate fail-closed handling
+        const code = data?.error?.code;
+        const msg = data?.error?.message;
+        if (code === "PAYMENT_AUTHORIZATION_REQUIRED" || msg?.includes("payment")) {
+          setAcceptPaymentNotice(
+            "Payment authorization is required before this booking request can be accepted. Payment capture is currently blocked by provider.",
+          );
+        } else {
+          setDetailsError(msg || "Unable to accept this booking request.");
+        }
+        return;
+      }
+
+      setSuccessMessage("Booking request accepted successfully!");
+      setBookings((prev) => prev.filter((b) => b.id !== selectedBookingId));
+      closeDetailsModal();
+      router.refresh();
+    } catch (err) {
+      setDetailsError(err instanceof Error ? err.message : "An unexpected error occurred while accepting.");
+    } finally {
+      setIsAccepting(false);
+    }
+  };
+
+  // Reject action: decline booking and release inventory
+  const handleReject = async () => {
+    if (!selectedBookingId) return;
+    setIsRejecting(true);
+    setDetailsError(null);
+
+    try {
+      const res = await fetch(`/api/v1/host/bookings/${selectedBookingId}/reject`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason: rejectReason.trim() || undefined }),
+      });
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok) {
+        throw new Error(data?.error?.message || "Failed to decline booking request.");
+      }
+
+      setSuccessMessage("Booking request declined. The dates have been released back to your calendar.");
+      setBookings((prev) => prev.filter((b) => b.id !== selectedBookingId));
+      closeDetailsModal();
+      router.refresh();
+    } catch (err) {
+      setDetailsError(err instanceof Error ? err.message : "An error occurred while declining the request.");
+    } finally {
+      setIsRejecting(false);
+    }
+  };
+
+  // Approve all (bulk)
   const approveAll = async () => {
-    setIsSubmitting(true);
-    setError(null);
+    setIsBulkSubmitting(true);
+    setGlobalError(null);
     try {
       const response = await fetch("/api/v1/host/bookings/approve-all", { method: "POST" });
       const payload = await response.json().catch(() => null);
       if (!response.ok) throw new Error(payload?.error?.message || "Unable to approve bookings right now.");
-      setIsConfirmOpen(false);
+      setIsBulkConfirmOpen(false);
+      setSuccessMessage("All pending bookings have been confirmed.");
       router.refresh();
     } catch (approvalError) {
-      setError(approvalError instanceof Error ? approvalError.message : "Unable to approve bookings right now.");
+      setGlobalError(approvalError instanceof Error ? approvalError.message : "Unable to approve bookings right now.");
     } finally {
-      setIsSubmitting(false);
+      setIsBulkSubmitting(false);
     }
   };
 
-  return <div className="mx-auto w-full max-w-6xl py-8 sm:py-12">
-    <div className="flex flex-wrap items-end justify-between gap-5 border-b border-zinc-200 pb-7">
-      <div><p className="text-sm font-medium text-zinc-500">Host tools</p><h1 className="mt-1 text-3xl font-semibold tracking-tight text-zinc-900">Pending booking requests</h1><p className="mt-2 text-sm text-zinc-600">Review the active requests for your listings, then confirm them together.</p></div>
-      {bookings.length > 0 && <button type="button" onClick={() => setIsConfirmOpen(true)} className="min-h-11 rounded-xl bg-[#1F1F1F] px-5 text-sm font-semibold text-white transition-colors hover:bg-zinc-700">Approve all ({bookings.length})</button>}
-    </div>
-
-    {error && <p role="alert" className="mt-6 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
-    {bookings.length === 0 ? <div className="mt-8 rounded-3xl border border-dashed border-zinc-300 bg-zinc-50 px-6 py-14 text-center"><h2 className="text-lg font-semibold text-zinc-900">No pending booking requests</h2><p className="mt-2 text-sm text-zinc-600">New requests will appear here when guests request a stay at one of your listings.</p></div> : <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-      {bookings.map((booking) => {
-        const location = [booking.listing.city, booking.listing.country].filter(Boolean).join(", ");
-        return <article key={booking.id} className="overflow-hidden rounded-3xl border border-zinc-200 bg-white p-4 shadow-sm">
-          {booking.listing.photos[0] ? <img src={booking.listing.photos[0]} alt={booking.listing.title} className="aspect-[16/10] w-full rounded-2xl object-cover" /> : <div className="flex aspect-[16/10] items-center justify-center rounded-2xl bg-zinc-100 text-sm text-zinc-500">Photo unavailable</div>}
-          <h2 className="mt-4 truncate text-lg font-semibold text-zinc-900">{booking.listing.title}</h2>
-          {location && <p className="mt-1 text-sm text-zinc-600">{location}</p>}
-          <dl className="mt-4 grid grid-cols-2 gap-4 border-t border-zinc-200 pt-4 text-sm"><div><dt className="text-zinc-500">Guest</dt><dd className="mt-1 font-medium text-zinc-900">{booking.guest.name || "Guest"}</dd></div><div><dt className="text-zinc-500">Guests</dt><dd className="mt-1 font-medium text-zinc-900">{booking.guests}</dd></div><div><dt className="text-zinc-500">Check-in</dt><dd className="mt-1 font-medium text-zinc-900">{formatDate(booking.startDate)}</dd></div><div><dt className="text-zinc-500">Check-out</dt><dd className="mt-1 font-medium text-zinc-900">{formatDate(booking.endDate)}</dd></div></dl>
-        </article>;
-      })}
-    </div>}
-
-    {isConfirmOpen && <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div role="dialog" aria-modal="true" aria-labelledby="approve-bookings-title" className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl">
-        <h2 id="approve-bookings-title" className="text-xl font-semibold text-zinc-900">Approve all pending bookings?</h2>
-        <p className="mt-3 text-sm leading-6 text-zinc-600">This will confirm {bookings.length} active pending {bookings.length === 1 ? "booking" : "bookings"}. Guests will see the updated status immediately.</p>
-        <div className="mt-6 flex justify-end gap-3"><button type="button" disabled={isSubmitting} onClick={() => setIsConfirmOpen(false)} className="min-h-11 rounded-xl px-4 text-sm font-semibold text-zinc-700 hover:bg-zinc-100">Cancel</button><button type="button" disabled={isSubmitting} onClick={approveAll} className="min-h-11 rounded-xl bg-[#1F1F1F] px-5 text-sm font-semibold text-white hover:bg-zinc-700 disabled:bg-zinc-300">{isSubmitting ? "Approving…" : "Approve all"}</button></div>
+  return (
+    <div className="mx-auto w-full max-w-6xl py-8 sm:py-12">
+      {/* Page Header */}
+      <div className="flex flex-wrap items-end justify-between gap-5 border-b border-zinc-200 pb-7">
+        <div>
+          <p className="text-sm font-medium text-zinc-500">Host tools</p>
+          <h1 className="mt-1 text-3xl font-semibold tracking-tight text-zinc-900">
+            Pending booking requests
+          </h1>
+          <p className="mt-2 text-sm text-zinc-600">
+            Review active requests for your listings, communicate with guests, and respond within 24 hours.
+          </p>
+        </div>
+        {bookings.length > 0 && (
+          <button
+            type="button"
+            onClick={() => setIsBulkConfirmOpen(true)}
+            className="min-h-11 rounded-xl bg-zinc-100 px-4 text-sm font-semibold text-zinc-800 transition-colors hover:bg-zinc-200"
+          >
+            Approve all ({bookings.length})
+          </button>
+        )}
       </div>
-    </ModalOverlay>}
-  </div>;
+
+      {/* Global Alerts */}
+      {globalError && (
+        <div role="alert" className="mt-6 rounded-2xl bg-red-50 p-4 text-sm text-red-700 border border-red-200">
+          {globalError}
+        </div>
+      )}
+      {successMessage && (
+        <div role="status" className="mt-6 flex items-center justify-between rounded-2xl bg-emerald-50 p-4 text-sm text-emerald-800 border border-emerald-200">
+          <span>{successMessage}</span>
+          <button
+            type="button"
+            onClick={() => setSuccessMessage(null)}
+            className="text-xs font-semibold uppercase tracking-wider text-emerald-700 hover:underline"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
+      {/* Requests List */}
+      {bookings.length === 0 ? (
+        <div className="mt-8 rounded-3xl border border-dashed border-zinc-300 bg-zinc-50 px-6 py-14 text-center">
+          <h2 className="text-lg font-semibold text-zinc-900">No pending booking requests</h2>
+          <p className="mt-2 text-sm text-zinc-600">
+            New requests will appear here when guests request a stay at one of your listings.
+          </p>
+        </div>
+      ) : (
+        <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {bookings.map((booking) => {
+            const location = [booking.listing.city, booking.listing.country].filter(Boolean).join(", ");
+            const deadline = formatDeadlineCountdown(booking.createdAt);
+
+            return (
+              <article
+                key={booking.id}
+                className="flex flex-col justify-between overflow-hidden rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md"
+              >
+                <div>
+                  {/* Photo & Badge */}
+                  <div className="relative aspect-[16/10] w-full overflow-hidden rounded-2xl bg-zinc-100">
+                    {booking.listing.photos[0] ? (
+                      <img
+                        src={booking.listing.photos[0]}
+                        alt={booking.listing.title}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-sm text-zinc-500">
+                        Photo unavailable
+                      </div>
+                    )}
+                    {deadline.isExpired || booking.isExpired ? (
+                      <span className="absolute left-3 top-3 inline-flex items-center rounded-full bg-zinc-700/90 px-3 py-1 text-xs font-semibold text-white shadow-sm backdrop-blur-sm">
+                        Expired
+                      </span>
+                    ) : (
+                      <span className="absolute left-3 top-3 inline-flex items-center rounded-full bg-amber-500/90 px-3 py-1 text-xs font-semibold text-white shadow-sm backdrop-blur-sm">
+                        Pending approval
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Title & Location */}
+                  <h2 className="mt-4 truncate text-lg font-semibold text-zinc-900" title={booking.listing.title}>
+                    {booking.listing.title}
+                  </h2>
+                  {location && <p className="mt-0.5 truncate text-sm text-zinc-500">{location}</p>}
+
+                  {/* Deadline & Requested Time */}
+                  <div className="mt-3 flex items-center justify-between text-xs text-zinc-500 border-t border-zinc-100 pt-3">
+                    <span>Requested {formatTimeAgo(booking.createdAt)}</span>
+                    <span
+                      className={`font-medium ${
+                        deadline.isExpired
+                          ? "text-red-600"
+                          : deadline.isUrgent
+                          ? "text-amber-600"
+                          : "text-zinc-600"
+                      }`}
+                    >
+                      {deadline.text}
+                    </span>
+                  </div>
+
+                  {/* Booking Details Grid */}
+                  <dl className="mt-3 grid grid-cols-2 gap-3 rounded-2xl bg-zinc-50 p-3.5 text-xs sm:text-sm">
+                    <div>
+                      <dt className="text-zinc-500">Guest</dt>
+                      <dd className="mt-0.5 font-medium text-zinc-900 truncate">
+                        {booking.guest.name || "Guest"}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-zinc-500">Guests</dt>
+                      <dd className="mt-0.5 font-medium text-zinc-900">
+                        {booking.guests} {booking.guests === 1 ? "guest" : "guests"}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-zinc-500">Check-in</dt>
+                      <dd className="mt-0.5 font-medium text-zinc-900">{formatBookingDate(booking.startDate)}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-zinc-500">Check-out</dt>
+                      <dd className="mt-0.5 font-medium text-zinc-900">{formatBookingDate(booking.endDate)}</dd>
+                    </div>
+                  </dl>
+
+                  {/* Pricing row */}
+                  {booking.totalPrice != null && (
+                    <div className="mt-3 flex items-center justify-between px-1">
+                      <span className="text-xs text-zinc-500">Total amount</span>
+                      <span className="text-sm font-semibold text-zinc-900">
+                        {formatMoney(booking.totalPrice, booking.currency || "SAR")}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Primary CTA */}
+                <div className="mt-5 border-t border-zinc-100 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => openRequestDetails(booking)}
+                    className="w-full min-h-11 rounded-xl bg-[#1F1F1F] px-4 text-sm font-semibold text-white transition-colors hover:bg-zinc-700"
+                  >
+                    View request
+                  </button>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
+
+      {/* REQUEST DETAILS MODAL */}
+      {selectedBookingId && (
+        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="request-details-title"
+            className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl"
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-zinc-200 px-6 py-5">
+              <div className="flex items-center gap-3">
+                {details?.isExpired ? (
+                  <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-semibold text-zinc-600 border border-zinc-200">
+                    Expired
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-800">
+                    Pending approval
+                  </span>
+                )}
+                <h2 id="request-details-title" className="text-lg font-semibold text-zinc-900">
+                  Booking Request Details
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={closeDetailsModal}
+                className="rounded-full p-2 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600"
+                aria-label="Close dialog"
+              >
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Modal Body - Scrollable */}
+            <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
+              {detailsLoading && (
+                <div className="flex flex-col items-center justify-center py-12 text-zinc-500">
+                  <div className="h-8 w-8 animate-spin rounded-full border-2 border-zinc-900 border-t-transparent mb-3" />
+                  <p className="text-sm">Loading request details...</p>
+                </div>
+              )}
+
+              {detailsError && (
+                <div role="alert" className="rounded-2xl bg-red-50 p-4 text-sm text-red-700 border border-red-200">
+                  {detailsError}
+                </div>
+              )}
+
+              {acceptPaymentNotice && (
+                <div role="alert" className="rounded-2xl bg-amber-50 p-4 text-sm text-amber-900 border border-amber-200">
+                  <div className="flex items-start gap-2.5">
+                    <svg className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <div>
+                      <p className="font-semibold">Payment Authorization Required</p>
+                      <p className="mt-1 text-xs text-amber-800 leading-relaxed">
+                        {acceptPaymentNotice}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {details && (
+                <>
+                  {/* Expired Request Notice */}
+                  {details.isExpired && (
+                    <div role="status" className="rounded-2xl bg-zinc-100 p-4 border border-zinc-200 text-zinc-800">
+                      <div className="flex items-center gap-2">
+                        <span className="h-2 w-2 rounded-full bg-zinc-500" />
+                        <p className="font-semibold text-sm">Response deadline expired</p>
+                      </div>
+                      <p className="mt-1 text-xs text-zinc-600 leading-relaxed">
+                        The 24-hour response window for this booking request has passed. The temporary date hold has been released back to your calendar.
+                      </p>
+                    </div>
+                  )}
+                  {/* Property Section */}
+                  <div className="flex gap-4 items-start rounded-2xl bg-zinc-50 p-4 border border-zinc-200">
+                    {details.listing.photos[0] ? (
+                      <img
+                        src={details.listing.photos[0]}
+                        alt={details.listing.title}
+                        className="h-20 w-28 rounded-xl object-cover flex-shrink-0"
+                      />
+                    ) : (
+                      <div className="flex h-20 w-28 items-center justify-center rounded-xl bg-zinc-200 text-xs text-zinc-500 flex-shrink-0">
+                        No photo
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">Property</p>
+                      <h3 className="text-base font-semibold text-zinc-900 truncate">{details.listing.title}</h3>
+                      <p className="text-xs text-zinc-600 truncate mt-0.5">
+                        {[details.listing.address, details.listing.city, details.listing.country].filter(Boolean).join(", ")}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Guest Information */}
+                  <div className="flex items-center justify-between rounded-2xl border border-zinc-200 p-4">
+                    <div className="flex items-center gap-3">
+                      {details.guest.image ? (
+                        <img
+                          src={details.guest.image}
+                          alt={details.guest.name || "Guest"}
+                          className="h-12 w-12 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100 text-sm font-semibold text-zinc-700">
+                          {(details.guest.name || "G")[0].toUpperCase()}
+                        </div>
+                      )}
+                      <div>
+                        <h4 className="font-semibold text-zinc-900">{details.guest.name || "Guest"}</h4>
+                        <p className="text-xs text-zinc-500">
+                          Member since {new Date(details.guest.createdAt).getFullYear()}
+                        </p>
+                      </div>
+                    </div>
+
+                    {details.conversationId ? (
+                      <Link
+                        href={`/host/messages?conversationId=${details.conversationId}`}
+                        className="rounded-xl border border-zinc-200 px-3.5 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50"
+                      >
+                        Message guest
+                      </Link>
+                    ) : (
+                      <Link
+                        href="/host/messages"
+                        className="rounded-xl border border-zinc-200 px-3.5 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50"
+                      >
+                        Message guest
+                      </Link>
+                    )}
+                  </div>
+
+                  {/* Trip Details */}
+                  <div>
+                    <h4 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-2">Trip details</h4>
+                    <dl className="grid grid-cols-2 sm:grid-cols-4 gap-3 rounded-2xl bg-zinc-50 p-4 text-sm">
+                      <div>
+                        <dt className="text-xs text-zinc-500">Check-in</dt>
+                        <dd className="mt-1 font-semibold text-zinc-900">{formatBookingDate(details.startDate)}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-xs text-zinc-500">Check-out</dt>
+                        <dd className="mt-1 font-semibold text-zinc-900">{formatBookingDate(details.endDate)}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-xs text-zinc-500">Guests</dt>
+                        <dd className="mt-1 font-semibold text-zinc-900">
+                          {details.guests} {details.guests === 1 ? "guest" : "guests"}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="text-xs text-zinc-500">Response deadline</dt>
+                        <dd className="mt-1 font-semibold text-amber-700">
+                          {formatDeadlineCountdown(details.createdAt).text}
+                        </dd>
+                      </div>
+                    </dl>
+                  </div>
+
+                  {/* Guest Message */}
+                  {details.guestMessage && (
+                    <div className="rounded-2xl border border-blue-100 bg-blue-50/50 p-4">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-blue-800">
+                        Message from guest
+                      </p>
+                      <p className="mt-2 text-sm text-zinc-800 italic whitespace-pre-wrap leading-relaxed">
+                        "{details.guestMessage}"
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Pricing Breakdown */}
+                  <div>
+                    <h4 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-2">Price breakdown</h4>
+                    <div className="rounded-2xl border border-zinc-200 p-4 text-sm space-y-2.5">
+                      {details.nightlyPrice != null && (
+                        <div className="flex justify-between text-zinc-600 text-xs sm:text-sm">
+                          <span>Nightly rate</span>
+                          <span>{formatMoney(details.nightlyPrice, details.currency)} / night</span>
+                        </div>
+                      )}
+                      {details.cleaningFee != null && details.cleaningFee > 0 && (
+                        <div className="flex justify-between text-zinc-600 text-xs sm:text-sm">
+                          <span>Cleaning fee</span>
+                          <span>{formatMoney(details.cleaningFee, details.currency)}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between items-center border-t border-zinc-200 pt-3 font-semibold text-zinc-900 text-base">
+                        <span>Total (guest pays)</span>
+                        <span className="text-lg font-bold">{formatMoney(details.totalPrice, details.currency)}</span>
+                      </div>
+                      <p className="text-[11px] text-zinc-500">
+                        Payment status: Deferred (no online payment gateway required).
+                      </p>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Modal Actions Footer */}
+            {details && (
+              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-zinc-200 bg-zinc-50 px-6 py-4">
+                {details.isExpired ? (
+                  <div className="flex w-full items-center justify-between">
+                    <span className="text-xs sm:text-sm font-medium text-zinc-500">
+                      This request has expired and can no longer be accepted.
+                    </span>
+                    <button
+                      type="button"
+                      onClick={closeDetailsModal}
+                      className="min-h-11 rounded-xl bg-[#1F1F1F] px-6 text-sm font-semibold text-white transition-colors hover:bg-zinc-700"
+                    >
+                      Close
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      disabled={isAccepting || isRejecting}
+                      onClick={() => setIsRejectOpen(true)}
+                      className="min-h-11 rounded-xl border border-red-200 px-4 text-sm font-semibold text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
+                    >
+                      Decline request
+                    </button>
+
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        disabled={isAccepting || isRejecting}
+                        onClick={closeDetailsModal}
+                        className="min-h-11 rounded-xl px-4 text-sm font-semibold text-zinc-700 hover:bg-zinc-200/60"
+                      >
+                        Close
+                      </button>
+                      <button
+                        type="button"
+                        disabled={isAccepting || isRejecting}
+                        onClick={handleAccept}
+                        className="min-h-11 rounded-xl bg-[#1F1F1F] px-6 text-sm font-semibold text-white transition-colors hover:bg-zinc-700 disabled:bg-zinc-400"
+                      >
+                        {isAccepting ? "Validating…" : "Accept request"}
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        </ModalOverlay>
+      )}
+
+      {/* REJECT CONFIRMATION MODAL */}
+      {isRejectOpen && (
+        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="reject-dialog-title"
+            className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl"
+          >
+            <h3 id="reject-dialog-title" className="text-xl font-semibold text-zinc-900">
+              Decline booking request?
+            </h3>
+            <p className="mt-2 text-sm text-zinc-600 leading-relaxed">
+              Declining this request will cancel the reservation and release the held dates back to your calendar.
+            </p>
+
+            <div className="mt-4">
+              <label htmlFor="reject-reason" className="block text-xs font-medium text-zinc-700 mb-1.5">
+                Reason for declining (optional, sent to guest):
+              </label>
+              <textarea
+                id="reject-reason"
+                rows={3}
+                maxLength={500}
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+                placeholder="Let the guest know why you cannot accommodate them..."
+                className="w-full rounded-xl border border-zinc-300 p-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900"
+              />
+            </div>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                type="button"
+                disabled={isRejecting}
+                onClick={() => setIsRejectOpen(false)}
+                className="min-h-11 rounded-xl px-4 text-sm font-semibold text-zinc-700 hover:bg-zinc-100"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isRejecting}
+                onClick={handleReject}
+                className="min-h-11 rounded-xl bg-red-600 px-5 text-sm font-semibold text-white hover:bg-red-700 disabled:bg-red-300"
+              >
+                {isRejecting ? "Declining…" : "Confirm Decline"}
+              </button>
+            </div>
+          </div>
+        </ModalOverlay>
+      )}
+
+      {/* BULK APPROVE MODAL */}
+      {isBulkConfirmOpen && (
+        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="approve-bookings-title"
+            className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl"
+          >
+            <h2 id="approve-bookings-title" className="text-xl font-semibold text-zinc-900">
+              Approve all pending bookings?
+            </h2>
+            <p className="mt-3 text-sm leading-6 text-zinc-600">
+              This will confirm {bookings.length} active pending {bookings.length === 1 ? "booking" : "bookings"}.
+              Guests will see the updated status immediately.
+            </p>
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                type="button"
+                disabled={isBulkSubmitting}
+                onClick={() => setIsBulkConfirmOpen(false)}
+                className="min-h-11 rounded-xl px-4 text-sm font-semibold text-zinc-700 hover:bg-zinc-100"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isBulkSubmitting}
+                onClick={approveAll}
+                className="min-h-11 rounded-xl bg-[#1F1F1F] px-5 text-sm font-semibold text-white hover:bg-zinc-700 disabled:bg-zinc-300"
+              >
+                {isBulkSubmitting ? "Approving…" : "Approve all"}
+              </button>
+            </div>
+          </div>
+        </ModalOverlay>
+      )}
+    </div>
+  );
 }

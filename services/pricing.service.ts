@@ -2,6 +2,7 @@ import { AppError } from "@/lib/api/errors";
 import { TaxCalculator } from "@/lib/tax/tax-calculator";
 import type { CalculatedTaxItem, HostPayoutBreakdown, ListingTaxDTO, TaxRuleDTO } from "@/lib/tax/types";
 import { getHostServiceFeePercentage } from "@/services/app-settings.service";
+import { bookingDateKey, parseBookingDate } from "@/lib/booking/booking-date";
 
 export interface NightRateBreakdown {
   date: string; // YYYY-MM-DD
@@ -89,27 +90,14 @@ export interface SpecialOfferPricingParams {
  * Normalizes input date or string to UTC midnight to avoid local timezone offset drift.
  */
 export function parseDateToUtcMidnight(input: Date | string): Date {
-  if (typeof input === "string") {
-    const match = input.match(/^(\d{4})-(\d{2})-(\d{2})/);
-    if (match) {
-      const year = parseInt(match[1], 10);
-      const month = parseInt(match[2], 10) - 1;
-      const day = parseInt(match[3], 10);
-      return new Date(Date.UTC(year, month, day, 0, 0, 0, 0));
-    }
-  }
-  const d = new Date(input);
-  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 0, 0, 0, 0));
+  return parseBookingDate(input);
 }
 
 /**
  * Formats a Date to YYYY-MM-DD string key in UTC.
  */
 export function formatDateToKey(date: Date): string {
-  const y = date.getUTCFullYear();
-  const m = String(date.getUTCMonth() + 1).padStart(2, "0");
-  const d = String(date.getUTCDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
+  return bookingDateKey(date);
 }
 
 /**

@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import { formatBookingDate } from "@/lib/booking/booking-date";
 
 interface BookingStayInfoProps {
   bookingId: string;
@@ -20,7 +21,7 @@ interface BookingStayInfoProps {
   description?: string | null;
 }
 
-function formatDate(val: Date | string): string {
+function formatCreatedDate(val: Date | string): string {
   const d = new Date(val);
   if (isNaN(d.getTime())) return "Not available";
   return d.toLocaleDateString("en-US", {
@@ -80,12 +81,12 @@ export function BookingStayInfo({
         <div className="rounded-2xl border border-zinc-100 bg-zinc-50/70 p-4">
           <dt className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Reservation Code</dt>
           <dd className="mt-1 font-mono font-semibold text-zinc-900">{bookingCode}</dd>
-          <p className="text-xs text-zinc-500 mt-0.5">Booked on {formatDate(createdAt)}</p>
+          <p className="text-xs text-zinc-500 mt-0.5">Booked on {formatCreatedDate(createdAt)}</p>
         </div>
 
         <div className="rounded-2xl border border-zinc-100 bg-zinc-50/70 p-4">
           <dt className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Check-in</dt>
-          <dd className="mt-1 font-semibold text-zinc-900">{formatDate(startDate)}</dd>
+          <dd className="mt-1 font-semibold text-zinc-900">{formatBookingDate(startDate, { weekday: true })}</dd>
           <p className="text-xs text-zinc-600 mt-0.5">
             {checkInStart ? `From ${checkInStart}` : "Check-in from 3:00 PM"}
           </p>
@@ -93,7 +94,7 @@ export function BookingStayInfo({
 
         <div className="rounded-2xl border border-zinc-100 bg-zinc-50/70 p-4">
           <dt className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Check-out</dt>
-          <dd className="mt-1 font-semibold text-zinc-900">{formatDate(endDate)}</dd>
+          <dd className="mt-1 font-semibold text-zinc-900">{formatBookingDate(endDate, { weekday: true })}</dd>
           <p className="text-xs text-zinc-600 mt-0.5">
             {checkOutTime ? `By ${checkOutTime}` : "Check-out by 11:00 AM"}
           </p>
@@ -135,4 +136,3 @@ export function BookingStayInfo({
     </section>
   );
 }
-

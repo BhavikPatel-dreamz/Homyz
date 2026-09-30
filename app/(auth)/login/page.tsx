@@ -6,14 +6,15 @@ import { getSafeCallbackUrl } from "@/lib/auth/redirect";
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ callbackUrl?: string; error?: string; method?: string }>;
+  searchParams: Promise<{ callbackUrl?: string; returnUrl?: string; error?: string; method?: string }>;
 }) {
   const [user, resolvedParams] = await Promise.all([
     getSessionUser(),
     searchParams,
   ]);
 
-  const { callbackUrl: rawCallbackUrl, error, method } = resolvedParams || {};
+  const rawCallbackUrl = resolvedParams?.callbackUrl || resolvedParams?.returnUrl;
+  const { error, method } = resolvedParams || {};
 
   const safeCallbackUrl = getSafeCallbackUrl(rawCallbackUrl, "/");
 

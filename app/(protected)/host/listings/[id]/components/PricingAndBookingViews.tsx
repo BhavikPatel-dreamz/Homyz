@@ -56,16 +56,16 @@ interface PricingAndBookingViewsProps {
   setAllowSameDayRequests?: (val: boolean) => void;
 
   // Booking Settings
-  bookingMethod: "first-three" | "instant" | "approve";
+  bookingMethod: "instant" | "approve";
   requireGoodTrackRecord: boolean;
   approvedBookingCount: number;
   hasCustomBookingMessage: boolean;
   saveBookingSettings: (settings: {
-    bookingMethod: "first-three" | "instant" | "approve";
+    bookingMethod: "instant" | "approve";
     requireGoodTrackRecord: boolean;
     bookingMessage?: string;
   }) => Promise<boolean>;
-  requestInstantBookOff: (bookingMethod: "first-three" | "approve") => void;
+  requestInstantBookOff: (bookingMethod: "approve") => void;
   openCustomMessage: () => void;
 
   // Cancellation Policy & Custom Link
@@ -121,7 +121,6 @@ export function PricingAndBookingViews({
   setAllowSameDayRequests,
   bookingMethod: _bookingMethod,
   requireGoodTrackRecord,
-  approvedBookingCount,
   hasCustomBookingMessage,
   saveBookingSettings,
   requestInstantBookOff,
@@ -621,21 +620,6 @@ export function PricingAndBookingViews({
             <BookingSettingsSkeleton />
           ) : (
             <div className="flex flex-col gap-3 md:mt-12 mt-6">
-              <section className={`rounded-lg border bg-white dark:bg-zinc-800 sm:px-6 px-4 sm:py-5 py-4 shadow-2xs transition-colors ${_bookingMethod === "first-three" ? "border-[#1f1f1f] dark:border-zinc-500" : "border-[#727272] dark:border-zinc-700 hover:border-[#1f1f1f]"}`}>
-                <button type="button" disabled={isSaving} onClick={() => {
-                  if (_bookingMethod === "first-three") return;
-                  if (_bookingMethod === "instant") requestInstantBookOff("first-three");
-                  else void saveBookingSettings({ bookingMethod: "first-three", requireGoodTrackRecord });
-                }} className="flex w-full items-start justify-between gap-5 text-left disabled:cursor-wait">
-                  <div>
-                    <h2 className="text-base font-medium text-[#1f1f1f] dark:text-zinc-100">{t("host_approve_first_three")}</h2>
-                    <p className="mt-0.5 text-sm font-medium text-emerald-600 dark:text-emerald-400">{Math.min(approvedBookingCount, 3)} {t("host_of_three_approved")}</p>
-                    <p className="mt-1 text-sm text-[#727272] dark:text-zinc-400">{t("host_first_three_desc")}</p>
-                  </div>
-                  <svg aria-hidden="true" className="mt-1 size-8 shrink-0 text-zinc-800 dark:text-zinc-200" fill="none" stroke="currentColor" strokeWidth="1.7" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8 3v3m8-3v3M4 9h16M5 5h14a1 1 0 011 1v13a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z" /><path strokeLinecap="round" strokeLinejoin="round" d="m8.5 15 2.2 2.2 4.8-5" /></svg>
-                </button>
-              </section>
-
               <section className={`rounded-lg border bg-white dark:bg-zinc-800 sm:px-6 px-4 sm:py-5 py-4 transition-colors ${_bookingMethod === "instant" ? "border-[#1f1f1f] dark:border-zinc-500" : "border-[#727272] dark:border-zinc-700"}`}>
                 <button type="button" disabled={isSaving} onClick={() => _bookingMethod !== "instant" && saveBookingSettings({ bookingMethod: "instant", requireGoodTrackRecord })} className="flex w-full items-start justify-between gap-5 text-left disabled:cursor-wait">
                   <div>

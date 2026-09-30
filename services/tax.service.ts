@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db/prisma";
+import { bookingDateKey } from "@/lib/booking/booking-date";
 import { AppError } from "@/lib/api/errors";
 import type { AuthUser } from "@/lib/auth/types";
 import { resolveTaxJurisdiction } from "@/lib/tax/jurisdiction-resolver";
@@ -632,8 +633,8 @@ export class TaxService {
       issueDate: booking.createdAt.toISOString(),
       bookingId: booking.id,
       stayDates: {
-        checkIn: booking.startDate.toISOString().split("T")[0],
-        checkOut: booking.endDate.toISOString().split("T")[0],
+        checkIn: bookingDateKey(booking.startDate),
+        checkOut: bookingDateKey(booking.endDate),
         nights,
       },
       supplier: {

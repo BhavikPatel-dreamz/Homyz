@@ -33,7 +33,10 @@ export default async function ProfileTabPage({
   }
 
 
-  const data = await loadProfilePageData(route.tab, route.subTab);
+  const bookingView = typeof resolvedSearchParams?.bookingView === "string"
+    ? resolvedSearchParams.bookingView
+    : undefined;
+  const data = await loadProfilePageData(route.tab, route.subTab, bookingView);
 
   return (
     <ProfileClient

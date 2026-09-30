@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { AppHeader } from "@/components/dashboard/app-header";
 import { Footer } from "@/components/dashboard/footer";
@@ -15,7 +15,7 @@ import { AmenityIcon } from "@/components/ui/amenity-icon";
 import { CANONICAL_AMENITIES, searchAmenitiesCatalog } from "@/lib/constants/amenities";
 import type { BookingQuote } from "@/services/booking.service";
 import type { PublicListingDTO } from "@/services/mappers";
-import { saveRecentlyViewedProperty, clearLastSearch } from "@/lib/storage/client-history";
+import { saveRecentlyViewedProperty, clearLastSearch, saveLastSearch, getLastSearch, buildBookingCheckoutUrl } from "@/lib/storage/client-history";
 import { getCurrencyForCountry } from "@/lib/currency";
 import { useCurrency } from "@/lib/currency-context";
 import { cancellationPolicyLabel } from "@/lib/constants/listing-enums";
@@ -182,6 +182,11 @@ interface PublicListingDetailClientProps {
   searchCheckIn?: string;
   searchCheckOut?: string;
   searchGuests?: number;
+  searchAdults?: number;
+  searchChildren?: number;
+  searchInfants?: number;
+  searchPets?: number;
+  initialSpecialOfferId?: string;
 }
 
 type BookedDateRange = { start: string; end: string };
@@ -554,9 +559,15 @@ export function PublicListingDetailClient({
   searchCheckIn,
   searchCheckOut,
   searchGuests,
+  searchAdults,
+  searchChildren,
+  searchInfants,
+  searchPets,
+  initialSpecialOfferId,
 }: PublicListingDetailClientProps) {
   const { formatPrice } = useCurrency();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const wishlist = useWishlist();
   const { data: session, status: sessionStatus } = useSession();
   const isAuthenticated = sessionStatus === "authenticated" && Boolean(session?.user);
@@ -583,15 +594,17 @@ export function PublicListingDetailClient({
   const maxPetsAllowed = Math.max(1, listing.maxPets || 2);
   const allowsPets = listing.petsAllowed !== false;
 
-  // Booking Widget State — pre-filled from search URL params
+  // Booking Widget State — pre-filled from search URL params or active search context
   const [checkIn, setCheckIn] = useState(searchCheckIn && isDateKey(searchCheckIn) ? searchCheckIn : "");
   const [checkOut, setCheckOut] = useState(searchCheckOut && isDateKey(searchCheckOut) ? searchCheckOut : "");
-  const [adultsCount, setAdultsCount] = useState(() => Math.min(maximumGuests, Math.max(1, searchGuests ?? 1)));
-  const [childrenCount, setChildrenCount] = useState(0);
-  const [infantsCount, setInfantsCount] = useState(0);
-  const [petsCount, setPetsCount] = useState(0);
+  // DO NOT clamp to maximumGuests! Preserve user search guest count (Requirement 9 & Test 11)
+  const [adultsCount, setAdultsCount] = useState(() => searchAdults ?? Math.max(1, searchGuests ?? 1));
+  const [childrenCount, setChildrenCount] = useState(() => searchChildren ?? 0);
+  const [infantsCount, setInfantsCount] = useState(() => searchInfants ?? 0);
+  const [petsCount, setPetsCount] = useState(() => searchPets ?? 0);
   const [isNonRefundable, setIsNonRefundable] = useState(false);
   const [quote, setQuote] = useState<BookingQuote | null>(null);
+  const isInstantBook = (quote?.bookingMode ?? listing.bookingMode) === "INSTANT_BOOK";
   const [isQuoteLoading, setIsQuoteLoading] = useState(false);
   const [quoteError, setQuoteError] = useState<string | null>(null);
   const [isBookingSubmitting, setIsBookingSubmitting] = useState(false);
@@ -670,11 +683,11 @@ export function PublicListingDetailClient({
       metadata: {
         propertyType: listing.propertyType,
         listingType: listing.listingType,
-        instantBook: listing.instantBook,
+        instantBook: isInstantBook,
         isGuestFavorite: listing.isGuestFavorite,
       },
     });
-  }, [listing, totalCapacityGuests, checkIn, checkOut]);
+  }, [listing, totalCapacityGuests, checkIn, checkOut, isInstantBook]);
 
   useEffect(() => {
     if (typeof IntersectionObserver === "undefined" || !listing?.id) return;
@@ -717,16 +730,29 @@ export function PublicListingDetailClient({
   // A client component may be preserved while the route segment changes. Reset
   // all booking-specific state so a quote from property A never appears on B.
   useEffect(() => {
-    const nextCheckIn = isDateKey(searchCheckIn) ? searchCheckIn : "";
-    const nextCheckOut = isDateKey(searchCheckOut) && (!nextCheckIn || searchCheckOut > nextCheckIn) ? searchCheckOut : "";
-    const nextGuests = Math.min(Math.max(1, searchGuests ?? 1), maximumGuests);
+    const last = getLastSearch();
+    const nextCheckIn = isDateKey(searchCheckIn)
+      ? searchCheckIn
+      : last?.checkIn && isDateKey(last.checkIn)
+      ? last.checkIn
+      : "";
+    const nextCheckOut = isDateKey(searchCheckOut) && (!nextCheckIn || searchCheckOut > nextCheckIn)
+      ? searchCheckOut
+      : last?.checkOut && isDateKey(last.checkOut) && (!nextCheckIn || last.checkOut > nextCheckIn)
+      ? last.checkOut
+      : "";
+    const nextGuests = searchAdults ?? (searchGuests ? Math.max(1, searchGuests) : last?.adults || last?.guests || 1);
+    const nextChildren = searchChildren ?? last?.children ?? 0;
+    const nextInfants = searchInfants ?? last?.infants ?? 0;
+    const nextPets = searchPets ?? last?.pets ?? 0;
+
     const timer = window.setTimeout(() => {
       setCheckIn(nextCheckIn);
       setCheckOut(nextCheckOut);
       setAdultsCount(nextGuests);
-      setChildrenCount(0);
-      setInfantsCount(0);
-      setPetsCount(0);
+      setChildrenCount(nextChildren);
+      setInfantsCount(nextInfants);
+      setPetsCount(nextPets);
       setIsNonRefundable(false);
       setQuote(null);
       setQuoteError(null);
@@ -744,7 +770,7 @@ export function PublicListingDetailClient({
       setAvailabilityRefreshVersion((version) => version + 1);
     }, 0);
     return () => window.clearTimeout(timer);
-  }, [listing.id, maximumGuests, searchCheckIn, searchCheckOut, searchGuests]);
+  }, [listing.id, searchCheckIn, searchCheckOut, searchGuests, searchAdults, searchChildren, searchInfants, searchPets]);
 
   useEffect(() => {
     if (!isAllAmenitiesOpen) return;
@@ -775,18 +801,58 @@ export function PublicListingDetailClient({
   }, [isGuestSelectorOpen]);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
     const url = new URL(window.location.href);
-    if (checkIn) url.searchParams.set("checkIn", checkIn);
-    else url.searchParams.delete("checkIn");
-    if (checkOut) url.searchParams.set("checkOut", checkOut);
-    else url.searchParams.delete("checkOut");
+    if (checkIn) {
+      url.searchParams.set("checkIn", checkIn);
+      url.searchParams.delete("checkin");
+    } else {
+      url.searchParams.delete("checkin");
+      url.searchParams.delete("checkIn");
+    }
+    if (checkOut) {
+      url.searchParams.set("checkOut", checkOut);
+      url.searchParams.delete("checkout");
+    } else {
+      url.searchParams.delete("checkout");
+      url.searchParams.delete("checkOut");
+    }
     url.searchParams.delete("startDate");
     url.searchParams.delete("endDate");
     url.searchParams.set("guests", String(totalCapacityGuests));
+    if (adultsCount > 0) url.searchParams.set("adults", String(adultsCount));
+    else url.searchParams.delete("adults");
+    if (childrenCount > 0) url.searchParams.set("children", String(childrenCount));
+    else url.searchParams.delete("children");
+    if (infantsCount > 0) url.searchParams.set("infants", String(infantsCount));
+    else url.searchParams.delete("infants");
     if (petsCount > 0) url.searchParams.set("pets", String(petsCount));
     else url.searchParams.delete("pets");
-    window.history.replaceState(window.history.state, "", url);
-  }, [checkIn, checkOut, totalCapacityGuests, petsCount]);
+    window.history.replaceState(window.history.state, "", url.toString());
+
+    // Also sync to canonical search persistence if dates or guests are selected
+    if (checkIn || checkOut) {
+      const existing = getLastSearch();
+      saveLastSearch({
+        query: existing?.query || listing.city || "Stays",
+        displayName: existing?.displayName || listing.city || "Stays",
+        placeId: existing?.placeId || null,
+        placeType: existing?.placeType || "general",
+        latitude: existing?.latitude ?? listing.latitude ?? null,
+        longitude: existing?.longitude ?? listing.longitude ?? null,
+        city: existing?.city || listing.city || null,
+        country: existing?.country || listing.country || null,
+        checkIn: checkIn || null,
+        checkOut: checkOut || null,
+        guests: totalCapacityGuests,
+        adults: adultsCount,
+        children: childrenCount,
+        infants: infantsCount,
+        pets: petsCount,
+        searchedAt: new Date().toISOString(),
+      });
+    }
+  }, [checkIn, checkOut, totalCapacityGuests, adultsCount, childrenCount, infantsCount, petsCount, listing.city, listing.country, listing.latitude, listing.longitude]);
 
   // This compact range is shared by the booking card and read-only calendar.
   // The quote endpoint remains authoritative at reserve time.
@@ -826,19 +892,14 @@ export function PublicListingDetailClient({
             for (const range of [...retained, ...fetchedRanges]) unique.set(`${range.start}:${range.end}`, range);
             return [...unique.values()].sort((a, b) => a.start.localeCompare(b.start));
           });
-          // A direct/native date input may choose a date before its containing
-          // availability window has loaded. Reconcile that selection as soon as
-          // the authoritative window arrives instead of leaving an invalid
-          // range visibly selected.
+          // Keep persisted dates selected if unavailable per Requirement 8 & 9.
+          // Do NOT silently erase them; display a clear error message instead.
           if (isDateKey(checkIn) && isUnavailableDate(new Date(`${checkIn}T00:00:00`), fetchedRanges)) {
-            setCheckIn("");
-            setCheckOut("");
             setQuote(null);
-            setQuoteError("Your selected check-in date is unavailable. Please choose different dates.");
+            setQuoteError("These dates are not available for this property. Please choose different dates.");
           } else if (isDateKey(checkIn) && isDateKey(checkOut) && overlapsBookedRange(checkIn, checkOut, fetchedRanges)) {
-            setCheckOut("");
             setQuote(null);
-            setQuoteError("Part of your selected stay is unavailable. Please choose another checkout date.");
+            setQuoteError("These dates are not available for this property. Please choose different dates.");
           }
         })
         .catch((error: unknown) => {
@@ -1325,7 +1386,7 @@ export function PublicListingDetailClient({
   };
 
   // Handle Booking — validates all listing settings before redirecting to /book/[id]
-  const handleReserve = () => {
+  const handleReserve = async () => {
 
     if (!checkIn || !checkOut) {
       setQuoteError("Please choose check-in and check-out dates to continue.");
@@ -1426,47 +1487,103 @@ export function PublicListingDetailClient({
       return;
     }
 
-    trackListingEvent({
-      eventType: "reserve_clicked",
-      propertyId: listing.id,
-      city: listing.city,
-      country: listing.country,
-      checkIn,
-      checkOut,
-      guestCount: totalCapacityGuests,
-      metadata: {
+    const effectiveSpecialOffer = initialSpecialOfferId || searchParams.get("specialOfferId") || undefined;
+
+    setIsBookingSubmitting(true);
+    setQuoteError(null);
+    try {
+      const verificationParams = new URLSearchParams({
+        checkIn,
+        checkOut,
+        guests: String(totalCapacityGuests),
+        pets: String(petsCount),
+        nonRefundable: String(isNonRefundable),
+      });
+      if (effectiveSpecialOffer) verificationParams.set("specialOfferId", effectiveSpecialOffer);
+
+      // Re-check authoritative availability immediately before checkout entry.
+      const response = await fetch(`/api/v1/listings/${listing.id}/quote?${verificationParams.toString()}`, {
+        cache: "no-store",
+      });
+      const payload = await response.json();
+      if (!response.ok || payload.error || !payload.data) {
+        setQuote(null);
+        setQuoteError(payload.error?.message || "These dates are no longer available. Please choose different dates.");
+        setAvailabilityRefreshVersion((version) => version + 1);
+        return;
+      }
+      setQuote(payload.data);
+      const checkoutUrl = buildBookingCheckoutUrl(
+        listing.customSlug || listing.id,
+        {
+          location: listing.city || undefined,
+          checkIn,
+          checkOut,
+          guests: totalCapacityGuests,
+          adults: adultsCount,
+          children: childrenCount,
+          infants: infantsCount,
+          pets: petsCount,
+          specialOfferId: effectiveSpecialOffer,
+        },
+        {
+          ...(isNonRefundable ? { nonRefundable: "true" } : {}),
+          bookingMode: payload.data.bookingMode,
+        },
+      );
+
+      trackListingEvent({
+        eventType: "reserve_clicked",
+        propertyId: listing.id,
+        city: listing.city,
+        country: listing.country,
+        checkIn,
+        checkOut,
+        guestCount: totalCapacityGuests,
+        metadata: {
+          adults: adultsCount,
+          children: childrenCount,
+          infants: infantsCount,
+          pets: petsCount,
+          isNonRefundable,
+          bookingMode: payload.data.bookingMode,
+        },
+      });
+
+      trackListingEvent({
+        eventType: "booking_flow_started",
+        propertyId: listing.id,
+        city: listing.city,
+        country: listing.country,
+        checkIn,
+        checkOut,
+        guestCount: totalCapacityGuests,
+      });
+
+      saveLastSearch({
+        location: listing.city || "",
+        checkIn,
+        checkOut,
+        guests: totalCapacityGuests,
         adults: adultsCount,
         children: childrenCount,
         infants: infantsCount,
         pets: petsCount,
-        isNonRefundable,
-      },
-    });
+        specialOfferId: effectiveSpecialOffer,
+      });
 
-    trackListingEvent({
-      eventType: "booking_flow_started",
-      propertyId: listing.id,
-      city: listing.city,
-      country: listing.country,
-      checkIn,
-      checkOut,
-      guestCount: totalCapacityGuests,
-    });
+      if (!isAuthenticated) {
+        const callbackUrl = encodeURIComponent(checkoutUrl);
+        router.push(`/login?callbackUrl=${callbackUrl}`);
+        return;
+      }
 
-    const queryParams = new URLSearchParams({
-      checkIn,
-      checkOut,
-      guests: String(totalCapacityGuests),
-      adults: String(adultsCount),
-      children: String(childrenCount),
-    });
-    if (infantsCount > 0) queryParams.set("infants", String(infantsCount));
-    if (petsCount > 0) queryParams.set("pets", String(petsCount));
-    if (isNonRefundable) {
-      queryParams.set("nonRefundable", "true");
+      router.push(checkoutUrl);
+    } catch {
+      setQuoteError("Unable to verify availability right now. Please try again.");
+    } finally {
+      setIsBookingSubmitting(false);
     }
-
-    router.push(`/book/${listing.customSlug || listing.id}?${queryParams.toString()}`);
   };
 
   return (
@@ -1761,7 +1878,7 @@ export function PublicListingDetailClient({
                         <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto text-xl font-bold">
                           ✓
                         </div>
-                        <h3 className="text-[20px] font-normal text-[#1f1f1f]">{listing.instantBook ? "Reservation confirmed" : "Reservation request submitted"}</h3>
+                        <h3 className="text-[20px] font-normal text-[#1f1f1f]">{isInstantBook ? "Reservation confirmed" : "Reservation request submitted"}</h3>
                         <p className="text-xs text-zinc-500 leading-relaxed font-normal">
                           Your stay has been recorded. You can manage your bookings in your trips dashboard.
                         </p>
@@ -1782,7 +1899,7 @@ export function PublicListingDetailClient({
                             <span className="text-base text-[#1F1F1F] font-normal"> / night</span>
                           </div>
                           <span className="text-xs text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full font-semibold">
-                            {listing.instantBook ? "Instant Book" : "Host approval required"}
+                            {isInstantBook ? "Instant Book" : "Host approval required"}
                           </span>
                         </div>
 
@@ -1893,7 +2010,7 @@ export function PublicListingDetailClient({
                           </div>
                         </div>
 
-                        <p className="text-sm leading-relaxed text-[#727272]" aria-live="polite">
+                        {/* <p className="text-sm leading-relaxed text-[#727272]" aria-live="polite">
                           {isAvailabilityLoading || (Boolean(checkIn && checkOut) && isQuoteLoading)
                             ? "Checking availability…"
                             : isDateKey(checkIn) && isDateKey(checkOut) && overlapsBookedRange(checkIn, checkOut, bookedDateRanges)
@@ -1901,7 +2018,7 @@ export function PublicListingDetailClient({
                               : hasValidQuote
                                 ? "Your selected dates are available."
                                 : "Availability is confirmed before you reserve."}
-                        </p>
+                        </p> */}
 
                         {listing.bookingMessage && <p className="rounded-xl bg-zinc-50 border border-zinc-200 px-3 py-2 text-xs text-[#727272] whitespace-pre-wrap">{listing.bookingMessage}</p>}
 
@@ -2043,7 +2160,7 @@ export function PublicListingDetailClient({
                             ? "Confirming..."
                             : isQuoteLoading
                               ? "Checking availability..."
-                              : listing.instantBook
+                              : isInstantBook
                                 ? "Reserve"
                                 : "Request to book"}
                         </button>
@@ -2514,7 +2631,7 @@ export function PublicListingDetailClient({
                   ? "Confirming..."
                   : isQuoteLoading
                     ? "Checking..."
-                    : listing.instantBook
+                    : isInstantBook
                       ? "Reserve"
                       : "Request to book"}
               </button>

@@ -282,9 +282,13 @@ export function SearchMap({
   const buildDetailUrl = useCallback(
     (listingId: string) => {
       const params = new URLSearchParams();
-      if (checkIn) params.set("checkIn", checkIn);
-      if (checkOut) params.set("checkOut", checkOut);
-      if (guests && guests > 1) params.set("guests", String(guests));
+      if (checkIn) {
+        params.set("checkIn", checkIn);
+      }
+      if (checkOut) {
+        params.set("checkOut", checkOut);
+      }
+      if (guests && guests >= 1) params.set("guests", String(guests));
       const qs = params.toString();
       return `/listings/${listingId}${qs ? `?${qs}` : ""}`;
     },
