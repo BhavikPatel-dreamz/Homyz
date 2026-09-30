@@ -79,7 +79,7 @@ export function StepPinConfirm({
                   <p className="text-sm font-semibold text-[#1F1F1F] truncate">
                     {formattedStreet || t("host_street_address")}
                   </p>
-                  <p className="text-xs text-zinc-500 truncate">
+                  <p className="text-xs text-[#727272] truncate">
                     {formattedRegion || `${city}, ${country}`}
                   </p>
                 </div>
@@ -87,13 +87,13 @@ export function StepPinConfirm({
               <button
                 type="button"
                 onClick={onEditAddress}
-                className="shrink-0 text-xs font-semibold text-zinc-900 underline hover:text-zinc-600 px-3 py-1.5 rounded-lg hover:bg-zinc-200/60 transition-colors cursor-pointer"
+                className="shrink-0 text-xs font-semibold text-[#1F1F1F] underline hover:text-zinc-600 px-3 py-1.5 rounded-lg hover:bg-zinc-200/60 transition-colors cursor-pointer"
               >
                 {t("host_edit_address")}
               </button>
             </div>
 
-            <p className="text-xs text-zinc-500 mb-2 flex items-center gap-1.5">
+            <p className="text-xs text-[#727272] mb-2 flex items-center gap-1.5">
               <span>💡</span> {t("host_drag_pin_hint")}
             </p>
 
@@ -134,7 +134,7 @@ export function StepPinConfirm({
                   />
                 </button>
               </div>
-              <p className="sm:text-base text-sm font-normal text-zinc-500 leading-relaxed max-w-xl">
+              <p className="sm:text-base text-sm font-normal text-[#727272] leading-relaxed max-w-xl">
                 {t("host_show_specific_location_desc")}
               </p>
             </div>

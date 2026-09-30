@@ -24,7 +24,7 @@ function ExpandControl({
         <span>
           <span className="block text-sm text-[#1F1F1F] dark:text-zinc-100 font-medium">{title}</span>
           {subtitle && (
-            <span className="mt-1 block text-sm leading-5 text-[#727272] dark:text-zinc-400 font-normal">
+            <span className="mt-1 block text-sm leading-5 text-[#727272] dark:text-[#727272] font-normal">
               {subtitle}
             </span>
           )}
@@ -36,7 +36,7 @@ function ExpandControl({
           +
         </span>
       </summary>
-      <div className="mt-4 border-t border-zinc-200 dark:border-zinc-700 pt-3 text-xs leading-5 text-[#727272] dark:text-zinc-400">
+      <div className="mt-4 border-t border-zinc-200 dark:border-zinc-700 pt-3 text-xs leading-5 text-[#727272] dark:text-[#727272]">
         {children}
       </div>
     </details>
@@ -131,12 +131,12 @@ export function CalendarSettingsPanel({
         <div className="space-y-5">
           <h2 className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100">Availability settings</h2>
           <div className={controlClass}>
-            <p className="text-xs text-[#727272] dark:text-zinc-400">Trip length</p>
+            <p className="text-xs text-[#727272] dark:text-[#727272]">Trip length</p>
             <p className="mt-2 text-sm font-medium text-[#1F1F1F] dark:text-zinc-100">
               {listing.minNights}–{listing.maxNights} nights
             </p>
           </div>
-          <p className="text-xs leading-5 text-[#727272] dark:text-zinc-400">
+          <p className="text-xs leading-5 text-[#727272] dark:text-[#727272]">
             Select dates on the calendar to manage availability.
           </p>
           <Link
@@ -186,7 +186,7 @@ export function CalendarSettingsPanel({
           <section className="space-y-3 pb-6">
             <div>
               <h2 className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100">Price settings</h2>
-              <p className="mt-1 text-xs leading-5 text-[#727272] dark:text-zinc-400">
+              <p className="mt-1 text-xs leading-5 text-[#727272] dark:text-[#727272]">
                 These apply to all nights, unless you customize them by date.
               </p>
             </div>
@@ -234,7 +234,7 @@ export function CalendarSettingsPanel({
           </section>
           <section className="space-y-3 border-t border-[#F3F4F5] dark:border-zinc-800 py-6">
             <h3 className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100">Discounts</h3>
-            <p className="pb-1 text-xs leading-4 text-[#727272] dark:text-zinc-400">
+            <p className="pb-1 text-xs leading-4 text-[#727272] dark:text-[#727272]">
               Offer lower nightly rates for longer stays.
             </p>
             {input(
@@ -262,7 +262,7 @@ export function CalendarSettingsPanel({
           </section>
           <section className="space-y-3 border-t border-[#F3F4F5] dark:border-zinc-800 py-6">
             <h3 className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100">Promotions</h3>
-            <p className="pb-1 text-xs leading-4 text-[#727272] dark:text-zinc-400">
+            <p className="pb-1 text-xs leading-4 text-[#727272] dark:text-[#727272]">
               Manage offers and discounts for your listing.
             </p>
             <ExpandControl
@@ -299,7 +299,7 @@ export function CalendarSettingsPanel({
             <button
               type="submit"
               disabled={saving}
-              className="w-full rounded-full bg-[#FDE29B] dark:bg-amber-400 text-zinc-900 dark:text-zinc-950 font-semibold px-4 py-2.5 text-xs disabled:opacity-50 hover:bg-amber-300 dark:hover:bg-amber-300 transition-colors cursor-pointer"
+              className="w-full rounded-full bg-[#FDE29B] dark:bg-amber-400 text-[#1F1F1F] dark:text-zinc-950 font-semibold px-4 py-2.5 text-xs disabled:opacity-50 hover:bg-amber-300 dark:hover:bg-amber-300 transition-colors cursor-pointer"
             >
               {saving ? "Saving…" : "Save changes"}
             </button>

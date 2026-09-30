@@ -54,7 +54,7 @@ function CopyBadge({ text, label }: { text: string; label: string }) {
       title={`Copy ${label}`}
     >
       <span>{copied ? "Copied!" : "Copy"}</span>
-      <svg className="h-3.5 w-3.5 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <svg className="h-3.5 w-3.5 text-[#727272]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
       </svg>
     </button>
@@ -117,8 +117,8 @@ export function BookingArrivalInfo({
         <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-2xs">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Address</p>
-              <p className="mt-1 text-base font-semibold text-zinc-900">
+              <p className="text-xs font-semibold text-[#727272] uppercase tracking-wider">Address</p>
+              <p className="mt-1 text-base font-semibold text-[#1F1F1F]">
                 {fullAddress || "Full address will be available after confirmation."}
               </p>
               {apartment && (
@@ -149,15 +149,15 @@ export function BookingArrivalInfo({
         {/* Check-in Times */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-            <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Check-in Window</p>
-            <p className="mt-1 text-sm font-semibold text-zinc-900">
+            <p className="text-xs font-semibold text-[#727272] uppercase tracking-wider">Check-in Window</p>
+            <p className="mt-1 text-sm font-semibold text-[#1F1F1F]">
               {checkInStart ? `${checkInStart}` : "3:00 PM"}
               {checkInEnd ? ` – ${checkInEnd}` : " onwards"}
             </p>
           </div>
           <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-            <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Check-out Time</p>
-            <p className="mt-1 text-sm font-semibold text-zinc-900">
+            <p className="text-xs font-semibold text-[#727272] uppercase tracking-wider">Check-out Time</p>
+            <p className="mt-1 text-sm font-semibold text-[#1F1F1F]">
               {checkOutTime || "11:00 AM"}
             </p>
           </div>
@@ -202,15 +202,15 @@ export function BookingArrivalInfo({
                     <div className="mt-2.5 flex flex-wrap gap-4">
                       {doorCode && (
                         <div className="flex items-center gap-2 rounded-xl bg-white border border-emerald-200 px-3.5 py-2">
-                          <span className="text-xs text-zinc-500 font-medium">Door code:</span>
-                          <span className="font-mono text-sm font-bold text-zinc-900">{doorCode}</span>
+                          <span className="text-xs text-[#727272] font-medium">Door code:</span>
+                          <span className="font-mono text-sm font-bold text-[#1F1F1F]">{doorCode}</span>
                           <CopyBadge text={doorCode} label="door code" />
                         </div>
                       )}
                       {lockboxCode && (
                         <div className="flex items-center gap-2 rounded-xl bg-white border border-emerald-200 px-3.5 py-2">
-                          <span className="text-xs text-zinc-500 font-medium">Lockbox code:</span>
-                          <span className="font-mono text-sm font-bold text-zinc-900">{lockboxCode}</span>
+                          <span className="text-xs text-[#727272] font-medium">Lockbox code:</span>
+                          <span className="font-mono text-sm font-bold text-[#1F1F1F]">{lockboxCode}</span>
                           <CopyBadge text={lockboxCode} label="lockbox code" />
                         </div>
                       )}
@@ -230,13 +230,13 @@ export function BookingArrivalInfo({
                     </svg>
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-sm font-semibold text-zinc-900">Wi-Fi Connection</h3>
+                    <h3 className="text-sm font-semibold text-[#1F1F1F]">Wi-Fi Connection</h3>
                     <div className="mt-2.5 grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {wifiNetwork && (
                         <div className="flex items-center justify-between rounded-xl bg-zinc-50 border border-zinc-200 px-3.5 py-2">
                           <div>
-                            <span className="block text-[11px] text-zinc-500 uppercase tracking-wider font-semibold">Network</span>
-                            <span className="font-medium text-sm text-zinc-900">{wifiNetwork}</span>
+                            <span className="block text-[11px] text-[#727272] uppercase tracking-wider font-semibold">Network</span>
+                            <span className="font-medium text-sm text-[#1F1F1F]">{wifiNetwork}</span>
                           </div>
                           <CopyBadge text={wifiNetwork} label="network" />
                         </div>
@@ -244,8 +244,8 @@ export function BookingArrivalInfo({
                       {wifiPassword && (
                         <div className="flex items-center justify-between rounded-xl bg-zinc-50 border border-zinc-200 px-3.5 py-2">
                           <div>
-                            <span className="block text-[11px] text-zinc-500 uppercase tracking-wider font-semibold">Password</span>
-                            <span className="font-mono font-medium text-sm text-zinc-900">{wifiPassword}</span>
+                            <span className="block text-[11px] text-[#727272] uppercase tracking-wider font-semibold">Password</span>
+                            <span className="font-mono font-medium text-sm text-[#1F1F1F]">{wifiPassword}</span>
                           </div>
                           <CopyBadge text={wifiPassword} label="password" />
                         </div>
@@ -259,7 +259,7 @@ export function BookingArrivalInfo({
             {/* Check-in Instructions */}
             {checkInInstructions && (
               <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-2xs">
-                <h3 className="text-sm font-semibold text-zinc-900">Check-in Instructions</h3>
+                <h3 className="text-sm font-semibold text-[#1F1F1F]">Check-in Instructions</h3>
                 <p className="mt-2 whitespace-pre-line text-xs sm:text-sm text-zinc-600 leading-relaxed">
                   {checkInInstructions}
                 </p>
@@ -291,7 +291,7 @@ export function BookingArrivalInfo({
             {/* House Manual */}
             {houseManual && (
               <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-2xs">
-                <h3 className="text-sm font-semibold text-zinc-900">House Manual</h3>
+                <h3 className="text-sm font-semibold text-[#1F1F1F]">House Manual</h3>
                 <p className="mt-2 whitespace-pre-line text-xs sm:text-sm text-zinc-600 leading-relaxed">
                   {houseManual}
                 </p>

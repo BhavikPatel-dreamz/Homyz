@@ -28,8 +28,8 @@ export default async function AcceptInvitationPage({
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
               </svg>
             </div>
-            <h1 className="mb-2 text-xl font-semibold text-zinc-900">Invalid Invitation Link</h1>
-            <p className="text-xs sm:text-sm text-zinc-500 mb-6 leading-relaxed">
+            <h1 className="mb-2 text-xl font-semibold text-[#1F1F1F]">Invalid Invitation Link</h1>
+            <p className="text-xs sm:text-sm text-[#727272] mb-6 leading-relaxed">
               This invitation link is missing its security token or has already been consumed.
             </p>
             <Link
@@ -65,13 +65,13 @@ export default async function AcceptInvitationPage({
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
               </svg>
             </div>
-            <h1 className="text-xl font-semibold text-zinc-900">
+            <h1 className="text-xl font-semibold text-[#1F1F1F]">
               Unable to Accept Invitation
             </h1>
             <div className="rounded-2xl bg-rose-50 border border-rose-200 p-3.5 text-xs text-rose-800 font-medium">
               {errorMsg}
             </div>
-            <p className="text-xs sm:text-sm text-zinc-500 leading-relaxed">
+            <p className="text-xs sm:text-sm text-[#727272] leading-relaxed">
               If your link has expired or was revoked, please request a new invitation link from your system administrator.
             </p>
             <div className="pt-2">

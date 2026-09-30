@@ -758,7 +758,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
               <div className="text-[14px] font-normal text-[#1f1f1f] truncate">
                 {isLocating ? t("home_detecting_location") : t("home_use_current_location")}
               </div>
-              <div className="text-[12px] text-zinc-500 truncate">{t("home_find_stays_near_you")}</div>
+              <div className="text-[12px] text-[#727272] truncate">{t("home_find_stays_near_you")}</div>
             </div>
           </div>
           <span className="shrink-0 rounded-full bg-blue-100/70 px-2.5 py-0.5 text-[10px] font-semibold tracking-wider uppercase text-blue-800">
@@ -792,10 +792,10 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                   <div className="flex items-center gap-3 min-w-0">
                     <LocationIcon type="city" />
                     <div className="min-w-0">
-                      <div className="text-[14px] font-bold text-zinc-900 truncate">
+                      <div className="text-[14px] font-bold text-[#1F1F1F] truncate">
                         {highlightMatch(primaryCity.fullLabel || primaryCity.name, destination)}
                       </div>
-                      <div className="text-[12px] text-zinc-500 truncate">{primaryCity.subtitle || `All stays in ${primaryCity.name}`}</div>
+                      <div className="text-[12px] text-[#727272] truncate">{primaryCity.subtitle || `All stays in ${primaryCity.name}`}</div>
                     </div>
                   </div>
                   <span className="shrink-0 rounded-full bg-zinc-100 px-2.5 py-0.5 text-[10px] font-bold tracking-wider uppercase text-zinc-700">
@@ -808,7 +808,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
             {/* 2. Places & Neighborhoods in this city */}
             {places.length > 0 && (
               <div>
-                <p className="px-2 pt-1 pb-1.5 text-[11px] font-bold uppercase tracking-wider text-zinc-400">
+                <p className="px-2 pt-1 pb-1.5 text-[11px] font-bold uppercase tracking-wider text-[#727272]">
                   {t("home_places_in", { name: primaryCity?.name || t("home_search_where") })}
                 </p>
                 <div className="space-y-1">
@@ -831,10 +831,10 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                         <div className="flex items-center gap-3 min-w-0">
                           <LocationIcon type={p.locationType || p.type} />
                           <div className="min-w-0">
-                            <div className="text-[13px] font-semibold text-zinc-900 truncate">
+                            <div className="text-[13px] font-semibold text-[#1F1F1F] truncate">
                               {highlightMatch(p.name || p.city, destination)}
                             </div>
-                            <div className="text-[11px] text-zinc-500 truncate">{p.subtitle || p.fullLabel}</div>
+                            <div className="text-[11px] text-[#727272] truncate">{p.subtitle || p.fullLabel}</div>
                           </div>
                         </div>
                         <span className="shrink-0 rounded-full bg-amber-100/70 px-2 py-0.5 text-[10px] font-semibold text-amber-900">
@@ -850,7 +850,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
             {/* 3. Nearby Districts & Suburbs */}
             {districts.length > 0 && (
               <div>
-                <p className="px-2 pt-1 pb-1.5 text-[11px] font-bold uppercase tracking-wider text-zinc-400">
+                <p className="px-2 pt-1 pb-1.5 text-[11px] font-bold uppercase tracking-wider text-[#727272]">
                   {t("home_nearby_areas_districts")}
                 </p>
                 <div className="space-y-1">
@@ -873,10 +873,10 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                         <div className="flex items-center gap-3 min-w-0">
                           <LocationIcon type="district" />
                           <div className="min-w-0">
-                            <div className="text-[13px] font-semibold text-zinc-900 truncate">
+                            <div className="text-[13px] font-semibold text-[#1F1F1F] truncate">
                               {highlightMatch(d.name || d.city, destination)}
                             </div>
-                            <div className="text-[11px] text-zinc-500 truncate">{d.subtitle || d.fullLabel}</div>
+                            <div className="text-[11px] text-[#727272] truncate">{d.subtitle || d.fullLabel}</div>
                           </div>
                         </div>
                         <span className="shrink-0 rounded-full bg-blue-100/70 px-2 py-0.5 text-[10px] font-semibold text-blue-900">
@@ -936,7 +936,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
             {/* 5. Properties / Stays */}
             {properties.length > 0 && (
               <div>
-                <p className="px-2 pt-1 pb-1.5 text-[11px] font-bold uppercase tracking-wider text-zinc-400">
+                <p className="px-2 pt-1 pb-1.5 text-[11px] font-bold uppercase tracking-wider text-[#727272]">
                   Available Stays
                 </p>
                 <div className="space-y-1">
@@ -962,10 +962,10 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                             </svg>
                           </div>
                           <div className="min-w-0">
-                            <div className="text-[14px] font-semibold text-zinc-900 truncate">
+                            <div className="text-[14px] font-semibold text-[#1F1F1F] truncate">
                               {highlightMatch(p.title, destination)}
                             </div>
-                            {p.city && <div className="text-[12px] text-zinc-500 truncate">{p.city}</div>}
+                            {p.city && <div className="text-[12px] text-[#727272] truncate">{p.city}</div>}
                           </div>
                         </div>
                         <span className="shrink-0 rounded-full bg-emerald-100/80 px-2 py-0.5 text-[10px] font-bold text-emerald-900">
@@ -979,21 +979,21 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
             )}
           </>
         ) : isLoadingSuggestions ? (
-          <div className="py-6 px-2 text-center text-[13px] text-zinc-500 flex items-center justify-center gap-2">
+          <div className="py-6 px-2 text-center text-[13px] text-[#727272] flex items-center justify-center gap-2">
             <div className="h-4 w-4 border-2 border-zinc-300 border-t-zinc-800 rounded-full animate-spin" />
             {t("home_searching_destinations")}
           </div>
         ) : destination.trim().length >= 2 ? (
           <div className="py-8 px-4 text-center">
-            <div className="mx-auto mb-2.5 flex h-10 w-10 items-center justify-center rounded-2xl bg-zinc-100 text-zinc-500">
+            <div className="mx-auto mb-2.5 flex h-10 w-10 items-center justify-center rounded-2xl bg-zinc-100 text-[#727272]">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
                 <circle cx="12" cy="12" r="10" />
                 <line x1="12" y1="8" x2="12" y2="12" />
                 <line x1="12" y1="16" x2="12.01" y2="16" />
               </svg>
             </div>
-            <p className="text-[14px] font-semibold text-zinc-900">{t("home_no_matching_location")}</p>
-            <p className="text-[12px] text-zinc-500 mt-1">{t("home_no_matching_location_hint")}</p>
+            <p className="text-[14px] font-semibold text-[#1F1F1F]">{t("home_no_matching_location")}</p>
+            <p className="text-[12px] text-[#727272] mt-1">{t("home_no_matching_location_hint")}</p>
           </div>
         ) : (
           /* Fallback: recent searches & popular destinations */
@@ -1001,14 +1001,14 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
             {recentSearches.length > 0 && (
               <div className="mb-2">
                 <div className="flex items-center justify-between mb-1.5 px-2">
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">{t("home_recent_searches")}</p>
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-[#727272]">{t("home_recent_searches")}</p>
                   <button
                     type="button"
                     onClick={() => {
                       localStorage.removeItem("homyz_recent_searches");
                       setRecentSearches([]);
                     }}
-                    className="text-[11px] text-zinc-500 underline hover:text-zinc-900 cursor-pointer"
+                    className="text-[11px] text-[#727272] underline hover:text-[#1F1F1F] cursor-pointer"
                   >
                     {t("home_clear")}
                   </button>
@@ -1029,7 +1029,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                         <path d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" />
                       </svg>
                     </div>
-                    <div className="text-[14px] font-medium text-zinc-900 truncate">{term}</div>
+                    <div className="text-[14px] font-medium text-[#1F1F1F] truncate">{term}</div>
                   </button>
                 ))}
               </div>
@@ -1038,7 +1038,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
             {/* Popular Global Destinations */}
             {cities.length > 0 ? (
               <div>
-                <p className="px-2 pt-1 pb-1.5 text-[11px] font-bold uppercase tracking-wider text-zinc-500">
+                <p className="px-2 pt-1 pb-1.5 text-[11px] font-bold uppercase tracking-wider text-[#727272]">
                   {t("home_popular_destinations_worldwide")}
                 </p>
                 <div className="space-y-1">
@@ -1056,8 +1056,8 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                       <div className="flex items-center gap-3 min-w-0">
                         <LocationIcon type={d.locationType || "city"} />
                         <div className="min-w-0">
-                          <div className="text-[13px] font-semibold text-zinc-900 truncate">{d.name || d.city}</div>
-                          <div className="text-[11px] text-zinc-500 truncate">{d.subtitle || d.country}</div>
+                          <div className="text-[13px] font-semibold text-[#1F1F1F] truncate">{d.name || d.city}</div>
+                          <div className="text-[11px] text-[#727272] truncate">{d.subtitle || d.country}</div>
                         </div>
                       </div>
                       <span className="shrink-0 rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-medium text-zinc-600">
@@ -1076,7 +1076,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                   </svg>
                 </div>
                 <p className="text-[13px] font-medium text-zinc-800">{t("home_search_any_city_worldwide")}</p>
-                <p className="text-[11px] text-zinc-500 mt-0.5">{t("home_search_city_hint")}</p>
+                <p className="text-[11px] text-[#727272] mt-0.5">{t("home_search_city_hint")}</p>
               </div>
             )}
           </>
@@ -1175,7 +1175,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
             </span>
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#FCDF9C] text-[#1f1f1f]">
               {isSearching ? (
-                <svg className="h-4.5 w-4.5 animate-spin text-zinc-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <svg className="h-4.5 w-4.5 animate-spin text-[#1F1F1F]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
                   <path className="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                 </svg>
@@ -1302,7 +1302,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                   <button
                     type="button"
                     onClick={handleClearDestination}
-                    className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-200/80 hover:bg-zinc-300 text-zinc-600 hover:text-zinc-900 text-xs transition-colors cursor-pointer"
+                    className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-200/80 hover:bg-zinc-300 text-zinc-600 hover:text-[#1F1F1F] text-xs transition-colors cursor-pointer"
                     aria-label="Clear destination"
                   >
                     ✕
@@ -1384,10 +1384,10 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                 type="submit"
                 disabled={isSearching}
                 aria-label={isSearching ? "Searching..." : t("home_search_btn")}
-                className="ml-1 flex h-[48px] w-[48px] shrink-0 items-center justify-center rounded-full bg-[#fcdf9c] text-zinc-900 shadow-sm transition-all hover:bg-[#f3cf77] hover:scale-105 active:scale-95 cursor-pointer disabled:opacity-90 disabled:cursor-not-allowed disabled:hover:scale-100"
+                className="ml-1 flex h-[48px] w-[48px] shrink-0 items-center justify-center rounded-full bg-[#fcdf9c] text-[#1F1F1F] shadow-sm transition-all hover:bg-[#f3cf77] hover:scale-105 active:scale-95 cursor-pointer disabled:opacity-90 disabled:cursor-not-allowed disabled:hover:scale-100"
               >
                 {isSearching ? (
-                  <svg className="h-5 w-5 animate-spin text-zinc-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <svg className="h-5 w-5 animate-spin text-[#1F1F1F]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
                     <path className="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                   </svg>
@@ -1462,7 +1462,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
           >
             {/* Close Button at top right */}
             <div className="flex justify-between items-center mb-3">
-              <h2 className="text-base font-bold text-zinc-900">{t("home_find_your_stay")}</h2>
+              <h2 className="text-base font-bold text-[#1F1F1F]">{t("home_find_your_stay")}</h2>
               <button
                 type="button"
                 onClick={() => setIsMobileSearchOpen(false)}
@@ -1484,12 +1484,12 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                 aria-expanded={false}
                 className="flex w-full items-center justify-between gap-3 rounded-[22px] border border-zinc-200 bg-zinc-50 hover:bg-zinc-100/80 px-5 py-3.5 text-left transition-colors cursor-pointer"
               >
-                <span className="text-[13px] font-semibold text-zinc-500 uppercase tracking-wider">{t("home_search_where")}</span>
-                <span className="truncate text-[15px] font-semibold text-zinc-900">{destination || t("home_search_where_placeholder")}</span>
+                <span className="text-[13px] font-semibold text-[#727272] uppercase tracking-wider">{t("home_search_where")}</span>
+                <span className="truncate text-[15px] font-semibold text-[#1F1F1F]">{destination || t("home_search_where_placeholder")}</span>
               </button>
             ) : (
               <div className="rounded-[24px] bg-white border border-zinc-200/90 p-4 shadow-xs">
-                <h3 className="text-[18px] font-bold text-zinc-900 mb-3">{t("home_where_to")}</h3>
+                <h3 className="text-[18px] font-bold text-[#1F1F1F] mb-3">{t("home_where_to")}</h3>
 
                 {/* Search input pill */}
                 <div className="flex items-center justify-between rounded-full border border-zinc-300 bg-zinc-50/70 focus-within:bg-white focus-within:border-zinc-900 focus-within:ring-1 focus-within:ring-zinc-900 pl-4 pr-1.5 py-1.5 shadow-2xs mb-3 transition-all">
@@ -1523,14 +1523,14 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                         }
                       }
                     }}
-                    className="w-full bg-transparent text-[14px] font-medium text-zinc-900 placeholder:text-zinc-400 focus:outline-none"
+                    className="w-full bg-transparent text-[14px] font-medium text-[#1F1F1F] placeholder:text-[#727272] focus:outline-none"
                     autoFocus
                   />
                   {destination && (
                     <button
                       type="button"
                       onClick={handleClearDestination}
-                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-zinc-200 hover:bg-zinc-300 text-zinc-600 hover:text-zinc-900 text-xs mr-1 transition-colors cursor-pointer"
+                      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-zinc-200 hover:bg-zinc-300 text-zinc-600 hover:text-[#1F1F1F] text-xs mr-1 transition-colors cursor-pointer"
                       aria-label="Clear destination"
                     >
                       ✕
@@ -1540,11 +1540,11 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                     type="button"
                     disabled={isSearching}
                     onClick={handleMobileSubmit}
-                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#FCDF9C] text-zinc-900 transition-transform active:scale-95 cursor-pointer hover:brightness-95 disabled:opacity-90 disabled:cursor-not-allowed"
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#FCDF9C] text-[#1F1F1F] transition-transform active:scale-95 cursor-pointer hover:brightness-95 disabled:opacity-90 disabled:cursor-not-allowed"
                     aria-label={isSearching ? "Searching..." : "Search"}
                   >
                     {isSearching ? (
-                      <svg className="h-4 w-4 animate-spin text-zinc-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <svg className="h-4 w-4 animate-spin text-[#1F1F1F]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
                         <path className="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                       </svg>
@@ -1557,7 +1557,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                   </button>
                 </div>
 
-                <p className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 mb-2">{t("home_search_where")}</p>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-[#727272] mb-2">{t("home_search_where")}</p>
                 {destinationSuggestions}
               </div>
             )}
@@ -1572,11 +1572,11 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                 }`}
                 onClick={() => setActiveStep(activeStep === "when" ? "where" : "when")}
               >
-                <span className={activeStep === "when" ? "text-[18px] font-bold text-zinc-900" : "text-[13px] font-semibold text-zinc-500 uppercase tracking-wider"}>
+                <span className={activeStep === "when" ? "text-[18px] font-bold text-[#1F1F1F]" : "text-[13px] font-semibold text-[#727272] uppercase tracking-wider"}>
                   {activeStep === "when" ? t("home_when_trip") : t("home_search_when")}
                 </span>
                 {activeStep !== "when" && (
-                  <span className="text-right text-[15px] font-semibold text-zinc-900">
+                  <span className="text-right text-[15px] font-semibold text-[#1F1F1F]">
                     {datePreferences.mode !== "dates"
                       ? `${datePreferences.mode === "flexible" ? t(`home_when_stay_${datePreferences.stay.toLowerCase()}` as any) + " · " : ""}${
                           datePreferences.months.length
@@ -1630,11 +1630,11 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                 className="flex w-full items-center justify-between gap-3 text-left cursor-pointer"
                 onClick={() => setActiveStep(activeStep === "who" ? "where" : "who")}
               >
-                <span className={activeStep === "who" ? "text-[18px] font-bold text-zinc-900" : "text-[13px] font-semibold text-zinc-500 uppercase tracking-wider"}>
+                <span className={activeStep === "who" ? "text-[18px] font-bold text-[#1F1F1F]" : "text-[13px] font-semibold text-[#727272] uppercase tracking-wider"}>
                   {activeStep === "who" ? t("home_whos_coming") : t("home_search_who")}
                 </span>
                 {activeStep !== "who" && (
-                  <span className="text-right text-[15px] font-semibold text-zinc-900">
+                  <span className="text-right text-[15px] font-semibold text-[#1F1F1F]">
                     {mobileGuestSummary || t("home_search_add_guests")}
                   </span>
                 )}
@@ -1663,11 +1663,11 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                 type="button"
                 disabled={isSearching}
                 onClick={handleMobileNext}
-                className="flex items-center justify-center gap-2 rounded-full bg-[#fcdf9c] px-6 py-2.5 text-[14px] font-bold text-zinc-900 shadow-sm transition-all hover:bg-[#f5d580] active:scale-95 cursor-pointer disabled:opacity-90 disabled:cursor-not-allowed"
+                className="flex items-center justify-center gap-2 rounded-full bg-[#fcdf9c] px-6 py-2.5 text-[14px] font-bold text-[#1F1F1F] shadow-sm transition-all hover:bg-[#f5d580] active:scale-95 cursor-pointer disabled:opacity-90 disabled:cursor-not-allowed"
               >
                 {isSearching && activeStep === "who" ? (
                   <>
-                    <svg className="h-4 w-4 animate-spin text-zinc-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <svg className="h-4 w-4 animate-spin text-[#1F1F1F]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
                       <path className="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                     </svg>

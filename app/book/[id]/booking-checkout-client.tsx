@@ -350,7 +350,7 @@ export function BookingCheckoutClient({
   const locationLabel = [listing.city, listing.country].filter(Boolean).join(", ") || "Saudi Arabia";
 
   return (
-    <div className="flex min-h-screen flex-col bg-white font-sans text-zinc-900 antialiased selection:bg-amber-100">
+    <div className="flex min-h-screen flex-col bg-white font-sans text-[#1F1F1F] antialiased selection:bg-amber-100">
       <AppHeader showBottomBorder={true} />
 
       <main className="w-full flex-1 pt-8 pb-20 sm:py-12 lg:py-24">
@@ -412,7 +412,7 @@ export function BookingCheckoutClient({
                             className="mt-0.5 size-6 shrink-0 cursor-pointer appearance-none rounded-full border border-[#1F1F1F] bg-white checked:border-[7px] checked:border-[#1F1F1F] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1F1F1F]"
                           />
                           <div className="flex-1 min-w-0">
-                            <span className="text-sm font-normal text-zinc-900">
+                            <span className="text-sm font-normal text-[#1F1F1F]">
                               Pay <strong className="font-semibold">{formatMoney(effectiveTotalMinor)}</strong> now
                             </span>
                           </div>
@@ -431,10 +431,10 @@ export function BookingCheckoutClient({
                             className="mt-0.5 size-6 shrink-0 cursor-pointer appearance-none rounded-full border border-[#1F1F1F] bg-white checked:border-[7px] checked:border-[#1F1F1F] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1F1F1F]"
                           />
                           <div className="flex-1 min-w-0">
-                            <span className="block text-sm font-normal text-zinc-900">
+                            <span className="block text-sm font-normal text-[#1F1F1F]">
                               Pay <strong className="font-semibold">part now, part later</strong>
                             </span>
-                            <p className="text-xs text-zinc-500 mt-1 leading-relaxed">
+                            <p className="text-xs text-[#727272] mt-1 leading-relaxed">
                               {formatMoney(partNowMinor)} now, {formatMoney(partLaterMinor)} will be charged on {formatPartPaymentDate(checkIn)}. No extra fees.{" "}
                               <button
                                 type="button"
@@ -463,10 +463,10 @@ export function BookingCheckoutClient({
                             className="mt-0.5 size-6 shrink-0 cursor-pointer appearance-none rounded-full border border-[#1F1F1F] bg-white checked:border-[7px] checked:border-[#1F1F1F] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1F1F1F]"
                           />
                           <div className="flex-1 min-w-0">
-                            <span className="block text-sm font-normal text-zinc-900">
+                            <span className="block text-sm font-normal text-[#1F1F1F]">
                               Pay over time, with Klarna
                             </span>
-                            <p className="text-xs text-zinc-500 mt-1 leading-relaxed">
+                            <p className="text-xs text-[#727272] mt-1 leading-relaxed">
                               Choose a flexible payment option that works for you.{" "}
                               <button
                                 type="button"
@@ -574,7 +574,7 @@ export function BookingCheckoutClient({
                                     onChange={handleCardNumberChange}
                                     className="w-full rounded-[8px] border border-[#727272] bg-white px-4 py-2.5 text-base text-[#1f1f1f] placeholder:text-[rgba(31, 31, 31, 0.5)] focus:border-zinc-900 focus:outline-none transition-colors sm:min-h-[56px]  min-h-[45px] "
                                   />
-                                  <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-400 text-xs">
+                                  <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#727272] text-xs">
                                     💳
                                   </span>
                                 </div>
@@ -670,7 +670,7 @@ export function BookingCheckoutClient({
                             />
                             <div className="flex sm:flex-row flex-col sm:items-center items-start sm:gap-3">
                               <span className="text-base font-semibold text-[#1f1f1f]">Local gateways</span>
-                              <span className="text-xs text-zinc-400">(Mada, STC Pay, Tamara)</span>
+                              <span className="text-xs text-[#727272]">(Mada, STC Pay, Tamara)</span>
                             </div>
                           </label>
                         </div>
@@ -1018,7 +1018,7 @@ export function BookingCheckoutClient({
                           <span>
                             {nightsCount} night{nightsCount > 1 ? "s" : ""} x {formatMoney(effectiveBaseNightlyMinor)}
                           </span>
-                          <span className="font-medium text-zinc-900">
+                          <span className="font-medium text-[#1F1F1F]">
                             {formatMoney(effectiveNightlySubtotalMinor, true)}
                           </span>
                         </div>
@@ -1026,7 +1026,7 @@ export function BookingCheckoutClient({
                         {quote?.cleaningFee ? (
                           <div className="flex items-center justify-between text-sm text-[#727272]">
                             <span>Cleaning fee</span>
-                            <span className="font-medium text-zinc-900">
+                            <span className="font-medium text-[#1F1F1F]">
                               {formatMoney(quote.cleaningFee, true)}
                             </span>
                           </div>
@@ -1034,7 +1034,7 @@ export function BookingCheckoutClient({
 
                         <div className="flex items-center justify-between text-sm text-[#727272]">
                           <span>Taxes</span>
-                          <span className="font-medium text-zinc-900">
+                          <span className="font-medium text-[#1F1F1F]">
                             {formatMoney(effectiveTaxesMinor, true)}
                           </span>
                         </div>
@@ -1087,7 +1087,7 @@ export function BookingCheckoutClient({
               <button
                 type="button"
                 onClick={() => setIsDatesModalOpen(false)}
-                className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-zinc-100 text-zinc-500 cursor-pointer"
+                className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-zinc-100 text-[#727272] cursor-pointer"
               >
                 ✕
               </button>
@@ -1155,7 +1155,7 @@ export function BookingCheckoutClient({
               <button
                 type="button"
                 onClick={() => setIsGuestsModalOpen(false)}
-                className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-zinc-100 text-zinc-500 cursor-pointer"
+                className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-zinc-100 text-[#727272] cursor-pointer"
               >
                 ✕
               </button>
@@ -1165,8 +1165,8 @@ export function BookingCheckoutClient({
               {/* Adults */}
               <div className="flex items-center justify-between py-2">
                 <div>
-                  <h4 className="text-sm font-normal text-zinc-900">Adults</h4>
-                  <p className="text-xs text-zinc-500">Age 13+</p>
+                  <h4 className="text-sm font-normal text-[#1F1F1F]">Adults</h4>
+                  <p className="text-xs text-[#727272]">Age 13+</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <button
@@ -1194,8 +1194,8 @@ export function BookingCheckoutClient({
               {/* Pets */}
               <div className="flex items-center justify-between py-2">
                 <div>
-                  <h4 className="text-sm font-normal text-zinc-900">Pets</h4>
-                  <p className="text-xs text-zinc-500">Service animals welcome</p>
+                  <h4 className="text-sm font-normal text-[#1F1F1F]">Pets</h4>
+                  <p className="text-xs text-[#727272]">Service animals welcome</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <button
@@ -1251,7 +1251,7 @@ export function BookingCheckoutClient({
               <button
                 type="button"
                 onClick={() => setIsPolicyModalOpen(false)}
-                className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-zinc-100 text-zinc-500 cursor-pointer"
+                className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-zinc-100 text-[#727272] cursor-pointer"
               >
                 ✕
               </button>
@@ -1259,16 +1259,16 @@ export function BookingCheckoutClient({
 
             <div className="py-5 space-y-4 text-sm text-zinc-700 leading-relaxed">
               <div className="p-4 rounded-2xl bg-zinc-50 border border-zinc-100">
-                <h4 className="font-bold text-zinc-900 mb-1">
+                <h4 className="font-bold text-[#1F1F1F] mb-1">
                   Full refund before {formatCancellationCutoff(checkIn)}
                 </h4>
-                <p className="text-xs text-zinc-500">
+                <p className="text-xs text-[#727272]">
                   Cancel up to 72 hours before check-in for a full refund minus processing fees.
                 </p>
               </div>
 
               <div>
-                <h5 className="font-bold text-zinc-900 text-xs uppercase tracking-wider mb-2">
+                <h5 className="font-bold text-[#1F1F1F] text-xs uppercase tracking-wider mb-2">
                   Standard Terms
                 </h5>
                 <ul className="list-disc list-inside space-y-1.5 text-xs text-zinc-600">
@@ -1318,7 +1318,7 @@ export function BookingCheckoutClient({
             <div className="py-5 space-y-3 text-sm text-zinc-700">
               <div className="flex justify-between">
                 <span>Accommodation ({nightsCount} nights)</span>
-                <span className="font-semibold text-zinc-900">
+                <span className="font-semibold text-[#1F1F1F]">
                   {formatMoney(effectiveNightlySubtotalMinor, true)}
                 </span>
               </div>
@@ -1326,7 +1326,7 @@ export function BookingCheckoutClient({
               {quote?.cleaningFee ? (
                 <div className="flex justify-between">
                   <span>Cleaning fee</span>
-                  <span className="font-semibold text-zinc-900">
+                  <span className="font-semibold text-[#1F1F1F]">
                     {formatMoney(quote.cleaningFee, true)}
                   </span>
                 </div>
@@ -1334,7 +1334,7 @@ export function BookingCheckoutClient({
 
               <div className="flex justify-between">
                 <span>Estimated taxes (VAT 10%)</span>
-                <span className="font-semibold text-zinc-900">
+                <span className="font-semibold text-[#1F1F1F]">
                   {formatMoney(effectiveTaxesMinor, true)}
                 </span>
               </div>

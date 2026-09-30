@@ -5,11 +5,11 @@ import Link from "next/link";
 export default function Unauthorized() {
   return (
     <main className="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
-      <p className="text-sm font-medium text-zinc-500">401</p>
+      <p className="text-sm font-medium text-[#727272]">401</p>
       <h1>
         Sign in required
       </h1>
-      <p className="max-w-md text-zinc-600 dark:text-zinc-400">
+      <p className="max-w-md text-zinc-600 dark:text-[#727272]">
         You need to be signed in to view this page.
       </p>
       <Link

@@ -283,7 +283,7 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
                     >
                       <div className="pr-2">
                         <p className="text-sm font-semibold text-[#1F1F1F] group-hover:text-amber-600 transition-colors">{t("header_become_a_host")}</p>
-                        <p className="text-xs text-zinc-500 mt-0.5 leading-relaxed">{t("header_become_a_host_subtitle") || "It's easy to start hosting and earn extra income."}</p>
+                        <p className="text-xs text-[#727272] mt-0.5 leading-relaxed">{t("header_become_a_host_subtitle") || "It's easy to start hosting and earn extra income."}</p>
                       </div>
                       {/* Host Illustration matching Screenshot 3 */}
                       <div className="w-12 h-14 flex items-center justify-center shrink-0">

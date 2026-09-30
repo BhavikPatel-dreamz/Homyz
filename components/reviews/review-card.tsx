@@ -52,7 +52,7 @@ export function ReviewCard({ id, rating, comment, author, createdAt }: ReviewCar
       </div>
 
       <div className="mt-3 flex items-center text-xs text-zinc-600">
-        <span className="flex items-center gap-0.5 text-zinc-900" aria-label={`Rated ${rating} out of 5`}>
+        <span className="flex items-center gap-0.5 text-[#1F1F1F]" aria-label={`Rated ${rating} out of 5`}>
           {Array.from({ length: 5 }, (_, index) => (
             <Image
               key={index}

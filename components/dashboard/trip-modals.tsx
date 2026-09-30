@@ -88,7 +88,7 @@ export function CancelBookingModal({
           onClick={onClose}
           disabled={submitting}
           aria-label="Close dialog"
-          className="absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-full text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800 disabled:opacity-50"
+          className="absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-full text-[#727272] hover:bg-zinc-100 hover:text-zinc-800 disabled:opacity-50"
         >
           <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -105,7 +105,7 @@ export function CancelBookingModal({
             <h2 id="cancel-modal-title" className="text-xl font-semibold text-[#1F1F1F]">
               Cancel reservation?
             </h2>
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-[#727272]">
               Reference #{booking.id.slice(-8).toUpperCase()}
             </p>
           </div>
@@ -129,7 +129,7 @@ export function CancelBookingModal({
             </p>
           )}
 
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-[#727272]">
             Once cancelled, your reserved dates will be released and this action cannot be undone.
           </p>
         </div>
@@ -260,7 +260,7 @@ export function ReceiptModal({ bookingId, isOpen, onClose }: ReceiptModalProps) 
             type="button"
             onClick={onClose}
             aria-label="Close dialog"
-            className="flex h-9 w-9 items-center justify-center rounded-full text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-[#727272] hover:bg-zinc-100 hover:text-zinc-800"
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -274,7 +274,7 @@ export function ReceiptModal({ bookingId, isOpen, onClose }: ReceiptModalProps) 
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
             </svg>
-            <p className="text-sm text-zinc-500">Generating authoritative receipt...</p>
+            <p className="text-sm text-[#727272]">Generating authoritative receipt...</p>
           </div>
         ) : error ? (
           <div className="my-8 rounded-2xl border border-red-200 bg-red-50 p-5 text-center">
@@ -292,7 +292,7 @@ export function ReceiptModal({ bookingId, isOpen, onClose }: ReceiptModalProps) 
             {/* Header Meta */}
             <div className="grid grid-cols-2 gap-4 text-xs sm:text-sm">
               <div>
-                <span className="text-zinc-500 block">Issue Date</span>
+                <span className="text-[#727272] block">Issue Date</span>
                 <span className="font-medium">
                   {invoice.issueDate
                     ? new Date(invoice.issueDate).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
@@ -300,7 +300,7 @@ export function ReceiptModal({ bookingId, isOpen, onClose }: ReceiptModalProps) 
                 </span>
               </div>
               <div>
-                <span className="text-zinc-500 block">Booking Reference</span>
+                <span className="text-[#727272] block">Booking Reference</span>
                 <span className="font-mono font-medium">
                   {((invoice.bookingId || bookingId || "").slice(-8)).toUpperCase()}
                 </span>
@@ -312,13 +312,13 @@ export function ReceiptModal({ bookingId, isOpen, onClose }: ReceiptModalProps) 
               <div>
                 <span className="font-semibold text-zinc-800 block mb-1">Host / Supplier</span>
                 <p className="font-medium text-[#1F1F1F]">{invoice.supplier?.name || "Host"}</p>
-                {invoice.supplier?.taxId && <p className="text-zinc-500 text-xs">VAT: {invoice.supplier.taxId}</p>}
-                {invoice.supplier?.address && <p className="text-zinc-500 text-xs">{invoice.supplier.address}</p>}
+                {invoice.supplier?.taxId && <p className="text-[#727272] text-xs">VAT: {invoice.supplier.taxId}</p>}
+                {invoice.supplier?.address && <p className="text-[#727272] text-xs">{invoice.supplier.address}</p>}
               </div>
               <div>
                 <span className="font-semibold text-zinc-800 block mb-1">Guest</span>
                 <p className="font-medium text-[#1F1F1F]">{invoice.guest?.name || "Guest"}</p>
-                <p className="text-zinc-500 text-xs">{invoice.guest?.email || ""}</p>
+                <p className="text-[#727272] text-xs">{invoice.guest?.email || ""}</p>
               </div>
             </div>
 
@@ -327,7 +327,7 @@ export function ReceiptModal({ bookingId, isOpen, onClose }: ReceiptModalProps) 
               <span className="font-semibold text-zinc-800 block mb-1">Property & Stay</span>
               <p className="font-medium text-[#1F1F1F]">{invoice.property?.title || "Property Stay"}</p>
               {invoice.property && (
-                <p className="text-zinc-500">{[invoice.property.address, invoice.property.city, invoice.property.country].filter(Boolean).join(", ")}</p>
+                <p className="text-[#727272]">{[invoice.property.address, invoice.property.city, invoice.property.country].filter(Boolean).join(", ")}</p>
               )}
               {invoice.stayDates && (
                 <p className="text-zinc-600 pt-1 font-medium">
@@ -350,7 +350,7 @@ export function ReceiptModal({ bookingId, isOpen, onClose }: ReceiptModalProps) 
                   {(invoice.lineItems || []).map((item, idx) => (
                     <tr key={idx} className="hover:bg-zinc-50/50">
                       <td className="px-4 py-2.5">{item.description}</td>
-                      <td className="px-4 py-2.5 text-center text-zinc-500">{item.quantity}</td>
+                      <td className="px-4 py-2.5 text-center text-[#727272]">{item.quantity}</td>
                       <td className="px-4 py-2.5 text-right font-medium">
                         {formatPrice(item.total, invoice.currency || "SAR")}
                       </td>
@@ -379,7 +379,7 @@ export function ReceiptModal({ bookingId, isOpen, onClose }: ReceiptModalProps) 
 
             {/* Actions */}
             <div className="flex items-center justify-between pt-2">
-              <span className="text-[11px] text-zinc-400">
+              <span className="text-[11px] text-[#727272]">
                 Authorized electronic receipt generated by Homyz
               </span>
               <div className="flex gap-2">
@@ -444,7 +444,7 @@ export function ContactHostModal({ booking, isOpen, onClose }: ContactHostModalP
           type="button"
           onClick={onClose}
           aria-label="Close dialog"
-          className="absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-full text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800"
+          className="absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-full text-[#727272] hover:bg-zinc-100 hover:text-zinc-800"
         >
           <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -461,7 +461,7 @@ export function ContactHostModal({ booking, isOpen, onClose }: ContactHostModalP
             <h2 id="contact-modal-title" className="text-xl font-semibold text-[#1F1F1F]">
               Contact Host
             </h2>
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-[#727272]">
               Booking #{booking.id.slice(-8).toUpperCase()}
             </p>
           </div>
@@ -469,7 +469,7 @@ export function ContactHostModal({ booking, isOpen, onClose }: ContactHostModalP
 
         <div className="mt-4 rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
           <p className="text-xs font-semibold text-zinc-800 line-clamp-1">{booking.propertyName}</p>
-          <p className="text-xs text-zinc-500">{booking.location}</p>
+          <p className="text-xs text-[#727272]">{booking.location}</p>
         </div>
 
         <div className="mt-4 space-y-3 text-xs sm:text-sm text-zinc-600 leading-relaxed">

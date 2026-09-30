@@ -421,7 +421,7 @@ export function HostComplianceDashboard() {
           <div className="rounded-2xl border border-zinc-400 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-900 p-4 shadow-2xs">
             <span className="text-[10px] font-semibold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider block">Suspended</span>
             <div className="text-2xl font-black text-[#1F1F1F] dark:text-zinc-100 mt-1">{metrics.suspendedForCompliance}</div>
-            <span className="text-[9px] text-zinc-600 dark:text-zinc-400 block truncate">Blocked hosts</span>
+            <span className="text-[9px] text-zinc-600 dark:text-[#727272] block truncate">Blocked hosts</span>
           </div>
         </div>
       )}

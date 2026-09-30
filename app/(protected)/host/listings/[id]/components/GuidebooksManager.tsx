@@ -611,7 +611,7 @@ export function GuidebooksManager({
               />
               <div>
                 <h1>{t("host_guidebooks") || "Guidebooks"}</h1>
-                <p className="text-sm leading-5 text-[#727272] dark:text-zinc-400 max-w-[491px]">
+                <p className="text-sm leading-5 text-[#727272] dark:text-[#727272] max-w-[491px]">
                   {t("host_guidebooks_subtext") || "Share your favorite places and local tips with guests."}
                 </p>
               </div>
@@ -644,7 +644,7 @@ export function GuidebooksManager({
               </div>
               <div className="space-y-1">
                 <h3 className="text-lg font-normal text-[#1f1f1f]">{t("host_create_a_guidebook") || "Create a guidebook"}</h3>
-                <p className="text-sm text-zinc-500 font-normal max-w-sm leading-relaxed">
+                <p className="text-sm text-[#727272] font-normal max-w-sm leading-relaxed">
                   {t("host_create_guidebook_desc_text") || "Help guests discover your favorite restaurants, cafés, attractions, shops, and authentic local experiences."}
                 </p>
               </div>
@@ -704,7 +704,7 @@ export function GuidebooksManager({
                           <span>📍</span>
                           <span>{gb.itemsCount} {gb.itemsCount === 1 ? (t("host_recommendation_singular") || "recommendation") : (t("host_recommendations_plural") || "recommendations")}</span>
                         </div>
-                        <div className="flex items-center gap-1 text-[11px] text-zinc-400">
+                        <div className="flex items-center gap-1 text-[11px] text-[#727272]">
                           {(() => {
                             const count = Array.isArray(gb.listings) ? gb.listings.length : 0;
                             return <span>{count} {count === 1 ? (t("host_listing_singular") || "listing") : (t("host_listings_plural") || "listings")}</span>;
@@ -750,7 +750,7 @@ export function GuidebooksManager({
                               setGbToDelete(gb.id);
                               setModalType("delete_gb");
                             }}
-                            className="w-8 h-8 rounded-full border border-zinc-200 hover:bg-rose-50 hover:border-rose-200 hover:text-rose-600 flex items-center justify-center text-xs text-zinc-400 transition-all cursor-pointer"
+                            className="w-8 h-8 rounded-full border border-zinc-200 hover:bg-rose-50 hover:border-rose-200 hover:text-rose-600 flex items-center justify-center text-xs text-[#727272] transition-all cursor-pointer"
                             title={t("host_delete_guidebook") || "Delete guidebook"}
                           >
                             🗑️
@@ -778,7 +778,7 @@ export function GuidebooksManager({
             />
             <div>
               <h2>{t("host_create_guidebook_title") || "Create a Guidebook"}</h2>
-              <p className="text-sm leading-5 text-[#727272] dark:text-zinc-400 max-w-[491px]">
+              <p className="text-sm leading-5 text-[#727272] dark:text-[#727272] max-w-[491px]">
                 {t("host_create_guidebook_form_subtext") || "Share your favorite places and authentic recommendations with your guests."}
               </p>
             </div>
@@ -788,8 +788,8 @@ export function GuidebooksManager({
             {/* Guidebook Title */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <label className="block text-xs font-bold text-zinc-900">{t("host_guidebook_title_label") || "Guidebook title"}</label>
-                <span className="text-[10px] text-zinc-400">{createTitle.length}/100</span>
+                <label className="block text-xs font-bold text-[#1F1F1F]">{t("host_guidebook_title_label") || "Guidebook title"}</label>
+                <span className="text-[10px] text-[#727272]">{createTitle.length}/100</span>
               </div>
               <input
                 type="text"
@@ -798,22 +798,22 @@ export function GuidebooksManager({
                 value={createTitle}
                 onChange={(e) => setCreateTitle(e.target.value)}
                 placeholder={t("host_guidebook_title_placeholder") || "e.g. Bhavik's Favorite Places in Riyadh"}
-                className="w-full rounded-2xl border border-zinc-200 bg-white p-3.5 text-xs font-medium text-zinc-900 outline-none focus:border-zinc-400 shadow-2xs"
+                className="w-full rounded-2xl border border-zinc-200 bg-white p-3.5 text-xs font-medium text-[#1F1F1F] outline-none focus:border-zinc-400 shadow-2xs"
               />
             </div>
 
             {/* Destination / Area Autocomplete */}
             <div className="space-y-1.5 relative">
-              <label className="block text-xs font-bold text-zinc-900">{t("host_primary_location_label") || "Primary location or area"}</label>
+              <label className="block text-xs font-bold text-[#1F1F1F]">{t("host_primary_location_label") || "Primary location or area"}</label>
               <input
                 type="text"
                 value={createLocation}
                 onChange={(e) => setCreateLocation(e.target.value)}
                 placeholder={t("host_primary_location_placeholder") || "Search city or neighborhood (e.g. Al Olaya, Riyadh)"}
-                className="w-full rounded-2xl border border-zinc-200 bg-white p-3.5 text-xs font-medium text-zinc-900 outline-none focus:border-zinc-400 shadow-2xs"
+                className="w-full rounded-2xl border border-zinc-200 bg-white p-3.5 text-xs font-medium text-[#1F1F1F] outline-none focus:border-zinc-400 shadow-2xs"
               />
               {isLocationSearching && (
-                <span className="absolute right-3.5 top-9 text-[10px] text-zinc-400">{t("host_searching") || "Searching..."}</span>
+                <span className="absolute right-3.5 top-9 text-[10px] text-[#727272]">{t("host_searching") || "Searching..."}</span>
               )}
 
               {locationSuggestions.length > 0 && (
@@ -829,7 +829,7 @@ export function GuidebooksManager({
                       className="p-3 text-xs font-medium text-zinc-800 hover:bg-amber-50/70 cursor-pointer transition-colors"
                     >
                       <span className="font-semibold">{dest.locationName}</span>
-                      <span className="text-[10px] text-zinc-400 block truncate">{dest.formattedAddress}</span>
+                      <span className="text-[10px] text-[#727272] block truncate">{dest.formattedAddress}</span>
                     </div>
                   ))}
                 </div>
@@ -838,12 +838,12 @@ export function GuidebooksManager({
 
             {/* Cover Photo */}
             <div className="space-y-2">
-              <label className="block text-xs font-bold text-zinc-900">{t("host_cover_photo_label") || "Cover photo"}</label>
+              <label className="block text-xs font-bold text-[#1F1F1F]">{t("host_cover_photo_label") || "Cover photo"}</label>
               {createCover ? (
                 <div className="relative h-44 rounded-2xl overflow-hidden border border-zinc-200 group">
                   <img src={createCover} alt="Cover preview" className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
-                    <label className="rounded-full bg-white text-zinc-900 text-xs font-semibold px-4 py-2 cursor-pointer shadow-md hover:bg-zinc-100">
+                    <label className="rounded-full bg-white text-[#1F1F1F] text-xs font-semibold px-4 py-2 cursor-pointer shadow-md hover:bg-zinc-100">
                       {t("host_replace") || "Replace"}
                       <input
                         type="file"
@@ -867,7 +867,7 @@ export function GuidebooksManager({
                   <span className="text-xs font-semibold text-zinc-700">
                     {isUploadingCover ? (t("host_uploading_cover_image") || "Uploading cover image...") : (t("host_upload_cover_photo") || "Upload cover photo")}
                   </span>
-                  <span className="text-[10px] text-zinc-400 mt-0.5">{t("host_photo_upload_note") || "JPEG, PNG, or WebP up to 10MB"}</span>
+                  <span className="text-[10px] text-[#727272] mt-0.5">{t("host_photo_upload_note") || "JPEG, PNG, or WebP up to 10MB"}</span>
                   <input
                     type="file"
                     accept="image/jpeg,image/png,image/webp"
@@ -882,10 +882,10 @@ export function GuidebooksManager({
             {/* Guidebook Details */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <label className="block text-xs font-bold text-zinc-900" htmlFor="guidebook-details">
-                  {t("host_guidebook_details_label") || "Guidebook details"} <span className="text-zinc-400 font-normal">{t("host_optional_parentheses") || "(optional)"}</span>
+                <label className="block text-xs font-bold text-[#1F1F1F]" htmlFor="guidebook-details">
+                  {t("host_guidebook_details_label") || "Guidebook details"} <span className="text-[#727272] font-normal">{t("host_optional_parentheses") || "(optional)"}</span>
                 </label>
-                <span className="text-[10px] text-zinc-400">{createDescription.length}/1200</span>
+                <span className="text-[10px] text-[#727272]">{createDescription.length}/1200</span>
               </div>
               <textarea
                 id="guidebook-details"
@@ -894,13 +894,13 @@ export function GuidebooksManager({
                 value={createDescription}
                 onChange={(e) => setCreateDescription(e.target.value)}
                 placeholder={t("host_guidebook_details_placeholder") || "Tell guests what makes this guidebook useful, such as your favorite neighborhood or the kind of recommendations inside."}
-                className="w-full resize-y rounded-2xl border border-zinc-200 bg-white p-3.5 text-xs font-medium leading-relaxed text-zinc-900 outline-none focus:border-zinc-400 shadow-2xs"
+                className="w-full resize-y rounded-2xl border border-zinc-200 bg-white p-3.5 text-xs font-medium leading-relaxed text-[#1F1F1F] outline-none focus:border-zinc-400 shadow-2xs"
               />
             </div>
 
             {/* Associate Listing Note */}
             <div className="rounded-2xl bg-zinc-50 border border-zinc-200/80 p-4 text-xs text-zinc-600 space-y-1">
-              <span className="font-semibold text-zinc-900 block">{t("host_listing_association_title") || "Listing Association"}</span>
+              <span className="font-semibold text-[#1F1F1F] block">{t("host_listing_association_title") || "Listing Association"}</span>
               <p className="text-base text-[#727272] font-normal">
                 {t("host_listing_association_text") || "This guidebook will automatically be linked to this listing. You can link additional listings anytime."}
               </p>
@@ -945,7 +945,7 @@ export function GuidebooksManager({
               />
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="text-lg font-bold tracking-tight text-zinc-900 truncate max-w-sm sm:max-w-md">
+                  <h2 className="text-lg font-bold tracking-tight text-[#1F1F1F] truncate max-w-sm sm:max-w-md">
                     {selectedGuidebook.title}
                   </h2>
                   <button
@@ -961,10 +961,10 @@ export function GuidebooksManager({
                     {selectedGuidebook.published ? `● ${t("host_published") || "Published"}` : `○ ${t("host_draft") || "Draft"}`}
                   </button>
                 </div>
-                <span className="text-[11px] text-zinc-500 font-medium">
+                <span className="text-[11px] text-[#727272] font-medium">
                   {selectedGuidebook.city ? `${selectedGuidebook.city} · ` : ""}
                   {selectedGuidebook.items.length} {t("host_recommendations_plural") || "recommendations"}
-                  {saveStatus === "saving" && <span className="ml-2 text-zinc-400">{t("host_saving") || "Saving..."}</span>}
+                  {saveStatus === "saving" && <span className="ml-2 text-[#727272]">{t("host_saving") || "Saving..."}</span>}
                   {saveStatus === "saved" && <span className="ml-2 text-emerald-600">{t("host_saved") || "Saved ✓"}</span>}
                 </span>
               </div>
@@ -1001,7 +1001,7 @@ export function GuidebooksManager({
                   type="button"
                   onClick={() => setMobileTab("content")}
                   className={`px-3 py-1 text-xs font-semibold rounded-full transition-all ${
-                    mobileTab === "content" ? "bg-white text-zinc-900 shadow-2xs" : "text-zinc-500"
+                    mobileTab === "content" ? "bg-white text-[#1F1F1F] shadow-2xs" : "text-[#727272]"
                   }`}
                 >
                   {t("host_list_tab") || "List"}
@@ -1010,7 +1010,7 @@ export function GuidebooksManager({
                   type="button"
                   onClick={() => setMobileTab("map")}
                   className={`px-3 py-1 text-xs font-semibold rounded-full transition-all ${
-                    mobileTab === "map" ? "bg-white text-zinc-900 shadow-2xs" : "text-zinc-500"
+                    mobileTab === "map" ? "bg-white text-[#1F1F1F] shadow-2xs" : "text-[#727272]"
                   }`}
                 >
                   {t("host_map_tab") || "Map"} ({mapPins.length})
@@ -1026,7 +1026,7 @@ export function GuidebooksManager({
               {/* Overview & Progress Checklist */}
               <div className="rounded-3xl border border-zinc-200 bg-white p-5 space-y-4 shadow-2xs">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-zinc-900 uppercase tracking-wider">{t("host_guidebook_overview") || "Guidebook Overview"}</span>
+                  <span className="text-xs font-bold text-[#1F1F1F] uppercase tracking-wider">{t("host_guidebook_overview") || "Guidebook Overview"}</span>
                   <span className="text-base text-[#727272] font-normal">
                     {(() => {
                       const count = Array.isArray(selectedGuidebook.listings) ? selectedGuidebook.listings.length : 0;
@@ -1037,10 +1037,10 @@ export function GuidebooksManager({
 
                 <div className="space-y-1.5 border-t border-zinc-100 pt-4">
                   <div className="flex items-center justify-between gap-3">
-                    <label className="text-xs font-bold text-zinc-900" htmlFor="edit-guidebook-details">
+                    <label className="text-xs font-bold text-[#1F1F1F]" htmlFor="edit-guidebook-details">
                       {t("host_guidebook_details_label") || "Guidebook details"}
                     </label>
-                    <span className="text-[10px] text-zinc-400">{detailsDraft.length}/1200</span>
+                    <span className="text-[10px] text-[#727272]">{detailsDraft.length}/1200</span>
                   </div>
                   <textarea
                     id="edit-guidebook-details"
@@ -1049,7 +1049,7 @@ export function GuidebooksManager({
                     value={detailsDraft}
                     onChange={(e) => setDetailsDraft(e.target.value)}
                     placeholder={t("host_add_intro_placeholder") || "Add a short introduction for guests."}
-                    className="w-full resize-y rounded-2xl border border-zinc-200 bg-white p-3 text-xs font-medium leading-relaxed text-zinc-900 outline-none focus:border-zinc-400 shadow-2xs"
+                    className="w-full resize-y rounded-2xl border border-zinc-200 bg-white p-3 text-xs font-medium leading-relaxed text-[#1F1F1F] outline-none focus:border-zinc-400 shadow-2xs"
                   />
                   <div className="flex justify-end">
                     <button
@@ -1065,26 +1065,26 @@ export function GuidebooksManager({
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
                   <div className="p-2.5 rounded-2xl bg-zinc-50 border border-zinc-100">
-                    <span className="text-[10px] text-zinc-400 block font-semibold">{t("host_title_heading") || "Title"}</span>
+                    <span className="text-[10px] text-[#727272] block font-semibold">{t("host_title_heading") || "Title"}</span>
                     <span className="font-semibold text-emerald-600 flex items-center gap-1 mt-0.5">
                       {t("host_ready") || "✓ Ready"}
                     </span>
                   </div>
                   <div className="p-2.5 rounded-2xl bg-zinc-50 border border-zinc-100">
-                    <span className="text-[10px] text-zinc-400 block font-semibold">{t("host_cover") || "Cover"}</span>
+                    <span className="text-[10px] text-[#727272] block font-semibold">{t("host_cover") || "Cover"}</span>
                     <span className={`font-semibold flex items-center gap-1 mt-0.5 ${hasCover ? "text-emerald-600" : "text-amber-600"}`}>
                       {hasCover ? (t("host_added") || "✓ Added") : (t("host_optional") || "○ Optional")}
                     </span>
                   </div>
                   <div className="p-2.5 rounded-2xl bg-zinc-50 border border-zinc-100">
-                    <span className="text-[10px] text-zinc-400 block font-semibold">{t("host_places") || "Places"}</span>
-                    <span className={`font-semibold flex items-center gap-1 mt-0.5 ${placesCount > 0 ? "text-emerald-600" : "text-zinc-500"}`}>
+                    <span className="text-[10px] text-[#727272] block font-semibold">{t("host_places") || "Places"}</span>
+                    <span className={`font-semibold flex items-center gap-1 mt-0.5 ${placesCount > 0 ? "text-emerald-600" : "text-[#727272]"}`}>
                       {placesCount} {t("host_places") || "places"}
                     </span>
                   </div>
                   <div className="p-2.5 rounded-2xl bg-zinc-50 border border-zinc-100">
-                    <span className="text-[10px] text-zinc-400 block font-semibold">{t("host_tips") || "Tips"}</span>
-                    <span className={`font-semibold flex items-center gap-1 mt-0.5 ${tipsCount > 0 ? "text-emerald-600" : "text-zinc-500"}`}>
+                    <span className="text-[10px] text-[#727272] block font-semibold">{t("host_tips") || "Tips"}</span>
+                    <span className={`font-semibold flex items-center gap-1 mt-0.5 ${tipsCount > 0 ? "text-emerald-600" : "text-[#727272]"}`}>
                       {tipsCount} {t("host_tips") || "tips"}
                     </span>
                   </div>
@@ -1118,7 +1118,7 @@ export function GuidebooksManager({
                         <span className="text-base">📍</span>
                         <div>
                           <span>{t("host_add_a_place") || "Add a place"}</span>
-                          <span className="text-[10px] text-zinc-400 block font-normal">{t("host_add_place_subtext") || "Café, restaurant, museum, park"}</span>
+                          <span className="text-[10px] text-[#727272] block font-normal">{t("host_add_place_subtext") || "Café, restaurant, museum, park"}</span>
                         </div>
                       </button>
 
@@ -1138,7 +1138,7 @@ export function GuidebooksManager({
                         <span className="text-base">🏘️</span>
                         <div>
                           <span>{t("host_add_a_neighborhood") || "Add a neighborhood"}</span>
-                          <span className="text-[10px] text-zinc-400 block font-normal">{t("host_add_neighborhood_subtext") || "Overview of an area"}</span>
+                          <span className="text-[10px] text-[#727272] block font-normal">{t("host_add_neighborhood_subtext") || "Overview of an area"}</span>
                         </div>
                       </button>
 
@@ -1158,7 +1158,7 @@ export function GuidebooksManager({
                         <span className="text-base">💡</span>
                         <div>
                           <span>{t("host_add_a_tip") || "Add a local tip"}</span>
-                          <span className="text-[10px] text-zinc-400 block font-normal">{t("host_add_tip_subtext") || "Transport, etiquette, weather"}</span>
+                          <span className="text-[10px] text-[#727272] block font-normal">{t("host_add_tip_subtext") || "Transport, etiquette, weather"}</span>
                         </div>
                       </button>
                     </div>
@@ -1174,7 +1174,7 @@ export function GuidebooksManager({
                     placeholder={t("host_search_this_guidebook_placeholder") || "Search this guidebook..."}
                     className="w-full rounded-full border border-zinc-200 bg-white py-2 pl-8 pr-3 text-xs font-medium text-zinc-800 outline-none focus:border-zinc-400 shadow-2xs"
                   />
-                  <span className="absolute left-2.5 top-2.5 text-xs text-zinc-400">🔍</span>
+                  <span className="absolute left-2.5 top-2.5 text-xs text-[#727272]">🔍</span>
                 </div>
               </div>
 
@@ -1229,7 +1229,7 @@ export function GuidebooksManager({
                 <div className="rounded-3xl border border-zinc-200 bg-white p-8 text-center space-y-2">
                   <span className="text-2xl">🔍</span>
                   <p className="text-xs font-semibold text-zinc-700">{t("host_no_recommendations_found") || "No recommendations found"}</p>
-                  <p className="text-[11px] text-zinc-400">
+                  <p className="text-[11px] text-[#727272]">
                     {searchQuery
                       ? (t("host_try_another_search") || "Try another search keyword.")
                       : (t("host_click_add_guidebook_subtext") || "Click \"+ Add to guidebook\" above to add your first place or tip.")}
@@ -1268,7 +1268,7 @@ export function GuidebooksManager({
                           <div className="flex items-start justify-between gap-2">
                             <div>
                               <div className="flex items-center gap-1.5">
-                                <h4 className="text-xs font-bold text-zinc-900 leading-tight truncate">
+                                <h4 className="text-xs font-bold text-[#1F1F1F] leading-tight truncate">
                                   {item.title}
                                 </h4>
                                 {item.isFavorite && (
@@ -1277,7 +1277,7 @@ export function GuidebooksManager({
                                   </span>
                                 )}
                               </div>
-                              <span className="text-[10px] text-zinc-400 font-medium">
+                              <span className="text-[10px] text-[#727272] font-medium">
                                 {icon} {label}
                                 {item.address ? ` · ${item.address}` : ""}
                               </span>
@@ -1364,10 +1364,10 @@ export function GuidebooksManager({
             <div className={`lg:col-span-5 sticky top-24 ${mobileTab === "content" ? "hidden lg:block" : "block"}`}>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-zinc-900 uppercase tracking-wider">
+                  <span className="text-xs font-bold text-[#1F1F1F] uppercase tracking-wider">
                     {t("host_interactive_map") || "Interactive Map"} ({mapPins.length} {t("host_pins") || "pins"})
                   </span>
-                  <span className="text-[11px] text-zinc-400">{t("host_click_pin_details") || "Click a pin to view details"}</span>
+                  <span className="text-[11px] text-[#727272]">{t("host_click_pin_details") || "Click a pin to view details"}</span>
                 </div>
                 <div className="h-[480px]">
                   <GuidebookMap
@@ -1391,13 +1391,13 @@ export function GuidebooksManager({
         <ModalOverlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-xl w-full p-6 space-y-5 max-h-[90vh] overflow-y-auto shadow-2xl border border-zinc-200 animate-in zoom-in-95">
             <div className="flex items-center justify-between border-b border-zinc-200/80 pb-3">
-              <h3 className="text-base font-bold text-zinc-900">
+              <h3 className="text-base font-bold text-[#1F1F1F]">
                 {editingItem ? (t("host_edit_recommendation") || "Edit recommendation") : (t("host_add_a_place_to_guidebook") || "Add a place to guidebook")}
               </h3>
               <button
                 type="button"
                 onClick={() => setModalType(null)}
-                className="w-8 h-8 rounded-full border border-zinc-200 text-zinc-500 hover:bg-zinc-100 flex items-center justify-center text-sm"
+                className="w-8 h-8 rounded-full border border-zinc-200 text-[#727272] hover:bg-zinc-100 flex items-center justify-center text-sm"
               >
                 ✕
               </button>
@@ -1405,18 +1405,18 @@ export function GuidebooksManager({
 
             {/* Step A: Search for Place */}
             <div className="space-y-2">
-              <label className="block text-xs font-bold text-zinc-900">{t("host_search_for_place") || "Search for a place"}</label>
+              <label className="block text-xs font-bold text-[#1F1F1F]">{t("host_search_for_place") || "Search for a place"}</label>
               <div className="relative">
                 <input
                   type="text"
                   value={placeSearchInput}
                   onChange={(e) => setPlaceSearchInput(e.target.value)}
                   placeholder={t("host_search_place_placeholder") || "e.g. Brew92, Kingdom Tower, Danube Supermarket..."}
-                  className="w-full rounded-2xl border border-zinc-200 bg-white p-3.5 pl-9 text-xs font-medium text-zinc-900 outline-none focus:border-zinc-400 shadow-2xs"
+                  className="w-full rounded-2xl border border-zinc-200 bg-white p-3.5 pl-9 text-xs font-medium text-[#1F1F1F] outline-none focus:border-zinc-400 shadow-2xs"
                 />
-                <span className="absolute left-3 top-3.5 text-xs text-zinc-400">🔍</span>
+                <span className="absolute left-3 top-3.5 text-xs text-[#727272]">🔍</span>
                 {isSearchingPlaces && (
-                  <span className="absolute right-3.5 top-3.5 text-[10px] text-zinc-400">{t("host_searching") || "Searching..."}</span>
+                  <span className="absolute right-3.5 top-3.5 text-[10px] text-[#727272]">{t("host_searching") || "Searching..."}</span>
                 )}
               </div>
 
@@ -1438,12 +1438,12 @@ export function GuidebooksManager({
                       className="p-3 hover:bg-amber-50/70 cursor-pointer transition-colors text-xs space-y-0.5"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="font-bold text-zinc-900">{p.name}</span>
+                        <span className="font-bold text-[#1F1F1F]">{p.name}</span>
                         {p.relativeDistance && (
-                          <span className="text-[10px] text-zinc-500 font-semibold">{p.relativeDistance}</span>
+                          <span className="text-[10px] text-[#727272] font-semibold">{p.relativeDistance}</span>
                         )}
                       </div>
-                      <span className="text-[10px] text-zinc-400 block truncate">{p.address}</span>
+                      <span className="text-[10px] text-[#727272] block truncate">{p.address}</span>
                     </div>
                   ))}
                 </div>
@@ -1455,13 +1455,13 @@ export function GuidebooksManager({
               <div className="space-y-4 pt-2 border-t border-zinc-100">
                 <div className="p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200/80 flex items-center justify-between">
                   <div>
-                    <span className="text-xs font-bold text-zinc-900 block">{selectedPlace.name}</span>
-                    <span className="text-[10px] text-zinc-500 block truncate max-w-sm">{selectedPlace.address}</span>
+                    <span className="text-xs font-bold text-[#1F1F1F] block">{selectedPlace.name}</span>
+                    <span className="text-[10px] text-[#727272] block truncate max-w-sm">{selectedPlace.address}</span>
                   </div>
                   <button
                     type="button"
                     onClick={() => setSelectedPlace(null)}
-                    className="text-xs text-zinc-500 hover:text-zinc-800 underline font-semibold"
+                    className="text-xs text-[#727272] hover:text-zinc-800 underline font-semibold"
                   >
                     {t("host_change") || "Change"}
                   </button>
@@ -1469,11 +1469,11 @@ export function GuidebooksManager({
 
                 {/* Category Selector */}
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-zinc-900">{t("host_category") || "Category"}</label>
+                  <label className="block text-xs font-bold text-[#1F1F1F]">{t("host_category") || "Category"}</label>
                   <select
                     value={itemCategory}
                     onChange={(e) => setItemCategory(e.target.value)}
-                    className="w-full rounded-2xl border border-zinc-200 bg-white p-3.5 text-xs font-semibold text-zinc-900 outline-none focus:border-zinc-400 shadow-2xs"
+                    className="w-full rounded-2xl border border-zinc-200 bg-white p-3.5 text-xs font-semibold text-[#1F1F1F] outline-none focus:border-zinc-400 shadow-2xs"
                   >
                     {GUIDEBOOK_CATEGORIES.map((cat) => (
                       <option key={cat.id} value={cat.id}>
@@ -1486,36 +1486,36 @@ export function GuidebooksManager({
                 {/* Why do you recommend this place? */}
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <label className="block text-xs font-bold text-zinc-900">{t("host_why_recommend_place") || "Why do you recommend this place?"}</label>
-                    <span className="text-[10px] text-zinc-400">{recommendationText.length}/1200</span>
+                    <label className="block text-xs font-bold text-[#1F1F1F]">{t("host_why_recommend_place") || "Why do you recommend this place?"}</label>
+                    <span className="text-[10px] text-[#727272]">{recommendationText.length}/1200</span>
                   </div>
                   <textarea
                     rows={3}
                     value={recommendationText}
                     onChange={(e) => setRecommendationText(e.target.value)}
                     placeholder={t("host_recommendation_placeholder") || "e.g. My favorite place for breakfast. Try the outdoor terrace in the morning!"}
-                    className="w-full rounded-2xl border border-zinc-200 bg-white p-3.5 text-xs font-medium text-zinc-900 outline-none focus:border-zinc-400 shadow-2xs leading-relaxed"
+                    className="w-full rounded-2xl border border-zinc-200 bg-white p-3.5 text-xs font-medium text-[#1F1F1F] outline-none focus:border-zinc-400 shadow-2xs leading-relaxed"
                   />
                 </div>
 
                 {/* Personal Host Tip */}
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-zinc-900">
-                    {t("host_host_tip") || "Host tip"} <span className="text-zinc-400 font-normal">{t("host_optional_parentheses") || "(optional)"}</span>
+                  <label className="block text-xs font-bold text-[#1F1F1F]">
+                    {t("host_host_tip") || "Host tip"} <span className="text-[#727272] font-normal">{t("host_optional_parentheses") || "(optional)"}</span>
                   </label>
                   <input
                     type="text"
                     value={hostTipText}
                     onChange={(e) => setHostTipText(e.target.value)}
                     placeholder={t("host_tip_placeholder") || "e.g. Ask for the terrace, or go before 9 AM to avoid queues."}
-                    className="w-full rounded-2xl border border-zinc-200 bg-white p-3.5 text-xs font-medium text-zinc-900 outline-none focus:border-zinc-400 shadow-2xs"
+                    className="w-full rounded-2xl border border-zinc-200 bg-white p-3.5 text-xs font-medium text-[#1F1F1F] outline-none focus:border-zinc-400 shadow-2xs"
                   />
                 </div>
 
                 {/* Photo Upload */}
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-zinc-900">
-                    {t("host_photo") || "Photo"} <span className="text-zinc-400 font-normal">{t("host_optional_parentheses") || "(optional)"}</span>
+                  <label className="block text-xs font-bold text-[#1F1F1F]">
+                    {t("host_photo") || "Photo"} <span className="text-[#727272] font-normal">{t("host_optional_parentheses") || "(optional)"}</span>
                   </label>
                   {itemPhotoUrl ? (
                     <div className="relative h-28 rounded-2xl overflow-hidden border border-zinc-200">
@@ -1552,8 +1552,8 @@ export function GuidebooksManager({
                     className="w-4 h-4 rounded text-amber-500 focus:ring-amber-400"
                   />
                   <div>
-                    <span className="text-xs font-bold text-zinc-900 block">{t("host_highlight_as_favorite") || "⭐ Highlight as Host Favorite"}</span>
-                    <span className="text-[10px] text-zinc-500 block">{t("host_highlight_as_favorite_subtext") || "Standout recommendation shown prominently to guests"}</span>
+                    <span className="text-xs font-bold text-[#1F1F1F] block">{t("host_highlight_as_favorite") || "⭐ Highlight as Host Favorite"}</span>
+                    <span className="text-[10px] text-[#727272] block">{t("host_highlight_as_favorite_subtext") || "Standout recommendation shown prominently to guests"}</span>
                   </div>
                 </label>
 
@@ -1587,13 +1587,13 @@ export function GuidebooksManager({
         <ModalOverlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl border border-zinc-200 animate-in zoom-in-95">
             <div className="flex items-center justify-between border-b border-zinc-200/80 pb-3">
-              <h3 className="text-base font-bold text-zinc-900">
+              <h3 className="text-base font-bold text-[#1F1F1F]">
                 {modalType === "neighborhood" ? (t("host_add_neighborhood_advice") || "Add neighborhood advice") : (t("host_add_a_local_tip") || "Add a local tip")}
               </h3>
               <button
                 type="button"
                 onClick={() => setModalType(null)}
-                className="w-8 h-8 rounded-full border border-zinc-200 text-zinc-500 hover:bg-zinc-100 flex items-center justify-center text-sm"
+                className="w-8 h-8 rounded-full border border-zinc-200 text-[#727272] hover:bg-zinc-100 flex items-center justify-center text-sm"
               >
                 ✕
               </button>
@@ -1602,11 +1602,11 @@ export function GuidebooksManager({
             <div className="space-y-3.5">
               {modalType === "tip" && (
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-zinc-900">{t("host_tip_category") || "Tip category"}</label>
+                  <label className="block text-xs font-bold text-[#1F1F1F]">{t("host_tip_category") || "Tip category"}</label>
                   <select
                     value={simpleCategory}
                     onChange={(e) => setSimpleCategory(e.target.value)}
-                    className="w-full rounded-2xl border border-zinc-200 bg-white p-3 text-xs font-semibold text-zinc-900 outline-none shadow-2xs"
+                    className="w-full rounded-2xl border border-zinc-200 bg-white p-3 text-xs font-semibold text-[#1F1F1F] outline-none shadow-2xs"
                   >
                     {TIP_CATEGORIES.map((cat) => (
                       <option key={cat.id} value={cat.id}>
@@ -1618,7 +1618,7 @@ export function GuidebooksManager({
               )}
 
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-zinc-900">
+                <label className="block text-xs font-bold text-[#1F1F1F]">
                   {modalType === "neighborhood" ? (t("host_neighborhood_name") || "Neighborhood name") : (t("host_tip_title") || "Tip title")}
                 </label>
                 <input
@@ -1626,12 +1626,12 @@ export function GuidebooksManager({
                   value={simpleTitle}
                   onChange={(e) => setSimpleTitle(e.target.value)}
                   placeholder={modalType === "neighborhood" ? (t("host_neighborhood_placeholder") || "e.g. Al Olaya") : (t("host_tip_title_placeholder") || "e.g. Best time to explore the old town")}
-                  className="w-full rounded-2xl border border-zinc-200 bg-white p-3.5 text-xs font-medium text-zinc-900 outline-none focus:border-zinc-400 shadow-2xs"
+                  className="w-full rounded-2xl border border-zinc-200 bg-white p-3.5 text-xs font-medium text-[#1F1F1F] outline-none focus:border-zinc-400 shadow-2xs"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-zinc-900">
+                <label className="block text-xs font-bold text-[#1F1F1F]">
                   {modalType === "neighborhood" ? (t("host_neighborhood_desc_label") || "Description & why you recommend it") : (t("host_tip_desc_label") || "Advice / details")}
                 </label>
                 <textarea
@@ -1643,19 +1643,19 @@ export function GuidebooksManager({
                       ? (t("host_neighborhood_desc_placeholder") || "A vibrant central area with fantastic cafés and walkable boutiques...")
                       : (t("host_tip_desc_placeholder") || "Ride-hailing apps are the easiest and most reliable way to get around after 10 PM.")
                   }
-                  className="w-full rounded-2xl border border-zinc-200 bg-white p-3.5 text-xs font-medium text-zinc-900 outline-none focus:border-zinc-400 shadow-2xs"
+                  className="w-full rounded-2xl border border-zinc-200 bg-white p-3.5 text-xs font-medium text-[#1F1F1F] outline-none focus:border-zinc-400 shadow-2xs"
                 />
               </div>
 
               {modalType === "neighborhood" && (
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-zinc-900">{t("host_insider_tip_optional") || "Insider tip (optional)"}</label>
+                  <label className="block text-xs font-bold text-[#1F1F1F]">{t("host_insider_tip_optional") || "Insider tip (optional)"}</label>
                   <input
                     type="text"
                     value={simpleTip}
                     onChange={(e) => setSimpleTip(e.target.value)}
                     placeholder={t("host_insider_tip_placeholder") || "e.g. Walk around Tahlia Street in the evening for the best atmosphere."}
-                    className="w-full rounded-2xl border border-zinc-200 bg-white p-3.5 text-xs font-medium text-zinc-900 outline-none focus:border-zinc-400 shadow-2xs"
+                    className="w-full rounded-2xl border border-zinc-200 bg-white p-3.5 text-xs font-medium text-[#1F1F1F] outline-none focus:border-zinc-400 shadow-2xs"
                   />
                 </div>
               )}
@@ -1692,10 +1692,10 @@ export function GuidebooksManager({
               🗑️
             </div>
             <div className="space-y-1">
-              <h3 className="text-sm font-bold text-zinc-900">
+              <h3 className="text-sm font-bold text-[#1F1F1F]">
                 {modalType === "delete_item" ? (t("host_remove_recommendation_confirm") || "Remove this recommendation?") : (t("host_delete_guidebook_confirm") || "Delete this guidebook?")}
               </h3>
-              <p className="text-xs text-zinc-500 font-normal">
+              <p className="text-xs text-[#727272] font-normal">
                 {modalType === "delete_item"
                   ? (t("host_remove_recommendation_subtext") || "This place will be removed from your guidebook.")
                   : (t("host_delete_guidebook_subtext") || "This action cannot be undone. Guests will no longer see this guidebook.")}

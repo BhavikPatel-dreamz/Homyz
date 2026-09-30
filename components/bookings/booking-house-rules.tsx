@@ -66,7 +66,7 @@ export function BookingHouseRules({
       <div className="mt-5 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {/* House rules */}
         <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-2xs">
-          <h3 className="text-sm font-semibold text-zinc-900 mb-3 flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-[#1F1F1F] mb-3 flex items-center gap-2">
             <svg className="h-4 w-4 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -87,7 +87,7 @@ export function BookingHouseRules({
 
         {/* Safety & Property Disclosures */}
         <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-2xs">
-          <h3 className="text-sm font-semibold text-zinc-900 mb-3 flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-[#1F1F1F] mb-3 flex items-center gap-2">
             <svg className="h-4 w-4 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
@@ -114,7 +114,7 @@ export function BookingHouseRules({
         {/* Additional Host Rules */}
         {additionalRules && (
           <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-2xs sm:col-span-2 lg:col-span-1">
-            <h3 className="text-sm font-semibold text-zinc-900 mb-2 flex items-center gap-2">
+            <h3 className="text-sm font-semibold text-[#1F1F1F] mb-2 flex items-center gap-2">
               <svg className="h-4 w-4 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>

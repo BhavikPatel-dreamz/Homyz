@@ -71,7 +71,7 @@ export function LoginForm({
             </label>
             <Link
               href="/forgot-password"
-              className="text-xs text-zinc-500 hover:text-[#1F1F1F]"
+              className="text-xs text-[#727272] hover:text-[#1F1F1F]"
             >
               Forgot password?
             </Link>
@@ -88,7 +88,7 @@ export function LoginForm({
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700 transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#727272] hover:text-zinc-700 transition-colors"
               aria-label="Toggle password visibility"
             >
               {showPassword ? (
@@ -108,7 +108,7 @@ export function LoginForm({
           {pending ? "Signing in…" : "Sign in"}
         </button>
       </form>
-      <p className="text-center text-sm text-zinc-500">
+      <p className="text-center text-sm text-[#727272]">
         No account?{" "}
         <Link
           href="/register"

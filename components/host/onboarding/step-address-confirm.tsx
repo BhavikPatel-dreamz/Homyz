@@ -187,7 +187,7 @@ export function StepAddressConfirm({
                       />
                     </button>
                   </div>
-                  <p className="sm:text-base text-sm font-normal text-zinc-500 leading-relaxed max-w-xl">
+                  <p className="sm:text-base text-sm font-normal text-[#727272] leading-relaxed max-w-xl">
                     {t("host_show_specific_location_desc")}
                   </p>
                   <button type="button" className="underline text-[#1F1F1F] text-sm font-medium mt-1 inline-block hover:opacity-80">

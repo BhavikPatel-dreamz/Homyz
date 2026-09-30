@@ -243,7 +243,7 @@ export function PropertyTypeSkeleton() {
           </div>
         </div>
       </div>
-      <SkeletonText className="h-3 w-64 text-zinc-400" />
+      <SkeletonText className="h-3 w-64 text-[#727272]" />
 
       {/* Property categorization card */}
       <div className="pt-2 border-t border-zinc-200">

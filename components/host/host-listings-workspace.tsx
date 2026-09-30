@@ -563,7 +563,7 @@ export function HostListingsWorkspace({
           {showSearch && (
             <div className="sm:hidden">
               {filteredListings.length === 0 && searchQuery ? (
-                <p className="py-10 text-center text-zinc-500">{t("host_no_listings_matching_search")}</p>
+                <p className="py-10 text-center text-[#727272]">{t("host_no_listings_matching_search")}</p>
               ) : filteredListings.length === 0 ? (
                 <EmptyListingsState onCreate={handleOpenCreate} pending={pending} />
               ) : (
@@ -616,7 +616,7 @@ export function HostListingsWorkspace({
           {/* Property Cards Grid (Shown on desktop, and on mobile only when search is not active) */}
           <div className={showSearch ? "hidden sm:block" : "block"}>
             {filteredListings.length === 0 && searchQuery ? (
-              <p className="py-10 text-center text-zinc-500">{t("host_no_listings_matching_search")}</p>
+              <p className="py-10 text-center text-[#727272]">{t("host_no_listings_matching_search")}</p>
             ) : filteredListings.length === 0 ? (
               <EmptyListingsState onCreate={handleOpenCreate} pending={pending} />
             ) : (
@@ -1225,7 +1225,7 @@ export function HostListingsWorkspace({
                         <span>Enable Instant Booking</span>
                       </label>
 
-                      <label className="flex items-center gap-2 text-xs font-semibold text-zinc-600 dark:text-zinc-400 cursor-pointer">
+                      <label className="flex items-center gap-2 text-xs font-semibold text-zinc-600 dark:text-[#727272] cursor-pointer">
                         <input
                           type="checkbox"
                           checked={formData.isPaused}

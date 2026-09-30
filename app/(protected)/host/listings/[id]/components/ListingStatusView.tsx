@@ -394,8 +394,8 @@ export function ListingStatusView({
       <section aria-label="Approval and publishing progress" className="overflow-hidden rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 shadow-2xs">
         <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-700 px-5 py-4 sm:px-6">
           <div>
-            <p className="text-sm font-normal text-[#727272] dark:text-zinc-400">{t("host_status_journey")}</p>
-            <p className="mt-0.5 text-base font-medium text-zinc-900 dark:text-zinc-100">{t("host_status_approval_progress")}</p>
+            <p className="text-sm font-normal text-[#727272] dark:text-[#727272]">{t("host_status_journey")}</p>
+            <p className="mt-0.5 text-base font-medium text-[#1F1F1F] dark:text-zinc-100">{t("host_status_approval_progress")}</p>
           </div>
           <span className={`rounded-full px-3 py-1 text-xs font-medium uppercase tracking-wide ${
             displayState === "PUBLISHED" ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300" :
@@ -419,7 +419,7 @@ export function ListingStatusView({
                     isComplete ? "border-emerald-600 bg-emerald-600 text-white" :
                     isCurrent ? "border-amber-400 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 ring-4 ring-amber-100 dark:ring-amber-900/40" :
                     isWarning ? "border-rose-500 bg-rose-500 text-white" :
-                    "border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500"
+                    "border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-[#727272] dark:text-[#727272]"
                   }`}>
                     {isComplete ? (
                       <Image
@@ -433,7 +433,7 @@ export function ListingStatusView({
                     ) : isWarning ? "!" : idx + 1}
                   </span>
                   <span className={`mt-3 max-w-[108px] text-xs font-normal ${
-                    isComplete ? "text-[#1f1f1f]" : isCurrent ? "text-zinc-950 dark:text-zinc-100" : isWarning ? "text-rose-800 dark:text-rose-400" : "text-zinc-400 dark:text-zinc-500"
+                    isComplete ? "text-[#1f1f1f]" : isCurrent ? "text-zinc-950 dark:text-zinc-100" : isWarning ? "text-rose-800 dark:text-rose-400" : "text-[#727272] dark:text-[#727272]"
                   }`}>
                     {step.label}
                   </span>
@@ -534,7 +534,7 @@ export function ListingStatusView({
               {t("host_draft_badge")}
             </span>
           </div>
-          <p className="text-sm text-[#727272] dark:text-zinc-400 leading-relaxed">
+          <p className="text-sm text-[#727272] dark:text-[#727272] leading-relaxed">
             {isSaudi
               ? t("host_saudi_draft_desc")
               : t("host_regular_draft_desc")}
@@ -546,8 +546,8 @@ export function ListingStatusView({
                 className="flex items-center justify-between p-3 rounded-lg bg-white dark:bg-zinc-800 border border-[#727272] dark:border-zinc-700 text-sm"
               >
                 <div>
-                  <span className="font-semibold text-zinc-900 dark:text-zinc-100">{req.label}</span>
-                  <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">{req.description}</p>
+                  <span className="font-semibold text-[#1F1F1F] dark:text-zinc-100">{req.label}</span>
+                  <p className="text-sm text-[#727272] dark:text-[#727272] mt-0.5">{req.description}</p>
                 </div>
                 <button
                   type="button"
@@ -662,7 +662,7 @@ export function ListingStatusView({
               </span>
             ) : null}
           </div>
-          <p className="text-sm text-[#727272] dark:text-zinc-400 font-normal leading-relaxed">
+          <p className="text-sm text-[#727272] dark:text-[#727272] font-normal leading-relaxed">
             {t("host_listed_card_desc")}
           </p>
           {!isApproved && (
@@ -695,7 +695,7 @@ export function ListingStatusView({
               </span>
             )}
           </div>
-          <p className="text-sm text-[#727272] dark:text-zinc-400 font-normal leading-relaxed">
+          <p className="text-sm text-[#727272] dark:text-[#727272] font-normal leading-relaxed">
             {t("host_unlisted_card_desc")}
           </p>
         </div>
@@ -711,7 +711,7 @@ export function ListingStatusView({
           onClick={handleSave}
           className={`rounded-full font-medium text-sm px-5 py-2 shadow-2xs transition-all duration-300 ${
             !isApproved
-              ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500 cursor-not-allowed border border-zinc-200 dark:border-zinc-700"
+              ? "bg-zinc-100 dark:bg-zinc-800 text-[#727272] dark:text-[#727272] cursor-not-allowed border border-zinc-200 dark:border-zinc-700"
               : "bg-[#FEE08B] hover:bg-[#1f1f1f] text-[#1f1f1f] hover:text-white cursor-pointer"
           }`}
         >

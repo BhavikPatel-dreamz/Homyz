@@ -105,23 +105,23 @@ export function BookingReviewWizard(props: ReviewWizardProps) {
     }
   };
 
-  if (submitted) return <section className="mx-auto flex min-h-[55vh] max-w-xl flex-col items-center justify-center text-center"><span className="flex size-16 items-center justify-center rounded-full bg-emerald-100 text-3xl text-emerald-700">✓</span><h1 className="mt-6 text-3xl font-semibold tracking-tight text-zinc-900">Thanks for sharing your stay</h1><p className="mt-3 max-w-md text-sm leading-6 text-zinc-600">Your review has been submitted and will help future guests.</p><Link href={`/bookings/${props.bookingId}`} className="mt-7 inline-flex min-h-11 items-center rounded-xl bg-[#1F1F1F] px-6 text-sm font-semibold text-white hover:bg-zinc-700">Back to reservation</Link></section>;
+  if (submitted) return <section className="mx-auto flex min-h-[55vh] max-w-xl flex-col items-center justify-center text-center"><span className="flex size-16 items-center justify-center rounded-full bg-emerald-100 text-3xl text-emerald-700">✓</span><h1 className="mt-6 text-3xl font-semibold tracking-tight text-[#1F1F1F]">Thanks for sharing your stay</h1><p className="mt-3 max-w-md text-sm leading-6 text-zinc-600">Your review has been submitted and will help future guests.</p><Link href={`/bookings/${props.bookingId}`} className="mt-7 inline-flex min-h-11 items-center rounded-xl bg-[#1F1F1F] px-6 text-sm font-semibold text-white hover:bg-zinc-700">Back to reservation</Link></section>;
 
   return <div className="mx-auto grid w-full max-w-6xl gap-8 lg:grid-cols-[300px_minmax(0,1fr)] lg:gap-14">
     <aside className="h-fit rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm lg:sticky lg:top-28">
-      {props.listingPhoto ? <img src={props.listingPhoto} alt={props.listingName} className="aspect-[4/3] w-full rounded-2xl object-cover" /> : <div className="flex aspect-[4/3] items-center justify-center rounded-2xl bg-zinc-100 text-sm text-zinc-500">Photo unavailable</div>}
-      <h2 className="mt-4 text-lg font-semibold text-zinc-900">{props.listingName}</h2>
+      {props.listingPhoto ? <img src={props.listingPhoto} alt={props.listingName} className="aspect-[4/3] w-full rounded-2xl object-cover" /> : <div className="flex aspect-[4/3] items-center justify-center rounded-2xl bg-zinc-100 text-sm text-[#727272]">Photo unavailable</div>}
+      <h2 className="mt-4 text-lg font-semibold text-[#1F1F1F]">{props.listingName}</h2>
       {summary && <p className="mt-2 text-sm leading-5 text-zinc-600">{summary}</p>}
-      <p className="mt-4 border-t border-zinc-200 pt-4 text-sm font-medium text-zinc-900">{props.totalPaid}</p>
+      <p className="mt-4 border-t border-zinc-200 pt-4 text-sm font-medium text-[#1F1F1F]">{props.totalPaid}</p>
     </aside>
 
     <section className="flex min-h-[560px] flex-col rounded-3xl bg-white px-2 py-3 sm:px-8 sm:py-8" aria-labelledby="review-step-title">
       <div className="mx-auto flex w-full max-w-xl flex-1 flex-col justify-center text-center">
-        <p className="text-xs font-medium text-zinc-500">Step {draft.step + 1} of {steps.length}</p>
-        <h1 id="review-step-title" className="mt-5 text-3xl font-semibold leading-tight tracking-tight text-zinc-900 sm:text-4xl">{active.title(props.listingName)}</h1>
+        <p className="text-xs font-medium text-[#727272]">Step {draft.step + 1} of {steps.length}</p>
+        <h1 id="review-step-title" className="mt-5 text-3xl font-semibold leading-tight tracking-tight text-[#1F1F1F] sm:text-4xl">{active.title(props.listingName)}</h1>
         <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-zinc-600">{active.subtitle}</p>
         {active.key !== "intro" && active.key !== "comment" && <StarRating value={activeRating} onChange={setRating} label={active.title(props.listingName)} />}
-        {active.key === "comment" && <textarea value={draft.comment} onChange={(event) => setDraft((current) => ({ ...current, comment: event.target.value.slice(0, 5000) }))} maxLength={5000} placeholder="Say a few words about your stay" className="mt-8 min-h-40 w-full resize-y rounded-2xl border border-zinc-300 p-4 text-sm leading-6 text-zinc-900 outline-none placeholder:text-zinc-400 focus:border-zinc-900" />}
+        {active.key === "comment" && <textarea value={draft.comment} onChange={(event) => setDraft((current) => ({ ...current, comment: event.target.value.slice(0, 5000) }))} maxLength={5000} placeholder="Say a few words about your stay" className="mt-8 min-h-40 w-full resize-y rounded-2xl border border-zinc-300 p-4 text-sm leading-6 text-[#1F1F1F] outline-none placeholder:text-[#727272] focus:border-zinc-900" />}
         {error && <p role="alert" className="mt-5 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
       </div>
       <div className="mx-auto mt-8 w-full max-w-xl">

@@ -147,7 +147,7 @@ Would need:
 {/* No property review model or public review API exists yet. Do
     not mislabel host-profile metrics as reviews for this stay. */}
 <section className="space-y-2 border-b border-zinc-200/80 pb-6" aria-labelledby="guest-reviews-heading">
-  <h3 id="guest-reviews-heading" className="text-base font-bold text-zinc-900">Guest reviews</h3>
+  <h3 id="guest-reviews-heading" className="text-base font-bold text-[#1F1F1F]">Guest reviews</h3>
   <p className="text-xs leading-relaxed text-zinc-600">This property has no guest reviews yet.</p>
 </section>
 ```
@@ -472,7 +472,7 @@ File: [app/listings/[id]/public-listing-detail-client.tsx](app/listings/[id]/pub
 {/* No property review model or public review API exists yet. Do
     not mislabel host-profile metrics as reviews for this stay. */}
 <section className="space-y-2 border-b border-zinc-200/80 pb-6">
-  <h3 className="text-base font-bold text-zinc-900">Guest reviews</h3>
+  <h3 className="text-base font-bold text-[#1F1F1F]">Guest reviews</h3>
   <p className="text-xs leading-relaxed text-zinc-600">This property has no guest reviews yet.</p>
 </section>
 ```

@@ -161,7 +161,7 @@ export function HostOperationsDashboard() {
               Phase 6 Operational Intelligence
             </span>
           </div>
-          <p className="mt-1 text-sm text-zinc-500">
+          <p className="mt-1 text-sm text-[#727272]">
             Centralized monitoring, lifecycle funnel metrics, SLAs, reviewer workloads, and unified action queues.
           </p>
         </div>
@@ -206,7 +206,7 @@ export function HostOperationsDashboard() {
           { label: "Suspended Hosts", val: metrics?.suspended, color: "text-rose-700", bg: "bg-rose-100/50" },
         ].map((item, idx) => (
           <div key={idx} className={`p-4 rounded-xl border border-zinc-200/80 ${item.bg} flex flex-col justify-between shadow-2xs`}>
-            <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">{item.label}</span>
+            <span className="text-xs font-semibold text-[#727272] uppercase tracking-wider">{item.label}</span>
             <span className={`text-2xl font-black mt-2 ${item.color}`}>
               {loading ? "..." : item.val ?? 0}
             </span>
@@ -219,7 +219,7 @@ export function HostOperationsDashboard() {
         <div className="flex items-center justify-between border-b border-zinc-100 pb-4">
           <div>
             <h2 className="text-lg font-semibold text-[#1F1F1F]">Host Lifecycle Conversion Funnel</h2>
-            <p className="text-xs text-zinc-500 mt-0.5">End-to-end progression from intake registration to active host status</p>
+            <p className="text-xs text-[#727272] mt-0.5">End-to-end progression from intake registration to active host status</p>
           </div>
           <span className="text-xs font-medium text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
             Overall Conversion: {funnel.length > 0 ? `${funnel[funnel.length - 1]?.conversionRate}%` : "0%"}
@@ -230,7 +230,7 @@ export function HostOperationsDashboard() {
           {funnel.map((st, i) => (
             <div key={st.stageKey} className="relative p-4 rounded-xl bg-gradient-to-br from-zinc-50 to-white border border-zinc-200/70 shadow-2xs flex flex-col justify-between">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-zinc-400">0{i + 1}</span>
+                <span className="text-xs font-semibold text-[#727272]">0{i + 1}</span>
                 <span className="text-[11px] font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">
                   ~{st.avgTimeHours}h avg
                 </span>
@@ -239,7 +239,7 @@ export function HostOperationsDashboard() {
                 <div className="text-sm font-semibold text-[#1F1F1F]">{st.stageName}</div>
                 <div className="text-2xl font-black text-amber-600 mt-1">{st.count}</div>
               </div>
-              <div className="flex items-center justify-between text-xs pt-2 border-t border-zinc-100 text-zinc-500">
+              <div className="flex items-center justify-between text-xs pt-2 border-t border-zinc-100 text-[#727272]">
                 <span>Conv: <strong className="text-zinc-800">{st.conversionRate}%</strong></span>
                 {i > 0 && <span className="text-rose-600">Drop: <strong>-{st.dropOffRate}%</strong></span>}
               </div>
@@ -255,27 +255,27 @@ export function HostOperationsDashboard() {
           <h2 className="text-lg font-semibold text-[#1F1F1F] border-b border-zinc-100 pb-3">Operational KPIs & Efficiency Rates</h2>
           <div className="grid grid-cols-2 gap-4">
             <div className="p-3.5 rounded-xl bg-zinc-50 border border-zinc-200/60">
-              <div className="text-xs text-zinc-500">Approval Rate</div>
+              <div className="text-xs text-[#727272]">Approval Rate</div>
               <div className="text-xl font-semibold text-emerald-600 mt-1">{kpis?.approvalRate ?? 0}%</div>
             </div>
             <div className="p-3.5 rounded-xl bg-zinc-50 border border-zinc-200/60">
-              <div className="text-xs text-zinc-500">Rejection Rate</div>
+              <div className="text-xs text-[#727272]">Rejection Rate</div>
               <div className="text-xl font-semibold text-rose-600 mt-1">{kpis?.rejectionRate ?? 0}%</div>
             </div>
             <div className="p-3.5 rounded-xl bg-zinc-50 border border-zinc-200/60">
-              <div className="text-xs text-zinc-500">Doc Rejection Rate</div>
+              <div className="text-xs text-[#727272]">Doc Rejection Rate</div>
               <div className="text-xl font-semibold text-amber-600 mt-1">{kpis?.documentRejectionRate ?? 0}%</div>
             </div>
             <div className="p-3.5 rounded-xl bg-zinc-50 border border-zinc-200/60">
-              <div className="text-xs text-zinc-500">Compliance Failure Rate</div>
+              <div className="text-xs text-[#727272]">Compliance Failure Rate</div>
               <div className="text-xl font-semibold text-violet-600 mt-1">{kpis?.complianceFailureRate ?? 0}%</div>
             </div>
             <div className="p-3.5 rounded-xl bg-zinc-50 border border-zinc-200/60">
-              <div className="text-xs text-zinc-500">Re-Verification Rate</div>
+              <div className="text-xs text-[#727272]">Re-Verification Rate</div>
               <div className="text-xl font-semibold text-blue-600 mt-1">{kpis?.reVerificationRate ?? 0}%</div>
             </div>
             <div className="p-3.5 rounded-xl bg-zinc-50 border border-zinc-200/60">
-              <div className="text-xs text-zinc-500">Suspension Rate</div>
+              <div className="text-xs text-[#727272]">Suspension Rate</div>
               <div className="text-xl font-semibold text-red-600 mt-1">{kpis?.suspensionRate ?? 0}%</div>
             </div>
           </div>
@@ -293,7 +293,7 @@ export function HostOperationsDashboard() {
               <div key={b.stageKey} className="p-4 rounded-xl border border-zinc-200/80 bg-zinc-50/50 flex items-center justify-between">
                 <div>
                   <div className="text-sm font-semibold text-[#1F1F1F]">{b.stageName}</div>
-                  <div className="text-xs text-zinc-500 mt-1">
+                  <div className="text-xs text-[#727272] mt-1">
                     Applications Waiting: <span className="font-semibold text-zinc-800">{b.stuckCount}</span> | Avg Wait: <span className="font-semibold text-amber-700">{b.avgWaitDays} days</span>
                   </div>
                 </div>
@@ -306,7 +306,7 @@ export function HostOperationsDashboard() {
                   }`}>
                     {b.status === "EXCEEDED" ? "SLA EXCEEDED" : b.status === "WARNING" ? "SLA WARNING" : "WITHIN SLA"}
                   </span>
-                  <div className="text-[11px] text-zinc-400 mt-1">Target SLA: ≤ {b.slaDays}d</div>
+                  <div className="text-[11px] text-[#727272] mt-1">Target SLA: ≤ {b.slaDays}d</div>
                 </div>
               </div>
             ))}
@@ -319,7 +319,7 @@ export function HostOperationsDashboard() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-100 pb-4">
           <div>
             <h2 className="text-lg font-semibold text-[#1F1F1F]">Unified Action Required Queue</h2>
-            <p className="text-xs text-zinc-500">Centralized queue consolidating pending reviews, compliance issues, expired docs & re-verifications</p>
+            <p className="text-xs text-[#727272]">Centralized queue consolidating pending reviews, compliance issues, expired docs & re-verifications</p>
           </div>
 
           {/* Saved Views Presets */}
@@ -383,7 +383,7 @@ export function HostOperationsDashboard() {
         {/* Action Table */}
         <div className="overflow-x-auto rounded-xl border border-zinc-200/80">
           <table className="w-full text-left text-sm text-zinc-600">
-            <thead className="bg-zinc-50 text-xs font-semibold text-zinc-500 uppercase tracking-wider border-b border-zinc-200">
+            <thead className="bg-zinc-50 text-xs font-semibold text-[#727272] uppercase tracking-wider border-b border-zinc-200">
               <tr>
                 <th className="px-4 py-3">Host & App ID</th>
                 <th className="px-4 py-3">Issue / Task</th>
@@ -396,7 +396,7 @@ export function HostOperationsDashboard() {
             <tbody className="divide-y divide-zinc-200/80 bg-white">
               {filteredQueue.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-zinc-400">
+                  <td colSpan={6} className="px-4 py-8 text-center text-[#727272]">
                     No active action required items matching filters.
                   </td>
                 </tr>
@@ -405,11 +405,11 @@ export function HostOperationsDashboard() {
                   <tr key={item.id} className="hover:bg-zinc-50/70 transition-colors">
                     <td className="px-4 py-3">
                       <div className="font-semibold text-[#1F1F1F]">{item.hostName}</div>
-                      <div className="text-xs text-zinc-400 font-mono">{item.applicationId}</div>
+                      <div className="text-xs text-[#727272] font-mono">{item.applicationId}</div>
                     </td>
                     <td className="px-4 py-3">
                       <span className="font-medium text-zinc-800">{item.issueType}</span>
-                      <div className="text-xs text-zinc-500 max-w-xs truncate">{item.description}</div>
+                      <div className="text-xs text-[#727272] max-w-xs truncate">{item.description}</div>
                     </td>
                     <td className="px-4 py-3">
                       <span className="inline-block px-2.5 py-0.5 rounded-md text-xs font-semibold bg-zinc-100 text-zinc-700">
@@ -450,7 +450,7 @@ export function HostOperationsDashboard() {
         <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
           <div>
             <h2 className="text-lg font-semibold text-[#1F1F1F]">Reviewer Workload & Balancing</h2>
-            <p className="text-xs text-zinc-500">Monitor individual admin workload, pending items, and SLA adherence</p>
+            <p className="text-xs text-[#727272]">Monitor individual admin workload, pending items, and SLA adherence</p>
           </div>
         </div>
 
@@ -470,7 +470,7 @@ export function HostOperationsDashboard() {
         {/* Workload Table */}
         <div className="overflow-x-auto rounded-xl border border-zinc-200/80">
           <table className="w-full text-left text-sm text-zinc-600">
-            <thead className="bg-zinc-50 text-xs font-semibold text-zinc-500 uppercase tracking-wider border-b border-zinc-200">
+            <thead className="bg-zinc-50 text-xs font-semibold text-[#727272] uppercase tracking-wider border-b border-zinc-200">
               <tr>
                 <th className="px-4 py-3">Reviewer Name</th>
                 <th className="px-4 py-3">Assigned Total</th>
@@ -485,13 +485,13 @@ export function HostOperationsDashboard() {
                 <tr key={rev.reviewerId} className="hover:bg-zinc-50/70 transition-colors">
                   <td className="px-4 py-3">
                     <div className="font-semibold text-[#1F1F1F]">{rev.name}</div>
-                    <div className="text-xs text-zinc-400">{rev.email}</div>
+                    <div className="text-xs text-[#727272]">{rev.email}</div>
                   </td>
                   <td className="px-4 py-3 font-semibold text-[#1F1F1F]">{rev.assigned}</td>
                   <td className="px-4 py-3 font-semibold text-amber-600">{rev.pending}</td>
                   <td className="px-4 py-3 font-semibold text-rose-600">{rev.overdue}</td>
                   <td className="px-4 py-3 font-semibold text-emerald-600">{rev.completed}</td>
-                  <td className="px-4 py-3 text-xs text-zinc-500">~{rev.avgReviewTimeHours}h</td>
+                  <td className="px-4 py-3 text-xs text-[#727272]">~{rev.avgReviewTimeHours}h</td>
                 </tr>
               ))}
             </tbody>
@@ -506,7 +506,7 @@ export function HostOperationsDashboard() {
           {geoMetrics.map((g) => (
             <div key={g.region} className="p-4 rounded-xl border border-zinc-200/80 bg-zinc-50/40 flex flex-col justify-between">
               <div>
-                <div className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">{g.region}</div>
+                <div className="text-xs font-semibold text-[#727272] uppercase tracking-wider">{g.region}</div>
                 <div className="text-xl font-semibold text-[#1F1F1F] mt-1">{g.totalApplications} Applications</div>
               </div>
               <div className="flex items-center justify-between text-xs border-t border-zinc-200/60 pt-3 mt-3">

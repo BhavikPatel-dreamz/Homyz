@@ -171,7 +171,7 @@ export function ChangeReservationModal({
           onClick={onClose}
           disabled={submitting}
           aria-label="Close dialog"
-          className="absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-full text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800 disabled:opacity-50"
+          className="absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-full text-[#727272] hover:bg-zinc-100 hover:text-zinc-800 disabled:opacity-50"
         >
           <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -188,7 +188,7 @@ export function ChangeReservationModal({
             <h2 id="change-modal-title" className="text-xl font-semibold text-[#1F1F1F]">
               Change reservation
             </h2>
-            <p className="text-xs text-zinc-500 line-clamp-1">{propertyName}</p>
+            <p className="text-xs text-[#727272] line-clamp-1">{propertyName}</p>
           </div>
         </div>
 
@@ -205,7 +205,7 @@ export function ChangeReservationModal({
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
                 disabled={submitting}
-                className="mt-1.5 w-full rounded-xl border border-zinc-300 bg-white px-3.5 py-2.5 text-sm font-medium text-zinc-900 shadow-2xs focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900"
+                className="mt-1.5 w-full rounded-xl border border-zinc-300 bg-white px-3.5 py-2.5 text-sm font-medium text-[#1F1F1F] shadow-2xs focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900"
               />
             </div>
             <div>
@@ -219,7 +219,7 @@ export function ChangeReservationModal({
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
                 disabled={submitting}
-                className="mt-1.5 w-full rounded-xl border border-zinc-300 bg-white px-3.5 py-2.5 text-sm font-medium text-zinc-900 shadow-2xs focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900"
+                className="mt-1.5 w-full rounded-xl border border-zinc-300 bg-white px-3.5 py-2.5 text-sm font-medium text-[#1F1F1F] shadow-2xs focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900"
               />
             </div>
           </div>
@@ -229,10 +229,10 @@ export function ChangeReservationModal({
               <label className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider">
                 Guests
               </label>
-              <span className="text-xs text-zinc-500">Max {maxGuests} guests</span>
+              <span className="text-xs text-[#727272]">Max {maxGuests} guests</span>
             </div>
             <div className="mt-1.5 flex items-center justify-between rounded-xl border border-zinc-300 bg-white px-4 py-2.5">
-              <span className="text-sm font-medium text-zinc-900">
+              <span className="text-sm font-medium text-[#1F1F1F]">
                 {guests} {guests === 1 ? "guest" : "guests"}
               </span>
               <div className="flex items-center gap-2">
@@ -262,8 +262,8 @@ export function ChangeReservationModal({
         {/* Pricing & Comparison Preview */}
         <div className="mt-6 rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
           {loadingPreview ? (
-            <div className="flex items-center justify-center py-4 text-xs text-zinc-500 gap-2">
-              <svg className="h-4 w-4 animate-spin text-zinc-500" fill="none" viewBox="0 0 24 24">
+            <div className="flex items-center justify-center py-4 text-xs text-[#727272] gap-2">
+              <svg className="h-4 w-4 animate-spin text-[#727272]" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
               </svg>
@@ -281,7 +281,7 @@ export function ChangeReservationModal({
                   <CurrencyPrice amountMinorUnits={currentTotalPrice} sourceCurrency={currency} fractionDigits={2} />
                 </dd>
               </div>
-              <div className="flex justify-between font-semibold text-zinc-900 border-t border-zinc-200/80 pt-2">
+              <div className="flex justify-between font-semibold text-[#1F1F1F] border-t border-zinc-200/80 pt-2">
                 <dt>New total ({previewData.newNights} {previewData.newNights === 1 ? "night" : "nights"})</dt>
                 <dd>
                   <CurrencyPrice amountMinorUnits={previewData.newTotal} sourceCurrency={currency} fractionDigits={2} />
@@ -302,7 +302,7 @@ export function ChangeReservationModal({
               </div>
             </dl>
           ) : (
-            <p className="text-center text-xs text-zinc-500 py-2">
+            <p className="text-center text-xs text-[#727272] py-2">
               Select your new dates and guest count above to see availability and price updates.
             </p>
           )}

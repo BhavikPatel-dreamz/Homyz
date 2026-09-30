@@ -78,7 +78,7 @@ export function HostAlertsCenter() {
               Live Monitoring
             </span>
           </div>
-          <p className="mt-1 text-sm text-zinc-500">
+          <p className="mt-1 text-sm text-[#727272]">
             Real-time alerts for overdue applications, document expirations, critical compliance issues, and workload limits.
           </p>
         </div>
@@ -101,7 +101,7 @@ export function HostAlertsCenter() {
           { key: "ACKNOWLEDGED", label: "Acknowledged", count: countByStatus.ACKNOWLEDGED, color: "text-amber-600", bg: "bg-amber-50" },
           { key: "IN_PROGRESS", label: "In Progress", count: countByStatus.IN_PROGRESS, color: "text-blue-600", bg: "bg-blue-50" },
           { key: "RESOLVED", label: "Resolved", count: countByStatus.RESOLVED, color: "text-emerald-600", bg: "bg-emerald-50" },
-          { key: "DISMISSED", label: "Dismissed", count: countByStatus.DISMISSED, color: "text-zinc-500", bg: "bg-zinc-100" },
+          { key: "DISMISSED", label: "Dismissed", count: countByStatus.DISMISSED, color: "text-[#727272]", bg: "bg-zinc-100" },
         ].map((item) => (
           <button
             key={item.key}
@@ -110,7 +110,7 @@ export function HostAlertsCenter() {
               statusFilter === item.key ? "ring-2 ring-amber-500 border-amber-500 shadow-xs" : "border-zinc-200/80 bg-white"
             }`}
           >
-            <div className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">{item.label}</div>
+            <div className="text-xs font-semibold text-[#727272] uppercase tracking-wider">{item.label}</div>
             <div className={`text-xl font-semibold mt-1 ${item.color}`}>{item.count}</div>
           </button>
         ))}
@@ -119,7 +119,7 @@ export function HostAlertsCenter() {
       {/* Filter Bar */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-xl border border-zinc-200/80 shadow-2xs">
         <div className="flex items-center gap-3 w-full sm:w-auto">
-          <label className="text-xs font-semibold text-zinc-500">Filter Status:</label>
+          <label className="text-xs font-semibold text-[#727272]">Filter Status:</label>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
@@ -135,7 +135,7 @@ export function HostAlertsCenter() {
         </div>
 
         <div className="flex items-center gap-3 w-full sm:w-auto">
-          <label className="text-xs font-semibold text-zinc-500">Filter Severity:</label>
+          <label className="text-xs font-semibold text-[#727272]">Filter Severity:</label>
           <select
             value={severityFilter}
             onChange={(e) => setSeverityFilter(e.target.value)}
@@ -153,9 +153,9 @@ export function HostAlertsCenter() {
       {/* Alerts List */}
       <div className="space-y-3">
         {loading ? (
-          <div className="bg-white p-8 rounded-2xl text-center text-zinc-400">Loading operational alerts...</div>
+          <div className="bg-white p-8 rounded-2xl text-center text-[#727272]">Loading operational alerts...</div>
         ) : filteredAlerts.length === 0 ? (
-          <div className="bg-white p-12 rounded-2xl text-center text-zinc-400 border border-zinc-200/80">
+          <div className="bg-white p-12 rounded-2xl text-center text-[#727272] border border-zinc-200/80">
             No operational alerts matching selected filters.
           </div>
         ) : (
@@ -178,18 +178,18 @@ export function HostAlertsCenter() {
                     {alert.severity}
                   </span>
 
-                  <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+                  <span className="text-xs font-semibold text-[#727272] uppercase tracking-wider">
                     {alert.alertType.replace(/_/g, " ")}
                   </span>
 
-                  <span className="text-xs text-zinc-400 font-mono">
+                  <span className="text-xs text-[#727272] font-mono">
                     • {new Date(alert.createdAt).toLocaleDateString()}
                   </span>
                 </div>
 
                 <h3 className="text-lg font-medium text-[#1F1F1F]">{alert.title}</h3>
                 <p className="text-xs text-zinc-600">{alert.details}</p>
-                <div className="text-xs text-zinc-400 mt-1">
+                <div className="text-xs text-[#727272] mt-1">
                   Host: <strong className="text-zinc-700">{alert.hostName}</strong> ({alert.applicationId}) | Assigned: {alert.assignedUser?.name || "Unassigned"}
                 </div>
               </div>

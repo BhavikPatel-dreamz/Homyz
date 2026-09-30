@@ -81,7 +81,7 @@ export function LocationSearchInput({
       </label>
 
       <div className="relative">
-        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 text-sm pointer-events-none">
+        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#727272] text-sm pointer-events-none">
           📍
         </span>
 
@@ -120,7 +120,7 @@ export function LocationSearchInput({
               onChange("");
               setIsOpen(true);
             }}
-            className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-500 text-[11px] flex items-center justify-center transition-colors cursor-pointer"
+            className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-zinc-100 hover:bg-zinc-200 text-[#727272] text-[11px] flex items-center justify-center transition-colors cursor-pointer"
             title="Clear location"
           >
             ✕
@@ -132,15 +132,15 @@ export function LocationSearchInput({
       {isOpen && (
         <div className="absolute left-0 right-0 top-full mt-1 z-50 max-h-60 overflow-y-auto rounded-2xl bg-white border border-zinc-200 shadow-xl py-1.5 animate-in fade-in">
           {loading ? (
-            <div className="px-4 py-3 text-xs text-zinc-500 flex items-center gap-2">
-              <svg className="w-3.5 h-3.5 animate-spin text-zinc-400" viewBox="0 0 24 24" fill="none">
+            <div className="px-4 py-3 text-xs text-[#727272] flex items-center gap-2">
+              <svg className="w-3.5 h-3.5 animate-spin text-[#727272]" viewBox="0 0 24 24" fill="none">
                 <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" className="opacity-25" />
                 <path fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" className="opacity-75" />
               </svg>
               <span>Searching places...</span>
             </div>
           ) : suggestions.length === 0 ? (
-            <div className="px-4 py-3 text-xs text-zinc-400 italic text-center">
+            <div className="px-4 py-3 text-xs text-[#727272] italic text-center">
               No places found
             </div>
           ) : (
@@ -160,13 +160,13 @@ export function LocationSearchInput({
                       : "hover:bg-zinc-50 text-zinc-800"
                   }`}
                 >
-                  <span className="text-zinc-400 text-xs shrink-0">📍</span>
+                  <span className="text-[#727272] text-xs shrink-0">📍</span>
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-mediun text-[#1F1F1F] truncate">{dest.locationName}</p>
                     <p className="text-xs text-[#727272] truncate">{dest.formattedAddress}</p>
                   </div>
                   {dest.countryCode && (
-                    <span className="text-[10px] font-semibold text-zinc-400 bg-zinc-100 px-1.5 py-0.5 rounded shrink-0">
+                    <span className="text-[10px] font-semibold text-[#727272] bg-zinc-100 px-1.5 py-0.5 rounded shrink-0">
                       {dest.countryCode}
                     </span>
                   )}

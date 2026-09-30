@@ -539,7 +539,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
               <div className="flex items-start justify-between">
                 <div>
                   <h3 className="text-base font-medium text-[#1F1F1F]">Legal name</h3>
-                  <p className="text-xs text-zinc-500 mt-1">
+                  <p className="text-xs text-[#727272] mt-1">
                     This is the name on your travel document, which could be a license or a passport.
                   </p>
                 </div>
@@ -597,7 +597,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
                 <div className="text-base font-medium text-[#1F1F1F]">Legal name</div>
-                <div className="text-sm text-zinc-500 mt-0.5 truncate">
+                <div className="text-sm text-[#727272] mt-0.5 truncate">
                   {data.legalName || "Not provided"}
                 </div>
               </div>
@@ -621,7 +621,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
               <div className="flex items-start justify-between">
                 <div>
                   <h3 className="text-base font-medium text-[#1F1F1F]">Preferred first name</h3>
-                  <p className="text-xs text-zinc-500 mt-1">
+                  <p className="text-xs text-[#727272] mt-1">
                     This is how your first name will appear to hosts and guests.
                   </p>
                 </div>
@@ -661,7 +661,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
                 <div className="text-base font-medium text-[#1F1F1F]">Preferred first name</div>
-                <div className="text-sm text-zinc-500 mt-0.5 truncate">
+                <div className="text-sm text-[#727272] mt-0.5 truncate">
                   {data.preferredFirstName || "Not provided"}
                 </div>
               </div>
@@ -685,7 +685,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
               <div className="flex items-start justify-between">
                 <div>
                   <h3 className="text-base font-medium text-[#1F1F1F]">Email address</h3>
-                  <p className="text-xs text-zinc-500 mt-1">
+                  <p className="text-xs text-[#727272] mt-1">
                     Use an address you’ll always have access to.
                   </p>
                 </div>
@@ -727,7 +727,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
                 <div className="text-base font-medium text-[#1F1F1F]">Email address</div>
-                <div className="text-sm text-zinc-500 mt-0.5 truncate">
+                <div className="text-sm text-[#727272] mt-0.5 truncate">
                   {maskEmail(data.email)}
                 </div>
               </div>
@@ -751,7 +751,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
               <div className="flex items-start justify-between">
                 <div>
                   <h3 className="text-base font-medium text-[#1F1F1F]">Phone number</h3>
-                  <p className="text-xs text-zinc-500 mt-1">
+                  <p className="text-xs text-[#727272] mt-1">
                     For notifications, reminders, and help logging in.
                   </p>
                 </div>
@@ -809,10 +809,10 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
                 <div className="text-base font-medium text-[#1F1F1F]">Phone number</div>
-                <div className="text-sm text-zinc-500 mt-0.5">
+                <div className="text-sm text-[#727272] mt-0.5">
                   {maskPhone(data.phone)}
                 </div>
-                <div className="text-xs text-zinc-400 mt-1 leading-relaxed">
+                <div className="text-xs text-[#727272] mt-1 leading-relaxed">
                   Contact number (for confirmed guests and Homyz to get in touch). You can add other numbers and choose how they&apos;re used.
                 </div>
               </div>
@@ -848,7 +848,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                       Verified
                     </span>
                     {data.identityDocument?.fileName && (
-                      <p className="text-xs text-zinc-500">
+                      <p className="text-xs text-[#727272]">
                         Official ID: <span className="font-medium text-zinc-700">{data.identityDocument.fileName}</span>
                       </p>
                     )}
@@ -856,14 +856,14 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                 ) : data.identityStatus === "PENDING" ? (
                   <div className="space-y-1">
                     {data.identityDocument?.fileName && (
-                      <p className="text-xs text-zinc-500">
+                      <p className="text-xs text-[#727272]">
                         Uploaded: <span className="font-medium text-zinc-700">{data.identityDocument.fileName}</span>
-                        <span className="text-zinc-400"> (Under review)</span>
+                        <span className="text-[#727272]"> (Under review)</span>
                       </p>
                     )}
                   </div>
                 ) : (
-                  <span className="text-zinc-500">Not started</span>
+                  <span className="text-[#727272]">Not started</span>
                 )}
               </div>
             </div>
@@ -894,7 +894,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
               <div className="flex items-start justify-between">
                 <div>
                   <h3 className="text-base font-medium text-[#1F1F1F]">Residential address</h3>
-                  <p className="text-xs text-zinc-500 mt-1">
+                  <p className="text-xs text-[#727272] mt-1">
                     Your residential address is kept private and not shared publicly.
                   </p>
                 </div>
@@ -988,7 +988,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
                 <div className="text-base font-medium text-[#1F1F1F]">Residential address</div>
-                <div className="text-sm text-zinc-500 mt-0.5">
+                <div className="text-sm text-[#727272] mt-0.5">
                   {formatAddressPreview(data.residentialAddress)}
                 </div>
               </div>
@@ -1012,7 +1012,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
               <div className="flex items-start justify-between">
                 <div>
                   <h3 className="text-base font-medium text-[#1F1F1F]">Postal address</h3>
-                  <p className="text-xs text-zinc-500 mt-1">
+                  <p className="text-xs text-[#727272] mt-1">
                     Where you receive physical correspondence.
                   </p>
                 </div>
@@ -1108,7 +1108,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                   </div>
                 </div>
               ) : (
-                <p className="text-xs text-zinc-500 italic bg-zinc-50 p-3 rounded-xl border border-zinc-200">
+                <p className="text-xs text-[#727272] italic bg-zinc-50 p-3 rounded-xl border border-zinc-200">
                   Using your residential address as your postal address.
                 </p>
               )}
@@ -1127,7 +1127,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
                 <div className="text-base font-medium text-[#1F1F1F]">Postal address</div>
-                <div className="text-sm text-zinc-500 mt-0.5">
+                <div className="text-sm text-[#727272] mt-0.5">
                   {data.sameAsResidential
                     ? "Provided"
                     : formatAddressPreview(data.postalAddress)}
@@ -1153,7 +1153,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
               <div className="flex items-start justify-between">
                 <div>
                   <h3 className="text-base font-medium text-[#1F1F1F]">Emergency contact</h3>
-                  <p className="text-xs text-zinc-500 mt-1">
+                  <p className="text-xs text-[#727272] mt-1">
                     A trusted contact we can alert in an urgent situation.
                   </p>
                 </div>
@@ -1268,7 +1268,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
                 <div className="text-base font-medium text-[#1F1F1F]">Emergency contact</div>
-                <div className="text-sm text-zinc-500 mt-0.5 truncate">
+                <div className="text-sm text-[#727272] mt-0.5 truncate">
                   {data.emergencyContact
                     ? `${data.emergencyContact.name} (${data.emergencyContact.relationship})`
                     : "Not provided"}
@@ -1303,7 +1303,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
             <h4 className="text-sm font-semibold text-[#1F1F1F]">
               Why isn’t my info shown here?
             </h4>
-            <p className="text-xs text-zinc-500 mt-1 leading-relaxed">
+            <p className="text-xs text-[#727272] mt-1 leading-relaxed">
               We’re hiding some account details to protect your identity.
             </p>
           </div>
@@ -1323,7 +1323,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
             <h4 className="text-sm font-semibold text-[#1F1F1F]">
               Which details can be edited?
             </h4>
-            <p className="text-xs text-zinc-500 mt-1 leading-relaxed">
+            <p className="text-xs text-[#727272] mt-1 leading-relaxed">
               Contact info and personal details can be edited. If this info was used to verify your identity, you’ll need to get verified again the next time you book – or to continue hosting.
             </p>
           </div>
@@ -1344,7 +1344,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
             <h4 className="text-sm font-semibold text-[#1F1F1F]">
               What info is shared with others?
             </h4>
-            <p className="text-xs text-zinc-500 mt-1 leading-relaxed">
+            <p className="text-xs text-[#727272] mt-1 leading-relaxed">
               Homyz only releases contact information for Hosts and guests after a reservation is confirmed.
             </p>
           </div>
@@ -1367,7 +1367,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                 <h3 id="identity-modal-title" className="text-lg font-semibold text-[#1F1F1F]">
                   Identity Verification
                 </h3>
-                <p className="text-xs text-zinc-500 mt-1 leading-relaxed">
+                <p className="text-xs text-[#727272] mt-1 leading-relaxed">
                   Upload an official government-issued ID to verify your identity. Your document will be securely stored and reviewed by our verification team.
                 </p>
               </div>
@@ -1378,7 +1378,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                   setSelectedDocFile(null);
                   setDocUploadError(null);
                 }}
-                className="rounded-full p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 transition-colors"
+                className="rounded-full p-1 text-[#727272] hover:bg-zinc-100 hover:text-zinc-600 transition-colors"
                 aria-label="Close modal"
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -1446,7 +1446,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                 >
                   <div>
                     <p className="text-sm font-medium text-[#1F1F1F]">{opt.label}</p>
-                    <p className="text-xs text-zinc-500">{opt.desc}</p>
+                    <p className="text-xs text-[#727272]">{opt.desc}</p>
                   </div>
                   <input
                     type="radio"
@@ -1502,9 +1502,9 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                     </svg>
                   </div>
                   <p className="text-sm font-medium text-[#1F1F1F]">
-                    Click to upload <span className="font-normal text-zinc-500">or drag and drop</span>
+                    Click to upload <span className="font-normal text-[#727272]">or drag and drop</span>
                   </p>
-                  <p className="text-xs text-zinc-400 mt-1">
+                  <p className="text-xs text-[#727272] mt-1">
                     JPG, PNG, WebP or PDF (up to 15MB)
                   </p>
                 </div>
@@ -1518,7 +1518,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                     </div>
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-[#1F1F1F] truncate">{selectedDocFile.name}</p>
-                      <p className="text-xs text-zinc-500">{formatFileSize(selectedDocFile.size)}</p>
+                      <p className="text-xs text-[#727272]">{formatFileSize(selectedDocFile.size)}</p>
                     </div>
                   </div>
                   <button
@@ -1527,7 +1527,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                       setSelectedDocFile(null);
                       if (fileInputRef.current) fileInputRef.current.value = "";
                     }}
-                    className="p-1.5 rounded-lg text-zinc-400 hover:text-red-600 hover:bg-zinc-100 transition-colors cursor-pointer"
+                    className="p-1.5 rounded-lg text-[#727272] hover:text-red-600 hover:bg-zinc-100 transition-colors cursor-pointer"
                     aria-label="Remove selected file"
                   >
                     <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
@@ -1545,7 +1545,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
             {/* Privacy & Review Notice */}
             <div className="rounded-xl bg-zinc-50 border border-zinc-200/80 p-3.5 text-xs text-zinc-600 space-y-1.5">
               <div className="flex items-center gap-1.5 font-medium text-[#1F1F1F]">
-                <svg className="w-4 h-4 text-zinc-500" viewBox="0 0 20 20" fill="currentColor">
+                <svg className="w-4 h-4 text-[#727272]" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
                 </svg>
                 Secure & Confidential Review

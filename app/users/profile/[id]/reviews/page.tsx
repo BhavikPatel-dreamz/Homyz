@@ -21,7 +21,7 @@ export default async function HostReviewsPage({ params }: { params: Promise<{ id
   const hostName = host.name || "Homyz host";
 
   return (
-    <div className="flex min-h-screen flex-col bg-white text-zinc-900">
+    <div className="flex min-h-screen flex-col bg-white text-[#1F1F1F]">
       <AppHeader />
       <main className="flex-1 py-8 sm:py-12">
         <Container>
@@ -34,7 +34,7 @@ export default async function HostReviewsPage({ params }: { params: Promise<{ id
               {reviews.map((review) => <article key={review.id} className="py-7 first:pt-0 last:pb-0">
                 <div className="flex items-center gap-3">
                   {review.author.image ? <img src={review.author.image} alt="" loading="lazy" className="size-11 rounded-full object-cover" /> : <span aria-hidden="true" className="flex size-11 items-center justify-center rounded-full bg-zinc-100 text-sm font-semibold text-zinc-600">{(review.author.name || "G")[0]?.toUpperCase()}</span>}
-                  <div><p className="text-sm font-semibold">{review.author.name || "Guest"}</p><p className="text-xs text-zinc-500">{relativeDate(review.createdAt)}{review.listing.title ? ` · ${review.listing.title}` : ""}</p></div>
+                  <div><p className="text-sm font-semibold">{review.author.name || "Guest"}</p><p className="text-xs text-[#727272]">{relativeDate(review.createdAt)}{review.listing.title ? ` · ${review.listing.title}` : ""}</p></div>
                 </div>
                 <p className="mt-4 text-sm" aria-label={`${review.rating} out of 5 stars`}>{"★".repeat(review.rating)}<span className="text-zinc-300">{"★".repeat(5 - review.rating)}</span></p>
                 <p className="mt-3 whitespace-pre-line text-sm leading-6 text-zinc-700">{review.comment}</p>

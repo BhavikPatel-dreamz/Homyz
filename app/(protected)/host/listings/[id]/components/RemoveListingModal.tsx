@@ -109,7 +109,7 @@ export function RemoveListingModal({
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-5 top-5 z-10 flex h-9 w-9 items-center justify-center rounded-full text-[#1f1f1f] transition-colors hover:bg-zinc-100 hover:text-zinc-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-white dark:focus-visible:ring-zinc-100 dark:focus-visible:ring-offset-zinc-900"
+          className="absolute right-5 top-5 z-10 flex h-9 w-9 items-center justify-center rounded-full text-[#1f1f1f] transition-colors hover:bg-zinc-100 hover:text-zinc-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 dark:text-[#727272] dark:hover:bg-zinc-800 dark:hover:text-white dark:focus-visible:ring-zinc-100 dark:focus-visible:ring-offset-zinc-900"
           aria-label={t("host_close") || "Close"}
         >
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round">
@@ -125,7 +125,7 @@ export function RemoveListingModal({
               <h2 id="remove-listing-survey-title" className="text-xl font-semibold tracking-tight text-[#1F1F1F] dark:text-zinc-100 sm:text-2xl">
                 {t("host_remove_survey_heading") || "Let us know why you've changed your mind about hosting"}
               </h2>
-              <p className="mt-2 text-base leading-6 text-[#727272] dark:text-zinc-400">
+              <p className="mt-2 text-base leading-6 text-[#727272] dark:text-[#727272]">
                 {t("host_remove_survey_subtext") || "Choose all that apply."}
               </p>
             </div>
@@ -146,7 +146,7 @@ export function RemoveListingModal({
                       className="group flex w-full items-center justify-between rounded-xl px-1 py-3 text-left transition-colors hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900/15 dark:hover:bg-zinc-800/60 dark:focus-visible:ring-zinc-100/20"
                     >
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 group-hover:text-zinc-950 dark:group-hover:text-white">
+                        <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 group-hover:text-zinc-950 dark:group-hover:text-white">
                           {translatedCategoryTitle}
                         </span>
                         {/* show badge if any selected and category is collapsed */}
@@ -158,7 +158,7 @@ export function RemoveListingModal({
                       </div>
 
                       <svg
-                        className={`w-4 h-4 text-zinc-500 dark:text-zinc-400 transition-transform duration-200 shrink-0 ${
+                        className={`w-4 h-4 text-[#727272] dark:text-[#727272] transition-transform duration-200 shrink-0 ${
                           isExpanded ? "rotate-180" : ""
                         }`}
                         fill="none"
@@ -198,7 +198,7 @@ export function RemoveListingModal({
                                   )}
                                 </div>
 
-                                <span className="text-sm leading-5 text-zinc-700 dark:text-zinc-300 group-hover:text-zinc-900 dark:group-hover:text-zinc-100">
+                                <span className="text-sm leading-5 text-zinc-700 dark:text-zinc-300 group-hover:text-[#1F1F1F] dark:group-hover:text-zinc-100">
                                   {translatedOptionLabel}
                                 </span>
                               </label>
@@ -211,7 +211,7 @@ export function RemoveListingModal({
                                     placeholder={t("host_remove_survey_tell_us_more") || "Please tell us more"}
                                     value={customFeedback}
                                     onChange={(e) => setCustomFeedback(e.target.value)}
-                                    className="w-full resize-none rounded-xl border border-zinc-200 bg-zinc-50 p-3 text-sm text-zinc-800 shadow-2xs outline-none transition-all placeholder:text-zinc-400 focus:border-zinc-900 focus:bg-white focus:ring-2 focus:ring-zinc-900/10 dark:border-zinc-700 dark:bg-zinc-800/80 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-zinc-400 dark:focus:bg-zinc-800 dark:focus:ring-zinc-100/10"
+                                    className="w-full resize-none rounded-xl border border-zinc-200 bg-zinc-50 p-3 text-sm text-zinc-800 shadow-2xs outline-none transition-all placeholder:text-[#727272] focus:border-zinc-900 focus:bg-white focus:ring-2 focus:ring-zinc-900/10 dark:border-zinc-700 dark:bg-zinc-800/80 dark:text-zinc-100 dark:placeholder:text-[#727272] dark:focus:border-zinc-400 dark:focus:bg-zinc-800 dark:focus:ring-zinc-100/10"
                                   />
                                 </div>
                               )}
@@ -260,7 +260,7 @@ export function RemoveListingModal({
               <h2 id="remove-listing-confirm-title" className="text-xl font-semibold tracking-tight text-[#1F1F1F] dark:text-zinc-100 sm:text-2xl">
                 {t("host_remove_confirm_heading") || "Permanently remove this listing?"}
               </h2>
-              <p className="mt-2 max-w-[491px] text-sm leading-6 text-[#727272] dark:text-zinc-400">
+              <p className="mt-2 max-w-[491px] text-sm leading-6 text-[#727272] dark:text-[#727272]">
                 {t("host_remove_confirm_subtext_prefix") || "You are removing "}
                 <strong className="text-[#1f1f1f] dark:text-zinc-100 font-semibold">{listingTitle}</strong>
                 {t("host_remove_confirm_subtext_suffix") || " from Homyz."}
@@ -282,21 +282,21 @@ export function RemoveListingModal({
                   </svg>
                   {t("host_remove_warning_title") || "This action is permanent"}
                 </div>
-                <p className="text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                <p className="text-zinc-600 dark:text-[#727272] leading-relaxed">
                   {t("host_remove_warning_body") || "Your listing will be immediately removed from public search. Your photos, descriptions, and settings will no longer be available."}
                 </p>
               </div>
 
               {/* Selected Feedback Summary */}
               <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/60 p-4 space-y-2">
-                <div className="text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                <div className="text-xs font-bold uppercase tracking-wider text-[#727272] dark:text-[#727272]">
                   {t("host_remove_summary_title", { count: String(totalSelectedCount) }) || `Your Feedback Summary (${totalSelectedCount} reasons)`}
                 </div>
                 <ul className="list-disc space-y-1 pl-4 text-sm text-zinc-700 dark:text-zinc-300">
                   {selectedReasonLabels.map((label) => <li key={label}>{label}</li>)}
                 </ul>
                 {customFeedback && (
-                  <div className="border-t border-zinc-200 pt-2 text-sm italic text-zinc-600 dark:border-zinc-800 dark:text-zinc-400">
+                  <div className="border-t border-zinc-200 pt-2 text-sm italic text-zinc-600 dark:border-zinc-800 dark:text-[#727272]">
                     &ldquo;{customFeedback}&rdquo;
                   </div>
                 )}

@@ -661,7 +661,7 @@ model ReservationTax {
   <span className="font-semibold text-zinc-950 text-sm">
     SAR {formattedPrice}
   </span>
-  <span className="text-zinc-500 font-normal">/ night</span>
+  <span className="text-[#727272] font-normal">/ night</span>
   ```
 - **Conversion:** `Math.round(listing.price / 100)`
 

@@ -187,7 +187,7 @@ export function StepLocationSearch({
                         onClick={() => handleSuggestionClick(item)}
                         className="flex w-full items-center gap-2.5 rounded-lg px-2 py-2.5 text-left text-xs font-medium text-zinc-800 transition-colors hover:bg-zinc-50"
                       >
-                        <span className="text-zinc-400">📍</span>
+                        <span className="text-[#727272]">📍</span>
                         <span className="truncate">{item.display_name}</span>
                       </button>
                     ))}

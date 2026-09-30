@@ -410,15 +410,15 @@ export function ListingCard({
             ))}
           </div>
         ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center bg-zinc-100 text-zinc-400">
+          <div className="w-full h-full flex flex-col items-center justify-center bg-zinc-100 text-[#727272]">
             <span className="text-3xl mb-1" aria-hidden="true">🏡</span>
-            <span className="text-xs font-medium text-zinc-400">No photo yet</span>
+            <span className="text-xs font-medium text-[#727272]">No photo yet</span>
           </div>
         )}
 
         {/* ── Badges (Top Left) ── */}
         {isGuestFav ? (
-          <span className="absolute left-3 top-3 z-20 inline-flex items-center rounded-full bg-white px-3 py-1 text-[11px] sm:text-xs font-semibold text-zinc-900 shadow-md border border-black/5">
+          <span className="absolute left-3 top-3 z-20 inline-flex items-center rounded-full bg-white px-3 py-1 text-[11px] sm:text-xs font-semibold text-[#1F1F1F] shadow-md border border-black/5">
             Guest favourite
           </span>
         ) : isSuper ? (
@@ -426,7 +426,7 @@ export function ListingCard({
             Superhost
           </span>
         ) : isFeat ? (
-          <span className="absolute left-3 top-3 z-20 inline-flex items-center rounded-full bg-white/90 backdrop-blur-md px-2.5 py-1 text-[11px] sm:text-xs font-semibold text-zinc-900 shadow-xs border border-white/60">
+          <span className="absolute left-3 top-3 z-20 inline-flex items-center rounded-full bg-white/90 backdrop-blur-md px-2.5 py-1 text-[11px] sm:text-xs font-semibold text-[#1F1F1F] shadow-xs border border-white/60">
             Featured
           </span>
         ) : null}
@@ -621,16 +621,16 @@ export function ListingCard({
       <div className="pt-3 pb-1 space-y-0.5 text-left">
         {/* Row 1: Title + Rating */}
         <div className="flex items-start justify-between gap-2">
-          <h3 className="text-sm sm:text-[15px] font-semibold text-zinc-900 truncate leading-snug group-hover:text-amber-950 transition-colors flex-1 min-w-0">
+          <h3 className="text-sm sm:text-[15px] font-semibold text-[#1F1F1F] truncate leading-snug group-hover:text-amber-950 transition-colors flex-1 min-w-0">
             {primaryHeading}
           </h3>
 
           {/* Rating */}
           {numericRating !== null ? (
-            <span className="inline-flex items-center gap-1 text-sm font-semibold text-zinc-900 shrink-0 ml-1">
+            <span className="inline-flex items-center gap-1 text-sm font-semibold text-[#1F1F1F] shrink-0 ml-1">
               <svg
                 aria-hidden="true"
-                className="w-3.5 h-3.5 text-zinc-900 fill-current"
+                className="w-3.5 h-3.5 text-[#1F1F1F] fill-current"
                 viewBox="0 0 24 24"
               >
                 <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
@@ -638,33 +638,33 @@ export function ListingCard({
               <span>
                 {numericRating.toFixed(2).replace(/\.?0+$/, "") || numericRating.toFixed(1)}
                 {reviewCount > 0 && (
-                  <span className="text-zinc-500 font-normal ml-0.5">
+                  <span className="text-[#727272] font-normal ml-0.5">
                     ({reviewCount.toLocaleString()})
                   </span>
                 )}
               </span>
             </span>
           ) : (
-            <span className="text-[10px] font-medium text-zinc-400 bg-zinc-100 px-1.5 py-0.5 rounded-full shrink-0">
+            <span className="text-[10px] font-medium text-[#727272] bg-zinc-100 px-1.5 py-0.5 rounded-full shrink-0">
               New
             </span>
           )}
         </div>
 
         {/* Row 2: Subtitle / Description / Distance */}
-        <p className="text-xs sm:text-[13px] text-zinc-500 font-normal truncate">
+        <p className="text-xs sm:text-[13px] text-[#727272] font-normal truncate">
           {secondarySubtitle}
           {distanceText}
         </p>
 
         {/* Row 3: Room breakdown / Specs */}
-        <p className="text-xs sm:text-[13px] text-zinc-500 font-normal truncate">
+        <p className="text-xs sm:text-[13px] text-[#727272] font-normal truncate">
           {specsText}
         </p>
 
         {/* Row 4: Dates if available */}
         {dateRangeString && (
-          <p className="text-xs sm:text-[13px] text-zinc-500 font-normal truncate">
+          <p className="text-xs sm:text-[13px] text-[#727272] font-normal truncate">
             {dateRangeString}
           </p>
         )}
@@ -673,12 +673,12 @@ export function ListingCard({
         <div className="pt-0.5 flex items-baseline gap-1.5 flex-wrap text-xs sm:text-[13px]">
           {formattedDiscountedPrice != null ? (
             <>
-              <span className="line-through text-zinc-400 text-xs font-normal">
+              <span className="line-through text-[#727272] text-xs font-normal">
                 {formattedBasePrice}
               </span>
               <span className="font-semibold text-zinc-950 text-sm">
                 {formattedDiscountedPrice}
-                <span className="text-zinc-500 font-normal text-xs ml-0.5">/ night</span>
+                <span className="text-[#727272] font-normal text-xs ml-0.5">/ night</span>
               </span>
               {discountLabel && (
                 <span className="inline-flex items-center text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/70 px-1.5 py-0.5 rounded-full">
@@ -689,7 +689,7 @@ export function ListingCard({
           ) : (
             <div className="flex items-baseline gap-1">
               <span className="font-semibold text-zinc-950 text-sm">{formattedBasePrice}</span>
-              <span className="text-zinc-500 font-normal text-xs">/ night</span>
+              <span className="text-[#727272] font-normal text-xs">/ night</span>
             </div>
           )}
         </div>

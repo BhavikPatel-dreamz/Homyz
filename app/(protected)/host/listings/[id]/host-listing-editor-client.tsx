@@ -1510,14 +1510,14 @@ export function HostListingEditorClient({
                     <div className="flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-zinc-400" />
                       <span className="font-semibold">Listing Status: Draft (Incomplete)</span>
-                      <span className="text-zinc-500 font-normal hidden sm:inline">
+                      <span className="text-[#727272] font-normal hidden sm:inline">
                         — {missingRequirements.length} required {missingRequirements.length === 1 ? "section" : "sections"} remaining
                       </span>
                     </div>
                     <button
                       type="button"
                       onClick={() => setActiveSection("listing-status")}
-                      className="font-semibold text-zinc-900 hover:underline cursor-pointer"
+                      className="font-semibold text-[#1F1F1F] hover:underline cursor-pointer"
                     >
                       View Checklist →
                     </button>
@@ -1891,13 +1891,13 @@ export function HostListingEditorClient({
 
             {(activeSection === "remove-listing" || activeSection === "removelisting") && (
               <div className="rounded-3xl border border-zinc-200 bg-white p-6 sm:p-8 space-y-4 text-xs font-sans animate-in fade-in shadow-2xs">
-                <div className="flex items-center gap-3 text-zinc-900">
+                <div className="flex items-center gap-3 text-[#1F1F1F]">
                   <div className="w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center font-semibold text-lg text-zinc-600">
                     🏠
                   </div>
                   <div>
                     <h2 className="text-base font-semibold text-[#1F1F1F]">{t("host_remove_listing_card_title") || "Remove listing"}</h2>
-                    <p className="text-xs text-zinc-500">{t("host_remove_listing_card_sub") || "Permanently remove your listing from Homyz."}</p>
+                    <p className="text-xs text-[#727272]">{t("host_remove_listing_card_sub") || "Permanently remove your listing from Homyz."}</p>
                   </div>
                 </div>
                 <p className="text-zinc-600 leading-relaxed">
@@ -2026,14 +2026,14 @@ export function HostListingEditorClient({
                 pendingNavigationRef.current = null;
                 setIsUnsavedChangesDialogOpen(false);
               }}
-              className="absolute right-4 top-4 inline-flex size-8 items-center justify-center rounded-full text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100 dark:focus-visible:outline-zinc-100 cursor-pointer"
+              className="absolute right-4 top-4 inline-flex size-8 items-center justify-center rounded-full text-[#727272] transition-colors hover:bg-zinc-100 hover:text-zinc-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 dark:text-[#727272] dark:hover:bg-zinc-800 dark:hover:text-zinc-100 dark:focus-visible:outline-zinc-100 cursor-pointer"
             >
               <CloseIcon className="size-4" />
             </button>
             <h2 id="unsaved-preferences-title" className="text-lg font-semibold tracking-tight text-zinc-950 dark:text-zinc-100">
               You have unsaved changes
             </h2>
-            <p className="mt-2 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+            <p className="mt-2 text-sm leading-relaxed text-zinc-600 dark:text-[#727272]">
               Your changes haven&apos;t been saved. Are you sure you want to leave?
             </p>
             <div className="mt-5 flex flex-wrap items-center justify-end gap-2">
@@ -2086,7 +2086,7 @@ export function HostListingEditorClient({
               <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">
                 {t("host_booking_turn_off_instant_title") || "Turn off Instant Book?"}
               </h3>
-              <p className="text-sm text-zinc-500 font-normal">
+              <p className="text-sm text-[#727272] font-normal">
                 {t("host_booking_turn_off_instant_subtitle") || "Your setting will not change until you confirm."}
               </p>
             </div>
@@ -2104,7 +2104,7 @@ export function HostListingEditorClient({
                 </div>
                 <div className="space-y-0.5">
                   <h4 className="font-medium text-base text-[#1F1F1F]">{t("host_booking_consideration_1_title") || "Guests may experience slower confirmation"}</h4>
-                  <p className="text-xs text-zinc-500 leading-relaxed font-normal">
+                  <p className="text-xs text-[#727272] leading-relaxed font-normal">
                     {t("host_booking_consideration_1_desc") || "Guests will wait for your approval instead of receiving an immediate booking confirmation."}
                   </p>
                 </div>
@@ -2119,7 +2119,7 @@ export function HostListingEditorClient({
                 </div>
                 <div className="space-y-0.5">
                   <h4 className="font-medium text-base text-[#1F1F1F]">{t("host_booking_consideration_2_title") || "Review every booking request"}</h4>
-                  <p className="text-xs text-zinc-500 leading-relaxed font-normal">
+                  <p className="text-xs text-[#727272] leading-relaxed font-normal">
                     {t("host_booking_consideration_2_desc") || "All booking requests will need your review before they are confirmed."}
                   </p>
                 </div>
@@ -2134,7 +2134,7 @@ export function HostListingEditorClient({
                 </div>
                 <div className="space-y-0.5">
                   <h4 className="font-medium text-base text-[#1F1F1F]">{t("host_booking_consideration_3_title") || "Respond within 24 hours"}</h4>
-                  <p className="text-xs text-zinc-500 leading-relaxed font-normal">
+                  <p className="text-xs text-[#727272] leading-relaxed font-normal">
                     {t("host_booking_consideration_3_desc") || "Unanswered requests expire automatically after 24 hours and affect your host response rate."}
                   </p>
                 </div>
@@ -2245,14 +2245,14 @@ export function HostListingEditorClient({
             <button
               type="button"
               onClick={() => setIsEditingAdditionalRulesModalOpen(false)}
-              className="absolute top-6 right-6 text-zinc-600 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white font-semibold text-sm cursor-pointer p-1"
+              className="absolute top-6 right-6 text-zinc-600 dark:text-[#727272] hover:text-zinc-950 dark:hover:text-white font-semibold text-sm cursor-pointer p-1"
             >
               <CloseIcon className="size-5 stroke-[2.5]" />
             </button>
 
             <div className="space-y-1">
               <h3 className="font-medium text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">{t("host_additional_house_rules_modal_title")}</h3>
-              <p className="text-sm text-[#727272] dark:text-zinc-400 font-normal">
+              <p className="text-sm text-[#727272] dark:text-[#727272] font-normal">
                 {t("host_additional_house_rules_modal_desc")}
               </p>
             </div>
@@ -2262,7 +2262,7 @@ export function HostListingEditorClient({
               value={additionalHouseRules}
               onChange={(e) => setAdditionalHouseRules(e.target.value)}
               placeholder={t("host_additional_house_rules_placeholder")}
-              className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4 text-xs text-zinc-800 dark:text-zinc-100 font-medium outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition-colors shadow-2xs placeholder:text-zinc-400 dark:placeholder:text-zinc-500"
+              className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4 text-xs text-zinc-800 dark:text-zinc-100 font-medium outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition-colors shadow-2xs placeholder:text-[#727272] dark:placeholder:text-[#727272]"
             />
 
             <div className="flex items-center justify-between gap-3 pt-2">

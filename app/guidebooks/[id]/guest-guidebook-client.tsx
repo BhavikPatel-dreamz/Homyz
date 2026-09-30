@@ -122,12 +122,12 @@ export function GuestGuidebookClient({
         <div className="flex items-center gap-4">
           <Link
             href="/"
-            className="text-sm font-bold text-zinc-900 hover:text-zinc-700 transition-colors"
+            className="text-sm font-bold text-[#1F1F1F] hover:text-zinc-700 transition-colors"
           >
             ← Back to Homyz
           </Link>
           <span className="text-zinc-300">|</span>
-          <span className="text-xs font-semibold text-zinc-500 truncate max-w-xs">
+          <span className="text-xs font-semibold text-[#727272] truncate max-w-xs">
             {guidebook.title}
           </span>
         </div>
@@ -263,9 +263,9 @@ export function GuestGuidebookClient({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search this guidebook..."
-              className="w-full rounded-full border border-zinc-200 bg-zinc-50 py-1.5 pl-8 pr-3 text-xs font-medium text-zinc-900 outline-none focus:bg-white focus:border-zinc-400 shadow-2xs"
+              className="w-full rounded-full border border-zinc-200 bg-zinc-50 py-1.5 pl-8 pr-3 text-xs font-medium text-[#1F1F1F] outline-none focus:bg-white focus:border-zinc-400 shadow-2xs"
             />
-            <span className="absolute left-2.5 top-2 text-xs text-zinc-400">🔍</span>
+            <span className="absolute left-2.5 top-2 text-xs text-[#727272]">🔍</span>
           </div>
         </div>
 
@@ -276,8 +276,8 @@ export function GuestGuidebookClient({
             {filteredItems.length === 0 ? (
               <div className="rounded-3xl border border-zinc-200 bg-white p-12 text-center space-y-2">
                 <span className="text-3xl">🔍</span>
-                <h3 className="text-sm font-bold text-zinc-900">No matching recommendations</h3>
-                <p className="text-xs text-zinc-500 font-normal">
+                <h3 className="text-sm font-bold text-[#1F1F1F]">No matching recommendations</h3>
+                <p className="text-xs text-[#727272] font-normal">
                   Try clearing your search query or selecting a different category filter.
                 </p>
               </div>
@@ -317,11 +317,11 @@ export function GuestGuidebookClient({
                     <div className="flex-1 min-w-0 space-y-2">
                       <div>
                         <div className="flex items-baseline justify-between gap-2">
-                          <h3 className="text-sm font-bold text-zinc-900 leading-snug truncate">
+                          <h3 className="text-sm font-bold text-[#1F1F1F] leading-snug truncate">
                             {item.title}
                           </h3>
                         </div>
-                        <span className="text-xs text-zinc-500 font-medium">
+                        <span className="text-xs text-[#727272] font-medium">
                           {icon} {label}
                           {item.address ? ` · ${item.address}` : ""}
                         </span>
@@ -355,10 +355,10 @@ export function GuestGuidebookClient({
           <div className="hidden lg:block lg:col-span-5 sticky top-24">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-zinc-900 uppercase tracking-wider">
+                <span className="text-xs font-bold text-[#1F1F1F] uppercase tracking-wider">
                   Area Map ({mapPins.length} locations)
                 </span>
-                <span className="text-[11px] text-zinc-400">Interactive recommendations map</span>
+                <span className="text-[11px] text-[#727272]">Interactive recommendations map</span>
               </div>
               <div className="h-[560px]">
                 <GuidebookMap
@@ -393,7 +393,7 @@ export function GuestGuidebookClient({
         <ModalOverlay className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex flex-col justify-end lg:hidden">
           <div className="bg-white rounded-t-3xl w-full h-[85vh] p-4 flex flex-col space-y-3 animate-in slide-in-from-bottom">
             <div className="flex items-center justify-between border-b border-zinc-200 pb-2">
-              <span className="text-xs font-bold text-zinc-900">
+              <span className="text-xs font-bold text-[#1F1F1F]">
                 Guidebook Map ({mapPins.length} places)
               </span>
               <button

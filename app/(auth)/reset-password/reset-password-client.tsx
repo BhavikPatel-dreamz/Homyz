@@ -21,7 +21,7 @@ export function ResetPasswordClient({ token }: { token: string }) {
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-950 mb-2">
               {t("auth_reset_title")}
             </h1>
-            <p className="text-xs sm:text-sm text-zinc-500 mb-6 leading-relaxed">
+            <p className="text-xs sm:text-sm text-[#727272] mb-6 leading-relaxed">
               {t("auth_reset_subtitle")}
             </p>
 
