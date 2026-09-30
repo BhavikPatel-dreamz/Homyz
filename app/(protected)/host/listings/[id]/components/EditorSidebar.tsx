@@ -887,7 +887,7 @@ export function EditorSidebar({
                       }`}
                     aria-label="Photo tour preview"
                   >
-                    <div className="relative w-full max-w-full h-36 sm:h-45">
+                    <div className="relative w-full max-w-[70%] h-36 sm:h-45">
                       {/* Card 0 (Leftmost, z-0) */}
                       <div
                         className="absolute top-0 bottom-0 left-0 w-[154px] rounded-xl border-2 border-[#1F1F1F] bg-white shadow-2xs overflow-hidden z-0 transition-all duration-300 ease-out hover:!z-50 hover:shadow-lg"
