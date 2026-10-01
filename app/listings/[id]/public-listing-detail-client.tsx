@@ -18,6 +18,7 @@ import type { PublicListingDTO } from "@/services/mappers";
 import { saveRecentlyViewedProperty, clearLastSearch, saveLastSearch, getLastSearch, buildBookingCheckoutUrl } from "@/lib/storage/client-history";
 import { getCurrencyForCountry } from "@/lib/currency";
 import { useCurrency } from "@/lib/currency-context";
+import { useLanguage } from "@/lib/i18n/language-context";
 import { cancellationPolicyLabel } from "@/lib/constants/listing-enums";
 import { saveBookingQuote } from "@/lib/booking/quote-cache";
 import useWishlist from "@/hooks/useWishlist";
@@ -566,6 +567,7 @@ export function PublicListingDetailClient({
   initialSpecialOfferId,
 }: PublicListingDetailClientProps) {
   const { formatPrice } = useCurrency();
+  const { t } = useLanguage();
   const router = useRouter();
   const searchParams = useSearchParams();
   const wishlist = useWishlist();
@@ -1583,17 +1585,17 @@ export function PublicListingDetailClient({
                   <div className="flex flex-wrap items-center gap-2" aria-label="Listing distinctions">
                     {listing.isGuestFavorite && (
                       <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-950">
-                        <span aria-hidden="true">✦</span> Guest favourite
+                        <span aria-hidden="true">✦</span> {t("listing_detail_guest_favourite", "Guest favourite")}
                       </span>
                     )}
                     {listing.host?.isSuperhost && (
                       <span className="inline-flex items-center gap-1.5 rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-xs font-medium text-sky-950">
-                        <span aria-hidden="true">★</span> Superhost
+                        <span aria-hidden="true">★</span> {t("home_superhost", "Superhost")}
                       </span>
                     )}
                     {listing.isFeatured && (
                       <span className="inline-flex items-center rounded-full bg-zinc-100 px-3 py-2 text-xs font-medium text-[#1f1f1f]">
-                        Featured stay
+                        {t("home_featured", "Featured stay")}
                       </span>
                     )}
                   </div>
@@ -1604,13 +1606,13 @@ export function PublicListingDetailClient({
                   <span className="flex size-10 items-center justify-center rounded-full border border-[#1f1f1f] bg-white transition-colors group-hover:border-zinc-500 group-hover:bg-zinc-50">
                     <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.55" className="size-6"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="m8.6 10.6 6.8-4.1M8.6 13.4l6.8 4.1" /></svg>
                   </span>
-                  <span className="hidden sm:inline">Share</span>
+                  <span className="hidden sm:inline">{t("listing_detail_share", "Share")}</span>
                 </button>
                 <button type="button" onClick={() => void handleSave()} disabled={wishlist.adding.has(listing.id) || wishlist.removeInFlight.has(listing.id)} className="group inline-flex items-center gap-3 rounded-full text-base font-normal text-[#1f1f1f] transition-colors hover:text-[#727272] disabled:opacity-50" aria-pressed={wishlist.has(listing.id)} aria-label={wishlist.has(listing.id) ? "Remove from wishlist" : "Save listing"}>
                   <span className={`flex size-10 items-center justify-center rounded-full border transition-colors ${wishlist.has(listing.id) ? "border-red-700 bg-red-50 text-red-700" : "border-[#1f1f1f] bg-white group-hover:border-zinc-500 group-hover:bg-zinc-50"}`}>
                     <svg aria-hidden="true" viewBox="0 0 24 24" fill={wishlist.has(listing.id) ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.55" className="size-6"><path d="M12 20.5 3.8 12a5.2 5.2 0 0 1 7.4-7.3L12 5.5l.8-.8a5.2 5.2 0 0 1 7.4 7.3L12 20.5Z" /></svg>
                   </span>
-                  <span className="hidden sm:inline">{wishlist.has(listing.id) ? "Saved" : "Save"}</span>
+                  <span className="hidden sm:inline">{wishlist.has(listing.id) ? t("listing_detail_saved", "Saved") : t("listing_detail_save", "Save")}</span>
                 </button>
               </div>
             </div>
@@ -1632,7 +1634,7 @@ export function PublicListingDetailClient({
                   </h2>
                   {/* Where you'll sleep */}
                   <p className="mt-1 text-sm font-light text-[#1F1F1F] lg:mt-2 lg:text-base">
-                    {listing.guests || 1} {listing.guests === 1 ? "guest" : "guests"} · {listing.bedrooms || 1} {listing.bedrooms === 1 ? "bedroom" : "bedrooms"} · {listing.beds || 1} {listing.beds === 1 ? "bed" : "beds"} · {listing.bathrooms || 1} {listing.bathrooms === 1 ? "bath" : "baths"}
+                    {(listing.guests || 1) === 1 ? t("home_guest_one", "{count} guest").replace("{count}", String(listing.guests || 1)) : t("home_guest_many", "{count} guests").replace("{count}", String(listing.guests || 1))} · {(listing.bedrooms || 1) === 1 ? t("listing_detail_bedroom_one", "{count} bedroom").replace("{count}", String(listing.bedrooms || 1)) : t("listing_detail_bedroom_many", "{count} bedrooms").replace("{count}", String(listing.bedrooms || 1))} · {(listing.beds || 1) === 1 ? t("listing_detail_bed_one", "{count} bed").replace("{count}", String(listing.beds || 1)) : t("listing_detail_bed_many", "{count} beds").replace("{count}", String(listing.beds || 1))} · {(listing.bathrooms || 1) === 1 ? t("listing_detail_bath_one", "{count} bath").replace("{count}", String(listing.bathrooms || 1)) : t("listing_detail_bath_many", "{count} baths").replace("{count}", String(listing.bathrooms || 1))}
                   </p>
                 </section>
 
@@ -1640,10 +1642,10 @@ export function PublicListingDetailClient({
                   <section className="mt-7 hidden w-full max-w-[720px] overflow-hidden rounded-[40px] border border-[#dedede] bg-white shadow-[0_2px_4px_rgba(0,0,0,0.16)] xl:grid xl:grid-cols-[1.1fr_1.75fr_.85fr_.62fr] xl:px-6" aria-label="Guest favourite rating summary">
                     <div className="flex min-w-0 items-center justify-center gap-2.5 border-b border-[#dedede] px-4 py-5 md:border-r xl:border-b-0">
                       <Image src="/images/icons/leaves-left.svg" alt="" width={39} height={71} aria-hidden="true" className="h-[71px] w-[39px] shrink-0" />
-                      <span className="text-[17px] font-normal leading-5 text-[#1f1f1f] text-center">Guest<br />favourite</span>
+                      <span className="text-[17px] font-normal leading-5 text-[#1f1f1f] text-center">{t("listing_detail_guest_favourite", "Guest favourite")}</span>
                       <Image src="/images/icons/leaves-right.svg" alt="" width={39} height={71} aria-hidden="true" className="h-[71px] w-[39px] shrink-0" />
                     </div>
-                    <p className="relative flex min-w-0 items-center border-b border-[#dedede] px-5 py-5 text-base font-normal leading-6 text-[#1f1f1f] xl:border-b-0 xl:after:absolute xl:after:right-0 xl:after:top-1/2 xl:after:h-[58px] xl:after:w-px xl:after:-translate-y-1/2 xl:after:bg-[#a9a9a9]">One of the most loved homes on Homyz, according to guests.</p>
+                    <p className="relative flex min-w-0 items-center border-b border-[#dedede] px-5 py-5 text-base font-normal leading-6 text-[#1f1f1f] xl:border-b-0 xl:after:absolute xl:after:right-0 xl:after:top-1/2 xl:after:h-[58px] xl:after:w-px xl:after:-translate-y-1/2 xl:after:bg-[#a9a9a9]">{t("listing_detail_loved_home", "One of the most loved homes on Homyz, according to guests.")}</p>
                     <div className="relative flex items-center justify-center border-r border-[#dedede] px-4 py-5 xl:border-r-0 xl:after:absolute xl:after:right-0 xl:after:top-1/2 xl:after:h-[58px] xl:after:w-px xl:after:-translate-y-1/2 xl:after:bg-[#a9a9a9]">
                       <div>
                         <p className="text-[26px] font-medium leading-none text-[#1f1f1f]">{reviewRating.toFixed(2)}</p>
@@ -1651,7 +1653,7 @@ export function PublicListingDetailClient({
                       </div>
                     </div>
                     <div className="flex items-center justify-center px-3 py-5">
-                      <p className="text-left text-[26px] font-medium leading-5 text-[#1f1f1f]">{reviewCount}<br /><span className="text-[15px] font-normal leading-5 text-[#1f1f1f]">{reviewCount === 1 ? "Review" : "Reviews"}</span></p>
+                      <p className="text-left text-[26px] font-medium leading-5 text-[#1f1f1f]">{reviewCount}<br /><span className="text-[15px] font-normal leading-5 text-[#1f1f1f]">{reviewCount === 1 ? t("listing_detail_review_one", "Review") : t("listing_detail_review_many", "Reviews")}</span></p>
                     </div>
                   </section>
                 )}
@@ -1661,18 +1663,18 @@ export function PublicListingDetailClient({
                     <div className="rounded-[12px] border border-[#dedede] bg-white px-5 py-4 text-center shadow-[0_2px_4px_rgba(0,0,0,0.16)]">
                       <div className="flex items-center justify-center gap-3">
                         <Image src="/images/icons/leaves-left.svg" alt="" width={32} height={48} className="h-12 w-8" />
-                        <span className="text-base leading-5 text-[#1f1f1f]">Guest<br />bestie</span>
+                        <span className="text-base leading-5 text-[#1f1f1f]">{t("listing_detail_guest_favourite", "Guest favourite")}</span>
                         <Image src="/images/icons/leaves-right.svg" alt="" width={32} height={48} className="h-12 w-8" />
                       </div>
-                      <p className="mt-3 text-sm leading-5 text-[#1f1f1f]">One of the most loved homes on Homyz, according to guests</p>
+                      <p className="mt-3 text-sm leading-5 text-[#1f1f1f]">{t("listing_detail_loved_home", "One of the most loved homes on Homyz, according to guests.")}</p>
                     </div>
                     <div className="grid grid-cols-2 overflow-hidden rounded-[12px] border border-[#dedede] bg-white shadow-[0_2px_4px_rgba(0,0,0,0.16)]">
                       <div className="px-5 py-4 text-center"><p className="text-2xl font-medium leading-none">{reviewRating.toFixed(2)}</p><p className="mt-2 text-sm tracking-[0.08em] text-[#e9a400]">★★★★★</p></div>
-                      <div className="border-l border-[#a9a9a9] px-5 py-4 text-center"><p className="text-2xl font-medium leading-none">{reviewCount}</p><p className="mt-2 text-sm text-[#1f1f1f]">{reviewCount === 1 ? "Review" : "Reviews"}</p></div>
+                      <div className="border-l border-[#a9a9a9] px-5 py-4 text-center"><p className="text-2xl font-medium leading-none">{reviewCount}</p><p className="mt-2 text-sm text-[#1f1f1f]">{reviewCount === 1 ? t("listing_detail_review_one", "Review") : t("listing_detail_review_many", "Reviews")}</p></div>
                     </div>
                     <a href={`mailto:support@homyz.com?subject=${encodeURIComponent(`Report listing: ${listing.title}`)}`} className="flex items-center justify-center gap-3 py-2 text-sm text-[#1f1f1f] underline underline-offset-2">
                       <span className="flex size-9 items-center justify-center rounded-full border border-[#1F1F1F]"><Image src="/images/icons/report-icon.svg" alt="" width={16} height={16} className="size-4" /></span>
-                      Report this listing
+                      {t("listing_detail_report", "Report this listing")}
                     </a>
                   </section>
                 )}
@@ -1693,13 +1695,13 @@ export function PublicListingDetailClient({
                           }}
                           className="hover:underline underline-offset-2"
                         >
-                          Hosted by {listing.host?.name || "Homyz host"}
+                          {t("listing_detail_hosted_by", "Hosted by {name}").replace("{name}", listing.host?.name || "Homyz host")}
                         </Link>
                       ) : (
-                        `Hosted by ${listing.host?.name || "Homyz host"}`
+                        t("listing_detail_hosted_by", "Hosted by {name}").replace("{name}", listing.host?.name || "Homyz host")
                       )}
                     </h2>
-                    <p className="sm:text-base text-sm font-light text-[#1F1F1F]">{listing.host?.isSuperhost ? "Superhost" : "Homyz host"}{hostSince ? ` · Hosting since ${hostSince}` : ""}</p>
+                    <p className="sm:text-base text-sm font-light text-[#1F1F1F]">{listing.host?.isSuperhost ? t("home_superhost", "Superhost") : "Homyz host"}{hostSince ? ` · ${t("listing_detail_hosting_since", "Hosting since {date}").replace("{date}", hostSince)}` : ""}</p>
                   </div>
                   {hostProfileHref ? (
                     <Link
@@ -1758,7 +1760,7 @@ export function PublicListingDetailClient({
                 {/* Description */}
                 {normalizedDescription && (
                   <section className="mt-6 border-b border-zinc-200/80 pb-7.5">
-                    <h3 className="text-[20px] font-normal text-[#1f1f1f]">About this place</h3>
+                    <h3 className="text-[20px] font-normal text-[#1f1f1f]">{t("listing_detail_about_place", "About this place")}</h3>
                     <p className="mt-2.5 line-clamp-4 whitespace-pre-line break-words text-base font-normal text-[#727272]">
                       {normalizedDescription}
                     </p>
@@ -1774,7 +1776,7 @@ export function PublicListingDetailClient({
                         }}
                         className="mt-8 rounded-full border border-[#1F1F1F] bg-[#F3F4F5] hover:bg-[#1f1f1f] sm:px-7 px-4 sm:py-3.25 py-2 sm:text-lg text-base font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f]"
                       >
-                        Show more
+                        {t("listing_detail_show_more", "Show more")}
                       </button>
                     )}
                   </section>
@@ -1782,9 +1784,9 @@ export function PublicListingDetailClient({
 
                 {/* Amenities Grid */}
                 <div className="mt-7.5 order-1 space-y-5 border-b border-zinc-200/80 pb-7.5">
-                  <h3 className="text-[20px] font-normal text-[#1f1f1f]">What this place offers</h3>
+                  <h3 className="text-[20px] font-normal text-[#1f1f1f]">{t("listing_detail_what_place_offers", "What this place offers")}</h3>
                   {categorizedAmenities.length === 0 ? (
-                    <p className="text-xs text-[#727272]">This host has not listed any amenities yet.</p>
+                    <p className="text-xs text-[#727272]">{t("listing_detail_no_amenities", "This host has not listed any amenities yet.")}</p>
                   ) : <>
                     <div className="grid grid-cols-1 gap-x-12 gap-y-2.5 text-[#1f1f1f] sm:grid-cols-2">
                       {categorizedAmenities.slice(0, 6).map((am) => (
@@ -1810,7 +1812,7 @@ export function PublicListingDetailClient({
                         }}
                           className="mt-3 rounded-full border border-[#1F1F1F] bg-[#F3F4F5] hover:bg-[#1f1f1f] px-7 sm:py-3.25 py-2 sm:text-lg text-base font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f]"
                       >
-                        Show all amenities
+                        {t("listing_detail_show_all_amenities", "Show all amenities")}
                       </button>
                     )}
                   </>}
@@ -1850,7 +1852,7 @@ export function PublicListingDetailClient({
                     <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-full border border-[#1F1F1F]">
                       <Image src="/images/icons/price-icon.svg" alt="" width={24} height={24} className="size-6" />
                     </span>
-                    Prices include all fees
+                    {t("listing_detail_prices_include_all_fees", "Prices include all fees")}
                   </div>
                   <div className="space-y-4 rounded-[30px] border border-zinc-300 bg-[rgba(255,255,255,0.6)] p-6 shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)] sm:p-5">
                     {bookingSuccess ? (
@@ -1876,10 +1878,10 @@ export function PublicListingDetailClient({
                         <div className="flex items-baseline justify-between border-b border-zinc-100 pb-4">
                           <div>
                             <span className="text-[20px] font-medium text-[#1F1F1F] underline underline-offset-4">{displayPrice ?? "Price unavailable"}</span>
-                            <span className="text-base text-[#1F1F1F] font-normal"> / night</span>
+                            <span className="text-base text-[#1F1F1F] font-normal"> {t("listing_detail_per_night", "/ night")}</span>
                           </div>
                           <span className="text-xs text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full font-semibold">
-                            {isInstantBook ? "Instant Book" : "Host approval required"}
+                            {isInstantBook ? t("listing_detail_instant_book", "Instant Book") : t("listing_detail_host_approval_required", "Host approval required")}
                           </span>
                         </div>
 
@@ -1889,7 +1891,7 @@ export function PublicListingDetailClient({
                           <div className="grid grid-cols-2 divide-x divide-[#727272]">
                             <div className="p-3 space-y-1">
                               <label className="block text-base font-normal text-[#1f1f1f]">
-                                Check-in
+                                {t("home_check_in", "Check-in")}
                               </label>
                               <input
                                 type="date"
@@ -1902,7 +1904,7 @@ export function PublicListingDetailClient({
                             </div>
                             <div className="p-3 space-y-1">
                               <label className="block text-base font-normal text-[#1f1f1f]">
-                                Check-out
+                                {t("home_check_out", "Check-out")}
                               </label>
                               <input
                                 type="date"
@@ -1918,7 +1920,7 @@ export function PublicListingDetailClient({
 
                           <div className="p-3 space-y-1">
                             <label className="block text-base font-normal text-[#1f1f1f]">
-                              Guests
+                              {t("host_basics_guests", "Guests")}
                             </label>
                             <button
                               type="button"
@@ -1945,7 +1947,7 @@ export function PublicListingDetailClient({
                                 {/* Adults */}
                                 <div className="flex items-center justify-between gap-3">
                                   <div>
-                                    <p className="font-semibold text-[#1f1f1f]">Adults</p>
+                                    <p className="font-semibold text-[#1f1f1f]">{t("home_adults", "Adults")}</p>
                                     <p className="text-xs text-[#727272]">Age 13+</p>
                                   </div>
                                   <div className="flex items-center gap-2">
@@ -1958,7 +1960,7 @@ export function PublicListingDetailClient({
                                 {/* Children */}
                                 <div className="flex items-center justify-between gap-3 border-t border-zinc-200/80 pt-3">
                                   <div>
-                                    <p className="font-medium text-[#1f1f1f]">Children</p>
+                                    <p className="font-medium text-[#1f1f1f]">{t("home_children", "Children")}</p>
                                     <p className="text-xs text-[#727272]">Ages 2–12</p>
                                   </div>
                                   <div className="flex items-center gap-2">
@@ -1983,7 +1985,7 @@ export function PublicListingDetailClient({
                                   onClick={() => setIsGuestSelectorOpen(false)}
                                   className="w-full shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 text-base font-medium text-[#1F1F1F] hover:text-white transition-colors inline-flex justify-center border border-transparent hover:border-[#1F1F1F]"
                                 >
-                                  Done
+                                  {t("header_done", "Done")}
                                 </button>
                               </div>
                             )}
@@ -2085,7 +2087,7 @@ export function PublicListingDetailClient({
                                 <div className="pt-2 border-t border-zinc-100 space-y-1.5">
                                   <div className="flex items-center justify-between text-[#727272]">
                                     <span className="flex items-center gap-1.5 font-medium">
-                                      Taxes & fees
+                                      {t("listing_detail_taxes_and_fees", "Taxes & fees")}
                                       {quote.taxes.some((tax) => tax.exemptionApplied) && (
                                         <span className="text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-1.5 py-0.5 rounded-full font-semibold">
                                           Exemption applied
@@ -2109,13 +2111,13 @@ export function PublicListingDetailClient({
                                 </div>
 
                                 <div className="pt-2 border-t border-zinc-200 flex items-center justify-between text-lg font-bold text-[#1f1f1f]">
-                                  <span>Total</span>
+                                  <span>{t("listing_detail_total", "Total")}</span>
                                   <span>{formatPrice((quote.guestTotal ?? quote.totalPrice) || 0, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                                 </div>
                               </>
                             ) : (
                                   <div className="pt-2 border-t border-zinc-200 flex items-center justify-between text-lg font-bold text-[#1f1f1f]">
-                                <span>Total</span>
+                                <span>{t("listing_detail_total", "Total")}</span>
                                 <span>{formatPrice((quote.guestTotal ?? quote.totalPrice) || 0, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                               </div>
                             )}
@@ -2138,12 +2140,12 @@ export function PublicListingDetailClient({
                             : isQuoteLoading
                               ? "Checking availability..."
                               : isInstantBook
-                                ? "Reserve"
-                                : "Request to book"}
+                                ? t("listing_detail_reserve", "Reserve")
+                                : t("listing_detail_request_to_book", "Request to book")}
                         </button>
 
                         <p className="text-xs text-[#727272] text-center font-normal">
-                          {"You won't be charged yet. Taxes and additional charges may be calculated at checkout."}
+                          {t("listing_detail_not_charged_yet", "You won't be charged yet. Taxes and additional charges may be calculated at checkout.")}
                         </p>
                       </>
                     )}
@@ -2152,7 +2154,7 @@ export function PublicListingDetailClient({
                     <span className="flex size-10 shrink-0 items-center justify-center rounded-full border border-[#1F1F1F] no-underline group-hover:border-[#727272]">
                       <Image src="/images/icons/report-icon.svg" alt="" width={18} height={18} className="size-4.5" />
                     </span>
-                    Report this listing
+                    {t("listing_detail_report", "Report this listing")}
                   </a>
                 </div>
               </div>
@@ -2162,7 +2164,7 @@ export function PublicListingDetailClient({
 
               {listing.host && (
                 <section className="sm:pt-12 pt-7.5 sm:pb-12 pb-7.5 order-5 border-y border-zinc-200/80 lg:relative lg:z-10 lg:w-[calc(100vw-3rem)] lg:max-w-[1262px] mx-auto  lg:bg-white" aria-labelledby="meet-host-heading">
-                  <h3 id="meet-host-heading" className="mb-6 text-[20px] font-normal text-[#1f1f1f]">Meet your host</h3>
+                  <h3 id="meet-host-heading" className="mb-6 text-[20px] font-normal text-[#1f1f1f]">{t("listing_detail_meet_host", "Meet your host")}</h3>
                   <div className="grid gap-8 md:grid-cols-[376px_minmax(0,1fr)] md:gap-16">
                     <div>
                       {hostProfileHref ? (
@@ -2191,14 +2193,14 @@ export function PublicListingDetailClient({
                     </div>
 
                     <div className="min-w-0 pt-1">
-                      <h4 className="text-[20px] font-normal text-[#1f1f1f]">{listing.host.isSuperhost ? `${listing.host.name || "This host"} is a superhost` : `Hosted by ${listing.host.name || "Homyz host"}`}</h4>
+                      <h4 className="text-[20px] font-normal text-[#1f1f1f]">{listing.host.isSuperhost ? `${listing.host.name || "This host"} is a superhost` : t("listing_detail_hosted_by", "Hosted by {name}").replace("{name}", listing.host.name || "Homyz host")}</h4>
                       {listing.host.isSuperhost && <p className="mt-2 max-w-2xl text-base leading-6 text-[#727272]">Superhosts are experienced, highly rated hosts who are committed to providing great stays for guests.</p>}
                       {hostBio && <p className="mt-2 max-w-2xl line-clamp-3 whitespace-pre-line text-base leading-6 text-[#727272] font-normal">{hostBio}</p>}
 
                       {(hostSince || listing.host.isSuperhost) && <div className="mt-8 space-y-2">
                         <h5 className="text-[20px] font-normal text-[#1f1f1f]">Host details</h5>
                         {hostSince && <p className="text-base text-[#727272]">Joined Homyz in {hostSince}</p>}
-                        {listing.host.isSuperhost && <p className="flex items-center gap-1.5 text-base text-[#727272]"><span aria-hidden="true">★</span> Superhost</p>}
+                        {listing.host.isSuperhost && <p className="flex items-center gap-1.5 text-base text-[#727272]"><span aria-hidden="true">★</span> {t("home_superhost", "Superhost")}</p>}
                       </div>}
 
                       <div className="mt-7 flex flex-wrap items-center gap-3">
@@ -2214,7 +2216,7 @@ export function PublicListingDetailClient({
                             }}
                             className="inline-flex min-h-12 items-center gap-2 rounded-full border border-[#1f1f1f] bg-[#F3F4F5] px-5 text-sm font-normal text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f] group transition-colors"
                           >
-                            View host profile
+                            {t("listing_detail_view_host_profile", "View host profile")}
                           </Link>
                         )}
                         {canMessageHost && (
@@ -2224,7 +2226,7 @@ export function PublicListingDetailClient({
                             className="inline-flex min-h-12 items-center gap-2 rounded-full border border-zinc-300 bg-white px-5 text-sm font-semibold text-[#1f1f1f] hover:border-black hover:bg-zinc-50 transition-colors shadow-2xs"
                           >
                             <Image src="/images/icons/messages.svg" alt="" width={18} height={18} className="size-4" />
-                            Message host
+                            {t("listing_detail_message_host", "Message host")}
                           </button>
                         )}
                       </div>
@@ -2249,10 +2251,10 @@ export function PublicListingDetailClient({
 
               {/* House Rules */}
               <section className="order-6 md:pb-12 lg:relative lg:z-10 lg:w-[calc(100vw-3rem)] lg:max-w-[1262px] mx-auto lg:bg-white" aria-labelledby="things-to-know-heading">
-                <h3 id="things-to-know-heading" className="mb-7 text-[20px] font-normal text-[#1f1f1f]">Things to know</h3>
+                <h3 id="things-to-know-heading" className="mb-7 text-[20px] font-normal text-[#1f1f1f]">{t("listing_detail_things_to_know", "Things to know")}</h3>
                 <div className="grid sm:gap-8 gap-4 md:grid-cols-[1fr_1fr_1.25fr]">
                   <div className="order-1 flex min-h-[294px] flex-col sm:rounded-[30px] rounded-[10px] border border-[#dedede] bg-white/60 sm:p-7 py-8 px-5 shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)]" aria-labelledby="house-rules-heading">
-                    <h4 id="house-rules-heading" className="sm:text-[20px] text-lg font-normal text-[#1f1f1f]">House rules</h4>
+                    <h4 id="house-rules-heading" className="sm:text-[20px] text-lg font-normal text-[#1f1f1f]">{t("listing_detail_house_rules", "House rules")}</h4>
                     <div className="shrink-0 mt-5 space-y-4 text-base text-[#1f1f1f]">
                       {houseRuleItems.slice(0, 4).map((item) => (
                         <div key={item.id} className="shrink-0 flex items-center gap-3">
@@ -2261,39 +2263,39 @@ export function PublicListingDetailClient({
                         </div>
                       ))}
                     </div>
-                    <button type="button" onClick={() => setOpenThingsCard("rules")} className="mt-auto pt-6 text-left text-base text-[#727272] underline underline-offset-2">Show more</button>
+                    <button type="button" onClick={() => setOpenThingsCard("rules")} className="mt-auto pt-6 text-left text-base text-[#727272] underline underline-offset-2">{t("listing_detail_show_more", "Show more")}</button>
                   </div>
 
                   {(cancellationLabel || longTermCancellationLabel) && <div className="order-3 flex min-h-[294px] flex-col sm:rounded-[30px] rounded-[10px] border border-[#dedede] bg-white py-8 px-5 shadow-[0_2px_5px_rgba(0,0,0,0.14)]" aria-labelledby="cancellation-heading">
-                    <h4 id="cancellation-heading" className="sm:text-[20px] text-lg font-normal text-[#1f1f1f]">Cancellation policy</h4>
+                    <h4 id="cancellation-heading" className="sm:text-[20px] text-lg font-normal text-[#1f1f1f]">{t("listing_detail_cancellation_policy", "Cancellation policy")}</h4>
                     <div className="mt-4 space-y-4">
                       {cancellationItems.slice(0, 4).map((item, index) => (
                         <p key={`${item}-${index}`} className="text-base leading-6 text-[#1f1f1f]">{item}</p>
                       ))}
                     </div>
-                    <button type="button" onClick={() => setOpenThingsCard("cancellation")} className="mt-auto pt-6 text-left text-base text-[#727272] underline underline-offset-2">Show more</button>
+                    <button type="button" onClick={() => setOpenThingsCard("cancellation")} className="mt-auto pt-6 text-left text-base text-[#727272] underline underline-offset-2">{t("listing_detail_show_more", "Show more")}</button>
                   </div>}
 
                   {/* Safety Disclosures */}
                   <div className="order-2 flex min-h-[294px] flex-col sm:rounded-[30px] rounded-[10px] border border-[#dedede] bg-white py-8 px-5 shadow-[0_2px_5px_rgba(0,0,0,0.14)]">
-                    <h4 className="sm:text-[20px] text-lg font-normal text-[#1f1f1f]">Safety & property</h4>
+                    <h4 className="sm:text-[20px] text-lg font-normal text-[#1f1f1f]">{t("listing_detail_safety_property", "Safety & property")}</h4>
                     <div className="mt-5 space-y-4 text-base text-[#1f1f1f]">
                       {safetyItems.slice(0, 4).map((item, index) => (
                         <p key={`${item}-${index}`}>{item}</p>
                       ))}
                       {safetyItems.length === 0 && <p>No safety equipment or property hazards have been reported.</p>}
                     </div>
-                    <button type="button" onClick={() => setOpenThingsCard("safety")} className="mt-auto pt-6 text-left text-base text-[#727272] underline underline-offset-2">Show more</button>
+                    <button type="button" onClick={() => setOpenThingsCard("safety")} className="mt-auto pt-6 text-left text-base text-[#727272] underline underline-offset-2">{t("listing_detail_show_more", "Show more")}</button>
                   </div>
                 </div>
               </section>
 
               {/* Location & Map Section */}
               <div className="order-4 space-y-3 sm:pb-12 pb-8 lg:relative lg:z-10 w-full lg:w-[calc(100vw-3rem)] lg:max-w-[1262px] mx-auto lg:bg-white">
-                <h3 className="text-[20px] font-normal text-[#1f1f1f]">{"Where you'll be"}</h3>
+                <h3 className="text-[20px] font-normal text-[#1f1f1f]">{t("listing_detail_where_youll_be", "Where you'll be")}</h3>
                 <p className="mt-1 text-sm text-[#727272] font-normal">
                   {locationString || "Location details are not available for this listing."}
-                  {!listing.showExactLocation && " · Approximate location provided to protect host privacy"}
+                  {!listing.showExactLocation && ` · ${t("listing_detail_approx_location", "Approximate location provided to protect host privacy")}`}
                 </p>
                 {publicCoordinates ? (
                   <div className="h-[163px] w-full overflow-hidden sm:rounded-[30px] rounded-[10px] border border-zinc-200 shadow-sm sm:h-[604px] bg-[#F1F1F199]">
@@ -2313,7 +2315,7 @@ export function PublicListingDetailClient({
                   </div>
                 ) : (
                   <p className="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-6 text-xs text-[#727272]">
-                    Map location is not available for this listing.
+                    {t("listing_detail_map_unavailable", "Map location is not available for this listing.")}
                   </p>
                 )}
                 {/* TEMPORARILY DISABLED: local guidebook cards are hidden while the feature is paused. */}
@@ -2370,7 +2372,7 @@ export function PublicListingDetailClient({
           <div className="flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-[20px] bg-white shadow-2xl">
             <div className="flex items-center justify-between px-6 pb-4 pt-6 sm:px-8">
               <h3 id="things-to-know-modal-title" className="text-2xl font-semibold text-[#1f1f1f]">
-                {openThingsCard === "rules" ? "House rules" : openThingsCard === "safety" ? "Safety & property" : "Cancellation policy"}
+                {openThingsCard === "rules" ? t("listing_detail_house_rules", "House rules") : openThingsCard === "safety" ? t("listing_detail_safety_property", "Safety & property") : t("listing_detail_cancellation_policy", "Cancellation policy")}
               </h3>
               <button type="button" onClick={() => setOpenThingsCard(null)} aria-label="Close details" className="-mr-1 -mt-1 rounded-full w-7.5 h-7.5 flex justify-center items-center text-2xl leading-none text-[#1f1f1f] hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f] shrink-0">×</button>
             </div>
@@ -2415,7 +2417,7 @@ export function PublicListingDetailClient({
         <ModalOverlay role="dialog" aria-modal="true" aria-labelledby="description-modal-title" className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
           <div className="flex max-h-[85vh] w-full max-w-2xl flex-col rounded-[28px] border border-zinc-200 bg-white p-6 shadow-2xl">
             <div className="flex items-center justify-between border-b border-zinc-200 pb-4">
-              <h3 id="description-modal-title" className="text-2xl font-semibold text-[#1f1f1f]">About this place</h3>
+              <h3 id="description-modal-title" className="text-2xl font-semibold text-[#1f1f1f]">{t("listing_detail_about_place", "About this place")}</h3>
               <button type="button" onClick={() => setIsDescriptionModalOpen(false)} aria-label="Close description" className="cursor-pointer p-1 text-lg font-semibold text-[#1f1f1f] hover:text-[#727272] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f]">✕</button>
             </div>
             <div className="visible-scrollbar mt-5 space-y-6 overflow-y-auto pr-1 text-base leading-6 text-[#727272]">
@@ -2436,7 +2438,7 @@ export function PublicListingDetailClient({
         <ModalOverlay role="dialog" aria-modal="true" aria-labelledby="amenities-modal-title" className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
           <div className="flex max-h-[85vh] w-full max-w-lg flex-col rounded-[20px] border border-zinc-200 bg-white p-6 shadow-2xl">
             <div className="flex items-center justify-between pb-4 border-b border-zinc-200">
-              <h3 id="amenities-modal-title" className="font-semibold text-xl text-[#1f1f1f]">What this place offers</h3>
+              <h3 id="amenities-modal-title" className="font-semibold text-xl text-[#1f1f1f]">{t("listing_detail_what_place_offers", "What this place offers")}</h3>
               <button
                 ref={amenityCloseRef}
                 type="button"
@@ -2453,7 +2455,7 @@ export function PublicListingDetailClient({
                 type="text"
                 value={amenitySearchQuery}
                 onChange={(e) => setAmenitySearchQuery(e.target.value)}
-                placeholder="Search amenities..."
+                placeholder={t("listing_detail_search_amenities", "Search amenities...")}
                 className="w-full rounded-full border border-[#727272] text-[#1f1f1f] px-4 py-2 sm:min-h-[56px] min-h-[45px] text-sm outline-none focus:border-[#1f1f1f]"
               />
             </div>
@@ -2467,7 +2469,7 @@ export function PublicListingDetailClient({
                   <div className="space-y-3">{amenities.map((am) => <AmenityRow key={am.id} amenity={am} />)}</div>
                 </section>
               ))}
-              {filteredModalAmenities.length === 0 && <p className="py-5 text-center text-xs text-[#727272]">No matching amenities.</p>}
+              {filteredModalAmenities.length === 0 && <p className="py-5 text-center text-xs text-[#727272]">{t("listing_detail_no_matching_amenities", "No matching amenities.")}</p>}
             </div>
           </div>
         </ModalOverlay>
@@ -2485,7 +2487,7 @@ export function PublicListingDetailClient({
             <div className="flex items-center justify-between pb-3 border-b border-zinc-200">
               <div>
                 <h3 id="contact-host-modal-title" className="font-bold text-lg text-[#1f1f1f]">
-                  Contact {listing.host?.name || "Host"}
+                  {t("listing_detail_contact_host", "Contact host")} {listing.host?.name ? `(${listing.host.name})` : ""}
                 </h3>
                 <p className="text-xs text-zinc-500">Ask about dates, amenities, or special requests</p>
               </div>
@@ -2507,7 +2509,7 @@ export function PublicListingDetailClient({
                     <span className="font-semibold text-zinc-800">{checkIn} to {checkOut}</span>
                   </div>
                   <div>
-                    <span className="text-zinc-500 block">Guests</span>
+                    <span className="text-zinc-500 block">{t("host_basics_guests", "Guests")}</span>
                     <span className="font-semibold text-zinc-800">{adultsCount + childrenCount}</span>
                   </div>
                 </div>
@@ -2523,7 +2525,7 @@ export function PublicListingDetailClient({
                   value={inquiryMessage}
                   onChange={(e) => setInquiryMessage(e.target.value)}
                   placeholder="Hi! I'm planning a trip and was wondering if..."
-                  className="w-full rounded-2xl border border-zinc-300 p-3 text-xs sm:text-sm focus:border-zinc-500 focus:outline-none"
+                  className="w-full rounded-2xl border border-zinc-300 p-3 text-xs sm:text-sm focus:border-zinc-500 focus-outline-none"
                 />
               </div>
 
@@ -2541,7 +2543,7 @@ export function PublicListingDetailClient({
                   onClick={() => setContactHostModalOpen(false)}
                   className="px-5 py-2.5 rounded-full text-xs font-semibold text-zinc-600 hover:bg-zinc-100"
                 >
-                  Cancel
+                  {t("host_cancel", "Cancel")}
                 </button>
                 <button
                   type="submit"
@@ -2568,7 +2570,7 @@ export function PublicListingDetailClient({
                   : displayPrice ?? "Price unavailable"}
               </span>
               <span className="text-xs font-normal text-[#727272]">
-                {quote?.nights ? `total · ${quote.nights} ${quote.nights === 1 ? "night" : "nights"}` : "/ night"}
+                {quote?.nights ? `total · ${quote.nights} ${quote.nights === 1 ? "night" : "nights"}` : ` ${t("listing_detail_per_night", "/ night")}`}
               </span>
             </div>
             <div className="truncate text-xs font-medium text-[#727272]">
@@ -2591,7 +2593,7 @@ export function PublicListingDetailClient({
                 }}
                 className="rounded-2xl border border-amber-400 bg-[#fee09a] px-5 py-2.5 text-xs font-bold text-[#1f1f1f] shadow-xs transition hover:bg-[#fbd775] active:scale-[0.98] cursor-pointer"
               >
-                Check availability
+                {t("listing_detail_check_availability", "Check availability")}
               </button>
             ) : (
               <button
@@ -2609,8 +2611,8 @@ export function PublicListingDetailClient({
                   : isQuoteLoading
                     ? "Checking..."
                     : isInstantBook
-                      ? "Reserve"
-                      : "Request to book"}
+                      ? t("listing_detail_reserve", "Reserve")
+                      : t("listing_detail_request_to_book", "Request to book")}
               </button>
             )}
           </div>
