@@ -85,6 +85,8 @@ export type ConversationDTO = {
     createdAt: string;
     phone?: string | null;
     isSuperhost?: boolean;
+    identityVerified?: boolean;
+    emailVerified?: boolean;
   };
   host: {
     id: string;
@@ -99,10 +101,14 @@ export type ConversationDTO = {
     title: string;
     photos: string[];
     city: string | null;
+    district?: string | null;
     country: string | null;
     price: number;
     propertyType: string | null;
     roomType?: string | null;
+    checkInStart?: string | null;
+    checkOutTime?: string | null;
+    cancellationPolicy?: string | null;
   };
   booking?: {
     id: string;
@@ -114,6 +120,9 @@ export type ConversationDTO = {
     nightlyPrice: number | null;
     currency: string;
     cancellationPolicy: string | null;
+    isNonRefundable?: boolean;
+    priceBreakdown?: any;
+    createdAt?: string;
   } | null;
   lastMessage?: MessageDTO | null;
   activeSpecialOffer?: SpecialOfferDTO | null;
@@ -208,6 +217,11 @@ function toConversationDTO(c: any, currentUserId: string, unreadCount = 0): Conv
       email: c.guest.email,
       createdAt: c.guest.createdAt ? c.guest.createdAt.toISOString() : new Date().toISOString(),
       phone: c.guest.phone || null,
+      emailVerified: Boolean(c.guest.emailVerified),
+      identityVerified: Boolean(
+        c.guest.personalInfo?.identityStatus === "VERIFIED" ||
+        c.guest.personalInfo?.identityVerified
+      ),
     },
     host: {
       id: c.host.id,
@@ -221,10 +235,14 @@ function toConversationDTO(c: any, currentUserId: string, unreadCount = 0): Conv
       title: c.listing.title,
       photos: Array.isArray(c.listing.photos) ? c.listing.photos : [],
       city: c.listing.city || null,
+      district: c.listing.district || null,
       country: c.listing.country || null,
       price: c.listing.price || 0,
       propertyType: c.listing.propertyType || null,
       roomType: c.listing.listingType || null,
+      checkInStart: c.listing.checkInStart || null,
+      checkOutTime: c.listing.checkOutTime || null,
+      cancellationPolicy: c.listing.cancellationPolicy || null,
     },
     booking: c.booking
       ? {
@@ -237,6 +255,9 @@ function toConversationDTO(c: any, currentUserId: string, unreadCount = 0): Conv
           nightlyPrice: c.booking.nightlyPrice,
           currency: c.booking.currency,
           cancellationPolicy: c.booking.cancellationPolicy,
+          isNonRefundable: Boolean(c.booking.isNonRefundable),
+          priceBreakdown: c.booking.priceBreakdown ?? null,
+          createdAt: c.booking.createdAt ? c.booking.createdAt.toISOString() : undefined,
         }
       : null,
     lastMessage: latestMessage ? toMessageDTO(latestMessage, currentUserId) : null,
@@ -301,7 +322,7 @@ async function listConversationsForUser(
       skip: params.skip || 0,
       take: params.take || 50,
       include: {
-        guest: { select: { id: true, name: true, image: true, email: true, createdAt: true, phone: true } },
+        guest: { select: { id: true, name: true, image: true, email: true, emailVerified: true, personalInfo: true, createdAt: true, phone: true } },
         host: { select: { id: true, name: true, image: true, email: true, createdAt: true } },
         listing: {
           select: {
@@ -309,10 +330,14 @@ async function listConversationsForUser(
             title: true,
             photos: true,
             city: true,
+            district: true,
             country: true,
             price: true,
             propertyType: true,
             listingType: true,
+            checkInStart: true,
+            checkOutTime: true,
+            cancellationPolicy: true,
           },
         },
         booking: {
@@ -326,6 +351,9 @@ async function listConversationsForUser(
             nightlyPrice: true,
             currency: true,
             cancellationPolicy: true,
+            isNonRefundable: true,
+            priceBreakdown: true,
+            createdAt: true,
           },
         },
         messages: {
@@ -396,7 +424,7 @@ async function getConversationById(
   const conversation = await prisma.conversation.findUnique({
     where: { id: conversationId },
     include: {
-      guest: { select: { id: true, name: true, image: true, email: true, createdAt: true, phone: true } },
+      guest: { select: { id: true, name: true, image: true, email: true, emailVerified: true, personalInfo: true, createdAt: true, phone: true } },
       host: { select: { id: true, name: true, image: true, email: true, createdAt: true } },
       listing: {
         select: {
@@ -404,10 +432,14 @@ async function getConversationById(
           title: true,
           photos: true,
           city: true,
+          district: true,
           country: true,
           price: true,
           propertyType: true,
           listingType: true,
+          checkInStart: true,
+          checkOutTime: true,
+          cancellationPolicy: true,
         },
       },
       booking: {
@@ -421,6 +453,9 @@ async function getConversationById(
           nightlyPrice: true,
           currency: true,
           cancellationPolicy: true,
+          isNonRefundable: true,
+          priceBreakdown: true,
+          createdAt: true,
         },
       },
       messages: {

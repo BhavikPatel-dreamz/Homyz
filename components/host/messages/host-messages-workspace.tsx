@@ -1,12 +1,22 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
-import { bookingDateKey, formatBookingDateRange } from "@/lib/booking/booking-date";
+import {
+  bookingDateKey,
+  formatBookingDate,
+  formatBookingDateRange,
+} from "@/lib/booking/booking-date";
 import { formatConversationListDate, formatMessageTime } from "@/lib/messages/message-date";
+import { useCurrency } from "@/lib/currency-context";
+import {
+  ReservationDetails,
+  type HostReservation,
+} from "@/components/host/host-workspace-shared";
+import type { ListingDTO } from "@/services/mappers";
 import type {
   ConversationDTO,
   MessageDTO,
@@ -125,8 +135,171 @@ export function HostMessagesWorkspace({
     new Map(initialConversations.map((conversation) => [conversation.id, conversation])),
   );
 
+  const { formatPrice } = useCurrency();
+  const [showReservationDetails, setShowReservationDetails] = useState(false);
+
   const selectedConversation = conversations.find((c) => c.id === selectedId) || null;
   const visibleConversations = inboxView === "all" || inboxView === "hosting" ? conversations : [];
+
+  const selectedReservation: HostReservation | null = useMemo(() => {
+    if (!selectedConversation?.booking) return null;
+    const b = selectedConversation.booking;
+    const g = selectedConversation.guest;
+    const l = selectedConversation.listing;
+    return {
+      id: b.id,
+      listingId: l.id,
+      status: b.status,
+      startDate: b.startDate,
+      endDate: b.endDate,
+      createdAt: b.createdAt || selectedConversation.createdAt,
+      guestName: g.name || "Guest",
+      guestId: g.id,
+      guestImage: g.image,
+      guestEmail: g.email,
+      guestCreatedAt: g.createdAt,
+      conversationId: selectedConversation.id,
+      guests: b.guests || 1,
+      totalPrice: b.totalPrice,
+      nightlyPrice: b.nightlyPrice,
+      currency: b.currency || "SAR",
+      priceBreakdown: b.priceBreakdown,
+      cancellationPolicy: b.cancellationPolicy,
+      isNonRefundable: b.isNonRefundable,
+      listing: {
+        id: l.id,
+        title: l.title,
+        city: l.city || "",
+        district: l.district ?? null,
+        country: l.country || "",
+        photos: l.photos || [],
+        checkInStart: l.checkInStart || "15:00",
+        checkOutTime: l.checkOutTime || "11:00",
+        price: l.price,
+      },
+    };
+  }, [selectedConversation]);
+
+  const selectedListingDTO: ListingDTO | null = useMemo(() => {
+    if (!selectedConversation?.listing) return null;
+    const l = selectedConversation.listing;
+    return {
+      id: l.id,
+      title: l.title,
+      city: l.city || "",
+      district: l.district ?? null,
+      country: l.country || "",
+      photos: l.photos || [],
+      price: l.price,
+      checkInStart: l.checkInStart || "15:00",
+      checkOutTime: l.checkOutTime || "11:00",
+      cancellationPolicy:
+        l.cancellationPolicy ||
+        selectedConversation.booking?.cancellationPolicy ||
+        "Flexible",
+    } as unknown as ListingDTO;
+  }, [selectedConversation]);
+
+  const inquiryDetails = useMemo(() => {
+    if (!selectedConversation) return null;
+    const offer = selectedConversation.activeSpecialOffer;
+    const inqMsg = messages.find(
+      (m) =>
+        m.metadata &&
+        (m.metadata.inquiry === true ||
+          m.metadata.startDate != null ||
+          m.metadata.endDate != null ||
+          m.metadata.guests != null),
+    );
+    const startDate =
+      (inqMsg?.metadata?.startDate as string | undefined) || offer?.startDate || null;
+    const endDate =
+      (inqMsg?.metadata?.endDate as string | undefined) || offer?.endDate || null;
+    const guests =
+      (inqMsg?.metadata?.guests as number | undefined) || offer?.guests || null;
+    const createdAt = inqMsg?.createdAt || selectedConversation.createdAt;
+
+    return {
+      hasDetails: Boolean(startDate || endDate || guests),
+      startDate,
+      endDate,
+      guests,
+      createdAt,
+    };
+  }, [messages, selectedConversation]);
+
+  const headerInfo = useMemo(() => {
+    if (!selectedConversation) return null;
+    const guestName = selectedConversation.guest.name || "Guest";
+    const b = selectedConversation.booking;
+    const offer = selectedConversation.activeSpecialOffer;
+
+    if (offer && (!b || b.status !== "CONFIRMED")) {
+      return {
+        badge: "Special offer",
+        title: `${guestName} received a special offer`,
+      };
+    }
+
+    if (b) {
+      switch (b.status) {
+        case "CONFIRMED":
+          return {
+            badge: "Confirmed reservation",
+            title: `${guestName} is staying at your place`,
+          };
+        case "PENDING":
+          return {
+            badge: "Booking request",
+            title: `${guestName} requested to book your place`,
+          };
+        case "CANCELLED":
+          return {
+            badge: "Cancelled reservation",
+            title: `${guestName}'s reservation was cancelled`,
+          };
+        case "REJECTED":
+          return {
+            badge: "Declined request",
+            title: "Booking request was declined",
+          };
+        case "EXPIRED":
+          return {
+            badge: "Expired request",
+            title: "Booking request expired",
+          };
+        case "COMPLETED":
+          return {
+            badge: "Past reservation",
+            title: `${guestName} stayed at your place`,
+          };
+      }
+    }
+
+    if (selectedConversation.status === "PRE_APPROVED") {
+      return {
+        badge: "Pre-approved inquiry",
+        title: `You pre-approved ${guestName}'s inquiry`,
+      };
+    }
+    if (selectedConversation.status === "DECLINED") {
+      return {
+        badge: "Declined inquiry",
+        title: "Inquiry was declined",
+      };
+    }
+
+    return {
+      badge: "Inquiry",
+      title: `${guestName} asked about your listing`,
+    };
+  }, [selectedConversation]);
+
+  const listingLocation = useMemo(() => {
+    if (!selectedConversation?.listing) return "";
+    const { district, city, country } = selectedConversation.listing;
+    return [district, city, country].filter(Boolean).join(", ");
+  }, [selectedConversation]);
 
   const scrollToBottom = useCallback((behavior: ScrollBehavior = "smooth") => {
     const el = messagesContainerRef.current;
@@ -267,6 +440,7 @@ export function HostMessagesWorkspace({
       if (a.previewUrl) URL.revokeObjectURL(a.previewUrl);
     });
     setStagedAttachments([]);
+    setShowReservationDetails(false);
 
     if (selectedId) {
       lastScrolledConvIdRef.current = null;
@@ -654,6 +828,53 @@ export function HostMessagesWorkspace({
     }
   };
 
+  const getBookingStatusBadge = (status: string) => {
+    switch (status) {
+      case "CONFIRMED":
+        return (
+          <span className="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-800 border border-emerald-300">
+            Confirmed stay
+          </span>
+        );
+      case "PENDING":
+        return (
+          <span className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-800 border border-amber-300">
+            Pending
+          </span>
+        );
+      case "CANCELLED":
+        return (
+          <span className="inline-flex items-center rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-semibold text-rose-800 border border-rose-300">
+            Cancelled
+          </span>
+        );
+      case "REJECTED":
+        return (
+          <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-semibold text-zinc-700 border border-zinc-300">
+            Declined
+          </span>
+        );
+      case "EXPIRED":
+        return (
+          <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-semibold text-zinc-600 border border-zinc-300">
+            Expired
+          </span>
+        );
+      case "COMPLETED":
+        return (
+          <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-semibold text-zinc-700 border border-zinc-300">
+            Completed
+          </span>
+        );
+      default:
+        return (
+          <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-semibold text-zinc-700 border border-zinc-300 capitalize">
+            {status.replaceAll("_", " ").toLowerCase()}
+          </span>
+        );
+    }
+  };
+
   return (
     <div className="messages-workspace flex-1 w-full max-w-[1520px] mx-auto px-0 sm:px-6 pb-20">
       <div className="grid grid-cols-1 overflow-hidden bg-white lg:grid-cols-[300px_minmax(0,1fr)_362px] xl:grid-cols-[320px_minmax(0,1fr)_362px] lg:h-[calc(100svh-132px)] lg:min-h-[680px] lg:border lg:border-zinc-300">
@@ -758,19 +979,7 @@ export function HostMessagesWorkspace({
 
           {/* Conversations Scroll Area */}
           <div className="flex-1 overflow-y-auto divide-y divide-zinc-100">
-            {loadingConversations ? (
-              <div className="p-4 space-y-4">
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="flex gap-3 animate-pulse">
-                    <div className="size-12 rounded-full bg-zinc-200 shrink-0" />
-                    <div className="flex-1 space-y-2 py-1">
-                      <div className="h-3.5 bg-zinc-200 rounded w-1/2" />
-                      <div className="h-3 bg-zinc-100 rounded w-3/4" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : visibleConversations.length === 0 ? (
+            {visibleConversations.length === 0 ? (
               <div className="p-8 text-center text-[#727272] space-y-2">
                 <svg
                   className="mx-auto size-10 text-zinc-400"
@@ -831,7 +1040,7 @@ export function HostMessagesWorkspace({
                           {conv.guest.name || "Guest"}
                         </span>
                         <span className="text-xs text-[#616161] shrink-0">
-                          {formatListDate(conv.lastMessageAt)}
+                          {formatConversationListDate(conv.lastMessageAt, initialRenderedAt)}
                         </span>
                       </div>
 
@@ -1353,21 +1562,65 @@ export function HostMessagesWorkspace({
         <aside className="hidden lg:flex flex-col gap-3 overflow-y-auto bg-white px-5.25 py-12">
           {selectedConversation ? (
             <>
+              {/* 1. Header Section */}
               <section className="border-b border-[#D7D7D7] pb-4">
-                <p className="text-xs text-zinc-500">Inquiry</p>
-                <h2 className="guest-name mt-1 text-xl font-medium text-[#727272]"><span className="text-[#1f1f1f]">{selectedConversation.guest.name || "Guest"}</span> asked about your trip</h2>
-                <p className="property-location mt-3 text-sm text-[#1f1f1f] font-normal">{selectedConversation.listing.title}</p>
-                <p className="countryname text-sm text-[#727272]">{[selectedConversation.listing.city, selectedConversation.listing.country].filter(Boolean).join(", ")}</p>
-                {selectedConversation.status !== "CONFIRMED" && selectedConversation.status !== "DECLINED" && (
+                <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                  {headerInfo?.badge || "Inquiry"}
+                </p>
+                <h2 className="guest-name mt-1 text-xl font-medium text-[#727272]">
+                  {headerInfo?.title.startsWith(selectedConversation.guest.name || "Guest") ? (
+                    <>
+                      <span className="text-[#1F1F1F] font-semibold">
+                        {selectedConversation.guest.name || "Guest"}
+                      </span>{" "}
+                      {headerInfo.title
+                        .slice((selectedConversation.guest.name || "Guest").length)
+                        .trim()}
+                    </>
+                  ) : (
+                    <span className="text-[#1F1F1F] font-semibold">
+                      {headerInfo?.title}
+                    </span>
+                  )}
+                </h2>
+                <p className="property-location mt-3 text-sm font-semibold text-[#1F1F1F]">
+                  {selectedConversation.listing.title}
+                </p>
+                {listingLocation && (
+                  <p className="countryname text-sm text-[#727272]">
+                    {listingLocation}
+                  </p>
+                )}
+
+                {/* Pre-approve / Special Offer / Decline actions ONLY when booking is NOT confirmed or declined */}
+                {!selectedConversation.booking && selectedConversation.status !== "DECLINED" && (
                   <div className="mt-6 space-y-3">
-                    <button type="button" onClick={() => setPreApproveModalOpen(true)} className="flex h-9 w-full items-center justify-center rounded-lg border border-[#727272] px-3 text-base font-normal text-[#1F1F1F] transition-colors hover:bg-zinc-50">Pre-approve</button>
-                    <button type="button" onClick={() => setSpecialOfferModalOpen(true)} className="flex h-9 w-full items-center justify-center rounded-lg border border-[#727272] px-3 text-base font-normal text-[#1F1F1F] transition-colors hover:bg-zinc-50">Special offer</button>
-                    <button type="button" onClick={() => setDeclineModalOpen(true)} className="flex h-9 w-full items-center justify-center rounded-lg border border-[#727272] px-3 text-base font-normal text-[#1F1F1F] transition-colors hover:bg-zinc-50">Decline</button>
+                    <button
+                      type="button"
+                      onClick={() => setPreApproveModalOpen(true)}
+                      className="flex h-9 w-full items-center justify-center rounded-lg border border-[#727272] px-3 text-base font-normal text-[#1F1F1F] transition-colors hover:bg-zinc-50 cursor-pointer"
+                    >
+                      Pre-approve
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSpecialOfferModalOpen(true)}
+                      className="flex h-9 w-full items-center justify-center rounded-lg border border-[#727272] px-3 text-base font-normal text-[#1F1F1F] transition-colors hover:bg-zinc-50 cursor-pointer"
+                    >
+                      Special offer
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDeclineModalOpen(true)}
+                      className="flex h-9 w-full items-center justify-center rounded-lg border border-[#727272] px-3 text-base font-normal text-[#1F1F1F] transition-colors hover:bg-zinc-50 cursor-pointer"
+                    >
+                      Decline
+                    </button>
                   </div>
                 )}
               </section>
 
-              {/* Listing Card */}
+              {/* 2. Listing Card */}
               <div className="rounded-[10px] border border-[#E5E5E5] bg-white p-3.5 shadow-[0_2px_5px_rgba(0,0,0,0.12)] space-y-2.5">
                 <h4 className="text-base font-medium text-[#1F1F1F]">Listing</h4>
                 <div className="flex gap-3 items-center">
@@ -1386,26 +1639,40 @@ export function HostMessagesWorkspace({
                     <p className="text-sm font-medium text-[#1F1F1F] truncate">
                       {selectedConversation.listing.title}
                     </p>
-                    <p className="text-xs text-zinc-500 truncate">
-                      {[selectedConversation.listing.city, selectedConversation.listing.country].filter(Boolean).join(", ")}
-                    </p>
+                    {listingLocation && (
+                      <p className="text-xs text-zinc-500 truncate">
+                        {listingLocation}
+                      </p>
+                    )}
                     <p className="text-xs font-semibold text-zinc-800 mt-1">
-                      SAR {(selectedConversation.listing.price / 100).toFixed(0)} <span className="font-normal text-zinc-500">/ night</span>
+                      {formatPrice(selectedConversation.listing.price, "SAR", 0)}{" "}
+                      <span className="font-normal text-zinc-500">/ night</span>
                     </p>
                   </div>
                 </div>
                 <Link
                   href={`/listings/${selectedConversation.listing.id}`}
                   target="_blank"
+                  rel="noopener noreferrer"
                   className="block text-center w-full py-2 rounded-[8px] border border-[#D7D7D7] text-sm font-medium text-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white transition-colors"
                 >
                   View Listing
                 </Link>
               </div>
 
-              {/* Guest Profile Card */}
+              {/* 3. Guest Profile Card */}
               <div className="rounded-[10px] border border-[#E5E5E5] bg-white p-3.5 shadow-[0_2px_5px_rgba(0,0,0,0.12)] space-y-2.5">
-                <h4 className="text-base font-medium text-[#1F1F1F]">About the Guest</h4>
+                <div className="flex items-center justify-between">
+                  <h4 className="text-base font-medium text-[#1F1F1F]">About the Guest</h4>
+                  {selectedConversation.guest.id && (
+                    <Link
+                      href={`/users/profile/${selectedConversation.guest.id}`}
+                      className="text-xs font-medium text-[#1F1F1F] underline underline-offset-2 hover:text-black"
+                    >
+                      View profile
+                    </Link>
+                  )}
+                </div>
                 <div className="flex items-center gap-3">
                   {selectedConversation.guest.image ? (
                     <Image
@@ -1424,129 +1691,250 @@ export function HostMessagesWorkspace({
                     <p className="text-sm font-medium text-[#1F1F1F] truncate">
                       {selectedConversation.guest.name || "Guest"}
                     </p>
-                    <p className="text-sm text-[#727272]">
-                      Member since {new Date(selectedConversation.guest.createdAt).getFullYear()}
-                    </p>
+                    {selectedConversation.guest.createdAt && (
+                      <p className="text-sm text-[#727272]">
+                        Member since {new Date(selectedConversation.guest.createdAt).getUTCFullYear()}
+                      </p>
+                    )}
                   </div>
                 </div>
-                <div className="pt-2 border-t border-[#E5E5E5] text-sm text-[#727272] space-y-1.5">
-                  <div className="flex items-center gap-2">
-                    <svg className="size-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span>Identity confirmed</span>
+
+                {/* Real verifications only */}
+                {(selectedConversation.guest.identityVerified || selectedConversation.guest.emailVerified) && (
+                  <div className="pt-2 border-t border-[#E5E5E5] text-sm text-[#727272] space-y-1.5">
+                    {selectedConversation.guest.identityVerified && (
+                      <div className="flex items-center gap-2">
+                        <svg className="size-4 text-emerald-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>Identity confirmed</span>
+                      </div>
+                    )}
+                    {selectedConversation.guest.emailVerified && (
+                      <div className="flex items-center gap-2">
+                        <svg className="size-4 text-emerald-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>Email verified</span>
+                      </div>
+                    )}
                   </div>
-                  {selectedConversation.guest.email && (
-                    <div className="flex items-center gap-2">
-                      <svg className="size-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                      </svg>
-                      <span>Email verified</span>
-                    </div>
-                  )}
-                </div>
+                )}
               </div>
 
-              {/* Booking details */}
-              <section className="border-t border-[#E5E5E5] pt-5 space-y-3">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-xl font-medium text-[#1F1F1F]">Booking details</h4>
-                  {getStatusBadge(selectedConversation.status, selectedConversation.activeSpecialOffer)}
-                </div>
+              {/* 4. Booking or Inquiry details */}
+              {selectedConversation.booking ? (
+                (() => {
+                  const b = selectedConversation.booking;
+                  const isConfirmed = b.status === "CONFIRMED";
+                  const isPending = b.status === "PENDING";
+                  const isCancelled = b.status === "CANCELLED";
+                  const cardClass =
+                    "rounded-[10px] bg-white px-4 py-3 shadow-[0_2px_5px_rgba(0,0,0,0.12)] border border-[#E5E5E5]";
 
-                {selectedConversation.booking ? (
-                  (() => {
-                    const b = selectedConversation.booking;
-                    const fmt = (d: string | Date) =>
-                      new Date(d).toLocaleDateString("en-US", {
-                        weekday: "short",
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      });
+                  return (
+                    <section className="border-t border-[#E5E5E5] pt-5 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-xl font-medium text-[#1F1F1F]">Booking details</h4>
+                        {getBookingStatusBadge(b.status)}
+                      </div>
 
-                    const cardClass =
-                      "rounded-[10px] bg-white px-4 py-3 shadow-[0_2px_5px_rgba(0,0,0,0.12)]";
-
-                    return (
                       <div className="space-y-3">
                         <div className={cardClass}>
                           <p className="text-base font-medium text-[#1F1F1F]">Guests</p>
                           <p className="text-base text-zinc-500">
-                            {b.guests} {b.guests === 1 ? "Guest" : "Guests"}
+                            {b.guests} {b.guests === 1 ? "guest" : "guests"}
                           </p>
                         </div>
 
                         <div className={cardClass}>
                           <p className="text-base font-medium text-[#1F1F1F]">Check-in</p>
-                          <p className="text-base text-zinc-500">{fmt(b.startDate)}</p>
+                          <p className="text-base text-zinc-500">
+                            {formatBookingDate(b.startDate, { weekday: true })}
+                          </p>
                         </div>
 
                         <div className={cardClass}>
                           <p className="text-base font-medium text-[#1F1F1F]">Check-out</p>
-                          <p className="text-base text-zinc-500">{fmt(b.endDate)}</p>
-                        </div>
-
-                        <div className={cardClass}>
-                          <p className="text-base font-medium text-[#1F1F1F]">Total price</p>
                           <p className="text-base text-zinc-500">
-                            {b.currency} {((b.totalPrice || 0) / 100).toFixed(2)}
+                            {formatBookingDate(b.endDate, { weekday: true })}
                           </p>
                         </div>
 
-                        {b.cancellationPolicy && (
+                        {b.totalPrice != null && (
+                          <div className={cardClass}>
+                            <p className="text-base font-medium text-[#1F1F1F]">Total price</p>
+                            <p className="text-base font-semibold text-zinc-900">
+                              {formatPrice(b.totalPrice, b.currency || "SAR", 2)}
+                            </p>
+                          </div>
+                        )}
+
+                        {(b.cancellationPolicy || selectedConversation.listing.cancellationPolicy) && (
                           <div className={cardClass}>
                             <p className="text-base font-medium text-[#1F1F1F]">Cancellation policy</p>
                             <p className="text-base text-zinc-500 capitalize">
-                              {b.cancellationPolicy.toLowerCase()}
+                              {(b.cancellationPolicy || selectedConversation.listing.cancellationPolicy || "Flexible")
+                                .replaceAll("_", " ")
+                                .toLowerCase()}
                             </p>
                           </div>
                         )}
 
                         <Link
-                          href="/calendar"
+                          href={`/host/calendar?listingId=${selectedConversation.listing.id}`}
                           className="inline-block text-base font-medium text-[#1F1F1F] underline underline-offset-2 hover:text-black"
                         >
-                          Show calendar
+                          View in calendar →
                         </Link>
 
-                        <Link
-                          href={`/bookings/${b.id}`}
-                          className="block text-center w-full py-3 rounded-lg bg-[#FCDF9C] text-[#1F1F1F] hover:text-white text-base font-medium hover:bg-[#1F1F1F] transition-colors"
-                        >
-                          View Reservation Details
-                        </Link>
+                        {(isConfirmed || isPending || isCancelled) && (
+                          <button
+                            type="button"
+                            onClick={() => setShowReservationDetails(true)}
+                            className="block text-center w-full py-3 rounded-lg bg-[#FCDF9C] text-[#1F1F1F] hover:text-white text-base font-medium hover:bg-[#1F1F1F] transition-colors cursor-pointer"
+                          >
+                            View Reservation Details
+                          </button>
+                        )}
                       </div>
-                    );
-                  })()
-                ) : (
-                  <div className="space-y-3 text-sm text-zinc-600">
-                    <p>This is a pre-booking inquiry. The guest has not yet confirmed a reservation.</p>
-                    <button
-                      type="button"
-                      onClick={() => setPreApproveModalOpen(true)}
-                      className="w-full py-2.5 rounded-[10px] border border-zinc-400 text-[#1F1F1F] text-base font-medium hover:bg-zinc-50 transition-colors"
-                    >
-                      Pre-approve
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setSpecialOfferModalOpen(true)}
-                      className="w-full py-2.5 rounded-[10px] border border-zinc-400 text-[#1F1F1F] text-base font-medium hover:bg-zinc-50 transition-colors"
-                    >
-                      Special offer
-                    </button>
+                    </section>
+                  );
+                })()
+              ) : (
+                <section className="border-t border-[#E5E5E5] pt-5 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-xl font-medium text-[#1F1F1F]">Inquiry details</h4>
+                    <span className="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700 border border-blue-200">
+                      {selectedConversation.status === "PRE_APPROVED" ? "Pre-approved" : "Inquiry"}
+                    </span>
                   </div>
+
+                  {inquiryDetails?.hasDetails ? (
+                    <div className="space-y-3">
+                      {inquiryDetails.guests != null && (
+                        <div className="rounded-[10px] bg-white px-4 py-3 shadow-[0_2px_5px_rgba(0,0,0,0.12)] border border-[#E5E5E5]">
+                          <p className="text-base font-medium text-[#1F1F1F]">Guests</p>
+                          <p className="text-base text-zinc-500">
+                            {inquiryDetails.guests} {inquiryDetails.guests === 1 ? "guest" : "guests"}
+                          </p>
+                        </div>
+                      )}
+
+                      {inquiryDetails.startDate && (
+                        <div className="rounded-[10px] bg-white px-4 py-3 shadow-[0_2px_5px_rgba(0,0,0,0.12)] border border-[#E5E5E5]">
+                          <p className="text-base font-medium text-[#1F1F1F]">Requested check-in</p>
+                          <p className="text-base text-zinc-500">
+                            {formatBookingDate(inquiryDetails.startDate, { weekday: true })}
+                          </p>
+                        </div>
+                      )}
+
+                      {inquiryDetails.endDate && (
+                        <div className="rounded-[10px] bg-white px-4 py-3 shadow-[0_2px_5px_rgba(0,0,0,0.12)] border border-[#E5E5E5]">
+                          <p className="text-base font-medium text-[#1F1F1F]">Requested check-out</p>
+                          <p className="text-base text-zinc-500">
+                            {formatBookingDate(inquiryDetails.endDate, { weekday: true })}
+                          </p>
+                        </div>
+                      )}
+
+                      {inquiryDetails.createdAt && (
+                        <div className="rounded-[10px] bg-white px-4 py-3 shadow-[0_2px_5px_rgba(0,0,0,0.12)] border border-[#E5E5E5]">
+                          <p className="text-base font-medium text-[#1F1F1F]">Inquiry sent</p>
+                          <p className="text-base text-zinc-500">
+                            {formatBookingDate(inquiryDetails.createdAt, { weekday: true })}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="rounded-[10px] bg-zinc-50 p-4 text-sm text-[#727272] border border-zinc-200">
+                      This is a pre-booking inquiry. The guest has not yet confirmed a reservation.
+                    </div>
+                  )}
+
+                  {selectedConversation.status !== "DECLINED" && (
+                    <div className="pt-2 space-y-2.5">
+                      <button
+                        type="button"
+                        onClick={() => setPreApproveModalOpen(true)}
+                        className="w-full py-2.5 rounded-[10px] border border-zinc-400 text-[#1F1F1F] text-base font-medium hover:bg-zinc-50 transition-colors cursor-pointer"
+                      >
+                        Pre-approve
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSpecialOfferModalOpen(true)}
+                        className="w-full py-2.5 rounded-[10px] border border-zinc-400 text-[#1F1F1F] text-base font-medium hover:bg-zinc-50 transition-colors cursor-pointer"
+                      >
+                        Special offer
+                      </button>
+                    </div>
+                  )}
+                </section>
+              )}
+
+              {/* 5. Active Special Offer Section (if present and stay not confirmed) */}
+              {selectedConversation.activeSpecialOffer &&
+                (!selectedConversation.booking ||
+                  selectedConversation.booking.status !== "CONFIRMED") && (
+                  <section className="border-t border-[#E5E5E5] pt-5 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-base font-medium text-[#1F1F1F]">Active special offer</h4>
+                      <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-800 border border-amber-200 capitalize">
+                        {selectedConversation.activeSpecialOffer.status.toLowerCase()}
+                      </span>
+                    </div>
+                    <div className="rounded-[10px] bg-white px-4 py-3 shadow-[0_2px_5px_rgba(0,0,0,0.12)] border border-[#E5E5E5]">
+                      <p className="text-xs text-zinc-500">Dates</p>
+                      <p className="text-sm font-medium text-zinc-800 mt-0.5">
+                        {formatBookingDateRange(
+                          selectedConversation.activeSpecialOffer.startDate,
+                          selectedConversation.activeSpecialOffer.endDate,
+                        )}
+                      </p>
+                      <p className="text-xs text-zinc-600 mt-1">
+                        {selectedConversation.activeSpecialOffer.guests}{" "}
+                        {selectedConversation.activeSpecialOffer.guests === 1
+                          ? "guest"
+                          : "guests"}
+                      </p>
+                      <div className="mt-2.5 pt-2 border-t border-zinc-100 flex justify-between items-center text-sm">
+                        <span className="text-zinc-600 font-medium">Offer total</span>
+                        <span className="font-semibold text-zinc-900">
+                          {formatPrice(
+                            selectedConversation.activeSpecialOffer.subtotalPrice || 0,
+                            selectedConversation.activeSpecialOffer.currency || "SAR",
+                            2,
+                          )}
+                        </span>
+                      </div>
+                    </div>
+                  </section>
                 )}
-              </section>
             </>
           ) : (
-            <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 text-center text-xs text-zinc-400">
-              Context and stay details will appear here.
+            <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 text-center text-sm text-[#727272]">
+              <p className="font-medium text-[#1F1F1F] mb-1">
+                Select a conversation to view details
+              </p>
+              <p className="text-xs text-zinc-500">
+                Choose a guest from the left panel to review inquiries, send special offers, or respond to booking messages.
+              </p>
             </div>
           )}
         </aside>
       </div>
+
+      {/* Reservation Details Modal */}
+      {showReservationDetails && selectedReservation && selectedListingDTO && (
+        <ReservationDetails
+          booking={selectedReservation}
+          listing={selectedListingDTO}
+          onClose={() => setShowReservationDetails(false)}
+        />
+      )}
 
       {/* ========================================================================= */}
       {/* MODAL: MESSAGING SETTINGS                                                 */}
