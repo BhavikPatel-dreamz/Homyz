@@ -242,7 +242,7 @@ export function HostMessagesWorkspace({
     }
 
     if (b) {
-      switch (b.status) {
+      switch (b.status as string) {
         case "CONFIRMED":
           return {
             badge: "Confirmed reservation",

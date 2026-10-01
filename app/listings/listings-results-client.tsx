@@ -292,6 +292,42 @@ function deduplicateListings<T extends { id: string }>(items: T[]): T[] {
   return result;
 }
 
+interface ClientSearchCacheEntry {
+  items: PublicListingCardDTO[];
+  total: number;
+  totalPages: number;
+  priceRange?: { min: number; max: number };
+  locationContextName?: string;
+  targetCoords?: { lat: number; lng: number };
+  appliedRadiusKm?: number;
+  isRadiusExpanded?: boolean;
+  timestamp: number;
+}
+
+const clientSearchCache = new Map<string, ClientSearchCacheEntry>();
+const CLIENT_CACHE_TTL_MS = 180_000; // 3 minutes
+
+export function buildNormalizedSearchKey(params: URLSearchParams | string): string {
+  const sp = typeof params === "string" ? new URLSearchParams(params) : params;
+  const keysToInclude = [
+    "destination", "location", "city", "placeName", "lat", "lng", "radius",
+    "checkIn", "checkin", "startDate", "checkOut", "checkout", "endDate",
+    "guests", "adults", "children", "infants", "pets",
+    "propertyType", "propertyTypes", "listingType",
+    "minPrice", "maxPrice", "amenities", "accessibility", "languages",
+    "bedrooms", "bathrooms", "beds", "instantBook", "featured",
+    "sortBy", "neLat", "neLng", "swLat", "swLng", "page"
+  ];
+  const parts: string[] = [];
+  for (const k of keysToInclude.sort()) {
+    const v = sp.get(k);
+    if (v !== null && v !== "" && v !== "undefined") {
+      parts.push(`${k}=${v}`);
+    }
+  }
+  return parts.join("&");
+}
+
 // ─────────────────────────────────────────────
 // Main Component
 // ─────────────────────────────────────────────
@@ -315,6 +351,16 @@ export function ListingsResultsClient({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
+
+  const [activeFilters, setActiveFilters] = useState(currentFilters);
+  useEffect(() => {
+    setActiveFilters(currentFilters);
+  }, [currentFilters]);
+
+  const [activeStatus, setActiveStatus] = useState<"idle" | "loading" | "refining" | "error">(
+    hasError ? "error" : "idle"
+  );
+  const activeAbortControllerRef = useRef<AbortController | null>(null);
 
   // Synchronize active search URL/filter state into lastSearch context
   useEffect(() => {
@@ -396,7 +442,7 @@ export function ListingsResultsClient({
   const isLoadingMoreRef = useRef(false);
   const [total, setTotal] = useState(initialTotal);
   // Track desktop vs mobile/tablet breakpoint (lg: 1024px)
-  const [isDesktop, setIsDesktop] = useState<boolean>(false);
+  const [isDesktop, setIsDesktop] = useState<boolean>(() => typeof window !== "undefined" && window.innerWidth >= 1024);
 
   useEffect(() => {
     const mql = window.matchMedia("(min-width: 1024px)");
@@ -589,20 +635,21 @@ export function ListingsResultsClient({
   // Compute active filter count for badge
   const availableMinPrice = priceRange?.min ?? 0;
   const availableMaxPrice = priceRange?.max ?? 0;
+  const effFilters = activeFilters || currentFilters;
   const activeFilterCount = [
-    typeof currentFilters.minPrice === "number" && currentFilters.minPrice > availableMinPrice,
-    typeof currentFilters.maxPrice === "number" && availableMaxPrice > 0 && currentFilters.maxPrice < availableMaxPrice,
-    currentFilters.propertyType || (currentFilters.propertyTypes ?? []).length > 0,
-    currentFilters.listingType,
-    (currentFilters.amenities ?? []).length > 0,
-    (currentFilters.accessibility ?? []).length > 0,
-    (currentFilters.languages ?? []).length > 0,
-    currentFilters.bedrooms && currentFilters.bedrooms > 0,
-    currentFilters.bathrooms && currentFilters.bathrooms > 0,
-    currentFilters.beds && currentFilters.beds > 0,
-    currentFilters.instantBook,
-    currentFilters.featured,
-    currentFilters.pets && currentFilters.pets > 0,
+    typeof effFilters.minPrice === "number" && effFilters.minPrice > availableMinPrice,
+    typeof effFilters.maxPrice === "number" && availableMaxPrice > 0 && effFilters.maxPrice < availableMaxPrice,
+    effFilters.propertyType || (effFilters.propertyTypes ?? []).length > 0,
+    effFilters.listingType,
+    (effFilters.amenities ?? []).length > 0,
+    (effFilters.accessibility ?? []).length > 0,
+    (effFilters.languages ?? []).length > 0,
+    effFilters.bedrooms && effFilters.bedrooms > 0,
+    effFilters.bathrooms && effFilters.bathrooms > 0,
+    effFilters.beds && effFilters.beds > 0,
+    effFilters.instantBook,
+    effFilters.featured,
+    effFilters.pets && effFilters.pets > 0,
   ].filter(Boolean).length;
 
   const currencySymbol = getCurrencySymbol(selectedCurrency);
@@ -676,21 +723,160 @@ export function ListingsResultsClient({
     [pathname, searchParams],
   );
 
-  // Sort change — immediate URL navigation
+  // Seed client search cache with initial results
+  useEffect(() => {
+    const sp = new URLSearchParams(typeof window !== "undefined" ? window.location.search || searchParams.toString() : searchParams.toString());
+    const initialKey = buildNormalizedSearchKey(sp);
+    if (!clientSearchCache.has(initialKey)) {
+      clientSearchCache.set(initialKey, {
+        items: initialListings,
+        total: initialTotal,
+        totalPages: initialTotalPages,
+        priceRange,
+        locationContextName,
+        targetCoords,
+        appliedRadiusKm,
+        isRadiusExpanded,
+        timestamp: Date.now(),
+      });
+    }
+  }, [initialListings, initialTotal, initialTotalPages, priceRange, locationContextName, targetCoords, appliedRadiusKm, isRadiusExpanded, searchParams]);
+
+  // Fast client-side filter executor with caching and abort control
+  const executeFilterQuery = useCallback(
+    async (overrides: Record<string, string | number | boolean | undefined | null>, pushToHistory = true) => {
+      const currentQuery = typeof window !== "undefined" ? window.location.search || searchParams.toString() : searchParams.toString();
+      const params = new URLSearchParams(currentQuery);
+      for (const [k, v] of Object.entries(overrides)) {
+        if (v === null || v === undefined || v === "" || v === 0 || v === false) {
+          params.delete(k);
+        } else {
+          params.set(k, String(v));
+        }
+      }
+      params.delete("page");
+      const queryString = params.toString();
+      const targetUrl = `${pathname}${queryString ? `?${queryString}` : ""}`;
+
+      if (pushToHistory && typeof window !== "undefined") {
+        window.history.pushState(null, "", targetUrl);
+      }
+
+      // Update active filters state
+      const nextFilters: typeof currentFilters = {
+        ...activeFilters,
+        minPrice: params.has("minPrice") ? Number(params.get("minPrice")) : undefined,
+        maxPrice: params.has("maxPrice") ? Number(params.get("maxPrice")) : undefined,
+        propertyType: params.get("propertyType") || undefined,
+        propertyTypes: params.get("propertyTypes") ? params.get("propertyTypes")!.split(",") : undefined,
+        listingType: params.get("listingType") || undefined,
+        amenities: params.get("amenities") ? params.get("amenities")!.split(",") : undefined,
+        accessibility: params.get("accessibility") ? params.get("accessibility")!.split(",") : undefined,
+        languages: params.get("languages") ? params.get("languages")!.split(",") : undefined,
+        bedrooms: params.has("bedrooms") ? Number(params.get("bedrooms")) : undefined,
+        bathrooms: params.has("bathrooms") ? Number(params.get("bathrooms")) : undefined,
+        beds: params.has("beds") ? Number(params.get("beds")) : undefined,
+        instantBook: params.get("instantBook") === "true",
+        featured: params.get("featured") === "true",
+        pets: params.has("pets") ? Number(params.get("pets")) : undefined,
+        sortBy: (params.get("sortBy") as SortBy) || "recommended",
+      };
+      setActiveFilters(nextFilters);
+
+      const cacheKey = buildNormalizedSearchKey(params);
+      const cached = clientSearchCache.get(cacheKey);
+      const now = Date.now();
+      if (cached && now - cached.timestamp < CLIENT_CACHE_TTL_MS) {
+        setAllListings(cached.items);
+        setTotal(cached.total);
+        setCurrentPage(1);
+        setHasMore(1 < cached.totalPages);
+        setActiveStatus("idle");
+        return;
+      }
+
+      setActiveStatus(allListings.length > 0 ? "refining" : "loading");
+
+      if (activeAbortControllerRef.current) {
+        activeAbortControllerRef.current.abort();
+      }
+      const controller = new AbortController();
+      activeAbortControllerRef.current = controller;
+
+      try {
+        const res = await fetch(`/api/v1/listings?${queryString}`, {
+          credentials: "same-origin",
+          signal: controller.signal,
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          const items: PublicListingCardDTO[] = data.items ?? data.data ?? [];
+          const resTotal = data.total ?? data.pagination?.total ?? items.length;
+          const resTotalPages = data.totalPages ?? data.pagination?.totalPages ?? 1;
+
+          clientSearchCache.set(cacheKey, {
+            items,
+            total: resTotal,
+            totalPages: resTotalPages,
+            priceRange: data.priceRange,
+            locationContextName: data.locationContextName,
+            targetCoords: data.targetCoords,
+            appliedRadiusKm: data.appliedRadiusKm,
+            isRadiusExpanded: data.isRadiusExpanded,
+            timestamp: Date.now(),
+          });
+
+          setAllListings(items);
+          setTotal(resTotal);
+          setCurrentPage(1);
+          setHasMore(1 < resTotalPages);
+          setActiveStatus("idle");
+        } else {
+          setActiveStatus("error");
+        }
+      } catch (err: any) {
+        if (err?.name === "AbortError") return;
+        setActiveStatus("error");
+      }
+    },
+    [searchParams, pathname, activeFilters, allListings.length]
+  );
+
+  // Popstate listener for browser Back / Forward
+  useEffect(() => {
+    const handlePopState = () => {
+      if (typeof window === "undefined") return;
+      const sp = new URLSearchParams(window.location.search);
+      const cacheKey = buildNormalizedSearchKey(sp);
+      const cached = clientSearchCache.get(cacheKey);
+      if (cached && Date.now() - cached.timestamp < CLIENT_CACHE_TTL_MS) {
+        setAllListings(cached.items);
+        setTotal(cached.total);
+        setCurrentPage(1);
+        setHasMore(1 < cached.totalPages);
+        setActiveStatus("idle");
+      } else {
+        router.refresh();
+      }
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [router]);
+
+  // Sort change — immediate fast update
   const handleSortChange = (sort: SortBy) => {
     trackListingEvent({
       eventType: "listing_sort_changed",
       sortOption: sort,
       resultCount: total,
     });
-    startTransition(() => {
-      router.push(buildUrl({ sortBy: sort === "recommended" ? null : sort }));
-    });
+    executeFilterQuery({ sortBy: sort === "recommended" ? null : sort });
   };
 
   // Quick amenity chip toggle
   const handleAmenityChip = (amenityId: string) => {
-    const current = (currentFilters.amenities ?? []);
+    const current = (activeFilters.amenities ?? currentFilters.amenities ?? []);
     const next = current.includes(amenityId)
       ? current.filter((a) => a !== amenityId)
       : [...current, amenityId];
@@ -700,9 +886,7 @@ export function ListingsResultsClient({
       metadata: { action: current.includes(amenityId) ? "remove" : "add", amenities: next },
       resultCount: total,
     });
-    startTransition(() => {
-      router.push(buildUrl({ amenities: next.length ? next.join(",") : null }));
-    });
+    executeFilterQuery({ amenities: next.length ? next.join(",") : null });
   };
 
   // Apply filter panel
@@ -727,24 +911,20 @@ export function ListingsResultsClient({
       },
       resultCount: total,
     });
-    startTransition(() => {
-      router.push(
-        buildUrl({
-          minPrice: draftMinPrice > 0 ? draftMinPrice * 100 : null,
-          maxPrice: draftMaxPrice > 0 ? draftMaxPrice * 100 : null,
-          propertyType: draftPropertyType || null,
-          listingType: draftListingType || null,
-          amenities: draftAmenities.length ? draftAmenities.join(",") : null,
-          accessibility: draftAccessibility.length ? draftAccessibility.join(",") : null,
-          languages: draftHostLanguages.length ? draftHostLanguages.join(",") : null,
-          bedrooms: draftBedrooms > 0 ? draftBedrooms : null,
-          bathrooms: draftBathrooms > 0 ? draftBathrooms : null,
-          beds: draftBeds > 0 ? draftBeds : null,
-          instantBook: draftInstantBook ? "true" : null,
-          featured: draftFeatured || draftStandout ? "true" : null,
-          pets: draftPets ? 1 : null,
-        }),
-      );
+    executeFilterQuery({
+      minPrice: draftMinPrice > 0 ? draftMinPrice * 100 : null,
+      maxPrice: draftMaxPrice > 0 ? draftMaxPrice * 100 : null,
+      propertyType: draftPropertyType || null,
+      listingType: draftListingType || null,
+      amenities: draftAmenities.length ? draftAmenities.join(",") : null,
+      accessibility: draftAccessibility.length ? draftAccessibility.join(",") : null,
+      languages: draftHostLanguages.length ? draftHostLanguages.join(",") : null,
+      bedrooms: draftBedrooms > 0 ? draftBedrooms : null,
+      bathrooms: draftBathrooms > 0 ? draftBathrooms : null,
+      beds: draftBeds > 0 ? draftBeds : null,
+      instantBook: draftInstantBook ? "true" : null,
+      featured: draftFeatured || draftStandout ? "true" : null,
+      pets: draftPets ? 1 : null,
     });
   };
 
@@ -778,23 +958,21 @@ export function ListingsResultsClient({
       metadata: filters,
       resultCount: total,
     });
-    startTransition(() => {
-      router.push(buildUrl({
-        minPrice: selectedMinPrice > absoluteMinPrice ? selectedMinPrice * 100 : null,
-        maxPrice: absoluteMaxPrice > 0 && selectedMaxPrice < absoluteMaxPrice ? selectedMaxPrice * 100 : null,
-        propertyType: null,
-        propertyTypes: filters.propertyTypes.length ? filters.propertyTypes.join(",") : null,
-        listingType: filters.listingType || null,
-        amenities: filters.amenities.length ? filters.amenities.join(",") : null,
-        accessibility: filters.accessibility.length ? filters.accessibility.join(",") : null,
-        languages: filters.languages.length ? filters.languages.join(",") : null,
-        bedrooms: filters.bedrooms || null,
-        bathrooms: filters.bathrooms || null,
-        beds: filters.beds || null,
-        instantBook: filters.instantBook ? "true" : null,
-        featured: filters.featured ? "true" : null,
-        pets: filters.pets ? 1 : null,
-      }));
+    executeFilterQuery({
+      minPrice: selectedMinPrice > absoluteMinPrice ? selectedMinPrice * 100 : null,
+      maxPrice: absoluteMaxPrice > 0 && selectedMaxPrice < absoluteMaxPrice ? selectedMaxPrice * 100 : null,
+      propertyType: null,
+      propertyTypes: filters.propertyTypes.length ? filters.propertyTypes.join(",") : null,
+      listingType: filters.listingType || null,
+      amenities: filters.amenities.length ? filters.amenities.join(",") : null,
+      accessibility: filters.accessibility.length ? filters.accessibility.join(",") : null,
+      languages: filters.languages.length ? filters.languages.join(",") : null,
+      bedrooms: filters.bedrooms || null,
+      bathrooms: filters.bathrooms || null,
+      beds: filters.beds || null,
+      instantBook: filters.instantBook ? "true" : null,
+      featured: filters.featured ? "true" : null,
+      pets: filters.pets ? 1 : null,
     });
   };
 
@@ -814,24 +992,28 @@ export function ListingsResultsClient({
       params.set("swLat", String(bounds.swLat.toFixed(6)));
       params.set("swLng", String(bounds.swLng.toFixed(6)));
       params.delete("page");
-      startTransition(() => {
-        router.push(`${pathname}?${params.toString()}`);
+
+      executeFilterQuery({
+        neLat: bounds.neLat.toFixed(6),
+        neLng: bounds.neLng.toFixed(6),
+        swLat: bounds.swLat.toFixed(6),
+        swLng: bounds.swLng.toFixed(6),
       });
     },
-    [pathname, searchParams, router],
+    [searchParams, executeFilterQuery],
   );
 
   // ── Infinite scroll ──────────────────────────
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!hasMore) return;
+    if (!hasMore || activeStatus === "refining" || activeStatus === "loading") return;
     const sentinel = sentinelRef.current;
     if (!sentinel) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0]?.isIntersecting && !isLoadingMore) {
+        if (entries[0]?.isIntersecting && !isLoadingMore && !isLoadingMoreRef.current) {
           loadNextPage();
         }
       },
@@ -841,7 +1023,7 @@ export function ListingsResultsClient({
     observer.observe(sentinel);
     return () => observer.disconnect();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasMore, isLoadingMore, currentPage]);
+  }, [hasMore, isLoadingMore, currentPage, activeStatus]);
 
   const loadNextPage = async () => {
     if (isLoadingMore || !hasMore || isLoadingMoreRef.current) return;
@@ -859,7 +1041,7 @@ export function ListingsResultsClient({
       eventType: "load_more",
       metadata: { nextPage, currentCount: allListings.length },
     });
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(typeof window !== "undefined" ? window.location.search || searchParams.toString() : searchParams.toString());
     params.set("page", String(nextPage));
 
     try {
@@ -1052,13 +1234,11 @@ export function ListingsResultsClient({
           <div className="h-6 w-px bg-zinc-200 shrink-0 mx-1" aria-hidden="true" />
 
           {/* Active Featured Chip */}
-          {currentFilters.featured && (
+          {(activeFilters.featured || currentFilters.featured) && (
             <button
               type="button"
               onClick={() => {
-                startTransition(() => {
-                  router.push(buildUrl({ featured: null }));
-                });
+                executeFilterQuery({ featured: null });
               }}
               className="flex items-center gap-1.5 rounded-full bg-zinc-900 text-white text-xs sm:text-[13px] font-semibold px-3.5 py-2 shadow-2xs hover:bg-zinc-800 transition-all shrink-0 cursor-pointer"
               aria-label="Clear featured filter"
@@ -1074,23 +1254,22 @@ export function ListingsResultsClient({
             let handleClick = () => {};
 
             if (opt.type === "amenity") {
-              isSelected = (currentFilters.amenities ?? []).includes(opt.id);
+              const amenities = activeFilters.amenities ?? currentFilters.amenities ?? [];
+              isSelected = amenities.includes(opt.id);
               handleClick = () => handleAmenityChip(opt.id);
             } else if (opt.type === "bathrooms") {
+              const bathrooms = activeFilters.bathrooms ?? currentFilters.bathrooms;
               isSelected =
-                typeof currentFilters.bathrooms === "number" &&
-                currentFilters.bathrooms >= opt.count;
+                typeof bathrooms === "number" &&
+                bathrooms >= opt.count;
               handleClick = () => {
-                startTransition(() => {
-                  router.push(buildUrl({ bathrooms: isSelected ? null : opt.count }));
-                });
+                executeFilterQuery({ bathrooms: isSelected ? null : opt.count });
               };
             } else if (opt.type === "instantBook") {
-              isSelected = currentFilters.instantBook === true;
+              const instantBook = activeFilters.instantBook ?? currentFilters.instantBook;
+              isSelected = instantBook === true;
               handleClick = () => {
-                startTransition(() => {
-                  router.push(buildUrl({ instantBook: isSelected ? null : true }));
-                });
+                executeFilterQuery({ instantBook: isSelected ? null : true });
               };
             }
 
@@ -1116,7 +1295,7 @@ export function ListingsResultsClient({
         <div className="shrink-0 pl-1">
           <div className="relative shrink-0">
             <select
-              value={currentFilters.sortBy ?? "recommended"}
+              value={activeFilters.sortBy ?? currentFilters.sortBy ?? "recommended"}
               onChange={(e) => handleSortChange(e.target.value as SortBy)}
               className="appearance-none rounded-full border border-zinc-200 bg-white py-2 pl-3.5 pr-9 text-xs sm:text-[13px] font-medium text-zinc-800 outline-none hover:border-zinc-900 focus:border-zinc-900 cursor-pointer"
               aria-label="Sort by"
@@ -1145,13 +1324,20 @@ export function ListingsResultsClient({
       <div className="flex flex-col lg:flex-row gap-6 items-start">
         {/* Left: listings list */}
         <div className={`w-full min-w-0 ${showMap ? "lg:w-[58%] xl:w-[56%]" : "w-full"}`}>
-          {isPending ? (
+          {/* Subtle top refining indicator while updating results */}
+          {activeStatus === "refining" && (
+            <div className="w-full h-1 bg-zinc-100 overflow-hidden rounded-full mb-3 -mt-2">
+              <div className="h-full bg-zinc-900 rounded-full animate-pulse w-1/3 mx-auto" />
+            </div>
+          )}
+
+          {(isPending || activeStatus === "loading") && allListings.length === 0 ? (
             <div className={`grid gap-5 ${showMap ? "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3" : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4"}`}>
               {Array.from({ length: 6 }).map((_, i) => (
                 <SkeletonCard key={i} />
               ))}
             </div>
-          ) : hasError ? (
+          ) : hasError || activeStatus === "error" ? (
             /* ── Error state ── */
             <div className="py-16 text-center space-y-4 max-w-md mx-auto">
               <div className="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center mx-auto text-2xl text-red-500">
@@ -1169,9 +1355,7 @@ export function ListingsResultsClient({
                 <button
                   type="button"
                   onClick={() => {
-                    startTransition(() => {
-                      router.refresh();
-                    });
+                    executeFilterQuery({}, false);
                   }}
                   className="rounded-full bg-zinc-900 hover:bg-zinc-800 text-white font-semibold text-xs px-6 py-2.5 transition-all cursor-pointer shadow-xs inline-flex items-center gap-1.5"
                 >
@@ -1182,7 +1366,7 @@ export function ListingsResultsClient({
                 </button>
               </div>
             </div>
-          ) : allListings.length === 0 ? (
+          ) : allListings.length === 0 && activeStatus === "idle" && !isPending ? (
             /* ── No results ── */
             <div className="py-20 text-center space-y-4 max-w-md mx-auto">
               <div className="w-14 h-14 rounded-full bg-zinc-100 flex items-center justify-center mx-auto text-[#727272]">
@@ -1201,18 +1385,35 @@ export function ListingsResultsClient({
                 <button
                   type="button"
                   onClick={() => {
-                    startTransition(() => {
-                      router.push("/listings");
+                    executeFilterQuery({
+                      minPrice: null,
+                      maxPrice: null,
+                      propertyType: null,
+                      propertyTypes: null,
+                      listingType: null,
+                      amenities: null,
+                      accessibility: null,
+                      languages: null,
+                      bedrooms: null,
+                      bathrooms: null,
+                      beds: null,
+                      instantBook: null,
+                      featured: null,
+                      pets: null,
+                      neLat: null,
+                      neLng: null,
+                      swLat: null,
+                      swLng: null,
                     });
                   }}
-                      className="shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 min-[1440px]:inline-flex border border-transparent hover:border-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white"
+                  className="shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 min-[1440px]:inline-flex border border-transparent hover:border-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white"
                 >
                   Clear all filters
                 </button>
-                {currentFilters.amenities && currentFilters.amenities.length > 0 && (
+                {((activeFilters.amenities && activeFilters.amenities.length > 0) || (currentFilters.amenities && currentFilters.amenities.length > 0)) && (
                   <button
                     type="button"
-                    onClick={() => startTransition(() => router.push(buildUrl({ amenities: null })))}
+                    onClick={() => executeFilterQuery({ amenities: null })}
                     className="rounded-full border border-zinc-300 text-zinc-700 font-semibold text-xs px-6 py-2.5 transition-all hover:bg-zinc-50 cursor-pointer"
                   >
                     Remove amenity filters
@@ -1223,7 +1424,9 @@ export function ListingsResultsClient({
           ) : (
             <>
               <div
-                className={`grid gap-5 ${
+                className={`grid gap-5 transition-opacity duration-150 ${
+                  activeStatus === "refining" ? "opacity-75 pointer-events-none" : "opacity-100"
+                } ${
                   showMap
                     ? "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3"
                     : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4"

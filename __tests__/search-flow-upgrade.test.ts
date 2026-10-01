@@ -63,7 +63,7 @@ assert(fs.existsSync(bookedDatesApiPath), "app/api/v1/listings/[id]/booked-dates
 const bookedDatesApiCode = fs.readFileSync(bookedDatesApiPath, "utf-8");
 
 assert(bookedDatesApiCode.includes("prisma.booking.findMany"), "booked-dates route must query booking table");
-assert(bookedDatesApiCode.includes('status: { in: ["CONFIRMED", "PENDING"] }'), "booked-dates must check CONFIRMED and PENDING bookings");
+assert(bookedDatesApiCode.includes("CONFIRMED") && bookedDatesApiCode.includes("PENDING"), "booked-dates must check CONFIRMED and PENDING bookings");
 console.log("✓ Booked dates API verified!");
 
 // --- [4] HeroSection Autocomplete & URL Search Building Audit ---

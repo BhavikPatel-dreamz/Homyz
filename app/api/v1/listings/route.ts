@@ -1,3 +1,4 @@
+import { NextResponse } from "next/server";
 import { apiHandler } from "@/lib/api/handler";
 import { buildPagination, parsePagination } from "@/lib/api/pagination";
 import { created, paginated } from "@/lib/api/response";
@@ -116,7 +117,20 @@ export const GET = apiHandler(async (req) => {
 
   const total = result.total;
   const items = result.items;
-  return paginated(items, buildPagination(page, limit, total));
+  const pagination = buildPagination(page, limit, total);
+  return NextResponse.json({
+    success: true,
+    data: items,
+    items,
+    pagination,
+    total,
+    totalPages: pagination.totalPages,
+    priceRange: (result as any).priceRange,
+    locationContextName: (result as any).locationContextName,
+    targetCoords: (result as any).targetCoords,
+    appliedRadiusKm: (result as any).appliedRadiusKm,
+    isRadiusExpanded: (result as any).isRadiusExpanded,
+  });
 });
 
 // POST /api/v1/listings — create a listing draft (USER, HOST or ADMIN).

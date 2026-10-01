@@ -543,24 +543,20 @@ async function searchPublicListings(
     const cIn = parseBookingDate(filters.checkIn);
     const cOut = parseBookingDate(filters.checkOut);
     if (!isNaN(cIn.getTime()) && !isNaN(cOut.getTime()) && cOut > cIn) {
-      // 1. Confirmed / Active Pending bookings (unexpired date holds)
+      // 1. Confirmed / Active Pending bookings (unexpired date holds) — database relation filter with NOT EXISTS
       const expiryThreshold = getExpiryThresholdDate();
-      const conflicts = await prisma.booking.findMany({
-        where: {
-          startDate: { lt: cOut },
-          endDate: { gt: cIn },
-          OR: [
-            { status: BookingStatus.CONFIRMED },
-            { status: BookingStatus.PENDING, createdAt: { gt: expiryThreshold } },
-          ],
+      baseClauses.push({
+        bookings: {
+          none: {
+            startDate: { lt: cOut },
+            endDate: { gt: cIn },
+            OR: [
+              { status: BookingStatus.CONFIRMED },
+              { status: BookingStatus.PENDING, createdAt: { gt: expiryThreshold } },
+            ],
+          },
         },
-        select: { listingId: true },
-        distinct: ["listingId"],
       });
-      if (conflicts.length > 0) {
-        const bookedIds = conflicts.map((c: { listingId: string }) => c.listingId);
-        baseClauses.push({ id: { notIn: bookedIds } });
-      }
 
       // 2. Listing blockedDates
       const requestedNights: string[] = [];
@@ -586,30 +582,35 @@ async function searchPublicListings(
   // Coordinate Search with Adaptive Radius Expansion
   if (effectiveLat !== undefined && effectiveLng !== undefined) {
     const initialGeoClause = getGeoBoundsClause(effectiveLat, effectiveLng, initialRadius);
-    const initialCount = await prisma.listing.count({
-      where: { AND: [...baseClauses, initialGeoClause] },
-    });
-
-    if (initialCount >= 3 || initialRadius >= 50) {
-      appliedRadius = initialRadius;
+    if (filters.radiusKm && filters.radiusKm >= 25) {
+      appliedRadius = filters.radiusKm;
       andClauses.push(initialGeoClause);
     } else {
-      // Expand radius: 10km -> 25km -> 50km
-      const tiers = [10, 25, 50].filter((t) => t > initialRadius);
-      let chosenTier = initialRadius;
-      for (const tier of tiers) {
-        const tierGeoClause = getGeoBoundsClause(effectiveLat, effectiveLng, tier);
-        const count = await prisma.listing.count({
-          where: { AND: [...baseClauses, tierGeoClause] },
-        });
-        chosenTier = tier;
-        if (count >= 3) break;
+      const initialCount = await prisma.listing.count({
+        where: { AND: [...baseClauses, initialGeoClause] },
+      });
+
+      if (initialCount >= 3 || initialRadius >= 50) {
+        appliedRadius = initialRadius;
+        andClauses.push(initialGeoClause);
+      } else {
+        // Expand radius: 10km -> 25km -> 50km
+        const tiers = [10, 25, 50].filter((t) => t > initialRadius);
+        let chosenTier = initialRadius;
+        for (const tier of tiers) {
+          const tierGeoClause = getGeoBoundsClause(effectiveLat, effectiveLng, tier);
+          const count = await prisma.listing.count({
+            where: { AND: [...baseClauses, tierGeoClause] },
+          });
+          chosenTier = tier;
+          if (count >= 3) break;
+        }
+        if (chosenTier > initialRadius) {
+          appliedRadius = chosenTier;
+          isRadiusExpanded = true;
+        }
+        andClauses.push(getGeoBoundsClause(effectiveLat, effectiveLng, appliedRadius));
       }
-      if (chosenTier > initialRadius) {
-        appliedRadius = chosenTier;
-        isRadiusExpanded = true;
-      }
-      andClauses.push(getGeoBoundsClause(effectiveLat, effectiveLng, appliedRadius));
     }
   } else if (filters.city && filters.city.trim()) {
     // Text-based fallback when coordinates could not be resolved
@@ -727,98 +728,54 @@ async function searchPublicListings(
     });
   };
 
-  if (!hasDateFilter) {
-    const cacheVersion = await getCounter(keys.listingsPublicVersion());
-    const filterHash = hashFilters({
-      lat: effectiveLat ?? "",
-      lng: effectiveLng ?? "",
-      radiusKm: appliedRadius,
-      city: filters.city ?? "",
-      country: filters.country ?? "",
-      guests: totalGuests,
-      pets: filters.pets ?? 0,
-      propertyType: filters.propertyType ?? "",
-      propertyTypes: (filters.propertyTypes ?? []).slice().sort().join(","),
-      listingType: filters.listingType ?? "",
-      minPrice: filters.minPrice ?? 0,
-      maxPrice: filters.maxPrice ?? 0,
-      amenities: (filters.amenities ?? []).slice().sort().join(","),
-      accessibilityFeatures: (filters.accessibilityFeatures ?? []).slice().sort().join(","),
-      languages: languageIds.slice().sort().join(","),
-      bedrooms: filters.bedrooms ?? 0,
-      bathrooms: filters.bathrooms ?? 0,
-      beds: filters.beds ?? 0,
-      instantBook: filters.instantBook ?? false,
-      featured: filters.featured ?? false,
-      sortBy: filters.sortBy ?? "recommended",
-      includePriceRange,
-      mapBounds: filters.mapBounds
-        ? `${filters.mapBounds.swLat},${filters.mapBounds.swLng},${filters.mapBounds.neLat},${filters.mapBounds.neLng}`
-        : "",
-      skip,
-      take,
-    });
-    const cacheKey = `homyz:listings:search:card:v2:v${cacheVersion}:${filterHash}:s${skip}:t${take}`;
-    type CachePayload = {
-      items: PublicListingCardDTO[];
-      total: number;
-      priceRange?: { min: number; max: number };
-      appliedRadiusKm: number;
-      originalRadiusKm: number;
-      isRadiusExpanded: boolean;
-      locationContextName?: string;
-      targetCoords?: { lat: number; lng: number };
-    };
-    const cached = await getCache<CachePayload>(cacheKey);
-    if (cached) {
-      return { ...cached, page, totalPages: Math.ceil(cached.total / take) };
-    }
-
-    const [items, total, priceAgg] = await Promise.all([
-      findSortedCards(),
-      prisma.listing.count({ where }),
-      includePriceRange
-        ? prisma.listing.aggregate({ where: availablePriceWhere, _min: { price: true }, _max: { price: true } })
-        : Promise.resolve(null),
-    ]);
-    const priceRange = priceAgg
-      ? { min: priceAgg._min.price ?? 0, max: priceAgg._max.price ?? 0 }
-      : undefined;
-    let mappedItems: PublicListingCardDTO[] = items;
-
-    if (effectiveLat !== undefined && effectiveLng !== undefined) {
-      mappedItems = mappedItems.map((dto: PublicListingCardDTO): PublicListingCardDTO => {
-        if (dto.latitude != null && dto.longitude != null) {
-          const dist = calculateDistance(filters.lat! ?? effectiveLat!, filters.lng! ?? effectiveLng!, dto.latitude, dto.longitude);
-          return { ...dto, distanceKm: Math.round(dist * 10) / 10 };
-        }
-        return dto;
-      });
-      if (!filters.sortBy || filters.sortBy === "recommended") {
-        mappedItems.sort((a: PublicListingCardDTO, b: PublicListingCardDTO) => {
-          if (a.distanceKm != null && b.distanceKm != null) return a.distanceKm - b.distanceKm;
-          if (a.distanceKm != null) return -1;
-          if (b.distanceKm != null) return 1;
-          return 0;
-        });
-      }
-    }
-
-    const payload: CachePayload = {
-      items: mappedItems,
-      total,
-      priceRange,
-      appliedRadiusKm: appliedRadius,
-      originalRadiusKm: initialRadius,
-      isRadiusExpanded,
-      locationContextName: effectivePlaceName || filters.city || undefined,
-      targetCoords: (effectiveLat !== undefined && effectiveLng !== undefined) ? { lat: effectiveLat, lng: effectiveLng } : undefined,
-    };
-    await setCache(cacheKey, payload, 120);
-    return { ...payload, page, totalPages: Math.ceil(total / take) };
+  const cacheVersion = await getCounter(keys.listingsPublicVersion());
+  const filterHash = hashFilters({
+    lat: effectiveLat ?? "",
+    lng: effectiveLng ?? "",
+    radiusKm: appliedRadius,
+    city: filters.city ?? "",
+    country: filters.country ?? "",
+    checkIn: filters.checkIn ?? "",
+    checkOut: filters.checkOut ?? "",
+    guests: totalGuests,
+    pets: filters.pets ?? 0,
+    propertyType: filters.propertyType ?? "",
+    propertyTypes: (filters.propertyTypes ?? []).slice().sort().join(","),
+    listingType: filters.listingType ?? "",
+    minPrice: filters.minPrice ?? 0,
+    maxPrice: filters.maxPrice ?? 0,
+    amenities: (filters.amenities ?? []).slice().sort().join(","),
+    accessibilityFeatures: (filters.accessibilityFeatures ?? []).slice().sort().join(","),
+    languages: languageIds.slice().sort().join(","),
+    bedrooms: filters.bedrooms ?? 0,
+    bathrooms: filters.bathrooms ?? 0,
+    beds: filters.beds ?? 0,
+    instantBook: filters.instantBook ?? false,
+    featured: filters.featured ?? false,
+    sortBy: filters.sortBy ?? "recommended",
+    includePriceRange,
+    mapBounds: filters.mapBounds
+      ? `${filters.mapBounds.swLat},${filters.mapBounds.swLng},${filters.mapBounds.neLat},${filters.mapBounds.neLng}`
+      : "",
+    skip,
+    take,
+  });
+  const cacheKey = `homyz:listings:search:card:v2:v${cacheVersion}:${filterHash}:s${skip}:t${take}`;
+  type CachePayload = {
+    items: PublicListingCardDTO[];
+    total: number;
+    priceRange?: { min: number; max: number };
+    appliedRadiusKm: number;
+    originalRadiusKm: number;
+    isRadiusExpanded: boolean;
+    locationContextName?: string;
+    targetCoords?: { lat: number; lng: number };
+  };
+  const cached = await getCache<CachePayload>(cacheKey);
+  if (cached) {
+    return { ...cached, page, totalPages: Math.ceil(cached.total / take) };
   }
 
-  // Live path (availability check active)
   const [items, total, priceAgg] = await Promise.all([
     findSortedCards(),
     prisma.listing.count({ where }),
@@ -826,7 +783,11 @@ async function searchPublicListings(
       ? prisma.listing.aggregate({ where: availablePriceWhere, _min: { price: true }, _max: { price: true } })
       : Promise.resolve(null),
   ]);
+  const priceRange = priceAgg
+    ? { min: priceAgg._min.price ?? 0, max: priceAgg._max.price ?? 0 }
+    : undefined;
   let mappedItems: PublicListingCardDTO[] = items;
+
   if (effectiveLat !== undefined && effectiveLng !== undefined) {
     mappedItems = mappedItems.map((dto: PublicListingCardDTO): PublicListingCardDTO => {
       if (dto.latitude != null && dto.longitude != null) {
@@ -845,20 +806,18 @@ async function searchPublicListings(
     }
   }
 
-  return {
+  const payload: CachePayload = {
     items: mappedItems,
     total,
-    priceRange: priceAgg
-      ? { min: priceAgg._min.price ?? 0, max: priceAgg._max.price ?? 0 }
-      : undefined,
-    page,
-    totalPages: Math.ceil(total / take),
+    priceRange: priceRange,
     appliedRadiusKm: appliedRadius,
     originalRadiusKm: initialRadius,
     isRadiusExpanded,
     locationContextName: effectivePlaceName || filters.city || undefined,
     targetCoords: (effectiveLat !== undefined && effectiveLng !== undefined) ? { lat: effectiveLat, lng: effectiveLng } : undefined,
   };
+  await setCache(cacheKey, payload, hasDateFilter ? 60 : 120);
+  return { ...payload, page, totalPages: Math.ceil(total / take) };
 }
 
 type PublicListingDetail = PublicListingDTO & {

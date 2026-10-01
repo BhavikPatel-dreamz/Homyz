@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useCallback, useState } from "react";
+import "leaflet/dist/leaflet.css";
 import type { PublicListingCardDTO } from "@/services/mappers";
 import { getCurrencyForCountry } from "@/lib/currency";
 import { useCurrency } from "@/lib/currency-context";
@@ -336,14 +337,6 @@ export function SearchMap({
 
     (async () => {
       try {
-        if (!document.getElementById("leaflet-css")) {
-          const link = document.createElement("link");
-          link.id = "leaflet-css";
-          link.rel = "stylesheet";
-          link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
-          document.head.appendChild(link);
-        }
-
         const L = await loadLeaflet();
         if (!isMounted || !containerRef.current || mapRef.current) return;
 

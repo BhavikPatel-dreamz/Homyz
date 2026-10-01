@@ -134,41 +134,46 @@ export default async function ListingsSearchPage({ searchParams }: SearchPagePro
   };
 
   let hasError = false;
+  let user: Awaited<ReturnType<typeof getSessionUser>> = null;
+  const userPromise = getSessionUser().catch(() => null);
+  const searchPromise = listingService.searchPublicListings({
+    destination,
+    lat: typeof lat === "number" && !isNaN(lat) ? lat : undefined,
+    lng: typeof lng === "number" && !isNaN(lng) ? lng : undefined,
+    radiusKm: typeof radiusKm === "number" && !isNaN(radiusKm) ? radiusKm : undefined,
+    placeId,
+    locationType,
+    city,
+    placeName,
+    checkIn,
+    checkOut,
+    guests,
+    adults,
+    children,
+    infants,
+    pets,
+    propertyType,
+    propertyTypes,
+    listingType,
+    minPrice,
+    maxPrice,
+    amenities,
+    accessibilityFeatures: accessibility,
+    languages,
+    bedrooms,
+    bathrooms,
+    beds,
+    instantBook,
+    featured,
+    sortBy,
+    mapBounds,
+    page,
+    limit: LIMIT,
+  });
+
   try {
-    const res = await listingService.searchPublicListings({
-      destination,
-      lat: typeof lat === "number" && !isNaN(lat) ? lat : undefined,
-      lng: typeof lng === "number" && !isNaN(lng) ? lng : undefined,
-      radiusKm: typeof radiusKm === "number" && !isNaN(radiusKm) ? radiusKm : undefined,
-      placeId,
-      locationType,
-      city,
-      placeName,
-      checkIn,
-      checkOut,
-      guests,
-      adults,
-      children,
-      infants,
-      pets,
-      propertyType,
-      propertyTypes,
-      listingType,
-      minPrice,
-      maxPrice,
-      amenities,
-      accessibilityFeatures: accessibility,
-      languages,
-      bedrooms,
-      bathrooms,
-      beds,
-      instantBook,
-      featured,
-      sortBy,
-      mapBounds,
-      page,
-      limit: LIMIT,
-    });
+    const [resolvedUser, res] = await Promise.all([userPromise, searchPromise]);
+    user = resolvedUser;
     result = res;
   } catch (err) {
     console.error("Search query failed:", err);
@@ -177,16 +182,15 @@ export default async function ListingsSearchPage({ searchParams }: SearchPagePro
 
   // Load favorites for logged-in users (only for the items on this page)
   let favoriteIds = new Set<string>();
-  try {
-    const user = await getSessionUser();
-    if (user?.id && result.items.length > 0) {
+  if (user?.id && result.items.length > 0) {
+    try {
       favoriteIds = await favoriteService.getFavoriteListingIds(
         user.id,
         result.items.map((i) => i.id),
       );
+    } catch {
+      // favorites are non-critical
     }
-  } catch {
-    // favorites are non-critical
   }
 
   const currentFilters = {

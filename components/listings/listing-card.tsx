@@ -443,25 +443,32 @@ export function ListingCard({
           <div
             className="relative h-full w-full overflow-hidden"
           >
-            {validPhotos.map((photo, idx) => (
-              <div
-                key={`${photo}-${idx}`}
-                aria-hidden={idx !== currentPhotoIndex}
-                className={`absolute inset-0 h-full w-full overflow-hidden transition-opacity duration-300 ease-out ${idx === currentPhotoIndex ? "z-10 opacity-100" : "pointer-events-none z-0 opacity-0"}`}
-              >
-                <img
-                  src={photo}
-                  alt={listing.title || `Photo ${idx + 1}`}
-                  onError={() => {
-                    setFailedIndices((prev) => new Set(prev).add(idx));
-                  }}
-                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  loading={priority && idx === 0 ? "eager" : "lazy"}
-                  decoding={priority && idx === 0 ? "sync" : "async"}
-                  {...(priority && idx === 0 ? { fetchPriority: "high" as const } : {})}
-                />
-              </div>
-            ))}
+            {validPhotos.map((photo, idx) => {
+              const shouldRenderImage = idx === currentPhotoIndex || Math.abs(idx - currentPhotoIndex) <= 1;
+              return (
+                <div
+                  key={`${photo}-${idx}`}
+                  aria-hidden={idx !== currentPhotoIndex}
+                  className={`absolute inset-0 h-full w-full overflow-hidden transition-opacity duration-300 ease-out ${idx === currentPhotoIndex ? "z-10 opacity-100" : "pointer-events-none z-0 opacity-0"}`}
+                >
+                  {shouldRenderImage ? (
+                    <img
+                      src={photo}
+                      alt={listing.title || `Photo ${idx + 1}`}
+                      onError={() => {
+                        setFailedIndices((prev) => new Set(prev).add(idx));
+                      }}
+                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      loading={priority && idx === 0 ? "eager" : "lazy"}
+                      decoding={priority && idx === 0 ? "sync" : "async"}
+                      {...(priority && idx === 0 ? { fetchPriority: "high" as const } : {})}
+                    />
+                  ) : (
+                    <div className="h-full w-full bg-zinc-100" />
+                  )}
+                </div>
+              );
+            })}
           </div>
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center bg-zinc-100 text-[#727272]">

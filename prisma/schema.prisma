@@ -572,6 +572,10 @@ model Listing {
   @@index([status])
   @@index([status, published])
   @@index([city])
+  @@index([latitude, longitude])
+  @@index([price])
+  @@index([guests])
+  @@index([status, published, isPaused, deletedAt])
 }
 
 model ListingFavorite {
