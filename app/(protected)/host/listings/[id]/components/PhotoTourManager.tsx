@@ -395,12 +395,12 @@ export function PhotoTourManager({
               </button>
             </div>
           </div>
-          <div className="grid divide-y border-t border-zinc-200 dark:border-zinc-700 bg-zinc-50/80 dark:bg-zinc-800/50 sm:grid-cols-3 sm:divide-x sm:divide-zinc-200 dark:sm:divide-zinc-700 sm:divide-y-0">
+          <div className="grid divide-y border-t border-[#727272] dark:border-zinc-700 bg-zinc-50/80 dark:bg-zinc-800/50 sm:grid-cols-3 sm:divide-x sm:divide-zinc-200 dark:sm:divide-zinc-700 sm:divide-y-0">
             <div className="px-5 py-3"><p className="text-xs font-semibold text-[#525252] dark:text-[#727272]">{t("host_gallery_photos", "Gallery photos")}</p><p className="mt-0.5 text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100">{photos.length}<span className="ml-1 text-xs font-medium text-[#727272] dark:text-[#727272]">{t("host_photos_unit", "photos")}</span></p></div>
             <div className="px-5 py-3"><p className="text-xs font-semibold text-[#525252] dark:text-[#727272]">{t("host_organized_by_room", "Organized by room")}</p><p className="mt-0.5 text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100">{assignedCount}<span className="ml-1 text-xs font-medium text-[#727272] dark:text-[#727272]">{t("host_assigned_unit", "assigned")}</span></p></div>
             <div className="px-5 py-3"><p className="text-xs font-semibold text-[#525252] dark:text-[#727272]">{t("host_still_to_organize", "Still to organize")}</p><p className="mt-0.5 text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100">{unassignedCount}<span className="ml-1 text-xs font-medium text-[#727272] dark:text-[#727272]">{t("host_unassigned_unit", "unassigned")}</span></p></div>
           </div>
-          <div className="border-t border-zinc-200 bg-white px-5 py-4 dark:border-zinc-700 dark:bg-zinc-800 sm:px-6">
+          <div className="border-t border-[#727272] bg-white px-5 py-4 dark:border-zinc-700 dark:bg-zinc-800 sm:px-6">
             <div className="mb-2.5 flex items-center justify-between gap-3">
               <p className="text-sm font-semibold text-[#1f1f1f] dark:text-zinc-300">{t("host_photo_types_available", "Photo types available to assign")}</p>
               <div className="flex items-center gap-1.5">
@@ -504,6 +504,14 @@ export function PhotoTourManager({
               {photos.length > 0 && <button type="button" onClick={() => setSelectedIndices(new Set(photos.map((_, index) => index)))} disabled={controlsDisabled} className="text-sm font-semibold text-[#1F1F1F] underline underline-offset-4 transition hover:text-zinc-600 disabled:opacity-50 dark:text-zinc-100 dark:hover:text-amber-400">{t("host_select_all", "Select all")}</button>}
             </div>
 
+            <button type="button" onClick={() => addInput.current?.click()} disabled={controlsDisabled} className="flex min-h-36 w-full flex-col items-center justify-center rounded-lg border border-dashed border-[#727272] bg-white text-base font-semibold text-zinc-700 transition hover:border-zinc-900 hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:border-zinc-500 dark:hover:bg-zinc-700/50">
+              <span className="mb-2 flex size-9 items-center justify-center rounded-full border border-[#1f1f1f] bg-zinc-100 dark:bg-zinc-700">
+                <Image src="/images/icons/add-icon.svg" alt="" width={18} height={18} />
+              </span>
+              {t("host_add_more_photos_btn", "Add more photos")}
+              <span className="mt-1 text-sm font-normal text-[#727272] dark:text-[#727272]">{t("host_photo_upload_specs", "JPEG, PNG, WebP, or AVIF · up to 10 MB each")}</span>
+            </button>
+
             {visibleRoomSections.map(({ roomType, label, description, accent }) => {
               const roomPhotos = photos
                 .map((photo, index) => ({ photo, index }))
@@ -531,13 +539,7 @@ export function PhotoTourManager({
               );
             })}
 
-            <button type="button" onClick={() => addInput.current?.click()} disabled={controlsDisabled} className="flex min-h-36 w-full flex-col items-center justify-center rounded-lg border border-dashed border-zinc-300 bg-white text-sm font-semibold text-zinc-700 transition hover:border-zinc-900 hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:border-zinc-500 dark:hover:bg-zinc-700/50">
-              <span className="mb-2 flex size-9 items-center justify-center rounded-full border border-[#1f1f1f] bg-zinc-100 dark:bg-zinc-700">
-                <Image src="/images/icons/add-icon.svg" alt="" width={18} height={18} />
-              </span>
-              {t("host_add_more_photos_btn", "Add more photos")}
-              <span className="mt-1 text-xs font-normal text-[#727272] dark:text-[#727272]">{t("host_photo_upload_specs", "JPEG, PNG, WebP, or AVIF · up to 10 MB each")}</span>
-            </button>
+            
           </div>
         )}
       </section>

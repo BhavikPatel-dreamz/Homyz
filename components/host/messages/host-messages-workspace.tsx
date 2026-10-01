@@ -61,7 +61,9 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
   const [loadingConversations, setLoadingConversations] = useState(true);
   const [selectedId, setSelectedId] = useState<string | null>(activeIdFromQuery);
   const [filter, setFilter] = useState<"all" | "unread">("all");
+  const [filterMenuOpen, setFilterMenuOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [mobileView, setMobileView] = useState<"list" | "thread">("list");
 
   // Messages state
   const [messages, setMessages] = useState<MessageDTO[]>([]);
@@ -315,6 +317,7 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
   const handleSelectConversation = (id: string) => {
     if (id === selectedId) return;
     setSelectedId(id);
+    setMobileView("thread");
     lastScrolledConvIdRef.current = null;
     router.replace(`/host/messages?id=${id}`, { scroll: false });
   };
@@ -635,45 +638,36 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
   };
 
   return (
-    <div className="flex-1 w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+    <div className="messages-workspace flex-1 w-full max-w-[1520px] mx-auto px-0 sm:px-5 lg:px-0 py-0 lg:py-4">
       <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr_340px] xl:grid-cols-[380px_1fr_360px] gap-6 h-[calc(100vh-210px)] min-h-[640px]">
         {/* ========================================================================= */}
         {/* COLUMN 1: CONVERSATIONS LIST                                              */}
         {/* ========================================================================= */}
-        <div className="flex flex-col rounded-3xl border border-zinc-200/90 bg-white shadow-xs overflow-hidden">
+        <div className={`flex flex-col bg-white overflow-hidden lg:border-r lg:border-zinc-200 ${mobileView === "thread" ? "hidden lg:flex" : "flex"}`}>
           {/* Header & Tabs */}
           <div className="p-4 border-b border-zinc-100 space-y-3">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-[#1F1F1F]">Messages</h2>
+              <h1>Messages</h1>
               <span className="text-xs font-semibold text-zinc-500 bg-zinc-100 px-2.5 py-1 rounded-full">
                 {conversations.length} conversation{conversations.length === 1 ? "" : "s"}
               </span>
             </div>
 
             {/* Filter Pills */}
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setFilter("all")}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors ${
-                  filter === "all"
-                    ? "bg-[#1F1F1F] text-white"
-                    : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
-                }`}
-              >
-                All
-              </button>
-              <button
-                type="button"
-                onClick={() => setFilter("unread")}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors flex items-center gap-1.5 ${
-                  filter === "unread"
-                    ? "bg-[#1F1F1F] text-white"
-                    : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
-                }`}
-              >
-                <span>Unread</span>
-              </button>
+            <div className="messages-filters flex gap-2">
+              <div className="relative">
+                <button type="button" onClick={() => setFilterMenuOpen((open) => !open)} aria-haspopup="menu" aria-expanded={filterMenuOpen} className="inline-flex h-[45px] min-w-[77px] items-center justify-center gap-1.5 rounded-[30px] border border-[#777] bg-[#FCDF9C] px-4 text-base font-medium text-[#1F1F1F] transition-colors">
+                  All
+                  <svg className={`size-3.5 transition-transform ${filterMenuOpen ? "rotate-180" : ""}`} viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m3 5 5 5 5-5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                </button>
+                {filterMenuOpen && (
+                  <div role="menu" className="absolute left-0 top-[calc(100%+6px)] z-20 min-w-[132px] overflow-hidden rounded-2xl border border-zinc-300 bg-white p-1 shadow-lg">
+                    <button type="button" role="menuitem" onClick={() => { setFilter("all"); setFilterMenuOpen(false); }} className="block w-full rounded-xl px-3 py-2 text-left text-sm text-zinc-800 hover:bg-zinc-100">All messages</button>
+                    <button type="button" role="menuitem" onClick={() => { setFilter("unread"); setFilterMenuOpen(false); }} className="block w-full rounded-xl px-3 py-2 text-left text-sm text-zinc-800 hover:bg-zinc-100">Unread</button>
+                  </div>
+                )}
+              </div>
+              <button type="button" onClick={() => { setFilter("unread"); setFilterMenuOpen(false); }} className="inline-flex h-[45px] min-w-[93px] items-center justify-center rounded-[30px] border border-[#777] bg-white px-4 text-base font-medium text-[#1F1F1F] transition-colors hover:bg-zinc-50"><span>Unread</span></button>
             </div>
 
             {/* Search Input */}
@@ -754,12 +748,12 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
                         <Image
                           src={conv.guest.image}
                           alt={conv.guest.name || "Guest"}
-                          width={48}
-                          height={48}
-                          className="size-12 rounded-full object-cover border border-zinc-200"
+                          width={40}
+                          height={40}
+                          className="size-10 rounded-full object-cover border border-zinc-200"
                         />
                       ) : (
-                        <div className="size-12 rounded-full bg-amber-200 text-amber-900 flex items-center justify-center font-bold text-base border border-amber-300">
+                        <div className="size-10 rounded-full bg-amber-200 text-amber-900 flex items-center justify-center font-bold text-base border border-amber-300">
                           {(conv.guest.name || "G")[0].toUpperCase()}
                         </div>
                       )}
@@ -781,12 +775,12 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
                         </span>
                       </div>
 
-                      <p className="text-xs font-medium text-zinc-600 truncate mb-1">
+                      <p className="hidden">
                         {conv.listing.title}
                       </p>
 
                       <div className="flex items-center justify-between gap-2">
-                        <p className={`text-xs truncate ${hasUnread ? "font-semibold text-[#1F1F1F]" : "text-zinc-500"}`}>
+                        <p className={`truncate text-[13px] leading-[18px] `}>
                           {getMessagePreview(conv.lastMessage)}
                         </p>
                         <span className="shrink-0">{getStatusBadge(conv.status, conv.activeSpecialOffer)}</span>
@@ -802,12 +796,13 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
         {/* ========================================================================= */}
         {/* COLUMN 2: ACTIVE CHAT THREAD                                              */}
         {/* ========================================================================= */}
-        <div className="flex flex-col rounded-3xl border border-zinc-200/90 bg-white shadow-xs overflow-hidden">
+        <div className={`flex flex-col bg-white overflow-hidden min-w-0 ${mobileView === "list" ? "hidden lg:flex" : "flex"}`}>
           {selectedConversation ? (
             <>
               {/* Thread Top Bar */}
               <div className="p-4 border-b border-zinc-100 flex flex-wrap items-center justify-between gap-3 bg-zinc-50/50">
                 <div className="flex items-center gap-3 min-w-0">
+                  <button type="button" onClick={() => setMobileView("list")} className="lg:hidden -ml-1 size-9 rounded-full border border-zinc-200 text-lg" aria-label="Back to messages">‹</button>
                   {selectedConversation.guest.image ? (
                     <Image
                       src={selectedConversation.guest.image}

@@ -694,7 +694,7 @@ export function ListingCard({
               </span>
             </span>
           ) : (
-            <span className="text-[10px] font-medium text-[#727272] bg-zinc-100 px-1.5 py-0.5 rounded-full shrink-0">
+                  <span className="text-[10px] font-medium text-[#727272] bg-[#F3F4F5] px-1.5 py-0.5 rounded-lg shrink-0 leading-3.5">
               New
             </span>
           )}

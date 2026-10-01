@@ -35,20 +35,10 @@ export function MyReviewsSection({ reviews, className = "" }: MyReviewsSectionPr
 
   return (
     <section className={`w-full flex flex-col ${className}`} aria-labelledby="my-reviews-heading">
-      <div className="flex items-center justify-between border-b border-zinc-200/80 pb-4 mb-6">
-        <div>
-          <h2 id="my-reviews-heading" className="text-xl sm:text-2xl font-semibold tracking-tight text-[#1F1F1F]">
-            {t("profile_reviews_title", "My reviews")}
-          </h2>
-          <p className="text-sm text-[#727272] mt-0.5">
-            {t("profile_reviews_subtitle", "Reviews you have written for completed stays")}
-          </p>
-        </div>
-        {/* {reviews.length > 0 && (
-          <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-semibold text-zinc-700">
-            {t(reviews.length === 1 ? "profile_reviews_count_one" : "profile_reviews_count_many", { count: reviews.length })}
-          </span>
-        )} */}
+      <div className="mb-5">
+        <h2 id="my-reviews-heading" className="text-xl font-medium tracking-tight text-[#1F1F1F]">
+          My reviews
+        </h2>
       </div>
 
       {reviews.length === 0 ? (
@@ -66,7 +56,7 @@ export function MyReviewsSection({ reviews, className = "" }: MyReviewsSectionPr
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
+          <div className="grid w-full gap-x-8 gap-y-10 xl:grid-cols-3 md:grid-cols-2 grid-cols-1">
           {reviews.map((rev) => {
             const dateStr = new Date(rev.createdAt).toLocaleDateString("en-US", {
               month: "short",
@@ -79,82 +69,68 @@ export function MyReviewsSection({ reviews, className = "" }: MyReviewsSectionPr
             const propertyHref = listing ? `/listings/${listing.customSlug || listing.id}` : undefined;
             const isLong = rev.comment.length > 150;
 
-            return (
-              <article
-                key={rev.id}
-                className="flex flex-col justify-between rounded-2xl border border-zinc-200/90 bg-white p-5 shadow-2xs hover:shadow-xs transition-shadow"
-              >
+            const reviewContent = (
                 <div>
-                  {/* Related Property Header */}
-                  <div className="flex items-center gap-3 pb-3 border-b border-zinc-100">
-                    <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-zinc-100 border border-zinc-200">
-                      {listing?.photos[0] ? (
-                        <Image
-                          src={listing.photos[0]}
-                          alt={propertyTitle}
-                          fill
-                          className="object-cover"
-                          sizes="48px"
-                        />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center text-[#727272] text-xs">
-                          Stay
-                        </div>
-                      )}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      {propertyHref ? (
-                        <Link
-                          href={propertyHref}
-                          className="block text-sm font-semibold text-[#1F1F1F] truncate hover:underline"
-                        >
-                          {propertyTitle}
-                        </Link>
-                      ) : (
-                        <span className="block text-sm font-semibold text-[#1F1F1F] truncate">
-                          {propertyTitle}
-                        </span>
-                      )}
-                      {propertyLocation && (
-                        <p className="text-xs text-[#727272] truncate">{propertyLocation}</p>
-                      )}
-                    </div>
+                  <div className="relative h-15 w-15 overflow-hidden rounded-full bg-zinc-100">
+                    {listing?.photos[0] ? (
+                      <Image
+                        src={listing.photos[0]}
+                        alt={propertyTitle}
+                        fill
+                        className="object-cover"
+                        sizes="48px"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-xs text-[#727272]">
+                        Stay
+                      </div>
+                    )}
                   </div>
 
-                  {/* Rating & Date */}
-                  <div className="flex items-center justify-between mt-3 mb-2">
+                  <div className="mt-3">
                     <StarRating rating={rev.rating} />
-                    <span className="text-xs text-[#727272] font-normal">{dateStr}</span>
                   </div>
 
-                  {/* Comment */}
-                  <p className="text-sm text-zinc-700 leading-relaxed line-clamp-3">
-                    {rev.comment || <span className="italic text-zinc-400">{t("profile_reviews_no_comment", "Rating provided without written comment.")}</span>}
+                  <p className="mt-3 text-sm leading-relaxed text-[#727272] line-clamp-3">
+                    {rev.comment || <span className="italic">Rating provided without written comment.</span>}
                   </p>
+
+                  <div className="mt-3 min-w-0 text-sm text-[#1F1F1F]">
+                    <span className="block truncate font-medium">{propertyTitle}</span>
+                    {propertyLocation && (
+                      <p className="mt-0.5 truncate text-[#727272]">{propertyLocation}</p>
+                    )}
+                    <span className="mt-0.5 block text-xs text-[#727272]">{dateStr}</span>
+                  </div>
                 </div>
+            );
+
+            return (
+              <article key={rev.id} className="flex flex-col">
+                {propertyHref ? (
+                  <Link
+                    href={propertyHref}
+                    aria-label={`View ${propertyTitle}`}
+                    className="relative block rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1F1F1F] focus-visible:ring-offset-2"
+                  >
+                    {reviewContent}
+                  </Link>
+                ) : (
+                  reviewContent
+                )}
 
                 {/* Show review Action */}
-                <div className="mt-4 pt-3 border-t border-zinc-100 flex items-center justify-between">
-                  {isLong ? (
+                {isLong && (
+                  <div className="relative mt-5">
                     <button
                       type="button"
                       onClick={() => setSelectedReview(rev)}
-                      className="text-xs font-semibold text-[#1F1F1F] hover:underline underline-offset-2 transition-colors cursor-pointer"
+                      className="rounded-full bg-[#FFE29A] px-5 py-2 text-xs font-medium text-[#1F1F1F] transition-colors hover:bg-[#f7d57e] cursor-pointer"
                     >
                       {t("profile_reviews_show_review", "Show review")}
                     </button>
-                  ) : (
-                    <span className="text-[11px] text-zinc-400">{t("profile_reviews_verified_guest_review", "Verified guest review")}</span>
-                  )}
-                  {propertyHref && (
-                    <Link
-                      href={propertyHref}
-                      className="text-xs font-medium text-[#727272] hover:text-[#1F1F1F] transition-colors"
-                    >
-                      {t("profile_reviews_view_property", "View property →")}
-                    </Link>
-                  )}
-                </div>
+                  </div>
+                )}
               </article>
             );
           })}

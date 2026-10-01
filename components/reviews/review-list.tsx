@@ -201,7 +201,7 @@ export function ReviewList({ listingId, isGuestFavorite = false, onStatsChange }
             if (event.target === event.currentTarget) setIsReviewInfoOpen(false);
           }}
         >
-          <div className="flex max-h-[calc(100vh-2rem)] w-full max-w-[360px] flex-col rounded-lg bg-white px-4 py-5 shadow-2xl sm:max-w-[430px] sm:px-6 sm:py-7">
+          <div className="flex max-h-[calc(100vh-2rem)] w-full max-w-[360px] flex-col rounded-2xl bg-white px-4 py-5 shadow-2xl sm:max-w-[430px] sm:px-6 sm:py-7">
             <div className="flex items-start justify-between gap-4">
               <h3 id="review-info-modal-title" className="pt-0.5 text-xl font-medium text-[#1f1f1f]">How reviews work</h3>
               <button
@@ -209,7 +209,7 @@ export function ReviewList({ listingId, isGuestFavorite = false, onStatsChange }
                 type="button"
                 onClick={() => setIsReviewInfoOpen(false)}
                 aria-label="Close review information"
-                className="-mr-1 -mt-1 flex size-8 shrink-0 items-center justify-center rounded-full text-xl font-light leading-none text-[#1f1f1f] hover:text-[#727272] transition-colors hover:bg-zinc-100 duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900"
+                className="-mr-1 -mt-1 flex size-8 shrink-0 items-center justify-center rounded-full text-2xl font-medium leading-none text-[#1f1f1f] hover:text-[#727272] transition-colors hover:bg-zinc-100 duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900"
               >
                 ×
               </button>
