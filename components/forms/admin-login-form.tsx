@@ -11,10 +11,12 @@ import { AuthHeading } from "@/components/auth/auth-heading";
 import { AuthHeroImage } from "@/components/auth/auth-hero-image";
 import { Footer } from "@/components/dashboard/footer";
 import { authInputClass, authLabelClass } from "@/components/auth/auth-form.styles";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 export function AdminLoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t } = useLanguage();
 
   const callbackUrl = searchParams.get("callbackUrl") || "/admin";
   const errorParam = searchParams.get("error");
@@ -28,13 +30,13 @@ export function AdminLoginForm() {
 
   useEffect(() => {
     if (loggedOutParam === "true") {
-      toast.success("You have been signed out.");
+      toast.success(t("admin_signed_out_toast", "You have been signed out."));
     } else if (errorParam === "account_suspended") {
-      setError("This account has been suspended by an administrator.");
+      setError(t("admin_err_suspended", "This account has been suspended by an administrator."));
     } else if (errorParam === "session_revoked") {
-      setError("Your session was revoked. Please log in again.");
+      setError(t("admin_err_session_revoked", "Your session was revoked. Please log in again."));
     }
-  }, [loggedOutParam, errorParam]);
+  }, [loggedOutParam, errorParam, t]);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -42,7 +44,7 @@ export function AdminLoginForm() {
 
     const trimmedEmail = email.trim().toLowerCase();
     if (!trimmedEmail || !password) {
-      setError("Please fill in both email and password.");
+      setError(t("admin_err_fill_both", "Please fill in both email and password."));
       return;
     }
 
@@ -54,9 +56,9 @@ export function AdminLoginForm() {
       });
 
       if (!res || res.error) {
-        let msg = "Invalid email or password. Please verify your credentials.";
+        let msg = t("admin_err_invalid_credentials", "Invalid email or password. Please verify your credentials.");
         if (res?.error === "CredentialsSignin") {
-          msg = "Incorrect email or password. Please check your credentials.";
+          msg = t("admin_err_incorrect_credentials", "Incorrect email or password. Please check your credentials.");
         } else if (res?.error && res.error !== "Error") {
           msg = res.error;
         }
@@ -69,7 +71,7 @@ export function AdminLoginForm() {
       const session = await getSession();
       const isAdmin = session?.user?.role === "ADMIN" || Boolean(session?.user?.adminRoleSlug);
 
-      toast.success("Signed in successfully!");
+      toast.success(t("admin_signin_success", "Signed in successfully!"));
 
       let destination = callbackUrl;
       if (!isAdmin) {
@@ -96,7 +98,7 @@ export function AdminLoginForm() {
           <div className="left-column lg:pt-2.5 w-full max-w-[538px] lg:max-w-none lg:w-1/2 xl:w-[643px] flex flex-col mx-auto lg:mx-0">
             {/* Header / Title area with Slide Back Button */}
             <AuthHeading
-              title="Log in"
+              title={t("auth_login_link", "Log in")}
               onBack={() => {
                 if (typeof window !== "undefined" && window.history.length > 1) {
                   router.back();
@@ -108,14 +110,14 @@ export function AdminLoginForm() {
 
             {/* Subtitle */}
             <div className="pl-0 sm:pl-13.5 mb-2 sm:mb-4 lg:mb-6 font-['Poppins'] font-normal text-[15px] sm:text-[17px] lg:text-[18px] leading-relaxed text-[#727272]">
-              Enter your credentials to access the admin portal.
+              {t("admin_login_subtitle", "Enter your credentials to access the admin portal.")}
             </div>
 
             {/* Mobile/Tablet Hero Image */}
             <AuthHeroImage
               mobile
               src="/images/auth-traveler-street.jpg"
-              alt="Traveler carrying a backpack on a city street"
+              alt={t("admin_hero_alt", "Traveler carrying a backpack on a city street")}
             />
 
             {/* Error feedback */}
@@ -131,7 +133,7 @@ export function AdminLoginForm() {
                 {/* Email address */}
                 <div className="flex flex-col gap-2">
                   <label className={authLabelClass}>
-                    Email address *
+                    {t("auth_email_address", "Email address")} *
                   </label>
                   <input
                     type="email"
@@ -150,7 +152,7 @@ export function AdminLoginForm() {
                 {/* Password */}
                 <div className="flex flex-col gap-2">
                   <label className={authLabelClass}>
-                    Password *
+                    {t("auth_password", "Password")} *
                   </label>
                   <div className="relative h-[56px]">
                     <input
@@ -168,8 +170,8 @@ export function AdminLoginForm() {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-[#727272] hover:text-zinc-700 transition-colors cursor-pointer"
-                      aria-label="Toggle password visibility"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-700 transition-colors cursor-pointer"
+                      aria-label={t("auth_toggle_password_visibility", "Toggle password visibility")}
                     >
                       {showPassword ? (
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -189,7 +191,7 @@ export function AdminLoginForm() {
                       href="/forgot-password"
                       className="font-['Poppins'] text-xs sm:text-sm text-[#1F1F1F] hover:underline font-normal cursor-pointer"
                     >
-                      Forgot password?
+                      {t("auth_forgot_password", "Forgot password?")}
                     </Link>
                   </div>
                 </div>
@@ -200,10 +202,10 @@ export function AdminLoginForm() {
                   disabled={pending || !isFormValid}
                   fullWidth
                   isLoading={pending}
-                  loadingText="Signing in..."
+                  loadingText={t("admin_signing_in", "Signing in...")}
                   className="auth-action-button mt-2"
                 >
-                  Log in
+                  {t("auth_login_link", "Log in")}
                 </Button>
               </form>
             </div>
@@ -212,7 +214,7 @@ export function AdminLoginForm() {
           {/* Right Column: Hero Image (Fluid on lg, fixed 619px on xl) */}
           <AuthHeroImage
             src="/images/auth-traveler-street.jpg"
-            alt="Traveler carrying a backpack on a city street"
+            alt={t("admin_hero_alt", "Traveler carrying a backpack on a city street")}
           />
         </div>
       </main>
