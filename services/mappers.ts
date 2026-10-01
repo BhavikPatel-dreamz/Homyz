@@ -445,7 +445,6 @@ export function toBookingDTO(b: BookingDTOInput) {
     guests: b.guests,
     totalPrice: b.totalPrice,
     nightlyPrice: b.nightlyPrice,
-    cleaningFee: b.cleaningFee,
     currency: b.currency,
     priceBreakdown: b.priceBreakdown,
     cancellationPolicy: b.cancellationPolicy,

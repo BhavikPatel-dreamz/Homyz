@@ -141,7 +141,6 @@ export async function adminUpdateListingPricingAction(input: {
   listingId: string;
   price: number; // in cents
   weekdayBasePrice?: number;
-  cleaningFee?: number;
   securityDeposit?: number;
   weekendPrice?: number;
   extraGuestFee?: number;
@@ -158,7 +157,7 @@ export async function adminUpdateListingPricingAction(input: {
     const updated = await listingService.updateForAdmin(input.listingId, {
         price: effectiveWeekday,
         weekdayBasePrice: effectiveWeekday,
-        ...(input.cleaningFee !== undefined && { cleaningFee: Math.max(0, Math.round(input.cleaningFee)) }),
+        cleaningFee: 0,
         ...(input.securityDeposit !== undefined && { securityDeposit: Math.max(0, Math.round(input.securityDeposit)) }),
         ...(input.weekendPrice !== undefined && { weekendPrice: input.weekendPrice ? Math.max(0, Math.round(input.weekendPrice)) : null }),
         ...(input.extraGuestFee !== undefined && { extraGuestFee: Math.max(0, Math.round(input.extraGuestFee)) }),

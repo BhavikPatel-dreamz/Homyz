@@ -2,8 +2,10 @@ import { formatBookingDate, formatBookingDateRange } from "@/lib/booking/booking
 
 export type CheckoutSummaryTax = {
   taxName: string;
-  taxAmount?: number;
-  amount?: number;
+  taxAmount: number;
+  exemptionApplied?: boolean;
+  exemptionReason?: string;
+  zeroReason?: string;
 };
 
 export type CheckoutSummaryQuote = {
@@ -11,7 +13,8 @@ export type CheckoutSummaryQuote = {
   baseNightlyPrice: number;
   nightlySubtotal: number;
   discountAmount?: number;
-  cleaningFee: number;
+  /** @deprecated Ignored. Cleaning fees are no longer displayed or charged. */
+  cleaningFee?: number;
   extraGuestFee: number;
   petFee?: number;
   hostServiceFee: number;
@@ -79,20 +82,19 @@ export function getCheckoutPriceRows(
     },
   ];
   if ((quote.discountAmount || 0) > 0) rows.push({ id: "discount", label: "Discount", amount: quote.discountAmount || 0, subtract: true });
-  if (quote.cleaningFee > 0) rows.push({ id: "cleaning", label: "Cleaning fee", amount: quote.cleaningFee });
   if (quote.extraGuestFee > 0) rows.push({ id: "extra-guests", label: "Extra guest fee", amount: quote.extraGuestFee });
   if ((quote.petFee || 0) > 0) rows.push({ id: "pets", label: "Pet fee", amount: quote.petFee || 0 });
-  if (quote.hostServiceFee > 0) rows.push({ id: "service", label: "Service fee", amount: quote.hostServiceFee });
 
-  if (quote.taxTotal > 0) {
+  if (quote.taxes.length > 0) {
     if (options.itemizeTaxes && quote.taxes.length > 0) {
       quote.taxes.forEach((tax, index) => rows.push({
         id: `tax-${index}`,
-        label: tax.taxName || "Tax",
-        amount: tax.taxAmount ?? tax.amount ?? 0,
+        label: `${tax.taxName || "Tax"}${tax.exemptionApplied && tax.exemptionReason ? ` · ${tax.exemptionReason}` : ""}`,
+        amount: tax.taxAmount,
       }));
     } else {
-      rows.push({ id: "taxes", label: "Taxes", amount: quote.taxTotal });
+      const allExempt = quote.taxes.every((tax) => tax.exemptionApplied && tax.taxAmount === 0);
+      rows.push({ id: "taxes", label: allExempt ? "Taxes · exemption applied" : "Taxes", amount: quote.taxTotal });
     }
   }
   return rows;

@@ -178,7 +178,6 @@ export function CalendarSettingsPanel({
                   ? null
                   : Math.round(number("weekendPrice") * 100),
               discounts: { ...discounts, weekly, monthly },
-              cleaningFee: Math.round(number("cleaningFee") * 100),
               extraGuestFee: data.get("extraGuestFee") ? Math.round(number("extraGuestFee") * 100) : 0,
             });
           }}
@@ -279,12 +278,7 @@ export function CalendarSettingsPanel({
           </section>
           <section className="space-y-3 border-t border-[#F3F4F5] dark:border-zinc-800 py-6">
             <h3 className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100">Additional charges</h3>
-            <ExpandControl title="Fees" subtitle="Cleaning, pets, extra guests">
-              {input(
-                "cleaningFee",
-                `Cleaning fee · ${listingCurrency}`,
-                (listing.cleaningFee || 0) / 100,
-              )}
+            <ExpandControl title="Fees" subtitle="Pets and extra guests">
               {input(
                 "extraGuestFee",
                 `Extra guest fee (per guest per night) · ${listingCurrency}`,

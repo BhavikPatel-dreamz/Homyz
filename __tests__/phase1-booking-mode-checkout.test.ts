@@ -38,7 +38,8 @@ assert.doesNotMatch(bookingService, /input\.bookingMode/, "booking creation neve
 assert.doesNotMatch(checkout, /!isInstantBook && <>/, "Instant Book uses the shared four-step checkout");
 assert.match(checkout, /setAuthoritativeBookingMode\(data\.data\.bookingMode\)/, "checkout refreshes stale mode from quote");
 assert.match(checkout, /message: hostMessage\.trim\(\) \|\| undefined/, "Instant Book submits its optional host message");
-assert.match(listingPage, /Re-check authoritative availability immediately before checkout entry/, "CTA rechecks availability before checkout");
+assert.match(listingPage, /saveBookingQuote/, "CTA carries the authoritative detail quote into checkout without a duplicate request");
+assert.match(bookingService, /prevalidatedQuote \?\? await getBookingQuote/, "the server remains authoritative at booking creation");
 assert.match(listingPage, /Request to book/, "request listings use an explicit request CTA");
 assert.match(listingService, /Object\.assign\(dataToUpdate, bookingModePersistence\(nextMode\)\)/, "listing updates synchronize legacy fields");
 assert.doesNotMatch(hostBookingSettings, /bookingMethod: "first-three"/, "host settings expose only the two supported modes");

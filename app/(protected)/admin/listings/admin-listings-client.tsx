@@ -267,7 +267,6 @@ export function AdminListingsClient({
   // Form states for pricing
   const [editPrice, setEditPrice] = useState(100);
   const [editWeekendPrice, setEditWeekendPrice] = useState(0);
-  const [editCleaningFee, setEditCleaningFee] = useState(0);
   const [editSecurityDeposit, setEditSecurityDeposit] = useState(0);
 
   // Moderation state
@@ -343,7 +342,6 @@ export function AdminListingsClient({
 
     setEditPrice(item.price / 100);
     setEditWeekendPrice((item.weekendPrice || 0) / 100);
-    setEditCleaningFee((item.cleaningFee || 0) / 100);
     setEditSecurityDeposit((item.securityDeposit || 0) / 100);
     setModReason(item.rejectionReason || "");
   }
@@ -616,7 +614,6 @@ export function AdminListingsClient({
       listingId: selectedListing.id,
       price: Math.round(editPrice * 100),
       weekendPrice: Math.round(editWeekendPrice * 100),
-      cleaningFee: Math.round(editCleaningFee * 100),
       securityDeposit: Math.round(editSecurityDeposit * 100),
     });
     setIsSaving(false);
@@ -624,7 +621,7 @@ export function AdminListingsClient({
       updateLocalListing({
         price: Math.round(editPrice * 100),
         weekendPrice: Math.round(editWeekendPrice * 100),
-        cleaningFee: Math.round(editCleaningFee * 100),
+        cleaningFee: 0,
         securityDeposit: Math.round(editSecurityDeposit * 100),
       });
       setFeedbackMsg({ type: "success", text: "Pricing & fees updated successfully!" });
@@ -1669,18 +1666,6 @@ export function AdminListingsClient({
                       min="0"
                       value={editWeekendPrice}
                       onChange={(e) => setEditWeekendPrice(Number(e.target.value))}
-                      className="mt-1 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-xs text-muted-foreground font-mono focus:border-amber-500 focus:outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block font-semibold text-muted-foreground">Cleaning Fee ({getCurrencyForCountry(selectedListing.country)})</label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      value={editCleaningFee}
-                      onChange={(e) => setEditCleaningFee(Number(e.target.value))}
                       className="mt-1 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-xs text-muted-foreground font-mono focus:border-amber-500 focus:outline-none"
                     />
                   </div>

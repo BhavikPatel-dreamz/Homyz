@@ -112,7 +112,6 @@ export type ConversationDTO = {
     guests: number;
     totalPrice: number | null;
     nightlyPrice: number | null;
-    cleaningFee: number | null;
     currency: string;
     cancellationPolicy: string | null;
   } | null;
@@ -236,7 +235,6 @@ function toConversationDTO(c: any, currentUserId: string, unreadCount = 0): Conv
           guests: c.booking.guests,
           totalPrice: c.booking.totalPrice,
           nightlyPrice: c.booking.nightlyPrice,
-          cleaningFee: c.booking.cleaningFee,
           currency: c.booking.currency,
           cancellationPolicy: c.booking.cancellationPolicy,
         }
@@ -326,7 +324,6 @@ async function listConversationsForUser(
             guests: true,
             totalPrice: true,
             nightlyPrice: true,
-            cleaningFee: true,
             currency: true,
             cancellationPolicy: true,
           },
@@ -422,7 +419,6 @@ async function getConversationById(
           guests: true,
           totalPrice: true,
           nightlyPrice: true,
-          cleaningFee: true,
           currency: true,
           cancellationPolicy: true,
         },

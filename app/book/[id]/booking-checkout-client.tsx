@@ -47,6 +47,7 @@ import {
   validateHostMessage,
 } from "@/lib/booking/host-message";
 import { createReviewRequestData } from "@/lib/booking/review-request";
+import { readBookingQuote } from "@/lib/booking/quote-cache";
 
 interface BookingCheckoutClientProps {
   listing: PublicListingDTO & {
@@ -73,6 +74,10 @@ interface BookingCheckoutClientProps {
 
 interface QuoteData extends CheckoutSummaryQuote {
   bookingMode: "INSTANT_BOOK" | "REQUEST_TO_BOOK";
+  checkIn: string;
+  checkOut: string;
+  guests: number;
+  pets: number;
   subtotal: number;
   cancellationPolicy: string;
   isSpecialOffer?: boolean;
@@ -160,7 +165,6 @@ export function BookingCheckoutClient({
   const updateAdults = (delta: number) => {
     const next = adultsCount + delta;
     if (next < 1 || (delta > 0 && !canAddCapacityGuest)) return;
-    setQuote(null);
     setQuoteError(null);
     setIsQuoteLoading(true);
     setAdultsCount(next);
@@ -168,7 +172,6 @@ export function BookingCheckoutClient({
   const updateChildren = (delta: number) => {
     const next = childrenCount + delta;
     if (next < 0 || (delta > 0 && (!allowsChildren || !canAddCapacityGuest))) return;
-    setQuote(null);
     setQuoteError(null);
     setIsQuoteLoading(true);
     setChildrenCount(next);
@@ -181,7 +184,6 @@ export function BookingCheckoutClient({
   const updatePets = (delta: number) => {
     const next = petsCount + delta;
     if (next < 0 || next > maximumPets) return;
-    setQuote(null);
     setQuoteError(null);
     setIsQuoteLoading(true);
     setPetsCount(next);
@@ -355,10 +357,19 @@ export function BookingCheckoutClient({
   const [isBreakdownModalOpen, setIsBreakdownModalOpen] = useState(false);
 
   // Live Quote state
-  const [quote, setQuote] = useState<QuoteData | null>(null);
+  const [quote, setQuote] = useState<QuoteData | null>(() => readBookingQuote<QuoteData>({
+    listingId: listing.id,
+    checkIn,
+    checkOut,
+    guests: guestsCount,
+    pets: petsCount,
+    nonRefundable: isNonRefundable,
+    specialOfferId,
+  }));
   const [authoritativeBookingMode, setAuthoritativeBookingMode] = useState(listing.bookingMode);
   const [isQuoteLoading, setIsQuoteLoading] = useState(true);
   const [quoteError, setQuoteError] = useState<string | null>(null);
+  const [quoteNotice, setQuoteNotice] = useState<string | null>(null);
   const [quoteRefreshKey, setQuoteRefreshKey] = useState(0);
   const isInstantBook = authoritativeBookingMode === "INSTANT_BOOK";
 
@@ -456,14 +467,12 @@ export function BookingCheckoutClient({
   ), [bookingCurrency]);
 
   const updateCheckIn = (value: string) => {
-    setQuote(null);
     setQuoteError(null);
     setIsQuoteLoading(true);
     setCheckIn(value);
     if (checkOut && value >= checkOut) setCheckOut("");
   };
   const updateCheckOut = (value: string) => {
-    setQuote(null);
     setQuoteError(null);
     setIsQuoteLoading(true);
     setCheckOut(value);
@@ -488,46 +497,58 @@ export function BookingCheckoutClient({
       if (!isCurrent) return;
       setIsQuoteLoading(true);
       setQuoteError(null);
-      setQuote(null);
     });
 
     const specialOfferParam = specialOfferId ? `&specialOfferId=${encodeURIComponent(specialOfferId)}` : "";
 
-    fetch(
-      `/api/v1/listings/${listing.id}/quote?checkIn=${encodeURIComponent(checkIn)}&checkOut=${encodeURIComponent(checkOut)}&guests=${guestsCount}&pets=${petsCount}&nonRefundable=${isNonRefundable}${specialOfferParam}`,
-      { signal: controller.signal, cache: "no-store" },
-    )
+    const requestTimer = window.setTimeout(() => {
+      fetch(
+        `/api/v1/listings/${listing.id}/quote?checkIn=${encodeURIComponent(checkIn)}&checkOut=${encodeURIComponent(checkOut)}&guests=${guestsCount}&pets=${petsCount}&nonRefundable=${isNonRefundable}${specialOfferParam}`,
+        { signal: controller.signal, cache: "no-store" },
+      )
       .then(async (res) => ({ ok: res.ok, data: await res.json() }))
       .then(({ ok, data }) => {
         if (!isCurrent) return;
         if (!ok || data.error || !data.data) {
           setQuoteError(data.error?.message || "Selected dates are not available.");
-          setQuote(null);
           return;
         }
-        setQuote(data.data);
+        setQuote((current) => {
+          const sameSelection = current
+            && current.checkIn === checkIn
+            && current.checkOut === checkOut
+            && current.guests === guestsCount
+            && current.pets === petsCount;
+          if (sameSelection && (current.guestTotal !== data.data.guestTotal || current.currency !== data.data.currency)) {
+            setQuoteNotice("The price changed since the property page. Review the updated total before continuing.");
+          } else {
+            setQuoteNotice(null);
+          }
+          return data.data;
+        });
         setAuthoritativeBookingMode(data.data.bookingMode);
         setQuoteError(null);
       })
       .catch((err) => {
         if (!isCurrent || err?.name === "AbortError") return;
         setQuoteError("Unable to calculate price quotation.");
-        setQuote(null);
       })
       .finally(() => {
         if (isCurrent) setIsQuoteLoading(false);
       });
+    }, 0);
 
     return () => {
       isCurrent = false;
+      window.clearTimeout(requestTimer);
       controller.abort();
     };
   }, [listing.id, checkIn, checkOut, guestsCount, petsCount, isNonRefundable, specialOfferId, quoteRefreshKey]);
 
-  const checkoutTotalLabel = isQuoteLoading
-    ? "Calculating…"
-    : quote
-      ? formatMoney(quote.guestTotal, 2)
+  const checkoutTotalLabel = quote
+    ? formatMoney(quote.guestTotal, 2)
+    : isQuoteLoading
+      ? "Calculating…"
       : "Unavailable";
   const partNowAmount = quote ? Math.ceil(quote.guestTotal / 2) : 0;
   const partLaterAmount = quote ? quote.guestTotal - partNowAmount : 0;
@@ -802,7 +823,7 @@ export function BookingCheckoutClient({
       pets: petsCount,
     },
     pricing: {
-      status: isQuoteLoading ? "loading" as const : quote ? "success" as const : "error" as const,
+      status: isQuoteLoading ? "loading" as const : quoteError ? "error" as const : quote ? "success" as const : "error" as const,
       quote,
       error: quoteError,
     },
@@ -972,6 +993,12 @@ export function BookingCheckoutClient({
                       {quoteError && (
                         <div ref={quoteErrorRef} tabIndex={-1} role="alert" className="mb-4 p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-xs font-medium text-rose-700 text-center focus:outline-none">
                           {quoteError}
+                        </div>
+                      )}
+
+                      {quoteNotice && (
+                        <div role="status" className="mb-4 rounded-xl border border-amber-300 bg-amber-50 p-3.5 text-center text-xs font-medium text-amber-900">
+                          {quoteNotice}
                         </div>
                       )}
 

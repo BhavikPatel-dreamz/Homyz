@@ -22,14 +22,20 @@ const BecomeHostModal = dynamic(
 type AppHeaderProps = {
   showBottomBorder?: boolean;
   showSearchBar?: boolean;
+  user?: {
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+    role?: string | null;
+  } | null;
 };
 
-export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = {}) {
+export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }: AppHeaderProps = {}) {
   const pathname = usePathname();
   const router = useRouter();
   const { data: session, status: sessionStatus, update } = useSession();
-  const user = session?.user ?? null;
-  const sessionLoading = sessionStatus === "loading";
+  const user = session?.user ?? initialUser ?? null;
+  const sessionLoading = sessionStatus === "loading" && !initialUser;
   const role = user?.role;
   const [isConvertingRole, setIsConvertingRole] = useState(false);
 
@@ -37,6 +43,7 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
   const [menuOpen, setMenuOpen] = useState(false);
   const [langModalOpen, setLangModalOpen] = useState(false);
   const [becomeHostModalOpen, setBecomeHostModalOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState<number>(0);
   const { currency: selectedCurrency, setCurrency: setSelectedCurrency } = useCurrency();
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -46,11 +53,61 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
         setMenuOpen(false);
       }
     }
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setMenuOpen(false);
+        setLangModalOpen(false);
+      }
+    }
+    function handleToggleMenu() {
+      setMenuOpen((prev) => !prev);
+    }
+
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("homyz:toggle-menu", handleToggleMenu);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("homyz:toggle-menu", handleToggleMenu);
+    };
   }, []);
 
+  useEffect(() => {
+    if (!user) return;
+    let isMounted = true;
+
+    const fetchUnread = () => {
+      fetch("/api/v1/notifications?take=1&unreadOnly=true")
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (!isMounted || !data) return;
+          const count =
+            typeof data.unreadCount === "number"
+              ? data.unreadCount
+              : typeof data.total === "number"
+                ? data.total
+                : 0;
+          setUnreadCount(count);
+        })
+        .catch(() => {});
+    };
+
+    fetchUnread();
+    window.addEventListener("focus", fetchUnread);
+    window.addEventListener("homyz:notifications-updated", fetchUnread);
+
+    return () => {
+      isMounted = false;
+      window.removeEventListener("focus", fetchUnread);
+      window.removeEventListener("homyz:notifications-updated", fetchUnread);
+    };
+  }, [user]);
+
   const isHostRoute = pathname?.startsWith("/host") ?? false;
+  const logoHref = isHostRoute ? "/host/today" : "/";
+  const logoAriaLabel = isHostRoute ? "Homyz host dashboard home" : "Homyz home";
   const isListingRoute = showSearchBar === true;
   const routeHasHeaderDivider = !["/", "/dashboard", "/profile", "/profile-management", "/account-settings"].some(
     (route) => pathname === route || pathname?.startsWith(`${route}/`),
@@ -116,9 +173,9 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
             }`}
         >
           <Link
-            href="/"
+            href={logoHref}
             className="absolute left-0 block h-[68px] w-[66px] shrink-0 overflow-hidden transition-opacity hover:opacity-80 md:hidden"
-            aria-label="Homyz home"
+            aria-label={logoAriaLabel}
           >
             <Image
               src="/images/brand/homyz-mobile-logo-dark-v1.svg"
@@ -130,7 +187,7 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
             />
           </Link>
 
-          <Link href="/" className="hidden shrink-0 transition-opacity hover:opacity-80 md:block focus-visible:outline-none" aria-label="Homyz home">
+          <Link href={logoHref} className="hidden shrink-0 transition-opacity hover:opacity-80 md:block focus-visible:outline-none" aria-label={logoAriaLabel}>
             <Image src="/images/brand/homyz-logo-dark-v2.svg" alt="Stay like a homie." width={200} height={53} className="h-auto w-[145px] md:w-[150px] lg:w-[160px] xl:w-[185px] 2xl:w-[200px]" priority />
           </Link>
 
@@ -148,7 +205,7 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
             </>
           ) : (
             <>
-              <Link href="/" className="group absolute left-[53%] block -translate-x-1/2 md:hidden outline-0" aria-label="Homyz home">
+              <Link href={logoHref} className="group absolute left-[53%] block -translate-x-1/2 md:hidden outline-0" aria-label={logoAriaLabel}>
                 <Image
                   src="/images/brand/homyz-logo-dark-v2.svg"
                   alt="Stay like a homie."
@@ -159,7 +216,7 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
                 />
               </Link>
 
-              <Link href="/" className="group absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 md:block" aria-label="Homyz home">
+              <Link href={logoHref} className="group absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 md:block" aria-label={logoAriaLabel}>
                 <span className="relative block aspect-[199/72] w-[125px] md:w-[135px] lg:w-[145px] xl:w-[170px] 2xl:w-[198px]">
                   <Image src="/images/brand/homyz-logo-dark-v1.svg" alt="Homyz" fill sizes="(min-width: 1536px) 198px, (min-width: 1280px) 170px, (min-width: 1024px) 145px, (min-width: 768px) 135px, 125px" className="object-contain" priority />
                 </span>
@@ -177,14 +234,14 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
               isHostRoute ? (
                 <Link
                   href="/dashboard"
-                  className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 lg:text-base text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 min-[1440px]:inline-flex ${primaryButtonInteractionClass}`}
+                  className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-4 py-2.5 md:px-6 md:py-3 lg:text-base text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 sm:inline-flex ${primaryButtonInteractionClass}`}
                 >
                   {t("header_switch_traveling") || "Switch to traveling"}
                 </Link>
               ) : (
                 <Link
                   href="/host/listings"
-                  className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 lg:text-base text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 min-[1440px]:inline-flex ${primaryButtonInteractionClass}`}
+                  className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-4 py-2.5 md:px-6 md:py-3 lg:text-base text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 min-[1440px]:inline-flex ${primaryButtonInteractionClass}`}
                 >
                   {t("header_switch_hosting") || "Switch to hosting"}
                 </Link>
@@ -225,6 +282,32 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
                   <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
                 </svg>
               </button>
+            )}
+
+            {/* Notifications Icon Button */}
+            {user && (
+              <Link
+                href="/profile/tab/notifications"
+                className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5] text-[#1F1F1F] transition-colors hover:bg-zinc-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 md:h-9 md:w-9"
+                aria-label={unreadCount > 0 ? `${t("header_notifications") || "Notifications"}, ${unreadCount} unread` : (t("header_notifications") || "Notifications")}
+                title={t("header_notifications") || "Notifications"}
+              >
+                <Image
+                  src="/images/icons/Notifications.svg"
+                  alt=""
+                  width={18}
+                  height={18}
+                  className="size-[18px] object-contain"
+                />
+                {unreadCount > 0 && (
+                  <span
+                    aria-label={`${unreadCount} unread notifications`}
+                    className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white shadow-xs"
+                  >
+                    {unreadCount > 99 ? "99+" : unreadCount}
+                  </span>
+                )}
+              </Link>
             )}
 
             <button type="button" onClick={() => setLangModalOpen(!langModalOpen)} className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5] transition-colors hover:bg-zinc-200 sm:flex" title="Language" aria-label="Choose language and currency">
@@ -376,7 +459,7 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
                         <span>Trips</span>
                       </Link>
 
-                      {/* Messages */}
+                      {/* Messages (alias href="/host/messages") */}
                       <Link
                         href="/messages"
                         onClick={() => setMenuOpen(false)}
@@ -488,6 +571,13 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
                       >
                         Find a co-Host
                       </Link>
+                      <Link
+                        href="/giftcards"
+                        onClick={() => setMenuOpen(false)}
+                        className="block px-3.5 py-2 text-sm sm:text-[15px] font-normal text-[#1F1F1F] hover:bg-white rounded-xl transition-colors"
+                      >
+                        Gift Cards
+                      </Link>
                     </div>
 
                     <div className="my-1 border-t border-zinc-200/80" />
@@ -523,6 +613,8 @@ export function AppHeader({ showBottomBorder, showSearchBar }: AppHeaderProps = 
                         </span>
                       </div>
                     </div>
+
+                
 
                     <div className="visible-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">
                       <div className="py-1">

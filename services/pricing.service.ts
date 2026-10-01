@@ -24,7 +24,6 @@ export interface BookingPricingParams {
   weekdayBasePrice: number; // cents (required, > 0)
   weekendPrice?: number | null; // cents
   customPrices?: Record<string, number> | null; // map of YYYY-MM-DD -> cents
-  cleaningFee?: number | null; // cents
   extraGuestFee?: number | null; // cents per extra guest per night
   baseGuests?: number; // base guest capacity included in price (defaults to 1)
   guests?: number; // requested total guests (defaults to 1)
@@ -56,10 +55,9 @@ export interface BookingPricingResult {
   discountAmount: number; // cents (0 if no discount)
   discountPercentage: number; // percentage applied (0 if none)
   accommodationSubtotal: number; // staySubtotal - discountAmount (cents)
-  cleaningFee: number; // cents
   extraGuestFee: number; // cents
   petFee: number; // cents
-  totalAdditionalFees: number; // cleaningFee + extraGuestFee + petFee (cents)
+  totalAdditionalFees: number; // extraGuestFee + petFee (cents)
   hostServiceFeePercentage: number; // e.g. 15
   hostServiceFee: number; // cents (calculated on accommodationSubtotal)
   taxableBase: number; // accommodationSubtotal + taxable fees (strictly excludes hostServiceFee)
@@ -76,7 +74,6 @@ export interface BookingPricingResult {
 export interface SpecialOfferPricingParams {
   specialOfferAmount: number; // cents (host-offered accommodation subtotal)
   nights: number;
-  cleaningFee?: number | null;
   extraGuestFee?: number | null;
   petFee?: number | null;
   guests?: number;
@@ -409,13 +406,13 @@ export async function calculateBookingPrice(params: BookingPricingParams): Promi
   const discountPercentage = staySubtotal > 0 ? (discountAmount / staySubtotal) * 100 : 0;
   const accommodationSubtotal = Math.max(0, staySubtotal - discountAmount);
 
-  // 3. Host-Defined Additional Charges
-  const cleaningFee = Math.max(0, Math.round(params.cleaningFee ?? 0));
+  // 3. Host-Defined Additional Charges. Cleaning fees are deliberately not a
+  // booking input: Homyz no longer charges them anywhere in the quote flow.
   const extraGuestPerNightRate = Math.max(0, Math.round(params.extraGuestFee ?? 0));
   const extraGuestCount = Math.max(0, guests - baseGuests);
   const extraGuestFee = extraGuestCount * extraGuestPerNightRate * nights;
   const petFee = Math.max(0, Math.round(params.petFee ?? 0));
-  const totalAdditionalFees = cleaningFee + extraGuestFee + petFee;
+  const totalAdditionalFees = extraGuestFee + petFee;
 
   // 4. Host Service Fee (Admin Configured, strictly excluded from Taxable Base)
   const hostServiceFeePercentage = params.hostServiceFeePercentage ?? (await getHostServiceFeePercentage().catch(() => 15));
@@ -425,8 +422,8 @@ export async function calculateBookingPrice(params: BookingPricingParams): Promi
   const taxResult = TaxCalculator.calculateTaxes({
     nights,
     nightlySubtotal: staySubtotal,
+    nightlyRates: breakdown.map((night) => night.price),
     discountAmount,
-    cleaningFee,
     petFee,
     extraGuestFee,
     guests,
@@ -438,7 +435,7 @@ export async function calculateBookingPrice(params: BookingPricingParams): Promi
   });
 
   // 6. Final Guest Total & Host Payout
-  const taxableBase = accommodationSubtotal + cleaningFee + petFee + extraGuestFee;
+  const taxableBase = accommodationSubtotal + petFee + extraGuestFee;
   const guestTotal = taxResult.guestTotal;
   const payoutBreakdown = taxResult.payoutBreakdown;
 
@@ -456,7 +453,6 @@ export async function calculateBookingPrice(params: BookingPricingParams): Promi
     discountAmount,
     discountPercentage,
     accommodationSubtotal,
-    cleaningFee,
     extraGuestFee,
     petFee,
     totalAdditionalFees,
@@ -477,12 +473,11 @@ export async function calculateBookingPrice(params: BookingPricingParams): Promi
 /**
  * Special Offer Pricing Calculator.
  * The host sets an explicit accommodation subtotal for the entire stay.
- * Cleaning fees, extra guest fees, taxes, and host service fees are computed separately on top.
+ * Extra guest fees, pet fees, and taxes are computed separately on top.
  */
 export async function calculateSpecialOffer(params: SpecialOfferPricingParams): Promise<BookingPricingResult> {
   const nights = Math.max(1, params.nights);
   const specialOfferAmount = Math.max(0, Math.round(params.specialOfferAmount));
-  const cleaningFee = Math.max(0, Math.round(params.cleaningFee ?? 0));
   const extraGuestFee = Math.max(0, Math.round(params.extraGuestFee ?? 0));
   const petFee = Math.max(0, Math.round(params.petFee ?? 0));
   const guests = Math.max(1, params.guests ?? 1);
@@ -494,8 +489,11 @@ export async function calculateSpecialOffer(params: SpecialOfferPricingParams): 
   const taxResult = TaxCalculator.calculateTaxes({
     nights,
     nightlySubtotal: specialOfferAmount,
+    nightlyRates: Array.from({ length: nights }, (_, index) => {
+      const base = Math.floor(specialOfferAmount / nights);
+      return base + (index < specialOfferAmount - base * nights ? 1 : 0);
+    }),
     discountAmount: 0,
-    cleaningFee,
     petFee,
     extraGuestFee,
     guests,
@@ -506,7 +504,7 @@ export async function calculateSpecialOffer(params: SpecialOfferPricingParams): 
     hostServiceFee,
   });
 
-  const taxableBase = specialOfferAmount + cleaningFee + petFee + extraGuestFee;
+  const taxableBase = specialOfferAmount + petFee + extraGuestFee;
 
   return {
     nights,
@@ -522,10 +520,9 @@ export async function calculateSpecialOffer(params: SpecialOfferPricingParams): 
     discountAmount: 0,
     discountPercentage: 0,
     accommodationSubtotal: specialOfferAmount,
-    cleaningFee,
     extraGuestFee,
     petFee,
-    totalAdditionalFees: cleaningFee + extraGuestFee + petFee,
+    totalAdditionalFees: extraGuestFee + petFee,
     hostServiceFeePercentage,
     hostServiceFee,
     taxableBase,

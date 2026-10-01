@@ -5,6 +5,9 @@ import { Footer } from "@/components/dashboard/footer";
 import { HostTodayWorkspace } from "@/components/host/host-today-workspace";
 import { getHostWorkspace } from "@/services/host-workspace.service";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function HostTodayPage() {
   const actor = await requirePageRole([Role.HOST, Role.ADMIN]);
   const data = await getHostWorkspace(actor);

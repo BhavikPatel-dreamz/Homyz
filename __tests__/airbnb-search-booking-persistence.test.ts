@@ -120,7 +120,6 @@ async function runAuditTests() {
       checkIn: "2026-10-10",
       checkOut: "2026-10-14",
       guests: 2,
-      cleaningFee: 5000,
       hostServiceFeePercentage: 15,
     });
     assert.equal(quote.nights, 4);

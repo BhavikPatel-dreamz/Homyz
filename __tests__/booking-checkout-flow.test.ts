@@ -69,7 +69,7 @@ assert(summaryCode.includes("Guests"), "Must display Guests row with Change butt
 assert(summaryCode.includes("Price details"), "Must display Price details section");
 assert(summaryHelperCode.includes("Taxes"), "Must display Taxes line");
 assert(summaryHelperCode.includes("Extra guest fee"), "Must itemize the extra-guest fee included in the total");
-assert(summaryHelperCode.includes("Service fee"), "Must itemize the service fee included in the total");
+assert(!summaryHelperCode.includes('label: "Service fee"'), "Host payout fees must not be charged to the guest");
 assert(summaryHelperCode.includes("Pet fee"), "Must itemize a pet fee when one is included in the total");
 assert(summaryCode.includes("Total"), "Must display Total amount row");
 assert(summaryCode.includes("Price breakdown"), "Must include Price breakdown modal trigger");
@@ -79,8 +79,8 @@ assert(
   "Checkout payment labels must display the authoritative quote total with two decimal places",
 );
 assert(
-  clientCode.includes('isQuoteLoading\n    ? "Calculating…"'),
-  "Checkout must not display the regular listing-price fallback while an offer quote is loading",
+  clientCode.includes('quote\n    ? formatMoney(quote.guestTotal, 2)'),
+  "Checkout must retain the last authoritative total while a refreshed quote is loading",
 );
 console.log("✓ Sticky property & price summary card verified!");
 

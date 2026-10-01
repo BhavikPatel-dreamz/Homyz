@@ -87,11 +87,14 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
     ? details.priceBreakdown
     : {};
 
-  const cleaningFee = details.cleaningFee ?? breakdown.cleaningFee ?? 0;
-  const nightlySubtotal = details.nightlyPrice
-    ? details.nightlyPrice * nights
-    : breakdown.nightlySubtotal ?? 0;
+  const nightlySubtotal = breakdown.nightlySubtotal ?? (details.nightlyPrice ? details.nightlyPrice * nights : 0);
+  const nightlyRates = Array.isArray(breakdown.breakdown) ? breakdown.breakdown : [];
+  const hasVaryingRates = new Set(nightlyRates.map((night: { price?: number }) => night.price)).size > 1;
+  const discountAmount = breakdown.discountAmount ?? 0;
+  const extraGuestFee = breakdown.extraGuestFee ?? 0;
+  const petFee = breakdown.petFee ?? 0;
   const taxTotal = breakdown.taxTotal ?? 0;
+  const taxItems = Array.isArray(breakdown.taxes) ? breakdown.taxes : [];
   const totalPrice = details.totalPrice ?? breakdown.guestTotal ?? breakdown.totalPrice ?? 0;
 
   return (
@@ -295,29 +298,44 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
             <dl className="mt-4 space-y-3 text-sm text-zinc-700">
               <div className="flex justify-between gap-4">
                 <dt className="text-zinc-600">
-                  {formatMoney(details.nightlyPrice || 0, details.currency)} × {nights} {nights === 1 ? "night" : "nights"}
+                  {hasVaryingRates
+                    ? `Accommodation · ${nights} nights (varying rates)`
+                    : `${formatMoney(nightlyRates[0]?.price ?? details.nightlyPrice ?? 0, details.currency)} × ${nights} ${nights === 1 ? "night" : "nights"}`}
                 </dt>
                 <dd className="font-medium text-zinc-900">
                   {formatMoney(nightlySubtotal, details.currency)}
                 </dd>
               </div>
 
-              {cleaningFee > 0 && (
+              {discountAmount > 0 && (
                 <div className="flex justify-between gap-4">
-                  <dt className="text-zinc-600">Cleaning fee</dt>
+                  <dt className="text-emerald-700">Discount</dt>
+                  <dd className="font-medium text-emerald-700">−{formatMoney(discountAmount, details.currency)}</dd>
+                </div>
+              )}
+
+              {extraGuestFee > 0 && (
+                <div className="flex justify-between gap-4">
+                  <dt className="text-zinc-600">Extra guest fee</dt>
                   <dd className="font-medium text-zinc-900">
-                    {formatMoney(cleaningFee, details.currency)}
+                    {formatMoney(extraGuestFee, details.currency)}
                   </dd>
                 </div>
               )}
 
-              {taxTotal > 0 && (
-                <div className="flex justify-between gap-4">
-                  <dt className="text-zinc-600">Taxes</dt>
-                  <dd className="font-medium text-zinc-900">
-                    {formatMoney(taxTotal, details.currency)}
-                  </dd>
+              {petFee > 0 && <div className="flex justify-between gap-4"><dt className="text-zinc-600">Pet fee</dt><dd className="font-medium text-zinc-900">{formatMoney(petFee, details.currency)}</dd></div>}
+
+              {taxItems.map((tax: { taxName?: string; taxAmount?: number; exemptionApplied?: boolean; exemptionReason?: string }, index: number) => (
+                <div key={`${tax.taxName || "Tax"}-${index}`} className="flex justify-between gap-4">
+                  <dt className="text-zinc-600">
+                    {tax.taxName || "Tax"}
+                    {tax.exemptionApplied && tax.exemptionReason ? ` · ${tax.exemptionReason}` : ""}
+                  </dt>
+                  <dd className="font-medium text-zinc-900">{formatMoney(tax.taxAmount ?? 0, details.currency)}</dd>
                 </div>
+              ))}
+              {taxItems.length === 0 && taxTotal > 0 && (
+                <div className="flex justify-between gap-4"><dt className="text-zinc-600">Taxes</dt><dd className="font-medium text-zinc-900">{formatMoney(taxTotal, details.currency)}</dd></div>
               )}
 
               <div className="flex justify-between gap-4 border-t border-zinc-200 pt-4 text-base font-bold text-zinc-900">

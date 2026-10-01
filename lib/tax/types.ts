@@ -37,6 +37,12 @@ export type TaxableComponent =
   | "GUEST_FEE"
   | "RESORT_FEE";
 
+export type TaxZeroReason =
+  | "EXEMPTION_APPLIED"
+  | "NO_TAXABLE_BASE"
+  | "NO_TAXABLE_NIGHTS"
+  | "RATE_ZERO";
+
 export interface TaxJurisdictionDTO {
   id: string;
   country: string;
@@ -105,6 +111,7 @@ export interface TaxRegistrationDTO {
 
 export interface CalculatedTaxItem {
   id?: string;
+  taxId?: string;
   taxRuleId?: string | null;
   taxRuleVersion: number;
   taxName: string;
@@ -112,18 +119,27 @@ export interface CalculatedTaxItem {
   calculationMethod: TaxCalculationMethod;
   rate: number | null;
   amount: number | null;
+  taxableBaseBeforeExemption: number;
   taxableBase: number; // in minor units / cents
+  taxableNights: number;
+  exemptNights: number;
+  taxableGuests: number;
+  grossTax: number;
+  exemptionAmount: number;
+  capAdjustment: number;
+  finalTax: number;
   taxAmount: number; // in minor units / cents
   currency: string;
   remittanceResponsibility: TaxRemittanceResponsibility;
   isInclusive: boolean;
   isExempt: boolean;
+  exemptionApplied: boolean;
   exemptionReason?: string;
+  zeroReason?: TaxZeroReason;
 }
 
 export interface HostPayoutBreakdown {
   accommodationSubtotal: number; // nightly subtotal minus discounts
-  cleaningFee: number;
   petFee: number;
   taxesCollectedForHost: number; // Host-remitted taxes collected from guest
   taxesRemittedByPlatform: number; // Platform-remitted taxes
@@ -140,7 +156,7 @@ export interface TaxCalculationResult {
   hostRemittedTaxTotal: number; // Host remittance (cents)
   hostServiceFee?: number; // Host service fee (cents)
   hostServiceFeePercentage?: number; // Host service fee percentage
-  guestTotal: number; // Total guest pays = Subtotal + Cleaning + Taxes (+ Host Service Fee if applicable) (cents)
+  guestTotal: number; // Accommodation + supported guest charges + taxes (cents)
   payoutBreakdown: HostPayoutBreakdown;
   currency: string;
 }
@@ -148,10 +164,11 @@ export interface TaxCalculationResult {
 export interface TaxCalculationParams {
   nights: number;
   nightlySubtotal: number; // in cents
+  nightlyRates?: number[]; // actual per-night amounts, before discounts
   discountAmount?: number; // in cents
-  cleaningFee?: number; // in cents
   petFee?: number; // in cents
   extraGuestFee?: number; // in cents
+  feeAmounts?: Partial<Record<TaxableComponent, number>>;
   guests?: number;
   currency?: string;
   rules?: TaxRuleDTO[];

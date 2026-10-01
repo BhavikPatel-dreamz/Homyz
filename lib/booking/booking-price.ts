@@ -3,6 +3,8 @@ import { calculateCalendarNights } from "./booking-status";
 export interface TaxItemBreakdown {
   name: string;
   amountMinorUnits: number;
+  exemptionApplied: boolean;
+  exemptionReason?: string;
 }
 
 export interface AuthoritativePriceBreakdown {
@@ -11,8 +13,7 @@ export interface AuthoritativePriceBreakdown {
   nightlyPrice: number; // minor units
   nightlySubtotal: number; // minor units
   extraGuestFee: number; // minor units
-  cleaningFee: number; // minor units
-  serviceFee: number; // minor units (platform / concierge service fee)
+  petFee: number; // minor units
   discountAmount: number; // minor units
   taxTotal: number; // minor units
   taxes: TaxItemBreakdown[];
@@ -64,9 +65,8 @@ export function getAuthoritativePriceBreakdown(booking: {
   const nightlySubtotal = snapshotNightlySubtotal > 0 ? snapshotNightlySubtotal : baseNightlyPrice * nights;
 
   // Additional charges
-  const cleaningFee = safeNum(booking.cleaningFee) || safeNum(snapshot.cleaningFee);
   const extraGuestFee = safeNum(snapshot.extraGuestFee);
-  const serviceFee = safeNum(snapshot.hostServiceFee) || safeNum(snapshot.serviceFee);
+  const petFee = safeNum(snapshot.petFee);
   const discountAmount = safeNum(snapshot.discountAmount) || safeNum(snapshot.nonRefundableDiscount);
 
   // Taxes
@@ -78,33 +78,27 @@ export function getAuthoritativePriceBreakdown(booking: {
         const taxRec = item as Record<string, unknown>;
         const name = typeof taxRec.taxName === "string" ? taxRec.taxName : "Tax";
         const amt = safeNum(taxRec.taxAmount);
-        if (amt > 0) {
-          taxes.push({ name, amountMinorUnits: amt });
-        }
+        const exemptionApplied = taxRec.exemptionApplied === true || taxRec.isExempt === true;
+        const exemptionReason = typeof taxRec.exemptionReason === "string" ? taxRec.exemptionReason : undefined;
+        taxes.push({ name, amountMinorUnits: amt, exemptionApplied, exemptionReason });
       }
     }
   }
 
   // Calculate sum of known items
   const subtotalBeforeReconcile =
-    nightlySubtotal - discountAmount + cleaningFee + extraGuestFee + serviceFee + taxTotal;
+    nightlySubtotal - discountAmount + extraGuestFee + petFee + taxTotal;
 
   let otherCharges = 0;
-  let finalServiceFee = serviceFee;
 
-  // Reconcile with storedTotal to guarantee displayedTotal === storedTotal
+  // Reconcile legacy snapshots with storedTotal without reintroducing removed
+  // cleaning/service-fee labels. Historical payment totals remain immutable.
   if (storedTotal > 0 && subtotalBeforeReconcile !== storedTotal) {
-    const diff = storedTotal - subtotalBeforeReconcile;
-    // If service fee was 0 but difference is positive and <= 20% of subtotal, attribute to service fee
-    if (serviceFee === 0 && diff > 0 && diff < nightlySubtotal * 0.3) {
-      finalServiceFee = diff;
-    } else {
-      otherCharges = diff;
-    }
+    otherCharges = storedTotal - subtotalBeforeReconcile;
   }
 
   const computedTotal =
-    nightlySubtotal - discountAmount + cleaningFee + extraGuestFee + finalServiceFee + taxTotal + otherCharges;
+    nightlySubtotal - discountAmount + extraGuestFee + petFee + taxTotal + otherCharges;
 
   const authoritativeTotal = storedTotal > 0 ? storedTotal : computedTotal;
 
@@ -114,8 +108,7 @@ export function getAuthoritativePriceBreakdown(booking: {
     nightlyPrice: baseNightlyPrice,
     nightlySubtotal,
     extraGuestFee,
-    cleaningFee,
-    serviceFee: finalServiceFee,
+    petFee,
     discountAmount,
     taxTotal,
     taxes,
@@ -125,4 +118,3 @@ export function getAuthoritativePriceBreakdown(booking: {
     isMathConsistent: authoritativeTotal === computedTotal,
   };
 }
-

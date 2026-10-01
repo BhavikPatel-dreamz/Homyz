@@ -189,7 +189,6 @@ export function HostListingsWorkspace({
     cancellationPolicy: "FLEXIBLE",
     minNights: 1,
     maxNights: 365,
-    cleaningFee: 5000, // $50.00
     securityDeposit: 0,
     weekendPrice: 0,
     instantBook: true,
@@ -238,7 +237,6 @@ export function HostListingsWorkspace({
       cancellationPolicy: item.cancellationPolicy || "FLEXIBLE",
       minNights: item.minNights ?? 1,
       maxNights: item.maxNights ?? 365,
-      cleaningFee: item.cleaningFee ?? 0,
       securityDeposit: item.securityDeposit ?? 0,
       weekendPrice: item.weekendPrice ?? 0,
       instantBook: item.instantBook ?? true,
@@ -282,7 +280,6 @@ export function HostListingsWorkspace({
           maxNights: Number(formData.maxNights),
           instantBook: formData.instantBook,
           isPaused: formData.isPaused,
-          cleaningFee: Number(formData.cleaningFee),
           securityDeposit: Number(formData.securityDeposit),
           weekendPrice: formData.weekendPrice ? Number(formData.weekendPrice) : undefined,
         };
@@ -1121,8 +1118,8 @@ export function HostListingsWorkspace({
               {editorStep === 5 && (
                 <div className="space-y-6">
                   <div>
-                    <h4 className="font-semibold text-muted-foreground mb-3">Pricing & Fees</h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <h4 className="font-semibold text-muted-foreground mb-3">Pricing</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-[var(--muted-foreground)] font-medium mb-1">Nightly Rate ({getCurrencyForCountry(formData.country)}) *</label>
                         <input
@@ -1141,16 +1138,6 @@ export function HostListingsWorkspace({
                           min={0}
                           value={(formData.weekendPrice || 0) / 100}
                           onChange={(e) => setFormData({ ...formData, weekendPrice: Math.round(Number(e.target.value) * 100) })}
-                          className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground font-semibold outline-none"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[var(--muted-foreground)] font-medium mb-1">Cleaning Fee ({getCurrencyForCountry(formData.country)})</label>
-                        <input
-                          type="number"
-                          min={0}
-                          value={(formData.cleaningFee || 0) / 100}
-                          onChange={(e) => setFormData({ ...formData, cleaningFee: Math.round(Number(e.target.value) * 100) })}
                           className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground font-semibold outline-none"
                         />
                       </div>

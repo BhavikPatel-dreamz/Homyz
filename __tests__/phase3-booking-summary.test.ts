@@ -30,7 +30,7 @@ const quote: CheckoutSummaryQuote = {
     { taxName: "VAT", taxAmount: 2_000 },
   ],
   taxTotal: 3_200,
-  guestTotal: 58_880,
+  guestTotal: 49_400,
   currency: "SAR",
   breakdown: [
     { date: "2026-10-01", price: 12_000 },
@@ -77,11 +77,11 @@ assert.match(summary, /onError=\{\(\) => setFailed\(true\)\}/, "primary image ha
 assert.match(summary, /sizes="\(min-width: 1280px\)/, "optimized image receives responsive sizes");
 assert.match(checkout, /new AbortController\(\)/, "pricing refreshes cancel stale requests");
 assert.match(checkout, /if \(!isCurrent\) return;/, "stale quote responses cannot overwrite current pricing");
-assert.match(checkout, /setQuote\(null\);\s+setQuoteError\(null\);\s+setIsQuoteLoading\(true\);\s+setAdultsCount/, "guest changes immediately invalidate stale pricing");
+assert.match(checkout, /setQuoteError\(null\);\s+setIsQuoteLoading\(true\);\s+setAdultsCount/, "guest changes trigger authoritative pricing while retaining the painted quote");
 assert.match(summary, /onRetryPricing/, "failed pricing exposes retry behavior");
 assert.match(summary, /aria-expanded=\{isBreakdownOpen\}/, "price breakdown exposes expansion state");
 assert.match(summary, /lg:max-h-\[calc\(100vh-7rem\)\]/, "tall sticky summaries remain reachable");
 assert.match(checkout, /className="order-2 lg:sticky lg:top-24"/, "summary follows the wizard on mobile and sticks on desktop");
-assert.match(bookingService, /const quote = await getBookingQuote\(/, "booking creation recalculates the authoritative quote");
+assert.match(bookingService, /prevalidatedQuote \?\? await getBookingQuote\(/, "booking creation uses an authoritative quote and avoids request-to-book recalculation");
 
 console.log("Phase 3 persistent booking summary regression checks passed.");

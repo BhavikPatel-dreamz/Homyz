@@ -164,7 +164,6 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
   // Form states for Pricing
   const [editPrice, setEditPrice] = useState((listing.weekdayBasePrice ?? listing.price) / 100);
   const [editWeekendPrice, setEditWeekendPrice] = useState((listing.weekendPrice || 0) / 100);
-  const [editCleaningFee, setEditCleaningFee] = useState((listing.cleaningFee || 0) / 100);
   const [editSecurityDeposit, setEditSecurityDeposit] = useState((listing.securityDeposit || 0) / 100);
   const [editExtraGuestFee, setEditExtraGuestFee] = useState((listing.extraGuestFee || 0) / 100);
   // Moderation & Delete state
@@ -345,7 +344,6 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
       price: Math.round(editPrice * 100),
       weekdayBasePrice: Math.round(editPrice * 100),
       weekendPrice: Math.round(editWeekendPrice * 100),
-      cleaningFee: Math.round(editCleaningFee * 100),
       securityDeposit: Math.round(editSecurityDeposit * 100),
       extraGuestFee: Math.round(editExtraGuestFee * 100),
     });
@@ -355,7 +353,7 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
         price: Math.round(editPrice * 100),
         weekdayBasePrice: Math.round(editPrice * 100),
         weekendPrice: Math.round(editWeekendPrice * 100),
-        cleaningFee: Math.round(editCleaningFee * 100),
+        cleaningFee: 0,
         securityDeposit: Math.round(editSecurityDeposit * 100),
         extraGuestFee: Math.round(editExtraGuestFee * 100),
       });
@@ -1066,8 +1064,8 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
         <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 sm:p-8 space-y-6 shadow-2xs text-xs animate-in fade-in">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[var(--border-subtle)] pb-4">
             <div>
-              <h2 className="text-lg font-black text-muted-foreground">Nightly Rates & Mandatory Fees</h2>
-              <p className="text-xs text-[var(--muted-foreground)]">Configure standard price, weekend rates, cleaning fees, and security deposit.</p>
+              <h2 className="text-lg font-black text-muted-foreground">Nightly Rates & Deposits</h2>
+              <p className="text-xs text-[var(--muted-foreground)]">Configure standard price, weekend rates, and security deposit.</p>
             </div>
             <button
               type="button"
@@ -1079,7 +1077,7 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
             </button>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-3">
             <div>
               <label className="block font-bold text-muted-foreground mb-1">Standard Base Rate ({getCurrencyForCountry(listing.country)}/night) *</label>
               <input
@@ -1099,18 +1097,6 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
                 min="0"
                 value={editWeekendPrice}
                 onChange={(e) => setEditWeekendPrice(Number(e.target.value))}
-                className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-sm text-muted-foreground font-mono font-semibold outline-none focus:border-amber-500 transition-all"
-              />
-            </div>
-
-            <div>
-              <label className="block font-bold text-muted-foreground mb-1">Cleaning Fee ({getCurrencyForCountry(listing.country)})</label>
-              <input
-                type="number"
-                step="0.01"
-                min="0"
-                value={editCleaningFee}
-                onChange={(e) => setEditCleaningFee(Number(e.target.value))}
                 className="w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-3 text-sm text-muted-foreground font-mono font-semibold outline-none focus:border-amber-500 transition-all"
               />
             </div>

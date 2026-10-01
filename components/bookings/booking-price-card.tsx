@@ -96,25 +96,12 @@ export function BookingPriceCard({
           </div>
         )}
 
-        {pricing.cleaningFee > 0 && (
+        {pricing.petFee > 0 && (
           <div className="flex justify-between gap-4">
-            <dt className="text-zinc-600">Cleaning fee</dt>
+            <dt className="text-zinc-600">Pet fee</dt>
             <dd className="font-medium text-[#1F1F1F]">
               <CurrencyPrice
-                amountMinorUnits={pricing.cleaningFee}
-                sourceCurrency={pricing.currency}
-                fractionDigits={2}
-              />
-            </dd>
-          </div>
-        )}
-
-        {pricing.serviceFee > 0 && (
-          <div className="flex justify-between gap-4">
-            <dt className="text-zinc-600">Service fee</dt>
-            <dd className="font-medium text-[#1F1F1F]">
-              <CurrencyPrice
-                amountMinorUnits={pricing.serviceFee}
+                amountMinorUnits={pricing.petFee}
                 sourceCurrency={pricing.currency}
                 fractionDigits={2}
               />
@@ -136,20 +123,17 @@ export function BookingPriceCard({
           </div>
         )}
 
-        {pricing.taxTotal > 0 && (
-          <div className="flex justify-between gap-4">
+        {pricing.taxes.map((tax, index) => (
+          <div key={`${tax.name}-${index}`} className="flex justify-between gap-4">
             <dt className="text-zinc-600">
-              {pricing.taxes.length === 1 ? pricing.taxes[0].name : "Taxes"}
+              {tax.name}
+              {tax.exemptionApplied && tax.exemptionReason ? ` · ${tax.exemptionReason}` : ""}
             </dt>
             <dd className="font-medium text-[#1F1F1F]">
-              <CurrencyPrice
-                amountMinorUnits={pricing.taxTotal}
-                sourceCurrency={pricing.currency}
-                fractionDigits={2}
-              />
+              <CurrencyPrice amountMinorUnits={tax.amountMinorUnits} sourceCurrency={pricing.currency} fractionDigits={2} />
             </dd>
           </div>
-        )}
+        ))}
 
         {pricing.otherCharges !== 0 && (
           <div className="flex justify-between gap-4 text-zinc-600">
@@ -325,4 +309,3 @@ export function BookingPriceCard({
     </aside>
   );
 }
-

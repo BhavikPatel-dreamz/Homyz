@@ -19,6 +19,7 @@ import { saveRecentlyViewedProperty, clearLastSearch, saveLastSearch, getLastSea
 import { getCurrencyForCountry } from "@/lib/currency";
 import { useCurrency } from "@/lib/currency-context";
 import { cancellationPolicyLabel } from "@/lib/constants/listing-enums";
+import { saveBookingQuote } from "@/lib/booking/quote-cache";
 import useWishlist from "@/hooks/useWishlist";
 import { trackListingEvent } from "@/lib/analytics/listing-analytics";
 
@@ -1100,9 +1101,8 @@ export function PublicListingDetailClient({
     let isMounted = true;
     const controller = new AbortController();
     const timer = setTimeout(() => {
-      // A quote always belongs to exactly one date/guest selection. Clear the
-      // previous result before loading so Reserve cannot use a stale total.
-      setQuote(null);
+      // Keep the last completed quote painted while the new authoritative
+      // quote is in flight. Reserve remains disabled until this request wins.
       setIsQuoteLoading(true);
       setQuoteError(null);
 
@@ -1130,7 +1130,6 @@ export function PublicListingDetailClient({
             metadata: {
               nights: data.data.nights,
               totalPrice: data.data.guestTotal ?? data.data.totalPrice,
-              cleaningFee: data.data.cleaningFee,
               extraGuestFee: data.data.extraGuestFee,
               appliedDiscount: data.data.appliedDiscount?.name,
               nonRefundable: isNonRefundable,
@@ -1164,7 +1163,6 @@ export function PublicListingDetailClient({
   const clearBookingDates = () => {
     setCheckIn("");
     setCheckOut("");
-    setQuote(null);
     setQuoteError(null);
     trackListingEvent({
       eventType: "dates_cleared",
@@ -1188,7 +1186,6 @@ export function PublicListingDetailClient({
       });
       return;
     }
-    setQuote(null);
     setQuoteError(null);
     setCheckIn(nextCheckIn);
     trackListingEvent({
@@ -1239,7 +1236,6 @@ export function PublicListingDetailClient({
       });
       return;
     }
-    setQuote(null);
     setQuoteError(null);
     setCheckOut(nextCheckOut);
     trackListingEvent({
@@ -1256,7 +1252,6 @@ export function PublicListingDetailClient({
     const next = adultsCount + delta;
     if (next < 1) return;
     if (delta > 0 && !canAddCapacityGuest) return;
-    setQuote(null);
     setQuoteError(null);
     setAdultsCount(next);
     trackListingEvent({
@@ -1271,7 +1266,6 @@ export function PublicListingDetailClient({
     const next = childrenCount + delta;
     if (next < 0) return;
     if (delta > 0 && !canAddCapacityGuest) return;
-    setQuote(null);
     setQuoteError(null);
     setChildrenCount(next);
     trackListingEvent({
@@ -1297,7 +1291,6 @@ export function PublicListingDetailClient({
   const updatePets = (delta: number) => {
     const next = petsCount + delta;
     if (next < 0 || next > maxPetsAllowed) return;
-    setQuote(null);
     setQuoteError(null);
     setPetsCount(next);
     trackListingEvent({
@@ -1491,27 +1484,15 @@ export function PublicListingDetailClient({
     setIsBookingSubmitting(true);
     setQuoteError(null);
     try {
-      const verificationParams = new URLSearchParams({
+      saveBookingQuote({
+        listingId: listing.id,
         checkIn,
         checkOut,
-        guests: String(totalCapacityGuests),
-        pets: String(petsCount),
-        nonRefundable: String(isNonRefundable),
-      });
-      if (effectiveSpecialOffer) verificationParams.set("specialOfferId", effectiveSpecialOffer);
-
-      // Re-check authoritative availability immediately before checkout entry.
-      const response = await fetch(`/api/v1/listings/${listing.id}/quote?${verificationParams.toString()}`, {
-        cache: "no-store",
-      });
-      const payload = await response.json();
-      if (!response.ok || payload.error || !payload.data) {
-        setQuote(null);
-        setQuoteError(payload.error?.message || "These dates are no longer available. Please choose different dates.");
-        setAvailabilityRefreshVersion((version) => version + 1);
-        return;
-      }
-      setQuote(payload.data);
+        guests: totalCapacityGuests,
+        pets: petsCount,
+        nonRefundable: isNonRefundable,
+        specialOfferId: effectiveSpecialOffer,
+      }, quote);
       const checkoutUrl = buildBookingCheckoutUrl(
         listing.customSlug || listing.id,
         {
@@ -1527,7 +1508,7 @@ export function PublicListingDetailClient({
         },
         {
           ...(isNonRefundable ? { nonRefundable: "true" } : {}),
-          bookingMode: payload.data.bookingMode,
+          bookingMode: quote.bookingMode,
         },
       );
 
@@ -1545,7 +1526,7 @@ export function PublicListingDetailClient({
           infants: infantsCount,
           pets: petsCount,
           isNonRefundable,
-          bookingMode: payload.data.bookingMode,
+          bookingMode: quote.bookingMode,
         },
       });
 
@@ -2036,7 +2017,7 @@ export function PublicListingDetailClient({
                         )}
 
                         {/* Live Quote Breakdown */}
-                        {isQuoteLoading && (
+                        {isQuoteLoading && !quote && (
                           <div className="py-4 text-center text-xs text-[#727272] animate-pulse font-medium">
                             Calculating price breakdown...
                           </div>
@@ -2051,12 +2032,16 @@ export function PublicListingDetailClient({
                           </div>
                         )}
 
-                        {quote && !isQuoteLoading && (
+                        {quote && (
                           <div className="space-y-2.5 pt-2 border-t border-zinc-100 text-sm">
+                            {isQuoteLoading && (
+                              <p className="text-xs font-medium text-[#727272]" aria-live="polite">Updating price…</p>
+                            )}
                             <div className="flex items-center justify-between text-[#727272]">
                               <span>
-                                {formatPrice(quote.baseNightlyPrice, listing.currency ?? getCurrencyForCountry(listing.country))} × {quote.nights} {" "}
-                                {quote.nights === 1 ? "night" : "nights"}
+                                {new Set(quote.breakdown.map((night) => night.price)).size <= 1
+                                  ? `${formatPrice(quote.breakdown[0]?.price ?? quote.baseNightlyPrice, listing.currency ?? getCurrencyForCountry(listing.country))} × ${quote.nights} ${quote.nights === 1 ? "night" : "nights"}`
+                                  : `Accommodation · ${quote.nights} nights (varying rates)`}
                               </span>
                               <span>{formatPrice(quote.nightlySubtotal, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                             </div>
@@ -2071,13 +2056,6 @@ export function PublicListingDetailClient({
                               <div className="flex items-center justify-between text-[#727272] text-sm">
                                 <span>Includes {quote.weekendNights} weekend nights</span>
                                 <span>{formatPrice(quote.weekendNightlyPrice, currencyCode)} / night</span>
-                              </div>
-                            )}
-
-                            {quote.cleaningFee > 0 && (
-                              <div className="flex items-center justify-between text-[#727272]">
-                                <span>Cleaning fee</span>
-                                <span>{formatPrice(quote.cleaningFee, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                               </div>
                             )}
 
@@ -2108,13 +2086,13 @@ export function PublicListingDetailClient({
                                   <div className="flex items-center justify-between text-[#727272]">
                                     <span className="flex items-center gap-1.5 font-medium">
                                       Taxes & fees
-                                      {quote.taxes.some((tax) => tax.isExempt) && (
+                                      {quote.taxes.some((tax) => tax.exemptionApplied) && (
                                         <span className="text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-1.5 py-0.5 rounded-full font-semibold">
                                           Exemption applied
                                         </span>
                                       )}
                                     </span>
-                                    <span className="font-medium">{formatPrice(quote.taxTotal || 0, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
+                                    <span className="font-medium">{formatPrice(quote.taxTotal, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                                   </div>
                                     <div className="pl-2.5 space-y-1 border-l-2 border-[#FCDF9C] text-sm font-light text-[#727272]">
                                     {quote.taxes.map((tax, idx) => (
@@ -2122,9 +2100,9 @@ export function PublicListingDetailClient({
                                         <span>
                                           {tax.taxName}
                                           {tax.rate ? ` (${tax.rate}%)` : ""}
-                                          {tax.isExempt ? ` • ${tax.exemptionReason || "Exempt"}` : ""}
+                                          {tax.exemptionApplied ? ` • ${tax.exemptionReason || "Exemption applied"}` : ""}
                                         </span>
-                                        <span>{tax.isExempt ? formatPrice(0, listing.currency ?? getCurrencyForCountry(listing.country)) : formatPrice(tax.taxAmount, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
+                                        <span>{formatPrice(tax.taxAmount, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                                       </div>
                                     ))}
                                   </div>

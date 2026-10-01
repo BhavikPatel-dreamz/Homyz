@@ -4,6 +4,7 @@ import { Role } from "@/generated/prisma/enums";
 import { requirePageRole } from "@/lib/permissions/page-guards";
 import { bookingService } from "@/services/booking.service";
 import { HostHeader } from "@/components/host/host-header";
+import { HostSubNav } from "@/components/host/host-sub-nav";
 import { Footer } from "@/components/dashboard/footer";
 import { HostBookingDetailsClient } from "@/components/host/host-booking-details-client";
 
@@ -25,7 +26,7 @@ export default async function HostBookingDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const actor = await requirePageRole([Role.HOST]);
+  const actor = await requirePageRole([Role.HOST, Role.ADMIN]);
 
   const details = await bookingService.getRequestDetailsForHost(actor, id).catch((err) => {
     if (err?.status === 404 || err?.statusCode === 404) return null;
@@ -39,6 +40,7 @@ export default async function HostBookingDetailPage({
   return (
     <div className="flex min-h-screen flex-col bg-white text-zinc-900">
       <HostHeader />
+      <HostSubNav />
       <main className="flex-1 px-4 sm:px-6">
         <HostBookingDetailsClient details={details} />
       </main>

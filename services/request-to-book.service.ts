@@ -80,7 +80,10 @@ async function createRequestToBook(actor: AuthUser, input: RequestToBookInput) {
     );
   }
 
-  const listing = await prisma.listing.findUnique({ where: { id: input.listingId } });
+  const listing = await prisma.listing.findUnique({
+    where: { id: input.listingId },
+    include: { taxes: { where: { isActive: true } } },
+  });
   if (!listing || !listing.published || listing.status !== ListingStatus.ACTIVE || listing.isPaused) {
     throw new AppError(
       ErrorCode.PROPERTY_NOT_AVAILABLE,
@@ -129,6 +132,7 @@ async function createRequestToBook(actor: AuthUser, input: RequestToBookInput) {
       nonRefundable: input.nonRefundable,
       specialOfferId: input.specialOfferId,
       actor,
+      preloadedListing: listing,
     });
   } catch (error) {
     mapQuoteError(error);
@@ -168,7 +172,9 @@ async function createRequestToBook(actor: AuthUser, input: RequestToBookInput) {
     nonRefundable: input.nonRefundable,
     paymentPlan: input.paymentPlan,
     requestSubmissionId: input.requestSubmissionId,
-  });
+    expectedGuestTotal: input.expectedGuestTotal,
+    expectedCurrency: input.expectedCurrency,
+  }, quote, listing);
 }
 
 export const requestToBookService = {

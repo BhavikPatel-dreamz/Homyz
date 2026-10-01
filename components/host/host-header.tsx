@@ -7,9 +7,11 @@ export interface HostHeaderProps {
     name?: string | null;
     email?: string | null;
     image?: string | null;
-  };
+    role?: string | null;
+  } | null;
+  showBottomBorder?: boolean;
 }
 
-export function HostHeader(_props?: HostHeaderProps) {
-  return <AppHeader />;
+export function HostHeader({ user, showBottomBorder }: HostHeaderProps = {}) {
+  return <AppHeader user={user} showBottomBorder={showBottomBorder} />;
 }

@@ -30,7 +30,6 @@ export type HostBookingRequestDetails = {
   guests: number;
   totalPrice: number | null;
   nightlyPrice: number | null;
-  cleaningFee: number | null;
   currency: string;
   status: string;
   cancellationPolicy: string | null;
@@ -580,12 +579,6 @@ export function HostBookingApprovals({ bookings: initialBookings }: { bookings: 
                         <div className="flex justify-between text-zinc-600 text-xs sm:text-sm">
                           <span>Nightly rate</span>
                           <span>{formatMoney(details.nightlyPrice, details.currency)} / night</span>
-                        </div>
-                      )}
-                      {details.cleaningFee != null && details.cleaningFee > 0 && (
-                        <div className="flex justify-between text-zinc-600 text-xs sm:text-sm">
-                          <span>Cleaning fee</span>
-                          <span>{formatMoney(details.cleaningFee, details.currency)}</span>
                         </div>
                       )}
                       <div className="flex justify-between items-center border-t border-zinc-200 pt-3 font-semibold text-zinc-900 text-base">

@@ -16,12 +16,10 @@ import { messagingService } from "./messaging.service";
 import { auditService } from "./audit.service";
 
 import type { Prisma } from "@/generated/prisma/client";
-import { resolveTaxJurisdiction } from "@/lib/tax/jurisdiction-resolver";
-import { TaxCalculator } from "@/lib/tax/tax-calculator";
 import type { CalculatedTaxItem, HostPayoutBreakdown, ListingTaxDTO } from "@/lib/tax/types";
 import { getHostServiceFeePercentage } from "@/services/app-settings.service";
 import { getNonRefundableDiscountPercentage } from "@/services/app-settings.service";
-import { calculateBookingPrice, calculateSpecialOffer, type AppliedDiscount, type NightRateBreakdown } from "@/services/pricing.service";
+import { calculateBookingPrice, calculateSpecialOffer, isWeekendNight, type AppliedDiscount } from "@/services/pricing.service";
 import { getCurrencyForCountry } from "@/lib/currency";
 import {
   computeBookingStatus,
@@ -68,18 +66,17 @@ export type BookingQuote = {
   discountAmount: number; // cents
   discountPercentage: number;
   appliedDiscount?: AppliedDiscount | null;
-  cleaningFee: number; // cents
   extraGuestFee?: number; // cents
   petFee?: number; // cents
   hostServiceFee: number; // cents
   hostServiceFeePercentage: number; // percentage e.g. 15
-  subtotal: number; // nightlySubtotal - discountAmount + cleaningFee (cents)
+  subtotal: number; // accommodation + supported additional fees (cents)
   totalPrice: number; // cents (totalPrice before tax for compatibility)
   taxes: CalculatedTaxItem[];
   taxTotal: number; // total tax in cents
   platformRemittedTaxTotal: number; // taxes platform collects & remits
   hostRemittedTaxTotal: number; // taxes host collects & remits
-  guestTotal: number; // stayAmount + cleaningFee + taxTotal + hostServiceFee (cents)
+  guestTotal: number; // accommodation + supported additional fees + tax (cents)
   payoutBreakdown?: HostPayoutBreakdown;
   currency: string;
   guests: number;
@@ -99,6 +96,8 @@ export type BookingQuote = {
     rateSource?: "CUSTOM" | "WEEKEND" | "WEEKDAY" | "SPECIAL_OFFER";
   }>;
 };
+
+type QuoteListing = Prisma.ListingGetPayload<{ include: { taxes: true } }>;
 
 export function parseCutoffHour(cutoff: string | null | undefined): number {
   switch (cutoff?.trim().toUpperCase()) {
@@ -147,11 +146,18 @@ export async function getBookingQuote(opts: {
   nonRefundable?: boolean;
   specialOfferId?: string;
   actor?: AuthUser;
+  /** Internal fast path for booking submission after the listing was validated. */
+  preloadedListing?: QuoteListing;
 }): Promise<BookingQuote> {
-  const listing = await prisma.listing.findUnique({
-    where: { id: opts.listingId },
-    include: { taxes: { where: { isActive: true } } },
-  });
+  // Start the independent platform-fee lookup immediately. It affects host
+  // payout only, but resolving it in parallel avoids a database waterfall.
+  const hostServiceFeePromise = getHostServiceFeePercentage().catch(() => 15);
+  const listing = opts.preloadedListing?.id === opts.listingId
+    ? opts.preloadedListing
+    : await prisma.listing.findUnique({
+        where: { id: opts.listingId },
+        include: { taxes: { where: { isActive: true } } },
+      });
 
   if (!listing || !listing.published || listing.status !== ListingStatus.ACTIVE || listing.isPaused) {
     throw AppError.notFound("Listing is not available or does not exist");
@@ -330,14 +336,6 @@ export async function getBookingQuote(opts: {
     throw AppError.badRequest("A non-refundable reservation is not available for this stay.");
   }
 
-  // Resolve jurisdiction and compute deterministic taxes
-  const resolved = resolveTaxJurisdiction({
-    country: listing.country,
-    city: listing.city,
-    postalCode: listing.postalCode,
-    district: listing.district,
-  });
-
   const hostTaxes: ListingTaxDTO[] = (listing.taxes || []).map((t: any) => ({
     id: t.id,
     listingId: t.listingId,
@@ -357,17 +355,18 @@ export async function getBookingQuote(opts: {
     createdAt: t.createdAt.toISOString(),
     updatedAt: t.updatedAt.toISOString(),
   }));
+  const hostServiceFeePercentage = await hostServiceFeePromise;
 
   const usesManualAdjustments = listing.smartPricing !== true;
   const pricing = validatedOffer
     ? await calculateSpecialOffer({
         specialOfferAmount: validatedOffer.subtotalPrice,
         nights,
-        cleaningFee: listing.cleaningFee,
         extraGuestFee: (listing as any).extraGuestFee,
         petFee: listing.petFee,
         guests: requestedGuests,
-        taxRules: resolved.systemRules,
+        hostServiceFeePercentage,
+        taxRules: [],
         hostTaxes,
         currency: getCurrencyForCountry(listing.country),
       })
@@ -379,7 +378,6 @@ export async function getBookingQuote(opts: {
         weekdayBasePrice: (listing as any).weekdayBasePrice ?? listing.price,
         weekendPrice: usesManualAdjustments ? listing.weekendPrice : null,
         customPrices: (listing as any).customPrices as Record<string, number> | null,
-        cleaningFee: listing.cleaningFee,
         extraGuestFee: (listing as any).extraGuestFee,
         baseGuests,
         guests: requestedGuests,
@@ -387,13 +385,14 @@ export async function getBookingQuote(opts: {
         petFee: listing.petFee,
         discounts: usesManualAdjustments ? (listing.discounts as Record<string, unknown> | null) : null,
         includeNewListingPromotion: false,
-        taxRules: resolved.systemRules,
+        hostServiceFeePercentage,
+        taxRules: [],
         hostTaxes,
         nonRefundableDiscountPercentage: opts.nonRefundable ? configuredNonRefundablePercentage : null,
         currency: getCurrencyForCountry(listing.country),
       });
 
-  const subtotal = pricing.accommodationSubtotal + pricing.cleaningFee + pricing.extraGuestFee + pricing.petFee;
+  const subtotal = pricing.accommodationSubtotal + pricing.extraGuestFee + pricing.petFee;
 
   return {
     listingId: listing.id,
@@ -411,7 +410,6 @@ export async function getBookingQuote(opts: {
     discountAmount: pricing.discountAmount,
     discountPercentage: pricing.discountPercentage,
     appliedDiscount: pricing.appliedDiscount,
-    cleaningFee: pricing.cleaningFee,
     extraGuestFee: pricing.extraGuestFee,
     petFee: pricing.petFee,
     hostServiceFee: pricing.hostServiceFee,
@@ -443,7 +441,7 @@ export async function getBookingQuote(opts: {
     })) : Array.from({ length: nights }, (_, i) => {
       const d = new Date(cIn);
       d.setUTCDate(d.getUTCDate() + i);
-      const isWeekend = d.getUTCDay() === 5 || d.getUTCDay() === 6;
+      const isWeekend = isWeekendNight(d);
       return {
         date: bookingDateKey(d),
         isWeekend,
@@ -463,6 +461,8 @@ type CreateBookingRequest = Omit<CreateBookingInput, "nonRefundable"> & {
 async function create(
   actor: AuthUser,
   input: CreateBookingRequest,
+  prevalidatedQuote?: BookingQuote,
+  prevalidatedListing?: QuoteListing,
 ): Promise<BookingDTO> {
   if (input.requestSubmissionId) {
     const existingSubmission = await prisma.booking.findUnique({
@@ -473,9 +473,12 @@ async function create(
       throw AppError.checkoutConflict(ErrorCode.DUPLICATE_REQUEST, "This booking request has already been submitted.");
     }
   }
-  const listing = await prisma.listing.findUnique({
-    where: { id: input.listingId },
-  });
+  const listing = prevalidatedListing?.id === input.listingId
+    ? prevalidatedListing
+    : await prisma.listing.findUnique({
+        where: { id: input.listingId },
+        include: { taxes: { where: { isActive: true } } },
+      });
   if (!listing || !listing.published || listing.status !== ListingStatus.ACTIVE || listing.isPaused) {
     throw AppError.notFound("Listing is not available or does not exist");
   }
@@ -528,16 +531,17 @@ async function create(
   }
 
   // Calculate authoritative quote
-  const quote = await getBookingQuote({
-    listingId: input.listingId,
-    checkIn: input.startDate,
-    checkOut: input.endDate,
-    guests: input.guests,
-    pets: input.pets,
-    nonRefundable: input.nonRefundable ?? false,
-    specialOfferId: input.specialOfferId,
-    actor,
-  });
+  const quote = prevalidatedQuote ?? await getBookingQuote({
+      listingId: input.listingId,
+      checkIn: input.startDate,
+      checkOut: input.endDate,
+      guests: input.guests,
+      pets: input.pets,
+      nonRefundable: input.nonRefundable ?? false,
+      specialOfferId: input.specialOfferId,
+      actor,
+      preloadedListing: listing,
+    });
   if (
     input.expectedGuestTotal !== undefined
     && (quote.guestTotal !== input.expectedGuestTotal || quote.currency !== input.expectedCurrency)
@@ -598,7 +602,7 @@ async function create(
       guests: quote.guests,
       totalPrice: quote.guestTotal,
       nightlyPrice: quote.baseNightlyPrice,
-      cleaningFee: quote.cleaningFee,
+      cleaningFee: 0,
       currency: quote.currency,
       priceBreakdown: {
         ...quote,
@@ -834,7 +838,6 @@ export type HostBookingRequestDetails = {
   guests: number;
   totalPrice: number | null;
   nightlyPrice: number | null;
-  cleaningFee: number | null;
   currency: string;
   status: BookingStatus;
   cancellationPolicy: string | null;
@@ -978,7 +981,6 @@ async function getRequestDetailsForHost(actor: AuthUser, id: string): Promise<Ho
     guests: booking.guests,
     totalPrice: booking.totalPrice,
     nightlyPrice: booking.nightlyPrice,
-    cleaningFee: booking.cleaningFee,
     currency: booking.currency,
     status: booking.status,
     cancellationPolicy: booking.cancellationPolicy,
@@ -1782,7 +1784,6 @@ export type BookingDetailsData = {
     guests: number;
     totalPrice: number | null;
     nightlyPrice: number | null;
-    cleaningFee: number | null;
     currency: string;
     priceBreakdown: unknown;
     cancellationPolicy: string | null;
@@ -2012,7 +2013,6 @@ async function getBookingDetails(actor: AuthUser, id: string): Promise<BookingDe
       guests: b.guests,
       totalPrice: b.totalPrice,
       nightlyPrice: b.nightlyPrice,
-      cleaningFee: b.cleaningFee,
       currency: b.currency,
       priceBreakdown: b.priceBreakdown,
       cancellationPolicy: b.cancellationPolicy,
@@ -2224,7 +2224,7 @@ async function changeBookingReservation(
         guests: requestedGuests,
         totalPrice: preview.quote!.guestTotal,
         nightlyPrice: preview.quote!.baseNightlyPrice,
-        cleaningFee: preview.quote!.cleaningFee,
+        cleaningFee: 0,
         priceBreakdown: preview.quote! as unknown as Prisma.InputJsonValue,
       },
       include: { listing: true },

@@ -31,6 +31,8 @@ export interface BookingItem {
   startDate: string;
   endDate: string;
   createdAt: string;
+  totalPrice: number | null;
+  currency: string;
   user: {
     id: string;
     name: string | null;
@@ -98,7 +100,7 @@ export function AdminBookingsClient({
     const headers = ["Booking ID", "Listing", "Host Email", "Guest Name", "Guest Email", "Check-In", "Check-Out", "Nights", "Total Price", "Status"];
     const rows = filtered.map((b) => {
       const nights = getDurationNights(b.startDate, b.endDate);
-      const total = b.listing.price * nights;
+      const total = b.totalPrice ?? b.listing.price * nights;
       return [
         `"${b.id}"`,
         `"${b.listing.title.replace(/"/g, '""')}"`,
@@ -108,7 +110,7 @@ export function AdminBookingsClient({
         `"${formatBookingDate(b.startDate)}"`,
         `"${formatBookingDate(b.endDate)}"`,
         `"${nights}"`,
-        `"${formatPrice(total, "SAR")}"`,
+        `"${formatPrice(total, b.currency)}"`,
         `"${b.status}"`,
       ];
     });
@@ -250,7 +252,7 @@ export function AdminBookingsClient({
               ) : (
                 paginatedBookings.map((booking) => {
                   const nights = getDurationNights(booking.startDate, booking.endDate);
-                  const totalPrice = booking.listing.price * nights;
+                  const totalPrice = booking.totalPrice ?? booking.listing.price * nights;
 
                   return (
                     <tr
@@ -281,7 +283,7 @@ export function AdminBookingsClient({
                       </td>
 
                       <td className="py-3.5 px-4 whitespace-nowrap font-semibold text-muted-foreground font-mono">
-                        {formatPrice(totalPrice, "SAR")}
+                        {formatPrice(totalPrice, booking.currency)}
                       </td>
 
                       <td className="py-3.5 px-4 whitespace-nowrap">
@@ -328,7 +330,7 @@ export function AdminBookingsClient({
         ) : (
           paginatedBookings.map((booking) => {
             const nights = getDurationNights(booking.startDate, booking.endDate);
-            const totalPrice = booking.listing.price * nights;
+            const totalPrice = booking.totalPrice ?? booking.listing.price * nights;
 
             return (
               <div
@@ -361,7 +363,7 @@ export function AdminBookingsClient({
                   </div>
                   <div>
                     <span className="text-[var(--muted-foreground)] block text-[10px] uppercase font-semibold">Amount</span>
-                    <span className="font-semibold text-muted-foreground font-mono">{formatPrice(totalPrice, "SAR")}</span>
+                    <span className="font-semibold text-muted-foreground font-mono">{formatPrice(totalPrice, booking.currency)}</span>
                   </div>
                   <div className="col-span-2">
                     <span className="text-[var(--muted-foreground)] block text-[10px] uppercase font-semibold">Dates</span>
@@ -454,7 +456,7 @@ export function AdminBookingsClient({
                 <div className="text-right">
                   <span className="text-[10px] text-[var(--muted-foreground)] block">Total Amount</span>
                   <span className="text-base font-semibold text-amber-600 dark:text-amber-400">
-                    {formatPrice(selectedBooking.listing.price * getDurationNights(selectedBooking.startDate, selectedBooking.endDate), "SAR")}
+                    {formatPrice(selectedBooking.totalPrice ?? selectedBooking.listing.price * getDurationNights(selectedBooking.startDate, selectedBooking.endDate), selectedBooking.currency)}
                   </span>
                 </div>
               </div>

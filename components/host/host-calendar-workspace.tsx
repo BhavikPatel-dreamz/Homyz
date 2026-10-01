@@ -204,7 +204,7 @@ const DEFAULT_DEMO_LISTING: ListingDTO = {
   bathrooms: 1,
   price: 42100, // SAR 421
   currency: "SAR",
-  cleaningFee: 24100,
+  cleaningFee: 0,
   securityDeposit: 50000,
   weekendPrice: 52000,
   minNights: 1,

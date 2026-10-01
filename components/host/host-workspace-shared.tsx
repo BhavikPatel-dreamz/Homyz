@@ -17,6 +17,23 @@ export type HostReservation = {
   createdAt: string;
   guestName: string;
   guestImage: string | null;
+  guestEmail?: string | null;
+  guests?: number;
+  totalPrice?: number | null;
+  currency?: string;
+  priceBreakdown?: any;
+  listing?: {
+    id: string;
+    title: string;
+    city: string;
+    district: string | null;
+    country: string;
+    photos: string[];
+    checkInStart?: string | null;
+    checkInEnd?: string | null;
+    checkOutTime?: string | null;
+    price?: number;
+  };
 };
 export type HostWorkspaceProps = {
   listings: ListingDTO[];
@@ -165,16 +182,23 @@ export function ReservationDetails({
   const { currency, formatPrice } = useCurrency();
   const sourceCurrency = getCurrencyForCountry(listing.country);
   const nights = Math.max(1, differenceInBookingNights(booking.startDate, booking.endDate));
-  const nightlyRate = listing.price;
-  const roomFee = nights * nightlyRate;
-  const cleaningFee = listing.cleaningFee || Math.round(nightlyRate * 0.35);
-
   const pb = (booking as any)?.priceBreakdown;
+  const nightlyRate = pb?.breakdown?.[0]?.price ?? listing.price;
+  const roomFee = pb?.nightlySubtotal ?? nights * nightlyRate;
+  const hasVaryingRates = new Set((pb?.breakdown || []).map((night: { price?: number }) => night.price)).size > 1;
+  const extraGuestFee = pb?.extraGuestFee ?? 0;
+  const petFee = pb?.petFee ?? 0;
   const hostServiceFeePercentage = pb?.hostServiceFeePercentage ?? 15;
   const hostServiceFee = pb?.hostServiceFee ?? Math.round(roomFee * (hostServiceFeePercentage / 100));
   const taxes = pb?.taxTotal ?? 0;
-  const guestTotal = pb?.guestTotal ?? (roomFee + cleaningFee + taxes + hostServiceFee);
-  const hostPayout = pb?.payoutBreakdown?.netHostPayout ?? (roomFee + cleaningFee - hostServiceFee);
+  const taxItems: Array<{
+    taxName?: string;
+    taxAmount?: number;
+    exemptionApplied?: boolean;
+    exemptionReason?: string;
+  }> = Array.isArray(pb?.taxes) ? pb.taxes : [];
+  const guestTotal = pb?.guestTotal ?? booking.totalPrice ?? (roomFee + extraGuestFee + petFee + taxes);
+  const hostPayout = pb?.payoutBreakdown?.netHostPayout ?? (roomFee + petFee - hostServiceFee);
 
   return (
     <WorkspaceDialog title="Reservation details" onClose={onClose} maxWidth="max-w-lg">
@@ -206,7 +230,7 @@ export function ReservationDetails({
               <p className="text-xs text-zinc-600 dark:text-zinc-300 mt-0.5 truncate">{listing.title}</p>
               <p className="text-xs text-[#727272] dark:text-[#727272]">{[listing.city, listing.country].filter(Boolean).join(", ")}</p>
               <p className="mt-2 text-xs font-medium text-zinc-800 dark:text-zinc-200">
-                {shortDate(booking.startDate)} – {shortDate(booking.endDate)} ({nights} {nights === 1 ? "night" : "nights"}) • 2 guests
+                {shortDate(booking.startDate)} – {shortDate(booking.endDate)} ({nights} {nights === 1 ? "night" : "nights"}) • {booking.guests || 1} {(booking.guests || 1) === 1 ? "guest" : "guests"}
               </p>
             </div>
           </div>
@@ -259,7 +283,9 @@ export function ReservationDetails({
           <dl className="divide-y divide-zinc-100 dark:divide-zinc-800 text-xs">
             <div className="py-2.5 flex justify-between">
               <dt className="text-[#727272] dark:text-[#727272]">Guests</dt>
-              <dd className="font-medium text-zinc-800 dark:text-zinc-200">2 Adults</dd>
+              <dd className="font-medium text-zinc-800 dark:text-zinc-200">
+                {booking.guests || 1} {(booking.guests || 1) === 1 ? "guest" : "guests"}
+              </dd>
             </div>
             <div className="py-2.5 flex justify-between">
               <dt className="text-[#727272] dark:text-[#727272]">Check-in</dt>
@@ -294,22 +320,22 @@ export function ReservationDetails({
           <h4 className="font-semibold text-[#1F1F1F] dark:text-zinc-100 text-sm mb-3">Guest paid</h4>
           <dl className="space-y-2 text-xs">
             <div className="flex justify-between">
-              <dt className="text-[#727272] dark:text-[#727272]">{formatPrice(nightlyRate, sourceCurrency, 2)} × {nights} {nights === 1 ? "night" : "nights"}</dt>
+              <dt className="text-[#727272] dark:text-[#727272]">{hasVaryingRates ? `${nights} nights · varying rates` : `${formatPrice(nightlyRate, sourceCurrency, 2)} × ${nights} ${nights === 1 ? "night" : "nights"}`}</dt>
               <dd className="text-zinc-800 dark:text-zinc-200">{formatPrice(roomFee, sourceCurrency, 2)}</dd>
             </div>
-            <div className="flex justify-between">
-              <dt className="text-[#727272] dark:text-[#727272]">Cleaning fee</dt>
-              <dd className="text-zinc-800 dark:text-zinc-200">{formatPrice(cleaningFee, sourceCurrency, 2)}</dd>
-            </div>
-            <div className="flex justify-between">
-              <dt className="text-[#727272] dark:text-[#727272]">Guest service fee ({hostServiceFeePercentage}%)</dt>
-              <dd className="text-zinc-800 dark:text-zinc-200">{formatPrice(hostServiceFee, sourceCurrency, 2)}</dd>
-            </div>
-            {taxes > 0 && (
-              <div className="flex justify-between">
-                <dt className="text-[#727272] dark:text-[#727272]">Taxes</dt>
-                <dd className="text-zinc-800 dark:text-zinc-200">{formatPrice(taxes, sourceCurrency, 2)}</dd>
+            {extraGuestFee > 0 && <div className="flex justify-between"><dt className="text-[#727272] dark:text-[#727272]">Extra guest fee</dt><dd className="text-zinc-800 dark:text-zinc-200">{formatPrice(extraGuestFee, sourceCurrency, 2)}</dd></div>}
+            {petFee > 0 && <div className="flex justify-between"><dt className="text-[#727272] dark:text-[#727272]">Pet fee</dt><dd className="text-zinc-800 dark:text-zinc-200">{formatPrice(petFee, sourceCurrency, 2)}</dd></div>}
+            {taxItems.map((tax, index) => (
+              <div key={`${tax.taxName || "Tax"}-${index}`} className="flex justify-between gap-3">
+                <dt className="text-[#727272] dark:text-[#727272]">
+                  {tax.taxName || "Tax"}
+                  {tax.exemptionApplied && tax.exemptionReason ? ` · ${tax.exemptionReason}` : ""}
+                </dt>
+                <dd className="text-zinc-800 dark:text-zinc-200">{formatPrice(tax.taxAmount ?? 0, sourceCurrency, 2)}</dd>
               </div>
+            ))}
+            {taxItems.length === 0 && taxes > 0 && (
+              <div className="flex justify-between"><dt className="text-[#727272] dark:text-[#727272]">Taxes</dt><dd className="text-zinc-800 dark:text-zinc-200">{formatPrice(taxes, sourceCurrency, 2)}</dd></div>
             )}
             <div className="flex justify-between border-t border-zinc-100 dark:border-zinc-800 pt-2 font-semibold text-sm">
               <dt className="text-[#1F1F1F] dark:text-zinc-100">Total ({currency})</dt>
@@ -326,14 +352,8 @@ export function ReservationDetails({
               <dt className="text-[#727272] dark:text-[#727272]">{nights} {nights === 1 ? "night" : "nights"} room fee</dt>
               <dd className="text-zinc-800 dark:text-zinc-200">{formatPrice(roomFee, sourceCurrency, 2)}</dd>
             </div>
-            {cleaningFee > 0 && (
-              <div className="flex justify-between">
-                <dt className="text-[#727272] dark:text-[#727272]">Cleaning fee</dt>
-                <dd className="text-zinc-800 dark:text-zinc-200">{formatPrice(cleaningFee, sourceCurrency, 2)}</dd>
-              </div>
-            )}
             <div className="flex justify-between">
-              <dt className="text-[#727272] dark:text-[#727272]">Guest service fee ({hostServiceFeePercentage}%)</dt>
+              <dt className="text-[#727272] dark:text-[#727272]">Platform service fee ({hostServiceFeePercentage}%)</dt>
               <dd className="text-rose-600 dark:text-rose-400">- {formatPrice(hostServiceFee, sourceCurrency, 2)}</dd>
             </div>
             <div className="flex justify-between border-t border-zinc-100 dark:border-zinc-800 pt-2 font-semibold text-sm">
@@ -375,7 +395,7 @@ export function MoneyDialog({
           <p className="text-[11px] font-semibold uppercase tracking-wider text-[#727272]">From</p>
           <p className="my-1 font-bold text-base text-[#1F1F1F] dark:text-zinc-100">{booking.guestName}</p>
           <p className="text-xs text-[#727272] dark:text-[#727272]">
-            {shortDate(booking.startDate)} – {shortDate(booking.endDate)} ({nights} {nights === 1 ? "night" : "nights"}) • 2 guests
+            {shortDate(booking.startDate)} – {shortDate(booking.endDate)} ({nights} {nights === 1 ? "night" : "nights"}) • {booking.guests || 1} {(booking.guests || 1) === 1 ? "guest" : "guests"}
           </p>
         </div>
 
