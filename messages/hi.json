@@ -155,7 +155,7 @@
   "home_next": "आगे",
   "home_nearby_areas_districts": "पास के क्षेत्र और जिले",
   "home_places_in": "{name} में स्थान",
-  "home_this_location": "इस स्थान",
+  "home_this_location": "यह स्थान",
   "home_no_stays_hint": "अपनी तारीख सीमा बढ़ाने, मेहमानों की संख्या समायोजित करने या आस-पास के गंतव्यों को खोजने का प्रयास करें।",
   "home_section_homes_in": "{location} में आवास",
   "home_section_homes_near": "{location} के पास आवास",
@@ -2387,5 +2387,16 @@
   "admin_search_placeholder": "एडमिन ऐप खोजें...",
   "header_open_navigation_menu": "नेविगेशन मेनू खोलें",
   "header_toggle_sidebar_collapse": "साइडबार संक्षिप्त करें/फैलाएं",
-  "header_switch_to": "{mode} पर स्विच करें"
+  "header_switch_to": "{mode} पर स्विच करें",
+  "home_no_stays_found_in": "{location} में आपकी खोज से मेल खाने वाला कोई प्रवास नहीं मिला",
+  "home_discover_handpicked_stays": "Homyz पर चुने गए आवासों की खोज करें",
+  "home_try_expanding_date_range": "अपनी तिथियों की सीमा बढ़ाने, मेहमानों की संख्या समायोजित करने या आस-पास के गंतव्यों को खोजने का प्रयास करें।",
+  "home_search_destinations_above": "उपलब्ध छुट्टियों के किराये और आवास ब्राउज़ करने के लिए ऊपर गंतव्य, चेक-इन तिथियां और अतिथि क्षमता खोजें।",
+  "home_clear_search": "खोज साफ़ करें",
+  "home_browse_all_stays": "सभी आवास ब्राउज़ करें",
+  "home_check_in": "चेक इन",
+  "home_check_out": "चेक आउट",
+  "home_choose_checkin_date": "चेक-इन तिथि चुनें",
+  "home_choose_checkout_date": "चेक-आउट तिथि चुनें",
+  "home_date_range_to": "{checkIn} से {checkOut}"
 }

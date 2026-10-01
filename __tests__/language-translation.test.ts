@@ -441,7 +441,34 @@ function runTests() {
   assert(MESSAGES.es.host_require_profile_photo_title === "Exigir una foto de perfil", "ES host_require_profile_photo_title");
   assert(MESSAGES.fr.host_require_profile_photo_title === "Exiger une photo de profil", "FR host_require_profile_photo_title");
   assert(MESSAGES.de.host_require_profile_photo_title === "Profilfoto anfordern", "DE host_require_profile_photo_title");
-  assert(MESSAGES.hi.host_require_profile_photo_title === "प्रोफ़ाइल फ़ोटो आवश्यक करें", "HI host_require_profile_photo_title");
+  // 5g. Admin Login & Header Popup & Home Check-in/out translations
+  assert(MESSAGES.en.admin_login_subtitle === "Enter your credentials to access the admin portal.", "EN admin_login_subtitle");
+  assert(MESSAGES.es.admin_login_subtitle === "Ingrese sus credenciales para acceder al portal de administración.", "ES admin_login_subtitle");
+  assert(MESSAGES.fr.admin_login_subtitle === "Saisissez vos identifiants pour accéder au portail d'administration.", "FR admin_login_subtitle");
+  assert(MESSAGES.de.admin_login_subtitle === "Geben Sie Ihre Zugangsdaten ein, um auf das Administrator-Portal zuzugreifen.", "DE admin_login_subtitle");
+  assert(MESSAGES.hi.admin_login_subtitle === "एडमिन पोर्टल तक पहुंचने के लिए अपनी साख दर्ज करें।", "HI admin_login_subtitle");
+  assert(MESSAGES.ar.admin_login_subtitle === "أدخل بيانات الاعتماد الخاصة بك للوصول إلى لوحة التحكم الإدارية.", "AR admin_login_subtitle");
+
+  assert(MESSAGES.en.header_wishlist === "Wishlist", "EN header_wishlist");
+  assert(MESSAGES.es.header_wishlist === "Lista de deseos", "ES header_wishlist");
+  assert(MESSAGES.fr.header_wishlist === "Favoris", "FR header_wishlist");
+  assert(MESSAGES.de.header_wishlist === "Wunschliste", "DE header_wishlist");
+  assert(MESSAGES.hi.header_wishlist === "इच्छा-सूची", "HI header_wishlist");
+  assert(MESSAGES.ar.header_wishlist === "قائمة الرغبات", "AR header_wishlist");
+
+  assert(MESSAGES.en.home_check_in === "Check in", "EN home_check_in");
+  assert(MESSAGES.es.home_check_in === "Llegada", "ES home_check_in");
+  assert(MESSAGES.fr.home_check_in === "Arrivée", "FR home_check_in");
+  assert(MESSAGES.de.home_check_in === "Anreise", "DE home_check_in");
+  assert(MESSAGES.hi.home_check_in === "चेक इन", "HI home_check_in");
+  assert(MESSAGES.ar.home_check_in === "تسجيل الوصول", "AR home_check_in");
+
+  assert(MESSAGES.en.home_check_out === "Check out", "EN home_check_out");
+  assert(MESSAGES.es.home_check_out === "Salida", "ES home_check_out");
+  assert(MESSAGES.fr.home_check_out === "Départ", "FR home_check_out");
+  assert(MESSAGES.de.home_check_out === "Abreise", "DE home_check_out");
+  assert(MESSAGES.hi.home_check_out === "चेक आउट", "HI home_check_out");
+  assert(MESSAGES.ar.home_check_out === "المغادرة", "AR home_check_out");
 
   console.log(`\n🎉 All ${passedCount}/${totalCount} tests passed cleanly!`);
 }

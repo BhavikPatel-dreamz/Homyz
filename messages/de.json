@@ -155,7 +155,7 @@
   "home_next": "Weiter",
   "home_nearby_areas_districts": "Nahegelegene Gebiete & Bezirke",
   "home_places_in": "Orte in {name}",
-  "home_this_location": "diesem Ort",
+  "home_this_location": "dieser Standort",
   "home_no_stays_hint": "Versuchen Sie, den Datumsbereich zu erweitern, die Gästeanzahl anzupassen oder nahegelegene Reiseziele zu erkunden.",
   "home_section_homes_in": "Unterkünfte in {location}",
   "home_section_homes_near": "Unterkünfte in der Nähe von {location}",
@@ -2387,5 +2387,16 @@
   "admin_search_placeholder": "Admin-App durchsuchen...",
   "header_open_navigation_menu": "Navigationsmenü öffnen",
   "header_toggle_sidebar_collapse": "Seitenleiste ein-/ausklappen",
-  "header_switch_to": "Wechseln zu {mode}"
+  "header_switch_to": "Wechseln zu {mode}",
+  "home_no_stays_found_in": "Keine Unterkünfte für Ihre Suche in {location} gefunden",
+  "home_discover_handpicked_stays": "Entdecken Sie handverlesene Unterkünfte auf Homyz",
+  "home_try_expanding_date_range": "Versuchen Sie, Ihren Datumsbereich zu erweitern, die Gästeanzahl anzupassen oder nahegelegene Reiseziele zu erkunden.",
+  "home_search_destinations_above": "Suchen Sie oben nach Reisezielen, Anreisedaten und Gästeanzahl, um verfügbare Unterkünfte zu durchsuchen.",
+  "home_clear_search": "Suche löschen",
+  "home_browse_all_stays": "Alle Unterkünfte durchsuchen",
+  "home_check_in": "Anreise",
+  "home_check_out": "Abreise",
+  "home_choose_checkin_date": "Anreisedatum wählen",
+  "home_choose_checkout_date": "Abreisedatum wählen",
+  "home_date_range_to": "Vom {checkIn} bis {checkOut}"
 }

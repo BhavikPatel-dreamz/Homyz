@@ -2387,5 +2387,16 @@
   "admin_search_placeholder": "Rechercher dans l'application d'administration...",
   "header_open_navigation_menu": "Ouvrir le menu de navigation",
   "header_toggle_sidebar_collapse": "Basculer la réduction de la barre latérale",
-  "header_switch_to": "Passer en mode {mode}"
+  "header_switch_to": "Passer en mode {mode}",
+  "home_no_stays_found_in": "Aucun séjour ne correspond à votre recherche à {location}",
+  "home_discover_handpicked_stays": "Découvrez des séjours triés sur le volet sur Homyz",
+  "home_try_expanding_date_range": "Essayez d'élargir vos dates, d'ajuster le nombre de voyageurs ou d'explorer les destinations voisines.",
+  "home_search_destinations_above": "Recherchez ci-dessus les destinations, dates d'arrivée et nombre de voyageurs pour parcourir les hébergements disponibles.",
+  "home_clear_search": "Effacer la recherche",
+  "home_browse_all_stays": "Parcourir tous les séjours",
+  "home_check_in": "Arrivée",
+  "home_check_out": "Départ",
+  "home_choose_checkin_date": "Choisissez la date d'arrivée",
+  "home_choose_checkout_date": "Choisissez la date de départ",
+  "home_date_range_to": "Du {checkIn} au {checkOut}"
 }

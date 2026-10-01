@@ -2387,5 +2387,16 @@
   "admin_search_placeholder": "البحث في تطبيق المسؤول...",
   "header_open_navigation_menu": "فتح قائمة التنقل",
   "header_toggle_sidebar_collapse": "تبديل طي الشريط الجانبي",
-  "header_switch_to": "التبديل إلى {mode}"
+  "header_switch_to": "التبديل إلى {mode}",
+  "home_no_stays_found_in": "لم يتم العثور على مكان إقامة يطابق بحثك في {location}",
+  "home_discover_handpicked_stays": "اكتشف أماكن إقامة ممتازة مختارة بعناية على Homyz",
+  "home_try_expanding_date_range": "جرب توسيع نطاق التواريخ، أو تعديل عدد الضيوف، أو استكشاف الوجهات المجاورة.",
+  "home_search_destinations_above": "ابحث عن الوجهات وتواريخ الوصول وعدد الضيوف أعلاه لتصفح أماكن الإقامة المتاحة.",
+  "home_clear_search": "مسح البحث",
+  "home_browse_all_stays": "تصفح جميع أماكن الإقامة",
+  "home_check_in": "تسجيل الوصول",
+  "home_check_out": "المغادرة",
+  "home_choose_checkin_date": "اختر تاريخ الوصول",
+  "home_choose_checkout_date": "اختر تاريخ المغادرة",
+  "home_date_range_to": "من {checkIn} إلى {checkOut}"
 }

@@ -2387,5 +2387,16 @@
   "admin_search_placeholder": "Search admin app...",
   "header_open_navigation_menu": "Open navigation menu",
   "header_toggle_sidebar_collapse": "Toggle sidebar collapse",
-  "header_switch_to": "Switch to {mode}"
+  "header_switch_to": "Switch to {mode}",
+  "home_no_stays_found_in": "No stays found matching your search in {location}",
+  "home_discover_handpicked_stays": "Discover hand-picked stays on Homyz",
+  "home_try_expanding_date_range": "Try expanding your date range, adjusting guest count, or exploring nearby destinations.",
+  "home_search_destinations_above": "Search destinations, check-in dates, and guest capacity above to browse available vacation rentals and accommodations.",
+  "home_clear_search": "Clear search",
+  "home_browse_all_stays": "Browse all stays",
+  "home_check_in": "Check in",
+  "home_check_out": "Check out",
+  "home_choose_checkin_date": "Choose check-in date",
+  "home_choose_checkout_date": "Choose check-out date",
+  "home_date_range_to": "{checkIn} to {checkOut}"
 }
