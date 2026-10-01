@@ -1472,7 +1472,7 @@ export function PublicListingDetailClient({
     <div className="flex min-h-screen flex-col bg-white font-sans text-[#1f1f1f] antialiased">
       <AppHeader />
 
-      <main className="w-full flex-1 pb-13 pt-5 sm:pt-7">
+      <main className="w-full flex-1 pb-13 pt-5 sm:pt-10">
         <Container>
           <div className="single-listing-page">
             {/* Header Section */}

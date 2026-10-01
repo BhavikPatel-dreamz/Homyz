@@ -161,7 +161,7 @@ export function SavedListingsView({ initialFavorites, initialTotal = 0 }: SavedL
               Wishlists
             </h2>
             {validItems.length > 0 && (
-              <span className="inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">
+              <span className="inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800">
                 {validItems.length} {validItems.length === 1 ? "saved stay" : "saved stays"}
               </span>
             )}
@@ -174,11 +174,10 @@ export function SavedListingsView({ initialFavorites, initialTotal = 0 }: SavedL
             <button
               type="button"
               onClick={() => setCategoryFilter("ALL")}
-              className={`shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all ${
-                categoryFilter === "ALL"
-                  ? "bg-white text-[#1F1F1F] shadow-2xs"
-                  : "text-[#727272] hover:text-[#1F1F1F]"
-              }`}
+              className={`shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-medium transition-all ${categoryFilter === "ALL"
+                ? "text-[#1f1f1f] bg-[#FCDF9C]"
+                : "text-[#1f1f1f] bg-[#FCDF9C]"
+                }`}
             >
               All ({validItems.length})
             </button>
@@ -187,11 +186,10 @@ export function SavedListingsView({ initialFavorites, initialTotal = 0 }: SavedL
                 key={cat}
                 type="button"
                 onClick={() => setCategoryFilter(cat)}
-                className={`shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all capitalize ${
-                  categoryFilter === cat
-                    ? "bg-white text-[#1F1F1F] shadow-2xs"
+                className={`shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-xs font-medium transition-all capitalize ${categoryFilter === cat
+                  ? "bg-[#1F1F1F] text-[#fff] shadow-2xs"
                     : "text-[#727272] hover:text-[#1F1F1F]"
-                }`}
+                  }`}
               >
                 {cat}
               </button>
