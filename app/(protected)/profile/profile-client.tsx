@@ -479,7 +479,7 @@ export function ProfileClient({
             )}
 
             {activeTab === "account_settings" && (
-              <div className="flex flex-col animate-in fade-in">
+            <div className="flex flex-col animate-in fade-in amenities-list-scrollbar lg:h-[calc(100dvh-10rem)] lg:overflow-y-auto lg:overscroll-contain lg:pr-5">
                 <PersonalInfoView initialData={initialPersonalInfo} />
               </div>
             )}

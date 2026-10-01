@@ -522,7 +522,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
   }
 
   return (
-    <div className="w-full max-w-2xl text-[#1F1F1F]">
+    <div className=" w-full max-w-2xl mx-auto text-[#1F1F1F]">
       {/* Page Title */}
       <h1>
         Personal information

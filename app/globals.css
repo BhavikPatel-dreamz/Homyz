@@ -746,3 +746,56 @@ input[type="number"] {
   }
 
 }
+
+@keyframes messages-filter-menu-in {
+  from { opacity: 0; transform: translateY(-4px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes messages-search-in {
+  from { opacity: 0; transform: translateX(8px) scaleX(0.96); }
+  to { opacity: 1; transform: translateX(0) scaleX(1); }
+}
+
+@keyframes messages-settings-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes messages-search-expand {
+  from { opacity: 0.7; transform: scaleX(0.16); }
+  to { opacity: 1; transform: scaleX(1); }
+}
+
+@keyframes messages-search-cancel-in {
+  from { opacity: 0; transform: translateX(4px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes messages-search-collapse {
+  from { opacity: 1; transform: scaleX(1); }
+  to { opacity: 0.7; transform: scaleX(0.16); }
+}
+
+@keyframes messages-search-cancel-out {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(4px); }
+}
+
+@keyframes messages-settings-sheet-in {
+  from { opacity: 0.96; transform: translateY(100%); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.messages-settings-sheet {
+  animation: messages-settings-sheet-in 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform, opacity;
+}
+
+@media (min-width: 640px) {
+  .messages-settings-sheet {
+    animation-name: messages-settings-in;
+    animation-duration: 200ms;
+    animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
+  }
+}

@@ -14,7 +14,7 @@ export default async function HostMessagesPage(props: {
   const initialConversationId = resolvedParams?.id;
 
   return (
-    <div className="min-h-screen pb-[calc(110px+env(safe-area-inset-bottom))] sm:pb-0 bg-zinc-50/50 text-[#1F1F1F] font-sans flex flex-col selection:bg-[#FEE08B] selection:text-[#1F1F1F]">
+    <div className="min-h-screen sm:pb-0 bg-zinc-50/50 text-[#1F1F1F] font-sans flex flex-col selection:bg-[#FEE08B] selection:text-[#1F1F1F]">
       {/* Messages has a dedicated workspace header. */}
       <MessagesHeader />
 
@@ -22,7 +22,7 @@ export default async function HostMessagesPage(props: {
         <HostMessagesWorkspace initialConversationId={initialConversationId} />
       </main>
 
-      <Footer />
+      {/* <Footer /> */}
     </div>
   );
 }
