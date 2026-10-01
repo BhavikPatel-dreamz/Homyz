@@ -306,7 +306,7 @@ export function ProfileClient({
   const years = initialStats.yearsOnHomyz || (currentUser.createdAt ? Math.max(1, new Date().getFullYear() - new Date(currentUser.createdAt).getFullYear()) : 1);
 
   return (
-    <div className="flex min-h-[85vh] w-full flex-col bg-white pb-14 pt-12 font-sans lg:pb-12">
+    <div className="flex min-h-[85vh] w-full flex-col bg-white pb-14 pt-5 font-sans lg:pb-12">
         <div className="mb-5 flex items-center justify-between lg:hidden">
           <BackButton
             onClick={() => {
@@ -520,7 +520,7 @@ export function ProfileClient({
             )}
 
             {activeTab === "account_settings" && (
-              <div className="flex flex-col animate-in fade-in">
+            <div className="flex flex-col animate-in fade-in amenities-list-scrollbar lg:h-[calc(100dvh-10rem)] lg:overflow-y-auto lg:overscroll-contain lg:pr-5">
                 <PersonalInfoView initialData={initialPersonalInfo} />
               </div>
             )}
