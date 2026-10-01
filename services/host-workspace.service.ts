@@ -33,7 +33,13 @@ export async function getHostWorkspace(actor: AuthUser) {
           name: true,
           image: true,
           email: true,
+          createdAt: true,
         },
+      },
+      conversations: {
+        select: { id: true },
+        orderBy: { updatedAt: "desc" },
+        take: 1,
       },
       listing: {
         select: {
@@ -72,12 +78,18 @@ export async function getHostWorkspace(actor: AuthUser) {
       endDate: bookingDateKey(b.endDate),
       guests: b.guests || 1,
       totalPrice: b.totalPrice,
+      nightlyPrice: b.nightlyPrice,
       currency: b.currency || "SAR",
       priceBreakdown: b.priceBreakdown,
+      cancellationPolicy: b.cancellationPolicy,
+      isNonRefundable: b.isNonRefundable,
       createdAt: b.createdAt.toISOString(),
       guestName: b.user?.name || "Guest",
+      guestId: b.user?.id,
       guestImage: b.user?.image || null,
       guestEmail: b.user?.email || null,
+      guestCreatedAt: b.user?.createdAt?.toISOString() || null,
+      conversationId: b.conversations?.[0]?.id || null,
       listing: {
         id: b.listing.id,
         title: b.listing.title,

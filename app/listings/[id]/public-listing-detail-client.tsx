@@ -19,7 +19,8 @@ import { saveRecentlyViewedProperty, clearLastSearch, saveLastSearch, getLastSea
 import { getCurrencyForCountry } from "@/lib/currency";
 import { useCurrency } from "@/lib/currency-context";
 import { cancellationPolicyLabel } from "@/lib/constants/listing-enums";
-import { saveBookingQuote } from "@/lib/booking/quote-cache";
+import { saveBookingQuote, readBookingQuote, fetchAuthoritativeQuote } from "@/lib/booking/quote-cache";
+import { getLanguageDisplayNames } from "@/lib/utils/language-options";
 import useWishlist from "@/hooks/useWishlist";
 import { trackListingEvent } from "@/lib/analytics/listing-analytics";
 
@@ -603,7 +604,21 @@ export function PublicListingDetailClient({
   const [infantsCount, setInfantsCount] = useState(() => searchInfants ?? 0);
   const [petsCount, setPetsCount] = useState(() => searchPets ?? 0);
   const [isNonRefundable, setIsNonRefundable] = useState(false);
-  const [quote, setQuote] = useState<BookingQuote | null>(null);
+  const [quote, setQuote] = useState<BookingQuote | null>(() => {
+    if (searchCheckIn && searchCheckOut && isDateKey(searchCheckIn) && isDateKey(searchCheckOut)) {
+      return readBookingQuote<BookingQuote>({
+        listingId: listing.id,
+        checkIn: searchCheckIn,
+        checkOut: searchCheckOut,
+        guests: searchAdults ?? (searchGuests ? Math.max(1, searchGuests) : 1),
+        pets: searchPets ?? 0,
+        nonRefundable: false,
+        specialOfferId: initialSpecialOfferId,
+      });
+    }
+    return null;
+  });
+  const lastQuoteQueryRef = useRef<string>("");
   const isInstantBook = (quote?.bookingMode ?? listing.bookingMode) === "INSTANT_BOOK";
   const [isQuoteLoading, setIsQuoteLoading] = useState(false);
   const [quoteError, setQuoteError] = useState<string | null>(null);
@@ -730,21 +745,14 @@ export function PublicListingDetailClient({
   // A client component may be preserved while the route segment changes. Reset
   // all booking-specific state so a quote from property A never appears on B.
   useEffect(() => {
-    const last = getLastSearch();
-    const nextCheckIn = isDateKey(searchCheckIn)
-      ? searchCheckIn
-      : last?.checkIn && isDateKey(last.checkIn)
-      ? last.checkIn
-      : "";
+    const nextCheckIn = isDateKey(searchCheckIn) ? searchCheckIn : "";
     const nextCheckOut = isDateKey(searchCheckOut) && (!nextCheckIn || searchCheckOut > nextCheckIn)
       ? searchCheckOut
-      : last?.checkOut && isDateKey(last.checkOut) && (!nextCheckIn || last.checkOut > nextCheckIn)
-      ? last.checkOut
       : "";
-    const nextGuests = searchAdults ?? (searchGuests ? Math.max(1, searchGuests) : last?.adults || last?.guests || 1);
-    const nextChildren = searchChildren ?? last?.children ?? 0;
-    const nextInfants = searchInfants ?? last?.infants ?? 0;
-    const nextPets = searchPets ?? last?.pets ?? 0;
+    const nextGuests = searchAdults ?? (searchGuests ? Math.max(1, searchGuests) : 1);
+    const nextChildren = searchChildren ?? 0;
+    const nextInfants = searchInfants ?? 0;
+    const nextPets = searchPets ?? 0;
 
     const timer = window.setTimeout(() => {
       setCheckIn(nextCheckIn);
@@ -970,7 +978,11 @@ export function PublicListingDetailClient({
   const hostBio = typeof publicProfile?.bio === "string" ? publicProfile.bio : "";
   const hostWork = typeof publicProfile?.myWork === "string" ? publicProfile.myWork.trim() : "";
   const hostLanguages = Array.isArray(publicProfile?.languages)
-    ? publicProfile.languages.filter((value): value is string => typeof value === "string" && value.trim().length > 0).slice(0, 4)
+    ? getLanguageDisplayNames(
+        publicProfile.languages
+          .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
+          .slice(0, 4),
+      )
     : [];
   const hostSince = listing.host?.createdAt && !Number.isNaN(new Date(listing.host.createdAt).getTime())
     ? new Intl.DateTimeFormat("en", { month: "long", year: "numeric" }).format(new Date(listing.host.createdAt))
@@ -1070,6 +1082,7 @@ export function PublicListingDetailClient({
   // Fetch quote when valid dates are selected
   useEffect(() => {
     if (!checkIn || !checkOut) {
+      lastQuoteQueryRef.current = "";
       const timer = window.setTimeout(() => {
         setQuote(null);
         setQuoteError(null);
@@ -1079,6 +1092,7 @@ export function PublicListingDetailClient({
     }
 
     if (totalCapacityGuests < 1 || totalCapacityGuests > maximumGuests) {
+      lastQuoteQueryRef.current = "";
       const timer = window.setTimeout(() => {
         setQuote(null);
         setQuoteError(`This property accommodates up to ${maximumGuests} ${maximumGuests === 1 ? "guest" : "guests"}.`);
@@ -1090,6 +1104,7 @@ export function PublicListingDetailClient({
     const cIn = new Date(`${checkIn}T00:00:00`);
     const cOut = new Date(`${checkOut}T00:00:00`);
     if (isNaN(cIn.getTime()) || isNaN(cOut.getTime()) || cOut <= cIn) {
+      lastQuoteQueryRef.current = "";
       const timer = window.setTimeout(() => {
         setQuote(null);
         setQuoteError("Checkout must be after check-in");
@@ -1098,26 +1113,45 @@ export function PublicListingDetailClient({
       return () => clearTimeout(timer);
     }
 
+    if (overlapsBookedRange(checkIn, checkOut, bookedDateRanges)) {
+      lastQuoteQueryRef.current = "";
+      const timer = window.setTimeout(() => {
+        setQuote(null);
+        setQuoteError("These dates are not available for this property. Please choose different dates.");
+        setIsQuoteLoading(false);
+      }, 0);
+      return () => window.clearTimeout(timer);
+    }
+
+    const effectiveSpecialOffer = initialSpecialOfferId || searchParams.get("specialOfferId") || undefined;
+    const currentQueryKey = `${listing.id}:${checkIn}:${checkOut}:${totalCapacityGuests}:${petsCount}:${isNonRefundable}:${effectiveSpecialOffer || ""}`;
+
+    if (lastQuoteQueryRef.current === currentQueryKey && quote) {
+      return;
+    }
+
     let isMounted = true;
     const controller = new AbortController();
     const timer = setTimeout(() => {
-      // Keep the last completed quote painted while the new authoritative
-      // quote is in flight. Reserve remains disabled until this request wins.
+      lastQuoteQueryRef.current = currentQueryKey;
       setIsQuoteLoading(true);
       setQuoteError(null);
 
-      fetch(
-        `/api/v1/listings/${listing.id}/quote?checkIn=${encodeURIComponent(checkIn)}&checkOut=${encodeURIComponent(checkOut)}&guests=${totalCapacityGuests}&pets=${petsCount}&nonRefundable=${isNonRefundable}`,
-        { signal: controller.signal, cache: "no-store" },
+      fetchAuthoritativeQuote<BookingQuote>(
+        {
+          listingId: listing.id,
+          checkIn,
+          checkOut,
+          guests: totalCapacityGuests,
+          pets: petsCount,
+          nonRefundable: isNonRefundable,
+          specialOfferId: effectiveSpecialOffer,
+        },
+        { signal: controller.signal },
       )
-        .then(async (res) => ({ ok: res.ok, data: await res.json() }))
-        .then(({ ok, data }) => {
+        .then((data) => {
           if (!isMounted) return;
-          if (!ok || data.error || !data.data) {
-            setQuoteError(data.error?.message || "Selected dates are not available");
-            return;
-          }
-          setQuote(data.data);
+          setQuote(data);
           setQuoteError(null);
           trackListingEvent({
             eventType: "quote_calculated",
@@ -1128,17 +1162,18 @@ export function PublicListingDetailClient({
             checkOut,
             guestCount: totalCapacityGuests,
             metadata: {
-              nights: data.data.nights,
-              totalPrice: data.data.guestTotal ?? data.data.totalPrice,
-              extraGuestFee: data.data.extraGuestFee,
-              appliedDiscount: data.data.appliedDiscount?.name,
+              nights: data.nights,
+              totalPrice: data.guestTotal ?? data.totalPrice,
+              extraGuestFee: data.extraGuestFee,
+              appliedDiscount: data.appliedDiscount?.name,
               nonRefundable: isNonRefundable,
             },
           });
         })
         .catch((error: unknown) => {
           if (!isMounted || (error instanceof DOMException && error.name === "AbortError")) return;
-          setQuoteError("Unable to calculate price quotation.");
+          setQuote(null);
+          setQuoteError(error instanceof Error ? error.message : "Unable to calculate price quotation.");
         })
         .finally(() => {
           if (isMounted) setIsQuoteLoading(false);
@@ -1150,7 +1185,7 @@ export function PublicListingDetailClient({
       controller.abort();
       clearTimeout(timer);
     };
-  }, [checkIn, checkOut, totalCapacityGuests, petsCount, isNonRefundable, listing.id, listing.city, listing.country, maximumGuests]);
+  }, [checkIn, checkOut, totalCapacityGuests, petsCount, isNonRefundable, listing.id, listing.city, listing.country, maximumGuests, initialSpecialOfferId, searchParams, bookedDateRanges]);
 
   const isDateRangeValid = Boolean(
     isDateKey(checkIn) && isDateKey(checkOut) && checkOut > checkIn && !overlapsBookedRange(checkIn, checkOut, bookedDateRanges),
@@ -1875,8 +1910,22 @@ export function PublicListingDetailClient({
                       <>
                         <div className="flex items-baseline justify-between border-b border-zinc-100 pb-4">
                           <div>
-                            <span className="text-[20px] font-medium text-[#1F1F1F] underline underline-offset-4">{displayPrice ?? "Price unavailable"}</span>
-                            <span className="text-base text-[#1F1F1F] font-normal"> / night</span>
+                            {(quote?.selectedDiscount || quote?.nonRefundableDiscount) && quote.discountAmount > 0 && quote.nights > 0 ? (
+                              <div className="flex items-baseline gap-2">
+                                <span className="text-[20px] font-medium text-[#1F1F1F] underline underline-offset-4">
+                                  {formatPrice(quote.discountedDisplayPrice ?? Math.round((quote.accommodationSubtotal ?? (quote.nightlySubtotal - quote.discountAmount)) / quote.nights), currencyCode)}
+                                </span>
+                                <span className="text-sm text-[#727272] line-through font-normal">
+                                  {formatPrice(quote.originalDisplayPrice ?? quote.baseNightlyPrice, currencyCode)}
+                                </span>
+                                <span className="text-base text-[#1F1F1F] font-normal"> / night</span>
+                              </div>
+                            ) : (
+                              <div>
+                                <span className="text-[20px] font-medium text-[#1F1F1F] underline underline-offset-4">{displayPrice ?? "Price unavailable"}</span>
+                                <span className="text-base text-[#1F1F1F] font-normal"> / night</span>
+                              </div>
+                            )}
                           </div>
                           <span className="text-xs text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full font-semibold">
                             {isInstantBook ? "Instant Book" : "Host approval required"}
@@ -2002,16 +2051,29 @@ export function PublicListingDetailClient({
 
                         {listing.bookingMessage && <p className="rounded-xl bg-zinc-50 border border-zinc-200 px-3 py-2 text-xs text-[#727272] whitespace-pre-wrap">{listing.bookingMessage}</p>}
 
-                        {quote?.nonRefundableAvailable && !isQuoteLoading && (
+                        {(quote?.nonRefundableAvailable || isNonRefundable) && (
                           <fieldset className="space-y-2 rounded-xl border border-zinc-200 bg-zinc-50/70 p-3 text-xs">
-                            <legend className="px-1 font-semibold text-[#1f1f1f]">Choose your reservation</legend>
-                            <label className={`flex cursor-pointer items-start gap-2.5 rounded-lg border p-2.5 ${!isNonRefundable ? "border-[#1f1f1f] bg-white" : "border-transparent"}`}>
-                              <input type="radio" name="reservation-type" checked={!isNonRefundable} onChange={() => setIsNonRefundable(false)} className="mt-0.5" />
-                              <span><span className="block font-semibold text-[#1f1f1f]">Standard booking</span><span className="text-[#727272]">Uses this listing&apos;s normal cancellation policy.</span></span>
+                            <legend className="px-1 font-semibold text-[#1f1f1f]">Rate options</legend>
+                            <label className={`flex cursor-pointer items-start gap-2.5 rounded-lg border p-2.5 transition-colors ${!isNonRefundable ? "border-[#1f1f1f] bg-white shadow-2xs" : "border-transparent hover:bg-zinc-100/60"}`}>
+                              <input type="radio" name="reservation-type" checked={!isNonRefundable} onChange={() => setIsNonRefundable(false)} className="mt-0.5 cursor-pointer" />
+                              <div className="flex-1">
+                                <span className="block font-semibold text-[#1f1f1f]">Standard rate</span>
+                                <span className="text-[#727272]">
+                                  {listing.cancellationPolicy ? `Cancellation: ${listing.cancellationPolicy}` : "Uses this listing's normal cancellation policy."}
+                                </span>
+                              </div>
                             </label>
-                            <label className={`flex cursor-pointer items-start gap-2.5 rounded-lg border p-2.5 ${isNonRefundable ? "border-amber-500 bg-amber-50" : "border-transparent"}`}>
-                              <input type="radio" name="reservation-type" checked={isNonRefundable} onChange={() => setIsNonRefundable(true)} className="mt-0.5" />
-                              <span><span className="block font-semibold text-[#1f1f1f]">Non-refundable booking</span><span className="text-[#727272]">Discounted price. If you cancel, you cannot receive the normal cancellation refund and the host retains the booked payout.</span></span>
+                            <label className={`flex cursor-pointer items-start gap-2.5 rounded-lg border p-2.5 transition-colors ${isNonRefundable ? "border-amber-500 bg-amber-50/80 shadow-2xs" : "border-transparent hover:bg-zinc-100/60"}`}>
+                              <input type="radio" name="reservation-type" checked={isNonRefundable} onChange={() => setIsNonRefundable(true)} className="mt-0.5 cursor-pointer" />
+                              <div className="flex-1">
+                                <div className="flex items-center justify-between">
+                                  <span className="font-semibold text-[#1f1f1f]">Non-refundable rate</span>
+                                  {quote?.nonRefundableDiscount?.amount ? (
+                                    <span className="font-semibold text-emerald-700">Save {formatPrice(quote.nonRefundableDiscount.amount, currencyCode)}</span>
+                                  ) : null}
+                                </div>
+                                <span className="text-[#727272]">No refund if cancelled. Lower price in exchange for an immutable reservation.</span>
+                              </div>
                             </label>
                           </fieldset>
                         )}
@@ -2068,8 +2130,8 @@ export function PublicListingDetailClient({
 
                             {quote.appliedDiscount && (
                               <div className="flex items-center justify-between text-emerald-700 font-medium">
-                                <span>{quote.appliedDiscount.name}</span>
-                                <span>−{formatPrice(quote.appliedDiscount.amount, currencyCode)}</span>
+                                <span>{quote.selectedDiscount?.label ? `${quote.selectedDiscount.label} (${quote.selectedDiscount.percentage}%)` : quote.appliedDiscount.name}</span>
+                                <span>−{formatPrice(quote.selectedDiscount?.amount ?? quote.appliedDiscount.amount, currencyCode)}</span>
                               </div>
                             )}
 
@@ -2126,7 +2188,17 @@ export function PublicListingDetailClient({
                         <button
                           type="button"
                           disabled={isBookingSubmitting}
-                          onClick={handleReserve}
+                          onClick={() => {
+                            if (!checkIn || !checkOut) {
+                              const calendarEl = calendarSectionRef.current || document.getElementById("availability-calendar-section");
+                              if (calendarEl) {
+                                calendarEl.scrollIntoView({ behavior: "smooth", block: "center" });
+                              }
+                              setQuoteError("Please choose check-in and check-out dates to continue.");
+                              return;
+                            }
+                            handleReserve();
+                          }}
                           className={`w-full rounded-full py-3.5 text-lg font-medium transition-all shadow-xs ${hasValidQuote && !isBookingSubmitting
                             ? "border border-[#1f1f1f] bg-[#FCDF9C] text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] cursor-pointer"
                             : "border border-zinc-200 bg-zinc-100 text-[#727272] hover:border-zinc-300 hover:text-[#727272] cursor-pointer"
@@ -2137,9 +2209,11 @@ export function PublicListingDetailClient({
                             ? "Confirming..."
                             : isQuoteLoading
                               ? "Checking availability..."
-                              : isInstantBook
-                                ? "Reserve"
-                                : "Request to book"}
+                              : (!checkIn || !checkOut)
+                                ? "Check availability"
+                                : isInstantBook
+                                  ? "Reserve"
+                                  : "Request to book"}
                         </button>
 
                         <p className="text-xs text-[#727272] text-center font-normal">

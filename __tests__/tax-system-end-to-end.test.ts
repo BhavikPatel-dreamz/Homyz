@@ -204,7 +204,7 @@ describe("HOMYZ authoritative host tax flow", () => {
     const checkout = fs.readFileSync(path.resolve("app/book/[id]/booking-checkout-client.tsx"), "utf8");
     const booking = fs.readFileSync(path.resolve("services/booking.service.ts"), "utf8");
     const form = fs.readFileSync(path.resolve("app/(protected)/host/listings/[id]/components/TaxesManager.tsx"), "utf8");
-    assert.match(detail, /\/api\/v1\/listings\/\$\{listing\.id\}\/quote/);
+    assert.match(detail, /fetchAuthoritativeQuote/); // URL encapsulated inside quote-cache helper
     assert.match(checkout, /\/api\/v1\/listings\/\$\{listing\.id\}\/quote/);
     assert.match(booking, /priceBreakdown: \{/);
     assert.match(booking, /reservationTax\.create/);

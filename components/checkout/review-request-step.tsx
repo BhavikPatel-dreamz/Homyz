@@ -138,7 +138,13 @@ export function ReviewRequestStep({
         </dl>
       </section>
 
-      <div className="pt-5">
+      <div className="pt-5 space-y-4">
+        {data.isNonRefundable && (
+          <div className="rounded-2xl border border-amber-300 bg-amber-50 p-4 text-sm leading-6 text-amber-950" role="note" aria-label="Non-refundable policy acknowledgment">
+            <p className="font-semibold">Non-refundable rate</p>
+            <p>You have selected the non-refundable rate. If you cancel this reservation, you will not receive a refund.</p>
+          </div>
+        )}
         <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4 text-sm leading-6 text-blue-950">
           {isInstantBook ? (
             <>

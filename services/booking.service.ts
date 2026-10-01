@@ -19,7 +19,15 @@ import type { Prisma } from "@/generated/prisma/client";
 import type { CalculatedTaxItem, HostPayoutBreakdown, ListingTaxDTO } from "@/lib/tax/types";
 import { getHostServiceFeePercentage } from "@/services/app-settings.service";
 import { getNonRefundableDiscountPercentage } from "@/services/app-settings.service";
-import { calculateBookingPrice, calculateSpecialOffer, isWeekendNight, type AppliedDiscount } from "@/services/pricing.service";
+import {
+  calculateBookingPrice,
+  calculateSpecialOffer,
+  isWeekendNight,
+  type AppliedDiscount,
+  type SelectedDiscountQuote,
+  type WinningDiscountResult,
+  type DiscountEligibilityResult,
+} from "@/services/pricing.service";
 import { getCurrencyForCountry } from "@/lib/currency";
 import {
   computeBookingStatus,
@@ -30,6 +38,7 @@ import {
   type BookingStatusTimelineEvent,
 } from "@/lib/booking/booking-status";
 import {
+  allocateNightlyTotal,
   getAuthoritativePriceBreakdown,
   type AuthoritativePriceBreakdown,
 } from "@/lib/booking/booking-price";
@@ -85,6 +94,13 @@ export type BookingQuote = {
   cancellationPolicyType: "SHORT_TERM" | "LONG_TERM";
   nonRefundableAvailable: boolean;
   isNonRefundable: boolean;
+  rateType?: "STANDARD" | "NON_REFUNDABLE" | string;
+  nonRefundable?: {
+    enabled: boolean;
+    selected: boolean;
+    percentage?: number | null;
+    amount: number;
+  };
   nonRefundableDiscount: AppliedDiscount | null;
   isSpecialOffer?: boolean;
   specialOfferId?: string | null;
@@ -95,6 +111,24 @@ export type BookingQuote = {
     price: number;
     rateSource?: "CUSTOM" | "WEEKEND" | "WEEKDAY" | "SPECIAL_OFFER";
   }>;
+  nightlyBreakdown?: Array<{
+    date: string;
+    rate: number;
+    rateType?: "CUSTOM" | "WEEKEND" | "WEEKDAY" | "SPECIAL_OFFER";
+  }>;
+  accommodationSubtotal?: number;
+  discountedAccommodationSubtotal?: number;
+  feeBreakdown?: Array<{ id: string; name: string; amount: number }>;
+  taxBreakdown?: CalculatedTaxItem[];
+  feeTotal?: number;
+  total?: number;
+  selectedDiscount?: SelectedDiscountQuote | null;
+  winningDiscount?: WinningDiscountResult;
+  discountEligibility?: DiscountEligibilityResult;
+  originalDisplayPrice?: number;
+  discountedDisplayPrice?: number;
+  discountType?: string | null;
+  discountLabel?: string | null;
 };
 
 type QuoteListing = Prisma.ListingGetPayload<{ include: { taxes: true } }>;
@@ -393,6 +427,19 @@ export async function getBookingQuote(opts: {
       });
 
   const subtotal = pricing.accommodationSubtotal + pricing.extraGuestFee + pricing.petFee;
+  const fallbackNightlyTotal = validatedOffer?.subtotalPrice ?? pricing.staySubtotal;
+  const fallbackNightlyRates = allocateNightlyTotal(fallbackNightlyTotal, nights);
+  const nightlyBreakdown = pricing.nightlyBreakdown.length > 0
+    ? pricing.nightlyBreakdown
+    : Array.from({ length: nights }, (_, index) => {
+        const date = new Date(cIn);
+        date.setUTCDate(date.getUTCDate() + index);
+        return {
+          date: bookingDateKey(date),
+          rate: fallbackNightlyRates[index],
+          rateType: "SPECIAL_OFFER" as const,
+        };
+      });
 
   return {
     listingId: listing.id,
@@ -410,6 +457,19 @@ export async function getBookingQuote(opts: {
     discountAmount: pricing.discountAmount,
     discountPercentage: pricing.discountPercentage,
     appliedDiscount: pricing.appliedDiscount,
+    selectedDiscount: pricing.selectedDiscount,
+    accommodationSubtotal: pricing.accommodationSubtotal,
+    discountedAccommodationSubtotal: pricing.discountedAccommodationSubtotal,
+    feeBreakdown: pricing.feeBreakdown,
+    feeTotal: pricing.feeTotal,
+    taxBreakdown: pricing.taxBreakdown,
+    total: pricing.total,
+    originalDisplayPrice: pricing.originalDisplayPrice,
+    discountedDisplayPrice: pricing.discountedDisplayPrice,
+    discountType: pricing.discountType,
+    discountLabel: pricing.discountLabel,
+    winningDiscount: pricing.winningDiscount,
+    discountEligibility: pricing.discountEligibility,
     extraGuestFee: pricing.extraGuestFee,
     petFee: pricing.petFee,
     hostServiceFee: pricing.hostServiceFee,
@@ -428,8 +488,16 @@ export async function getBookingQuote(opts: {
     cancellationPolicy,
     cancellationPolicyType,
     nonRefundableAvailable,
+    rateType: opts.nonRefundable ? ("NON_REFUNDABLE" as const) : ("STANDARD" as const),
+    nonRefundable: pricing.nonRefundable ?? {
+      enabled: nonRefundableAvailable,
+      selected: Boolean(opts.nonRefundable),
+      percentage: opts.nonRefundable && configuredNonRefundablePercentage ? configuredNonRefundablePercentage : 0,
+      amount: pricing.nonRefundableDiscount?.amount ?? 0,
+    },
     isNonRefundable: Boolean(opts.nonRefundable),
     nonRefundableDiscount: pricing.nonRefundableDiscount,
+
     isSpecialOffer: Boolean(validatedOffer),
     specialOfferId: validatedOffer ? validatedOffer.id : null,
     specialOfferAmount: validatedOffer ? validatedOffer.subtotalPrice : null,
@@ -438,17 +506,13 @@ export async function getBookingQuote(opts: {
       isWeekend: b.isWeekend,
       price: b.price,
       rateSource: b.rateSource,
-    })) : Array.from({ length: nights }, (_, i) => {
-      const d = new Date(cIn);
-      d.setUTCDate(d.getUTCDate() + i);
-      const isWeekend = isWeekendNight(d);
-      return {
-        date: bookingDateKey(d),
-        isWeekend,
-        price: Math.round((validatedOffer?.subtotalPrice ?? pricing.staySubtotal) / nights),
+    })) : nightlyBreakdown.map((night) => ({
+        date: night.date,
+        isWeekend: isWeekendNight(night.date),
+        price: night.rate,
         rateSource: "SPECIAL_OFFER" as const,
-      };
-    }),
+      })),
+    nightlyBreakdown,
   };
 }
 
@@ -606,6 +670,15 @@ async function create(
       currency: quote.currency,
       priceBreakdown: {
         ...quote,
+        pricingSnapshotVersion: "v1",
+        pricingSnapshotRevision: 1,
+        automaticDiscount: quote.selectedDiscount ? {
+          type: quote.selectedDiscount.type,
+          label: quote.selectedDiscount.label,
+          percentage: quote.selectedDiscount.percentage,
+          amount: quote.selectedDiscount.amount,
+        } : null,
+        cancellationPolicySnapshot: quote.cancellationPolicy,
         paymentPlan: input.paymentPlan ?? "FULL",
         paymentMode: "DEFERRED",
         paymentStatus: "PAYMENT_PENDING",
@@ -1114,7 +1187,7 @@ async function acceptBookingRequest(
         acceptedBy: "HOST",
         hostId: actor.id,
       },
-    } as Prisma.InputJsonValue;
+    } as unknown as Prisma.InputJsonValue;
 
     const updated = await tx.booking.update({
       where: { id },
@@ -2200,10 +2273,16 @@ async function changeBookingReservation(
 
   const checkIn = parseBookingDate(input.startDate);
   const checkOut = parseBookingDate(input.endDate);
-  const requestedGuests = input.guests ?? 1;
+  const requestedGuests = preview.quote.guests;
 
   const updatedBooking = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${preview.quote!.listingId}))`;
+
+    const existingBooking = await tx.booking.findUnique({
+      where: { id },
+      select: { priceBreakdown: true },
+    });
+    if (!existingBooking) throw AppError.notFound("Booking not found");
 
     const conflict = await tx.booking.findFirst({
       where: {
@@ -2216,6 +2295,41 @@ async function changeBookingReservation(
     });
     if (conflict) throw AppError.conflict("The selected dates are no longer available.");
 
+    const previousBreakdown = existingBooking.priceBreakdown
+      && typeof existingBooking.priceBreakdown === "object"
+      && !Array.isArray(existingBooking.priceBreakdown)
+      ? existingBooking.priceBreakdown as Record<string, unknown>
+      : {};
+    const previousHistory = Array.isArray(previousBreakdown.pricingSnapshotHistory)
+      ? previousBreakdown.pricingSnapshotHistory
+      : [];
+    const previousRevision = typeof previousBreakdown.pricingSnapshotRevision === "number"
+      ? previousBreakdown.pricingSnapshotRevision
+      : 1;
+    const previousSnapshot = { ...previousBreakdown };
+    delete previousSnapshot.pricingSnapshotHistory;
+    const updatedPriceBreakdown = {
+      ...previousBreakdown,
+      ...preview.quote!,
+      pricingSnapshotVersion: "v1",
+      pricingSnapshotRevision: previousRevision + 1,
+      automaticDiscount: preview.quote!.selectedDiscount ? {
+        type: preview.quote!.selectedDiscount.type,
+        label: preview.quote!.selectedDiscount.label,
+        percentage: preview.quote!.selectedDiscount.percentage,
+        amount: preview.quote!.selectedDiscount.amount,
+      } : null,
+      cancellationPolicySnapshot: preview.quote!.cancellationPolicy,
+      pricingSnapshotHistory: [
+        ...previousHistory,
+        {
+          revision: previousRevision,
+          supersededAt: new Date().toISOString(),
+          snapshot: previousSnapshot,
+        },
+      ],
+    } as unknown as Prisma.InputJsonValue;
+
     return tx.booking.update({
       where: { id },
       data: {
@@ -2225,7 +2339,10 @@ async function changeBookingReservation(
         totalPrice: preview.quote!.guestTotal,
         nightlyPrice: preview.quote!.baseNightlyPrice,
         cleaningFee: 0,
-        priceBreakdown: preview.quote! as unknown as Prisma.InputJsonValue,
+        currency: preview.quote!.currency,
+        cancellationPolicy: preview.quote!.cancellationPolicy,
+        isNonRefundable: preview.quote!.isNonRefundable,
+        priceBreakdown: updatedPriceBreakdown,
       },
       include: { listing: true },
     });

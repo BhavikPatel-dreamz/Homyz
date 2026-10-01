@@ -10,6 +10,8 @@ import { useCurrency } from "@/lib/currency-context";
 import type { PublicListingDTO } from "@/services/mappers";
 import { trackListingEvent } from "@/lib/analytics/listing-analytics";
 import { buildListingDetailUrl, getLastSearch } from "@/lib/storage/client-history";
+import { toPropertyCardPricingViewModel } from "@/lib/booking/property-card-pricing";
+
 
 // ─── Discount Helpers ──────────────────────────────────────────────────────────
 type DiscountEntry =
@@ -211,26 +213,28 @@ export function ListingCard({
     setCurrentPhotoIndex((prev) => (prev < validPhotos.length - 1 ? prev + 1 : prev));
   };
 
-  // ── Pricing & Currency ──────────────────────────────────────────────────────
+  // ── Pricing & Currency (Phase 6 Central Card Pricing Adapter) ────────────────
   const currency = getCurrencyForCountry(listing.country);
   const basePrice = typeof listing.price === "number" && isFinite(listing.price) ? listing.price : 0;
   // Compatibility static contract reference: listing.price / 100 SAR {formattedPrice}
   const _priceInWhole = Math.round(listing.price / 100);
 
-  // Discount parsing
-  const rawDiscounts = (listing as { discounts?: unknown }).discounts as DiscountsJson | null | undefined;
-  const weeklyPct = getDiscountPct(rawDiscounts?.weekly);
-  const monthlyPct = getDiscountPct(rawDiscounts?.monthly);
-  // Priority: weekly > monthly
-  const activePct = weeklyPct ?? monthlyPct ?? null;
-  const discountedPrice = activePct != null ? basePrice * (1 - activePct / 100) : null;
+  const cardPricing = toPropertyCardPricingViewModel(listing, {
+    checkIn,
+    checkOut,
+    guests,
+    currency,
+  });
 
-  const formattedBasePrice = formatPrice(basePrice, currency);
+  const activePct = cardPricing.hasDiscount ? cardPricing.discountPercentage : null;
+  const discountedPrice = cardPricing.hasDiscount ? cardPricing.discountedDisplayPrice : null;
+
+  const formattedBasePrice = formatPrice(cardPricing.baseDisplayPrice, currency);
   const formattedDiscountedPrice =
     discountedPrice != null ? formatPrice(discountedPrice, currency) : null;
 
-  const discountLabel =
-    weeklyPct != null ? "Weekly discount" : monthlyPct != null ? "Monthly discount" : null;
+  const discountLabel = cardPricing.hasDiscount ? cardPricing.discountLabel : null;
+
 
   // ── Rating & Reviews ────────────────────────────────────────────────────────
   const numericRating =
@@ -308,6 +312,7 @@ export function ListingCard({
   })();
 
   const totalPrice = (discountedPrice ?? basePrice) * nights;
+  const baseTotalPrice = basePrice * nights;
 
   const hasFreeCancellation =
     (listing as any).cancellationPolicy !== "STRICT" &&
@@ -648,14 +653,36 @@ export function ListingCard({
           </p>
 
           {/* Row 4: Price & Nights */}
-          <div className="flex items-center gap-1.5 text-xs leading-4 text-[#1F1F1F] pt-0.5">
-            <span className="font-semibold underline">
-              {formatPrice(totalPrice, currency)}
-            </span>
-            <span className="text-[#727272]">
-              for {nights} {nights === 1 ? "night" : "nights"}
-            </span>
+          <div className="flex items-center gap-1.5 text-xs leading-4 text-[#1F1F1F] pt-0.5 flex-wrap">
+            {discountedPrice != null ? (
+              <>
+                <span className="line-through text-[#727272] text-[11px] font-normal">
+                  {formatPrice(baseTotalPrice, currency)}
+                </span>
+                <span className="font-semibold underline">
+                  {formatPrice(totalPrice, currency)}
+                </span>
+                <span className="text-[#727272]">
+                  for {nights} {nights === 1 ? "night" : "nights"}
+                </span>
+                {discountLabel && (
+                  <span className="inline-flex items-center text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/70 px-1.5 py-0.5 rounded-full">
+                    {discountLabel}
+                  </span>
+                )}
+              </>
+            ) : (
+              <>
+                <span className="font-semibold underline">
+                  {formatPrice(totalPrice, currency)}
+                </span>
+                <span className="text-[#727272]">
+                  for {nights} {nights === 1 ? "night" : "nights"}
+                </span>
+              </>
+            )}
           </div>
+
 
           {/* Row 5: Free cancellation badge */}
           {hasFreeCancellation && (

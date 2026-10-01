@@ -143,13 +143,31 @@ export const BookingSummary = memo(function BookingSummary({ state, actions, isB
           <SummaryImage key={property.imageUrl || "no-image"} src={property.imageUrl} title={property.title} />
         </section>
 
-        <section className="mt-5 border-b border-[#727272] pb-5" aria-labelledby="booking-summary-cancellation">
-          <h3 id="booking-summary-cancellation" className="text-base font-semibold text-[#1f1f1f]">Free cancellation</h3>
-          <p className="mt-1 text-sm text-[#727272]">
-            Cancel before {cancellationCutoff} for a full refund.{" "}
-            <button type="button" onClick={actions.onOpenPolicy} className="font-normal text-[#1f1f1f] underline hover:text-[#727272]">Full policy</button>
-          </p>
-        </section>
+        {(() => {
+          const isNonRefundable = Boolean(
+            pricing.quote?.isNonRefundable || pricing.quote?.rateType === "NON_REFUNDABLE"
+          );
+          return (
+            <section className="mt-5 border-b border-[#727272] pb-5" aria-labelledby="booking-summary-cancellation">
+              <h3 id="booking-summary-cancellation" className="text-base font-semibold text-[#1f1f1f]">
+                {isNonRefundable ? "Non-refundable rate" : "Free cancellation"}
+              </h3>
+              <p className="mt-1 text-sm text-[#727272]">
+                {isNonRefundable ? (
+                  <>
+                    This booking uses the non-refundable rate. If you cancel, you will not receive a refund.{" "}
+                    <button type="button" onClick={actions.onOpenPolicy} className="font-normal text-[#1f1f1f] underline hover:text-[#727272]">Full policy</button>
+                  </>
+                ) : (
+                  <>
+                    Cancel before {cancellationCutoff} for a full refund.{" "}
+                    <button type="button" onClick={actions.onOpenPolicy} className="font-normal text-[#1f1f1f] underline hover:text-[#727272]">Full policy</button>
+                  </>
+                )}
+              </p>
+            </section>
+          );
+        })()}
 
         <section className="flex items-center justify-between gap-4 border-b border-[#727272] py-4 sm:py-6" aria-labelledby="booking-summary-dates">
           <div>

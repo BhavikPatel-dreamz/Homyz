@@ -4,6 +4,7 @@ import { HostHeader } from "@/components/host/host-header";
 import { Footer } from "@/components/dashboard/footer";
 import { HostTodayWorkspace } from "@/components/host/host-today-workspace";
 import { getHostWorkspace } from "@/services/host-workspace.service";
+import { bookingDateKey } from "@/lib/booking/booking-date";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -11,10 +12,17 @@ export const revalidate = 0;
 export default async function HostTodayPage() {
   const actor = await requirePageRole([Role.HOST, Role.ADMIN]);
   const data = await getHostWorkspace(actor);
+  const renderedAt = new Date();
+  const today = bookingDateKey(renderedAt);
+  const initialCurrentTimeMinutes = renderedAt.getHours() * 60 + renderedAt.getMinutes();
   return (
     <div className="flex min-h-screen flex-col bg-white pb-[calc(110px+env(safe-area-inset-bottom))] font-sans text-[#1F1F1F] selection:bg-[#FEE08B] sm:pb-0">
       <HostHeader />
-      <HostTodayWorkspace {...data} />
+      <HostTodayWorkspace
+        {...data}
+        today={today}
+        initialCurrentTimeMinutes={initialCurrentTimeMinutes}
+      />
       <Footer />
     </div>
   );

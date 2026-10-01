@@ -1781,23 +1781,44 @@ export function BookingCheckoutClient({
             </div>
 
             <div className="py-5 space-y-4 text-sm text-zinc-700 leading-relaxed">
-              <div className="p-4 rounded-2xl bg-zinc-50 border border-zinc-100">
-                <h4 className="font-bold text-[#1F1F1F] mb-1">
-                  Full refund before {formatCancellationCutoff(checkIn)}
-                </h4>
-                <p className="text-xs text-[#727272]">
-                  Cancel up to 72 hours before check-in for a full refund minus processing fees.
-                </p>
-              </div>
+              {isNonRefundable ? (
+                <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200">
+                  <h4 className="font-bold text-[#1F1F1F] mb-1">
+                    Non-refundable rate
+                  </h4>
+                  <p className="text-xs text-[#727272]">
+                    This reservation is non-refundable. If you cancel or change your reservation, you will not receive a refund.
+                  </p>
+                </div>
+              ) : (
+                <div className="p-4 rounded-2xl bg-zinc-50 border border-zinc-100">
+                  <h4 className="font-bold text-[#1F1F1F] mb-1">
+                    Full refund before {formatCancellationCutoff(checkIn)}
+                  </h4>
+                  <p className="text-xs text-[#727272]">
+                    Cancel up to 72 hours before check-in for a full refund minus processing fees.
+                  </p>
+                </div>
+              )}
 
               <div>
                 <h5 className="font-bold text-[#1F1F1F] text-xs uppercase tracking-wider mb-2">
-                  Standard Terms
+                  {isNonRefundable ? "Non-refundable Terms" : "Standard Terms"}
                 </h5>
                 <ul className="list-disc list-inside space-y-1.5 text-xs text-zinc-600">
-                  <li>If you cancel less than 72 hours before check-in, the first night is non-refundable.</li>
-                  <li>Cleanings fees are always refunded if the reservation is cancelled before check-in.</li>
-                  <li>In the event of extenuating circumstances, special refund considerations may apply.</li>
+                  {isNonRefundable ? (
+                    <>
+                      <li>Non-refundable bookings receive a lower price in exchange for no refund if cancelled.</li>
+                      <li>Cleaning fees may be refunded if cancelled prior to check-in, subject to host policy.</li>
+                      <li>In the event of declared extenuating circumstances, special refund considerations may apply.</li>
+                    </>
+                  ) : (
+                    <>
+                      <li>If you cancel less than 72 hours before check-in, the first night is non-refundable.</li>
+                      <li>Cleanings fees are always refunded if the reservation is cancelled before check-in.</li>
+                      <li>In the event of extenuating circumstances, special refund considerations may apply.</li>
+                    </>
+                  )}
                 </ul>
               </div>
             </div>

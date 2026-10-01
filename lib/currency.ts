@@ -160,3 +160,16 @@ export function formatConvertedListingPrice(
   const convertedMinorUnits = (amount / 100) * sourceRate / targetRate * 100;
   return formatListingPrice(convertedMinorUnits, target, fractionDigits);
 }
+
+/**
+ * Authoritative currency display formatter.
+ * Formats a minor-unit amount (cents/halalas) into its currency representation.
+ * Keep calculations strictly numeric; use formatMoney only for display.
+ */
+export function formatMoney(
+  amountMinorUnits: number,
+  currencyCode: string = LISTING_CURRENCY,
+  fractionDigits = 0,
+): string {
+  return formatListingPrice(amountMinorUnits, currencyCode, fractionDigits);
+}

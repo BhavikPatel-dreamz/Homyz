@@ -296,14 +296,22 @@ export function NewListingGetStarted({
     photos: overrides?.photos ?? photos,
     highlights: selectedHighlights,
     discounts: {
-      new_listing: selectedDiscounts.includes("new_listing"),
-      // Keep the documented 15% alongside the enabled state so this value is
-      // restored exactly when a draft is resumed or edited.
-      last_minute: selectedDiscounts.includes("last_minute")
-        ? { enabled: true, percentage: 15 }
-        : false,
-      weekly: selectedDiscounts.includes("weekly"),
-      monthly: selectedDiscounts.includes("monthly"),
+      new_listing: {
+        enabled: selectedDiscounts.includes("new_listing"),
+        percentage: 20,
+      },
+      last_minute: {
+        enabled: selectedDiscounts.includes("last_minute"),
+        percentage: 15,
+      },
+      weekly: {
+        enabled: selectedDiscounts.includes("weekly"),
+        percentage: 10,
+      },
+      monthly: {
+        enabled: selectedDiscounts.includes("monthly"),
+        percentage: 25,
+      },
     },
     safetyDisclosures: selectedSafety,
     published: false,
@@ -555,7 +563,11 @@ export function NewListingGetStarted({
           discountValues && typeof discountValues === "object" && !Array.isArray(discountValues)
             ? Object.entries(discountValues)
                 .filter(([, value]) => isDiscountEnabled(value))
-                .map(([discount]) => discount)
+                .map(([discount]) => {
+                  if (discount === "newListing") return "new_listing";
+                  if (discount === "lastMinute") return "last_minute";
+                  return discount;
+                })
             : ["new_listing"];
 
         setDraftId(listing.id);

@@ -38,12 +38,20 @@ interface PricingAndBookingViewsProps {
   setWeekendPremium?: (val: number) => void;
   weeklyDiscount: number;
   setWeeklyDiscount: (val: number) => void;
+  weeklyEnabled?: boolean;
+  setWeeklyEnabled?: (val: boolean) => void;
   monthlyDiscount: number;
   setMonthlyDiscount: (val: number) => void;
+  monthlyEnabled?: boolean;
+  setMonthlyEnabled?: (val: boolean) => void;
   lastMinuteDiscount: number;
   setLastMinuteDiscount: (val: number) => void;
   lastMinuteEnabled: boolean;
   setLastMinuteEnabled: (val: boolean) => void;
+  newListingDiscount?: number;
+  setNewListingDiscount?: (val: number) => void;
+  newListingEnabled?: boolean;
+  setNewListingEnabled?: (val: boolean) => void;
   minNights: number;
   setMinNights: (val: number) => void;
   maxNights: number;
@@ -103,12 +111,20 @@ export function PricingAndBookingViews({
   setWeekendPremium,
   weeklyDiscount,
   setWeeklyDiscount,
+  weeklyEnabled = true,
+  setWeeklyEnabled,
   monthlyDiscount,
   setMonthlyDiscount,
+  monthlyEnabled = true,
+  setMonthlyEnabled,
   lastMinuteDiscount,
   setLastMinuteDiscount,
   lastMinuteEnabled,
   setLastMinuteEnabled,
+  newListingDiscount = 20,
+  setNewListingDiscount,
+  newListingEnabled = false,
+  setNewListingEnabled,
   minNights,
   setMinNights,
   maxNights,
@@ -272,20 +288,183 @@ export function PricingAndBookingViews({
                   </div>
 
                   {/* 3. Discounts section */}
-                  <div className="space-y-2 pt-1">
-                    <label className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">{t("host_discounts")}</label>
+                  <div className="space-y-4 pt-1">
+                    <div>
+                      <label className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">{t("host_discounts")}</label>
+                      <p className="mt-1 text-xs text-[#727272] dark:text-zinc-400 font-normal leading-relaxed">
+                        Only one discount can apply to a reservation. If multiple discounts are eligible, Homyz will apply the applicable discount according to pricing rules.
+                      </p>
+                    </div>
 
-                    {/* Weekly discount card */}
-                    <div className="rounded-xl border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4 space-y-2">
-                      <span className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 block">
-                        {t("host_discount_weekly")} <span className="text-xs font-normal text-[#727272] dark:text-[#727272]">{t("host_discount_for_7_plus_nights")}</span>
-                      </span>
-                      <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div className="flex items-center gap-1 rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-1.5 focus-within:border-[#1F1F1F] dark:focus-within:border-zinc-100 focus-within:ring-1 focus-within:ring-[#1F1F1F] dark:focus-within:ring-zinc-100 transition-all">
+                    {/* New Listing Promotion card */}
+                    <div className="rounded-xl border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4 space-y-3">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="space-y-0.5">
+                          <span className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 block">
+                            {t("host_discount_new_listing_title")}
+                          </span>
+                          <span className="text-xs text-[#727272] dark:text-[#727272] font-normal leading-relaxed block">
+                            {t("host_discount_new_listing_desc")}
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          role="switch"
+                          aria-checked={newListingEnabled}
+                          aria-label="Toggle new listing promotion"
+                          onClick={() => {
+                            const next = !newListingEnabled;
+                            setNewListingEnabled?.(next);
+                            if (next && (!newListingDiscount || newListingDiscount <= 0)) {
+                              setNewListingDiscount?.(20);
+                            }
+                          }}
+                          className={`relative h-6 w-11 shrink-0 rounded-full transition-colors cursor-pointer ${newListingEnabled ? "bg-[#DF4557]" : "bg-[#DDDDDE]"}`}
+                        >
+                          <span className={`absolute left-0.5 top-0.5 size-5 rounded-full bg-white shadow-xs transition-transform ${newListingEnabled ? "translate-x-5" : "translate-x-0"}`} />
+                        </button>
+                      </div>
+                      <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+                        <div className={`flex items-center gap-1 rounded-lg border px-3 py-1.5 transition-all ${
+                          newListingEnabled
+                            ? "border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-900 focus-within:border-[#1F1F1F] dark:focus-within:border-zinc-100 focus-within:ring-1 focus-within:ring-[#1F1F1F] dark:focus-within:ring-zinc-100"
+                            : "border-zinc-200 dark:border-zinc-700/60 bg-zinc-50 dark:bg-zinc-800/60 opacity-60 cursor-not-allowed"
+                        }`}>
                           <input
                             type="number"
-                            min={0}
+                            min={1}
                             max={100}
+                            disabled={!newListingEnabled}
+                            value={newListingDiscount || ""}
+                            onChange={(e) => {
+                              const raw = e.target.value;
+                              if (raw === "") {
+                                setNewListingDiscount?.(0);
+                                return;
+                              }
+                              const num = Number(raw);
+                              setNewListingDiscount?.(isNaN(num) ? 0 : Math.min(100, Math.max(0, num)));
+                            }}
+                            onBlur={() => {
+                              if (newListingEnabled && (!newListingDiscount || newListingDiscount <= 0)) {
+                                setNewListingDiscount?.(20);
+                              }
+                            }}
+                            placeholder="20"
+                            className="w-14 text-center text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none bg-transparent placeholder:text-[#727272] dark:placeholder:text-[#727272] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:cursor-not-allowed"
+                          />
+                          <span className="text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100">%</span>
+                        </div>
+                        <span className="text-xs text-[#727272] dark:text-[#727272] font-normal">
+                          Guest pays {currency} {Math.max(0, Math.round((editPrice || 0) * (1 - (newListingDiscount || 0) / 100)))} / night
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Last-minute discount card */}
+                    <div className="rounded-xl border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4 space-y-3">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="space-y-0.5">
+                          <span className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 block">
+                            {t("host_discount_last_minute_title")}
+                          </span>
+                          <span className="text-xs text-[#727272] dark:text-[#727272] font-normal leading-relaxed block">
+                            {t("host_discount_last_minute_desc")}
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          role="switch"
+                          aria-checked={lastMinuteEnabled}
+                          aria-label="Toggle last-minute discount"
+                          onClick={() => {
+                            const next = !lastMinuteEnabled;
+                            setLastMinuteEnabled(next);
+                            if (next && (!lastMinuteDiscount || lastMinuteDiscount <= 0)) {
+                              setLastMinuteDiscount(15);
+                            }
+                          }}
+                          className={`relative h-6 w-11 shrink-0 rounded-full transition-colors cursor-pointer ${lastMinuteEnabled ? "bg-[#DF4557]" : "bg-[#DDDDDE]"}`}
+                        >
+                          <span className={`absolute left-0.5 top-0.5 size-5 rounded-full bg-white shadow-xs transition-transform ${lastMinuteEnabled ? "translate-x-5" : "translate-x-0"}`} />
+                        </button>
+                      </div>
+                      <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+                        <div className={`flex items-center gap-1 rounded-lg border px-3 py-1.5 transition-all ${
+                          lastMinuteEnabled
+                            ? "border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-900 focus-within:border-[#1F1F1F] dark:focus-within:border-zinc-100 focus-within:ring-1 focus-within:ring-[#1F1F1F] dark:focus-within:ring-zinc-100"
+                            : "border-zinc-200 dark:border-zinc-700/60 bg-zinc-50 dark:bg-zinc-800/60 opacity-60 cursor-not-allowed"
+                        }`}>
+                          <input
+                            type="number"
+                            min={1}
+                            max={100}
+                            disabled={!lastMinuteEnabled}
+                            value={lastMinuteDiscount || ""}
+                            onChange={(e) => {
+                              const raw = e.target.value;
+                              if (raw === "") {
+                                setLastMinuteDiscount(0);
+                                return;
+                              }
+                              const num = Number(raw);
+                              setLastMinuteDiscount(isNaN(num) ? 0 : Math.min(100, Math.max(0, num)));
+                            }}
+                            onBlur={() => {
+                              if (lastMinuteEnabled && (!lastMinuteDiscount || lastMinuteDiscount <= 0)) {
+                                setLastMinuteDiscount(15);
+                              }
+                            }}
+                            placeholder="15"
+                            className="w-14 text-center text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none bg-transparent placeholder:text-[#727272] dark:placeholder:text-[#727272] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:cursor-not-allowed"
+                          />
+                          <span className="text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100">%</span>
+                        </div>
+                        <span className="text-xs text-[#727272] dark:text-[#727272] font-normal">
+                          Guest pays {currency} {Math.max(0, Math.round((editPrice || 0) * (1 - (lastMinuteDiscount || 0) / 100)))} / night
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Weekly discount card */}
+                    <div className="rounded-xl border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4 space-y-3">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="space-y-0.5">
+                          <span className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 block">
+                            {t("host_discount_weekly")} <span className="text-xs font-normal text-[#727272] dark:text-[#727272]">{t("host_discount_for_7_plus_nights")}</span>
+                          </span>
+                          <span className="text-xs text-[#727272] dark:text-[#727272] font-normal leading-relaxed block">
+                            {t("host_discount_weekly_desc")}
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          role="switch"
+                          aria-checked={weeklyEnabled}
+                          aria-label="Toggle weekly discount"
+                          onClick={() => {
+                            const next = !weeklyEnabled;
+                            setWeeklyEnabled?.(next);
+                            if (next && (!weeklyDiscount || weeklyDiscount <= 0)) {
+                              setWeeklyDiscount(10);
+                            }
+                          }}
+                          className={`relative h-6 w-11 shrink-0 rounded-full transition-colors cursor-pointer ${weeklyEnabled ? "bg-[#DF4557]" : "bg-[#DDDDDE]"}`}
+                        >
+                          <span className={`absolute left-0.5 top-0.5 size-5 rounded-full bg-white shadow-xs transition-transform ${weeklyEnabled ? "translate-x-5" : "translate-x-0"}`} />
+                        </button>
+                      </div>
+                      <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+                        <div className={`flex items-center gap-1 rounded-lg border px-3 py-1.5 transition-all ${
+                          weeklyEnabled
+                            ? "border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-900 focus-within:border-[#1F1F1F] dark:focus-within:border-zinc-100 focus-within:ring-1 focus-within:ring-[#1F1F1F] dark:focus-within:ring-zinc-100"
+                            : "border-zinc-200 dark:border-zinc-700/60 bg-zinc-50 dark:bg-zinc-800/60 opacity-60 cursor-not-allowed"
+                        }`}>
+                          <input
+                            type="number"
+                            min={1}
+                            max={100}
+                            disabled={!weeklyEnabled}
                             value={weeklyDiscount || ""}
                             onChange={(e) => {
                               const raw = e.target.value;
@@ -296,28 +475,61 @@ export function PricingAndBookingViews({
                               const num = Number(raw);
                               setWeeklyDiscount(isNaN(num) ? 0 : Math.min(100, Math.max(0, num)));
                             }}
-                            placeholder="5"
-                            className="w-14 text-center text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none bg-transparent placeholder:text-[#727272] dark:placeholder:text-[#727272] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            onBlur={() => {
+                              if (weeklyEnabled && (!weeklyDiscount || weeklyDiscount <= 0)) {
+                                setWeeklyDiscount(10);
+                              }
+                            }}
+                            placeholder="10"
+                            className="w-14 text-center text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none bg-transparent placeholder:text-[#727272] dark:placeholder:text-[#727272] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:cursor-not-allowed"
                           />
                           <span className="text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100">%</span>
                         </div>
                         <span className="text-xs text-[#727272] dark:text-[#727272] font-normal">
-                          {t("host_weekly_average_prefix")} {currency} {Math.round((editPrice || 0) * 7 * (1 - (weeklyDiscount || 0) / 100))}
+                          {t("host_weekly_average_prefix")} {currency} {Math.max(0, Math.round((editPrice || 0) * 7 * (1 - (weeklyDiscount || 0) / 100)))}
                         </span>
                       </div>
                     </div>
 
                     {/* Monthly discount card */}
-                    <div className="rounded-xl border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4 space-y-2">
-                      <span className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 block">
-                        {t("host_discount_monthly")} <span className="text-xs font-normal text-[#727272] dark:text-[#727272]">{t("host_discount_for_28_plus_nights")}</span>
-                      </span>
-                      <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div className="flex items-center gap-1 rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-1.5 focus-within:border-[#1F1F1F] dark:focus-within:border-zinc-100 focus-within:ring-1 focus-within:ring-[#1F1F1F] dark:focus-within:ring-zinc-100 transition-all">
+                    <div className="rounded-xl border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4 space-y-3">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="space-y-0.5">
+                          <span className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 block">
+                            {t("host_discount_monthly")} <span className="text-xs font-normal text-[#727272] dark:text-[#727272]">{t("host_discount_for_28_plus_nights")}</span>
+                          </span>
+                          <span className="text-xs text-[#727272] dark:text-[#727272] font-normal leading-relaxed block">
+                            {t("host_discount_monthly_desc")}
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          role="switch"
+                          aria-checked={monthlyEnabled}
+                          aria-label="Toggle monthly discount"
+                          onClick={() => {
+                            const next = !monthlyEnabled;
+                            setMonthlyEnabled?.(next);
+                            if (next && (!monthlyDiscount || monthlyDiscount <= 0)) {
+                              setMonthlyDiscount(25);
+                            }
+                          }}
+                          className={`relative h-6 w-11 shrink-0 rounded-full transition-colors cursor-pointer ${monthlyEnabled ? "bg-[#DF4557]" : "bg-[#DDDDDE]"}`}
+                        >
+                          <span className={`absolute left-0.5 top-0.5 size-5 rounded-full bg-white shadow-xs transition-transform ${monthlyEnabled ? "translate-x-5" : "translate-x-0"}`} />
+                        </button>
+                      </div>
+                      <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+                        <div className={`flex items-center gap-1 rounded-lg border px-3 py-1.5 transition-all ${
+                          monthlyEnabled
+                            ? "border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-900 focus-within:border-[#1F1F1F] dark:focus-within:border-zinc-100 focus-within:ring-1 focus-within:ring-[#1F1F1F] dark:focus-within:ring-zinc-100"
+                            : "border-zinc-200 dark:border-zinc-700/60 bg-zinc-50 dark:bg-zinc-800/60 opacity-60 cursor-not-allowed"
+                        }`}>
                           <input
                             type="number"
-                            min={0}
+                            min={1}
                             max={100}
+                            disabled={!monthlyEnabled}
                             value={monthlyDiscount || ""}
                             onChange={(e) => {
                               const raw = e.target.value;
@@ -328,51 +540,20 @@ export function PricingAndBookingViews({
                               const num = Number(raw);
                               setMonthlyDiscount(isNaN(num) ? 0 : Math.min(100, Math.max(0, num)));
                             }}
-                            placeholder="10"
-                            className="w-14 text-center text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none bg-transparent placeholder:text-[#727272] dark:placeholder:text-[#727272] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                            onBlur={() => {
+                              if (monthlyEnabled && (!monthlyDiscount || monthlyDiscount <= 0)) {
+                                setMonthlyDiscount(25);
+                              }
+                            }}
+                            placeholder="25"
+                            className="w-14 text-center text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none bg-transparent placeholder:text-[#727272] dark:placeholder:text-[#727272] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:cursor-not-allowed"
                           />
                           <span className="text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100">%</span>
                         </div>
                         <span className="text-xs text-[#727272] dark:text-[#727272] font-normal">
-                          {t("host_monthly_average_prefix")} {currency} {Math.round((editPrice || 0) * 30 * (1 - (monthlyDiscount || 0) / 100))}
+                          {t("host_monthly_average_prefix")} {currency} {Math.max(0, Math.round((editPrice || 0) * 30 * (1 - (monthlyDiscount || 0) / 100)))}
                         </span>
                       </div>
-                    </div>
-
-                    {/* Last-minute discount card */}
-                    <div className="hidden">
-                      <div className="space-y-1">
-                        <span className="text-[10px] font-semibold text-[#727272] tracking-wider uppercase block">
-                          LAST-MINUTE - WITHIN 2 DAYS
-                        </span>
-                        <div className="flex items-baseline gap-1">
-                          <input
-                            type="number"
-                            min={1}
-                            max={100}
-                            value={lastMinuteDiscount || ""}
-                            disabled={!lastMinuteEnabled}
-                            onChange={(e) => setLastMinuteDiscount(Number(e.target.value))}
-                            placeholder="15"
-                            className="w-12 text-lg font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none bg-transparent underline underline-offset-4 decoration-zinc-300 placeholder:text-zinc-300 disabled:cursor-not-allowed disabled:opacity-40"
-                          />
-                          <span className="text-lg font-semibold text-[#1F1F1F] dark:text-zinc-100">%</span>
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        role="switch"
-                        aria-checked={lastMinuteEnabled}
-                        aria-label="Toggle last-minute discount"
-                        onClick={() => {
-                          const nextEnabled = !lastMinuteEnabled;
-                          setLastMinuteEnabled(nextEnabled);
-                          if (nextEnabled && lastMinuteDiscount <= 0) setLastMinuteDiscount(15);
-                        }}
-                        className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${lastMinuteEnabled ? "bg-[#DF4557]" : "bg-[#DDDDDE]"}`}
-                      >
-                        <span className={`absolute left-0.5 top-0.5 size-5 rounded-full bg-white shadow-xs transition-transform ${lastMinuteEnabled ? "translate-x-5" : "translate-x-0"}`} />
-                      </button>
                     </div>
                   </div>
                 </>

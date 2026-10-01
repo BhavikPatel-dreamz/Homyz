@@ -4,6 +4,8 @@ import { useEffect, useRef, useCallback, useState } from "react";
 import type { PublicListingCardDTO } from "@/services/mappers";
 import { getCurrencyForCountry } from "@/lib/currency";
 import { useCurrency } from "@/lib/currency-context";
+import { toPropertyCardPricingViewModel } from "@/lib/booking/property-card-pricing";
+
 
 // ─── Minimal Leaflet Type Stubs (SSR-safe) ────────────────────────────────────
 interface LeafletMap {
@@ -94,7 +96,13 @@ export { CartoTileLayer } from "./carto-tile-layer";
 export type ListingForMap = Pick<
   PublicListingCardDTO,
   "id" | "title" | "price" | "city" | "country" | "latitude" | "longitude"
->;
+> & {
+  discounts?: unknown;
+  isNewListing?: boolean;
+  createdAt?: string | Date | null;
+  completedBookingsCount?: number | null;
+};
+
 
 export interface SearchMapProps {
   listings: ListingForMap[];
@@ -446,7 +454,18 @@ export function SearchMap({
         const currency = getCurrencyForCountry(listing.country);
         // Match listing cards: show the selected stay total, or one night when
         // a complete date range has not been selected.
-        const priceLabel = formatPrice(listing.price * selectedStayNights, currency);
+        const cardPricing = toPropertyCardPricingViewModel(listing, {
+          checkIn,
+          checkOut,
+          guests,
+          currency,
+        });
+        const activeNightlyPrice =
+          cardPricing.hasDiscount && cardPricing.discountedDisplayPrice != null
+            ? cardPricing.discountedDisplayPrice
+            : cardPricing.baseDisplayPrice;
+        const priceLabel = formatPrice(activeNightlyPrice * selectedStayNights, currency);
+
 
         const icon = L.divIcon({
           html: `<div style="${pillStyle(false)}">${priceLabel}</div>`,
@@ -499,7 +518,8 @@ export function SearchMap({
       isMounted = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mapInstance, listings, buildDetailUrl, onMarkerClick, formatPrice, selectedStayNights]);
+  }, [mapInstance, listings, buildDetailUrl, onMarkerClick, formatPrice, selectedStayNights, checkIn, checkOut]);
+
 
   // ── Effect 4: In-place highlight update — no marker rebuild ──────────────
   useEffect(() => {

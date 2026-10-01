@@ -69,7 +69,9 @@ export function CancelBookingModal({
       onCancelled(booking.id);
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An unexpected error occurred.");
+      setError(
+        err instanceof Error ? err.message : "An unexpected error occurred.",
+      );
     } finally {
       setSubmitting(false);
     }
@@ -90,19 +92,42 @@ export function CancelBookingModal({
           aria-label="Close dialog"
           className="absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-full text-[#727272] hover:bg-zinc-100 hover:text-zinc-800 disabled:opacity-50"
         >
-          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          <svg
+            className="h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
 
         <div className="flex items-center gap-3">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-red-50 text-red-600">
-            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            <svg
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
             </svg>
           </div>
           <div>
-            <h2 id="cancel-modal-title" className="text-xl font-semibold text-[#1F1F1F]">
+            <h2
+              id="cancel-modal-title"
+              className="text-xl font-semibold text-[#1F1F1F]"
+            >
               Cancel reservation?
             </h2>
             <p className="text-xs text-[#727272]">
@@ -112,25 +137,32 @@ export function CancelBookingModal({
         </div>
 
         <div className="mt-5 rounded-2xl border border-zinc-200 bg-zinc-50/80 p-4">
-          <h3 className="font-semibold text-sm text-[#1F1F1F] line-clamp-1">{booking.propertyName}</h3>
+          <h3 className="font-semibold text-sm text-[#1F1F1F] line-clamp-1">
+            {booking.propertyName}
+          </h3>
           <p className="text-xs text-zinc-600 mt-0.5">{booking.location}</p>
         </div>
 
         <div className="mt-4 space-y-3 text-sm text-zinc-600">
           {booking.isNonRefundable ? (
             <div className="rounded-xl border border-amber-200 bg-amber-50/80 p-3.5 text-xs text-amber-900">
-              <span className="font-semibold">Non-refundable booking:</span> This reservation was confirmed under non-refundable rate terms. No refund will be issued upon cancellation.
+              <span className="font-semibold">Non-refundable booking:</span>{" "}
+              This reservation was confirmed under non-refundable rate terms. No
+              refund will be issued upon cancellation.
             </div>
           ) : (
             <p className="text-xs text-zinc-600">
               Cancellation is governed by the host&apos;s standard policy (
-              <span className="font-semibold text-zinc-800">{booking.cancellationPolicy || "Flexible"}</span>
+              <span className="font-semibold text-zinc-800">
+                {booking.cancellationPolicy || "Flexible"}
+              </span>
               ). Please review your stay terms before confirming.
             </p>
           )}
 
           <p className="text-xs text-[#727272]">
-            Once cancelled, your reserved dates will be released and this action cannot be undone.
+            Once cancelled, your reserved dates will be released and this action
+            cannot be undone.
           </p>
         </div>
 
@@ -157,9 +189,24 @@ export function CancelBookingModal({
           >
             {submitting ? (
               <>
-                <svg className="h-4 w-4 animate-spin text-white" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                <svg
+                  className="h-4 w-4 animate-spin text-white"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
                 </svg>
                 <span>Cancelling...</span>
               </>
@@ -183,7 +230,11 @@ interface ReceiptModalProps {
   onClose: () => void;
 }
 
-export function ReceiptModal({ bookingId, isOpen, onClose }: ReceiptModalProps) {
+export function ReceiptModal({
+  bookingId,
+  isOpen,
+  onClose,
+}: ReceiptModalProps) {
   const { formatPrice } = useCurrency();
   const [invoice, setInvoice] = useState<TaxInvoiceData | null>(null);
   const [loading, setLoading] = useState(false);
@@ -240,7 +291,7 @@ export function ReceiptModal({ bookingId, isOpen, onClose }: ReceiptModalProps) 
   if (!isOpen) return null;
 
   return (
-    <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
+    <ModalOverlay className="fixed inset-0 z-[110] flex items-center justify-center overflow-y-auto bg-black/60 p-4 backdrop-blur-xs">
       <div
         role="dialog"
         aria-modal="true"
@@ -252,7 +303,10 @@ export function ReceiptModal({ bookingId, isOpen, onClose }: ReceiptModalProps) 
             <span className="text-xs font-semibold tracking-wider text-emerald-700 uppercase">
               Official Tax Invoice & Receipt
             </span>
-            <h2 id="receipt-modal-title" className="mt-1 text-2xl font-bold tracking-tight text-[#1F1F1F]">
+            <h2
+              id="receipt-modal-title"
+              className="mt-1 text-2xl font-bold tracking-tight text-[#1F1F1F]"
+            >
               {invoice?.invoiceNumber || "Booking Receipt"}
             </h2>
           </div>
@@ -262,19 +316,46 @@ export function ReceiptModal({ bookingId, isOpen, onClose }: ReceiptModalProps) 
             aria-label="Close dialog"
             className="flex h-9 w-9 items-center justify-center rounded-full text-[#727272] hover:bg-zinc-100 hover:text-zinc-800"
           >
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <svg
+              className="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>
 
         {loading ? (
           <div className="py-16 text-center space-y-3">
-            <svg className="mx-auto h-8 w-8 animate-spin text-zinc-600" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+            <svg
+              className="mx-auto h-8 w-8 animate-spin text-zinc-600"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              />
             </svg>
-            <p className="text-sm text-[#727272]">Generating authoritative receipt...</p>
+            <p className="text-sm text-[#727272]">
+              Generating authoritative receipt...
+            </p>
           </div>
         ) : error ? (
           <div className="my-8 rounded-2xl border border-red-200 bg-red-50 p-5 text-center">
@@ -295,14 +376,20 @@ export function ReceiptModal({ bookingId, isOpen, onClose }: ReceiptModalProps) 
                 <span className="text-[#727272] block">Issue Date</span>
                 <span className="font-medium">
                   {invoice.issueDate
-                    ? new Date(invoice.issueDate).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
+                    ? new Date(invoice.issueDate).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })
                     : "—"}
                 </span>
               </div>
               <div>
                 <span className="text-[#727272] block">Booking Reference</span>
                 <span className="font-mono font-medium">
-                  {((invoice.bookingId || bookingId || "").slice(-8)).toUpperCase()}
+                  {(invoice.bookingId || bookingId || "")
+                    .slice(-8)
+                    .toUpperCase()}
                 </span>
               </div>
             </div>
@@ -310,28 +397,60 @@ export function ReceiptModal({ bookingId, isOpen, onClose }: ReceiptModalProps) 
             {/* Parties */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-xs sm:text-sm">
               <div>
-                <span className="font-semibold text-zinc-800 block mb-1">Host / Supplier</span>
-                <p className="font-medium text-[#1F1F1F]">{invoice.supplier?.name || "Host"}</p>
-                {invoice.supplier?.taxId && <p className="text-[#727272] text-xs">VAT: {invoice.supplier.taxId}</p>}
-                {invoice.supplier?.address && <p className="text-[#727272] text-xs">{invoice.supplier.address}</p>}
+                <span className="font-semibold text-zinc-800 block mb-1">
+                  Host / Supplier
+                </span>
+                <p className="font-medium text-[#1F1F1F]">
+                  {invoice.supplier?.name || "Host"}
+                </p>
+                {invoice.supplier?.taxId && (
+                  <p className="text-[#727272] text-xs">
+                    VAT: {invoice.supplier.taxId}
+                  </p>
+                )}
+                {invoice.supplier?.address && (
+                  <p className="text-[#727272] text-xs">
+                    {invoice.supplier.address}
+                  </p>
+                )}
               </div>
               <div>
-                <span className="font-semibold text-zinc-800 block mb-1">Guest</span>
-                <p className="font-medium text-[#1F1F1F]">{invoice.guest?.name || "Guest"}</p>
-                <p className="text-[#727272] text-xs">{invoice.guest?.email || ""}</p>
+                <span className="font-semibold text-zinc-800 block mb-1">
+                  Guest
+                </span>
+                <p className="font-medium text-[#1F1F1F]">
+                  {invoice.guest?.name || "Guest"}
+                </p>
+                <p className="text-[#727272] text-xs">
+                  {invoice.guest?.email || ""}
+                </p>
               </div>
             </div>
 
             {/* Stay Details */}
             <div className="rounded-2xl border border-zinc-200 p-4 text-xs sm:text-sm space-y-1">
-              <span className="font-semibold text-zinc-800 block mb-1">Property & Stay</span>
-              <p className="font-medium text-[#1F1F1F]">{invoice.property?.title || "Property Stay"}</p>
+              <span className="font-semibold text-zinc-800 block mb-1">
+                Property & Stay
+              </span>
+              <p className="font-medium text-[#1F1F1F]">
+                {invoice.property?.title || "Property Stay"}
+              </p>
               {invoice.property && (
-                <p className="text-[#727272]">{[invoice.property.address, invoice.property.city, invoice.property.country].filter(Boolean).join(", ")}</p>
+                <p className="text-[#727272]">
+                  {[
+                    invoice.property.address,
+                    invoice.property.city,
+                    invoice.property.country,
+                  ]
+                    .filter(Boolean)
+                    .join(", ")}
+                </p>
               )}
               {invoice.stayDates && (
                 <p className="text-zinc-600 pt-1 font-medium">
-                  {invoice.stayDates.checkIn} – {invoice.stayDates.checkOut} ({invoice.stayDates.nights} {invoice.stayDates.nights === 1 ? "night" : "nights"})
+                  {invoice.stayDates.checkIn} – {invoice.stayDates.checkOut} (
+                  {invoice.stayDates.nights}{" "}
+                  {invoice.stayDates.nights === 1 ? "night" : "nights"})
                 </p>
               )}
             </div>
@@ -342,15 +461,21 @@ export function ReceiptModal({ bookingId, isOpen, onClose }: ReceiptModalProps) 
                 <thead className="bg-zinc-100 text-zinc-700">
                   <tr>
                     <th className="px-4 py-2.5 font-semibold">Description</th>
-                    <th className="px-4 py-2.5 font-semibold text-center">Qty</th>
-                    <th className="px-4 py-2.5 font-semibold text-right">Amount</th>
+                    <th className="px-4 py-2.5 font-semibold text-center">
+                      Qty
+                    </th>
+                    <th className="px-4 py-2.5 font-semibold text-right">
+                      Amount
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-zinc-200">
                   {(invoice.lineItems || []).map((item, idx) => (
                     <tr key={idx} className="hover:bg-zinc-50/50">
                       <td className="px-4 py-2.5">{item.description}</td>
-                      <td className="px-4 py-2.5 text-center text-[#727272]">{item.quantity}</td>
+                      <td className="px-4 py-2.5 text-center text-[#727272]">
+                        {item.quantity}
+                      </td>
                       <td className="px-4 py-2.5 text-right font-medium">
                         {formatPrice(item.total, invoice.currency || "SAR")}
                       </td>
@@ -358,7 +483,9 @@ export function ReceiptModal({ bookingId, isOpen, onClose }: ReceiptModalProps) 
                   ))}
                   {(invoice.taxBreakdown || []).map((tax, idx) => (
                     <tr key={`tax-${idx}`} className="text-zinc-600">
-                      <td className="px-4 py-2 text-xs italic">{tax.taxName}</td>
+                      <td className="px-4 py-2 text-xs italic">
+                        {tax.taxName}
+                      </td>
                       <td className="px-4 py-2 text-center text-xs">—</td>
                       <td className="px-4 py-2 text-right text-xs">
                         {formatPrice(tax.taxAmount, invoice.currency || "SAR")}
@@ -368,9 +495,14 @@ export function ReceiptModal({ bookingId, isOpen, onClose }: ReceiptModalProps) 
                 </tbody>
                 <tfoot className="border-t-2 border-zinc-300 bg-zinc-50 font-semibold text-[#1F1F1F]">
                   <tr>
-                    <td className="px-4 py-3" colSpan={2}>Grand Total Paid</td>
+                    <td className="px-4 py-3" colSpan={2}>
+                      Grand Total Paid
+                    </td>
                     <td className="px-4 py-3 text-right text-base text-emerald-700 font-bold">
-                      {formatPrice(invoice.grandTotal ?? 0, invoice.currency || "SAR")}
+                      {formatPrice(
+                        invoice.grandTotal ?? 0,
+                        invoice.currency || "SAR",
+                      )}
                     </td>
                   </tr>
                 </tfoot>
@@ -388,8 +520,18 @@ export function ReceiptModal({ bookingId, isOpen, onClose }: ReceiptModalProps) 
                   onClick={() => window.print()}
                   className="inline-flex items-center gap-1.5 rounded-full border border-zinc-300 px-4 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-100 transition-colors"
                 >
-                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                  <svg
+                    className="h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
+                    />
                   </svg>
                   <span>Print / PDF</span>
                 </button>
@@ -419,7 +561,11 @@ interface ContactHostModalProps {
   onClose: () => void;
 }
 
-export function ContactHostModal({ booking, isOpen, onClose }: ContactHostModalProps) {
+export function ContactHostModal({
+  booking,
+  isOpen,
+  onClose,
+}: ContactHostModalProps) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {
@@ -446,19 +592,42 @@ export function ContactHostModal({ booking, isOpen, onClose }: ContactHostModalP
           aria-label="Close dialog"
           className="absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-full text-[#727272] hover:bg-zinc-100 hover:text-zinc-800"
         >
-          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          <svg
+            className="h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
 
         <div className="flex items-center gap-3">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-amber-50 text-amber-700">
-            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            <svg
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+              />
             </svg>
           </div>
           <div>
-            <h2 id="contact-modal-title" className="text-xl font-semibold text-[#1F1F1F]">
+            <h2
+              id="contact-modal-title"
+              className="text-xl font-semibold text-[#1F1F1F]"
+            >
               Contact Host
             </h2>
             <p className="text-xs text-[#727272]">
@@ -468,17 +637,25 @@ export function ContactHostModal({ booking, isOpen, onClose }: ContactHostModalP
         </div>
 
         <div className="mt-4 rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
-          <p className="text-xs font-semibold text-zinc-800 line-clamp-1">{booking.propertyName}</p>
+          <p className="text-xs font-semibold text-zinc-800 line-clamp-1">
+            {booking.propertyName}
+          </p>
           <p className="text-xs text-[#727272]">{booking.location}</p>
         </div>
 
         <div className="mt-4 space-y-3 text-xs sm:text-sm text-zinc-600 leading-relaxed">
           <p>
-            Direct peer-to-peer guest messaging is currently being finalized. To protect host and guest privacy, private personal contact details are kept secure.
+            Direct peer-to-peer guest messaging is currently being finalized. To
+            protect host and guest privacy, private personal contact details are
+            kept secure.
           </p>
           <div className="rounded-xl border border-blue-100 bg-blue-50/80 p-3 text-xs text-blue-900">
-            <span className="font-semibold block mb-0.5">Need immediate assistance with this stay?</span>
-            Our 24/7 Concierge & Support desk can liaise directly with your host regarding arrival check-in, key handover, or special accommodation requests.
+            <span className="font-semibold block mb-0.5">
+              Need immediate assistance with this stay?
+            </span>
+            Our 24/7 Concierge & Support desk can liaise directly with your host
+            regarding arrival check-in, key handover, or special accommodation
+            requests.
           </div>
         </div>
 
@@ -497,7 +674,6 @@ export function ContactHostModal({ booking, isOpen, onClose }: ContactHostModalP
           >
             <span>Message Host</span>
           </Link>
-
         </div>
       </div>
     </ModalOverlay>

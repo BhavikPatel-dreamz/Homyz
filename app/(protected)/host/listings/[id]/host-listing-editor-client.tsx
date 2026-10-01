@@ -50,30 +50,45 @@ import {
   type PhotoRoomAssignment,
 } from "@/lib/listing/photo-room-assignments";
 
-type ConfigurableDiscount = "weekly" | "monthly" | "last_minute";
+import { clearBookingQuote } from "@/lib/booking/quote-cache";
+
+type ConfigurableDiscount = "weekly" | "monthly" | "last_minute" | "new_listing";
 
 const DEFAULT_DISCOUNT_PERCENTAGES: Record<ConfigurableDiscount, number> = {
+  new_listing: 20,
+  last_minute: 15,
   weekly: 10,
   monthly: 25,
-  last_minute: 15,
 };
 
-function discountPercentage(discounts: Record<string, unknown> | null | undefined, period: ConfigurableDiscount) {
-  const entry = discounts?.[period];
-  if (entry === true) return DEFAULT_DISCOUNT_PERCENTAGES[period];
-  if (!entry || typeof entry !== "object" || (entry as Record<string, unknown>).enabled === false) return 0;
-  const value = (entry as Record<string, unknown>).percentage;
-  return typeof value === "number" && Number.isFinite(value) ? value : DEFAULT_DISCOUNT_PERCENTAGES[period];
+function getDiscountEntry(discounts: Record<string, unknown> | null | undefined, period: ConfigurableDiscount) {
+  if (!discounts || typeof discounts !== "object") return undefined;
+  if (period === "new_listing") return discounts.new_listing ?? discounts.newListing;
+  if (period === "last_minute") return discounts.last_minute ?? discounts.lastMinute;
+  return discounts[period];
 }
 
-function isDiscountEnabled(discounts: Record<string, unknown> | null | undefined, period: ConfigurableDiscount) {
-  const entry = discounts?.[period];
-  return entry === true || (
-    typeof entry === "object" &&
-    entry !== null &&
-    !Array.isArray(entry) &&
-    (entry as Record<string, unknown>).enabled !== false
-  );
+function discountPercentage(discounts: Record<string, unknown> | null | undefined, period: ConfigurableDiscount): number {
+  const entry = getDiscountEntry(discounts, period);
+  if (entry === true) return DEFAULT_DISCOUNT_PERCENTAGES[period];
+  if (typeof entry === "number" && Number.isFinite(entry) && entry > 0) return entry;
+  if (typeof entry === "object" && entry !== null && !Array.isArray(entry)) {
+    const value = (entry as Record<string, unknown>).percentage;
+    if (typeof value === "number" && Number.isFinite(value) && value > 0) {
+      return value;
+    }
+  }
+  return DEFAULT_DISCOUNT_PERCENTAGES[period];
+}
+
+function isDiscountEnabled(discounts: Record<string, unknown> | null | undefined, period: ConfigurableDiscount): boolean {
+  const entry = getDiscountEntry(discounts, period);
+  if (entry === true) return true;
+  if (typeof entry === "number" && Number.isFinite(entry) && entry > 0) return true;
+  if (typeof entry === "object" && entry !== null && !Array.isArray(entry)) {
+    return (entry as Record<string, unknown>).enabled === true;
+  }
+  return false;
 }
 
 export type { HostListingData };
@@ -372,9 +387,13 @@ export function HostListingEditorClient({
     setWeekendPrice(nextWeekendPrice);
   }, [editPrice, weekendPremium]);
   const [weeklyDiscount, setWeeklyDiscount] = useState(() => discountPercentage(listing.discounts, "weekly"));
+  const [weeklyEnabled, setWeeklyEnabled] = useState(() => isDiscountEnabled(listing.discounts, "weekly"));
   const [monthlyDiscount, setMonthlyDiscount] = useState(() => discountPercentage(listing.discounts, "monthly"));
+  const [monthlyEnabled, setMonthlyEnabled] = useState(() => isDiscountEnabled(listing.discounts, "monthly"));
   const [lastMinuteDiscount, setLastMinuteDiscount] = useState(() => discountPercentage(listing.discounts, "last_minute"));
   const [lastMinuteEnabled, setLastMinuteEnabled] = useState(() => isDiscountEnabled(listing.discounts, "last_minute"));
+  const [newListingDiscount, setNewListingDiscount] = useState(() => discountPercentage(listing.discounts, "new_listing"));
+  const [newListingEnabled, setNewListingEnabled] = useState(() => isDiscountEnabled(listing.discounts, "new_listing"));
 
   // Availability
   const [minNights, setMinNights] = useState(listing.minNights || 1);
@@ -857,17 +876,21 @@ export function HostListingEditorClient({
       const nextDiscounts = {
         ...(typeof listing.discounts === "object" && listing.discounts ? listing.discounts : {}),
         ...(manualPricing ? {
-          weekly: {
-            enabled: Number(weeklyDiscount) > 0,
-            percentage: Math.max(0, Math.min(100, Number(weeklyDiscount) || 0)),
-          },
-          monthly: {
-            enabled: Number(monthlyDiscount) > 0,
-            percentage: Math.max(0, Math.min(100, Number(monthlyDiscount) || 0)),
+          new_listing: {
+            enabled: newListingEnabled,
+            percentage: Math.max(1, Math.min(100, Number(newListingDiscount) || 20)),
           },
           last_minute: {
             enabled: lastMinuteEnabled,
             percentage: Math.max(1, Math.min(100, Number(lastMinuteDiscount) || 15)),
+          },
+          weekly: {
+            enabled: weeklyEnabled,
+            percentage: Math.max(1, Math.min(100, Number(weeklyDiscount) || 10)),
+          },
+          monthly: {
+            enabled: monthlyEnabled,
+            percentage: Math.max(1, Math.min(100, Number(monthlyDiscount) || 25)),
           },
         } : {}),
       };
@@ -1165,6 +1188,7 @@ export function HostListingEditorClient({
       const res = await updateListingAction(listing.id, payload);
       setIsSaving(false);
       if (res.ok && res.data) {
+        clearBookingQuote(listing.id);
         setListing((prev) => ({ ...prev, ...payload }));
         if (PREFERENCE_SECTIONS.includes(sectionToSave)) {
           markPreferenceDraftSaved();
@@ -1324,13 +1348,29 @@ export function HostListingEditorClient({
     cancellationPolicy: string;
     longTermCancellationPolicy: "FIRM" | "STRICT";
     nonRefundable?: boolean;
+    nonRefundablePercentage?: number | null;
   }) {
     setIsSaving(true);
     setFeedbackMsg(null);
     try {
+      const existingNonRefundable = (typeof listing.discounts === "object" && listing.discounts)
+        ? (listing.discounts as any).non_refundable
+        : undefined;
+      const currentPercentage = typeof existingNonRefundable === "object" && existingNonRefundable?.percentage !== undefined
+        ? existingNonRefundable.percentage
+        : (listing.nonRefundableDiscountPercentage || 10);
+      const targetPercentage = typeof data.nonRefundablePercentage === "number"
+        ? data.nonRefundablePercentage
+        : currentPercentage;
+
       const nextDiscounts = {
         ...(typeof listing.discounts === "object" && listing.discounts ? listing.discounts : {}),
-        ...(data.nonRefundable !== undefined ? { non_refundable: data.nonRefundable } : {}),
+        ...(data.nonRefundable !== undefined ? {
+          non_refundable: {
+            enabled: data.nonRefundable,
+            percentage: targetPercentage,
+          },
+        } : {}),
       };
       const payload = {
         cancellationPolicy: canonicalCancellationPolicy(data.cancellationPolicy),
@@ -1345,6 +1385,7 @@ export function HostListingEditorClient({
           cancellationPolicy: payload.cancellationPolicy,
           longTermCancellationPolicy: payload.longTermCancellationPolicy,
           discounts: nextDiscounts,
+          nonRefundableDiscountPercentage: targetPercentage,
         }));
         setCancellationPolicy(payload.cancellationPolicy);
         setLongTermCancellationPolicy(payload.longTermCancellationPolicy);
@@ -1661,12 +1702,20 @@ export function HostListingEditorClient({
             setWeekendPremium={(nextValue) => setWeekendPremium(clampWeekendPremium(nextValue))}
             weeklyDiscount={weeklyDiscount}
             setWeeklyDiscount={setWeeklyDiscount}
+            weeklyEnabled={weeklyEnabled}
+            setWeeklyEnabled={setWeeklyEnabled}
             monthlyDiscount={monthlyDiscount}
             setMonthlyDiscount={setMonthlyDiscount}
+            monthlyEnabled={monthlyEnabled}
+            setMonthlyEnabled={setMonthlyEnabled}
             lastMinuteDiscount={lastMinuteDiscount}
             setLastMinuteDiscount={setLastMinuteDiscount}
             lastMinuteEnabled={lastMinuteEnabled}
             setLastMinuteEnabled={setLastMinuteEnabled}
+            newListingDiscount={newListingDiscount}
+            setNewListingDiscount={setNewListingDiscount}
+            newListingEnabled={newListingEnabled}
+            setNewListingEnabled={setNewListingEnabled}
             minNights={minNights}
             setMinNights={setMinNights}
             maxNights={maxNights}

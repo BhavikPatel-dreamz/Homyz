@@ -58,3 +58,44 @@ export function clearBookingQuote(listingId: string): void {
     window.sessionStorage.removeItem(storageKey(listingId));
   } catch {}
 }
+
+export function createQuoteRequestKey(selection: BookingQuoteSelection): string {
+  return selectionKey(selection);
+}
+
+const inFlightRequests = new Map<string, Promise<unknown>>();
+
+/**
+ * Deduplicates in-flight quote requests. If an identical quote request is already
+ * in flight, reuses the pending Promise rather than initiating a duplicate fetch.
+ */
+export async function fetchAuthoritativeQuote<T>(
+  selection: BookingQuoteSelection,
+  options?: { signal?: AbortSignal },
+): Promise<T> {
+  const key = selectionKey(selection);
+  const existing = inFlightRequests.get(key);
+  if (existing) {
+    return existing as Promise<T>;
+  }
+
+  const specialOfferParam = selection.specialOfferId ? `&specialOfferId=${encodeURIComponent(selection.specialOfferId)}` : "";
+  const url = `/api/v1/listings/${selection.listingId}/quote?checkIn=${encodeURIComponent(selection.checkIn)}&checkOut=${encodeURIComponent(selection.checkOut)}&guests=${selection.guests}&pets=${selection.pets}&nonRefundable=${selection.nonRefundable}${specialOfferParam}`;
+
+  const requestPromise = (async () => {
+    try {
+      const res = await fetch(url, { signal: options?.signal, cache: "no-store" });
+      const json = await res.json();
+      if (!res.ok || json.error || !json.data) {
+        throw new Error(json.error?.message || "Selected dates are not available.");
+      }
+      saveBookingQuote(selection, json.data);
+      return json.data as T;
+    } finally {
+      inFlightRequests.delete(key);
+    }
+  })();
+
+  inFlightRequests.set(key, requestPromise);
+  return requestPromise;
+}

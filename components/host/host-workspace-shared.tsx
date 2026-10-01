@@ -1,12 +1,55 @@
 "use client";
 
-import { useEffect, useId, useRef, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
+import Link from "next/link";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { CloseButton } from "@/components/ui/close-button";
+import { ReceiptModal } from "@/components/dashboard/trip-modals";
 import type { ListingDTO } from "@/services/mappers";
 import { useCurrency } from "@/lib/currency-context";
 import { getCurrencyForCountry } from "@/lib/currency";
-import { differenceInBookingNights, formatBookingDate } from "@/lib/booking/booking-date";
+import {
+  differenceInBookingNights,
+  formatBookingDate,
+} from "@/lib/booking/booking-date";
+import { getAuthoritativePriceBreakdown } from "@/lib/booking/booking-price";
+import { formatTime12h } from "@/lib/booking/booking-time";
+
+type HostPriceBreakdown = {
+  nightlySubtotal?: number;
+  discountAmount?: number;
+  extraGuestFee?: number;
+  petFee?: number;
+  hostServiceFeePercentage?: number;
+  hostServiceFee?: number;
+  taxTotal?: number;
+  guestTotal?: number;
+  rateType?: string;
+  paymentMode?: string;
+  paymentStatus?: string;
+  cancellationPolicySnapshot?: string;
+  breakdown?: Array<{ price?: number }>;
+  taxes?: Array<{
+    taxName?: string;
+    taxAmount?: number;
+    exemptionApplied?: boolean;
+    exemptionReason?: string;
+  }>;
+  automaticDiscount?: { label?: string } | null;
+  selectedDiscount?: { label?: string } | null;
+  appliedDiscount?: { name?: string } | null;
+  nonRefundable?: { amount?: number } | null;
+  nonRefundableDiscount?: { amount?: number } | null;
+  payoutBreakdown?: {
+    accommodationSubtotal?: number;
+    petFee?: number;
+    taxesCollectedForHost?: number;
+    taxesRemittedByPlatform?: number;
+    platformServiceFee?: number;
+    hostServiceFee?: number;
+    netHostPayout?: number;
+  };
+};
 
 export type HostReservation = {
   id: string;
@@ -16,12 +59,18 @@ export type HostReservation = {
   endDate: string;
   createdAt: string;
   guestName: string;
+  guestId?: string;
   guestImage: string | null;
   guestEmail?: string | null;
+  guestCreatedAt?: string | null;
+  conversationId?: string | null;
   guests?: number;
   totalPrice?: number | null;
+  nightlyPrice?: number | null;
   currency?: string;
-  priceBreakdown?: any;
+  priceBreakdown?: HostPriceBreakdown;
+  cancellationPolicy?: string | null;
+  isNonRefundable?: boolean;
   listing?: {
     id: string;
     title: string;
@@ -41,7 +90,8 @@ export type HostWorkspaceProps = {
 };
 export const dateKey = (date: Date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-export const shortDate = (date: string) => formatBookingDate(date, { locale: "en-GB" });
+export const shortDate = (date: string) =>
+  formatBookingDate(date, { locale: "en-GB" });
 
 export function PropertyPhoto({
   listing,
@@ -89,7 +139,7 @@ export function WorkspaceDialog({
   onClose: () => void;
   dark?: boolean;
   maxWidth?: string;
-  variant?: "default" | "listing-filter";
+  variant?: "default" | "listing-filter" | "reservation-details";
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const titleId = useId();
@@ -140,7 +190,7 @@ export function WorkspaceDialog({
   }, []);
   return (
     <ModalOverlay
-      className={`fixed inset-0 z-[100] flex ${dark ? "items-end sm:items-center" : "items-center"} justify-center ${variant === "listing-filter" ? "bg-black/10 p-6" : "bg-black/30 p-4 backdrop-blur-xs"}`}
+      className={`fixed inset-0 z-[100] flex ${dark ? "items-end sm:items-center" : variant === "listing-filter" || variant === "reservation-details" ? "items-stretch sm:items-center" : "items-center"} justify-center ${variant === "listing-filter" ? "bg-black/10 p-0 sm:p-6" : variant === "reservation-details" ? "bg-black/30 p-0 backdrop-blur-xs sm:p-4" : "bg-black/30 p-4 backdrop-blur-xs"}`}
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -151,10 +201,19 @@ export function WorkspaceDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className={`${variant === "listing-filter" ? "max-h-[calc(100dvh-48px)] rounded-[12px] p-6 shadow-[0_2px_6px_rgba(0,0,0,0.25)] sm:rounded-[28px]" : "max-h-[88dvh] rounded-2xl p-6 shadow-2xl"} w-full min-w-0 ${maxWidth} overflow-y-auto overscroll-contain outline-none ${dark ? "bg-[#1F1F1F] text-white" : "bg-white text-[#1F1F1F]"}`}
+        className={`${variant === "listing-filter" ? "h-dvh max-h-dvh rounded-none p-5 shadow-[0_2px_6px_rgba(0,0,0,0.25)] sm:h-auto sm:max-h-[calc(100dvh-48px)] sm:rounded-[28px] sm:p-6" : variant === "reservation-details" ? "flex h-dvh max-h-dvh flex-col overflow-hidden rounded-none shadow-2xl sm:h-auto sm:max-h-[88dvh] sm:rounded-3xl" : "max-h-[88dvh] overflow-y-auto overscroll-contain rounded-2xl p-6 shadow-2xl"} w-full min-w-0 ${maxWidth} outline-none ${dark ? "bg-[#1F1F1F] text-white" : "bg-white text-[#1F1F1F]"}`}
       >
-        <div className={`flex items-center justify-between gap-3 border-b ${variant === "listing-filter" ? "mb-3 border-[#D7D7D7] pb-2 sm:mb-4 sm:pb-4" : "mb-5 border-zinc-100 pb-4 dark:border-white/10"}`}>
-          <h2 id={titleId} className={variant === "listing-filter" ? "text-lg font-normal leading-7 sm:font-medium" : "text-lg font-semibold tracking-tight"}>
+        <div
+          className={`flex items-center justify-between gap-3 border-b ${variant === "listing-filter" ? "mb-3 border-[#D7D7D7] pb-2 sm:mb-4 sm:pb-4" : variant === "reservation-details" ? "z-10 shrink-0 border-zinc-200 bg-white px-5 py-4 sm:px-6 sm:py-5 dark:border-white/10 dark:bg-[#1F1F1F]" : "mb-5 border-zinc-100 pb-4 dark:border-white/10"}`}
+        >
+          <h2
+            id={titleId}
+            className={
+              variant === "listing-filter"
+                ? "text-lg font-normal leading-7 sm:font-medium"
+                : "text-lg font-semibold tracking-tight"
+            }
+          >
             {title}
           </h2>
           <CloseButton
@@ -162,7 +221,13 @@ export function WorkspaceDialog({
             className={dark ? "text-white hover:bg-white/10" : ""}
           />
         </div>
-        {children}
+        {variant === "reservation-details" ? (
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-5 sm:px-6 sm:py-6">
+            {children}
+          </div>
+        ) : (
+          children
+        )}
       </div>
     </ModalOverlay>
   );
@@ -177,205 +242,581 @@ export function ReservationDetails({
   booking: HostReservation;
   listing: ListingDTO;
   onClose: () => void;
-  onMoney: () => void;
+  onMoney?: () => void;
 }) {
   const { currency, formatPrice } = useCurrency();
-  const sourceCurrency = getCurrencyForCountry(listing.country);
-  const nights = Math.max(1, differenceInBookingNights(booking.startDate, booking.endDate));
-  const pb = (booking as any)?.priceBreakdown;
-  const nightlyRate = pb?.breakdown?.[0]?.price ?? listing.price;
-  const roomFee = pb?.nightlySubtotal ?? nights * nightlyRate;
-  const hasVaryingRates = new Set((pb?.breakdown || []).map((night: { price?: number }) => night.price)).size > 1;
-  const extraGuestFee = pb?.extraGuestFee ?? 0;
-  const petFee = pb?.petFee ?? 0;
-  const hostServiceFeePercentage = pb?.hostServiceFeePercentage ?? 15;
-  const hostServiceFee = pb?.hostServiceFee ?? Math.round(roomFee * (hostServiceFeePercentage / 100));
-  const taxes = pb?.taxTotal ?? 0;
-  const taxItems: Array<{
-    taxName?: string;
-    taxAmount?: number;
-    exemptionApplied?: boolean;
-    exemptionReason?: string;
-  }> = Array.isArray(pb?.taxes) ? pb.taxes : [];
-  const guestTotal = pb?.guestTotal ?? booking.totalPrice ?? (roomFee + extraGuestFee + petFee + taxes);
-  const hostPayout = pb?.payoutBreakdown?.netHostPayout ?? (roomFee + petFee - hostServiceFee);
+  const [showInvoice, setShowInvoice] = useState(false);
+  const [codeCopied, setCodeCopied] = useState(false);
+  const sourceCurrency =
+    booking.currency || getCurrencyForCountry(listing.country);
+  const pb = booking.priceBreakdown;
+  const pricing = getAuthoritativePriceBreakdown({
+    startDate: booking.startDate,
+    endDate: booking.endDate,
+    totalPrice: booking.totalPrice,
+    nightlyPrice: booking.nightlyPrice,
+    currency: sourceCurrency,
+    priceBreakdown: pb,
+    cancellationPolicy: booking.cancellationPolicy,
+    isNonRefundable: booking.isNonRefundable,
+  });
+  const nights = pricing.nights;
+  const guestCount = booking.guests || 1;
+  const hasVaryingRates =
+    new Set(pricing.nightlyBreakdown?.map((night) => night.rate) ?? []).size >
+    1;
+  const hasNonRefundableDiscount =
+    booking.isNonRefundable || pb?.rateType === "NON_REFUNDABLE";
+  const discountLabel =
+    pricing.automaticDiscount?.label ??
+    (hasNonRefundableDiscount ? "Non-refundable discount" : "Discount");
+  const cancellationPolicyLabel = hasNonRefundableDiscount
+    ? "Non-refundable"
+    : pricing.cancellationPolicySnapshot || booking.cancellationPolicy || listing.cancellationPolicy || "Flexible";
+  const taxItemsMatchTotal =
+    pricing.taxes.reduce((sum, tax) => sum + tax.amountMinorUnits, 0) ===
+    pricing.taxTotal;
+  const status = booking.status.toUpperCase();
+  const statusClasses =
+    status === "CONFIRMED"
+      ? {
+          dot: "bg-emerald-500",
+          text: "text-emerald-700 dark:text-emerald-400",
+        }
+      : status === "PENDING"
+        ? { dot: "bg-amber-500", text: "text-amber-800 dark:text-amber-300" }
+        : status === "CANCELLED"
+          ? { dot: "bg-rose-500", text: "text-rose-700 dark:text-rose-400" }
+          : { dot: "bg-zinc-500", text: "text-zinc-700 dark:text-zinc-300" };
+  const payout = pb?.payoutBreakdown;
+  const payoutAccommodation = payout?.accommodationSubtotal ?? 0;
+  const payoutPetFee = payout?.petFee ?? 0;
+  const payoutHostTax = payout?.taxesCollectedForHost ?? 0;
+  const payoutServiceFee =
+    payout?.platformServiceFee ?? payout?.hostServiceFee ?? 0;
+  const payoutTotal = payout?.netHostPayout;
+  const payoutKnownTotal =
+    payoutAccommodation +
+    payoutPetFee +
+    pricing.extraGuestFee +
+    payoutHostTax -
+    payoutServiceFee;
+  const payoutAdjustment =
+    typeof payoutTotal === "number" ? payoutTotal - payoutKnownTotal : 0;
+
+  const hostServiceFeeAmount =
+    pb?.hostServiceFee ??
+    pb?.payoutBreakdown?.platformServiceFee ??
+    pb?.payoutBreakdown?.hostServiceFee ??
+    0;
+  const isPlatformServiceFee =
+    pricing.otherCharges > 0 &&
+    (hostServiceFeeAmount === pricing.otherCharges ||
+      Math.abs(hostServiceFeeAmount - pricing.otherCharges) <= 1);
+  const otherChargeLabel = isPlatformServiceFee
+    ? typeof pb?.hostServiceFeePercentage === "number"
+      ? `Platform service fee (${pb.hostServiceFeePercentage}%)`
+      : "Platform service fee"
+    : pricing.otherCharges > 0
+      ? "Service fee"
+      : "Pricing adjustment";
+
+  const confirmationCode = booking.id.slice(-8).toUpperCase();
+  const handleCopyCode = () => {
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      void navigator.clipboard.writeText(confirmationCode);
+      setCodeCopied(true);
+      setTimeout(() => setCodeCopied(false), 2000);
+    }
+  };
+
+  const messageHref = booking.conversationId
+    ? `/host/messages?id=${encodeURIComponent(booking.conversationId)}`
+    : "/host/messages";
 
   return (
-    <WorkspaceDialog title="Reservation details" onClose={onClose} maxWidth="max-w-lg">
-      <div className="space-y-6 text-sm">
-        {/* Confirmed Header & Guest Info */}
-        <div className="rounded-2xl bg-zinc-50 dark:bg-zinc-800/80 p-5 border border-zinc-100 dark:border-zinc-700">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="size-2 rounded-full bg-emerald-500" />
-            <span className="text-xs font-semibold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
-              Confirmed
-            </span>
-          </div>
-
-          <div className="flex items-start gap-4">
-            {booking.guestImage ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={booking.guestImage}
-                alt={booking.guestName}
-                className="size-14 rounded-full object-cover border border-zinc-200 dark:border-zinc-700"
-              />
-            ) : (
-              <div className="flex size-14 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 font-semibold text-lg border border-amber-200 dark:border-amber-800">
-                {booking.guestName[0] || "G"}
+    <>
+      {!showInvoice && (
+        <WorkspaceDialog
+          title="Reservation details"
+          onClose={onClose}
+          maxWidth="max-w-[580px]"
+          variant="reservation-details"
+        >
+          <div className="space-y-6 text-sm">
+            {/* 1. Reservation Summary Card with Distinct Property & Guest Identity */}
+            <section
+              aria-labelledby="reservation-summary-heading"
+              className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 sm:p-5 dark:border-zinc-700 dark:bg-zinc-800/80"
+            >
+              <h3 id="reservation-summary-heading" className="sr-only">
+                Reservation summary
+              </h3>
+              <div className="mb-4 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`size-2 rounded-full ${statusClasses.dot}`}
+                    aria-hidden="true"
+                  />
+                  <span
+                    className={`text-xs font-semibold uppercase tracking-wider ${statusClasses.text}`}
+                  >
+                    {status.replaceAll("_", " ")}
+                  </span>
+                </div>
+                <span className="text-xs text-[#727272] font-mono">
+                  #{confirmationCode}
+                </span>
               </div>
-            )}
-            <div className="min-w-0 flex-1">
-              <h3 className="text-xl font-bold text-[#1F1F1F] dark:text-zinc-100">{booking.guestName}</h3>
-              <p className="text-xs text-zinc-600 dark:text-zinc-300 mt-0.5 truncate">{listing.title}</p>
-              <p className="text-xs text-[#727272] dark:text-[#727272]">{[listing.city, listing.country].filter(Boolean).join(", ")}</p>
-              <p className="mt-2 text-xs font-medium text-zinc-800 dark:text-zinc-200">
-                {shortDate(booking.startDate)} – {shortDate(booking.endDate)} ({nights} {nights === 1 ? "night" : "nights"}) • {booking.guests || 1} {(booking.guests || 1) === 1 ? "guest" : "guests"}
-              </p>
-            </div>
-          </div>
-        </div>
 
-        {/* About Guest Card */}
-        <div className="rounded-2xl border border-zinc-200 dark:border-zinc-700 p-4 space-y-2">
-          <h4 className="text-xs font-semibold uppercase tracking-wider text-[#727272] dark:text-[#727272]">
-            About {booking.guestName}
-          </h4>
-          <div className="space-y-1.5 text-xs text-zinc-700 dark:text-zinc-300">
-            <div className="flex items-center gap-2">
-              <span className="text-amber-500">★</span>
-              <span>5.0 rating from 1 review</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-emerald-600 dark:text-emerald-400">✔</span>
-              <span>Identity verified</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-[#727272]">📅</span>
-              <span>Joined Homyz in 2022</span>
-            </div>
-          </div>
-          <button type="button" className="text-xs font-medium text-[#1F1F1F] dark:text-zinc-100 underline pt-1 cursor-pointer">
-            Show profile
-          </button>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <button
-            type="button"
-            onClick={onMoney}
-            className="w-full rounded-full border border-zinc-900 dark:border-zinc-700 px-4 py-3 font-medium text-xs text-[#1F1F1F] dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors shadow-2xs cursor-pointer"
-          >
-            Send or request money
-          </button>
-          <a
-            href="/host/messages"
-            className="w-full rounded-full bg-[#1F1F1F] dark:bg-zinc-100 px-4 py-3 text-center text-xs font-medium text-white dark:text-[#1F1F1F] hover:bg-black dark:hover:bg-white transition-colors shadow-2xs"
-          >
-            Message
-          </a>
-        </div>
-
-        {/* Booking Details */}
-        <div>
-          <h4 className="font-semibold text-[#1F1F1F] dark:text-zinc-100 text-sm mb-3">Booking details</h4>
-          <dl className="divide-y divide-zinc-100 dark:divide-zinc-800 text-xs">
-            <div className="py-2.5 flex justify-between">
-              <dt className="text-[#727272] dark:text-[#727272]">Guests</dt>
-              <dd className="font-medium text-zinc-800 dark:text-zinc-200">
-                {booking.guests || 1} {(booking.guests || 1) === 1 ? "guest" : "guests"}
-              </dd>
-            </div>
-            <div className="py-2.5 flex justify-between">
-              <dt className="text-[#727272] dark:text-[#727272]">Check-in</dt>
-              <dd className="font-medium text-zinc-800 dark:text-zinc-200">{shortDate(booking.startDate)} ({listing.checkInStart || "15:00"})</dd>
-            </div>
-            <div className="py-2.5 flex justify-between">
-              <dt className="text-[#727272] dark:text-[#727272]">Check-out</dt>
-              <dd className="font-medium text-zinc-800 dark:text-zinc-200">{shortDate(booking.endDate)} ({listing.checkOutTime || "11:00"})</dd>
-            </div>
-            <div className="py-2.5 flex justify-between">
-              <dt className="text-[#727272] dark:text-[#727272]">Booking date</dt>
-              <dd className="font-medium text-zinc-800 dark:text-zinc-200">{shortDate(booking.createdAt)}</dd>
-            </div>
-            <div className="py-2.5 flex justify-between">
-              <dt className="text-[#727272] dark:text-[#727272]">Confirmation code</dt>
-              <dd className="font-mono text-zinc-800 dark:text-zinc-200">{booking.id.slice(-8).toUpperCase()}</dd>
-            </div>
-            <div className="py-2.5 flex justify-between">
-              <dt className="text-[#727272] dark:text-[#727272]">Cancellation policy</dt>
-              <dd className="font-medium capitalize text-zinc-800 dark:text-zinc-200">
-                {listing.cancellationPolicy.replaceAll("_", " ").toLowerCase()}
-              </dd>
-            </div>
-          </dl>
-          <a href="/host/calendar" className="inline-block text-xs font-medium text-[#1F1F1F] dark:text-zinc-100 underline mt-2">
-            Show calendar
-          </a>
-        </div>
-
-        {/* Financial Breakdown: Guest Paid */}
-        <div className="border-t border-zinc-200 dark:border-zinc-800 pt-4">
-          <h4 className="font-semibold text-[#1F1F1F] dark:text-zinc-100 text-sm mb-3">Guest paid</h4>
-          <dl className="space-y-2 text-xs">
-            <div className="flex justify-between">
-              <dt className="text-[#727272] dark:text-[#727272]">{hasVaryingRates ? `${nights} nights · varying rates` : `${formatPrice(nightlyRate, sourceCurrency, 2)} × ${nights} ${nights === 1 ? "night" : "nights"}`}</dt>
-              <dd className="text-zinc-800 dark:text-zinc-200">{formatPrice(roomFee, sourceCurrency, 2)}</dd>
-            </div>
-            {extraGuestFee > 0 && <div className="flex justify-between"><dt className="text-[#727272] dark:text-[#727272]">Extra guest fee</dt><dd className="text-zinc-800 dark:text-zinc-200">{formatPrice(extraGuestFee, sourceCurrency, 2)}</dd></div>}
-            {petFee > 0 && <div className="flex justify-between"><dt className="text-[#727272] dark:text-[#727272]">Pet fee</dt><dd className="text-zinc-800 dark:text-zinc-200">{formatPrice(petFee, sourceCurrency, 2)}</dd></div>}
-            {taxItems.map((tax, index) => (
-              <div key={`${tax.taxName || "Tax"}-${index}`} className="flex justify-between gap-3">
-                <dt className="text-[#727272] dark:text-[#727272]">
-                  {tax.taxName || "Tax"}
-                  {tax.exemptionApplied && tax.exemptionReason ? ` · ${tax.exemptionReason}` : ""}
-                </dt>
-                <dd className="text-zinc-800 dark:text-zinc-200">{formatPrice(tax.taxAmount ?? 0, sourceCurrency, 2)}</dd>
+              {/* Property Details */}
+              <div className="flex items-start gap-3.5 sm:gap-4">
+                <PropertyPhoto
+                  listing={listing}
+                  className="size-20 shrink-0 rounded-xl border border-zinc-200 object-cover dark:border-zinc-700"
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-[#727272]">
+                    Property
+                  </p>
+                  <Link
+                    href={`/host/listings/${listing.id}`}
+                    className="mt-0.5 block truncate text-base font-semibold text-[#1F1F1F] underline-offset-2 hover:underline dark:text-zinc-100"
+                  >
+                    {listing.title}
+                  </Link>
+                  <p className="mt-0.5 truncate text-xs text-[#727272]">
+                    {[listing.district, listing.city, listing.country]
+                      .filter(Boolean)
+                      .join(", ")}
+                  </p>
+                </div>
               </div>
-            ))}
-            {taxItems.length === 0 && taxes > 0 && (
-              <div className="flex justify-between"><dt className="text-[#727272] dark:text-[#727272]">Taxes</dt><dd className="text-zinc-800 dark:text-zinc-200">{formatPrice(taxes, sourceCurrency, 2)}</dd></div>
+
+              {/* Explicit Guest & Dates Context */}
+              <div className="mt-4 grid grid-cols-2 gap-3 border-t border-zinc-200/80 pt-3 text-xs dark:border-zinc-700/80">
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-[#727272]">
+                    Guest
+                  </p>
+                  <p className="mt-0.5 font-semibold text-zinc-900 dark:text-zinc-100 truncate">
+                    {booking.guestName}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-[#727272]">
+                    Dates
+                  </p>
+                  <p className="mt-0.5 font-medium text-zinc-800 dark:text-zinc-200">
+                    {shortDate(booking.startDate)} – {shortDate(booking.endDate)}
+                  </p>
+                  <p className="text-[11px] text-[#727272]">
+                    {nights} {nights === 1 ? "night" : "nights"} · {guestCount}{" "}
+                    {guestCount === 1 ? "guest" : "guests"}
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            {/* 2. Guest Information Section */}
+            <section aria-labelledby="guest-heading">
+              <h3
+                id="guest-heading"
+                className="mb-3 text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100"
+              >
+                Guest
+              </h3>
+              <div className="flex items-center gap-3 rounded-2xl border border-zinc-200 p-4 dark:border-zinc-700">
+                {booking.guestImage ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={booking.guestImage}
+                    alt={booking.guestName}
+                    className="size-12 shrink-0 rounded-full border border-zinc-200 object-cover dark:border-zinc-700"
+                  />
+                ) : (
+                  <span
+                    aria-hidden="true"
+                    className="flex size-12 shrink-0 items-center justify-center rounded-full border border-amber-200 bg-amber-100 font-semibold text-amber-900 dark:border-amber-800 dark:bg-amber-950/60 dark:text-amber-300"
+                  >
+                    {booking.guestName[0]?.toUpperCase() || "G"}
+                  </span>
+                )}
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold text-zinc-900 dark:text-zinc-100">
+                    {booking.guestName}
+                  </p>
+                  {booking.guestEmail && (
+                    <p className="truncate text-xs text-[#727272]">
+                      {booking.guestEmail}
+                    </p>
+                  )}
+                  {booking.guestCreatedAt && (
+                    <p className="mt-1 text-xs text-[#727272]">
+                      Member since{" "}
+                      {new Date(booking.guestCreatedAt).getUTCFullYear()}
+                    </p>
+                  )}
+                </div>
+                {booking.guestId && (
+                  <Link
+                    href={`/profile/${booking.guestId}`}
+                    className="shrink-0 text-xs font-semibold text-[#1F1F1F] underline underline-offset-2 hover:text-black dark:text-zinc-100"
+                  >
+                    View profile
+                  </Link>
+                )}
+              </div>
+            </section>
+
+            {/* 3. Primary & Secondary Actions */}
+            <div
+              className={
+                onMoney && status === "CONFIRMED"
+                  ? "grid gap-3 sm:grid-cols-2"
+                  : "grid"
+              }
+            >
+              {onMoney && status === "CONFIRMED" && (
+                <button
+                  type="button"
+                  onClick={onMoney}
+                  className="min-h-11 w-full rounded-full border border-zinc-900 px-4 py-3 text-xs font-medium text-[#1F1F1F] transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-800"
+                >
+                  Send or request money
+                </button>
+              )}
+              <Link
+                href={messageHref}
+                className="flex min-h-11 w-full items-center justify-center rounded-full bg-[#1F1F1F] px-4 py-3 text-center text-xs font-semibold text-white transition-colors hover:bg-black dark:bg-zinc-100 dark:text-[#1F1F1F] dark:hover:bg-white"
+              >
+                Message guest
+              </Link>
+            </div>
+
+            {/* 4. Stay Details */}
+            <section aria-labelledby="stay-details-heading">
+              <h3
+                id="stay-details-heading"
+                className="mb-3 text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100"
+              >
+                Stay details
+              </h3>
+              <dl className="divide-y divide-zinc-100 text-xs dark:divide-zinc-800">
+                <DetailRow
+                  label="Guests"
+                  value={`${guestCount} ${guestCount === 1 ? "guest" : "guests"}`}
+                />
+                <DetailRow
+                  label="Check-in"
+                  value={`${shortDate(booking.startDate)} · ${formatTime12h(listing.checkInStart, "3:00 PM")}`}
+                />
+                <DetailRow
+                  label="Check-out"
+                  value={`${shortDate(booking.endDate)} · ${formatTime12h(listing.checkOutTime, "11:00 AM")}`}
+                />
+                <DetailRow
+                  label="Length of stay"
+                  value={`${nights} ${nights === 1 ? "night" : "nights"}`}
+                />
+                <DetailRow
+                  label="Booking date"
+                  value={shortDate(booking.createdAt)}
+                />
+                <div className="flex items-center justify-between gap-4 py-2.5">
+                  <dt className="text-[#727272]">Confirmation code</dt>
+                  <dd className="flex items-center gap-2">
+                    <span className="font-mono font-medium text-zinc-900 dark:text-zinc-100">
+                      {confirmationCode}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleCopyCode}
+                      className="inline-flex items-center gap-1 rounded-md border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[11px] font-medium text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 transition-colors dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 cursor-pointer"
+                      title="Copy confirmation code"
+                    >
+                      {codeCopied ? (
+                        <span className="text-emerald-600 dark:text-emerald-400 font-semibold">
+                          Copied!
+                        </span>
+                      ) : (
+                        <span>Copy</span>
+                      )}
+                    </button>
+                  </dd>
+                </div>
+                {cancellationPolicyLabel && (
+                  <DetailRow
+                    label="Cancellation policy"
+                    value={cancellationPolicyLabel
+                      .replaceAll("_", " ")
+                      .toLowerCase()}
+                    capitalize
+                  />
+                )}
+              </dl>
+              <Link
+                href="/host/calendar"
+                className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-[#1F1F1F] underline underline-offset-2 hover:text-black dark:text-zinc-100"
+              >
+                View in calendar →
+              </Link>
+            </section>
+
+            {/* 5. Guest Paid (Authoritative Pricing Breakdown) */}
+            <section
+              aria-labelledby="guest-paid-heading"
+              className="border-t border-zinc-200 pt-5 dark:border-zinc-800"
+            >
+              <h3
+                id="guest-paid-heading"
+                className="mb-3 text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100"
+              >
+                Guest paid
+              </h3>
+              <dl className="space-y-2 text-xs">
+                <PriceRow
+                  label={
+                    hasVaryingRates
+                      ? `${nights} nights · varying rates`
+                      : `${formatPrice(pricing.nightlyPrice, sourceCurrency, 2)} × ${nights} ${nights === 1 ? "night" : "nights"}`
+                  }
+                  value={formatPrice(
+                    pricing.nightlySubtotal,
+                    sourceCurrency,
+                    2,
+                  )}
+                />
+                {pricing.discountAmount > 0 && (
+                  <PriceRow
+                    label={discountLabel}
+                    value={`− ${formatPrice(pricing.discountAmount, sourceCurrency, 2)}`}
+                    tone="discount"
+                  />
+                )}
+                {pricing.extraGuestFee > 0 && (
+                  <PriceRow
+                    label="Extra guest fee"
+                    value={formatPrice(
+                      pricing.extraGuestFee,
+                      sourceCurrency,
+                      2,
+                    )}
+                  />
+                )}
+                {pricing.petFee > 0 && (
+                  <PriceRow
+                    label="Pet fee"
+                    value={formatPrice(pricing.petFee, sourceCurrency, 2)}
+                  />
+                )}
+                {pricing.taxTotal > 0 && taxItemsMatchTotal ? (
+                  pricing.taxes.map((tax, index) => (
+                    <PriceRow
+                      key={`${tax.name}-${index}`}
+                      label={`${tax.name}${tax.exemptionApplied && tax.exemptionReason ? ` · ${tax.exemptionReason}` : ""}`}
+                      value={formatPrice(
+                        tax.amountMinorUnits,
+                        sourceCurrency,
+                        2,
+                      )}
+                    />
+                  ))
+                ) : pricing.taxTotal > 0 ? (
+                  <PriceRow
+                    label="Taxes"
+                    value={formatPrice(pricing.taxTotal, sourceCurrency, 2)}
+                  />
+                ) : null}
+                {pricing.otherCharges !== 0 && (
+                  <PriceRow
+                    label={otherChargeLabel}
+                    value={
+                      pricing.otherCharges > 0
+                        ? formatPrice(pricing.otherCharges, sourceCurrency, 2)
+                        : `− ${formatPrice(Math.abs(pricing.otherCharges), sourceCurrency, 2)}`
+                    }
+                  />
+                )}
+                <div className="flex justify-between gap-4 border-t border-zinc-100 pt-2 text-sm font-semibold dark:border-zinc-800">
+                  <dt>Total paid by guest ({currency})</dt>
+                  <dd>{formatPrice(pricing.totalPrice, sourceCurrency, 2)}</dd>
+                </div>
+              </dl>
+            </section>
+
+            {/* 6. Host Payout */}
+            {payout && typeof payoutTotal === "number" && (
+              <section
+                aria-labelledby="host-payout-heading"
+                className="border-t border-zinc-200 pt-5 dark:border-zinc-800"
+              >
+                <h3
+                  id="host-payout-heading"
+                  className="mb-3 text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100"
+                >
+                  Your payout
+                </h3>
+                <dl className="space-y-2 text-xs">
+                  <PriceRow
+                    label="Accommodation amount"
+                    value={formatPrice(payoutAccommodation, sourceCurrency, 2)}
+                  />
+                  {pricing.extraGuestFee > 0 && (
+                    <PriceRow
+                      label="Extra guest fee"
+                      value={formatPrice(
+                        pricing.extraGuestFee,
+                        sourceCurrency,
+                        2,
+                      )}
+                    />
+                  )}
+                  {payoutPetFee > 0 && (
+                    <PriceRow
+                      label="Pet fee"
+                      value={formatPrice(payoutPetFee, sourceCurrency, 2)}
+                    />
+                  )}
+                  {payoutHostTax > 0 && (
+                    <PriceRow
+                      label="Taxes collected for host"
+                      value={formatPrice(payoutHostTax, sourceCurrency, 2)}
+                    />
+                  )}
+                  {payoutServiceFee > 0 && (
+                    <PriceRow
+                      label={
+                        typeof pb?.hostServiceFeePercentage === "number"
+                          ? `Platform service fee (${pb.hostServiceFeePercentage}%)`
+                          : "Platform service fee"
+                      }
+                      value={`− ${formatPrice(payoutServiceFee, sourceCurrency, 2)}`}
+                      tone="fee"
+                    />
+                  )}
+                  {payoutAdjustment !== 0 && (
+                    <PriceRow
+                      label="Payout adjustment"
+                      value={
+                        payoutAdjustment > 0
+                          ? formatPrice(payoutAdjustment, sourceCurrency, 2)
+                          : `− ${formatPrice(Math.abs(payoutAdjustment), sourceCurrency, 2)}`
+                      }
+                    />
+                  )}
+                  <div className="flex justify-between gap-4 border-t border-zinc-100 pt-2 text-sm font-semibold dark:border-zinc-800">
+                    <dt>Total host payout ({currency})</dt>
+                    <dd className="text-emerald-700 dark:text-emerald-400 font-bold">
+                      {formatPrice(payoutTotal, sourceCurrency, 2)}
+                    </dd>
+                  </div>
+                </dl>
+              </section>
             )}
-            <div className="flex justify-between border-t border-zinc-100 dark:border-zinc-800 pt-2 font-semibold text-sm">
-              <dt className="text-[#1F1F1F] dark:text-zinc-100">Total ({currency})</dt>
-              <dd className="text-[#1F1F1F] dark:text-zinc-100">{formatPrice(guestTotal, sourceCurrency, 2)}</dd>
-            </div>
-          </dl>
-        </div>
 
-        {/* Financial Breakdown: Host Payout */}
-        <div className="border-t border-zinc-200 dark:border-zinc-800 pt-4">
-          <h4 className="font-semibold text-[#1F1F1F] dark:text-zinc-100 text-sm mb-3">Host payout</h4>
-          <dl className="space-y-2 text-xs">
-            <div className="flex justify-between">
-              <dt className="text-[#727272] dark:text-[#727272]">{nights} {nights === 1 ? "night" : "nights"} room fee</dt>
-              <dd className="text-zinc-800 dark:text-zinc-200">{formatPrice(roomFee, sourceCurrency, 2)}</dd>
-            </div>
-            <div className="flex justify-between">
-              <dt className="text-[#727272] dark:text-[#727272]">Platform service fee ({hostServiceFeePercentage}%)</dt>
-              <dd className="text-rose-600 dark:text-rose-400">- {formatPrice(hostServiceFee, sourceCurrency, 2)}</dd>
-            </div>
-            <div className="flex justify-between border-t border-zinc-100 dark:border-zinc-800 pt-2 font-semibold text-sm">
-              <dt className="text-[#1F1F1F] dark:text-zinc-100">Total payout ({currency})</dt>
-              <dd className="text-emerald-700 dark:text-emerald-400">{formatPrice(hostPayout, sourceCurrency, 2)}</dd>
-            </div>
-          </dl>
-        </div>
+            {/* 7. Documents & Payment Records */}
+            <section
+              aria-label="Documents and payment details"
+              className="border-t border-zinc-200 pt-4 text-xs dark:border-zinc-800 space-y-2.5"
+            >
+              {pricing.taxTotal > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setShowInvoice(true)}
+                  className="flex min-h-11 w-full items-center justify-between rounded-xl border border-zinc-200 p-3 text-zinc-700 hover:bg-zinc-50 hover:text-zinc-950 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-white transition-colors"
+                >
+                  <span className="font-medium">View VAT invoice</span>
+                  <span aria-hidden="true" className="text-base text-zinc-400">›</span>
+                </button>
+              )}
 
-        {/* Bottom Document Links */}
-        <div className="border-t border-zinc-200 dark:border-zinc-800 pt-3 space-y-2 text-xs">
-          <button type="button" className="flex w-full items-center justify-between py-1.5 text-zinc-700 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white cursor-pointer">
-            <span>VAT invoice</span>
-            <span>›</span>
-          </button>
-          <button type="button" className="flex w-full items-center justify-between py-1.5 text-zinc-700 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white cursor-pointer">
-            <span>Transaction history</span>
-            <span>›</span>
-          </button>
-        </div>
-      </div>
-    </WorkspaceDialog>
+              {/* Payment Details Summary */}
+              <div className="rounded-xl border border-zinc-200 bg-zinc-50/70 p-3.5 dark:border-zinc-700 dark:bg-zinc-800/50 text-xs">
+                <p className="font-semibold text-zinc-800 dark:text-zinc-200 mb-2">
+                  Payment record
+                </p>
+                <div className="space-y-1.5 text-zinc-600 dark:text-zinc-400">
+                  <div className="flex justify-between">
+                    <span>Payment mode</span>
+                    <span className="font-medium text-zinc-800 dark:text-zinc-200 capitalize">
+                      {pb?.paymentMode?.toLowerCase() || "Standard"}
+                    </span>
+                  </div>
+                  {pb?.paymentStatus && (
+                    <div className="flex justify-between">
+                      <span>Payment status</span>
+                      <span className="font-medium text-zinc-800 dark:text-zinc-200 capitalize">
+                        {pb.paymentStatus.replaceAll("_", " ").toLowerCase()}
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex justify-between">
+                    <span>Booking reference</span>
+                    <span className="font-mono text-zinc-800 dark:text-zinc-200">
+                      {confirmationCode}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+        </WorkspaceDialog>
+      )}
+      <ReceiptModal
+        bookingId={booking.id}
+        isOpen={showInvoice}
+        onClose={() => setShowInvoice(false)}
+      />
+    </>
+  );
+}
+
+function DetailRow({
+  label,
+  value,
+  mono = false,
+  capitalize = false,
+}: {
+  label: string;
+  value: string;
+  mono?: boolean;
+  capitalize?: boolean;
+}) {
+  return (
+    <div className="flex items-start justify-between gap-4 py-2.5">
+      <dt className="text-[#727272]">{label}</dt>
+      <dd
+        className={`text-right font-medium text-zinc-800 dark:text-zinc-200 ${mono ? "font-mono" : ""} ${capitalize ? "capitalize" : ""}`}
+      >
+        {value}
+      </dd>
+    </div>
+  );
+}
+
+function PriceRow({
+  label,
+  value,
+  tone = "default",
+}: {
+  label: string;
+  value: string;
+  tone?: "default" | "discount" | "fee";
+}) {
+  const toneClass =
+    tone === "discount"
+      ? "text-emerald-700 dark:text-emerald-400"
+      : tone === "fee"
+        ? "text-rose-600 dark:text-rose-400"
+        : "text-zinc-800 dark:text-zinc-200";
+  return (
+    <div className="flex justify-between gap-4">
+      <dt className={tone === "default" ? "text-[#727272]" : toneClass}>
+        {label}
+      </dt>
+      <dd className={`shrink-0 ${toneClass}`}>{value}</dd>
+    </div>
   );
 }
 
@@ -386,33 +827,63 @@ export function MoneyDialog({
   booking: HostReservation;
   onClose: () => void;
 }) {
-  const nights = Math.max(1, differenceInBookingNights(booking.startDate, booking.endDate));
+  const nights = Math.max(
+    1,
+    differenceInBookingNights(booking.startDate, booking.endDate),
+  );
 
   return (
-    <WorkspaceDialog title="Send or request money" onClose={onClose} maxWidth="max-w-md">
+    <WorkspaceDialog
+      title="Send or request money"
+      onClose={onClose}
+      maxWidth="max-w-md"
+    >
       <div className="space-y-5 text-sm">
         <div className="rounded-xl bg-zinc-50 dark:bg-zinc-800/80 p-4 border border-zinc-100 dark:border-zinc-700">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-[#727272]">From</p>
-          <p className="my-1 font-bold text-base text-[#1F1F1F] dark:text-zinc-100">{booking.guestName}</p>
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-[#727272]">
+            From
+          </p>
+          <p className="my-1 font-bold text-base text-[#1F1F1F] dark:text-zinc-100">
+            {booking.guestName}
+          </p>
           <p className="text-xs text-[#727272] dark:text-[#727272]">
-            {shortDate(booking.startDate)} – {shortDate(booking.endDate)} ({nights} {nights === 1 ? "night" : "nights"}) • {booking.guests || 1} {(booking.guests || 1) === 1 ? "guest" : "guests"}
+            {shortDate(booking.startDate)} – {shortDate(booking.endDate)} (
+            {nights} {nights === 1 ? "night" : "nights"}) •{" "}
+            {booking.guests || 1}{" "}
+            {(booking.guests || 1) === 1 ? "guest" : "guests"}
           </p>
         </div>
 
         <fieldset className="space-y-3">
-          <legend className="mb-2 font-semibold text-[#1F1F1F] dark:text-zinc-100 text-sm">What would you like to do?</legend>
+          <legend className="mb-2 font-semibold text-[#1F1F1F] dark:text-zinc-100 text-sm">
+            What would you like to do?
+          </legend>
           <label className="flex items-center gap-3 p-3 rounded-xl border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 cursor-pointer transition-colors">
-            <input type="radio" name="money-action" defaultChecked className="size-4 accent-[#1F1F1F] dark:accent-amber-400" />
-            <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">Send money</span>
+            <input
+              type="radio"
+              name="money-action"
+              defaultChecked
+              className="size-4 accent-[#1F1F1F] dark:accent-amber-400"
+            />
+            <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
+              Send money
+            </span>
           </label>
           <label className="flex items-center gap-3 p-3 rounded-xl border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 cursor-pointer transition-colors">
-            <input type="radio" name="money-action" className="size-4 accent-[#1F1F1F] dark:accent-amber-400" />
-            <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">Request money</span>
+            <input
+              type="radio"
+              name="money-action"
+              className="size-4 accent-[#1F1F1F] dark:accent-amber-400"
+            />
+            <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
+              Request money
+            </span>
           </label>
         </fieldset>
 
         <p className="rounded-xl bg-amber-50 dark:bg-amber-950/40 p-3.5 text-xs text-amber-900 dark:text-amber-300 leading-relaxed border border-amber-200/60 dark:border-amber-900/60">
-          Payments are securely handled via Homyz escrow. You can also contact your guest directly through Messages.
+          Payments are securely handled via Homyz escrow. You can also contact
+          your guest directly through Messages.
         </p>
 
         <div className="mt-6 flex items-center justify-between border-t border-zinc-100 dark:border-zinc-800 pt-4">

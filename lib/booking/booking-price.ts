@@ -21,6 +21,15 @@ export interface AuthoritativePriceBreakdown {
   totalPrice: number; // authoritative total in minor units
   storedTotal: number; // stored booking.totalPrice in DB
   isMathConsistent: boolean;
+  pricingSnapshotVersion?: string;
+  pricingSnapshotRevision?: number;
+  rateType?: string;
+  isNonRefundable?: boolean;
+  accommodationSubtotal?: number;
+  discountedAccommodationSubtotal?: number;
+  automaticDiscount?: { type: string; label?: string; percentage?: number; amount: number } | null;
+  cancellationPolicySnapshot?: string | null;
+  nightlyBreakdown?: Array<{ date: string; rate: number; rateType?: string }>;
 }
 
 function safeNum(val: unknown): number {
@@ -29,6 +38,19 @@ function safeNum(val: unknown): number {
 
 function asRecord(val: unknown): Record<string, unknown> {
   return val && typeof val === "object" && !Array.isArray(val) ? (val as Record<string, unknown>) : {};
+}
+
+/** Splits an integer monetary total across nights without losing minor units. */
+export function allocateNightlyTotal(totalMinorUnits: number, nights: number): number[] {
+  const normalizedTotal = Math.max(0, Math.round(totalMinorUnits));
+  const normalizedNights = Math.max(1, Math.floor(nights));
+  const base = Math.floor(normalizedTotal / normalizedNights);
+  const remainder = normalizedTotal - base * normalizedNights;
+
+  return Array.from(
+    { length: normalizedNights },
+    (_, index) => base + (index < remainder ? 1 : 0),
+  );
 }
 
 /**
@@ -44,6 +66,8 @@ export function getAuthoritativePriceBreakdown(booking: {
   startDate: Date | string;
   endDate: Date | string;
   priceBreakdown?: unknown;
+  cancellationPolicy?: string | null;
+  isNonRefundable?: boolean;
 }): AuthoritativePriceBreakdown {
   const snapshot = asRecord(booking.priceBreakdown);
   const currency = booking.currency || (typeof snapshot.currency === "string" ? snapshot.currency : "SAR");
@@ -102,6 +126,49 @@ export function getAuthoritativePriceBreakdown(booking: {
 
   const authoritativeTotal = storedTotal > 0 ? storedTotal : computedTotal;
 
+  const nightlyBreakdown = Array.isArray(snapshot.nightlyBreakdown)
+    ? (snapshot.nightlyBreakdown as Array<{ date: string; rate: number; rateType?: string }>)
+    : Array.isArray(snapshot.breakdown)
+      ? (snapshot.breakdown as Array<{ date: string; price: number; rateSource?: string }>).map((b) => ({
+          date: b.date,
+          rate: b.price,
+          rateType: b.rateSource,
+        }))
+      : undefined;
+
+  const accommodationSubtotal = safeNum(snapshot.accommodationSubtotal) || (nightlySubtotal - discountAmount);
+  const discountedAccommodationSubtotal = safeNum(snapshot.discountedAccommodationSubtotal) || accommodationSubtotal;
+
+  const automaticDiscount = snapshot.automaticDiscount && typeof snapshot.automaticDiscount === "object"
+    ? (snapshot.automaticDiscount as { type: string; label?: string; percentage?: number; amount: number })
+    : snapshot.selectedDiscount && typeof snapshot.selectedDiscount === "object"
+      ? (snapshot.selectedDiscount as { type: string; label?: string; percentage?: number; amount: number })
+      : snapshot.appliedDiscount && typeof snapshot.appliedDiscount === "object"
+        ? (() => {
+            const appliedDiscount = snapshot.appliedDiscount as Record<string, unknown>;
+            return {
+              type: typeof appliedDiscount.key === "string" ? appliedDiscount.key : "DISCOUNT",
+              label: typeof appliedDiscount.name === "string" ? appliedDiscount.name : undefined,
+              percentage: typeof appliedDiscount.percentage === "number" ? appliedDiscount.percentage : undefined,
+              amount: safeNum(appliedDiscount.amount),
+            };
+          })()
+        : null;
+
+  const rateType = typeof snapshot.rateType === "string" ? snapshot.rateType : undefined;
+  const isNonRefundable = Boolean(snapshot.isNonRefundable || booking.isNonRefundable);
+  const pricingSnapshotVersion = typeof snapshot.pricingSnapshotVersion === "string" ? snapshot.pricingSnapshotVersion : undefined;
+  const pricingSnapshotRevision = typeof snapshot.pricingSnapshotRevision === "number"
+    ? snapshot.pricingSnapshotRevision
+    : undefined;
+  const cancellationPolicySnapshot = typeof snapshot.cancellationPolicySnapshot === "string"
+    ? snapshot.cancellationPolicySnapshot
+    : typeof booking.cancellationPolicy === "string"
+      ? booking.cancellationPolicy
+      : typeof snapshot.cancellationPolicy === "string"
+        ? snapshot.cancellationPolicy
+        : null;
+
   return {
     currency,
     nights,
@@ -116,5 +183,14 @@ export function getAuthoritativePriceBreakdown(booking: {
     totalPrice: authoritativeTotal,
     storedTotal: authoritativeTotal,
     isMathConsistent: authoritativeTotal === computedTotal,
+    pricingSnapshotVersion,
+    pricingSnapshotRevision,
+    rateType,
+    isNonRefundable,
+    accommodationSubtotal,
+    discountedAccommodationSubtotal,
+    automaticDiscount,
+    cancellationPolicySnapshot,
+    nightlyBreakdown,
   };
 }

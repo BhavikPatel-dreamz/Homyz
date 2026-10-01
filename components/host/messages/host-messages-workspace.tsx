@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { bookingDateKey, formatBookingDateRange } from "@/lib/booking/booking-date";
+import { formatConversationListDate, formatMessageTime } from "@/lib/messages/message-date";
 import type {
   ConversationDTO,
   MessageDTO,
@@ -49,17 +50,26 @@ function getMessagePreview(lastMessage?: MessageDTO | null): string {
 
 interface HostMessagesWorkspaceProps {
   initialConversationId?: string;
+  initialConversations: ConversationDTO[];
+  initialRenderedAt: string;
 }
 
-export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWorkspaceProps) {
+export function HostMessagesWorkspace({
+  initialConversationId,
+  initialConversations,
+  initialRenderedAt,
+}: HostMessagesWorkspaceProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const activeIdFromQuery = searchParams.get("id") || initialConversationId || null;
 
   // Conversations state
-  const [conversations, setConversations] = useState<ConversationDTO[]>([]);
-  const [loadingConversations, setLoadingConversations] = useState(true);
-  const [selectedId, setSelectedId] = useState<string | null>(activeIdFromQuery);
+  const [conversations, setConversations] = useState<ConversationDTO[]>(initialConversations);
+  const [selectedId, setSelectedId] = useState<string | null>(() =>
+    activeIdFromQuery && initialConversations.some((conversation) => conversation.id === activeIdFromQuery)
+      ? activeIdFromQuery
+      : initialConversations[0]?.id ?? null,
+  );
   const [filter, setFilter] = useState<"all" | "unread">("all");
   const [filterMenuOpen, setFilterMenuOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -98,8 +108,15 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
   const [isNearBottom, setIsNearBottom] = useState(true);
   const prevMessagesCountRef = useRef(0);
   const lastScrolledConvIdRef = useRef<string | null>(null);
+  const didInitializeConversationRefreshRef = useRef(false);
+  const conversationRequestIdRef = useRef(0);
+  const conversationCacheRef = useRef(
+    new Map(initialConversations.map((conversation) => [conversation.id, conversation])),
+  );
 
-  const selectedConversation = conversations.find((c) => c.id === selectedId) || null;
+  const selectedConversation = conversations.find((c) => c.id === selectedId)
+    ?? (selectedId ? conversationCacheRef.current.get(selectedId) : null)
+    ?? null;
 
   const scrollToBottom = useCallback((behavior: ScrollBehavior = "smooth") => {
     const el = messagesContainerRef.current;
@@ -128,9 +145,9 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
   }, [activeIdFromQuery, selectedId]);
 
   // Fetch conversations list
-  const fetchConversations = useCallback(async (isBackground = false) => {
+  const fetchConversations = useCallback(async () => {
+    const requestId = ++conversationRequestIdRef.current;
     try {
-      if (!isBackground) setLoadingConversations(true);
       const params = new URLSearchParams();
       params.set("role", "host");
       if (filter === "unread") params.set("filter", "unread");
@@ -139,8 +156,12 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
       const res = await fetch(`/api/v1/messages/conversations?${params.toString()}`);
       if (!res.ok) throw new Error("Failed to fetch conversations");
       const json = await res.json();
+      if (requestId !== conversationRequestIdRef.current) return;
       if (json.success && Array.isArray(json.data.conversations)) {
         const incomingConvs: ConversationDTO[] = json.data.conversations;
+        incomingConvs.forEach((conversation) => {
+          conversationCacheRef.current.set(conversation.id, conversation);
+        });
         setConversations((prev) => {
           if (prev.length === incomingConvs.length) {
             let isSame = true;
@@ -164,16 +185,12 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
         });
 
         // Default to first conversation if none selected
-        if (!selectedId && incomingConvs.length > 0) {
-          setSelectedId(incomingConvs[0].id);
-        }
+        setSelectedId((current) => current ?? incomingConvs[0]?.id ?? null);
       }
     } catch (err) {
       console.error("Error fetching conversations:", err);
-    } finally {
-      if (!isBackground) setLoadingConversations(false);
     }
-  }, [filter, search, selectedId]);
+  }, [filter, search]);
 
   // Fetch messages for selected conversation
   const fetchMessages = useCallback(async (convId: string, isBackground = false) => {
@@ -226,6 +243,10 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
 
   // Initial and reactive fetch for conversations
   useEffect(() => {
+    if (!didInitializeConversationRefreshRef.current) {
+      didInitializeConversationRefreshRef.current = true;
+      return;
+    }
     fetchConversations();
   }, [fetchConversations]);
 
@@ -303,7 +324,7 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
   useEffect(() => {
     const interval = setInterval(() => {
       if (document.visibilityState === "visible") {
-        fetchConversations(true);
+        fetchConversations();
         if (selectedId) {
           fetchMessages(selectedId, true);
         }
@@ -493,7 +514,7 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
       const json = await res.json();
       if (json.success && json.data) {
         setMessages((prev) => prev.map((m) => (m.id === tempId ? json.data : m)));
-        fetchConversations(true);
+        fetchConversations();
       }
     } catch (err) {
       console.error("Failed to send message:", err);
@@ -520,7 +541,7 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
       setPreApproveModalOpen(false);
       setPreApproveNote("");
       await fetchMessages(selectedId);
-      await fetchConversations(true);
+      await fetchConversations();
     } catch (err) {
       console.error("Pre-approval error:", err);
       alert("Failed to pre-approve inquiry.");
@@ -557,7 +578,7 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
       setSpecialOfferModalOpen(false);
       setOfferNote("");
       await fetchMessages(selectedId);
-      await fetchConversations(true);
+      await fetchConversations();
     } catch (err) {
       console.error("Special offer error:", err);
       alert("Failed to send special offer.");
@@ -583,27 +604,13 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
       setDeclineModalOpen(false);
       setDeclineNote("");
       await fetchMessages(selectedId);
-      await fetchConversations(true);
+      await fetchConversations();
     } catch (err) {
       console.error("Decline error:", err);
       alert("Failed to decline inquiry.");
     } finally {
       setModalSubmitting(false);
     }
-  };
-
-  const formatMessageTime = (dateStr: string) => {
-    const d = new Date(dateStr);
-    return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
-  };
-
-  const formatListDate = (dateStr: string) => {
-    const d = new Date(dateStr);
-    const now = new Date();
-    if (d.toDateString() === now.toDateString()) {
-      return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
-    }
-    return d.toLocaleDateString([], { month: "short", day: "numeric" });
   };
 
   const getStatusBadge = (status: string, activeOffer?: any) => {
@@ -697,19 +704,7 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
 
           {/* Conversations Scroll Area */}
           <div className="flex-1 overflow-y-auto divide-y divide-zinc-100">
-            {loadingConversations ? (
-              <div className="p-4 space-y-4">
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="flex gap-3 animate-pulse">
-                    <div className="size-12 rounded-full bg-zinc-200 shrink-0" />
-                    <div className="flex-1 space-y-2 py-1">
-                      <div className="h-3.5 bg-zinc-200 rounded w-1/2" />
-                      <div className="h-3 bg-zinc-100 rounded w-3/4" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : conversations.length === 0 ? (
+            {conversations.length === 0 ? (
               <div className="p-8 text-center text-zinc-400 space-y-2">
                 <svg
                   className="mx-auto size-10 text-zinc-300"
@@ -771,7 +766,7 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
                           {conv.guest.name || "Guest"}
                         </span>
                         <span className="text-[11px] text-zinc-400 shrink-0">
-                          {formatListDate(conv.lastMessageAt)}
+                          {formatConversationListDate(conv.lastMessageAt, initialRenderedAt)}
                         </span>
                       </div>
 
@@ -1340,7 +1335,7 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
                       {selectedConversation.guest.name || "Guest"}
                     </p>
                     <p className="text-xs text-zinc-500">
-                      Member since {new Date(selectedConversation.guest.createdAt).getFullYear()}
+                      Member since {new Date(selectedConversation.guest.createdAt).getUTCFullYear()}
                     </p>
                   </div>
                 </div>

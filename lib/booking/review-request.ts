@@ -28,6 +28,8 @@ export type ReviewRequestData = {
     total: number;
     currency: string;
   };
+  isNonRefundable: boolean;
+  rateType: "STANDARD" | "NON_REFUNDABLE" | string;
   canSubmitRequest: boolean;
   blocker: string | null;
 };
@@ -69,6 +71,8 @@ export function createReviewRequestData(input: {
       total: input.quote.guestTotal,
       currency: input.quote.currency,
     },
+    isNonRefundable: Boolean(input.quote.isNonRefundable || input.quote.rateType === "NON_REFUNDABLE"),
+    rateType: input.quote.rateType || (input.quote.isNonRefundable ? "NON_REFUNDABLE" : "STANDARD"),
     canSubmitRequest,
     blocker: canSubmitRequest ? null : PAYMENT_AUTHORIZATION_REQUIRED_MESSAGE,
   };

@@ -288,7 +288,7 @@ async function runPhaseP3Tests() {
   assert(detailClientSrc.includes("What this place offers"), "Detail client provides categorized amenities modal");
   assert(detailClientSrc.includes("Where you'll sleep"), "Detail client displays structured room sleeping arrangements");
   assert(detailClientSrc.includes("Where you'll be"), "Detail client includes approximate location map");
-  assert(detailClientSrc.includes("/api/v1/listings/${listing.id}/quote"), "Detail client calculates real-time price quotes");
+  assert(detailClientSrc.includes("fetchAuthoritativeQuote"), "Detail client calculates real-time price quotes via fetchAuthoritativeQuote (URL encapsulated in quote-cache)");
 
   console.log("\n==================================================================");
   console.log(`   ALL PHASE P3 TESTS PASSED (${passed}/${passed + failed})   `);

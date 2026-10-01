@@ -13,6 +13,34 @@ export type CheckoutSummaryQuote = {
   baseNightlyPrice: number;
   nightlySubtotal: number;
   discountAmount?: number;
+  discountPercentage?: number;
+  appliedDiscount?: {
+    key?: string;
+    name?: string;
+    percentage?: number;
+    amount: number;
+  } | null;
+  selectedDiscount?: {
+    type: string;
+    label: string;
+    percentage: number;
+    amount: number;
+  } | null;
+  rateType?: "STANDARD" | "NON_REFUNDABLE" | string;
+  isNonRefundable?: boolean;
+  nonRefundableDiscount?: {
+    key?: string;
+    name?: string;
+    percentage?: number;
+    amount: number;
+  } | null;
+  nonRefundable?: {
+    enabled?: boolean;
+    selected?: boolean;
+    percentage?: number;
+    amount?: number;
+  } | null;
+
   /** @deprecated Ignored. Cleaning fees are no longer displayed or charged. */
   cleaningFee?: number;
   extraGuestFee: number;
@@ -81,7 +109,53 @@ export function getCheckoutPriceRows(
       units: !quote.isSpecialOffer && nightlyPrices.size <= 1 ? quote.nights : undefined,
     },
   ];
-  if ((quote.discountAmount || 0) > 0) rows.push({ id: "discount", label: "Discount", amount: quote.discountAmount || 0, subtract: true });
+  const isNonRefundable =
+    quote.rateType === "NON_REFUNDABLE" ||
+    quote.isNonRefundable === true ||
+    quote.nonRefundable?.selected === true;
+  const nonRefundableAmount = isNonRefundable
+    ? (quote.nonRefundableDiscount?.amount ?? quote.nonRefundable?.amount ?? 0)
+    : 0;
+  const nonRefundablePercentage =
+    quote.nonRefundableDiscount?.percentage ?? quote.nonRefundable?.percentage ?? 10;
+
+  const promoDiscountAmount =
+    quote.selectedDiscount?.amount ??
+    (quote.appliedDiscount && quote.appliedDiscount.key !== "non_refundable"
+      ? quote.appliedDiscount.amount
+      : 0);
+
+  const promoDiscountLabel = quote.selectedDiscount?.label
+    ? `${quote.selectedDiscount.label} (${quote.selectedDiscount.percentage}%)`
+    : quote.appliedDiscount && quote.appliedDiscount.key !== "non_refundable"
+      ? `${quote.appliedDiscount.name}${quote.appliedDiscount.percentage ? ` (${quote.appliedDiscount.percentage}%)` : ""}`
+      : "Discount";
+
+  if (promoDiscountAmount > 0) {
+    rows.push({
+      id: "discount",
+      label: promoDiscountLabel,
+      amount: promoDiscountAmount,
+      subtract: true,
+    });
+  }
+
+  if (isNonRefundable && nonRefundableAmount > 0) {
+    rows.push({
+      id: "non-refundable-discount",
+      label: `Non-refundable discount (${nonRefundablePercentage}%)`,
+      amount: nonRefundableAmount,
+      subtract: true,
+    });
+  } else if (!promoDiscountAmount && (quote.discountAmount || 0) > 0) {
+    rows.push({
+      id: "discount",
+      label: "Discount",
+      amount: quote.discountAmount || 0,
+      subtract: true,
+    });
+  }
+
   if (quote.extraGuestFee > 0) rows.push({ id: "extra-guests", label: "Extra guest fee", amount: quote.extraGuestFee });
   if ((quote.petFee || 0) > 0) rows.push({ id: "pets", label: "Pet fee", amount: quote.petFee || 0 });
 
