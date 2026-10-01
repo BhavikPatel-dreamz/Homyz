@@ -203,7 +203,7 @@ export function SupportChatView({ user }: { user?: { name?: string | null } }) {
         {/* Other Help Channels */}
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4 xl:flex xl:flex-col">
           <div className="border border-[#727272] bg-white p-4 sm:p-5 rounded-lg">
-            <h4 className="text-sm font-medium text-[#1F1F1F]">{t("profile_support_phone_title", "Phone Support")}</h4>
+            <h4 className="text-base font-semibold text-[#1F1F1F]">Phone Support</h4>
             <p className="mt-1 text-sm text-[#727272] leading-relaxed">
               {t("profile_support_phone_desc", "For immediate assistance with active reservations:")}
             </p>
@@ -217,7 +217,7 @@ export function SupportChatView({ user }: { user?: { name?: string | null } }) {
           </div>
 
           <div className="border border-[#727272] bg-white p-4 sm:p-5 rounded-lg">
-            <h4 className="text-sm font-medium text-[#1F1F1F]">{t("profile_support_email_title", "Email Support")}</h4>
+            <h4 className="text-base font-semibold text-[#1F1F1F]">Email Support</h4>
             <p className="mt-1 text-sm text-[#727272] leading-relaxed">
               {t("profile_support_email_desc", "Send documents or detailed billing inquiries:")}
             </p>
@@ -231,7 +231,7 @@ export function SupportChatView({ user }: { user?: { name?: string | null } }) {
           </div>
 
           <div className="border border-[#727272] bg-white p-4 sm:p-5 rounded-lg">
-            <h4 className="text-sm font-medium text-[#1F1F1F]">{t("profile_support_help_title", "Help Centre")}</h4>
+            <h4 className="text-base font-semibold text-[#1F1F1F]">Help Centre</h4>
             <p className="mt-1 text-sm text-[#727272] leading-relaxed">
               {t("profile_support_help_desc", "Find instant answers to FAQs, cancellation policies, and guest guides.")}
             </p>

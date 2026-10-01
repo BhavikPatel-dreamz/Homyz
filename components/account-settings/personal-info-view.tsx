@@ -536,7 +536,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
   return (
     <div className="w-full max-w-2xl text-[#1F1F1F]">
       {/* Page Title */}
-      <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-[#1F1F1F] mb-6">
+      <h1>
         {t("personal_info_title", "Personal information")}
       </h1>
 
