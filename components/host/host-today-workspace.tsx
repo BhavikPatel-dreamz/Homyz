@@ -240,8 +240,7 @@ export function HostTodayWorkspace({
               role="status"
             >
               <span>
-                Reservations could not be refreshed. Showing the last available
-                data.
+                Reservations could not be refreshed. Showing the last available data.
               </span>
               <button
                 type="button"
