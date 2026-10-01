@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { formatBookingDateRange } from "@/lib/booking/booking-date";
-import { getBookingStatusPresentation } from "@/lib/booking/booking-status";
 import { useLanguage } from "@/lib/i18n/language-context";
 
 export interface ReservationCardData {
@@ -30,26 +29,10 @@ export interface ReservationCardData {
   createdAt?: Date | string;
 }
 
-function formatDates(start: Date | string, end: Date | string, fallbackText: string) {
-  const first = new Date(start);
-  const last = new Date(end);
-  if (Number.isNaN(first.getTime()) || Number.isNaN(last.getTime())) {
-    return fallbackText;
-  }
-  const format = (date: Date, includeYear: boolean) =>
-    date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      ...(includeYear ? { year: "numeric" as const } : {}),
-      timeZone: "UTC",
-    });
-  return `${format(first, first.getUTCFullYear() !== last.getUTCFullYear())} – ${format(last, true)}`;
-}
 
 function StatusBadge({ status }: { status?: string }) {
   const { t } = useLanguage();
   const s = (status || "PENDING").toUpperCase();
-  const presentation = getBookingStatusPresentation(s);
   if (s === "CONFIRMED" || s === "CURRENT_STAY") {
     return (
       <span className="inline-flex items-center gap-1.5 rounded-full bg-white/95 backdrop-blur-xs px-2.5 py-1 text-xs font-semibold text-emerald-800 border border-emerald-200/90 shadow-2xs">
@@ -112,8 +95,6 @@ export function ReservationCard({
   const title = data.propertyName || "Property stay";
   const isPastVariant = variant === "past";
   const detailsHref = href || `/bookings/${data.id}`;
-  const statusPresentation = getBookingStatusPresentation(data.status || "PENDING");
-  const isPending = statusPresentation.status === "PENDING";
   return (
     <article
       className={isPastVariant
@@ -155,7 +136,7 @@ export function ReservationCard({
             ? "order-2 mt-1 text-sm leading-6 text-[#727272]"
             : "text-[11px] font-semibold uppercase tracking-[0.04em] text-slate-500"}
           >
-            {formatDates(data.startDate, data.endDate)}
+            {formatBookingDateRange(data.startDate, data.endDate)}
           </p>
 
           <Link
@@ -183,16 +164,7 @@ export function ReservationCard({
             Booking #{data.id.slice(-8).toUpperCase()}
           </p>
 
-          {/* {isPending && (
-            <p className="mt-2 text-sm leading-5 text-amber-800">
-              Your host is reviewing this request.
-            </p>
-          )} */}
 
-          <p className="mt-2 text-[10px] font-medium tracking-[0.02em] text-slate-400">
-            {t("dashboard_card_booking_num", "Booking #")}
-            {data.id.slice(-8).toUpperCase()}
-          </p>
 
           {/* <Link
             href={detailsHref}
