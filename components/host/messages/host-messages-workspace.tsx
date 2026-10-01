@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
+import { useScrollbarDrag } from "@/components/ui/use-scrollbar-drag";
 import type {
   ConversationDTO,
   MessageDTO,
@@ -97,6 +98,7 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
   const [offerGuests, setOfferGuests] = useState(1);
   const [offerSubtotal, setOfferSubtotal] = useState("");
   const [offerNote, setOfferNote] = useState("");
+  const [offerListingId, setOfferListingId] = useState("");
   const [modalSubmitting, setModalSubmitting] = useState(false);
 
   const [preApproveNote, setPreApproveNote] = useState("");
@@ -108,9 +110,15 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
   const [isNearBottom, setIsNearBottom] = useState(true);
   const prevMessagesCountRef = useRef(0);
   const lastScrolledConvIdRef = useRef<string | null>(null);
+  const rightPanelScrollRef = useRef<HTMLElement>(null);
+  const rightPanelScrollTrackRef = useRef<HTMLDivElement>(null);
+  const rightPanelScrollFrameRef = useRef<number | null>(null);
+  const [rightPanelScrollThumb, setRightPanelScrollThumb] = useState({ height: 0, top: 0, visible: false });
+  const { isDragging: isRightPanelScrollbarDragging, onThumbPointerDown: onRightPanelThumbPointerDown, scrollByPage: scrollRightPanelByPage } = useScrollbarDrag(rightPanelScrollRef, rightPanelScrollTrackRef, rightPanelScrollThumb.height);
 
   const selectedConversation = conversations.find((c) => c.id === selectedId) || null;
   const visibleConversations = inboxView === "all" || inboxView === "hosting" ? conversations : [];
+  const specialOfferListings = Array.from(new Map(conversations.map((conversation) => [conversation.listing.id, conversation.listing])).values());
 
   const scrollToBottom = useCallback((behavior: ScrollBehavior = "smooth") => {
     const el = messagesContainerRef.current;
@@ -540,6 +548,11 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
     }
   };
 
+  const openSpecialOfferModal = () => {
+    setOfferListingId(selectedConversation?.listing.id || "");
+    setSpecialOfferModalOpen(true);
+  };
+
   // Send special offer
   const handleSendSpecialOffer = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -561,6 +574,7 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
           endDate: offerEndDate,
           guests: offerGuests,
           subtotalPrice: subtotal,
+          listingId: offerListingId || selectedConversation?.listing.id,
           messageText: offerNote.trim() || undefined,
         }),
       });
@@ -617,6 +631,40 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
     return d.toLocaleDateString([], { month: "short", day: "numeric" });
   };
 
+  const updateRightPanelScrollThumb = useCallback(() => {
+    if (rightPanelScrollFrameRef.current !== null) cancelAnimationFrame(rightPanelScrollFrameRef.current);
+    rightPanelScrollFrameRef.current = requestAnimationFrame(() => {
+      const element = rightPanelScrollRef.current;
+      if (!element) return;
+      const hasOverflow = element.scrollHeight > element.clientHeight + 1;
+      const trackHeight = rightPanelScrollTrackRef.current?.clientHeight || element.clientHeight;
+      const arrowSpace = 28;
+      const usableTrackHeight = Math.max(0, trackHeight - arrowSpace * 2);
+      const height = hasOverflow ? Math.min(60, usableTrackHeight) : 0;
+      const maxTop = Math.max(0, usableTrackHeight - height);
+      const scrollRange = Math.max(1, element.scrollHeight - element.clientHeight);
+      const top = hasOverflow ? arrowSpace + Math.round((element.scrollTop / scrollRange) * maxTop) : 0;
+      setRightPanelScrollThumb((current) => current.height === height && current.top === top && current.visible === hasOverflow ? current : { height, top, visible: hasOverflow });
+      rightPanelScrollFrameRef.current = null;
+    });
+  }, []);
+
+  useEffect(() => {
+    const element = rightPanelScrollRef.current;
+    if (!element) return;
+    updateRightPanelScrollThumb();
+    const resizeObserver = new ResizeObserver(updateRightPanelScrollThumb);
+    const mutationObserver = new MutationObserver(updateRightPanelScrollThumb);
+    resizeObserver.observe(element);
+    if (rightPanelScrollTrackRef.current) resizeObserver.observe(rightPanelScrollTrackRef.current);
+    mutationObserver.observe(element, { childList: true, subtree: true });
+    return () => {
+      resizeObserver.disconnect();
+      mutationObserver.disconnect();
+      if (rightPanelScrollFrameRef.current !== null) cancelAnimationFrame(rightPanelScrollFrameRef.current);
+    };
+  }, [rightPanelScrollThumb.visible, updateRightPanelScrollThumb]);
+
   const getStatusBadge = (status: string, activeOffer?: any) => {
     if (activeOffer && status !== "CONFIRMED" && status !== "CANCELLED" && status !== "COMPLETED") {
       if (activeOffer.status === "ACCEPTED") {
@@ -649,14 +697,14 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
   };
 
   return (
-    <div className="messages-workspace flex-1 w-full max-w-[1520px] mx-auto px-0 sm:px-6 pb-20">
+    <div className="messages-workspace flex-1 w-full max-w-[1520px] mx-auto px-0 sm:px-6">
       <div className="grid grid-cols-1 overflow-hidden bg-white lg:grid-cols-[300px_minmax(0,1fr)_362px] xl:grid-cols-[320px_minmax(0,1fr)_362px] lg:h-[calc(100svh-132px)] lg:min-h-[680px] lg:border lg:border-zinc-300">
         {/* ========================================================================= */}
         {/* COLUMN 1: CONVERSATIONS LIST                                              */}
         {/* ========================================================================= */}
         <div className={`flex-col bg-white overflow-hidden lg:border-r lg:border-zinc-300 ${mobileView === "thread" ? "hidden lg:flex" : "flex"}`}>
           {/* Header & Tabs */}
-          <div className="border-b border-zinc-200 p-4 space-y-3">
+          <div className="border-b border-zinc-200 px-4 pb-8 pt-12 space-y-3">
             <div className="flex h-6 items-center justify-between">
               <h1 className="text-lg font-medium text-[#1F1F1F]">Messages</h1>
             </div>
@@ -889,14 +937,14 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
                       <button
                         type="button"
                         onClick={() => setPreApproveModalOpen(true)}
-                        className="px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 transition-colors"
+                        className="px-3 py-1.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 transition-colors"
                       >
                         Pre-approve
                       </button>
                       <button
                         type="button"
-                        onClick={() => setSpecialOfferModalOpen(true)}
-                        className="px-3 py-1.5 rounded-full text-xs font-semibold bg-[#FCDF9C] text-[#1F1F1F] hover:bg-[#F7D37D] transition-colors"
+                        onClick={openSpecialOfferModal}
+                        className="px-3 py-1.5 rounded-full text-xs font-medium bg-[#FCDF9C] text-[#1F1F1F] hover:bg-[#F7D37D] transition-colors"
                       >
                         Special offer
                       </button>
@@ -977,7 +1025,7 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
                                         Accepted by Guest
                                       </span>
                                     ) : (
-                                      <span className="inline-flex items-center rounded-full bg-amber-200/80 px-2 py-0.5 text-[10px] font-semibold text-amber-900 border border-amber-300">
+                                      <span className="inline-flex items-center rounded-full bg-amber-200/80 px-2 py-0.5 text-[10px] font-medium text-amber-900 border border-amber-300">
                                         Sent (Awaiting Guest)
                                       </span>
                                     )}
@@ -988,14 +1036,14 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
                                 {m.metadata && (
                                   <div className="grid grid-cols-2 gap-2 text-xs bg-white/80 p-2.5 rounded-xl border border-amber-200/60">
                                     <div>
-                                      <span className="text-zinc-500 block">Dates:</span>
-                                      <span className="font-semibold text-zinc-800">
+                                      <span className="text-[#1f1f1f] block">Dates:</span>
+                                      <span className="font-medium text-[#1f1f1f]">
                                         {String(m.metadata.startDate || "")} - {String(m.metadata.endDate || "")}
                                       </span>
                                     </div>
                                     <div>
-                                      <span className="text-zinc-500 block">Total Offer:</span>
-                                      <span className="font-bold text-amber-900 text-sm">
+                                      <span className="text-[#1f1f1f] block">Total Offer:</span>
+                                      <span className="font-medium text-amber-900 text-sm">
                                         {String(m.metadata.currency || "SAR")} {((Number(m.metadata.subtotalPrice) || 0) / 100).toFixed(2)}
                                       </span>
                                     </div>
@@ -1344,7 +1392,8 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
         {/* ========================================================================= */}
         {/* COLUMN 3: CONTEXT & RESERVATION PANEL                                     */}
         {/* ========================================================================= */}
-        <aside className="hidden lg:flex flex-col gap-3 overflow-y-auto bg-white px-5.25 py-12">
+        <div className="relative hidden min-h-0 lg:flex">
+          <aside ref={rightPanelScrollRef} onScroll={updateRightPanelScrollThumb} className="custom-scrollbar flex h-full w-full flex-col gap-3 overflow-y-auto overscroll-contain bg-white pl-5.25 pr-[38px] py-12">
           {selectedConversation ? (
             <>
               <section className="border-b border-[#D7D7D7] pb-4">
@@ -1355,7 +1404,7 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
                 {selectedConversation.status !== "CONFIRMED" && selectedConversation.status !== "DECLINED" && (
                   <div className="mt-6 space-y-3">
                     <button type="button" onClick={() => setPreApproveModalOpen(true)} className="flex h-9 w-full items-center justify-center rounded-lg border border-[#727272] px-3 text-base font-normal text-[#1F1F1F] transition-colors hover:bg-zinc-50">Pre-approve</button>
-                    <button type="button" onClick={() => setSpecialOfferModalOpen(true)} className="flex h-9 w-full items-center justify-center rounded-lg border border-[#727272] px-3 text-base font-normal text-[#1F1F1F] transition-colors hover:bg-zinc-50">Special offer</button>
+                    <button type="button" onClick={openSpecialOfferModal} className="flex h-9 w-full items-center justify-center rounded-lg border border-[#727272] px-3 text-base font-normal text-[#1F1F1F] transition-colors hover:bg-zinc-50">Special offer</button>
                     <button type="button" onClick={() => setDeclineModalOpen(true)} className="flex h-9 w-full items-center justify-center rounded-lg border border-[#727272] px-3 text-base font-normal text-[#1F1F1F] transition-colors hover:bg-zinc-50">Decline</button>
                   </div>
                 )}
@@ -1391,7 +1440,7 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
                 <Link
                   href={`/listings/${selectedConversation.listing.id}`}
                   target="_blank"
-                  className="block text-center w-full py-2 rounded-[8px] border border-[#D7D7D7] text-sm font-medium text-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white transition-colors"
+                  className="block text-center w-full py-2 rounded-[8px] border border-[#727272] text-sm font-medium text-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white transition-colors"
                 >
                   View Listing
                 </Link>
@@ -1525,7 +1574,7 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
                     </button>
                     <button
                       type="button"
-                      onClick={() => setSpecialOfferModalOpen(true)}
+                      onClick={openSpecialOfferModal}
                       className="w-full py-2.5 rounded-[10px] border border-zinc-400 text-[#1F1F1F] text-base font-medium hover:bg-zinc-50 transition-colors"
                     >
                       Special offer
@@ -1539,7 +1588,19 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
               Context and stay details will appear here.
             </div>
           )}
-        </aside>
+          </aside>
+          {rightPanelScrollThumb.visible && (
+            <div ref={rightPanelScrollTrackRef} className="absolute inset-y-0 right-0 hidden w-[22px] rounded-[30px] bg-white lg:block">
+              <button type="button" aria-label="Scroll message details up" onClick={() => scrollRightPanelByPage("up")} className="absolute left-0 top-1 z-10 flex size-[22px] items-center justify-center rounded-full text-[#727272] transition hover:bg-white/70 hover:text-[#1f1f1f]">
+                <svg aria-hidden="true" className="size-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m18 15-6-6-6 6" /></svg>
+              </button>
+              <div onPointerDown={onRightPanelThumbPointerDown} className={`absolute left-0 top-0 w-[22px] touch-none select-none rounded-[30px] border border-white bg-[#DDDDDE] shadow-[0_2px_4px_rgba(0,0,0,0.25)] will-change-transform ${isRightPanelScrollbarDragging ? "cursor-grabbing" : "cursor-grab"}`} style={{ height: `${rightPanelScrollThumb.height}px`, transform: `translate3d(0, ${rightPanelScrollThumb.top}px, 0)` }} />
+              <button type="button" aria-label="Scroll message details down" onClick={() => scrollRightPanelByPage("down")} className="absolute bottom-1 left-0 z-10 flex size-[22px] items-center justify-center rounded-full text-[#727272] transition hover:bg-white/70 hover:text-[#1f1f1f]">
+                <svg aria-hidden="true" className="size-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m6 9 6 6 6-6" /></svg>
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* ========================================================================= */}
@@ -1589,108 +1650,125 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
       {/* MODAL: SPECIAL OFFER                                                      */}
       {/* ========================================================================= */}
       {specialOfferModalOpen && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
-          <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl space-y-5">
-            <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
-              <h3 className="text-lg font-bold text-[#1F1F1F]">Send a Special Offer</h3>
+        <ModalOverlay
+          className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 px-4 py-6 sm:items-center sm:p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="special-offer-title"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setSpecialOfferModalOpen(false);
+          }}
+        >
+          <section className="w-full max-w-[400px] rounded-[12px] bg-white px-6 py-5 text-[#1F1F1F] shadow-[0_12px_32px_rgba(0,0,0,0.18)] sm:max-w-[475px] sm:rounded-[20px] pt-11 pb-8" onMouseDown={(event) => event.stopPropagation()}>
+            <header className="relative pr-8">
+              <h3 id="special-offer-title" className="text-xl text-[#727272] font-medium leading-7 tracking-[-0.02em]">
+                Send <span className="text-[#1f1f1f]">{selectedConversation?.guest.name || "Guest"}</span> a special offer
+              </h3>
               <button
                 type="button"
                 onClick={() => setSpecialOfferModalOpen(false)}
-                className="size-8 rounded-full flex items-center justify-center text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100"
+                aria-label="Close special offer"
+                className="absolute right-0 -top-[25px] flex size-7 items-center justify-center rounded-full transition-colors hover:bg-zinc-100"
               >
-                ✕
+                <Image src="/images/icons/homyz/stroke/X.svg" alt="" width={20} height={20} className="size-5" />
               </button>
-            </div>
+              <p className="mt-1.5 max-w-[360px] text-sm leading-5 text-[#727272]">
+                {selectedConversation?.guest.name || "The guest"} will have 24 hours to book. In the meantime, your calendar will remain open.
+              </p>
+            </header>
 
-            <form onSubmit={handleSendSpecialOffer} className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-zinc-700 mb-1">Check-in</label>
+            <form onSubmit={handleSendSpecialOffer} className="mt-6 space-y-3">
+              <div>
+                <label className="mb-1.5 block text-base font-medium">Listing</label>
+                <div className="relative">
+                  <select
+                    value={offerListingId || selectedConversation?.listing.id || ""}
+                    onChange={(event) => setOfferListingId(event.target.value)}
+                    className="h-12 w-full appearance-none rounded-[10px] border border-[#727272] bg-white px-4 pr-10 text-base outline-none transition-shadow focus:ring-2 focus:ring-[#1F1F1F]/15"
+                    aria-label="Listing for this special offer"
+                  >
+                    {(specialOfferListings.length ? specialOfferListings : selectedConversation ? [selectedConversation.listing] : []).map((listing) => (
+                      <option key={listing.id} value={listing.id}>
+                        {[listing.title, listing.city, listing.country].filter(Boolean).join(", ") || "Property name, City, Country"}
+                      </option>
+                    ))}
+                  </select>
+                  <svg className="pointer-events-none absolute right-4 top-1/2 size-5 -translate-y-1/2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="m6 9 6 6 6-6" /></svg>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+                <label className="relative block">
+                  <span className="pointer-events-none absolute left-4 top-2 text-xs text-[#727272]">Check-in</span>
                   <input
                     type="date"
                     required
                     value={offerStartDate}
                     onChange={(e) => setOfferStartDate(e.target.value)}
-                    className="w-full h-10 px-3 text-xs sm:text-sm rounded-xl border border-zinc-300 focus:outline-none focus:border-zinc-500"
+                    className="h-[76px] w-full rounded-[10px] border border-[#727272] px-4 pt-5 text-base font-medium text-[#1F1F1F] outline-none transition-shadow focus:ring-2 focus:ring-[#1F1F1F]/15 sm:h-[68px]"
                   />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-zinc-700 mb-1">Check-out</label>
+                </label>
+                <label className="relative block">
+                  <span className="pointer-events-none absolute left-4 top-2 text-xs text-[#727272]">Check-out</span>
                   <input
                     type="date"
                     required
                     value={offerEndDate}
                     onChange={(e) => setOfferEndDate(e.target.value)}
-                    className="w-full h-10 px-3 text-xs sm:text-sm rounded-xl border border-zinc-300 focus:outline-none focus:border-zinc-500"
+                    className="h-[76px] w-full rounded-[10px] border border-[#727272] px-4 pt-5 text-base font-medium text-[#1F1F1F] outline-none transition-shadow focus:ring-2 focus:ring-[#1F1F1F]/15 sm:h-[68px]"
                   />
-                </div>
+                </label>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-zinc-700 mb-1">Guests</label>
-                  <input
-                    type="number"
-                    min={1}
-                    max={20}
-                    required
-                    value={offerGuests}
-                    onChange={(e) => setOfferGuests(parseInt(e.target.value, 10) || 1)}
-                    className="w-full h-10 px-3 text-xs sm:text-sm rounded-xl border border-zinc-300 focus:outline-none focus:border-zinc-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-zinc-700 mb-1">
-                    Special Subtotal ({selectedConversation?.booking?.currency || "SAR"})
-                  </label>
-                  <input
-                    type="number"
-                    min={1}
-                    step="any"
-                    required
-                    placeholder="e.g. 500"
-                    value={offerSubtotal}
-                    onChange={(e) => setOfferSubtotal(e.target.value)}
-                    className="w-full h-10 px-3 text-xs sm:text-sm rounded-xl border border-zinc-300 focus:outline-none focus:border-zinc-500"
-                  />
-                </div>
-              </div>
+              <label className="relative block">
+                <span className="pointer-events-none absolute left-4 top-2 text-xs text-[#727272]">Guests</span>
+                <input
+                  type="number"
+                  min={1}
+                  max={20}
+                  required
+                  value={offerGuests}
+                  onChange={(e) => setOfferGuests(parseInt(e.target.value, 10) || 1)}
+                  className="h-[68px] w-full appearance-none rounded-[10px] border border-[#727272] px-4 pt-5 text-base font-medium text-[#1F1F1F] outline-none transition-shadow focus:ring-2 focus:ring-[#1F1F1F]/15"
+                />
+                <svg className="pointer-events-none absolute right-4 top-1/2 size-5 -translate-y-1/2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" d="m6 9 6 6 6-6" /></svg>
+              </label>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-700 mb-1">
-                  Optional note to guest
-                </label>
-                <textarea
-                  rows={2}
-                  value={offerNote}
-                  onChange={(e) => setOfferNote(e.target.value)}
-                  placeholder="e.g. I gave you a 10% discount for the week!"
-                  className="w-full p-2.5 text-xs sm:text-sm rounded-xl border border-zinc-300 focus:outline-none focus:border-zinc-500"
+                <input
+                  type="number"
+                  min={1}
+                  step="any"
+                  required
+                  placeholder="Subtotal"
+                  value={offerSubtotal}
+                  onChange={(e) => setOfferSubtotal(e.target.value)}
+                  className="h-12 w-full rounded-[10px] border border-[#727272] px-4 text-base font-medium text-[#1F1F1F] placeholder:text-[#1F1F1F] outline-none transition-shadow focus:ring-2 focus:ring-[#1F1F1F]/15"
+                  aria-label={`Special subtotal in ${selectedConversation?.booking?.currency || "SAR"}`}
                 />
+                <p className="mt-3 text-sm leading-5 text-[#727272]">
+                  Enter a subtotal that includes any cleaning or extra guest fee. This won&apos;t include service fees or applicable taxes.
+                </p>
               </div>
 
-              <p className="text-[11px] text-zinc-500">
-                Special offers expire automatically after 24 hours. The guest can accept and book directly.
-              </p>
-
-              <div className="flex justify-end gap-3 pt-3 border-t border-zinc-100">
+              <div className="flex flex-col gap-3 pt-3 sm:flex-row sm:items-center sm:justify-between">
                 <button
                   type="button"
                   onClick={() => setSpecialOfferModalOpen(false)}
-                  className="px-5 py-2.5 rounded-full text-xs font-semibold text-zinc-600 hover:bg-zinc-100"
+                  className="h-12 w-full rounded-full border border-[#1F1F1F] px-6 text-base font-medium transition-colors hover:bg-[#1F1F1F] hover:text-white duration-300 sm:w-auto"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={modalSubmitting}
-                  className="px-6 py-2.5 rounded-full bg-[#1F1F1F] text-white text-xs font-semibold hover:bg-black disabled:opacity-50"
+                  className="h-12 w-full rounded-full bg-[#FCDF9C] px-6 text-base font-medium text-[#1F1F1F] hover:text-white transition-colors hover:bg-[#1f1f1f] disabled:cursor-not-allowed disabled:opacity-50 duration-300 sm:w-auto"
                 >
-                  {modalSubmitting ? "Sending..." : "Send Special Offer"}
+                  {modalSubmitting ? "Sending..." : "Send special offer"}
                 </button>
               </div>
             </form>
-          </div>
+          </section>
         </ModalOverlay>
       )}
 
@@ -1700,12 +1778,12 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
       {preApproveModalOpen && (
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
           <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl space-y-4">
-            <h3 className="text-lg font-bold text-[#1F1F1F]">Pre-approve Guest Inquiry</h3>
-            <p className="text-xs text-zinc-600 leading-relaxed">
+            <h3 className="text-xl font-medium text-[#1F1F1F]">Pre-approve Guest Inquiry</h3>
+            <p className="text-sm text-[#727272]">
               Pre-approving lets {selectedConversation?.guest.name || "the guest"} book immediately without needing additional approval. The guest will receive a notification and has 24 hours to complete their reservation.
             </p>
             <div>
-              <label className="block text-xs font-semibold text-zinc-700 mb-1">
+              <label className="block text-sm font-medium text-[#1f1f1f] mb-1">
                 Custom message (optional)
               </label>
               <textarea
@@ -1720,7 +1798,7 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
               <button
                 type="button"
                 onClick={() => setPreApproveModalOpen(false)}
-                className="px-5 py-2.5 rounded-full text-xs font-semibold text-zinc-600 hover:bg-zinc-100"
+                className="px-5 py-2.5 rounded-full text-sm font-medium text-[#1f1f1f] border-[#1f1f1f] border hover:bg-zinc-100"
               >
                 Cancel
               </button>
@@ -1728,7 +1806,7 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
                 type="button"
                 disabled={modalSubmitting}
                 onClick={handlePreApprove}
-                className="px-6 py-2.5 rounded-full bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 disabled:opacity-50"
+                className="px-6 py-2.5 rounded-full bg-emerald-600 border-emerald-600 hover:border-emerald-700 text-white text-sm font-medium hover:bg-emerald-700 disabled:opacity-50"
               >
                 {modalSubmitting ? "Pre-approving..." : "Confirm Pre-approval"}
               </button>
@@ -1743,9 +1821,9 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
       {declineModalOpen && (
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
           <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl space-y-4">
-            <h3 className="text-lg font-bold text-[#1F1F1F]">Decline Inquiry</h3>
+            <h3 className="text-lg font-semibold text-[#1F1F1F]">Decline Inquiry</h3>
             <div>
-              <label className="block text-xs font-semibold text-zinc-700 mb-1">Reason</label>
+              <label className="block text-sm font-medium text-[#1f1f1f] mb-1">Reason</label>
               <select
                 value={declineReason}
                 onChange={(e) => setDeclineReason(e.target.value)}
@@ -1758,7 +1836,7 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
               </select>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-zinc-700 mb-1">
+              <label className="block text-sm font-medium text-[#1f1f1f] mb-1">
                 Note to guest (optional)
               </label>
               <textarea
@@ -1769,11 +1847,11 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
                 className="w-full p-2.5 text-xs sm:text-sm rounded-xl border border-zinc-300 focus:outline-none focus:border-zinc-500"
               />
             </div>
-            <div className="flex justify-end gap-2.5 pt-2">
+            <div className="flex max-[340px]:flex-col justify-end gap-2.5 pt-2">
               <button
                 type="button"
                 onClick={() => setDeclineModalOpen(false)}
-                className="px-5 py-2.5 rounded-full text-xs font-semibold text-zinc-600 hover:bg-zinc-100"
+                className="px-5 py-2.5 rounded-full border border-[#1f1f1f] text-sm font-medium text-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white"
               >
                 Cancel
               </button>
@@ -1781,7 +1859,7 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
                 type="button"
                 disabled={modalSubmitting}
                 onClick={handleDecline}
-                className="px-6 py-2.5 rounded-full bg-rose-600 text-white text-xs font-semibold hover:bg-rose-700 disabled:opacity-50"
+                className="px-6 py-2.5 rounded-full bg-rose-600 text-white text-sm font-medium hover:bg-rose-700 disabled:opacity-50"
               >
                 {modalSubmitting ? "Declining..." : "Decline Inquiry"}
               </button>

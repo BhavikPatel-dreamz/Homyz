@@ -567,22 +567,20 @@ export function GuestMessagesWorkspace({ initialConversationId }: GuestMessagesW
               <button
                 type="button"
                 onClick={() => setFilter("all")}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors ${
-                  filter === "all"
+                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors ${filter === "all"
                     ? "bg-[#1F1F1F] text-white"
                     : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
-                }`}
+                  }`}
               >
                 All
               </button>
               <button
                 type="button"
                 onClick={() => setFilter("unread")}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors ${
-                  filter === "unread"
+                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors ${filter === "unread"
                     ? "bg-[#1F1F1F] text-white"
                     : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
-                }`}
+                  }`}
               >
                 Unread
               </button>
@@ -635,11 +633,10 @@ export function GuestMessagesWorkspace({ initialConversationId }: GuestMessagesW
                     key={conv.id}
                     type="button"
                     onClick={() => handleSelectConversation(conv.id)}
-                    className={`w-full text-left p-3.5 sm:p-4 flex gap-3 transition-colors ${
-                      isSelected
+                    className={`w-full text-left p-3.5 sm:p-4 flex gap-3 transition-colors ${isSelected
                         ? "bg-amber-50/70 border-l-4 border-amber-400"
                         : "hover:bg-zinc-50/80"
-                    }`}
+                      }`}
                   >
                     <div className="relative shrink-0">
                       {conv.host.image ? (
@@ -778,318 +775,314 @@ export function GuestMessagesWorkspace({ initialConversationId }: GuestMessagesW
                   onScroll={handleContainerScroll}
                   className="flex-1 p-4 sm:p-6 overflow-y-auto space-y-4 bg-zinc-50/20"
                 >
-                {loadingMessages ? (
-                  <div className="flex items-center justify-center h-full text-xs text-zinc-400">
-                    Loading messages...
-                  </div>
-                ) : messages.length === 0 ? (
-                  <div className="text-center py-12 text-zinc-400 space-y-2">
-                    <p className="text-sm font-medium text-zinc-600">Send a message</p>
-                    <p className="text-xs">Ask the host any questions about the place or your upcoming stay.</p>
-                  </div>
-                ) : (
-                  messages.map((m) => {
-                    const isGuest = m.isOwn;
+                  {loadingMessages ? (
+                    <div className="flex items-center justify-center h-full text-xs text-zinc-400">
+                      Loading messages...
+                    </div>
+                  ) : messages.length === 0 ? (
+                    <div className="text-center py-12 text-zinc-400 space-y-2">
+                      <p className="text-sm font-medium text-zinc-600">Send a message</p>
+                      <p className="text-xs">Ask the host any questions about the place or your upcoming stay.</p>
+                    </div>
+                  ) : (
+                    messages.map((m) => {
+                      const isGuest = m.isOwn;
 
-                    // Special Offer Card
-                    if (m.type === "SPECIAL_OFFER") {
-                      const offerId = (m.metadata?.specialOfferId as string) || "";
-                      const matchingOffer = selectedConversation.specialOffers?.find((so) => so.id === offerId);
-                      const startDate = String(matchingOffer?.startDate || m.metadata?.startDate || "").split("T")[0];
-                      const endDate = String(matchingOffer?.endDate || m.metadata?.endDate || "").split("T")[0];
-                      const guestsCount = Number(matchingOffer?.guests || m.metadata?.guests || 1);
-                      const currency = String(matchingOffer?.currency || m.metadata?.currency || "SAR");
-                      const subtotalPrice = Number(matchingOffer?.subtotalPrice ?? m.metadata?.subtotalPrice ?? 0);
-                      const expiresAtStr = matchingOffer?.expiresAt || (m.metadata?.expiresAt as string) || null;
+                      // Special Offer Card
+                      if (m.type === "SPECIAL_OFFER") {
+                        const offerId = (m.metadata?.specialOfferId as string) || "";
+                        const matchingOffer = selectedConversation.specialOffers?.find((so) => so.id === offerId);
+                        const startDate = String(matchingOffer?.startDate || m.metadata?.startDate || "").split("T")[0];
+                        const endDate = String(matchingOffer?.endDate || m.metadata?.endDate || "").split("T")[0];
+                        const guestsCount = Number(matchingOffer?.guests || m.metadata?.guests || 1);
+                        const currency = String(matchingOffer?.currency || m.metadata?.currency || "SAR");
+                        const subtotalPrice = Number(matchingOffer?.subtotalPrice ?? m.metadata?.subtotalPrice ?? 0);
+                        const expiresAtStr = matchingOffer?.expiresAt || (m.metadata?.expiresAt as string) || null;
 
-                      const isExpired =
-                        matchingOffer?.status === "EXPIRED" ||
-                        Boolean(expiresAtStr && new Date(expiresAtStr) < new Date());
-                      const isDeclined = matchingOffer?.status === "DECLINED";
-                      const hasBooking = Boolean(
-                        selectedConversation.bookingId &&
-                        selectedConversation.booking &&
-                        selectedConversation.booking.status !== "CANCELLED"
-                      );
-                      const isAcceptedSystemMsg = messages.some(
-                        (msg) => msg.type === "SYSTEM" && msg.metadata?.specialOfferId === offerId
-                      );
-                      const isAccepted = matchingOffer?.status === "ACCEPTED" || isAcceptedSystemMsg;
+                        const isExpired =
+                          matchingOffer?.status === "EXPIRED" ||
+                          Boolean(expiresAtStr && new Date(expiresAtStr) < new Date());
+                        const isDeclined = matchingOffer?.status === "DECLINED";
+                        const hasBooking = Boolean(
+                          selectedConversation.bookingId &&
+                          selectedConversation.booking &&
+                          selectedConversation.booking.status !== "CANCELLED"
+                        );
+                        const isAcceptedSystemMsg = messages.some(
+                          (msg) => msg.type === "SYSTEM" && msg.metadata?.specialOfferId === offerId
+                        );
+                        const isAccepted = matchingOffer?.status === "ACCEPTED" || isAcceptedSystemMsg;
 
-                      const checkoutUrl = `/book/${selectedConversation.listing.id}?checkin=${encodeURIComponent(startDate)}&checkout=${encodeURIComponent(endDate)}&guests=${guestsCount}&specialOfferId=${encodeURIComponent(offerId)}`;
+                        const checkoutUrl = `/book/${selectedConversation.listing.id}?checkin=${encodeURIComponent(startDate)}&checkout=${encodeURIComponent(endDate)}&guests=${guestsCount}&specialOfferId=${encodeURIComponent(offerId)}`;
 
-                      return (
-                        <div key={m.id} className="flex justify-center my-3">
-                          <div className="max-w-md w-full rounded-2xl border-2 border-amber-300 bg-amber-50 p-5 shadow-sm space-y-3">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs font-bold text-amber-900 uppercase tracking-wider">
-                                  Special Offer from Host
-                                </span>
-                                {hasBooking ? (
-                                  <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800 border border-emerald-300">
-                                    Booked
+                        return (
+                          <div key={m.id} className="flex justify-center my-3">
+                            <div className="max-w-md w-full rounded-2xl border-2 border-amber-300 bg-amber-50 p-5 shadow-sm space-y-3">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs font-bold text-amber-900 uppercase tracking-wider">
+                                    Special Offer from Host
                                   </span>
-                                ) : isExpired ? (
-                                  <span className="inline-flex items-center rounded-full bg-zinc-200 px-2 py-0.5 text-[10px] font-semibold text-zinc-600 border border-zinc-300">
-                                    Expired
-                                  </span>
-                                ) : isDeclined ? (
-                                  <span className="inline-flex items-center rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-semibold text-rose-700 border border-rose-200">
-                                    Declined
-                                  </span>
-                                ) : isAccepted ? (
-                                  <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800 border border-emerald-300">
-                                    Accepted
-                                  </span>
-                                ) : (
-                                  <span className="inline-flex items-center rounded-full bg-amber-200/80 px-2 py-0.5 text-[10px] font-semibold text-amber-900 border border-amber-300">
-                                    Available
-                                  </span>
-                                )}
-                              </div>
-                              <span className="text-[11px] text-zinc-500">{formatMessageTime(m.createdAt)}</span>
-                            </div>
-
-                            <p className="text-sm text-zinc-800 font-medium">{m.content}</p>
-
-                            {m.metadata && (
-                              <div className="grid grid-cols-2 gap-2 text-xs bg-white/90 p-3 rounded-xl border border-amber-200">
-                                <div>
-                                  <span className="text-zinc-500 block">Dates:</span>
-                                  <span className="font-semibold text-zinc-800">
-                                    {startDate || "Dates on request"} {endDate ? `- ${endDate}` : ""}
-                                  </span>
+                                  {hasBooking ? (
+                                    <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-medium text-emerald-800 border border-emerald-300">
+                                      Booked
+                                    </span>
+                                  ) : isExpired ? (
+                                    <span className="inline-flex items-center rounded-full bg-zinc-200 px-2 py-0.5 text-[10px] font-medium text-zinc-600 border border-zinc-300">
+                                      Expired
+                                    </span>
+                                  ) : isDeclined ? (
+                                    <span className="inline-flex items-center rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-medium text-rose-700 border border-rose-200">
+                                      Declined
+                                    </span>
+                                  ) : isAccepted ? (
+                                    <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-medium text-emerald-800 border border-emerald-300">
+                                      Accepted
+                                    </span>
+                                  ) : (
+                                    <span className="inline-flex items-center rounded-full bg-amber-200/80 px-2 py-0.5 text-[10px] font-medium text-amber-900 border border-amber-300">
+                                      Available
+                                    </span>
+                                  )}
                                 </div>
-                                <div>
-                                  <span className="text-zinc-500 block">Special Price:</span>
-                                  <span className="font-bold text-amber-900 text-sm">
-                                    {currency} {(subtotalPrice / 100).toFixed(2)}
-                                  </span>
-                                </div>
+                                <span className="text-[11px] text-zinc-500">{formatMessageTime(m.createdAt)}</span>
                               </div>
-                            )}
 
-                            {/* Actions based on state */}
-                            {hasBooking ? (
-                              <Link
-                                href={`/bookings/${selectedConversation.bookingId}`}
-                                className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-full bg-emerald-700 text-white text-xs font-semibold hover:bg-emerald-800 transition-colors shadow-xs"
-                              >
-                                <span>View Confirmed Reservation</span>
-                                <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                                </svg>
-                              </Link>
-                            ) : isExpired ? (
-                              <div className="w-full py-2 rounded-full bg-zinc-100 border border-zinc-200 text-zinc-400 text-xs font-semibold text-center cursor-not-allowed">
-                                Offer Expired
-                              </div>
-                            ) : isDeclined ? (
-                              <div className="w-full py-2 rounded-full bg-zinc-100 border border-zinc-200 text-zinc-400 text-xs font-semibold text-center cursor-not-allowed">
-                                Offer Declined
-                              </div>
-                            ) : isAccepted ? (
-                              <div className="space-y-1.5">
+                              <p className="text-sm text-zinc-800 font-medium">{m.content}</p>
+
+                              {m.metadata && (
+                                <div className="grid grid-cols-2 gap-2 text-xs bg-white/90 p-3 rounded-xl border border-amber-200">
+                                  <div>
+                                    <span className="text-zinc-500 block">Dates:</span>
+                                    <span className="font-semibold text-zinc-800">
+                                      {startDate || "Dates on request"} {endDate ? `- ${endDate}` : ""}
+                                    </span>
+                                  </div>
+                                  <div>
+                                    <span className="text-zinc-500 block">Special Price:</span>
+                                    <span className="font-medium text-amber-900 text-sm">
+                                      {currency} {(subtotalPrice / 100).toFixed(2)}
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Actions based on state */}
+                              {hasBooking ? (
+                                <Link
+                                  href={`/bookings/${selectedConversation.bookingId}`}
+                                  className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-full bg-emerald-700 text-white text-xs font-semibold hover:bg-emerald-800 transition-colors shadow-xs"
+                                >
+                                  <span>View Confirmed Reservation</span>
+                                  <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                  </svg>
+                                </Link>
+                              ) : isExpired ? (
+                                <div className="w-full py-2 rounded-full bg-zinc-100 border border-zinc-200 text-zinc-400 text-xs font-semibold text-center cursor-not-allowed">
+                                  Offer Expired
+                                </div>
+                              ) : isDeclined ? (
+                                <div className="w-full py-2 rounded-full bg-zinc-100 border border-zinc-200 text-zinc-400 text-xs font-semibold text-center cursor-not-allowed">
+                                  Offer Declined
+                                </div>
+                              ) : isAccepted ? (
+                                <div className="space-y-1.5">
+                                  <button
+                                    type="button"
+                                    disabled={acceptingOffer}
+                                    onClick={() => handleAcceptSpecialOffer(offerId, checkoutUrl)}
+                                    className="w-full py-2.5 rounded-full bg-[#1F1F1F] text-white text-xs font-semibold hover:bg-black transition-colors shadow-xs flex items-center justify-center gap-1.5 disabled:opacity-60"
+                                  >
+                                    <span>{acceptingOffer ? "Opening Checkout..." : "Proceed to Checkout & Pay"}</span>
+                                    <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                    </svg>
+                                  </button>
+                                  <p className="text-[11px] text-center text-zinc-500 font-normal">
+                                    Offer accepted • Click above to resume or complete your booking
+                                  </p>
+                                </div>
+                              ) : offerId ? (
                                 <button
                                   type="button"
                                   disabled={acceptingOffer}
                                   onClick={() => handleAcceptSpecialOffer(offerId, checkoutUrl)}
-                                  className="w-full py-2.5 rounded-full bg-[#1F1F1F] text-white text-xs font-semibold hover:bg-black transition-colors shadow-xs flex items-center justify-center gap-1.5 disabled:opacity-60"
+                                  className="w-full py-2.5 rounded-full bg-[#1F1F1F] text-white text-xs font-semibold hover:bg-black transition-colors disabled:opacity-50 shadow-xs flex items-center justify-center gap-1.5"
                                 >
-                                  <span>{acceptingOffer ? "Opening Checkout..." : "Proceed to Checkout & Pay"}</span>
+                                  <span>{acceptingOffer ? "Processing..." : "Accept & Proceed to Checkout"}</span>
                                   <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                                   </svg>
                                 </button>
-                                <p className="text-[11px] text-center text-zinc-500 font-normal">
-                                  Offer accepted • Click above to resume or complete your booking
-                                </p>
-                              </div>
-                            ) : offerId ? (
-                              <button
-                                type="button"
-                                disabled={acceptingOffer}
-                                onClick={() => handleAcceptSpecialOffer(offerId, checkoutUrl)}
-                                className="w-full py-2.5 rounded-full bg-[#1F1F1F] text-white text-xs font-semibold hover:bg-black transition-colors disabled:opacity-50 shadow-xs flex items-center justify-center gap-1.5"
+                              ) : null}
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      // Pre-approval Notice
+                      if (m.type === "PRE_APPROVAL") {
+                        return (
+                          <div key={m.id} className="flex justify-center my-3">
+                            <div className="max-w-md w-full rounded-2xl border border-emerald-200 bg-emerald-50 p-4 shadow-2xs space-y-2 text-center">
+                              <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider block">
+                                You&apos;re Pre-Approved!
+                              </span>
+                              <p className="text-xs sm:text-sm text-emerald-950">{m.content}</p>
+                              <Link
+                                href={`/book/${selectedConversation.listing.id}`}
+                                className="inline-block px-5 py-2 rounded-full bg-emerald-700 text-white text-xs font-semibold hover:bg-emerald-800 transition-colors"
                               >
-                                <span>{acceptingOffer ? "Processing..." : "Accept & Proceed to Checkout"}</span>
-                                <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                                </svg>
-                              </button>
-                            ) : null}
+                                Book Now
+                              </Link>
+                            </div>
                           </div>
-                        </div>
-                      );
-                    }
+                        );
+                      }
 
-                    // Pre-approval Notice
-                    if (m.type === "PRE_APPROVAL") {
+                      // Decline Notice
+                      if (m.type === "DECLINE") {
+                        return (
+                          <div key={m.id} className="flex justify-center my-3">
+                            <div className="max-w-md w-full rounded-2xl border border-zinc-200 bg-zinc-100 p-3.5 shadow-2xs text-center space-y-1">
+                              <span className="text-xs font-bold text-zinc-700 uppercase tracking-wider">
+                                Inquiry Declined
+                              </span>
+                              <p className="text-xs sm:text-sm text-zinc-700">{m.content}</p>
+                              <span className="text-[10px] text-zinc-400 block">{formatMessageTime(m.createdAt)}</span>
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      // System / Status Message
+                      if (m.type === "SYSTEM" || m.type === "BOOKING_STATUS") {
+                        return (
+                          <div key={m.id} className="flex justify-center my-2">
+                            <div className="rounded-full bg-zinc-100 border border-zinc-200 px-4 py-1 text-xs text-zinc-600 font-medium">
+                              {m.content} • {formatMessageTime(m.createdAt)}
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      // Standard Chat Bubble
+                      const hasAttachments = m.attachments && m.attachments.length > 0;
                       return (
-                        <div key={m.id} className="flex justify-center my-3">
-                          <div className="max-w-md w-full rounded-2xl border border-emerald-200 bg-emerald-50 p-4 shadow-2xs space-y-2 text-center">
-                            <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider block">
-                              You&apos;re Pre-Approved!
-                            </span>
-                            <p className="text-xs sm:text-sm text-emerald-950">{m.content}</p>
-                            <Link
-                              href={`/book/${selectedConversation.listing.id}`}
-                              className="inline-block px-5 py-2 rounded-full bg-emerald-700 text-white text-xs font-semibold hover:bg-emerald-800 transition-colors"
-                            >
-                              Book Now
-                            </Link>
-                          </div>
-                        </div>
-                      );
-                    }
-
-                    // Decline Notice
-                    if (m.type === "DECLINE") {
-                      return (
-                        <div key={m.id} className="flex justify-center my-3">
-                          <div className="max-w-md w-full rounded-2xl border border-zinc-200 bg-zinc-100 p-3.5 shadow-2xs text-center space-y-1">
-                            <span className="text-xs font-bold text-zinc-700 uppercase tracking-wider">
-                              Inquiry Declined
-                            </span>
-                            <p className="text-xs sm:text-sm text-zinc-700">{m.content}</p>
-                            <span className="text-[10px] text-zinc-400 block">{formatMessageTime(m.createdAt)}</span>
-                          </div>
-                        </div>
-                      );
-                    }
-
-                    // System / Status Message
-                    if (m.type === "SYSTEM" || m.type === "BOOKING_STATUS") {
-                      return (
-                        <div key={m.id} className="flex justify-center my-2">
-                          <div className="rounded-full bg-zinc-100 border border-zinc-200 px-4 py-1 text-xs text-zinc-600 font-medium">
-                            {m.content} • {formatMessageTime(m.createdAt)}
-                          </div>
-                        </div>
-                      );
-                    }
-
-                    // Standard Chat Bubble
-                    const hasAttachments = m.attachments && m.attachments.length > 0;
-                    return (
-                      <div
-                        key={m.id}
-                        className={`flex flex-col ${isGuest ? "items-end" : "items-start"}`}
-                      >
                         <div
-                          className={`max-w-[85%] sm:max-w-[75%] rounded-2xl p-2.5 text-xs sm:text-sm leading-relaxed shadow-2xs space-y-2 ${
-                            isGuest
-                              ? "bg-[#1F1F1F] text-white rounded-br-xs"
-                              : "bg-white border border-zinc-200/80 text-zinc-800 rounded-bl-xs"
-                          }`}
+                          key={m.id}
+                          className={`flex flex-col ${isGuest ? "items-end" : "items-start"}`}
                         >
-                          {m.type === "BOOKING_REQUEST" && (
-                            <div className="pb-1.5 border-b border-white/20 text-[11px] font-semibold text-amber-200">
-                              Booking Request Note
-                            </div>
-                          )}
+                          <div
+                            className={`max-w-[85%] sm:max-w-[75%] rounded-2xl p-2.5 text-xs sm:text-sm leading-relaxed shadow-2xs space-y-2 ${isGuest
+                                ? "bg-[#1F1F1F] text-white rounded-br-xs"
+                                : "bg-white border border-zinc-200/80 text-zinc-800 rounded-bl-xs"
+                              }`}
+                          >
+                            {m.type === "BOOKING_REQUEST" && (
+                              <div className="pb-1.5 border-b border-white/20 text-[11px] font-semibold text-amber-200">
+                                Booking Request Note
+                              </div>
+                            )}
 
-                          {/* Render Attachments if present */}
-                          {hasAttachments && (
-                            <div className="space-y-2">
-                              {/* Image attachments */}
-                              {m.attachments!.filter((a) => a.fileType === "IMAGE").length > 0 && (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                  {m.attachments!
-                                    .filter((a) => a.fileType === "IMAGE")
-                                    .map((att) => (
-                                      <button
-                                        key={att.id}
-                                        type="button"
-                                        onClick={() => setLightboxAttachment(att)}
-                                        className="relative group block overflow-hidden rounded-xl bg-black/10 border border-black/5 hover:opacity-95 transition-opacity text-left"
-                                        title="Click to view full image"
+                            {/* Render Attachments if present */}
+                            {hasAttachments && (
+                              <div className="space-y-2">
+                                {/* Image attachments */}
+                                {m.attachments!.filter((a) => a.fileType === "IMAGE").length > 0 && (
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    {m.attachments!
+                                      .filter((a) => a.fileType === "IMAGE")
+                                      .map((att) => (
+                                        <button
+                                          key={att.id}
+                                          type="button"
+                                          onClick={() => setLightboxAttachment(att)}
+                                          className="relative group block overflow-hidden rounded-xl bg-black/10 border border-black/5 hover:opacity-95 transition-opacity text-left"
+                                          title="Click to view full image"
+                                        >
+                                          <img
+                                            src={att.fileUrl}
+                                            alt={att.fileName}
+                                            loading="lazy"
+                                            className="w-full h-44 object-cover rounded-xl"
+                                          />
+                                          <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                                            <svg className="size-6 drop-shadow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" />
+                                            </svg>
+                                          </div>
+                                        </button>
+                                      ))}
+                                  </div>
+                                )}
+
+                                {/* Document attachments */}
+                                {m.attachments!.filter((a) => a.fileType === "DOCUMENT").map((att) => (
+                                  <div
+                                    key={att.id}
+                                    className={`flex items-center justify-between gap-3 p-3 rounded-xl border ${isGuest
+                                        ? "bg-white/10 border-white/15 text-white"
+                                        : "bg-zinc-50 border-zinc-200 text-zinc-800"
+                                      }`}
+                                  >
+                                    <div className="flex items-center gap-2.5 min-w-0">
+                                      <div className="size-9 rounded-lg bg-red-500/15 text-red-500 flex items-center justify-center shrink-0">
+                                        <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                          <path strokeLinecap="round" strokeLinejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                        </svg>
+                                      </div>
+                                      <div className="min-w-0">
+                                        <p className="text-xs font-semibold truncate max-w-[180px] sm:max-w-xs">{att.fileName}</p>
+                                        <p className={`text-[10px] ${isGuest ? "text-zinc-300" : "text-zinc-500"}`}>{formatFileSize(att.fileSize)} • PDF Document</p>
+                                      </div>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 shrink-0">
+                                      <a
+                                        href={att.fileUrl}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className={`px-2.5 py-1 text-[11px] font-medium rounded-lg transition-colors ${isGuest
+                                            ? "bg-white/20 hover:bg-white/30 text-white"
+                                            : "bg-zinc-200 hover:bg-zinc-300 text-zinc-800"
+                                          }`}
                                       >
-                                        <img
-                                          src={att.fileUrl}
-                                          alt={att.fileName}
-                                          loading="lazy"
-                                          className="w-full h-44 object-cover rounded-xl"
-                                        />
-                                        <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
-                                          <svg className="size-6 drop-shadow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" />
-                                          </svg>
-                                        </div>
-                                      </button>
-                                    ))}
-                                </div>
-                              )}
-
-                              {/* Document attachments */}
-                              {m.attachments!.filter((a) => a.fileType === "DOCUMENT").map((att) => (
-                                <div
-                                  key={att.id}
-                                  className={`flex items-center justify-between gap-3 p-3 rounded-xl border ${
-                                    isGuest
-                                      ? "bg-white/10 border-white/15 text-white"
-                                      : "bg-zinc-50 border-zinc-200 text-zinc-800"
-                                  }`}
-                                >
-                                  <div className="flex items-center gap-2.5 min-w-0">
-                                    <div className="size-9 rounded-lg bg-red-500/15 text-red-500 flex items-center justify-center shrink-0">
-                                      <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                                      </svg>
-                                    </div>
-                                    <div className="min-w-0">
-                                      <p className="text-xs font-semibold truncate max-w-[180px] sm:max-w-xs">{att.fileName}</p>
-                                      <p className={`text-[10px] ${isGuest ? "text-zinc-300" : "text-zinc-500"}`}>{formatFileSize(att.fileSize)} • PDF Document</p>
+                                        Open
+                                      </a>
+                                      <a
+                                        href={`${att.fileUrl}?download=true`}
+                                        download={att.fileName}
+                                        className={`p-1.5 rounded-lg transition-colors ${isGuest
+                                            ? "bg-white/20 hover:bg-white/30 text-white"
+                                            : "bg-zinc-200 hover:bg-zinc-300 text-zinc-800"
+                                          }`}
+                                        title="Download document"
+                                      >
+                                        <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                          <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                        </svg>
+                                      </a>
                                     </div>
                                   </div>
-                                  <div className="flex items-center gap-1.5 shrink-0">
-                                    <a
-                                      href={att.fileUrl}
-                                      target="_blank"
-                                      rel="noreferrer"
-                                      className={`px-2.5 py-1 text-[11px] font-medium rounded-lg transition-colors ${
-                                        isGuest
-                                          ? "bg-white/20 hover:bg-white/30 text-white"
-                                          : "bg-zinc-200 hover:bg-zinc-300 text-zinc-800"
-                                      }`}
-                                    >
-                                      Open
-                                    </a>
-                                    <a
-                                      href={`${att.fileUrl}?download=true`}
-                                      download={att.fileName}
-                                      className={`p-1.5 rounded-lg transition-colors ${
-                                        isGuest
-                                          ? "bg-white/20 hover:bg-white/30 text-white"
-                                          : "bg-zinc-200 hover:bg-zinc-300 text-zinc-800"
-                                      }`}
-                                      title="Download document"
-                                    >
-                                      <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                      </svg>
-                                    </a>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          )}
+                                ))}
+                              </div>
+                            )}
 
-                          {m.content && (
-                            <p className="whitespace-pre-wrap break-words px-1.5">{m.content}</p>
-                          )}
+                            {m.content && (
+                              <p className="whitespace-pre-wrap break-words px-1.5">{m.content}</p>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1 mt-1 text-[10px] text-zinc-400 px-1">
+                            <span>{formatMessageTime(m.createdAt)}</span>
+                            {isGuest && (
+                              <span>{m.readAt ? "• Read" : "• Sent"}</span>
+                            )}
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1 mt-1 text-[10px] text-zinc-400 px-1">
-                          <span>{formatMessageTime(m.createdAt)}</span>
-                          {isGuest && (
-                            <span>{m.readAt ? "• Read" : "• Sent"}</span>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
+                      );
+                    })
+                  )}
                 </div>
 
                 {/* Jump to latest button when user scrolled up */}
@@ -1164,8 +1157,8 @@ export function GuestMessagesWorkspace({ initialConversationId }: GuestMessagesW
                             {s.status === "UPLOADING"
                               ? "Uploading..."
                               : s.status === "FAILED"
-                              ? "Failed"
-                              : formatFileSize(s.fileSize)}
+                                ? "Failed"
+                                : formatFileSize(s.fileSize)}
                           </p>
                         </div>
                         <button
