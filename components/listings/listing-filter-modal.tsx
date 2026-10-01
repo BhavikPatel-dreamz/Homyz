@@ -5,6 +5,7 @@ import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { AmenityIcon } from "@/components/ui/amenity-icon";
 import { CANONICAL_AMENITIES } from "@/lib/constants/amenities";
 import { LANGUAGE_OPTIONS } from "@/lib/utils/language-options";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 export type ListingFilterValues = {
   minPrice?: number;
@@ -85,13 +86,13 @@ function FilterPill({ active, children, ...props }: ComponentPropsWithoutRef<"bu
   );
 }
 
-function CounterRow({ label, value, onChange }: { label: string; value: number; onChange: (value: number) => void }) {
+function CounterRow({ label, value, onChange, anyLabel = "Any" }: { label: string; value: number; onChange: (value: number) => void; anyLabel?: string }) {
   return (
     <div className="flex min-h-10 items-center justify-between gap-4">
       <span className="text-sm text-zinc-800">{label}</span>
       <div className="flex items-center gap-4">
         <button type="button" onClick={() => onChange(Math.max(0, value - 1))} disabled={value === 0} aria-label={`Decrease ${label}`} className="flex size-7 items-center justify-center rounded-full bg-zinc-100 text-lg font-light text-zinc-700 transition hover:bg-zinc-200 disabled:text-zinc-300">−</button>
-        <span className="min-w-7 text-center text-sm text-zinc-800">{value === 0 ? "Any" : value >= 8 ? "8+" : value}</span>
+        <span className="min-w-7 text-center text-sm text-zinc-800">{value === 0 ? anyLabel : value >= 8 ? "8+" : value}</span>
         <button type="button" onClick={() => onChange(Math.min(8, value + 1))} disabled={value >= 8} aria-label={`Increase ${label}`} className="flex size-7 items-center justify-center rounded-full bg-zinc-100 text-lg font-light text-zinc-700 transition hover:bg-zinc-200 disabled:text-zinc-300">+</button>
       </div>
     </div>
@@ -213,6 +214,7 @@ export function ListingFilterModal({ open, onClose, onApply, initialFilters, ava
     return () => { window.clearTimeout(timer); controller.abort(); };
   }, [open, hasDraftChanges, baseSearchParams, normalisedDraft, availableMin, availableMax]);
 
+  const { t } = useLanguage();
   if (!open) return null;
   const amenityById = new Map(CANONICAL_AMENITIES.map((amenity) => [amenity.id, amenity]));
   const extraAmenities = CANONICAL_AMENITIES.filter((amenity) => !amenityGroups.flatMap((group) => group.ids).includes(amenity.id) && amenity.category !== "accessibility");
@@ -229,7 +231,12 @@ export function ListingFilterModal({ open, onClose, onApply, initialFilters, ava
       : { ...previous, maxPrice: Math.max(bounded, previous.minPrice ?? availableMin) });
   };
 
-  const propertyTypeLabels = new Map<string, string>(PRIMARY_PROPERTY_TYPES.map((type) => [type.id, type.label]));
+  const propertyTypeLabels = new Map<string, string>([
+    ["HOUSE", t("listings_house", "House")],
+    ["APARTMENT", t("listings_flat", "Flat")],
+    ["GUEST_HOUSE", t("listings_guest_house", "Guest house")],
+    ["BOUTIQUE_HOTEL", t("listings_hotel", "Hotel")],
+  ]);
   const languageLabels = new Map(FILTER_LANGUAGE_OPTIONS.map((language) => [language.id, language.name]));
   const selectedFilters: Array<{ id: string; label: string; clear: () => void }> = [];
   const priceChanged = normalisedDraft.minPrice > availableMin || normalisedDraft.maxPrice < availableMax;
@@ -237,11 +244,11 @@ export function ListingFilterModal({ open, onClose, onApply, initialFilters, ava
     const label = normalisedDraft.minPrice > availableMin && normalisedDraft.maxPrice < availableMax
       ? `${currencySymbol}${normalisedDraft.minPrice.toLocaleString()} – ${currencySymbol}${normalisedDraft.maxPrice.toLocaleString()}`
       : normalisedDraft.minPrice > availableMin
-      ? `From ${currencySymbol}${normalisedDraft.minPrice.toLocaleString()}`
-      : `Up to ${currencySymbol}${normalisedDraft.maxPrice.toLocaleString()}`;
+      ? t("listings_from_price", { price: `${currencySymbol}${normalisedDraft.minPrice.toLocaleString()}` }, `From ${currencySymbol}${normalisedDraft.minPrice.toLocaleString()}`)
+      : t("listings_up_to_price", { price: `${currencySymbol}${normalisedDraft.maxPrice.toLocaleString()}` }, `Up to ${currencySymbol}${normalisedDraft.maxPrice.toLocaleString()}`);
     selectedFilters.push({ id: "price", label, clear: () => setDraft((previous) => ({ ...previous, minPrice: availableMin, maxPrice: availableMax })) });
   }
-  if (normalisedDraft.listingType) selectedFilters.push({ id: "listingType", label: normalisedDraft.listingType === "ROOM" ? "Room" : "Entire home", clear: () => setDraft((previous) => ({ ...previous, listingType: "" })) });
+  if (normalisedDraft.listingType) selectedFilters.push({ id: "listingType", label: normalisedDraft.listingType === "ROOM" ? t("listings_room", "Room") : t("listings_entire_home", "Entire home"), clear: () => setDraft((previous) => ({ ...previous, listingType: "" })) });
   normalisedDraft.propertyTypes.forEach((type) => selectedFilters.push({ id: `type-${type}`, label: propertyTypeLabels.get(type) ?? type, clear: () => setDraft((previous) => ({ ...previous, propertyTypes: previous.propertyTypes.filter((item) => item !== type) })) }));
   (["bedrooms", "beds", "bathrooms"] as const).forEach((key) => {
     const value = normalisedDraft[key];
@@ -250,23 +257,40 @@ export function ListingFilterModal({ open, onClose, onApply, initialFilters, ava
   normalisedDraft.amenities.forEach((amenityId) => selectedFilters.push({ id: `amenity-${amenityId}`, label: amenityById.get(amenityId)?.label ?? amenityId, clear: () => setDraft((previous) => ({ ...previous, amenities: previous.amenities.filter((item) => item !== amenityId) })) }));
   normalisedDraft.accessibility.forEach((featureId) => selectedFilters.push({ id: `accessibility-${featureId}`, label: amenityById.get(featureId)?.label ?? featureId, clear: () => setDraft((previous) => ({ ...previous, accessibility: previous.accessibility.filter((item) => item !== featureId) })) }));
   normalisedDraft.languages.forEach((languageId) => selectedFilters.push({ id: `language-${languageId}`, label: languageLabels.get(languageId) ?? languageId, clear: () => setDraft((previous) => ({ ...previous, languages: previous.languages.filter((item) => item !== languageId) })) }));
-  if (normalisedDraft.instantBook) selectedFilters.push({ id: "instantBook", label: "Instant Book", clear: () => setDraft((previous) => ({ ...previous, instantBook: false })) });
-  if (normalisedDraft.pets) selectedFilters.push({ id: "pets", label: "Allows pets", clear: () => setDraft((previous) => ({ ...previous, pets: false })) });
-  if (normalisedDraft.featured) selectedFilters.push({ id: "featured", label: "Guest favourite", clear: () => setDraft((previous) => ({ ...previous, featured: false })) });
+  if (normalisedDraft.instantBook) selectedFilters.push({ id: "instantBook", label: t("listings_instant_book", "Instant Book"), clear: () => setDraft((previous) => ({ ...previous, instantBook: false })) });
+  if (normalisedDraft.pets) selectedFilters.push({ id: "pets", label: t("listings_allows_pets", "Allows pets"), clear: () => setDraft((previous) => ({ ...previous, pets: false })) });
+  if (normalisedDraft.featured) selectedFilters.push({ id: "featured", label: t("listings_guest_favourite", "Guest favourite"), clear: () => setDraft((previous) => ({ ...previous, featured: false })) });
+
+  const getAccessibilityLabel = (amenityId: string, fallback: string) => {
+    switch (amenityId) {
+      case "elevator": return t("listings_elevator", "Elevator");
+      case "step_free_entrance": return t("listings_step_free_entrance", "Step-free guest entrance");
+      case "step_free_path": return t("listings_step_free_path", "Step-free path to entrance");
+      case "accessible_parking": return t("listings_accessible_parking", "Accessible parking spot");
+      case "wide_entrance": return t("listings_wide_entrance", "Guest entrance wider than 32 inches");
+      case "wide_hallways": return t("listings_wide_hallways", "Wide hallways");
+      case "step_free_bedroom": return t("listings_step_free_bedroom", "Step-free bedroom access");
+      case "step_free_bathroom": return t("listings_step_free_bathroom", "Step-free bathroom access");
+      case "grab_rails": return t("listings_grab_rails", "Grab rails in bathroom");
+      case "roll_in_shower": return t("listings_roll_in_shower", "Roll-in shower");
+      case "shower_chair": return t("listings_shower_chair", "Shower chair");
+      default: return fallback;
+    }
+  };
 
   return (
     <ModalOverlay className="fixed inset-0 z-50 flex items-end justify-center bg-black/45 sm:items-center sm:px-4" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
       <section ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="listing-filter-title" className="flex max-h-[100dvh] w-full max-w-2xl flex-col overflow-hidden rounded-t-[28px] bg-white shadow-2xl sm:max-h-[88dvh] sm:rounded-[28px]">
         <header className="flex shrink-0 items-center justify-between border-b border-zinc-200 px-5 py-4 sm:px-6">
           <span className="size-10" aria-hidden="true" />
-          <h2 id="listing-filter-title" className="text-base font-semibold text-zinc-950">Filters</h2>
+          <h2 id="listing-filter-title" className="text-base font-semibold text-zinc-950">{t("listings_filters", "Filters")}</h2>
           <button ref={closeRef} type="button" onClick={onClose} aria-label="Close filters" className="flex size-10 items-center justify-center rounded-full text-zinc-800 transition hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950">✕</button>
         </header>
         {selectedFilters.length > 0 && (
           <section aria-label="Selected filters" className="shrink-0 border-b border-zinc-200 px-5 py-4 sm:px-6">
             <div className="mb-3 flex items-center justify-between gap-4">
-              <h3 className="text-sm font-semibold text-[#1F1F1F]">Selected</h3>
-              <button type="button" onClick={clearAll} className="text-xs font-semibold underline underline-offset-2 hover:text-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950">Clear all</button>
+              <h3 className="text-sm font-semibold text-[#1F1F1F]">{t("listings_selected", "Selected")}</h3>
+              <button type="button" onClick={clearAll} className="text-xs font-semibold underline underline-offset-2 hover:text-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950">{t("listings_clear_all", "Clear all")}</button>
             </div>
             <div className="flex max-h-28 flex-wrap gap-2 overflow-y-auto pr-1">
               {selectedFilters.map((filter) => <button key={filter.id} type="button" onClick={filter.clear} aria-label={`Remove ${filter.label} filter`} className="inline-flex min-h-9 items-center gap-2 rounded-full border border-zinc-950 px-3 text-xs font-semibold text-[#1F1F1F] transition hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"><span>{filter.label}</span><span aria-hidden="true">×</span></button>)}
@@ -276,15 +300,15 @@ export function ListingFilterModal({ open, onClose, onApply, initialFilters, ava
 
         <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-8 sm:px-6">
           <div className="border-b border-zinc-200 py-7">
-            <h3 className="mb-4 text-base font-semibold text-[#1F1F1F]">Type of place</h3>
+            <h3 className="mb-4 text-base font-semibold text-[#1F1F1F]">{t("listings_type_of_place", "Type of place")}</h3>
             <div className="grid grid-cols-3 rounded-xl border border-zinc-300 p-1" role="radiogroup" aria-label="Type of place">
-              {([ ["", "Any type"], ["ROOM", "Room"], ["ENTIRE_PLACE", "Entire home"] ] as const).map(([value, label]) => <button key={value || "any"} type="button" role="radio" aria-checked={draft.listingType === value} onClick={() => setDraft((previous) => ({ ...previous, listingType: value }))} className={`min-h-10 rounded-lg px-2 text-xs font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 ${draft.listingType === value ? "border border-zinc-950 bg-white shadow-sm" : "border border-transparent hover:bg-zinc-50"}`}>{label}</button>)}
+              {([ ["", t("listings_any_type", "Any type")], ["ROOM", t("listings_room", "Room")], ["ENTIRE_PLACE", t("listings_entire_home", "Entire home")] ] as const).map(([value, label]) => <button key={value || "any"} type="button" role="radio" aria-checked={draft.listingType === value} onClick={() => setDraft((previous) => ({ ...previous, listingType: value }))} className={`min-h-10 rounded-lg px-2 text-xs font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 ${draft.listingType === value ? "border border-zinc-950 bg-white shadow-sm" : "border border-transparent hover:bg-zinc-50"}`}>{label}</button>)}
             </div>
           </div>
 
           <div className="border-b border-zinc-200 py-7">
-            <h3 className="text-base font-semibold text-[#1F1F1F]">Price range</h3>
-            <p className="mt-1 text-xs text-zinc-600">Nightly price, before taxes and fees</p>
+            <h3 className="text-base font-semibold text-[#1F1F1F]">{t("listings_price_range", "Price range")}</h3>
+            <p className="mt-1 text-xs text-zinc-600">{t("listings_price_subtitle", "Nightly price, before taxes and fees")}</p>
             {hasPriceRange ? <>
               <div className="mt-7 h-14 border-b border-zinc-300" aria-hidden="true"><div className="flex h-full items-end gap-1">{Array.from({ length: 32 }, (_, index) => <span key={index} className="flex-1 rounded-t bg-zinc-300" style={{ height: `${18 + Math.round(70 * Math.sin((index / 31) * Math.PI))}%` }} />)}</div></div>
               <div className="relative mt-1 h-9">
@@ -294,56 +318,61 @@ export function ListingFilterModal({ open, onClose, onApply, initialFilters, ava
                 <input type="range" min={availableMin} max={availableMax} step={Math.max(1, Math.round((availableMax - availableMin) / 200))} value={normalisedDraft.maxPrice} onChange={(event) => updatePrice("maxPrice", event.target.value)} aria-label="Maximum price" className="pointer-events-none absolute inset-0 z-20 h-9 w-full appearance-none bg-transparent [&::-webkit-slider-runnable-track]:h-1 [&::-webkit-slider-runnable-track]:bg-transparent [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:mt-[-6px] [&::-webkit-slider-thumb]:size-5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border [&::-webkit-slider-thumb]:border-zinc-300 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-md [&::-moz-range-track]:h-1 [&::-moz-range-track]:bg-transparent [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:size-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border [&::-moz-range-thumb]:border-zinc-300 [&::-moz-range-thumb]:bg-white" />
               </div>
               <div className="mt-5 grid grid-cols-2 gap-3">
-                {([ ["minPrice", "Minimum"], ["maxPrice", "Maximum"] ] as const).map(([key, label]) => <label key={key} className="rounded-xl border border-zinc-300 px-3 py-2 focus-within:border-zinc-950 focus-within:ring-1 focus-within:ring-zinc-950"><span className="block text-[11px] font-medium text-[#727272]">{label}</span><span className="mt-0.5 flex items-center gap-1"><span className="text-sm text-[#727272]">{currencySymbol}</span><input inputMode="numeric" value={normalisedDraft[key]} onChange={(event) => updatePrice(key, event.target.value.replace(/[^0-9]/g, ""))} className="min-w-0 w-full bg-transparent text-sm font-semibold outline-none" /></span></label>)}
+                {([ ["minPrice", t("listings_minimum", "Minimum")], ["maxPrice", t("listings_maximum", "Maximum")] ] as const).map(([key, label]) => <label key={key} className="rounded-xl border border-zinc-300 px-3 py-2 focus-within:border-zinc-950 focus-within:ring-1 focus-within:ring-zinc-950"><span className="block text-[11px] font-medium text-[#727272]">{label}</span><span className="mt-0.5 flex items-center gap-1"><span className="text-sm text-[#727272]">{currencySymbol}</span><input inputMode="numeric" value={normalisedDraft[key]} onChange={(event) => updatePrice(key, event.target.value.replace(/[^0-9]/g, ""))} className="min-w-0 w-full bg-transparent text-sm font-semibold outline-none" /></span></label>)}
               </div>
-            </> : <p className="mt-5 rounded-xl bg-zinc-50 p-4 text-sm text-zinc-600">Price controls become available when matching homes have prices.</p>}
+            </> : <p className="mt-5 rounded-xl bg-zinc-50 p-4 text-sm text-zinc-600">{t("listings_price_controls_unavailable", "Price controls become available when matching homes have prices.")}</p>}
           </div>
 
           <div className="space-y-4 border-b border-zinc-200 py-7">
-            <h2 className="mb-2 text-base font-semibold text-zinc-950">Rooms and beds</h2>
-            <CounterRow label="Bedrooms" value={draft.bedrooms} onChange={(bedrooms) => setDraft((previous) => ({ ...previous, bedrooms }))} />
-            <CounterRow label="Beds" value={draft.beds} onChange={(beds) => setDraft((previous) => ({ ...previous, beds }))} />
-            <CounterRow label="Bathrooms" value={draft.bathrooms} onChange={(bathrooms) => setDraft((previous) => ({ ...previous, bathrooms }))} />
+            <h2 className="mb-2 text-base font-semibold text-zinc-950">{t("listings_rooms_and_beds", "Rooms and beds")}</h2>
+            <CounterRow label={t("listings_bedrooms", "Bedrooms")} value={draft.bedrooms} anyLabel={t("listings_any", "Any")} onChange={(bedrooms) => setDraft((previous) => ({ ...previous, bedrooms }))} />
+            <CounterRow label={t("listings_beds", "Beds")} value={draft.beds} anyLabel={t("listings_any", "Any")} onChange={(beds) => setDraft((previous) => ({ ...previous, beds }))} />
+            <CounterRow label={t("listings_bathrooms", "Bathrooms")} value={draft.bathrooms} anyLabel={t("listings_any", "Any")} onChange={(bathrooms) => setDraft((previous) => ({ ...previous, bathrooms }))} />
           </div>
 
           <div className="border-b border-zinc-200 py-7">
-            <h2 className="mb-4 text-base font-semibold text-zinc-950">Property type</h2>
+            <h2 className="mb-4 text-base font-semibold text-zinc-950">{t("listings_property_type", "Property type")}</h2>
             <div className="flex flex-wrap gap-2">
-              {PRIMARY_PROPERTY_TYPES.map((propertyType) => <button key={propertyType.id} type="button" aria-pressed={draft.propertyTypes.includes(propertyType.id)} onClick={() => setDraft((previous) => ({ ...previous, propertyTypes: toggle(previous.propertyTypes, propertyType.id) }))} className={`inline-flex min-h-10 items-center gap-2 rounded-full border px-3 text-xs font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 ${draft.propertyTypes.includes(propertyType.id) ? "border-zinc-950 bg-zinc-950 text-white" : "border-zinc-300 bg-white text-zinc-800 hover:border-zinc-700"}`}><PropertyTypeIcon type={propertyType.icon} />{propertyType.label}</button>)}
+              {PRIMARY_PROPERTY_TYPES.map((propertyType) => {
+                const label = propertyTypeLabels.get(propertyType.id) ?? propertyType.label;
+                return (
+                  <button key={propertyType.id} type="button" aria-pressed={draft.propertyTypes.includes(propertyType.id)} onClick={() => setDraft((previous) => ({ ...previous, propertyTypes: toggle(previous.propertyTypes, propertyType.id) }))} className={`inline-flex min-h-10 items-center gap-2 rounded-full border px-3 text-xs font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 ${draft.propertyTypes.includes(propertyType.id) ? "border-zinc-950 bg-zinc-950 text-white" : "border-zinc-300 bg-white text-zinc-800 hover:border-zinc-700"}`}><PropertyTypeIcon type={propertyType.icon} />{label}</button>
+                );
+              })}
             </div>
           </div>
 
           <div className="border-b border-zinc-200 py-7">
-            <h2 className="mb-5 text-lg font-semibold text-zinc-950">Amenities</h2>
-            <div className="space-y-5">{amenityGroups.map((group) => <div key={group.title}><h3 className="mb-2.5 text-sm font-semibold text-zinc-800">{group.title}</h3><div className="flex flex-wrap gap-2">{group.ids.map((id) => amenityById.get(id)).filter(Boolean).map((amenity) => <FilterPill key={amenity!.id} active={draft.amenities.includes(amenity!.id)} onClick={() => setDraft((previous) => ({ ...previous, amenities: toggle(previous.amenities, amenity!.id) }))}><AmenityIcon id={amenity!.id} className="size-4" />{amenity!.label}</FilterPill>)}</div></div>)}</div>
+            <h2 className="mb-5 text-lg font-semibold text-zinc-950">{t("listings_amenities", "Amenities")}</h2>
+            <div className="space-y-5">{amenityGroups.map((group) => <div key={group.title}><h3 className="mb-2.5 text-sm font-semibold text-zinc-800">{group.title === "Popular" ? t("listings_popular", "Popular") : group.title === "Essentials" ? t("listings_essentials", "Essentials") : group.title === "Features" ? t("listings_features", "Features") : group.title}</h3><div className="flex flex-wrap gap-2">{group.ids.map((id) => amenityById.get(id)).filter(Boolean).map((amenity) => <FilterPill key={amenity!.id} active={draft.amenities.includes(amenity!.id)} onClick={() => setDraft((previous) => ({ ...previous, amenities: toggle(previous.amenities, amenity!.id) }))}><AmenityIcon id={amenity!.id} className="size-4" />{amenity!.label}</FilterPill>)}</div></div>)}</div>
             {showAllAmenities && <div className="mt-5 flex flex-wrap gap-2">{extraAmenities.map((amenity) => <FilterPill key={amenity.id} active={draft.amenities.includes(amenity.id)} onClick={() => setDraft((previous) => ({ ...previous, amenities: toggle(previous.amenities, amenity.id) }))}><AmenityIcon id={amenity.id} className="size-4" />{amenity.label}</FilterPill>)}</div>}
-            <button type="button" onClick={() => setShowAllAmenities((value) => !value)} className="mt-5 text-sm font-semibold underline underline-offset-2 hover:text-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950">{showAllAmenities ? "Show less" : "Show more"}</button>
+            <button type="button" onClick={() => setShowAllAmenities((value) => !value)} className="mt-5 text-sm font-semibold underline underline-offset-2 hover:text-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950">{showAllAmenities ? t("listings_show_less", "Show less") : t("listings_show_more", "Show more")}</button>
           </div>
 
           <div className="border-b border-zinc-200 py-7">
-            <h2 className="mb-4 text-lg font-semibold text-zinc-950">Booking options</h2>
+            <h2 className="mb-4 text-lg font-semibold text-zinc-950">{t("listings_booking_options", "Booking options")}</h2>
             <div className="flex flex-wrap gap-2">
-              <FilterPill active={draft.instantBook} onClick={() => setDraft((previous) => ({ ...previous, instantBook: !previous.instantBook }))}><svg aria-hidden="true" viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="m13 2-9 12h7l-1 8 9-12h-7z" /></svg>Instant Book</FilterPill>
-              <FilterPill active={draft.amenities.includes("self_check_in")} onClick={() => setDraft((previous) => ({ ...previous, amenities: toggle(previous.amenities, "self_check_in") }))}><AmenityIcon id="self_check_in" className="size-4" />Self check-in</FilterPill>
-              <FilterPill active={draft.pets} onClick={() => setDraft((previous) => ({ ...previous, pets: !previous.pets }))}><AmenityIcon id="pet_friendly" className="size-4" />Allows pets</FilterPill>
-              <FilterPill active={draft.featured} onClick={() => setDraft((previous) => ({ ...previous, featured: !previous.featured }))}>★ Guest favourite</FilterPill>
+              <FilterPill active={draft.instantBook} onClick={() => setDraft((previous) => ({ ...previous, instantBook: !previous.instantBook }))}><svg aria-hidden="true" viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="m13 2-9 12h7l-1 8 9-12h-7z" /></svg>{t("listings_instant_book", "Instant Book")}</FilterPill>
+              <FilterPill active={draft.amenities.includes("self_check_in")} onClick={() => setDraft((previous) => ({ ...previous, amenities: toggle(previous.amenities, "self_check_in") }))}><AmenityIcon id="self_check_in" className="size-4" />{t("listings_self_check_in", "Self check-in")}</FilterPill>
+              <FilterPill active={draft.pets} onClick={() => setDraft((previous) => ({ ...previous, pets: !previous.pets }))}><AmenityIcon id="pet_friendly" className="size-4" />{t("listings_allows_pets", "Allows pets")}</FilterPill>
+              <FilterPill active={draft.featured} onClick={() => setDraft((previous) => ({ ...previous, featured: !previous.featured }))}>★ {t("listings_guest_favourite", "Guest favourite")}</FilterPill>
             </div>
           </div>
 
           <div className="border-b border-zinc-200 py-7">
-            <button type="button" onClick={() => setShowAccessibility((value) => !value)} aria-expanded={showAccessibility} className="flex w-full items-center justify-between text-left text-lg font-semibold text-zinc-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950">Accessibility features <span aria-hidden="true">{showAccessibility ? "⌃" : "⌄"}</span></button>
-            {showAccessibility && <div className="mt-5 grid gap-3 sm:grid-cols-2">{accessibilityAmenities.map((amenity) => <label key={amenity.id} className="flex min-h-11 cursor-pointer items-center gap-3 text-sm text-zinc-800"><input type="checkbox" checked={draft.accessibility.includes(amenity.id)} onChange={() => setDraft((previous) => ({ ...previous, accessibility: toggle(previous.accessibility, amenity.id) }))} className="size-5 rounded border-zinc-400 text-zinc-950 focus:ring-zinc-950" />{amenity.label}</label>)}</div>}
+            <button type="button" onClick={() => setShowAccessibility((value) => !value)} aria-expanded={showAccessibility} className="flex w-full items-center justify-between text-left text-lg font-semibold text-zinc-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950">{t("listings_accessibility_features", "Accessibility features")} <span aria-hidden="true">{showAccessibility ? "⌃" : "⌄"}</span></button>
+            {showAccessibility && <div className="mt-5 grid gap-3 sm:grid-cols-2">{accessibilityAmenities.map((amenity) => <label key={amenity.id} className="flex min-h-11 cursor-pointer items-center gap-3 text-sm text-zinc-800"><input type="checkbox" checked={draft.accessibility.includes(amenity.id)} onChange={() => setDraft((previous) => ({ ...previous, accessibility: toggle(previous.accessibility, amenity.id) }))} className="size-5 rounded border-zinc-400 text-zinc-950 focus:ring-zinc-950" />{getAccessibilityLabel(amenity.id, amenity.label)}</label>)}</div>}
           </div>
 
           <div className="border-b border-zinc-200 py-7">
-            <button type="button" onClick={() => setShowLanguages((value) => !value)} aria-expanded={showLanguages} className="flex w-full items-center justify-between text-left text-lg font-semibold text-zinc-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950">Host languages <span aria-hidden="true">{showLanguages ? "⌃" : "⌄"}</span></button>
-            {showLanguages && <div className="mt-5 grid max-h-72 gap-3 overflow-y-auto pr-1 sm:grid-cols-2">{FILTER_LANGUAGE_OPTIONS.map((language) => <label key={language.id} className="flex min-h-11 cursor-pointer items-center gap-3 text-sm text-zinc-800"><input type="checkbox" checked={draft.languages.includes(language.id)} onChange={() => setDraft((previous) => ({ ...previous, languages: toggle(previous.languages, language.id) }))} className="size-5 rounded border-zinc-400 text-zinc-950 focus:ring-zinc-950" />{language.name}</label>)}</div>}
+            <button type="button" onClick={() => setShowLanguages((value) => !value)} aria-expanded={showLanguages} className="flex w-full items-center justify-between text-left text-lg font-semibold text-zinc-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950">{t("listings_host_languages", "Host languages")} <span aria-hidden="true">{showLanguages ? "⌃" : "⌄"}</span></button>
+            {showLanguages && <div className="mt-5 grid max-h-72 gap-3 overflow-y-auto pr-1 sm:grid-cols-2">{FILTER_LANGUAGE_OPTIONS.map((language) => <label key={language.id} className="flex min-h-11 cursor-pointer items-center gap-3 text-sm text-zinc-800"><input type="checkbox" checked={draft.languages.includes(language.id)} onChange={() => setDraft((previous) => ({ ...previous, languages: toggle(previous.languages, language.id) }))} className="size-5 rounded border-zinc-400 text-zinc-950 focus:ring-zinc-950" />{language.nativeName && language.nativeName !== language.name ? `${language.name} (${language.nativeName})` : language.name}</label>)}</div>}
           </div>
         </div>
 
         <footer className="flex shrink-0 items-center justify-between gap-4 border-t border-zinc-200 bg-white px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-6">
-          <button type="button" onClick={clearAll} className="text-sm font-semibold underline underline-offset-2 hover:text-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950">Clear all</button>
-          <button type="button" disabled={isApplying || (hasDraftChanges && isCounting)} onClick={() => onApply(normalisedDraft)} className="min-h-12 rounded-xl bg-zinc-950 px-5 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-wait disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950">{hasDraftChanges && isCounting ? "Finding places…" : `Show ${shownCount.toLocaleString()} ${shownCount === 1 ? "place" : "places"}`}</button>
+          <button type="button" onClick={clearAll} className="text-sm font-semibold underline underline-offset-2 hover:text-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950">{t("listings_clear_all", "Clear all")}</button>
+          <button type="button" disabled={isApplying || (hasDraftChanges && isCounting)} onClick={() => onApply(normalisedDraft)} className="min-h-12 rounded-xl bg-zinc-950 px-5 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-wait disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950">{hasDraftChanges && isCounting ? t("listings_finding_places", "Finding places…") : shownCount === 1 ? t("listings_show_place", { count: shownCount }, "Show 1 place") : t("listings_show_places", { count: shownCount.toLocaleString() }, `Show ${shownCount.toLocaleString()} places`)}</button>
         </footer>
       </section>
     </ModalOverlay>

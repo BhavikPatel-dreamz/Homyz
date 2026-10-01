@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getCurrencyForCountry } from "@/lib/currency";
 import { useCurrency } from "@/lib/currency-context";
+import { useLanguage } from "@/lib/i18n/language-context";
 import type { PublicListingDTO } from "@/services/mappers";
 import { trackListingEvent } from "@/lib/analytics/listing-analytics";
 import { buildListingDetailUrl, getLastSearch } from "@/lib/storage/client-history";
@@ -130,6 +131,7 @@ export function ListingCard({
   variant = "default",
 }: ListingCardProps) {
   const { formatPrice } = useCurrency();
+  const { t } = useLanguage();
   const router = useRouter();
   const [isFavorite, setIsFavorite] = useState(initialFavorite);
   const [isFavoriting, setIsFavoriting] = useState(false);
@@ -230,7 +232,7 @@ export function ListingCard({
     discountedPrice != null ? formatPrice(discountedPrice, currency) : null;
 
   const discountLabel =
-    weeklyPct != null ? "Weekly discount" : monthlyPct != null ? "Monthly discount" : null;
+    weeklyPct != null ? t("listings_weekly_discount", "Weekly discount") : monthlyPct != null ? t("listings_monthly_discount", "Monthly discount") : null;
 
   // ── Rating & Reviews ────────────────────────────────────────────────────────
   const numericRating =
@@ -259,8 +261,8 @@ export function ListingCard({
 
   // Primary heading: "Flat in Dubai", "Apartment in Riyadh", etc.
   const primaryHeading = listing.city
-    ? `${listing.propertyType || "Stay"} in ${listing.city}`
-    : listing.title || "Untitled property";
+    ? t("listings_stay_in", { propertyType: listing.propertyType || t("home_search_where", undefined, "Stay"), city: listing.city }, `${listing.propertyType || "Stay"} in ${listing.city}`)
+    : listing.title || t("host_untitled_listing", "Untitled property");
 
   // Secondary subtitle: full descriptive title or location
   const secondarySubtitle = listing.city
@@ -270,24 +272,25 @@ export function ListingCard({
   const distanceText =
     typeof listing.distanceKm === "number" && isFinite(listing.distanceKm)
       ? targetLocationName
-        ? ` · ${listing.distanceKm} km from ${targetLocationName}`
-        : ` · ${listing.distanceKm} km away`
+        ? t("listings_km_from", { distance: listing.distanceKm, location: targetLocationName }, ` · ${listing.distanceKm} km from ${targetLocationName}`)
+        : t("listings_km_away", { distance: listing.distanceKm }, ` · ${listing.distanceKm} km away`)
       : "";
 
   // Room specification line: e.g. "1 bedroom · 2 beds · 1 bathroom"
   const roomSpecs: string[] = [];
   if (listing.bedrooms && listing.bedrooms > 0) {
-    roomSpecs.push(`${listing.bedrooms} bedroom${listing.bedrooms > 1 ? "s" : ""}`);
+    roomSpecs.push(listing.bedrooms === 1 ? t("listings_bedroom_one", { count: listing.bedrooms }, "1 bedroom") : t("listings_bedroom_many", { count: listing.bedrooms }, `${listing.bedrooms} bedrooms`));
   }
   if (listing.beds && listing.beds > 0) {
-    roomSpecs.push(`${listing.beds} bed${listing.beds > 1 ? "s" : ""}`);
+    roomSpecs.push(listing.beds === 1 ? t("listings_bed_one", { count: listing.beds }, "1 bed") : t("listings_bed_many", { count: listing.beds }, `${listing.beds} beds`));
   }
   if (listing.bathrooms && listing.bathrooms > 0) {
-    roomSpecs.push(`${listing.bathrooms} bathroom${listing.bathrooms > 1 ? "s" : ""}`);
+    roomSpecs.push(listing.bathrooms === 1 ? t("listings_bathroom_one", { count: listing.bathrooms }, "1 bathroom") : t("listings_bathroom_many", { count: listing.bathrooms }, `${listing.bathrooms} bathrooms`));
   }
   if (roomSpecs.length === 0) {
+    const guestVal = listing.guests ?? 1;
     roomSpecs.push(
-      `${listing.propertyType || "Home"} · ${listing.guests ?? 1} ${(listing.guests ?? 1) === 1 ? "guest" : "guests"}`
+      `${listing.propertyType || "Home"} · ${guestVal} ${guestVal === 1 ? t("home_guest_one", { count: guestVal }, "1 guest") : t("home_guest_many", { count: guestVal }, `${guestVal} guests`)}`
     );
   }
   const specsText = roomSpecs.join(" · ");
@@ -461,22 +464,22 @@ export function ListingCard({
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center bg-zinc-100 text-[#727272]">
             <span className="text-3xl mb-1" aria-hidden="true">🏡</span>
-            <span className="text-xs font-medium text-[#727272]">No photo yet</span>
+            <span className="text-xs font-medium text-[#727272]">{t("listings_no_photo_yet", "No photo yet")}</span>
           </div>
         )}
 
         {/* ── Badges (Top Left) ── */}
         {isGuestFav ? (
           <span className="absolute left-3 top-3 z-20 inline-flex items-center rounded-full bg-white px-3 py-1 text-[11px] sm:text-xs font-semibold text-[#1F1F1F] shadow-md border border-black/5">
-            Guest favourite
+            {t("listings_guest_favourite", "Guest favourite")}
           </span>
         ) : isSuper ? (
           <span className="absolute left-3 top-3 z-20 inline-flex items-center rounded-full bg-black/60 backdrop-blur-md px-3 py-1 text-[11px] sm:text-xs font-medium text-white shadow-md">
-            Superhost
+            {t("listings_superhost", "Superhost")}
           </span>
         ) : isFeat ? (
           <span className="absolute left-3 top-3 z-20 inline-flex items-center rounded-full bg-white/90 backdrop-blur-md px-2.5 py-1 text-[11px] sm:text-xs font-semibold text-[#1F1F1F] shadow-xs border border-white/60">
-            Featured
+            {t("listings_featured_badge", "Featured")}
           </span>
         ) : null}
 
@@ -631,7 +634,7 @@ export function ListingCard({
                 {reviewCount > 0 && <span className="font-normal text-[#727272]">({reviewCount})</span>}
               </div>
             ) : (
-              <span className="text-[11px] font-medium text-[#727272] shrink-0">★ New</span>
+              <span className="text-[11px] font-medium text-[#727272] shrink-0">★ {t("listings_new", "New")}</span>
             )}
           </div>
 
@@ -653,7 +656,7 @@ export function ListingCard({
               {formatPrice(totalPrice, currency)}
             </span>
             <span className="text-[#727272]">
-              for {nights} {nights === 1 ? "night" : "nights"}
+              {nights === 1 ? t("listings_for_night", { count: nights }, "for 1 night") : t("listings_for_nights", { count: nights }, `for ${nights} nights`)}
             </span>
           </div>
 
@@ -661,7 +664,7 @@ export function ListingCard({
           {hasFreeCancellation && (
             <div className="pt-0.5 flex items-center">
               <span className="inline-block text-[11px] font-normal text-[#727272] bg-zinc-100 px-2 py-0.5 rounded">
-                Free cancellation
+                {t("listings_free_cancellation", "Free cancellation")}
               </span>
             </div>
           )}
@@ -695,7 +698,7 @@ export function ListingCard({
             </span>
           ) : (
                   <span className="text-[10px] font-medium text-[#727272] bg-[#F3F4F5] px-1.5 py-0.5 rounded-lg shrink-0 leading-3.5">
-              New
+              {t("listings_new", "New")}
             </span>
           )}
         </div>
@@ -727,7 +730,7 @@ export function ListingCard({
               </span>
               <span className="font-semibold text-zinc-950 text-sm">
                 {formattedDiscountedPrice}
-                <span className="text-[#727272] font-normal text-xs ml-0.5">/ night</span>
+                <span className="text-[#727272] font-normal text-xs ml-0.5">{t("listings_per_night", "/ night")}</span>
               </span>
               {discountLabel && (
                 <span className="inline-flex items-center text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/70 px-1.5 py-0.5 rounded-full">
@@ -738,7 +741,7 @@ export function ListingCard({
           ) : (
             <div className="flex items-baseline gap-1">
               <span className="font-semibold text-zinc-950 text-sm">{formattedBasePrice}</span>
-              <span className="text-[#727272] font-normal text-xs">/ night</span>
+              <span className="text-[#727272] font-normal text-xs">{t("listings_per_night", "/ night")}</span>
             </div>
           )}
         </div>

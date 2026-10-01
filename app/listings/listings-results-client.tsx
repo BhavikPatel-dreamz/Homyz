@@ -13,6 +13,7 @@ import type { SortBy } from "@/services/listing.service";
 import { saveLastSearch, saveRecentSearchContext, buildListingDetailUrl } from "@/lib/storage/client-history";
 import { getCurrencyForCountry, getCurrencySymbol } from "@/lib/currency";
 import { useCurrency } from "@/lib/currency-context";
+import { useLanguage } from "@/lib/i18n/language-context";
 import { trackListingEvent } from "@/lib/analytics/listing-analytics";
 import { getGoogleMapsUrl, trackGoogleMapsOpen } from "@/lib/location/google-maps";
 import { ListingFilterModal, type ListingFilterValues } from "@/components/listings/listing-filter-modal";
@@ -175,6 +176,7 @@ function SelectedPreviewCard({
   pets?: number;
 }) {
   const { formatPrice } = useCurrency();
+  const { t } = useLanguage();
   const currency = getCurrencyForCountry(listing.country);
   const selectedStayNights = (() => {
     if (!checkIn || !checkOut) return 1;
@@ -205,7 +207,7 @@ function SelectedPreviewCard({
           {listing.photos && listing.photos.length > 0 ? (
             <img
               src={listing.photos[0]}
-              alt={listing.title || "Property"}
+              alt={listing.title || t("host_untitled_listing", "Property")}
               className="h-full w-full object-cover group-hover:scale-105 transition-transform"
             />
           ) : (
@@ -215,7 +217,7 @@ function SelectedPreviewCard({
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
             <h4 className="text-xs font-bold text-[#1F1F1F] truncate group-hover:text-amber-950 transition-colors">
-              {listing.title || "Untitled property"}
+              {listing.title || t("host_untitled_listing", "Untitled property")}
             </h4>
             {typeof listing.rating === "number" && listing.rating > 0 && (
               <span className="text-[11px] font-semibold text-zinc-800 flex items-center gap-0.5 shrink-0 ml-auto">
@@ -228,12 +230,12 @@ function SelectedPreviewCard({
           </div>
           <p className="text-[11px] text-[#727272] truncate">
             {listing.city || listing.country || "Saudi Arabia"}
-            {typeof listing.distanceKm === "number" ? ` · ${listing.distanceKm} km away` : ""}
+            {typeof listing.distanceKm === "number" ? t("listings_km_away", { distance: listing.distanceKm }, ` · ${listing.distanceKm} km away`) : ""}
           </p>
           <div className="text-xs font-bold text-zinc-950 mt-0.5">
             {formattedPrice}
             <span className="text-[10px] font-normal text-[#727272]">
-              {selectedStayNights === 1 ? " / night" : ` for ${selectedStayNights} nights`}
+              {selectedStayNights === 1 ? t("listings_per_night", " / night") : t("listings_for_nights", { count: selectedStayNights }, ` for ${selectedStayNights} nights`)}
             </span>
           </div>
         </div>
@@ -252,7 +254,7 @@ function SelectedPreviewCard({
                 trackGoogleMapsOpen(listing.id, "listing_marker_preview");
               }}
               aria-label={`Open ${listing.title || "property"} location in Google Maps`}
-              title="Open in Google Maps"
+              title={t("listings_open_google_maps", "Open in Google Maps")}
               className="h-7 w-7 rounded-full bg-zinc-100 hover:bg-zinc-200 flex items-center justify-center text-zinc-600 hover:text-[#1F1F1F] transition-colors cursor-pointer"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5" aria-hidden="true">
@@ -269,7 +271,7 @@ function SelectedPreviewCard({
             e.stopPropagation();
             onClose();
           }}
-          aria-label="Close preview"
+          aria-label={t("listings_close_preview", "Close preview")}
           className="h-7 w-7 rounded-full bg-zinc-100 hover:bg-zinc-200 flex items-center justify-center text-[#727272] hover:text-zinc-800 text-xs transition-colors cursor-pointer"
         >
           ✕
@@ -311,6 +313,7 @@ export function ListingsResultsClient({
   source,
 }: ListingsResultsClientProps) {
   const { currency: selectedCurrency } = useCurrency();
+  const { t } = useLanguage();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -992,12 +995,12 @@ export function ListingsResultsClient({
             type="button"
             onClick={() => setMobileViewMode("map")}
             className="absolute top-3 right-3 z-[1000] bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-full border border-zinc-200 shadow-md text-xs font-semibold text-zinc-800 hover:bg-zinc-100 flex items-center gap-1.5 cursor-pointer"
-            aria-label="Expand to map-focused mode"
+            aria-label={t("listings_focus_map", "Expand to map-focused mode")}
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5">
               <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
             </svg>
-            <span>Focus map</span>
+            <span>{t("listings_focus_map", "Focus map")}</span>
           </button>
 
           {/* Selected Property Preview (when a marker is tapped on mobile inline map) */}
@@ -1040,7 +1043,7 @@ export function ListingsResultsClient({
             >
               <path d="M1 3.5a.5.5 0 0 1 .5-.5h2.086a2 2 0 0 1 3.828 0H14.5a.5.5 0 0 1 0 1H7.414a2 2 0 0 1-3.828 0H1.5a.5.5 0 0 1-.5-.5zm0 4.5a.5.5 0 0 1 .5-.5h6.086a2 2 0 0 1 3.828 0H14.5a.5.5 0 0 1 0 1h-3.086a2 2 0 0 1-3.828 0H1.5a.5.5 0 0 1-.5-.5zm0 4.5a.5.5 0 0 1 .5-.5h1.086a2 2 0 0 1 3.828 0H14.5a.5.5 0 0 1 0 1H6.414a2 2 0 0 1-3.828 0H1.5a.5.5 0 0 1-.5-.5z" />
             </svg>
-            <span>Filters</span>
+            <span>{t("listings_filters", "Filters")}</span>
             {activeFilterCount > 0 && (
               <span className="flex h-4 w-4 items-center justify-center rounded-full bg-white text-[10px] font-bold text-[#1F1F1F] ml-0.5">
                 {activeFilterCount}
@@ -1063,7 +1066,7 @@ export function ListingsResultsClient({
               className="flex items-center gap-1.5 rounded-full bg-zinc-900 text-white text-xs sm:text-[13px] font-semibold px-3.5 py-2 shadow-2xs hover:bg-zinc-800 transition-all shrink-0 cursor-pointer"
               aria-label="Clear featured filter"
             >
-              <span>✨ Featured</span>
+              <span>✨ {t("listings_guest_favourite", "Featured")}</span>
               <span className="text-[#727272] hover:text-white font-bold text-xs ml-0.5">✕</span>
             </button>
           )}
@@ -1094,6 +1097,20 @@ export function ListingsResultsClient({
               };
             }
 
+            const translatedLabel =
+              opt.type === "amenity"
+                ? opt.id === "self_check_in" ? t("listings_self_check_in", "Self check-in")
+                  : opt.id === "free_parking" ? t("listings_free_parking", "Free parking")
+                  : opt.id === "air_conditioning" ? t("listings_air_conditioning", "Air conditioning")
+                  : opt.id === "wifi" ? t("listings_wifi", "Wifi")
+                  : opt.id === "washer" ? t("listings_washing_machine", "Washing machine")
+                  : opt.id === "pool" ? t("listings_pool", "Pool")
+                  : opt.id === "tv" ? t("listings_tv", "TV")
+                  : opt.label
+                : opt.type === "bathrooms"
+                ? t("listings_one_plus_bathrooms", "1+ bathrooms")
+                : t("listings_instant_book", "Instant Book");
+
             return (
               <button
                 key={opt.label}
@@ -1106,7 +1123,7 @@ export function ListingsResultsClient({
                     : "bg-white text-zinc-800 border-zinc-200 hover:border-zinc-900 font-medium"
                 }`}
               >
-                {opt.label}
+                {translatedLabel}
               </button>
             );
           })}
@@ -1119,13 +1136,13 @@ export function ListingsResultsClient({
               value={currentFilters.sortBy ?? "recommended"}
               onChange={(e) => handleSortChange(e.target.value as SortBy)}
               className="appearance-none rounded-full border border-zinc-200 bg-white py-2 pl-3.5 pr-9 text-xs sm:text-[13px] font-medium text-zinc-800 outline-none hover:border-zinc-900 focus:border-zinc-900 cursor-pointer"
-              aria-label="Sort by"
+              aria-label={t("listings_sort_by", "Sort by")}
             >
-              {SORT_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
+              <option value="recommended">{t("listings_sort_recommended", "Recommended")}</option>
+              <option value="price_low">{t("listings_sort_price_low", "Price: Low to High")}</option>
+              <option value="price_high">{t("listings_sort_price_high", "Price: High to Low")}</option>
+              <option value="top_rated">{t("listings_sort_top_rated", "Top Rated")}</option>
+              <option value="most_reviewed">{t("listings_sort_most_reviewed", "Most Reviewed")}</option>
             </select>
             <svg
               aria-hidden="true"
@@ -1159,10 +1176,10 @@ export function ListingsResultsClient({
               </div>
               <div className="space-y-1.5">
                 <h2 className="text-base sm:text-lg font-bold text-[#1F1F1F]">
-                  We couldn&apos;t load these properties
+                  {t("listings_error_title", "We couldn't load these properties")}
                 </h2>
                 <p className="text-xs sm:text-sm text-[#727272] font-normal leading-relaxed">
-                  Something went wrong while searching. Please try again or clear your filters.
+                  {t("listings_error_desc", "Something went wrong while searching. Please try again or clear your filters.")}
                 </p>
               </div>
               <div className="pt-2 flex items-center justify-center gap-2.5">
@@ -1175,7 +1192,7 @@ export function ListingsResultsClient({
                   }}
                   className="rounded-full bg-zinc-900 hover:bg-zinc-800 text-white font-semibold text-xs px-6 py-2.5 transition-all cursor-pointer shadow-xs inline-flex items-center gap-1.5"
                 >
-                  <span>Retry</span>
+                  <span>{t("listings_retry", "Retry")}</span>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5">
                     <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
                   </svg>
@@ -1192,9 +1209,9 @@ export function ListingsResultsClient({
                 </svg>
               </div>
               <div className="space-y-1.5">
-                <h2 className="text-base sm:text-lg font-semibold text-[#1F1F1F]">No properties found for these search criteria</h2>
+                <h2 className="text-base sm:text-lg font-semibold text-[#1F1F1F]">{t("listings_empty_title", "No properties found for these search criteria")}</h2>
                 <p className="text-xs sm:text-sm text-[#727272] font-normal leading-relaxed">
-                  Try adjusting your destination, dates, or clearing some filters to find available homes.
+                  {t("listings_empty_desc", "Try adjusting your destination, dates, or clearing some filters to find available homes.")}
                 </p>
               </div>
               <div className="pt-2 flex flex-wrap items-center justify-center gap-2.5">
@@ -1207,7 +1224,7 @@ export function ListingsResultsClient({
                   }}
                       className="shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 min-[1440px]:inline-flex border border-transparent hover:border-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white"
                 >
-                  Clear all filters
+                  {t("listings_clear_all_filters", "Clear all filters")}
                 </button>
                 {currentFilters.amenities && currentFilters.amenities.length > 0 && (
                   <button
@@ -1215,7 +1232,7 @@ export function ListingsResultsClient({
                     onClick={() => startTransition(() => router.push(buildUrl({ amenities: null })))}
                     className="rounded-full border border-zinc-300 text-zinc-700 font-semibold text-xs px-6 py-2.5 transition-all hover:bg-zinc-50 cursor-pointer"
                   >
-                    Remove amenity filters
+                    {t("listings_remove_amenity_filters", "Remove amenity filters")}
                   </button>
                 )}
               </div>
@@ -1269,7 +1286,7 @@ export function ListingsResultsClient({
                   {isLoadingMore && (
                     <div className="flex items-center gap-2 text-xs text-[#727272]">
                       <div className="h-4 w-4 border-2 border-zinc-300 border-t-zinc-900 rounded-full animate-spin" />
-                      Loading more stays…
+                      {t("listings_loading_more", "Loading more stays…")}
                     </div>
                   )}
                 </div>
@@ -1321,20 +1338,20 @@ export function ListingsResultsClient({
             <div className="flex items-center gap-2 min-w-0">
               <span className="text-xs font-bold text-[#1F1F1F] truncate">
                 {currentFilters.placeName || currentFilters.city
-                  ? `Map: ${currentFilters.placeName || currentFilters.city}`
-                  : "Map view"}
+                  ? `${t("listings_map_view", "Map")}: ${currentFilters.placeName || currentFilters.city}`
+                  : t("listings_map_view", "Map view")}
               </span>
               <span className="text-[11px] font-semibold text-zinc-600 bg-zinc-100 px-2 py-0.5 rounded-full shrink-0">
-                {total} {total === 1 ? "place" : "places"}
+                {total === 1 ? t("listings_show_place", { count: total }, "1 place") : t("listings_show_places", { count: total.toLocaleString() }, `${total} places`)}
               </span>
             </div>
             <button
               type="button"
               onClick={() => setMobileViewMode("combined")}
               className="text-xs font-semibold text-zinc-700 bg-zinc-100 hover:bg-zinc-200 px-3.5 py-1.5 rounded-full transition-colors cursor-pointer shrink-0 flex items-center gap-1.5"
-              aria-label="Back to listings"
+              aria-label={t("listings_list_view", "Back to listings")}
             >
-              <span>List view</span>
+              <span>{t("listings_list_view", "List view")}</span>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5">
                 <path d="M4 6h16M4 12h16M4 18h16" />
               </svg>
@@ -1362,12 +1379,12 @@ export function ListingsResultsClient({
                 type="button"
                 onClick={() => setMobileViewMode("combined")}
                 className="flex items-center gap-2 bg-zinc-900 hover:bg-zinc-800 text-white font-semibold px-5 py-2.5 rounded-full shadow-2xl text-xs cursor-pointer transition-all hover:scale-105 active:scale-95 whitespace-nowrap"
-                aria-label={`Show ${total} ${total === 1 ? "place" : "places"}`}
+                aria-label={total === 1 ? t("listings_show_place", { count: total }, "Show 1 place") : t("listings_show_places", { count: total }, `Show ${total} places`)}
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5">
                   <path d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
-                <span>Show {total} {total === 1 ? "place" : "places"}</span>
+                <span>{total === 1 ? t("listings_show_place", { count: total }, "Show 1 place") : t("listings_show_places", { count: total }, `Show ${total} places`)}</span>
               </button>
             </div>
 
@@ -1409,14 +1426,14 @@ export function ListingsResultsClient({
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
               </svg>
-              Hide map
+              {t("listings_hide_map", "Hide map")}
             </>
           ) : (
             <>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
                 <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" />
               </svg>
-              Show map
+              {t("listings_show_map", "Show map")}
             </>
           )}
         </span>
@@ -1426,14 +1443,14 @@ export function ListingsResultsClient({
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
                 <path d="M4 6h16M4 12h16M4 18h16" />
               </svg>
-              Show list
+              {t("listings_show_list", "Show list")}
             </>
           ) : (
             <>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
                 <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" />
               </svg>
-              Map view
+              {t("listings_map_view", "Map view")}
             </>
           )}
         </span>
