@@ -19,7 +19,7 @@ import { saveRecentlyViewedProperty, clearLastSearch, saveLastSearch, getLastSea
 import { getCurrencyForCountry } from "@/lib/currency";
 import { useCurrency } from "@/lib/currency-context";
 import { useLanguage } from "@/lib/i18n/language-context";
-import { cancellationPolicyLabel } from "@/lib/constants/listing-enums";
+import { cancellationPolicyLabel, listingTypeLabel, propertyTypeLabel } from "@/lib/constants/listing-enums";
 import { saveBookingQuote } from "@/lib/booking/quote-cache";
 import useWishlist from "@/hooks/useWishlist";
 import { trackListingEvent } from "@/lib/analytics/listing-analytics";
@@ -990,28 +990,48 @@ export function PublicListingDetailClient({
   };
   const humanize = (value: string) => value.toLowerCase().replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
   const aboutLocationDetails = [
-    ...(listing.neighborhoodDescription ? [{ heading: "Neighborhood", content: listing.neighborhoodDescription }] : []),
-    ...(listing.gettingAround ? [{ heading: "Getting around", content: listing.gettingAround }] : []),
+    ...(listing.neighborhoodDescription ? [{ heading: t("listing_detail_neighborhood", "Neighborhood"), content: listing.neighborhoodDescription }] : []),
+    ...(listing.gettingAround ? [{ heading: t("listing_detail_getting_around", "Getting around"), content: listing.gettingAround }] : []),
     ...(Array.isArray(listing.locationFeatures) && listing.locationFeatures.length > 0
-      ? [{ heading: "Location features", content: listing.locationFeatures.map(humanize).join(" · ") }]
+      ? [{ heading: t("listing_detail_location_features", "Location features"), content: listing.locationFeatures.map(humanize).join(" · ") }]
       : []),
     ...(Array.isArray(listing.views) && listing.views.length > 0
-      ? [{ heading: "Views", content: listing.views.map(humanize).join(" · ") }]
+      ? [{ heading: t("listing_detail_views", "Views"), content: listing.views.map(humanize).join(" · ") }]
       : []),
   ];
   const formatSafetyDisclosure = (entry: string): string | null => {
     const [key, status, ...detailParts] = entry.split(":");
     if (status === "NO") return null;
     const labels: Record<string, string> = {
-      MUST_CLIMB_STAIRS: "Guests must climb stairs",
-      POTENTIAL_FOR_NOISE: "Construction or other potential noise during stays",
-      NEARBY_WATER: "Nearby water bodies",
-      DANGEROUS_ANIMALS: "Potentially dangerous animals",
-      SPECIAL_CONSIDERATIONS: "Other safety or regulatory notes",
+      MUST_CLIMB_STAIRS: t("host_safety_must_climb_stairs", "Guests must climb stairs"),
+      POTENTIAL_FOR_NOISE: t("host_safety_potential_noise_short", "Construction or other potential noise during stays"),
+      NEARBY_WATER: t("host_safety_nearby_water_title", "Nearby water, like a lake or river"),
+      DANGEROUS_ANIMALS: t("host_safety_dangerous_animals_title", "Potentially dangerous animal(s) on the property"),
+      SPECIAL_CONSIDERATIONS: t("host_safety_special_considerations_title", "Other safety or regulatory notes"),
     };
     const label = labels[key] ?? humanize(key);
     const details = detailParts.join(":").trim();
     return status === "YES" ? `${label}${details ? `: ${details}` : ""}` : humanize(entry);
+  };
+  const translateSafetyEquipment = (item: string) => {
+    const normalized = item.toUpperCase().replace(/\s+/g, "_");
+    switch (normalized) {
+      case "SMOKE_ALARM":
+        return t("host_safety_smoke_alarm_title", "Smoke alarm");
+      case "CARBON_MONOXIDE_ALARM":
+      case "CO_ALARM":
+        return t("host_safety_carbon_monoxide_title", "Carbon monoxide alarm");
+      case "FIRST_AID_KIT":
+        return t("host_first_aid_kit", "First aid kit");
+      case "FIRE_EXTINGUISHER":
+        return t("host_fire_extinguisher", "Fire extinguisher");
+      case "SECURITY_CAMERA":
+        return t("host_safety_security_camera_title", "Exterior security camera present");
+      case "NOISE_MONITOR":
+        return t("host_safety_noise_monitor_title", "Noise decibel monitor present");
+      default:
+        return humanize(item);
+    }
   };
   const publicSafetyEquipment = Array.isArray(listing.safetyEquipment) ? listing.safetyEquipment : [];
   const publicSafetyHazards = Array.isArray(listing.safetyHazards)
@@ -1020,52 +1040,127 @@ export function PublicListingDetailClient({
   const publicSafetyDisclosures = Array.isArray(listing.safetyDisclosures)
     ? listing.safetyDisclosures.map(formatSafetyDisclosure).filter((item): item is string => Boolean(item))
     : [];
-  const cancellationLabel = listing.cancellationPolicy ? cancellationPolicyLabel(listing.cancellationPolicy) : null;
-  const longTermCancellationLabel = listing.longTermCancellationPolicy ? cancellationPolicyLabel(listing.longTermCancellationPolicy) : null;
+  const cancellationLabel = listing.cancellationPolicy ? cancellationPolicyLabel(listing.cancellationPolicy, t) : null;
+  const longTermCancellationLabel = listing.longTermCancellationPolicy ? cancellationPolicyLabel(listing.longTermCancellationPolicy, t) : null;
   const configuredHouseRules = Array.isArray(listing.houseRules)
     ? listing.houseRules.filter((rule): rule is string => typeof rule === "string" && rule.trim().length > 0)
     : [];
   const safetyItems = [
-    ...publicSafetyEquipment.map(humanize),
+    ...publicSafetyEquipment.map(translateSafetyEquipment),
     ...publicSafetyHazards,
     ...publicSafetyDisclosures,
   ];
   const houseRuleItems = [
     ...(formatTime(listing.checkInStart)
-      ? [{ id: "check-in", icon: <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-full border border-[#1f1f1f]"><Image src="/images/icons/check-in-icon.svg" alt="" width={15} height={15} className="size-6" /></span>, text: `Check-in after ${formatTime(listing.checkInStart)}${formatTime(listing.checkInEnd) ? `, before ${formatTime(listing.checkInEnd)}` : ""}` }]
+      ? [{
+          id: "check-in",
+          icon: <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-full border border-[#1f1f1f]"><Image src="/images/icons/check-in-icon.svg" alt="" width={15} height={15} className="size-6" /></span>,
+          text: formatTime(listing.checkInEnd)
+            ? t("listing_detail_check_in_after_before", { start: formatTime(listing.checkInStart) || "", end: formatTime(listing.checkInEnd) || "" }, `Check-in after ${formatTime(listing.checkInStart)}, before ${formatTime(listing.checkInEnd)}`)
+            : t("listing_detail_check_in_after", { start: formatTime(listing.checkInStart) || "" }, `Check-in after ${formatTime(listing.checkInStart)}`),
+        }]
       : []),
     ...(formatTime(listing.checkOutTime)
-      ? [{ id: "check-out", icon: <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-full border border-[#1f1f1f]"><Image src="/images/icons/check-in-icon.svg" alt="" width={15} height={15} className="size-6" /></span>, text: `Check-out before ${formatTime(listing.checkOutTime)}` }]
+      ? [{
+          id: "check-out",
+          icon: <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-full border border-[#1f1f1f]"><Image src="/images/icons/check-in-icon.svg" alt="" width={15} height={15} className="size-6" /></span>,
+          text: t("listing_detail_check_out_before", { time: formatTime(listing.checkOutTime) || "" }, `Check-out before ${formatTime(listing.checkOutTime)}`),
+        }]
       : []),
-    { id: "maximum-guests", icon: <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-full border border-[#1f1f1f]"><Image src="/images/icons/max-guest-icon.svg" alt="" width={15} height={15} className="size-6" /></span>, text: `${listing.guests || 1} guest maximum` },
-    ...(listing.petsAllowed !== null ? [{ id: "pets", icon: <RuleIcon name="pets" />, text: listing.petsAllowed ? `Pets allowed${listing.maxPets ? ` · up to ${listing.maxPets}` : ""}` : "No pets" }] : []),
-    ...(listing.smokingAllowed !== null ? [{ id: "smoking", icon: <RuleIcon name="smoking" />, text: listing.smokingAllowed ? `Smoking: ${listing.smokingLocation ? humanize(listing.smokingLocation) : "allowed"}` : "No smoking" }] : []),
-    ...(listing.eventsAllowed !== null ? [{ id: "events", icon: <RuleIcon name="events" />, text: listing.eventsAllowed ? "Events allowed" : "No parties or events" }] : []),
-    ...(listing.photographyAllowed !== null ? [{ id: "photography", icon: <RuleIcon name="photo" />, text: listing.photographyAllowed ? "Commercial photography allowed" : "No commercial photography" }] : []),
+    {
+      id: "maximum-guests",
+      icon: <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-full border border-[#1f1f1f]"><Image src="/images/icons/max-guest-icon.svg" alt="" width={15} height={15} className="size-6" /></span>,
+      text: t("listing_detail_guests_max", { count: listing.guests || 1 }, `${listing.guests || 1} guest maximum`),
+    },
+    ...(listing.petsAllowed !== null
+      ? [{
+          id: "pets",
+          icon: <RuleIcon name="pets" />,
+          text: listing.petsAllowed
+            ? (listing.maxPets
+                ? t("listing_detail_pets_allowed_max", { max: listing.maxPets }, `Pets allowed · up to ${listing.maxPets}`)
+                : t("listing_detail_pets_allowed", "Pets allowed"))
+            : t("listing_detail_no_pets", "No pets"),
+        }]
+      : []),
+    ...(listing.smokingAllowed !== null
+      ? [{
+          id: "smoking",
+          icon: <RuleIcon name="smoking" />,
+          text: listing.smokingAllowed
+            ? (listing.smokingLocation
+                ? t("listing_detail_smoking_location", { location: humanize(listing.smokingLocation) }, `Smoking: ${humanize(listing.smokingLocation)}`)
+                : t("listing_detail_smoking_allowed", "Smoking allowed"))
+            : t("listing_detail_no_smoking", "No smoking"),
+        }]
+      : []),
+    ...(listing.eventsAllowed !== null
+      ? [{
+          id: "events",
+          icon: <RuleIcon name="events" />,
+          text: listing.eventsAllowed ? t("listing_detail_events_allowed", "Events allowed") : t("listing_detail_no_events", "No parties or events"),
+        }]
+      : []),
+    ...(listing.photographyAllowed !== null
+      ? [{
+          id: "photography",
+          icon: <RuleIcon name="photo" />,
+          text: listing.photographyAllowed ? t("listing_detail_photography_allowed", "Commercial photography allowed") : t("listing_detail_no_photography", "No commercial photography"),
+        }]
+      : []),
     ...(listing.quietHours && formatTime(listing.quietHoursStart) && formatTime(listing.quietHoursEnd)
-      ? [{ id: "quiet-hours", icon: <RuleIcon name="quiet" />, text: `Quiet hours: ${formatTime(listing.quietHoursStart)}–${formatTime(listing.quietHoursEnd)}` }]
+      ? [{
+          id: "quiet-hours",
+          icon: <RuleIcon name="quiet" />,
+          text: t("listing_detail_quiet_hours", { start: formatTime(listing.quietHoursStart) || "", end: formatTime(listing.quietHoursEnd) || "" }, `Quiet hours: ${formatTime(listing.quietHoursStart)}–${formatTime(listing.quietHoursEnd)}`),
+        }]
       : []),
     ...configuredHouseRules.map((text, index) => ({ id: `configured-${index}`, icon: <RuleCheckIcon />, text })),
     ...(listing.additionalRules ? [{ id: "additional", icon: <RuleIcon name="rule" />, text: listing.additionalRules }] : []),
   ];
   const cancellationItems = [
-    ...(cancellationLabel ? [`${cancellationLabel}. Applies to stays under 28 nights.`] : []),
-    ...(longTermCancellationLabel ? [`${longTermCancellationLabel}. Applies to stays of 28 nights or more.`] : []),
+    ...(cancellationLabel ? [t("listing_detail_cancellation_short_term", { policy: cancellationLabel }, `${cancellationLabel}. Applies to stays under 28 nights.`)] : []),
+    ...(longTermCancellationLabel ? [t("listing_detail_cancellation_long_term", { policy: longTermCancellationLabel }, `${longTermCancellationLabel}. Applies to stays of 28 nights or more.`)] : []),
   ];
+  const translateHighlightTitle = (rawTitle: string): string => {
+    const lower = rawTitle.toLowerCase().trim();
+    if (lower === "dedicated workspace" || lower === "workspace") {
+      return t("listings_dedicated_workspace", "Dedicated workspace");
+    }
+    if (lower === "central location" || lower === "central") {
+      return t("listing_detail_highlight_central_location", "Central location");
+    }
+    if (lower === "peaceful") {
+      return t("host_highlights_peaceful", "Peaceful");
+    }
+    if (lower === "unique") {
+      return t("host_highlights_unique", "Unique");
+    }
+    if (lower === "family-friendly" || lower === "family friendly") {
+      return t("host_highlights_family", "Family-friendly");
+    }
+    if (lower === "stylish") {
+      return t("host_highlights_stylish", "Stylish");
+    }
+    if (lower === "spacious") {
+      return t("host_highlights_spacious", "Spacious");
+    }
+    return rawTitle;
+  };
   const trustHighlights: Array<{ icon: TrustHighlightIconName; title: string; description: string }> = [
     ...(listing.isGuestFavorite
-      ? [{ icon: "award" as const, title: "Guest favourite", description: "Highly rated by guests who have stayed here." }]
+      ? [{ icon: "award" as const, title: t("listing_detail_guest_favourite", "Guest favourite"), description: t("listing_detail_guest_favourite_desc", "Highly rated by guests who have stayed here.") }]
       : []),
     ...((Array.isArray(listing.highlights) ? listing.highlights : []).slice(0, 2).map((title) => ({
       icon: "sparkle" as const,
-      title,
-      description: "A highlight shared by this host.",
+      title: translateHighlightTitle(title),
+      description: t("listing_detail_host_highlight_desc", "A highlight shared by this host."),
     }))),
     ...(cancellationLabel
-      ? [{ icon: "calendar" as const, title: "Cancellation policy", description: cancellationLabel }]
+      ? [{ icon: "calendar" as const, title: t("listing_detail_cancellation_policy", "Cancellation policy"), description: cancellationLabel }]
       : []),
     ...(displayPrice
-      ? [{ icon: "pricing" as const, title: "Clear pricing", description: "Your full price is shown before you reserve." }]
+      ? [{ icon: "pricing" as const, title: t("listing_detail_clear_pricing", "Clear pricing"), description: t("listing_detail_clear_pricing_desc", "Your full price is shown before you reserve.") }]
       : []),
   ].slice(0, 4);
 
@@ -1630,7 +1725,7 @@ export function PublicListingDetailClient({
               <div className="lg:col-span-7">
                 <section className="pb-1">
                   <h2 className="text-[18px] font-normal leading-6 text-[#1f1f1f] lg:text-[20px] lg:leading-5">
-                    {listing.listingType || "Stay"}{listing.propertyType ? ` in ${humanize(listing.propertyType)}` : ""}{locationString ? ` in ${locationString}` : ""}
+                    {listing.listingType ? listingTypeLabel(listing.listingType, t) : "Stay"}{listing.propertyType ? ` in ${propertyTypeLabel(listing.propertyType, t)}` : ""}{locationString ? ` in ${locationString}` : ""}
                   </h2>
                   {/* Where you'll sleep */}
                   <p className="mt-1 text-sm font-light text-[#1F1F1F] lg:mt-2 lg:text-base">
@@ -1860,16 +1955,16 @@ export function PublicListingDetailClient({
                         <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto text-xl font-bold">
                           ✓
                         </div>
-                        <h3 className="text-[20px] font-normal text-[#1f1f1f]">{isInstantBook ? "Reservation confirmed" : "Reservation request submitted"}</h3>
+                        <h3 className="text-[20px] font-normal text-[#1f1f1f]">{isInstantBook ? t("listing_detail_reservation_confirmed", "Reservation confirmed") : t("listing_detail_reservation_submitted", "Reservation request submitted")}</h3>
                         <p className="text-xs text-zinc-500 leading-relaxed font-normal">
-                          Your stay has been recorded. You can manage your bookings in your trips dashboard.
+                          {t("listing_detail_stay_recorded", "Your stay has been recorded. You can manage your bookings in your trips dashboard.")}
                         </p>
                         <div className="pt-2">
                           <Link
                             href="/profile/tab/upcoming"
                             className="rounded-full bg-[#1f1f1f] text-white font-semibold text-xs px-6 py-2.5 inline-block"
                           >
-                            View your bookings
+                            {t("listing_detail_view_your_bookings", "View your bookings")}
                           </Link>
                         </div>
                       </div>
@@ -1877,7 +1972,7 @@ export function PublicListingDetailClient({
                       <>
                         <div className="flex items-baseline justify-between border-b border-zinc-100 pb-4">
                           <div>
-                            <span className="text-[20px] font-medium text-[#1F1F1F] underline underline-offset-4">{displayPrice ?? "Price unavailable"}</span>
+                            <span className="text-[20px] font-medium text-[#1F1F1F] underline underline-offset-4">{displayPrice ?? t("listing_detail_price_unavailable", "Price unavailable")}</span>
                             <span className="text-base text-[#1F1F1F] font-normal"> {t("listing_detail_per_night", "/ night")}</span>
                           </div>
                           <span className="text-xs text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full font-semibold">
@@ -2021,7 +2116,7 @@ export function PublicListingDetailClient({
                         {/* Live Quote Breakdown */}
                         {isQuoteLoading && !quote && (
                           <div className="py-4 text-center text-xs text-[#727272] animate-pulse font-medium">
-                            Calculating price breakdown...
+                            {t("listing_detail_calculating_breakdown", "Calculating price breakdown...")}
                           </div>
                         )}
 
@@ -2187,19 +2282,19 @@ export function PublicListingDetailClient({
                       )}
 
                       {(hostWork || hostLanguages.length > 0) && <div className="mt-7 space-y-4 text-base text-[#1f1f1f]">
-                        {hostWork && <p className="flex items-center gap-5"><span aria-hidden="true" className="flex size-12 shrink-0 items-center justify-center rounded-full border border-[#1f1f1f]"><Image src="/images/icons/job-search.svg" alt="" width={24} height={24} className="size-6" /></span><span>My work: {hostWork}</span></p>}
-                        {hostLanguages.length > 0 && <p className="flex items-center gap-5"><span aria-hidden="true" className="flex size-12 shrink-0 items-center justify-center rounded-full border border-[#1f1f1f]"><Image src="/images/icons/translate-icon.svg" alt="" width={24} height={24} className="size-6" /></span><span>Speaks {hostLanguages.join(", ")}</span></p>}
+                        {hostWork && <p className="flex items-center gap-5"><span aria-hidden="true" className="flex size-12 shrink-0 items-center justify-center rounded-full border border-[#1f1f1f]"><Image src="/images/icons/job-search.svg" alt="" width={24} height={24} className="size-6" /></span><span>{t("listing_detail_host_work", { work: hostWork }, `My work: ${hostWork}`)}</span></p>}
+                        {hostLanguages.length > 0 && <p className="flex items-center gap-5"><span aria-hidden="true" className="flex size-12 shrink-0 items-center justify-center rounded-full border border-[#1f1f1f]"><Image src="/images/icons/translate-icon.svg" alt="" width={24} height={24} className="size-6" /></span><span>{t("listing_detail_host_speaks", { languages: hostLanguages.join(", ") }, `Speaks ${hostLanguages.join(", ")}`)}</span></p>}
                       </div>}
                     </div>
 
                     <div className="min-w-0 pt-1">
-                      <h4 className="text-[20px] font-normal text-[#1f1f1f]">{listing.host.isSuperhost ? `${listing.host.name || "This host"} is a superhost` : t("listing_detail_hosted_by", "Hosted by {name}").replace("{name}", listing.host.name || "Homyz host")}</h4>
-                      {listing.host.isSuperhost && <p className="mt-2 max-w-2xl text-base leading-6 text-[#727272]">Superhosts are experienced, highly rated hosts who are committed to providing great stays for guests.</p>}
+                      <h4 className="text-[20px] font-normal text-[#1f1f1f]">{listing.host.isSuperhost ? t("listing_detail_host_is_superhost", { name: listing.host.name || "This host" }, `${listing.host.name || "This host"} is a superhost`) : t("listing_detail_hosted_by", { name: listing.host.name || "Homyz host" }, "Hosted by {name}").replace("{name}", listing.host.name || "Homyz host")}</h4>
+                      {listing.host.isSuperhost && <p className="mt-2 max-w-2xl text-base leading-6 text-[#727272]">{t("listing_detail_superhost_desc", "Superhosts are experienced, highly rated hosts who are committed to providing great stays for guests.")}</p>}
                       {hostBio && <p className="mt-2 max-w-2xl line-clamp-3 whitespace-pre-line text-base leading-6 text-[#727272] font-normal">{hostBio}</p>}
 
                       {(hostSince || listing.host.isSuperhost) && <div className="mt-8 space-y-2">
-                        <h5 className="text-[20px] font-normal text-[#1f1f1f]">Host details</h5>
-                        {hostSince && <p className="text-base text-[#727272]">Joined Homyz in {hostSince}</p>}
+                        <h5 className="text-[20px] font-normal text-[#1f1f1f]">{t("listing_detail_host_details_heading", "Host details")}</h5>
+                        {hostSince && <p className="text-base text-[#727272]">{t("listing_detail_joined_in", { date: hostSince }, `Joined Homyz in ${hostSince}`)}</p>}
                         {listing.host.isSuperhost && <p className="flex items-center gap-1.5 text-base text-[#727272]"><span aria-hidden="true">★</span> {t("home_superhost", "Superhost")}</p>}
                       </div>}
 
@@ -2231,7 +2326,7 @@ export function PublicListingDetailClient({
                         )}
                       </div>
 
-                      <p className="mt-7 max-w-3xl text-sm leading-5 text-[#727272]">To help protect your payment, always use Homyz to send money and communicate with hosts.</p>
+                      <p className="mt-7 max-w-3xl text-sm leading-5 text-[#727272]">{t("listing_detail_protect_payment_help", "To help protect your payment, always use Homyz to send money and communicate with hosts.")}</p>
                     </div>
                   </div>
                 </section>
@@ -2283,7 +2378,7 @@ export function PublicListingDetailClient({
                       {safetyItems.slice(0, 4).map((item, index) => (
                         <p key={`${item}-${index}`}>{item}</p>
                       ))}
-                      {safetyItems.length === 0 && <p>No safety equipment or property hazards have been reported.</p>}
+                      {safetyItems.length === 0 && <p>{t("listing_detail_no_safety_reported", "No safety equipment or property hazards have been reported.")}</p>}
                     </div>
                     <button type="button" onClick={() => setOpenThingsCard("safety")} className="mt-auto pt-6 text-left text-base text-[#727272] underline underline-offset-2">{t("listing_detail_show_more", "Show more")}</button>
                   </div>
@@ -2374,12 +2469,12 @@ export function PublicListingDetailClient({
               <h3 id="things-to-know-modal-title" className="text-2xl font-semibold text-[#1f1f1f]">
                 {openThingsCard === "rules" ? t("listing_detail_house_rules", "House rules") : openThingsCard === "safety" ? t("listing_detail_safety_property", "Safety & property") : t("listing_detail_cancellation_policy", "Cancellation policy")}
               </h3>
-              <button type="button" onClick={() => setOpenThingsCard(null)} aria-label="Close details" className="-mr-1 -mt-1 rounded-full w-7.5 h-7.5 flex justify-center items-center text-2xl leading-none text-[#1f1f1f] hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f] shrink-0">×</button>
+              <button type="button" onClick={() => setOpenThingsCard(null)} aria-label={t("listing_detail_close_details", "Close details")} className="-mr-1 -mt-1 rounded-full w-7.5 h-7.5 flex justify-center items-center text-2xl leading-none text-[#1f1f1f] hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f] shrink-0">×</button>
             </div>
             <div className="visible-scrollbar overflow-y-auto px-6 pb-7 sm:px-8 sm:pb-8">
               {openThingsCard === "rules" && (
                 <>
-                  <p className="text-base leading-6 text-[#1f1f1f]">You’ll be staying in someone’s home, so please treat it with care and respect.</p>
+                  <p className="text-base leading-6 text-[#1f1f1f]">{t("listing_detail_house_rules_modal_desc", "You’ll be staying in someone’s home, so please treat it with care and respect.")}</p>
                   <div className="mt-7 divide-y divide-zinc-200 border-t border-zinc-200">
                     {houseRuleItems.map((item) => (
                       <div key={item.id} className="flex items-center gap-4 py-5 text-base text-[#1f1f1f]">
@@ -2392,16 +2487,16 @@ export function PublicListingDetailClient({
               )}
               {openThingsCard === "safety" && (
                 <>
-                  <p className="text-base leading-6 text-[#1f1f1f]">Avoid surprises by looking over these important details about your host’s property.</p>
+                  <p className="text-base leading-6 text-[#1f1f1f]">{t("listing_detail_safety_modal_desc", "Avoid surprises by looking over these important details about your host’s property.")}</p>
                   <div className="mt-7 divide-y divide-zinc-200 border-t border-zinc-200">
                     {safetyItems.map((item, index) => <p key={`${item}-${index}`} className="py-5 text-base leading-6 text-[#1f1f1f]">{item}</p>)}
-                    {safetyItems.length === 0 && <p className="py-5 text-base leading-6 text-[#1f1f1f]">No safety equipment or property hazards have been reported.</p>}
+                    {safetyItems.length === 0 && <p className="py-5 text-base leading-6 text-[#1f1f1f]">{t("listing_detail_no_safety_reported", "No safety equipment or property hazards have been reported.")}</p>}
                   </div>
                 </>
               )}
               {openThingsCard === "cancellation" && (
                 <>
-                  <p className="text-base leading-6 text-[#1f1f1f]">Review the cancellation terms for this listing before you reserve.</p>
+                  <p className="text-base leading-6 text-[#1f1f1f]">{t("listing_detail_cancellation_modal_desc", "Review the cancellation terms for this listing before you reserve.")}</p>
                   <div className="mt-7 divide-y divide-zinc-200 border-t border-zinc-200">
                     {cancellationItems.map((item, index) => <p key={`${item}-${index}`} className="py-5 text-base leading-6 text-[#1f1f1f]">{item}</p>)}
                   </div>
@@ -2418,7 +2513,7 @@ export function PublicListingDetailClient({
           <div className="flex max-h-[85vh] w-full max-w-2xl flex-col rounded-[28px] border border-zinc-200 bg-white p-6 shadow-2xl">
             <div className="flex items-center justify-between border-b border-zinc-200 pb-4">
               <h3 id="description-modal-title" className="text-2xl font-semibold text-[#1f1f1f]">{t("listing_detail_about_place", "About this place")}</h3>
-              <button type="button" onClick={() => setIsDescriptionModalOpen(false)} aria-label="Close description" className="cursor-pointer p-1 text-lg font-semibold text-[#1f1f1f] hover:text-[#727272] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f]">✕</button>
+              <button type="button" onClick={() => setIsDescriptionModalOpen(false)} aria-label={t("listing_detail_close_description", "Close description")} className="cursor-pointer p-1 text-lg font-semibold text-[#1f1f1f] hover:text-[#727272] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f]">✕</button>
             </div>
             <div className="visible-scrollbar mt-5 space-y-6 overflow-y-auto pr-1 text-base leading-6 text-[#727272]">
               <p className="whitespace-pre-line">{normalizedDescription}</p>
@@ -2489,7 +2584,7 @@ export function PublicListingDetailClient({
                 <h3 id="contact-host-modal-title" className="font-bold text-lg text-[#1f1f1f]">
                   {t("listing_detail_contact_host", "Contact host")} {listing.host?.name ? `(${listing.host.name})` : ""}
                 </h3>
-                <p className="text-xs text-zinc-500">Ask about dates, amenities, or special requests</p>
+                <p className="text-xs text-zinc-500">{t("listing_detail_ask_host_subtitle", "Ask about dates, amenities, or special requests")}</p>
               </div>
               <button
                 type="button"
@@ -2505,8 +2600,8 @@ export function PublicListingDetailClient({
               {checkIn && checkOut && (
                 <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3 text-xs flex justify-between items-center">
                   <div>
-                    <span className="text-zinc-500 block">Dates selected</span>
-                    <span className="font-semibold text-zinc-800">{checkIn} to {checkOut}</span>
+                    <span className="text-zinc-500 block">{t("listing_detail_dates_selected", "Dates selected")}</span>
+                    <span className="font-semibold text-zinc-800">{checkIn} – {checkOut}</span>
                   </div>
                   <div>
                     <span className="text-zinc-500 block">{t("host_basics_guests", "Guests")}</span>
@@ -2517,15 +2612,15 @@ export function PublicListingDetailClient({
 
               <div>
                 <label className="block text-xs font-semibold text-zinc-700 mb-1">
-                  Your message to the host
+                  {t("listing_detail_your_message_label", "Your message to the host")}
                 </label>
                 <textarea
                   rows={4}
                   required
                   value={inquiryMessage}
                   onChange={(e) => setInquiryMessage(e.target.value)}
-                  placeholder="Hi! I'm planning a trip and was wondering if..."
-                  className="w-full rounded-2xl border border-zinc-300 p-3 text-xs sm:text-sm focus:border-zinc-500 focus-outline-none"
+                  placeholder={t("listing_detail_message_placeholder", "Hi! I'm planning a trip and was wondering if...")}
+                  className="w-full rounded-2xl border border-zinc-300 p-3 text-xs sm:text-sm focus:border-zinc-500 focus:outline-none"
                 />
               </div>
 
@@ -2534,7 +2629,7 @@ export function PublicListingDetailClient({
               )}
 
               <p className="text-[11px] text-zinc-500">
-                To protect your payments, always communicate and book through Homyz.
+                {t("listing_detail_protect_payments_notice", "To protect your payments, always communicate and book through Homyz.")}
               </p>
 
               <div className="flex justify-end gap-2.5 pt-2 border-t border-zinc-100">
@@ -2550,7 +2645,7 @@ export function PublicListingDetailClient({
                   disabled={inquirySending || !inquiryMessage.trim()}
                   className="px-6 py-2.5 rounded-full bg-[#1f1f1f] text-white text-xs font-semibold hover:bg-black disabled:opacity-50"
                 >
-                  {inquirySending ? "Sending..." : "Send Message"}
+                  {inquirySending ? t("listing_detail_sending", "Sending...") : t("listing_detail_send_message", "Send Message")}
                 </button>
               </div>
             </form>

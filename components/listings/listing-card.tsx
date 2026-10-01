@@ -11,6 +11,7 @@ import { useLanguage } from "@/lib/i18n/language-context";
 import type { PublicListingDTO } from "@/services/mappers";
 import { trackListingEvent } from "@/lib/analytics/listing-analytics";
 import { buildListingDetailUrl, getLastSearch } from "@/lib/storage/client-history";
+import { propertyTypeLabel } from "@/lib/constants/listing-enums";
 
 // ─── Discount Helpers ──────────────────────────────────────────────────────────
 type DiscountEntry =
@@ -259,9 +260,11 @@ export function ListingCard({
     ? `${listing.city}${listing.country ? `, ${listing.country}` : ""}`
     : listing.country || "";
 
+  const formattedPropertyType = propertyTypeLabel(listing.propertyType, t);
+
   // Primary heading: "Flat in Dubai", "Apartment in Riyadh", etc.
   const primaryHeading = listing.city
-    ? t("listings_stay_in", { propertyType: listing.propertyType || t("home_search_where", undefined, "Stay"), city: listing.city }, `${listing.propertyType || "Stay"} in ${listing.city}`)
+    ? t("listings_stay_in", { propertyType: formattedPropertyType || t("home_search_where", undefined, "Stay"), city: listing.city }, `${formattedPropertyType || "Stay"} in ${listing.city}`)
     : listing.title || t("host_untitled_listing", "Untitled property");
 
   // Secondary subtitle: full descriptive title or location
@@ -290,7 +293,7 @@ export function ListingCard({
   if (roomSpecs.length === 0) {
     const guestVal = listing.guests ?? 1;
     roomSpecs.push(
-      `${listing.propertyType || "Home"} · ${guestVal} ${guestVal === 1 ? t("home_guest_one", { count: guestVal }, "1 guest") : t("home_guest_many", { count: guestVal }, `${guestVal} guests`)}`
+      `${formattedPropertyType || "Home"} · ${guestVal} ${guestVal === 1 ? t("home_guest_one", { count: guestVal }, "1 guest") : t("home_guest_many", { count: guestVal }, `${guestVal} guests`)}`
     );
   }
   const specsText = roomSpecs.join(" · ");

@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState, type ComponentPropsWithoutRef } from "react";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { AmenityIcon } from "@/components/ui/amenity-icon";
-import { CANONICAL_AMENITIES } from "@/lib/constants/amenities";
+import { CANONICAL_AMENITIES, getAmenityTranslationKey } from "@/lib/constants/amenities";
 import { LANGUAGE_OPTIONS } from "@/lib/utils/language-options";
 import { useLanguage } from "@/lib/i18n/language-context";
 
@@ -254,7 +254,13 @@ export function ListingFilterModal({ open, onClose, onApply, initialFilters, ava
     const value = normalisedDraft[key];
     if (value > 0) selectedFilters.push({ id: key, label: `${value >= 8 ? "8+" : value}+ ${key}`, clear: () => setDraft((previous) => ({ ...previous, [key]: 0 })) });
   });
-  normalisedDraft.amenities.forEach((amenityId) => selectedFilters.push({ id: `amenity-${amenityId}`, label: amenityById.get(amenityId)?.label ?? amenityId, clear: () => setDraft((previous) => ({ ...previous, amenities: previous.amenities.filter((item) => item !== amenityId) })) }));
+  const getAmenityLabel = (amenityId: string, fallback: string) => {
+    const key = getAmenityTranslationKey(amenityId) as keyof typeof import("@/messages/en.json");
+    const translated = t(key);
+    return translated && translated !== key ? translated : fallback;
+  };
+
+  normalisedDraft.amenities.forEach((amenityId) => selectedFilters.push({ id: `amenity-${amenityId}`, label: getAmenityLabel(amenityId, amenityById.get(amenityId)?.label ?? amenityId), clear: () => setDraft((previous) => ({ ...previous, amenities: previous.amenities.filter((item) => item !== amenityId) })) }));
   normalisedDraft.accessibility.forEach((featureId) => selectedFilters.push({ id: `accessibility-${featureId}`, label: amenityById.get(featureId)?.label ?? featureId, clear: () => setDraft((previous) => ({ ...previous, accessibility: previous.accessibility.filter((item) => item !== featureId) })) }));
   normalisedDraft.languages.forEach((languageId) => selectedFilters.push({ id: `language-${languageId}`, label: languageLabels.get(languageId) ?? languageId, clear: () => setDraft((previous) => ({ ...previous, languages: previous.languages.filter((item) => item !== languageId) })) }));
   if (normalisedDraft.instantBook) selectedFilters.push({ id: "instantBook", label: t("listings_instant_book", "Instant Book"), clear: () => setDraft((previous) => ({ ...previous, instantBook: false })) });
@@ -344,8 +350,8 @@ export function ListingFilterModal({ open, onClose, onApply, initialFilters, ava
 
           <div className="border-b border-zinc-200 py-7">
             <h2 className="mb-5 text-lg font-semibold text-zinc-950">{t("listings_amenities", "Amenities")}</h2>
-            <div className="space-y-5">{amenityGroups.map((group) => <div key={group.title}><h3 className="mb-2.5 text-sm font-semibold text-zinc-800">{group.title === "Popular" ? t("listings_popular", "Popular") : group.title === "Essentials" ? t("listings_essentials", "Essentials") : group.title === "Features" ? t("listings_features", "Features") : group.title}</h3><div className="flex flex-wrap gap-2">{group.ids.map((id) => amenityById.get(id)).filter(Boolean).map((amenity) => <FilterPill key={amenity!.id} active={draft.amenities.includes(amenity!.id)} onClick={() => setDraft((previous) => ({ ...previous, amenities: toggle(previous.amenities, amenity!.id) }))}><AmenityIcon id={amenity!.id} className="size-4" />{amenity!.label}</FilterPill>)}</div></div>)}</div>
-            {showAllAmenities && <div className="mt-5 flex flex-wrap gap-2">{extraAmenities.map((amenity) => <FilterPill key={amenity.id} active={draft.amenities.includes(amenity.id)} onClick={() => setDraft((previous) => ({ ...previous, amenities: toggle(previous.amenities, amenity.id) }))}><AmenityIcon id={amenity.id} className="size-4" />{amenity.label}</FilterPill>)}</div>}
+            <div className="space-y-5">{amenityGroups.map((group) => <div key={group.title}><h3 className="mb-2.5 text-sm font-semibold text-zinc-800">{group.title === "Popular" ? t("listings_popular", "Popular") : group.title === "Essentials" ? t("listings_essentials", "Essentials") : group.title === "Features" ? t("listings_features", "Features") : group.title}</h3><div className="flex flex-wrap gap-2">{group.ids.map((id) => amenityById.get(id)).filter(Boolean).map((amenity) => <FilterPill key={amenity!.id} active={draft.amenities.includes(amenity!.id)} onClick={() => setDraft((previous) => ({ ...previous, amenities: toggle(previous.amenities, amenity!.id) }))}><AmenityIcon id={amenity!.id} className="size-4" />{getAmenityLabel(amenity!.id, amenity!.label)}</FilterPill>)}</div></div>)}</div>
+            {showAllAmenities && <div className="mt-5 flex flex-wrap gap-2">{extraAmenities.map((amenity) => <FilterPill key={amenity.id} active={draft.amenities.includes(amenity.id)} onClick={() => setDraft((previous) => ({ ...previous, amenities: toggle(previous.amenities, amenity.id) }))}><AmenityIcon id={amenity.id} className="size-4" />{getAmenityLabel(amenity.id, amenity.label)}</FilterPill>)}</div>}
             <button type="button" onClick={() => setShowAllAmenities((value) => !value)} className="mt-5 text-sm font-semibold underline underline-offset-2 hover:text-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950">{showAllAmenities ? t("listings_show_less", "Show less") : t("listings_show_more", "Show more")}</button>
           </div>
 
