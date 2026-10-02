@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { useScrollbarDrag } from "@/components/ui/use-scrollbar-drag";
+import { BackButton } from "@/components/ui/back-button";
 import type {
   ConversationDTO,
   MessageDTO,
@@ -704,7 +705,7 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
         {/* ========================================================================= */}
         <div className={`flex-col bg-white overflow-hidden lg:border-r lg:border-zinc-300 ${mobileView === "thread" ? "hidden lg:flex" : "flex"}`}>
           {/* Header & Tabs */}
-          <div className="border-b border-zinc-200 px-4 pb-8 pt-12 space-y-3">
+          <div className="border-b border-zinc-200 px-4 pb-8 lg:pt-12 pt-5 space-y-3">
             <div className="flex h-6 items-center justify-between">
               <h1 className="text-lg font-medium text-[#1F1F1F]">Messages</h1>
             </div>
@@ -898,13 +899,13 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
         {/* ========================================================================= */}
         {/* COLUMN 2: ACTIVE CHAT THREAD                                              */}
         {/* ========================================================================= */}
-        <div className={`flex flex-col bg-white overflow-hidden min-w-0 lg:border-r lg:border-zinc-200 ${mobileView === "list" ? "hidden lg:flex" : "flex"}`}>
+        <div className={`flex h-[calc(100dvh-76px)] flex-col overflow-hidden bg-white min-w-0 lg:h-auto lg:border-r lg:border-zinc-200 ${mobileView === "list" ? "hidden lg:flex" : "flex"}`}>
           {selectedConversation ? (
             <>
               {/* Thread Top Bar */}
               <div className="border-b border-zinc-100 p-4 lg:hidden">
                 <div className="flex min-w-0 items-center gap-3 lg:flex-col lg:gap-0 lg:text-center">
-                  <button type="button" onClick={() => setMobileView("list")} className="lg:hidden -ml-1 size-9 rounded-full border border-zinc-200 text-lg" aria-label="Back to messages">‹</button>
+                  <BackButton onClick={() => setMobileView("list")} className="-ml-1 lg:hidden" aria-label="Back to messages" />
                   <div className="lg:hidden">
                     {selectedConversation.guest.image ? (
                       <Image
@@ -931,27 +932,27 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
                 </div>
 
                 {/* Header Action Buttons (Pre-approve, Special offer, Decline) */}
-                <div className="mt-3 flex items-center gap-2 lg:hidden">
+                <div className="mt-3 flex items-center gap-2 lg:hidden overflow-x-auto">
                   {selectedConversation.status !== "CONFIRMED" && selectedConversation.status !== "DECLINED" && (
                     <>
                       <button
                         type="button"
                         onClick={() => setPreApproveModalOpen(true)}
-                        className="px-3 py-1.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 transition-colors"
+                        className="px-3 py-1.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 transition-colors whitespace-nowrap"
                       >
                         Pre-approve
                       </button>
                       <button
                         type="button"
                         onClick={openSpecialOfferModal}
-                        className="px-3 py-1.5 rounded-full text-xs font-medium bg-[#FCDF9C] text-[#1F1F1F] hover:bg-[#F7D37D] transition-colors"
+                        className="px-3 py-1.5 rounded-full text-xs font-medium bg-[#FCDF9C] text-[#1F1F1F] hover:bg-[#F7D37D] transition-colors whitespace-nowrap"
                       >
                         Special offer
                       </button>
                       <button
                         type="button"
                         onClick={() => setDeclineModalOpen(true)}
-                        className="px-3 py-1.5 rounded-full text-xs font-medium text-zinc-600 hover:bg-zinc-100 border border-zinc-200 transition-colors"
+                        className="px-3 py-1.5 rounded-full text-xs font-medium text-zinc-600 hover:bg-zinc-100 border border-zinc-200 transition-colors whitespace-nowrap"
                       >
                         Decline
                       </button>
@@ -1003,29 +1004,29 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
                           return (
                             <div key={m.id} className="flex justify-center my-3">
                               <div className="max-w-md w-full rounded-2xl border border-amber-300 bg-amber-50/90 p-4 shadow-2xs space-y-3">
-                                <div className="flex items-center justify-between">
+                                <div className="flex items-center justify-between flex-wrap">
                                   <div className="flex items-center gap-2">
                                     <span className="text-xs font-bold text-amber-900 uppercase tracking-wider">
                                       Special Offer Sent
                                     </span>
                                     {hasBooking ? (
-                                      <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800 border border-emerald-300">
+                                      <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800 border border-emerald-300 whitespace-nowrap">
                                         Booked & Confirmed
                                       </span>
                                     ) : isExpired ? (
-                                      <span className="inline-flex items-center rounded-full bg-zinc-200 px-2 py-0.5 text-[10px] font-semibold text-zinc-600 border border-zinc-300">
+                                        <span className="inline-flex items-center rounded-full bg-zinc-200 px-2 py-0.5 text-[10px] font-semibold text-zinc-600 border border-zinc-300 whitespace-nowrap">
                                         Expired
                                       </span>
                                     ) : isDeclined ? (
-                                      <span className="inline-flex items-center rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-semibold text-rose-700 border border-rose-200">
+                                          <span className="inline-flex items-center rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-semibold text-rose-700 border border-rose-200 whitespace-nowrap">
                                         Declined
                                       </span>
                                     ) : isAccepted ? (
-                                      <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800 border border-emerald-300">
+                                            <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800 border border-emerald-300 whitespace-nowrap">
                                         Accepted by Guest
                                       </span>
                                     ) : (
-                                      <span className="inline-flex items-center rounded-full bg-amber-200/80 px-2 py-0.5 text-[10px] font-medium text-amber-900 border border-amber-300">
+                                      <span className="inline-flex items-center rounded-full bg-amber-200/80 px-2 py-0.5 text-[10px] font-medium text-amber-900 border border-amber-300 whitespace-nowrap">
                                         Sent (Awaiting Guest)
                                       </span>
                                     )}
@@ -1238,7 +1239,7 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
               </div>
 
               {/* Message Composer */}
-              <div className="border-t border-zinc-300 bg-white px-5 py-4 sm:px-6 sm:py-5 space-y-2">
+              <div className="sticky bottom-0 z-20 shrink-0 border-t border-zinc-300 bg-white px-4 py-4 sm:px-6 sm:py-5 space-y-2 lg:static">
                 {/* Staged attachments preview */}
                 {stagedAttachments.length > 0 && (
                   <div className="flex items-center gap-2 overflow-x-auto pb-1">
@@ -1307,10 +1308,10 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
                   </div>
                 )}
 
-                <form onSubmit={handleSendMessage} className="mx-auto flex w-full max-w-none flex-wrap items-end rounded-md border border-[#727272] bg-white p-4 ">
+                <form onSubmit={handleSendMessage} className="relative mx-auto flex w-full max-w-none flex-nowrap items-stretch gap-3 rounded-none border-0 bg-transparent p-0 lg:flex-wrap lg:items-end lg:gap-0 lg:rounded-md lg:border lg:border-[#727272] lg:bg-white lg:p-4">
 
                   {/* Textarea */}
-                  <div className="w-full mb-3">
+                  <div className="order-2 mb-0 min-w-0 flex-1 lg:order-none lg:mb-3 lg:w-full lg:flex-none">
                     <textarea
                       rows={1}
                       value={inputText}
@@ -1322,23 +1323,23 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
                         }
                       }}
                       placeholder="Type a message"
-                      className="h-full w-full resize-none border-0 bg-transparent p-0 text-base text-[#1f1f1f] placeholder:text-[#727272] focus:outline-none"
+                      className="h-[88px] w-full resize-none rounded-[8px] border border-[#727272] bg-white px-4 pb-4 pt-4 pr-12 sm:text-base text-sm text-[#1f1f1f] placeholder:text-[#727272] focus:outline-none lg:h-full lg:rounded-none lg:border-0 lg:bg-transparent lg:p-0"
                     />
                   </div>
 
                   {/* Attachment button */}
-                  <div className="flex gap-x-3 content-between">
+                  <div className="order-1 flex w-8 shrink-0 flex-col items-center justify-center gap-y-3 lg:order-none lg:w-auto lg:flex-row lg:gap-x-3 lg:content-between">
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="flex size-6 items-center justify-center transition-opacity hover:opacity-70 border border-[#1f1f1f] rounded-full"
+                      className="flex size-8 items-center justify-center rounded-full border border-[#1f1f1f] transition-opacity hover:opacity-70 lg:size-6"
                       title="Attach a photo or document"
                       aria-label="Attach a photo or document"
                     >
-                      <Image src="/images/icons/homyz/stroke/Plus.svg" alt="" width={15} height={15} className="size-3.75" />
+                      <Image src="/images/icons/homyz/stroke/Plus.svg" alt="" width={15} height={15} className="size-4 lg:size-3.75" />
                     </button>
-                    <span className="flex size-6 items-center justify-center" aria-hidden="true">
-                      <Image src="/images/icons/messages.svg" alt="" width={24} height={24} className="size-6" />
+                    <span className="flex size-8 items-center justify-center lg:size-6" aria-hidden="true">
+                      <Image src="/images/icons/messages.svg" alt="" width={24} height={24} className="size-8 lg:size-6" />
                     </span>
                   </div>
                   <input
@@ -1356,7 +1357,7 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
                       sending ||
                       stagedAttachments.some((a) => a.status === "UPLOADING")
                     }
-                    className={`ml-auto flex size-7 items-center justify-center rounded-full hover:bg-[#1F1F1F] hover:text-white text-[#1f1f1f] transition-colors duration-300 bg-[#FCDF9C] disabled:cursor-not-allowed disabled:opacity-40 group ${inputText.trim() || stagedAttachments.length > 0 ? "" : "hidden"}`}
+                    className={`absolute bottom-4 right-2 z-10 flex size-9 items-center justify-center rounded-full bg-[#FCDF9C] text-[#1f1f1f] shadow-sm transition-colors duration-300 hover:bg-[#1F1F1F] hover:text-white disabled:cursor-not-allowed disabled:opacity-40 group lg:static lg:ml-auto lg:size-7 lg:shadow-none ${inputText.trim() || stagedAttachments.length > 0 ? "" : "hidden"}`}
                     aria-label={sending ? "Sending message" : "Send message"}
                     title={sending ? "Sending..." : "Send message"}
                   >
@@ -1492,7 +1493,7 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
 
               {/* Booking details */}
               <section className="border-t border-[#E5E5E5] pt-5 space-y-3">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between sm:flex-row flex-col">
                   <h4 className="text-xl font-medium text-[#1F1F1F]">Booking details</h4>
                   {getStatusBadge(selectedConversation.status, selectedConversation.activeSpecialOffer)}
                 </div>
