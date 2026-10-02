@@ -155,13 +155,13 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
     { href: "/host/today", label: t("header_today") || "Today", icon: "/images/icons/today-icon.svg" },
     { href: "/host/calendar", label: t("header_calendar") || "Calendar", icon: "/images/icons/calendar-date.svg" },
     { href: "/host/listings", label: t("header_your_listings") || "Your listings", icon: "/images/icons/listing-edit-icon.svg" },
-    { href: "/host/bookings", label: "Booking requests", icon: "/images/icons/post-bookings.svg" },
+    { href: "/host/bookings", label: t("header_booking_requests") || "Booking requests", icon: "/images/icons/post-bookings.svg" },
     { href: "/host/messages", label: t("header_messages") || "Messages", icon: "/images/icons/messages.svg" },
     { href: "/dashboard", label: t("header_dashboard") || "Dashboard", icon: "/images/icons/home-icon.svg" },
     { href: "/profile/tab/notifications", label: t("header_notifications") || "Notifications", icon: "/images/icons/Notifications.svg" },
     { href: "/profile", label: t("header_profile") || "Profile", icon: "/images/icons/profile.svg" },
     { href: "/profile/tab/account_settings", label: t("header_account_settings") || "Account settings", icon: "/images/icons/setting.svg" }, // alias: /account-settings/personal-info
-    { href: "/profile/tab/saved", label: "Wishlist", icon: "/images/icons/wishlist.svg" },
+    { href: "/profile/tab/saved", label: t("header_wishlist") || "Wishlist", icon: "/images/icons/wishlist.svg" },
     ...(role === "ADMIN" ? [{ href: "/admin", label: t("header_admin") || "Admin", icon: "/images/icons/grid-Icon.svg" }] : []),
   ];
 
@@ -443,7 +443,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                         <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
                           <Image src="/images/icons/wishlist.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
                         </span>
-                        <span>Wishlist</span>
+                        <span>{t("header_wishlist")}</span>
                       </Link>
 
                       {/* Trips */}
@@ -456,7 +456,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                         <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
                           <Image src="/images/icons/trip.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
                         </span>
-                        <span>Trips</span>
+                        <span>{t("header_trips")}</span>
                       </Link>
 
                       {/* Messages (alias href="/host/messages") */}
@@ -469,7 +469,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                         <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
                           <Image src="/images/icons/messages.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
                         </span>
-                        <span>Messages</span>
+                        <span>{t("header_messages")}</span>
                       </Link>
 
 
@@ -483,7 +483,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                         <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
                           <Image src="/images/icons/profile.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
                         </span>
-                        <span>Profile</span>
+                        <span>{t("header_profile")}</span>
                       </Link>
                     </div>
 
@@ -512,7 +512,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                         <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
                           <Image src="/images/icons/setting.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
                         </span>
-                        <span>Account setting</span>
+                        <span>{t("header_account_settings")}</span>
                       </Link>
 
                       <button
@@ -539,7 +539,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                         <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
                           <Image src="/images/icons/help.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
                         </span>
-                        <span>Help centre</span>
+                        <span>{t("header_help_centre")}</span>
                       </Link>
                     </div>
 
@@ -562,21 +562,21 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                         onClick={() => setMenuOpen(false)}
                         className="block px-3.5 py-2 text-sm sm:text-[15px] font-normal text-[#1F1F1F] hover:bg-white rounded-xl transition-colors"
                       >
-                        Refer a Host
+                        {t("header_refer_a_host")}
                       </Link>
                       <Link
                         href="/host/co-host"
                         onClick={() => setMenuOpen(false)}
                         className="block px-3.5 py-2 text-sm sm:text-[15px] font-normal text-[#1F1F1F] hover:bg-white rounded-xl transition-colors"
                       >
-                        Find a co-Host
+                        {t("header_find_cohost")}
                       </Link>
                       <Link
                         href="/giftcards"
                         onClick={() => setMenuOpen(false)}
                         className="block px-3.5 py-2 text-sm sm:text-[15px] font-normal text-[#1F1F1F] hover:bg-white rounded-xl transition-colors"
                       >
-                        Gift Cards
+                        {t("header_gift_cards")}
                       </Link>
                     </div>
 
@@ -595,7 +595,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                         }}
                         className="w-full text-left px-3.5 py-2 text-sm sm:text-[15px] font-normal text-[#1F1F1F] hover:bg-white rounded-xl transition-colors underline underline-offset-4 cursor-pointer"
                       >
-                        Log out
+                        {t("header_sign_out")}
                       </button>
                     </div>
                   </div>

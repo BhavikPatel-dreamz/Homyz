@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 export interface ResultsSummaryBarProps {
   total: number;
@@ -33,6 +34,8 @@ export function ResultsSummaryBar({
   pets,
   isPending = false,
 }: ResultsSummaryBarProps) {
+  const { t } = useLanguage();
+
   if (isPending) {
     return (
       <div className="pb-4 border-b border-zinc-200/80 mb-5 animate-pulse">
@@ -47,7 +50,7 @@ export function ResultsSummaryBar({
     return null;
   }
 
-  // Dynamic Headline formatting per Phase 2 requirements
+  // Dynamic Headline formatting
   let countLabel = "";
   if (total >= 1000) {
     countLabel = "1,000+";
@@ -55,23 +58,26 @@ export function ResultsSummaryBar({
     countLabel = total.toLocaleString();
   }
 
-  const noun = total === 1 ? "home" : "homes";
   const headline = locationContextName
-    ? `${countLabel} ${noun} mapped in ${locationContextName} just for you`
-    : `${countLabel} ${noun} mapped just for you`;
+    ? total === 1
+      ? t("listings_mapped_single_in", { count: countLabel, location: locationContextName }, `${countLabel} home mapped in ${locationContextName} just for you`)
+      : t("listings_mapped_in", { count: countLabel, location: locationContextName }, `${countLabel} homes mapped in ${locationContextName} just for you`)
+    : total === 1
+      ? t("listings_mapped_single", { count: countLabel }, `${countLabel} home mapped just for you`)
+      : t("listings_mapped", { count: countLabel }, `${countLabel} homes mapped just for you`);
 
   // Subtitle with date range and guest counts
   const subtitleParts: string[] = [];
   if (checkIn && checkOut) {
-    subtitleParts.push(`${formatShortDate(checkIn)} to ${formatShortDate(checkOut)}`);
+    subtitleParts.push(t("listings_date_to_date", { checkIn: formatShortDate(checkIn), checkOut: formatShortDate(checkOut) }, `${formatShortDate(checkIn)} to ${formatShortDate(checkOut)}`));
   } else if (checkIn) {
-    subtitleParts.push(`From ${formatShortDate(checkIn)}`);
+    subtitleParts.push(t("listings_from_date", { date: formatShortDate(checkIn) }, `From ${formatShortDate(checkIn)}`));
   }
   if (guests && guests > 0) {
-    subtitleParts.push(`${guests} ${guests === 1 ? "guest" : "guests"}`);
+    subtitleParts.push(guests === 1 ? t("home_guest_one", { count: guests }, "1 guest") : t("home_guest_many", { count: guests }, `${guests} guests`));
   }
   if (pets && pets > 0) {
-    subtitleParts.push(`${pets} ${pets === 1 ? "pet" : "pets"}`);
+    subtitleParts.push(pets === 1 ? t("home_pet_one", { count: pets }, "1 pet") : t("home_pet_many", { count: pets }, `${pets} pets`));
   }
 
   return (

@@ -7,6 +7,7 @@ import type { ReviewCategoryRatings, ReviewMention } from "@/services/review.ser
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { ReviewCard } from "./review-card";
 import { trackListingEvent } from "@/lib/analytics/listing-analytics";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 interface ReviewListProps {
   listingId: string;
@@ -32,8 +33,9 @@ interface StatsResponse {
 }
 
 function ReviewSkeleton() {
+  const { t } = useLanguage();
   return (
-    <section className="border-b border-zinc-200/80 py-8" aria-label="Loading guest reviews">
+    <section className="border-b border-zinc-200/80 py-8" aria-label={t("reviews_loading_aria", "Loading guest reviews")}>
       <div className="h-7 w-48 animate-pulse rounded bg-zinc-200" />
       <div className="mt-6 grid animate-pulse gap-6 lg:grid-cols-[minmax(220px,0.8fr)_minmax(0,1.2fr)]">
         <div className="space-y-3">{Array.from({ length: 5 }, (_, index) => <div key={index} className="h-4 rounded bg-zinc-200" />)}</div>
@@ -45,6 +47,7 @@ function ReviewSkeleton() {
 }
 
 export function ReviewList({ listingId, isGuestFavorite = false, onStatsChange }: ReviewListProps) {
+  const { t } = useLanguage();
   const callbackRef = useRef(onStatsChange);
   const [reviews, setReviews] = useState<PublicReviewDTO[]>([]);
   const [stats, setStats] = useState<StatsResponse["data"] | null>(null);
@@ -139,7 +142,7 @@ export function ReviewList({ listingId, isGuestFavorite = false, onStatsChange }
   if (!stats) {
     return (
       <section className="border-b border-zinc-200/80 py-8" aria-labelledby="guest-reviews-heading">
-        <h2 id="guest-reviews-heading" className="text-[20px] font-normal text-[#1f1f1f]">Guest reviews</h2>
+        <h2 id="guest-reviews-heading" className="text-[20px] font-normal text-[#1f1f1f]">{t("reviews_guest_reviews", "Guest reviews")}</h2>
         <p className="mt-1 text-sm text-[#727272] font-normal">{error ?? "Unable to load reviews right now."}</p>
       </section>
     );
@@ -148,8 +151,8 @@ export function ReviewList({ listingId, isGuestFavorite = false, onStatsChange }
   if (stats.totalCount === 0) {
     return (
       <section className="border-b border-zinc-200/80 py-8" aria-labelledby="guest-reviews-heading">
-        <h2 id="guest-reviews-heading" className="text-[20px] font-normal text-[#1f1f1f]">Guest reviews</h2>
-        <p className="mt-1 text-sm text-[#727272] font-normal">No reviews yet. This property hasn&apos;t received any guest reviews yet.</p>
+        <h2 id="guest-reviews-heading" className="text-[20px] font-normal text-[#1f1f1f]">{t("reviews_guest_reviews", "Guest reviews")}</h2>
+        <p className="mt-1 text-sm text-[#727272] font-normal">{t("reviews_no_reviews_yet", "No reviews yet. This property hasn't received any guest reviews yet.")}</p>
       </section>
     );
   }
@@ -162,8 +165,8 @@ export function ReviewList({ listingId, isGuestFavorite = false, onStatsChange }
           <span className="text-5xl font-medium tracking-tight text-[#1f1f1f] sm:text-6xl">{stats.averageRating?.toFixed(2)}</span>
           <Image src="/images/icons/filled-leaves-right.svg" alt="" width={70} height={127} className="h-[90px] w-[57px] sm:h-[127px] sm:w-[70px]" />
         </div>
-        <h2 id="guest-reviews-heading" className="mt-4 text-base font-normal text-[#1f1f1f]">{isGuestFavorite ? "Guest favourite" : "Guest reviews"}</h2>
-        <p className="mt-1 text-base text-[#727272]">{isGuestFavorite ? "This home is in the top 5% of eligible listings based on ratings, reviews, and reliability" : `${stats.totalCount} ${stats.totalCount === 1 ? "guest has" : "guests have"} shared their stay.`}</p>
+        <h2 id="guest-reviews-heading" className="mt-4 text-base font-normal text-[#1f1f1f]">{isGuestFavorite ? t("listing_detail_guest_favourite", "Guest favourite") : t("reviews_guest_reviews", "Guest reviews")}</h2>
+        <p className="mt-1 text-base text-[#727272]">{isGuestFavorite ? t("reviews_top_five_percent", "This home is in the top 5% of eligible listings based on ratings, reviews, and reliability") : (stats.totalCount === 1 ? t("reviews_one_guest_shared", "{count} guest has shared their stay.").replace("{count}", "1") : t("reviews_many_guests_shared", "{count} guests have shared their stay.").replace("{count}", String(stats.totalCount)))}</p>
       </div>
 
       <div className="mt-10">
@@ -172,7 +175,7 @@ export function ReviewList({ listingId, isGuestFavorite = false, onStatsChange }
           {reviews.map((review) => <ReviewCard key={review.id} {...review} />)}
         </div>
         <div className="mt-8 flex flex-wrap items-center gap-5">
-          {currentPage < totalPages ? <button type="button" disabled={loadingMore} onClick={showMore} className="rounded-full border border-[#1f1f1f] bg-white px-6 py-3 text-base font-normal text-[#1f1f1f] transition-colors hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50">{loadingMore ? "Loading…" : `Show all ${stats.totalCount} reviews`}</button> : null}
+          {currentPage < totalPages ? <button type="button" disabled={loadingMore} onClick={showMore} className="rounded-full border border-[#1f1f1f] bg-white px-6 py-3 text-base font-normal text-[#1f1f1f] transition-colors hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50">{loadingMore ? t("host_loading", "Loading...") : t("reviews_show_all", "Show all {count} reviews").replace("{count}", String(stats.totalCount))}</button> : null}
           <button
             type="button"
             onClick={() => {
@@ -185,7 +188,7 @@ export function ReviewList({ listingId, isGuestFavorite = false, onStatsChange }
             }}
             className="text-base text-[#1F1F1F] underline underline-offset-4 transition-colors hover:text-[#727272] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-zinc-900 cursor-pointer"
           >
-            Learn how reviews work
+            {t("reviews_learn_how_work", "Learn how reviews work")}
           </button>
         </div>
         {error && reviews.length > 0 ? <p className="mt-4 text-sm text-amber-800">{error}</p> : null}
@@ -203,7 +206,7 @@ export function ReviewList({ listingId, isGuestFavorite = false, onStatsChange }
         >
           <div className="flex max-h-[calc(100vh-2rem)] w-full max-w-[360px] flex-col rounded-2xl bg-white px-4 py-5 shadow-2xl sm:max-w-[430px] sm:px-6 sm:py-7">
             <div className="flex items-start justify-between gap-4">
-              <h3 id="review-info-modal-title" className="pt-0.5 text-xl font-medium text-[#1f1f1f]">How reviews work</h3>
+              <h3 id="review-info-modal-title" className="pt-0.5 text-xl font-medium text-[#1f1f1f]">{t("reviews_how_reviews_work", "How reviews work")}</h3>
               <button
                 ref={reviewInfoCloseRef}
                 type="button"
@@ -216,10 +219,10 @@ export function ReviewList({ listingId, isGuestFavorite = false, onStatsChange }
             </div>
 
             <div className="mt-4 space-y-4 overflow-y-auto pr-1 leading-[1.45] text-[#1f1f1f] text-sm font-normal">
-              <p>Reviews from past guests help our community learn more about each home. By default, reviews are sorted by relevance. Relevance is based on recency, length and information that you provided to us, such as your booking search, your country and your language preferences.</p>
-              <p>Only the guest who made the reservation can leave a review, and Homyz only moderates reviews flagged for not following our policies.</p>
-              <p>To be eligible for a percentile ranking or guest favourite label, listings need at least 5 reviews in the last 4 years. Criteria are subject to change.</p>
-              <a href="/help" className="inline-block font-medium underline underline-offset-2 hover:text-zinc-950">Learn more in our Help Centre</a>
+              <p>{t("reviews_explainer_1", "Reviews from past guests help our community learn more about each home. By default, reviews are sorted by relevance. Relevance is based on recency, length and information that you provided to us, such as your booking search, your country and your language preferences.")}</p>
+              <p>{t("reviews_explainer_2", "Only the guest who made the reservation can leave a review, and Homyz only moderates reviews flagged for not following our policies.")}</p>
+              <p>{t("reviews_explainer_3", "To be eligible for a percentile ranking or guest favourite label, listings need at least 5 reviews in the last 4 years. Criteria are subject to change.")}</p>
+              <a href="/help" className="inline-block font-medium underline underline-offset-2 hover:text-zinc-950">{t("reviews_help_centre_link", "Learn more in our Help Centre")}</a>
             </div>
           </div>
         </ModalOverlay>

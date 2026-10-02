@@ -24,6 +24,7 @@ import {
 import { HomepageLoadingState } from "./home-section-skeleton";
 import { Container } from "../ui";
 import { ContinueSearchingBar } from "./continue-searching-bar";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 export interface HomeViewProps {
   sections?: HomepageSection[];
@@ -51,6 +52,7 @@ export function HomeView({
   searchContext = null,
 }: HomeViewProps) {
   const router = useRouter();
+  const { t } = useLanguage();
   const [isNavigatingSearch, setIsNavigatingSearch] = useState(false);
   const [recentlyViewed, setRecentlyViewed] = useState<ViewedPropertyItem[]>([]);
   const [activeContext, setActiveContext] = useState<SearchContext | PersistedSearchContext | null>(searchContext);
@@ -398,7 +400,7 @@ export function HomeView({
           {recentlyViewed.length >= 2 && !propertySections.some((s) => s.id === "recently-viewed") && (
             <section className="mt-8 sm:mt-[92px]">
               <HomePropertySection
-                title="Recently viewed"
+                title={t("home_recently_viewed", "Recently viewed")}
                 cards={recentlyViewed.map((item) => ({
                   id: item.id,
                   name: item.title,
@@ -430,13 +432,13 @@ export function HomeView({
                 <div className="space-y-1">
                   <h3 className="text-lg font-semibold text-[#1F1F1F]">
                     {mode === "SEARCH"
-                      ? `No stays found matching your search in ${searchContext?.displayName ?? "this location"}`
-                      : "Discover hand-picked stays on Homyz"}
+                      ? t("home_no_stays_found_in", { location: searchContext?.displayName ?? t("home_this_location", "this location") })
+                      : t("home_discover_handpicked_stays", "Discover hand-picked stays on Homyz")}
                   </h3>
                   <p className="text-xs text-[#727272] leading-relaxed font-normal">
                     {mode === "SEARCH"
-                      ? "Try expanding your date range, adjusting guest count, or exploring nearby destinations."
-                      : "Search destinations, check-in dates, and guest capacity above to browse available vacation rentals and accommodations."}
+                      ? t("home_try_expanding_date_range", "Try expanding your date range, adjusting guest count, or exploring nearby destinations.")
+                      : t("home_search_destinations_above", "Search destinations, check-in dates, and guest capacity above to browse available vacation rentals and accommodations.")}
                   </p>
                 </div>
                 <div className="pt-2 flex items-center justify-center gap-3">
@@ -446,21 +448,21 @@ export function HomeView({
                       onClick={handleClearSearch}
                       className="rounded-full bg-zinc-900 hover:bg-zinc-800 text-white font-semibold text-xs px-6 py-2.5 transition-all cursor-pointer"
                     >
-                      Clear search
+                      {t("home_clear_search", "Clear search")}
                     </button>
                   ) : (
                     <Link
                       href="/listings"
                       className="rounded-full bg-zinc-900 hover:bg-zinc-800 text-white font-semibold text-xs px-6 py-2.5 transition-all"
                     >
-                      Browse all stays
+                      {t("home_browse_all_stays", "Browse all stays")}
                     </Link>
                   )}
                   <Link
                     href="/become-a-host"
                     className="rounded-full bg-amber-200 hover:bg-amber-300 text-amber-950 font-semibold text-xs px-6 py-2.5 transition-all"
                   >
-                    Become a host
+                    {t("header_become_a_host", "Become a host")}
                   </Link>
                 </div>
               </div>
@@ -536,7 +538,7 @@ export function HomeView({
             <section className="mt-8 sm:mt-[92px]">
               <div className="mb-4 sm:mb-6 flex items-center justify-between gap-3">
                 <h2 className="text-[20px] sm:text-[22px] font-medium leading-7 sm:leading-8 tracking-[-.35px] text-[#1f1f1f]">
-                  Trending destinations
+                  {t("home_trending_destinations", "Trending destinations")}
                 </h2>
               </div>
               <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">

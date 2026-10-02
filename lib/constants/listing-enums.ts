@@ -140,6 +140,7 @@ export function propertyTypeLabel(value: string | undefined | null, t?: (key: an
   const canonical = canonicalPropertyType(value);
   if (t) {
     const keysToTry: string[] = [
+      `listings_${canonical.toLowerCase()}`,
       `host_property_type_${canonical.toLowerCase()}`,
       `host_category_${canonical.toLowerCase()}`,
       `host_type_${canonical.toLowerCase()}`,

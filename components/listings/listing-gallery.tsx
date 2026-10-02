@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { trackListingEvent } from "@/lib/analytics/listing-analytics";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 type Props = {
   photos: string[];
@@ -17,6 +18,7 @@ type Props = {
 
 export function ListingGallery({ photos, listingTitle, onShare, onSave, isSaved = false, saveDisabled = false }: Props) {
   const router = useRouter();
+  const { t } = useLanguage();
   // Listing.photos is an ordered array: the host editor keeps index 0 as the
   // cover photo. Remove invalid/duplicate URLs without changing that order.
   const galleryPhotos = useMemo(
@@ -121,7 +123,7 @@ export function ListingGallery({ photos, listingTitle, onShare, onSave, isSaved 
       <div className="relative mb-8">
         <div className="aspect-[21/9] w-full bg-zinc-100 flex flex-col items-center justify-center text-[#727272]">
           <span className="text-4xl mb-2">🏡</span>
-          <span className="text-xs font-medium">No property photos uploaded</span>
+          <span className="text-xs font-medium">{t("listing_gallery_no_photos", "No property photos uploaded")}</span>
         </div>
       </div>
     );
@@ -188,7 +190,7 @@ export function ListingGallery({ photos, listingTitle, onShare, onSave, isSaved 
           {total > 5 && (
             <button type="button" onClick={handleOpenLightbox} className="absolute bottom-5 right-5 z-10 inline-flex items-center gap-2 rounded-full border border-[#1F1F1F] bg-white/95 px-4 py-1.5 text-base font-normal text-[#1f1f1f] transition hover:bg-white">
               <Image src="/images/icons/camera-mode.svg" alt="" width={18} height={18} className="size-[18px]" />
-              Show all {total} photos
+              {t("listing_gallery_show_all_photos", { count: total }, `Show all ${total} photos`)}
             </button>
           )}
         </div>}

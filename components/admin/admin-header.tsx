@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { LogoutButton } from "./logout-button";
 import { ThemeSwitcher } from "@/components/theme/theme-switcher";
 import { AdminBreadcrumb } from "./admin-breadcrumb";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 interface AdminHeaderProps {
   onToggleSidebar: () => void;
@@ -19,6 +20,7 @@ export function AdminHeader({
   const { data: session } = useSession();
   const user = session?.user;
   const role = user?.role;
+  const { t } = useLanguage();
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [mode, setMode] = useState<"hosting" | "traveling">("hosting");
@@ -46,7 +48,7 @@ export function AdminHeader({
             type="button"
             onClick={onOpenMobileSidebar}
             className="md:hidden flex h-9 w-9 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface)] text-muted-foreground hover:bg-[var(--surface-secondary)] transition-colors shadow-2xs"
-            title="Open navigation menu"
+            title={t("header_open_navigation_menu", "Open navigation menu")}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
@@ -58,7 +60,7 @@ export function AdminHeader({
             type="button"
             onClick={onToggleSidebar}
             className="hidden md:flex h-9 w-9 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--muted-foreground)] hover:bg-[var(--surface-secondary)] hover:text-muted-foreground transition-colors shadow-2xs"
-            title="Toggle sidebar collapse"
+            title={t("header_toggle_sidebar_collapse", "Toggle sidebar collapse")}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h7" />
@@ -80,7 +82,7 @@ export function AdminHeader({
               type="text"
               value={quickSearch}
               onChange={(e) => setQuickSearch(e.target.value)}
-              placeholder="Search admin app..."
+              placeholder={t("admin_search_placeholder", "Search admin app...")}
               className="w-full rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] py-1.5 pl-8 pr-8 text-xs text-muted-foreground outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-amber-500/20 transition-all"
             />
             <svg
@@ -111,7 +113,7 @@ export function AdminHeader({
           <button
             type="button"
             className="relative flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] text-[var(--muted-foreground)] hover:bg-[var(--surface-secondary)] hover:text-muted-foreground transition-colors shadow-2xs"
-            title="Notifications"
+            title={t("header_notifications", "Notifications")}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
@@ -125,7 +127,7 @@ export function AdminHeader({
             onClick={() => setMode(mode === "hosting" ? "traveling" : "hosting")}
             className="hidden xl:inline-flex whitespace-nowrap items-center rounded-full border border-amber-300/80 bg-[var(--card-highlight)] hover:opacity-90 px-3.5 py-1.5 text-xs font-semibold text-[var(--accent-foreground)] shadow-2xs transition-all"
           >
-            Switch to {mode === "hosting" ? "traveling" : "hosting"}
+            {t("header_switch_to", { mode: mode === "hosting" ? (t("header_switch_traveling", "traveling")) : (t("header_switch_hosting", "hosting")) })}
           </button>
 
           {/* Theme Selector */}
@@ -190,7 +192,7 @@ export function AdminHeader({
                     <svg className="w-4 h-4 text-[var(--muted-foreground)]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
-                    Account Settings
+                    {t("header_account_settings", "Account Settings")}
                   </Link>
 
                   <Link
@@ -201,14 +203,14 @@ export function AdminHeader({
                     <svg className="w-4 h-4 text-[var(--muted-foreground)]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
-                    Security & Access
+                    {t("header_security_access", "Security & Access")}
                   </Link>
                 </div>
 
                 {/* Sign Out Action */}
                 <div className="border-t border-[var(--border-subtle)] pt-2 mt-2">
                   <LogoutButton variant="menu-item" callbackUrl="/login?logged_out=true">
-                    Sign Out
+                    {t("header_sign_out", "Sign Out")}
                   </LogoutButton>
                 </div>
               </div>
