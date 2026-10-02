@@ -40,12 +40,12 @@ export function BookingPriceCard({
 
   return (
     <aside
-      className="h-fit rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm lg:sticky lg:top-28"
+      className="h-fit sm:rounded-3xl rounded-lg border border-zinc-200 bg-white p-6 shadow-sm lg:sticky lg:top-28"
       aria-labelledby="price-summary-heading"
     >
       {/* Property Photo & Link */}
       {photo && (
-        <Link href={listingHref} className="group block mb-5 overflow-hidden rounded-2xl">
+        <Link href={listingHref} className="group block mb-5 overflow-hidden sm:rounded-2xl rounded-lg">
           <img
             src={photo}
             alt={propertyTitle}
@@ -164,9 +164,9 @@ export function BookingPriceCard({
           </div>
         )}
 
-        <div className="flex justify-between gap-4 border-t border-zinc-200 pt-4 text-base font-bold text-[#1F1F1F]">
+        <div className="flex justify-between gap-4 border-t border-zinc-200 pt-4 sm:text-base text-sm font-bold text-[#1F1F1F]">
           <dt>Total paid ({pricing.currency})</dt>
-          <dd className="text-lg text-emerald-800">
+          <dd className="sm:text-lg text-sm text-emerald-800">
             <CurrencyPrice
               amountMinorUnits={pricing.totalPrice}
               sourceCurrency={pricing.currency}
@@ -232,7 +232,7 @@ export function BookingPriceCard({
             <button
               type="button"
               onClick={onOpenReceipt}
-              className="flex min-h-10 w-full items-center justify-center rounded-xl border border-zinc-300 bg-white px-4 text-sm font-semibold text-zinc-800 hover:bg-zinc-50 hover:border-zinc-400 transition-colors cursor-pointer"
+              className="flex min-h-11 w-full items-center justify-center rounded-xl border border-zinc-300 bg-white px-4 text-sm font-semibold text-zinc-800 hover:bg-zinc-50 hover:border-zinc-400 transition-colors cursor-pointer"
             >
               View receipt
             </button>
@@ -241,7 +241,7 @@ export function BookingPriceCard({
               <button
                 type="button"
                 onClick={onOpenCancel}
-                className="flex min-h-10 w-full items-center justify-center rounded-xl border border-red-200 bg-white px-4 text-sm font-semibold text-red-600 hover:bg-red-50 hover:border-red-300 transition-colors cursor-pointer"
+                className="flex min-h-11 w-full items-center justify-center rounded-xl border border-red-200 bg-white px-4 text-sm font-medium text-red-600 hover:bg-red-50 hover:border-red-300 transition-colors cursor-pointer"
               >
                 Cancel reservation
               </button>
@@ -308,7 +308,7 @@ export function BookingPriceCard({
             <button
               type="button"
               onClick={onOpenCancel}
-              className="flex min-h-10 w-full items-center justify-center rounded-xl border border-red-200 bg-white px-4 text-sm font-semibold text-red-600 hover:bg-red-50 hover:border-red-300 transition-colors cursor-pointer"
+              className="flex min-h-10 w-full items-center justify-center rounded-xl border border-red-200 bg-white px-4 text-sm font-medium text-red-600 hover:bg-red-50 hover:border-red-300 transition-colors cursor-pointer"
             >
               Withdraw request
             </button>

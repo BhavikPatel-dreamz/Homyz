@@ -61,7 +61,7 @@ export function BookingStayInfo({
         </h2>
         <Link
           href={listingHref}
-          className="inline-flex items-center gap-1.5 text-sm font-semibold text-zinc-800 underline underline-offset-4 hover:text-zinc-600 transition-colors"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-800 underline underline-offset-4 hover:text-zinc-600 transition-colors"
         >
           <span>View full listing</span>
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -71,37 +71,37 @@ export function BookingStayInfo({
       </div>
 
       <dl className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2">
-        <div className="rounded-2xl border border-zinc-100 bg-zinc-50/70 p-4">
+        <div className="sm:rounded-2xl rounded-lg border border-zinc-100 bg-[#F3F4F5] p-4">
           <dt className="text-xs font-semibold text-[#727272] uppercase tracking-wider">Property</dt>
-          <dd className="mt-1 font-semibold text-[#1F1F1F]">{propertyName}</dd>
+          <dd className="mt-1 font-medium text-[#1F1F1F]">{propertyName}</dd>
           {propertyType && <p className="text-xs text-[#727272] mt-0.5">{propertyType}</p>}
         </div>
 
-        <div className="rounded-2xl border border-zinc-100 bg-zinc-50/70 p-4">
+        <div className="sm:rounded-2xl rounded-lg border border-zinc-100 bg-[#F3F4F5] p-4">
           <dt className="text-xs font-semibold text-[#727272] uppercase tracking-wider">Reservation Code</dt>
-          <dd className="mt-1 font-mono font-semibold text-[#1F1F1F]">{bookingCode}</dd>
+          <dd className="mt-1 font-mono font-medium text-[#1F1F1F]">{bookingCode}</dd>
           <p className="text-xs text-[#727272] mt-0.5">Booked on {formatDate(createdAt)}</p>
         </div>
 
-        <div className="rounded-2xl border border-zinc-100 bg-zinc-50/70 p-4">
+        <div className="sm:rounded-2xl rounded-lg border border-zinc-100 bg-[#F3F4F5] p-4">
           <dt className="text-xs font-semibold text-[#727272] uppercase tracking-wider">Check-in</dt>
-          <dd className="mt-1 font-semibold text-[#1F1F1F]">{formatDate(startDate)}</dd>
+          <dd className="mt-1 font-medium text-[#1F1F1F]">{formatDate(startDate)}</dd>
           <p className="text-xs text-zinc-600 mt-0.5">
             {checkInStart ? `From ${checkInStart}` : "Check-in from 3:00 PM"}
           </p>
         </div>
 
-        <div className="rounded-2xl border border-zinc-100 bg-zinc-50/70 p-4">
+        <div className="sm:rounded-2xl rounded-lg border border-zinc-100 bg-[#F3F4F5] p-4">
           <dt className="text-xs font-semibold text-[#727272] uppercase tracking-wider">Check-out</dt>
-          <dd className="mt-1 font-semibold text-[#1F1F1F]">{formatDate(endDate)}</dd>
+          <dd className="mt-1 font-medium text-[#1F1F1F]">{formatDate(endDate)}</dd>
           <p className="text-xs text-zinc-600 mt-0.5">
             {checkOutTime ? `By ${checkOutTime}` : "Check-out by 11:00 AM"}
           </p>
         </div>
 
-        <div className="rounded-2xl border border-zinc-100 bg-zinc-50/70 p-4">
+        <div className="sm:rounded-2xl rounded-lg border border-zinc-100 bg-[#F3F4F5] p-4">
           <dt className="text-xs font-semibold text-[#727272] uppercase tracking-wider">Length of Stay</dt>
-          <dd className="mt-1 font-semibold text-[#1F1F1F]">
+          <dd className="mt-1 font-medium text-[#1F1F1F]">
             {nights} {nights === 1 ? "night" : "nights"}
           </dd>
           <p className="text-xs text-[#727272] mt-0.5">
@@ -109,9 +109,9 @@ export function BookingStayInfo({
           </p>
         </div>
 
-        <div className="rounded-2xl border border-zinc-100 bg-zinc-50/70 p-4">
+        <div className="sm:rounded-2xl rounded-lg border border-zinc-100 bg-[#F3F4F5] p-4">
           <dt className="text-xs font-semibold text-[#727272] uppercase tracking-wider">Cancellation Policy</dt>
-          <dd className="mt-1 font-semibold text-[#1F1F1F]">
+          <dd className="mt-1 font-medium text-[#1F1F1F]">
             {isNonRefundable ? "Non-refundable" : cancellationPolicy || "Flexible"}
           </dd>
           <p className="text-xs text-[#727272] mt-0.5">
@@ -123,7 +123,7 @@ export function BookingStayInfo({
       </dl>
 
       {description && (
-        <div className="mt-5 rounded-2xl border border-zinc-200/70 bg-white p-4">
+        <div className="mt-5 sm:rounded-2xl rounded-lg border border-zinc-200/70 bg-white p-4">
           <p className="text-xs font-semibold text-[#727272] uppercase tracking-wider mb-1.5">
             Listing Summary
           </p>

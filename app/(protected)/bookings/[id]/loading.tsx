@@ -7,7 +7,7 @@ export default function BookingDetailsLoading() {
       <div className="h-5 w-32 rounded-lg bg-zinc-200" />
 
       {/* Main Grid Skeleton */}
-      <div className="mt-5 grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-14">
+      <div className="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-14">
         {/* Left Column Skeleton */}
         <div className="min-w-0 space-y-7">
           {/* Header */}

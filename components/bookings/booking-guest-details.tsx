@@ -39,7 +39,7 @@ export function BookingGuestDetails({
         )}
       </div>
 
-      <div className="mt-5 rounded-2xl border border-zinc-200 bg-white p-5 shadow-2xs">
+      <div className="mt-5 sm:rounded-2xl rounded-lg border border-zinc-200 bg-white p-5 shadow-2xs">
         <dl className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div>
             <dt className="text-xs font-semibold text-[#727272] uppercase tracking-wider">Total Guests</dt>

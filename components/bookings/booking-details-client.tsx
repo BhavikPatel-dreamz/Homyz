@@ -55,7 +55,7 @@ export function BookingDetailsClient({ data }: BookingDetailsClientProps) {
   );
 
   return (
-    <div className="mx-auto w-full max-w-6xl pb-16 pt-4 text-[#1F1F1F]">
+    <div className="w-full pb-16 pt-4 text-[#1F1F1F]">
       {/* Back navigation */}
       <Link
         href={backLinkHref}
@@ -68,7 +68,7 @@ export function BookingDetailsClient({ data }: BookingDetailsClientProps) {
       </Link>
 
       {/* Main Grid: Left Content (cols) & Right Sticky Sidebar */}
-      <div className="mt-5 grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-14">
+      <div className="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-14">
         {/* Left Column: Comprehensive Reservation Management */}
         <div className="min-w-0">
           {/* Header */}
@@ -77,7 +77,7 @@ export function BookingDetailsClient({ data }: BookingDetailsClientProps) {
               <p className="text-xs font-semibold uppercase tracking-wider text-[#727272]">
                 Reservation #{bookingCode}
               </p>
-              <h1 className="mt-1.5 text-2xl sm:text-3xl font-bold tracking-tight text-[#1F1F1F]">
+              <h1 className="mt-1.5 text-2xl sm:text-3xl font-semibold tracking-tight text-[#1F1F1F]">
                 {listing.title}
               </h1>
               {location && (
@@ -92,14 +92,14 @@ export function BookingDetailsClient({ data }: BookingDetailsClientProps) {
             </div>
 
             <div className="flex flex-col items-end gap-1.5">
-              <span className={`rounded-full px-3.5 py-1 text-sm font-semibold shadow-2xs ${statusDetails.badgeClass}`}>
+              <span className={`rounded-full px-3.5 py-1 text-sm font-medium shadow-2xs ${statusDetails.badgeClass}`}>
                 {statusDetails.label}
               </span>
             </div>
           </div>
 
           {/* Contextual Status Banner */}
-          <div className={`mt-6 rounded-2xl border p-5 ${
+          <div className={`mt-6 sm:rounded-2xl rounded-lg border p-5 ${
             statusDetails.isCompleted
               ? "bg-zinc-50 border-zinc-200 text-zinc-800"
               : statusDetails.isCancelled
@@ -203,7 +203,7 @@ export function BookingDetailsClient({ data }: BookingDetailsClientProps) {
               Need help with this reservation?
             </h2>
             <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-2xs">
+              <div className="sm:rounded-2xl rounded-lg border border-zinc-200 bg-white p-5 shadow-2xs">
                 <h3 className="font-semibold text-sm text-[#1F1F1F]">Message your host</h3>
                 <p className="mt-1 text-xs text-zinc-600 leading-relaxed">
                   Have questions about arrival, luggage drop-off, key exchange, or check-in?
@@ -217,7 +217,7 @@ export function BookingDetailsClient({ data }: BookingDetailsClientProps) {
                 </button>
               </div>
 
-              <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-2xs">
+              <div className="sm:rounded-2xl rounded-lg border border-zinc-200 bg-white p-5 shadow-2xs">
                 <h3 className="font-semibold text-sm text-[#1F1F1F]">24/7 Concierge Support</h3>
                 <p className="mt-1 text-xs text-zinc-600 leading-relaxed">
                   Our customer care team is available around the clock to support your stay.

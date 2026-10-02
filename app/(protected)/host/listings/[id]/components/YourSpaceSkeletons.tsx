@@ -252,7 +252,7 @@ export function PropertyTypeSkeleton() {
             <SkeletonText className="h-3.5 w-40" />
             <SkeletonText className="h-3 w-72" />
           </div>
-          <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 w-36 flex flex-col items-center gap-1">
+          <div className="sm:rounded-2xl rounded-lg shadow-md bg-white p-4 w-36 flex flex-col items-center gap-1">
             <SkeletonText className="h-3.5 w-16" />
             <SkeletonText className="h-2.5 w-24" />
           </div>

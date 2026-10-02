@@ -35,7 +35,7 @@ export function BookingHostCard({
 
   return (
     <section className="border-b border-zinc-200 py-7" aria-labelledby="host-heading">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5 rounded-3xl border border-zinc-200 bg-white p-6 shadow-2xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5 sm:rounded-3xl rounded-lg border border-zinc-200 bg-white p-6 shadow-2xs">
         <div className="flex items-center gap-4">
           {hostImage ? (
             <img

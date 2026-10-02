@@ -308,7 +308,7 @@ export function ReceiptModal({ bookingId, isOpen, onClose }: ReceiptModalProps) 
             </div>
 
             {/* Parties */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-xs sm:text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:rounded-2xl rounded-lg shadow-md bg-white p-4 text-xs sm:text-sm">
               <div>
                 <span className="font-semibold text-zinc-800 block mb-1">Host / Supplier</span>
                 <p className="font-medium text-[#1F1F1F]">{invoice.supplier?.name || "Host"}</p>
@@ -467,7 +467,7 @@ export function ContactHostModal({ booking, isOpen, onClose }: ContactHostModalP
           </div>
         </div>
 
-        <div className="mt-4 rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+        <div className="mt-4 sm:rounded-2xl rounded-lg shadow-md bg-white p-4">
           <p className="text-xs font-semibold text-zinc-800 line-clamp-1">{booking.propertyName}</p>
           <p className="text-xs text-[#727272]">{booking.location}</p>
         </div>

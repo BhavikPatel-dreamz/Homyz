@@ -117,7 +117,7 @@ export function EnhancedCancelModal({
           </div>
         </div>
 
-        <div className="mt-5 rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+        <div className="mt-5 sm:rounded-2xl rounded-lg shadow-md bg-white p-4">
           <h3 className="font-semibold text-sm text-[#1F1F1F] line-clamp-1">{propertyName}</h3>
           {location && <p className="text-xs text-zinc-600 mt-0.5">{location}</p>}
         </div>

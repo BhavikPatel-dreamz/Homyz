@@ -260,7 +260,7 @@ export function ChangeReservationModal({
         </div>
 
         {/* Pricing & Comparison Preview */}
-        <div className="mt-6 rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+        <div className="mt-6 sm:rounded-2xl rounded-lg shadow-md bg-white p-4">
           {loadingPreview ? (
             <div className="flex items-center justify-center py-4 text-xs text-[#727272] gap-2">
               <svg className="h-4 w-4 animate-spin text-[#727272]" fill="none" viewBox="0 0 24 24">
