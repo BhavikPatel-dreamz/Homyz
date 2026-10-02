@@ -76,6 +76,9 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
   const [searchClosing, setSearchClosing] = useState(false);
   const [messagingSettingsOpen, setMessagingSettingsOpen] = useState(false);
   const [mobileView, setMobileView] = useState<"list" | "thread">("list");
+  const [laptopDetailsOpen, setLaptopDetailsOpen] = useState(false);
+  const [isCompactViewport, setIsCompactViewport] = useState(false);
+  const [isTabletViewport, setIsTabletViewport] = useState(false);
 
   // Messages state
   const [messages, setMessages] = useState<MessageDTO[]>([]);
@@ -105,6 +108,22 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
   const [preApproveNote, setPreApproveNote] = useState("");
   const [declineReason, setDeclineReason] = useState("Dates not available");
   const [declineNote, setDeclineNote] = useState("");
+
+  useEffect(() => {
+    const compactMediaQuery = window.matchMedia("(max-width: 1023px)");
+    const tabletMediaQuery = window.matchMedia("(min-width: 768px) and (max-width: 1023px)");
+    const updateViewport = () => {
+      setIsCompactViewport(compactMediaQuery.matches);
+      setIsTabletViewport(tabletMediaQuery.matches);
+    };
+    updateViewport();
+    compactMediaQuery.addEventListener("change", updateViewport);
+    tabletMediaQuery.addEventListener("change", updateViewport);
+    return () => {
+      compactMediaQuery.removeEventListener("change", updateViewport);
+      tabletMediaQuery.removeEventListener("change", updateViewport);
+    };
+  }, []);
 
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const isNearBottomRef = useRef(true);
@@ -697,15 +716,18 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
     }
   };
 
+  const panelIsModal = isCompactViewport && laptopDetailsOpen;
+  const InquiryPanelContainer = panelIsModal ? ModalOverlay : "div";
+
   return (
     <div className="messages-workspace flex-1 w-full max-w-[1520px] mx-auto px-0 sm:px-6">
-      <div className="grid grid-cols-1 overflow-hidden bg-white lg:grid-cols-[300px_minmax(0,1fr)_362px] xl:grid-cols-[320px_minmax(0,1fr)_362px] lg:h-[calc(100svh-132px)] lg:min-h-[680px] lg:border lg:border-zinc-300">
+      <div className="grid grid-cols-1 overflow-hidden bg-white lg:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[320px_minmax(0,1fr)_362px] lg:h-[calc(100svh-132px)] lg:min-h-[680px] lg:border lg:border-zinc-300">
         {/* ========================================================================= */}
         {/* COLUMN 1: CONVERSATIONS LIST                                              */}
         {/* ========================================================================= */}
         <div className={`flex-col bg-white overflow-hidden lg:border-r lg:border-zinc-300 ${mobileView === "thread" ? "hidden lg:flex" : "flex"}`}>
           {/* Header & Tabs */}
-          <div className="border-b border-zinc-200 px-4 pb-8 lg:pt-12 pt-5 space-y-3">
+          <div className="border-b border-zinc-200 px-4 pb-8 xl:pt-12 lg:pt-5 pt-4 space-y-3">
             <div className="flex h-6 items-center justify-between">
               <h1 className="text-lg font-medium text-[#1F1F1F]">Messages</h1>
             </div>
@@ -929,6 +951,15 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
                       {selectedConversation.listing.title}
                     </p>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => setLaptopDetailsOpen(true)}
+                    className="ml-auto shrink-0 rounded-full border border-[#1f1f1f] bg-[#F3F4F5] px-3 py-1.5 text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-[#e5e7e9] lg:hidden"
+                    aria-expanded={laptopDetailsOpen}
+                    aria-controls="mobile-message-details"
+                  >
+                    Inquiry
+                  </button>
                 </div>
 
                 {/* Header Action Buttons (Pre-approve, Special offer, Decline) */}
@@ -959,6 +990,22 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
                     </>
                   )}
                 </div>
+              </div>
+
+              <div className="hidden shrink-0 items-center justify-between border-b border-zinc-100 px-5 py-3 lg:flex xl:hidden">
+                <div className="min-w-0">
+                  <p className="truncate text-base font-medium text-[#1F1F1F]">{selectedConversation.guest.name || "Guest"}</p>
+                  <p className="truncate text-xs font-normal text-[#727272]">{selectedConversation.listing.title}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setLaptopDetailsOpen(true)}
+                  className="ml-4 shrink-0 rounded-full border border-[#1f1f1f] px-3 py-1.5 text-base bg-[#F3F4F5] font-medium text-[#1F1F1F] transition-colors hover:bg-[#1f1f1f]"
+                  aria-expanded={laptopDetailsOpen}
+                  aria-controls="laptop-message-details"
+                >
+                  Inquiry
+                </button>
               </div>
 
               {/* Messages Area */}
@@ -1115,15 +1162,10 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
                             </div>
                             <div
                               className={`order-2 max-w-[85%] sm:max-w-[72%] rounded-lg px-3 py-2 text-xs sm:text-sm leading-relaxed shadow-none space-y-2 ${isHost
-                                ? "bg-[#E9EBFF] text-zinc-800 rounded-br-sm"
-                                : "bg-zinc-100 text-zinc-800 rounded-bl-sm"
+                                ? "bg-[#E9EBFF] text-zinc-800 rounded-tr-none"
+                                : "bg-zinc-100 text-zinc-800 rounded-tl-none rounded-bl-sm"
                                 }`}
-                            >
-                              {m.type === "BOOKING_REQUEST" && (
-                                <div className="border-b border-zinc-200 pb-1.5 text-[11px] font-semibold text-zinc-500">
-                                  {isHost ? "You" : selectedConversation.guest.name || "Guest"}
-                                </div>
-                              )}
+                            >                              
 
                               {/* Render Attachments if present */}
                               {hasAttachments && (
@@ -1228,12 +1270,11 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
                       setIsNearBottom(true);
                       scrollToBottom("smooth");
                     }}
-                    className="absolute bottom-3 right-5 z-10 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white text-zinc-800 text-xs font-semibold shadow-md border border-zinc-200 hover:bg-zinc-50 hover:shadow-lg transition-all"
+                    className="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 items-center justify-center rounded-full border border-zinc-200 bg-white p-3 text-xs font-semibold text-zinc-800 shadow-md transition-all hover:bg-zinc-50 hover:shadow-lg"
                   >
                     <svg className="size-3.5 text-zinc-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
                     </svg>
-                    <span>Jump to latest</span>
                   </button>
                 )}
               </div>
@@ -1393,20 +1434,44 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
         {/* ========================================================================= */}
         {/* COLUMN 3: CONTEXT & RESERVATION PANEL                                     */}
         {/* ========================================================================= */}
-        <div className="relative hidden min-h-0 lg:flex">
-          <aside ref={rightPanelScrollRef} onScroll={updateRightPanelScrollThumb} className="custom-scrollbar flex h-full w-full flex-col gap-3 overflow-y-auto overscroll-contain bg-white pl-5.25 pr-[38px] py-12">
+        <InquiryPanelContainer
+          {...(panelIsModal ? { role: "dialog", "aria-modal": true, "aria-labelledby": "mobile-message-details-title" } : {})}
+          onMouseDown={isTabletViewport ? (event) => {
+            if (event.target === event.currentTarget) setLaptopDetailsOpen(false);
+          } : undefined}
+          className={panelIsModal
+            ? isTabletViewport
+              ? "fixed inset-0 z-[60] flex min-h-0 justify-center bg-[#F7F7F7] p-4 sm:p-6"
+              : "fixed inset-0 z-[60] flex min-h-0 bg-white"
+            : `relative hidden min-h-0 xl:flex xl:w-auto xl:border-l-0 xl:shadow-none ${laptopDetailsOpen ? "lg:fixed lg:bottom-0 lg:right-0 lg:top-[88px] lg:z-50 lg:flex lg:w-[362px] lg:border-l lg:border-zinc-200 lg:shadow-[-12px_0_28px_rgba(0,0,0,0.12)]" : ""}`}
+        >
+          <aside id={panelIsModal ? "mobile-message-details" : "laptop-message-details"} ref={rightPanelScrollRef} onScroll={updateRightPanelScrollThumb} className={`custom-scrollbar flex h-full w-full flex-col gap-3 overflow-y-auto overscroll-contain bg-white ${panelIsModal ? isTabletViewport ? "max-w-[760px] border border-zinc-200 px-8 pb-8 pt-16 shadow-[0_8px_28px_rgba(0,0,0,0.08)]" : "pl-5.25 pr-5.25 pb-10 pt-[70px]" : "pl-5.25 pr-[38px] py-12"}`}>
+          <button
+            type="button"
+            onClick={() => setLaptopDetailsOpen(false)}
+            className={panelIsModal
+              ? isTabletViewport
+                ? "absolute right-8 top-8 flex size-10 items-center justify-center rounded-full border border-zinc-200 bg-white text-[#1A1A1A] shadow-sm transition-colors hover:bg-zinc-50"
+                : "absolute right-6 top-8 flex size-9 items-center justify-center rounded-full text-[#1A1A1A] transition-colors hover:bg-zinc-100"
+              : "ml-auto hidden rounded-full border border-zinc-300 px-3 py-1.5 text-xs font-medium text-[#1F1F1F] transition-colors hover:bg-zinc-50 lg:flex xl:hidden"}
+            aria-label="Close inquiry details"
+          >
+            {panelIsModal ? (
+              <svg className="size-6" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
+            ) : "Close details"}
+          </button>
           {selectedConversation ? (
             <>
               <section className="border-b border-[#D7D7D7] pb-4">
                 <p className="text-xs text-zinc-500">Inquiry</p>
-                <h2 className="guest-name mt-1 text-xl font-medium text-[#727272]"><span className="text-[#1f1f1f]">{selectedConversation.guest.name || "Guest"}</span> asked about your trip</h2>
+                <h2 id={panelIsModal ? "mobile-message-details-title" : undefined} className="guest-name mt-1 text-xl font-medium text-[#727272]"><span className="text-[#1f1f1f]">{selectedConversation.guest.name || "Guest"}</span> asked about your trip</h2>
                 <p className="property-location mt-3 text-sm text-[#1f1f1f] font-normal">{selectedConversation.listing.title}</p>
                 <p className="countryname text-sm text-[#727272]">{[selectedConversation.listing.city, selectedConversation.listing.country].filter(Boolean).join(", ")}</p>
                 {selectedConversation.status !== "CONFIRMED" && selectedConversation.status !== "DECLINED" && (
-                  <div className="mt-6 space-y-3">
-                    <button type="button" onClick={() => setPreApproveModalOpen(true)} className="flex h-9 w-full items-center justify-center rounded-lg border border-[#727272] px-3 text-base font-normal text-[#1F1F1F] transition-colors hover:bg-zinc-50">Pre-approve</button>
-                    <button type="button" onClick={openSpecialOfferModal} className="flex h-9 w-full items-center justify-center rounded-lg border border-[#727272] px-3 text-base font-normal text-[#1F1F1F] transition-colors hover:bg-zinc-50">Special offer</button>
-                    <button type="button" onClick={() => setDeclineModalOpen(true)} className="flex h-9 w-full items-center justify-center rounded-lg border border-[#727272] px-3 text-base font-normal text-[#1F1F1F] transition-colors hover:bg-zinc-50">Decline</button>
+                  <div className={isTabletViewport ? "mt-5 grid grid-cols-2 gap-2" : "mt-6 space-y-3"}>
+                    <button type="button" onClick={() => setPreApproveModalOpen(true)} className="flex h-10 w-full items-center justify-center rounded-xl border border-emerald-200 bg-emerald-50 px-3 text-sm font-medium text-emerald-900 transition-colors hover:bg-emerald-100">Pre-approve</button>
+                    <button type="button" onClick={openSpecialOfferModal} className="flex h-10 w-full items-center justify-center rounded-xl border border-amber-200 bg-[#FCDF9C] px-3 text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-[#F7D37D]">Special offer</button>
+                    <button type="button" onClick={() => setDeclineModalOpen(true)} className={`${isTabletViewport ? "col-span-2" : ""} flex h-10 w-full items-center justify-center rounded-xl border border-zinc-300 px-3 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50`}>Decline</button>
                   </div>
                 )}
               </section>
@@ -1493,8 +1558,8 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
 
               {/* Booking details */}
               <section className="border-t border-[#E5E5E5] pt-5 space-y-3">
-                <div className="flex items-center justify-between sm:flex-row flex-col">
-                  <h4 className="text-xl font-medium text-[#1F1F1F]">Booking details</h4>
+                <div className="flex items-center justify-between">
+                  <h4 className="sm:text-xl text-lg font-medium text-[#1F1F1F]">Booking details</h4>
                   {getStatusBadge(selectedConversation.status, selectedConversation.activeSpecialOffer)}
                 </div>
 
@@ -1569,14 +1634,14 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
                     <button
                       type="button"
                       onClick={() => setPreApproveModalOpen(true)}
-                      className="w-full py-2.5 rounded-[10px] border border-zinc-400 text-[#1F1F1F] text-base font-medium hover:bg-zinc-50 transition-colors"
+                      className="w-full py-2.5 rounded-[10px] border border-zinc-400 text-[#1F1F1F] sm:text-base text-sm font-medium hover:bg-zinc-50 transition-colors"
                     >
                       Pre-approve
                     </button>
                     <button
                       type="button"
                       onClick={openSpecialOfferModal}
-                      className="w-full py-2.5 rounded-[10px] border border-zinc-400 text-[#1F1F1F] text-base font-medium hover:bg-zinc-50 transition-colors"
+                          className="w-full py-2.5 rounded-[10px] border border-zinc-400 text-[#1F1F1F] sm:text-base text-sm font-medium hover:bg-zinc-50 transition-colors"
                     >
                       Special offer
                     </button>
@@ -1601,7 +1666,7 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
               </button>
             </div>
           )}
-        </div>
+        </InquiryPanelContainer>
       </div>
 
       {/* ========================================================================= */}
@@ -1908,4 +1973,3 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
     </div>
   );
 }
-

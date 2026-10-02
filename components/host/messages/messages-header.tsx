@@ -39,7 +39,7 @@ export function MessagesHeader() {
         </Link>
         <nav
           aria-label="Host navigation"
-          className="hidden items-center gap-8 text-base text-[#727272] font-medium md:flex"
+          className="hidden items-center gap-5 text-base text-[#727272] font-medium md:flex xl:gap-8"
         >
           {links.map((link) => (
             <Link
@@ -58,7 +58,7 @@ export function MessagesHeader() {
         <div className="flex items-center gap-3">
           <Link
             href="/dashboard"
-            className="hidden rounded-full bg-[#FCDF9C] px-4 py-2 text-sm font-medium transition-colors hover:bg-[#F7D37D] lg:block"
+            className="hidden rounded-full bg-[#FCDF9C] px-4 py-2 text-sm font-medium transition-colors hover:bg-[#F7D37D] xl:block"
           >
             Switch to traveling
           </Link>
