@@ -895,7 +895,7 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
                         <span className={`text-sm truncate ${hasUnread ? "font-bold text-[#1F1F1F]" : "font-normal text-[#242424]"}`}>
                           {conv.guest.name || "Guest"}
                         </span>
-                        <span className="text-xs text-[#616161] shrink-0">
+                        <span className="text-[11px] text-zinc-400 shrink-0">
                           {formatListDate(conv.lastMessageAt)}
                         </span>
                       </div>
@@ -1061,7 +1061,7 @@ export function HostMessagesWorkspace({ initialConversationId }: HostMessagesWor
                                         Booked & Confirmed
                                       </span>
                                     ) : isExpired ? (
-                                        <span className="inline-flex items-center rounded-full bg-zinc-200 px-2 py-0.5 text-[10px] font-semibold text-zinc-600 border border-zinc-300 whitespace-nowrap">
+                                        <span className="inline-flex items-center rounded-full bg-zinc-200 px-2 py-0.5 text-[10px] font-semibold text-zinc-600 border border-zinc-300 whitespace-nowrap leading-4">
                                         Expired
                                       </span>
                                     ) : isDeclined ? (
