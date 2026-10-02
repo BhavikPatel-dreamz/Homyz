@@ -2600,6 +2600,7 @@
   "listing_detail_per_night": "/ nuit",
   "listing_detail_instant_book": "Réservation instantanée",
   "listing_detail_select_dates": "Sélectionnez vos dates",
+  "listing_detail_select_dates_in": "Sélectionnez vos dates à {location}",
   "listing_detail_nights_in": "{nights} nuits à {location}",
   "listing_detail_night_in": "1 nuit à {location}",
   "listing_detail_approx_location": "Emplacement approximatif fourni pour protéger la confidentialité de l’hôte",
@@ -2637,5 +2638,13 @@
   "reviews_month_ago": "il y a 1 mois",
   "reviews_read_more": "lire la suite",
   "reviews_read_less": "afficher moins",
-  "reviews_help_centre_link": "En savoir plus dans notre Centre d’aide"
+  "reviews_help_centre_link": "En savoir plus dans notre Centre d’aide",
+  "host_amenity_cat_standout": "Équipements remarquables",
+  "host_amenity_cat_essentials": "Équipements de base",
+  "host_amenity_cat_premium": "Équipements haut de gamme",
+  "host_amenity_cat_parking": "Stationnement",
+  "host_amenity_cat_accessibility": "Accessibilité",
+  "host_amenity_cat_facilities": "Installations",
+  "host_amenity_self_check_in": "Arrivée autonome",
+  "host_amenity_desc_self_check_in": "Accédez au logement vous-même grâce à un digicode ou une serrure connectée"
 }

@@ -2600,6 +2600,7 @@
   "listing_detail_per_night": "/ ليلة",
   "listing_detail_instant_book": "حجز فوري",
   "listing_detail_select_dates": "حدد تواريخك",
+  "listing_detail_select_dates_in": "حدد تواريخك في {location}",
   "listing_detail_nights_in": "{nights} ليالٍ في {location}",
   "listing_detail_night_in": "ليلة واحدة في {location}",
   "listing_detail_approx_location": "تم تقديم الموقع التقريبي لحماية خصوصية المضيف",
@@ -2637,5 +2638,13 @@
   "reviews_month_ago": "منذ شهر واحد",
   "reviews_read_more": "قراءة المزيد",
   "reviews_read_less": "قراءة أقل",
-  "reviews_help_centre_link": "اعرف المزيد في مركز المساعدة الخاص بنا"
+  "reviews_help_centre_link": "اعرف المزيد في مركز المساعدة الخاص بنا",
+  "host_amenity_cat_standout": "ميزات بارزة",
+  "host_amenity_cat_essentials": "الأساسيات",
+  "host_amenity_cat_premium": "ميزات ممتازة",
+  "host_amenity_cat_parking": "موقف السيارات",
+  "host_amenity_cat_accessibility": "سهولة الوصول",
+  "host_amenity_cat_facilities": "المرافق",
+  "host_amenity_self_check_in": "تسجيل وصول ذاتي",
+  "host_amenity_desc_self_check_in": "سجل وصولك بنفسك باستخدام لوحة مفاتيح أو قفل ذكي"
 }

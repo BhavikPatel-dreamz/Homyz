@@ -136,7 +136,13 @@ export function ListingCard({
   const router = useRouter();
   const [isFavorite, setIsFavorite] = useState(initialFavorite);
   const [isFavoriting, setIsFavoriting] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
   const wishlist = useWishlist();
+
+  // Reset navigation loading state when target URL or component changes
+  useEffect(() => {
+    setIsNavigating(false);
+  }, [listing.id]);
 
   // Sync if parent passes a new initial state (e.g., after server re-render)
   useEffect(() => {
@@ -426,13 +432,23 @@ export function ListingCard({
       href={targetHref}
       aria-label={listing.title || "View property"}
       onClick={() => {
+        setIsNavigating(true);
         trackListingEvent({
           eventType: "property_card_click",
           propertyId: listing.id,
         });
       }}
-      className={`group block overflow-hidden text-left ${isSearchGridCard ? "rounded-[20px] border border-[#1F1F1F] bg-white focus-within:ring-0 focus-visible:shadow-none" : ""} ${className}`}
+      className={`group relative block overflow-hidden text-left ${isNavigating ? "opacity-90 cursor-wait" : ""} ${isSearchGridCard ? "rounded-[20px] border border-[#1F1F1F] bg-white focus-within:ring-0 focus-visible:shadow-none" : ""} ${className}`}
     >
+      {/* ── Navigation Loading Overlay ── */}
+      {isNavigating && (
+        <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/25 backdrop-blur-[1px] transition-all">
+          <div className="flex items-center gap-2 rounded-full bg-white px-3.5 py-1.5 shadow-lg text-xs font-semibold text-zinc-900 border border-zinc-200">
+            <div className="size-3.5 rounded-full border-2 border-zinc-300 border-t-zinc-900 animate-spin" />
+            <span>Loading...</span>
+          </div>
+        </div>
+      )}
       {/* ── Image Carousel ── */}
       <div
         className={`relative aspect-[4/3] w-full overflow-hidden bg-zinc-100 select-none ${isSearchGridCard ? "rounded-none shadow-none" : "rounded-2xl shadow-xs"}`}

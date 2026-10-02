@@ -2600,6 +2600,7 @@
   "listing_detail_per_night": "/ noche",
   "listing_detail_instant_book": "Reserva inmediata",
   "listing_detail_select_dates": "Selecciona tus fechas",
+  "listing_detail_select_dates_in": "Selecciona tus fechas en {location}",
   "listing_detail_nights_in": "{nights} noches en {location}",
   "listing_detail_night_in": "1 noche en {location}",
   "listing_detail_approx_location": "Ubicación aproximada proporcionada para proteger la privacidad del anfitrión",
@@ -2637,5 +2638,13 @@
   "reviews_month_ago": "hace 1 mes",
   "reviews_read_more": "leer más",
   "reviews_read_less": "leer menos",
-  "reviews_help_centre_link": "Más información en nuestro Centro de ayuda"
+  "reviews_help_centre_link": "Más información en nuestro Centro de ayuda",
+  "host_amenity_cat_standout": "Servicios destacados",
+  "host_amenity_cat_essentials": "Elementos básicos",
+  "host_amenity_cat_premium": "Servicios premium",
+  "host_amenity_cat_parking": "Aparcamiento",
+  "host_amenity_cat_accessibility": "Accesibilidad",
+  "host_amenity_cat_facilities": "Instalaciones",
+  "host_amenity_self_check_in": "Llegada autónoma",
+  "host_amenity_desc_self_check_in": "Accede a la propiedad con teclado o cerradura inteligente"
 }

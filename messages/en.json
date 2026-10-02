@@ -2600,6 +2600,7 @@
   "listing_detail_per_night": "/ night",
   "listing_detail_instant_book": "Instant Book",
   "listing_detail_select_dates": "Select your dates",
+  "listing_detail_select_dates_in": "Select your dates in {location}",
   "listing_detail_nights_in": "{nights} nights in {location}",
   "listing_detail_night_in": "1 night in {location}",
   "listing_detail_approx_location": "Approximate location provided to protect host privacy",
@@ -2637,5 +2638,13 @@
   "reviews_month_ago": "1 month ago",
   "reviews_read_more": "read more",
   "reviews_read_less": "read less",
-  "reviews_help_centre_link": "Learn more in our Help Centre"
+  "reviews_help_centre_link": "Learn more in our Help Centre",
+  "host_amenity_cat_standout": "Standout features",
+  "host_amenity_cat_essentials": "Essentials",
+  "host_amenity_cat_premium": "Premium features",
+  "host_amenity_cat_parking": "Parking",
+  "host_amenity_cat_accessibility": "Accessibility",
+  "host_amenity_cat_facilities": "Facilities",
+  "host_amenity_self_check_in": "Self check-in",
+  "host_amenity_desc_self_check_in": "Check yourself into the home with a keypad or smart lock"
 }

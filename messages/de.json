@@ -2600,6 +2600,7 @@
   "listing_detail_per_night": "/ Nacht",
   "listing_detail_instant_book": "Sofortbuchung",
   "listing_detail_select_dates": "Wählen Sie Ihre Daten",
+  "listing_detail_select_dates_in": "Wählen Sie Ihre Daten in {location}",
   "listing_detail_nights_in": "{nights} Nächte in {location}",
   "listing_detail_night_in": "1 Nacht in {location}",
   "listing_detail_approx_location": "Ungefährer Standort zum Schutz der Privatsphäre des Gastgebers angegeben",
@@ -2637,5 +2638,13 @@
   "reviews_month_ago": "vor 1 Monat",
   "reviews_read_more": "mehr lesen",
   "reviews_read_less": "weniger lesen",
-  "reviews_help_centre_link": "Weitere Informationen in unserem Hilfe-Center"
+  "reviews_help_centre_link": "Weitere Informationen in unserem Hilfe-Center",
+  "host_amenity_cat_standout": "Besondere Ausstattungen",
+  "host_amenity_cat_essentials": "Grundausstattung",
+  "host_amenity_cat_premium": "Premium-Ausstattung",
+  "host_amenity_cat_parking": "Parken",
+  "host_amenity_cat_accessibility": "Barrierefreiheit",
+  "host_amenity_cat_facilities": "Einrichtungen",
+  "host_amenity_self_check_in": "Eigenständiger Check-in",
+  "host_amenity_desc_self_check_in": "Checken Sie selbst mit einem Tastenfeld oder Smart Lock ein"
 }

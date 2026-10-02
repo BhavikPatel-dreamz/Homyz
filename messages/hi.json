@@ -2600,6 +2600,7 @@
   "listing_detail_per_night": "/ रात",
   "listing_detail_instant_book": "तत्काल बुकिंग",
   "listing_detail_select_dates": "अपनी तारीखें चुनें",
+  "listing_detail_select_dates_in": "{location} में अपनी तारीखें चुनें",
   "listing_detail_nights_in": "{location} में {nights} रातें",
   "listing_detail_night_in": "{location} में 1 रात",
   "listing_detail_approx_location": "मेजबान की गोपनीयता की रक्षा के लिए अनुमानित स्थान प्रदान किया गया",
@@ -2637,5 +2638,13 @@
   "reviews_month_ago": "1 महीना पहले",
   "reviews_read_more": "और पढ़ें",
   "reviews_read_less": "कम पढ़ें",
-  "reviews_help_centre_link": "हमारे सहायता केंद्र में अधिक जानें"
+  "reviews_help_centre_link": "हमारे सहायता केंद्र में अधिक जानें",
+  "host_amenity_cat_standout": "प्रमुख सुविधाएं",
+  "host_amenity_cat_essentials": "आवश्यक सामग्री",
+  "host_amenity_cat_premium": "प्रीमियम सुविधाएं",
+  "host_amenity_cat_parking": "पार्किंग",
+  "host_amenity_cat_accessibility": "सुगमता",
+  "host_amenity_cat_facilities": "परिसर की सुविधाएं",
+  "host_amenity_self_check_in": "सेल्फ चेक-इन",
+  "host_amenity_desc_self_check_in": "कीपैड या स्मार्ट लॉक से स्वयं चेक-इन करें"
 }
