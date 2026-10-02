@@ -50,11 +50,11 @@ function CopyBadge({ text, label }: { text: string; label: string }) {
     <button
       type="button"
       onClick={handleCopy}
-      className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-300 bg-white px-2.5 py-1 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 hover:border-zinc-400 transition-colors cursor-pointer"
+      className={`inline-flex cursor-pointer items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-medium transition-colors ${copied ? "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:border-emerald-300" : "border-zinc-300 bg-white text-zinc-700 hover:border-zinc-400 hover:bg-zinc-50"}`}
       title={`Copy ${label}`}
     >
       <span>{copied ? "Copied!" : "Copy"}</span>
-      <svg className="h-3.5 w-3.5 text-[#727272]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
       </svg>
     </button>
@@ -134,7 +134,7 @@ export function BookingArrivalInfo({
                   href={directionsUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-[#1F1F1F] px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-zinc-800 transition-colors"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-[#1F1F1F] px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-[#D9D9D9] hover:text-[#1f1f1f] transition-colors"
                 >
                   <span>Google Maps</span>
                   <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -303,4 +303,3 @@ export function BookingArrivalInfo({
     </section>
   );
 }
-

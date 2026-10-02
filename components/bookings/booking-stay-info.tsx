@@ -74,19 +74,19 @@ export function BookingStayInfo({
         <div className="sm:rounded-2xl rounded-lg border border-zinc-100 bg-[#F3F4F5] p-4">
           <dt className="text-xs font-semibold text-[#727272] uppercase tracking-wider">Property</dt>
           <dd className="mt-1 font-medium text-[#1F1F1F]">{propertyName}</dd>
-          {propertyType && <p className="text-xs text-[#727272] mt-0.5">{propertyType}</p>}
+          {propertyType && <p className="text-sm text-[#727272] mt-0.5">{propertyType}</p>}
         </div>
 
         <div className="sm:rounded-2xl rounded-lg border border-zinc-100 bg-[#F3F4F5] p-4">
           <dt className="text-xs font-semibold text-[#727272] uppercase tracking-wider">Reservation Code</dt>
           <dd className="mt-1 font-mono font-medium text-[#1F1F1F]">{bookingCode}</dd>
-          <p className="text-xs text-[#727272] mt-0.5">Booked on {formatDate(createdAt)}</p>
+          <p className="text-sm text-[#727272] mt-0.5">Booked on {formatDate(createdAt)}</p>
         </div>
 
         <div className="sm:rounded-2xl rounded-lg border border-zinc-100 bg-[#F3F4F5] p-4">
           <dt className="text-xs font-semibold text-[#727272] uppercase tracking-wider">Check-in</dt>
           <dd className="mt-1 font-medium text-[#1F1F1F]">{formatDate(startDate)}</dd>
-          <p className="text-xs text-zinc-600 mt-0.5">
+          <p className="text-sm text-zinc-600 mt-0.5">
             {checkInStart ? `From ${checkInStart}` : "Check-in from 3:00 PM"}
           </p>
         </div>
@@ -94,7 +94,7 @@ export function BookingStayInfo({
         <div className="sm:rounded-2xl rounded-lg border border-zinc-100 bg-[#F3F4F5] p-4">
           <dt className="text-xs font-semibold text-[#727272] uppercase tracking-wider">Check-out</dt>
           <dd className="mt-1 font-medium text-[#1F1F1F]">{formatDate(endDate)}</dd>
-          <p className="text-xs text-zinc-600 mt-0.5">
+          <p className="text-sm text-zinc-600 mt-0.5">
             {checkOutTime ? `By ${checkOutTime}` : "Check-out by 11:00 AM"}
           </p>
         </div>
@@ -104,7 +104,7 @@ export function BookingStayInfo({
           <dd className="mt-1 font-medium text-[#1F1F1F]">
             {nights} {nights === 1 ? "night" : "nights"}
           </dd>
-          <p className="text-xs text-[#727272] mt-0.5">
+          <p className="text-sm text-[#727272] mt-0.5">
             {guests} {guests === 1 ? "guest" : "guests"} reserved
           </p>
         </div>
@@ -114,7 +114,7 @@ export function BookingStayInfo({
           <dd className="mt-1 font-medium text-[#1F1F1F]">
             {isNonRefundable ? "Non-refundable" : cancellationPolicy || "Flexible"}
           </dd>
-          <p className="text-xs text-[#727272] mt-0.5">
+          <p className="text-sm text-[#727272] mt-0.5">
             {isNonRefundable
               ? "Special non-refundable discounted booking"
               : "Review terms for refund eligibility"}
@@ -127,7 +127,7 @@ export function BookingStayInfo({
           <p className="text-xs font-semibold text-[#727272] uppercase tracking-wider mb-1.5">
             Listing Summary
           </p>
-          <p className="text-xs sm:text-sm text-zinc-600 leading-relaxed line-clamp-3">
+          <p className="text-sm sm:text-sm text-zinc-600 leading-relaxed line-clamp-3">
             {description}
           </p>
         </div>

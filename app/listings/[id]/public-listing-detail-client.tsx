@@ -2117,7 +2117,7 @@ export function PublicListingDetailClient({
                                 metadata: { hostId: listing.host?.id },
                               });
                             }}
-                            className="inline-flex min-h-12 items-center gap-2 rounded-full border border-[#1f1f1f] bg-[#F3F4F5] px-5 text-sm font-normal text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f] group transition-colors"
+                            className="inline-flex min-h-12 items-center gap-2 rounded-full border border-[#1f1f1f] bg-[#F3F4F5] px-5 text-sm font-medium text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f] group transition-colors"
                           >
                             View host profile
                           </Link>
@@ -2166,7 +2166,7 @@ export function PublicListingDetailClient({
                         </div>
                       ))}
                     </div>
-                    <button type="button" onClick={() => setOpenThingsCard("rules")} className="mt-auto pt-6 text-left text-base text-[#727272] underline underline-offset-2">Show more</button>
+                    <button type="button" onClick={() => setOpenThingsCard("rules")} className="mt-auto pt-6 text-left text-base hover:text-[#727272] text-[#1f1f1f] underline underline-offset-2">Show more</button>
                   </div>
 
                   {(cancellationLabel || longTermCancellationLabel) && <div className="order-3 flex min-h-[294px] flex-col sm:rounded-[30px] rounded-[10px] border border-[#dedede] bg-white py-8 px-5 shadow-[0_2px_5px_rgba(0,0,0,0.14)]" aria-labelledby="cancellation-heading">
@@ -2176,7 +2176,7 @@ export function PublicListingDetailClient({
                         <p key={`${item}-${index}`} className="text-base leading-6 text-[#1f1f1f]">{item}</p>
                       ))}
                     </div>
-                    <button type="button" onClick={() => setOpenThingsCard("cancellation")} className="mt-auto pt-6 text-left text-base text-[#727272] underline underline-offset-2">Show more</button>
+                    <button type="button" onClick={() => setOpenThingsCard("cancellation")} className="mt-auto pt-6 text-left text-base hover:text-[#727272] text-[#1f1f1f] underline underline-offset-2">Show more</button>
                   </div>}
 
                   {/* Safety Disclosures */}
@@ -2188,7 +2188,7 @@ export function PublicListingDetailClient({
                       ))}
                       {safetyItems.length === 0 && <p>No safety equipment or property hazards have been reported.</p>}
                     </div>
-                    <button type="button" onClick={() => setOpenThingsCard("safety")} className="mt-auto pt-6 text-left text-base text-[#727272] underline underline-offset-2">Show more</button>
+                    <button type="button" onClick={() => setOpenThingsCard("safety")} className="mt-auto pt-6 text-left text-base hover:text-[#727272] text-[#1f1f1f] underline underline-offset-2">Show more</button>
                   </div>
                 </div>
               </section>
