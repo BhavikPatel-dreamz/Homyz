@@ -9,6 +9,7 @@ import type {
   CreateGuidebookItemInput,
   UpdateGuidebookItemInput,
 } from "@/lib/validation/guidebook";
+import { GUIDEBOOK_CATEGORIES } from "@/lib/validation/guidebook";
 
 export class GuidebookService {
   /**
@@ -65,6 +66,9 @@ export class GuidebookService {
         items: {
           orderBy: { sortOrder: "asc" },
         },
+        categories: {
+          orderBy: { name: "asc" },
+        },
         listings: {
           include: {
             listing: {
@@ -86,6 +90,12 @@ export class GuidebookService {
       throw AppError.forbidden("You do not have access to this guidebook");
     }
 
+    const eligibleListings = await prisma.listing.findMany({
+      where: { hostId: guidebook.hostId, deletedAt: null },
+      orderBy: { updatedAt: "desc" },
+      select: { id: true, title: true, city: true, photos: true, published: true, status: true },
+    });
+
     return {
       id: guidebook.id,
       hostId: guidebook.hostId,
@@ -106,12 +116,15 @@ export class GuidebookService {
       items: guidebook.items.map((item: any) => ({
         id: item.id,
         guidebookId: item.guidebookId,
-        type: item.type as "PLACE" | "NEIGHBORHOOD" | "TIP",
+        type: item.type as "PLACE" | "NEIGHBORHOOD" | "CITY_ADVICE" | "TIP",
         title: item.title,
         category: item.category,
+        categoryLabel: item.categoryLabel,
+        adviceType: item.adviceType,
         description: item.description,
         hostTip: item.hostTip,
         photo: item.photo,
+        photos: item.photos,
         placeProviderId: item.placeProviderId,
         address: item.address,
         latitude: item.latitude,
@@ -127,6 +140,18 @@ export class GuidebookService {
         city: l.listing.city,
         address: l.listing.address,
         coverPhoto: l.listing.photos[0] || null,
+      })),
+      eligibleListings: eligibleListings.map((listing: any) => ({
+        id: listing.id,
+        title: listing.title,
+        city: listing.city,
+        coverPhoto: listing.photos[0] || null,
+        published: listing.published,
+        status: listing.status,
+      })),
+      categories: guidebook.categories.map((category: any) => ({
+        id: category.id,
+        name: category.name,
       })),
     };
   }
@@ -184,12 +209,15 @@ export class GuidebookService {
       },
       items: guidebook.items.map((item: any) => ({
         id: item.id,
-        type: item.type as "PLACE" | "NEIGHBORHOOD" | "TIP",
+        type: item.type as "PLACE" | "NEIGHBORHOOD" | "CITY_ADVICE" | "TIP",
         title: item.title,
         category: item.category,
+        categoryLabel: item.categoryLabel,
+        adviceType: item.adviceType,
         description: item.description,
         hostTip: item.hostTip,
         photo: item.photo,
+        photos: item.photos,
         placeProviderId: item.placeProviderId,
         address: item.address,
         latitude: item.latitude,
@@ -242,7 +270,7 @@ export class GuidebookService {
     const { listingIds, ...data } = input;
 
     // Verify host owns all listings to be associated
-    if (listingIds && listingIds.length > 0 && actor.role !== Role.ADMIN) {
+    if (listingIds && listingIds.length > 0) {
       const ownedCount = await prisma.listing.count({
         where: {
           id: { in: listingIds },
@@ -444,11 +472,11 @@ export class GuidebookService {
     assertOwnership(actor, guidebook.hostId);
 
     // Verify host owns all target listings
-    if (listingIds.length > 0 && actor.role !== Role.ADMIN) {
+    if (listingIds.length > 0) {
       const count = await prisma.listing.count({
         where: {
           id: { in: listingIds },
-          hostId: actor.id,
+          hostId: guidebook.hostId,
         },
       });
       if (count !== listingIds.length) {
@@ -475,6 +503,27 @@ export class GuidebookService {
     ]);
 
     return { success: true };
+  }
+
+  /** Creates a reusable category scoped to one guidebook. */
+  async createCategory(actor: AuthUser, guidebookId: string, name: string) {
+    const guidebook = await prisma.guidebook.findUnique({ where: { id: guidebookId } });
+    if (!guidebook) throw AppError.notFound("Guidebook not found");
+    assertOwnership(actor, guidebook.hostId);
+
+    const normalized = name.trim().toLocaleLowerCase().replace(/\s+/g, " ");
+    if (GUIDEBOOK_CATEGORIES.some((category) => category.label.toLocaleLowerCase() === normalized)) {
+      throw AppError.conflict("This category already exists.");
+    }
+    const duplicate = await prisma.guidebookCategory.findUnique({
+      where: { guidebookId_normalized: { guidebookId, normalized } },
+    });
+    if (duplicate) throw AppError.conflict("A category with this name already exists.");
+
+    return prisma.guidebookCategory.create({
+      data: { guidebookId, name: name.trim(), normalized },
+      select: { id: true, name: true },
+    });
   }
 }
 

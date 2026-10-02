@@ -577,7 +577,6 @@ export function PublicListingDetailClient({
     (session.user.id === listing.host?.id || session.user.id === (listing as any).hostId)
   );
   const canMessageHost = isAuthenticated && !isHostUser;
-  void guidebooks; // The section is intentionally paused; retain the existing server contract.
 
   // Modal and Expand States
   const [isAllAmenitiesOpen, setIsAllAmenitiesOpen] = useState(false);
@@ -2390,8 +2389,7 @@ export function PublicListingDetailClient({
                     Map location is not available for this listing.
                   </p>
                 )}
-                {/* TEMPORARILY DISABLED: local guidebook cards are hidden while the feature is paused. */}
-                {/* {guidebooks.length > 0 && (
+                {guidebooks.length > 0 && (
                   <div className="pt-5 border-t border-zinc-200/80 space-y-3">
                     <div className="flex items-center justify-between">
                       <h4 className="font-bold text-sm text-[#1f1f1f]">Local Host Guidebook</h4>
@@ -2424,7 +2422,7 @@ export function PublicListingDetailClient({
                       ))}
                     </div>
                   </div>
-                )} */}
+                )}
               </div>
             </div>
           </div>

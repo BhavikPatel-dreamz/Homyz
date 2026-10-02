@@ -1051,6 +1051,7 @@ model Guidebook {
   host     User               @relation(fields: [hostId], references: [id], onDelete: Cascade)
   listings GuidebookListing[]
   items    GuidebookItem[]
+  categories GuidebookCategory[]
 
   @@index([hostId])
   @@index([city])
@@ -1074,12 +1075,15 @@ model GuidebookListing {
 model GuidebookItem {
   id              String   @id @default(cuid())
   guidebookId     String
-  type            String   @default("PLACE") // "PLACE" | "NEIGHBORHOOD" | "TIP"
+  type            String   @default("PLACE") // "PLACE" | "NEIGHBORHOOD" | "CITY_ADVICE" (legacy: "TIP")
   title           String
-  category        String // "FOOD_AND_DRINK", "COFFEE_AND_CAFES", "SIGHTSEEING", "SHOPPING", "OUTDOORS", "ENTERTAINMENT", "NIGHTLIFE", "ESSENTIALS", "GETTING_AROUND", "FAMILY", "WELLNESS", "LOCAL_FAVORITE", "LOCAL_TIP"
+  category        String
+  categoryLabel   String?
+  adviceType      String?
   description     String?  @db.Text
   hostTip         String?  @db.Text
   photo           String?
+  photos          String[] @default([])
   placeProviderId String?
   address         String?
   latitude        Float?
@@ -1093,6 +1097,20 @@ model GuidebookItem {
 
   @@index([guidebookId])
   @@index([guidebookId, sortOrder])
+}
+
+model GuidebookCategory {
+  id          String   @id @default(cuid())
+  guidebookId String
+  name        String
+  normalized  String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  guidebook Guidebook @relation(fields: [guidebookId], references: [id], onDelete: Cascade)
+
+  @@unique([guidebookId, normalized])
+  @@index([guidebookId])
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

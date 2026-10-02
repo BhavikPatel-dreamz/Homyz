@@ -2,7 +2,6 @@
 
 import { revalidatePath } from "next/cache";
 import { runAction } from "@/lib/actions/result";
-import { AppError } from "@/lib/api/errors";
 import { getSessionUser } from "@/lib/auth/session";
 import { assertRole } from "@/lib/permissions/authorize";
 import { Role } from "@/generated/prisma/enums";
@@ -13,6 +12,7 @@ import {
   updateGuidebookItemSchema,
   reorderGuidebookItemsSchema,
   setGuidebookListingsSchema,
+  createGuidebookCategorySchema,
 } from "@/lib/validation/guidebook";
 import { guidebookService } from "@/services/guidebook.service";
 
@@ -119,7 +119,17 @@ export async function setGuidebookListingsAction(guidebookId: string, input: unk
     assertRole(actor, [Role.USER, Role.HOST, Role.ADMIN]);
     const { listingIds } = setGuidebookListingsSchema.parse(input);
     const result = await guidebookService.setListingAssociations(actor, guidebookId, listingIds);
+    revalidatePath("/host/listings");
     revalidatePath(`/guidebooks/${guidebookId}`);
     return result;
+  });
+}
+
+export async function createGuidebookCategoryAction(guidebookId: string, input: unknown) {
+  return runAction(async () => {
+    const actor = await getSessionUser();
+    assertRole(actor, [Role.USER, Role.HOST, Role.ADMIN]);
+    const { name } = createGuidebookCategorySchema.parse(input);
+    return guidebookService.createCategory(actor, guidebookId, name);
   });
 }

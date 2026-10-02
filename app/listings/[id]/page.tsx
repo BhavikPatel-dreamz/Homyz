@@ -2,6 +2,7 @@ import React, { cache } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { listingService } from "@/services/listing.service";
+import { guidebookService } from "@/services/guidebook.service";
 import { PublicListingDetailClient } from "./public-listing-detail-client";
 import { cookies } from "next/headers";
 import { LAST_SEARCH_COOKIE, parseServerLastSearch } from "@/lib/storage/client-history";
@@ -113,10 +114,13 @@ export default async function PublicListingPage({ params, searchParams }: Listin
     notFound();
   }
 
+  const guidebooks = await guidebookService.getGuidebooksForListing(listing.id);
+
   return (
     <div suppressHydrationWarning={process.env.NODE_ENV === "development"}>
       <PublicListingDetailClient
         listing={listing}
+        guidebooks={guidebooks}
         searchCheckIn={searchCheckIn}
         searchCheckOut={searchCheckOut}
         searchGuests={searchGuests}

@@ -14,6 +14,19 @@ export interface PlaceSearchResult {
   relativeDistance?: string;
 }
 
+interface NominatimSearchResult {
+  lat: string;
+  lon: string;
+  osm_type: string;
+  osm_id: string | number;
+  name?: string;
+  display_name: string;
+  type?: string;
+  class?: string;
+  address?: Record<string, string>;
+  extratags?: Record<string, string>;
+}
+
 /**
  * Calculates straight-line distance in kilometers using the Haversine formula.
  */
@@ -181,76 +194,6 @@ export function detectCategoryFromOsm(
   return "LOCAL_FAVORITE";
 }
 
-// Curated instant offline suggestions for common place searches
-const CURATED_SAMPLE_PLACES: PlaceSearchResult[] = [
-  {
-    id: "curated_1",
-    name: "Brew92 Specialty Coffee",
-    category: "COFFEE_AND_CAFES",
-    address: "Al Olaya, Riyadh",
-    city: "Riyadh",
-    country: "Saudi Arabia",
-    latitude: 24.7011,
-    longitude: 46.6782,
-    placeProviderId: "osm:curated_1",
-  },
-  {
-    id: "curated_2",
-    name: "LPM Restaurant & Bar",
-    category: "FOOD_AND_DRINK",
-    address: "Al Olaya, Riyadh",
-    city: "Riyadh",
-    country: "Saudi Arabia",
-    latitude: 24.6985,
-    longitude: 46.6812,
-    placeProviderId: "osm:curated_2",
-  },
-  {
-    id: "curated_3",
-    name: "Kingdom Centre & Sky Bridge",
-    category: "SIGHTSEEING",
-    address: "King Fahd Rd, Riyadh",
-    city: "Riyadh",
-    country: "Saudi Arabia",
-    latitude: 24.7114,
-    longitude: 46.6744,
-    placeProviderId: "osm:curated_3",
-  },
-  {
-    id: "curated_4",
-    name: "Danube Supermarket",
-    category: "ESSENTIALS",
-    address: "Al Olaya District, Riyadh",
-    city: "Riyadh",
-    country: "Saudi Arabia",
-    latitude: 24.706,
-    longitude: 46.685,
-    placeProviderId: "osm:curated_4",
-  },
-  {
-    id: "curated_5",
-    name: "King Fahd National Library Park",
-    category: "OUTDOORS",
-    address: "Al Olaya, Riyadh",
-    city: "Riyadh",
-    country: "Saudi Arabia",
-    latitude: 24.6865,
-    longitude: 46.6905,
-    placeProviderId: "osm:curated_5",
-  },
-  {
-    id: "curated_6",
-    name: "Centria Mall",
-    category: "SHOPPING",
-    address: "Tahlia St, Riyadh",
-    city: "Riyadh",
-    country: "Saudi Arabia",
-    latitude: 24.7005,
-    longitude: 46.684,
-    placeProviderId: "osm:curated_6",
-  },
-];
-
 /**
  * Searches for places via OpenStreetMap Nominatim with category auto-detection and distance calculation.
  */
@@ -261,13 +204,7 @@ export async function searchPlaces(
 ): Promise<PlaceSearchResult[]> {
   const trimmed = query.trim();
   if (!trimmed || trimmed.length < 2) {
-    return CURATED_SAMPLE_PLACES.map((p) => {
-      if (centerLat != null && centerLng != null) {
-        const dist = calculateDistance(centerLat, centerLng, p.latitude, p.longitude);
-        return { ...p, distanceKm: dist, relativeDistance: formatRelativeDistance(dist) };
-      }
-      return p;
-    });
+    return [];
   }
 
   try {
@@ -292,7 +229,7 @@ export async function searchPlaces(
     if (res.ok) {
       const data = await res.json();
       if (Array.isArray(data) && data.length > 0) {
-        return data.map((item: any) => {
+        return (data as NominatimSearchResult[]).map((item) => {
           const lat = parseFloat(item.lat);
           const lon = parseFloat(item.lon);
           const addr = item.address || {};
@@ -329,18 +266,5 @@ export async function searchPlaces(
     // Network / timeout fallback
   }
 
-  // Fallback to local curated places matching search query
-  const q = trimmed.toLowerCase();
-  return CURATED_SAMPLE_PLACES.filter(
-    (p) =>
-      p.name.toLowerCase().includes(q) ||
-      p.address.toLowerCase().includes(q) ||
-      p.category.toLowerCase().includes(q)
-  ).map((p) => {
-    if (centerLat != null && centerLng != null) {
-      const dist = calculateDistance(centerLat, centerLng, p.latitude, p.longitude);
-      return { ...p, distanceKm: dist, relativeDistance: formatRelativeDistance(dist) };
-    }
-    return p;
-  });
+  return [];
 }

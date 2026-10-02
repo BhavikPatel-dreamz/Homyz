@@ -122,6 +122,21 @@ async function runGuidebookLifecycleTests() {
     assert.equal(tip.category, "GETTING_AROUND");
   });
 
+  test("guidebook items support explicit city advice, category labels, and multiple photos", () => {
+    const item = createGuidebookItemSchema.parse({
+      type: "CITY_ADVICE",
+      title: "Use the metro at rush hour",
+      category: "GETTING_AROUND",
+      categoryLabel: "Getting around",
+      adviceType: "GETTING_AROUND",
+      description: "Buy a day pass before the morning rush.",
+      photos: ["/uploads/guidebook-photos/guidebook_123.jpg"],
+    });
+    assert.equal(item.type, "CITY_ADVICE");
+    assert.equal(item.adviceType, "GETTING_AROUND");
+    assert.equal(item.photos.length, 1);
+  });
+
   test("reorderGuidebookItemsSchema accepts array of item IDs", () => {
     const parsed = reorderGuidebookItemsSchema.parse({
       itemIds: ["item_3", "item_1", "item_2"],
@@ -184,9 +199,15 @@ async function runGuidebookLifecycleTests() {
     const content = fs.readFileSync(filePath, "utf-8");
     assert(content.includes("ModalOverlay"), "GuidebooksManager must use ModalOverlay per user rule");
     assert(!content.includes("Lorem ipsum"), "GuidebooksManager must contain zero Lorem Ipsum text");
-    assert(content.includes("searchPlaces"), "GuidebooksManager must use places search");
-    assert(content.includes("isFavorite"), "GuidebooksManager must support standout favorites");
-    assert(content.includes("duplicateWarning"), "GuidebooksManager must implement duplicate prevention");
+    assert(content.includes("GuidebookRecommendationForm"), "Places and neighborhoods must share one recommendation form");
+    assert(!content.includes('"place-search"'), "Reference flow must not add a place-search intermediary modal");
+    assert(!content.includes("GuidebookMap"), "Reference host editor must not add a map section");
+    assert(content.includes("What do you want to add?"), "GuidebooksManager must use the add chooser flow");
+    assert(content.includes("What's your advice about?"), "GuidebooksManager must have the advice-specific flow");
+    assert(content.includes("Food scene"), "Recommendation forms must show the Food scene category");
+    assert(content.includes("Sightseeing"), "Recommendation forms must show the Sightseeing category");
+    assert(content.includes("Choose listings"), "GuidebooksManager must support listing associations");
+    assert(content.includes("Edit cover"), "GuidebooksManager must support cover editing");
   });
 
   test("GuestGuidebookClient exists and contains zero host edit controls", () => {
@@ -230,6 +251,8 @@ async function runGuidebookLifecycleTests() {
     assert(content.includes("updateGuidebookItemAction"), "Must export updateGuidebookItemAction");
     assert(content.includes("deleteGuidebookItemAction"), "Must export deleteGuidebookItemAction");
     assert(content.includes("reorderGuidebookItemsAction"), "Must export reorderGuidebookItemsAction");
+    assert(content.includes("setGuidebookListingsAction"), "Must export listing association mutation");
+    assert(content.includes("createGuidebookCategoryAction"), "Must export custom category mutation");
   });
 
   console.log("\n==================================================================");
