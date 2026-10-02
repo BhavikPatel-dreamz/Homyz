@@ -18,7 +18,12 @@ import type { PublicListingDTO } from "@/services/mappers";
 import { saveRecentlyViewedProperty, clearLastSearch, saveLastSearch, getLastSearch, buildBookingCheckoutUrl } from "@/lib/storage/client-history";
 import { getCurrencyForCountry } from "@/lib/currency";
 import { useCurrency } from "@/lib/currency-context";
-import { cancellationPolicyLabel } from "@/lib/constants/listing-enums";
+import {
+  cancellationPolicyLabel,
+  listingTypeLabel,
+  propertyTypeLabel,
+} from "@/lib/constants/listing-enums";
+import { useLanguage } from "@/lib/i18n/language-context";
 import { saveBookingQuote, readBookingQuote, fetchAuthoritativeQuote } from "@/lib/booking/quote-cache";
 import { getLanguageDisplayNames } from "@/lib/utils/language-options";
 import useWishlist from "@/hooks/useWishlist";
