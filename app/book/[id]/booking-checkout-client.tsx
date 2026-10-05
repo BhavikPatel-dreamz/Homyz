@@ -463,8 +463,8 @@ export function BookingCheckoutClient({
     formatPrice(minorAmount, bookingCurrency, fractionDigits)
   ), [bookingCurrency, formatPrice]);
   const formatBookingMoney = useCallback((minorAmount: number, fractionDigits = 0) => (
-    formatListingPrice(minorAmount, bookingCurrency, fractionDigits)
-  ), [bookingCurrency]);
+    formatPrice(minorAmount, bookingCurrency, fractionDigits)
+  ), [bookingCurrency, formatPrice]);
 
   const updateCheckIn = (value: string) => {
     setQuoteError(null);

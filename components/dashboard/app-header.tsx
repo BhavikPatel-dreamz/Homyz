@@ -106,8 +106,8 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
   }, [user]);
 
   const isHostRoute = pathname?.startsWith("/host") ?? false;
-  const logoHref = isHostRoute ? "/host/today" : "/";
-  const logoAriaLabel = isHostRoute ? "Homyz host dashboard home" : "Homyz home";
+  const logoHref = "/";
+  const logoAriaLabel = "Homyz home";
   const isListingRoute = showSearchBar === true;
   const routeHasHeaderDivider = !["/", "/dashboard"].some(
     (route) => pathname === route || pathname?.startsWith(`${route}/`),
@@ -140,30 +140,8 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
     }
   };
 
-  type NavItem = {
-    href: string;
-    label: string;
-    requireHost?: boolean;
-    requireAdmin?: boolean;
-    separatorBefore?: boolean;
-    icon?: string;
-  };
-
   const isHost = role === "HOST" || role === "ADMIN";
-
-  const hostNavItems: NavItem[] = [
-    { href: "/host/today", label: t("header_today") || "Today", icon: "/images/icons/today-icon.svg" },
-    { href: "/host/calendar", label: t("header_calendar") || "Calendar", icon: "/images/icons/calendar-date.svg" },
-    { href: "/host/listings", label: t("header_your_listings") || "Your listings", icon: "/images/icons/listing-edit-icon.svg" },
-    { href: "/host/bookings", label: t("header_booking_requests") || "Booking requests", icon: "/images/icons/post-bookings.svg" },
-    { href: "/host/messages", label: t("header_messages") || "Messages", icon: "/images/icons/messages.svg" },
-    { href: "/dashboard", label: t("header_dashboard") || "Dashboard", icon: "/images/icons/streamline-freehand/dashboard-layout--Streamline-Freehand.svg" },
-    { href: "/profile/tab/notifications", label: t("header_notifications") || "Notifications", icon: "/images/icons/Notifications.svg" },
-    { href: "/profile", label: t("header_profile") || "Profile", icon: "/images/icons/profile.svg" },
-    { href: "/profile/tab/account_settings", label: t("header_account_settings") || "Account settings", icon: "/images/icons/setting.svg" }, // alias: /account-settings/personal-info
-    { href: "/profile/tab/saved", label: t("header_wishlist") || "Wishlist", icon: "/images/icons/wishlist.svg" },
-    ...(role === "ADMIN" ? [{ href: "/admin", label: t("header_admin") || "Admin", icon: "/images/icons/grid-Icon.svg" }] : []),
-  ];
+  const isHosting = isHost && isHostRoute;
 
   return (
     <header className="header sticky top-0 z-40 w-full bg-white text-[#1F1F1F]" suppressHydrationWarning>
@@ -228,7 +206,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
             {sessionLoading ? (
               <div
                 aria-label="Loading account"
-                className="hidden h-12 w-[168px] shrink-0 animate-pulse rounded-full bg-zinc-100 min-[1440px]:block"
+                className="hidden h-12 w-[168px] shrink-0 animate-pulse rounded-full bg-zinc-100 sm:block"
               />
             ) : isHost ? (
               isHostRoute ? (
@@ -240,8 +218,8 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                 </Link>
               ) : (
                 <Link
-                  href="/host/listings"
-                  className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-4 py-2.5 md:px-6 md:py-3 lg:text-base text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 min-[1440px]:inline-flex ${primaryButtonInteractionClass}`}
+                  href="/host/today"
+                  className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-4 py-2.5 md:px-6 md:py-3 lg:text-base text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 sm:inline-flex ${primaryButtonInteractionClass}`}
                 >
                   {t("header_switch_hosting") || "Switch to hosting"}
                 </Link>
@@ -251,14 +229,14 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                 type="button"
                 onClick={handleBecomeHost}
                 disabled={isConvertingRole}
-                className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 lg:text-base text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 min-[1440px]:inline-flex ${primaryButtonInteractionClass}`}
+                className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 lg:text-base text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 sm:inline-flex ${primaryButtonInteractionClass}`}
               >
                 {isConvertingRole ? (t("host_loading") || "Loading...") : (t("header_become_a_host") || "Become a host")}
               </button>
             ) : (
               <Link
                 href="/login?callbackUrl=/host/onboarding"
-                className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 lg: text-base text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 min-[1440px]:inline-flex ${primaryButtonInteractionClass}`}
+                className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 lg:text-base text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 sm:inline-flex ${primaryButtonInteractionClass}`}
               >
                 {t("header_become_a_host") || "Become a host"}
               </Link>
@@ -414,197 +392,12 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                       {t("header_login_signup")}
                     </Link>
                   </div>
-                ) : !isHost ? (
+                ) : isHosting ? (
                   /* ------------------------------------------------------------- */
-                  /* REGULAR USER / GUEST MENU (100% Matches Reference Image 1)   */
-                  /* ------------------------------------------------------------- */
-                  <div className="flex min-h-0 flex-1 flex-col">
-                    <div className="mb-1 shrink-0 border-b border-[#727272] px-3.5 py-3">
-                      <p className="text-sm font-semibold text-[#1F1F1F] truncate">{user.name || user.email}</p>
-                      <div className="flex items-center justify-between gap-5">
-                        <p className="text-sm text-[#727272] truncate mt-0.5">{user.email}</p>
-                        <span className="mt-2 inline-block rounded-full bg-amber-100 px-2.5 py-0.5 text-[10px] font-semibold text-amber-800">
-                          {role || "USER"}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="visible-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">
-                      <div className="space-y-1">
-                    {/* Group 1: User Navigation with Icons matching Image 1 */}
-                    <div className="py-0.5 space-y-1">
-                      {/* Wishlist */}
-                      <Link
-                        href="/profile/tab/saved"
-                        onClick={() => setMenuOpen(false)}
-                        className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${pathname === "/profile/tab/saved" ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
-                          }`}
-                      >
-                        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
-                          <Image src="/images/icons/wishlist.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
-                        </span>
-                        <span>{t("header_wishlist")}</span>
-                      </Link>
-
-                      {/* Trips */}
-                      <Link
-                        href="/profile/tab/upcoming"
-                        onClick={() => setMenuOpen(false)}
-                        className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${pathname?.startsWith("/profile/tab/upcoming") || pathname === "/bookings" ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
-                          }`}
-                      >
-                        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
-                          <Image src="/images/icons/trip.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
-                        </span>
-                        <span>{t("header_trips")}</span>
-                      </Link>
-
-                      {/* Messages (alias href="/host/messages") */}
-                      <Link
-                        href="/messages"
-                        onClick={() => setMenuOpen(false)}
-                        className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${pathname === "/messages" || pathname.startsWith("/messages") ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
-                          }`}
-                      >
-                        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
-                          <Image src="/images/icons/messages.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
-                        </span>
-                        <span>{t("header_messages")}</span>
-                      </Link>
-
-
-                      {/* Profile */}
-                      <Link
-                        href="/profile"
-                        onClick={() => setMenuOpen(false)}
-                        className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${pathname === "/profile" ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
-                          }`}
-                      >
-                        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
-                          <Image src="/images/icons/profile.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
-                        </span>
-                        <span>{t("header_profile")}</span>
-                      </Link>
-                    </div>
-
-                    <div className="my-1 border-t border-zinc-200/80" />
-
-                    {/* Group 2: Account setting & Help centre */}
-                    <div className="py-0.5 space-y-1">
-                      <Link
-                        href="/profile/tab/notifications"
-                        onClick={() => setMenuOpen(false)}
-                        className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${pathname?.startsWith("/profile/tab/notifications") ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"}`}
-                      >
-                        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
-                          <Image src="/images/icons/Notifications.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
-                        </span>
-                        <span>Notifications</span>
-                      </Link>
-
-                      {/* Account setting (alias href="/profile-management") */}
-                      <Link
-                        href="/profile/tab/account_settings"
-                        onClick={() => setMenuOpen(false)}
-                        className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${pathname?.includes("account_settings") || pathname?.startsWith("/account-settings") || pathname === "/profile-management" ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
-                          }`}
-                      >
-                        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
-                          <Image src="/images/icons/setting.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
-                        </span>
-                        <span>{t("header_account_settings")}</span>
-                      </Link>
-
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setMenuOpen(false);
-                          setLangModalOpen(true);
-                        }}
-                        className="flex w-full items-center gap-3.5 px-3 py-2 text-left text-sm sm:text-[15px] font-normal text-[#1F1F1F] transition-colors hover:bg-white rounded-2xl"
-                      >
-                        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
-                          <Image src="/images/icons/translate-icon.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
-                        </span>
-                        <span>Languages &amp; currency</span>
-                      </button>
-
-                      {/* Help centre */}
-                      <Link
-                        href="/help"
-                        onClick={() => setMenuOpen(false)}
-                        className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${pathname === "/help" ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
-                          }`}
-                      >
-                        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
-                          <Image src="/images/icons/help.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
-                        </span>
-                        <span>{t("header_help_centre")}</span>
-                      </Link>
-                    </div>
-
-                    <div className="my-1 border-t border-zinc-200/80" />
-
-                    {/* Group 3: Plain text links (Refer a Host, Find a co-Host, Gift Cards) */}
-                    <div className="py-0.5 space-y-0.5">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setMenuOpen(false);
-                          setBecomeHostModalOpen(true);
-                        }}
-                        className="block w-full px-3.5 py-2 text-left text-sm sm:text-[15px] font-normal text-[#1F1F1F] hover:bg-white rounded-xl transition-colors"
-                      >
-                        Become a host
-                      </button>
-                      <Link
-                        href="/host/refer"
-                        onClick={() => setMenuOpen(false)}
-                        className="block px-3.5 py-2 text-sm sm:text-[15px] font-normal text-[#1F1F1F] hover:bg-white rounded-xl transition-colors"
-                      >
-                        {t("header_refer_a_host")}
-                      </Link>
-                      <Link
-                        href="/host/co-host"
-                        onClick={() => setMenuOpen(false)}
-                        className="block px-3.5 py-2 text-sm sm:text-[15px] font-normal text-[#1F1F1F] hover:bg-white rounded-xl transition-colors"
-                      >
-                        {t("header_find_cohost")}
-                      </Link>
-                      <Link
-                        href="/giftcards"
-                        onClick={() => setMenuOpen(false)}
-                        className="block px-3.5 py-2 text-sm sm:text-[15px] font-normal text-[#1F1F1F] hover:bg-white rounded-xl transition-colors"
-                      >
-                        {t("header_gift_cards")}
-                      </Link>
-                    </div>
-
-                    <div className="my-1 border-t border-zinc-200/80" />
-
-                      </div>
-                    </div>
-
-                    {/* Group 4: Log out matching Image 1 */}
-                    <div className="shrink-0 border-t border-zinc-200/80 pt-1.5 mt-1">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setMenuOpen(false);
-                          signOut({ callbackUrl: "/login?logged_out=true" });
-                        }}
-                        className="w-full text-left px-3.5 py-2 text-sm sm:text-[15px] font-normal text-[#1F1F1F] hover:bg-white rounded-xl transition-colors underline underline-offset-4 cursor-pointer"
-                      >
-                        {t("header_sign_out")}
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  /* ------------------------------------------------------------- */
-                  /* HOST & ADMIN MENU ("host show all")                           */
+                  /* HOSTING MENU (Active when host is in hosting mode /host/*)    */
                   /* ------------------------------------------------------------- */
                   <div className="flex min-h-0 flex-1 flex-col">
-                    <div className="mb-1 shrink-0 border-b border-[#727272] px-3.5 py-3">
+                    <div className="mb-1 shrink-0 border-b border-[#727272]/30 px-3.5 py-3">
                       <p className="text-sm font-semibold text-[#1F1F1F] truncate">{user.name || user.email}</p>
                       <div className="flex items-center justify-between gap-5">
                         <p className="text-sm text-[#727272] truncate mt-0.5">{user.email}</p>
@@ -614,51 +407,412 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                       </div>
                     </div>
 
-                
-
                     <div className="visible-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">
-                      <div className="py-1">
-                      {hostNavItems.map((item) => (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          onClick={() => setMenuOpen(false)}
-                          className={`flex items-center gap-3 px-3.5 py-2 text-xs sm:text-sm font-normal rounded-xl transition-colors ${pathname === item.href
-                            ? "bg-amber-100 text-[#1F1F1F] font-medium"
-                            : "text-[#1F1F1F] hover:bg-white"
-                            }`}
-                        >
-                          {item.icon && (
-                            <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-white shadow-2xs">
-                              <Image src={item.icon} alt="" width={16} height={16} className="size-4 object-contain" />
+                      <div className="space-y-1">
+                        {/* Switch to traveling action */}
+                        <div className="pt-0.5 pb-1">
+                          <Link
+                            href="/dashboard"
+                            onClick={() => setMenuOpen(false)}
+                            className="flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-medium text-[#1F1F1F] bg-[#FCDF9C]/50 hover:bg-[#FCDF9C] rounded-2xl transition-colors"
+                          >
+                            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
+                              <Image src="/images/icons/trip.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
                             </span>
+                            <span>{t("header_switch_traveling") || "Switch to traveling"}</span>
+                          </Link>
+                        </div>
+
+                        <div className="my-1 border-t border-zinc-200/80" />
+
+                        {/* Host Navigation */}
+                        <div className="py-0.5 space-y-1">
+                          {/* Today */}
+                          <Link
+                            href="/host/today"
+                            onClick={() => setMenuOpen(false)}
+                            className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${
+                              pathname === "/host/today" ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
+                            }`}
+                          >
+                            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
+                              <Image src="/images/icons/today-icon.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
+                            </span>
+                            <span>{t("header_today") || "Today"}</span>
+                          </Link>
+
+                          {/* Calendar */}
+                          <Link
+                            href="/host/calendar"
+                            onClick={() => setMenuOpen(false)}
+                            className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${
+                              pathname?.startsWith("/host/calendar") ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
+                            }`}
+                          >
+                            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
+                              <Image src="/images/icons/calendar-date.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
+                            </span>
+                            <span>{t("header_calendar") || "Calendar"}</span>
+                          </Link>
+
+                          {/* Your listings */}
+                          <Link
+                            href="/host/listings"
+                            onClick={() => setMenuOpen(false)}
+                            className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${
+                              pathname?.startsWith("/host/listings") ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
+                            }`}
+                          >
+                            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
+                              <Image src="/images/icons/listing-edit-icon.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
+                            </span>
+                            <span>{t("header_your_listings") || "Your listings"}</span>
+                          </Link>
+
+                          {/* Booking requests */}
+                          <Link
+                            href="/host/bookings"
+                            onClick={() => setMenuOpen(false)}
+                            className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${
+                              pathname?.startsWith("/host/bookings") ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
+                            }`}
+                          >
+                            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
+                              <Image src="/images/icons/post-bookings.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
+                            </span>
+                            <span>{t("header_booking_requests") || "Booking requests"}</span>
+                          </Link>
+
+                          {/* Messages */}
+                          <Link
+                            href="/host/messages"
+                            onClick={() => setMenuOpen(false)}
+                            className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${
+                              pathname?.startsWith("/host/messages") ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
+                            }`}
+                          >
+                            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
+                              <Image src="/images/icons/messages.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
+                            </span>
+                            <span>{t("header_messages") || "Messages"}</span>
+                          </Link>
+                        </div>
+
+                        <div className="my-1 border-t border-zinc-200/80" />
+
+                        {/* Host Account / Profile */}
+                        <div className="py-0.5 space-y-1">
+                          {/* Profile */}
+                          <Link
+                            href="/profile"
+                            onClick={() => setMenuOpen(false)}
+                            className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${
+                              pathname === "/profile" ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
+                            }`}
+                          >
+                            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
+                              <Image src="/images/icons/profile.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
+                            </span>
+                            <span>{t("header_profile") || "Profile"}</span>
+                          </Link>
+
+                          {/* Notifications */}
+                          <Link
+                            href="/profile/tab/notifications"
+                            onClick={() => setMenuOpen(false)}
+                            className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${
+                              pathname?.startsWith("/profile/tab/notifications") ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
+                            }`}
+                          >
+                            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
+                              <Image src="/images/icons/Notifications.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
+                            </span>
+                            <span>{t("header_notifications") || "Notifications"}</span>
+                          </Link>
+
+                          {/* Account settings */}
+                          <Link
+                            href="/profile/tab/account_settings"
+                            onClick={() => setMenuOpen(false)}
+                            className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${
+                              pathname?.includes("account_settings") || pathname?.startsWith("/account-settings") || pathname === "/profile-management" ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
+                            }`}
+                          >
+                            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
+                              <Image src="/images/icons/setting.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
+                            </span>
+                            <span>{t("header_account_settings") || "Account settings"}</span>
+                          </Link>
+
+                          {role === "ADMIN" && (
+                            <Link
+                              href="/admin"
+                              onClick={() => setMenuOpen(false)}
+                              className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${
+                                pathname?.startsWith("/admin") ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
+                              }`}
+                            >
+                              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
+                                <Image src="/images/icons/grid-Icon.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
+                              </span>
+                              <span>{t("header_admin") || "Admin"}</span>
+                            </Link>
                           )}
-                          <span>{item.label}</span>
-                        </Link>
-                      ))}
+                        </div>
                       </div>
                     </div>
 
-                    <div className="mt-1 shrink-0 border-t border-[#727272] pt-2 flex flex-col gap-1">
+                    {/* Host Menu Footer */}
+                    <div className="shrink-0 border-t border-zinc-200/80 pt-1.5 mt-1 space-y-1">
                       <button
                         type="button"
                         onClick={() => {
                           setMenuOpen(false);
                           setLangModalOpen(true);
                         }}
-                        className="w-full flex items-center gap-3 px-3.5 py-2 text-xs sm:text-sm font-normal text-[#1F1F1F] hover:bg-white rounded-xl transition-colors text-left"
+                        className="flex w-full items-center gap-3.5 px-3 py-2 text-left text-sm sm:text-[15px] font-normal text-[#1F1F1F] transition-colors hover:bg-white rounded-2xl cursor-pointer"
                       >
-                        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-white shadow-2xs">
-                          <Image src="/images/icons/translate-icon.svg" alt="" width={16} height={16} className="size-4 object-contain" />
+                        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
+                          <Image src="/images/icons/translate-icon.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
                         </span>
-                        <span>{t("header_languages_currency")}</span>
+                        <span>{t("header_languages_currency") || "Languages & currency"}</span>
                       </button>
 
-                      <div className="border-t border-[#727272] pt-2 mt-1">
-                        <LogoutButton variant="menu-item" callbackUrl="/login?logged_out=true">
-                          {t("header_sign_out")}
-                        </LogoutButton>
+                      <div className="border-t border-zinc-200/80 pt-1">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setMenuOpen(false);
+                            signOut({ callbackUrl: "/login?logged_out=true" });
+                          }}
+                          className="w-full text-left px-3.5 py-2 text-sm sm:text-[15px] font-normal text-[#1F1F1F] hover:bg-white rounded-xl transition-colors underline underline-offset-4 cursor-pointer"
+                        >
+                          {t("header_sign_out") || "Sign out"}
+                        </button>
                       </div>
+                    </div>
+                  </div>
+                ) : (
+                  /* ------------------------------------------------------------- */
+                  /* TRAVELING MENU (For Guests & Hosts Browsing / Traveling)      */
+                  /* ------------------------------------------------------------- */
+                  <div className="flex min-h-0 flex-1 flex-col">
+                    <div className="mb-1 shrink-0 border-b border-[#727272]/30 px-3.5 py-3">
+                      <p className="text-sm font-semibold text-[#1F1F1F] truncate">{user.name || user.email}</p>
+                      <div className="flex items-center justify-between gap-5">
+                        <p className="text-sm text-[#727272] truncate mt-0.5">{user.email}</p>
+                        <span className="mt-2 inline-block rounded-full bg-amber-100 px-2.5 py-0.5 text-[10px] font-semibold text-amber-800">
+                          {isHost ? "TRAVELER" : (role || "USER")}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="visible-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">
+                      <div className="space-y-1">
+                        {/* Switch to hosting (only if user is host/admin) */}
+                        {isHost && (
+                          <div className="pt-0.5 pb-1">
+                            <Link
+                              href="/host/today"
+                              onClick={() => setMenuOpen(false)}
+                              className="flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-medium text-[#1F1F1F] bg-[#FCDF9C]/50 hover:bg-[#FCDF9C] rounded-2xl transition-colors"
+                            >
+                              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
+                                <Image src="/images/icons/today-icon.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
+                              </span>
+                              <span>{t("header_switch_hosting") || "Switch to hosting"}</span>
+                            </Link>
+                          </div>
+                        )}
+
+                        {isHost && <div className="my-1 border-t border-zinc-200/80" />}
+
+                        {/* Group 1: Traveler Navigation */}
+                        <div className="py-0.5 space-y-1">
+                          {/* Wishlist */}
+                          <Link
+                            href="/profile/tab/saved"
+                            onClick={() => setMenuOpen(false)}
+                            className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${
+                              pathname === "/profile/tab/saved" ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
+                            }`}
+                          >
+                            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
+                              <Image src="/images/icons/wishlist.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
+                            </span>
+                            <span>{t("header_wishlist") || "Wishlist"}</span>
+                          </Link>
+
+                          {/* Trips */}
+                          <Link
+                            href="/profile/tab/upcoming"
+                            onClick={() => setMenuOpen(false)}
+                            className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${
+                              pathname?.startsWith("/profile/tab/upcoming") || pathname === "/bookings" ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
+                            }`}
+                          >
+                            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
+                              <Image src="/images/icons/trip.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
+                            </span>
+                            <span>{t("header_trips") || "Trips"}</span>
+                          </Link>
+
+                          {/* Messages */}
+                          <Link
+                            href="/messages"
+                            onClick={() => setMenuOpen(false)}
+                            className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${
+                              pathname === "/messages" || pathname?.startsWith("/messages") ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
+                            }`}
+                          >
+                            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
+                              <Image src="/images/icons/messages.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
+                            </span>
+                            <span>{t("header_messages") || "Messages"}</span>
+                          </Link>
+
+                          {/* Profile */}
+                          <Link
+                            href="/profile"
+                            onClick={() => setMenuOpen(false)}
+                            className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${
+                              pathname === "/profile" ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
+                            }`}
+                          >
+                            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
+                              <Image src="/images/icons/profile.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
+                            </span>
+                            <span>{t("header_profile") || "Profile"}</span>
+                          </Link>
+                        </div>
+
+                        <div className="my-1 border-t border-zinc-200/80" />
+
+                        {/* Group 2: Account settings & Help */}
+                        <div className="py-0.5 space-y-1">
+                          <Link
+                            href="/profile/tab/notifications"
+                            onClick={() => setMenuOpen(false)}
+                            className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${
+                              pathname?.startsWith("/profile/tab/notifications") ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
+                            }`}
+                          >
+                            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
+                              <Image src="/images/icons/Notifications.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
+                            </span>
+                            <span>{t("header_notifications") || "Notifications"}</span>
+                          </Link>
+
+                          <Link
+                            href="/profile/tab/account_settings"
+                            onClick={() => setMenuOpen(false)}
+                            className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${
+                              pathname?.includes("account_settings") || pathname?.startsWith("/account-settings") || pathname === "/profile-management" ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
+                            }`}
+                          >
+                            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
+                              <Image src="/images/icons/setting.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
+                            </span>
+                            <span>{t("header_account_settings") || "Account settings"}</span>
+                          </Link>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setMenuOpen(false);
+                              setLangModalOpen(true);
+                            }}
+                            className="flex w-full items-center gap-3.5 px-3 py-2 text-left text-sm sm:text-[15px] font-normal text-[#1F1F1F] transition-colors hover:bg-white rounded-2xl cursor-pointer"
+                          >
+                            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
+                              <Image src="/images/icons/translate-icon.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
+                            </span>
+                            <span>{t("header_languages_currency") || "Languages & currency"}</span>
+                          </button>
+
+                          <Link
+                            href="/help"
+                            onClick={() => setMenuOpen(false)}
+                            className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${
+                              pathname === "/help" ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
+                            }`}
+                          >
+                            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
+                              <Image src="/images/icons/help.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
+                            </span>
+                            <span>{t("header_help_centre") || "Help Centre"}</span>
+                          </Link>
+
+                          {role === "ADMIN" && (
+                            <Link
+                              href="/admin"
+                              onClick={() => setMenuOpen(false)}
+                              className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${
+                                pathname?.startsWith("/admin") ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
+                              }`}
+                            >
+                              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
+                                <Image src="/images/icons/grid-Icon.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
+                              </span>
+                              <span>{t("header_admin") || "Admin"}</span>
+                            </Link>
+                          )}
+                        </div>
+
+                        {/* Group 3: Shown ONLY for regular non-host users */}
+                        {!isHost && (
+                          <>
+                            <div className="my-1 border-t border-zinc-200/80" />
+                            <div className="py-0.5 space-y-0.5">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setMenuOpen(false);
+                                  setBecomeHostModalOpen(true);
+                                }}
+                                className="block w-full px-3.5 py-2 text-left text-sm sm:text-[15px] font-normal text-[#1F1F1F] hover:bg-white rounded-xl transition-colors cursor-pointer"
+                              >
+                                {t("header_become_a_host") || "Become a host"}
+                              </button>
+                              <Link
+                                href="/host/refer"
+                                onClick={() => setMenuOpen(false)}
+                                className="block px-3.5 py-2 text-sm sm:text-[15px] font-normal text-[#1F1F1F] hover:bg-white rounded-xl transition-colors"
+                              >
+                                {t("header_refer_a_host") || "Refer a host"}
+                              </Link>
+                              <Link
+                                href="/host/co-host"
+                                onClick={() => setMenuOpen(false)}
+                                className="block px-3.5 py-2 text-sm sm:text-[15px] font-normal text-[#1F1F1F] hover:bg-white rounded-xl transition-colors"
+                              >
+                                {t("header_find_cohost") || "Find a co-host"}
+                              </Link>
+                              <Link
+                                href="/giftcards"
+                                onClick={() => setMenuOpen(false)}
+                                className="block px-3.5 py-2 text-sm sm:text-[15px] font-normal text-[#1F1F1F] hover:bg-white rounded-xl transition-colors"
+                              >
+                                {t("header_gift_cards") || "Gift Cards"}
+                              </Link>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Traveling Menu Footer */}
+                    <div className="shrink-0 border-t border-zinc-200/80 pt-1.5 mt-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMenuOpen(false);
+                          signOut({ callbackUrl: "/login?logged_out=true" });
+                        }}
+                        className="w-full text-left px-3.5 py-2 text-sm sm:text-[15px] font-normal text-[#1F1F1F] hover:bg-white rounded-xl transition-colors underline underline-offset-4 cursor-pointer"
+                      >
+                        {t("header_sign_out") || "Sign out"}
+                      </button>
                     </div>
                   </div>
                 )}

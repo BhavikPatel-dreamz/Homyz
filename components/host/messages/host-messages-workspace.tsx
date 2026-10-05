@@ -7,6 +7,17 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { useScrollbarDrag } from "@/components/ui/use-scrollbar-drag";
 import { BackButton } from "@/components/ui/back-button";
+import {
+  bookingDateKey,
+  formatBookingDate,
+  formatBookingDateRange,
+} from "@/lib/booking/booking-date";
+import { useCurrency } from "@/lib/currency-context";
+import {
+  ReservationDetails,
+  type HostReservation,
+} from "@/components/host/host-workspace-shared";
+import type { ListingDTO } from "@/services/mappers";
 import type {
   ConversationDTO,
   MessageDTO,
@@ -143,6 +154,12 @@ export function HostMessagesWorkspace({
   const conversationCacheRef = useRef(
     new Map(initialConversations.map((conversation) => [conversation.id, conversation])),
   );
+
+  const rightPanelScrollRef = useRef<HTMLElement>(null);
+  const rightPanelScrollTrackRef = useRef<HTMLDivElement>(null);
+  const rightPanelScrollFrameRef = useRef<number | null>(null);
+  const [rightPanelScrollThumb, setRightPanelScrollThumb] = useState({ height: 0, top: 0, visible: false });
+  const { isDragging: isRightPanelScrollbarDragging, onThumbPointerDown: onRightPanelThumbPointerDown, scrollByPage: scrollRightPanelByPage } = useScrollbarDrag(rightPanelScrollRef, rightPanelScrollTrackRef, rightPanelScrollThumb.height);
 
   const { formatPrice } = useCurrency();
   const [showReservationDetails, setShowReservationDetails] = useState(false);
@@ -743,6 +760,10 @@ export function HostMessagesWorkspace({
     }
   };
 
+  const openSpecialOfferModal = () => {
+    setSpecialOfferModalOpen(true);
+  };
+
   // Send special offer
   const handleSendSpecialOffer = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -803,6 +824,101 @@ export function HostMessagesWorkspace({
       alert("Failed to decline inquiry.");
     } finally {
       setModalSubmitting(false);
+    }
+  };
+
+  const formatMessageTime = (dateStr: string) => {
+    const d = new Date(dateStr);
+    return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  };
+
+  const formatListDate = (dateStr: string) => {
+    const d = new Date(dateStr);
+    const now = new Date();
+    if (d.toDateString() === now.toDateString()) {
+      return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    }
+    return d.toLocaleDateString([], { month: "short", day: "numeric" });
+  };
+
+  const updateRightPanelScrollThumb = useCallback(() => {
+    if (rightPanelScrollFrameRef.current !== null) cancelAnimationFrame(rightPanelScrollFrameRef.current);
+    rightPanelScrollFrameRef.current = requestAnimationFrame(() => {
+      const element = rightPanelScrollRef.current;
+      if (!element) return;
+      const hasOverflow = element.scrollHeight > element.clientHeight + 1;
+      const trackHeight = rightPanelScrollTrackRef.current?.clientHeight || element.clientHeight;
+      const arrowSpace = 28;
+      const usableTrackHeight = Math.max(0, trackHeight - arrowSpace * 2);
+      const height = hasOverflow ? Math.min(60, usableTrackHeight) : 0;
+      const maxTop = Math.max(0, usableTrackHeight - height);
+      const scrollRange = Math.max(1, element.scrollHeight - element.clientHeight);
+      const top = hasOverflow ? arrowSpace + Math.round((element.scrollTop / scrollRange) * maxTop) : 0;
+      setRightPanelScrollThumb((current) => current.height === height && current.top === top && current.visible === hasOverflow ? current : { height, top, visible: hasOverflow });
+      rightPanelScrollFrameRef.current = null;
+    });
+  }, []);
+
+  useEffect(() => {
+    const element = rightPanelScrollRef.current;
+    if (!element) return;
+    updateRightPanelScrollThumb();
+    const resizeObserver = new ResizeObserver(updateRightPanelScrollThumb);
+    const mutationObserver = new MutationObserver(updateRightPanelScrollThumb);
+    resizeObserver.observe(element);
+    if (rightPanelScrollTrackRef.current) resizeObserver.observe(rightPanelScrollTrackRef.current);
+    mutationObserver.observe(element, { childList: true, subtree: true });
+    return () => {
+      resizeObserver.disconnect();
+      mutationObserver.disconnect();
+      if (rightPanelScrollFrameRef.current !== null) cancelAnimationFrame(rightPanelScrollFrameRef.current);
+    };
+  }, [rightPanelScrollThumb.visible, updateRightPanelScrollThumb]);
+
+  const getBookingStatusBadge = (status: string) => {
+    switch (status) {
+      case "CONFIRMED":
+        return (
+          <span className="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-800 border border-emerald-300">
+            Confirmed stay
+          </span>
+        );
+      case "PENDING":
+        return (
+          <span className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-800 border border-amber-300">
+            Pending
+          </span>
+        );
+      case "CANCELLED":
+        return (
+          <span className="inline-flex items-center rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-semibold text-rose-800 border border-rose-300">
+            Cancelled
+          </span>
+        );
+      case "REJECTED":
+        return (
+          <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-semibold text-zinc-700 border border-zinc-300">
+            Declined
+          </span>
+        );
+      case "EXPIRED":
+        return (
+          <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-semibold text-zinc-600 border border-zinc-300">
+            Expired
+          </span>
+        );
+      case "COMPLETED":
+        return (
+          <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-semibold text-zinc-700 border border-zinc-300">
+            Completed
+          </span>
+        );
+      default:
+        return (
+          <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-semibold text-zinc-700 border border-zinc-300 capitalize">
+            {status.replaceAll("_", " ").toLowerCase()}
+          </span>
+        );
     }
   };
 
@@ -1693,97 +1809,89 @@ export function HostMessagesWorkspace({
               </div>
 
               {/* Booking details */}
-              <section className="border-t border-[#E5E5E5] pt-5 space-y-3">
-                <div className="flex items-center justify-between">
-                  <h4 className="sm:text-xl text-lg font-medium text-[#1F1F1F]">Booking details</h4>
-                  {getStatusBadge(selectedConversation.status, selectedConversation.activeSpecialOffer)}
-                </div>
+              {selectedConversation.booking ? (() => {
+                const b = selectedConversation.booking!;
+                const isConfirmed = b.status === "CONFIRMED";
+                const isPending = b.status === "PENDING";
+                const isCancelled = b.status === "CANCELLED";
+                const cardClass = "rounded-[10px] bg-white px-4 py-3 shadow-[0_2px_5px_rgba(0,0,0,0.12)] border border-[#E5E5E5]";
+                return (
+                  <section className="border-t border-[#E5E5E5] pt-5 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-xl font-medium text-[#1F1F1F]">Booking details</h4>
+                      {getBookingStatusBadge(b.status)}
+                    </div>
 
-                  return (
-                    <section className="border-t border-[#E5E5E5] pt-5 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <h4 className="text-xl font-medium text-[#1F1F1F]">Booking details</h4>
-                        {getBookingStatusBadge(b.status)}
+                    <div className="space-y-3">
+                      <div className={cardClass}>
+                        <p className="text-base font-medium text-[#1F1F1F]">Guests</p>
+                        <p className="text-base text-zinc-500">
+                          {b.guests} {b.guests === 1 ? "guest" : "guests"}
+                        </p>
                       </div>
 
-                      <div className="space-y-3">
+                      <div className={cardClass}>
+                        <p className="text-base font-medium text-[#1F1F1F]">Check-in</p>
+                        <p className="text-base text-zinc-500">
+                          {formatBookingDate(b.startDate, { weekday: true })}
+                        </p>
+                      </div>
+
+                      <div className={cardClass}>
+                        <p className="text-base font-medium text-[#1F1F1F]">Check-out</p>
+                        <p className="text-base text-zinc-500">
+                          {formatBookingDate(b.endDate, { weekday: true })}
+                        </p>
+                      </div>
+
+                      {b.totalPrice != null && (
                         <div className={cardClass}>
-                          <p className="text-base font-medium text-[#1F1F1F]">Guests</p>
-                          <p className="text-base text-zinc-500">
-                            {b.guests} {b.guests === 1 ? "guest" : "guests"}
+                          <p className="text-base font-medium text-[#1F1F1F]">Total price</p>
+                          <p className="text-base font-semibold text-zinc-900">
+                            {formatPrice(b.totalPrice, b.currency || "SAR", 2)}
                           </p>
                         </div>
+                      )}
 
+                      {(b.cancellationPolicy || selectedConversation.listing.cancellationPolicy) && (
                         <div className={cardClass}>
-                          <p className="text-base font-medium text-[#1F1F1F]">Check-in</p>
-                          <p className="text-base text-zinc-500">
-                            {formatBookingDate(b.startDate, { weekday: true })}
+                          <p className="text-base font-medium text-[#1F1F1F]">Cancellation policy</p>
+                          <p className="text-base text-zinc-500 capitalize">
+                            {(b.cancellationPolicy || selectedConversation.listing.cancellationPolicy || "Flexible")
+                              .replaceAll("_", " ")
+                              .toLowerCase()}
                           </p>
                         </div>
+                      )}
 
-                        <div className={cardClass}>
-                          <p className="text-base font-medium text-[#1F1F1F]">Check-out</p>
-                          <p className="text-base text-zinc-500">
-                            {formatBookingDate(b.endDate, { weekday: true })}
-                          </p>
-                        </div>
+                      <Link
+                        href={`/host/calendar?listingId=${selectedConversation.listing.id}`}
+                        className="inline-block text-base font-medium text-[#1F1F1F] underline underline-offset-2 hover:text-black"
+                      >
+                        View in calendar →
+                      </Link>
 
-                        {b.totalPrice != null && (
-                          <div className={cardClass}>
-                            <p className="text-base font-medium text-[#1F1F1F]">Total price</p>
-                            <p className="text-base font-semibold text-zinc-900">
-                              {formatPrice(b.totalPrice, b.currency || "SAR", 2)}
-                            </p>
-                          </div>
-                        )}
-
-                        {(b.cancellationPolicy || selectedConversation.listing.cancellationPolicy) && (
-                          <div className={cardClass}>
-                            <p className="text-base font-medium text-[#1F1F1F]">Cancellation policy</p>
-                            <p className="text-base text-zinc-500 capitalize">
-                              {(b.cancellationPolicy || selectedConversation.listing.cancellationPolicy || "Flexible")
-                                .replaceAll("_", " ")
-                                .toLowerCase()}
-                            </p>
-                          </div>
-                        )}
-
-                        <Link
-                          href={`/host/calendar?listingId=${selectedConversation.listing.id}`}
-                          className="inline-block text-base font-medium text-[#1F1F1F] underline underline-offset-2 hover:text-black"
+                      {(isConfirmed || isPending || isCancelled) && (
+                        <button
+                          type="button"
+                          onClick={() => setShowReservationDetails(true)}
+                          className="block text-center w-full py-3 rounded-lg bg-[#FCDF9C] text-[#1F1F1F] hover:text-white text-base font-medium hover:bg-[#1F1F1F] transition-colors cursor-pointer"
                         >
-                          View in calendar →
-                        </Link>
+                          View Reservation Details
+                        </button>
+                      )}
+                    </div>
+                  </section>
+                );
+              })() : (
+                <section className="border-t border-[#E5E5E5] pt-5 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="sm:text-xl text-lg font-medium text-[#1F1F1F]">Booking details</h4>
+                    {getStatusBadge(selectedConversation.status, selectedConversation.activeSpecialOffer)}
+                  </div>
 
-                        {(isConfirmed || isPending || isCancelled) && (
-                          <button
-                            type="button"
-                            onClick={() => setShowReservationDetails(true)}
-                            className="block text-center w-full py-3 rounded-lg bg-[#FCDF9C] text-[#1F1F1F] hover:text-white text-base font-medium hover:bg-[#1F1F1F] transition-colors cursor-pointer"
-                          >
-                            View Reservation Details
-                          </button>
-                        )}
-                      </div>
-                    );
-                  })()
-                ) : (
                   <div className="space-y-3 text-sm text-zinc-600">
                     <p>This is a pre-booking inquiry. The guest has not yet confirmed a reservation.</p>
-                    <button
-                      type="button"
-                      onClick={() => setPreApproveModalOpen(true)}
-                      className="w-full py-2.5 rounded-[10px] border border-zinc-400 text-[#1F1F1F] sm:text-base text-sm font-medium hover:bg-zinc-50 transition-colors"
-                    >
-                      Pre-approve
-                    </button>
-                    <button
-                      type="button"
-                      onClick={openSpecialOfferModal}
-                          className="w-full py-2.5 rounded-[10px] border border-zinc-400 text-[#1F1F1F] sm:text-base text-sm font-medium hover:bg-zinc-50 transition-colors"
-                    >
-                      Special offer
-                    </button>
                   </div>
 
                   {inquiryDetails?.hasDetails ? (
@@ -1848,7 +1956,7 @@ export function HostMessagesWorkspace({
                       </button>
                     </div>
                   )}
-                </section>
+                 </section>
               )}
 
               {/* 5. Active Special Offer Section (if present and stay not confirmed) */}
