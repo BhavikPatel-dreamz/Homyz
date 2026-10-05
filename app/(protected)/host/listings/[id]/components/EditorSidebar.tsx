@@ -566,7 +566,7 @@ export function EditorSidebar({
                 setEditorTab("space");
                 setActiveSection("description");
               }}
-              className={`min-h-11 flex-1 rounded-full px-3 py-1.5 text-xs font-medium transition-all cursor-pointer sm:text-sm lg:min-h-[48px] lg:px-4 duration-300 ${editorTab === "space"
+              className={`min-h-11 flex-1 rounded-full px-3 py-1.5 text-base font-medium transition-all cursor-pointer sm:text-sm lg:min-h-[48px] lg:px-4 duration-300 ${editorTab === "space"
                 ? "bg-[#FEE08B] text-[#1F1F1F] shadow-2xs dark:bg-amber-400 dark:text-zinc-950"
                 : "text-[#1F1F1F] hover:text-white hover:bg-[#1F1F1F] dark:text-zinc-300 dark:hover:bg-zinc-700 dark:hover:text-white"
                 }`}
@@ -580,7 +580,7 @@ export function EditorSidebar({
                 setEditorTab("arrival");
                 setActiveSection("check-in-out");
               }}
-              className={`min-h-11 flex-1 rounded-full px-3 py-1.5 text-xs font-medium transition-all cursor-pointer sm:text-sm lg:min-h-[48px] lg:px-4 duration-300 ${editorTab === "arrival"
+              className={`min-h-11 flex-1 rounded-full px-3 py-1.5 text-base font-medium transition-all cursor-pointer sm:text-sm lg:min-h-[48px] lg:px-4 duration-300 ${editorTab === "arrival"
                 ? "bg-[#FEE08B] text-[#1F1F1F] shadow-2xs dark:bg-amber-400 dark:text-zinc-950"
                 : "text-[#1F1F1F] hover:text-white hover:bg-[#1F1F1F] dark:text-zinc-300 dark:hover:bg-zinc-700 dark:hover:text-white"
                 }`}
@@ -596,7 +596,7 @@ export function EditorSidebar({
               setEditorTab("preferences");
               setActiveSection("listing-status");
             }}
-            className={`group flex h-11 w-11 shrink-0 items-center justify-center rounded-full border text-xs transition-all  duration-300 cursor-pointer lg:h-12 lg:w-12 ${editorTab === "preferences"
+            className={`group flex h-11 w-11 shrink-0 items-center justify-center rounded-full border text-base transition-all  duration-300 cursor-pointer lg:h-12 lg:w-12 ${editorTab === "preferences"
               ? "bg-[#FEE08B] hover:bg-[#1f1f1f] border-transparent text-[#1f1f1f] hover:text-white hover:border-[#1f1f1f]"
               : "bg-white border-[#1F1F1F] text-[#727272] hover:bg-[#1F1F1F] dark:bg-zinc-800 dark:border-zinc-700 dark:text-[#727272] dark:hover:bg-zinc-700"
               }`}
@@ -881,7 +881,7 @@ export function EditorSidebar({
                 {activeSection !== "about-host" && (
                   <div
                     onClick={() => setActiveSection("photos")}
-                    className={`relative min-w-0 cursor-pointer group mb-[72px] rounded-3xl transition-all ${activeSection === "photos"
+                    className={`relative min-w-0 cursor-pointer group sm:mb-[72px] mb-[40px] rounded-3xl transition-all ${activeSection === "photos"
                       ? ""
                       : "hover:bg-zinc-100/50"
                       }`}

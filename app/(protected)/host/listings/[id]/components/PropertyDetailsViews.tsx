@@ -436,7 +436,7 @@ export function PropertyDetailsViews({
       {/* VIEW 1: DESCRIPTION */}
       {/* --------------------------------------------------------- */}
       {activeSection === "description" && (
-        <div className="w-full max-w-full space-y-6 animate-in fade-in pb-10 font-sans lg:max-w-[calc(100%-75px)]">
+        <div className="w-full max-w-full space-y-6 animate-in fade-in sm:pb-10 font-sans lg:max-w-[calc(100%-75px)]">
           {/* Header & Back Button */}
           <div className="sm:space-y-1.5 space-y-3">
             <div className="flex items-start gap-6">
@@ -465,7 +465,7 @@ export function PropertyDetailsViews({
                   onClick={() => setOpenDescAccordion(openDescAccordion === "description" ? null : "description")}
                 >
                   <div className="space-y-0.5">
-                    <h3 className="font-medium text-base text-[#1F1F1F] dark:text-zinc-100">{t("host_listing_description_title")}</h3>
+                    <h3 className="font-medium text-lg text-[#1F1F1F] dark:text-zinc-100">{t("host_listing_description_title")}</h3>
                     <span className="text-base text-[#727272] font-normal block dark:text-[#727272]">
                       {Math.max(0, 500 - (editDescription?.length || 0))}/500 {t("host_available")}
                     </span>
@@ -511,7 +511,7 @@ export function PropertyDetailsViews({
                   className="flex items-center justify-between cursor-pointer select-none"
                 >
                   <div className="space-y-0.5">
-                    <h4 className="font-medium text-base text-[#1F1F1F] dark:text-zinc-100">{t("host_your_property_title")}</h4>
+                    <h4 className="font-medium text-lg text-[#1F1F1F] dark:text-zinc-100">{t("host_your_property_title")}</h4>
                     <p className="text-base text-[#727272] font-normal dark:text-[#727272]">
                       {editPropertyDetails ? editPropertyDetails.slice(0, 40) + "..." : t("host_add_details")}
                     </p>
@@ -553,7 +553,7 @@ export function PropertyDetailsViews({
                   className="flex items-center justify-between cursor-pointer select-none"
                 >
                   <div className="space-y-0.5">
-                    <h4 className="font-medium text-base text-[#1F1F1F] dark:text-zinc-100">{t("host_guest_access_title")}</h4>
+                    <h4 className="font-medium text-lg text-[#1F1F1F] dark:text-zinc-100">{t("host_guest_access_title")}</h4>
                     <p className="text-base text-[#727272] font-normal dark:text-[#727272]">
                       {editAccessDetails ? editAccessDetails.slice(0, 40) + "..." : t("host_add_details")}
                     </p>
@@ -595,7 +595,7 @@ export function PropertyDetailsViews({
                   className="flex items-center justify-between cursor-pointer select-none"
                 >
                   <div className="space-y-0.5">
-                    <h4 className="font-medium text-base text-[#1F1F1F] dark:text-zinc-100">{t("host_guest_interaction_title")}</h4>
+                    <h4 className="font-medium text-lg text-[#1F1F1F] dark:text-zinc-100">{t("host_guest_interaction_title")}</h4>
                     <p className="text-base text-[#727272] font-normal dark:text-[#727272]">
                       {interactionDetails ? interactionDetails.slice(0, 40) + "..." : t("host_add_details")}
                     </p>
@@ -637,7 +637,7 @@ export function PropertyDetailsViews({
                   className="flex items-center justify-between cursor-pointer select-none"
                 >
                   <div className="space-y-0.5">
-                    <h4 className="font-medium text-base text-[#1F1F1F] dark:text-zinc-100">{t("host_other_details_title")}</h4>
+                    <h4 className="font-medium text-lg text-[#1F1F1F] dark:text-zinc-100">{t("host_other_details_title")}</h4>
                     <p className="text-base text-[#727272] font-normal dark:text-[#727272]">
                       {otherDetails ? otherDetails.slice(0, 40) + "..." : t("host_add_details")}
                     </p>
@@ -1683,7 +1683,7 @@ export function PropertyDetailsViews({
                                 <AmenityIcon id={item.id} className="size-6 text-[#1F1F1F] dark:text-zinc-100" />
                               </div>
                               <div className="min-w-0">
-                                <span className="font-medium text-base text-[#1F1F1F] dark:text-zinc-100 block">
+                                <span className="font-medium text-lg text-[#1F1F1F] dark:text-zinc-100 block">
                                   {getAmenityLabel(item.id, item.label)}
                                 </span>
                               </div>
@@ -1807,7 +1807,7 @@ export function PropertyDetailsViews({
       {/* VIEW 2: ACCESSIBILITY FEATURES */}
       {/* --------------------------------------------------------- */}
       {activeSection === "accessibility" && (
-        <div className="w-full max-w-full space-y-6 animate-in fade-in pb-10 font-sans lg:max-w-[calc(100%-75px)]">
+        <div className="w-full max-w-full space-y-6 animate-in fade-in sm:pb-10 font-sans lg:max-w-[calc(100%-75px)]">
           {/* Header */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-6">
@@ -1846,37 +1846,37 @@ export function PropertyDetailsViews({
                   {
                     id: "disabled_parking",
                     name: t("host_acc_disabled_parking_name"),
-                    icon: "♿",
+                    icon: "/images/icons/disabled-parking-spot.svg",
                     desc: t("host_acc_disabled_parking_desc")
                   },
                   {
                     id: "lit_path",
                     name: t("host_acc_lit_path_name"),
-                    icon: "💡",
+                    icon: "/images/icons/guest-entrance.svg",
                     desc: t("host_acc_lit_path_desc")
                   },
                   {
                     id: "step_free",
                     name: t("host_acc_step_free_name"),
-                    icon: "🪜",
+                    icon: "/images/icons/step-free-access.svg",
                     desc: t("host_acc_step_free_desc")
                   },
                   {
                     id: "entrance_32",
                     name: t("host_acc_wide_entrance_name"),
-                    icon: "↔️",
+                    icon: "/images/icons/guest-entrance-wider.svg",
                     desc: t("host_acc_wide_entrance_desc")
                   },
                   {
                     id: "pool_hoist",
                     name: t("host_acc_pool_hoist_name"),
-                    icon: "🏊",
+                    icon: "/images/icons/swimming-pool.svg",
                     desc: t("host_acc_pool_hoist_desc")
                   },
                   {
                     id: "ceiling_hoist",
                     name: t("host_acc_ceiling_hoist_name"),
-                    icon: "🏗️",
+                    icon: "/images/icons/ceiling-mobile-hoist.svg",
                     desc: t("host_acc_ceiling_hoist_desc")
                   }
                 ].map((feature) => {
@@ -1894,9 +1894,9 @@ export function PropertyDetailsViews({
                       /* Expanded Grey Container Card matching Figma Screenshot 1 */
                       <div
                         key={feature.id}
-                        className={`grid overflow-hidden rounded-2xl transition-[grid-template-rows,opacity,padding,transform,border-color] duration-300 ease-in-out ${isCollapsing || isOpening
+                        className={`grid overflow-hidden sm:rounded-2xl rounded-[12px] transition-[grid-template-rows,opacity,padding,transform,border-color] duration-300 ease-in-out ${isCollapsing || isOpening
                           ? "pointer-events-none grid-rows-[0fr] -translate-y-1 border-transparent bg-transparent p-0 opacity-0"
-                          : "grid-rows-[1fr] translate-y-0 border border-[#1f1f1f] dark:border-zinc-700 bg-zinc-100/90 dark:bg-zinc-800/90 p-5 opacity-100 shadow-2xs"
+                          : "grid-rows-[1fr] translate-y-0 border border-white bg-[#F3F4F5] dark:bg-zinc-800/90 p-3 sm:p-5 opacity-100 shadow-2xs"
                           }`}
                       >
                         <div className="min-h-0 overflow-hidden space-y-4">
@@ -1906,11 +1906,11 @@ export function PropertyDetailsViews({
                             className="flex cursor-pointer items-start justify-between gap-4"
                           >
                             <div className="flex flex-1 items-start gap-3.5">
-                              <div className="w-10 h-10 rounded-full border border-[#1f1f1f] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-sm shrink-0 shadow-2xs mt-0.5">
-                                {feature.icon}
+                              <div className="w-10 h-10 rounded-full border border-[#1f1f1f] dark:border-zinc-700  dark:bg-zinc-800 flex items-center justify-center text-sm shrink-0 shadow-2xs mt-0.5">
+                                <Image src={feature.icon} alt="" width={24} height={24} />
                               </div>
                               <div className="space-y-1">
-                                <h3 className="font-medium text-base text-[#1F1F1F] dark:text-zinc-100">{feature.name}</h3>
+                                <h3 className="font-medium text-lg text-[#1F1F1F] dark:text-zinc-100">{feature.name}</h3>
                                 <p className="text-sm text-[#727272] dark:text-[#727272] font-normal leading-relaxed max-w-md">
                                   {feature.desc}
                                 </p>
@@ -1931,14 +1931,14 @@ export function PropertyDetailsViews({
                           {/* Examples Gallery Grid */}
                           <div className="space-y-2 pt-1">
                             <span className="text-sm mb-3 font-normal text-[#727272] dark:text-[#727272]">{t("host_acc_examples")}</span>
-                            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-6">
-                              <div className="aspect-[4/4] rounded-xl bg-[#D9D9D9] dark:bg-zinc-700 border border-[#D9D9D9] dark:border-zinc-700 flex items-center justify-center text-[10px] text-[#1f1f1f] dark:text-zinc-200 font-medium">
+                            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-6">
+                              <div className="aspect-[4/4] sm:rounded-[10px] rounded-md bg-[#D9D9D9] dark:bg-zinc-700 border border-[#D9D9D9] dark:border-zinc-700 flex items-center justify-center text-[10px] text-[#1f1f1f] dark:text-zinc-200 font-medium">
                                 {/* Photo 1 */}
                               </div>
-                              <div className="aspect-[4/4] rounded-xl bg-[#D9D9D9] dark:bg-zinc-700 border border-[#D9D9D9] dark:border-zinc-700 flex items-center justify-center text-[10px] text-[#1f1f1f] dark:text-zinc-200 font-medium">
+                              <div className="aspect-[4/4] sm:rounded-[10px] rounded-md bg-[#D9D9D9] dark:bg-zinc-700 border border-[#D9D9D9] dark:border-zinc-700 flex items-center justify-center text-[10px] text-[#1f1f1f] dark:text-zinc-200 font-medium">
                                 {/* Photo 2 */}
                               </div>
-                              <div className="aspect-[4/4] rounded-xl bg-[#D9D9D9] dark:bg-zinc-700 border border-[#D9D9D9] dark:border-zinc-700 flex items-center justify-center text-[10px] text-[#1f1f1f] dark:text-zinc-200 font-medium">
+                              <div className="aspect-[4/4] sm:rounded-[10px] rounded-md bg-[#D9D9D9] dark:bg-zinc-700 border border-[#D9D9D9] dark:border-zinc-700 flex items-center justify-center text-[10px] text-[#1f1f1f] dark:text-zinc-200 font-medium">
                                 {/* Photo 3 */}
                               </div>
                             </div>
@@ -1956,7 +1956,7 @@ export function PropertyDetailsViews({
                                 }
                                 setAccessibilityDetails?.(accessibilityDetails.filter((detail) => detail.featureId !== featureId));
                               }}
-                              className={`rounded-lg p-3.5 flex items-center gap-8 cursor-pointer transition-all ${!isSelected
+                              className={`rounded-lg p-3.5 flex items-center sm:gap-8 gap-5 cursor-pointer transition-all ${!isSelected
                                 ? "bg-white dark:bg-zinc-900 border border-[#1f1f1f] dark:border-zinc-500"
                                 : "bg-transparent border border-[#727272] dark:border-zinc-700 hover:border-[#1f1f1f] dark:hover:border-zinc-500"
                                 }`}
@@ -1979,7 +1979,7 @@ export function PropertyDetailsViews({
                                   setAccessibilityFeatures([featureId]);
                                 }
                               }}
-                              className={`rounded-lg p-3.5 flex items-center gap-8 cursor-pointer transition-all ${isSelected
+                              className={`rounded-lg p-3.5 flex items-center sm:gap-8 gap-5 cursor-pointer transition-all ${isSelected
                                 ? "bg-white dark:bg-zinc-900 border border-[#1f1f1f] dark:border-zinc-500"
                                 : "bg-transparent border border-[#727272] dark:border-zinc-700 hover:border-[#1f1f1f] dark:hover:border-zinc-500"
                                 }`}
@@ -1994,10 +1994,10 @@ export function PropertyDetailsViews({
 
                           {isSelected && (
                             <div className="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-3.5 space-y-3">
-                              <div className="flex flex-wrap items-start justify-between gap-2">
-                                <div>
+                              <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                <div className="min-w-0">
                                   <h4 className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">{t("host_acc_photos_heading")}</h4>
-                                  <p className="mt-0.5 text-xs text-[#727272] dark:text-[#727272]">{t("host_acc_photos_subtitle")}</p>
+                                  <p className="mt-0.5 text-sm text-[#727272] dark:text-[#727272]">{t("host_acc_photos_subtitle")}</p>
                                 </div>
                                 <button
                                   type="button"
@@ -2009,24 +2009,24 @@ export function PropertyDetailsViews({
                                     }
                                     accessibilityPhotoInput.current?.click();
                                   }}
-                                  className="rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-1.5 text-sm font-medium text-[#1f1f1f] dark:text-zinc-100 transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-700 disabled:cursor-wait disabled:opacity-60"
+                                  className="w-full rounded-full border border-zinc-300 bg-white px-3 py-1.5 text-sm font-medium text-[#1f1f1f] transition-colors hover:bg-zinc-100 disabled:cursor-wait disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700 sm:w-auto sm:shrink-0"
                                 >
                                   {uploadingAccessibilityPhoto && accessibilityPhotoFeatureId === featureId ? t("host_acc_uploading_photo") : t("host_acc_add_photos_btn")}
                                 </button>
                               </div>
 
                               {featurePhotos.length > 0 ? (
-                                <div className="grid grid-cols-3 gap-2">
+                                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3">
                                   {featurePhotos.map((photo) => (
                                     <div key={photo} className="group relative aspect-[4/3] overflow-hidden rounded-lg bg-zinc-100 dark:bg-zinc-800">
-                                      <img src={photo} alt={t("host_acc_photo_evidence_alt", { name: feature.name })} className="h-full w-full object-cover" />
+                                      <img src={photo} alt={t("host_acc_photo_evidence_alt", { name: feature.name })} className="h-full w-full object-cover sm:text-sm text-xs" />
                                       <button
                                         type="button"
                                         aria-label={t("host_acc_remove_photo", { name: feature.name })}
                                         onClick={() => updateAccessibilityDetail(featureId, (detail) => ({ ...detail, photos: detail.photos.filter((item) => item !== photo) }))}
-                                        className="absolute right-2 top-2 flex size-8 items-center justify-center rounded-full border border-rose-600 bg-rose-600 text-white shadow-sm backdrop-blur-sm transition-all duration-200 hover:scale-105 hover:border-rose-200 hover:bg-white hover:text-rose-600 active:scale-95 focus-visible:scale-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600 dark:border-rose-600 dark:bg-rose-600 dark:text-white dark:hover:border-rose-200 dark:hover:bg-white dark:hover:text-rose-600 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
+                                        className="absolute right-1.5 top-1.5 flex size-7 items-center justify-center rounded-full border border-rose-600 bg-rose-600 text-white shadow-sm backdrop-blur-sm transition-all duration-200 hover:scale-105 hover:border-rose-200 hover:bg-white hover:text-rose-600 active:scale-95 focus-visible:scale-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600 dark:border-rose-600 dark:bg-rose-600 dark:text-white dark:hover:border-rose-200 dark:hover:bg-white dark:hover:text-rose-600 sm:right-2 sm:top-2 sm:size-8 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
                                       >
-                                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="size-4">
+                                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="size-3 sm:size-3.5">
                                           <path d="m6 6 12 12M18 6 6 18" strokeLinecap="round" />
                                         </svg>
                                       </button>
@@ -2047,16 +2047,16 @@ export function PropertyDetailsViews({
                     /* Collapsed Line Item */
                     <div
                       key={feature.id}
-                      className="py-3 px-5 flex items-center justify-between cursor-pointer group select-none"
+                      className="group flex cursor-pointer select-none items-center justify-between border-b border-[#D6D6D6] sm:px-5 px-0 sm:py-4 py-3 last:border-b-0 dark:border-zinc-700 lg:border-b-0"
                     >
                       <div
                         className="flex items-center gap-3 flex-1"
                         onClick={() => expandAccessibilityFeature(feature.id)}
                       >
-                        <div className="w-10 h-10 rounded-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-sm shrink-0 shadow-2xs group-hover:border-zinc-300 dark:group-hover:border-zinc-600">
-                          {feature.icon}
+                        <div className="w-10 h-10 rounded-full border border-[#1f1f1f] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-sm shrink-0 shadow-2xs group-hover:border-zinc-300 dark:group-hover:border-zinc-600">
+                          <Image src={feature.icon} alt="" width={24} height={24} />
                         </div>
-                        <span className="font-medium text-base text-[#1F1F1F] dark:text-zinc-100 tracking-tight">{feature.name}</span>
+                        <span className="font-medium text-lg text-[#1F1F1F] dark:text-zinc-100 tracking-tight leading-normal">{feature.name}</span>
                       </div>
 
                       <button
@@ -2077,7 +2077,7 @@ export function PropertyDetailsViews({
                   type="button"
                   disabled={isSaving || uploadingAccessibilityPhoto}
                   onClick={() => handleSaveSection("accessibility")}
-                  className="rounded-full bg-[#FCDF9C] dark:bg-amber-400 hover:bg-[#1F1F1F] dark:hover:bg-amber-300 text-[#1f1f1f] dark:text-zinc-950 hover:text-white dark:hover:text-zinc-950 font-medium text-sm px-8 py-2.5 transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F] duration-300"
+                  className="rounded-full bg-[#FCDF9C] dark:bg-amber-400 hover:bg-[#1F1F1F] dark:hover:bg-amber-300 text-[#1f1f1f] dark:text-zinc-950 hover:text-white dark:hover:text-zinc-950 font-medium text-sm px-8 py-2.5 transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F] duration-300 sm:w-auto w-full"
                 >
                   {uploadingAccessibilityPhoto ? t("host_acc_uploading") : isSaving ? t("host_saving") : t("host_acc_save")}
                 </button>
