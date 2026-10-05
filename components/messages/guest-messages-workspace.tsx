@@ -553,17 +553,17 @@ export function GuestMessagesWorkspace({
       case "CANCELLED":
         return <span className="inline-flex items-center rounded-full bg-rose-50 px-2 py-0.5 text-[11px] font-medium text-rose-700 border border-rose-200">Cancelled</span>;
       default:
-        return <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-[11px] font-medium text-blue-700 border border-blue-200">Inquiry</span>;
+        return <span className="inline-flex items-center  px-4 py-1.5 font-medium rounded-full border border-[#1f1f1f] bg-[#F3F4F5] text-sm text-[#1F1F1F] transition-colors hover:bg-[#e5e7e9]">Inquiry</span>;
     }
   };
 
   return (
-    <div className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 py-6">
+    <div className="flex-1 w-full">
       <div className="grid grid-cols-1 md:grid-cols-[340px_1fr] lg:grid-cols-[380px_1fr] gap-6 h-[calc(100vh-190px)] min-h-[600px]">
         {/* ========================================================================= */}
         {/* LEFT COLUMN: CONVERSATIONS LIST                                           */}
         {/* ========================================================================= */}
-        <div className="flex flex-col rounded-3xl border border-zinc-200/90 bg-white shadow-xs overflow-hidden">
+        <div className="flex flex-col border border-zinc-300 bg-white shadow-xs overflow-hidden">
           {/* Header & Tabs */}
           <div className="p-4 border-b border-zinc-100 space-y-3">
             <div className="flex items-center justify-between">
@@ -633,11 +633,10 @@ export function GuestMessagesWorkspace({
                     key={conv.id}
                     type="button"
                     onClick={() => handleSelectConversation(conv.id)}
-                    className={`w-full text-left p-3.5 sm:p-4 flex gap-3 transition-colors ${
-                      isSelected
-                        ? "bg-amber-50/70 border-l-4 border-amber-400"
-                        : "hover:bg-zinc-50/80"
-                    }`}
+                    className={`w-full text-left p-3.5 sm:p-4 flex gap-3 transition-colors duration-300 ${isSelected
+                      ? "bg-[#F3F4F5]"
+                      : "hover:bg-[#F3F4F5]"
+                      }`}
                   >
                     <div className="relative shrink-0">
                       {conv.host.image ? (
@@ -649,7 +648,7 @@ export function GuestMessagesWorkspace({
                           className="size-12 rounded-full object-cover border border-zinc-200"
                         />
                       ) : (
-                        <div className="size-12 rounded-full bg-zinc-200 text-zinc-700 flex items-center justify-center font-bold text-base">
+                          <div className="size-10 rounded-full bg-amber-200 text-amber-900 flex items-center justify-center font-bold text-base border border-amber-300">
                           {(conv.host.name || "H")[0].toUpperCase()}
                         </div>
                       )}
@@ -675,7 +674,7 @@ export function GuestMessagesWorkspace({
                       </p>
 
                       <div className="flex items-center justify-between gap-2">
-                        <p className={`text-xs truncate ${hasUnread ? "font-semibold text-[#1F1F1F]" : "text-zinc-500"}`}>
+                        <p className={`text-xs truncate ${hasUnread ? "font-medium text-[#1F1F1F]" : "text-[#727272]"}`}>
                           {getMessagePreview(conv.lastMessage)}
                         </p>
                         <span className="shrink-0">{getStatusBadge(conv.status, conv.activeSpecialOffer)}</span>
@@ -691,7 +690,7 @@ export function GuestMessagesWorkspace({
         {/* ========================================================================= */}
         {/* RIGHT COLUMN: ACTIVE CHAT THREAD                                          */}
         {/* ========================================================================= */}
-        <div className="flex flex-col rounded-3xl border border-zinc-200/90 bg-white shadow-xs overflow-hidden">
+        <div className="flex flex-col border border-zinc-300 bg-white shadow-xs overflow-hidden">
           {selectedConversation ? (
             <>
               {/* Header */}
@@ -916,12 +915,151 @@ export function GuestMessagesWorkspace({
                                 onClick={() => handleAcceptSpecialOffer(offerId, checkoutUrl)}
                                 className="w-full py-2.5 rounded-full bg-[#1F1F1F] text-white text-xs font-semibold hover:bg-black transition-colors disabled:opacity-50 shadow-xs flex items-center justify-center gap-1.5"
                               >
-                                <span>{acceptingOffer ? "Processing..." : "Accept & Proceed to Checkout"}</span>
-                                <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                                </svg>
+                                Book Now
                               </button>
                             ) : null}
+                          </div>
+                          </div>
+                        );
+                      }
+
+                      // Decline Notice
+                      if (m.type === "DECLINE") {
+                        return (
+                          <div key={m.id} className="flex justify-center my-3">
+                            <div className="max-w-md w-full rounded-2xl border border-zinc-200 bg-zinc-100 p-3.5 shadow-2xs text-center space-y-1">
+                              <span className="text-xs font-bold text-zinc-700 uppercase tracking-wider">
+                                Inquiry Declined
+                              </span>
+                              <p className="text-xs sm:text-sm text-zinc-700">{m.content}</p>
+                              <span className="text-[10px] text-zinc-400 block">{formatMessageTime(m.createdAt)}</span>
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      // System / Status Message
+                      if (m.type === "SYSTEM" || m.type === "BOOKING_STATUS") {
+                        return (
+                          <div key={m.id} className="flex justify-center my-2">
+                            <div className="rounded-full bg-zinc-100 border border-zinc-200 px-4 py-1 text-xs text-zinc-600 font-medium">
+                              {m.content} • {formatMessageTime(m.createdAt)}
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      // Standard Chat Bubble
+                      const hasAttachments = m.attachments && m.attachments.length > 0;
+                      return (
+                        <div
+                          key={m.id}
+                          className={`flex flex-col ${isGuest ? "items-end" : "items-start"}`}
+                        >
+                          <div
+                            className={`max-w-[85%] sm:max-w-[75%] rounded-2xl p-2.5 text-xs sm:text-sm leading-relaxed shadow-2xs space-y-2 ${isGuest
+                              ? "bg-[#E9EBFF] text-[#1f1f1f] rounded-br-xs"
+                              : "bg-white border border-zinc-200/80 text-[#1f1f1f] rounded-bl-xs"
+                              }`}
+                          >
+                            {m.type === "BOOKING_REQUEST" && (
+                              <div className="pb-1.5 border-b border-white/20 text-[11px] font-semibold text-amber-200">
+                                Booking Request Note
+                              </div>
+                            )}
+
+                            {/* Render Attachments if present */}
+                            {hasAttachments && (
+                              <div className="space-y-2">
+                                {/* Image attachments */}
+                                {m.attachments!.filter((a) => a.fileType === "IMAGE").length > 0 && (
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    {m.attachments!
+                                      .filter((a) => a.fileType === "IMAGE")
+                                      .map((att) => (
+                                        <button
+                                          key={att.id}
+                                          type="button"
+                                          onClick={() => setLightboxAttachment(att)}
+                                          className="relative group block overflow-hidden rounded-xl bg-black/10 border border-black/5 hover:opacity-95 transition-opacity text-left"
+                                          title="Click to view full image"
+                                        >
+                                          <img
+                                            src={att.fileUrl}
+                                            alt={att.fileName}
+                                            loading="lazy"
+                                            className="w-full h-44 object-cover rounded-xl"
+                                          />
+                                          <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                                            <svg className="size-6 drop-shadow" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" />
+                                            </svg>
+                                          </div>
+                                        </button>
+                                      ))}
+                                  </div>
+                                )}
+
+                                {/* Document attachments */}
+                                {m.attachments!.filter((a) => a.fileType === "DOCUMENT").map((att) => (
+                                  <div
+                                    key={att.id}
+                                    className={`flex items-center justify-between gap-3 p-3 rounded-xl border ${isGuest
+                                        ? "bg-white/10 border-white/15 text-white"
+                                        : "bg-zinc-50 border-zinc-200 text-zinc-800"
+                                      }`}
+                                  >
+                                    <div className="flex items-center gap-2.5 min-w-0">
+                                      <div className="size-9 rounded-lg bg-red-500/15 text-red-500 flex items-center justify-center shrink-0">
+                                        <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                          <path strokeLinecap="round" strokeLinejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                        </svg>
+                                      </div>
+                                      <div className="min-w-0">
+                                        <p className="text-xs font-semibold truncate max-w-[180px] sm:max-w-xs">{att.fileName}</p>
+                                        <p className={`text-[10px] ${isGuest ? "text-zinc-300" : "text-zinc-500"}`}>{formatFileSize(att.fileSize)} • PDF Document</p>
+                                      </div>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 shrink-0">
+                                      <a
+                                        href={att.fileUrl}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className={`px-2.5 py-1 text-[11px] font-medium rounded-lg transition-colors ${isGuest
+                                            ? "bg-white/20 hover:bg-white/30 text-white"
+                                            : "bg-zinc-200 hover:bg-zinc-300 text-zinc-800"
+                                          }`}
+                                      >
+                                        Open
+                                      </a>
+                                      <a
+                                        href={`${att.fileUrl}?download=true`}
+                                        download={att.fileName}
+                                        className={`p-1.5 rounded-lg transition-colors ${isGuest
+                                            ? "bg-white/20 hover:bg-white/30 text-white"
+                                            : "bg-zinc-200 hover:bg-zinc-300 text-zinc-800"
+                                          }`}
+                                        title="Download document"
+                                      >
+                                        <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                          <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                        </svg>
+                                      </a>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+
+                            {m.content && (
+                              <p className="whitespace-pre-wrap break-words px-1.5">{m.content}</p>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1 mt-1 text-[10px] text-zinc-400 px-1">
+                            <span>{formatMessageTime(m.createdAt)}</span>
+                            {isGuest && (
+                              <span>{m.readAt ? "• Read" : "• Sent"}</span>
+                            )}
                           </div>
                         </div>
                       );
@@ -1206,7 +1344,7 @@ export function GuestMessagesWorkspace({
                     className="hidden"
                   />
 
-                  <div className="flex-1 relative">
+                  <div className="flex-1 relative leading-0">
                     <textarea
                       rows={2}
                       value={inputText}

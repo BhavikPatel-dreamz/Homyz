@@ -5,18 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
-import {
-  bookingDateKey,
-  formatBookingDate,
-  formatBookingDateRange,
-} from "@/lib/booking/booking-date";
-import { formatConversationListDate, formatMessageTime } from "@/lib/messages/message-date";
-import { useCurrency } from "@/lib/currency-context";
-import {
-  ReservationDetails,
-  type HostReservation,
-} from "@/components/host/host-workspace-shared";
-import type { ListingDTO } from "@/services/mappers";
+import { useScrollbarDrag } from "@/components/ui/use-scrollbar-drag";
+import { BackButton } from "@/components/ui/back-button";
 import type {
   ConversationDTO,
   MessageDTO,
@@ -95,6 +85,9 @@ export function HostMessagesWorkspace({
   const [searchClosing, setSearchClosing] = useState(false);
   const [messagingSettingsOpen, setMessagingSettingsOpen] = useState(false);
   const [mobileView, setMobileView] = useState<"list" | "thread">("list");
+  const [laptopDetailsOpen, setLaptopDetailsOpen] = useState(false);
+  const [isCompactViewport, setIsCompactViewport] = useState(false);
+  const [isTabletViewport, setIsTabletViewport] = useState(false);
 
   // Messages state
   const [messages, setMessages] = useState<MessageDTO[]>([]);
@@ -123,6 +116,22 @@ export function HostMessagesWorkspace({
   const [preApproveNote, setPreApproveNote] = useState("");
   const [declineReason, setDeclineReason] = useState("Dates not available");
   const [declineNote, setDeclineNote] = useState("");
+
+  useEffect(() => {
+    const compactMediaQuery = window.matchMedia("(max-width: 1023px)");
+    const tabletMediaQuery = window.matchMedia("(min-width: 768px) and (max-width: 1023px)");
+    const updateViewport = () => {
+      setIsCompactViewport(compactMediaQuery.matches);
+      setIsTabletViewport(tabletMediaQuery.matches);
+    };
+    updateViewport();
+    compactMediaQuery.addEventListener("change", updateViewport);
+    tabletMediaQuery.addEventListener("change", updateViewport);
+    return () => {
+      compactMediaQuery.removeEventListener("change", updateViewport);
+      tabletMediaQuery.removeEventListener("change", updateViewport);
+    };
+  }, []);
 
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const isNearBottomRef = useRef(true);
@@ -801,89 +810,45 @@ export function HostMessagesWorkspace({
     if (activeOffer && status !== "CONFIRMED" && status !== "CANCELLED" && status !== "COMPLETED") {
       if (activeOffer.status === "ACCEPTED") {
         return (
-          <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-800 border border-emerald-200">
+          <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-800 border border-emerald-200">
             Offer accepted
           </span>
         );
       }
       return (
-        <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-800 border border-amber-200">
+        <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-800 border border-amber-200">
           Special offer sent
         </span>
       );
     }
     switch (status) {
       case "PRE_APPROVED":
-        return <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 border border-emerald-200">Pre-approved</span>;
+        return <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 border border-emerald-200">Pre-approved</span>;
       case "SPECIAL_OFFER_SENT":
-        return <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-800 border border-amber-200">Special offer sent</span>;
+        return <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-800 border border-amber-200">Special offer sent</span>;
       case "CONFIRMED":
-        return <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-900 border border-emerald-300">Confirmed stay</span>;
+        return <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-900 border border-emerald-300">Confirmed stay</span>;
       case "DECLINED":
-        return <span className="inline-flex items-center rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-medium text-zinc-600 border border-zinc-200">Declined</span>;
+        return <span className="inline-flex items-center rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-600 border border-zinc-200">Declined</span>;
       case "CANCELLED":
-        return <span className="inline-flex items-center rounded-full bg-rose-50 px-2 py-0.5 text-[11px] font-medium text-rose-700 border border-rose-200">Cancelled</span>;
+        return <span className="inline-flex items-center rounded-full bg-rose-50 px-2 py-0.5 text-xs font-medium text-rose-700 border border-rose-200">Cancelled</span>;
       default:
-        return <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-[11px] font-medium text-blue-700 border border-blue-200">Inquiry</span>;
+        return <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700 border border-blue-200">Inquiry</span>;
     }
   };
 
-  const getBookingStatusBadge = (status: string) => {
-    switch (status) {
-      case "CONFIRMED":
-        return (
-          <span className="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-800 border border-emerald-300">
-            Confirmed stay
-          </span>
-        );
-      case "PENDING":
-        return (
-          <span className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-800 border border-amber-300">
-            Pending
-          </span>
-        );
-      case "CANCELLED":
-        return (
-          <span className="inline-flex items-center rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-semibold text-rose-800 border border-rose-300">
-            Cancelled
-          </span>
-        );
-      case "REJECTED":
-        return (
-          <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-semibold text-zinc-700 border border-zinc-300">
-            Declined
-          </span>
-        );
-      case "EXPIRED":
-        return (
-          <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-semibold text-zinc-600 border border-zinc-300">
-            Expired
-          </span>
-        );
-      case "COMPLETED":
-        return (
-          <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-semibold text-zinc-700 border border-zinc-300">
-            Completed
-          </span>
-        );
-      default:
-        return (
-          <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-semibold text-zinc-700 border border-zinc-300 capitalize">
-            {status.replaceAll("_", " ").toLowerCase()}
-          </span>
-        );
-    }
-  };
+  const panelIsModal = isCompactViewport && laptopDetailsOpen;
+  const InquiryPanelContainer = panelIsModal ? ModalOverlay : "div";
 
   return (
-    <div className="messages-workspace flex-1 w-full max-w-[1520px] mx-auto px-0 sm:px-6 pb-20">
-      <div className="grid grid-cols-1 overflow-hidden bg-white lg:grid-cols-[300px_minmax(0,1fr)_362px] xl:grid-cols-[320px_minmax(0,1fr)_362px] lg:h-[calc(100svh-132px)] lg:min-h-[680px] lg:border lg:border-zinc-300">
+    <div className="messages-workspace flex-1 w-full max-w-[1520px] mx-auto px-0 sm:px-6">
+      <div className="grid grid-cols-1 overflow-hidden bg-white lg:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[320px_minmax(0,1fr)_362px] lg:h-[calc(100svh-132px)] lg:min-h-[680px] lg:border lg:border-zinc-300">
         {/* ========================================================================= */}
         {/* COLUMN 1: CONVERSATIONS LIST                                              */}
         {/* ========================================================================= */}
         <div className={`flex-col bg-white overflow-hidden lg:border-r lg:border-zinc-300 ${mobileView === "thread" ? "hidden lg:flex" : "flex"}`}>
           {/* Header & Tabs */}
-          <div className="border-b border-zinc-200 p-4 space-y-3">
+          <div className="border-b border-zinc-200 px-4 pb-8 xl:pt-12 lg:pt-5 pt-4 space-y-3">
             <div className="flex h-6 items-center justify-between">
               <h1 className="text-lg font-medium text-[#1F1F1F]">Messages</h1>
             </div>
@@ -1039,8 +1004,8 @@ export function HostMessagesWorkspace({
                         <span className={`text-sm truncate ${hasUnread ? "font-bold text-[#1F1F1F]" : "font-normal text-[#242424]"}`}>
                           {conv.guest.name || "Guest"}
                         </span>
-                        <span className="text-xs text-[#616161] shrink-0">
-                          {formatConversationListDate(conv.lastMessageAt, initialRenderedAt)}
+                        <span className="text-[11px] text-zinc-400 shrink-0">
+                          {formatListDate(conv.lastMessageAt)}
                         </span>
                       </div>
 
@@ -1065,13 +1030,13 @@ export function HostMessagesWorkspace({
         {/* ========================================================================= */}
         {/* COLUMN 2: ACTIVE CHAT THREAD                                              */}
         {/* ========================================================================= */}
-        <div className={`flex flex-col bg-white overflow-hidden min-w-0 lg:border-r lg:border-zinc-200 ${mobileView === "list" ? "hidden lg:flex" : "flex"}`}>
+        <div className={`flex h-[calc(100dvh-76px)] flex-col overflow-hidden bg-white min-w-0 lg:h-auto lg:border-r lg:border-zinc-200 ${mobileView === "list" ? "hidden lg:flex" : "flex"}`}>
           {selectedConversation ? (
             <>
               {/* Thread Top Bar */}
               <div className="border-b border-zinc-100 p-4 lg:hidden">
                 <div className="flex min-w-0 items-center gap-3 lg:flex-col lg:gap-0 lg:text-center">
-                  <button type="button" onClick={() => setMobileView("list")} className="lg:hidden -ml-1 size-9 rounded-full border border-zinc-200 text-lg" aria-label="Back to messages">‹</button>
+                  <BackButton onClick={() => setMobileView("list")} className="-ml-1 lg:hidden" aria-label="Back to messages" />
                   <div className="lg:hidden">
                     {selectedConversation.guest.image ? (
                       <Image
@@ -1095,36 +1060,61 @@ export function HostMessagesWorkspace({
                       {selectedConversation.listing.title}
                     </p>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => setLaptopDetailsOpen(true)}
+                    className="ml-auto shrink-0 rounded-full border border-[#1f1f1f] bg-[#F3F4F5] px-3 py-1.5 text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-[#e5e7e9] lg:hidden"
+                    aria-expanded={laptopDetailsOpen}
+                    aria-controls="mobile-message-details"
+                  >
+                    Inquiry
+                  </button>
                 </div>
 
                 {/* Header Action Buttons (Pre-approve, Special offer, Decline) */}
-                <div className="mt-3 flex items-center gap-2 lg:hidden">
+                <div className="mt-3 flex items-center gap-2 lg:hidden overflow-x-auto">
                   {selectedConversation.status !== "CONFIRMED" && selectedConversation.status !== "DECLINED" && (
                     <>
                       <button
                         type="button"
                         onClick={() => setPreApproveModalOpen(true)}
-                        className="px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 transition-colors"
+                        className="px-3 py-1.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 transition-colors whitespace-nowrap"
                       >
                         Pre-approve
                       </button>
                       <button
                         type="button"
-                        onClick={() => setSpecialOfferModalOpen(true)}
-                        className="px-3 py-1.5 rounded-full text-xs font-semibold bg-[#FCDF9C] text-[#1F1F1F] hover:bg-[#F7D37D] transition-colors"
+                        onClick={openSpecialOfferModal}
+                        className="px-3 py-1.5 rounded-full text-xs font-medium bg-[#FCDF9C] text-[#1F1F1F] hover:bg-[#F7D37D] transition-colors whitespace-nowrap"
                       >
                         Special offer
                       </button>
                       <button
                         type="button"
                         onClick={() => setDeclineModalOpen(true)}
-                        className="px-3 py-1.5 rounded-full text-xs font-medium text-zinc-600 hover:bg-zinc-100 border border-zinc-200 transition-colors"
+                        className="px-3 py-1.5 rounded-full text-xs font-medium text-zinc-600 hover:bg-zinc-100 border border-zinc-200 transition-colors whitespace-nowrap"
                       >
                         Decline
                       </button>
                     </>
                   )}
                 </div>
+              </div>
+
+              <div className="hidden shrink-0 items-center justify-between border-b border-zinc-100 px-5 py-3 lg:flex xl:hidden">
+                <div className="min-w-0">
+                  <p className="truncate text-base font-medium text-[#1F1F1F]">{selectedConversation.guest.name || "Guest"}</p>
+                  <p className="truncate text-xs font-normal text-[#727272]">{selectedConversation.listing.title}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setLaptopDetailsOpen(true)}
+                  className="ml-4 shrink-0 rounded-full border border-[#1f1f1f] px-3 py-1.5 text-base bg-[#F3F4F5] font-medium text-[#1F1F1F] transition-colors hover:bg-[#1f1f1f]"
+                  aria-expanded={laptopDetailsOpen}
+                  aria-controls="laptop-message-details"
+                >
+                  Inquiry
+                </button>
               </div>
 
               {/* Messages Area */}
@@ -1170,29 +1160,29 @@ export function HostMessagesWorkspace({
                           return (
                             <div key={m.id} className="flex justify-center my-3">
                               <div className="max-w-md w-full rounded-2xl border border-amber-300 bg-amber-50/90 p-4 shadow-2xs space-y-3">
-                                <div className="flex items-center justify-between">
+                                <div className="flex items-center justify-between flex-wrap">
                                   <div className="flex items-center gap-2">
                                     <span className="text-xs font-bold text-amber-900 uppercase tracking-wider">
                                       Special Offer Sent
                                     </span>
                                     {hasBooking ? (
-                                      <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800 border border-emerald-300">
+                                      <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800 border border-emerald-300 whitespace-nowrap">
                                         Booked & Confirmed
                                       </span>
                                     ) : isExpired ? (
-                                      <span className="inline-flex items-center rounded-full bg-zinc-200 px-2 py-0.5 text-[10px] font-semibold text-zinc-600 border border-zinc-300">
+                                        <span className="inline-flex items-center rounded-full bg-zinc-200 px-2 py-0.5 text-[10px] font-semibold text-zinc-600 border border-zinc-300 whitespace-nowrap leading-4">
                                         Expired
                                       </span>
                                     ) : isDeclined ? (
-                                      <span className="inline-flex items-center rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-semibold text-rose-700 border border-rose-200">
+                                          <span className="inline-flex items-center rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-semibold text-rose-700 border border-rose-200 whitespace-nowrap">
                                         Declined
                                       </span>
                                     ) : isAccepted ? (
-                                      <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800 border border-emerald-300">
+                                            <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800 border border-emerald-300 whitespace-nowrap">
                                         Accepted by Guest
                                       </span>
                                     ) : (
-                                      <span className="inline-flex items-center rounded-full bg-amber-200/80 px-2 py-0.5 text-[10px] font-semibold text-amber-900 border border-amber-300">
+                                      <span className="inline-flex items-center rounded-full bg-amber-200/80 px-2 py-0.5 text-[10px] font-medium text-amber-900 border border-amber-300 whitespace-nowrap">
                                         Sent (Awaiting Guest)
                                       </span>
                                     )}
@@ -1285,15 +1275,10 @@ export function HostMessagesWorkspace({
                             </div>
                             <div
                               className={`order-2 max-w-[85%] sm:max-w-[72%] rounded-lg px-3 py-2 text-xs sm:text-sm leading-relaxed shadow-none space-y-2 ${isHost
-                                ? "bg-[#E9EBFF] text-zinc-800 rounded-br-sm"
-                                : "bg-zinc-100 text-zinc-800 rounded-bl-sm"
+                                ? "bg-[#E9EBFF] text-zinc-800 rounded-tr-none"
+                                : "bg-zinc-100 text-zinc-800 rounded-tl-none rounded-bl-sm"
                                 }`}
-                            >
-                              {m.type === "BOOKING_REQUEST" && (
-                                <div className="border-b border-zinc-200 pb-1.5 text-[11px] font-semibold text-zinc-500">
-                                  {isHost ? "You" : selectedConversation.guest.name || "Guest"}
-                                </div>
-                              )}
+                            >                              
 
                               {/* Render Attachments if present */}
                               {hasAttachments && (
@@ -1398,18 +1383,17 @@ export function HostMessagesWorkspace({
                       setIsNearBottom(true);
                       scrollToBottom("smooth");
                     }}
-                    className="absolute bottom-3 right-5 z-10 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white text-zinc-800 text-xs font-semibold shadow-md border border-zinc-200 hover:bg-zinc-50 hover:shadow-lg transition-all"
+                    className="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 items-center justify-center rounded-full border border-zinc-200 bg-white p-3 text-xs font-semibold text-zinc-800 shadow-md transition-all hover:bg-zinc-50 hover:shadow-lg"
                   >
                     <svg className="size-3.5 text-zinc-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
                     </svg>
-                    <span>Jump to latest</span>
                   </button>
                 )}
               </div>
 
               {/* Message Composer */}
-              <div className="border-t border-zinc-300 bg-white px-5 py-4 sm:px-6 sm:py-5 space-y-2">
+              <div className="sticky bottom-0 z-20 shrink-0 border-t border-zinc-300 bg-white px-4 py-4 sm:px-6 sm:py-5 space-y-2 lg:static">
                 {/* Staged attachments preview */}
                 {stagedAttachments.length > 0 && (
                   <div className="flex items-center gap-2 overflow-x-auto pb-1">
@@ -1478,10 +1462,10 @@ export function HostMessagesWorkspace({
                   </div>
                 )}
 
-                <form onSubmit={handleSendMessage} className="mx-auto flex w-full max-w-none flex-wrap items-end rounded-md border border-[#727272] bg-white p-4 ">
+                <form onSubmit={handleSendMessage} className="relative mx-auto flex w-full max-w-none flex-nowrap items-stretch gap-3 rounded-none border-0 bg-transparent p-0 lg:flex-wrap lg:items-end lg:gap-0 lg:rounded-md lg:border lg:border-[#727272] lg:bg-white lg:p-4">
 
                   {/* Textarea */}
-                  <div className="w-full mb-3">
+                  <div className="order-2 mb-0 min-w-0 flex-1 lg:order-none lg:mb-3 lg:w-full lg:flex-none">
                     <textarea
                       rows={1}
                       value={inputText}
@@ -1493,23 +1477,23 @@ export function HostMessagesWorkspace({
                         }
                       }}
                       placeholder="Type a message"
-                      className="h-full w-full resize-none border-0 bg-transparent p-0 text-base text-[#1f1f1f] placeholder:text-[#727272] focus:outline-none"
+                      className="h-[88px] w-full resize-none rounded-[8px] border border-[#727272] bg-white px-4 pb-4 pt-4 pr-12 sm:text-base text-sm text-[#1f1f1f] placeholder:text-[#727272] focus:outline-none lg:h-full lg:rounded-none lg:border-0 lg:bg-transparent lg:p-0"
                     />
                   </div>
 
                   {/* Attachment button */}
-                  <div className="flex gap-x-3 content-between">
+                  <div className="order-1 flex w-8 shrink-0 flex-col items-center justify-center gap-y-3 lg:order-none lg:w-auto lg:flex-row lg:gap-x-3 lg:content-between">
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="flex size-6 items-center justify-center transition-opacity hover:opacity-70 border border-[#1f1f1f] rounded-full"
+                      className="flex size-8 items-center justify-center rounded-full border border-[#1f1f1f] transition-opacity hover:opacity-70 lg:size-6"
                       title="Attach a photo or document"
                       aria-label="Attach a photo or document"
                     >
-                      <Image src="/images/icons/homyz/stroke/Plus.svg" alt="" width={15} height={15} className="size-3.75" />
+                      <Image src="/images/icons/homyz/stroke/Plus.svg" alt="" width={15} height={15} className="size-4 lg:size-3.75" />
                     </button>
-                    <span className="flex size-6 items-center justify-center" aria-hidden="true">
-                      <Image src="/images/icons/messages.svg" alt="" width={24} height={24} className="size-6" />
+                    <span className="flex size-8 items-center justify-center lg:size-6" aria-hidden="true">
+                      <Image src="/images/icons/messages.svg" alt="" width={24} height={24} className="size-8 lg:size-6" />
                     </span>
                   </div>
                   <input
@@ -1527,7 +1511,7 @@ export function HostMessagesWorkspace({
                       sending ||
                       stagedAttachments.some((a) => a.status === "UPLOADING")
                     }
-                    className={`ml-auto flex size-7 items-center justify-center rounded-full hover:bg-[#1F1F1F] hover:text-white text-[#1f1f1f] transition-colors duration-300 bg-[#FCDF9C] disabled:cursor-not-allowed disabled:opacity-40 group ${inputText.trim() || stagedAttachments.length > 0 ? "" : "hidden"}`}
+                    className={`absolute bottom-4 right-2 z-10 flex size-9 items-center justify-center rounded-full bg-[#FCDF9C] text-[#1f1f1f] shadow-sm transition-colors duration-300 hover:bg-[#1F1F1F] hover:text-white disabled:cursor-not-allowed disabled:opacity-40 group lg:static lg:ml-auto lg:size-7 lg:shadow-none ${inputText.trim() || stagedAttachments.length > 0 ? "" : "hidden"}`}
                     aria-label={sending ? "Sending message" : "Send message"}
                     title={sending ? "Sending..." : "Send message"}
                   >
@@ -1563,63 +1547,45 @@ export function HostMessagesWorkspace({
         {/* ========================================================================= */}
         {/* COLUMN 3: CONTEXT & RESERVATION PANEL                                     */}
         {/* ========================================================================= */}
-        <aside className="hidden lg:flex flex-col gap-3 overflow-y-auto bg-white px-5.25 py-12">
+        <InquiryPanelContainer
+          {...(panelIsModal ? { role: "dialog", "aria-modal": true, "aria-labelledby": "mobile-message-details-title" } : {})}
+          onMouseDown={isTabletViewport ? (event) => {
+            if (event.target === event.currentTarget) setLaptopDetailsOpen(false);
+          } : undefined}
+          className={panelIsModal
+            ? isTabletViewport
+              ? "fixed inset-0 z-[60] flex min-h-0 justify-center bg-[#F7F7F7] p-4 sm:p-6"
+              : "fixed inset-0 z-[60] flex min-h-0 bg-white"
+            : `relative hidden min-h-0 xl:flex xl:w-auto xl:border-l-0 xl:shadow-none ${laptopDetailsOpen ? "lg:fixed lg:bottom-0 lg:right-0 lg:top-[88px] lg:z-50 lg:flex lg:w-[362px] lg:border-l lg:border-zinc-200 lg:shadow-[-12px_0_28px_rgba(0,0,0,0.12)]" : ""}`}
+        >
+          <aside id={panelIsModal ? "mobile-message-details" : "laptop-message-details"} ref={rightPanelScrollRef} onScroll={updateRightPanelScrollThumb} className={`custom-scrollbar flex h-full w-full flex-col gap-3 overflow-y-auto overscroll-contain bg-white ${panelIsModal ? isTabletViewport ? "max-w-[760px] border border-zinc-200 px-8 pb-8 pt-16 shadow-[0_8px_28px_rgba(0,0,0,0.08)]" : "pl-5.25 pr-5.25 pb-10 pt-[70px]" : "pl-5.25 pr-[38px] py-12"}`}>
+          <button
+            type="button"
+            onClick={() => setLaptopDetailsOpen(false)}
+            className={panelIsModal
+              ? isTabletViewport
+                ? "absolute right-8 top-8 flex size-10 items-center justify-center rounded-full border border-zinc-200 bg-white text-[#1A1A1A] shadow-sm transition-colors hover:bg-zinc-50"
+                : "absolute right-6 top-8 flex size-9 items-center justify-center rounded-full text-[#1A1A1A] transition-colors hover:bg-zinc-100"
+              : "ml-auto hidden rounded-full border border-zinc-300 px-3 py-1.5 text-xs font-medium text-[#1F1F1F] transition-colors hover:bg-zinc-50 lg:flex xl:hidden"}
+            aria-label="Close inquiry details"
+          >
+            {panelIsModal ? (
+              <svg className="size-6" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
+            ) : "Close details"}
+          </button>
           {selectedConversation ? (
             <>
               {/* 1. Header Section */}
               <section className="border-b border-[#D7D7D7] pb-4">
-                <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
-                  {headerInfo?.badge || "Inquiry"}
-                </p>
-                <h2 className="guest-name mt-1 text-xl font-medium text-[#727272]">
-                  {headerInfo?.title.startsWith(selectedConversation.guest.name || "Guest") ? (
-                    <>
-                      <span className="text-[#1F1F1F] font-semibold">
-                        {selectedConversation.guest.name || "Guest"}
-                      </span>{" "}
-                      {headerInfo.title
-                        .slice((selectedConversation.guest.name || "Guest").length)
-                        .trim()}
-                    </>
-                  ) : (
-                    <span className="text-[#1F1F1F] font-semibold">
-                      {headerInfo?.title}
-                    </span>
-                  )}
-                </h2>
-                <p className="property-location mt-3 text-sm font-semibold text-[#1F1F1F]">
-                  {selectedConversation.listing.title}
-                </p>
-                {listingLocation && (
-                  <p className="countryname text-sm text-[#727272]">
-                    {listingLocation}
-                  </p>
-                )}
-
-                {/* Pre-approve / Special Offer / Decline actions ONLY when booking is NOT confirmed or declined */}
-                {!selectedConversation.booking && selectedConversation.status !== "DECLINED" && (
-                  <div className="mt-6 space-y-3">
-                    <button
-                      type="button"
-                      onClick={() => setPreApproveModalOpen(true)}
-                      className="flex h-9 w-full items-center justify-center rounded-lg border border-[#727272] px-3 text-base font-normal text-[#1F1F1F] transition-colors hover:bg-zinc-50 cursor-pointer"
-                    >
-                      Pre-approve
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setSpecialOfferModalOpen(true)}
-                      className="flex h-9 w-full items-center justify-center rounded-lg border border-[#727272] px-3 text-base font-normal text-[#1F1F1F] transition-colors hover:bg-zinc-50 cursor-pointer"
-                    >
-                      Special offer
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setDeclineModalOpen(true)}
-                      className="flex h-9 w-full items-center justify-center rounded-lg border border-[#727272] px-3 text-base font-normal text-[#1F1F1F] transition-colors hover:bg-zinc-50 cursor-pointer"
-                    >
-                      Decline
-                    </button>
+                <p className="text-xs text-zinc-500">Inquiry</p>
+                <h2 id={panelIsModal ? "mobile-message-details-title" : undefined} className="guest-name mt-1 text-xl font-medium text-[#727272]"><span className="text-[#1f1f1f]">{selectedConversation.guest.name || "Guest"}</span> asked about your trip</h2>
+                <p className="property-location mt-3 text-sm text-[#1f1f1f] font-normal">{selectedConversation.listing.title}</p>
+                <p className="countryname text-sm text-[#727272]">{[selectedConversation.listing.city, selectedConversation.listing.country].filter(Boolean).join(", ")}</p>
+                {selectedConversation.status !== "CONFIRMED" && selectedConversation.status !== "DECLINED" && (
+                  <div className={isTabletViewport ? "mt-5 grid grid-cols-2 gap-2" : "mt-6 space-y-3"}>
+                    <button type="button" onClick={() => setPreApproveModalOpen(true)} className="flex h-10 w-full items-center justify-center rounded-xl border border-emerald-200 bg-emerald-50 px-3 text-sm font-medium text-emerald-900 transition-colors hover:bg-emerald-100">Pre-approve</button>
+                    <button type="button" onClick={openSpecialOfferModal} className="flex h-10 w-full items-center justify-center rounded-xl border border-amber-200 bg-[#FCDF9C] px-3 text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-[#F7D37D]">Special offer</button>
+                    <button type="button" onClick={() => setDeclineModalOpen(true)} className={`${isTabletViewport ? "col-span-2" : ""} flex h-10 w-full items-center justify-center rounded-xl border border-zinc-300 px-3 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50`}>Decline</button>
                   </div>
                 )}
               </section>
@@ -1726,15 +1692,12 @@ export function HostMessagesWorkspace({
                 )}
               </div>
 
-              {/* 4. Booking or Inquiry details */}
-              {selectedConversation.booking ? (
-                (() => {
-                  const b = selectedConversation.booking;
-                  const isConfirmed = b.status === "CONFIRMED";
-                  const isPending = b.status === "PENDING";
-                  const isCancelled = b.status === "CANCELLED";
-                  const cardClass =
-                    "rounded-[10px] bg-white px-4 py-3 shadow-[0_2px_5px_rgba(0,0,0,0.12)] border border-[#E5E5E5]";
+              {/* Booking details */}
+              <section className="border-t border-[#E5E5E5] pt-5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="sm:text-xl text-lg font-medium text-[#1F1F1F]">Booking details</h4>
+                  {getStatusBadge(selectedConversation.status, selectedConversation.activeSpecialOffer)}
+                </div>
 
                   return (
                     <section className="border-t border-[#E5E5E5] pt-5 space-y-3">
@@ -1802,16 +1765,25 @@ export function HostMessagesWorkspace({
                           </button>
                         )}
                       </div>
-                    </section>
-                  );
-                })()
-              ) : (
-                <section className="border-t border-[#E5E5E5] pt-5 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-xl font-medium text-[#1F1F1F]">Inquiry details</h4>
-                    <span className="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700 border border-blue-200">
-                      {selectedConversation.status === "PRE_APPROVED" ? "Pre-approved" : "Inquiry"}
-                    </span>
+                    );
+                  })()
+                ) : (
+                  <div className="space-y-3 text-sm text-zinc-600">
+                    <p>This is a pre-booking inquiry. The guest has not yet confirmed a reservation.</p>
+                    <button
+                      type="button"
+                      onClick={() => setPreApproveModalOpen(true)}
+                      className="w-full py-2.5 rounded-[10px] border border-zinc-400 text-[#1F1F1F] sm:text-base text-sm font-medium hover:bg-zinc-50 transition-colors"
+                    >
+                      Pre-approve
+                    </button>
+                    <button
+                      type="button"
+                      onClick={openSpecialOfferModal}
+                          className="w-full py-2.5 rounded-[10px] border border-zinc-400 text-[#1F1F1F] sm:text-base text-sm font-medium hover:bg-zinc-50 transition-colors"
+                    >
+                      Special offer
+                    </button>
                   </div>
 
                   {inquiryDetails?.hasDetails ? (
@@ -1928,7 +1900,19 @@ export function HostMessagesWorkspace({
               </p>
             </div>
           )}
-        </aside>
+          </aside>
+          {rightPanelScrollThumb.visible && (
+            <div ref={rightPanelScrollTrackRef} className="absolute inset-y-0 right-0 hidden w-[22px] rounded-[30px] bg-white lg:block">
+              <button type="button" aria-label="Scroll message details up" onClick={() => scrollRightPanelByPage("up")} className="absolute left-0 top-1 z-10 flex size-[22px] items-center justify-center rounded-full text-[#727272] transition hover:bg-white/70 hover:text-[#1f1f1f]">
+                <svg aria-hidden="true" className="size-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m18 15-6-6-6 6" /></svg>
+              </button>
+              <div onPointerDown={onRightPanelThumbPointerDown} className={`absolute left-0 top-0 w-[22px] touch-none select-none rounded-[30px] border border-white bg-[#DDDDDE] shadow-[0_2px_4px_rgba(0,0,0,0.25)] will-change-transform ${isRightPanelScrollbarDragging ? "cursor-grabbing" : "cursor-grab"}`} style={{ height: `${rightPanelScrollThumb.height}px`, transform: `translate3d(0, ${rightPanelScrollThumb.top}px, 0)` }} />
+              <button type="button" aria-label="Scroll message details down" onClick={() => scrollRightPanelByPage("down")} className="absolute bottom-1 left-0 z-10 flex size-[22px] items-center justify-center rounded-full text-[#727272] transition hover:bg-white/70 hover:text-[#1f1f1f]">
+                <svg aria-hidden="true" className="size-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m6 9 6 6 6-6" /></svg>
+              </button>
+            </div>
+          )}
+        </InquiryPanelContainer>
       </div>
 
       {/* Reservation Details Modal */}

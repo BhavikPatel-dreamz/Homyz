@@ -20,11 +20,14 @@ export function ReservationDashboard({
   initialTab = "today",
   reviews = [],
   onTabChange,
+  wideGuestGrid = false,
 }: {
   initialReservations?: ReservationCardData[];
   initialTab?: FilterOptions["tab"];
   reviews?: GuestAuthoredReviewDTO[];
   onTabChange?: (tab: FilterOptions["tab"]) => void;
+  /** Enables five columns only for the full-width guest dashboard. */
+  wideGuestGrid?: boolean;
 }) {
   const searchParams = useSearchParams();
   const requestedBookingView = searchParams.get("bookingView");
@@ -39,6 +42,9 @@ export function ReservationDashboard({
   });
   const [loading, setLoading] = useState<boolean>(initialReservations === undefined);
   const [error, setError] = useState<string | null>(null);
+  const reservationGridClassName = wideGuestGrid
+    ? "grid grid-cols-1 items-start gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
+    : "grid grid-cols-1 items-start gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4";
 
   useEffect(() => {
     if (initialReservations !== undefined) return;
@@ -185,7 +191,7 @@ export function ReservationDashboard({
       {error ? (
         <ErrorState message={error} onRetry={() => setError(null)} />
       ) : loading ? (
-        <LoadingSkeleton count={4} tab={filters.tab} showFilterBar={false} />
+        <LoadingSkeleton count={4} wideGuestGrid={wideGuestGrid} />
       ) : filteredItems.length === 0 ? (
         filters.tab === "upcoming" && !filters.search ? (
           <EmptyState
@@ -249,7 +255,7 @@ export function ReservationDashboard({
                 <h2 id={`bookings-year-${year}`} className="text-xl font-semibold leading-7 text-[#1F1F1F] mb-5 sm:text-2xl">
                   {year}
                 </h2>
-                <div className="grid max-w-[812px] grid-cols-1 items-start gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                <div className={reservationGridClassName}>
                   {items.map((item) => (
                     <ReservationCard
                       key={item.id}
@@ -269,12 +275,13 @@ export function ReservationDashboard({
           </div>
         </div>
       ) : (
-        <div className="grid max-w-[812px] grid-cols-1 items-start gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                <div className={reservationGridClassName}>
           {filteredItems.map((item) => (
             <ReservationCard
               key={item.id}
               data={item}
               href={`/bookings/${item.id}`}
+              variant="past"
             />
           ))}
         </div>

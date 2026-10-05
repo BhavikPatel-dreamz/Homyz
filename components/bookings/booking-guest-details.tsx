@@ -39,14 +39,14 @@ export function BookingGuestDetails({
         )}
       </div>
 
-      <div className="mt-5 rounded-2xl border border-zinc-200 bg-white p-5 shadow-2xs">
+      <div className="mt-5 sm:rounded-2xl rounded-lg border border-zinc-200 bg-white p-5 shadow-2xs">
         <dl className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div>
             <dt className="text-xs font-semibold text-[#727272] uppercase tracking-wider">Total Guests</dt>
             <dd className="mt-1 text-base font-semibold text-[#1F1F1F]">
               {totalGuests} {totalGuests === 1 ? "guest" : "guests"}
             </dd>
-            <p className="text-xs text-[#727272] mt-0.5">Maximum occupancy: {maxListingGuests}</p>
+            <p className="text-sm text-[#727272] mt-0.5">Maximum occupancy: {maxListingGuests}</p>
           </div>
 
           <div>
@@ -54,7 +54,7 @@ export function BookingGuestDetails({
             <dd className="mt-1 text-sm font-medium text-zinc-800">
               {totalGuests} {totalGuests === 1 ? "adult" : "adults / children"}
             </dd>
-            <p className="text-xs text-[#727272] mt-0.5">Infants accommodated</p>
+            <p className="text-sm text-[#727272] mt-0.5">Infants accommodated</p>
           </div>
 
           <div>
@@ -62,7 +62,7 @@ export function BookingGuestDetails({
             <dd className="mt-1 text-sm font-medium text-zinc-800">
               {petsCount > 0 ? `${petsCount} ${petsCount === 1 ? "pet" : "pets"}` : "No pets declared"}
             </dd>
-            <p className="text-xs text-[#727272] mt-0.5">Subject to listing house rules</p>
+            <p className="text-sm text-[#727272] mt-0.5">Subject to listing house rules</p>
           </div>
         </dl>
       </div>

@@ -1,21 +1,20 @@
 "use client";
 
-import React from "react";
-
 export function LoadingSkeleton({
   count = 4,
   tab = "upcoming",
   showFilterBar = true,
+  wideGuestGrid = false,
 }: {
   count?: number;
   tab?: "today" | "upcoming" | "past" | "all" | string;
   showFilterBar?: boolean;
+  wideGuestGrid?: boolean;
 }) {
   const isPast = tab === "past";
 
   return (
     <div aria-label="Loading reservations" role="status" className="flex flex-col gap-8 sm:pb-12 pb-5 animate-pulse">
-      {/* FilterBar Skeleton (only rendered when requested) */}
       {showFilterBar && (
         <div className="flex flex-col gap-6">
           <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
@@ -30,7 +29,6 @@ export function LoadingSkeleton({
               <div className="h-7 w-14 rounded-full bg-zinc-200 skeleton-shimmer" />
             </div>
           </div>
-
           <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
             <div className="h-[46px] flex-1 w-full rounded-[30px] bg-zinc-100 border border-zinc-200 skeleton-shimmer" />
             <div className="h-[46px] w-full sm:w-36 rounded-[30px] bg-zinc-100 border border-zinc-200 skeleton-shimmer" />
@@ -84,7 +82,9 @@ export function LoadingSkeleton({
           </div>
         </div>
       ) : (
-        <div className="grid max-w-[812px] grid-cols-1 items-start gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className={wideGuestGrid
+          ? "grid grid-cols-1 items-start gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5"
+          : "grid max-w-[812px] grid-cols-1 items-start gap-5 sm:grid-cols-2 lg:grid-cols-3"}>
           {Array.from({ length: count }).map((_, i) => (
             <div key={i} className="min-h-[304px] rounded-[24px] border border-zinc-200 bg-white p-4 shadow-2xs">
               <div className="aspect-[16/10] w-full rounded-[18px] bg-zinc-200 skeleton-shimmer" />

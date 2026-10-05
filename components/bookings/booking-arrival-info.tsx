@@ -50,11 +50,11 @@ function CopyBadge({ text, label }: { text: string; label: string }) {
     <button
       type="button"
       onClick={handleCopy}
-      className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-300 bg-white px-2.5 py-1 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 hover:border-zinc-400 transition-colors cursor-pointer"
+      className={`inline-flex cursor-pointer items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-medium transition-colors ${copied ? "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:border-emerald-300" : "border-zinc-300 bg-white text-zinc-700 hover:border-zinc-400 hover:bg-zinc-50"}`}
       title={`Copy ${label}`}
     >
       <span>{copied ? "Copied!" : "Copy"}</span>
-      <svg className="h-3.5 w-3.5 text-[#727272]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
       </svg>
     </button>
@@ -107,14 +107,14 @@ export function BookingArrivalInfo({
         <h2 id="arrival-heading" className="text-xl font-semibold text-[#1F1F1F]">
           Arrival & check-in
         </h2>
-        <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-800 border border-blue-200">
+        <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-800 border border-blue-200">
           {methodLabel}
         </span>
       </div>
 
       <div className="mt-5 space-y-4">
         {/* Address & Navigation */}
-        <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-2xs">
+        <div className="sm:rounded-2xl rounded-lg border border-zinc-200 bg-white p-5 shadow-2xs">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <p className="text-xs font-semibold text-[#727272] uppercase tracking-wider">Address</p>
@@ -134,7 +134,7 @@ export function BookingArrivalInfo({
                   href={directionsUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-[#1F1F1F] px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-zinc-800 transition-colors"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-[#1F1F1F] px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-[#D9D9D9] hover:text-[#1f1f1f] transition-colors"
                 >
                   <span>Google Maps</span>
                   <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -148,14 +148,14 @@ export function BookingArrivalInfo({
 
         {/* Check-in Times */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+          <div className="sm:rounded-2xl rounded-lg shadow-md bg-white p-4">
             <p className="text-xs font-semibold text-[#727272] uppercase tracking-wider">Check-in Window</p>
             <p className="mt-1 text-sm font-semibold text-[#1F1F1F]">
               {checkInStart ? `${checkInStart}` : "3:00 PM"}
               {checkInEnd ? ` – ${checkInEnd}` : " onwards"}
             </p>
           </div>
-          <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+          <div className="sm:rounded-2xl rounded-lg shadow-md bg-white p-4">
             <p className="text-xs font-semibold text-[#727272] uppercase tracking-wider">Check-out Time</p>
             <p className="mt-1 text-sm font-semibold text-[#1F1F1F]">
               {checkOutTime || "11:00 AM"}
@@ -165,7 +165,7 @@ export function BookingArrivalInfo({
 
         {/* Time-Gated Access Codes & Instructions */}
         {!isArrivalInfoReleased ? (
-          <div className="rounded-2xl border border-amber-200 bg-amber-50/70 p-5">
+          <div className="sm:rounded-2xl rounded-lg border border-amber-200 bg-amber-50/70 p-5">
             <div className="flex items-start gap-3.5">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-800">
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -222,7 +222,7 @@ export function BookingArrivalInfo({
 
             {/* Wi-Fi Details */}
             {(wifiNetwork || wifiPassword) && (
-              <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-2xs">
+              <div className="sm:rounded-2xl rounded-lg border border-zinc-200 bg-white p-5 shadow-2xs">
                 <div className="flex items-start gap-3.5">
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
                     <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -258,7 +258,7 @@ export function BookingArrivalInfo({
 
             {/* Check-in Instructions */}
             {checkInInstructions && (
-              <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-2xs">
+              <div className="sm:rounded-2xl rounded-lg border border-zinc-200 bg-white p-5 shadow-2xs">
                 <h3 className="text-sm font-semibold text-[#1F1F1F]">Check-in Instructions</h3>
                 <p className="mt-2 whitespace-pre-line text-xs sm:text-sm text-zinc-600 leading-relaxed">
                   {checkInInstructions}
@@ -290,7 +290,7 @@ export function BookingArrivalInfo({
 
             {/* House Manual */}
             {houseManual && (
-              <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-2xs">
+              <div className="sm:rounded-2xl rounded-lg border border-zinc-200 bg-white p-5 shadow-2xs">
                 <h3 className="text-sm font-semibold text-[#1F1F1F]">House Manual</h3>
                 <p className="mt-2 whitespace-pre-line text-xs sm:text-sm text-zinc-600 leading-relaxed">
                   {houseManual}
@@ -303,4 +303,3 @@ export function BookingArrivalInfo({
     </section>
   );
 }
-

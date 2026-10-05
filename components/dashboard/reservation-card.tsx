@@ -99,7 +99,7 @@ export function ReservationCard({
     <article
       className={isPastVariant
         ? "group flex flex-col"
-        : "group flex min-h-[304px] flex-col overflow-hidden rounded-[24px] border border-zinc-200 bg-white p-4 shadow-[0_2px_4px_rgba(0,0,0,0.08)] transition-[border-color,box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:border-zinc-300 hover:shadow-[0_8px_20px_rgba(0,0,0,0.10)]"}
+        : "group flex min-h-[304px] flex-col overflow-hidden rounded-[24px] border border-zinc-200 bg-white p-4 shadow-[0_2px_4px_rgba(0,0,0,0.08)] transition-[border-color,box-shadow] duration-300 hover:border-zinc-300 hover:shadow-[0_8px_20px_rgba(0,0,0,0.10)]"}
     >
       <div>
         {/* IMAGE WITH FLOATING BADGE OVERLAY */}

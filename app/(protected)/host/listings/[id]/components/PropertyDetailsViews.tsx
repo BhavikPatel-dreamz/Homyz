@@ -953,7 +953,7 @@ export function PropertyDetailsViews({
                     <select
                       value={yearBuilt}
                       onChange={(e) => setYearBuilt?.(e.target.value)}
-                      className="h-14 w-full appearance-none rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 pr-10 text-[#727272] dark:text-zinc-100 font-normal outline-none transition-colors cursor-pointer focus:border-[#1F1F1F] dark:focus:border-zinc-500 sm:h-11 sm:px-3 sm:pr-9 text-base"
+                        className="appearance-none rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 py-3.5 pr-10 text-base text-[#727272] dark:text-zinc-100 font-normal outline-none focus:border-[#1F1F1F] dark:focus:border-zinc-500 transition-colors cursor-pointer min-h-[56px]"
                     >
                       <option value="">{t("host_select_year_optional")}</option>
                       {["2026", "2025", "2024", "2023", "2022", "2021", "2020", "2018", "2015", "2010", "2005", "2000", "1995", "1990", "1980"].map((yr) => (
@@ -980,7 +980,7 @@ export function PropertyDetailsViews({
                         placeholder="e.g. 120"
                         min={1}
                         max={50000}
-                        className="h-14 w-full rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 text-base font-normal text-[#727272] dark:text-zinc-100 placeholder:text-[#727272] dark:placeholder:text-[#727272] outline-none transition-colors shadow-2xs focus:border-[#1F1F1F] dark:focus:border-zinc-500 sm:h-11 sm:px-3"
+                          className="min-h-[56px] w-full rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 text-base font-normal text-[#727272] dark:text-zinc-100 placeholder:text-[#727272] dark:placeholder:text-[#727272] outline-none transition-colors shadow-2xs focus:border-[#1F1F1F] dark:focus:border-zinc-500 sm:h-11 sm:px-3"
                       />
                     </div>
                     <div className="space-y-2">
@@ -989,7 +989,7 @@ export function PropertyDetailsViews({
                         <select
                           value={propertySizeUnit}
                           onChange={(e) => setPropertySizeUnit?.(e.target.value)}
-                          className="h-14 w-full appearance-none rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 pr-10 text-base font-normal text-[#727272] dark:text-zinc-100 outline-none transition-colors shadow-2xs focus:border-[#1F1F1F] dark:focus:border-zinc-500 sm:h-11 sm:px-3 sm:pr-8"
+                            className="min-h-[56px] w-full appearance-none rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 pr-10 text-base font-normal text-[#727272] dark:text-zinc-100 outline-none transition-colors shadow-2xs focus:border-[#1F1F1F] dark:focus:border-zinc-500 sm:h-11 sm:px-3 sm:pr-8"
                         >
                           <option value="SQM">SQM (m²)</option>
                           <option value="SQFT">SQFT (sq ft)</option>
@@ -2024,9 +2024,11 @@ export function PropertyDetailsViews({
                                         type="button"
                                         aria-label={t("host_acc_remove_photo", { name: feature.name })}
                                         onClick={() => updateAccessibilityDetail(featureId, (detail) => ({ ...detail, photos: detail.photos.filter((item) => item !== photo) }))}
-                                        className="absolute right-1 top-1 rounded-full bg-white/95 dark:bg-zinc-900/95 px-1.5 py-0.5 text-[10px] font-bold text-rose-700 dark:text-rose-400 opacity-0 transition-opacity group-hover:opacity-100 focus:opacity-100"
+                                        className="absolute right-2 top-2 flex size-8 items-center justify-center rounded-full border border-rose-600 bg-rose-600 text-white shadow-sm backdrop-blur-sm transition-all duration-200 hover:scale-105 hover:border-rose-200 hover:bg-white hover:text-rose-600 active:scale-95 focus-visible:scale-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600 dark:border-rose-600 dark:bg-rose-600 dark:text-white dark:hover:border-rose-200 dark:hover:bg-white dark:hover:text-rose-600 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
                                       >
-                                        ×
+                                        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="size-4">
+                                          <path d="m6 6 12 12M18 6 6 18" strokeLinecap="round" />
+                                        </svg>
                                       </button>
                                     </div>
                                   ))}

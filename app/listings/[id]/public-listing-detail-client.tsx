@@ -583,7 +583,6 @@ export function PublicListingDetailClient({
   const { t } = useLanguage();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const specialOfferQueryId = searchParams.get("specialOfferId") || undefined;
   const wishlist = useWishlist();
   const { data: session, status: sessionStatus } = useSession();
   const isAuthenticated = sessionStatus === "authenticated" && Boolean(session?.user);
@@ -622,16 +621,8 @@ export function PublicListingDetailClient({
   // sessionStorage and are restored by the route-sync effect after hydration.
   const [quote, setQuote] = useState<BookingQuote | null>(null);
   const lastQuoteQueryRef = useRef<string>("");
-  const quoteRequestKeyRef = useRef<string>("");
-  const quoteControllerRef = useRef<AbortController | null>(null);
-  const componentMountedRef = useRef(false);
   const isInstantBook = (quote?.bookingMode ?? listing.bookingMode) === "INSTANT_BOOK";
-  // A URL with a complete stay selection needs a quote immediately after
-  // hydration. Deriving this from server-provided props keeps the first render
-  // deterministic while avoiding a misleading idle price state.
-  const [isQuoteLoading, setIsQuoteLoading] = useState(
-    Boolean(searchCheckIn && searchCheckOut && isDateKey(searchCheckIn) && isDateKey(searchCheckOut)),
-  );
+  const [isQuoteLoading, setIsQuoteLoading] = useState(false);
   const [quoteError, setQuoteError] = useState<string | null>(null);
   const [isBookingSubmitting, setIsBookingSubmitting] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(false);
@@ -657,13 +648,6 @@ export function PublicListingDetailClient({
   const reviewSectionRef = useRef<HTMLDivElement>(null);
   const bookingPanelRef = useRef<HTMLDivElement>(null);
   const normalizedDescription = listing.description?.trim() ?? "";
-
-  useEffect(() => {
-    componentMountedRef.current = true;
-    return () => {
-      componentMountedRef.current = false;
-    };
-  }, []);
 
   const totalCapacityGuests = adultsCount + childrenCount;
   const canAddCapacityGuest = totalCapacityGuests < maximumGuests;
@@ -793,7 +777,7 @@ export function PublicListingDetailClient({
               guests: nextGuests,
               pets: nextPets,
               nonRefundable: false,
-              specialOfferId: initialSpecialOfferId || specialOfferQueryId,
+              specialOfferId: initialSpecialOfferId,
             })
           : null,
       );
@@ -814,7 +798,7 @@ export function PublicListingDetailClient({
       setAvailabilityRefreshVersion((version) => version + 1);
     }, 0);
     return () => window.clearTimeout(timer);
-  }, [listing.id, searchCheckIn, searchCheckOut, searchGuests, searchAdults, searchChildren, searchInfants, searchPets, initialSpecialOfferId, specialOfferQueryId]);
+  }, [listing.id, searchCheckIn, searchCheckOut, searchGuests, searchAdults, searchChildren, searchInfants, searchPets, initialSpecialOfferId]);
 
   useEffect(() => {
     if (!isAllAmenitiesOpen) return;
@@ -993,25 +977,6 @@ export function PublicListingDetailClient({
 
   // Format price
   const currencyCode = listing.currency ?? getCurrencyForCountry(listing.country);
-  const effectiveSpecialOfferId = initialSpecialOfferId || specialOfferQueryId;
-
-  // Guest count is an occupancy constraint, not a pricing input. The quote
-  // remains reusable while the selector moves within the listing capacity.
-  const activeQuote = useMemo(() => {
-    if (!quote) return null;
-    if (
-      quote.listingId !== listing.id
-      || quote.checkIn !== checkIn
-      || quote.checkOut !== checkOut
-      || (quote.pets ?? 0) !== petsCount
-      || Boolean(quote.isNonRefundable) !== isNonRefundable
-      || (quote.specialOfferId ?? undefined) !== effectiveSpecialOfferId
-    ) {
-      return null;
-    }
-    return quote;
-  }, [quote, listing.id, checkIn, checkOut, petsCount, isNonRefundable, effectiveSpecialOfferId]);
-
   const earliestCheckIn = getEarliestCheckInKey(listing);
   let defaultDisplayDate = earliestCheckIn;
   for (let offset = 0; offset < 366; offset += 1) {
@@ -1027,7 +992,8 @@ export function PublicListingDetailClient({
     }
   }
   // Keep the no-quote detail price identical to homepage and search cards.
-  // All surfaces use the same calendar resolver and promotion rules.
+  // Those cards resolve the first available calendar date and intentionally
+  // exclude the new-listing promotion from browse pricing.
   const defaultCalendarPricing = resolveCalendarDatePricing({
     dateKey: defaultDisplayDate,
     listing: {
@@ -1258,14 +1224,7 @@ export function PublicListingDetailClient({
 
   // Fetch quote when valid dates are selected
   useEffect(() => {
-    const cancelPendingQuote = () => {
-      quoteControllerRef.current?.abort();
-      quoteControllerRef.current = null;
-      quoteRequestKeyRef.current = "";
-    };
-
     if (!checkIn || !checkOut) {
-      cancelPendingQuote();
       lastQuoteQueryRef.current = "";
       const timer = window.setTimeout(() => {
         setQuote(null);
@@ -1276,7 +1235,6 @@ export function PublicListingDetailClient({
     }
 
     if (totalCapacityGuests < 1 || totalCapacityGuests > maximumGuests) {
-      cancelPendingQuote();
       lastQuoteQueryRef.current = "";
       const timer = window.setTimeout(() => {
         setQuote(null);
@@ -1289,18 +1247,16 @@ export function PublicListingDetailClient({
     const cIn = new Date(`${checkIn}T00:00:00`);
     const cOut = new Date(`${checkOut}T00:00:00`);
     if (isNaN(cIn.getTime()) || isNaN(cOut.getTime()) || cOut <= cIn) {
-      cancelPendingQuote();
       lastQuoteQueryRef.current = "";
       const timer = window.setTimeout(() => {
         setQuote(null);
         setQuoteError("Checkout must be after check-in");
         setIsQuoteLoading(false);
       }, 0);
-      return () => window.clearTimeout(timer);
+      return () => clearTimeout(timer);
     }
 
     if (overlapsBookedRange(checkIn, checkOut, bookedDateRanges)) {
-      cancelPendingQuote();
       lastQuoteQueryRef.current = "";
       const timer = window.setTimeout(() => {
         setQuote(null);
@@ -1310,102 +1266,76 @@ export function PublicListingDetailClient({
       return () => window.clearTimeout(timer);
     }
 
-    // Guest count is an occupancy constraint, not a pricing input. Reuse the
-    // same date/pet/rate quote while the selector moves within capacity.
-    const currentQueryKey = `${listing.id}:${checkIn}:${checkOut}:${petsCount}:${isNonRefundable}:${effectiveSpecialOfferId || ""}`;
+    const effectiveSpecialOffer = initialSpecialOfferId || searchParams.get("specialOfferId") || undefined;
+    const currentQueryKey = `${listing.id}:${checkIn}:${checkOut}:${totalCapacityGuests}:${petsCount}:${isNonRefundable}:${effectiveSpecialOffer || ""}`;
 
-    // Availability can update while the quote request is still in flight.
-    // Do not abort and restart the same request just because that independent
-    // state changed; a failed request clears the key below so a later render
-    // can retry normally.
-    if (lastQuoteQueryRef.current === currentQueryKey && (quoteRequestKeyRef.current === currentQueryKey || quote)) {
+    if (lastQuoteQueryRef.current === currentQueryKey && quote) {
       return;
     }
 
+    let isMounted = true;
     const controller = new AbortController();
-    const selection = {
-      listingId: listing.id,
-      checkIn,
-      checkOut,
-      guests: totalCapacityGuests,
-      pets: petsCount,
-      nonRefundable: isNonRefundable,
-      specialOfferId: effectiveSpecialOfferId,
-    };
-    // Reuse an exact session quote immediately when the guest returns to a
-    // previously priced selection, then revalidate it in the background.
-    const cachedQuote = readBookingQuote<BookingQuote>(selection);
-    if (cachedQuote) {
-      window.setTimeout(() => {
-        if (componentMountedRef.current && quoteRequestKeyRef.current === currentQueryKey) {
-          setQuote(cachedQuote);
-        }
-      }, 0);
-    }
-    lastQuoteQueryRef.current = currentQueryKey;
-    if (quoteRequestKeyRef.current && quoteRequestKeyRef.current !== currentQueryKey) {
-      quoteControllerRef.current?.abort();
-    }
-    quoteRequestKeyRef.current = currentQueryKey;
-    quoteControllerRef.current = controller;
-    // Start the authoritative request in this effect immediately. The old
-    // zero-delay timer made rapid date changes spend an extra event-loop turn
-    // in a stale/loading state and could leave the previous breakdown visible.
-    setIsQuoteLoading(true);
-    setQuoteError(null);
+    const timer = setTimeout(() => {
+      lastQuoteQueryRef.current = currentQueryKey;
+      setIsQuoteLoading(true);
+      setQuoteError(null);
 
-    fetchAuthoritativeQuote<BookingQuote>(
-      selection,
-      { signal: controller.signal },
-    )
-      .then((data) => {
-        if (!componentMountedRef.current || quoteRequestKeyRef.current !== currentQueryKey) return;
-        setQuote(data);
-        setQuoteError(null);
-        trackListingEvent({
-          eventType: "quote_calculated",
-          propertyId: listing.id,
-          city: listing.city,
-          country: listing.country,
+      fetchAuthoritativeQuote<BookingQuote>(
+        {
+          listingId: listing.id,
           checkIn,
           checkOut,
-          guestCount: totalCapacityGuests,
-          metadata: {
-            nights: data.nights,
-            totalPrice: data.guestTotal ?? data.totalPrice,
-            extraGuestFee: data.extraGuestFee,
-            appliedDiscount: data.appliedDiscount?.name,
-            nonRefundable: isNonRefundable,
-          },
+          guests: totalCapacityGuests,
+          pets: petsCount,
+          nonRefundable: isNonRefundable,
+          specialOfferId: effectiveSpecialOffer,
+        },
+        { signal: controller.signal },
+      )
+        .then((data) => {
+          if (!isMounted) return;
+          setQuote(data);
+          setQuoteError(null);
+          trackListingEvent({
+            eventType: "quote_calculated",
+            propertyId: listing.id,
+            city: listing.city,
+            country: listing.country,
+            checkIn,
+            checkOut,
+            guestCount: totalCapacityGuests,
+            metadata: {
+              nights: data.nights,
+              totalPrice: data.guestTotal ?? data.totalPrice,
+              extraGuestFee: data.extraGuestFee,
+              appliedDiscount: data.appliedDiscount?.name,
+              nonRefundable: isNonRefundable,
+            },
+          });
+        })
+        .catch((error: unknown) => {
+          if (!isMounted || (error instanceof DOMException && error.name === "AbortError")) return;
+          setQuote(null);
+          setQuoteError(error instanceof Error ? error.message : "Unable to calculate price quotation.");
+        })
+        .finally(() => {
+          if (isMounted) setIsQuoteLoading(false);
         });
-      })
-      .catch((error: unknown) => {
-        if (!componentMountedRef.current || (error instanceof DOMException && error.name === "AbortError")) return;
-        lastQuoteQueryRef.current = "";
-        quoteRequestKeyRef.current = "";
-        setQuote(null);
-        setQuoteError(error instanceof Error ? error.message : "Unable to calculate price quotation.");
-      })
-      .finally(() => {
-        if (componentMountedRef.current && quoteRequestKeyRef.current === currentQueryKey) {
-          quoteRequestKeyRef.current = "";
-          setIsQuoteLoading(false);
-        }
-      });
+    }, 0);
 
     return () => {
-      // The next effect setup aborts only when its selection key differs.
-      // Leaving this request alive here avoids Strict Mode and availability
-      // refreshes cancelling an otherwise reusable quote request.
+      isMounted = false;
+      controller.abort();
+      clearTimeout(timer);
     };
-  }, [checkIn, checkOut, totalCapacityGuests, petsCount, isNonRefundable, listing.id, listing.city, listing.country, maximumGuests, effectiveSpecialOfferId, bookedDateRanges, quote]);
+  }, [checkIn, checkOut, totalCapacityGuests, petsCount, isNonRefundable, listing.id, listing.city, listing.country, maximumGuests, initialSpecialOfferId, searchParams, bookedDateRanges]);
 
   const isDateRangeValid = Boolean(
     isDateKey(checkIn) && isDateKey(checkOut) && checkOut > checkIn && !overlapsBookedRange(checkIn, checkOut, bookedDateRanges),
   );
   const isGuestSelectionValid = Number.isInteger(totalCapacityGuests) && totalCapacityGuests >= 1 && totalCapacityGuests <= maximumGuests;
   const hasValidQuote = Boolean(
-    isDateRangeValid && isGuestSelectionValid && activeQuote && !quoteError && !isQuoteLoading && !isAvailabilityLoading && !availabilityError,
+    isDateRangeValid && isGuestSelectionValid && quote && !quoteError && !isQuoteLoading && !isAvailabilityLoading && !availabilityError,
   );
 
   const clearBookingDates = () => {
@@ -1717,7 +1647,7 @@ export function PublicListingDetailClient({
       return;
     }
 
-    if (!hasValidQuote || !activeQuote) {
+    if (!hasValidQuote || !quote) {
       setQuoteError("Unable to calculate price quotation for these dates. Please try another selection.");
       trackListingEvent({
         eventType: "reserve_validation_failed",
@@ -1726,6 +1656,8 @@ export function PublicListingDetailClient({
       });
       return;
     }
+
+    const effectiveSpecialOffer = initialSpecialOfferId || searchParams.get("specialOfferId") || undefined;
 
     setIsBookingSubmitting(true);
     setQuoteError(null);
@@ -1737,8 +1669,8 @@ export function PublicListingDetailClient({
         guests: totalCapacityGuests,
         pets: petsCount,
         nonRefundable: isNonRefundable,
-        specialOfferId: effectiveSpecialOfferId,
-      }, activeQuote);
+        specialOfferId: effectiveSpecialOffer,
+      }, quote);
       const checkoutUrl = buildBookingCheckoutUrl(
         listing.customSlug || listing.id,
         {
@@ -1750,11 +1682,11 @@ export function PublicListingDetailClient({
           children: childrenCount,
           infants: infantsCount,
           pets: petsCount,
-          specialOfferId: effectiveSpecialOfferId,
+          specialOfferId: effectiveSpecialOffer,
         },
         {
           ...(isNonRefundable ? { nonRefundable: "true" } : {}),
-          bookingMode: activeQuote.bookingMode,
+          bookingMode: quote.bookingMode,
         },
       );
 
@@ -1772,7 +1704,7 @@ export function PublicListingDetailClient({
           infants: infantsCount,
           pets: petsCount,
           isNonRefundable,
-          bookingMode: activeQuote.bookingMode,
+          bookingMode: quote.bookingMode,
         },
       });
 
@@ -1795,7 +1727,7 @@ export function PublicListingDetailClient({
         children: childrenCount,
         infants: infantsCount,
         pets: petsCount,
-        specialOfferId: effectiveSpecialOfferId,
+        specialOfferId: effectiveSpecialOffer,
       });
 
       if (!isAuthenticated) {
@@ -2122,21 +2054,19 @@ export function PublicListingDetailClient({
                       <>
                         <div className="flex items-baseline justify-between border-b border-zinc-100 pb-4">
                           <div>
-                            {(activeQuote?.selectedDiscount || activeQuote?.nonRefundableDiscount) && activeQuote.discountAmount > 0 && activeQuote.nights > 0 ? (
+                            {(quote?.selectedDiscount || quote?.nonRefundableDiscount) && quote.discountAmount > 0 && quote.nights > 0 ? (
                               <div className="flex items-baseline gap-2">
                                 <span className="text-[20px] font-medium text-[#1F1F1F] underline underline-offset-4">
-                                  {formatPrice(activeQuote.discountedDisplayPrice ?? Math.round((activeQuote.accommodationSubtotal ?? (activeQuote.nightlySubtotal - activeQuote.discountAmount)) / activeQuote.nights), currencyCode)}
+                                  {formatPrice(quote.discountedDisplayPrice ?? Math.round((quote.accommodationSubtotal ?? (quote.nightlySubtotal - quote.discountAmount)) / quote.nights), currencyCode)}
                                 </span>
                                 <span className="text-sm text-[#727272] line-through font-normal">
-                                  {formatPrice(activeQuote.originalDisplayPrice ?? activeQuote.baseNightlyPrice, currencyCode)}
+                                  {formatPrice(quote.originalDisplayPrice ?? quote.baseNightlyPrice, currencyCode)}
                                 </span>
                                 <span className="text-base text-[#1F1F1F] font-normal"> / night</span>
                               </div>
                             ) : (
                               <div>
-                                <span className="text-[20px] font-medium text-[#1F1F1F] underline underline-offset-4">
-                                  {activeQuote ? formatPrice(activeQuote.discountedDisplayPrice ?? activeQuote.baseNightlyPrice, currencyCode) : displayPrice ?? "Price unavailable"}
-                                </span>
+                                <span className="text-[20px] font-medium text-[#1F1F1F] underline underline-offset-4">{displayPrice ?? "Price unavailable"}</span>
                                 <span className="text-base text-[#1F1F1F] font-normal"> / night</span>
                               </div>
                             )}
@@ -2293,7 +2223,7 @@ export function PublicListingDetailClient({
                         )} */}
 
                         {/* Live Quote Breakdown */}
-                        {isQuoteLoading && !activeQuote && (
+                        {isQuoteLoading && !quote && (
                           <div className="py-4 text-center text-xs text-[#727272] animate-pulse font-medium">
                             {t("listing_detail_calculating_breakdown", "Calculating price breakdown...")}
                           </div>
@@ -2308,75 +2238,70 @@ export function PublicListingDetailClient({
                           </div>
                         )}
 
-                        {activeQuote && (
+                        {quote && (
                           <div className="space-y-2.5 pt-2 border-t border-zinc-100 text-sm">
-                            {isQuoteLoading && <p className="text-xs font-medium text-[#727272]" aria-live="polite">Updating price…</p>}
+                            {/* {isQuoteLoading && (
+                              <p className="text-xs font-medium text-[#727272]" aria-live="polite">Updating price…</p>
+                            )} */}
                             <div className="flex items-center justify-between text-[#727272]">
                               <span>
-                                {new Set(activeQuote.breakdown.map((night) => night.price)).size <= 1
-                                  ? `${formatPrice(activeQuote.breakdown[0]?.price ?? activeQuote.baseNightlyPrice, listing.currency ?? getCurrencyForCountry(listing.country))} × ${activeQuote.nights} ${activeQuote.nights === 1 ? "night" : "nights"}`
-                                  : `Accommodation · ${activeQuote.nights} nights (varying rates)`}
+                                {new Set(quote.breakdown.map((night) => night.price)).size <= 1
+                                  ? `${formatPrice(quote.breakdown[0]?.price ?? quote.baseNightlyPrice, listing.currency ?? getCurrencyForCountry(listing.country))} × ${quote.nights} ${quote.nights === 1 ? "night" : "nights"}`
+                                  : `Accommodation · ${quote.nights} nights (varying rates)`}
                               </span>
-                              <span>{formatPrice(activeQuote.nightlySubtotal, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
+                              <span>{formatPrice(quote.nightlySubtotal, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                             </div>
 
-                            {activeQuote.customPricedNights !== undefined && activeQuote.customPricedNights > 0 && (
+                            {quote.customPricedNights !== undefined && quote.customPricedNights > 0 && (
                               <div className="flex items-center justify-between text-amber-700 text-sm font-medium bg-amber-50 px-2 py-0.5 rounded">
-                                <span>Includes {activeQuote.customPricedNights} custom calendar rate {activeQuote.customPricedNights === 1 ? "night" : "nights"}</span>
+                                <span>Includes {quote.customPricedNights} custom calendar rate {quote.customPricedNights === 1 ? "night" : "nights"}</span>
                               </div>
                             )}
 
-                            {activeQuote.weekendNights > 0 && activeQuote.weekendNightlyPrice && (
+                            {quote.weekendNights > 0 && quote.weekendNightlyPrice && (
                               <div className="flex items-center justify-between text-[#727272] text-sm">
-                                <span>Includes {activeQuote.weekendNights} weekend nights</span>
-                                <span>{formatPrice(activeQuote.weekendNightlyPrice, currencyCode)} / night</span>
+                                <span>Includes {quote.weekendNights} weekend nights</span>
+                                <span>{formatPrice(quote.weekendNightlyPrice, currencyCode)} / night</span>
                               </div>
                             )}
 
-                            {activeQuote.petFee !== undefined && activeQuote.petFee > 0 && (
+                            {quote.extraGuestFee !== undefined && quote.extraGuestFee > 0 && (
                               <div className="flex items-center justify-between text-[#727272]">
-                                <span>Pet fee</span>
-                                <span>{formatPrice(activeQuote.petFee, currencyCode)}</span>
+                                <span>Extra guest fee</span>
+                                <span>{formatPrice(quote.extraGuestFee, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                               </div>
                             )}
 
-                            {activeQuote.cleaningFee !== undefined && activeQuote.cleaningFee > 0 && (
-                              <div className="flex items-center justify-between text-[#727272]">
-                                <span>Cleaning fee</span>
-                                <span>{formatPrice(activeQuote.cleaningFee, currencyCode)}</span>
-                              </div>
-                            )}
-
-                            {activeQuote.appliedDiscount && (
+                            {quote.appliedDiscount && (
                               <div className="flex items-center justify-between text-emerald-700 font-medium">
-                                <span>{activeQuote.selectedDiscount?.label ? `${activeQuote.selectedDiscount.label} (${activeQuote.selectedDiscount.percentage}%)` : activeQuote.appliedDiscount.name}</span>
-                                <span>−{formatPrice(activeQuote.selectedDiscount?.amount ?? activeQuote.appliedDiscount.amount, currencyCode)}</span>
+                                <span>{quote.selectedDiscount?.label ? `${quote.selectedDiscount.label} (${quote.selectedDiscount.percentage}%)` : quote.appliedDiscount.name}</span>
+                                <span>−{formatPrice(quote.selectedDiscount?.amount ?? quote.appliedDiscount.amount, currencyCode)}</span>
                               </div>
                             )}
 
-                            {activeQuote.nonRefundableDiscount && (
+                            {quote.nonRefundableDiscount && (
                               <div className="flex items-center justify-between text-emerald-700 font-medium">
-                                <span>{activeQuote.nonRefundableDiscount.name} ({activeQuote.nonRefundableDiscount.percentage}%)</span>
-                                <span>−{formatPrice(activeQuote.nonRefundableDiscount.amount, currencyCode)}</span>
+                                <span>{quote.nonRefundableDiscount.name} ({quote.nonRefundableDiscount.percentage}%)</span>
+                                <span>−{formatPrice(quote.nonRefundableDiscount.amount, currencyCode)}</span>
                               </div>
                             )}
 
-                            {activeQuote.taxes && activeQuote.taxes.length > 0 ? (
+                            {quote.taxes && quote.taxes.length > 0 ? (
                               <>
                                 <div className="pt-2 border-t border-zinc-100 space-y-1.5">
                                   <div className="flex items-center justify-between text-[#727272]">
                                     <span className="flex items-center gap-1.5 font-medium">
                                       {t("listing_detail_taxes_and_fees", "Taxes & fees")}
-                                      {activeQuote.taxes.some((tax) => tax.exemptionApplied) && (
+                                      {quote.taxes.some((tax) => tax.exemptionApplied) && (
                                         <span className="text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-1.5 py-0.5 rounded-full font-semibold">
                                           Exemption applied
                                         </span>
                                       )}
                                     </span>
-                                    <span className="font-medium">{formatPrice(activeQuote.taxTotal, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
+                                    <span className="font-medium">{formatPrice(quote.taxTotal, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                                   </div>
                                     <div className="pl-2.5 space-y-1 border-l-2 border-[#FCDF9C] text-sm font-light text-[#727272]">
-                                    {activeQuote.taxes.map((tax, idx) => (
+                                    {quote.taxes.map((tax, idx) => (
                                       <div key={idx} className="flex items-center justify-between">
                                         <span>
                                           {tax.taxName}
@@ -2391,13 +2316,13 @@ export function PublicListingDetailClient({
 
                                 <div className="pt-2 border-t border-zinc-200 flex items-center justify-between text-lg font-bold text-[#1f1f1f]">
                                   <span>{t("listing_detail_total", "Total")}</span>
-                                  <span>{formatPrice((activeQuote.guestTotal ?? activeQuote.totalPrice) || 0, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
+                                  <span>{formatPrice((quote.guestTotal ?? quote.totalPrice) || 0, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                                 </div>
                               </>
                             ) : (
-                                <div className="pt-2 border-t border-zinc-200 flex items-center justify-between text-lg font-bold text-[#1f1f1f]">
-                                  <span>{t("listing_detail_total", "Total")}</span>
-                                <span>{formatPrice((activeQuote.guestTotal ?? activeQuote.totalPrice) || 0, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
+                                  <div className="pt-2 border-t border-zinc-200 flex items-center justify-between text-lg font-bold text-[#1f1f1f]">
+                                <span>{t("listing_detail_total", "Total")}</span>
+                                <span>{formatPrice((quote.guestTotal ?? quote.totalPrice) || 0, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                               </div>
                             )}
                           </div>
@@ -2855,12 +2780,12 @@ export function PublicListingDetailClient({
           <div className="min-w-0">
             <div className="flex items-baseline gap-1 truncate">
               <span className="text-[20px] font-normal text-[#1f1f1f] sm:text-lg">
-                {activeQuote?.guestTotal || activeQuote?.totalPrice
-                  ? formatPrice((activeQuote.guestTotal ?? activeQuote.totalPrice) || 0, currencyCode)
+                {quote?.guestTotal || quote?.totalPrice
+                  ? formatPrice((quote.guestTotal ?? quote.totalPrice) || 0, currencyCode)
                   : displayPrice ?? "Price unavailable"}
               </span>
               <span className="text-xs font-normal text-[#727272]">
-                {activeQuote?.nights ? `total · ${activeQuote.nights} ${activeQuote.nights === 1 ? "night" : "nights"}` : ` ${t("listing_detail_per_night", "/ night")}`}
+                {quote?.nights ? `total · ${quote.nights} ${quote.nights === 1 ? "night" : "nights"}` : ` ${t("listing_detail_per_night", "/ night")}`}
               </span>
             </div>
             <div className="truncate text-xs font-medium text-[#727272]">

@@ -166,7 +166,7 @@ export function ChangeReservationModal({
           onClick={onClose}
           disabled={submitting}
           aria-label="Close dialog"
-          className="absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-full text-[#727272] hover:bg-zinc-100 hover:text-zinc-800 disabled:opacity-50"
+          className="absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-full text-[#1f1f1f] hover:bg-zinc-100 hover:text-zinc-800 disabled:opacity-50"
         >
           <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -255,7 +255,7 @@ export function ChangeReservationModal({
         </div>
 
         {/* Pricing & Comparison Preview */}
-        <div className="mt-6 rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+        <div className="mt-6 sm:rounded-2xl rounded-lg shadow-md bg-white p-4">
           {loadingPreview ? (
             <div className="flex items-center justify-center py-4 text-xs text-[#727272] gap-2">
               <svg className="h-4 w-4 animate-spin text-[#727272]" fill="none" viewBox="0 0 24 24">
@@ -314,7 +314,7 @@ export function ChangeReservationModal({
             type="button"
             onClick={onClose}
             disabled={submitting}
-            className="flex h-11 items-center justify-center rounded-full border border-zinc-300 px-5 text-sm font-semibold text-zinc-700 hover:bg-zinc-100 disabled:opacity-50"
+            className="flex h-11 items-center justify-center rounded-full border border-[#1F1F1F] px-5 text-sm font-medium text-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white disabled:opacity-50"
           >
             Cancel
           </button>
@@ -322,7 +322,7 @@ export function ChangeReservationModal({
             type="button"
             onClick={handleSubmit}
             disabled={submitting || !hasChanges || !previewData?.available}
-            className="flex h-11 items-center justify-center gap-2 rounded-full bg-[#1F1F1F] px-6 text-sm font-semibold text-white shadow-xs hover:bg-zinc-800 disabled:bg-zinc-300 disabled:cursor-not-allowed cursor-pointer"
+            className="flex h-11 items-center justify-center gap-2 rounded-full bg-[#FCDF9C] px-6 text-sm font-medium text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] disabled:bg-zinc-300 disabled:text-[#727272] disabled:cursor-not-allowed cursor-pointer transition-all duration-300"
           >
             {submitting ? (
               <>

@@ -56,7 +56,7 @@ export function BookingDetailsClient({ data }: BookingDetailsClientProps) {
   );
 
   return (
-    <div className="mx-auto w-full max-w-6xl pb-16 pt-4 text-[#1F1F1F]">
+    <div className="w-full pb-16 pt-4 text-[#1F1F1F]">
       {/* Back navigation */}
       <Link
         href={backLinkHref}
@@ -69,7 +69,7 @@ export function BookingDetailsClient({ data }: BookingDetailsClientProps) {
       </Link>
 
       {/* Main Grid: Left Content (cols) & Right Sticky Sidebar */}
-      <div className="mt-5 grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-14">
+      <div className="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-14">
         {/* Left Column: Comprehensive Reservation Management */}
         <div className="min-w-0">
           {/* Header */}
@@ -78,11 +78,11 @@ export function BookingDetailsClient({ data }: BookingDetailsClientProps) {
               <p className="text-xs font-semibold uppercase tracking-wider text-[#727272]">
                 Reservation #{bookingCode}
               </p>
-              <h1 className="mt-1.5 text-2xl sm:text-3xl font-bold tracking-tight text-[#1F1F1F]">
+              <h1 className="mt-1.5 text-2xl sm:text-3xl font-semibold tracking-tight text-[#1F1F1F]">
                 {listing.title}
               </h1>
               {location && (
-                <p className="mt-1.5 text-sm font-medium text-zinc-600 flex items-center gap-1.5">
+                <p className="mt-1.5 text-sm font-medium text-[#727272] flex items-center gap-1.5">
                   <svg className="h-4 w-4 text-[#727272] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -93,14 +93,14 @@ export function BookingDetailsClient({ data }: BookingDetailsClientProps) {
             </div>
 
             <div className="flex flex-col items-end gap-1.5">
-              <span className={`rounded-full px-3.5 py-1 text-sm font-semibold shadow-2xs ${statusDetails.badgeClass}`}>
+              <span className={`rounded-full px-3.5 py-1 text-sm font-medium shadow-2xs ${statusDetails.badgeClass}`}>
                 {statusDetails.label}
               </span>
             </div>
           </div>
 
           {/* Contextual Status Banner */}
-          <div className={`mt-6 rounded-2xl border p-5 ${
+          <div className={`mt-6 sm:rounded-2xl rounded-lg border p-5 ${
             statusDetails.isCompleted
               ? "bg-zinc-50 border-zinc-200 text-zinc-800"
               : statusDetails.isCancelled
@@ -231,28 +231,28 @@ export function BookingDetailsClient({ data }: BookingDetailsClientProps) {
               Need help with this reservation?
             </h2>
             <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-2xs">
-                <h3 className="font-semibold text-sm text-[#1F1F1F]">Message your host</h3>
-                <p className="mt-1 text-xs text-zinc-600 leading-relaxed">
+              <div className="sm:rounded-2xl rounded-lg border border-zinc-200 bg-white p-5 shadow-2xs">
+                <h3 className="font-semibold text-base text-[#1F1F1F]">Message your host</h3>
+                <p className="mt-1 text-sm text-[#727272]">
                   Have questions about arrival, luggage drop-off, key exchange, or check-in?
                 </p>
                 <button
                   type="button"
                   onClick={() => setIsContactOpen(true)}
-                  className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-[#1F1F1F] underline underline-offset-4 hover:text-zinc-600 cursor-pointer"
+                  className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-[#1F1F1F] underline underline-offset-4 hover:text-zinc-600 cursor-pointer"
                 >
                   Contact host
                 </button>
               </div>
 
-              <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-2xs">
-                <h3 className="font-semibold text-sm text-[#1F1F1F]">24/7 Concierge Support</h3>
-                <p className="mt-1 text-xs text-zinc-600 leading-relaxed">
+              <div className="sm:rounded-2xl rounded-lg border border-zinc-200 bg-white p-5 shadow-2xs">
+                <h3 className="font-semibold text-base text-[#1F1F1F]">24/7 Concierge Support</h3>
+                <p className="mt-1 text-sm text-[#727272]">
                   Our customer care team is available around the clock to support your stay.
                 </p>
                 <Link
                   href="/profile/tab/support"
-                  className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-[#1F1F1F] underline underline-offset-4 hover:text-zinc-600"
+                  className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-[#1F1F1F] underline underline-offset-4 hover:text-zinc-600"
                 >
                   Contact support
                 </Link>

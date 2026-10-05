@@ -157,7 +157,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
     { href: "/host/listings", label: t("header_your_listings") || "Your listings", icon: "/images/icons/listing-edit-icon.svg" },
     { href: "/host/bookings", label: t("header_booking_requests") || "Booking requests", icon: "/images/icons/post-bookings.svg" },
     { href: "/host/messages", label: t("header_messages") || "Messages", icon: "/images/icons/messages.svg" },
-    { href: "/dashboard", label: t("header_dashboard") || "Dashboard", icon: "/images/icons/home-icon.svg" },
+    { href: "/dashboard", label: t("header_dashboard") || "Dashboard", icon: "/images/icons/streamline-freehand/dashboard-layout--Streamline-Freehand.svg" },
     { href: "/profile/tab/notifications", label: t("header_notifications") || "Notifications", icon: "/images/icons/Notifications.svg" },
     { href: "/profile", label: t("header_profile") || "Profile", icon: "/images/icons/profile.svg" },
     { href: "/profile/tab/account_settings", label: t("header_account_settings") || "Account settings", icon: "/images/icons/setting.svg" }, // alias: /account-settings/personal-info

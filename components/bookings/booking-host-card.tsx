@@ -35,7 +35,7 @@ export function BookingHostCard({
 
   return (
     <section className="border-b border-zinc-200 py-7" aria-labelledby="host-heading">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5 rounded-3xl border border-zinc-200 bg-white p-6 shadow-2xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5 sm:rounded-3xl rounded-lg border border-zinc-200 bg-white p-6 shadow-2xs">
         <div className="flex items-center gap-4">
           {hostImage ? (
             <img
@@ -67,7 +67,7 @@ export function BookingHostCard({
           <button
             type="button"
             onClick={onContactHost}
-            className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-[#1F1F1F] px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-800 transition-colors cursor-pointer"
+            className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-[#1F1F1F] hover:bg-[#D9D9D9] text-white hover:text-[#1f1f1f] px-4 py-2 text-sm font-semibold transition-colors duration-300 cursor-pointer"
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />

@@ -1,15 +1,8 @@
 import { YourSpaceEditorSkeleton } from "../components/YourSpaceSkeletons";
 
-interface LoadingProps {
-  params?: Promise<{ id?: string; section?: string[] }>;
-  searchParams?: Promise<{ section?: string }>;
-}
-
-export default async function HostListingSectionLoading({ params, searchParams }: LoadingProps) {
-  const resolvedParams = params ? await params : undefined;
-  const resolvedSearchParams = searchParams ? await searchParams : undefined;
-
-  const rawSection = resolvedParams?.section?.[0] || resolvedSearchParams?.section || "property-type";
-
-  return <YourSpaceEditorSkeleton section={rawSection} />;
+export default function HostListingSectionLoading() {
+  // `loading.tsx` is rendered as a Suspense fallback and receives no route
+  // params. Use the editor's representative first-section layout so the page
+  // shell stays stable while the selected section streams in.
+  return <YourSpaceEditorSkeleton section="property-type" />;
 }

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLanguage } from "@/lib/i18n/language-context";
+import { InviteEarnSkeleton } from "@/components/dashboard/section-skeletons";
 
 type ReferralStatus = "JOINED" | "PENDING_APPROVAL" | "CREDITED" | "NOT_APPROVED";
 type ReferralData = {
@@ -23,10 +24,6 @@ async function copyToClipboard(value: string): Promise<void> {
   const copied = document.execCommand("copy");
   textarea.remove();
   if (!copied) throw new Error("Clipboard access is unavailable");
-}
-
-function InviteEarnSkeleton() {
-  return <div aria-busy="true" aria-label="Loading invite and earn" className="w-full max-w-[1080px] animate-pulse space-y-6"><div className="h-10 w-52 rounded-lg bg-zinc-200" /><div className="h-36 rounded-2xl border border-[#E5E5E5] bg-zinc-50" /><div className="grid gap-4 sm:grid-cols-3"><div className="h-28 rounded-2xl bg-zinc-100" /><div className="h-28 rounded-2xl bg-zinc-100" /><div className="h-28 rounded-2xl bg-zinc-100" /></div><div className="h-56 rounded-2xl bg-zinc-100" /></div>;
 }
 
 function formatDate(value: string) {

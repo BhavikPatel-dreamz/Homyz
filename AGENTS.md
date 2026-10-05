@@ -15,6 +15,12 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Keep modal content scrollable when it exceeds the viewport. Do not add independent `document.body` or `document.documentElement` scroll-style mutations; they conflict with stacked modals.
 - Anchored non-modal dropdowns do not need to lock background scrolling.
 
+## Loading UI behavior
+
+- Treat every `loading.tsx` and in-component skeleton as a layout contract with the UI it replaces. Reuse or inherit the same page shell, container width, responsive grid, major section order, and persistent controls; do not introduce a nested `max-w-*`, centering wrapper, or different breakpoint layout unless the rendered UI has the same constraint.
+- Before changing or adding a loading state, compare it with its resolved page and parent layout at mobile and desktop widths. Preserve the footprint of prominent content (headers, sidebars, cards, media, and fixed/sticky panels) to avoid layout shift when data resolves.
+- Route loading files do not receive route params. When an exact variant cannot be selected, render the representative page structure rather than a generic, narrower placeholder.
+
 ## Host listing editor UI work
 
 - Preserve existing state, navigation, save behavior, and developer functionality when implementing host listing editor designs. Make UI-only changes unless a task explicitly requests functional changes.

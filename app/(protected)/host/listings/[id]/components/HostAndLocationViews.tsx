@@ -912,50 +912,76 @@ function CoHostView(props: Props) {
   const active = coHosts.filter(
     (item) => item.status === "PENDING" || item.status === "ACCEPTED",
   );
+  const hasCoHosts = active.length > 0;
   return (
     <div className="w-full max-w-full space-y-5 pb-10 lg:max-w-[calc(100%-75px)]">
-      <div className="flex items-start gap-6">
-        <BackButton onClick={onBack} className="mt-2" />
-        <div className="flex w-full justify-between">
-          <div className="flex flex-col items-start">
-            <h1>{t("host_cohost_title") || "Co-hosts"}</h1>
-            <p className="mt-1 text-sm font-normal text-[#727272]">
-              {t("host_cohost_subtitle") || "Accepted co-hosts are active, pending invitations are not."}
-            </p>
-          </div>
-          <div>
-            <button
-              type="button"
-              onClick={openModal}
-              className="rounded-full bg-[#FEE08B] px-5 py-2.5 text-sm font-medium transition-colors text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 duration-300"
-            >
-              {t("host_cohost_invite_button") || "Invite co-host"}
-            </button>
+      {hasCoHosts && (
+        <div className="flex items-start gap-6">
+          <BackButton onClick={onBack} className="mt-2" />
+          <div className="flex w-full justify-between">
+            <div className="flex flex-col items-start">
+              <h1>{t("host_cohost_title") || "Co-hosts"}</h1>
+              <p className="mt-1 text-sm font-normal text-[#727272]">
+                {t("host_cohost_subtitle") || "Accepted co-hosts are active, pending invitations are not."}
+              </p>
+            </div>
+            <div>
+              <button
+                type="button"
+                onClick={openModal}
+                className="rounded-full bg-[#FEE08B] px-5 py-2.5 text-sm font-medium transition-colors text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 duration-300"
+              >
+                {t("host_cohost_invite_button") || "Invite co-host"}
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {props.isLoading ? (
         <CoHostSkeleton />
       ) : (
         <>
           {message && <p aria-live="polite" className="text-sm text-zinc-600">{message}</p>}
-          {active.length === 0 ? (
-            <p className="rounded-2xl border border-dashed border-zinc-300 p-6 text-sm text-[#727272]">
-              {t("host_cohost_empty_state") || "No co-hosts or pending invitations."}
-            </p>
+          {!hasCoHosts ? (
+            <section className="flex min-h-[500px] flex-col items-center justify-center px-4 py-12 text-center sm:min-h-[580px]" aria-labelledby="co-host-empty-title">
+              <Image
+                src="/images/illustrations/no-co-host-icon.svg"
+                alt=""
+                width={252}
+                height={210}
+                className="h-auto w-[190px] sm:w-[220px]"
+                priority
+              />
+              <h1 id="co-host-empty-title" className="mt-8 text-3xl font-semibold tracking-tight text-[#1F1F1F] sm:text-4xl">
+                {t("host_cohost_empty_title") || "Invite a co-host"}
+              </h1>
+              <p className="mt-3 max-w-[440px] text-base leading-6 text-[#727272] sm:text-lg">
+                {t("host_cohost_empty_description") || "A co-host can help you with everything from managing your calendar to welcoming guests."}
+              </p>
+              <Link href="/help" className="mt-3 text-sm font-medium underline underline-offset-2 transition-colors hover:text-[#727272]">
+                {t("host_cohost_learn_more") || "Learn more about"}
+              </Link>
+              <button
+                type="button"
+                onClick={openModal}
+                className="mt-12 rounded-full border border-[#1F1F1F] bg-[#FEE08B] px-7 py-3 text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-[#1F1F1F] hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900"
+              >
+                {t("host_cohost_get_started") || "Get started"}
+              </button>
+            </section>
           ) : (
             <div className="space-y-3">
               {active.map((item) => (
                 <div
                   key={item.id}
-                  className="flex items-center justify-between gap-3 rounded-2xl border border-zinc-200 p-4"
+                  className="flex items-center justify-between gap-3 rounded-2xl border border-[#727272] p-4"
                 >
                   <div className="min-w-0">
                     <p className="truncate font-medium">
                       {item.user?.name || item.email || item.phone}
                     </p>
-                    <p className="mt-0.5 text-xs text-[#727272]">
+                    <p className="mt-0.5 text-sm text-[#727272]">
                       {item.status === "PENDING"
                         ? (item.email
                           ? (t("host_cohost_status_pending_email") || "Invitation pending · sent by email")
@@ -966,7 +992,7 @@ function CoHostView(props: Props) {
                   <button
                     type="button"
                     onClick={() => revoke(item.id)}
-                    className="text-xs font-semibold underline"
+                    className="text-base font-medium underline hover:text-[#727272] transition-all duration-300"
                   >
                     {item.status === "PENDING" ? (t("host_cohost_cancel_button") || "Cancel") : (t("host_cohost_remove_button") || "Remove")}
                   </button>

@@ -13,12 +13,14 @@ export function SectionHeaderSkeleton() {
 
 export function SavedListingsSkeleton() {
   return (
-    <div aria-label="Loading saved listings" role="status" className="space-y-6 animate-pulse">
-      <SectionHeaderSkeleton />
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div aria-label="Loading saved listings" role="status" className="flex w-full min-w-0 flex-col animate-pulse">
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between xl:mb-8">
+        <div className="h-[30px] w-32 rounded-lg bg-zinc-200 sm:h-[36px] lg:h-[40px] xl:h-[44px]" />
+      </div>
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="flex flex-col space-y-3">
-            <div className="aspect-[4/3] w-full rounded-2xl bg-zinc-200" />
+          <div key={i} className="space-y-3">
+            <div className="aspect-[288/256] w-full rounded-2xl bg-zinc-200" />
             <div className="h-4 w-3/4 rounded bg-zinc-200" />
             <div className="h-3 w-1/2 rounded bg-zinc-100" />
             <div className="h-4 w-1/3 rounded bg-zinc-200" />
@@ -81,13 +83,47 @@ export function NotificationsSkeleton() {
 
 export function LoyaltyWalletSkeleton() {
   return (
-    <div aria-label="Loading loyalty points" role="status" className="max-w-4xl space-y-6 animate-pulse">
-      <SectionHeaderSkeleton />
-      <div className="h-36 w-full rounded-3xl bg-zinc-200" />
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="h-28 rounded-2xl bg-zinc-100" />
-        <div className="h-28 rounded-2xl bg-zinc-100" />
+    <div aria-label="Loading loyalty points" role="status" className="flex flex-col animate-pulse">
+      <div className="mb-6 space-y-2 lg:mb-8">
+        <div className="h-[30px] w-64 rounded-lg bg-zinc-200 sm:h-[36px] lg:h-[40px] xl:h-[44px]" />
+        <div className="h-5 w-full max-w-2xl rounded bg-zinc-100" />
       </div>
+      <div className="mb-8 h-[238px] rounded-3xl border border-zinc-200 bg-zinc-100 sm:h-[248px]" />
+      <div className="mb-10 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        {Array.from({ length: 3 }).map((_, index) => (
+          <div key={index} className="h-[102px] rounded-2xl border border-zinc-200 bg-white" />
+        ))}
+      </div>
+      <div className="mb-4 h-7 w-44 rounded bg-zinc-200" />
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        {Array.from({ length: 3 }).map((_, index) => (
+          <div key={index} className="h-[178px] rounded-2xl border border-zinc-200 bg-white" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function InviteEarnSkeleton() {
+  return (
+    <div aria-label="Loading invite and earn" role="status" className="flex w-full max-w-[1080px] flex-col animate-pulse">
+      <div className="mb-7 space-y-2 lg:mb-9">
+        <div className="h-[30px] w-52 rounded-lg bg-zinc-200 sm:h-[36px] lg:h-[40px] xl:h-[44px]" />
+        <div className="h-5 w-full max-w-xl rounded bg-zinc-100" />
+      </div>
+      <div className="rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6">
+        <div className="h-5 w-36 rounded bg-zinc-200" />
+        <div className="mt-3 flex flex-col gap-3 sm:flex-row">
+          <div className="h-12 flex-1 rounded-xl bg-zinc-100" />
+          <div className="h-12 w-28 rounded-full bg-zinc-200" />
+        </div>
+        <div className="mt-4 h-10 w-40 rounded-full bg-zinc-100" />
+      </div>
+      <div className="mt-6 grid gap-4 sm:grid-cols-3">
+        {Array.from({ length: 3 }).map((_, index) => <div key={index} className="h-[122px] rounded-2xl border border-zinc-200 bg-white p-5" />)}
+      </div>
+      <div className="mt-6 h-[260px] rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6" />
+      <div className="mt-6 h-[122px] rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6" />
     </div>
   );
 }
@@ -217,49 +253,6 @@ export function PersonalInfoSkeleton() {
             <div className="h-4 w-12 rounded bg-zinc-200 skeleton-shimmer" />
           </div>
         ))}
-      </div>
-    </div>
-  );
-}
-
-export function InviteEarnSkeleton() {
-  return (
-    <div aria-label="Loading invite and earn" role="status" className="w-full max-w-[1080px] animate-pulse space-y-6">
-      <div className="mb-7 lg:mb-9 space-y-2">
-        <div className="h-9 w-48 rounded-lg bg-zinc-200 skeleton-shimmer" />
-        <div className="h-4 w-96 rounded bg-zinc-100 skeleton-shimmer" />
-      </div>
-      {/* Referral Link Box Skeleton */}
-      <div className="h-36 rounded-2xl border border-zinc-200 bg-white p-6 space-y-4">
-        <div className="h-5 w-40 rounded bg-zinc-200 skeleton-shimmer" />
-        <div className="flex gap-3">
-          <div className="h-12 flex-1 rounded-xl bg-zinc-100 skeleton-shimmer" />
-          <div className="h-12 w-28 rounded-full bg-zinc-200 skeleton-shimmer" />
-        </div>
-      </div>
-      {/* 3 Stat Cards Skeleton */}
-      <div className="grid gap-4 sm:grid-cols-3">
-        <div className="h-28 rounded-2xl border border-zinc-200 bg-white p-5 space-y-3">
-          <div className="h-4 w-24 rounded bg-zinc-100 skeleton-shimmer" />
-          <div className="h-7 w-16 rounded bg-zinc-200 skeleton-shimmer" />
-        </div>
-        <div className="h-28 rounded-2xl border border-zinc-200 bg-white p-5 space-y-3">
-          <div className="h-4 w-28 rounded bg-zinc-100 skeleton-shimmer" />
-          <div className="h-7 w-24 rounded bg-zinc-200 skeleton-shimmer" />
-        </div>
-        <div className="h-28 rounded-2xl border border-zinc-200 bg-white p-5 space-y-3">
-          <div className="h-4 w-28 rounded bg-zinc-100 skeleton-shimmer" />
-          <div className="h-7 w-24 rounded bg-zinc-200 skeleton-shimmer" />
-        </div>
-      </div>
-      {/* Activity Section Skeleton */}
-      <div className="h-56 rounded-2xl border border-zinc-200 bg-white p-6 space-y-4">
-        <div className="h-5 w-44 rounded bg-zinc-200 skeleton-shimmer" />
-        <div className="h-4 w-64 rounded bg-zinc-100 skeleton-shimmer" />
-        <div className="space-y-3 pt-2">
-          <div className="h-12 w-full rounded-xl bg-zinc-50 skeleton-shimmer" />
-          <div className="h-12 w-full rounded-xl bg-zinc-50 skeleton-shimmer" />
-        </div>
       </div>
     </div>
   );

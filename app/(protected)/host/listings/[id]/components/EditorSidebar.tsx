@@ -624,7 +624,7 @@ export function EditorSidebar({
                 <div
                   onClick={() => setActiveSection("listing-status")}
                   className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer dark:bg-zinc-800/90 dark:border-zinc-700 ${activeSection === "listing-status" || activeSection === "listingstatus"
-                    ? "!bg-[#E9EBFF] dark:!bg-zinc-700 border-indigo-200 dark:border-zinc-600 shadow-2xs"
+                    ? "!bg-[#E9EBFF] dark:!bg-zinc-700 border-transparent dark:border-zinc-600 shadow-2xs"
                     : "bg-white dark:bg-zinc-800 border-white dark:border-zinc-800"
                     }`}
                 >
@@ -675,7 +675,7 @@ export function EditorSidebar({
                 <div
                   onClick={() => setActiveSection("language")}
                   className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer flex items-center justify-between dark:bg-zinc-800 dark:border-zinc-700 ${activeSection === "language" || activeSection === "languages"
-                    ? "!bg-[#E9EBFF] dark:!bg-zinc-700 border-indigo-200 dark:border-zinc-600 shadow-2xs"
+                    ? "!bg-[#E9EBFF] dark:!bg-zinc-700 border-transparent dark:border-zinc-600 shadow-2xs"
                     : "bg-white dark:bg-zinc-800 border-white dark:border-zinc-800 hover:border-white dark:hover:border-zinc-700"
                     }`}
                 >
@@ -711,7 +711,7 @@ export function EditorSidebar({
                 <div
                   onClick={() => setActiveSection("guest-requirements")}
                   className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer flex items-center justify-between dark:bg-zinc-800 dark:border-zinc-700 ${activeSection === "guest-requirements" || activeSection === "guestrequirements"
-                    ? "!bg-[#E9EBFF] dark:!bg-zinc-700 border-indigo-200 dark:border-zinc-600 shadow-2xs"
+                    ? "!bg-[#E9EBFF] dark:!bg-zinc-700 border-transparent dark:border-zinc-600 shadow-2xs"
                     : "bg-white dark:bg-zinc-800 border-white dark:border-zinc-800 hover:border-white dark:hover:border-zinc-700"
                     }`}
                 >
@@ -737,7 +737,7 @@ export function EditorSidebar({
                 <div
                   onClick={() => setActiveSection("local-laws")}
                   className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer flex items-center justify-between dark:bg-zinc-800 dark:border-zinc-700 ${activeSection === "local-laws" || activeSection === "locallaws"
-                    ? "!bg-[#E9EBFF] dark:!bg-zinc-700 border-indigo-200 dark:border-zinc-600 shadow-2xs"
+                    ? "!bg-[#E9EBFF] dark:!bg-zinc-700 border-transparent dark:border-zinc-600 shadow-2xs"
                     : "bg-white dark:bg-zinc-800 border-white dark:border-zinc-800 hover:border-white dark:hover:border-zinc-700"
                     }`}
                 >
@@ -763,7 +763,7 @@ export function EditorSidebar({
                 <div
                   onClick={() => setActiveSection("regulations")}
                   className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer flex items-center justify-between dark:bg-zinc-800 dark:border-zinc-700 ${activeSection === "regulations"
-                    ? "!bg-[#E9EBFF] dark:!bg-zinc-700 border-indigo-200 dark:border-zinc-600 shadow-2xs"
+                    ? "!bg-[#E9EBFF] dark:!bg-zinc-700 border-transparent dark:border-zinc-600 shadow-2xs"
                     : "bg-white dark:bg-zinc-800 border-white dark:border-zinc-800 hover:border-white dark:hover:border-zinc-700"
                     }`}
                 >
@@ -789,7 +789,7 @@ export function EditorSidebar({
                 <div
                   onClick={() => setActiveSection("taxes")}
                   className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer flex items-center justify-between dark:bg-zinc-800 dark:border-zinc-700 ${activeSection === "taxes"
-                    ? "!bg-[#E9EBFF] dark:!bg-zinc-700 border-indigo-200 dark:border-zinc-600 shadow-2xs"
+                    ? "!bg-[#E9EBFF] dark:!bg-zinc-700 border-transparent dark:border-zinc-600 shadow-2xs"
                     : "bg-white dark:bg-zinc-800 border-white dark:border-zinc-800 hover:border-white dark:hover:border-zinc-700"
                     }`}
                 >
@@ -818,7 +818,7 @@ export function EditorSidebar({
                     activeSection === "airbnb-org-stays" ||
                     activeSection === "homyz-stays" ||
                     activeSection === "homyzstays"
-                    ? "!bg-[#E9EBFF] dark:!bg-zinc-700 border-indigo-200 dark:border-zinc-600 shadow-2xs"
+                    ? "!bg-[#E9EBFF] dark:!bg-zinc-700 border-transparent dark:border-zinc-600 shadow-2xs"
                     : "bg-white dark:bg-zinc-800 border-white dark:border-zinc-800 hover:border-white dark:hover:border-zinc-700"
                     }`}
                 >
@@ -858,7 +858,7 @@ export function EditorSidebar({
                     setIsRemoveListingModalOpen?.(true);
                   }}
                   className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer flex items-center justify-between dark:bg-zinc-800 dark:border-zinc-700 ${activeSection === "remove-listing" || activeSection === "removelisting"
-                    ? "!bg-[#E9EBFF] dark:!bg-zinc-700 border-indigo-200 dark:border-zinc-600 shadow-2xs"
+                    ? "!bg-[#E9EBFF] dark:!bg-zinc-700 border-transparent dark:border-zinc-600 shadow-2xs"
                     : "bg-white dark:bg-zinc-800 border-white dark:border-zinc-800 hover:border-white dark:hover:border-zinc-700"
                     }`}
                 >
@@ -996,9 +996,9 @@ export function EditorSidebar({
                 {/* 1. Title */}
                 <div
                   onClick={() => setActiveSection("title")}
-                  className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "title"
-                    ? "!bg-[#E9EBFF] border-indigo-200 shadow-2xs"
-                    : "bg-white border-white hover:border-white"
+                  className={`rounded-xl border shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer px-4 py-3 ${activeSection === "title"
+                    ? "!bg-[#E9EBFF] dark:!bg-zinc-800 border-transparent dark:border-zinc-600 shadow-2xs"
+                    : "bg-white dark:bg-zinc-800 border-white dark:border-zinc-700 hover:border-white dark:hover:border-zinc-600"
                     }`}
                 >
                   <span className="text-base font-medium tracking-tight text-[#1F1F1F] block mb-0.5">
@@ -1013,7 +1013,7 @@ export function EditorSidebar({
                 <div
                   onClick={() => setActiveSection("propertyType")}
                   className={`rounded-xl border shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer px-4 py-3 ${activeSection === "propertyType"
-                    ? "!bg-[#E9EBFF] dark:!bg-zinc-800 border-indigo-200 dark:border-zinc-600 shadow-2xs"
+                    ? "!bg-[#E9EBFF] dark:!bg-zinc-800 border-transparent dark:border-zinc-600 shadow-2xs"
                     : "bg-white dark:bg-zinc-800 border-white dark:border-zinc-700 hover:border-white dark:hover:border-zinc-600"
                     }`}
                 >
@@ -1028,9 +1028,9 @@ export function EditorSidebar({
                 {/* 3. Pricing */}
                 <div
                   onClick={() => setActiveSection("pricing")}
-                  className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "pricing"
-                    ? "!bg-[#E9EBFF] border-indigo-200 shadow-2xs"
-                    : "bg-white border-white hover:border-white"
+                  className={`rounded-xl border shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer px-4 py-3 ${activeSection === "pricing"
+                    ? "!bg-[#E9EBFF] dark:!bg-zinc-800 border-transparent dark:border-zinc-600 shadow-2xs"
+                    : "bg-white dark:bg-zinc-800 border-white dark:border-zinc-700 hover:border-white dark:hover:border-zinc-600"
                     }`}
                 >
                   <span className="text-base font-medium tracking-tight text-[#1F1F1F] block mb-0.5">
@@ -1060,9 +1060,9 @@ export function EditorSidebar({
                 {/* 4. Availability */}
                 <div
                   onClick={() => setActiveSection("availability")}
-                  className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "availability"
-                    ? "!bg-[#E9EBFF] border-indigo-200 shadow-2xs"
-                    : "bg-white border-white hover:border-white"
+                  className={`rounded-xl border shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer px-4 py-3 ${activeSection === "availability"
+                    ? "!bg-[#E9EBFF] dark:!bg-zinc-800 border-transparent dark:border-zinc-600 shadow-2xs"
+                    : "bg-white dark:bg-zinc-800 border-white dark:border-zinc-700 hover:border-white dark:hover:border-zinc-600"
                     }`}
                 >
                   <span className="text-base font-medium tracking-tight text-[#1F1F1F] block mb-0.5">
@@ -1082,9 +1082,9 @@ export function EditorSidebar({
                 {/* 5. Number of guests */}
                 <div
                   onClick={() => setActiveSection("guests")}
-                  className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "guests"
-                    ? "!bg-[#E9EBFF] border-indigo-200 shadow-2xs"
-                    : "bg-white border-white hover:border-white"
+                  className={`rounded-xl border shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer px-4 py-3 ${activeSection === "guests"
+                    ? "!bg-[#E9EBFF] dark:!bg-zinc-800 border-transparent dark:border-zinc-600 shadow-2xs"
+                    : "bg-white dark:bg-zinc-800 border-white dark:border-zinc-700 hover:border-white dark:hover:border-zinc-600"
                     }`}
                 >
                   <span className="text-base font-medium tracking-tight text-[#1F1F1F] block mb-0.5">
@@ -1098,9 +1098,9 @@ export function EditorSidebar({
                 {/* 5b. Sleeping arrangements */}
                 <div
                   onClick={() => setActiveSection("sleeping-arrangements")}
-                  className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "sleeping-arrangements"
-                    ? "!bg-[#E9EBFF] border-indigo-200 shadow-2xs"
-                    : "bg-white border-white hover:border-white"
+                  className={`rounded-xl border shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer px-4 py-3 ${activeSection === "sleeping-arrangements"
+                    ? "!bg-[#E9EBFF] dark:!bg-zinc-800 border-transparent dark:border-zinc-600 shadow-2xs"
+                    : "bg-white dark:bg-zinc-800 border-white dark:border-zinc-700 hover:border-white dark:hover:border-zinc-600"
                     }`}
                 >
                   <span className="text-base font-medium tracking-tight text-[#1F1F1F] block mb-0.5">
@@ -1114,9 +1114,9 @@ export function EditorSidebar({
                 {/* 6. Description */}
                 <div
                   onClick={() => setActiveSection("description")}
-                  className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "description"
-                    ? "!bg-[#E9EBFF] border-indigo-200 shadow-2xs dark:!bg-indigo-950/60 dark:border-indigo-500"
-                    : "bg-white border-white hover:border-white dark:bg-zinc-800/90 dark:border-zinc-700 dark:hover:border-zinc-600"
+                  className={`rounded-xl border shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer px-4 py-3 ${activeSection === "description"
+                    ? "!bg-[#E9EBFF] dark:!bg-zinc-800 border-transparent dark:border-zinc-600 shadow-2xs"
+                    : "bg-white dark:bg-zinc-800 border-white dark:border-zinc-700 hover:border-white dark:hover:border-zinc-600"
                     }`}
                 >
                   <span className="text-base font-medium tracking-tight text-[#1F1F1F] block mb-0.5 dark:text-zinc-100">
@@ -1130,9 +1130,9 @@ export function EditorSidebar({
                 {/* 7. Amenities */}
                 <div
                   onClick={() => setActiveSection("amenities")}
-                  className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer text-base font-medium text-[#727272] ${activeSection === "amenities" || activeSection === "add-amenities"
-                    ? "!bg-[#E9EBFF] border-indigo-200 shadow-2xs"
-                    : "bg-white border-white hover:border-white"
+                  className={`rounded-xl border shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer px-4 py-3 ${activeSection === "amenities" || activeSection === "add-amenities"
+                    ? "!bg-[#E9EBFF] dark:!bg-zinc-800 border-transparent dark:border-zinc-600 shadow-2xs"
+                    : "bg-white dark:bg-zinc-800 border-white dark:border-zinc-700 hover:border-white dark:hover:border-zinc-600"
                     }`}
                 >
                   <span className="text-base font-medium text-[#1F1F1F] block mb-3">
@@ -1158,7 +1158,7 @@ export function EditorSidebar({
                           );
                         })}
                         {editAmenities.length > 3 && (
-                          <span className="text-sm font-semibold text-[#1f1f1f] hover:text-[#727272] block pt-0.5 underline outline-offset-2 transition duration-300">
+                              <span className="mt-3 text-sm font-normal text-[#727272] hover:text-[#1f1f1f] block pt-0.5 transition duration-300">
                             +{editAmenities.length - 3} {t("host_more")}
                           </span>
                         )}
@@ -1170,9 +1170,9 @@ export function EditorSidebar({
                 {/* 8. Accessibility features */}
                 <div
                   onClick={() => setActiveSection("accessibility")}
-                  className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "accessibility"
-                    ? "!bg-[#E9EBFF] border-indigo-200 shadow-2xs"
-                    : "bg-white border-white hover:border-white"
+                  className={`rounded-xl border shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer px-4 py-3 ${activeSection === "accessibility"
+                    ? "!bg-[#E9EBFF] dark:!bg-zinc-800 border-transparent dark:border-zinc-600 shadow-2xs"
+                    : "bg-white dark:bg-zinc-800 border-white dark:border-zinc-700 hover:border-white dark:hover:border-zinc-600"
                     }`}
                 >
                   <span className="text-base font-medium tracking-tight text-[#1F1F1F] block mb-0.5">
@@ -1190,10 +1190,10 @@ export function EditorSidebar({
                             ) : (
                               <span className="flex h-7 w-7 items-center justify-center rounded-md border border-amber-200 bg-amber-50 text-[10px] text-amber-700">!</span>
                             )}
-                            <span className="min-w-0 flex-1 truncate font-medium">
+                            <span className="min-w-0 flex-1 truncate font-normal text-sm text-[#727272]">
                               {ACCESSIBILITY_FEATURE_KEYS[featureId] ? t(ACCESSIBILITY_FEATURE_KEYS[featureId]) : featureId.replace(/_/g, " ")}
                             </span>
-                            <span className="shrink-0 text-[10px] text-[#727272]">{detail?.photos.length ?? 0} {t("host_photos_label")}</span>
+                            <span className="shrink-0 text-xs text-[#1f1f1f]">{detail?.photos.length ?? 0} {t("host_photos_label")}</span>
                           </div>
                         );
                       })}
@@ -1206,9 +1206,9 @@ export function EditorSidebar({
                 {/* 9. Location */}
                 <div
                   onClick={() => setActiveSection("location")}
-                  className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "location"
-                    ? "!bg-[#E9EBFF] border-indigo-200 shadow-2xs"
-                    : "bg-white border-white hover:border-white"
+                  className={`rounded-xl border shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer px-4 py-3 ${activeSection === "location"
+                    ? "!bg-[#E9EBFF] dark:!bg-zinc-800 border-transparent dark:border-zinc-600 shadow-2xs"
+                    : "bg-white dark:bg-zinc-800 border-white dark:border-zinc-700 hover:border-white dark:hover:border-zinc-600"
                     }`}
                 >
                   <span className="text-base font-medium text-[#1F1F1F] block mb-2">{t("host_location_label")}</span>
@@ -1232,9 +1232,9 @@ export function EditorSidebar({
                 {/* 10. About the host */}
                 <div
                   onClick={() => setActiveSection("about-host")}
-                  className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "about-host"
-                    ? "!bg-[#E9EBFF] border-indigo-200"
-                    : "bg-white border-white hover:border-white"
+                  className={`rounded-xl border shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer px-4 py-3 ${activeSection === "about-host"
+                    ? "!bg-[#E9EBFF] dark:!bg-zinc-800 border-transparent dark:border-zinc-600 shadow-2xs"
+                    : "bg-white dark:bg-zinc-800 border-white dark:border-zinc-700 hover:border-white dark:hover:border-zinc-600"
                     }`}
                 >
                   <span className="text-base font-medium text-[#1F1F1F] block mb-4">
@@ -1318,15 +1318,15 @@ export function EditorSidebar({
                   onClick={() => {
                     setActiveSection("co-host");
                   }}
-                  className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "co-host"
-                    ? "!bg-[#E9EBFF] border-indigo-200 shadow-2xs"
-                    : "bg-white border-white hover:border-white"
+                  className={`rounded-xl border shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer px-4 py-3 ${activeSection === "co-host"
+                    ? "!bg-[#E9EBFF] dark:!bg-zinc-800 border-transparent dark:border-zinc-600 shadow-2xs"
+                    : "bg-white dark:bg-zinc-800 border-white dark:border-zinc-700 hover:border-white dark:hover:border-zinc-600"
                     }`}
                 >
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-base font-medium text-[#1F1F1F] block">{t("host_cohost_label")}</span>
                     {coHostSummary && (
-                      <span className="text-base bg-amber-100 text-amber-800 font-semibold px-2 py-0.5 rounded-full">
+                      <span className="text-xs bg-amber-100 text-amber-800 font-medium px-2 py-1 rounded-full">
                         {coHostSummary}
                       </span>
                     )}
@@ -1347,9 +1347,9 @@ export function EditorSidebar({
                 {/* 12. Booking settings */}
                 <div
                   onClick={() => setActiveSection("booking-settings")}
-                  className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "booking-settings"
-                    ? "!bg-[#E9EBFF] border-indigo-200 shadow-2xs"
-                    : "bg-white border-white hover:border-white"
+                  className={`rounded-xl border shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer px-4 py-3 ${activeSection === "booking-settings"
+                    ? "!bg-[#E9EBFF] dark:!bg-zinc-800 border-transparent dark:border-zinc-600 shadow-2xs"
+                    : "bg-white dark:bg-zinc-800 border-white dark:border-zinc-700 hover:border-white dark:hover:border-zinc-600"
                     }`}
                 >
                   <span className="text-base font-medium text-[#1f1f1f] block mb-0.5">
@@ -1365,9 +1365,9 @@ export function EditorSidebar({
                 {/* 13. House rules */}
                 <div
                   onClick={() => setActiveSection("house-rules")}
-                  className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "house-rules"
-                    ? "!bg-[#E9EBFF] border-indigo-200 shadow-2xs"
-                    : "bg-white border-white hover:border-white"
+                  className={`rounded-xl border shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer px-4 py-3 ${activeSection === "house-rules"
+                    ? "!bg-[#E9EBFF] dark:!bg-zinc-800 border-transparent dark:border-zinc-600 shadow-2xs"
+                    : "bg-white dark:bg-zinc-800 border-white dark:border-zinc-700 hover:border-white dark:hover:border-zinc-600"
                     }`}
                 >
                   <span className="text-base font-medium text-[#1F1F1F] block mb-3">{t("host_house_rules")}</span>
@@ -1398,7 +1398,7 @@ export function EditorSidebar({
                       </span>
                     </div>
                     {extraHouseRules.length > 0 && (
-                      <p className="pt-1.5 text-base text-[#727272] font-normal hover:text-[#1F1F1F] transition-all duration-300 hover:underline">+{extraHouseRules.length} {t("host_more")}</p>
+                      <p className="pt-3 text-sm text-[#727272] font-normal hover:text-[#1F1F1F] transition-all duration-300">+{extraHouseRules.length} {t("host_more")}</p>
                     )}
                   </div>
                 </div>
@@ -1406,9 +1406,9 @@ export function EditorSidebar({
                 {/* 14. Guests safety */}
                 <div
                   onClick={() => setActiveSection("guests-safety")}
-                  className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "guests-safety"
-                    ? "!bg-[#E9EBFF] border-indigo-200 shadow-2xs"
-                    : "bg-white border-white hover:border-white"
+                  className={`rounded-xl border shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer px-4 py-3 ${activeSection === "guests-safety"
+                    ? "!bg-[#E9EBFF] dark:!bg-zinc-800 border-transparent dark:border-zinc-600 shadow-2xs"
+                    : "bg-white dark:bg-zinc-800 border-white dark:border-zinc-700 hover:border-white dark:hover:border-zinc-600"
                     }`}
                 >
                   <span className="text-base font-medium text-[#1F1F1F] block mb-2.5">{t("host_guest_safety_title")}</span>
@@ -1417,13 +1417,13 @@ export function EditorSidebar({
                       {activeSafetyItems.slice(0, 3).map((item) => (
                         <div key={item.id} className="flex items-center gap-2.5">
                           <SafetySidebarIcon type={item.iconType} />
-                          <span className="text-[#1F1F1F] text-base font-normal leading-tight">
+                          <span className="text-[#727272] text-base font-normal leading-tight">
                             {item.label}
                           </span>
                         </div>
                       ))}
                       {activeSafetyItems.length > 3 && (
-                        <p className="pt-1 text-base text-[#1F1F1F] font-normal">
+                        <p className="pt-3 text-sm text-[#727272] hover:text-[#1f1f1f] font-normal">
                           +{activeSafetyItems.length - 3} {t("host_more")}
                         </p>
                       )}
@@ -1438,7 +1438,7 @@ export function EditorSidebar({
                       </div>
                       <div className="flex items-center gap-2.5">
                         <SafetySidebarIcon type="smoke" />
-                            <span className="text-[#727272] text-base font-normal leading-tight">
+                        <span className="text-[#727272] text-base font-normal leading-tight">
                           {t("host_smoke_alarm_not_reported")}
                         </span>
                       </div>
@@ -1449,12 +1449,12 @@ export function EditorSidebar({
                 {/* 15. Cancellation policy */}
                 <div
                   onClick={() => setActiveSection("cancellation-policy")}
-                  className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "cancellation-policy"
-                    ? "!bg-[#E9EBFF] border-indigo-200 shadow-2xs"
-                    : "bg-white border-white hover:border-white"
+                  className={`rounded-xl border shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer px-4 py-3 ${activeSection === "cancellation-policy"
+                    ? "!bg-[#E9EBFF] dark:!bg-zinc-800 border-transparent dark:border-zinc-600 shadow-2xs"
+                    : "bg-white dark:bg-zinc-800 border-white dark:border-zinc-700 hover:border-white dark:hover:border-zinc-600"
                     }`}
                 >
-                  <span className="text-base font-normal text-[#1f1f1f] block mb-1">
+                  <span className="text-base font-medium text-[#1f1f1f] block mb-1">
                     {t("host_cancellation_policy_title")}
                   </span>
                   <div className="space-y-0.5">
@@ -1470,11 +1470,11 @@ export function EditorSidebar({
                 {/* 16. Custom link */}
                 <div
                   onClick={() => setActiveSection("custom-link")}
-                  className={`rounded-xl border border-white dark:border-zinc-800 bg-white dark:bg-zinc-800/80 px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] dark:shadow-none transition-all cursor-pointer ${activeSection === "custom-link"
-                    ? "!bg-[#E9EBFF] dark:!bg-zinc-800 border-indigo-200 dark:border-zinc-700 shadow-2xs"
-                    : "bg-white dark:bg-zinc-800/80 border-white dark:border-zinc-800 hover:border-white dark:hover:border-zinc-700"
-                    }`}
-                >
+                    className={`rounded-xl border shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer px-4 py-3 ${activeSection === "custom-link"
+                      ? "!bg-[#E9EBFF] dark:!bg-zinc-800 border-transparent dark:border-zinc-600 shadow-2xs"
+                      : "bg-white dark:bg-zinc-800 border-white dark:border-zinc-700 hover:border-white dark:hover:border-zinc-600"
+                      }`}
+                  >
                   <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block mb-0.5">
                     {t("host_custom_link")}
                   </span>
@@ -1492,7 +1492,7 @@ export function EditorSidebar({
                   onClick={() => setActiveSection("check-in-out")}
                   aria-current={activeSection === "check-in-out" || activeSection === "arrival-guide" ? "page" : undefined}
                   className={`w-full rounded-xl border border-white bg-white px-4 py-3 text-left shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all ${activeSection === "check-in-out" || activeSection === "arrival-guide"
-                    ? "border-indigo-200 !bg-[#E9EBFF]"
+                    ? "border-transparent !bg-[#E9EBFF]"
                     : "border-white bg-white hover:border-white"
                     }`}
                 >
@@ -1506,7 +1506,7 @@ export function EditorSidebar({
                 <div
                   onClick={() => setActiveSection("check-in-method")}
                   className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "check-in-method"
-                    ? "!bg-[#E9EBFF] border-indigo-200 shadow-2xs"
+                    ? "!bg-[#E9EBFF] border-transparent shadow-2xs"
                     : "bg-white border-white hover:border-white"
                     }`}
                 >
@@ -1522,7 +1522,7 @@ export function EditorSidebar({
                 <div
                   onClick={() => setActiveSection("wifi-details")}
                   className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "wifi-details"
-                    ? "!bg-[#E9EBFF] border-indigo-200 shadow-2xs"
+                    ? "!bg-[#E9EBFF] border-transparent shadow-2xs"
                     : "bg-white border-white hover:border-white"
                     }`}
                 >
@@ -1537,7 +1537,7 @@ export function EditorSidebar({
                 <div
                   onClick={() => setActiveSection("directions")}
                   className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "directions"
-                    ? "!bg-[#E9EBFF] border-indigo-200 shadow-2xs"
+                    ? "!bg-[#E9EBFF] border-transparent shadow-2xs"
                     : "bg-white border-white hover:border-white"
                     }`}
                 >
@@ -1556,7 +1556,7 @@ export function EditorSidebar({
                 <div
                   onClick={() => setActiveSection("house-manual")}
                   className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "house-manual"
-                    ? "!bg-[#E9EBFF] border-indigo-200 shadow-2xs"
+                    ? "!bg-[#E9EBFF] border-transparent shadow-2xs"
                     : "bg-white border-white hover:border-white"
                     }`}
                 >
@@ -1572,7 +1572,7 @@ export function EditorSidebar({
                 <div
                   onClick={() => setActiveSection("parking")}
                   className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "parking"
-                    ? "!bg-[#E9EBFF] border-indigo-200 shadow-2xs"
+                    ? "!bg-[#E9EBFF] border-transparent shadow-2xs"
                     : "bg-white border-white hover:border-white"
                     }`}
                 >
@@ -1591,7 +1591,7 @@ export function EditorSidebar({
                     activeSection === "check-out-instructions" ||
                     activeSection === "checkout" ||
                     activeSection === "check-out"
-                    ? "!bg-[#E9EBFF] border-indigo-200 shadow-2xs"
+                    ? "!bg-[#E9EBFF] border-transparent shadow-2xs"
                     : "bg-white border-white hover:border-white"
                     }`}
                 >
@@ -1606,7 +1606,7 @@ export function EditorSidebar({
                 <div
                   onClick={() => setActiveSection("guidebooks")}
                   className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "guidebooks" || activeSection === "guidebook"
-                    ? "!bg-[#E9EBFF] border-indigo-200 shadow-2xs"
+                    ? "!bg-[#E9EBFF] border-transparent shadow-2xs"
                     : "bg-white border-white hover:border-white"
                     }`}
                 >
@@ -1624,7 +1624,7 @@ export function EditorSidebar({
                   className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "interaction-preferences" ||
                     activeSection === "interactionpreferences" ||
                     activeSection === "interaction"
-                    ? "!bg-[#E9EBFF] border-indigo-200 shadow-2xs"
+                    ? "!bg-[#E9EBFF] border-transparent shadow-2xs"
                     : "bg-white border-white hover:border-white"
                     }`}
                 >
