@@ -425,9 +425,9 @@ export function CancellationPolicyView({
                   <div
                     key={option.id}
                     onClick={() => setDraftShortPolicy(option.id)}
-                    className={`p-4 rounded-lg border border-[#727272] transition-all cursor-pointer relative ${isSelected
-                      ? "border border-[#1f1f1f] dark:border-zinc-100 bg-zinc-50/40 dark:bg-zinc-800/60"
-                      : "border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 hover:border-zinc-300 dark:hover:border-zinc-600"
+                    className={`py-3 px-6 transition-all cursor-pointer relative ${isSelected
+                      ? "border border-[#1f1f1f] dark:border-zinc-100 bg-[#FEF3D7] dark:bg-zinc-800/60"
+                      : "bg-[#F3F4F5] dark:bg-zinc-900 hover:bg-[#FEF3D7]"
                       }`}
                   >
                     <div className="flex items-start justify-between">
@@ -447,7 +447,10 @@ export function CancellationPolicyView({
                     <ul className="mt-2 space-y-1 text-sm text-[#727272] dark:text-zinc-300">
                       {option.bullets.map((bullet, idx) => (
                         <li key={idx} className="flex items-start gap-1.5 leading-relaxed">
-                          <span className="text-[#727272] dark:text-[#727272] select-none">•</span>
+                          <span
+                            aria-hidden="true"
+                            className="mt-[0.45em] size-[6px] shrink-0 rounded-full bg-[#727272]"
+                          />
                           <span>{bullet}</span>
                         </li>
                       ))}
@@ -525,9 +528,9 @@ export function CancellationPolicyView({
                   <div
                     key={option.id}
                     onClick={() => setDraftLongPolicy(option.id)}
-                    className={`p-4 rounded-lg border border-[#727272] transition-all cursor-pointer relative ${isSelected
-                      ? "border border-[#1f1f1f] dark:border-zinc-100 bg-zinc-50/40 dark:bg-zinc-800/60"
-                      : "border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 hover:border-zinc-300 dark:hover:border-zinc-600"
+                    className={`py-3 px-6 transition-all cursor-pointer relative ${isSelected
+                      ? "border border-[#1f1f1f] dark:border-zinc-100 bg-[#FEF3D7] dark:bg-zinc-800/60"
+                      : "bg-[#F3F4F5] dark:bg-zinc-900 hover:bg-[#FEF3D7]"
                       }`}
                   >
                     <div className="flex items-start justify-between">
@@ -547,7 +550,10 @@ export function CancellationPolicyView({
                     <ul className="mt-2 space-y-1 text-sm text-[#727272] dark:text-zinc-300">
                       {option.bullets.map((bullet, idx) => (
                         <li key={idx} className="flex items-start gap-1.5 leading-relaxed">
-                          <span className="text-[#727272] dark:text-[#727272] select-none">•</span>
+                          <span
+                            aria-hidden="true"
+                            className="mt-[0.45em] size-[6px] shrink-0 rounded-full bg-[#727272]"
+                          />
                           <span>{bullet}</span>
                         </li>
                       ))}
