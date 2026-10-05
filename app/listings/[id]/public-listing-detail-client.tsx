@@ -12,7 +12,7 @@ import { Container } from "@/components/ui";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import ListingGallery from "@/components/listings/listing-gallery";
 import { AmenityIcon } from "@/components/ui/amenity-icon";
-import { CANONICAL_AMENITIES, searchAmenitiesCatalog } from "@/lib/constants/amenities";
+import { CANONICAL_AMENITIES, searchAmenitiesCatalog, getAmenityTranslationKey } from "@/lib/constants/amenities";
 import type { BookingQuote } from "@/services/booking.service";
 import type { PublicListingDTO } from "@/services/mappers";
 import { saveRecentlyViewedProperty, clearLastSearch, saveLastSearch, getLastSearch, buildBookingCheckoutUrl } from "@/lib/storage/client-history";
@@ -274,6 +274,11 @@ function isUnavailableDate(date: Date, ranges: BookedDateRange[]): boolean {
 }
 
 function AmenityRow({ amenity }: { amenity: { id: string; category?: string; label: string; description?: string } }) {
+  const { t } = useLanguage();
+  const labelKey = getAmenityTranslationKey(amenity.id) as any;
+  const descKey = `host_amenity_desc_${amenity.id}` as any;
+  const translatedLabel = t(labelKey, amenity.label);
+  const translatedDesc = t(descKey, amenity.description || "");
 
   return (
     <div className="flex items-start gap-3 text-xs">
@@ -281,8 +286,8 @@ function AmenityRow({ amenity }: { amenity: { id: string; category?: string; lab
         <AmenityIcon id={amenity.id} className="size-5" />
       </span>
       <div className="min-w-0">
-        <h5 className="text-sm font-semibold text-[#1f1f1f]">{amenity.label}</h5>
-        {amenity.description && <p className="mt-0.5 text-sm font-normal text-[#727272]">{amenity.description}</p>}
+        <h5 className="text-sm font-semibold text-[#1f1f1f]">{translatedLabel}</h5>
+        {translatedDesc && <p className="mt-0.5 text-sm font-normal text-[#727272]">{translatedDesc}</p>}
       </div>
     </div>
   );
@@ -405,6 +410,7 @@ function ListingAvailabilityCalendar({
   maximumNights?: number;
   earliestCheckIn: string;
 }) {
+  const { t } = useLanguage();
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -521,7 +527,11 @@ function ListingAvailabilityCalendar({
     <section className="pb-7" aria-labelledby="availability-heading">
       <div className="mb-6">
         <h3 id="availability-heading" className="text-[20px] font-normal text-[#1f1f1f]">
-          {nights > 0 ? `${nights} ${nights === 1 ? "night" : "nights"} in ${locationName}` : `Select your dates in ${locationName}`}
+          {nights > 0
+            ? nights === 1
+              ? t("listing_detail_night_in" as any, { location: locationName }, `1 night in ${locationName}`)
+              : t("listing_detail_nights_in" as any, { nights, location: locationName }, `${nights} nights in ${locationName}`)
+            : t("listing_detail_select_dates_in" as any, { location: locationName }, `Select your dates in ${locationName}`)}
         </h3>
         <p className="mt-1 text-sm font-normal text-[#727272]" aria-live="polite">{formattedStayDates}</p>
       </div>
@@ -1970,7 +1980,7 @@ export function PublicListingDetailClient({
                           <span className="flex size-9 shrink-0 items-center justify-center rounded-full border border-[#1f1f1f]/65">
                             <AmenityIcon id={am.id} className="size-[18px]" />
                           </span>
-                          <span className="break-words text-base font-normal leading-5">{am.label}</span>
+                          <span className="break-words text-base font-normal leading-5">{t(getAmenityTranslationKey(am.id) as any, am.label)}</span>
                         </div>
                       ))}
                     </div>
@@ -2665,25 +2675,42 @@ export function PublicListingDetailClient({
               </button>
             </div>
 
-            <div className="py-5">
+            <div className="py-5 relative">
               <input
                 type="text"
                 value={amenitySearchQuery}
                 onChange={(e) => setAmenitySearchQuery(e.target.value)}
                 placeholder={t("listing_detail_search_amenities", "Search amenities...")}
-                className="w-full rounded-full border border-[#727272] text-[#1f1f1f] px-4 py-2 sm:min-h-[56px] min-h-[45px] text-sm outline-none focus:border-[#1f1f1f]"
+                className="w-full rounded-full border border-[#727272] text-[#1f1f1f] pl-4 pr-10 py-2 sm:min-h-[56px] min-h-[45px] text-sm outline-none focus:border-[#1f1f1f]"
               />
+              {amenitySearchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setAmenitySearchQuery("")}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 flex h-6 w-6 items-center justify-center rounded-full bg-zinc-200/80 hover:bg-zinc-300 text-zinc-600 text-xs transition-colors cursor-pointer"
+                  aria-label={t("home_clear", "Clear search")}
+                >
+                  ✕
+                </button>
+              )}
             </div>
 
             <div className="visible-scrollbar flex-1 space-y-5 overflow-y-auto pr-1">
               {amenitySearchQuery.trim() ? (
                 filteredModalAmenities.map((am) => <AmenityRow key={am.id} amenity={am} />)
-              ) : amenityGroups.map(([category, amenities]) => (
-                <section key={category} aria-label={`${category} amenities`}>
-                  <h4 className="mb-4 pb-3 text-base font-semibold capitalize text-[#1f1f1f] border-b border-zinc-200">{category.replace(/_/g, " ")}</h4>
-                  <div className="space-y-3">{amenities.map((am) => <AmenityRow key={am.id} amenity={am} />)}</div>
-                </section>
-              ))}
+              ) : amenityGroups.map(([category, amenities]) => {
+                const catKey = `host_amenity_cat_${category}` as any;
+                const fallbackCat = category.replace(/_/g, " ");
+                const translatedCategory = t(catKey, fallbackCat);
+                return (
+                  <section key={category} aria-label={`${translatedCategory} amenities`}>
+                    <h4 className="mb-4 pb-3 text-base font-semibold capitalize text-[#1f1f1f] border-b border-zinc-200">
+                      {translatedCategory}
+                    </h4>
+                    <div className="space-y-3">{amenities.map((am) => <AmenityRow key={am.id} amenity={am} />)}</div>
+                  </section>
+                );
+              })}
               {filteredModalAmenities.length === 0 && <p className="py-5 text-center text-xs text-[#727272]">{t("listing_detail_no_matching_amenities", "No matching amenities.")}</p>}
             </div>
           </div>
