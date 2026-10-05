@@ -2053,7 +2053,7 @@ export function PropertyDetailsViews({
                         className="flex items-center gap-3 flex-1"
                         onClick={() => expandAccessibilityFeature(feature.id)}
                       >
-                        <div className="w-10 h-10 rounded-full border border-[#1f1f1f] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-sm shrink-0 shadow-2xs group-hover:border-zinc-300 dark:group-hover:border-zinc-600">
+                        <div className="w-10 h-10 rounded-full border border-[#1f1f1f] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-sm shrink-0 shadow-2xs dark:group-hover:border-zinc-600">
                           <Image src={feature.icon} alt="" width={24} height={24} />
                         </div>
                         <span className="font-medium text-lg text-[#1F1F1F] dark:text-zinc-100 tracking-tight leading-normal">{feature.name}</span>

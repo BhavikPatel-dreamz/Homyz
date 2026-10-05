@@ -38,18 +38,25 @@ function AllowDenyButtons({
   label: string;
 }) {
   return (
-    <div className="flex shrink-0 items-center gap-2" aria-label={label}>
+    <div className="flex shrink-0 items-center gap-3" aria-label={label}>
       <button
         type="button"
         aria-label={`Do not allow ${label}`}
         aria-pressed={value === false}
         onClick={() => onChange(false)}
         className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition-all cursor-pointer ${value === false
-          ? "border border-[#1f1f1f] bg-[#1f1f1f] text-white shadow-xs"
+          ? "border border-[#FCDF9C] bg-[#FCDF9C] text-[#1f1f1f] shadow-xs"
           : "border border-[#727272] bg-white text-[#727272] hover:bg-zinc-200/80"
           }`}
       >
-        <CloseIcon className="size-4 stroke-[2.5]" />
+        <Image
+          src="/images/icons/close-icon.svg"
+          alt=""
+          aria-hidden="true"
+          width={14}
+          height={14}
+          className={`size-3.5 ${value === true ? "" : ""}`}
+        />
       </button>
       <button
         type="button"
@@ -57,7 +64,7 @@ function AllowDenyButtons({
         aria-pressed={value === true}
         onClick={() => onChange(true)}
         className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition-all cursor-pointer ${value === true
-          ? "border border-[#1f1f1f] bg-[#1f1f1f] text-white shadow-xs"
+          ? "border border-[#FCDF9C] bg-[#FCDF9C] text-[#1f1f1f] shadow-xs"
           : "border border-[#727272] bg-white text-[#727272] hover:bg-zinc-200/80"
           }`}
       >
@@ -67,7 +74,7 @@ function AllowDenyButtons({
           aria-hidden="true"
           width={14}
           height={14}
-          className={`size-3.5 ${value === true ? "brightness-0 invert" : ""}`}
+          className={`size-3.5 ${value === true ? "" : ""}`}
         />
       </button>
     </div>
@@ -313,15 +320,15 @@ export function HouseRulesAndArrivalViews({
                 <div className="py-5 space-y-4">
                   <div className="flex items-start justify-between gap-4">
                     <div className="space-y-1">
-                      <span className="font-normal text-base text-[#1F1F1F] dark:text-[#1f1f1f] block">{t("host_pets_allowed") || "Pets allowed"}</span>
-                      <p className="text-sm text-[#727272] dark:text-[#727272] leading-relaxed max-w-md">
+                      <span className="font-medium text-lg text-[#1F1F1F] dark:text-[#1f1f1f] block">{t("host_pets_allowed") || "Pets allowed"}</span>
+                      <p className="text-base text-[#727272] dark:text-[#727272] leading-relaxed">
                         {t("host_pets_allowed_desc") || "You can refuse pets, but must reasonably accommodate service animals."}{" "}
                         <a
                           href="#service-animals"
                           onClick={(e) => e.preventDefault()}
-                          className="underline font-semibold text-[#1f1f1f] dark:text-zinc-100 hover:text-[#727272] dark:hover:text-amber-400 inline-block duration-300"
+                          className="underline font-normal text-[#1f1f1f] dark:text-zinc-100 hover:text-[#727272] dark:hover:text-amber-400 inline-block duration-300"
                         >
-                          {t("host_learn_more") || "Learn more"}
+                          {t("host_learn_more") || "learn more"}
                         </a>
                       </p>
                     </div>
@@ -334,16 +341,16 @@ export function HouseRulesAndArrivalViews({
 
                   {/* Conditional Pet Details */}
                   {petsAllowed === true && (
-                    <div className="rounded-2xl bg-zinc-50/80 dark:bg-zinc-800/60 border border-zinc-200/80 dark:border-zinc-700 p-4 space-y-4">
+                    <div className="rounded-2xl bg-[#F3F4F5] dark:bg-zinc-800/60 p-4 space-y-4">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">{t("host_max_pets_allowed") || "Maximum number of pets allowed"}</span>
+                        <span className="text-base font-medium text-[#1f1f1f] dark:text-zinc-200">{t("host_max_pets_allowed") || "Maximum number of pets allowed"}</span>
                         <div className="flex items-center gap-3 shrink-0">
                           <button
                             type="button"
                             aria-label={t("host_decrease_max_pets_aria") || "Decrease maximum pets"}
                             disabled={(maxPetsCount || 1) <= 1}
                             onClick={() => setMaxPetsCount?.(Math.max(1, (maxPetsCount || 1) - 1))}
-                            className="w-8 h-8 rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-sm font-medium text-zinc-600 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                            className="w-8 h-8 rounded-full border border-[#1f1f1f] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-sm font-medium text-zinc-600 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors"
                           >
                             <Image src="/images/icons/minus-icon.svg" alt={t("host_decrease_max_pets_aria") || "Decrease maximum pets"} width={14} height={14} className="size-3.5 object-contain dark:invert" />
                           </button>
@@ -355,36 +362,36 @@ export function HouseRulesAndArrivalViews({
                             aria-label={t("host_increase_max_pets_aria") || "Increase maximum pets"}
                             disabled={(maxPetsCount || 1) >= 10}
                             onClick={() => setMaxPetsCount?.(Math.min(10, (maxPetsCount || 1) + 1))}
-                            className="w-8 h-8 rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-sm font-medium text-zinc-600 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                            className="w-8 h-8 rounded-full border border-[#1f1f1f] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-sm font-medium text-zinc-600 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors"
                           >
                             <Image src="/images/icons/add-icon.svg" alt={t("host_increase_max_pets_aria") || "Increase maximum pets"} width={14} height={14} className="size-3.5 object-contain dark:invert" />
                           </button>
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-3 pt-2 border-t border-zinc-200/60 dark:border-zinc-700">
+                      <div className="grid grid-cols-2 gap-3 pt-4 border-t border-[#727272] dark:border-zinc-700">
                         <label className="flex items-center gap-2 cursor-pointer">
                           <input
                             type="checkbox"
                             checked={dogsAllowed ?? true}
                             onChange={(e) => setDogsAllowed?.(e.target.checked)}
-                            className="rounded text-amber-500 accent-zinc-900"
+                            className="rounded text-amber-500 accent-[#1f1f1f] w-4 h-4"
                           />
-                          <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">{t("host_dogs_allowed") || "Dogs allowed"}</span>
+                          <span className=" text-base font-normal text-[#1f1f1f] dark:text-zinc-300">{t("host_dogs_allowed") || "Dogs allowed"}</span>
                         </label>
                         <label className="flex items-center gap-2 cursor-pointer">
                           <input
                             type="checkbox"
                             checked={catsAllowed ?? true}
                             onChange={(e) => setCatsAllowed?.(e.target.checked)}
-                            className="rounded text-amber-500 accent-zinc-900"
+                            className="rounded text-amber-500 accent-[#1f1f1f] w-4 h-4"
                           />
-                          <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">{t("host_cats_allowed") || "Cats allowed"}</span>
+                          <span className="text-base font-normal text-[#1f1f1f] dark:text-zinc-300">{t("host_cats_allowed") || "Cats allowed"}</span>
                         </label>
                       </div>
 
                       <div className="space-y-3 pt-1">
-                        <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                        <label className="block text-sm font-medium text-[#1f1f1f] dark:text-zinc-300">
                           {t("host_pet_fee_label") || "Pet fee per stay (optional, SAR)"}
                         </label>
                         <input
@@ -393,12 +400,12 @@ export function HouseRulesAndArrivalViews({
                           value={petFee ?? ""}
                           onChange={(e) => setPetFee?.(e.target.value)}
                           placeholder={t("host_pet_fee_placeholder") || "e.g. 50"}
-                          className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2.5 text-xs text-zinc-800 dark:text-zinc-100 outline-none focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs placeholder:text-[#727272] dark:placeholder:text-[#727272] font-medium"
+                          className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2.5 text-base text-[#1f1f1f] dark:text-zinc-100 outline-none focus:border-zinc-900 dark:focus:border-zinc-100 placeholder:text-[#727272] dark:placeholder:text-[#727272] font-normal min-h-[56px]"
                         />
                       </div>
 
                       <div className="space-y-3">
-                        <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                        <label className="block text-sm font-medium text-[#1f1f1f] dark:text-zinc-300">
                           {t("host_pet_restrictions_label") || "Pet restrictions or guidelines"}
                         </label>
                         <input
@@ -406,7 +413,7 @@ export function HouseRulesAndArrivalViews({
                           value={petRestrictions || ""}
                           onChange={(e) => setPetRestrictions?.(e.target.value)}
                           placeholder={t("host_pet_restrictions_placeholder") || "e.g. Under 20kg only, house-trained, please bring own bed"}
-                          className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2.5 text-xs text-zinc-800 dark:text-zinc-100 outline-none focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs placeholder:text-[#727272] dark:placeholder:text-[#727272] font-medium"
+                          className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2.5 text-base text-[#1f1f1f] dark:text-zinc-100 outline-none focus:border-zinc-900 dark:focus:border-zinc-100 placeholder:text-[#727272] dark:placeholder:text-[#727272] font-normal min-h-[56px]"
                         />
                       </div>
                     </div>
@@ -416,7 +423,7 @@ export function HouseRulesAndArrivalViews({
                 {/* Row 2: Events allowed */}
                 <div className="py-5 flex items-center justify-between">
                   <div>
-                    <span className="font-normal text-base text-[#1F1F1F] dark:text-[#1f1f1f] block">{t("host_events_allowed") || "Events allowed"}</span>
+                    <span className="font-medium text-lg text-[#1F1F1F] dark:text-[#1f1f1f] block">{t("host_events_allowed") || "Events allowed"}</span>
                   </div>
                   <AllowDenyButtons
                     label="events"
@@ -428,7 +435,7 @@ export function HouseRulesAndArrivalViews({
                 {/* Row 3: Smoking, vaping, e-cigarettes allowed */}
                 <div className="py-5 flex items-center justify-between">
                   <div>
-                    <span className="font-normal text-base text-[#1F1F1F] dark:text-[#1f1f1f] block">{t("host_smoking_allowed") || "Smoking, vaping, e-cigarettes allowed"}</span>
+                    <span className="font-medium text-lg text-[#1F1F1F] dark:text-[#1f1f1f] block">{t("host_smoking_allowed") || "Smoking, vaping, e-cigarettes allowed"}</span>
                   </div>
                   <AllowDenyButtons
                     label="smoking"
@@ -441,7 +448,7 @@ export function HouseRulesAndArrivalViews({
                 <div className="py-5 space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <span className="font-normal text-base text-[#1F1F1F] dark:text-[#1f1f1f] block">{t("host_quiet_hours") || "Quiet hours"}</span>
+                      <span className="font-medium text-lg text-[#1F1F1F] dark:text-[#1f1f1f] block">{t("host_quiet_hours") || "Quiet hours"}</span>
                     </div>
                     <AllowDenyButtons
                       label="quiet hours"
@@ -503,7 +510,7 @@ export function HouseRulesAndArrivalViews({
                 {/* Row 5: Commercial photography and filming allowed */}
                 <div className="py-5 flex items-center justify-between gap-5">
                   <div>
-                    <span className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">{t("host_commercial_filming_allowed") || "Commercial photography and filming allowed"}</span>
+                    <span className="font-medium text-lg text-[#1F1F1F] dark:text-[#1f1f1f] block">{t("host_commercial_filming_allowed") || "Commercial photography and filming allowed"}</span>
                   </div>
                   <AllowDenyButtons
                     label="commercial photography and filming"
@@ -515,7 +522,7 @@ export function HouseRulesAndArrivalViews({
                 {/* Row 6: Number of guests */}
                 <div className="py-5 flex items-center justify-between gap-5">
                   <div>
-                    <span className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">{t("host_number_of_guests") || "Number of guests"}</span>
+                    <span className="font-medium text-lg text-[#1F1F1F] dark:text-[#1f1f1f] block">{t("host_number_of_guests") || "Number of guests"}</span>
                   </div>
                   <div className="flex shrink-0 items-center gap-3">
                     <button
@@ -547,11 +554,11 @@ export function HouseRulesAndArrivalViews({
                   className="flex w-full items-center justify-between gap-5 py-5 text-left transition-colors hover:text-zinc-600 dark:hover:text-zinc-300 cursor-pointer group"
                 >
                   <div className="space-y-0.5">
-                    <span className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">{t("host_check_in_out_times_title") || "Check-in and checkout times"}</span>
-                    <p className="text-xs text-[#727272] dark:text-[#727272] font-normal">
+                    <span className="font-medium text-lg text-[#1F1F1F] dark:text-[#1f1f1f] block">{t("host_check_in_out_times_title") || "Check-in and checkout times"}</span>
+                    <p className="text-base text-[#727272] dark:text-[#727272] font-normal">
                       {t("host_arrive_between", { start: formatTimeDisplay(checkInStart, "3:00 pm"), end: checkInEnd && checkInEnd !== "Flexible" ? formatTimeDisplay(checkInEnd) : (t("host_flexible") || "Flexible") }) || `Arrive between ${formatTimeDisplay(checkInStart, "3:00 pm")} and ${checkInEnd && checkInEnd !== "Flexible" ? formatTimeDisplay(checkInEnd) : "Flexible"}`}
                     </p>
-                    <p className="text-xs text-[#727272] dark:text-[#727272] font-normal">
+                    <p className="text-base text-[#727272] dark:text-[#727272] font-normal">
                       {t("host_leave_before", { time: formatTimeDisplay(checkOutTime, "6:00 pm") }) || `Leave before ${formatTimeDisplay(checkOutTime, "6:00 pm")}`}
                     </p>
                   </div>
@@ -567,8 +574,8 @@ export function HouseRulesAndArrivalViews({
                   className="flex w-full items-center justify-between gap-5 py-5 text-left transition-colors hover:text-zinc-600 dark:hover:text-zinc-300 cursor-pointer group"
                 >
                   <div className="space-y-0.5 max-w-md">
-                    <span className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">{t("host_additional_rules_title") || "Additional rules"}</span>
-                    <p className="text-xs text-[#727272] dark:text-[#727272] font-normal line-clamp-2">
+                      <span className="font-medium text-lg text-[#1F1F1F] dark:text-[#1f1f1f] block">{t("host_additional_rules_title") || "Additional rules"}</span>
+                    <p className="text-base text-[#727272] dark:text-[#727272] font-normal line-clamp-2">
                       {additionalHouseRules?.trim() || (t("host_add_rules_placeholder") || "Add rules")}
                     </p>
                   </div>
@@ -841,7 +848,7 @@ export function HouseRulesAndArrivalViews({
 
                 {/* Parking Instructions */}
                 <div className="space-y-3">
-                  <label className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">{t("host_parking_instructions_label") || "Parking instructions for guests"}</label>
+                  <label className="font-medium text-lg text-[#1F1F1F] dark:text-[#1f1f1f] block">{t("host_parking_instructions_label") || "Parking instructions for guests"}</label>
                   <textarea
                     rows={4}
                     value={parkingInstructions}
@@ -2590,7 +2597,7 @@ function CheckInMethodView({
                       <CheckInMethodIcon id={method.id} />
                     </div>
                     <div className="min-w-0">
-                      <span className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100 mb-0.5">{method.label}</span>
+                      <span className="font-medium text-lg text-[#1F1F1F] dark:text-[#1f1f1f] block mb-0.5">{method.label}</span>
                       <p className="text-sm text-[#727272] dark:text-[#727272] leading-relaxed font-normal">{method.description}</p>
                     </div>
                   </button>
@@ -2628,7 +2635,7 @@ function CheckInMethodView({
             </div>
             {selectedDetailMethod.hasCode && (
               <div className="rounded-lg border border-[#727272] dark:border-zinc-700 bg-zinc-50/60 dark:bg-zinc-800/60 p-4 space-y-2 mb-6">
-                <label className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">
+                <label className="font-medium text-lg text-[#1F1F1F] dark:text-[#1f1f1f] block">
                   {selectedDetailMethod.codeLabel}{" "}
                   <span className="font-normal text-[#727272] dark:text-[#727272]">{t("host_confidential_tag") || "(Confidential)"}</span>
                 </label>
@@ -2689,7 +2696,7 @@ function CheckInMethodView({
               </p>
             </div>
             <div className="rounded-lg border border-[#727272] dark:border-zinc-700 bg-zinc-50/60 dark:bg-zinc-800/60 p-4 space-y-2 mb-6">
-              <label className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">{t("host_instructions_for_guests_label") || "Instructions for guests"}</label>
+              <label className="font-medium text-lg text-[#1F1F1F] dark:text-[#1f1f1f] block">{t("host_instructions_for_guests_label") || "Instructions for guests"}</label>
               <textarea
                 rows={5}
                 value={checkInInstructions || ""}
@@ -2844,7 +2851,7 @@ function RegulationsView({
                     <p className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100">{regNumber}</p>
                   </div>
                   <div>
-                      <p className="text-sm text-[#727272] font-normal">Address, Country</p>
+                    <p className="text-sm text-[#727272] font-normal">Address, Country</p>
                     <p className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100">{regAddress}</p>
                   </div>
                 </div>

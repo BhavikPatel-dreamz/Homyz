@@ -2400,7 +2400,7 @@ export function HostListingEditorClient({
               value={additionalHouseRules}
               onChange={(e) => setAdditionalHouseRules(e.target.value)}
               placeholder={t("host_additional_house_rules_placeholder")}
-              className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4 text-xs text-zinc-800 dark:text-zinc-100 font-medium outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition-colors shadow-2xs placeholder:text-[#727272] dark:placeholder:text-[#727272]"
+              className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4 text-sm text-[#1f1f1f] dark:text-zinc-100 font-normal outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition-colors shadow-2xs placeholder:text-[#727272] dark:placeholder:text-[#727272]"
             />
 
             <div className="flex items-center justify-between gap-3 pt-2">
