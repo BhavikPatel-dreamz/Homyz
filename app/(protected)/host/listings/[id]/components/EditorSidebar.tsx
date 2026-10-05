@@ -1491,9 +1491,9 @@ export function EditorSidebar({
                   type="button"
                   onClick={() => setActiveSection("check-in-out")}
                   aria-current={activeSection === "check-in-out" || activeSection === "arrival-guide" ? "page" : undefined}
-                  className={`w-full rounded-xl border border-white bg-white px-4 py-3 text-left shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all ${activeSection === "check-in-out" || activeSection === "arrival-guide"
+                  className={`w-full rounded-xl bg-white px-4 py-3 text-left shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all ${activeSection === "check-in-out" || activeSection === "arrival-guide"
                     ? "border-transparent !bg-[#E9EBFF]"
-                    : "border-white bg-white hover:border-white"
+                    : "bg-white"
                     }`}
                 >
                   <span className="mb-1 block text-base font-medium text-[#1F1F1F]">{t("host_checkin")}</span>
@@ -1505,9 +1505,9 @@ export function EditorSidebar({
                 {/* Card 2: Check-in method */}
                 <div
                   onClick={() => setActiveSection("check-in-method")}
-                  className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "check-in-method"
-                    ? "!bg-[#E9EBFF] border-transparent shadow-2xs"
-                    : "bg-white border-white hover:border-white"
+                  className={`rounded-xl bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "check-in-method"
+                    ? "!bg-[#E9EBFF] shadow-2xs"
+                    : "bg-white"
                     }`}
                 >
                   <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
@@ -1521,9 +1521,9 @@ export function EditorSidebar({
                 {/* Card 2: Wifi details */}
                 <div
                   onClick={() => setActiveSection("wifi-details")}
-                  className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "wifi-details"
-                    ? "!bg-[#E9EBFF] border-transparent shadow-2xs"
-                    : "bg-white border-white hover:border-white"
+                  className={`rounded-xl bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "wifi-details"
+                    ? "!bg-[#E9EBFF] shadow-2xs"
+                    : "bg-white"
                     }`}
                 >
                   <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
@@ -1536,9 +1536,9 @@ export function EditorSidebar({
 
                 <div
                   onClick={() => setActiveSection("directions")}
-                  className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "directions"
-                    ? "!bg-[#E9EBFF] border-transparent shadow-2xs"
-                    : "bg-white border-white hover:border-white"
+                  className={`rounded-xl bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "directions"
+                    ? "!bg-[#E9EBFF] shadow-2xs"
+                    : "bg-white"
                     }`}
                 >
                   <div className="flex items-center justify-between mb-0.5">
@@ -1555,9 +1555,9 @@ export function EditorSidebar({
                 {/* Card 3: House manual */}
                 <div
                   onClick={() => setActiveSection("house-manual")}
-                  className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "house-manual"
-                    ? "!bg-[#E9EBFF] border-transparent shadow-2xs"
-                    : "bg-white border-white hover:border-white"
+                  className={`rounded-xl bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "house-manual"
+                    ? "!bg-[#E9EBFF] shadow-2xs"
+                    : "bg-white"
                     }`}
                 >
                   <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
@@ -1571,9 +1571,9 @@ export function EditorSidebar({
                 {/* Card 3b: Parking */}
                 <div
                   onClick={() => setActiveSection("parking")}
-                  className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "parking"
-                    ? "!bg-[#E9EBFF] border-transparent shadow-2xs"
-                    : "bg-white border-white hover:border-white"
+                  className={`rounded-xl bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "parking"
+                    ? "!bg-[#E9EBFF] shadow-2xs"
+                    : "bg-white"
                     }`}
                 >
                   <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
@@ -1591,8 +1591,8 @@ export function EditorSidebar({
                     activeSection === "check-out-instructions" ||
                     activeSection === "checkout" ||
                     activeSection === "check-out"
-                    ? "!bg-[#E9EBFF] border-transparent shadow-2xs"
-                    : "bg-white border-white hover:border-white"
+                    ? "!bg-[#E9EBFF] shadow-2xs"
+                    : "bg-white"
                     }`}
                 >
                   <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
@@ -1606,8 +1606,8 @@ export function EditorSidebar({
                 <div
                   onClick={() => setActiveSection("guidebooks")}
                   className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "guidebooks" || activeSection === "guidebook"
-                    ? "!bg-[#E9EBFF] border-transparent shadow-2xs"
-                    : "bg-white border-white hover:border-white"
+                    ? "!bg-[#E9EBFF] shadow-2xs"
+                    : "bg-white"
                     }`}
                 >
                   <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
@@ -1624,8 +1624,8 @@ export function EditorSidebar({
                   className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "interaction-preferences" ||
                     activeSection === "interactionpreferences" ||
                     activeSection === "interaction"
-                    ? "!bg-[#E9EBFF] border-transparent shadow-2xs"
-                    : "bg-white border-white hover:border-white"
+                    ? "!bg-[#E9EBFF] shadow-2xs"
+                    : "bg-white"
                     }`}
                 >
                   <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">

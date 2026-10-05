@@ -1108,7 +1108,7 @@ function CoHostView(props: Props) {
                 <button
                   type="submit"
                   disabled={saving || (!hasEmail && !hasPhone) || (hasEmail && hasPhone)}
-                  className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-base px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
+                  className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
                 >
                   {saving ? (t("host_cohost_modal_sending_button") || "Sending…") : (t("host_cohost_modal_next_button") || "Next")}
                 </button>
