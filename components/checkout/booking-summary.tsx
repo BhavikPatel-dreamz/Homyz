@@ -3,6 +3,7 @@
 import { memo, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
+import { useCurrency } from "@/lib/currency-context";
 import {
   formatCheckoutDateRange,
   formatCheckoutGuests,
@@ -75,13 +76,12 @@ function SummaryImage({ src, title }: { src: string | null; title: string }) {
 
 function PriceRows({
   rows,
-  quote,
   formatMoney,
 }: {
   rows: CheckoutPriceRow[];
-  quote: CheckoutSummaryQuote;
   formatMoney: BookingSummaryActions["formatMoney"];
 }) {
+  const { currency: displayCurrency } = useCurrency();
   return (
     <dl className="space-y-2.5">
       {rows.map((row) => {
@@ -97,7 +97,7 @@ function PriceRows({
           </div>
         );
       })}
-      <div className="sr-only">Price currency: {quote.currency}</div>
+      <div className="sr-only">Price currency: {displayCurrency}</div>
     </dl>
   );
 }
@@ -194,7 +194,7 @@ export const BookingSummary = memo(function BookingSummary({ state, actions, isB
             </div>
           ) : (
             <div className="relative">
-              <PriceRows rows={summaryRows} quote={pricing.quote} formatMoney={actions.formatMoney} />
+              <PriceRows rows={summaryRows} formatMoney={actions.formatMoney} />
               {pricing.status === "loading" && <p className="mt-2 text-xs text-zinc-500" aria-live="polite">Updating price…</p>}
             </div>
           )}
@@ -227,7 +227,7 @@ export const BookingSummary = memo(function BookingSummary({ state, actions, isB
               <h2 id="checkout-price-breakdown-title" className="text-lg font-medium text-[#1f1f1f]">Price breakdown</h2>
               <button ref={breakdownCloseRef} type="button" onClick={closeBreakdown} aria-label="Close price breakdown" className="flex size-10 items-center justify-center rounded-full text-[#1f1f1f] hover:bg-zinc-100">✕</button>
             </div>
-            <div className="py-5"><PriceRows rows={breakdownRows} quote={pricing.quote} formatMoney={actions.formatMoney} /></div>
+            <div className="py-5"><PriceRows rows={breakdownRows} formatMoney={actions.formatMoney} /></div>
             <div className="flex items-center justify-between border-t border-[#727272] pt-4 text-base font-semibold text-[#1f1f1f]">
               <span>Total ({displayCurrency})</span>
               <span>{actions.formatMoney(pricing.quote.guestTotal, 2)}</span>

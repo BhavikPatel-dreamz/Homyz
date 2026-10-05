@@ -9,20 +9,16 @@ import { BookingStatusTimeline } from "@/components/bookings/booking-status-time
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { formatExpiryCountdown } from "@/lib/booking/booking-expiry";
 import { differenceInBookingNights, formatBookingDate } from "@/lib/booking/booking-date";
+import { useCurrency } from "@/lib/currency-context";
 
 interface HostBookingDetailsClientProps {
   details: HostBookingRequestDetails;
 }
 
-function formatMoney(amountMinorUnits: number | null | undefined, currency = "SAR"): string {
-  if (typeof amountMinorUnits !== "number") return `${currency} 0.00`;
-  return `${currency} ${(amountMinorUnits / 100).toLocaleString("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`;
-}
-
 export function HostBookingDetailsClient({ details }: HostBookingDetailsClientProps) {
+  const { currency: displayCurrency, formatPrice } = useCurrency();
+  const formatMoney = (amount: number | null | undefined, sourceCurrency = "SAR") =>
+    formatPrice(typeof amount === "number" ? amount : 0, sourceCurrency, 2);
   const router = useRouter();
   const [isAcceptModalOpen, setIsAcceptModalOpen] = useState(false);
   const [isDeclineModalOpen, setIsDeclineModalOpen] = useState(false);
@@ -339,7 +335,7 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
               )}
 
               <div className="flex justify-between gap-4 border-t border-zinc-200 pt-4 text-base font-bold text-zinc-900">
-                <dt>Total ({details.currency})</dt>
+                <dt>Total ({displayCurrency})</dt>
                 <dd className="text-lg text-emerald-800 font-extrabold">
                   {formatMoney(totalPrice, details.currency)}
                 </dd>

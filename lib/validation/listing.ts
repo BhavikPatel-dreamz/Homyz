@@ -79,7 +79,7 @@ export interface ListingDiscountsConfig {
 export const percentageDiscountSchema = z.object({
   enabled: z.boolean(),
   percentage: z.number().finite().min(0).max(100).nullable().optional(),
-}).strict().superRefine((data, ctx) => {
+}).passthrough().superRefine((data, ctx) => {
   if (data.enabled) {
     if (typeof data.percentage !== "number" || !Number.isFinite(data.percentage) || data.percentage <= 0 || data.percentage > 100) {
       ctx.addIssue({
@@ -337,7 +337,7 @@ const listingFields = {
   weekdayBasePrice: z.number().int().min(0).optional().nullable(),
   weekendPrice: z.number().int().min(0).optional().nullable(),
   weekendPremium: z.number().int().min(0).max(100).optional().nullable(),
-  customPrices: z.record(z.string(), z.number().int().min(0)).optional().nullable(),
+  customPrices: z.record(z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format, expected YYYY-MM-DD"), z.number().int().min(0)).optional().nullable(),
   extraGuestFee: z.number().int().min(0).optional().default(0),
   discounts: discountsSchema,
   currentStep: z.number().int().min(1).max(MAX_ONBOARDING_STEP).optional().default(1),
@@ -377,3 +377,12 @@ export const updateListingSchema = z
     },
   );
 export type UpdateListingInput = z.infer<typeof updateListingSchema>;
+
+export const bulkAvailabilitySchema = z.object({
+  action: z.enum(["BLOCK", "UNBLOCK", "RESTORE"]),
+  dates: z
+    .array(z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format, expected YYYY-MM-DD"))
+    .min(1, "At least one date is required")
+    .max(1095, "Maximum 3 years of dates"),
+});
+export type BulkAvailabilityInput = z.infer<typeof bulkAvailabilitySchema>;

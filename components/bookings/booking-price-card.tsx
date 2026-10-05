@@ -5,6 +5,7 @@ import Link from "next/link";
 import { CurrencyPrice } from "@/components/ui/currency-price";
 import type { AuthoritativePriceBreakdown } from "@/lib/booking/booking-price";
 import type { BookingStatusDetails, BookingAvailableActions } from "@/lib/booking/booking-status";
+import { useCurrency } from "@/lib/currency-context";
 
 interface BookingPriceCardProps {
   photo: string | null;
@@ -35,6 +36,7 @@ export function BookingPriceCard({
   onOpenReceipt,
   onOpenContact,
 }: BookingPriceCardProps) {
+  const { currency: displayCurrency } = useCurrency();
   const listingHref = `/listings/${listingSlug || listingId}`;
   const { status, isCompleted, isCancelled, isCurrent, isUpcoming, isPending } = statusDetails;
 
@@ -149,7 +151,7 @@ export function BookingPriceCard({
         )}
 
         <div className="flex justify-between gap-4 border-t border-zinc-200 pt-4 text-base font-bold text-zinc-900">
-          <dt>Total ({pricing.currency})</dt>
+          <dt>Total ({displayCurrency})</dt>
           <dd className="text-lg text-emerald-800">
             <CurrencyPrice
               amountMinorUnits={pricing.totalPrice}

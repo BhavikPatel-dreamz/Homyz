@@ -3,6 +3,7 @@ import type { Booking, Listing, Prisma, User, Review } from "@/generated/prisma/
 import { getMissingProfileFields } from "@/lib/auth/profile-completion";
 import { resolveBookingMode } from "@/lib/booking/booking-mode";
 import { bookingDateKey } from "@/lib/booking/booking-date";
+import { resolvePropertyCurrency } from "@/lib/currency";
 
 function getPublicCoordinates(
   latitude: number | null | undefined,
@@ -69,6 +70,7 @@ export function toListingDTO(l: Listing) {
     description: l.description,
     descriptionSections: (l as any).descriptionSections ?? null,
     price: l.price,
+    currency: resolvePropertyCurrency(l),
     smartPricing: (l as any).smartPricing ?? false,
     smartPricingMinPrice: (l as any).smartPricingMinPrice ?? null,
     smartPricingMaxPrice: (l as any).smartPricingMaxPrice ?? null,
@@ -171,6 +173,9 @@ export function toListingDTO(l: Listing) {
     bookingMode: resolveBookingMode(l),
     minNights: l.minNights ?? 1,
     maxNights: l.maxNights ?? 365,
+    advanceNotice: (l as any).advanceNotice || "Same day",
+    sameDayCutoff: (l as any).sameDayCutoff || "12:00 AM",
+    allowSameDayRequests: (l as any).allowSameDayRequests ?? true,
     instantBook: resolveBookingMode(l) === "INSTANT_BOOK",
     isPaused: l.isPaused ?? false,
     customSlug: (l as any).customSlug ?? null,
@@ -213,6 +218,7 @@ export function toPublicListingDTO(l: Listing | ListingDTO) {
     description: l.description,
     descriptionSections: (l as any).descriptionSections ?? null,
     price: l.price,
+    currency: resolvePropertyCurrency(l),
     smartPricing: (l as any).smartPricing ?? false,
     smartPricingMinPrice: (l as any).smartPricingMinPrice ?? null,
     smartPricingMaxPrice: (l as any).smartPricingMaxPrice ?? null,

@@ -7,6 +7,7 @@ import { ModalOverlay } from "@/components/ui/modal-overlay";
 
 import { formatExpiryCountdown } from "@/lib/booking/booking-expiry";
 import { formatBookingDate } from "@/lib/booking/booking-date";
+import { useCurrency } from "@/lib/currency-context";
 
 export type PendingBooking = {
   id: string;
@@ -58,14 +59,6 @@ export type HostBookingRequestDetails = {
   priceBreakdown: any;
 };
 
-function formatMoney(amountCents: number | null | undefined, currency: string = "SAR"): string {
-  if (amountCents == null) return "—";
-  return `${currency} ${(amountCents / 100).toLocaleString("en-US", {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  })}`;
-}
-
 function formatTimeAgo(dateStr: string): string {
   const date = new Date(dateStr);
   const now = new Date();
@@ -84,6 +77,9 @@ function formatDeadlineCountdown(createdAtStr: string): { text: string; isExpire
 }
 
 export function HostBookingApprovals({ bookings: initialBookings }: { bookings: PendingBooking[] }) {
+  const { formatPrice } = useCurrency();
+  const formatMoney = (amount: number | null | undefined, sourceCurrency = "SAR") =>
+    amount == null ? "—" : formatPrice(amount, sourceCurrency, 2);
   const router = useRouter();
   const [bookings, setBookings] = useState<PendingBooking[]>(initialBookings);
 

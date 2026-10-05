@@ -5,13 +5,24 @@ import { Footer } from "@/components/dashboard/footer";
 import { HostCalendarWorkspace } from "@/components/host/host-calendar-workspace";
 import { getHostWorkspace } from "@/services/host-workspace.service";
 
-export default async function HostCalendarPage() {
+export default async function HostCalendarPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ listingId?: string; month?: string; view?: string }>;
+}) {
   const actor = await requirePageRole([Role.HOST, Role.ADMIN]);
   const data = await getHostWorkspace(actor);
+  const sp = searchParams ? await searchParams : undefined;
+
   return (
     <div className="flex min-h-screen flex-col bg-white pb-[calc(110px+env(safe-area-inset-bottom))] font-sans text-[#1F1F1F] selection:bg-[#FEE08B] sm:pb-0">
       <HostHeader />
-      <HostCalendarWorkspace {...data} />
+      <HostCalendarWorkspace
+        {...data}
+        initialListingId={sp?.listingId}
+        initialMonth={sp?.month}
+        initialView={sp?.view}
+      />
       <Footer />
     </div>
   );

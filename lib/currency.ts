@@ -1,10 +1,13 @@
 export const LISTING_CURRENCY = "SAR";
+export const DEFAULT_CURRENCY = LISTING_CURRENCY;
 
 /** USD value of one unit of each supported currency. Used for display conversion only. */
 const USD_PER_CURRENCY_UNIT: Record<string, number> = {
   SAR: 1 / 3.75, AED: 1 / 3.6725, USD: 1, EUR: 1.09, GBP: 1.28,
   CAD: 0.74, AUD: 0.65, INR: 0.012, JPY: 0.0067, CHF: 1.13,
   KWD: 3.25, QAR: 1 / 3.64, BHD: 2.65, OMR: 2.6, EGP: 0.02, JOD: 1.41,
+  SGD: 0.78, THB: 0.031, BRL: 0.19, ZAR: 0.059, TRY: 0.024,
+  MYR: 0.24, IDR: 0.00006,
 };
 
 export function normalizeCurrencyCode(currencyCode?: string | null): string {
@@ -81,7 +84,40 @@ const COUNTRY_CURRENCY_MAP: Record<string, string> = {
   in: "INR",
   japan: "JPY",
   jp: "JPY",
+  singapore: "SGD",
+  sg: "SGD",
+  thailand: "THB",
+  th: "THB",
+  brazil: "BRL",
+  br: "BRL",
+  southafrica: "ZAR",
+  za: "ZAR",
+  turkey: "TRY",
+  tr: "TRY",
+  malaysia: "MYR",
+  my: "MYR",
+  indonesia: "IDR",
+  id: "IDR",
 };
+
+/**
+ * Authoritative resolver for a listing/property's currency.
+ * Prioritizes explicitly assigned property.currency, then country mapping,
+ * falling back safely to default LISTING_CURRENCY ("SAR").
+ */
+export function resolvePropertyCurrency(
+  property?: { currency?: string | null; country?: string | null } | null,
+): string {
+  if (property?.currency && typeof property.currency === "string" && property.currency.trim()) {
+    return normalizeCurrencyCode(property.currency);
+  }
+  if (property?.country && typeof property.country === "string" && property.country.trim()) {
+    return getCurrencyForCountry(property.country);
+  }
+  return LISTING_CURRENCY;
+}
+
+export const getListingCurrency = resolvePropertyCurrency;
 
 /**
  * Returns the appropriate ISO currency code for a given country name or alpha code.
@@ -108,6 +144,13 @@ const CURRENCY_SYMBOLS: Record<string, string> = {
   AUD: "A$",
   JPY: "¥",
   CHF: "CHF",
+  SGD: "S$",
+  THB: "฿",
+  BRL: "R$",
+  ZAR: "R",
+  TRY: "₺",
+  MYR: "RM",
+  IDR: "Rp",
 };
 
 export function getCurrencySymbol(currencyCode?: string | null): string {
@@ -140,8 +183,54 @@ export function formatListingPrice(
   return `${currency} ${formattedNum}`;
 }
 
+const FX_PAIR_CACHE = new Map<string, number>();
+
 /**
- * Converts a persisted minor-unit amount for interface display.  This must not
+ * Returns the cached exchange rate between source and target currency.
+ * Avoids repeated division or floating point recalculation across hundreds of cells/cards.
+ */
+export function getExchangeRate(
+  sourceCurrency?: string | null,
+  targetCurrency?: string | null,
+): number {
+  const source = normalizeCurrencyCode(sourceCurrency);
+  const target = normalizeCurrencyCode(targetCurrency);
+  if (source === target) return 1;
+
+  const pairKey = `${source}_${target}`;
+  const cached = FX_PAIR_CACHE.get(pairKey);
+  if (cached !== undefined) return cached;
+
+  const sourceRate = USD_PER_CURRENCY_UNIT[source];
+  const targetRate = USD_PER_CURRENCY_UNIT[target];
+  if (!sourceRate || !targetRate) {
+    FX_PAIR_CACHE.set(pairKey, 1);
+    return 1;
+  }
+
+  const rate = sourceRate / targetRate;
+  FX_PAIR_CACHE.set(pairKey, rate);
+  return rate;
+}
+
+/**
+ * Converts a numeric amount from a source currency to a target currency.
+ * Preserves the unit scale (e.g. major -> major or minor -> minor).
+ * If source === target, returns amount unchanged without floating point drift.
+ */
+export function convertCurrency(
+  amount: number,
+  sourceCurrency?: string | null,
+  targetCurrency?: string | null,
+): number {
+  const safeAmount = Number.isFinite(amount) ? amount : 0;
+  if (!safeAmount) return 0;
+  const rate = getExchangeRate(sourceCurrency, targetCurrency);
+  return safeAmount * rate;
+}
+
+/**
+ * Converts a persisted minor-unit amount for interface display. This must not
  * be used to change booking totals or settlement amounts.
  */
 export function formatConvertedListingPrice(
@@ -151,25 +240,42 @@ export function formatConvertedListingPrice(
   fractionDigits = 0,
 ): string {
   const source = normalizeCurrencyCode(sourceCurrency);
-  const target = normalizeCurrencyCode(displayCurrency);
+  const target = normalizeCurrencyCode(displayCurrency || sourceCurrency);
   const amount = Number.isFinite(amountMinorUnits) ? amountMinorUnits : 0;
-  const sourceRate = USD_PER_CURRENCY_UNIT[source];
-  const targetRate = USD_PER_CURRENCY_UNIT[target];
-
-  if (!sourceRate || !targetRate) return formatListingPrice(amount, target, fractionDigits);
-  const convertedMinorUnits = (amount / 100) * sourceRate / targetRate * 100;
+  if (source === target) {
+    return formatListingPrice(amount, target, fractionDigits);
+  }
+  const rate = getExchangeRate(source, target);
+  const convertedMinorUnits = amount * rate;
   return formatListingPrice(convertedMinorUnits, target, fractionDigits);
 }
 
 /**
  * Authoritative currency display formatter.
  * Formats a minor-unit amount (cents/halalas) into its currency representation.
- * Keep calculations strictly numeric; use formatMoney only for display.
+ * Supports:
+ * - Legacy: formatMoney(amount, currencyCode, fractionDigits)
+ * - Converted: formatMoney(amount, sourceCurrency, displayCurrency, fractionDigits)
  */
 export function formatMoney(
   amountMinorUnits: number,
-  currencyCode: string = LISTING_CURRENCY,
+  sourceCurrency: string = LISTING_CURRENCY,
+  displayCurrencyOrFractionDigits?: string | number,
   fractionDigits = 0,
 ): string {
-  return formatListingPrice(amountMinorUnits, currencyCode, fractionDigits);
+  if (typeof displayCurrencyOrFractionDigits === "number") {
+    // Legacy call: formatMoney(amount, currencyCode, fractionDigits)
+    return formatListingPrice(
+      amountMinorUnits,
+      sourceCurrency,
+      displayCurrencyOrFractionDigits,
+    );
+  }
+  // Modern call: formatMoney(amount, sourceCurrency, displayCurrency, fractionDigits)
+  return formatConvertedListingPrice(
+    amountMinorUnits,
+    sourceCurrency,
+    displayCurrencyOrFractionDigits || sourceCurrency,
+    fractionDigits,
+  );
 }

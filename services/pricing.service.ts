@@ -1,7 +1,14 @@
 import { AppError } from "@/lib/api/errors";
 import { TaxCalculator } from "@/lib/tax/tax-calculator";
 import type { CalculatedTaxItem, HostPayoutBreakdown, ListingTaxDTO, TaxRuleDTO } from "@/lib/tax/types";
-import { getHostServiceFeePercentage } from "@/services/app-settings.service";
+async function getAuthoritativeHostServiceFee(): Promise<number> {
+  try {
+    const { getHostServiceFeePercentage } = await import("@/services/app-settings.service");
+    return await getHostServiceFeePercentage();
+  } catch {
+    return 15;
+  }
+}
 import { bookingDateKey, parseBookingDate } from "@/lib/booking/booking-date";
 import {
   evaluateDiscountEligibility,
@@ -175,82 +182,27 @@ export function formatDateToKey(date: Date): string {
   return bookingDateKey(date);
 }
 
-/**
- * Returns true if a given date falls on a Middle East / Saudi weekend night:
- * Thursday (day 4) and Friday (day 5).
- */
-export function isWeekendNight(date: Date | string): boolean {
-  if (typeof date === "string") {
-    const d = parseDateToUtcMidnight(date);
-    const day = d.getUTCDay();
-    return day === 4 || day === 5;
-  }
-  const day = (date.getUTCHours() === 0 && date.getUTCMinutes() === 0 && date.getUTCSeconds() === 0)
-    ? date.getUTCDay()
-    : date.getDay();
-  return day === 4 || day === 5;
-}
+import {
+  isWeekendNight,
+  resolveNightlyRate,
+  resolveNightlyPrice,
+  calculatePriceTips,
+  type PriceTipRecommendation,
+  type PriceTipsResult,
+  type PriceTipAction,
+  type CalculatePriceTipsOptions,
+} from "@/lib/pricing/price-tips";
 
-/**
- * Resolves the nightly rate for a specific date using strict priority order:
- * Custom Date Price > Weekend Price > Weekday Base Price
- */
-export function resolveNightlyRate(opts: {
-  date: Date;
-  dateStr: string;
-  weekdayBasePrice: number;
-  weekendPrice?: number | null;
-  customPrices?: Record<string, number> | Map<string, number> | null;
-}): { price: number; rateSource: "CUSTOM" | "WEEKEND" | "WEEKDAY"; isWeekend: boolean } {
-  const isWeekend = isWeekendNight(opts.date);
-
-  // 1. Custom Calendar Date Price (Highest Priority)
-  if (opts.customPrices) {
-    const custom = opts.customPrices instanceof Map
-      ? opts.customPrices.get(opts.dateStr)
-      : typeof opts.customPrices === "object"
-        ? (opts.customPrices as Record<string, number>)[opts.dateStr]
-        : undefined;
-    if (typeof custom === "number" && custom >= 0) {
-      return { price: custom, rateSource: "CUSTOM", isWeekend };
-    }
-  }
-
-  // 2. Weekend Price (Applies to weekend nights when configured)
-  if (isWeekend && typeof opts.weekendPrice === "number" && opts.weekendPrice > 0) {
-    return { price: opts.weekendPrice, rateSource: "WEEKEND", isWeekend };
-  }
-
-  // 3. Weekday Base Price (Fallback for weekdays or unconfigured weekends)
-  return { price: Math.max(0, opts.weekdayBasePrice), rateSource: "WEEKDAY", isWeekend };
-}
-
-/**
- * Universal nightly price resolver for a listing and specific date.
- * Reusable across search, listing detail, and booking flows.
- */
-export function resolveNightlyPrice(
-  listing: {
-    price?: number | null;
-    weekdayBasePrice?: number | null;
-    baseNightlyPrice?: number | null;
-    weekendPrice?: number | null;
-    customPrices?: Record<string, number> | Map<string, number> | null;
-    nightlyPricing?: Record<string, number> | Map<string, number> | null;
-  },
-  date: Date | string,
-): { price: number; rateSource: "CUSTOM" | "WEEKEND" | "WEEKDAY"; isWeekend: boolean } {
-  const d = parseDateToUtcMidnight(date);
-  const dateStr = formatDateToKey(d);
-  const weekdayBasePrice = Math.max(0, Math.round((listing.weekdayBasePrice ?? listing.baseNightlyPrice ?? listing.price) || 0));
-  return resolveNightlyRate({
-    date: d,
-    dateStr,
-    weekdayBasePrice,
-    weekendPrice: listing.weekendPrice,
-    customPrices: listing.customPrices ?? listing.nightlyPricing,
-  });
-}
+export {
+  isWeekendNight,
+  resolveNightlyRate,
+  resolveNightlyPrice,
+  calculatePriceTips,
+  type PriceTipRecommendation,
+  type PriceTipsResult,
+  type PriceTipAction,
+  type CalculatePriceTipsOptions,
+};
 
 /**
  * Single Discount Rule Resolver.
@@ -283,55 +235,6 @@ export function resolveSingleDiscount(opts: {
     bookingCreatedAt: opts.bookingCreatedAt,
     completedBookingsCount: opts.completedBookingsCount ?? opts.approvedBookingCount,
   });
-
-  const rawDiscounts = opts.discounts && typeof opts.discounts === "object" ? opts.discounts : {};
-  const bookingTime = opts.bookingCreatedAt ? opts.bookingCreatedAt.getTime() : Date.now();
-  const checkInTime = opts.checkIn.getTime();
-  const daysUntilCheckIn = Math.max(0, Math.floor((checkInTime - bookingTime) / (1000 * 60 * 60 * 24)));
-
-  const earlyBirdEntry = rawDiscounts.early_bird ?? rawDiscounts.earlyBird;
-  if (earlyBirdEntry) {
-    let advanceThreshold = 30;
-    if (typeof earlyBirdEntry === "object" && earlyBirdEntry !== null && typeof (earlyBirdEntry as any).daysInAdvance === "number") {
-      advanceThreshold = (earlyBirdEntry as any).daysInAdvance;
-    }
-    if (daysUntilCheckIn >= advanceThreshold) {
-      const pct = typeof earlyBirdEntry === "object" && earlyBirdEntry !== null && typeof (earlyBirdEntry as any).percentage === "number"
-        ? (earlyBirdEntry as any).percentage
-        : 10;
-      if (pct > 0 && pct <= 100) {
-        eligibility.eligibleDiscounts.push({
-          key: "early_bird",
-          name: "Early-Bird Booking Discount",
-          configured: true,
-          enabled: true,
-          eligible: true,
-          percentage: pct,
-          reason: DISCOUNT_ELIGIBILITY_REASONS.ELIGIBLE,
-          priorityOrder: 5,
-        });
-      }
-    }
-  }
-
-  const customPromoEntry = rawDiscounts.custom_promotion;
-  if (customPromoEntry) {
-    const pct = typeof customPromoEntry === "object" && customPromoEntry !== null && typeof (customPromoEntry as any).percentage === "number"
-      ? (customPromoEntry as any).percentage
-      : 15;
-    if (pct > 0 && pct <= 100) {
-      eligibility.eligibleDiscounts.push({
-        key: "custom_promotion",
-        name: "Custom Promotional Discount",
-        configured: true,
-        enabled: true,
-        eligible: true,
-        percentage: pct,
-        reason: DISCOUNT_ELIGIBILITY_REASONS.ELIGIBLE,
-        priorityOrder: 6,
-      });
-    }
-  }
 
   const winning = resolveWinningDiscount(eligibility, opts.staySubtotal);
   if (!winning.selected || !winning.key) return null;
@@ -533,7 +436,7 @@ export async function calculateBookingPrice(params: BookingPricingParams): Promi
   }
 
   // 4. Host Service Fee (Admin Configured, strictly excluded from Taxable Base)
-  const hostServiceFeePercentage = params.hostServiceFeePercentage ?? (await getHostServiceFeePercentage().catch(() => 15));
+  const hostServiceFeePercentage = params.hostServiceFeePercentage ?? (await getAuthoritativeHostServiceFee());
   const hostServiceFee = Math.round(accommodationSubtotal * (hostServiceFeePercentage / 100));
 
   // 5. Deterministic Tax Calculation (Immune to Host Service Fee)
@@ -630,7 +533,7 @@ export async function calculateSpecialOffer(params: SpecialOfferPricingParams): 
   const guests = Math.max(1, params.guests ?? 1);
   const currency = params.currency || "SAR";
 
-  const hostServiceFeePercentage = params.hostServiceFeePercentage ?? (await getHostServiceFeePercentage().catch(() => 15));
+  const hostServiceFeePercentage = params.hostServiceFeePercentage ?? (await getAuthoritativeHostServiceFee());
   const hostServiceFee = Math.round(specialOfferAmount * (hostServiceFeePercentage / 100));
 
   const taxResult = TaxCalculator.calculateTaxes({

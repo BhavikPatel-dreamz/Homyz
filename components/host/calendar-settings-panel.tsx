@@ -1,42 +1,46 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import Link from "next/link";
 import { BackButton } from "@/components/ui/back-button";
 import type { ListingDTO } from "@/services/mappers";
-import { getCurrencyForCountry } from "@/lib/currency";
-
-const controlClass =
-  "rounded-xl bg-[#F3F4F5] dark:bg-zinc-800 px-3.5 py-3 shadow-[0_2px_4px_#00000025] border border-white dark:border-zinc-700";
+import { convertCurrency, resolvePropertyCurrency } from "@/lib/currency";
+import { useCurrency } from "@/lib/currency-context";
 
 function ExpandControl({
   title,
   subtitle,
   children,
+  defaultOpen = false,
 }: {
   title: string;
   subtitle?: string;
   children: ReactNode;
+  defaultOpen?: boolean;
 }) {
   return (
-    <details className={`${controlClass} group`}>
-      <summary className="flex cursor-pointer list-none items-start justify-between gap-3 [&::-webkit-details-marker]:hidden">
-        <span>
-          <span className="block text-sm text-[#1F1F1F] dark:text-zinc-100 font-medium">{title}</span>
+    <details
+      className="group rounded-xl border border-zinc-200 dark:border-zinc-700/80 bg-zinc-50/60 dark:bg-zinc-800/40 overflow-hidden transition-colors"
+      open={defaultOpen}
+    >
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-3.5 hover:bg-zinc-100/70 dark:hover:bg-zinc-800/70 transition-colors [&::-webkit-details-marker]:hidden">
+        <div className="min-w-0 flex-1">
+          <span className="block text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+            {title}
+          </span>
           {subtitle && (
-            <span className="mt-1 block text-sm leading-5 text-[#727272] dark:text-[#727272] font-normal">
+            <span className="mt-0.5 block text-[11px] leading-4 text-zinc-500 dark:text-zinc-400 font-normal">
               {subtitle}
             </span>
           )}
-        </span>
+        </div>
         <span
           aria-hidden="true"
-          className="text-lg font-light leading-4 group-open:rotate-45 text-[#1F1F1F] dark:text-zinc-100"
+          className="text-base font-medium leading-none text-zinc-400 group-open:rotate-180 transition-transform duration-200"
         >
-          +
+          ▾
         </span>
       </summary>
-      <div className="mt-4 border-t border-zinc-200 dark:border-zinc-700 pt-3 text-xs leading-5 text-[#727272] dark:text-[#727272]">
+      <div className="border-t border-zinc-200/80 dark:border-zinc-700/80 p-3.5 space-y-3 bg-white/70 dark:bg-zinc-900/40">
         {children}
       </div>
     </details>
@@ -54,257 +58,731 @@ export function CalendarSettingsPanel({
   notice: string;
   onSave: (values: Record<string, unknown>) => Promise<void>;
 }) {
-  const [panel, setPanel] = useState<"pricing" | "overview" | "availability">(
-    "pricing",
-  );
+  const { currency: displayCurrency, formatMajor } = useCurrency();
+  const [panel, setPanel] = useState<"pricing" | "overview" | "availability">("pricing");
   const [dirty, setDirty] = useState(false);
   const [validation, setValidation] = useState("");
-  const discounts = Array.isArray(listing.discounts)
-    ? Object.fromEntries(
-        listing.discounts
-          .filter((value): value is string => typeof value === "string")
-          .map((key) => [
-            key,
-            key === "weekly"
-              ? 10
-              : key === "monthly"
-                ? 25
-                : key === "new_listing"
-                  ? 20
-                  : 15,
-          ]),
-      )
-    : ((listing.discounts || {}) as Record<string, number>);
-  const editorHref = `/host/listings/${listing.id}/pricing`;
-  const listingCurrency = getCurrencyForCountry(listing.country);
-  const input = (
-    name: string,
-    label: string,
-    value: number | string,
+  const [formKey, setFormKey] = useState(0);
+
+  const rawDiscounts =
+    typeof listing.discounts === "object" && listing.discounts !== null
+      ? (listing.discounts as Record<string, any>)
+      : {};
+
+  const weeklyDiscount =
+    typeof rawDiscounts.weekly === "object"
+      ? rawDiscounts.weekly?.percentage ?? 10
+      : Number(rawDiscounts.weekly || 0);
+
+  const monthlyDiscount =
+    typeof rawDiscounts.monthly === "object"
+      ? rawDiscounts.monthly?.percentage ?? 25
+      : Number(rawDiscounts.monthly || 0);
+
+  const earlyBirdDiscount =
+    typeof rawDiscounts.early_bird === "object"
+      ? rawDiscounts.early_bird?.percentage ?? 10
+      : Number(rawDiscounts.early_bird || 0);
+
+  const lastMinuteDiscount =
+    typeof rawDiscounts.last_minute === "object"
+      ? rawDiscounts.last_minute?.percentage ?? 10
+      : Number(rawDiscounts.last_minute || 0);
+
+  const customPromoDiscount =
+    typeof rawDiscounts.custom_promotion === "object"
+      ? rawDiscounts.custom_promotion?.percentage ?? 15
+      : Number(rawDiscounts.custom_promotion || 0);
+
+  const listingCurrency = resolvePropertyCurrency(listing);
+  const toDisplayMajor = (amount: number) =>
+    convertCurrency(amount, listingCurrency, displayCurrency);
+  const toNativeMajor = (amount: number) =>
+    convertCurrency(amount, displayCurrency, listingCurrency);
+
+  // State to support explicitly clearing weekend price
+  const [customWeekendPriceVal, setCustomWeekendPriceVal] = useState<string>(
+    listing.weekendPrice == null ? "" : String(toDisplayMajor(listing.weekendPrice / 100))
+  );
+
+  const handleDiscard = () => {
+    setFormKey((k) => k + 1);
+    setCustomWeekendPriceVal(
+      listing.weekendPrice == null ? "" : String(toDisplayMajor(listing.weekendPrice / 100))
+    );
+    setDirty(false);
+    setValidation("");
+  };
+
+  const renderInputField = ({
+    name,
+    label,
+    defaultValue,
+    value,
+    onChange,
     suffix = "",
-    max?: number,
-  ) => (
-    <label className={`block ${controlClass}`}>
-      <span className="mb-2 block text-sm text-[#1F1F1F] dark:text-zinc-100 font-medium">{label}</span>
-      <span className="flex items-center gap-1 text-sm font-medium text-[#1F1F1F] dark:text-zinc-100">
-        {suffix === "currency" && <span>{listingCurrency}</span>}
+    prefix = "",
+    min = 0,
+    max,
+    step = "1",
+    helperText,
+    inputMode = "numeric",
+    placeholder,
+    onClear,
+    clearLabel,
+  }: {
+    name: string;
+    label: string;
+    defaultValue?: number | string;
+    value?: number | string;
+    onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    suffix?: string;
+    prefix?: string;
+    min?: number;
+    max?: number;
+    step?: string;
+    helperText?: string;
+    inputMode?: "numeric" | "decimal" | "text";
+    placeholder?: string;
+    onClear?: () => void;
+    clearLabel?: string;
+  }) => (
+    <div className="space-y-1">
+      <div className="flex items-center justify-between">
+        <label
+          htmlFor={`input-${name}`}
+          className="text-xs font-semibold text-zinc-800 dark:text-zinc-200"
+        >
+          {label}
+        </label>
+        {onClear && (
+          <button
+            type="button"
+            onClick={onClear}
+            className="text-[11px] font-medium text-zinc-500 hover:text-rose-600 dark:text-zinc-400 dark:hover:text-rose-400 transition-colors cursor-pointer"
+          >
+            {clearLabel || "Remove"}
+          </button>
+        )}
+      </div>
+
+      <div className="relative flex items-center rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 shadow-2xs transition-all focus-within:border-zinc-900 focus-within:ring-2 focus-within:ring-zinc-900/10 dark:focus-within:border-amber-400 dark:focus-within:ring-amber-400/20 hover:border-zinc-400 dark:hover:border-zinc-600">
+        {prefix ? (
+          <span className="pl-3.5 pr-1 text-xs font-bold text-zinc-500 dark:text-zinc-400 select-none shrink-0">
+            {prefix}
+          </span>
+        ) : null}
+
         <input
+          id={`input-${name}`}
           aria-label={label}
           name={name}
-          defaultValue={value}
+          defaultValue={defaultValue}
+          value={value}
+          onChange={onChange}
           type="number"
-          min="0"
+          min={min}
           max={max}
-          step="0.01"
-          required={name !== "weekendPrice"}
-          className={`${suffix === "%" ? "w-7" : "w-full"} min-w-0 bg-transparent text-[#1F1F1F] dark:text-zinc-100 outline-offset-2 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
+          step={step}
+          inputMode={inputMode}
+          placeholder={placeholder}
+          className="w-full min-w-0 bg-transparent px-3.5 py-2.5 text-sm font-medium text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
         />
-        {suffix === "%" && <span>%</span>}
-      </span>
-    </label>
+
+        {suffix ? (
+          <span className="pr-3.5 pl-1 text-xs font-bold text-zinc-500 dark:text-zinc-400 select-none shrink-0">
+            {suffix}
+          </span>
+        ) : null}
+      </div>
+
+      {helperText && (
+        <p className="text-[11px] leading-relaxed text-zinc-500 dark:text-zinc-400">
+          {helperText}
+        </p>
+      )}
+    </div>
   );
-  if (panel === "overview")
+
+  if (panel === "overview") {
     return (
-      <div className="space-y-8 text-sm text-[#1F1F1F] dark:text-zinc-100">
-        <button
-          className="flex w-full justify-between text-left hover:text-amber-600 dark:hover:text-amber-400"
-          onClick={() => setPanel("pricing")}
-        >
-          Price settings <span>›</span>
-        </button>
-        <button
-          className="flex w-full justify-between text-left hover:text-amber-600 dark:hover:text-amber-400"
-          onClick={() => setPanel("availability")}
-        >
-          Availability settings <span>›</span>
-        </button>
+      <div className="space-y-6 text-sm text-[#1F1F1F] dark:text-zinc-100">
+        <div>
+          <h2 className="text-base font-semibold">Calendar Settings</h2>
+          <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+            Configure rates, stay discounts, and booking availability rules.
+          </p>
+        </div>
+        <div className="space-y-2.5">
+          <button
+            type="button"
+            className="flex w-full items-center justify-between rounded-xl bg-white dark:bg-zinc-800 p-4 border border-zinc-200 dark:border-zinc-700 text-left hover:border-zinc-400 dark:hover:border-zinc-500 hover:shadow-xs transition-all cursor-pointer group"
+            onClick={() => setPanel("pricing")}
+          >
+            <div>
+              <p className="font-semibold text-sm text-zinc-900 dark:text-zinc-100 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+                Price settings
+              </p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                Base rate, weekend pricing, discounts, and fees
+              </p>
+            </div>
+            <span className="text-zinc-400 text-lg group-hover:translate-x-0.5 transition-transform">
+              ›
+            </span>
+          </button>
+
+          <button
+            type="button"
+            className="flex w-full items-center justify-between rounded-xl bg-white dark:bg-zinc-800 p-4 border border-zinc-200 dark:border-zinc-700 text-left hover:border-zinc-400 dark:hover:border-zinc-500 hover:shadow-xs transition-all cursor-pointer group"
+            onClick={() => setPanel("availability")}
+          >
+            <div>
+              <p className="font-semibold text-sm text-zinc-900 dark:text-zinc-100 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+                Availability settings
+              </p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+                Trip length limits, advance notice, and guest capacity
+              </p>
+            </div>
+            <span className="text-zinc-400 text-lg group-hover:translate-x-0.5 transition-transform">
+              ›
+            </span>
+          </button>
+        </div>
       </div>
     );
+  }
+
   return (
     <div className="text-[#1F1F1F] dark:text-zinc-100">
       <BackButton
         aria-label="Back to calendar settings"
-        onClick={() => setPanel("overview")}
-        className="mb-5"
+        onClick={() => {
+          if (dirty && typeof window !== "undefined") {
+            if (!window.confirm("You have unsaved changes. Discard them?")) {
+              return;
+            }
+          }
+          handleDiscard();
+          setPanel("overview");
+        }}
+        className="mb-4 cursor-pointer"
       />
+
       {panel === "availability" ? (
-        <div className="space-y-5">
-          <h2 className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100">Availability settings</h2>
-          <div className={controlClass}>
-            <p className="text-xs text-[#727272] dark:text-[#727272]">Trip length</p>
-            <p className="mt-2 text-sm font-medium text-[#1F1F1F] dark:text-zinc-100">
-              {listing.minNights}–{listing.maxNights} nights
+        /* Availability Settings Form */
+        <form
+          key={`avail-${formKey}`}
+          onChange={() => setDirty(true)}
+          onSubmit={async (e) => {
+            e.preventDefault();
+            const data = new FormData(e.currentTarget);
+            const minN = Number(data.get("minNights"));
+            const maxN = Number(data.get("maxNights"));
+            const guestsCount = Number(data.get("guests"));
+            const advNotice = String(data.get("advanceNotice"));
+            const cutoff = String(data.get("sameDayCutoff"));
+            const allowSameDay = data.get("allowSameDayRequests") === "on";
+
+            if (!Number.isFinite(minN) || minN < 1) {
+              setValidation("Minimum stay must be at least 1 night.");
+              return;
+            }
+            if (!Number.isFinite(maxN) || maxN < minN) {
+              setValidation("Maximum stay must be greater than or equal to minimum stay.");
+              return;
+            }
+            if (!Number.isFinite(guestsCount) || guestsCount < 1) {
+              setValidation("Maximum guests must be at least 1.");
+              return;
+            }
+
+            setValidation("");
+            await onSave({
+              minNights: minN,
+              maxNights: maxN,
+              guests: guestsCount,
+              advanceNotice: advNotice,
+              sameDayCutoff: cutoff,
+              allowSameDayRequests: allowSameDay,
+            });
+            setDirty(false);
+          }}
+          className="space-y-5 pb-6"
+        >
+          <div>
+            <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
+              Availability settings
+            </h2>
+            <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+              Set global trip length rules and booking notice requirements.
             </p>
           </div>
-          <p className="text-xs leading-5 text-[#727272] dark:text-[#727272]">
-            Select dates on the calendar to manage availability.
-          </p>
-          <Link
-            href={`/host/listings/${listing.id}/availability`}
-            className="block text-xs underline text-[#1F1F1F] dark:text-zinc-300 dark:hover:text-amber-400"
-          >
-            Edit availability and connect calendars
-          </Link>
-        </div>
+
+          <div className="space-y-4">
+            {renderInputField({
+              name: "minNights",
+              label: "Minimum stay",
+              defaultValue: listing.minNights ?? 1,
+              suffix: "nights",
+              min: 1,
+              max: 365,
+              inputMode: "numeric",
+              helperText: "Shortest reservation length guests can book.",
+            })}
+
+            {renderInputField({
+              name: "maxNights",
+              label: "Maximum stay",
+              defaultValue: listing.maxNights ?? 365,
+              suffix: "nights",
+              min: 1,
+              max: 365,
+              inputMode: "numeric",
+              helperText: "Longest reservation length guests can book.",
+            })}
+
+            {renderInputField({
+              name: "guests",
+              label: "Maximum guest capacity",
+              defaultValue: (listing as any).guests ?? 1,
+              suffix: "guests",
+              min: 1,
+              max: 50,
+              inputMode: "numeric",
+              helperText: "Maximum number of guests allowed per booking.",
+            })}
+
+            <div className="space-y-1">
+              <label
+                htmlFor="advanceNoticeSelect"
+                className="block text-xs font-semibold text-zinc-800 dark:text-zinc-200"
+              >
+                Advance notice
+              </label>
+              <div className="relative flex items-center rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 shadow-2xs focus-within:border-zinc-900 focus-within:ring-2 focus-within:ring-zinc-900/10 dark:focus-within:border-amber-400 dark:focus-within:ring-amber-400/20 hover:border-zinc-400 dark:hover:border-zinc-600">
+                <select
+                  id="advanceNoticeSelect"
+                  name="advanceNotice"
+                  defaultValue={(listing as any).advanceNotice || "Same day"}
+                  className="w-full appearance-none bg-transparent px-3.5 py-2.5 text-sm font-medium text-zinc-900 dark:text-zinc-100 outline-none cursor-pointer pr-9"
+                >
+                  <option value="Same day">Same day</option>
+                  <option value="At least 1 day">At least 1 day</option>
+                  <option value="At least 2 days">At least 2 days</option>
+                  <option value="At least 3 days">At least 3 days</option>
+                  <option value="At least 7 days">At least 7 days</option>
+                </select>
+                <span className="pointer-events-none absolute right-3.5 text-xs text-zinc-400">
+                  ▾
+                </span>
+              </div>
+              <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                Required lead time before a guest can check in.
+              </p>
+            </div>
+
+            <div className="space-y-1">
+              <label
+                htmlFor="sameDayCutoffSelect"
+                className="block text-xs font-semibold text-zinc-800 dark:text-zinc-200"
+              >
+                Same-day booking cutoff
+              </label>
+              <div className="relative flex items-center rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 shadow-2xs focus-within:border-zinc-900 focus-within:ring-2 focus-within:ring-zinc-900/10 dark:focus-within:border-amber-400 dark:focus-within:ring-amber-400/20 hover:border-zinc-400 dark:hover:border-zinc-600">
+                <select
+                  id="sameDayCutoffSelect"
+                  name="sameDayCutoff"
+                  defaultValue={(listing as any).sameDayCutoff || "12:00 AM"}
+                  className="w-full appearance-none bg-transparent px-3.5 py-2.5 text-sm font-medium text-zinc-900 dark:text-zinc-100 outline-none cursor-pointer pr-9"
+                >
+                  <option value="12:00 AM">12:00 AM (Midnight)</option>
+                  <option value="6:00 AM">6:00 AM</option>
+                  <option value="12:00 PM">12:00 PM (Noon)</option>
+                  <option value="3:00 PM">3:00 PM</option>
+                  <option value="6:00 PM">6:00 PM</option>
+                  <option value="9:00 PM">9:00 PM</option>
+                </select>
+                <span className="pointer-events-none absolute right-3.5 text-xs text-zinc-400">
+                  ▾
+                </span>
+              </div>
+              <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                Time after which guests cannot book a same-day reservation.
+              </p>
+            </div>
+
+            <label className="flex items-center justify-between gap-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50/70 dark:bg-zinc-800/40 p-3.5 hover:bg-zinc-100/70 dark:hover:bg-zinc-800/80 transition-colors cursor-pointer">
+              <div className="min-w-0 flex-1">
+                <span className="block text-xs font-semibold text-zinc-800 dark:text-zinc-200">
+                  Allow same-day booking requests
+                </span>
+                <span className="block text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+                  Let guests book on the day of arrival before the cutoff time.
+                </span>
+              </div>
+              <input
+                type="checkbox"
+                name="allowSameDayRequests"
+                defaultChecked={(listing as any).allowSameDayRequests !== false}
+                className="size-4.5 rounded border-zinc-300 text-amber-500 focus:ring-amber-400 cursor-pointer accent-amber-500"
+              />
+            </label>
+          </div>
+
+          {(validation || notice) && (
+            <div
+              role={validation ? "alert" : "status"}
+              className={`rounded-xl p-3 text-xs leading-5 font-medium ${
+                validation
+                  ? "bg-rose-50 text-rose-800 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/60"
+                  : "bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/60"
+              }`}
+            >
+              {validation || notice}
+            </div>
+          )}
+
+          {/* Sticky Action Footer */}
+          {(dirty || saving) && (
+            <div className="sticky bottom-0 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xs pt-3 pb-1 border-t border-zinc-200 dark:border-zinc-800 flex items-center gap-2 z-10 animate-in fade-in duration-150">
+              <button
+                type="button"
+                onClick={handleDiscard}
+                disabled={saving}
+                className="flex-1 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 font-semibold py-2.5 text-xs transition-colors cursor-pointer disabled:opacity-50"
+              >
+                Discard
+              </button>
+              <button
+                type="submit"
+                disabled={saving}
+                className="flex-1 rounded-xl bg-amber-400 hover:bg-amber-300 text-zinc-950 font-bold py-2.5 text-xs transition-colors cursor-pointer disabled:opacity-50 shadow-xs"
+              >
+                {saving ? "Saving…" : "Save availability"}
+              </button>
+            </div>
+          )}
+        </form>
       ) : (
+        /* Price Settings Form */
         <form
+          key={`price-${formKey}`}
           onChange={() => setDirty(true)}
           onSubmit={async (event) => {
             event.preventDefault();
             const data = new FormData(event.currentTarget);
-            const number = (key: string) => Number(data.get(key));
-            const price = number("price"),
-              weekly = number("weekly"),
-              monthly = number("monthly");
+            const num = (key: string) => Number(data.get(key));
+
+            const price = toNativeMajor(num("price"));
+            const weekendPriceRaw = data.get("weekendPrice");
+            const weekendPriceVal =
+              weekendPriceRaw === "" || weekendPriceRaw == null
+                ? null
+                : Math.round(toNativeMajor(Number(weekendPriceRaw)) * 100);
+
+            const weekly = num("weekly");
+            const monthly = num("monthly");
+            const earlyBird = num("earlyBird");
+            const lastMinute = num("lastMinute");
+            const customPromo = num("customPromo");
+            const extraGuest = data.get("extraGuestFee")
+              ? Math.round(toNativeMajor(num("extraGuestFee")) * 100)
+              : 0;
+            const cleaning = data.get("cleaningFee")
+              ? Math.round(toNativeMajor(num("cleaningFee")) * 100)
+              : 0;
+
             if (
               !Number.isFinite(price) ||
-              price < 0 ||
+              price <= 0 ||
               weekly < 0 ||
               weekly > 100 ||
               monthly < 0 ||
-              monthly > 100
+              monthly > 100 ||
+              earlyBird < 0 ||
+              earlyBird > 100 ||
+              lastMinute < 0 ||
+              lastMinute > 100 ||
+              customPromo < 0 ||
+              customPromo > 100
             ) {
               setValidation(
-                "Enter a valid price and discounts between 0 and 100%.",
+                "Please enter a valid base price and discount percentages between 0 and 100%."
               );
               return;
             }
+
             setValidation("");
+            const updatedDiscounts = {
+              ...rawDiscounts,
+              weekly: weekly > 0 ? { enabled: true, percentage: weekly } : false,
+              monthly: monthly > 0 ? { enabled: true, percentage: monthly } : false,
+              early_bird:
+                earlyBird > 0
+                  ? { enabled: true, percentage: earlyBird, daysInAdvance: 30 }
+                  : false,
+              last_minute:
+                lastMinute > 0
+                  ? { enabled: true, percentage: lastMinute, daysBefore: 2 }
+                  : false,
+              custom_promotion:
+                customPromo > 0
+                  ? {
+                      ...(typeof rawDiscounts.custom_promotion === "object"
+                        ? rawDiscounts.custom_promotion
+                        : {}),
+                      enabled: true,
+                      percentage: customPromo,
+                    }
+                  : false,
+            };
+
             await onSave({
               price: Math.round(price * 100),
               weekdayBasePrice: Math.round(price * 100),
-              weekendPrice:
-                data.get("weekendPrice") === ""
-                  ? null
-                  : Math.round(number("weekendPrice") * 100),
-              discounts: { ...discounts, weekly, monthly },
-              extraGuestFee: data.get("extraGuestFee") ? Math.round(number("extraGuestFee") * 100) : 0,
+              weekendPrice: weekendPriceVal,
+              discounts: updatedDiscounts,
+              extraGuestFee: extraGuest,
+              cleaningFee: cleaning,
             });
+            setDirty(false);
           }}
+          className="space-y-6 pb-6"
         >
-          <section className="space-y-3 pb-6">
+          {/* Base & Weekend Rates */}
+          <section className="space-y-3">
             <div>
-              <h2 className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100">Price settings</h2>
-              <p className="mt-1 text-xs leading-5 text-[#727272] dark:text-[#727272]">
-                These apply to all nights, unless you customize them by date.
+              <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                Base Nightly Rates
+              </h2>
+              <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+                Default rates applied unless customized for specific calendar dates.
               </p>
             </div>
-            <div className="flex items-center justify-between pt-1">
-              <span className="text-sm font-normal text-[#1F1F1F] dark:text-zinc-100">Weekday base price</span>
-              <div className="relative inline-flex shrink-0 items-center">
-                <span className="pointer-events-none absolute left-3 text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100">
-                  {listingCurrency}
-                </span>
-                <select
-                  aria-label="Pricing currency"
-                  defaultValue={listingCurrency}
-                  className="h-10 w-[114px] cursor-pointer appearance-none rounded-full border border-[#858585] dark:border-zinc-700 bg-white dark:bg-zinc-800 pl-[52px] pr-8 text-base font-normal text-[#1F1F1F] dark:text-zinc-100 focus-visible:outline-none"
-                >
-                  <option value={listingCurrency}>{listingCurrency}</option>
-                </select>
-                <svg
-                  aria-hidden="true"
-                  className="pointer-events-none absolute right-3 size-4 text-[#1F1F1F] dark:text-zinc-100"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="m6 9 6 6 6-6" />
-                </svg>
-              </div>
-            </div>
-            {input("price", "Weekday base rate", ((listing as any).weekdayBasePrice ?? listing.price) / 100, "currency")}
-            <ExpandControl title="Custom weekend price">
-              {input(
-                "weekendPrice",
-                `Per night · ${listingCurrency}`,
-                listing.weekendPrice == null ? "" : listing.weekendPrice / 100,
-              )}
-            </ExpandControl>
-            <ExpandControl title="Smart pricing">
-              <p>
-                Automatic pricing is not available yet. Set your base and
-                weekend rates above.
-              </p>
-            </ExpandControl>
-          </section>
-          <section className="space-y-3 border-t border-[#F3F4F5] dark:border-zinc-800 py-6">
-            <h3 className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100">Discounts</h3>
-            <p className="pb-1 text-xs leading-4 text-[#727272] dark:text-[#727272]">
-              Offer lower nightly rates for longer stays.
-            </p>
-            {input(
-              "weekly",
-              "Weekly (7 nights +)",
-              discounts.weekly || 0,
-              "%",
-              100,
-            )}
-            {input(
-              "monthly",
-              "Monthly (28 nights +)",
-              discounts.monthly || 0,
-              "%",
-              100,
-            )}
+
+            {renderInputField({
+              name: "price",
+              label: "Weekday base rate",
+              defaultValue:
+                toDisplayMajor(((listing as any).weekdayBasePrice ?? listing.price) / 100),
+              prefix: displayCurrency,
+              min: 1,
+              max: 100000,
+              step: "0.01",
+              inputMode: "decimal",
+              helperText: "Applies to Sunday through Wednesday nights.",
+            })}
+
             <ExpandControl
-              title="More discounts"
-              subtitle="Early birds | Last minute"
+              title="Custom weekend price"
+              subtitle={
+                customWeekendPriceVal
+                  ? `${displayCurrency} ${Number(customWeekendPriceVal).toLocaleString("en", { maximumFractionDigits: 2 })} / night`
+                  : `Not configured (defaults to ${formatMajor(((listing as any).weekdayBasePrice ?? listing.price) / 100, listingCurrency)})`
+              }
+              defaultOpen={Boolean(listing.weekendPrice)}
             >
-              <Link href={editorHref} className="underline dark:text-zinc-300 dark:hover:text-amber-400">
-                Manage additional discounts
-              </Link>
+              {renderInputField({
+                name: "weekendPrice",
+                label: `Weekend rate (${displayCurrency})`,
+                value: customWeekendPriceVal,
+                onChange: (e) => {
+                  setCustomWeekendPriceVal(e.target.value);
+                  setDirty(true);
+                },
+                prefix: displayCurrency,
+                min: 0,
+                max: 100000,
+                step: "0.01",
+                inputMode: "decimal",
+                placeholder: "Leave empty to use base rate",
+                helperText:
+                  "Applies to Thursday & Friday nights. Leave empty to use the weekday base rate.",
+                onClear: customWeekendPriceVal
+                  ? () => {
+                      setCustomWeekendPriceVal("");
+                      setDirty(true);
+                    }
+                  : undefined,
+                clearLabel: "Clear weekend rate",
+              })}
             </ExpandControl>
           </section>
-          <section className="space-y-3 border-t border-[#F3F4F5] dark:border-zinc-800 py-6">
-            <h3 className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100">Promotions</h3>
-            <p className="pb-1 text-xs leading-4 text-[#727272] dark:text-[#727272]">
-              Manage offers and discounts for your listing.
-            </p>
+
+          {/* Discounts */}
+          <section className="space-y-3 border-t border-zinc-200 dark:border-zinc-800 pt-5">
+            <div>
+              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                Stay Length Discounts
+              </h3>
+              <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+                Encourage longer reservations with stay duration discounts.
+              </p>
+            </div>
+
+            {renderInputField({
+              name: "weekly",
+              label: "Weekly discount (7+ nights)",
+              defaultValue: weeklyDiscount,
+              suffix: "%",
+              min: 0,
+              max: 100,
+              step: "1",
+              inputMode: "numeric",
+              helperText: "Applied automatically to bookings of 7 nights or more.",
+            })}
+
+            {renderInputField({
+              name: "monthly",
+              label: "Monthly discount (28+ nights)",
+              defaultValue: monthlyDiscount,
+              suffix: "%",
+              min: 0,
+              max: 100,
+              step: "1",
+              inputMode: "numeric",
+              helperText: "Applied automatically to bookings of 28 nights or more.",
+            })}
+
+            <ExpandControl
+              title="Early-bird & Last-minute"
+              subtitle="Booking lead-time discounts"
+              defaultOpen={earlyBirdDiscount > 0 || lastMinuteDiscount > 0}
+            >
+              <div className="space-y-3">
+                {renderInputField({
+                  name: "earlyBird",
+                  label: "Early-bird discount (30+ days advance)",
+                  defaultValue: earlyBirdDiscount,
+                  suffix: "%",
+                  min: 0,
+                  max: 100,
+                  step: "1",
+                  inputMode: "numeric",
+                  helperText: "For bookings made at least 30 days before arrival.",
+                })}
+
+                {renderInputField({
+                  name: "lastMinute",
+                  label: "Last-minute discount (within 2 days)",
+                  defaultValue: lastMinuteDiscount,
+                  suffix: "%",
+                  min: 0,
+                  max: 100,
+                  step: "1",
+                  inputMode: "numeric",
+                  helperText: "For bookings made within 2 days before arrival.",
+                })}
+              </div>
+            </ExpandControl>
+          </section>
+
+          {/* Promotions */}
+          <section className="space-y-3 border-t border-zinc-200 dark:border-zinc-800 pt-5">
+            <div>
+              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                Promotions
+              </h3>
+              <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+                Special promotional offers across your listing.
+              </p>
+            </div>
+
             <ExpandControl
               title="Custom promotion"
-              subtitle="Choose the dates and discounts"
+              subtitle={
+                customPromoDiscount > 0
+                  ? `${customPromoDiscount}% promotional discount configured`
+                  : "Property-wide promotional discount"
+              }
+              defaultOpen={customPromoDiscount > 0}
             >
-              <Link href={editorHref} className="underline dark:text-zinc-300 dark:hover:text-amber-400">
-                View promotion options
-              </Link>
-            </ExpandControl>
-            <ExpandControl title="Show past promotions">
-              <p>No promotion history is available.</p>
+              {renderInputField({
+                name: "customPromo",
+                label: "Special promotional discount",
+                defaultValue: customPromoDiscount,
+                suffix: "%",
+                min: 0,
+                max: 100,
+                step: "1",
+                inputMode: "numeric",
+                helperText: "Global promotional discount applied to eligible stays.",
+              })}
             </ExpandControl>
           </section>
-          <section className="space-y-3 border-t border-[#F3F4F5] dark:border-zinc-800 py-6">
-            <h3 className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100">Additional charges</h3>
-            <ExpandControl title="Fees" subtitle="Pets and extra guests">
-              {input(
-                "extraGuestFee",
-                `Extra guest fee (per guest per night) · ${listingCurrency}`,
-                ((listing as any).extraGuestFee || 0) / 100,
-              )}
-              <Link href={editorHref} className="mt-3 block underline text-sm text-[#1F1F1F] dark:text-zinc-300 dark:hover:text-amber-400">
-                More fee settings
-              </Link>
-            </ExpandControl>
+
+          {/* Additional Charges */}
+          <section className="space-y-3 border-t border-zinc-200 dark:border-zinc-800 pt-5">
+            <div>
+              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                Additional Charges
+              </h3>
+              <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+                Host-defined fees for guests and cleaning.
+              </p>
+            </div>
+
+            {renderInputField({
+              name: "extraGuestFee",
+              label: "Extra guest fee",
+              defaultValue: toDisplayMajor(((listing as any).extraGuestFee || 0) / 100),
+              prefix: displayCurrency,
+              suffix: "/ guest / night",
+              min: 0,
+              max: 10000,
+              step: "0.01",
+              inputMode: "decimal",
+              helperText: "Charge per extra guest beyond standard included guests.",
+            })}
+
+            {renderInputField({
+              name: "cleaningFee",
+              label: "Cleaning fee",
+              defaultValue: toDisplayMajor(((listing as any).cleaningFee || 0) / 100),
+              prefix: displayCurrency,
+              suffix: "/ stay",
+              min: 0,
+              max: 10000,
+              step: "0.01",
+              inputMode: "decimal",
+              helperText: "One-time host cleaning fee recorded with property.",
+            })}
           </section>
-          {(dirty || saving) && (
-            <button
-              type="submit"
-              disabled={saving}
-              className="w-full rounded-full bg-[#FDE29B] dark:bg-amber-400 text-[#1F1F1F] dark:text-zinc-950 font-semibold px-4 py-2.5 text-xs disabled:opacity-50 hover:bg-amber-300 dark:hover:bg-amber-300 transition-colors cursor-pointer"
-            >
-              {saving ? "Saving…" : "Save changes"}
-            </button>
-          )}
-          {(notice || validation) && (
-            <p
+
+          {(validation || notice) && (
+            <div
               role={validation ? "alert" : "status"}
-              className="mt-3 text-xs leading-5 dark:text-zinc-300"
+              className={`rounded-xl p-3 text-xs leading-5 font-medium ${
+                validation
+                  ? "bg-rose-50 text-rose-800 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/60"
+                  : "bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/60"
+              }`}
             >
               {validation || notice}
-            </p>
+            </div>
+          )}
+
+          {/* Sticky Action Footer */}
+          {(dirty || saving) && (
+            <div className="sticky bottom-0 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xs pt-3 pb-1 border-t border-zinc-200 dark:border-zinc-800 flex items-center gap-2 z-10 animate-in fade-in duration-150">
+              <button
+                type="button"
+                onClick={handleDiscard}
+                disabled={saving}
+                className="flex-1 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 font-semibold py-2.5 text-xs transition-colors cursor-pointer disabled:opacity-50"
+              >
+                Discard
+              </button>
+              <button
+                type="submit"
+                disabled={saving}
+                className="flex-1 rounded-xl bg-amber-400 hover:bg-amber-300 text-zinc-950 font-bold py-2.5 text-xs transition-colors cursor-pointer disabled:opacity-50 shadow-xs"
+              >
+                {saving ? "Saving…" : "Save price settings"}
+              </button>
+            </div>
           )}
         </form>
       )}

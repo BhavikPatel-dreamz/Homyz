@@ -3,7 +3,7 @@ import type { AuthUser } from "@/lib/auth/types";
 import { assertOwnership, authorize } from "@/lib/permissions/authorize";
 import { assertHostPermission } from "@/lib/permissions/host-permissions-server";
 import { prisma } from "@/lib/db/prisma";
-import { bookingDateKey, parseBookingDate } from "@/lib/booking/booking-date";
+import { bookingDateKey, parseBookingDate, shiftBookingDateKey } from "@/lib/booking/booking-date";
 import { deleteCache, getCache, getCounter, getOrSetCache, incrCounter, setCache } from "@/lib/redis/cache";
 import { hashFilters, keys } from "@/lib/redis/keys";
 import type {
@@ -12,7 +12,7 @@ import type {
 } from "@/lib/validation/listing";
 import { BookingStatus, ListingCoHostStatus, ListingStatus, Role } from "@/generated/prisma/enums";
 import { Prisma } from "@/generated/prisma/client";
-import { getExpiryThresholdDate } from "@/lib/booking/booking-expiry";
+import { getExpiryThresholdDate, isBookingRequestExpired } from "@/lib/booking/booking-expiry";
 
 import { auditService } from "./audit.service";
 import { qualificationService } from "./qualification.service";
@@ -1325,6 +1325,9 @@ async function update(
 ): Promise<ListingDTO> {
   const existing = await prisma.listing.findUnique({ where: { id } });
   if (!existing) throw AppError.notFound("Listing not found");
+  if (existing.deletedAt !== null) {
+    throw AppError.forbidden("Cannot modify a removed listing");
+  }
   const isCoHost = await assertListingAccess(actor, id, existing.hostId);
 
   if (!isCoHost && actor.role === Role.HOST) {
@@ -1402,9 +1405,44 @@ async function update(
     (dataToUpdate as any).weekdayBasePrice = dataToUpdate.price;
   }
   if ((dataToUpdate as any).customPrices !== undefined) {
-    (dataToUpdate as any).customPrices = (dataToUpdate as any).customPrices
-      ? JSON.parse(JSON.stringify((dataToUpdate as any).customPrices))
-      : null;
+    const rawCustom = (dataToUpdate as any).customPrices;
+    if (rawCustom && typeof rawCustom === "object") {
+      const activeBookings = await prisma.booking.findMany({
+        where: {
+          listingId: id,
+          status: { in: [BookingStatus.CONFIRMED, BookingStatus.PENDING] },
+        },
+        select: { startDate: true, endDate: true, status: true, createdAt: true },
+      });
+      const now = new Date();
+      const bookedSet = new Set<string>();
+      for (const b of activeBookings) {
+        if (b.status === BookingStatus.PENDING && isBookingRequestExpired(b.createdAt, now, b.endDate)) {
+          continue;
+        }
+        let cur = bookingDateKey(b.startDate);
+        const end = bookingDateKey(b.endDate);
+        while (cur < end) {
+          bookedSet.add(cur);
+          cur = shiftBookingDateKey(cur, 1);
+        }
+      }
+      const existingCustom = ((existing.customPrices || {}) as Record<string, number>);
+      const sanitizedCustom: Record<string, number> = {};
+      for (const [k, val] of Object.entries(rawCustom)) {
+        if (bookedSet.has(k)) {
+          // Strictly protect confirmed/active reservations: preserve prior pricing snapshot
+          if (existingCustom[k] !== undefined) {
+            sanitizedCustom[k] = existingCustom[k];
+          }
+        } else if (typeof val === "number" && val > 0) {
+          sanitizedCustom[k] = Math.round(val);
+        }
+      }
+      (dataToUpdate as any).customPrices = sanitizedCustom;
+    } else {
+      (dataToUpdate as any).customPrices = null;
+    }
   }
   if ((dataToUpdate as any).extraGuestFee !== undefined) {
     (dataToUpdate as any).extraGuestFee = Math.max(0, Math.round(Number((dataToUpdate as any).extraGuestFee)));
@@ -2060,14 +2098,105 @@ async function togglePause(actor: AuthUser, id: string, isPaused: boolean): Prom
   return toListingDTO(updated);
 }
 
-async function updateAvailability(actor: AuthUser, id: string, blockedDates: string[]): Promise<ListingDTO> {
+export interface BulkAvailabilityResult {
+  listing: ListingDTO;
+  action: "BLOCK" | "UNBLOCK" | "RESTORE";
+  affectedCount: number;
+  protectedCount: number;
+  newlyBookedCount: number;
+  previousBlockedDates: string[];
+}
+
+async function bulkUpdateAvailability(
+  actor: AuthUser,
+  id: string,
+  input: {
+    action: "BLOCK" | "UNBLOCK" | "RESTORE";
+    dates: string[];
+  },
+): Promise<BulkAvailabilityResult> {
   const existing = await prisma.listing.findUnique({ where: { id } });
   if (!existing) throw AppError.notFound("Listing not found");
+  if (existing.deletedAt !== null) {
+    throw AppError.forbidden("Cannot modify availability for a removed listing");
+  }
   await assertListingAccess(actor, id, existing.hostId);
+
+  // 1. Fetch active bookings (CONFIRMED or non-expired PENDING) to establish immutable protected dates
+  const activeBookings = await prisma.booking.findMany({
+    where: {
+      listingId: id,
+      status: { in: [BookingStatus.CONFIRMED, BookingStatus.PENDING] },
+    },
+    select: { startDate: true, endDate: true, createdAt: true, status: true },
+  });
+
+  const now = new Date();
+  const protectedDatesSet = new Set<string>();
+  for (const b of activeBookings) {
+    if (b.status === BookingStatus.PENDING && isBookingRequestExpired(b.createdAt, now, b.endDate)) {
+      continue;
+    }
+    const startKey = bookingDateKey(b.startDate);
+    const endKey = bookingDateKey(b.endDate);
+    let cur = startKey;
+    while (cur < endKey) {
+      protectedDatesSet.add(cur);
+      cur = shiftBookingDateKey(cur, 1);
+    }
+  }
+
+  const previousBlockedDates = Array.isArray(existing.blockedDates) ? [...existing.blockedDates] : [];
+  let nextBlockedSet = new Set<string>(previousBlockedDates);
+  let affectedCount = 0;
+  let protectedCount = 0;
+  let newlyBookedCount = 0;
+
+  if (input.action === "RESTORE") {
+    // Revert to prior blocked dates, strictly excluding any dates that are currently booked
+    nextBlockedSet = new Set<string>();
+    for (const d of input.dates) {
+      if (protectedDatesSet.has(d)) {
+        newlyBookedCount++;
+      } else {
+        nextBlockedSet.add(d);
+      }
+    }
+    affectedCount = nextBlockedSet.size;
+  } else if (input.action === "BLOCK") {
+    for (const d of input.dates) {
+      if (protectedDatesSet.has(d)) {
+        protectedCount++;
+      } else {
+        if (!nextBlockedSet.has(d)) {
+          nextBlockedSet.add(d);
+          affectedCount++;
+        }
+      }
+    }
+  } else if (input.action === "UNBLOCK") {
+    for (const d of input.dates) {
+      if (protectedDatesSet.has(d)) {
+        protectedCount++;
+      } else {
+        if (nextBlockedSet.has(d)) {
+          nextBlockedSet.delete(d);
+          affectedCount++;
+        }
+      }
+    }
+  }
+
+  // Authoritative boundary: active reservations are never manually blocked
+  for (const p of protectedDatesSet) {
+    nextBlockedSet.delete(p);
+  }
+
+  const sortedBlockedDates = Array.from(nextBlockedSet).sort();
 
   const updated = await prisma.listing.update({
     where: { id },
-    data: { blockedDates },
+    data: { blockedDates: sortedBlockedDates },
   });
 
   await Promise.all([
@@ -2081,10 +2210,25 @@ async function updateAvailability(actor: AuthUser, id: string, blockedDates: str
     action: "LISTING_AVAILABILITY_UPDATED",
     resourceType: "Listing",
     resourceId: id,
-    description: `Updated blocked calendar dates for "${updated.title}"`,
+    description: `Bulk calendar availability update (${input.action}) for "${updated.title}"`,
   });
 
-  return toListingDTO(updated);
+  return {
+    listing: toListingDTO(updated),
+    action: input.action,
+    affectedCount,
+    protectedCount,
+    newlyBookedCount,
+    previousBlockedDates,
+  };
+}
+
+async function updateAvailability(actor: AuthUser, id: string, blockedDates: string[]): Promise<ListingDTO> {
+  const result = await bulkUpdateAvailability(actor, id, {
+    action: "RESTORE",
+    dates: blockedDates,
+  });
+  return result.listing;
 }
 
 export const listingService = {
@@ -2106,6 +2250,7 @@ export const listingService = {
   duplicate,
   togglePause,
   updateAvailability,
+  bulkUpdateAvailability,
   publish: publishListing,
   unpublish: unpublishListing,
   publishListing,

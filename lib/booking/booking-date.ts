@@ -60,6 +60,15 @@ export function bookingDateKey(value: BookingDateInput): string {
   return `${String(parts.year).padStart(4, "0")}-${String(parts.month).padStart(2, "0")}-${String(parts.day).padStart(2, "0")}`;
 }
 
+/** Shifts a YYYY-MM-DD string by a given number of days. */
+export function shiftBookingDateKey(key: string, days: number): string {
+  const parts = parseBookingDateParts(key);
+  if (!parts) return key;
+  const date = new Date(Date.UTC(parts.year, parts.month - 1, parts.day));
+  date.setUTCDate(date.getUTCDate() + days);
+  return bookingDateKey(date);
+}
+
 export function bookingDateEpoch(value: BookingDateInput): number {
   return parseBookingDate(value).getTime();
 }

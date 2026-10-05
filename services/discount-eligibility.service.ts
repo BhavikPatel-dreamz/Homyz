@@ -71,6 +71,8 @@ export interface DiscountEligibilityParams {
   includeNewListingPromotion?: boolean;
 }
 
+export { DEFAULT_DISCOUNT_PERCENTAGES };
+
 export interface DiscountEligibilityResult {
   newListing: DiscountEligibilityItem;
   lastMinute: DiscountEligibilityItem;
@@ -78,6 +80,10 @@ export interface DiscountEligibilityResult {
   monthly: DiscountEligibilityItem;
   new_listing: DiscountEligibilityItem;
   last_minute: DiscountEligibilityItem;
+  earlyBird: DiscountEligibilityItem;
+  early_bird: DiscountEligibilityItem;
+  customPromotion: DiscountEligibilityItem;
+  custom_promotion: DiscountEligibilityItem;
   eligibleDiscounts: DiscountEligibilityItem[];
 }
 
@@ -309,6 +315,94 @@ export function evaluateDiscountEligibility(
   };
 
   // -------------------------------------------------------------
+  // 5. Early-Bird Discount (Configurable daysInAdvance, default 30)
+  // -------------------------------------------------------------
+  const rawEarlyBird = rawDiscounts.early_bird ?? rawDiscounts.earlyBird;
+  const earlyBirdParsed = parseDiscountConfigEntry(rawEarlyBird, 10);
+  let earlyBirdWindow = 30;
+  if (typeof rawEarlyBird === "object" && rawEarlyBird !== null && typeof (rawEarlyBird as any).daysInAdvance === "number") {
+    earlyBirdWindow = (rawEarlyBird as any).daysInAdvance;
+  }
+
+  let earlyBirdEligible = false;
+  let earlyBirdReason: DiscountEligibilityReason;
+
+  if (!earlyBirdParsed.configured) {
+    earlyBirdReason = DISCOUNT_ELIGIBILITY_REASONS.NOT_CONFIGURED;
+  } else if (!earlyBirdParsed.enabled) {
+    earlyBirdReason = DISCOUNT_ELIGIBILITY_REASONS.DISABLED;
+  } else if (!datesProvided) {
+    earlyBirdReason = DISCOUNT_ELIGIBILITY_REASONS.NOT_EVALUATED;
+  } else if (!datesValid) {
+    earlyBirdReason = DISCOUNT_ELIGIBILITY_REASONS.INVALID_DATES;
+  } else if (daysUntilCheckIn < earlyBirdWindow) {
+    earlyBirdReason = DISCOUNT_ELIGIBILITY_REASONS.OUTSIDE_LAST_MINUTE_WINDOW;
+  } else {
+    earlyBirdEligible = true;
+    earlyBirdReason = DISCOUNT_ELIGIBILITY_REASONS.ELIGIBLE;
+  }
+
+  const earlyBirdItem: DiscountEligibilityItem = {
+    key: "early_bird",
+    name: "Early-Bird Booking Discount",
+    configured: earlyBirdParsed.configured,
+    enabled: earlyBirdParsed.enabled,
+    eligible: earlyBirdEligible,
+    percentage: earlyBirdParsed.percentage,
+    windowDays: earlyBirdWindow,
+    daysUntilCheckIn: datesValid ? daysUntilCheckIn : undefined,
+    reason: earlyBirdReason,
+    priorityOrder: 5,
+  };
+
+  // -------------------------------------------------------------
+  // 6. Custom Promotional Discount (Configurable dates and percentage)
+  // -------------------------------------------------------------
+  const rawCustomPromo = rawDiscounts.custom_promotion;
+  const customPromoParsed = parseDiscountConfigEntry(rawCustomPromo, 15);
+  let promoStartDate: string | null = null;
+  let promoEndDate: string | null = null;
+  if (typeof rawCustomPromo === "object" && rawCustomPromo !== null) {
+    if (typeof (rawCustomPromo as any).startDate === "string") promoStartDate = (rawCustomPromo as any).startDate;
+    if (typeof (rawCustomPromo as any).endDate === "string") promoEndDate = (rawCustomPromo as any).endDate;
+  }
+
+  let customPromoEligible = false;
+  let customPromoReason: DiscountEligibilityReason;
+
+  if (!customPromoParsed.configured) {
+    customPromoReason = DISCOUNT_ELIGIBILITY_REASONS.NOT_CONFIGURED;
+  } else if (!customPromoParsed.enabled) {
+    customPromoReason = DISCOUNT_ELIGIBILITY_REASONS.DISABLED;
+  } else if (!datesProvided) {
+    customPromoReason = DISCOUNT_ELIGIBILITY_REASONS.NOT_EVALUATED;
+  } else if (!datesValid) {
+    customPromoReason = DISCOUNT_ELIGIBILITY_REASONS.INVALID_DATES;
+  } else {
+    const checkInStr = checkInDate ? checkInDate.toISOString().slice(0, 10) : "";
+    const inDateWindow = (!promoStartDate || checkInStr >= promoStartDate) && (!promoEndDate || checkInStr <= promoEndDate);
+    if (!inDateWindow) {
+      customPromoReason = DISCOUNT_ELIGIBILITY_REASONS.PROMOTION_EXCLUDED;
+    } else {
+      customPromoEligible = true;
+      customPromoReason = DISCOUNT_ELIGIBILITY_REASONS.ELIGIBLE;
+    }
+  }
+
+  const customPromoItem: DiscountEligibilityItem = {
+    key: "custom_promotion",
+    name: typeof rawCustomPromo === "object" && rawCustomPromo !== null && typeof (rawCustomPromo as any).name === "string"
+      ? (rawCustomPromo as any).name
+      : "Custom Promotional Discount",
+    configured: customPromoParsed.configured,
+    enabled: customPromoParsed.enabled,
+    eligible: customPromoEligible,
+    percentage: customPromoParsed.percentage,
+    reason: customPromoReason,
+    priorityOrder: 6,
+  };
+
+  // -------------------------------------------------------------
   // Collect all eligible discounts (WITHOUT picking a single winner)
   // -------------------------------------------------------------
   const eligibleDiscounts: DiscountEligibilityItem[] = [];
@@ -316,6 +410,8 @@ export function evaluateDiscountEligibility(
   if (weeklyItem.eligible) eligibleDiscounts.push(weeklyItem);
   if (lastMinuteItem.eligible) eligibleDiscounts.push(lastMinuteItem);
   if (newListingItem.eligible) eligibleDiscounts.push(newListingItem);
+  if (earlyBirdItem.eligible) eligibleDiscounts.push(earlyBirdItem);
+  if (customPromoItem.eligible) eligibleDiscounts.push(customPromoItem);
 
   return {
     newListing: newListingItem,
@@ -324,8 +420,12 @@ export function evaluateDiscountEligibility(
     monthly: monthlyItem,
     new_listing: newListingItem,
     last_minute: lastMinuteItem,
+    earlyBird: earlyBirdItem,
+    early_bird: earlyBirdItem,
+    customPromotion: customPromoItem,
+    custom_promotion: customPromoItem,
     eligibleDiscounts,
-  };
+  } as any;
 }
 
 export {

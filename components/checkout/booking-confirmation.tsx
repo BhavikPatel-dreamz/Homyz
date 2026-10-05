@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { BookingMode } from "@/lib/booking/booking-mode";
+import { useCurrency } from "@/lib/currency-context";
 import {
   formatCheckoutDate,
   formatCheckoutGuests,
@@ -46,6 +47,7 @@ export function BookingConfirmation({
   paymentMethod,
   formatMoney,
 }: BookingConfirmationProps) {
+  const { currency: displayCurrency } = useCurrency();
   const isInstantBook = bookingMode === "INSTANT_BOOK";
   const priceRows = getCheckoutPriceRows(quote);
 
@@ -119,7 +121,7 @@ export function BookingConfirmation({
               </div>
             ))}
             <div className="flex justify-between gap-4 border-t border-zinc-300 pt-3 text-base font-semibold text-zinc-950">
-              <dt>Total ({quote.currency})</dt>
+              <dt>Total ({displayCurrency})</dt>
               <dd>{formatMoney(quote.guestTotal, 2)}</dd>
             </div>
           </dl>

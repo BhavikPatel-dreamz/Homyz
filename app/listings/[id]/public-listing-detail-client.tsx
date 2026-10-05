@@ -2151,7 +2151,7 @@ export function PublicListingDetailClient({
 
                         {listing.bookingMessage && <p className="rounded-xl bg-zinc-50 border border-zinc-200 px-3 py-2 text-xs text-[#727272] whitespace-pre-wrap">{listing.bookingMessage}</p>}
 
-                        {(quote?.nonRefundableAvailable || isNonRefundable) && (
+                        {/* {(quote?.nonRefundableAvailable || isNonRefundable) && (
                           <fieldset className="space-y-2 rounded-xl border border-zinc-200 bg-zinc-50/70 p-3 text-xs">
                             <legend className="px-1 font-semibold text-[#1f1f1f]">Rate options</legend>
                             <label className={`flex cursor-pointer items-start gap-2.5 rounded-lg border p-2.5 transition-colors ${!isNonRefundable ? "border-[#1f1f1f] bg-white shadow-2xs" : "border-transparent hover:bg-zinc-100/60"}`}>
@@ -2176,7 +2176,7 @@ export function PublicListingDetailClient({
                               </div>
                             </label>
                           </fieldset>
-                        )}
+                        )} */}
 
                         {/* Live Quote Breakdown */}
                         {isQuoteLoading && !quote && (

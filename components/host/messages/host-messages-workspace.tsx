@@ -962,14 +962,14 @@ export function HostMessagesWorkspace({
                     <button type="button" onClick={() => { setFilterMenuOpen(false); setSearchClosing(false); setSearchOpen(true); }} aria-label="Search messages" className="flex size-8 items-center justify-center rounded-full border border-[#727272] text-[#1F1F1F] transition-transform duration-150 hover:scale-105 hover:bg-zinc-50 active:scale-95">
                       <Image src="/images/icons/search-icon.svg" alt="" width={16} height={16} className="size-4" />
                     </button>
-                    <button
+                    {/* <button
                       type="button"
                       onClick={() => { setFilterMenuOpen(false); setMessagingSettingsOpen(true); }}
                       aria-label="Open messaging settings"
                       className="flex size-8 items-center justify-center rounded-full border border-[#727272] bg-transparent p-0"
                     >
                       <Image src="/images/icons/setting-icon.svg" alt="" width={16} height={16} className="size-4" />
-                    </button>
+                    </button> */}
 
                   </div>
                 </>
@@ -1211,7 +1211,11 @@ export function HostMessagesWorkspace({
                                     <div>
                                       <span className="text-zinc-500 block">Total Offer:</span>
                                       <span className="font-bold text-amber-900 text-sm">
-                                        {String(m.metadata.currency || "SAR")} {((Number(m.metadata.subtotalPrice) || 0) / 100).toFixed(2)}
+                                        {formatPrice(
+                                          Number(m.metadata.subtotalPrice) || 0,
+                                          String(m.metadata.currency || "SAR"),
+                                          2,
+                                        )}
                                       </span>
                                     </div>
                                   </div>

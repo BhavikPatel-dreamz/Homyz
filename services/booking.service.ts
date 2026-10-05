@@ -258,7 +258,9 @@ export async function getBookingQuote(opts: {
     validatedOffer = offer;
   }
 
-  const minN = listing.minNights || 1;
+  const checkInKey = bookingDateKey(cIn);
+  const customMinStay = (listing.discounts as any)?.customMinNights?.[checkInKey];
+  const minN = typeof customMinStay === "number" && customMinStay > 0 ? customMinStay : (listing.minNights || 1);
   const maxN = listing.maxNights || 365;
 
   if (!validatedOffer && nights < minN) {

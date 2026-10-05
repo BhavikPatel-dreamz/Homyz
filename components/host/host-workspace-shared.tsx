@@ -6,8 +6,8 @@ import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { CloseButton } from "@/components/ui/close-button";
 import { ReceiptModal } from "@/components/dashboard/trip-modals";
 import type { ListingDTO } from "@/services/mappers";
+import { resolvePropertyCurrency } from "@/lib/currency";
 import { useCurrency } from "@/lib/currency-context";
-import { getCurrencyForCountry } from "@/lib/currency";
 import {
   differenceInBookingNights,
   formatBookingDate,
@@ -244,11 +244,11 @@ export function ReservationDetails({
   onClose: () => void;
   onMoney?: () => void;
 }) {
-  const { currency, formatPrice } = useCurrency();
+  const { formatPrice } = useCurrency();
   const [showInvoice, setShowInvoice] = useState(false);
   const [codeCopied, setCodeCopied] = useState(false);
   const sourceCurrency =
-    booking.currency || getCurrencyForCountry(listing.country);
+    booking.currency || resolvePropertyCurrency(listing);
   const pb = booking.priceBreakdown;
   const pricing = getAuthoritativePriceBreakdown({
     startDate: booking.startDate,
@@ -639,7 +639,7 @@ export function ReservationDetails({
                   />
                 )}
                 <div className="flex justify-between gap-4 border-t border-zinc-100 pt-2 text-sm font-semibold dark:border-zinc-800">
-                  <dt>Total paid by guest ({currency})</dt>
+                  <dt>Total paid by guest ({sourceCurrency})</dt>
                   <dd>{formatPrice(pricing.totalPrice, sourceCurrency, 2)}</dd>
                 </div>
               </dl>
@@ -706,7 +706,7 @@ export function ReservationDetails({
                     />
                   )}
                   <div className="flex justify-between gap-4 border-t border-zinc-100 pt-2 text-sm font-semibold dark:border-zinc-800">
-                    <dt>Total host payout ({currency})</dt>
+                    <dt>Total host payout ({sourceCurrency})</dt>
                     <dd className="text-emerald-700 dark:text-emerald-400 font-bold">
                       {formatPrice(payoutTotal, sourceCurrency, 2)}
                     </dd>

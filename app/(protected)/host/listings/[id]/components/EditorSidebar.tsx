@@ -30,6 +30,7 @@ import { getLanguageDisplayNames } from "@/lib/utils/language-options";
 import { computeMissingRequirements, getListingDisplayState } from "./ListingStatusView";
 import { getCheckInMethodLabel } from "./HouseRulesAndArrivalViews";
 import { isSaudiArabia } from "@/lib/location/address-countries";
+import { useCurrency } from "@/lib/currency-context";
 
 function SafetySidebarIcon({ type }: { type: SafetyIconType }) {
   if (type === "co") {
@@ -109,6 +110,8 @@ interface EditorSidebarProps {
   smartPricingMaxPrice?: number;
   weeklyDiscount: number;
   monthlyDiscount: number;
+  cleaningFee?: number;
+  extraGuestFee?: number;
   minNights: number;
   maxNights: number;
   advanceNotice?: string;
@@ -306,6 +309,8 @@ export function EditorSidebar({
   smartPricingMaxPrice = 0,
   weeklyDiscount,
   monthlyDiscount,
+  cleaningFee,
+  extraGuestFee,
   minNights,
   maxNights,
   advanceNotice = "Same day",
@@ -365,6 +370,7 @@ export function EditorSidebar({
   onMobileClose,
 }: EditorSidebarProps) {
   const { t } = useLanguage();
+  const { formatMajor } = useCurrency();
   const sidebarScrollRef = React.useRef<HTMLDivElement>(null);
   const sidebarScrollTrackRef = React.useRef<HTMLDivElement>(null);
   const sidebarScrollFrameRef = React.useRef<number | null>(null);
@@ -1035,15 +1041,21 @@ export function EditorSidebar({
                       <>
                         <p className="text-base font-normal text-[#727272]">{t("host_smart_pricing")}</p>
                         <p className="text-base text-[#727272]">
-                          {currency} {smartPricingMinPrice} – {currency} {smartPricingMaxPrice}
+                          {formatMajor(smartPricingMinPrice, currency)} – {formatMajor(smartPricingMaxPrice, currency)}
                         </p>
                       </>
                     ) : (
                       <>
-                        <p className="text-base font-normal text-[#727272]">{currency} {editPrice}</p>
-                        <p className="text-base text-[#727272]">{weeklyDiscount}% {t("host_weekly_discount")}</p>
-                        <p className="text-base text-[#727272]">{monthlyDiscount}% {t("host_monthly_discount")}</p>
+                        <p className="text-base font-normal text-[#727272]">{formatMajor(editPrice, currency)} / night</p>
+                        {weeklyDiscount > 0 && <p className="text-base text-[#727272]">{weeklyDiscount}% {t("host_weekly_discount")}</p>}
+                        {monthlyDiscount > 0 && <p className="text-base text-[#727272]">{monthlyDiscount}% {t("host_monthly_discount")}</p>}
                       </>
+                    )}
+                    {typeof cleaningFee === "number" && cleaningFee > 0 && (
+                      <p className="text-xs text-[#727272] pt-0.5">Cleaning: {formatMajor(cleaningFee, currency)}</p>
+                    )}
+                    {typeof extraGuestFee === "number" && extraGuestFee > 0 && (
+                      <p className="text-xs text-[#727272]">Extra guest: {formatMajor(extraGuestFee, currency)}/night</p>
                     )}
                   </div>
                 </div>

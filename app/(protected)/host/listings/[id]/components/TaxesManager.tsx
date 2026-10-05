@@ -5,8 +5,8 @@ import { BackButton } from "@/components/ui/back-button";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { toast } from "@/components/ui/toast";
 import { useLanguage, type TranslationKey } from "@/lib/i18n/language-context";
+import { resolvePropertyCurrency } from "@/lib/currency";
 import { useCurrency } from "@/lib/currency-context";
-import { getCurrencyForCountry } from "@/lib/currency";
 import { clearBookingQuote } from "@/lib/booking/quote-cache";
 import type {
   ListingTaxDTO,
@@ -21,6 +21,7 @@ interface TaxesManagerProps {
   listingId: string;
   listingCity?: string | null;
   listingCountry?: string | null;
+  listingCurrency?: string | null;
   setActiveSection: (s: string) => void;
   onDirtyChange?: (isDirty: boolean) => void;
 }
@@ -58,11 +59,12 @@ export function TaxesManager({
   listingId,
   listingCity: _listingCity,
   listingCountry,
+  listingCurrency: propsCurrency,
   setActiveSection,
   onDirtyChange,
 }: TaxesManagerProps) {
-  const { formatPrice } = useCurrency();
-  const listingCurrency = getCurrencyForCountry(listingCountry);
+  const { formatPrice, formatMajor } = useCurrency();
+  const listingCurrency = propsCurrency || resolvePropertyCurrency({ country: listingCountry });
   const { t } = useLanguage();
   const [_isLoading, setIsLoading] = useState(true);
 
@@ -794,10 +796,10 @@ export function TaxesManager({
                   <div className="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800/60 dark:text-zinc-300">
                     <span className="font-semibold text-zinc-900 dark:text-zinc-100">How this tax is calculated: </span>
                     {taxType === "PERCENTAGE" && `${taxRate}% of the selected taxable base`}
-                    {taxType === "FLAT_PER_BOOKING" && `${listingCurrency} ${taxRate} once per booking`}
-                    {taxType === "AMOUNT_PER_NIGHT" && `${listingCurrency} ${taxRate} per taxable night`}
-                    {taxType === "AMOUNT_PER_GUEST" && `${listingCurrency} ${taxRate} per taxable guest, once per booking`}
-                    {taxType === "AMOUNT_PER_GUEST_PER_NIGHT" && `${listingCurrency} ${taxRate} per taxable guest per taxable night`}
+                    {taxType === "FLAT_PER_BOOKING" && `${formatMajor(Number(taxRate) || 0, listingCurrency, 2)} once per booking`}
+                    {taxType === "AMOUNT_PER_NIGHT" && `${formatMajor(Number(taxRate) || 0, listingCurrency, 2)} per taxable night`}
+                    {taxType === "AMOUNT_PER_GUEST" && `${formatMajor(Number(taxRate) || 0, listingCurrency, 2)} per taxable guest, once per booking`}
+                    {taxType === "AMOUNT_PER_GUEST_PER_NIGHT" && `${formatMajor(Number(taxRate) || 0, listingCurrency, 2)} per taxable guest per taxable night`}
                     {partialStayExemption && `; only the first ${partialStayExemption} nights are taxable`}
                     {fullStayExemption && `; the entire stay is exempt at ${fullStayExemption}+ nights`}
                   </div>

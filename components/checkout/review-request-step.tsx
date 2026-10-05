@@ -1,6 +1,7 @@
 import Image from "next/image";
 import type { ReviewRequestData } from "@/lib/booking/review-request";
 import type { BookingMode } from "@/lib/booking/booking-mode";
+import { useCurrency } from "@/lib/currency-context";
 
 type ReviewRequestStepProps = {
   data: ReviewRequestData;
@@ -46,6 +47,7 @@ export function ReviewRequestStep({
   onChangeGuests,
   onSubmit,
 }: ReviewRequestStepProps) {
+  const { currency: displayCurrency } = useCurrency();
   const isInstantBook = bookingMode === "INSTANT_BOOK";
   return (
     <div className="min-w-0 divide-y divide-zinc-200">
@@ -132,7 +134,7 @@ export function ReviewRequestStep({
             </div>
           ))}
           <div className="flex items-center justify-between gap-4 border-t border-zinc-300 pt-3 font-semibold text-zinc-950">
-            <dt>Total ({data.pricing.currency})</dt>
+            <dt>Total ({displayCurrency})</dt>
             <dd>{formatMoney(data.pricing.total, 2)}</dd>
           </div>
         </dl>

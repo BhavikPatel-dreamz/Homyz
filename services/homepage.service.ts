@@ -306,7 +306,9 @@ function isListingAvailable(
   const nights = Math.round((cOut.getTime() - cIn.getTime()) / (1000 * 60 * 60 * 24));
   if (nights <= 0) return false;
 
-  const minNights = Math.max(1, listing.minNights || 1);
+  const checkInKey = dateKey(cIn);
+  const customMinStay = ((listing as any).discounts as any)?.customMinNights?.[checkInKey];
+  const minNights = typeof customMinStay === "number" && customMinStay > 0 ? customMinStay : Math.max(1, listing.minNights || 1);
   const maxNights = Math.max(minNights, listing.maxNights || 365);
   if (nights < minNights || nights > maxNights) return false;
 

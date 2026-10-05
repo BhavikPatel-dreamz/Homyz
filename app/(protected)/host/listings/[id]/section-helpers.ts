@@ -1,5 +1,6 @@
 import type { AccessibilityFeatureDetail } from "@/lib/constants/listing-enums";
 import type { PhotoRoomAssignment } from "@/lib/listing/photo-room-assignments";
+import { resolvePropertyCurrency } from "@/lib/currency";
 
 export type SectionKey =
   | "title"
@@ -219,6 +220,7 @@ export interface HostListingData {
   description: string;
   descriptionSections?: Record<string, unknown> | null;
   price: number; // in cents
+  currency: string;
   weekdayBasePrice?: number | null;
   smartPricing?: boolean;
   smartPricingMinPrice?: number | null;
@@ -330,6 +332,7 @@ export interface HostListingData {
   allowSameDayRequests?: boolean | null;
   blockedDates: string[];
   cleaningFee: number;
+  extraGuestFee?: number | null;
   securityDeposit: number;
   weekendPrice: number | null;
   weekendPremium?: number | null;
@@ -404,6 +407,7 @@ export function serializeListingForEditor(
       ? JSON.parse(JSON.stringify(listing.descriptionSections))
       : null,
     price: listing.price,
+    currency: resolvePropertyCurrency(listing),
     weekdayBasePrice: listing.weekdayBasePrice ?? listing.price,
     smartPricing: listing.smartPricing ?? false,
     smartPricingMinPrice: listing.smartPricingMinPrice ?? null,
@@ -465,6 +469,7 @@ export function serializeListingForEditor(
     allowSameDayRequests: listing.allowSameDayRequests ?? true,
     blockedDates: listing.blockedDates || [],
     cleaningFee: listing.cleaningFee ?? 0,
+    extraGuestFee: listing.extraGuestFee ?? 0,
     securityDeposit: listing.securityDeposit ?? 0,
     weekendPrice: listing.weekendPrice ?? null,
     weekendPremium: listing.weekendPremium ?? null,

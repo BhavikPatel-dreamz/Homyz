@@ -44,7 +44,7 @@ import {
 } from "@/lib/constants/listing-enums";
 import { normalizeSlug } from "@/lib/utils/slug";
 import { clampWeekendPremium, computeWeekendPrice, deriveWeekendPremium } from "@/lib/utils/listing-pricing";
-import { getCurrencyForCountry } from "@/lib/currency";
+import { getCurrencyForCountry, resolvePropertyCurrency } from "@/lib/currency";
 import {
   normalizePhotoRoomAssignments,
   type PhotoRoomAssignment,
@@ -52,19 +52,23 @@ import {
 
 import { clearBookingQuote } from "@/lib/booking/quote-cache";
 
-type ConfigurableDiscount = "weekly" | "monthly" | "last_minute" | "new_listing";
+type ConfigurableDiscount = "weekly" | "monthly" | "last_minute" | "new_listing" | "early_bird" | "custom_promotion";
 
 const DEFAULT_DISCOUNT_PERCENTAGES: Record<ConfigurableDiscount, number> = {
   new_listing: 20,
   last_minute: 15,
   weekly: 10,
   monthly: 25,
+  early_bird: 10,
+  custom_promotion: 15,
 };
 
 function getDiscountEntry(discounts: Record<string, unknown> | null | undefined, period: ConfigurableDiscount) {
   if (!discounts || typeof discounts !== "object") return undefined;
   if (period === "new_listing") return discounts.new_listing ?? discounts.newListing;
   if (period === "last_minute") return discounts.last_minute ?? discounts.lastMinute;
+  if (period === "early_bird") return discounts.early_bird ?? discounts.earlyBird;
+  if (period === "custom_promotion") return discounts.custom_promotion ?? discounts.customPromotion;
   return discounts[period];
 }
 
@@ -89,6 +93,24 @@ function isDiscountEnabled(discounts: Record<string, unknown> | null | undefined
     return (entry as Record<string, unknown>).enabled === true;
   }
   return false;
+}
+
+function getDiscountDaysBefore(discounts: Record<string, unknown> | null | undefined): number {
+  const entry = getDiscountEntry(discounts, "last_minute");
+  if (typeof entry === "object" && entry !== null && !Array.isArray(entry)) {
+    const val = (entry as Record<string, unknown>).daysBefore;
+    if (typeof val === "number" && Number.isFinite(val) && val >= 1) return val;
+  }
+  return 2;
+}
+
+function getDiscountDaysInAdvance(discounts: Record<string, unknown> | null | undefined): number {
+  const entry = getDiscountEntry(discounts, "early_bird");
+  if (typeof entry === "object" && entry !== null && !Array.isArray(entry)) {
+    const val = (entry as Record<string, unknown>).daysInAdvance;
+    if (typeof val === "number" && Number.isFinite(val) && val >= 1) return val;
+  }
+  return 30;
 }
 
 export type { HostListingData };
@@ -362,7 +384,10 @@ export function HostListingEditorClient({
   const [parkingInstructions, setParkingInstructions] = useState<string>(listing.parkingInstructions || "");
 
   // Pricing & Discounts
-  const listingCurrency = getCurrencyForCountry(editCountry || listing.country);
+  const listingCurrency = resolvePropertyCurrency({
+    currency: listing.currency,
+    country: editCountry || listing.country,
+  });
   const [editPrice, setEditPrice] = useState(((listing.weekdayBasePrice ?? listing.price) || 0) / 100);
   const [smartPricing, setSmartPricing] = useState(Boolean(listing.smartPricing ?? false));
   const [smartPricingMinPrice, setSmartPricingMinPrice] = useState(() => {
@@ -392,8 +417,42 @@ export function HostListingEditorClient({
   const [monthlyEnabled, setMonthlyEnabled] = useState(() => isDiscountEnabled(listing.discounts, "monthly"));
   const [lastMinuteDiscount, setLastMinuteDiscount] = useState(() => discountPercentage(listing.discounts, "last_minute"));
   const [lastMinuteEnabled, setLastMinuteEnabled] = useState(() => isDiscountEnabled(listing.discounts, "last_minute"));
+  const [lastMinuteDaysBefore, setLastMinuteDaysBefore] = useState(() => getDiscountDaysBefore(listing.discounts));
   const [newListingDiscount, setNewListingDiscount] = useState(() => discountPercentage(listing.discounts, "new_listing"));
   const [newListingEnabled, setNewListingEnabled] = useState(() => isDiscountEnabled(listing.discounts, "new_listing"));
+  const [earlyBirdDiscount, setEarlyBirdDiscount] = useState(() => discountPercentage(listing.discounts, "early_bird"));
+  const [earlyBirdEnabled, setEarlyBirdEnabled] = useState(() => isDiscountEnabled(listing.discounts, "early_bird"));
+  const [earlyBirdDaysInAdvance, setEarlyBirdDaysInAdvance] = useState(() => getDiscountDaysInAdvance(listing.discounts));
+  const [customPromoDiscount, setCustomPromoDiscount] = useState(() => discountPercentage(listing.discounts, "custom_promotion"));
+  const [customPromoEnabled, setCustomPromoEnabled] = useState(() => isDiscountEnabled(listing.discounts, "custom_promotion"));
+  const [cleaningFee, setCleaningFee] = useState(() => ((listing.cleaningFee || 0) / 100));
+  const [extraGuestFee, setExtraGuestFee] = useState(() => (((listing as any).extraGuestFee || 0) / 100));
+
+  const handleDiscardPricing = useCallback(() => {
+    setEditPrice(((listing.weekdayBasePrice ?? listing.price) || 0) / 100);
+    setSmartPricing(Boolean(listing.smartPricing ?? false));
+    setSmartPricingMinPrice((listing.smartPricingMinPrice ?? Math.max(0, Math.round((listing.price || 0) * 0.9))) / 100);
+    setSmartPricingMaxPrice((listing.smartPricingMaxPrice ?? Math.max(0, Math.round((listing.price || 0) * 1.1))) / 100);
+    const premium = clampWeekendPremium(listing.weekendPremium ?? deriveWeekendPremium(listing.price, listing.weekendPrice ?? null));
+    setWeekendPremium(premium);
+    setWeekendPrice((listing.weekendPrice ?? computeWeekendPrice(Math.round((listing.price || 0) * 100), premium)) / 100);
+    setWeeklyDiscount(discountPercentage(listing.discounts, "weekly"));
+    setWeeklyEnabled(isDiscountEnabled(listing.discounts, "weekly"));
+    setMonthlyDiscount(discountPercentage(listing.discounts, "monthly"));
+    setMonthlyEnabled(isDiscountEnabled(listing.discounts, "monthly"));
+    setLastMinuteDiscount(discountPercentage(listing.discounts, "last_minute"));
+    setLastMinuteEnabled(isDiscountEnabled(listing.discounts, "last_minute"));
+    setLastMinuteDaysBefore(getDiscountDaysBefore(listing.discounts));
+    setNewListingDiscount(discountPercentage(listing.discounts, "new_listing"));
+    setNewListingEnabled(isDiscountEnabled(listing.discounts, "new_listing"));
+    setEarlyBirdDiscount(discountPercentage(listing.discounts, "early_bird"));
+    setEarlyBirdEnabled(isDiscountEnabled(listing.discounts, "early_bird"));
+    setEarlyBirdDaysInAdvance(getDiscountDaysInAdvance(listing.discounts));
+    setCustomPromoDiscount(discountPercentage(listing.discounts, "custom_promotion"));
+    setCustomPromoEnabled(isDiscountEnabled(listing.discounts, "custom_promotion"));
+    setCleaningFee((listing.cleaningFee || 0) / 100);
+    setExtraGuestFee(((listing as any).extraGuestFee || 0) / 100);
+  }, [listing]);
 
   // Availability
   const [minNights, setMinNights] = useState(listing.minNights || 1);
@@ -871,6 +930,8 @@ export function HostListingEditorClient({
         setFeedbackMsg({ type: "error", text: "Base price must be greater than zero." });
         return;
       }
+      const parsedCleaningFee = Math.max(0, Math.round(Number(cleaningFee || 0) * 100));
+      const parsedExtraGuestFee = Math.max(0, Math.round(Number(extraGuestFee || 0) * 100));
       const manualPricing = !smartPricing;
       const nextDiscounts = {
         ...(typeof listing.discounts === "object" && listing.discounts ? listing.discounts : {}),
@@ -882,6 +943,7 @@ export function HostListingEditorClient({
           last_minute: {
             enabled: lastMinuteEnabled,
             percentage: Math.max(1, Math.min(100, Number(lastMinuteDiscount) || 15)),
+            daysBefore: Math.max(1, Math.min(14, Number(lastMinuteDaysBefore) || 2)),
           },
           weekly: {
             enabled: weeklyEnabled,
@@ -891,11 +953,23 @@ export function HostListingEditorClient({
             enabled: monthlyEnabled,
             percentage: Math.max(1, Math.min(100, Number(monthlyDiscount) || 25)),
           },
+          early_bird: {
+            enabled: earlyBirdEnabled,
+            percentage: Math.max(1, Math.min(100, Number(earlyBirdDiscount) || 10)),
+            daysInAdvance: Math.max(1, Math.min(365, Number(earlyBirdDaysInAdvance) || 30)),
+          },
+          custom_promotion: {
+            ...(((listing.discounts as any)?.custom_promotion || {}) as Record<string, any>),
+            enabled: customPromoEnabled,
+            percentage: Math.max(1, Math.min(100, Number(customPromoDiscount) || 15)),
+          },
         } : {}),
       };
       payload = {
         price: Math.round(editPrice * 100),
         weekdayBasePrice: Math.round(editPrice * 100),
+        cleaningFee: parsedCleaningFee,
+        extraGuestFee: parsedExtraGuestFee,
         smartPricing,
         smartPricingMinPrice: smartPricing ? Math.round(Number(smartPricingMinPrice || 0) * 100) : listing.smartPricingMinPrice ?? null,
         smartPricingMaxPrice: smartPricing ? Math.round(Number(smartPricingMaxPrice || 0) * 100) : listing.smartPricingMaxPrice ?? null,
@@ -1204,6 +1278,12 @@ export function HostListingEditorClient({
         }
         if (payload.smartPricingMaxPrice !== undefined) {
           setSmartPricingMaxPrice((Number((res.data as any).smartPricingMaxPrice ?? payload.smartPricingMaxPrice ?? 0)) / 100);
+        }
+        if (payload.cleaningFee !== undefined) {
+          setCleaningFee((Number((res.data as any).cleaningFee ?? payload.cleaningFee ?? 0)) / 100);
+        }
+        if (payload.extraGuestFee !== undefined) {
+          setExtraGuestFee((Number((res.data as any).extraGuestFee ?? payload.extraGuestFee ?? 0)) / 100);
         }
         if (payload.amenities !== undefined) {
           const freshAmenities = normalizeAmenities((res.data as any).amenities || payload.amenities);
@@ -1715,6 +1795,23 @@ export function HostListingEditorClient({
             setNewListingDiscount={setNewListingDiscount}
             newListingEnabled={newListingEnabled}
             setNewListingEnabled={setNewListingEnabled}
+            lastMinuteDaysBefore={lastMinuteDaysBefore}
+            setLastMinuteDaysBefore={setLastMinuteDaysBefore}
+            earlyBirdDiscount={earlyBirdDiscount}
+            setEarlyBirdDiscount={setEarlyBirdDiscount}
+            earlyBirdEnabled={earlyBirdEnabled}
+            setEarlyBirdEnabled={setEarlyBirdEnabled}
+            earlyBirdDaysInAdvance={earlyBirdDaysInAdvance}
+            setEarlyBirdDaysInAdvance={setEarlyBirdDaysInAdvance}
+            customPromoDiscount={customPromoDiscount}
+            setCustomPromoDiscount={setCustomPromoDiscount}
+            customPromoEnabled={customPromoEnabled}
+            setCustomPromoEnabled={setCustomPromoEnabled}
+            cleaningFee={cleaningFee}
+            setCleaningFee={setCleaningFee}
+            extraGuestFee={extraGuestFee}
+            setExtraGuestFee={setExtraGuestFee}
+            onDiscardPricing={handleDiscardPricing}
             minNights={minNights}
             setMinNights={setMinNights}
             maxNights={maxNights}
@@ -1988,6 +2085,8 @@ export function HostListingEditorClient({
           smartPricingMaxPrice={smartPricingMaxPrice}
           weeklyDiscount={weeklyDiscount}
           monthlyDiscount={monthlyDiscount}
+          cleaningFee={cleaningFee}
+          extraGuestFee={extraGuestFee}
           minNights={minNights}
           maxNights={maxNights}
           advanceNotice={advanceNotice}

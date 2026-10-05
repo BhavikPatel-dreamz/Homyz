@@ -6,6 +6,8 @@ import { useLanguage } from "@/lib/i18n/language-context";
 
 import React, { useState } from "react";
 import { isReservedSlug } from "@/lib/utils/slug";
+import { convertCurrency, LISTING_CURRENCY } from "@/lib/currency";
+import { useCurrency } from "@/lib/currency-context";
 import { CancellationPolicyView } from "./CancellationPolicyView";
 import {
   PricingSkeleton,
@@ -52,6 +54,23 @@ interface PricingAndBookingViewsProps {
   setNewListingDiscount?: (val: number) => void;
   newListingEnabled?: boolean;
   setNewListingEnabled?: (val: boolean) => void;
+  lastMinuteDaysBefore?: number;
+  setLastMinuteDaysBefore?: (val: number) => void;
+  earlyBirdDiscount?: number;
+  setEarlyBirdDiscount?: (val: number) => void;
+  earlyBirdEnabled?: boolean;
+  setEarlyBirdEnabled?: (val: boolean) => void;
+  earlyBirdDaysInAdvance?: number;
+  setEarlyBirdDaysInAdvance?: (val: number) => void;
+  customPromoDiscount?: number;
+  setCustomPromoDiscount?: (val: number) => void;
+  customPromoEnabled?: boolean;
+  setCustomPromoEnabled?: (val: boolean) => void;
+  cleaningFee?: number;
+  setCleaningFee?: (val: number) => void;
+  extraGuestFee?: number;
+  setExtraGuestFee?: (val: number) => void;
+  onDiscardPricing?: () => void;
   minNights: number;
   setMinNights: (val: number) => void;
   maxNights: number;
@@ -97,7 +116,7 @@ export function PricingAndBookingViews({
   setActiveSection,
   isSaving,
   handleSaveSection,
-  currency = "SAR",
+  currency = LISTING_CURRENCY,
   editPrice,
   setEditPrice,
   smartPricing = false,
@@ -125,6 +144,23 @@ export function PricingAndBookingViews({
   setNewListingDiscount,
   newListingEnabled = false,
   setNewListingEnabled,
+  lastMinuteDaysBefore = 2,
+  setLastMinuteDaysBefore,
+  earlyBirdDiscount = 10,
+  setEarlyBirdDiscount,
+  earlyBirdEnabled = false,
+  setEarlyBirdEnabled,
+  earlyBirdDaysInAdvance = 30,
+  setEarlyBirdDaysInAdvance,
+  customPromoDiscount = 15,
+  setCustomPromoDiscount,
+  customPromoEnabled = false,
+  setCustomPromoEnabled,
+  cleaningFee = 0,
+  setCleaningFee,
+  extraGuestFee = 0,
+  setExtraGuestFee,
+  onDiscardPricing,
   minNights,
   setMinNights,
   maxNights,
@@ -153,6 +189,11 @@ export function PricingAndBookingViews({
   isLoading,
 }: PricingAndBookingViewsProps) {
   const { t } = useLanguage();
+  const { currency: displayCurrency, convert, formatMajor } = useCurrency();
+  const toDisplayMajor = (amount: number) =>
+    Math.round(convert(amount, currency) * 100) / 100;
+  const toSourceMajor = (amount: number) =>
+    Math.round(convertCurrency(amount, displayCurrency, currency) * 100) / 100;
   const [localAvailabilityError, setLocalAvailabilityError] = useState<string | null>(null);
 
   const handleBack = (fallback = "pricing") => {
@@ -209,12 +250,12 @@ export function PricingAndBookingViews({
                     <div className="rounded-lg border border-[#727272] bg-white px-4 py-4">
                       <label className="mb-1 block text-base font-medium text-[#1F1F1F]">{t("host_min_price")}</label>
                       <div className="flex items-baseline gap-2">
-                        <span className="sm:text-[32px] text-[24px] font-medium text-[#1F1F1F]">{currency}</span>
+                        <span className="sm:text-[32px] text-[24px] font-medium text-[#1F1F1F]">{displayCurrency}</span>
                         <input
                           type="number"
                           min={0}
-                          value={smartPricingMinPrice || ""}
-                          onChange={(e) => setSmartPricingMinPrice?.(Number(e.target.value || 0))}
+                          value={smartPricingMinPrice ? toDisplayMajor(smartPricingMinPrice) : ""}
+                          onChange={(e) => setSmartPricingMinPrice?.(toSourceMajor(Number(e.target.value || 0)))}
                           className="w-full sm:text-[32px] text-[24px] font-medium text-[#1F1F1F] outline-none bg-transparent placeholder:text-[#727272] pl-3"
                         />
                       </div>
@@ -223,12 +264,12 @@ export function PricingAndBookingViews({
                     <div className="rounded-lg border border-[#727272] bg-white px-4 py-4">
                       <label className="mb-1 block text-base font-medium text-[#1F1F1F]">{t("host_max_price")}</label>
                       <div className="flex items-baseline gap-2">
-                        <span className="sm:text-[32px] text-[24px] font-medium text-[#1F1F1F]">{currency}</span>
+                        <span className="sm:text-[32px] text-[24px] font-medium text-[#1F1F1F]">{displayCurrency}</span>
                         <input
                           type="number"
                           min={0}
-                          value={smartPricingMaxPrice || ""}
-                          onChange={(e) => setSmartPricingMaxPrice?.(Number(e.target.value || 0))}
+                          value={smartPricingMaxPrice ? toDisplayMajor(smartPricingMaxPrice) : ""}
+                          onChange={(e) => setSmartPricingMaxPrice?.(toSourceMajor(Number(e.target.value || 0)))}
                           className="w-full sm:text-[32px] text-[24px] font-medium text-[#1F1F1F] outline-none bg-transparent placeholder:text-[#727272] pl-3"
                         />
                       </div>
@@ -236,11 +277,11 @@ export function PricingAndBookingViews({
                   </div>
                 ) : (
                   <div className="flex items-center gap-2 rounded-lg border border-[#727272] bg-white px-4 py-2 sm:min-h-[68px] min-h-[58px]">
-                    <span className="sm:text-[32px] text-[24px] font-medium text-[#1F1F1F]">{currency}</span>
+                    <span className="sm:text-[32px] text-[24px] font-medium text-[#1F1F1F]">{displayCurrency}</span>
                     <input
                       type="number"
-                      value={editPrice || ""}
-                      onChange={(e) => setEditPrice(Number(e.target.value))}
+                      value={editPrice ? toDisplayMajor(editPrice) : ""}
+                      onChange={(e) => setEditPrice(toSourceMajor(Number(e.target.value)))}
                       placeholder="100"
                       className="w-full sm:text-[32px] text-[24px] font-medium text-[#1F1F1F] outline-none bg-transparent placeholder:text-[#727272] pl-3"
                     />
@@ -287,143 +328,13 @@ export function PricingAndBookingViews({
                     </div>
                   </div>
 
-                  {/* 3. Discounts section */}
+                  {/* 2. Stay Length Discounts section */}
                   <div className="space-y-4 pt-1">
                     <div>
-                      <label className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">{t("host_discounts")}</label>
+                      <h2 className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">{t("host_discounts") || "Stay length discounts"}</h2>
                       <p className="mt-1 text-xs text-[#727272] dark:text-zinc-400 font-normal leading-relaxed">
-                        Only one discount can apply to a reservation. If multiple discounts are eligible, Homyz will apply the applicable discount according to pricing rules.
+                        Offer discounts for extended reservations to increase overall occupancy.
                       </p>
-                    </div>
-
-                    {/* New Listing Promotion card */}
-                    <div className="rounded-xl border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4 space-y-3">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="space-y-0.5">
-                          <span className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 block">
-                            {t("host_discount_new_listing_title")}
-                          </span>
-                          <span className="text-xs text-[#727272] dark:text-[#727272] font-normal leading-relaxed block">
-                            {t("host_discount_new_listing_desc")}
-                          </span>
-                        </div>
-                        <button
-                          type="button"
-                          role="switch"
-                          aria-checked={newListingEnabled}
-                          aria-label="Toggle new listing promotion"
-                          onClick={() => {
-                            const next = !newListingEnabled;
-                            setNewListingEnabled?.(next);
-                            if (next && (!newListingDiscount || newListingDiscount <= 0)) {
-                              setNewListingDiscount?.(20);
-                            }
-                          }}
-                          className={`relative h-6 w-11 shrink-0 rounded-full transition-colors cursor-pointer ${newListingEnabled ? "bg-[#DF4557]" : "bg-[#DDDDDE]"}`}
-                        >
-                          <span className={`absolute left-0.5 top-0.5 size-5 rounded-full bg-white shadow-xs transition-transform ${newListingEnabled ? "translate-x-5" : "translate-x-0"}`} />
-                        </button>
-                      </div>
-                      <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-                        <div className={`flex items-center gap-1 rounded-lg border px-3 py-1.5 transition-all ${
-                          newListingEnabled
-                            ? "border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-900 focus-within:border-[#1F1F1F] dark:focus-within:border-zinc-100 focus-within:ring-1 focus-within:ring-[#1F1F1F] dark:focus-within:ring-zinc-100"
-                            : "border-zinc-200 dark:border-zinc-700/60 bg-zinc-50 dark:bg-zinc-800/60 opacity-60 cursor-not-allowed"
-                        }`}>
-                          <input
-                            type="number"
-                            min={1}
-                            max={100}
-                            disabled={!newListingEnabled}
-                            value={newListingDiscount || ""}
-                            onChange={(e) => {
-                              const raw = e.target.value;
-                              if (raw === "") {
-                                setNewListingDiscount?.(0);
-                                return;
-                              }
-                              const num = Number(raw);
-                              setNewListingDiscount?.(isNaN(num) ? 0 : Math.min(100, Math.max(0, num)));
-                            }}
-                            onBlur={() => {
-                              if (newListingEnabled && (!newListingDiscount || newListingDiscount <= 0)) {
-                                setNewListingDiscount?.(20);
-                              }
-                            }}
-                            placeholder="20"
-                            className="w-14 text-center text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none bg-transparent placeholder:text-[#727272] dark:placeholder:text-[#727272] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:cursor-not-allowed"
-                          />
-                          <span className="text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100">%</span>
-                        </div>
-                        <span className="text-xs text-[#727272] dark:text-[#727272] font-normal">
-                          Guest pays {currency} {Math.max(0, Math.round((editPrice || 0) * (1 - (newListingDiscount || 0) / 100)))} / night
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Last-minute discount card */}
-                    <div className="rounded-xl border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4 space-y-3">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="space-y-0.5">
-                          <span className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 block">
-                            {t("host_discount_last_minute_title")}
-                          </span>
-                          <span className="text-xs text-[#727272] dark:text-[#727272] font-normal leading-relaxed block">
-                            {t("host_discount_last_minute_desc")}
-                          </span>
-                        </div>
-                        <button
-                          type="button"
-                          role="switch"
-                          aria-checked={lastMinuteEnabled}
-                          aria-label="Toggle last-minute discount"
-                          onClick={() => {
-                            const next = !lastMinuteEnabled;
-                            setLastMinuteEnabled(next);
-                            if (next && (!lastMinuteDiscount || lastMinuteDiscount <= 0)) {
-                              setLastMinuteDiscount(15);
-                            }
-                          }}
-                          className={`relative h-6 w-11 shrink-0 rounded-full transition-colors cursor-pointer ${lastMinuteEnabled ? "bg-[#DF4557]" : "bg-[#DDDDDE]"}`}
-                        >
-                          <span className={`absolute left-0.5 top-0.5 size-5 rounded-full bg-white shadow-xs transition-transform ${lastMinuteEnabled ? "translate-x-5" : "translate-x-0"}`} />
-                        </button>
-                      </div>
-                      <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-                        <div className={`flex items-center gap-1 rounded-lg border px-3 py-1.5 transition-all ${
-                          lastMinuteEnabled
-                            ? "border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-900 focus-within:border-[#1F1F1F] dark:focus-within:border-zinc-100 focus-within:ring-1 focus-within:ring-[#1F1F1F] dark:focus-within:ring-zinc-100"
-                            : "border-zinc-200 dark:border-zinc-700/60 bg-zinc-50 dark:bg-zinc-800/60 opacity-60 cursor-not-allowed"
-                        }`}>
-                          <input
-                            type="number"
-                            min={1}
-                            max={100}
-                            disabled={!lastMinuteEnabled}
-                            value={lastMinuteDiscount || ""}
-                            onChange={(e) => {
-                              const raw = e.target.value;
-                              if (raw === "") {
-                                setLastMinuteDiscount(0);
-                                return;
-                              }
-                              const num = Number(raw);
-                              setLastMinuteDiscount(isNaN(num) ? 0 : Math.min(100, Math.max(0, num)));
-                            }}
-                            onBlur={() => {
-                              if (lastMinuteEnabled && (!lastMinuteDiscount || lastMinuteDiscount <= 0)) {
-                                setLastMinuteDiscount(15);
-                              }
-                            }}
-                            placeholder="15"
-                            className="w-14 text-center text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none bg-transparent placeholder:text-[#727272] dark:placeholder:text-[#727272] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:cursor-not-allowed"
-                          />
-                          <span className="text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100">%</span>
-                        </div>
-                        <span className="text-xs text-[#727272] dark:text-[#727272] font-normal">
-                          Guest pays {currency} {Math.max(0, Math.round((editPrice || 0) * (1 - (lastMinuteDiscount || 0) / 100)))} / night
-                        </span>
-                      </div>
                     </div>
 
                     {/* Weekly discount card */}
@@ -486,7 +397,7 @@ export function PricingAndBookingViews({
                           <span className="text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100">%</span>
                         </div>
                         <span className="text-xs text-[#727272] dark:text-[#727272] font-normal">
-                          {t("host_weekly_average_prefix")} {currency} {Math.max(0, Math.round((editPrice || 0) * 7 * (1 - (weeklyDiscount || 0) / 100)))}
+                          {t("host_weekly_average_prefix")} {formatMajor(Math.max(0, (editPrice || 0) * 7 * (1 - (weeklyDiscount || 0) / 100)), currency)}
                         </span>
                       </div>
                     </div>
@@ -551,7 +462,327 @@ export function PricingAndBookingViews({
                           <span className="text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100">%</span>
                         </div>
                         <span className="text-xs text-[#727272] dark:text-[#727272] font-normal">
-                          {t("host_monthly_average_prefix")} {currency} {Math.max(0, Math.round((editPrice || 0) * 30 * (1 - (monthlyDiscount || 0) / 100)))}
+                          {t("host_monthly_average_prefix")} {formatMajor(Math.max(0, (editPrice || 0) * 30 * (1 - (monthlyDiscount || 0) / 100)), currency)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 3. Promotions section */}
+                  <div className="space-y-4 pt-2">
+                    <div>
+                      <h2 className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">{t("host_promotions") || "Promotions"}</h2>
+                      <p className="mt-1 text-xs text-[#727272] dark:text-zinc-400 font-normal leading-relaxed">
+                        {t("host_discount_footnote") || "Only one promotional or length-of-stay discount applies per booking (the highest qualifying discount is automatically selected)."}
+                      </p>
+                    </div>
+
+                    {/* New Listing Promotion card */}
+                    <div className="rounded-xl border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4 space-y-3">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="space-y-0.5">
+                          <span className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 block">
+                            {t("host_discount_new_listing_title")}
+                          </span>
+                          <span className="text-xs text-[#727272] dark:text-[#727272] font-normal leading-relaxed block">
+                            {t("host_discount_new_listing_desc")}
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          role="switch"
+                          aria-checked={newListingEnabled}
+                          aria-label="Toggle new listing promotion"
+                          onClick={() => {
+                            const next = !newListingEnabled;
+                            setNewListingEnabled?.(next);
+                            if (next && (!newListingDiscount || newListingDiscount <= 0)) {
+                              setNewListingDiscount?.(20);
+                            }
+                          }}
+                          className={`relative h-6 w-11 shrink-0 rounded-full transition-colors cursor-pointer ${newListingEnabled ? "bg-[#DF4557]" : "bg-[#DDDDDE]"}`}
+                        >
+                          <span className={`absolute left-0.5 top-0.5 size-5 rounded-full bg-white shadow-xs transition-transform ${newListingEnabled ? "translate-x-5" : "translate-x-0"}`} />
+                        </button>
+                      </div>
+                      <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+                        <div className={`flex items-center gap-1 rounded-lg border px-3 py-1.5 transition-all ${
+                          newListingEnabled
+                            ? "border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-900 focus-within:border-[#1F1F1F] dark:focus-within:border-zinc-100 focus-within:ring-1 focus-within:ring-[#1F1F1F] dark:focus-within:ring-zinc-100"
+                            : "border-zinc-200 dark:border-zinc-700/60 bg-zinc-50 dark:bg-zinc-800/60 opacity-60 cursor-not-allowed"
+                        }`}>
+                          <input
+                            type="number"
+                            min={1}
+                            max={100}
+                            disabled={!newListingEnabled}
+                            value={newListingDiscount || ""}
+                            onChange={(e) => {
+                              const raw = e.target.value;
+                              if (raw === "") {
+                                setNewListingDiscount?.(0);
+                                return;
+                              }
+                              const num = Number(raw);
+                              setNewListingDiscount?.(isNaN(num) ? 0 : Math.min(100, Math.max(0, num)));
+                            }}
+                            onBlur={() => {
+                              if (newListingEnabled && (!newListingDiscount || newListingDiscount <= 0)) {
+                                setNewListingDiscount?.(20);
+                              }
+                            }}
+                            placeholder="20"
+                            className="w-14 text-center text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none bg-transparent placeholder:text-[#727272] dark:placeholder:text-[#727272] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:cursor-not-allowed"
+                          />
+                          <span className="text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100">%</span>
+                        </div>
+                        <span className="text-xs text-[#727272] dark:text-[#727272] font-normal">
+                          Guest pays {formatMajor(Math.max(0, (editPrice || 0) * (1 - (newListingDiscount || 0) / 100)), currency)} / night
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Last-minute discount card */}
+                    <div className="rounded-xl border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4 space-y-3">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="space-y-0.5">
+                          <span className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 block">
+                            {t("host_discount_last_minute_title")}
+                          </span>
+                          <span className="text-xs text-[#727272] dark:text-[#727272] font-normal leading-relaxed block">
+                            {t("host_discount_last_minute_desc")}
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          role="switch"
+                          aria-checked={lastMinuteEnabled}
+                          aria-label="Toggle last-minute discount"
+                          onClick={() => {
+                            const next = !lastMinuteEnabled;
+                            setLastMinuteEnabled(next);
+                            if (next && (!lastMinuteDiscount || lastMinuteDiscount <= 0)) {
+                              setLastMinuteDiscount(15);
+                            }
+                          }}
+                          className={`relative h-6 w-11 shrink-0 rounded-full transition-colors cursor-pointer ${lastMinuteEnabled ? "bg-[#DF4557]" : "bg-[#DDDDDE]"}`}
+                        >
+                          <span className={`absolute left-0.5 top-0.5 size-5 rounded-full bg-white shadow-xs transition-transform ${lastMinuteEnabled ? "translate-x-5" : "translate-x-0"}`} />
+                        </button>
+                      </div>
+                      <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+                        <div className="flex items-center gap-2">
+                          <div className={`flex items-center gap-1 rounded-lg border px-3 py-1.5 transition-all ${
+                            lastMinuteEnabled
+                              ? "border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-900 focus-within:border-[#1F1F1F] dark:focus-within:border-zinc-100 focus-within:ring-1 focus-within:ring-[#1F1F1F] dark:focus-within:ring-zinc-100"
+                              : "border-zinc-200 dark:border-zinc-700/60 bg-zinc-50 dark:bg-zinc-800/60 opacity-60 cursor-not-allowed"
+                          }`}>
+                            <input
+                              type="number"
+                              min={1}
+                              max={100}
+                              disabled={!lastMinuteEnabled}
+                              value={lastMinuteDiscount || ""}
+                              onChange={(e) => {
+                                const raw = e.target.value;
+                                if (raw === "") {
+                                  setLastMinuteDiscount(0);
+                                  return;
+                                }
+                                const num = Number(raw);
+                                setLastMinuteDiscount(isNaN(num) ? 0 : Math.min(100, Math.max(0, num)));
+                              }}
+                              onBlur={() => {
+                                if (lastMinuteEnabled && (!lastMinuteDiscount || lastMinuteDiscount <= 0)) {
+                                  setLastMinuteDiscount(15);
+                                }
+                              }}
+                              placeholder="15"
+                              className="w-14 text-center text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none bg-transparent placeholder:text-[#727272] dark:placeholder:text-[#727272] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:cursor-not-allowed"
+                            />
+                            <span className="text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100">%</span>
+                          </div>
+
+                          {/* Days before arrival selector */}
+                          <div className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 transition-all ${
+                            lastMinuteEnabled
+                              ? "border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900"
+                              : "border-zinc-200 dark:border-zinc-700/60 bg-zinc-50 dark:bg-zinc-800/60 opacity-60 cursor-not-allowed"
+                          }`}>
+                            <span className="text-xs text-[#727272] dark:text-zinc-400">Within</span>
+                            <input
+                              type="number"
+                              min={1}
+                              max={14}
+                              disabled={!lastMinuteEnabled}
+                              value={lastMinuteDaysBefore || 2}
+                              onChange={(e) => {
+                                const num = Number(e.target.value);
+                                setLastMinuteDaysBefore?.(isNaN(num) ? 2 : Math.max(1, Math.min(14, num)));
+                              }}
+                              className="w-8 text-center text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none bg-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:cursor-not-allowed"
+                            />
+                            <span className="text-xs text-[#727272] dark:text-zinc-400">days</span>
+                          </div>
+                        </div>
+
+                        <span className="text-xs text-[#727272] dark:text-[#727272] font-normal">
+                          Guest pays {formatMajor(Math.max(0, (editPrice || 0) * (1 - (lastMinuteDiscount || 0) / 100)), currency)} / night
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Early-Bird discount card */}
+                    <div className="rounded-xl border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4 space-y-3">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="space-y-0.5">
+                          <span className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 block">
+                            {t("host_discount_early_bird_title") || "Early-bird discount"}
+                          </span>
+                          <span className="text-xs text-[#727272] dark:text-[#727272] font-normal leading-relaxed block">
+                            {t("host_discount_early_bird_desc") || "Offer a discount for bookings made well in advance to secure reservations early."}
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          role="switch"
+                          aria-checked={earlyBirdEnabled}
+                          aria-label="Toggle early-bird discount"
+                          onClick={() => {
+                            const next = !earlyBirdEnabled;
+                            setEarlyBirdEnabled?.(next);
+                            if (next && (!earlyBirdDiscount || earlyBirdDiscount <= 0)) {
+                              setEarlyBirdDiscount?.(10);
+                            }
+                          }}
+                          className={`relative h-6 w-11 shrink-0 rounded-full transition-colors cursor-pointer ${earlyBirdEnabled ? "bg-[#DF4557]" : "bg-[#DDDDDE]"}`}
+                        >
+                          <span className={`absolute left-0.5 top-0.5 size-5 rounded-full bg-white shadow-xs transition-transform ${earlyBirdEnabled ? "translate-x-5" : "translate-x-0"}`} />
+                        </button>
+                      </div>
+                      <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+                        <div className="flex items-center gap-2">
+                          <div className={`flex items-center gap-1 rounded-lg border px-3 py-1.5 transition-all ${
+                            earlyBirdEnabled
+                              ? "border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-900 focus-within:border-[#1F1F1F] dark:focus-within:border-zinc-100 focus-within:ring-1 focus-within:ring-[#1F1F1F] dark:focus-within:ring-zinc-100"
+                              : "border-zinc-200 dark:border-zinc-700/60 bg-zinc-50 dark:bg-zinc-800/60 opacity-60 cursor-not-allowed"
+                          }`}>
+                            <input
+                              type="number"
+                              min={1}
+                              max={100}
+                              disabled={!earlyBirdEnabled}
+                              value={earlyBirdDiscount || ""}
+                              onChange={(e) => {
+                                const raw = e.target.value;
+                                if (raw === "") {
+                                  setEarlyBirdDiscount?.(0);
+                                  return;
+                                }
+                                const num = Number(raw);
+                                setEarlyBirdDiscount?.(isNaN(num) ? 0 : Math.min(100, Math.max(0, num)));
+                              }}
+                              onBlur={() => {
+                                if (earlyBirdEnabled && (!earlyBirdDiscount || earlyBirdDiscount <= 0)) {
+                                  setEarlyBirdDiscount?.(10);
+                                }
+                              }}
+                              placeholder="10"
+                              className="w-14 text-center text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none bg-transparent placeholder:text-[#727272] dark:placeholder:text-[#727272] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:cursor-not-allowed"
+                            />
+                            <span className="text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100">%</span>
+                          </div>
+
+                          {/* Days in advance selector */}
+                          <div className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 transition-all ${
+                            earlyBirdEnabled
+                              ? "border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900"
+                              : "border-zinc-200 dark:border-zinc-700/60 bg-zinc-50 dark:bg-zinc-800/60 opacity-60 cursor-not-allowed"
+                          }`}>
+                            <span className="text-xs text-[#727272] dark:text-zinc-400">Made</span>
+                            <input
+                              type="number"
+                              min={7}
+                              max={365}
+                              disabled={!earlyBirdEnabled}
+                              value={earlyBirdDaysInAdvance || 30}
+                              onChange={(e) => {
+                                const num = Number(e.target.value);
+                                setEarlyBirdDaysInAdvance?.(isNaN(num) ? 30 : Math.max(1, Math.min(365, num)));
+                              }}
+                              className="w-10 text-center text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none bg-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:cursor-not-allowed"
+                            />
+                            <span className="text-xs text-[#727272] dark:text-zinc-400">+ days ahead</span>
+                          </div>
+                        </div>
+
+                        <span className="text-xs text-[#727272] dark:text-[#727272] font-normal">
+                          Guest pays {formatMajor(Math.max(0, (editPrice || 0) * (1 - (earlyBirdDiscount || 0) / 100)), currency)} / night
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Custom Promotion card */}
+                    <div className="rounded-xl border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4 space-y-3">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="space-y-0.5">
+                          <span className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 block">
+                            {t("host_discount_custom_promo_title") || "Custom promotion"}
+                          </span>
+                          <span className="text-xs text-[#727272] dark:text-[#727272] font-normal leading-relaxed block">
+                            {t("host_discount_custom_promo_desc") || "Offer a special promotional discount percentage across your listing."}
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          role="switch"
+                          aria-checked={customPromoEnabled}
+                          aria-label="Toggle custom promotion"
+                          onClick={() => {
+                            const next = !customPromoEnabled;
+                            setCustomPromoEnabled?.(next);
+                            if (next && (!customPromoDiscount || customPromoDiscount <= 0)) {
+                              setCustomPromoDiscount?.(15);
+                            }
+                          }}
+                          className={`relative h-6 w-11 shrink-0 rounded-full transition-colors cursor-pointer ${customPromoEnabled ? "bg-[#DF4557]" : "bg-[#DDDDDE]"}`}
+                        >
+                          <span className={`absolute left-0.5 top-0.5 size-5 rounded-full bg-white shadow-xs transition-transform ${customPromoEnabled ? "translate-x-5" : "translate-x-0"}`} />
+                        </button>
+                      </div>
+                      <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+                        <div className={`flex items-center gap-1 rounded-lg border px-3 py-1.5 transition-all ${
+                          customPromoEnabled
+                            ? "border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-900 focus-within:border-[#1F1F1F] dark:focus-within:border-zinc-100 focus-within:ring-1 focus-within:ring-[#1F1F1F] dark:focus-within:ring-zinc-100"
+                            : "border-zinc-200 dark:border-zinc-700/60 bg-zinc-50 dark:bg-zinc-800/60 opacity-60 cursor-not-allowed"
+                        }`}>
+                          <input
+                            type="number"
+                            min={1}
+                            max={100}
+                            disabled={!customPromoEnabled}
+                            value={customPromoDiscount || ""}
+                            onChange={(e) => {
+                              const raw = e.target.value;
+                              if (raw === "") {
+                                setCustomPromoDiscount?.(0);
+                                return;
+                              }
+                              const num = Number(raw);
+                              setCustomPromoDiscount?.(isNaN(num) ? 0 : Math.min(100, Math.max(0, num)));
+                            }}
+                            onBlur={() => {
+                              if (customPromoEnabled && (!customPromoDiscount || customPromoDiscount <= 0)) {
+                                setCustomPromoDiscount?.(15);
+                              }
+                            }}
+                            placeholder="15"
+                            className="w-14 text-center text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none bg-transparent placeholder:text-[#727272] dark:placeholder:text-[#727272] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:cursor-not-allowed"
+                          />
+                          <span className="text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100">%</span>
+                        </div>
+                        <span className="text-xs text-[#727272] dark:text-[#727272] font-normal">
+                          Guest pays {formatMajor(Math.max(0, (editPrice || 0) * (1 - (customPromoDiscount || 0) / 100)), currency)} / night
                         </span>
                       </div>
                     </div>
@@ -559,22 +790,106 @@ export function PricingAndBookingViews({
                 </>
               )}
 
-              {/* 4. Calendar notice card */}
+              {/* 4. Additional Host Charges section */}
+              <div className="space-y-4 pt-2">
+                <div>
+                  <h2 className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">{t("host_additional_charges_title") || "Additional charges"}</h2>
+                  <p className="mt-1 text-xs text-[#727272] dark:text-zinc-400 font-normal leading-relaxed">
+                    {t("host_additional_charges_desc") || "Configure property-level fees that apply as defaults across reservations."}
+                  </p>
+                </div>
+
+                {/* Cleaning fee card */}
+                <div className="rounded-xl border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4 space-y-3">
+                  <div className="space-y-0.5">
+                    <span className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 block">
+                      {t("host_cleaning_fee_title") || "Cleaning fee"}
+                    </span>
+                    <span className="text-xs text-[#727272] dark:text-[#727272] font-normal leading-relaxed block">
+                      {t("host_cleaning_fee_desc") || "One-time fee per stay recorded for host turnover and preparation accounting."}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+                    <div className="flex items-center gap-1 rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-1.5 focus-within:border-[#1F1F1F] dark:focus-within:border-zinc-100 focus-within:ring-1 focus-within:ring-[#1F1F1F] dark:focus-within:ring-zinc-100 transition-all">
+                      <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100">{displayCurrency}</span>
+                      <input
+                        type="number"
+                        min={0}
+                        step={1}
+                        value={cleaningFee === 0 ? "" : toDisplayMajor(cleaningFee)}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setCleaningFee?.(val === "" ? 0 : Math.max(0, toSourceMajor(Number(val))));
+                        }}
+                        placeholder="0"
+                        className="w-20 text-center text-lg font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none bg-transparent placeholder:text-[#727272] dark:placeholder:text-[#727272] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      />
+                    </div>
+                    <span className="text-xs text-[#727272] dark:text-[#727272] font-normal">
+                      One-time fee per reservation (host accounting)
+                    </span>
+                  </div>
+                </div>
+
+                {/* Extra guest fee card */}
+                <div className="rounded-xl border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4 space-y-3">
+                  <div className="space-y-0.5">
+                    <span className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 block">
+                      {t("host_extra_guest_fee_title") || "Extra guest fee"}
+                    </span>
+                    <span className="text-xs text-[#727272] dark:text-[#727272] font-normal leading-relaxed block">
+                      {t("host_extra_guest_fee_desc") || "Nightly charge for each guest above standard listing capacity."}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+                    <div className="flex items-center gap-1 rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-1.5 focus-within:border-[#1F1F1F] dark:focus-within:border-zinc-100 focus-within:ring-1 focus-within:ring-[#1F1F1F] dark:focus-within:ring-zinc-100 transition-all">
+                      <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100">{displayCurrency}</span>
+                      <input
+                        type="number"
+                        min={0}
+                        step={1}
+                        value={extraGuestFee === 0 ? "" : toDisplayMajor(extraGuestFee)}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setExtraGuestFee?.(val === "" ? 0 : Math.max(0, toSourceMajor(Number(val))));
+                        }}
+                        placeholder="0"
+                        className="w-20 text-center text-lg font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none bg-transparent placeholder:text-[#727272] dark:placeholder:text-[#727272] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      />
+                    </div>
+                    <span className="text-xs text-[#727272] dark:text-[#727272] font-normal">
+                      per extra guest / night (calculated at checkout)
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 5. Calendar notice card */}
               <div className="rounded-md bg-[#F3F4F5] dark:bg-zinc-800/90 dark:border dark:border-zinc-700 px-6 py-2 flex items-center gap-4 transition-all cursor-pointer sm:min-h-22">
                 <Image src="/images/icons/calendar-date.svg" alt="calendar-date.svg" width={24} height={24} className="dark:invert" />
                 <span className="text-base text-[#1f1f1f] dark:text-zinc-100 font-normal">{t("host_calendar_notice")}</span>
               </div>
 
-              {/* Save Button */}
-              <div className="mt-12">
+              {/* Save & Discard Buttons */}
+              <div className="mt-10 flex items-center gap-4 pt-2">
                 <button
                   type="button"
                   disabled={isSaving}
                   onClick={() => handleSaveSection("pricing")}
-                  className="rounded-full bg-[#FCDF9C] dark:bg-amber-400 hover:bg-[#F3F4F5] dark:hover:bg-amber-300 text-[#1F1F1F] dark:text-zinc-950 font-medium text-base px-8 py-2.5 shadow-2xs transition-all cursor-pointer"
+                  className="rounded-full bg-[#FCDF9C] dark:bg-amber-400 hover:bg-[#F3F4F5] dark:hover:bg-amber-300 text-[#1F1F1F] dark:text-zinc-950 font-medium text-base px-8 py-2.5 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
                 >
                   {isSaving ? t("host_saving") : t("host_save")}
                 </button>
+                {onDiscardPricing && (
+                  <button
+                    type="button"
+                    disabled={isSaving}
+                    onClick={onDiscardPricing}
+                    className="rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-[#1F1F1F] dark:text-zinc-200 font-medium text-base px-6 py-2.5 transition-all cursor-pointer disabled:opacity-50"
+                  >
+                    Discard changes
+                  </button>
+                )}
               </div>
             </div>
           )}

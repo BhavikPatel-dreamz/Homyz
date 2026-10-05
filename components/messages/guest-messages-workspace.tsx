@@ -7,6 +7,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { bookingDateKey, formatBookingDateRange } from "@/lib/booking/booking-date";
 import { formatConversationListDate, formatMessageTime } from "@/lib/messages/message-date";
+import { useCurrency } from "@/lib/currency-context";
 import type {
   ConversationDTO,
   MessageDTO,
@@ -58,6 +59,7 @@ export function GuestMessagesWorkspace({
   initialConversations,
   initialRenderedAt,
 }: GuestMessagesWorkspaceProps) {
+  const { formatPrice } = useCurrency();
   const searchParams = useSearchParams();
   const router = useRouter();
   const activeIdFromQuery = searchParams.get("id") || initialConversationId || null;
@@ -734,8 +736,11 @@ export function GuestMessagesWorkspace({
                     <div className="flex items-center gap-2 min-w-0">
                       <span className="size-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
                       <span className="font-semibold text-amber-950 truncate">
-                        Special Offer: {selectedConversation.activeSpecialOffer.currency}{" "}
-                        {(selectedConversation.activeSpecialOffer.subtotalPrice / 100).toFixed(2)} (
+                        Special Offer: {formatPrice(
+                          selectedConversation.activeSpecialOffer.subtotalPrice,
+                          selectedConversation.activeSpecialOffer.currency,
+                          2,
+                        )} (
                         {formatBookingDateRange(
                           selectedConversation.activeSpecialOffer.startDate,
                           selectedConversation.activeSpecialOffer.endDate,
@@ -862,7 +867,7 @@ export function GuestMessagesWorkspace({
                                 <div>
                                   <span className="text-zinc-500 block">Special Price:</span>
                                   <span className="font-bold text-amber-900 text-sm">
-                                    {currency} {(subtotalPrice / 100).toFixed(2)}
+                                    {formatPrice(subtotalPrice, currency, 2)}
                                   </span>
                                 </div>
                               </div>
