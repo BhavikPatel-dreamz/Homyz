@@ -39,12 +39,12 @@ export function GuestDashboardSidebar({
   const currentActive = normalizeTabId(activeId);
 
   return (
-    <aside className="order-2 w-full shrink-0 lg:order-1 lg:w-[390px] xl:w-[452px]">
+    <aside className="order-2 w-full shrink-0 lg:order-1 lg:w-[300px] xl:w-[452px]">
       <h1 className="mb-7 hidden tracking-[-0.02em] text-[#1F1F1F] lg:block xl:mb-10">
         My profile
       </h1>
 
-      <nav className="mobile-guest-grid grid grid-cols-2 gap-1.5 lg:block lg:mt-3 mt-5">
+      <nav className="mobile-guest-grid grid md:grid-cols-3 grid-cols-2 gap-1.5 lg:block lg:mt-3 mt-5">
         {GUEST_NAV_ITEMS.map((item, index) => {
           const isActive = item.id === currentActive;
           const precedesActive = GUEST_NAV_ITEMS[index + 1]?.id === currentActive;

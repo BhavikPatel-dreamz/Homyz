@@ -203,7 +203,7 @@ export function ReservationDashboard({
                 <h2 id={`bookings-year-${year}`} className="text-xl font-semibold leading-7 text-[#1F1F1F] mb-5 sm:text-2xl">
                   {year}
                 </h2>
-                <div className="grid max-w-[812px] grid-cols-1 items-start gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid grid-cols-1 items-start gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4">
                   {items.map((item) => (
                     <ReservationCard
                       key={item.id}
@@ -223,12 +223,13 @@ export function ReservationDashboard({
           </div>
         </div>
       ) : (
-        <div className="grid max-w-[812px] grid-cols-1 items-start gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid grid-cols-1 items-start gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4">
           {filteredItems.map((item) => (
             <ReservationCard
               key={item.id}
               data={item}
               href={`/bookings/${item.id}`}
+              variant="past"
             />
           ))}
         </div>

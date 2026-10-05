@@ -30,6 +30,7 @@ import {
   PersonalInfoSkeleton,
   ProfileManagementSkeleton,
   SupportChatSkeleton,
+  InviteEarnSkeleton,
 } from "@/components/dashboard/section-skeletons";
 
 const ReservationDashboard = dynamic(
@@ -45,7 +46,7 @@ const ProfileManagementClient = dynamic(
     import(
       "@/app/(protected)/profile-management/profile-management-client"
     ).then((m) => m.ProfileManagementClient),
-  { loading: () => <PersonalInfoSkeleton /> },
+  { loading: () => <ProfileManagementSkeleton /> },
 );
 
 const SavedListingsView = dynamic(
@@ -69,11 +70,7 @@ const InviteEarnView = dynamic(
     import("@/components/profile/invite-earn-view").then(
       (m) => m.InviteEarnView,
     ),
-  {
-    loading: () => (
-      <div className="h-64 animate-pulse rounded-2xl bg-zinc-100" />
-    ),
-  },
+  { loading: () => <InviteEarnSkeleton /> },
 );
 
 const SupportChatView = dynamic(
@@ -97,7 +94,23 @@ const MyReviewsSection = dynamic(
     import("@/components/profile/my-reviews-section").then(
       (m) => m.MyReviewsSection,
     ),
-  { loading: () => <div className="h-56 max-w-[336px] skeleton-shimmer" /> },
+  {
+    loading: () => (
+      <div aria-label="Loading reviews" role="status" className="w-full animate-pulse">
+        <div className="mb-5 h-6 w-28 rounded bg-zinc-200" />
+        <div className="grid grid-cols-1 gap-x-8 gap-y-10 md:grid-cols-2 xl:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <div key={index} className="space-y-3">
+              <div className="h-15 w-15 rounded-full bg-zinc-200" />
+              <div className="h-4 w-24 rounded bg-zinc-100" />
+              <div className="h-12 w-full rounded bg-zinc-100" />
+              <div className="h-4 w-2/3 rounded bg-zinc-200" />
+            </div>
+          ))}
+        </div>
+      </div>
+    ),
+  },
 );
 
 const PersonalInfoView = dynamic(
@@ -105,7 +118,7 @@ const PersonalInfoView = dynamic(
     import("@/components/account-settings/personal-info-view").then(
       (m) => m.PersonalInfoView,
     ),
-  { loading: () => <ProfileManagementSkeleton /> },
+  { loading: () => <PersonalInfoSkeleton /> },
 );
 
 export type PublicProfileData = {
@@ -287,7 +300,7 @@ export function ProfileClient({
           
         </div>
 
-      <div className="grid grid-cols-1 sm:gap-8 gap-3 lg:grid-cols-[390px_minmax(0,1fr)] lg:gap-12 xl:grid-cols-[452px_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 sm:gap-8 gap-3 lg:grid-cols-[300px_minmax(0,1fr)] lg:gap-12 xl:grid-cols-[452px_minmax(0,1fr)]">
 
           <GuestDashboardSidebar
             activeId={activeTab}

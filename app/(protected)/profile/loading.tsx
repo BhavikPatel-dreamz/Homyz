@@ -14,13 +14,13 @@ import { extractProfileRoute } from "@/lib/profile/tab-utils";
 function AboutMeSkeleton() {
   return (
     <>
-      <div className="mb-8 flex items-center gap-5">
-        <div className="h-10 w-40 rounded-lg skeleton-shimmer" />
+      <div className="mb-3 flex items-center gap-5 lg:mb-8 xl:mb-10">
+        <div className="h-[30px] w-32 rounded-lg skeleton-shimmer sm:h-[36px] sm:w-40 lg:h-[40px] xl:h-[44px]" />
         <div className="h-12 w-20 rounded-full skeleton-shimmer" />
       </div>
 
       <div className="mb-8 flex items-start gap-6">
-        <div className="h-[124px] w-[124px] shrink-0 rounded-xl skeleton-shimmer sm:h-[151px] sm:w-[233px] sm:rounded-2xl" />
+        <div className="h-[124px] w-[124px] shrink-0 rounded-xl border border-[#1F1F1F] skeleton-shimmer sm:h-[151px] sm:w-[233px] sm:rounded-2xl sm:border-2" />
         <div className="flex min-h-[124px] flex-1 flex-col justify-center gap-4 sm:min-h-[151px] sm:max-w-[195px]">
           <div className="h-5 w-28 rounded skeleton-shimmer" />
           <div className="h-4 w-36 rounded skeleton-shimmer" />
@@ -155,8 +155,8 @@ export default function Loading() {
   const activeTab = route.tab;
 
   return (
-    <div className="min-h-[85vh] w-full bg-white pb-14 pt-0 lg:pb-28">
-      <div className="grid grid-cols-1 gap-3 sm:gap-8 lg:grid-cols-[390px_minmax(0,1fr)] lg:gap-12 xl:grid-cols-[452px_minmax(0,1fr)]">
+    <div className="min-h-[85vh] w-full bg-white pb-14 pt-5 lg:pb-12">
+      <div className="grid grid-cols-1 gap-3 sm:gap-8 lg:grid-cols-[300px_minmax(0,1fr)] lg:gap-12 xl:grid-cols-[452px_minmax(0,1fr)]">
         <GuestDashboardSidebar activeId={activeTab} />
 
         <main
