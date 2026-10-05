@@ -18,5 +18,5 @@ export default async function DashboardPage() {
     console.error("Error fetching user bookings for dashboard:", err);
   }
 
-  return <ReservationDashboard initialReservations={initialReservations} />;
+  return <ReservationDashboard initialReservations={initialReservations} wideGuestGrid />;
 }

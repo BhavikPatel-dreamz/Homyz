@@ -1021,7 +1021,7 @@ export function HostAboutHostView({
             type="button"
             onClick={() => handleSave()}
             disabled={!isDirty || isSaving}
-            className="w-full rounded-full border border-[#FCDF9C] dark:border-amber-400 bg-[#FCDF9C] dark:bg-amber-400 px-5 py-2 text-sm font-medium text-[#1f1f1f] dark:text-zinc-950 transition-colors duration-300 hover:border-[#1f1f1f] dark:hover:border-amber-300 hover:bg-[#1f1f1f] dark:hover:bg-amber-300 hover:text-white dark:hover:text-zinc-950 disabled:opacity-50 sm:w-auto"
+            className="w-full rounded-full border border-[#FCDF9C] dark:border-amber-400 bg-[#FCDF9C] dark:bg-amber-400 px-5 py-2 text-sm font-medium text-[#1f1f1f] dark:text-zinc-950 transition-colors duration-300 hover:border-[#1f1f1f] dark:hover:border-amber-300 hover:bg-[#1f1f1f] dark:hover:bg-amber-300 hover:text-white dark:hover:text-zinc-950 disabled:opacity-50 sm:w-auto inline-flex items-center justify-center gap-2"
           >
             {isSaving && (
               <svg className="size-3.5 animate-spin" viewBox="0 0 24 24" fill="none">
