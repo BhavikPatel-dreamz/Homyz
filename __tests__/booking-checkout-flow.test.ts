@@ -2,6 +2,7 @@ import assert from "node:assert";
 import fs from "node:fs";
 import path from "node:path";
 import { createBookingSchema } from "../lib/validation/booking";
+import { getAvailablePaymentTimingOptions, getBookingApiPaymentPlan } from "../lib/booking/payment-timing";
 
 console.log("\n==================================================================");
 console.log("   BOOKING CHECKOUT EXPERIENCE & ACCORDION FLOW AUDIT SUITE        ");
@@ -30,18 +31,19 @@ const clientCode = fs.readFileSync(clientPath, "utf-8");
 
 // Step 1: Choose when to pay
 assert(clientCode.includes("Choose when to pay"), "Must include Step 1: Choose when to pay");
-assert(clientCode.includes("Pay part now, part lather") || clientCode.includes("part now"), "Must include pay part now, part later option");
-assert(clientCode.includes("Klarna"), "Must include Klarna payment option");
+assert.equal(getAvailablePaymentTimingOptions().length, 3, "All supported payment intents must be exposed");
+assert.equal(getBookingApiPaymentPlan(getAvailablePaymentTimingOptions()[0].type), "FULL");
+assert(getAvailablePaymentTimingOptions().some((option) => option.title === "Pay part now, part later"), "Must restore the partial-payment intent UI");
+assert(!clientCode.includes("Klarna"), "Must not expose an unconfigured installment provider");
 
 // Step 2: Payment method
 assert(clientCode.includes("Payment method"), "Must include Step 2: Payment method");
-assert(clientCode.includes("Credit / debit card"), "Must include credit/debit card option");
-assert(clientCode.includes("Card Number *"), "Must include Card Number input");
-assert(clientCode.includes("Expiry Date *"), "Must include Expiry Date input");
-assert(clientCode.includes("Card Code (CVC) *"), "Must include CVC input");
-assert(clientCode.includes("Apple Pay"), "Must include Apple Pay option");
-assert(clientCode.includes("Google Pay"), "Must include Google Pay option");
-assert(clientCode.includes("Local gateways"), "Must include Local gateways option");
+assert(clientCode.includes("Test payment mode"), "Must show test payment mode indicator");
+assert(clientCode.includes("Card Number *"), "Must restore the in-memory mock card UI");
+assert(clientCode.includes("Card Code (CVC) *"), "Must restore the in-memory mock CVC UI");
+assert(clientCode.includes("Google Pay"), "Must restore Google Pay as an explicitly mock selection");
+assert(clientCode.includes("Local gateways"), "Must restore the approved local-gateway row");
+assert(clientCode.includes("clearRawCardFields()"), "Must erase raw card fields after producing a safe summary");
 
 // Step 3: Write a message to the host
 assert(clientCode.includes("Write a message to the host"), "Must include Step 3: Write a message to the host");
@@ -49,37 +51,36 @@ assert(clientCode.includes("Hosted by"), "Must display Host card in Step 3");
 assert(clientCode.includes("Write a message"), "Must include message textarea label in Step 3");
 
 // Step 4: Review your request
-assert(clientCode.includes("Review your request"), "Must include Step 4: Review your request");
-assert(clientCode.includes("The host has 24 hours to confirm your booking") || clientCode.includes("instant"), "Must explain confirmation term");
-assert(clientCode.includes(">Pay<") || clientCode.includes(">Pay") || clientCode.includes("Pay</button>"), "Must include Pay CTA button");
-assert(
-  clientCode.includes('now: "FULL"') &&
-    clientCode.includes('part: "SPLIT"') &&
-    clientCode.includes('klarna: "KLARNA"'),
-  "Checkout payment-plan choices must map to the booking API enum values",
-);
+const wizardCode = fs.readFileSync(path.resolve(__dirname, "../lib/booking/checkout-wizard.ts"), "utf-8");
+assert(wizardCode.includes('title: "Review your request"'), "Must include Step 4: Review your request");
+const reviewStepCode = fs.readFileSync(path.resolve(__dirname, "../components/checkout/review-request-step.tsx"), "utf-8");
+assert(reviewStepCode.includes("The host has 24 hours to respond"), "Must explain confirmation term");
+assert(reviewStepCode.includes("Request to book"), "Must use the request-to-book CTA");
+assert(clientCode.includes("getBookingApiPaymentPlan(selectedPaymentTiming)"), "Supported timing maps through the central API adapter");
 console.log("✓ All 4 accordion steps verified!");
 
 // [3] Sticky Right Column & Price Details Audit
 console.log("\n--- [3] Sticky Summary Card & Live Price Audit ---");
-assert(clientCode.includes("Free cancellation"), "Must display Free cancellation terms");
-assert(clientCode.includes("Dates"), "Must display Dates row with Change button");
-assert(clientCode.includes("Guests"), "Must display Guests row with Change button");
-assert(clientCode.includes("Price details"), "Must display Price details section");
-assert(clientCode.includes("Taxes"), "Must display Taxes line");
-assert(clientCode.includes("Extra guest fee"), "Must itemize the extra-guest fee included in the total");
-assert(clientCode.includes("Service fee"), "Must itemize the service fee included in the total");
-assert(clientCode.includes("Pet fee"), "Must itemize a pet fee when one is included in the total");
-assert(clientCode.includes("Total"), "Must display Total amount row");
-assert(clientCode.includes("Price breakdown"), "Must include Price breakdown modal trigger");
-assert(clientCode.includes("ModalOverlay"), "Must use ModalOverlay for modals");
+const summaryCode = fs.readFileSync(path.resolve(__dirname, "../components/checkout/booking-summary.tsx"), "utf-8");
+const summaryHelperCode = fs.readFileSync(path.resolve(__dirname, "../lib/booking/checkout-summary.ts"), "utf-8");
+assert(summaryCode.includes("Free cancellation"), "Must display Free cancellation terms");
+assert(summaryCode.includes("Dates"), "Must display Dates row with Change button");
+assert(summaryCode.includes("Guests"), "Must display Guests row with Change button");
+assert(summaryCode.includes("Price details"), "Must display Price details section");
+assert(summaryHelperCode.includes("Taxes"), "Must display Taxes line");
+assert(summaryHelperCode.includes("Extra guest fee"), "Must itemize the extra-guest fee included in the total");
+assert(!summaryHelperCode.includes('label: "Service fee"'), "Host payout fees must not be charged to the guest");
+assert(summaryHelperCode.includes("Pet fee"), "Must itemize a pet fee when one is included in the total");
+assert(summaryCode.includes("Total"), "Must display Total amount row");
+assert(summaryCode.includes("Price breakdown"), "Must include Price breakdown modal trigger");
+assert(summaryCode.includes("ModalOverlay"), "Must use ModalOverlay for modals");
 assert(
-  clientCode.includes("formatMoney(quote.guestTotal, true)"),
+  clientCode.includes("formatMoney(quote.guestTotal, 2)"),
   "Checkout payment labels must display the authoritative quote total with two decimal places",
 );
 assert(
-  clientCode.includes('isQuoteLoading\n    ? "Calculating…"'),
-  "Checkout must not display the regular listing-price fallback while an offer quote is loading",
+  clientCode.includes('quote\n    ? formatMoney(quote.guestTotal, 2)'),
+  "Checkout must retain the last authoritative total while a refreshed quote is loading",
 );
 console.log("✓ Sticky property & price summary card verified!");
 
@@ -101,11 +102,11 @@ const validBookingPayload = {
   nonRefundable: false,
   message: "Hi Joyce, looking forward to staying at your place!",
   paymentPlan: "FULL" as const,
-  paymentMethod: "CARD" as const,
 };
 const parsed = createBookingSchema.safeParse(validBookingPayload);
-assert(parsed.success, "Booking schema must accept message, paymentPlan, and paymentMethod");
-console.log("✓ Booking validation schema accepts all checkout payload fields!");
+assert(parsed.success, "Booking schema must accept the supported booking request fields");
+assert.equal(createBookingSchema.safeParse({ ...validBookingPayload, paymentMethod: "CARD" }).success, false);
+console.log("✓ Booking validation rejects unsupported UI-only payment methods!");
 
 console.log("\n==================================================================");
 console.log("   ALL BOOKING CHECKOUT TESTS PASSED (5/5)                        ");

@@ -37,7 +37,7 @@ export function RegisterForm() {
       }
       // Auto sign-in after signup for a smooth first-run experience.
       await signIn("credentials", { email, password, redirect: false });
-      router.push("/dashboard");
+      router.push(role === "HOST" ? "/host/today" : "/dashboard");
       router.refresh();
     });
   }

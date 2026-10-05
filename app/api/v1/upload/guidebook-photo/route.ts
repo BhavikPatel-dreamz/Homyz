@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import path from "path";
 import { getSessionUser } from "@/lib/auth/session";
 import { savePublicMedia } from "@/lib/storage/media";
+import { prisma } from "@/lib/db/prisma";
+import { Role } from "@/generated/prisma/enums";
 
 const MAX_GUIDEBOOK_PHOTO_SIZE = 10 * 1024 * 1024;
 const ACCEPTED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/avif"]);
@@ -15,6 +17,22 @@ export async function POST(req: Request) {
 
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
+    const guidebookId = formData.get("guidebookId");
+
+    if (typeof guidebookId !== "string" || !guidebookId.trim()) {
+      return NextResponse.json({ error: "A guidebook is required for this upload." }, { status: 400 });
+    }
+
+    const guidebook = await prisma.guidebook.findUnique({
+      where: { id: guidebookId },
+      select: { hostId: true },
+    });
+    if (!guidebook) {
+      return NextResponse.json({ error: "Guidebook not found." }, { status: 404 });
+    }
+    if (actor.role !== Role.ADMIN && guidebook.hostId !== actor.id) {
+      return NextResponse.json({ error: "You cannot upload photos to this guidebook." }, { status: 403 });
+    }
 
     if (!file || typeof file === "string") {
       return NextResponse.json({ error: "No image file provided." }, { status: 400 });

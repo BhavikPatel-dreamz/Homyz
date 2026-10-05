@@ -9,6 +9,7 @@ import { BookingGuestDetails } from "./booking-guest-details";
 import { BookingHostCard } from "./booking-host-card";
 import { BookingHouseRules } from "./booking-house-rules";
 import { BookingPriceCard } from "./booking-price-card";
+import { BookingStatusTimeline } from "./booking-status-timeline";
 import { ChangeReservationModal } from "./change-reservation-modal";
 import { EnhancedCancelModal } from "./enhanced-cancel-modal";
 import { ReceiptModal, ContactHostModal } from "@/components/dashboard/trip-modals";
@@ -115,6 +116,33 @@ export function BookingDetailsClient({ data }: BookingDetailsClientProps) {
               {statusDetails.description}
             </p>
           </div>
+
+          {/* Status Timeline */}
+          {data.timeline && data.timeline.length > 0 && (
+            <BookingStatusTimeline events={data.timeline} className="mt-6" />
+          )}
+
+          {/* Guest message note */}
+          {data.guestMessage && (
+            <div className="mt-6 rounded-2xl border border-zinc-200 bg-zinc-50 p-5 shadow-2xs">
+              <div className="flex items-center justify-between gap-3 border-b border-zinc-200 pb-3">
+                <h3 className="text-sm font-semibold text-zinc-900">
+                  Your message to {listing.host.name || "the host"}
+                </h3>
+                {data.conversationId && (
+                  <Link
+                    href={`/messages?id=${data.conversationId}`}
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-900 hover:text-zinc-600 underline underline-offset-4"
+                  >
+                    Open conversation
+                  </Link>
+                )}
+              </div>
+              <p className="mt-3 text-sm text-zinc-700 leading-relaxed italic">
+                &ldquo;{data.guestMessage}&rdquo;
+              </p>
+            </div>
+          )}
 
           {/* 1. Stay Information */}
           <BookingStayInfo

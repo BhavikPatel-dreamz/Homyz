@@ -544,10 +544,18 @@ export async function searchPlacesAutocomplete(
     return false;
   };
 
+  // Check for exact city match in CSC database first so cities are not eclipsed by landmark clusters
+  const cscResults = searchCSCPlaces(trimmed, limit);
+  const exactCscCity = cscResults.find((c) => c.name.toLowerCase() === trimmed.toLowerCase() && c.locationType === "city");
+  if (exactCscCity) {
+    addResult(exactCscCity);
+  }
+
   // 1. Tier 1: World Landmarks, POIs, Airports, Stations & Beaches Registry (instant <1ms, typo-tolerant)
   const landmarkMatches = searchWorldLandmarks(trimmed, limit);
   for (const lm of landmarkMatches) {
     addResult(lm);
+    if (results.length >= limit) break;
   }
 
   // 2. Tier 2: Mapbox Geocoding & Search API (if token configured)

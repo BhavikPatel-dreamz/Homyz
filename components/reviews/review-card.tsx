@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 interface ReviewCardProps {
   id: string;
@@ -11,21 +12,32 @@ interface ReviewCardProps {
   createdAt: string | Date;
 }
 
-function relativeDate(dateValue: string | Date) {
-  const date = new Date(dateValue);
-  const elapsed = Date.now() - date.getTime();
-  const days = Math.floor(elapsed / 86_400_000);
-  if (days < 1) return "today";
-  if (days < 7) return `${days} day${days === 1 ? "" : "s"} ago`;
-  if (days < 30) {
-    const weeks = Math.floor(days / 7);
-    return `${weeks} week${weeks === 1 ? "" : "s"} ago`;
-  }
-  if (days < 365) {
-    const months = Math.floor(days / 30);
-    return `${months} month${months === 1 ? "" : "s"} ago`;
-  }
-  return date.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+function useRelativeDate() {
+  const { t, language } = useLanguage();
+  return (dateValue: string | Date) => {
+    const date = new Date(dateValue);
+    const elapsed = Date.now() - date.getTime();
+    const days = Math.floor(elapsed / 86_400_000);
+    if (days < 1) return t("reviews_date_today", "today");
+    if (days < 7) {
+      return days === 1
+        ? t("reviews_day_ago", "1 day ago")
+        : t("reviews_days_ago", "{count} days ago").replace("{count}", String(days));
+    }
+    if (days < 30) {
+      const weeks = Math.floor(days / 7);
+      return weeks === 1
+        ? t("reviews_week_ago", "1 week ago")
+        : t("reviews_weeks_ago", "{count} weeks ago").replace("{count}", String(weeks));
+    }
+    if (days < 365) {
+      const months = Math.floor(days / 30);
+      return months === 1
+        ? t("reviews_month_ago", "1 month ago")
+        : t("reviews_months_ago", "{count} months ago").replace("{count}", String(months));
+    }
+    return date.toLocaleDateString(language, { month: "short", year: "numeric" });
+  };
 }
 
 function previewText(text: string, maxLength = 260) {
@@ -35,6 +47,8 @@ function previewText(text: string, maxLength = 260) {
 }
 
 export function ReviewCard({ id, rating, comment, author, createdAt }: ReviewCardProps) {
+  const { t } = useLanguage();
+  const formatRelativeDate = useRelativeDate();
   const [isExpanded, setIsExpanded] = useState(false);
   const [imageFailed, setImageFailed] = useState(false);
   const name = author?.name?.trim() || "Guest";
@@ -65,7 +79,7 @@ export function ReviewCard({ id, rating, comment, author, createdAt }: ReviewCar
           ))}
           <span className="sr-only">Rated {rating} out of 5</span>
         </span>
-        <time className="sr-only" dateTime={new Date(createdAt).toISOString()}>{relativeDate(createdAt)}</time>
+        <time className="sr-only" dateTime={new Date(createdAt).toISOString()}>{formatRelativeDate(createdAt)}</time>
       </div>
 
       {comment ? (
@@ -78,7 +92,7 @@ export function ReviewCard({ id, rating, comment, author, createdAt }: ReviewCar
             aria-expanded={isExpanded}
             aria-controls={`review-${id}`}
           >
-            {isExpanded ? "read less" : "read more"}
+            {isExpanded ? t("reviews_read_less", "read less") : t("reviews_read_more", "read more")}
           </button></>}
         </p>
       ) : null}

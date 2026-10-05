@@ -1328,7 +1328,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                 desktopPanel === "checkIn" ? "" : "hover:bg-[#fcdf9c]"
               }`}
             >
-              <span className="block text-base font-normal text-[#1f1f1f] cursor-pointer">Check in</span>
+              <span className="block text-base font-normal text-[#1f1f1f] cursor-pointer">{t("home_check_in", "Check in")}</span>
               <span className="block truncate text-sm font-normal text-[#727272]">
                 {datePreferences.mode !== "dates" ? t("home_when_tab_flexible") : checkIn || t("home_search_add_dates")}
               </span>
@@ -1351,7 +1351,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                 desktopPanel === "checkOut" ? "" : "hover:bg-[#fcdf9c]"
               }`}
             >
-              <span className="block text-base font-normal text-[#1f1f1f] cursor-pointer">Check out</span>
+              <span className="block text-base font-normal text-[#1f1f1f] cursor-pointer">{t("home_check_out", "Check out")}</span>
               <span className="block truncate text-sm font-normal text-[#727272]">
                 {datePreferences.mode !== "dates" ? t("home_when_tab_flexible") : checkOut || t("home_search_add_dates")}
               </span>

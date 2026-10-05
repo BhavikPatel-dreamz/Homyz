@@ -9,6 +9,8 @@ import { ListingsResultsClient } from "./listings-results-client";
 import { getSessionUser } from "@/lib/auth/session";
 import { favoriteService } from "@/services/favorite.service";
 import { parsePublicListingSort } from "@/lib/listings/public-sort";
+import { cookies } from "next/headers";
+import { LAST_SEARCH_COOKIE, parseServerLastSearch } from "@/lib/storage/client-history";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +22,7 @@ export const metadata: Metadata = {
 
 interface SearchPageProps {
   searchParams: Promise<{
+    location?: string;
     city?: string;
     destination?: string;
     placeName?: string;
@@ -29,8 +32,10 @@ interface SearchPageProps {
     radius?: string;
     placeId?: string;
     locationType?: string;
+    checkin?: string;
     checkIn?: string;
     startDate?: string;
+    checkout?: string;
     checkOut?: string;
     endDate?: string;
     guests?: string;
@@ -68,22 +73,25 @@ interface SearchPageProps {
 export default async function ListingsSearchPage({ searchParams }: SearchPageProps) {
   const sp = await searchParams;
 
+  const cookieStore = await cookies();
+  const serverLastSearch = parseServerLastSearch(cookieStore.get(LAST_SEARCH_COOKIE)?.value);
+
   // Parse URL params
-  const destination = sp.destination || sp.city || undefined;
-  const city = sp.city || sp.destination || undefined;
-  const placeName = sp.placeName || sp.destination || sp.city || undefined;
+  const destination = sp.location || sp.destination || sp.city || undefined;
+  const city = sp.city || sp.location || sp.destination || undefined;
+  const placeName = sp.placeName || sp.location || sp.destination || sp.city || undefined;
   const lat = sp.lat ? parseFloat(sp.lat) : undefined;
   const lng = sp.lng ? parseFloat(sp.lng) : undefined;
   const radiusKm = sp.radius ? parseFloat(sp.radius) : undefined;
   const placeId = sp.placeId || undefined;
   const locationType = sp.locationType || undefined;
-  const checkIn = sp.checkIn || sp.startDate || undefined;
-  const checkOut = sp.checkOut || sp.endDate || undefined;
-  const guests = sp.guests ? parseInt(sp.guests, 10) : undefined;
-  const adults = sp.adults ? parseInt(sp.adults, 10) : undefined;
-  const children = sp.children ? parseInt(sp.children, 10) : undefined;
-  const infants = sp.infants ? parseInt(sp.infants, 10) : undefined;
-  const pets = sp.pets ? parseInt(sp.pets, 10) : undefined;
+  const checkIn = sp.checkIn || sp.checkin || sp.startDate || serverLastSearch?.checkIn || undefined;
+  const checkOut = sp.checkOut || sp.checkout || sp.endDate || serverLastSearch?.checkOut || undefined;
+  const guests = sp.guests ? parseInt(sp.guests, 10) : serverLastSearch?.guests || undefined;
+  const adults = sp.adults ? parseInt(sp.adults, 10) : serverLastSearch?.adults || undefined;
+  const children = sp.children ? parseInt(sp.children, 10) : serverLastSearch?.children || undefined;
+  const infants = sp.infants ? parseInt(sp.infants, 10) : serverLastSearch?.infants || undefined;
+  const pets = sp.pets ? parseInt(sp.pets, 10) : serverLastSearch?.pets || undefined;
   const propertyType = sp.propertyType || undefined;
   const propertyTypes = sp.propertyTypes ? sp.propertyTypes.split(",").filter(Boolean) : undefined;
   const listingType = sp.listingType || undefined;
@@ -126,41 +134,46 @@ export default async function ListingsSearchPage({ searchParams }: SearchPagePro
   };
 
   let hasError = false;
+  let user: Awaited<ReturnType<typeof getSessionUser>> = null;
+  const userPromise = getSessionUser().catch(() => null);
+  const searchPromise = listingService.searchPublicListings({
+    destination,
+    lat: typeof lat === "number" && !isNaN(lat) ? lat : undefined,
+    lng: typeof lng === "number" && !isNaN(lng) ? lng : undefined,
+    radiusKm: typeof radiusKm === "number" && !isNaN(radiusKm) ? radiusKm : undefined,
+    placeId,
+    locationType,
+    city,
+    placeName,
+    checkIn,
+    checkOut,
+    guests,
+    adults,
+    children,
+    infants,
+    pets,
+    propertyType,
+    propertyTypes,
+    listingType,
+    minPrice,
+    maxPrice,
+    amenities,
+    accessibilityFeatures: accessibility,
+    languages,
+    bedrooms,
+    bathrooms,
+    beds,
+    instantBook,
+    featured,
+    sortBy,
+    mapBounds,
+    page,
+    limit: LIMIT,
+  });
+
   try {
-    const res = await listingService.searchPublicListings({
-      destination,
-      lat: typeof lat === "number" && !isNaN(lat) ? lat : undefined,
-      lng: typeof lng === "number" && !isNaN(lng) ? lng : undefined,
-      radiusKm: typeof radiusKm === "number" && !isNaN(radiusKm) ? radiusKm : undefined,
-      placeId,
-      locationType,
-      city,
-      placeName,
-      checkIn,
-      checkOut,
-      guests,
-      adults,
-      children,
-      infants,
-      pets,
-      propertyType,
-      propertyTypes,
-      listingType,
-      minPrice,
-      maxPrice,
-      amenities,
-      accessibilityFeatures: accessibility,
-      languages,
-      bedrooms,
-      bathrooms,
-      beds,
-      instantBook,
-      featured,
-      sortBy,
-      mapBounds,
-      page,
-      limit: LIMIT,
-    });
+    const [resolvedUser, res] = await Promise.all([userPromise, searchPromise]);
+    user = resolvedUser;
     result = res;
   } catch (err) {
     console.error("Search query failed:", err);
@@ -169,16 +182,15 @@ export default async function ListingsSearchPage({ searchParams }: SearchPagePro
 
   // Load favorites for logged-in users (only for the items on this page)
   let favoriteIds = new Set<string>();
-  try {
-    const user = await getSessionUser();
-    if (user?.id && result.items.length > 0) {
+  if (user?.id && result.items.length > 0) {
+    try {
       favoriteIds = await favoriteService.getFavoriteListingIds(
         user.id,
         result.items.map((i) => i.id),
       );
+    } catch {
+      // favorites are non-critical
     }
-  } catch {
-    // favorites are non-critical
   }
 
   const currentFilters = {

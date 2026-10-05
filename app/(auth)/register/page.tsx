@@ -7,14 +7,15 @@ import { getSafeCallbackUrl } from "@/lib/auth/redirect";
 export default async function RegisterPage({
   searchParams,
 }: {
-  searchParams: Promise<{ callbackUrl?: string; method?: string }>;
+  searchParams: Promise<{ callbackUrl?: string; returnUrl?: string; method?: string }>;
 }) {
   const [user, resolvedParams] = await Promise.all([
     getSessionUser(),
     searchParams,
   ]);
 
-  const { callbackUrl: rawCallbackUrl, method } = resolvedParams || {};
+  const rawCallbackUrl = resolvedParams?.callbackUrl || resolvedParams?.returnUrl;
+  const { method } = resolvedParams || {};
   const safeCallbackUrl = getSafeCallbackUrl(rawCallbackUrl, "/");
 
   if (user && user.status !== "SUSPENDED") {
@@ -22,7 +23,7 @@ export default async function RegisterPage({
       redirect("/admin");
     }
     if (user.role === "HOST" && (safeCallbackUrl === "/" || safeCallbackUrl === "/dashboard")) {
-      redirect("/dashboard");
+      redirect("/host/today");
     }
     if (safeCallbackUrl === "/dashboard") {
       redirect("/");

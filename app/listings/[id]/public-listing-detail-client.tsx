@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { AppHeader } from "@/components/dashboard/app-header";
 import { Footer } from "@/components/dashboard/footer";
@@ -12,15 +12,28 @@ import { Container } from "@/components/ui";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import ListingGallery from "@/components/listings/listing-gallery";
 import { AmenityIcon } from "@/components/ui/amenity-icon";
-import { CANONICAL_AMENITIES, searchAmenitiesCatalog } from "@/lib/constants/amenities";
+import { CANONICAL_AMENITIES, searchAmenitiesCatalog, getAmenityTranslationKey } from "@/lib/constants/amenities";
 import type { BookingQuote } from "@/services/booking.service";
 import type { PublicListingDTO } from "@/services/mappers";
-import { saveRecentlyViewedProperty, clearLastSearch } from "@/lib/storage/client-history";
+import { saveRecentlyViewedProperty, clearLastSearch, saveLastSearch, getLastSearch, buildBookingCheckoutUrl } from "@/lib/storage/client-history";
 import { getCurrencyForCountry } from "@/lib/currency";
 import { useCurrency } from "@/lib/currency-context";
-import { cancellationPolicyLabel } from "@/lib/constants/listing-enums";
+import {
+  cancellationPolicyLabel,
+  listingTypeLabel,
+  propertyTypeLabel,
+} from "@/lib/constants/listing-enums";
+import { useLanguage } from "@/lib/i18n/language-context";
+import { saveBookingQuote, readBookingQuote, fetchAuthoritativeQuote } from "@/lib/booking/quote-cache";
+import { getLanguageDisplayNames } from "@/lib/utils/language-options";
 import useWishlist from "@/hooks/useWishlist";
 import { trackListingEvent } from "@/lib/analytics/listing-analytics";
+import { resolveCalendarDatePricing } from "@/lib/pricing/calendar-pricing";
+import {
+  getEarliestCheckInKey,
+  getMinimumStayForCheckIn,
+  isCheckInDateAllowed,
+} from "@/lib/booking/availability";
 
 // Reviews and the map sit below the booking decision. Split them out of the
 // initial route bundle, and keep a stable placeholder until each chunk loads.
@@ -181,6 +194,11 @@ interface PublicListingDetailClientProps {
   searchCheckIn?: string;
   searchCheckOut?: string;
   searchGuests?: number;
+  searchAdults?: number;
+  searchChildren?: number;
+  searchInfants?: number;
+  searchPets?: number;
+  initialSpecialOfferId?: string;
 }
 
 type BookedDateRange = { start: string; end: string };
@@ -256,6 +274,11 @@ function isUnavailableDate(date: Date, ranges: BookedDateRange[]): boolean {
 }
 
 function AmenityRow({ amenity }: { amenity: { id: string; category?: string; label: string; description?: string } }) {
+  const { t } = useLanguage();
+  const labelKey = getAmenityTranslationKey(amenity.id) as any;
+  const descKey = `host_amenity_desc_${amenity.id}` as any;
+  const translatedLabel = t(labelKey, amenity.label);
+  const translatedDesc = t(descKey, amenity.description || "");
 
   return (
     <div className="flex items-start gap-3 text-xs">
@@ -263,8 +286,8 @@ function AmenityRow({ amenity }: { amenity: { id: string; category?: string; lab
         <AmenityIcon id={amenity.id} className="size-5" />
       </span>
       <div className="min-w-0">
-        <h5 className="text-sm font-semibold text-[#1f1f1f]">{amenity.label}</h5>
-        {amenity.description && <p className="mt-0.5 text-sm font-normal text-[#727272]">{amenity.description}</p>}
+        <h5 className="text-sm font-semibold text-[#1f1f1f]">{translatedLabel}</h5>
+        {translatedDesc && <p className="mt-0.5 text-sm font-normal text-[#727272]">{translatedDesc}</p>}
       </div>
     </div>
   );
@@ -370,6 +393,7 @@ function ListingAvailabilityCalendar({
   locationName,
   minimumNights,
   maximumNights,
+  earliestCheckIn,
 }: {
   month: Date;
   onMonthChange: (month: Date) => void;
@@ -384,7 +408,9 @@ function ListingAvailabilityCalendar({
   locationName: string;
   minimumNights: number;
   maximumNights?: number;
+  earliestCheckIn: string;
 }) {
+  const { t } = useLanguage();
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -404,7 +430,7 @@ function ListingAvailabilityCalendar({
 
   const chooseDate = (key: string) => {
     const selectedDate = new Date(`${key}T00:00:00`);
-    if (selectedDate < today) return;
+    if (key < earliestCheckIn) return;
 
     if (!checkIn || checkOut || key <= checkIn) {
       if (isUnavailableDate(selectedDate, ranges)) {
@@ -451,7 +477,7 @@ function ListingAvailabilityCalendar({
           {Array.from({ length: daysInMonth }, (_, index) => {
             const date = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), index + 1);
             const key = dateKey(date);
-            const past = date < today;
+            const past = key < earliestCheckIn;
             const unavailable = isUnavailableDate(date, ranges);
             const isStart = key === checkIn;
             const isEnd = key === checkOut;
@@ -501,7 +527,11 @@ function ListingAvailabilityCalendar({
     <section className="pb-7" aria-labelledby="availability-heading">
       <div className="mb-6">
         <h3 id="availability-heading" className="text-[20px] font-normal text-[#1f1f1f]">
-          {nights > 0 ? `${nights} ${nights === 1 ? "night" : "nights"} in ${locationName}` : `Select your dates in ${locationName}`}
+          {nights > 0
+            ? nights === 1
+              ? t("listing_detail_night_in" as any, { location: locationName }, `1 night in ${locationName}`)
+              : t("listing_detail_nights_in" as any, { nights, location: locationName }, `${nights} nights in ${locationName}`)
+            : t("listing_detail_select_dates_in" as any, { location: locationName }, `Select your dates in ${locationName}`)}
         </h3>
         <p className="mt-1 text-sm font-normal text-[#727272]" aria-live="polite">{formattedStayDates}</p>
       </div>
@@ -553,9 +583,16 @@ export function PublicListingDetailClient({
   searchCheckIn,
   searchCheckOut,
   searchGuests,
+  searchAdults,
+  searchChildren,
+  searchInfants,
+  searchPets,
+  initialSpecialOfferId,
 }: PublicListingDetailClientProps) {
   const { formatPrice } = useCurrency();
+  const { t } = useLanguage();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const wishlist = useWishlist();
   const { data: session, status: sessionStatus } = useSession();
   const isAuthenticated = sessionStatus === "authenticated" && Boolean(session?.user);
@@ -564,7 +601,6 @@ export function PublicListingDetailClient({
     (session.user.id === listing.host?.id || session.user.id === (listing as any).hostId)
   );
   const canMessageHost = isAuthenticated && !isHostUser;
-  void guidebooks; // The section is intentionally paused; retain the existing server contract.
 
   // Modal and Expand States
   const [isAllAmenitiesOpen, setIsAllAmenitiesOpen] = useState(false);
@@ -582,24 +618,33 @@ export function PublicListingDetailClient({
   const maxPetsAllowed = Math.max(1, listing.maxPets || 2);
   const allowsPets = listing.petsAllowed !== false;
 
-  // Booking Widget State — pre-filled from search URL params
+  // Booking Widget State — pre-filled from search URL params or active search context
   const [checkIn, setCheckIn] = useState(searchCheckIn && isDateKey(searchCheckIn) ? searchCheckIn : "");
   const [checkOut, setCheckOut] = useState(searchCheckOut && isDateKey(searchCheckOut) ? searchCheckOut : "");
-  const [adultsCount, setAdultsCount] = useState(() => Math.min(maximumGuests, Math.max(1, searchGuests ?? 1)));
-  const [childrenCount, setChildrenCount] = useState(0);
-  const [infantsCount, setInfantsCount] = useState(0);
-  const [petsCount, setPetsCount] = useState(0);
+  // DO NOT clamp to maximumGuests! Preserve user search guest count (Requirement 9 & Test 11)
+  const [adultsCount, setAdultsCount] = useState(() => searchAdults ?? Math.max(1, searchGuests ?? 1));
+  const [childrenCount, setChildrenCount] = useState(() => searchChildren ?? 0);
+  const [infantsCount, setInfantsCount] = useState(() => searchInfants ?? 0);
+  const [petsCount, setPetsCount] = useState(() => searchPets ?? 0);
   const [isNonRefundable, setIsNonRefundable] = useState(false);
+  // Keep the initial render deterministic for SSR. Cached quotes live in
+  // sessionStorage and are restored by the route-sync effect after hydration.
   const [quote, setQuote] = useState<BookingQuote | null>(null);
+  const lastQuoteQueryRef = useRef<string>("");
+  const isInstantBook = (quote?.bookingMode ?? listing.bookingMode) === "INSTANT_BOOK";
   const [isQuoteLoading, setIsQuoteLoading] = useState(false);
   const [quoteError, setQuoteError] = useState<string | null>(null);
   const [isBookingSubmitting, setIsBookingSubmitting] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(false);
-  const [bookedDateRanges, setBookedDateRanges] = useState<BookedDateRange[]>([]);
+  const [bookedDateRanges, setBookedDateRanges] = useState<BookedDateRange[]>(() =>
+    (listing.blockedDates ?? []).map((date: string) => ({ start: date, end: addCalendarDays(date, 1) })),
+  );
   const [availabilityMonth, setAvailabilityMonth] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
   const [isAvailabilityLoading, setIsAvailabilityLoading] = useState(false);
   const [availabilityError, setAvailabilityError] = useState<string | null>(null);
-  const [availabilityRequested, setAvailabilityRequested] = useState(false);
+  // Availability is booking-critical, so load it with the detail page instead
+  // of waiting for a date-field focus event.
+  const [availabilityRequested, setAvailabilityRequested] = useState(true);
   const [availabilityRefreshVersion, setAvailabilityRefreshVersion] = useState(0);
   const [hostImageFailed, setHostImageFailed] = useState(false);
   const [isBookingPanelSticky, setIsBookingPanelSticky] = useState(true);
@@ -669,11 +714,11 @@ export function PublicListingDetailClient({
       metadata: {
         propertyType: listing.propertyType,
         listingType: listing.listingType,
-        instantBook: listing.instantBook,
+        instantBook: isInstantBook,
         isGuestFavorite: listing.isGuestFavorite,
       },
     });
-  }, [listing, totalCapacityGuests, checkIn, checkOut]);
+  }, [listing, totalCapacityGuests, checkIn, checkOut, isInstantBook]);
 
   useEffect(() => {
     if (typeof IntersectionObserver === "undefined" || !listing?.id) return;
@@ -717,17 +762,35 @@ export function PublicListingDetailClient({
   // all booking-specific state so a quote from property A never appears on B.
   useEffect(() => {
     const nextCheckIn = isDateKey(searchCheckIn) ? searchCheckIn : "";
-    const nextCheckOut = isDateKey(searchCheckOut) && (!nextCheckIn || searchCheckOut > nextCheckIn) ? searchCheckOut : "";
-    const nextGuests = Math.min(Math.max(1, searchGuests ?? 1), maximumGuests);
+    const nextCheckOut = isDateKey(searchCheckOut) && (!nextCheckIn || searchCheckOut > nextCheckIn)
+      ? searchCheckOut
+      : "";
+    const nextGuests = searchAdults ?? (searchGuests ? Math.max(1, searchGuests) : 1);
+    const nextChildren = searchChildren ?? 0;
+    const nextInfants = searchInfants ?? 0;
+    const nextPets = searchPets ?? 0;
+
     const timer = window.setTimeout(() => {
       setCheckIn(nextCheckIn);
       setCheckOut(nextCheckOut);
       setAdultsCount(nextGuests);
-      setChildrenCount(0);
-      setInfantsCount(0);
-      setPetsCount(0);
+      setChildrenCount(nextChildren);
+      setInfantsCount(nextInfants);
+      setPetsCount(nextPets);
       setIsNonRefundable(false);
-      setQuote(null);
+      setQuote(
+        nextCheckIn && nextCheckOut
+          ? readBookingQuote<BookingQuote>({
+              listingId: listing.id,
+              checkIn: nextCheckIn,
+              checkOut: nextCheckOut,
+              guests: nextGuests,
+              pets: nextPets,
+              nonRefundable: false,
+              specialOfferId: initialSpecialOfferId,
+            })
+          : null,
+      );
       setQuoteError(null);
       setBookingSuccess(false);
       setHostImageFailed(false);
@@ -735,15 +798,17 @@ export function PublicListingDetailClient({
       setIsAllAmenitiesOpen(false);
       setIsGuestSelectorOpen(false);
       setAmenitySearchQuery("");
-      setBookedDateRanges([]);
+      setBookedDateRanges(
+        (listing.blockedDates ?? []).map((date: string) => ({ start: date, end: addCalendarDays(date, 1) })),
+      );
       setAvailabilityError(null);
-      setAvailabilityRequested(Boolean(nextCheckIn || nextCheckOut));
+      setAvailabilityRequested(true);
       setIsAvailabilityLoading(false);
       setAvailabilityMonth(nextCheckIn ? new Date(`${nextCheckIn}T00:00:00`) : new Date(new Date().getFullYear(), new Date().getMonth(), 1));
       setAvailabilityRefreshVersion((version) => version + 1);
     }, 0);
     return () => window.clearTimeout(timer);
-  }, [listing.id, maximumGuests, searchCheckIn, searchCheckOut, searchGuests]);
+  }, [listing.id, searchCheckIn, searchCheckOut, searchGuests, searchAdults, searchChildren, searchInfants, searchPets, initialSpecialOfferId]);
 
   useEffect(() => {
     if (!isAllAmenitiesOpen) return;
@@ -774,18 +839,58 @@ export function PublicListingDetailClient({
   }, [isGuestSelectorOpen]);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
     const url = new URL(window.location.href);
-    if (checkIn) url.searchParams.set("checkIn", checkIn);
-    else url.searchParams.delete("checkIn");
-    if (checkOut) url.searchParams.set("checkOut", checkOut);
-    else url.searchParams.delete("checkOut");
+    if (checkIn) {
+      url.searchParams.set("checkIn", checkIn);
+      url.searchParams.delete("checkin");
+    } else {
+      url.searchParams.delete("checkin");
+      url.searchParams.delete("checkIn");
+    }
+    if (checkOut) {
+      url.searchParams.set("checkOut", checkOut);
+      url.searchParams.delete("checkout");
+    } else {
+      url.searchParams.delete("checkout");
+      url.searchParams.delete("checkOut");
+    }
     url.searchParams.delete("startDate");
     url.searchParams.delete("endDate");
     url.searchParams.set("guests", String(totalCapacityGuests));
+    if (adultsCount > 0) url.searchParams.set("adults", String(adultsCount));
+    else url.searchParams.delete("adults");
+    if (childrenCount > 0) url.searchParams.set("children", String(childrenCount));
+    else url.searchParams.delete("children");
+    if (infantsCount > 0) url.searchParams.set("infants", String(infantsCount));
+    else url.searchParams.delete("infants");
     if (petsCount > 0) url.searchParams.set("pets", String(petsCount));
     else url.searchParams.delete("pets");
-    window.history.replaceState(window.history.state, "", url);
-  }, [checkIn, checkOut, totalCapacityGuests, petsCount]);
+    window.history.replaceState(window.history.state, "", url.toString());
+
+    // Also sync to canonical search persistence if dates or guests are selected
+    if (checkIn || checkOut) {
+      const existing = getLastSearch();
+      saveLastSearch({
+        query: existing?.query || listing.city || "Stays",
+        displayName: existing?.displayName || listing.city || "Stays",
+        placeId: existing?.placeId || null,
+        placeType: existing?.placeType || "general",
+        latitude: existing?.latitude ?? listing.latitude ?? null,
+        longitude: existing?.longitude ?? listing.longitude ?? null,
+        city: existing?.city || listing.city || null,
+        country: existing?.country || listing.country || null,
+        checkIn: checkIn || null,
+        checkOut: checkOut || null,
+        guests: totalCapacityGuests,
+        adults: adultsCount,
+        children: childrenCount,
+        infants: infantsCount,
+        pets: petsCount,
+        searchedAt: new Date().toISOString(),
+      });
+    }
+  }, [checkIn, checkOut, totalCapacityGuests, adultsCount, childrenCount, infantsCount, petsCount, listing.city, listing.country, listing.latitude, listing.longitude]);
 
   // This compact range is shared by the booking card and read-only calendar.
   // The quote endpoint remains authoritative at reserve time.
@@ -825,19 +930,14 @@ export function PublicListingDetailClient({
             for (const range of [...retained, ...fetchedRanges]) unique.set(`${range.start}:${range.end}`, range);
             return [...unique.values()].sort((a, b) => a.start.localeCompare(b.start));
           });
-          // A direct/native date input may choose a date before its containing
-          // availability window has loaded. Reconcile that selection as soon as
-          // the authoritative window arrives instead of leaving an invalid
-          // range visibly selected.
+          // Keep persisted dates selected if unavailable per Requirement 8 & 9.
+          // Do NOT silently erase them; display a clear error message instead.
           if (isDateKey(checkIn) && isUnavailableDate(new Date(`${checkIn}T00:00:00`), fetchedRanges)) {
-            setCheckIn("");
-            setCheckOut("");
             setQuote(null);
-            setQuoteError("Your selected check-in date is unavailable. Please choose different dates.");
+            setQuoteError("These dates are not available for this property. Please choose different dates.");
           } else if (isDateKey(checkIn) && isDateKey(checkOut) && overlapsBookedRange(checkIn, checkOut, fetchedRanges)) {
-            setCheckOut("");
             setQuote(null);
-            setQuoteError("Part of your selected stay is unavailable. Please choose another checkout date.");
+            setQuoteError("These dates are not available for this property. Please choose different dates.");
           }
         })
         .catch((error: unknown) => {
@@ -886,11 +986,39 @@ export function PublicListingDetailClient({
   }, [categorizedAmenities]);
 
   // Format price
-  const displayPrice = typeof listing.price === "number"
-    ? formatPrice(listing.price, listing.currency ?? getCurrencyForCountry(listing.country))
-    : null;
   const currencyCode = listing.currency ?? getCurrencyForCountry(listing.country);
-  const minimumNights = Math.max(1, listing.minNights || 1);
+  const earliestCheckIn = getEarliestCheckInKey(listing);
+  let defaultDisplayDate = earliestCheckIn;
+  for (let offset = 0; offset < 366; offset += 1) {
+    const candidate = addCalendarDays(earliestCheckIn, offset);
+    const candidateMinimum = getMinimumStayForCheckIn(listing, candidate);
+    const candidateCheckout = addCalendarDays(candidate, candidateMinimum);
+    if (
+      isCheckInDateAllowed(listing, candidate) &&
+      !overlapsBookedRange(candidate, candidateCheckout, bookedDateRanges)
+    ) {
+      defaultDisplayDate = candidate;
+      break;
+    }
+  }
+  // Keep the no-quote detail price identical to homepage and search cards.
+  // Those cards resolve the first available calendar date and intentionally
+  // exclude the new-listing promotion from browse pricing.
+  const defaultCalendarPricing = resolveCalendarDatePricing({
+    dateKey: defaultDisplayDate,
+    listing: {
+      price: listing.price,
+      weekdayBasePrice: listing.weekdayBasePrice,
+      weekendPrice: listing.weekendPrice,
+      weekendPremium: listing.weekendPremium,
+      customPrices: listing.customPrices,
+      discounts: listing.discounts as Record<string, unknown> | null,
+    },
+  });
+  const effectiveDefaultPrice =
+    defaultCalendarPricing.promotion?.promotionalPrice ?? defaultCalendarPricing.originalPrice;
+  const displayPrice = effectiveDefaultPrice > 0 ? formatPrice(effectiveDefaultPrice, currencyCode) : null;
+  const minimumNights = getMinimumStayForCheckIn(listing, checkIn || earliestCheckIn);
   const maximumNights = Math.max(minimumNights, listing.maxNights || 365);
   const today = dateKey(new Date());
   const minimumCheckOut = checkIn
@@ -908,7 +1036,11 @@ export function PublicListingDetailClient({
   const hostBio = typeof publicProfile?.bio === "string" ? publicProfile.bio : "";
   const hostWork = typeof publicProfile?.myWork === "string" ? publicProfile.myWork.trim() : "";
   const hostLanguages = Array.isArray(publicProfile?.languages)
-    ? publicProfile.languages.filter((value): value is string => typeof value === "string" && value.trim().length > 0).slice(0, 4)
+    ? getLanguageDisplayNames(
+        publicProfile.languages
+          .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
+          .slice(0, 4),
+      )
     : [];
   const hostSince = listing.host?.createdAt && !Number.isNaN(new Date(listing.host.createdAt).getTime())
     ? new Intl.DateTimeFormat("en", { month: "long", year: "numeric" }).format(new Date(listing.host.createdAt))
@@ -926,28 +1058,48 @@ export function PublicListingDetailClient({
   };
   const humanize = (value: string) => value.toLowerCase().replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
   const aboutLocationDetails = [
-    ...(listing.neighborhoodDescription ? [{ heading: "Neighborhood", content: listing.neighborhoodDescription }] : []),
-    ...(listing.gettingAround ? [{ heading: "Getting around", content: listing.gettingAround }] : []),
+    ...(listing.neighborhoodDescription ? [{ heading: t("listing_detail_neighborhood", "Neighborhood"), content: listing.neighborhoodDescription }] : []),
+    ...(listing.gettingAround ? [{ heading: t("listing_detail_getting_around", "Getting around"), content: listing.gettingAround }] : []),
     ...(Array.isArray(listing.locationFeatures) && listing.locationFeatures.length > 0
-      ? [{ heading: "Location features", content: listing.locationFeatures.map(humanize).join(" · ") }]
+      ? [{ heading: t("listing_detail_location_features", "Location features"), content: listing.locationFeatures.map(humanize).join(" · ") }]
       : []),
     ...(Array.isArray(listing.views) && listing.views.length > 0
-      ? [{ heading: "Views", content: listing.views.map(humanize).join(" · ") }]
+      ? [{ heading: t("listing_detail_views", "Views"), content: listing.views.map(humanize).join(" · ") }]
       : []),
   ];
   const formatSafetyDisclosure = (entry: string): string | null => {
     const [key, status, ...detailParts] = entry.split(":");
     if (status === "NO") return null;
     const labels: Record<string, string> = {
-      MUST_CLIMB_STAIRS: "Guests must climb stairs",
-      POTENTIAL_FOR_NOISE: "Construction or other potential noise during stays",
-      NEARBY_WATER: "Nearby water bodies",
-      DANGEROUS_ANIMALS: "Potentially dangerous animals",
-      SPECIAL_CONSIDERATIONS: "Other safety or regulatory notes",
+      MUST_CLIMB_STAIRS: t("host_safety_must_climb_stairs", "Guests must climb stairs"),
+      POTENTIAL_FOR_NOISE: t("host_safety_potential_noise_short", "Construction or other potential noise during stays"),
+      NEARBY_WATER: t("host_safety_nearby_water_title", "Nearby water, like a lake or river"),
+      DANGEROUS_ANIMALS: t("host_safety_dangerous_animals_title", "Potentially dangerous animal(s) on the property"),
+      SPECIAL_CONSIDERATIONS: t("host_safety_special_considerations_title", "Other safety or regulatory notes"),
     };
     const label = labels[key] ?? humanize(key);
     const details = detailParts.join(":").trim();
     return status === "YES" ? `${label}${details ? `: ${details}` : ""}` : humanize(entry);
+  };
+  const translateSafetyEquipment = (item: string) => {
+    const normalized = item.toUpperCase().replace(/\s+/g, "_");
+    switch (normalized) {
+      case "SMOKE_ALARM":
+        return t("host_safety_smoke_alarm_title", "Smoke alarm");
+      case "CARBON_MONOXIDE_ALARM":
+      case "CO_ALARM":
+        return t("host_safety_carbon_monoxide_title", "Carbon monoxide alarm");
+      case "FIRST_AID_KIT":
+        return t("host_first_aid_kit", "First aid kit");
+      case "FIRE_EXTINGUISHER":
+        return t("host_fire_extinguisher", "Fire extinguisher");
+      case "SECURITY_CAMERA":
+        return t("host_safety_security_camera_title", "Exterior security camera present");
+      case "NOISE_MONITOR":
+        return t("host_safety_noise_monitor_title", "Noise decibel monitor present");
+      default:
+        return humanize(item);
+    }
   };
   const publicSafetyEquipment = Array.isArray(listing.safetyEquipment) ? listing.safetyEquipment : [];
   const publicSafetyHazards = Array.isArray(listing.safetyHazards)
@@ -956,58 +1108,134 @@ export function PublicListingDetailClient({
   const publicSafetyDisclosures = Array.isArray(listing.safetyDisclosures)
     ? listing.safetyDisclosures.map(formatSafetyDisclosure).filter((item): item is string => Boolean(item))
     : [];
-  const cancellationLabel = listing.cancellationPolicy ? cancellationPolicyLabel(listing.cancellationPolicy) : null;
-  const longTermCancellationLabel = listing.longTermCancellationPolicy ? cancellationPolicyLabel(listing.longTermCancellationPolicy) : null;
+  const cancellationLabel = listing.cancellationPolicy ? cancellationPolicyLabel(listing.cancellationPolicy, t) : null;
+  const longTermCancellationLabel = listing.longTermCancellationPolicy ? cancellationPolicyLabel(listing.longTermCancellationPolicy, t) : null;
   const configuredHouseRules = Array.isArray(listing.houseRules)
     ? listing.houseRules.filter((rule): rule is string => typeof rule === "string" && rule.trim().length > 0)
     : [];
   const safetyItems = [
-    ...publicSafetyEquipment.map(humanize),
+    ...publicSafetyEquipment.map(translateSafetyEquipment),
     ...publicSafetyHazards,
     ...publicSafetyDisclosures,
   ];
   const houseRuleItems = [
     ...(formatTime(listing.checkInStart)
-      ? [{ id: "check-in", icon: <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-full border border-[#1f1f1f]"><Image src="/images/icons/check-in-icon.svg" alt="" width={15} height={15} className="size-6" /></span>, text: `Check-in after ${formatTime(listing.checkInStart)}${formatTime(listing.checkInEnd) ? `, before ${formatTime(listing.checkInEnd)}` : ""}` }]
+      ? [{
+          id: "check-in",
+          icon: <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-full border border-[#1f1f1f]"><Image src="/images/icons/check-in-icon.svg" alt="" width={15} height={15} className="size-6" /></span>,
+          text: formatTime(listing.checkInEnd)
+            ? t("listing_detail_check_in_after_before", { start: formatTime(listing.checkInStart) || "", end: formatTime(listing.checkInEnd) || "" }, `Check-in after ${formatTime(listing.checkInStart)}, before ${formatTime(listing.checkInEnd)}`)
+            : t("listing_detail_check_in_after", { start: formatTime(listing.checkInStart) || "" }, `Check-in after ${formatTime(listing.checkInStart)}`),
+        }]
       : []),
     ...(formatTime(listing.checkOutTime)
-      ? [{ id: "check-out", icon: <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-full border border-[#1f1f1f]"><Image src="/images/icons/check-in-icon.svg" alt="" width={15} height={15} className="size-6" /></span>, text: `Check-out before ${formatTime(listing.checkOutTime)}` }]
+      ? [{
+          id: "check-out",
+          icon: <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-full border border-[#1f1f1f]"><Image src="/images/icons/check-in-icon.svg" alt="" width={15} height={15} className="size-6" /></span>,
+          text: t("listing_detail_check_out_before", { time: formatTime(listing.checkOutTime) || "" }, `Check-out before ${formatTime(listing.checkOutTime)}`),
+        }]
       : []),
-    { id: "maximum-guests", icon: <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-full border border-[#1f1f1f]"><Image src="/images/icons/max-guest-icon.svg" alt="" width={15} height={15} className="size-6" /></span>, text: `${listing.guests || 1} guest maximum` },
-    ...(listing.petsAllowed !== null ? [{ id: "pets", icon: <RuleIcon name="pets" />, text: listing.petsAllowed ? `Pets allowed${listing.maxPets ? ` · up to ${listing.maxPets}` : ""}` : "No pets" }] : []),
-    ...(listing.smokingAllowed !== null ? [{ id: "smoking", icon: <RuleIcon name="smoking" />, text: listing.smokingAllowed ? `Smoking: ${listing.smokingLocation ? humanize(listing.smokingLocation) : "allowed"}` : "No smoking" }] : []),
-    ...(listing.eventsAllowed !== null ? [{ id: "events", icon: <RuleIcon name="events" />, text: listing.eventsAllowed ? "Events allowed" : "No parties or events" }] : []),
-    ...(listing.photographyAllowed !== null ? [{ id: "photography", icon: <RuleIcon name="photo" />, text: listing.photographyAllowed ? "Commercial photography allowed" : "No commercial photography" }] : []),
+    {
+      id: "maximum-guests",
+      icon: <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-full border border-[#1f1f1f]"><Image src="/images/icons/max-guest-icon.svg" alt="" width={15} height={15} className="size-6" /></span>,
+      text: t("listing_detail_guests_max", { count: listing.guests || 1 }, `${listing.guests || 1} guest maximum`),
+    },
+    ...(listing.petsAllowed !== null
+      ? [{
+          id: "pets",
+          icon: <RuleIcon name="pets" />,
+          text: listing.petsAllowed
+            ? (listing.maxPets
+                ? t("listing_detail_pets_allowed_max", { max: listing.maxPets }, `Pets allowed · up to ${listing.maxPets}`)
+                : t("listing_detail_pets_allowed", "Pets allowed"))
+            : t("listing_detail_no_pets", "No pets"),
+        }]
+      : []),
+    ...(listing.smokingAllowed !== null
+      ? [{
+          id: "smoking",
+          icon: <RuleIcon name="smoking" />,
+          text: listing.smokingAllowed
+            ? (listing.smokingLocation
+                ? t("listing_detail_smoking_location", { location: humanize(listing.smokingLocation) }, `Smoking: ${humanize(listing.smokingLocation)}`)
+                : t("listing_detail_smoking_allowed", "Smoking allowed"))
+            : t("listing_detail_no_smoking", "No smoking"),
+        }]
+      : []),
+    ...(listing.eventsAllowed !== null
+      ? [{
+          id: "events",
+          icon: <RuleIcon name="events" />,
+          text: listing.eventsAllowed ? t("listing_detail_events_allowed", "Events allowed") : t("listing_detail_no_events", "No parties or events"),
+        }]
+      : []),
+    ...(listing.photographyAllowed !== null
+      ? [{
+          id: "photography",
+          icon: <RuleIcon name="photo" />,
+          text: listing.photographyAllowed ? t("listing_detail_photography_allowed", "Commercial photography allowed") : t("listing_detail_no_photography", "No commercial photography"),
+        }]
+      : []),
     ...(listing.quietHours && formatTime(listing.quietHoursStart) && formatTime(listing.quietHoursEnd)
-      ? [{ id: "quiet-hours", icon: <RuleIcon name="quiet" />, text: `Quiet hours: ${formatTime(listing.quietHoursStart)}–${formatTime(listing.quietHoursEnd)}` }]
+      ? [{
+          id: "quiet-hours",
+          icon: <RuleIcon name="quiet" />,
+          text: t("listing_detail_quiet_hours", { start: formatTime(listing.quietHoursStart) || "", end: formatTime(listing.quietHoursEnd) || "" }, `Quiet hours: ${formatTime(listing.quietHoursStart)}–${formatTime(listing.quietHoursEnd)}`),
+        }]
       : []),
     ...configuredHouseRules.map((text, index) => ({ id: `configured-${index}`, icon: <RuleCheckIcon />, text })),
     ...(listing.additionalRules ? [{ id: "additional", icon: <RuleIcon name="rule" />, text: listing.additionalRules }] : []),
   ];
   const cancellationItems = [
-    ...(cancellationLabel ? [`${cancellationLabel}. Applies to stays under 28 nights.`] : []),
-    ...(longTermCancellationLabel ? [`${longTermCancellationLabel}. Applies to stays of 28 nights or more.`] : []),
+    ...(cancellationLabel ? [t("listing_detail_cancellation_short_term", { policy: cancellationLabel }, `${cancellationLabel}. Applies to stays under 28 nights.`)] : []),
+    ...(longTermCancellationLabel ? [t("listing_detail_cancellation_long_term", { policy: longTermCancellationLabel }, `${longTermCancellationLabel}. Applies to stays of 28 nights or more.`)] : []),
   ];
+  const translateHighlightTitle = (rawTitle: string): string => {
+    const lower = rawTitle.toLowerCase().trim();
+    if (lower === "dedicated workspace" || lower === "workspace") {
+      return t("listings_dedicated_workspace", "Dedicated workspace");
+    }
+    if (lower === "central location" || lower === "central") {
+      return t("listing_detail_highlight_central_location", "Central location");
+    }
+    if (lower === "peaceful") {
+      return t("host_highlights_peaceful", "Peaceful");
+    }
+    if (lower === "unique") {
+      return t("host_highlights_unique", "Unique");
+    }
+    if (lower === "family-friendly" || lower === "family friendly") {
+      return t("host_highlights_family", "Family-friendly");
+    }
+    if (lower === "stylish") {
+      return t("host_highlights_stylish", "Stylish");
+    }
+    if (lower === "spacious") {
+      return t("host_highlights_spacious", "Spacious");
+    }
+    return rawTitle;
+  };
   const trustHighlights: Array<{ icon: TrustHighlightIconName; title: string; description: string }> = [
     ...(listing.isGuestFavorite
-      ? [{ icon: "award" as const, title: "Guest favourite", description: "Highly rated by guests who have stayed here." }]
+      ? [{ icon: "award" as const, title: t("listing_detail_guest_favourite", "Guest favourite"), description: t("listing_detail_guest_favourite_desc", "Highly rated by guests who have stayed here.") }]
       : []),
     ...((Array.isArray(listing.highlights) ? listing.highlights : []).slice(0, 2).map((title) => ({
       icon: "sparkle" as const,
-      title,
-      description: "A highlight shared by this host.",
+      title: translateHighlightTitle(title),
+      description: t("listing_detail_host_highlight_desc", "A highlight shared by this host."),
     }))),
     ...(cancellationLabel
-      ? [{ icon: "calendar" as const, title: "Cancellation policy", description: cancellationLabel }]
+      ? [{ icon: "calendar" as const, title: t("listing_detail_cancellation_policy", "Cancellation policy"), description: cancellationLabel }]
       : []),
     ...(displayPrice
-      ? [{ icon: "pricing" as const, title: "Clear pricing", description: "Your full price is shown before you reserve." }]
+      ? [{ icon: "pricing" as const, title: t("listing_detail_clear_pricing", "Clear pricing"), description: t("listing_detail_clear_pricing_desc", "Your full price is shown before you reserve.") }]
       : []),
   ].slice(0, 4);
 
   // Fetch quote when valid dates are selected
   useEffect(() => {
     if (!checkIn || !checkOut) {
+      lastQuoteQueryRef.current = "";
       const timer = window.setTimeout(() => {
         setQuote(null);
         setQuoteError(null);
@@ -1017,6 +1245,7 @@ export function PublicListingDetailClient({
     }
 
     if (totalCapacityGuests < 1 || totalCapacityGuests > maximumGuests) {
+      lastQuoteQueryRef.current = "";
       const timer = window.setTimeout(() => {
         setQuote(null);
         setQuoteError(`This property accommodates up to ${maximumGuests} ${maximumGuests === 1 ? "guest" : "guests"}.`);
@@ -1028,6 +1257,7 @@ export function PublicListingDetailClient({
     const cIn = new Date(`${checkIn}T00:00:00`);
     const cOut = new Date(`${checkOut}T00:00:00`);
     if (isNaN(cIn.getTime()) || isNaN(cOut.getTime()) || cOut <= cIn) {
+      lastQuoteQueryRef.current = "";
       const timer = window.setTimeout(() => {
         setQuote(null);
         setQuoteError("Checkout must be after check-in");
@@ -1036,27 +1266,45 @@ export function PublicListingDetailClient({
       return () => clearTimeout(timer);
     }
 
+    if (overlapsBookedRange(checkIn, checkOut, bookedDateRanges)) {
+      lastQuoteQueryRef.current = "";
+      const timer = window.setTimeout(() => {
+        setQuote(null);
+        setQuoteError("These dates are not available for this property. Please choose different dates.");
+        setIsQuoteLoading(false);
+      }, 0);
+      return () => window.clearTimeout(timer);
+    }
+
+    const effectiveSpecialOffer = initialSpecialOfferId || searchParams.get("specialOfferId") || undefined;
+    const currentQueryKey = `${listing.id}:${checkIn}:${checkOut}:${totalCapacityGuests}:${petsCount}:${isNonRefundable}:${effectiveSpecialOffer || ""}`;
+
+    if (lastQuoteQueryRef.current === currentQueryKey && quote) {
+      return;
+    }
+
     let isMounted = true;
     const controller = new AbortController();
     const timer = setTimeout(() => {
-      // A quote always belongs to exactly one date/guest selection. Clear the
-      // previous result before loading so Reserve cannot use a stale total.
-      setQuote(null);
+      lastQuoteQueryRef.current = currentQueryKey;
       setIsQuoteLoading(true);
       setQuoteError(null);
 
-      fetch(
-        `/api/v1/listings/${listing.id}/quote?checkIn=${encodeURIComponent(checkIn)}&checkOut=${encodeURIComponent(checkOut)}&guests=${totalCapacityGuests}&pets=${petsCount}&nonRefundable=${isNonRefundable}`,
-        { signal: controller.signal, cache: "no-store" },
+      fetchAuthoritativeQuote<BookingQuote>(
+        {
+          listingId: listing.id,
+          checkIn,
+          checkOut,
+          guests: totalCapacityGuests,
+          pets: petsCount,
+          nonRefundable: isNonRefundable,
+          specialOfferId: effectiveSpecialOffer,
+        },
+        { signal: controller.signal },
       )
-        .then(async (res) => ({ ok: res.ok, data: await res.json() }))
-        .then(({ ok, data }) => {
+        .then((data) => {
           if (!isMounted) return;
-          if (!ok || data.error || !data.data) {
-            setQuoteError(data.error?.message || "Selected dates are not available");
-            return;
-          }
-          setQuote(data.data);
+          setQuote(data);
           setQuoteError(null);
           trackListingEvent({
             eventType: "quote_calculated",
@@ -1067,18 +1315,18 @@ export function PublicListingDetailClient({
             checkOut,
             guestCount: totalCapacityGuests,
             metadata: {
-              nights: data.data.nights,
-              totalPrice: data.data.guestTotal ?? data.data.totalPrice,
-              cleaningFee: data.data.cleaningFee,
-              extraGuestFee: data.data.extraGuestFee,
-              appliedDiscount: data.data.appliedDiscount?.name,
+              nights: data.nights,
+              totalPrice: data.guestTotal ?? data.totalPrice,
+              extraGuestFee: data.extraGuestFee,
+              appliedDiscount: data.appliedDiscount?.name,
               nonRefundable: isNonRefundable,
             },
           });
         })
         .catch((error: unknown) => {
           if (!isMounted || (error instanceof DOMException && error.name === "AbortError")) return;
-          setQuoteError("Unable to calculate price quotation.");
+          setQuote(null);
+          setQuoteError(error instanceof Error ? error.message : "Unable to calculate price quotation.");
         })
         .finally(() => {
           if (isMounted) setIsQuoteLoading(false);
@@ -1090,7 +1338,7 @@ export function PublicListingDetailClient({
       controller.abort();
       clearTimeout(timer);
     };
-  }, [checkIn, checkOut, totalCapacityGuests, petsCount, isNonRefundable, listing.id, listing.city, listing.country, maximumGuests]);
+  }, [checkIn, checkOut, totalCapacityGuests, petsCount, isNonRefundable, listing.id, listing.city, listing.country, maximumGuests, initialSpecialOfferId, searchParams, bookedDateRanges]);
 
   const isDateRangeValid = Boolean(
     isDateKey(checkIn) && isDateKey(checkOut) && checkOut > checkIn && !overlapsBookedRange(checkIn, checkOut, bookedDateRanges),
@@ -1103,7 +1351,6 @@ export function PublicListingDetailClient({
   const clearBookingDates = () => {
     setCheckIn("");
     setCheckOut("");
-    setQuote(null);
     setQuoteError(null);
     trackListingEvent({
       eventType: "dates_cleared",
@@ -1114,8 +1361,8 @@ export function PublicListingDetailClient({
   };
 
   const updateCheckIn = (nextCheckIn: string) => {
-    if (!isDateKey(nextCheckIn) || nextCheckIn < today) {
-      setQuoteError("Choose a future check-in date.");
+    if (!isDateKey(nextCheckIn) || !isCheckInDateAllowed(listing, nextCheckIn)) {
+      setQuoteError("That check-in date does not meet this property's advance-notice or same-day booking rules.");
       return;
     }
     if (isUnavailableDate(new Date(`${nextCheckIn}T00:00:00`), bookedDateRanges)) {
@@ -1127,7 +1374,6 @@ export function PublicListingDetailClient({
       });
       return;
     }
-    setQuote(null);
     setQuoteError(null);
     setCheckIn(nextCheckIn);
     trackListingEvent({
@@ -1178,7 +1424,6 @@ export function PublicListingDetailClient({
       });
       return;
     }
-    setQuote(null);
     setQuoteError(null);
     setCheckOut(nextCheckOut);
     trackListingEvent({
@@ -1195,7 +1440,6 @@ export function PublicListingDetailClient({
     const next = adultsCount + delta;
     if (next < 1) return;
     if (delta > 0 && !canAddCapacityGuest) return;
-    setQuote(null);
     setQuoteError(null);
     setAdultsCount(next);
     trackListingEvent({
@@ -1210,7 +1454,6 @@ export function PublicListingDetailClient({
     const next = childrenCount + delta;
     if (next < 0) return;
     if (delta > 0 && !canAddCapacityGuest) return;
-    setQuote(null);
     setQuoteError(null);
     setChildrenCount(next);
     trackListingEvent({
@@ -1236,7 +1479,6 @@ export function PublicListingDetailClient({
   const updatePets = (delta: number) => {
     const next = petsCount + delta;
     if (next < 0 || next > maxPetsAllowed) return;
-    setQuote(null);
     setQuoteError(null);
     setPetsCount(next);
     trackListingEvent({
@@ -1324,7 +1566,7 @@ export function PublicListingDetailClient({
   };
 
   // Handle Booking — validates all listing settings before redirecting to /book/[id]
-  const handleReserve = () => {
+  const handleReserve = async () => {
 
     if (!checkIn || !checkOut) {
       setQuoteError("Please choose check-in and check-out dates to continue.");
@@ -1346,8 +1588,8 @@ export function PublicListingDetailClient({
       return;
     }
 
-    if (checkIn < today) {
-      setQuoteError("Check-in date cannot be in the past.");
+    if (!isCheckInDateAllowed(listing, checkIn)) {
+      setQuoteError("That check-in date does not meet this property's advance-notice or same-day booking rules.");
       trackListingEvent({
         eventType: "reserve_validation_failed",
         propertyId: listing.id,
@@ -1425,47 +1667,91 @@ export function PublicListingDetailClient({
       return;
     }
 
-    trackListingEvent({
-      eventType: "reserve_clicked",
-      propertyId: listing.id,
-      city: listing.city,
-      country: listing.country,
-      checkIn,
-      checkOut,
-      guestCount: totalCapacityGuests,
-      metadata: {
+    const effectiveSpecialOffer = initialSpecialOfferId || searchParams.get("specialOfferId") || undefined;
+
+    setIsBookingSubmitting(true);
+    setQuoteError(null);
+    try {
+      saveBookingQuote({
+        listingId: listing.id,
+        checkIn,
+        checkOut,
+        guests: totalCapacityGuests,
+        pets: petsCount,
+        nonRefundable: isNonRefundable,
+        specialOfferId: effectiveSpecialOffer,
+      }, quote);
+      const checkoutUrl = buildBookingCheckoutUrl(
+        listing.customSlug || listing.id,
+        {
+          location: listing.city || undefined,
+          checkIn,
+          checkOut,
+          guests: totalCapacityGuests,
+          adults: adultsCount,
+          children: childrenCount,
+          infants: infantsCount,
+          pets: petsCount,
+          specialOfferId: effectiveSpecialOffer,
+        },
+        {
+          ...(isNonRefundable ? { nonRefundable: "true" } : {}),
+          bookingMode: quote.bookingMode,
+        },
+      );
+
+      trackListingEvent({
+        eventType: "reserve_clicked",
+        propertyId: listing.id,
+        city: listing.city,
+        country: listing.country,
+        checkIn,
+        checkOut,
+        guestCount: totalCapacityGuests,
+        metadata: {
+          adults: adultsCount,
+          children: childrenCount,
+          infants: infantsCount,
+          pets: petsCount,
+          isNonRefundable,
+          bookingMode: quote.bookingMode,
+        },
+      });
+
+      trackListingEvent({
+        eventType: "booking_flow_started",
+        propertyId: listing.id,
+        city: listing.city,
+        country: listing.country,
+        checkIn,
+        checkOut,
+        guestCount: totalCapacityGuests,
+      });
+
+      saveLastSearch({
+        location: listing.city || "",
+        checkIn,
+        checkOut,
+        guests: totalCapacityGuests,
         adults: adultsCount,
         children: childrenCount,
         infants: infantsCount,
         pets: petsCount,
-        isNonRefundable,
-      },
-    });
+        specialOfferId: effectiveSpecialOffer,
+      });
 
-    trackListingEvent({
-      eventType: "booking_flow_started",
-      propertyId: listing.id,
-      city: listing.city,
-      country: listing.country,
-      checkIn,
-      checkOut,
-      guestCount: totalCapacityGuests,
-    });
+      if (!isAuthenticated) {
+        const callbackUrl = encodeURIComponent(checkoutUrl);
+        router.push(`/login?callbackUrl=${callbackUrl}`);
+        return;
+      }
 
-    const queryParams = new URLSearchParams({
-      checkIn,
-      checkOut,
-      guests: String(totalCapacityGuests),
-      adults: String(adultsCount),
-      children: String(childrenCount),
-    });
-    if (infantsCount > 0) queryParams.set("infants", String(infantsCount));
-    if (petsCount > 0) queryParams.set("pets", String(petsCount));
-    if (isNonRefundable) {
-      queryParams.set("nonRefundable", "true");
+      router.push(checkoutUrl);
+    } catch {
+      setQuoteError("Unable to verify availability right now. Please try again.");
+    } finally {
+      setIsBookingSubmitting(false);
     }
-
-    router.push(`/book/${listing.customSlug || listing.id}?${queryParams.toString()}`);
   };
 
   return (
@@ -1485,17 +1771,17 @@ export function PublicListingDetailClient({
                   <div className="flex flex-wrap items-center gap-2" aria-label="Listing distinctions">
                     {listing.isGuestFavorite && (
                       <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-950">
-                        <span aria-hidden="true">✦</span> Guest favourite
+                        <span aria-hidden="true">✦</span> {t("listing_detail_guest_favourite", "Guest favourite")}
                       </span>
                     )}
                     {listing.host?.isSuperhost && (
                       <span className="inline-flex items-center gap-1.5 rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-xs font-medium text-sky-950">
-                        <span aria-hidden="true">★</span> Superhost
+                        <span aria-hidden="true">★</span> {t("home_superhost", "Superhost")}
                       </span>
                     )}
                     {listing.isFeatured && (
                       <span className="inline-flex items-center rounded-full bg-zinc-100 px-3 py-2 text-xs font-medium text-[#1f1f1f]">
-                        Featured stay
+                        {t("home_featured", "Featured stay")}
                       </span>
                     )}
                   </div>
@@ -1506,13 +1792,13 @@ export function PublicListingDetailClient({
                   <span className="flex size-10 items-center justify-center rounded-full border border-[#1f1f1f] bg-white transition-colors group-hover:border-zinc-500 group-hover:bg-zinc-50">
                     <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.55" className="size-6"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="m8.6 10.6 6.8-4.1M8.6 13.4l6.8 4.1" /></svg>
                   </span>
-                  <span className="hidden sm:inline">Share</span>
+                  <span className="hidden sm:inline">{t("listing_detail_share", "Share")}</span>
                 </button>
                 <button type="button" onClick={() => void handleSave()} disabled={wishlist.adding.has(listing.id) || wishlist.removeInFlight.has(listing.id)} className="group inline-flex items-center gap-3 rounded-full text-base font-normal text-[#1f1f1f] transition-colors hover:text-[#727272] disabled:opacity-50" aria-pressed={wishlist.has(listing.id)} aria-label={wishlist.has(listing.id) ? "Remove from wishlist" : "Save listing"}>
                   <span className={`flex size-10 items-center justify-center rounded-full border transition-colors ${wishlist.has(listing.id) ? "border-red-700 bg-red-50 text-red-700" : "border-[#1f1f1f] bg-white group-hover:border-zinc-500 group-hover:bg-zinc-50"}`}>
                     <svg aria-hidden="true" viewBox="0 0 24 24" fill={wishlist.has(listing.id) ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.55" className="size-6"><path d="M12 20.5 3.8 12a5.2 5.2 0 0 1 7.4-7.3L12 5.5l.8-.8a5.2 5.2 0 0 1 7.4 7.3L12 20.5Z" /></svg>
                   </span>
-                  <span className="hidden sm:inline">{wishlist.has(listing.id) ? "Saved" : "Save"}</span>
+                  <span className="hidden sm:inline">{wishlist.has(listing.id) ? t("listing_detail_saved", "Saved") : t("listing_detail_save", "Save")}</span>
                 </button>
               </div>
             </div>
@@ -1530,11 +1816,11 @@ export function PublicListingDetailClient({
               <div className="lg:col-span-7">
                 <section className="pb-1">
                   <h2 className="text-[18px] font-normal leading-6 text-[#1f1f1f] lg:text-[20px] lg:leading-5">
-                    {listing.listingType || "Stay"}{listing.propertyType ? ` in ${humanize(listing.propertyType)}` : ""}{locationString ? ` in ${locationString}` : ""}
+                    {listing.listingType ? listingTypeLabel(listing.listingType, t) : "Stay"}{listing.propertyType ? ` in ${propertyTypeLabel(listing.propertyType, t)}` : ""}{locationString ? ` in ${locationString}` : ""}
                   </h2>
                   {/* Where you'll sleep */}
                   <p className="mt-1 text-sm font-light text-[#1F1F1F] lg:mt-2 lg:text-base">
-                    {listing.guests || 1} {listing.guests === 1 ? "guest" : "guests"} · {listing.bedrooms || 1} {listing.bedrooms === 1 ? "bedroom" : "bedrooms"} · {listing.beds || 1} {listing.beds === 1 ? "bed" : "beds"} · {listing.bathrooms || 1} {listing.bathrooms === 1 ? "bath" : "baths"}
+                    {(listing.guests || 1) === 1 ? t("home_guest_one", "{count} guest").replace("{count}", String(listing.guests || 1)) : t("home_guest_many", "{count} guests").replace("{count}", String(listing.guests || 1))} · {(listing.bedrooms || 1) === 1 ? t("listing_detail_bedroom_one", "{count} bedroom").replace("{count}", String(listing.bedrooms || 1)) : t("listing_detail_bedroom_many", "{count} bedrooms").replace("{count}", String(listing.bedrooms || 1))} · {(listing.beds || 1) === 1 ? t("listing_detail_bed_one", "{count} bed").replace("{count}", String(listing.beds || 1)) : t("listing_detail_bed_many", "{count} beds").replace("{count}", String(listing.beds || 1))} · {(listing.bathrooms || 1) === 1 ? t("listing_detail_bath_one", "{count} bath").replace("{count}", String(listing.bathrooms || 1)) : t("listing_detail_bath_many", "{count} baths").replace("{count}", String(listing.bathrooms || 1))}
                   </p>
                 </section>
 
@@ -1542,10 +1828,10 @@ export function PublicListingDetailClient({
                   <section className="mt-7 hidden w-full max-w-[720px] overflow-hidden rounded-[40px] border border-[#dedede] bg-white shadow-[0_2px_4px_rgba(0,0,0,0.16)] xl:grid xl:grid-cols-[1.1fr_1.75fr_.85fr_.62fr] xl:px-6" aria-label="Guest favourite rating summary">
                     <div className="flex min-w-0 items-center justify-center gap-2.5 border-b border-[#dedede] px-4 py-5 md:border-r xl:border-b-0">
                       <Image src="/images/icons/leaves-left.svg" alt="" width={39} height={71} aria-hidden="true" className="h-[71px] w-[39px] shrink-0" />
-                      <span className="text-[17px] font-normal leading-5 text-[#1f1f1f] text-center">Guest<br />favourite</span>
+                      <span className="text-[17px] font-normal leading-5 text-[#1f1f1f] text-center">{t("listing_detail_guest_favourite", "Guest favourite")}</span>
                       <Image src="/images/icons/leaves-right.svg" alt="" width={39} height={71} aria-hidden="true" className="h-[71px] w-[39px] shrink-0" />
                     </div>
-                    <p className="relative flex min-w-0 items-center border-b border-[#dedede] px-5 py-5 text-base font-normal leading-6 text-[#1f1f1f] xl:border-b-0 xl:after:absolute xl:after:right-0 xl:after:top-1/2 xl:after:h-[58px] xl:after:w-px xl:after:-translate-y-1/2 xl:after:bg-[#a9a9a9]">One of the most loved homes on Homyz, according to guests.</p>
+                    <p className="relative flex min-w-0 items-center border-b border-[#dedede] px-5 py-5 text-base font-normal leading-6 text-[#1f1f1f] xl:border-b-0 xl:after:absolute xl:after:right-0 xl:after:top-1/2 xl:after:h-[58px] xl:after:w-px xl:after:-translate-y-1/2 xl:after:bg-[#a9a9a9]">{t("listing_detail_loved_home", "One of the most loved homes on Homyz, according to guests.")}</p>
                     <div className="relative flex items-center justify-center border-r border-[#dedede] px-4 py-5 xl:border-r-0 xl:after:absolute xl:after:right-0 xl:after:top-1/2 xl:after:h-[58px] xl:after:w-px xl:after:-translate-y-1/2 xl:after:bg-[#a9a9a9]">
                       <div>
                         <p className="text-[26px] font-medium leading-none text-[#1f1f1f]">{reviewRating.toFixed(2)}</p>
@@ -1553,7 +1839,7 @@ export function PublicListingDetailClient({
                       </div>
                     </div>
                     <div className="flex items-center justify-center px-3 py-5">
-                      <p className="text-left text-[26px] font-medium leading-5 text-[#1f1f1f]">{reviewCount}<br /><span className="text-[15px] font-normal leading-5 text-[#1f1f1f]">{reviewCount === 1 ? "Review" : "Reviews"}</span></p>
+                      <p className="text-left text-[26px] font-medium leading-5 text-[#1f1f1f]">{reviewCount}<br /><span className="text-[15px] font-normal leading-5 text-[#1f1f1f]">{reviewCount === 1 ? t("listing_detail_review_one", "Review") : t("listing_detail_review_many", "Reviews")}</span></p>
                     </div>
                   </section>
                 )}
@@ -1563,18 +1849,18 @@ export function PublicListingDetailClient({
                     <div className="rounded-[12px] border border-[#dedede] bg-white px-5 py-4 text-center shadow-[0_2px_4px_rgba(0,0,0,0.16)]">
                       <div className="flex items-center justify-center gap-3">
                         <Image src="/images/icons/leaves-left.svg" alt="" width={32} height={48} className="h-12 w-8" />
-                        <span className="text-base leading-5 text-[#1f1f1f]">Guest<br />bestie</span>
+                        <span className="text-base leading-5 text-[#1f1f1f]">{t("listing_detail_guest_favourite", "Guest favourite")}</span>
                         <Image src="/images/icons/leaves-right.svg" alt="" width={32} height={48} className="h-12 w-8" />
                       </div>
-                      <p className="mt-3 text-sm leading-5 text-[#1f1f1f]">One of the most loved homes on Homyz, according to guests</p>
+                      <p className="mt-3 text-sm leading-5 text-[#1f1f1f]">{t("listing_detail_loved_home", "One of the most loved homes on Homyz, according to guests.")}</p>
                     </div>
                     <div className="grid grid-cols-2 overflow-hidden rounded-[12px] border border-[#dedede] bg-white shadow-[0_2px_4px_rgba(0,0,0,0.16)]">
                       <div className="px-5 py-4 text-center"><p className="text-2xl font-medium leading-none">{reviewRating.toFixed(2)}</p><p className="mt-2 text-sm tracking-[0.08em] text-[#e9a400]">★★★★★</p></div>
-                      <div className="border-l border-[#a9a9a9] px-5 py-4 text-center"><p className="text-2xl font-medium leading-none">{reviewCount}</p><p className="mt-2 text-sm text-[#1f1f1f]">{reviewCount === 1 ? "Review" : "Reviews"}</p></div>
+                      <div className="border-l border-[#a9a9a9] px-5 py-4 text-center"><p className="text-2xl font-medium leading-none">{reviewCount}</p><p className="mt-2 text-sm text-[#1f1f1f]">{reviewCount === 1 ? t("listing_detail_review_one", "Review") : t("listing_detail_review_many", "Reviews")}</p></div>
                     </div>
                     <a href={`mailto:support@homyz.com?subject=${encodeURIComponent(`Report listing: ${listing.title}`)}`} className="flex items-center justify-center gap-3 py-2 text-sm text-[#1f1f1f] underline underline-offset-2">
                       <span className="flex size-9 items-center justify-center rounded-full border border-[#1F1F1F]"><Image src="/images/icons/report-icon.svg" alt="" width={16} height={16} className="size-4" /></span>
-                      Report this listing
+                      {t("listing_detail_report", "Report this listing")}
                     </a>
                   </section>
                 )}
@@ -1595,13 +1881,13 @@ export function PublicListingDetailClient({
                           }}
                           className="hover:underline underline-offset-2"
                         >
-                          Hosted by {listing.host?.name || "Homyz host"}
+                          {t("listing_detail_hosted_by", "Hosted by {name}").replace("{name}", listing.host?.name || "Homyz host")}
                         </Link>
                       ) : (
-                        `Hosted by ${listing.host?.name || "Homyz host"}`
+                        t("listing_detail_hosted_by", "Hosted by {name}").replace("{name}", listing.host?.name || "Homyz host")
                       )}
                     </h2>
-                    <p className="sm:text-base text-sm font-light text-[#1F1F1F]">{listing.host?.isSuperhost ? "Superhost" : "Homyz host"}{hostSince ? ` · Hosting since ${hostSince}` : ""}</p>
+                    <p className="sm:text-base text-sm font-light text-[#1F1F1F]">{listing.host?.isSuperhost ? t("home_superhost", "Superhost") : "Homyz host"}{hostSince ? ` · ${t("listing_detail_hosting_since", "Hosting since {date}").replace("{date}", hostSince)}` : ""}</p>
                   </div>
                   {hostProfileHref ? (
                     <Link
@@ -1660,7 +1946,7 @@ export function PublicListingDetailClient({
                 {/* Description */}
                 {normalizedDescription && (
                   <section className="mt-6 border-b border-zinc-200/80 pb-7.5">
-                    <h3 className="text-[20px] font-normal text-[#1f1f1f]">About this place</h3>
+                    <h3 className="text-[20px] font-normal text-[#1f1f1f]">{t("listing_detail_about_place", "About this place")}</h3>
                     <p className="mt-2.5 line-clamp-4 whitespace-pre-line break-words text-base font-normal text-[#727272]">
                       {normalizedDescription}
                     </p>
@@ -1676,7 +1962,7 @@ export function PublicListingDetailClient({
                         }}
                         className="mt-8 rounded-full border border-[#1F1F1F] bg-[#F3F4F5] hover:bg-[#1f1f1f] sm:px-7 px-4 sm:py-3.25 py-2 sm:text-lg text-base font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f]"
                       >
-                        Show more
+                        {t("listing_detail_show_more", "Show more")}
                       </button>
                     )}
                   </section>
@@ -1684,9 +1970,9 @@ export function PublicListingDetailClient({
 
                 {/* Amenities Grid */}
                 <div className="mt-7.5 order-1 space-y-5 border-b border-zinc-200/80 pb-7.5">
-                  <h3 className="text-[20px] font-normal text-[#1f1f1f]">What this place offers</h3>
+                  <h3 className="text-[20px] font-normal text-[#1f1f1f]">{t("listing_detail_what_place_offers", "What this place offers")}</h3>
                   {categorizedAmenities.length === 0 ? (
-                    <p className="text-xs text-[#727272]">This host has not listed any amenities yet.</p>
+                    <p className="text-xs text-[#727272]">{t("listing_detail_no_amenities", "This host has not listed any amenities yet.")}</p>
                   ) : <>
                     <div className="grid grid-cols-1 gap-x-12 gap-y-2.5 text-[#1f1f1f] sm:grid-cols-2">
                       {categorizedAmenities.slice(0, 6).map((am) => (
@@ -1694,7 +1980,7 @@ export function PublicListingDetailClient({
                           <span className="flex size-9 shrink-0 items-center justify-center rounded-full border border-[#1f1f1f]/65">
                             <AmenityIcon id={am.id} className="size-[18px]" />
                           </span>
-                          <span className="break-words text-base font-normal leading-5">{am.label}</span>
+                          <span className="break-words text-base font-normal leading-5">{t(getAmenityTranslationKey(am.id) as any, am.label)}</span>
                         </div>
                       ))}
                     </div>
@@ -1712,7 +1998,7 @@ export function PublicListingDetailClient({
                         }}
                           className="mt-3 rounded-full border border-[#1F1F1F] bg-[#F3F4F5] hover:bg-[#1f1f1f] px-7 sm:py-3.25 py-2 sm:text-lg text-base font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f]"
                       >
-                        Show all amenities
+                        {t("listing_detail_show_all_amenities", "Show all amenities")}
                       </button>
                     )}
                   </>}
@@ -1731,6 +2017,7 @@ export function PublicListingDetailClient({
                     locationName={listing.city || listing.title || "this property"}
                     minimumNights={minimumNights}
                     maximumNights={maximumNights}
+                    earliestCheckIn={earliestCheckIn}
                     onDateRangeChange={(nextCheckIn, nextCheckOut) => {
                       if (nextCheckIn && !nextCheckOut) {
                         updateCheckIn(nextCheckIn);
@@ -1752,7 +2039,7 @@ export function PublicListingDetailClient({
                     <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-full border border-[#1F1F1F]">
                       <Image src="/images/icons/price-icon.svg" alt="" width={24} height={24} className="size-6" />
                     </span>
-                    Prices include all fees
+                    {t("listing_detail_prices_include_all_fees", "Prices include all fees")}
                   </div>
                   <div className="space-y-4 rounded-[30px] border border-zinc-300 bg-[rgba(255,255,255,0.6)] p-6 shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)] sm:p-5">
                     {bookingSuccess ? (
@@ -1760,16 +2047,16 @@ export function PublicListingDetailClient({
                         <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto text-xl font-bold">
                           ✓
                         </div>
-                        <h3 className="text-[20px] font-normal text-[#1f1f1f]">{listing.instantBook ? "Reservation confirmed" : "Reservation request submitted"}</h3>
-                        <p className="text-xs text-[#727272] leading-relaxed font-normal">
-                          Your stay has been recorded. You can manage your bookings in your trips dashboard.
+                        <h3 className="text-[20px] font-normal text-[#1f1f1f]">{isInstantBook ? t("listing_detail_reservation_confirmed", "Reservation confirmed") : t("listing_detail_reservation_submitted", "Reservation request submitted")}</h3>
+                        <p className="text-xs text-zinc-500 leading-relaxed font-normal">
+                          {t("listing_detail_stay_recorded", "Your stay has been recorded. You can manage your bookings in your trips dashboard.")}
                         </p>
                         <div className="pt-2">
                           <Link
                             href="/profile/tab/upcoming"
                             className="rounded-full bg-[#1f1f1f] text-white font-semibold text-xs px-6 py-2.5 inline-block"
                           >
-                            View your bookings
+                            {t("listing_detail_view_your_bookings", "View your bookings")}
                           </Link>
                         </div>
                       </div>
@@ -1777,11 +2064,25 @@ export function PublicListingDetailClient({
                       <>
                         <div className="flex items-baseline justify-between border-b border-zinc-100 pb-4">
                           <div>
-                            <span className="text-[20px] font-medium text-[#1F1F1F] underline underline-offset-4">{displayPrice ?? "Price unavailable"}</span>
-                            <span className="text-base text-[#1F1F1F] font-normal"> / night</span>
+                            {(quote?.selectedDiscount || quote?.nonRefundableDiscount) && quote.discountAmount > 0 && quote.nights > 0 ? (
+                              <div className="flex items-baseline gap-2">
+                                <span className="text-[20px] font-medium text-[#1F1F1F] underline underline-offset-4">
+                                  {formatPrice(quote.discountedDisplayPrice ?? Math.round((quote.accommodationSubtotal ?? (quote.nightlySubtotal - quote.discountAmount)) / quote.nights), currencyCode)}
+                                </span>
+                                <span className="text-sm text-[#727272] line-through font-normal">
+                                  {formatPrice(quote.originalDisplayPrice ?? quote.baseNightlyPrice, currencyCode)}
+                                </span>
+                                <span className="text-base text-[#1F1F1F] font-normal"> / night</span>
+                              </div>
+                            ) : (
+                              <div>
+                                <span className="text-[20px] font-medium text-[#1F1F1F] underline underline-offset-4">{displayPrice ?? "Price unavailable"}</span>
+                                <span className="text-base text-[#1F1F1F] font-normal"> / night</span>
+                              </div>
+                            )}
                           </div>
                           <span className="text-xs text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full font-semibold">
-                            {listing.instantBook ? "Instant Book" : "Host approval required"}
+                            {isInstantBook ? t("listing_detail_instant_book", "Instant Book") : t("listing_detail_host_approval_required", "Host approval required")}
                           </span>
                         </div>
 
@@ -1791,12 +2092,12 @@ export function PublicListingDetailClient({
                           <div className="grid grid-cols-2 divide-x divide-[#727272]">
                             <div className="p-3 space-y-1">
                               <label className="block text-base font-normal text-[#1f1f1f]">
-                                Check-in
+                                {t("home_check_in", "Check-in")}
                               </label>
                               <input
                                 type="date"
                                 value={checkIn}
-                                min={today}
+                                min={earliestCheckIn}
                                 onFocus={() => setAvailabilityRequested(true)}
                                 onChange={(e) => updateCheckIn(e.target.value)}
                                 className="w-full bg-transparent outline-none font-normal text-[#727272] text-sm cursor-pointer"
@@ -1804,7 +2105,7 @@ export function PublicListingDetailClient({
                             </div>
                             <div className="p-3 space-y-1">
                               <label className="block text-base font-normal text-[#1f1f1f]">
-                                Check-out
+                                {t("home_check_out", "Check-out")}
                               </label>
                               <input
                                 type="date"
@@ -1820,7 +2121,7 @@ export function PublicListingDetailClient({
 
                           <div className="p-3 space-y-1">
                             <label className="block text-base font-normal text-[#1f1f1f]">
-                              Guests
+                              {t("host_basics_guests", "Guests")}
                             </label>
                             <button
                               type="button"
@@ -1847,7 +2148,7 @@ export function PublicListingDetailClient({
                                 {/* Adults */}
                                 <div className="flex items-center justify-between gap-3">
                                   <div>
-                                    <p className="font-semibold text-[#1f1f1f]">Adults</p>
+                                    <p className="font-semibold text-[#1f1f1f]">{t("home_adults", "Adults")}</p>
                                     <p className="text-xs text-[#727272]">Age 13+</p>
                                   </div>
                                   <div className="flex items-center gap-2">
@@ -1860,7 +2161,7 @@ export function PublicListingDetailClient({
                                 {/* Children */}
                                 <div className="flex items-center justify-between gap-3 border-t border-zinc-200/80 pt-3">
                                   <div>
-                                    <p className="font-medium text-[#1f1f1f]">Children</p>
+                                    <p className="font-medium text-[#1f1f1f]">{t("home_children", "Children")}</p>
                                     <p className="text-xs text-[#727272]">Ages 2–12</p>
                                   </div>
                                   <div className="flex items-center gap-2">
@@ -1885,14 +2186,14 @@ export function PublicListingDetailClient({
                                   onClick={() => setIsGuestSelectorOpen(false)}
                                   className="w-full shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 text-base font-medium text-[#1F1F1F] hover:text-white transition-colors inline-flex justify-center border border-transparent hover:border-[#1F1F1F]"
                                 >
-                                  Done
+                                  {t("header_done", "Done")}
                                 </button>
                               </div>
                             )}
                           </div>
                         </div>
 
-                        <p className="text-sm leading-relaxed text-[#727272]" aria-live="polite">
+                        {/* <p className="text-sm leading-relaxed text-[#727272]" aria-live="polite">
                           {isAvailabilityLoading || (Boolean(checkIn && checkOut) && isQuoteLoading)
                             ? "Checking availability…"
                             : isDateKey(checkIn) && isDateKey(checkOut) && overlapsBookedRange(checkIn, checkOut, bookedDateRanges)
@@ -1900,28 +2201,41 @@ export function PublicListingDetailClient({
                               : hasValidQuote
                                 ? "Your selected dates are available."
                                 : "Availability is confirmed before you reserve."}
-                        </p>
+                        </p> */}
 
                         {listing.bookingMessage && <p className="rounded-xl bg-zinc-50 border border-zinc-200 px-3 py-2 text-xs text-[#727272] whitespace-pre-wrap">{listing.bookingMessage}</p>}
 
-                        {quote?.nonRefundableAvailable && !isQuoteLoading && (
+                        {/* {(quote?.nonRefundableAvailable || isNonRefundable) && (
                           <fieldset className="space-y-2 rounded-xl border border-zinc-200 bg-zinc-50/70 p-3 text-xs">
-                            <legend className="px-1 font-semibold text-[#1f1f1f]">Choose your reservation</legend>
-                            <label className={`flex cursor-pointer items-start gap-2.5 rounded-lg border p-2.5 ${!isNonRefundable ? "border-[#1f1f1f] bg-white" : "border-transparent"}`}>
-                              <input type="radio" name="reservation-type" checked={!isNonRefundable} onChange={() => setIsNonRefundable(false)} className="mt-0.5" />
-                              <span><span className="block font-semibold text-[#1f1f1f]">Standard booking</span><span className="text-[#727272]">Uses this listing&apos;s normal cancellation policy.</span></span>
+                            <legend className="px-1 font-semibold text-[#1f1f1f]">Rate options</legend>
+                            <label className={`flex cursor-pointer items-start gap-2.5 rounded-lg border p-2.5 transition-colors ${!isNonRefundable ? "border-[#1f1f1f] bg-white shadow-2xs" : "border-transparent hover:bg-zinc-100/60"}`}>
+                              <input type="radio" name="reservation-type" checked={!isNonRefundable} onChange={() => setIsNonRefundable(false)} className="mt-0.5 cursor-pointer" />
+                              <div className="flex-1">
+                                <span className="block font-semibold text-[#1f1f1f]">Standard rate</span>
+                                <span className="text-[#727272]">
+                                  {listing.cancellationPolicy ? `Cancellation: ${listing.cancellationPolicy}` : "Uses this listing's normal cancellation policy."}
+                                </span>
+                              </div>
                             </label>
-                            <label className={`flex cursor-pointer items-start gap-2.5 rounded-lg border p-2.5 ${isNonRefundable ? "border-amber-500 bg-amber-50" : "border-transparent"}`}>
-                              <input type="radio" name="reservation-type" checked={isNonRefundable} onChange={() => setIsNonRefundable(true)} className="mt-0.5" />
-                              <span><span className="block font-semibold text-[#1f1f1f]">Non-refundable booking</span><span className="text-[#727272]">Discounted price. If you cancel, you cannot receive the normal cancellation refund and the host retains the booked payout.</span></span>
+                            <label className={`flex cursor-pointer items-start gap-2.5 rounded-lg border p-2.5 transition-colors ${isNonRefundable ? "border-amber-500 bg-amber-50/80 shadow-2xs" : "border-transparent hover:bg-zinc-100/60"}`}>
+                              <input type="radio" name="reservation-type" checked={isNonRefundable} onChange={() => setIsNonRefundable(true)} className="mt-0.5 cursor-pointer" />
+                              <div className="flex-1">
+                                <div className="flex items-center justify-between">
+                                  <span className="font-semibold text-[#1f1f1f]">Non-refundable rate</span>
+                                  {quote?.nonRefundableDiscount?.amount ? (
+                                    <span className="font-semibold text-emerald-700">Save {formatPrice(quote.nonRefundableDiscount.amount, currencyCode)}</span>
+                                  ) : null}
+                                </div>
+                                <span className="text-[#727272]">No refund if cancelled. Lower price in exchange for an immutable reservation.</span>
+                              </div>
                             </label>
                           </fieldset>
-                        )}
+                        )} */}
 
                         {/* Live Quote Breakdown */}
-                        {isQuoteLoading && (
+                        {isQuoteLoading && !quote && (
                           <div className="py-4 text-center text-xs text-[#727272] animate-pulse font-medium">
-                            Calculating price breakdown...
+                            {t("listing_detail_calculating_breakdown", "Calculating price breakdown...")}
                           </div>
                         )}
 
@@ -1934,12 +2248,16 @@ export function PublicListingDetailClient({
                           </div>
                         )}
 
-                        {quote && !isQuoteLoading && (
+                        {quote && (
                           <div className="space-y-2.5 pt-2 border-t border-zinc-100 text-sm">
+                            {/* {isQuoteLoading && (
+                              <p className="text-xs font-medium text-[#727272]" aria-live="polite">Updating price…</p>
+                            )} */}
                             <div className="flex items-center justify-between text-[#727272]">
                               <span>
-                                {formatPrice(quote.baseNightlyPrice, listing.currency ?? getCurrencyForCountry(listing.country))} × {quote.nights} {" "}
-                                {quote.nights === 1 ? "night" : "nights"}
+                                {new Set(quote.breakdown.map((night) => night.price)).size <= 1
+                                  ? `${formatPrice(quote.breakdown[0]?.price ?? quote.baseNightlyPrice, listing.currency ?? getCurrencyForCountry(listing.country))} × ${quote.nights} ${quote.nights === 1 ? "night" : "nights"}`
+                                  : `Accommodation · ${quote.nights} nights (varying rates)`}
                               </span>
                               <span>{formatPrice(quote.nightlySubtotal, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                             </div>
@@ -1957,13 +2275,6 @@ export function PublicListingDetailClient({
                               </div>
                             )}
 
-                            {quote.cleaningFee > 0 && (
-                              <div className="flex items-center justify-between text-[#727272]">
-                                <span>Cleaning fee</span>
-                                <span>{formatPrice(quote.cleaningFee, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
-                              </div>
-                            )}
-
                             {quote.extraGuestFee !== undefined && quote.extraGuestFee > 0 && (
                               <div className="flex items-center justify-between text-[#727272]">
                                 <span>Extra guest fee</span>
@@ -1973,8 +2284,8 @@ export function PublicListingDetailClient({
 
                             {quote.appliedDiscount && (
                               <div className="flex items-center justify-between text-emerald-700 font-medium">
-                                <span>{quote.appliedDiscount.name}</span>
-                                <span>−{formatPrice(quote.appliedDiscount.amount, currencyCode)}</span>
+                                <span>{quote.selectedDiscount?.label ? `${quote.selectedDiscount.label} (${quote.selectedDiscount.percentage}%)` : quote.appliedDiscount.name}</span>
+                                <span>−{formatPrice(quote.selectedDiscount?.amount ?? quote.appliedDiscount.amount, currencyCode)}</span>
                               </div>
                             )}
 
@@ -1990,14 +2301,14 @@ export function PublicListingDetailClient({
                                 <div className="pt-2 border-t border-zinc-100 space-y-1.5">
                                   <div className="flex items-center justify-between text-[#727272]">
                                     <span className="flex items-center gap-1.5 font-medium">
-                                      Taxes & fees
-                                      {quote.taxes.some((tax) => tax.isExempt) && (
+                                      {t("listing_detail_taxes_and_fees", "Taxes & fees")}
+                                      {quote.taxes.some((tax) => tax.exemptionApplied) && (
                                         <span className="text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-1.5 py-0.5 rounded-full font-semibold">
                                           Exemption applied
                                         </span>
                                       )}
                                     </span>
-                                    <span className="font-medium">{formatPrice(quote.taxTotal || 0, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
+                                    <span className="font-medium">{formatPrice(quote.taxTotal, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                                   </div>
                                     <div className="pl-2.5 space-y-1 border-l-2 border-[#FCDF9C] text-sm font-light text-[#727272]">
                                     {quote.taxes.map((tax, idx) => (
@@ -2005,22 +2316,22 @@ export function PublicListingDetailClient({
                                         <span>
                                           {tax.taxName}
                                           {tax.rate ? ` (${tax.rate}%)` : ""}
-                                          {tax.isExempt ? ` • ${tax.exemptionReason || "Exempt"}` : ""}
+                                          {tax.exemptionApplied ? ` • ${tax.exemptionReason || "Exemption applied"}` : ""}
                                         </span>
-                                        <span>{tax.isExempt ? formatPrice(0, listing.currency ?? getCurrencyForCountry(listing.country)) : formatPrice(tax.taxAmount, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
+                                        <span>{formatPrice(tax.taxAmount, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                                       </div>
                                     ))}
                                   </div>
                                 </div>
 
                                 <div className="pt-2 border-t border-zinc-200 flex items-center justify-between text-lg font-bold text-[#1f1f1f]">
-                                  <span>Total</span>
+                                  <span>{t("listing_detail_total", "Total")}</span>
                                   <span>{formatPrice((quote.guestTotal ?? quote.totalPrice) || 0, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                                 </div>
                               </>
                             ) : (
                                   <div className="pt-2 border-t border-zinc-200 flex items-center justify-between text-lg font-bold text-[#1f1f1f]">
-                                <span>Total</span>
+                                <span>{t("listing_detail_total", "Total")}</span>
                                 <span>{formatPrice((quote.guestTotal ?? quote.totalPrice) || 0, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                               </div>
                             )}
@@ -2031,7 +2342,17 @@ export function PublicListingDetailClient({
                         <button
                           type="button"
                           disabled={isBookingSubmitting}
-                          onClick={handleReserve}
+                          onClick={() => {
+                            if (!checkIn || !checkOut) {
+                              const calendarEl = calendarSectionRef.current || document.getElementById("availability-calendar-section");
+                              if (calendarEl) {
+                                calendarEl.scrollIntoView({ behavior: "smooth", block: "center" });
+                              }
+                              setQuoteError("Please choose check-in and check-out dates to continue.");
+                              return;
+                            }
+                            handleReserve();
+                          }}
                           className={`w-full rounded-full py-3.5 text-lg font-medium transition-all shadow-xs ${hasValidQuote && !isBookingSubmitting
                             ? "border border-[#1f1f1f] bg-[#FCDF9C] text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] cursor-pointer"
                             : "border border-zinc-200 bg-zinc-100 text-[#727272] hover:border-zinc-300 hover:text-[#727272] cursor-pointer"
@@ -2042,13 +2363,15 @@ export function PublicListingDetailClient({
                             ? "Confirming..."
                             : isQuoteLoading
                               ? "Checking availability..."
-                              : listing.instantBook
-                                ? "Reserve"
-                                : "Request to book"}
+                              : (!checkIn || !checkOut)
+                                ? "Check availability"
+                                : isInstantBook
+                                  ? "Reserve"
+                                  : "Request to book"}
                         </button>
 
                         <p className="text-xs text-[#727272] text-center font-normal">
-                          {"You won't be charged yet. Taxes and additional charges may be calculated at checkout."}
+                          {t("listing_detail_not_charged_yet", "You won't be charged yet. Taxes and additional charges may be calculated at checkout.")}
                         </p>
                       </>
                     )}
@@ -2057,7 +2380,7 @@ export function PublicListingDetailClient({
                     <span className="flex size-10 shrink-0 items-center justify-center rounded-full border border-[#1F1F1F] no-underline group-hover:border-[#727272]">
                       <Image src="/images/icons/report-icon.svg" alt="" width={18} height={18} className="size-4.5" />
                     </span>
-                    Report this listing
+                    {t("listing_detail_report", "Report this listing")}
                   </a>
                 </div>
               </div>
@@ -2067,7 +2390,7 @@ export function PublicListingDetailClient({
 
               {listing.host && (
                 <section className="sm:pt-12 pt-7.5 sm:pb-12 pb-7.5 order-5 border-y border-zinc-200/80 lg:relative lg:z-10 lg:w-[calc(100vw-3rem)] lg:max-w-[1262px] mx-auto  lg:bg-white" aria-labelledby="meet-host-heading">
-                  <h3 id="meet-host-heading" className="mb-6 text-[20px] font-normal text-[#1f1f1f]">Meet your host</h3>
+                  <h3 id="meet-host-heading" className="mb-6 text-[20px] font-normal text-[#1f1f1f]">{t("listing_detail_meet_host", "Meet your host")}</h3>
                   <div className="grid gap-8 md:grid-cols-[376px_minmax(0,1fr)] md:gap-16">
                     <div>
                       {hostProfileHref ? (
@@ -2090,20 +2413,20 @@ export function PublicListingDetailClient({
                       )}
 
                       {(hostWork || hostLanguages.length > 0) && <div className="mt-7 space-y-4 text-base text-[#1f1f1f]">
-                        {hostWork && <p className="flex items-center gap-5"><span aria-hidden="true" className="flex size-12 shrink-0 items-center justify-center rounded-full border border-[#1f1f1f]"><Image src="/images/icons/job-search.svg" alt="" width={24} height={24} className="size-6" /></span><span>My work: {hostWork}</span></p>}
-                        {hostLanguages.length > 0 && <p className="flex items-center gap-5"><span aria-hidden="true" className="flex size-12 shrink-0 items-center justify-center rounded-full border border-[#1f1f1f]"><Image src="/images/icons/translate-icon.svg" alt="" width={24} height={24} className="size-6" /></span><span>Speaks {hostLanguages.join(", ")}</span></p>}
+                        {hostWork && <p className="flex items-center gap-5"><span aria-hidden="true" className="flex size-12 shrink-0 items-center justify-center rounded-full border border-[#1f1f1f]"><Image src="/images/icons/job-search.svg" alt="" width={24} height={24} className="size-6" /></span><span>{t("listing_detail_host_work", { work: hostWork }, `My work: ${hostWork}`)}</span></p>}
+                        {hostLanguages.length > 0 && <p className="flex items-center gap-5"><span aria-hidden="true" className="flex size-12 shrink-0 items-center justify-center rounded-full border border-[#1f1f1f]"><Image src="/images/icons/translate-icon.svg" alt="" width={24} height={24} className="size-6" /></span><span>{t("listing_detail_host_speaks", { languages: hostLanguages.join(", ") }, `Speaks ${hostLanguages.join(", ")}`)}</span></p>}
                       </div>}
                     </div>
 
                     <div className="min-w-0 pt-1">
-                      <h4 className="text-[20px] font-normal text-[#1f1f1f]">{listing.host.isSuperhost ? `${listing.host.name || "This host"} is a superhost` : `Hosted by ${listing.host.name || "Homyz host"}`}</h4>
-                      {listing.host.isSuperhost && <p className="mt-2 max-w-2xl text-base leading-6 text-[#727272]">Superhosts are experienced, highly rated hosts who are committed to providing great stays for guests.</p>}
+                      <h4 className="text-[20px] font-normal text-[#1f1f1f]">{listing.host.isSuperhost ? t("listing_detail_host_is_superhost", { name: listing.host.name || "This host" }, `${listing.host.name || "This host"} is a superhost`) : t("listing_detail_hosted_by", { name: listing.host.name || "Homyz host" }, "Hosted by {name}").replace("{name}", listing.host.name || "Homyz host")}</h4>
+                      {listing.host.isSuperhost && <p className="mt-2 max-w-2xl text-base leading-6 text-[#727272]">{t("listing_detail_superhost_desc", "Superhosts are experienced, highly rated hosts who are committed to providing great stays for guests.")}</p>}
                       {hostBio && <p className="mt-2 max-w-2xl line-clamp-3 whitespace-pre-line text-base leading-6 text-[#727272] font-normal">{hostBio}</p>}
 
                       {(hostSince || listing.host.isSuperhost) && <div className="mt-8 space-y-2">
-                        <h5 className="text-[20px] font-normal text-[#1f1f1f]">Host details</h5>
-                        {hostSince && <p className="text-base text-[#727272]">Joined Homyz in {hostSince}</p>}
-                        {listing.host.isSuperhost && <p className="flex items-center gap-1.5 text-base text-[#727272]"><span aria-hidden="true">★</span> Superhost</p>}
+                        <h5 className="text-[20px] font-normal text-[#1f1f1f]">{t("listing_detail_host_details_heading", "Host details")}</h5>
+                        {hostSince && <p className="text-base text-[#727272]">{t("listing_detail_joined_in", { date: hostSince }, `Joined Homyz in ${hostSince}`)}</p>}
+                        {listing.host.isSuperhost && <p className="flex items-center gap-1.5 text-base text-[#727272]"><span aria-hidden="true">★</span> {t("home_superhost", "Superhost")}</p>}
                       </div>}
 
                       <div className="mt-7 flex flex-wrap items-center gap-3">
@@ -2117,9 +2440,9 @@ export function PublicListingDetailClient({
                                 metadata: { hostId: listing.host?.id },
                               });
                             }}
-                            className="inline-flex min-h-12 items-center gap-2 rounded-full border border-[#1f1f1f] bg-[#F3F4F5] px-5 text-sm font-medium text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f] group transition-colors"
+                            className="inline-flex min-h-12 items-center gap-2 rounded-full border border-[#1f1f1f] bg-[#F3F4F5] px-5 text-sm font-normal text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f] group transition-colors"
                           >
-                            View host profile
+                            {t("listing_detail_view_host_profile", "View host profile")}
                           </Link>
                         )}
                         {canMessageHost && (
@@ -2129,12 +2452,12 @@ export function PublicListingDetailClient({
                             className="inline-flex min-h-12 items-center gap-2 rounded-full border border-zinc-300 bg-white px-5 text-sm font-semibold text-[#1f1f1f] hover:border-black hover:bg-zinc-50 transition-colors shadow-2xs"
                           >
                             <Image src="/images/icons/messages.svg" alt="" width={18} height={18} className="size-4" />
-                            Message host
+                            {t("listing_detail_message_host", "Message host")}
                           </button>
                         )}
                       </div>
 
-                      <p className="mt-7 max-w-3xl text-sm leading-5 text-[#727272]">To help protect your payment, always use Homyz to send money and communicate with hosts.</p>
+                      <p className="mt-7 max-w-3xl text-sm leading-5 text-[#727272]">{t("listing_detail_protect_payment_help", "To help protect your payment, always use Homyz to send money and communicate with hosts.")}</p>
                     </div>
                   </div>
                 </section>
@@ -2154,10 +2477,10 @@ export function PublicListingDetailClient({
 
               {/* House Rules */}
               <section className="order-6 md:pb-12 lg:relative lg:z-10 lg:w-[calc(100vw-3rem)] lg:max-w-[1262px] mx-auto lg:bg-white" aria-labelledby="things-to-know-heading">
-                <h3 id="things-to-know-heading" className="mb-7 text-[20px] font-normal text-[#1f1f1f]">Things to know</h3>
+                <h3 id="things-to-know-heading" className="mb-7 text-[20px] font-normal text-[#1f1f1f]">{t("listing_detail_things_to_know", "Things to know")}</h3>
                 <div className="grid sm:gap-8 gap-4 md:grid-cols-[1fr_1fr_1.25fr]">
                   <div className="order-1 flex min-h-[294px] flex-col sm:rounded-[30px] rounded-[10px] border border-[#dedede] bg-white/60 sm:p-7 py-8 px-5 shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)]" aria-labelledby="house-rules-heading">
-                    <h4 id="house-rules-heading" className="sm:text-[20px] text-lg font-normal text-[#1f1f1f]">House rules</h4>
+                    <h4 id="house-rules-heading" className="sm:text-[20px] text-lg font-normal text-[#1f1f1f]">{t("listing_detail_house_rules", "House rules")}</h4>
                     <div className="shrink-0 mt-5 space-y-4 text-base text-[#1f1f1f]">
                       {houseRuleItems.slice(0, 4).map((item) => (
                         <div key={item.id} className="shrink-0 flex items-center gap-3">
@@ -2166,39 +2489,39 @@ export function PublicListingDetailClient({
                         </div>
                       ))}
                     </div>
-                    <button type="button" onClick={() => setOpenThingsCard("rules")} className="mt-auto pt-6 text-left text-base hover:text-[#727272] text-[#1f1f1f] underline underline-offset-2">Show more</button>
+                    <button type="button" onClick={() => setOpenThingsCard("rules")} className="mt-auto pt-6 text-left text-base text-[#727272] underline underline-offset-2">{t("listing_detail_show_more", "Show more")}</button>
                   </div>
 
                   {(cancellationLabel || longTermCancellationLabel) && <div className="order-3 flex min-h-[294px] flex-col sm:rounded-[30px] rounded-[10px] border border-[#dedede] bg-white py-8 px-5 shadow-[0_2px_5px_rgba(0,0,0,0.14)]" aria-labelledby="cancellation-heading">
-                    <h4 id="cancellation-heading" className="sm:text-[20px] text-lg font-normal text-[#1f1f1f]">Cancellation policy</h4>
+                    <h4 id="cancellation-heading" className="sm:text-[20px] text-lg font-normal text-[#1f1f1f]">{t("listing_detail_cancellation_policy", "Cancellation policy")}</h4>
                     <div className="mt-4 space-y-4">
                       {cancellationItems.slice(0, 4).map((item, index) => (
                         <p key={`${item}-${index}`} className="text-base leading-6 text-[#1f1f1f]">{item}</p>
                       ))}
                     </div>
-                    <button type="button" onClick={() => setOpenThingsCard("cancellation")} className="mt-auto pt-6 text-left text-base hover:text-[#727272] text-[#1f1f1f] underline underline-offset-2">Show more</button>
+                    <button type="button" onClick={() => setOpenThingsCard("cancellation")} className="mt-auto pt-6 text-left text-base text-[#727272] underline underline-offset-2">{t("listing_detail_show_more", "Show more")}</button>
                   </div>}
 
                   {/* Safety Disclosures */}
                   <div className="order-2 flex min-h-[294px] flex-col sm:rounded-[30px] rounded-[10px] border border-[#dedede] bg-white py-8 px-5 shadow-[0_2px_5px_rgba(0,0,0,0.14)]">
-                    <h4 className="sm:text-[20px] text-lg font-normal text-[#1f1f1f]">Safety & property</h4>
+                    <h4 className="sm:text-[20px] text-lg font-normal text-[#1f1f1f]">{t("listing_detail_safety_property", "Safety & property")}</h4>
                     <div className="mt-5 space-y-4 text-base text-[#1f1f1f]">
                       {safetyItems.slice(0, 4).map((item, index) => (
                         <p key={`${item}-${index}`}>{item}</p>
                       ))}
-                      {safetyItems.length === 0 && <p>No safety equipment or property hazards have been reported.</p>}
+                      {safetyItems.length === 0 && <p>{t("listing_detail_no_safety_reported", "No safety equipment or property hazards have been reported.")}</p>}
                     </div>
-                    <button type="button" onClick={() => setOpenThingsCard("safety")} className="mt-auto pt-6 text-left text-base hover:text-[#727272] text-[#1f1f1f] underline underline-offset-2">Show more</button>
+                    <button type="button" onClick={() => setOpenThingsCard("safety")} className="mt-auto pt-6 text-left text-base text-[#727272] underline underline-offset-2">{t("listing_detail_show_more", "Show more")}</button>
                   </div>
                 </div>
               </section>
 
               {/* Location & Map Section */}
               <div className="order-4 space-y-3 sm:pb-12 pb-8 lg:relative lg:z-10 w-full lg:w-[calc(100vw-3rem)] lg:max-w-[1262px] mx-auto lg:bg-white">
-                <h3 className="text-[20px] font-normal text-[#1f1f1f]">{"Where you'll be"}</h3>
+                <h3 className="text-[20px] font-normal text-[#1f1f1f]">{t("listing_detail_where_youll_be", "Where you'll be")}</h3>
                 <p className="mt-1 text-sm text-[#727272] font-normal">
                   {locationString || "Location details are not available for this listing."}
-                  {!listing.showExactLocation && " · Approximate location provided to protect host privacy"}
+                  {!listing.showExactLocation && ` · ${t("listing_detail_approx_location", "Approximate location provided to protect host privacy")}`}
                 </p>
                 {publicCoordinates ? (
                   <div className="h-[163px] w-full overflow-hidden sm:rounded-[30px] rounded-[10px] border border-zinc-200 shadow-sm sm:h-[604px] bg-[#F1F1F199]">
@@ -2218,11 +2541,10 @@ export function PublicListingDetailClient({
                   </div>
                 ) : (
                   <p className="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-6 text-xs text-[#727272]">
-                    Map location is not available for this listing.
+                    {t("listing_detail_map_unavailable", "Map location is not available for this listing.")}
                   </p>
                 )}
-                {/* TEMPORARILY DISABLED: local guidebook cards are hidden while the feature is paused. */}
-                {/* {guidebooks.length > 0 && (
+                {guidebooks.length > 0 && (
                   <div className="pt-5 border-t border-zinc-200/80 space-y-3">
                     <div className="flex items-center justify-between">
                       <h4 className="font-bold text-sm text-[#1f1f1f]">Local Host Guidebook</h4>
@@ -2255,7 +2577,7 @@ export function PublicListingDetailClient({
                       ))}
                     </div>
                   </div>
-                )} */}
+                )}
               </div>
             </div>
           </div>
@@ -2275,14 +2597,14 @@ export function PublicListingDetailClient({
           <div className="flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-[20px] bg-white shadow-2xl">
             <div className="flex items-center justify-between px-6 pb-4 pt-6 sm:px-8">
               <h3 id="things-to-know-modal-title" className="text-2xl font-semibold text-[#1f1f1f]">
-                {openThingsCard === "rules" ? "House rules" : openThingsCard === "safety" ? "Safety & property" : "Cancellation policy"}
+                {openThingsCard === "rules" ? t("listing_detail_house_rules", "House rules") : openThingsCard === "safety" ? t("listing_detail_safety_property", "Safety & property") : t("listing_detail_cancellation_policy", "Cancellation policy")}
               </h3>
-              <button type="button" onClick={() => setOpenThingsCard(null)} aria-label="Close details" className="-mr-1 -mt-1 rounded-full w-7.5 h-7.5 flex justify-center items-center text-2xl leading-none text-[#1f1f1f] hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f] shrink-0">×</button>
+              <button type="button" onClick={() => setOpenThingsCard(null)} aria-label={t("listing_detail_close_details", "Close details")} className="-mr-1 -mt-1 rounded-full w-7.5 h-7.5 flex justify-center items-center text-2xl leading-none text-[#1f1f1f] hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f] shrink-0">×</button>
             </div>
             <div className="visible-scrollbar overflow-y-auto px-6 pb-7 sm:px-8 sm:pb-8">
               {openThingsCard === "rules" && (
                 <>
-                  <p className="text-base leading-6 text-[#1f1f1f]">You’ll be staying in someone’s home, so please treat it with care and respect.</p>
+                  <p className="text-base leading-6 text-[#1f1f1f]">{t("listing_detail_house_rules_modal_desc", "You’ll be staying in someone’s home, so please treat it with care and respect.")}</p>
                   <div className="mt-7 divide-y divide-zinc-200 border-t border-zinc-200">
                     {houseRuleItems.map((item) => (
                       <div key={item.id} className="flex items-center gap-4 py-5 text-base text-[#1f1f1f]">
@@ -2295,16 +2617,16 @@ export function PublicListingDetailClient({
               )}
               {openThingsCard === "safety" && (
                 <>
-                  <p className="text-base leading-6 text-[#1f1f1f]">Avoid surprises by looking over these important details about your host’s property.</p>
+                  <p className="text-base leading-6 text-[#1f1f1f]">{t("listing_detail_safety_modal_desc", "Avoid surprises by looking over these important details about your host’s property.")}</p>
                   <div className="mt-7 divide-y divide-zinc-200 border-t border-zinc-200">
                     {safetyItems.map((item, index) => <p key={`${item}-${index}`} className="py-5 text-base leading-6 text-[#1f1f1f]">{item}</p>)}
-                    {safetyItems.length === 0 && <p className="py-5 text-base leading-6 text-[#1f1f1f]">No safety equipment or property hazards have been reported.</p>}
+                    {safetyItems.length === 0 && <p className="py-5 text-base leading-6 text-[#1f1f1f]">{t("listing_detail_no_safety_reported", "No safety equipment or property hazards have been reported.")}</p>}
                   </div>
                 </>
               )}
               {openThingsCard === "cancellation" && (
                 <>
-                  <p className="text-base leading-6 text-[#1f1f1f]">Review the cancellation terms for this listing before you reserve.</p>
+                  <p className="text-base leading-6 text-[#1f1f1f]">{t("listing_detail_cancellation_modal_desc", "Review the cancellation terms for this listing before you reserve.")}</p>
                   <div className="mt-7 divide-y divide-zinc-200 border-t border-zinc-200">
                     {cancellationItems.map((item, index) => <p key={`${item}-${index}`} className="py-5 text-base leading-6 text-[#1f1f1f]">{item}</p>)}
                   </div>
@@ -2320,8 +2642,8 @@ export function PublicListingDetailClient({
         <ModalOverlay role="dialog" aria-modal="true" aria-labelledby="description-modal-title" className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
           <div className="flex max-h-[85vh] w-full max-w-2xl flex-col rounded-[28px] border border-zinc-200 bg-white p-6 shadow-2xl">
             <div className="flex items-center justify-between border-b border-zinc-200 pb-4">
-              <h3 id="description-modal-title" className="text-2xl font-semibold text-[#1f1f1f]">About this place</h3>
-              <button type="button" onClick={() => setIsDescriptionModalOpen(false)} aria-label="Close description" className="cursor-pointer p-1 text-lg font-semibold text-[#1f1f1f] hover:text-[#727272] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f]">✕</button>
+              <h3 id="description-modal-title" className="text-2xl font-semibold text-[#1f1f1f]">{t("listing_detail_about_place", "About this place")}</h3>
+              <button type="button" onClick={() => setIsDescriptionModalOpen(false)} aria-label={t("listing_detail_close_description", "Close description")} className="cursor-pointer p-1 text-lg font-semibold text-[#1f1f1f] hover:text-[#727272] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f]">✕</button>
             </div>
             <div className="visible-scrollbar mt-5 space-y-6 overflow-y-auto pr-1 text-base leading-6 text-[#727272]">
               <p className="whitespace-pre-line">{normalizedDescription}</p>
@@ -2341,7 +2663,7 @@ export function PublicListingDetailClient({
         <ModalOverlay role="dialog" aria-modal="true" aria-labelledby="amenities-modal-title" className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
           <div className="flex max-h-[85vh] w-full max-w-lg flex-col rounded-[20px] border border-zinc-200 bg-white p-6 shadow-2xl">
             <div className="flex items-center justify-between pb-4 border-b border-zinc-200">
-              <h3 id="amenities-modal-title" className="font-semibold text-xl text-[#1f1f1f]">What this place offers</h3>
+              <h3 id="amenities-modal-title" className="font-semibold text-xl text-[#1f1f1f]">{t("listing_detail_what_place_offers", "What this place offers")}</h3>
               <button
                 ref={amenityCloseRef}
                 type="button"
@@ -2353,26 +2675,43 @@ export function PublicListingDetailClient({
               </button>
             </div>
 
-            <div className="py-5">
+            <div className="py-5 relative">
               <input
                 type="text"
                 value={amenitySearchQuery}
                 onChange={(e) => setAmenitySearchQuery(e.target.value)}
-                placeholder="Search amenities..."
-                className="w-full rounded-full border border-[#727272] text-[#1f1f1f] px-4 py-2 sm:min-h-[56px] min-h-[45px] text-sm outline-none focus:border-[#1f1f1f]"
+                placeholder={t("listing_detail_search_amenities", "Search amenities...")}
+                className="w-full rounded-full border border-[#727272] text-[#1f1f1f] pl-4 pr-10 py-2 sm:min-h-[56px] min-h-[45px] text-sm outline-none focus:border-[#1f1f1f]"
               />
+              {amenitySearchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setAmenitySearchQuery("")}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 flex h-6 w-6 items-center justify-center rounded-full bg-zinc-200/80 hover:bg-zinc-300 text-zinc-600 text-xs transition-colors cursor-pointer"
+                  aria-label={t("home_clear", "Clear search")}
+                >
+                  ✕
+                </button>
+              )}
             </div>
 
             <div className="visible-scrollbar flex-1 space-y-5 overflow-y-auto pr-1">
               {amenitySearchQuery.trim() ? (
                 filteredModalAmenities.map((am) => <AmenityRow key={am.id} amenity={am} />)
-              ) : amenityGroups.map(([category, amenities]) => (
-                <section key={category} aria-label={`${category} amenities`}>
-                  <h4 className="mb-4 pb-3 text-base font-semibold capitalize text-[#1f1f1f] border-b border-zinc-200">{category.replace(/_/g, " ")}</h4>
-                  <div className="space-y-3">{amenities.map((am) => <AmenityRow key={am.id} amenity={am} />)}</div>
-                </section>
-              ))}
-              {filteredModalAmenities.length === 0 && <p className="py-5 text-center text-xs text-[#727272]">No matching amenities.</p>}
+              ) : amenityGroups.map(([category, amenities]) => {
+                const catKey = `host_amenity_cat_${category}` as any;
+                const fallbackCat = category.replace(/_/g, " ");
+                const translatedCategory = t(catKey, fallbackCat);
+                return (
+                  <section key={category} aria-label={`${translatedCategory} amenities`}>
+                    <h4 className="mb-4 pb-3 text-base font-semibold capitalize text-[#1f1f1f] border-b border-zinc-200">
+                      {translatedCategory}
+                    </h4>
+                    <div className="space-y-3">{amenities.map((am) => <AmenityRow key={am.id} amenity={am} />)}</div>
+                  </section>
+                );
+              })}
+              {filteredModalAmenities.length === 0 && <p className="py-5 text-center text-xs text-[#727272]">{t("listing_detail_no_matching_amenities", "No matching amenities.")}</p>}
             </div>
           </div>
         </ModalOverlay>
@@ -2390,9 +2729,9 @@ export function PublicListingDetailClient({
             <div className="flex items-center justify-between pb-3 border-b border-zinc-200">
               <div>
                 <h3 id="contact-host-modal-title" className="font-bold text-lg text-[#1f1f1f]">
-                  Contact {listing.host?.name || "Host"}
+                  {t("listing_detail_contact_host", "Contact host")} {listing.host?.name ? `(${listing.host.name})` : ""}
                 </h3>
-                <p className="text-xs text-zinc-500">Ask about dates, amenities, or special requests</p>
+                <p className="text-xs text-zinc-500">{t("listing_detail_ask_host_subtitle", "Ask about dates, amenities, or special requests")}</p>
               </div>
               <button
                 type="button"
@@ -2408,11 +2747,11 @@ export function PublicListingDetailClient({
               {checkIn && checkOut && (
                 <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3 text-xs flex justify-between items-center">
                   <div>
-                    <span className="text-zinc-500 block">Dates selected</span>
-                    <span className="font-semibold text-zinc-800">{checkIn} to {checkOut}</span>
+                    <span className="text-zinc-500 block">{t("listing_detail_dates_selected", "Dates selected")}</span>
+                    <span className="font-semibold text-zinc-800">{checkIn} – {checkOut}</span>
                   </div>
                   <div>
-                    <span className="text-zinc-500 block">Guests</span>
+                    <span className="text-zinc-500 block">{t("host_basics_guests", "Guests")}</span>
                     <span className="font-semibold text-zinc-800">{adultsCount + childrenCount}</span>
                   </div>
                 </div>
@@ -2420,14 +2759,14 @@ export function PublicListingDetailClient({
 
               <div>
                 <label className="block text-xs font-semibold text-zinc-700 mb-1">
-                  Your message to the host
+                  {t("listing_detail_your_message_label", "Your message to the host")}
                 </label>
                 <textarea
                   rows={4}
                   required
                   value={inquiryMessage}
                   onChange={(e) => setInquiryMessage(e.target.value)}
-                  placeholder="Hi! I'm planning a trip and was wondering if..."
+                  placeholder={t("listing_detail_message_placeholder", "Hi! I'm planning a trip and was wondering if...")}
                   className="w-full rounded-2xl border border-zinc-300 p-3 text-xs sm:text-sm focus:border-zinc-500 focus:outline-none"
                 />
               </div>
@@ -2437,7 +2776,7 @@ export function PublicListingDetailClient({
               )}
 
               <p className="text-[11px] text-zinc-500">
-                To protect your payments, always communicate and book through Homyz.
+                {t("listing_detail_protect_payments_notice", "To protect your payments, always communicate and book through Homyz.")}
               </p>
 
               <div className="flex justify-end gap-2.5 pt-2 border-t border-zinc-100">
@@ -2446,14 +2785,14 @@ export function PublicListingDetailClient({
                   onClick={() => setContactHostModalOpen(false)}
                   className="px-5 py-2.5 rounded-full text-xs font-semibold text-zinc-600 hover:bg-zinc-100"
                 >
-                  Cancel
+                  {t("host_cancel", "Cancel")}
                 </button>
                 <button
                   type="submit"
                   disabled={inquirySending || !inquiryMessage.trim()}
                   className="px-6 py-2.5 rounded-full bg-[#1f1f1f] text-white text-xs font-semibold hover:bg-black disabled:opacity-50"
                 >
-                  {inquirySending ? "Sending..." : "Send Message"}
+                  {inquirySending ? t("listing_detail_sending", "Sending...") : t("listing_detail_send_message", "Send Message")}
                 </button>
               </div>
             </form>
@@ -2473,7 +2812,7 @@ export function PublicListingDetailClient({
                   : displayPrice ?? "Price unavailable"}
               </span>
               <span className="text-xs font-normal text-[#727272]">
-                {quote?.nights ? `total · ${quote.nights} ${quote.nights === 1 ? "night" : "nights"}` : "/ night"}
+                {quote?.nights ? `total · ${quote.nights} ${quote.nights === 1 ? "night" : "nights"}` : ` ${t("listing_detail_per_night", "/ night")}`}
               </span>
             </div>
             <div className="truncate text-xs font-medium text-[#727272]">
@@ -2496,7 +2835,7 @@ export function PublicListingDetailClient({
                 }}
                 className="rounded-2xl border border-amber-400 bg-[#fee09a] px-5 py-2.5 text-xs font-bold text-[#1f1f1f] shadow-xs transition hover:bg-[#fbd775] active:scale-[0.98] cursor-pointer"
               >
-                Check availability
+                {t("listing_detail_check_availability", "Check availability")}
               </button>
             ) : (
               <button
@@ -2513,9 +2852,9 @@ export function PublicListingDetailClient({
                   ? "Confirming..."
                   : isQuoteLoading
                     ? "Checking..."
-                    : listing.instantBook
-                      ? "Reserve"
-                      : "Request to book"}
+                    : isInstantBook
+                      ? t("listing_detail_reserve", "Reserve")
+                      : t("listing_detail_request_to_book", "Request to book")}
               </button>
             )}
           </div>

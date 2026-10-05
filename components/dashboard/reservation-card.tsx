@@ -2,6 +2,8 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { formatBookingDateRange } from "@/lib/booking/booking-date";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 export interface ReservationCardData {
   id: string;
@@ -27,29 +29,39 @@ export interface ReservationCardData {
   createdAt?: Date | string;
 }
 
-function formatDates(start: Date | string, end: Date | string) {
-  const first = new Date(start);
-  const last = new Date(end);
-  if (Number.isNaN(first.getTime()) || Number.isNaN(last.getTime())) {
-    return "Dates TBD";
-  }
-  const format = (date: Date, includeYear: boolean) =>
-    date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      ...(includeYear ? { year: "numeric" as const } : {}),
-      timeZone: "UTC",
-    });
-  return `${format(first, first.getUTCFullYear() !== last.getUTCFullYear())} – ${format(last, true)}`;
-}
 
 function StatusBadge({ status }: { status?: string }) {
+  const { t } = useLanguage();
   const s = (status || "PENDING").toUpperCase();
-  if (s === "CONFIRMED") {
+  if (s === "CONFIRMED" || s === "CURRENT_STAY") {
     return (
       <span className="inline-flex items-center gap-1.5 rounded-full bg-white/95 backdrop-blur-xs px-2.5 py-1 text-xs font-semibold text-emerald-800 border border-emerald-200/90 shadow-2xs">
         <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-        Confirmed
+        {t("dashboard_status_confirmed", "Confirmed")}
+      </span>
+    );
+  }
+  if (s === "COMPLETED") {
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-white/95 backdrop-blur-xs px-2.5 py-1 text-xs font-medium text-zinc-700 border border-zinc-200 shadow-2xs">
+        <span className="h-1.5 w-1.5 rounded-full bg-zinc-400" />
+        Completed
+      </span>
+    );
+  }
+  if (s === "EXPIRED") {
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-white/95 backdrop-blur-xs px-2.5 py-1 text-xs font-medium text-zinc-500 border border-zinc-200 shadow-2xs">
+        <span className="h-1.5 w-1.5 rounded-full bg-zinc-400" />
+        Expired
+      </span>
+    );
+  }
+  if (s === "DECLINED" || s === "REJECTED") {
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-white/95 backdrop-blur-xs px-2.5 py-1 text-xs font-medium text-zinc-600 border border-zinc-200 shadow-2xs">
+        <span className="h-1.5 w-1.5 rounded-full bg-zinc-400" />
+        Declined
       </span>
     );
   }
@@ -57,14 +69,14 @@ function StatusBadge({ status }: { status?: string }) {
     return (
       <span className="inline-flex items-center gap-1.5 rounded-full bg-white/95 backdrop-blur-xs px-2.5 py-1 text-xs font-medium text-zinc-600 border border-zinc-200 shadow-2xs">
         <span className="h-1.5 w-1.5 rounded-full bg-zinc-400" />
-        Cancelled
+        {t("dashboard_status_cancelled", "Cancelled")}
       </span>
     );
   }
   return (
     <span className="inline-flex items-center gap-1.5 rounded-full bg-white/95 backdrop-blur-xs px-2.5 py-1 text-xs font-semibold text-amber-800 border border-amber-200/90 shadow-2xs">
       <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
-      Pending
+      {t("dashboard_status_pending", "Pending")}
     </span>
   );
 }
@@ -78,6 +90,7 @@ export function ReservationCard({
   href?: string;
   variant?: "default" | "past";
 }) {
+  const { t } = useLanguage();
   const [failedImage, setFailedImage] = useState<string | null>(null);
   const title = data.propertyName || "Property stay";
   const isPastVariant = variant === "past";
@@ -106,8 +119,8 @@ export function ReservationCard({
               className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.035]"
             />
           ) : (
-            <span className="flex h-full w-full items-center justify-center text-xs sm:text-sm text-[#727272] bg-zinc-100">
-              Photo unavailable
+            <span className="flex h-full w-full items-center justify-center text-xs sm:text-sm text-zinc-400 bg-zinc-100">
+              {t("dashboard_card_photo_unavailable", "Photo unavailable")}
             </span>
           )}
 
@@ -123,7 +136,7 @@ export function ReservationCard({
             ? "order-2 mt-1 text-sm leading-6 text-[#727272]"
             : "text-[11px] font-semibold uppercase tracking-[0.04em] text-slate-500"}
           >
-            {formatDates(data.startDate, data.endDate)}
+            {formatBookingDateRange(data.startDate, data.endDate)}
           </p>
 
           <Link
@@ -150,6 +163,15 @@ export function ReservationCard({
             : "mt-2 text-[10px] font-medium tracking-[0.02em] text-[#727272]"}>
             Booking #{data.id.slice(-8).toUpperCase()}
           </p>
+
+
+
+          {/* <Link
+            href={detailsHref}
+            className="mt-3 inline-flex min-h-11 items-center text-sm font-semibold text-[#1F1F1F] underline underline-offset-4"
+          >
+            View details
+          </Link> */}
         </div>
       </div>
     </article>

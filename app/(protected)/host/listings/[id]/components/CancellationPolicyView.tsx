@@ -22,6 +22,7 @@ interface CancellationPolicyViewProps {
     cancellationPolicy: string;
     longTermCancellationPolicy: "FIRM" | "STRICT";
     nonRefundable?: boolean;
+    nonRefundablePercentage?: number | null;
   }) => Promise<boolean | void>;
   discounts?: Record<string, unknown> | null;
   nonRefundableDiscountPercentage?: number | null;
@@ -131,6 +132,19 @@ export function CancellationPolicyView({
   );
   const [nonRefundable, setNonRefundable] = useState<boolean>(initialNonRefundable);
 
+  const initialPercentage = useMemo(() => {
+    const nrObj = (discounts as any)?.non_refundable;
+    if (typeof nrObj === "object" && typeof nrObj?.percentage === "number") {
+      return nrObj.percentage;
+    }
+    if (typeof nonRefundableDiscountPercentage === "number") {
+      return nonRefundableDiscountPercentage;
+    }
+    return 10;
+  }, [discounts, nonRefundableDiscountPercentage]);
+
+  const [nonRefundablePercentage, setNonRefundablePercentage] = useState<number>(initialPercentage);
+
   // Sync draft state with props when props change externally
   useEffect(() => {
     setDraftShortPolicy(cancellationPolicy || "FLEXIBLE");
@@ -144,6 +158,10 @@ export function CancellationPolicyView({
     setNonRefundable(initialNonRefundable);
   }, [initialNonRefundable]);
 
+  useEffect(() => {
+    setNonRefundablePercentage(initialPercentage);
+  }, [initialPercentage]);
+
   // Save handler for Short-term modal
   const handleSaveShortTerm = async () => {
     if (onSaveCancellationPolicy) {
@@ -151,6 +169,7 @@ export function CancellationPolicyView({
         cancellationPolicy: draftShortPolicy,
         longTermCancellationPolicy,
         nonRefundable,
+        nonRefundablePercentage,
       });
       if (res !== false) {
         setIsShortTermModalOpen(false);
@@ -169,6 +188,7 @@ export function CancellationPolicyView({
         cancellationPolicy,
         longTermCancellationPolicy: draftLongPolicy,
         nonRefundable,
+        nonRefundablePercentage,
       });
       if (res !== false) {
         setIsLongTermModalOpen(false);
@@ -188,6 +208,7 @@ export function CancellationPolicyView({
         cancellationPolicy,
         longTermCancellationPolicy,
         nonRefundable: nextVal,
+        nonRefundablePercentage,
       });
       if (result !== false) setNonRefundable(nextVal);
     } else {
@@ -260,41 +281,81 @@ export function CancellationPolicyView({
           </div>
 
           {/* 3. Non-refundable option Card */}
-          <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 flex items-center justify-between gap-4 shadow-2xs">
-            <div className="space-y-1 max-w-md">
-              <span className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-200 block">
-                {t("host_non_refundable_option_title")}
-              </span>
-              <p className="text-sm text-[#727272] dark:text-[#727272] font-normal leading-relaxed">
-                {nonRefundableDiscountPercentage
-                  ? t("host_non_refundable_option_desc_pct", { percentage: nonRefundableDiscountPercentage })
-                  : t("host_non_refundable_option_desc_no_pct")}{" "}
-                <button
-                  type="button"
-                  onClick={() => setIsLearnMoreOpen(true)}
-                  className="text-[#1F1F1F] dark:text-zinc-100 underline font-medium hover:text-zinc-700 dark:hover:text-zinc-300 cursor-pointer"
-                >
-                  {t("host_safety_learn_more")}
-                </button>
-              </p>
+          <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 space-y-4 shadow-2xs">
+            <div className="flex items-center justify-between gap-4">
+              <div className="space-y-1 max-w-md">
+                <span className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-200 block">
+                  {t("host_non_refundable_option_title")}
+                </span>
+                <p className="text-sm text-[#727272] dark:text-[#727272] font-normal leading-relaxed">
+                  {t("host_non_refundable_option_desc_pct", { percentage: nonRefundablePercentage })}{" "}
+                  <button
+                    type="button"
+                    onClick={() => setIsLearnMoreOpen(true)}
+                    className="text-[#1F1F1F] dark:text-zinc-100 underline font-medium hover:text-zinc-700 dark:hover:text-zinc-300 cursor-pointer"
+                  >
+                    {t("host_safety_learn_more")}
+                  </button>
+                </p>
+              </div>
+
+              {/* Toggle switch matching other editor toggles */}
+              <button
+                type="button"
+                role="switch"
+                aria-label={t("host_toggle_non_refundable_aria")}
+                aria-checked={nonRefundable}
+                disabled={isSaving}
+                onClick={handleToggleNonRefundable}
+                className={`relative h-6 w-11 shrink-0 rounded-full transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 ${nonRefundable ? "bg-[#DF4557] dark:bg-amber-400" : "bg-zinc-300 dark:bg-zinc-700"
+                  }`}
+              >
+                <span
+                  className={`block h-5 w-5 rounded-full bg-white dark:bg-zinc-900 shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-700 transition-transform ${nonRefundable ? "translate-x-5.5" : "translate-x-0.5"
+                    }`}
+                />
+              </button>
             </div>
 
-            {/* Toggle switch matching other editor toggles */}
-            <button
-              type="button"
-              role="switch"
-              aria-label={t("host_toggle_non_refundable_aria")}
-              aria-checked={nonRefundable}
-              disabled={isSaving}
-              onClick={handleToggleNonRefundable}
-              className={`relative h-6 w-11 shrink-0 rounded-full transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 ${nonRefundable ? "bg-[#DF4557] dark:bg-amber-400" : "bg-zinc-300 dark:bg-zinc-700"
-                }`}
-            >
-              <span
-                className={`block h-5 w-5 rounded-full bg-white dark:bg-zinc-900 shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-700 transition-transform ${nonRefundable ? "translate-x-5.5" : "translate-x-0.5"
-                  }`}
-              />
-            </button>
+            {nonRefundable && (
+              <div className="pt-3 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between gap-4">
+                <div>
+                  <label htmlFor="non-refundable-pct-input" className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-200 block">
+                    Discount percentage
+                  </label>
+                  <span className="text-xs text-[#727272] dark:text-zinc-400 block">
+                    Lower price offered to guests choosing non-refundable
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    id="non-refundable-pct-input"
+                    type="number"
+                    min={1}
+                    max={99}
+                    value={nonRefundablePercentage}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value, 10);
+                      if (!isNaN(val) && val >= 1 && val <= 99) {
+                        setNonRefundablePercentage(val);
+                      }
+                    }}
+                    onBlur={() => {
+                      if (onSaveCancellationPolicy) {
+                        onSaveCancellationPolicy({
+                          cancellationPolicy,
+                          longTermCancellationPolicy,
+                          nonRefundable: true,
+                          nonRefundablePercentage,
+                        });
+                      }
+                    }}
+                    className="w-20 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-1.5 text-right font-medium text-[#1F1F1F] dark:text-zinc-100 focus:border-zinc-900 focus:outline-none"
+                  />
+                  <span className="text-sm font-medium text-[#727272]">%</span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -10,6 +10,7 @@ import { assertPermission, PERMISSIONS } from "@/lib/permissions/permissions";
 import {
   createListingSchema,
   updateListingSchema,
+  bulkAvailabilitySchema,
 } from "@/lib/validation/listing";
 import { listingService } from "@/services/listing.service";
 import { Role } from "@/generated/prisma/enums";
@@ -200,7 +201,28 @@ export async function updateListingAvailabilityAction(id: string, blockedDates: 
     if (!actor) throw AppError.unauthorized();
     if (actor.role === Role.ADMIN) assertPermission(actor, PERMISSIONS.LISTINGS_EDIT);
     const listing = await listingService.updateAvailability(actor, id, blockedDates);
+    revalidatePath("/host/calendar");
     revalidatePath("/host/listings");
     return listing;
+  });
+}
+
+export async function bulkUpdateAvailabilityAction(
+  id: string,
+  input: {
+    action: "BLOCK" | "UNBLOCK" | "RESTORE";
+    dates: string[];
+  }
+) {
+  return runAction(async () => {
+    const actor = await getSessionUser();
+    if (!actor) throw AppError.unauthorized();
+    if (actor.role === Role.ADMIN) assertPermission(actor, PERMISSIONS.LISTINGS_EDIT);
+    const validatedInput = bulkAvailabilitySchema.parse(input);
+    const result = await listingService.bulkUpdateAvailability(actor, id, validatedInput);
+    revalidatePath("/host/listings");
+    revalidatePath(`/host/listings/${id}`);
+    revalidatePath("/host/calendar");
+    return result;
   });
 }

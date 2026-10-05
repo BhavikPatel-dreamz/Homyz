@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { CurrencyPrice } from "@/components/ui/currency-price";
 import { useRouter } from "next/navigation";
+import { bookingDateKey, compareBookingDates } from "@/lib/booking/booking-date";
 
 interface ChangeReservationModalProps {
   isOpen: boolean;
@@ -16,12 +17,6 @@ interface ChangeReservationModalProps {
   currency: string;
   currentTotalPrice: number; // minor units
   propertyName: string;
-}
-
-function toIsoDate(d: Date | string): string {
-  const date = new Date(d);
-  if (isNaN(date.getTime())) return "";
-  return date.toISOString().slice(0, 10);
 }
 
 export function ChangeReservationModal({
@@ -37,8 +32,8 @@ export function ChangeReservationModal({
   propertyName,
 }: ChangeReservationModalProps) {
   const router = useRouter();
-  const [startDate, setStartDate] = useState(toIsoDate(currentStartDate));
-  const [endDate, setEndDate] = useState(toIsoDate(currentEndDate));
+  const [startDate, setStartDate] = useState(bookingDateKey(currentStartDate));
+  const [endDate, setEndDate] = useState(bookingDateKey(currentEndDate));
   const [guests, setGuests] = useState(currentGuests);
 
   const [loadingPreview, setLoadingPreview] = useState(false);
@@ -61,8 +56,8 @@ export function ChangeReservationModal({
   // Sync state when opened
   useEffect(() => {
     if (isOpen) {
-      setStartDate(toIsoDate(currentStartDate));
-      setEndDate(toIsoDate(currentEndDate));
+      setStartDate(bookingDateKey(currentStartDate));
+      setEndDate(bookingDateKey(currentEndDate));
       setGuests(currentGuests);
       setPreviewData(null);
       setPreviewError(null);
@@ -75,7 +70,7 @@ export function ChangeReservationModal({
     if (!isOpen) return;
 
     if (!startDate || !endDate) return;
-    if (new Date(endDate) <= new Date(startDate)) {
+    if (compareBookingDates(endDate, startDate) <= 0) {
       setPreviewError("Check-out date must be after check-in date.");
       setPreviewData(null);
       return;
@@ -154,8 +149,8 @@ export function ChangeReservationModal({
   if (!isOpen) return null;
 
   const hasChanges =
-    startDate !== toIsoDate(currentStartDate) ||
-    endDate !== toIsoDate(currentEndDate) ||
+    startDate !== bookingDateKey(currentStartDate) ||
+    endDate !== bookingDateKey(currentEndDate) ||
     guests !== currentGuests;
 
   return (
@@ -346,4 +341,3 @@ export function ChangeReservationModal({
     </ModalOverlay>
   );
 }
-

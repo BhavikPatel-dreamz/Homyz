@@ -176,7 +176,6 @@ enum SpecialOfferStatus {
   EXPIRED
 }
 
-
 // ─────────────────────────────────────────────────────────────────────────────
 // Auth / identity (NextAuth adapter models: User, Account, Session,
 // VerificationToken — shapes required by @next-auth/prisma-adapter)
@@ -241,18 +240,17 @@ model User {
   listingRemovalFeedbacks         ListingRemovalFeedback[]
   authoredReviews                 Review[]                   @relation("AuthoredReviews")
   moderatedReviews                Review[]                   @relation("ModeratedReviews")
-  referredBy                      User?                     @relation("GuestReferrals", fields: [referredById], references: [id], onDelete: SetNull)
-  referredGuests                  User[]                    @relation("GuestReferrals")
-  referralRewards                 ReferralReward[]          @relation("ReferralRewardInviter")
-  referralRewardEarnedFor         ReferralReward?           @relation("ReferralRewardReferredGuest")
-  reviewedReferralRewards         ReferralReward[]          @relation("ReferralRewardReviewer")
+  referredBy                      User?                      @relation("GuestReferrals", fields: [referredById], references: [id], onDelete: SetNull)
+  referredGuests                  User[]                     @relation("GuestReferrals")
+  referralRewards                 ReferralReward[]           @relation("ReferralRewardInviter")
+  referralRewardEarnedFor         ReferralReward?            @relation("ReferralRewardReferredGuest")
+  reviewedReferralRewards         ReferralReward[]           @relation("ReferralRewardReviewer")
   notifications                   Notification[]
   guestConversations              Conversation[]             @relation("GuestConversations")
   hostConversations               Conversation[]             @relation("HostConversations")
   sentMessages                    Message[]                  @relation("SentMessages")
   guestSpecialOffers              SpecialOffer[]             @relation("GuestSpecialOffers")
   hostSpecialOffers               SpecialOffer[]             @relation("HostSpecialOffers")
-
 
   @@index([role])
   @@index([adminRoleId])
@@ -569,12 +567,15 @@ model Listing {
   conversations     Conversation[]
   specialOffers     SpecialOffer[]
 
-
   @@index([hostId])
   @@index([published])
   @@index([status])
   @@index([status, published])
   @@index([city])
+  @@index([latitude, longitude])
+  @@index([price])
+  @@index([guests])
+  @@index([status, published, isPaused, deletedAt])
 }
 
 model ListingFavorite {
@@ -621,11 +622,12 @@ model ListingCoHost {
 
 model Booking {
   id                 String        @id @default(cuid())
+  submissionId       String?       @unique
   userId             String
   listingId          String
   status             BookingStatus @default(PENDING)
-  startDate          DateTime
-  endDate            DateTime
+  startDate          DateTime      @db.Date
+  endDate            DateTime      @db.Date
   guests             Int           @default(1)
   totalPrice         Int? // Minor units / cents
   nightlyPrice       Int? // Minor units / cents
@@ -637,13 +639,12 @@ model Booking {
   createdAt          DateTime      @default(now())
   updatedAt          DateTime      @updatedAt
 
-  user    User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  listing Listing @relation(fields: [listingId], references: [id], onDelete: Restrict)
-  taxes   ReservationTax[]
-  reviews Review[]
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listing        Listing          @relation(fields: [listingId], references: [id], onDelete: Restrict)
+  taxes          ReservationTax[]
+  reviews        Review[]
   referralReward ReferralReward?
-  conversations Conversation[]
-
+  conversations  Conversation[]
 
   @@index([userId, createdAt])
   @@index([listingId])
@@ -653,16 +654,16 @@ model Booking {
 // A reward is created once after the referred guest's first completed confirmed
 // stay. It remains pending until an authorised administrator approves it.
 model ReferralReward {
-  id                 String   @id @default(cuid())
-  inviterId          String
-  referredUserId     String   @unique
-  qualifyingBookingId String  @unique
-  points             Int
-  status             ReferralRewardStatus @default(PENDING)
-  reviewedById       String?
-  reviewedAt         DateTime?
-  rejectionReason    String?
-  createdAt          DateTime @default(now())
+  id                  String               @id @default(cuid())
+  inviterId           String
+  referredUserId      String               @unique
+  qualifyingBookingId String               @unique
+  points              Int
+  status              ReferralRewardStatus @default(PENDING)
+  reviewedById        String?
+  reviewedAt          DateTime?
+  rejectionReason     String?
+  createdAt           DateTime             @default(now())
 
   inviter           User    @relation("ReferralRewardInviter", fields: [inviterId], references: [id], onDelete: Cascade)
   referredGuest     User    @relation("ReferralRewardReferredGuest", fields: [referredUserId], references: [id], onDelete: Cascade)
@@ -675,40 +676,40 @@ model ReferralReward {
 }
 
 model Review {
-  id                String        @id @default(cuid())
-  listingId         String
-  bookingId         String?
-  authorId          String
-  rating            Int // 1-5
-  cleanlinessRating Int?
-  accuracyRating    Int?
-  checkInRating     Int?
+  id                  String       @id @default(cuid())
+  listingId           String
+  bookingId           String?
+  authorId            String
+  rating              Int // 1-5
+  cleanlinessRating   Int?
+  accuracyRating      Int?
+  checkInRating       Int?
   communicationRating Int?
-  locationRating    Int?
-  valueRating       Int?
-  comment           String        @db.Text // Empty string allowed for rating-only reviews
-  topics            String[]      @default([])
-  status            ReviewStatus  @default(PUBLISHED)
+  locationRating      Int?
+  valueRating         Int?
+  comment             String       @db.Text // Empty string allowed for rating-only reviews
+  topics              String[]     @default([])
+  status              ReviewStatus @default(PUBLISHED)
 
   // Moderation
-  moderatedAt       DateTime?
-  moderatedById     String?
-  rejectionReason   String?
+  moderatedAt     DateTime?
+  moderatedById   String?
+  rejectionReason String?
 
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  listing   Listing   @relation("ListingReviews", fields: [listingId], references: [id], onDelete: Cascade)
-  booking   Booking?  @relation(fields: [bookingId], references: [id], onDelete: SetNull)
-  author    User      @relation("AuthoredReviews", fields: [authorId], references: [id], onDelete: Cascade)
-  moderator User?     @relation("ModeratedReviews", fields: [moderatedById], references: [id], onDelete: SetNull)
+  listing   Listing  @relation("ListingReviews", fields: [listingId], references: [id], onDelete: Cascade)
+  booking   Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  author    User     @relation("AuthoredReviews", fields: [authorId], references: [id], onDelete: Cascade)
+  moderator User?    @relation("ModeratedReviews", fields: [moderatedById], references: [id], onDelete: SetNull)
 
+  @@unique([bookingId])
   @@index([listingId])
   @@index([listingId, status])
   @@index([listingId, status, createdAt])
   @@index([authorId])
   @@index([bookingId])
-  @@unique([bookingId])
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1050,6 +1051,7 @@ model Guidebook {
   host     User               @relation(fields: [hostId], references: [id], onDelete: Cascade)
   listings GuidebookListing[]
   items    GuidebookItem[]
+  categories GuidebookCategory[]
 
   @@index([hostId])
   @@index([city])
@@ -1073,12 +1075,15 @@ model GuidebookListing {
 model GuidebookItem {
   id              String   @id @default(cuid())
   guidebookId     String
-  type            String   @default("PLACE") // "PLACE" | "NEIGHBORHOOD" | "TIP"
+  type            String   @default("PLACE") // "PLACE" | "NEIGHBORHOOD" | "CITY_ADVICE" (legacy: "TIP")
   title           String
-  category        String // "FOOD_AND_DRINK", "COFFEE_AND_CAFES", "SIGHTSEEING", "SHOPPING", "OUTDOORS", "ENTERTAINMENT", "NIGHTLIFE", "ESSENTIALS", "GETTING_AROUND", "FAMILY", "WELLNESS", "LOCAL_FAVORITE", "LOCAL_TIP"
+  category        String
+  categoryLabel   String?
+  adviceType      String?
   description     String?  @db.Text
   hostTip         String?  @db.Text
   photo           String?
+  photos          String[] @default([])
   placeProviderId String?
   address         String?
   latitude        Float?
@@ -1092,6 +1097,20 @@ model GuidebookItem {
 
   @@index([guidebookId])
   @@index([guidebookId, sortOrder])
+}
+
+model GuidebookCategory {
+  id          String   @id @default(cuid())
+  guidebookId String
+  name        String
+  normalized  String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  guidebook Guidebook @relation(fields: [guidebookId], references: [id], onDelete: Cascade)
+
+  @@unique([guidebookId, normalized])
+  @@index([guidebookId])
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1323,10 +1342,10 @@ model Conversation {
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt
 
-  guest         User               @relation("GuestConversations", fields: [guestId], references: [id], onDelete: Cascade)
-  host          User               @relation("HostConversations", fields: [hostId], references: [id], onDelete: Cascade)
-  listing       Listing            @relation(fields: [listingId], references: [id], onDelete: Cascade)
-  booking       Booking?           @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  guest         User                @relation("GuestConversations", fields: [guestId], references: [id], onDelete: Cascade)
+  host          User                @relation("HostConversations", fields: [hostId], references: [id], onDelete: Cascade)
+  listing       Listing             @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  booking       Booking?            @relation(fields: [bookingId], references: [id], onDelete: SetNull)
   messages      Message[]
   specialOffers SpecialOffer[]
   attachments   MessageAttachment[]
@@ -1339,18 +1358,18 @@ model Conversation {
 }
 
 model Message {
-  id             String              @id @default(cuid())
+  id             String      @id @default(cuid())
   conversationId String
   senderId       String?
-  type           MessageType         @default(TEXT)
-  content        String              @db.Text
+  type           MessageType @default(TEXT)
+  content        String      @db.Text
   readAt         DateTime?
   metadata       Json?
-  createdAt      DateTime            @default(now())
+  createdAt      DateTime    @default(now())
 
-  conversation   Conversation        @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  sender         User?               @relation("SentMessages", fields: [senderId], references: [id], onDelete: SetNull)
-  attachments    MessageAttachment[]
+  conversation Conversation        @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User?               @relation("SentMessages", fields: [senderId], references: [id], onDelete: SetNull)
+  attachments  MessageAttachment[]
 
   @@index([conversationId, createdAt])
   @@index([conversationId, readAt])
@@ -1363,10 +1382,10 @@ model SpecialOffer {
   hostId         String
   guestId        String
   listingId      String
-  startDate      DateTime
-  endDate        DateTime
+  startDate      DateTime           @db.Date
+  endDate        DateTime           @db.Date
   guests         Int                @default(1)
-  subtotalPrice  Int                // Minor units / cents
+  subtotalPrice  Int // Minor units / cents
   currency       String             @default("SAR")
   status         SpecialOfferStatus @default(PENDING)
   expiresAt      DateTime?
@@ -1374,10 +1393,10 @@ model SpecialOffer {
   createdAt      DateTime           @default(now())
   updatedAt      DateTime           @updatedAt
 
-  conversation   Conversation       @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  host           User               @relation("HostSpecialOffers", fields: [hostId], references: [id], onDelete: Cascade)
-  guest          User               @relation("GuestSpecialOffers", fields: [guestId], references: [id], onDelete: Cascade)
-  listing        Listing            @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  host         User         @relation("HostSpecialOffers", fields: [hostId], references: [id], onDelete: Cascade)
+  guest        User         @relation("GuestSpecialOffers", fields: [guestId], references: [id], onDelete: Cascade)
+  listing      Listing      @relation(fields: [listingId], references: [id], onDelete: Cascade)
 
   @@index([conversationId])
   @@index([guestId])
@@ -1386,23 +1405,21 @@ model SpecialOffer {
 }
 
 model MessageAttachment {
-  id             String       @id @default(cuid())
+  id             String   @id @default(cuid())
   conversationId String
   messageId      String?
   fileName       String
-  fileType       String       // "IMAGE" | "DOCUMENT"
+  fileType       String // "IMAGE" | "DOCUMENT"
   mimeType       String
   fileSize       Int
   storagePath    String
   fileUrl        String
-  createdAt      DateTime     @default(now())
+  createdAt      DateTime @default(now())
 
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  message        Message?     @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  message      Message?     @relation(fields: [messageId], references: [id], onDelete: Cascade)
 
   @@index([conversationId])
   @@index([messageId])
   @@index([createdAt])
 }
-
-

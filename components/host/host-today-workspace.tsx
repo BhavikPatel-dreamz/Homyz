@@ -1,234 +1,161 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import Link from "next/link";
 import { HostSubNav } from "./host-sub-nav";
+import { ReservationCard } from "./reservation-card";
 import {
   PropertyPhoto,
   WorkspaceDialog,
   ReservationDetails,
-  MoneyDialog,
-  dateKey,
-  shortDate,
   type HostWorkspaceProps,
   type HostReservation,
 } from "./host-workspace-shared";
 import type { ListingDTO } from "@/services/mappers";
 import { Container } from "../ui";
+import { bookingDateKey } from "@/lib/booking/booking-date";
+import {
+  buildOperationalEvents,
+  deduplicateHostReservations,
+  filterOperationalEventsByProperty,
+  selectPriorityReservationId,
+} from "@/lib/booking/host-reservation-events";
+import { useHostDashboardState } from "./host-dashboard-state";
 
-const DEFAULT_DEMO_LISTING: ListingDTO = {
-  id: "sample-listing-1",
-  hostId: "host-1",
-  title: "Luxury Urban Loft with Skyline View",
-  description: "Modern stay in the city center.",
-  hostingType: "HOME",
-  propertyType: "Apartment",
-  listingType: "Entire place",
-  address: "123 King Fahd Rd",
-  city: "Riyadh",
-  district: "Olaya",
-  postalCode: "12211",
-  country: "Saudi Arabia",
-  latitude: 24.7136,
-  longitude: 46.6753,
-  guests: 2,
-  bedrooms: 1,
-  beds: 1,
-  bathrooms: 1,
-  price: 42100, // SAR 421
-  currency: "SAR",
-  cleaningFee: 24100,
-  securityDeposit: 50000,
-  weekendPrice: 52000,
-  minNights: 1,
-  maxNights: 365,
-  cancellationPolicy: "FLEXIBLE",
-  instantBook: true,
-  published: true,
-  status: "ACTIVE",
-  isPaused: false,
-  photos: ["/images/listing/listing-img-01.png"],
-  highlights: ["Central", "Fast WiFi"],
-  amenities: ["WIFI", "AIR_CONDITIONING"],
-  houseRules: ["No smoking"],
-  checkInMethod: "SMART_LOCK",
-  checkInStart: "15:00",
-  checkInEnd: "22:00",
-  checkOutTime: "11:00",
-  blockedDates: [],
-  discounts: { weekly: 5, monthly: 10 },
-  createdAt: new Date("2025-01-01T00:00:00.000Z"),
-  updatedAt: new Date("2025-01-01T00:00:00.000Z"),
-} as unknown as ListingDTO;
-
-const DEMO_LISTINGS: Record<string, ListingDTO> = {
-  "sample-listing-1": {
-    ...DEFAULT_DEMO_LISTING,
-    id: "sample-listing-1",
-    title: "Property name",
-    district: "Location",
-    city: "",
-    photos: ["/images/listing/listing-img-01.png"],
-    checkOutTime: "12:00 PM",
-    checkInStart: "12:00 PM",
-  } as unknown as ListingDTO,
-  "sample-listing-2": {
-    ...DEFAULT_DEMO_LISTING,
-    id: "sample-listing-2",
-    title: "Property name",
-    district: "Location",
-    city: "",
-    photos: ["/images/listing/listing-img-02.png"],
-    checkOutTime: "12:00 PM",
-    checkInStart: "12:00 PM",
-  } as unknown as ListingDTO,
-  "sample-listing-3": {
-    ...DEFAULT_DEMO_LISTING,
-    id: "sample-listing-3",
-    title: "Property name",
-    district: "Location",
-    city: "",
-    photos: ["/images/listing/listing-img-03.png"],
-    checkOutTime: "3:00 PM",
-    checkInStart: "3:00 PM",
-  } as unknown as ListingDTO,
-  "sample-listing-4": {
-    ...DEFAULT_DEMO_LISTING,
-    id: "sample-listing-4",
-    title: "Property name",
-    district: "Location",
-    city: "",
-    photos: [],
-    checkOutTime: "4:00 PM",
-    checkInStart: "4:00 PM",
-  } as unknown as ListingDTO,
-};
-
-const SAMPLE_TODAY_RESERVATIONS: HostReservation[] = [
-  {
-    id: "res-today-1",
-    listingId: "sample-listing-1",
-    status: "CONFIRMED",
-    startDate: "2025-10-12T15:00:00.000Z",
-    endDate: "2025-10-15T11:00:00.000Z",
-    createdAt: "2025-09-10T00:00:00.000Z",
-    guestName: "Marik",
-    guestImage: null,
-  },
-  {
-    id: "res-today-2",
-    listingId: "sample-listing-2",
-    status: "CONFIRMED",
-    startDate: "2025-10-13T15:00:00.000Z",
-    endDate: "2025-10-15T11:00:00.000Z",
-    createdAt: "2025-09-12T00:00:00.000Z",
-    guestName: "(Name)",
-    guestImage: null,
-  },
-  {
-    id: "res-today-3",
-    listingId: "sample-listing-3",
-    status: "CONFIRMED",
-    startDate: "2025-10-15T15:00:00.000Z",
-    endDate: "2025-10-19T11:00:00.000Z",
-    createdAt: "2025-09-15T00:00:00.000Z",
-    guestName: "(Name)",
-    guestImage: null,
-  },
-  {
-    id: "res-today-4",
-    listingId: "sample-listing-4",
-    status: "CONFIRMED",
-    startDate: "2025-10-15T15:00:00.000Z",
-    endDate: "2025-10-17T11:00:00.000Z",
-    createdAt: "2025-09-16T00:00:00.000Z",
-    guestName: "(Name)",
-    guestImage: null,
-  },
-];
-
-const SAMPLE_UPCOMING_RESERVATIONS: HostReservation[] = [
-  {
-    id: "res-up-1",
-    listingId: "sample-listing-1",
-    status: "CONFIRMED",
-    startDate: "2025-10-06T15:00:00.000Z",
-    endDate: "2025-10-07T11:00:00.000Z",
-    createdAt: "2025-09-01T00:00:00.000Z",
-    guestName: "Khalid",
-    guestImage: null,
-  },
-  {
-    id: "res-up-2",
-    listingId: "sample-listing-1",
-    status: "CONFIRMED",
-    startDate: "2025-11-12T15:00:00.000Z",
-    endDate: "2025-11-18T11:00:00.000Z",
-    createdAt: "2025-09-05T00:00:00.000Z",
-    guestName: "Elena",
-    guestImage: null,
-  },
-  {
-    id: "res-up-3",
-    listingId: "sample-listing-1",
-    status: "CONFIRMED",
-    startDate: "2025-11-20T15:00:00.000Z",
-    endDate: "2025-11-25T11:00:00.000Z",
-    createdAt: "2025-09-10T00:00:00.000Z",
-    guestName: "Tariq",
-    guestImage: null,
-  },
-  {
-    id: "res-up-4",
-    listingId: "sample-listing-1",
-    status: "CONFIRMED",
-    startDate: "2025-12-01T15:00:00.000Z",
-    endDate: "2025-12-05T11:00:00.000Z",
-    createdAt: "2025-09-15T00:00:00.000Z",
-    guestName: "Jessica",
-    guestImage: null,
-  },
-];
-
-export function HostTodayWorkspace({ listings, bookings }: HostWorkspaceProps) {
+export function HostTodayWorkspace({
+  listings,
+  bookings,
+  today,
+  initialCurrentTimeMinutes,
+}: HostWorkspaceProps & { today: string; initialCurrentTimeMinutes: number }) {
   const [tab, setTab] = useState<"today" | "upcoming">("today");
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [filters, setFilters] = useState<string[]>([]);
-  const [draft, setDraft] = useState<string[]>([]);
+  const { selectedPropertyId, setSelectedPropertyId } = useHostDashboardState();
+  const [draftPropertyId, setDraftPropertyId] = useState<string | null>(null);
   const [selected, setSelected] = useState<HostReservation | null>(null);
-  const [showMoney, setShowMoney] = useState(false);
-  const [today] = useState(() => dateKey(new Date()));
+  const [currentDate, setCurrentDate] = useState(today);
+  const [currentTimeMinutes, setCurrentTimeMinutes] = useState(
+    initialCurrentTimeMinutes,
+  );
+  const [reservations, setReservations] = useState(() =>
+    deduplicateHostReservations(bookings),
+  );
+  const [refreshError, setRefreshError] = useState<string | null>(null);
+  const refreshInFlightRef = useRef(false);
 
-  // Filter actual bookings
-  const actualReservations = bookings.filter(
-    (b) =>
-      b.status !== "CANCELLED" &&
-      (tab === "today"
-        ? b.startDate.slice(0, 10) === today || b.endDate.slice(0, 10) === today
-        : b.startDate.slice(0, 10) > today),
+  const refreshReservations = useCallback(async () => {
+    if (refreshInFlightRef.current) return;
+    refreshInFlightRef.current = true;
+    try {
+      const response = await fetch("/api/v1/host/workspace", {
+        cache: "no-store",
+        headers: { Accept: "application/json" },
+      });
+      const payload = await response.json().catch(() => null);
+      if (
+        !response.ok ||
+        !payload?.success ||
+        !Array.isArray(payload.data?.bookings)
+      ) {
+        throw new Error(
+          payload?.error?.message || "Unable to refresh reservations.",
+        );
+      }
+      setReservations(deduplicateHostReservations(payload.data.bookings));
+      setRefreshError(null);
+    } catch (error) {
+      setRefreshError(
+        error instanceof Error
+          ? error.message
+          : "Unable to refresh reservations.",
+      );
+    } finally {
+      refreshInFlightRef.current = false;
+    }
+  }, []);
+
+  useEffect(() => {
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === "visible") void refreshReservations();
+    };
+    const interval = window.setInterval(refreshWhenVisible, 60_000);
+    window.addEventListener("focus", refreshWhenVisible);
+    document.addEventListener("visibilitychange", refreshWhenVisible);
+    window.addEventListener("homyz:reservations-updated", refreshWhenVisible);
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener("focus", refreshWhenVisible);
+      document.removeEventListener("visibilitychange", refreshWhenVisible);
+      window.removeEventListener(
+        "homyz:reservations-updated",
+        refreshWhenVisible,
+      );
+    };
+  }, [refreshReservations]);
+
+  useEffect(() => {
+    const updateCurrentTime = () => {
+      const now = new Date();
+      setCurrentDate(bookingDateKey(now));
+      setCurrentTimeMinutes(now.getHours() * 60 + now.getMinutes());
+    };
+    updateCurrentTime();
+    const interval = window.setInterval(updateCurrentTime, 60_000);
+    return () => window.clearInterval(interval);
+  }, []);
+
+  // Map listings for fast lookup
+  const listingsMap = useMemo(() => {
+    const map = new Map<string, ListingDTO>();
+    for (const l of listings) {
+      map.set(l.id, l);
+    }
+    return map;
+  }, [listings]);
+
+  // Ignore stale IDs if a listing was removed or the authenticated host changed.
+  const appliedPropertyId =
+    selectedPropertyId && listingsMap.has(selectedPropertyId)
+      ? selectedPropertyId
+      : null;
+
+  const operationalEvents = useMemo(
+    () => buildOperationalEvents(reservations, listingsMap, tab, currentDate),
+    [reservations, listingsMap, tab, currentDate],
   );
 
-  const reservations = (
-    bookings.length > 0
-      ? actualReservations
-      : tab === "today"
-        ? SAMPLE_TODAY_RESERVATIONS
-        : SAMPLE_UPCOMING_RESERVATIONS
-  ).filter((booking) => filters.length === 0 || filters.includes(booking.listingId));
+  // Apply listing filter
+  const displayedEvents = useMemo(
+    () =>
+      filterOperationalEventsByProperty(operationalEvents, appliedPropertyId),
+    [operationalEvents, appliedPropertyId],
+  );
 
-  const effectiveListings = listings.length > 0 ? listings : Object.values(DEMO_LISTINGS);
-  const selectedListing =
-    effectiveListings.find((l) => l.id === selected?.listingId) || effectiveListings[0];
+  const priorityReservationId = useMemo(
+    () => selectPriorityReservationId(displayedEvents, tab, currentTimeMinutes),
+    [displayedEvents, tab, currentTimeMinutes],
+  );
+
+  const openFilters = () => {
+    setDraftPropertyId(appliedPropertyId);
+    setFiltersOpen(true);
+  };
+
+  // Resolve selected listing for detail modal
+  const selectedListing = useMemo(() => {
+    if (!selected) return null;
+    const fromListings = listingsMap.get(selected.listingId);
+    if (fromListings) return fromListings;
+    if (selected.listing) return selected.listing as unknown as ListingDTO;
+    return listings[0] || null;
+  }, [selected, listingsMap, listings]);
 
   return (
     <>
       <HostSubNav
         activeTab="today"
-        onFilterClick={() => {
-          setDraft(filters);
-          setFiltersOpen(true);
-        }}
-        filterActive={filters.length > 0}
+        onFilterClick={openFilters}
+        filterActive={Boolean(appliedPropertyId)}
       />
 
       <main className="w-full min-w-0 pb-12 pt-10 sm:pb-24 sm:pt-10">
@@ -245,10 +172,11 @@ export function HostTodayWorkspace({ listings, bookings }: HostWorkspaceProps) {
                 role="tab"
                 aria-selected={tab === "today"}
                 onClick={() => setTab("today")}
-                className={`rounded-full px-4 py-3 text-base sm:px-4.25 sm:py-2.75 font-medium transition-all duration-300 ease-in-out font-sans ${tab === "today"
+                className={`rounded-full px-4 py-3 text-base sm:px-4.25 sm:py-2.75 font-medium transition-all duration-300 ease-in-out font-sans ${
+                  tab === "today"
                     ? "bg-[#1F1F1F] text-white shadow-xs"
                     : "bg-[#F3F4F5] text-[#1F1F1F] hover:bg-zinc-200"
-                  }`}
+                }`}
               >
                 Today
               </button>
@@ -256,10 +184,11 @@ export function HostTodayWorkspace({ listings, bookings }: HostWorkspaceProps) {
                 role="tab"
                 aria-selected={tab === "upcoming"}
                 onClick={() => setTab("upcoming")}
-                className={`rounded-full px-4 py-3 text-base sm:py-2.75 font-medium transition-all duration-300 ease-in-out font-sans ${tab === "upcoming"
+                className={`rounded-full px-4 py-3 text-base sm:py-2.75 font-medium transition-all duration-300 ease-in-out font-sans ${
+                  tab === "upcoming"
                     ? "bg-[#1F1F1F] text-white shadow-xs"
-                  : "bg-[#F3F4F5] text-[#1F1F1F] border border-transparent hover:bg-[#1F1F1F] hover:text-white hover:border-[#1F1F1F]"
-                  }`}
+                    : "bg-[#F3F4F5] text-[#1F1F1F] border border-transparent hover:bg-[#1F1F1F] hover:text-white hover:border-[#1F1F1F]"
+                }`}
               >
                 Upcoming
               </button>
@@ -269,12 +198,12 @@ export function HostTodayWorkspace({ listings, bookings }: HostWorkspaceProps) {
             <button
               type="button"
               aria-label="Filter listings"
-              onClick={() => {
-                setDraft(filters);
-                setFiltersOpen(true);
-              }}
-              className={`flex size-12 shrink-0 items-center justify-center rounded-full sm:hidden transition-colors duration-300 ease-in-out ${filters.length ? "bg-[#1F1F1F] text-white border-zinc-900" : "bg-[#F3F4F5] text-[#1F1F1F]"
-                }`}
+              onClick={openFilters}
+              className={`flex size-12 shrink-0 items-center justify-center rounded-full sm:hidden transition-colors duration-300 ease-in-out ${
+                appliedPropertyId
+                  ? "bg-[#1F1F1F] text-white border-zinc-900"
+                  : "bg-[#F3F4F5] text-[#1F1F1F]"
+              }`}
             >
               <svg
                 width="18"
@@ -300,169 +229,48 @@ export function HostTodayWorkspace({ listings, bookings }: HostWorkspaceProps) {
 
           {/* Section Headline */}
           <h1 className="mb-6 break-words font-sans text-[24px] leading-8 font-medium text-[#1F1F1F] tracking-normal sm:mb-8 sm:text-[32px] sm:leading-10 xl:text-[36px] xl:leading-[44px]">
-            You have {reservations.length} {tab === "upcoming" ? "upcoming " : ""}
-            {reservations.length === 1 ? "reservation" : "reservations"}
+            You have {displayedEvents.length}{" "}
+            {tab === "upcoming" ? "upcoming " : ""}
+            {displayedEvents.length === 1 ? "reservation" : "reservations"}
           </h1>
 
-          {/* Reservation Cards Flex Row matching Figma */}
-          {reservations.length > 0 ? (
+          {refreshError && (
+            <div
+              className="mb-5 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
+              role="status"
+            >
+              <span>
+                Reservations could not be refreshed. Showing the last available data.
+              </span>
+              <button
+                type="button"
+                onClick={() => void refreshReservations()}
+                className="font-semibold underline underline-offset-4"
+              >
+                Retry
+              </button>
+            </div>
+          )}
+
+          {/* Reservation Cards Grid */}
+          {displayedEvents.length > 0 ? (
             <div className="grid grid-cols-1 items-stretch gap-5 pb-2 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
-              {reservations.map((b, index) => {
-                const listing =
-                  listings.find((l) => l.id === b.listingId) ||
-                  DEMO_LISTINGS[b.listingId] ||
-                  DEFAULT_DEMO_LISTING;
-
-                // Times matching Figma specs:
-                // Card 0: 12:00 PM
-                // Card 1: 12:00 PM
-                // Card 2: 3:00 PM
-                // Card 3: 4:00 PM
-                const timeDisplay =
-                  index === 0
-                    ? "12:00 PM"
-                    : index === 1
-                      ? "12:00 PM"
-                      : index === 2
-                        ? "3:00 PM"
-                        : index === 3
-                          ? "4:00 PM"
-                          : b.endDate.slice(0, 10) === today
-                            ? listing.checkOutTime || "12:00 PM"
-                            : listing.checkInStart || "3:00 PM";
-
-                // Subtitles matching Figma specs:
-                // Card 0: Marik checks out
-                // Card 1: (Name) checks out
-                // Card 2: (Name) checks in
-                // Card 3: (Name) checks in
-                const isCheckout = index < 2;
-                const subtitleDisplay =
-                  tab === "upcoming"
-                    ? `${shortDate(b.startDate).slice(0, -5)} – ${shortDate(b.endDate)}`
-                    : index === 0
-                      ? `${b.guestName || "Marik"} checks out`
-                      : `${b.guestName || "(Name)"} checks ${isCheckout ? "out" : "in"}`;
-
-                const isSelected = selected?.id === b.id;
-                const badgeLetter =
-                  b.guestName && b.guestName !== "(Name)"
-                    ? b.guestName[0].toUpperCase()
-                    : index === 0
-                      ? "M"
-                      : "X";
-
-                return (
-                  <div
-                    key={b.id}
-                    onClick={() => setSelected(b)}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        setSelected(b);
-                      }
-                    }}
-                    className={`group relative flex min-h-[330px] w-full min-w-0 flex-col items-center justify-center rounded-[12px] border border-zinc-100 px-4 py-8 sm:min-h-[362px] sm:rounded-[20px] transition-colors duration-300 ease-in-out cursor-pointer select-none focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#1F1F1F] font-sans ${isSelected ? "bg-[#FCDF9C]" : "bg-white hover:bg-[#FCDF9C]"
-                      }`}
-                    style={{
-                      boxShadow: "0 1px 5px rgba(0, 0, 0, 0.20)",
-                    }}
-                  >
-                    {/* Frame 1996663767 */}
-                    <div className="relative flex w-[170px] flex-col items-center gap-[32px]">
-                      {/* Frame 1996663765: Header (Time + Subtitle) */}
-                      <div className="flex flex-col items-center justify-center text-center">
-                        <span className="font-sans text-[16px] font-medium leading-[24px] text-[#1F1F1F]">
-                          {timeDisplay}
-                        </span>
-                        <span
-                          className={`font-sans text-[14px] font-normal leading-[21px] transition-colors duration-300 ease-in-out ${isSelected ? "text-[#1F1F1F]" : "text-[#727272] group-hover:text-[#1F1F1F]"
-                            }`}
-                        >
-                          {subtitleDisplay}
-                        </span>
-                      </div>
-
-                      {/* Frame 1996663766: Content Body */}
-                      <div className="flex w-[170px] flex-col items-center gap-[12px]">
-                        {/* Frame 1996663768: Photo Thumbnail + Badge */}
-                        <div className="relative flex flex-col items-center">
-                          {index === 3 && (!listing.photos || listing.photos.length === 0) ? (
-                            /* Card 4 empty placeholder rectangle */
-                            <div
-                              className={`h-[110px] w-[149.79px] rounded-[23px] border border-[#1F1F1F] bg-[#F3F4F5] transition-all duration-300 ease-in-out ${isSelected
-                                ? "h-[110px] w-[149.79px] rounded-[23px]"
-                                : "group-hover:h-[110px] group-hover:w-[149.79px] group-hover:rounded-[23px]"
-                                }`}
-                            />
-                          ) : (
-                            /* Photo thumbnail with smooth expand on hover */
-                            <div
-                              className={`overflow-hidden transition-all duration-300 ease-in-out ${isSelected
-                                  ? "h-[110px] w-[149.79px] rounded-[23px] border border-[#1F1F1F]"
-                                  : "h-[110px] w-[149.79px] rounded-[23px] border border-[#1F1F1F]"
-                                }`}
-                            >
-                              <PropertyPhoto
-                                listing={listing}
-                                className="h-full w-full object-cover"
-                              />
-                            </div>
-                          )}
-
-                          {/* Avatar Badge: Frame 1996663769 */}
-                          <div className="absolute -top-[20px] left-1/2 flex h-[40px] w-[40px] -translate-x-1/2 items-center justify-center rounded-full border border-black bg-white z-10 shadow-xs">
-                            <span className="font-sans text-[16px] font-medium leading-[24px] text-[#1F1F1F]">
-                              {badgeLetter}
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Property name, Location */}
-                        <div
-                          className={`flex min-h-[36px] w-full min-w-0 flex-col items-center justify-center text-center font-sans text-[12px] font-normal leading-[18px] transition-colors duration-300 ease-in-out ${isSelected ? "text-[#1F1F1F]" : "text-[#727272] group-hover:text-[#1F1F1F]"
-                            }`}
-                        >
-                          <span className="line-clamp-2 max-w-full break-words">{listing.title},</span>
-                          <span className="line-clamp-2 max-w-full break-words">{[listing.district, listing.city].filter(Boolean).join(", ") || "Location"}</span>
-                        </div>
-
-                        {/* Action Button: slide */}
-                        <div
-                          className={`flex h-[32px] w-[32px] items-center justify-center rounded-full border border-[#1F1F1F] transition-colors duration-300 ease-in-out ${isSelected
-                              ? "bg-white"
-                              : "bg-[#FCDF9C] group-hover:bg-white"
-                            }`}
-                          aria-hidden="true"
-                        >
-                          {/* Single corner icon that rotates smoothly from ⌝ into > */}
-                          <svg
-                            width="10"
-                            height="10"
-                            viewBox="0 0 10 10"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                            className={`origin-center transition-transform duration-300 ease-in-out ${isSelected
-                                ? "rotate-45"
-                                : "rotate-0 group-hover:rotate-45"
-                              }`}
-                          >
-                            <path
-                              d="M2 2H8V8"
-                              stroke="#1F1F1F"
-                              strokeWidth="1.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+              {displayedEvents.map((event) => (
+                <ReservationCard
+                  key={event.booking.id}
+                  event={event}
+                  selected={selected?.id === event.booking.id}
+                  isActive={priorityReservationId === event.booking.id}
+                  priorityLabel={
+                    event.eventType === "staying"
+                      ? "Now"
+                      : tab === "today"
+                        ? "Next up"
+                        : "Upcoming"
+                  }
+                  onSelect={() => setSelected(event.booking)}
+                />
+              ))}
             </div>
           ) : (
             <div className="flex min-h-72 flex-col items-center justify-center rounded-[24px] border border-zinc-200 bg-zinc-50/50 px-6 py-12 text-center">
@@ -470,19 +278,35 @@ export function HostTodayWorkspace({ listings, bookings }: HostWorkspaceProps) {
                 ☼
               </span>
               <p className="text-lg font-semibold text-[#1F1F1F]">
-                {tab === "today" ? "A quiet day at home" : "Your next guests will appear here"}
+                {appliedPropertyId
+                  ? "No reservations found for this property"
+                  : tab === "today"
+                    ? "No reservations today"
+                    : "No upcoming reservations"}
               </p>
               <p className="mt-2 text-sm text-[#727272]">
-                {filters.length
-                  ? "Try clearing your listing filters to see all reservations."
-                  : "Manage your calendar and pricing to attract more travelers."}
+                {appliedPropertyId
+                  ? "Try clearing your listing filter to see all reservations."
+                  : tab === "today"
+                    ? "You don't have any check-ins, check-outs, or active stays scheduled for today."
+                    : "Your next reservations will appear here once guests book your space."}
               </p>
-              <Link
-                href="/host/calendar"
-                className="mt-6 rounded-full bg-[#1F1F1F] px-6 py-2.5 text-xs font-semibold text-white hover:bg-black transition-colors"
-              >
-                Open calendar
-              </Link>
+              {appliedPropertyId ? (
+                <button
+                  type="button"
+                  onClick={() => setSelectedPropertyId(null)}
+                  className="mt-6 rounded-full bg-[#1F1F1F] px-6 py-2.5 text-xs font-semibold text-white hover:bg-black transition-colors cursor-pointer"
+                >
+                  Clear filters
+                </button>
+              ) : (
+                <Link
+                  href="/host/calendar"
+                  className="mt-6 rounded-full bg-[#1F1F1F] px-6 py-2.5 text-xs font-semibold text-white hover:bg-black transition-colors"
+                >
+                  View calendar
+                </Link>
+              )}
             </div>
           )}
 
@@ -494,43 +318,73 @@ export function HostTodayWorkspace({ listings, bookings }: HostWorkspaceProps) {
               maxWidth="max-w-[520px]"
               variant="listing-filter"
             >
-              <div className="space-y-1.5 sm:space-y-2 sm:py-1">
-                {effectiveListings.map((l) => (
-                  <label
-                    key={l.id}
-                    className="flex min-h-12 cursor-pointer items-center gap-3 rounded-xl hover:bg-zinc-50 transition-colors sm:min-h-[68px] sm:gap-5 sm:py-1"
+              <div className="max-h-[calc(100dvh-190px)] space-y-1.5 overflow-y-auto overscroll-contain pr-1 sm:max-h-[50dvh] sm:space-y-2 sm:py-1">
+                <label className="flex min-h-12 cursor-pointer items-center gap-3 rounded-xl px-1 transition-colors hover:bg-zinc-50 sm:min-h-[60px] sm:gap-5">
+                  <span
+                    className="flex size-12 shrink-0 items-center justify-center rounded-full border border-[#727272] bg-[#F3F4F5] text-[#727272] sm:size-[60px]"
+                    aria-hidden="true"
                   >
-                    {l.photos[0] ? (
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.6"
+                    >
+                      <path d="m3 11 9-8 9 8M5 10v11h14V10M9 21v-8h6v8" />
+                    </svg>
+                  </span>
+                  <span className="min-w-0 flex-1 text-sm leading-5 font-normal text-[#1F1F1F] sm:text-base sm:leading-6">
+                    All properties
+                  </span>
+                  <input
+                    type="radio"
+                    name="host-property-filter"
+                    value="all"
+                    checked={draftPropertyId === null}
+                    onChange={() => setDraftPropertyId(null)}
+                    className="size-[22px] shrink-0 appearance-none rounded-full border border-[#1F1F1F] bg-white checked:border-[6px] checked:bg-[#FCDF9C] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#1F1F1F]"
+                  />
+                </label>
+                {listings.length === 0 ? (
+                  <p className="py-4 text-center text-sm text-[#727272]">
+                    No listings available.
+                  </p>
+                ) : (
+                  listings.map((l) => (
+                    <label
+                      key={l.id}
+                      className="flex min-h-12 cursor-pointer items-center gap-3 rounded-xl hover:bg-zinc-50 transition-colors sm:min-h-[68px] sm:gap-5 sm:py-1"
+                    >
                       <PropertyPhoto
                         listing={l}
                         className="size-12 shrink-0 rounded-full border border-[#727272] object-cover sm:size-[60px]"
                       />
-                    ) : (
-                      <span aria-hidden="true" className="size-12 shrink-0 rounded-full border border-[#727272] bg-[#F3F4F5] sm:size-[60px]" />
-                    )}
-                    <span className="min-w-0 flex-1 break-words text-sm font-normal leading-5 text-[#1F1F1F] sm:text-base sm:leading-6">
-                      {l.title}
-                    </span>
-                    <input
-                      type="checkbox"
-                      checked={draft.includes(l.id)}
-                      onChange={(e) =>
-                        setDraft(
-                          e.target.checked
-                            ? [...draft, l.id]
-                            : draft.filter((id) => id !== l.id),
-                        )
-                      }
-                      className="size-[22px] shrink-0 appearance-none rounded-full border border-[#1F1F1F] bg-white checked:border-[6px] checked:bg-[#FCDF9C] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#1F1F1F]"
-                    />
-                  </label>
-                ))}
+                      <span className="min-w-0 flex-1 break-words text-sm font-normal leading-5 text-[#1F1F1F] sm:text-base sm:leading-6">
+                        {l.title}
+                      </span>
+                      <input
+                        type="radio"
+                        name="host-property-filter"
+                        value={l.id}
+                        checked={draftPropertyId === l.id}
+                        onChange={() => setDraftPropertyId(l.id)}
+                        className="size-[22px] shrink-0 appearance-none rounded-full border border-[#1F1F1F] bg-white checked:border-[6px] checked:bg-[#FCDF9C] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#1F1F1F]"
+                      />
+                    </label>
+                  ))
+                )}
               </div>
 
-              <div className="mt-3 flex items-center justify-between gap-4 border-t border-[#D7D7D7] pt-4 sm:mt-5 sm:justify-start sm:gap-6 sm:pt-8">
+              <div className="sticky bottom-0 mt-3 flex items-center justify-between gap-4 border-t border-[#D7D7D7] bg-white pt-4 sm:mt-5 sm:justify-start sm:gap-6 sm:pt-6">
                 <button
                   type="button"
-                  onClick={() => setDraft([])}
+                  onClick={() => {
+                    setDraftPropertyId(null);
+                    setSelectedPropertyId(null);
+                    setFiltersOpen(false);
+                  }}
                   className="min-h-11 text-sm sm:text-base font-normal text-[#727272] underline underline-offset-4 hover:text-[#1F1F1F]"
                 >
                   Clear filters
@@ -538,7 +392,11 @@ export function HostTodayWorkspace({ listings, bookings }: HostWorkspaceProps) {
                 <button
                   type="button"
                   onClick={() => {
-                    setFilters(draft);
+                    setSelectedPropertyId(
+                      draftPropertyId && listingsMap.has(draftPropertyId)
+                        ? draftPropertyId
+                        : null,
+                    );
                     setFiltersOpen(false);
                   }}
                   className="min-h-12 rounded-full border border-[#727272] bg-[#FCDF9C] px-7 py-3 text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-[#F7D37D] sm:text-base sm:min-h-11 sm:border-transparent sm:px-7 sm:py-2.5"
@@ -550,23 +408,11 @@ export function HostTodayWorkspace({ listings, bookings }: HostWorkspaceProps) {
           )}
 
           {/* Reservation Details Drawer / Modal */}
-          {selected && selectedListing && !showMoney && (
+          {selected && selectedListing && (
             <ReservationDetails
               booking={selected}
               listing={selectedListing}
               onClose={() => setSelected(null)}
-              onMoney={() => setShowMoney(true)}
-            />
-          )}
-
-          {/* Send or Request Money Dialog */}
-          {selected && showMoney && (
-            <MoneyDialog
-              booking={selected}
-              onClose={() => {
-                setShowMoney(false);
-                setSelected(null);
-              }}
             />
           )}
         </Container>

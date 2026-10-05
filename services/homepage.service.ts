@@ -3,7 +3,15 @@ import { getCounter, getOrSetCache } from "@/lib/redis/cache";
 import { CACHE_KEYS } from "@/lib/redis/keys";
 import { CACHE_TTL } from "@/lib/redis/ttl";
 import { BookingStatus, ListingStatus } from "@/generated/prisma/enums";
-import { parseCutoffHour, parseRequiredAdvanceDays } from "@/services/booking.service";
+import {
+  getEarliestCheckInKey,
+  getMinimumStayForCheckIn,
+  validateStayAvailability,
+} from "@/lib/booking/availability";
+import { shiftBookingDateKey } from "@/lib/booking/booking-date";
+import { resolveCalendarDatePricing } from "@/lib/pricing/calendar-pricing";
+import type { PropertyCardPricingViewModel } from "@/lib/booking/property-card-pricing";
+import { getExpiryThresholdDate } from "@/lib/booking/booking-expiry";
 import { favoriteService } from "@/services/favorite.service";
 import { getHomepagePopularHomesConfig, type HomepagePopularHomesConfig } from "@/services/app-settings.service";
 import { reverseGeocodeLocation } from "@/lib/location/geocoding";
@@ -43,6 +51,7 @@ export type HomepageProperty = {
   badge?: "guest_favorite" | "superhost" | "featured" | null;
   alternativeDates?: string | null;
   distanceKm?: number;
+  pricing: PropertyCardPricingViewModel;
 };
 
 export type HomepageSectionType =
@@ -119,6 +128,10 @@ export type DiscoveryListing = {
   photos: string[];
   price: number;
   weekdayBasePrice: number | null;
+  weekendPrice: number | null;
+  weekendPremium: number | null;
+  customPrices: Record<string, number> | null;
+  discounts: Record<string, unknown> | null;
   guests: number;
   bedrooms?: number | null;
   bathrooms?: number | null;
@@ -141,7 +154,7 @@ export type DiscoveryListing = {
     publicProfile: Record<string, unknown> | null;
     bookings?: Array<{ status: BookingStatus }>;
   } | null;
-  bookings: Array<{ startDate: Date; endDate: Date; status: BookingStatus }>;
+  bookings: Array<{ startDate: Date; endDate: Date; status: BookingStatus; createdAt: Date }>;
 };
 
 function startOfDay(value = new Date()): Date {
@@ -196,7 +209,13 @@ function toProperty(
   const calculatedBadge: "guest_favorite" | "superhost" | "featured" | null =
     extra?.badge ?? (isGuestFav ? "guest_favorite" : isSuperh ? "superhost" : listing.isFeatured ? "featured" : null);
 
-  const priceVal = listing.weekdayBasePrice ?? listing.price;
+  const displayDate = getDefaultDisplayDate(listing);
+  const resolvedPricing = resolveCalendarDatePricing({
+    dateKey: displayDate,
+    listing,
+  });
+  const priceVal = resolvedPricing.originalPrice;
+  const promotion = resolvedPricing.promotion;
   const mainPhoto = listing.photos[0] ?? "/images/home/hero-banner.png";
 
   return {
@@ -226,6 +245,15 @@ function toProperty(
     badge: calculatedBadge,
     alternativeDates: extra?.alternativeDates ?? null,
     distanceKm: extra?.distanceKm,
+    pricing: {
+      currency,
+      baseDisplayPrice: priceVal,
+      discountedDisplayPrice: promotion?.promotionalPrice ?? null,
+      hasDiscount: Boolean(promotion),
+      discountType: promotion?.key ?? null,
+      discountLabel: promotion?.name ?? null,
+      discountPercentage: promotion?.percentage ?? null,
+    },
   };
 }
 
@@ -301,39 +329,33 @@ function isListingAvailable(
   cOut: Date,
   requiredGuests: number = 1,
 ): boolean {
-  if (listing.guests < requiredGuests) return false;
+  return validateStayAvailability({
+    listing,
+    checkIn: dateKey(cIn),
+    checkOut: dateKey(cOut),
+    guests: requiredGuests,
+    unavailableRanges: listing.bookings.map((booking) => ({
+      start: booking.startDate,
+      end: booking.endDate,
+    })),
+  }).available;
+}
 
-  const nights = Math.round((cOut.getTime() - cIn.getTime()) / (1000 * 60 * 60 * 24));
-  if (nights <= 0) return false;
-
-  const minNights = Math.max(1, listing.minNights || 1);
-  const maxNights = Math.max(minNights, listing.maxNights || 365);
-  if (nights < minNights || nights > maxNights) return false;
-
+function getDefaultDisplayDate(listing: DiscoveryListing): string {
   const now = new Date();
-  const today = startOfDay(now);
-  const advanceDays = parseRequiredAdvanceDays(listing.advanceNotice);
-  const earliestCheckIn = addDays(today, advanceDays);
-  if (cIn < earliestCheckIn) return false;
-
-  if (cIn.getTime() === today.getTime()) {
-    const currentHour = now.getHours() + now.getMinutes() / 60;
-    if (!listing.allowSameDayRequests || currentHour >= parseCutoffHour(listing.sameDayCutoff)) {
-      return false;
-    }
+  let candidate = getEarliestCheckInKey(listing, now);
+  for (let offset = 0; offset < 366; offset += 1) {
+    const minimumStay = getMinimumStayForCheckIn(listing, candidate);
+    const checkOut = shiftBookingDateKey(candidate, minimumStay);
+    if (isListingAvailable(
+      listing,
+      new Date(`${candidate}T00:00:00`),
+      new Date(`${checkOut}T00:00:00`),
+      1,
+    )) return candidate;
+    candidate = shiftBookingDateKey(candidate, 1);
   }
-
-  // Blocked dates check
-  const blocked = new Set(listing.blockedDates);
-  for (let d = new Date(cIn); d < cOut; d = addDays(d, 1)) {
-    if (blocked.has(dateKey(d))) return false;
-  }
-
-  // Overlapping confirmed or pending bookings
-  const hasConflict = listing.bookings.some(
-    (b) => b.startDate < cOut && b.endDate > cIn,
-  );
-  return !hasConflict;
+  return getEarliestCheckInKey(listing, now);
 }
 
 /**
@@ -464,6 +486,7 @@ export async function getDiscoveryCandidateListings(): Promise<DiscoveryListing[
   return getOrSetCache(
     cacheKey,
     async () => {
+      const expiryThreshold = getExpiryThresholdDate();
       return (await prisma.listing.findMany({
         where: {
           published: true,
@@ -484,6 +507,10 @@ export async function getDiscoveryCandidateListings(): Promise<DiscoveryListing[
           photos: true,
           price: true,
           weekdayBasePrice: true,
+          weekendPrice: true,
+          weekendPremium: true,
+          customPrices: true,
+          discounts: true,
           guests: true,
           bedrooms: true,
           bathrooms: true,
@@ -511,7 +538,13 @@ export async function getDiscoveryCandidateListings(): Promise<DiscoveryListing[
             },
           },
           bookings: {
-            select: { startDate: true, endDate: true, status: true },
+            where: {
+              OR: [
+                { status: BookingStatus.CONFIRMED },
+                { status: BookingStatus.PENDING, createdAt: { gt: expiryThreshold } },
+              ],
+            },
+            select: { startDate: true, endDate: true, status: true, createdAt: true },
           },
         },
         orderBy: [{ isFeatured: "desc" }, { createdAt: "desc" }],

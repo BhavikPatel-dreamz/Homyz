@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { ListingCard } from "@/components/listings/listing-card";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 type ListingSummary = React.ComponentProps<typeof ListingCard>["listing"];
 
@@ -19,6 +20,7 @@ interface SavedListingsViewProps {
 }
 
 export function SavedListingsView({ initialFavorites, initialTotal = 0 }: SavedListingsViewProps) {
+  const { t } = useLanguage();
   const [items, setItems] = useState<FavoriteItem[]>(initialFavorites || []);
   const [total, setTotal] = useState(initialTotal);
   const [isLoading, setIsLoading] = useState<boolean>(!initialFavorites);
@@ -145,12 +147,6 @@ export function SavedListingsView({ initialFavorites, initialTotal = 0 }: SavedL
     });
   }, [validItems, categoryFilter]);
 
-  const formatCategoryLabel = (category: string) =>
-    category
-      .replace(/[_-]/g, " ")
-      .toLowerCase()
-      .replace(/\b\w/g, (letter) => letter.toUpperCase());
-
   return (
     <div className="flex min-w-0 w-full flex-col animate-in fade-in duration-300">
       {/* Title Header */}
@@ -158,11 +154,13 @@ export function SavedListingsView({ initialFavorites, initialTotal = 0 }: SavedL
         <div className="min-w-0">
           <div className="flex items-center gap-3">
             <h2 className="text-[22px] leading-[30px] font-medium tracking-[-0.02em] text-[#1F1F1F] sm:text-[28px] sm:leading-[36px] lg:text-[32px] lg:leading-[40px] xl:text-[36px] xl:leading-[44px]">
-              Wishlists
+              {t("profile_saved_title", "Wishlists")}
             </h2>
             {validItems.length > 0 && (
-              <span className="inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800">
-                {validItems.length} {validItems.length === 1 ? "saved stay" : "saved stays"}
+              <span className="inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">
+                {validItems.length === 1
+                  ? t("profile_saved_count_one", { count: 1 }, "1 saved stay")
+                  : t("profile_saved_count_many", { count: validItems.length }, `${validItems.length} saved stays`)}
               </span>
             )}
           </div>
@@ -179,7 +177,7 @@ export function SavedListingsView({ initialFavorites, initialTotal = 0 }: SavedL
                 : "text-[#1f1f1f] bg-[#FCDF9C]"
                 }`}
             >
-              All ({validItems.length})
+              {t("profile_saved_all_filter", { count: validItems.length }, `All (${validItems.length})`)}
             </button>
             {availableCategories.map((cat) => (
               <button
@@ -218,27 +216,31 @@ export function SavedListingsView({ initialFavorites, initialTotal = 0 }: SavedL
               <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
             </svg>
           </div>
-          <h3 className="text-xl font-medium text-[#1F1F1F]">Your wishlist is empty</h3>
+          <h3 className="text-xl font-medium text-[#1F1F1F]">
+            {t("profile_saved_empty_title", "Your wishlist is empty")}
+          </h3>
           <p className="mt-1.5 text-sm text-[#727272] max-w-sm">
-            As you search, tap the heart icon on any stay to save your favorite villas and properties here.
+            {t("profile_saved_empty_desc", "As you search, tap the heart icon on any stay to save your favorite villas and properties here.")}
           </p>
           <Link
             href="/listings"
             className="mt-6 rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-2.5 text-sm font-semibold text-[#1F1F1F] hover:text-white transition-colors shadow-2xs"
           >
-            Explore stays
+            {t("profile_saved_explore_stays", "Explore stays")}
           </Link>
         </div>
       ) : filteredItems.length === 0 ? (
         /* Category Empty State */
         <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-zinc-200 py-12 text-center my-4">
-          <p className="text-sm font-medium text-[#1F1F1F]">No stays found under &ldquo;{categoryFilter}&rdquo;</p>
+          <p className="text-sm font-medium text-[#1F1F1F]">
+            {t("profile_saved_no_category_matches", { category: categoryFilter }, `No stays found under "${categoryFilter}"`)}
+          </p>
           <button
             type="button"
             onClick={() => setCategoryFilter("ALL")}
             className="mt-3 text-xs font-semibold text-amber-700 underline"
           >
-            Show all saved stays
+            {t("profile_saved_show_all", "Show all saved stays")}
           </button>
         </div>
       ) : (
@@ -265,7 +267,9 @@ export function SavedListingsView({ initialFavorites, initialTotal = 0 }: SavedL
                 disabled={isLoadingMore}
                 className="rounded-full border border-[#D7D7D7] bg-white px-5 py-2.5 text-sm font-semibold text-[#1F1F1F] transition-colors hover:bg-zinc-50 disabled:cursor-wait disabled:opacity-60"
               >
-                {isLoadingMore ? "Loading..." : "Load more"}
+                {isLoadingMore
+                  ? t("profile_saved_loading_more" as any, "Loading...")
+                  : t("profile_saved_load_more" as any, "Load more")}
               </button>
             </div>
           )}

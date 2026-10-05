@@ -211,20 +211,19 @@ describe("Complete Property Pricing & Fee System Audit Suite (16 Business Rules)
     assert.equal(res.totalAdditionalFees, 30000);
   });
 
-  // 10. Cleaning fee is added as a separate line item
-  it("10. Cleaning fee is added as a separate line item", async () => {
+  // 10. Cleaning fee is absent from current pricing contracts and results
+  it("10. Cleaning fee is never charged", async () => {
     const res = await calculateBookingPrice({
       checkIn: "2026-10-04",
       checkOut: "2026-10-07",
       weekdayBasePrice: 40000,
-      cleaningFee: 15000, // SAR 150.00
       hostServiceFeePercentage: 15,
     });
 
     assert.equal(res.staySubtotal, 120000);
-    assert.equal(res.cleaningFee, 15000);
-    assert.equal(res.totalAdditionalFees, 15000);
-    assert.equal(res.accommodationSubtotal, 120000, "Cleaning fee is not absorbed into nightly subtotal");
+    assert.equal("cleaningFee" in res, false);
+    assert.equal(res.totalAdditionalFees, 0);
+    assert.equal(res.guestTotal, 120000, "Cleaning fee is excluded from the guest total");
   });
 
   // 11. Host Service Fee is calculated using admin-configured percentage
@@ -244,35 +243,30 @@ describe("Complete Property Pricing & Fee System Audit Suite (16 Business Rules)
 
   // 12. Host Service Fee is NOT included in the taxable base
   it("12. Host Service Fee is strictly NOT included in the taxable base", async () => {
-    // Accommodation = 100,000 cents, Cleaning Fee = 20,000 cents. Host Service Fee = 15,000 cents.
-    // Taxable base MUST strictly equal 100,000 + 20,000 = 120,000 cents (NEVER 135,000 cents!)
+    // Accommodation = 100,000 cents. Host Service Fee = 15,000 cents.
     const res = await calculateBookingPrice({
       checkIn: "2026-10-04",
       checkOut: "2026-10-06",
       weekdayBasePrice: 50000,
-      cleaningFee: 20000,
       hostServiceFeePercentage: 15,
       taxRules: [SAUDI_VAT_RULE],
     });
 
     assert.equal(res.accommodationSubtotal, 100000);
-    assert.equal(res.cleaningFee, 20000);
+    assert.equal("cleaningFee" in res, false);
     assert.equal(res.hostServiceFee, 15000);
 
-    // VAT 15% on 120,000 cents = exactly 18,000 cents
-    assert.equal(res.taxableBase, 120000);
-    assert.equal(res.taxTotal, 18000, "VAT 15% on 120,000 must equal 18,000 cents, NOT 15% on 135,000");
+    assert.equal(res.taxableBase, 100000);
+    assert.equal(res.taxTotal, 15000, "VAT applies to accommodation, never a removed cleaning fee or platform fee");
   });
 
   // 13. Taxes are computed correctly on taxable amounts
   it("13. Taxes are computed correctly on taxable amounts", async () => {
-    // Accommodation: 60,000 cents, Extra guest fee: 10,000 cents, Cleaning fee: 10,000 cents
-    // Total taxable: 80,000 cents. VAT 15% = 12,000 cents.
+    // Accommodation: 60,000 cents, Extra guest fee: 10,000 cents.
     const res = await calculateBookingPrice({
       checkIn: "2026-10-04",
       checkOut: "2026-10-06",
       weekdayBasePrice: 30000,
-      cleaningFee: 10000,
       baseGuests: 1,
       guests: 2,
       extraGuestFee: 5000, // 1 extra guest * 5,000 * 2 nights = 10,000 cents
@@ -282,57 +276,50 @@ describe("Complete Property Pricing & Fee System Audit Suite (16 Business Rules)
 
     assert.equal(res.accommodationSubtotal, 60000);
     assert.equal(res.extraGuestFee, 10000);
-    assert.equal(res.cleaningFee, 10000);
-    assert.equal(res.taxableBase, 80000);
-    assert.equal(res.taxTotal, 12000);
-    assert.equal(res.guestTotal, 60000 + 10000 + 10000 + 12000 + res.hostServiceFee);
+    assert.equal("cleaningFee" in res, false);
+    assert.equal(res.taxableBase, 70000);
+    assert.equal(res.taxTotal, 10500);
+    assert.equal(res.guestTotal, 60000 + 10000 + 10500);
   });
 
-  // 14. Host payout equals (Accommodation + Cleaning - Host Service Fee)
-  it("14. Host payout equals (Accommodation + Cleaning - Host Service Fee)", async () => {
+  // 14. Host payout excludes cleaning and deducts the platform fee
+  it("14. Host payout equals accommodation minus host service fee", async () => {
     const res = await calculateBookingPrice({
       checkIn: "2026-10-04",
       checkOut: "2026-10-06",
       weekdayBasePrice: 50000, // 100,000 accommodation
-      cleaningFee: 25000,
       hostServiceFeePercentage: 15, // 15,000 fee
       taxRules: [SAUDI_VAT_RULE], // Platform remitted
     });
 
     assert.equal(res.accommodationSubtotal, 100000);
-    assert.equal(res.cleaningFee, 25000);
+    assert.equal("cleaningFee" in res, false);
     assert.equal(res.hostServiceFee, 15000);
 
-    // Host payout: 100,000 + 25,000 - 15,000 = 110,000 cents
-    assert.equal(res.payoutBreakdown.netHostPayout, 110000);
+    assert.equal(res.payoutBreakdown.netHostPayout, 85000);
     assert.equal(res.payoutBreakdown.platformServiceFee, 15000);
   });
 
-  // 15. Special Offer calculates accommodation subtotal + fees + taxes + host service fee correctly
-  it("15. Special Offer calculates accommodation subtotal + fees + taxes + host service fee correctly", async () => {
+  // 15. Special Offer excludes cleaning and guest-facing platform fees
+  it("15. Special Offer calculates supported charges and taxes correctly", async () => {
     // Special offer for SAR 2,000.00 (200,000 cents) for 5 nights
     const res = await calculateSpecialOffer({
       specialOfferAmount: 200000,
       nights: 5,
-      cleaningFee: 20000, // SAR 200.00
       extraGuestFee: 10000, // SAR 100.00
       hostServiceFeePercentage: 15,
       taxRules: [SAUDI_VAT_RULE],
     });
 
     assert.equal(res.accommodationSubtotal, 200000);
-    assert.equal(res.cleaningFee, 20000);
+    assert.equal("cleaningFee" in res, false);
     assert.equal(res.extraGuestFee, 10000);
     // Host fee = 15% on 200,000 = 30,000 cents
     assert.equal(res.hostServiceFee, 30000);
-    // Taxable base = 200,000 + 20,000 + 10,000 = 230,000 cents (Host Service Fee NOT included)
-    assert.equal(res.taxableBase, 230000);
-    // VAT = 15% of 230,000 = 34,500 cents
-    assert.equal(res.taxTotal, 34500);
-    // Guest Total = 200,000 + 20,000 + 10,000 + 34,500 + 30,000 = 294,500 cents
-    assert.equal(res.guestTotal, 294500);
-    // Host Payout = 200,000 + 20,000 - 30,000 = 190,000 cents
-    assert.equal(res.payoutBreakdown.netHostPayout, 190000);
+    assert.equal(res.taxableBase, 210000);
+    assert.equal(res.taxTotal, 31500);
+    assert.equal(res.guestTotal, 241500);
+    assert.equal(res.payoutBreakdown.netHostPayout, 180000);
   });
 
   // 16. Invalid date ranges, negative prices, or unsupported discount combinations are rejected gracefully

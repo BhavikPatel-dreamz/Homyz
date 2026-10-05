@@ -7,8 +7,16 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getCurrencyForCountry } from "@/lib/currency";
 import { useCurrency } from "@/lib/currency-context";
+import { useLanguage } from "@/lib/i18n/language-context";
 import type { PublicListingDTO } from "@/services/mappers";
 import { trackListingEvent } from "@/lib/analytics/listing-analytics";
+import { buildListingDetailUrl, getLastSearch } from "@/lib/storage/client-history";
+import {
+  toPropertyCardPricingViewModel,
+  type PropertyCardPricingViewModel,
+} from "@/lib/booking/property-card-pricing";
+
+import { propertyTypeLabel } from "@/lib/constants/listing-enums";
 
 // ─── Discount Helpers ──────────────────────────────────────────────────────────
 type DiscountEntry =
@@ -83,6 +91,7 @@ export interface ListingCardProps {
     isSuperhost?: boolean;
     badge?: string | null;
     alternativeDates?: string | null;
+    pricing?: PropertyCardPricingViewModel;
   };
   className?: string;
   /** Optional contextual landmark / place name (e.g. "Burj Khalifa") */
@@ -97,6 +106,14 @@ export interface ListingCardProps {
   checkIn?: string;
   /** Optional check-out date from search filters */
   checkOut?: string;
+  /** Optional guest count from search filters */
+  guests?: number;
+  /** Optional adults count */
+  adults?: number;
+  /** Optional children count */
+  children?: number;
+  /** Optional pets count */
+  pets?: number;
   /** Choose which favorite control to render: heart (toggle) or remove (cross) */
   favoriteVariant?: "heart" | "remove";
   /** Compact bordered card treatment used by the search-results grid. */
@@ -113,14 +130,25 @@ export function ListingCard({
   priority = false,
   checkIn,
   checkOut,
+  guests,
+  adults,
+  children,
+  pets,
   favoriteVariant = "heart",
   variant = "default",
 }: ListingCardProps) {
   const { formatPrice } = useCurrency();
+  const { t } = useLanguage();
   const router = useRouter();
   const [isFavorite, setIsFavorite] = useState(initialFavorite);
   const [isFavoriting, setIsFavoriting] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
   const wishlist = useWishlist();
+
+  // Reset navigation loading state when target URL or component changes
+  useEffect(() => {
+    setIsNavigating(false);
+  }, [listing.id]);
 
   // Sync if parent passes a new initial state (e.g., after server re-render)
   useEffect(() => {
@@ -198,26 +226,26 @@ export function ListingCard({
     setCurrentPhotoIndex((prev) => (prev < validPhotos.length - 1 ? prev + 1 : prev));
   };
 
-  // ── Pricing & Currency ──────────────────────────────────────────────────────
+  // ── Pricing & Currency (Phase 6 Central Card Pricing Adapter) ────────────────
   const currency = getCurrencyForCountry(listing.country);
-  const basePrice = typeof listing.price === "number" && isFinite(listing.price) ? listing.price : 0;
+  const storedBasePrice = typeof listing.price === "number" && isFinite(listing.price) ? listing.price : 0;
   // Compatibility static contract reference: listing.price / 100 SAR {formattedPrice}
   const _priceInWhole = Math.round(listing.price / 100);
 
-  // Discount parsing
-  const rawDiscounts = (listing as { discounts?: unknown }).discounts as DiscountsJson | null | undefined;
-  const weeklyPct = getDiscountPct(rawDiscounts?.weekly);
-  const monthlyPct = getDiscountPct(rawDiscounts?.monthly);
-  // Priority: weekly > monthly
-  const activePct = weeklyPct ?? monthlyPct ?? null;
-  const discountedPrice = activePct != null ? basePrice * (1 - activePct / 100) : null;
+  const serverPricing = "pricing" in listing ? listing.pricing : undefined;
+  const cardPricing = serverPricing ?? toPropertyCardPricingViewModel(listing, {
+      checkIn,
+      checkOut,
+      guests,
+      currency,
+    });
+  const basePrice = cardPricing.baseDisplayPrice || storedBasePrice;
 
-  const formattedBasePrice = formatPrice(basePrice, currency);
+  const discountedPrice = cardPricing.hasDiscount ? cardPricing.discountedDisplayPrice : null;
+
+  const formattedBasePrice = formatPrice(cardPricing.baseDisplayPrice, currency);
   const formattedDiscountedPrice =
     discountedPrice != null ? formatPrice(discountedPrice, currency) : null;
-
-  const discountLabel =
-    weeklyPct != null ? "Weekly discount" : monthlyPct != null ? "Monthly discount" : null;
 
   // ── Rating & Reviews ────────────────────────────────────────────────────────
   const numericRating =
@@ -244,10 +272,12 @@ export function ListingCard({
     ? `${listing.city}${listing.country ? `, ${listing.country}` : ""}`
     : listing.country || "";
 
+  const formattedPropertyType = propertyTypeLabel(listing.propertyType, t);
+
   // Primary heading: "Flat in Dubai", "Apartment in Riyadh", etc.
   const primaryHeading = listing.city
-    ? `${listing.propertyType || "Stay"} in ${listing.city}`
-    : listing.title || "Untitled property";
+    ? t("listings_stay_in", { propertyType: formattedPropertyType || t("home_search_where", undefined, "Stay"), city: listing.city }, `${formattedPropertyType || "Stay"} in ${listing.city}`)
+    : listing.title || t("host_untitled_listing", "Untitled property");
 
   // Secondary subtitle: full descriptive title or location
   const secondarySubtitle = listing.city
@@ -257,24 +287,25 @@ export function ListingCard({
   const distanceText =
     typeof listing.distanceKm === "number" && isFinite(listing.distanceKm)
       ? targetLocationName
-        ? ` · ${listing.distanceKm} km from ${targetLocationName}`
-        : ` · ${listing.distanceKm} km away`
+        ? t("listings_km_from", { distance: listing.distanceKm, location: targetLocationName }, ` · ${listing.distanceKm} km from ${targetLocationName}`)
+        : t("listings_km_away", { distance: listing.distanceKm }, ` · ${listing.distanceKm} km away`)
       : "";
 
   // Room specification line: e.g. "1 bedroom · 2 beds · 1 bathroom"
   const roomSpecs: string[] = [];
   if (listing.bedrooms && listing.bedrooms > 0) {
-    roomSpecs.push(`${listing.bedrooms} bedroom${listing.bedrooms > 1 ? "s" : ""}`);
+    roomSpecs.push(listing.bedrooms === 1 ? t("listings_bedroom_one", { count: listing.bedrooms }, "1 bedroom") : t("listings_bedroom_many", { count: listing.bedrooms }, `${listing.bedrooms} bedrooms`));
   }
   if (listing.beds && listing.beds > 0) {
-    roomSpecs.push(`${listing.beds} bed${listing.beds > 1 ? "s" : ""}`);
+    roomSpecs.push(listing.beds === 1 ? t("listings_bed_one", { count: listing.beds }, "1 bed") : t("listings_bed_many", { count: listing.beds }, `${listing.beds} beds`));
   }
   if (listing.bathrooms && listing.bathrooms > 0) {
-    roomSpecs.push(`${listing.bathrooms} bathroom${listing.bathrooms > 1 ? "s" : ""}`);
+    roomSpecs.push(listing.bathrooms === 1 ? t("listings_bathroom_one", { count: listing.bathrooms }, "1 bathroom") : t("listings_bathroom_many", { count: listing.bathrooms }, `${listing.bathrooms} bathrooms`));
   }
   if (roomSpecs.length === 0) {
+    const guestVal = listing.guests ?? 1;
     roomSpecs.push(
-      `${listing.propertyType || "Home"} · ${listing.guests ?? 1} ${(listing.guests ?? 1) === 1 ? "guest" : "guests"}`
+      `${formattedPropertyType || "Home"} · ${guestVal} ${guestVal === 1 ? t("home_guest_one", { count: guestVal }, "1 guest") : t("home_guest_many", { count: guestVal }, `${guestVal} guests`)}`
     );
   }
   const specsText = roomSpecs.join(" · ");
@@ -295,6 +326,7 @@ export function ListingCard({
   })();
 
   const totalPrice = (discountedPrice ?? basePrice) * nights;
+  const baseTotalPrice = basePrice * nights;
 
   const hasFreeCancellation =
     (listing as any).cancellationPolicy !== "STRICT" &&
@@ -310,7 +342,43 @@ export function ListingCard({
   // Navigation target — prefer customSlug when available
   // Compatibility static contract reference: href={`/listings/${listing.id}`}
   const slug = (listing as { customSlug?: string | null }).customSlug;
-  const targetHref = slug ? `/listings/${slug}` : `/listings/${listing.id}`;
+  const targetIdOrSlug = slug || listing.id;
+
+  const [activeContext, setActiveContext] = useState(() => ({
+    checkIn: checkIn || undefined,
+    checkOut: checkOut || undefined,
+    guests: guests || undefined,
+    adults: adults || undefined,
+    children: children || undefined,
+    pets: pets || undefined,
+  }));
+
+  useEffect(() => {
+    if (checkIn || checkOut || guests) {
+      setActiveContext({
+        checkIn: checkIn || undefined,
+        checkOut: checkOut || undefined,
+        guests: guests || undefined,
+        adults: adults || undefined,
+        children: children || undefined,
+        pets: pets || undefined,
+      });
+    } else {
+      const last = getLastSearch();
+      if (last && (last.checkIn || last.checkOut || last.guests)) {
+        setActiveContext({
+          checkIn: last.checkIn || undefined,
+          checkOut: last.checkOut || undefined,
+          guests: last.guests || undefined,
+          adults: last.adults || undefined,
+          children: last.children || undefined,
+          pets: last.pets || undefined,
+        });
+      }
+    }
+  }, [checkIn, checkOut, guests, adults, children, pets]);
+
+  const targetHref = buildListingDetailUrl(targetIdOrSlug, activeContext);
   const isSearchGridCard = variant === "search-grid";
 
   // ── Favorite Action ─────────────────────────────────────────────────────────
@@ -371,13 +439,23 @@ export function ListingCard({
       href={targetHref}
       aria-label={listing.title || "View property"}
       onClick={() => {
+        setIsNavigating(true);
         trackListingEvent({
           eventType: "property_card_click",
           propertyId: listing.id,
         });
       }}
-      className={`group block overflow-hidden text-left ${isSearchGridCard ? "rounded-[20px] border border-[#1F1F1F] bg-white focus-within:ring-0 focus-visible:shadow-none" : ""} ${className}`}
+      className={`group relative block overflow-hidden text-left ${isNavigating ? "opacity-90 cursor-wait" : ""} ${isSearchGridCard ? "rounded-[20px] border border-[#1F1F1F] bg-white focus-within:ring-0 focus-visible:shadow-none" : ""} ${className}`}
     >
+      {/* ── Navigation Loading Overlay ── */}
+      {isNavigating && (
+        <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/25 backdrop-blur-[1px] transition-all">
+          <div className="flex items-center gap-2 rounded-full bg-white px-3.5 py-1.5 shadow-lg text-xs font-semibold text-zinc-900 border border-zinc-200">
+            <div className="size-3.5 rounded-full border-2 border-zinc-300 border-t-zinc-900 animate-spin" />
+            <span>Loading...</span>
+          </div>
+        </div>
+      )}
       {/* ── Image Carousel ── */}
       <div
         className={`relative aspect-[4/3] w-full overflow-hidden bg-zinc-100 select-none ${isSearchGridCard ? "rounded-none shadow-none" : "rounded-2xl shadow-xs"}`}
@@ -389,45 +467,52 @@ export function ListingCard({
           <div
             className="relative h-full w-full overflow-hidden"
           >
-            {validPhotos.map((photo, idx) => (
-              <div
-                key={`${photo}-${idx}`}
-                aria-hidden={idx !== currentPhotoIndex}
-                className={`absolute inset-0 h-full w-full overflow-hidden transition-opacity duration-300 ease-out ${idx === currentPhotoIndex ? "z-10 opacity-100" : "pointer-events-none z-0 opacity-0"}`}
-              >
-                <img
-                  src={photo}
-                  alt={listing.title || `Photo ${idx + 1}`}
-                  onError={() => {
-                    setFailedIndices((prev) => new Set(prev).add(idx));
-                  }}
-                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  loading={priority && idx === 0 ? "eager" : "lazy"}
-                  decoding={priority && idx === 0 ? "sync" : "async"}
-                  {...(priority && idx === 0 ? { fetchPriority: "high" as const } : {})}
-                />
-              </div>
-            ))}
+            {validPhotos.map((photo, idx) => {
+              const shouldRenderImage = idx === currentPhotoIndex || Math.abs(idx - currentPhotoIndex) <= 1;
+              return (
+                <div
+                  key={`${photo}-${idx}`}
+                  aria-hidden={idx !== currentPhotoIndex}
+                  className={`absolute inset-0 h-full w-full overflow-hidden transition-opacity duration-300 ease-out ${idx === currentPhotoIndex ? "z-10 opacity-100" : "pointer-events-none z-0 opacity-0"}`}
+                >
+                  {shouldRenderImage ? (
+                    <img
+                      src={photo}
+                      alt={listing.title || `Photo ${idx + 1}`}
+                      onError={() => {
+                        setFailedIndices((prev) => new Set(prev).add(idx));
+                      }}
+                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      loading={priority && idx === 0 ? "eager" : "lazy"}
+                      decoding={priority && idx === 0 ? "sync" : "async"}
+                      {...(priority && idx === 0 ? { fetchPriority: "high" as const } : {})}
+                    />
+                  ) : (
+                    <div className="h-full w-full bg-zinc-100" />
+                  )}
+                </div>
+              );
+            })}
           </div>
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center bg-zinc-100 text-[#727272]">
             <span className="text-3xl mb-1" aria-hidden="true">🏡</span>
-            <span className="text-xs font-medium text-[#727272]">No photo yet</span>
+            <span className="text-xs font-medium text-[#727272]">{t("listings_no_photo_yet", "No photo yet")}</span>
           </div>
         )}
 
         {/* ── Badges (Top Left) ── */}
         {isGuestFav ? (
           <span className="absolute left-3 top-3 z-20 inline-flex items-center rounded-full bg-white px-3 py-1 text-[11px] sm:text-xs font-semibold text-[#1F1F1F] shadow-md border border-black/5">
-            Guest favourite
+            {t("listings_guest_favourite", "Guest favourite")}
           </span>
         ) : isSuper ? (
           <span className="absolute left-3 top-3 z-20 inline-flex items-center rounded-full bg-black/60 backdrop-blur-md px-3 py-1 text-[11px] sm:text-xs font-medium text-white shadow-md">
-            Superhost
+            {t("listings_superhost", "Superhost")}
           </span>
         ) : isFeat ? (
           <span className="absolute left-3 top-3 z-20 inline-flex items-center rounded-full bg-white/90 backdrop-blur-md px-2.5 py-1 text-[11px] sm:text-xs font-semibold text-[#1F1F1F] shadow-xs border border-white/60">
-            Featured
+            {t("listings_featured_badge", "Featured")}
           </span>
         ) : null}
 
@@ -582,7 +667,7 @@ export function ListingCard({
                 {reviewCount > 0 && <span className="font-normal text-[#727272]">({reviewCount})</span>}
               </div>
             ) : (
-              <span className="text-[11px] font-medium text-[#727272] shrink-0">★ New</span>
+              <span className="text-[11px] font-medium text-[#727272] shrink-0">★ {t("listings_new", "New")}</span>
             )}
           </div>
 
@@ -599,20 +684,37 @@ export function ListingCard({
           </p>
 
           {/* Row 4: Price & Nights */}
-          <div className="flex items-center gap-1.5 text-xs leading-4 text-[#1F1F1F] pt-0.5">
-            <span className="font-semibold underline">
-              {formatPrice(totalPrice, currency)}
-            </span>
-            <span className="text-[#727272]">
-              for {nights} {nights === 1 ? "night" : "nights"}
-            </span>
+          <div className="flex items-center gap-1.5 text-xs leading-4 text-[#1F1F1F] pt-0.5 flex-wrap">
+            {discountedPrice != null ? (
+              <>
+                <span className="line-through text-[#727272] text-[11px] font-normal">
+                  {formatPrice(baseTotalPrice, currency)}
+                </span>
+                <span className="font-semibold underline">
+                  {formatPrice(totalPrice, currency)}
+                </span>
+                <span className="text-[#727272]">
+                  for {nights} {nights === 1 ? "night" : "nights"}
+                </span>
+              </>
+            ) : (
+              <>
+                <span className="font-semibold underline">
+                  {formatPrice(totalPrice, currency)}
+                </span>
+                <span className="text-[#727272]">
+                  for {nights} {nights === 1 ? "night" : "nights"}
+                </span>
+              </>
+            )}
           </div>
+
 
           {/* Row 5: Free cancellation badge */}
           {hasFreeCancellation && (
             <div className="pt-0.5 flex items-center">
               <span className="inline-block text-[11px] font-normal text-[#727272] bg-zinc-100 px-2 py-0.5 rounded">
-                Free cancellation
+                {t("listings_free_cancellation", "Free cancellation")}
               </span>
             </div>
           )}
@@ -646,7 +748,7 @@ export function ListingCard({
             </span>
           ) : (
                   <span className="text-[10px] font-medium text-[#727272] bg-[#F3F4F5] px-1.5 py-0.5 rounded-lg shrink-0 leading-3.5">
-              New
+              {t("listings_new", "New")}
             </span>
           )}
         </div>
@@ -678,18 +780,13 @@ export function ListingCard({
               </span>
               <span className="font-semibold text-zinc-950 text-sm">
                 {formattedDiscountedPrice}
-                <span className="text-[#727272] font-normal text-xs ml-0.5">/ night</span>
+                <span className="text-[#727272] font-normal text-xs ml-0.5">{t("listings_per_night", "/ night")}</span>
               </span>
-              {discountLabel && (
-                <span className="inline-flex items-center text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/70 px-1.5 py-0.5 rounded-full">
-                  {discountLabel} · {activePct}% off
-                </span>
-              )}
             </>
           ) : (
             <div className="flex items-baseline gap-1">
               <span className="font-semibold text-zinc-950 text-sm">{formattedBasePrice}</span>
-              <span className="text-[#727272] font-normal text-xs">/ night</span>
+              <span className="text-[#727272] font-normal text-xs">{t("listings_per_night", "/ night")}</span>
             </div>
           )}
         </div>

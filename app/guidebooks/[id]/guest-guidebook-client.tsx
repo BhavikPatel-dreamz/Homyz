@@ -12,12 +12,15 @@ import {
 
 interface GuidebookItem {
   id: string;
-  type: "PLACE" | "NEIGHBORHOOD" | "TIP";
+  type: "PLACE" | "NEIGHBORHOOD" | "CITY_ADVICE" | "TIP";
   title: string;
   category: string;
+  categoryLabel?: string | null;
+  adviceType?: string | null;
   description?: string | null;
   hostTip?: string | null;
   photo?: string | null;
+  photos?: string[];
   address?: string | null;
   latitude?: number | null;
   longitude?: number | null;
@@ -68,7 +71,7 @@ export function GuestGuidebookClient({
   const filteredItems = guidebook.items.filter((item) => {
     if (activeCategory !== "ALL") {
       if (activeCategory === "FAVORITES" && !item.isFavorite) return false;
-      if (activeCategory === "TIPS" && item.type !== "TIP") return false;
+      if (activeCategory === "TIPS" && item.type !== "TIP" && item.type !== "CITY_ADVICE") return false;
       if (
         activeCategory !== "FAVORITES" &&
         activeCategory !== "TIPS" &&
@@ -100,6 +103,15 @@ export function GuestGuidebookClient({
       address: item.address,
       isFavorite: item.isFavorite,
     }));
+
+  const builtInCategoryIds = new Set(GUIDEBOOK_CATEGORIES.map((category) => category.id));
+  const customCategories = Array.from(
+    new Map(
+      guidebook.items
+        .filter((item) => !builtInCategoryIds.has(item.category as (typeof GUIDEBOOK_CATEGORIES)[number]["id"]))
+        .map((item) => [item.category, item.categoryLabel || getCategoryLabel(item.category)]),
+    ),
+  );
 
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
@@ -254,6 +266,23 @@ export function GuestGuidebookClient({
                 </button>
               );
             })}
+            {customCategories.map(([categoryId, label]) => {
+              const count = guidebook.items.filter((item) => item.category === categoryId).length;
+              return (
+                <button
+                  key={categoryId}
+                  type="button"
+                  onClick={() => setActiveCategory(categoryId)}
+                  className={`rounded-full px-3.5 py-1.5 font-semibold text-xs transition-all shrink-0 cursor-pointer ${
+                    activeCategory === categoryId
+                      ? "bg-zinc-900 text-white shadow-2xs"
+                      : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200"
+                  }`}
+                >
+                  {label} ({count})
+                </button>
+              );
+            })}
           </div>
 
           {/* Search Box */}
@@ -285,7 +314,7 @@ export function GuestGuidebookClient({
               filteredItems.map((item) => {
                 const isSelected = activePlaceId === item.id;
                 const icon = getCategoryIcon(item.category);
-                const label = getCategoryLabel(item.category);
+                const label = item.categoryLabel || getCategoryLabel(item.category);
 
                 return (
                   <article
@@ -330,7 +359,7 @@ export function GuestGuidebookClient({
                       {/* Personal Host Recommendation Quote */}
                       {item.description && (
                         <p className="text-xs text-zinc-700 font-normal leading-relaxed italic border-l-2 border-amber-300 pl-3 py-0.5">
-                          "{item.description}"
+                          &ldquo;{item.description}&rdquo;
                         </p>
                       )}
 

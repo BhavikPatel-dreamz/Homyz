@@ -86,16 +86,19 @@ export const updateGuidebookSchema = z.object({
 export type UpdateGuidebookInput = z.infer<typeof updateGuidebookSchema>;
 
 export const createGuidebookItemSchema = z.object({
-  type: z.enum(["PLACE", "NEIGHBORHOOD", "TIP"]).default("PLACE"),
+  type: z.enum(["PLACE", "NEIGHBORHOOD", "CITY_ADVICE", "TIP"]).default("PLACE"),
   title: z
     .string()
     .trim()
     .min(1, "Title is required")
     .max(150, "Title cannot exceed 150 characters"),
   category: z.string().trim().min(1, "Category is required"),
+  categoryLabel: z.string().trim().min(1).max(80).optional().nullable(),
+  adviceType: z.string().trim().min(1).max(80).optional().nullable(),
   description: z.string().trim().max(1200, "Recommendation cannot exceed 1200 characters").optional().nullable(),
   hostTip: z.string().trim().max(600, "Host tip cannot exceed 600 characters").optional().nullable(),
   photo: guidebookMediaUrlSchema.optional().nullable(),
+  photos: z.array(guidebookMediaUrlSchema).max(8, "A recommendation can have up to 8 photos").optional().default([]),
   placeProviderId: z.string().trim().max(200).optional().nullable(),
   address: z.string().trim().max(300).optional().nullable(),
   latitude: z.number().min(-90).max(90).optional().nullable(),
@@ -118,6 +121,10 @@ export type ReorderGuidebookItemsInput = z.infer<typeof reorderGuidebookItemsSch
 
 export const setGuidebookListingsSchema = z.object({
   listingIds: z.array(z.string().trim()),
+});
+
+export const createGuidebookCategorySchema = z.object({
+  name: z.string().trim().min(2, "Category name must be at least 2 characters").max(80),
 });
 
 export type SetGuidebookListingsInput = z.infer<typeof setGuidebookListingsSchema>;

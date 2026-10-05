@@ -1,6 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any -- Prisma JSON DTO boundary retains deliberately generic structured content. */
 import type { Booking, Listing, Prisma, User, Review } from "@/generated/prisma/client";
 import { getMissingProfileFields } from "@/lib/auth/profile-completion";
+import { resolveBookingMode } from "@/lib/booking/booking-mode";
+import { bookingDateKey } from "@/lib/booking/booking-date";
+import { resolvePropertyCurrency } from "@/lib/currency";
+import {
+  toPropertyCardPricingViewModel,
+  type PropertyCardPricingOptions,
+} from "@/lib/booking/property-card-pricing";
 
 function getPublicCoordinates(
   latitude: number | null | undefined,
@@ -67,6 +74,7 @@ export function toListingDTO(l: Listing) {
     description: l.description,
     descriptionSections: (l as any).descriptionSections ?? null,
     price: l.price,
+    currency: resolvePropertyCurrency(l),
     smartPricing: (l as any).smartPricing ?? false,
     smartPricingMinPrice: (l as any).smartPricingMinPrice ?? null,
     smartPricingMaxPrice: (l as any).smartPricingMaxPrice ?? null,
@@ -166,9 +174,13 @@ export function toListingDTO(l: Listing) {
     requireProfilePhoto: l.requireProfilePhoto ?? false,
     requireGoodTrackRecord: l.requireGoodTrackRecord ?? false,
     bookingApprovalMode: l.bookingApprovalMode ?? (l.instantBook ? "INSTANT" : "MANUAL"),
+    bookingMode: resolveBookingMode(l),
     minNights: l.minNights ?? 1,
     maxNights: l.maxNights ?? 365,
-    instantBook: l.instantBook ?? true,
+    advanceNotice: (l as any).advanceNotice || "Same day",
+    sameDayCutoff: (l as any).sameDayCutoff || "12:00 AM",
+    allowSameDayRequests: (l as any).allowSameDayRequests ?? true,
+    instantBook: resolveBookingMode(l) === "INSTANT_BOOK",
     isPaused: l.isPaused ?? false,
     customSlug: (l as any).customSlug ?? null,
     blockedDates: l.blockedDates || [],
@@ -210,6 +222,7 @@ export function toPublicListingDTO(l: Listing | ListingDTO) {
     description: l.description,
     descriptionSections: (l as any).descriptionSections ?? null,
     price: l.price,
+    currency: resolvePropertyCurrency(l),
     smartPricing: (l as any).smartPricing ?? false,
     smartPricingMinPrice: (l as any).smartPricingMinPrice ?? null,
     smartPricingMaxPrice: (l as any).smartPricingMaxPrice ?? null,
@@ -303,9 +316,14 @@ export function toPublicListingDTO(l: Listing | ListingDTO) {
     requireProfilePhoto: l.requireProfilePhoto ?? false,
     requireGoodTrackRecord: l.requireGoodTrackRecord ?? false,
     bookingApprovalMode: l.bookingApprovalMode ?? (l.instantBook ? "INSTANT" : "MANUAL"),
+    bookingMode: resolveBookingMode(l),
     minNights: l.minNights ?? 1,
     maxNights: l.maxNights ?? 365,
-    instantBook: l.instantBook ?? true,
+    advanceNotice: (l as any).advanceNotice ?? "Same day",
+    sameDayCutoff: (l as any).sameDayCutoff ?? "12:00 AM",
+    allowSameDayRequests: (l as any).allowSameDayRequests ?? true,
+    blockedDates: Array.isArray((l as any).blockedDates) ? (l as any).blockedDates : [],
+    instantBook: resolveBookingMode(l) === "INSTANT_BOOK",
     customSlug: (l as any).customSlug ?? null,
     cleaningFee: l.cleaningFee ?? 0,
     securityDeposit: l.securityDeposit ?? 0,
@@ -329,6 +347,10 @@ export const publicListingCardSelect = {
   id: true,
   title: true,
   price: true,
+  weekdayBasePrice: true,
+  weekendPrice: true,
+  weekendPremium: true,
+  customPrices: true,
   propertyType: true,
   listingType: true,
   city: true,
@@ -357,13 +379,20 @@ export type ListingReviewSummary = {
 };
 
 /** Lightweight, privacy-safe DTO for discovery cards and map markers. */
-export function toPublicListingCardDTO(l: PublicListingCardRecord & { reviewSummary?: ListingReviewSummary }) {
+export function toPublicListingCardDTO(
+  l: PublicListingCardRecord & { reviewSummary?: ListingReviewSummary },
+  pricingOptions?: PropertyCardPricingOptions,
+) {
   const showExact = Boolean(l.showExactLocation);
   const publicCoordinates = getPublicCoordinates(l.latitude, l.longitude, showExact);
   return {
     id: l.id,
     title: l.title,
     price: l.price,
+    weekdayBasePrice: l.weekdayBasePrice ?? l.price,
+    weekendPrice: l.weekendPrice,
+    weekendPremium: l.weekendPremium,
+    customPrices: (l.customPrices as Record<string, number> | null) ?? {},
     propertyType: l.propertyType,
     listingType: l.listingType,
     city: l.city,
@@ -382,6 +411,18 @@ export function toPublicListingCardDTO(l: PublicListingCardRecord & { reviewSumm
     rating: l.reviewSummary?.averageRating ?? null,
     reviewsCount: l.reviewSummary?.totalCount ?? 0,
     distanceKm: null as number | null,
+    pricing: toPropertyCardPricingViewModel({
+      id: l.id,
+      price: l.price,
+      weekdayBasePrice: l.weekdayBasePrice,
+      weekendPrice: l.weekendPrice,
+      weekendPremium: l.weekendPremium,
+      customPrices: l.customPrices && typeof l.customPrices === "object" && !Array.isArray(l.customPrices)
+        ? l.customPrices as Record<string, number>
+        : {},
+      country: l.country,
+      discounts: l.discounts,
+    }, pricingOptions),
   };
 }
 export type PublicListingCardDTO = ReturnType<typeof toPublicListingCardDTO>;
@@ -436,8 +477,8 @@ export function toBookingDTO(b: BookingDTOInput) {
     userId: b.userId,
     listingId: b.listingId,
     status: b.status,
-    startDate: b.startDate,
-    endDate: b.endDate,
+    startDate: bookingDateKey(b.startDate),
+    endDate: bookingDateKey(b.endDate),
     guests: b.guests,
     totalPrice: b.totalPrice,
     nightlyPrice: b.nightlyPrice,
@@ -512,8 +553,8 @@ export function revivePublicListingDTO(l: PublicListingDTO): PublicListingDTO {
 export function reviveBookingDTO(b: BookingDTO): BookingDTO {
   return {
     ...b,
-    startDate: new Date(b.startDate),
-    endDate: new Date(b.endDate),
+    startDate: bookingDateKey(b.startDate),
+    endDate: bookingDateKey(b.endDate),
     createdAt: new Date(b.createdAt),
   };
 }

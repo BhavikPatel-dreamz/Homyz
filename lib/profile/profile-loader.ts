@@ -38,7 +38,7 @@ export type GuestAuthoredReviewDTO = {
   } | null;
 };
 
-export async function loadProfilePageData(tab?: string, subTab?: string) {
+export async function loadProfilePageData(tab?: string, subTab?: string, bookingView?: string) {
   const actor = await requirePageUser();
   const normalizedTab = tab?.toLowerCase();
 
@@ -94,7 +94,13 @@ export async function loadProfilePageData(tab?: string, subTab?: string) {
       : Promise.resolve([]),
     needsReservations
       ? bookingService
-          .listForUser(actor, { skip: 0, take: 50 })
+          .listForUser(actor, {
+            skip: 0,
+            take: 50,
+            view: (normalizedTab === "upcoming_trips" || normalizedTab === "upcoming") && bookingView !== "all"
+              ? "UPCOMING"
+              : "ALL",
+          })
           .then(({ items }) =>
             items.map((booking) =>
               toReservationCardData(

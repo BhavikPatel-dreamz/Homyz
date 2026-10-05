@@ -149,7 +149,7 @@ export function MobileDatePicker({
         {preferences.mode === "dates" ? (
           <>
             <p className="sr-only" aria-live="polite">
-              {!checkIn ? "Choose check-in date" : !checkOut ? "Choose check-out date" : `${checkIn} to ${checkOut}`}
+              {!checkIn ? t("home_choose_checkin_date", "Choose check-in date") : !checkOut ? t("home_choose_checkout_date", "Choose check-out date") : t("home_date_range_to", { checkIn, checkOut })}
             </p>
             <div className={desktop ? "grid grid-cols-2 gap-8" : ""}>
               {[0, 1].map((offset) => {

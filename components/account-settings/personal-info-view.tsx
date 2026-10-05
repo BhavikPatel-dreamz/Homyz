@@ -19,6 +19,7 @@ import {
   updateEmergencyContactAction,
 } from "@/actions/user/personal-info";
 import { PersonalInfoSkeleton } from "@/components/dashboard/section-skeletons";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 interface PersonalInfoViewProps {
   initialData?: PersonalInfoDTO | null;
@@ -78,6 +79,7 @@ export function maskPhone(phone: string | null | undefined): string {
 }
 
 export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
+  const { t } = useLanguage();
   const [data, setData] = useState<PersonalInfoDTO>(initialData || defaultData);
   const [loading, setLoading] = useState<boolean>(!initialData);
 
@@ -512,9 +514,19 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
     }
   };
 
-  const formatAddressPreview = (addr: AddressData | null): string => {
-    if (!addr || (!addr.street && !addr.city && !addr.country)) return "Not provided";
-    return "Provided";
+  const maskEmailLoc = (email: string | null | undefined): string => {
+    if (!email || !email.includes("@")) return t("personal_info_not_provided", "Not provided");
+    return maskEmail(email);
+  };
+
+  const maskPhoneLoc = (phone: string | null | undefined): string => {
+    if (!phone || !phone.trim()) return t("personal_info_not_provided", "Not provided");
+    return maskPhone(phone);
+  };
+
+  const formatAddressPreviewLoc = (addr: AddressData | null): string => {
+    if (!addr || (!addr.street && !addr.city && !addr.country)) return t("personal_info_not_provided", "Not provided");
+    return t("personal_info_provided", "Provided");
   };
 
   if (loading) {
@@ -525,7 +537,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
     <div className=" w-full max-w-2xl mx-auto text-[#1F1F1F]">
       {/* Page Title */}
       <h1>
-        Personal information
+        {t("personal_info_title", "Personal information")}
       </h1>
 
       {/* Rows Container */}
@@ -538,9 +550,9 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
             <form onSubmit={handleSaveLegalName} className="space-y-4">
               <div className="flex items-start justify-between">
                 <div>
-                  <h3 className="text-base font-medium text-[#1F1F1F]">Legal name</h3>
-                  <p className="text-xs text-[#727272] mt-1">
-                    This is the name on your travel document, which could be a license or a passport.
+                  <h3 className="text-base font-medium text-[#1F1F1F]">{t("personal_info_legal_name", "Legal name")}</h3>
+                  <p className="text-xs text-zinc-500 mt-1">
+                    {t("personal_info_legal_name_desc", "This is the name on your travel document, which could be a license or a passport.")}
                   </p>
                 </div>
                 <button
@@ -548,19 +560,19 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                   onClick={closeEditRow}
                   className="text-sm font-semibold underline text-[#1F1F1F] hover:opacity-75 cursor-pointer shrink-0"
                 >
-                  Cancel
+                  {t("personal_info_cancel", "Cancel")}
                 </button>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
                 <div>
-                  <label className="block text-xs font-medium text-zinc-700 mb-1">First name</label>
+                  <label className="block text-xs font-medium text-zinc-700 mb-1">{t("personal_info_first_name", "First name")}</label>
                   <input
                     type="text"
                     value={legalFirst}
                     onChange={(e) => setLegalFirst(e.target.value)}
                     className="w-full rounded-xl border border-zinc-300 px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:border-zinc-900 focus:outline-none transition-colors"
-                    placeholder="First name"
+                    placeholder={t("personal_info_first_name", "First name")}
                     required
                   />
                   {fieldErrors.firstName && (
@@ -568,13 +580,13 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                   )}
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-zinc-700 mb-1">Last name</label>
+                  <label className="block text-xs font-medium text-zinc-700 mb-1">{t("personal_info_last_name", "Last name")}</label>
                   <input
                     type="text"
                     value={legalLast}
                     onChange={(e) => setLegalLast(e.target.value)}
                     className="w-full rounded-xl border border-zinc-300 px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:border-zinc-900 focus:outline-none transition-colors"
-                    placeholder="Last name"
+                    placeholder={t("personal_info_last_name", "Last name")}
                     required
                   />
                   {fieldErrors.lastName && (
@@ -589,16 +601,16 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                   disabled={isSubmitting}
                   className="rounded-xl bg-[#1F1F1F] px-5 py-2.5 text-sm font-medium text-white transition-all hover:bg-black disabled:opacity-50 cursor-pointer"
                 >
-                  {isSubmitting ? "Saving..." : "Save"}
+                  {isSubmitting ? t("personal_info_saving", "Saving...") : t("personal_info_save", "Save")}
                 </button>
               </div>
             </form>
           ) : (
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
-                <div className="text-base font-medium text-[#1F1F1F]">Legal name</div>
-                <div className="text-sm text-[#727272] mt-0.5 truncate">
-                  {data.legalName || "Not provided"}
+                <div className="text-base font-medium text-[#1F1F1F]">{t("personal_info_legal_name", "Legal name")}</div>
+                <div className="text-sm text-zinc-500 mt-0.5 truncate">
+                  {data.legalName || t("personal_info_not_provided", "Not provided")}
                 </div>
               </div>
               <button
@@ -606,7 +618,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                 onClick={() => openEditRow("legalName")}
                 className="text-sm font-semibold underline text-[#1F1F1F] hover:opacity-75 cursor-pointer shrink-0"
               >
-                Edit
+                {t("personal_info_edit", "Edit")}
               </button>
             </div>
           )}
@@ -620,9 +632,9 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
             <form onSubmit={handleSavePreferredName} className="space-y-4">
               <div className="flex items-start justify-between">
                 <div>
-                  <h3 className="text-base font-medium text-[#1F1F1F]">Preferred first name</h3>
-                  <p className="text-xs text-[#727272] mt-1">
-                    This is how your first name will appear to hosts and guests.
+                  <h3 className="text-base font-medium text-[#1F1F1F]">{t("personal_info_preferred_name", "Preferred first name")}</h3>
+                  <p className="text-xs text-zinc-500 mt-1">
+                    {t("personal_info_preferred_name_desc", "This is how your first name will appear to hosts and guests.")}
                   </p>
                 </div>
                 <button
@@ -630,20 +642,20 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                   onClick={closeEditRow}
                   className="text-sm font-semibold underline text-[#1F1F1F] hover:opacity-75 cursor-pointer shrink-0"
                 >
-                  Cancel
+                  {t("personal_info_cancel", "Cancel")}
                 </button>
               </div>
 
               <div className="pt-2">
                 <label className="block text-xs font-medium text-zinc-700 mb-1">
-                  Preferred first name
+                  {t("personal_info_preferred_name", "Preferred first name")}
                 </label>
                 <input
                   type="text"
                   value={prefFirst}
                   onChange={(e) => setPrefFirst(e.target.value)}
                   className="w-full sm:max-w-md rounded-xl border border-zinc-300 px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:border-zinc-900 focus:outline-none transition-colors"
-                  placeholder="e.g. Shihab"
+                  placeholder={t("personal_info_preferred_name_ph", "e.g. Shihab")}
                 />
               </div>
 
@@ -653,16 +665,16 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                   disabled={isSubmitting}
                   className="rounded-xl bg-[#1F1F1F] px-5 py-2.5 text-sm font-medium text-white transition-all hover:bg-black disabled:opacity-50 cursor-pointer"
                 >
-                  {isSubmitting ? "Saving..." : "Save"}
+                  {isSubmitting ? t("personal_info_saving", "Saving...") : t("personal_info_save", "Save")}
                 </button>
               </div>
             </form>
           ) : (
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
-                <div className="text-base font-medium text-[#1F1F1F]">Preferred first name</div>
-                <div className="text-sm text-[#727272] mt-0.5 truncate">
-                  {data.preferredFirstName || "Not provided"}
+                <div className="text-base font-medium text-[#1F1F1F]">{t("personal_info_preferred_name", "Preferred first name")}</div>
+                <div className="text-sm text-zinc-500 mt-0.5 truncate">
+                  {data.preferredFirstName || t("personal_info_not_provided", "Not provided")}
                 </div>
               </div>
               <button
@@ -670,7 +682,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                 onClick={() => openEditRow("preferredName")}
                 className="text-sm font-semibold underline text-[#1F1F1F] hover:opacity-75 cursor-pointer shrink-0"
               >
-                {data.preferredFirstName ? "Edit" : "Add"}
+                {data.preferredFirstName ? t("personal_info_edit", "Edit") : t("personal_info_add", "Add")}
               </button>
             </div>
           )}
@@ -684,9 +696,9 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
             <form onSubmit={handleSaveEmail} className="space-y-4">
               <div className="flex items-start justify-between">
                 <div>
-                  <h3 className="text-base font-medium text-[#1F1F1F]">Email address</h3>
-                  <p className="text-xs text-[#727272] mt-1">
-                    Use an address you’ll always have access to.
+                  <h3 className="text-base font-medium text-[#1F1F1F]">{t("personal_info_email", "Email address")}</h3>
+                  <p className="text-xs text-zinc-500 mt-1">
+                    {t("personal_info_email_desc", "Use an address you’ll always have access to.")}
                   </p>
                 </div>
                 <button
@@ -694,12 +706,12 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                   onClick={closeEditRow}
                   className="text-sm font-semibold underline text-[#1F1F1F] hover:opacity-75 cursor-pointer shrink-0"
                 >
-                  Cancel
+                  {t("personal_info_cancel", "Cancel")}
                 </button>
               </div>
 
               <div className="pt-2">
-                <label className="block text-xs font-medium text-zinc-700 mb-1">Email address</label>
+                <label className="block text-xs font-medium text-zinc-700 mb-1">{t("personal_info_email", "Email address")}</label>
                 <input
                   type="email"
                   value={emailVal}
@@ -719,16 +731,16 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                   disabled={isSubmitting}
                   className="rounded-xl bg-[#1F1F1F] px-5 py-2.5 text-sm font-medium text-white transition-all hover:bg-black disabled:opacity-50 cursor-pointer"
                 >
-                  {isSubmitting ? "Saving..." : "Save"}
+                  {isSubmitting ? t("personal_info_saving", "Saving...") : t("personal_info_save", "Save")}
                 </button>
               </div>
             </form>
           ) : (
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
-                <div className="text-base font-medium text-[#1F1F1F]">Email address</div>
-                <div className="text-sm text-[#727272] mt-0.5 truncate">
-                  {maskEmail(data.email)}
+                <div className="text-base font-medium text-[#1F1F1F]">{t("personal_info_email", "Email address")}</div>
+                <div className="text-sm text-zinc-500 mt-0.5 truncate">
+                  {maskEmailLoc(data.email)}
                 </div>
               </div>
               <button
@@ -736,7 +748,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                 onClick={() => openEditRow("email")}
                 className="text-sm font-semibold underline text-[#1F1F1F] hover:opacity-75 cursor-pointer shrink-0"
               >
-                Edit
+                {t("personal_info_edit", "Edit")}
               </button>
             </div>
           )}
@@ -750,9 +762,9 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
             <form onSubmit={handleSavePhone} className="space-y-4">
               <div className="flex items-start justify-between">
                 <div>
-                  <h3 className="text-base font-medium text-[#1F1F1F]">Phone number</h3>
-                  <p className="text-xs text-[#727272] mt-1">
-                    For notifications, reminders, and help logging in.
+                  <h3 className="text-base font-medium text-[#1F1F1F]">{t("personal_info_phone", "Phone number")}</h3>
+                  <p className="text-xs text-zinc-500 mt-1">
+                    {t("personal_info_phone_desc", "For notifications, reminders, and help logging in.")}
                   </p>
                 </div>
                 <button
@@ -760,13 +772,13 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                   onClick={closeEditRow}
                   className="text-sm font-semibold underline text-[#1F1F1F] hover:opacity-75 cursor-pointer shrink-0"
                 >
-                  Cancel
+                  {t("personal_info_cancel", "Cancel")}
                 </button>
               </div>
 
               <div className="pt-2 flex flex-col sm:flex-row gap-2 max-w-md">
                 <div className="w-full sm:w-44">
-                  <label className="block text-xs font-medium text-zinc-700 mb-1">Country code</label>
+                  <label className="block text-xs font-medium text-zinc-700 mb-1">{t("personal_info_country_code", "Country code")}</label>
                   <select
                     value={phoneCountry}
                     onChange={(e) => setPhoneCountry(e.target.value)}
@@ -780,7 +792,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                   </select>
                 </div>
                 <div className="flex-1">
-                  <label className="block text-xs font-medium text-zinc-700 mb-1">Phone number</label>
+                  <label className="block text-xs font-medium text-zinc-700 mb-1">{t("personal_info_phone", "Phone number")}</label>
                   <input
                     type="tel"
                     value={phoneNum}
@@ -801,19 +813,19 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                   disabled={isSubmitting}
                   className="rounded-xl bg-[#1F1F1F] px-5 py-2.5 text-sm font-medium text-white transition-all hover:bg-black disabled:opacity-50 cursor-pointer"
                 >
-                  {isSubmitting ? "Saving..." : "Save"}
+                  {isSubmitting ? t("personal_info_saving", "Saving...") : t("personal_info_save", "Save")}
                 </button>
               </div>
             </form>
           ) : (
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
-                <div className="text-base font-medium text-[#1F1F1F]">Phone number</div>
-                <div className="text-sm text-[#727272] mt-0.5">
-                  {maskPhone(data.phone)}
+                <div className="text-base font-medium text-[#1F1F1F]">{t("personal_info_phone", "Phone number")}</div>
+                <div className="text-sm text-zinc-500 mt-0.5">
+                  {maskPhoneLoc(data.phone)}
                 </div>
-                <div className="text-xs text-[#727272] mt-1 leading-relaxed">
-                  Contact number (for confirmed guests and Homyz to get in touch). You can add other numbers and choose how they&apos;re used.
+                <div className="text-xs text-zinc-400 mt-1 leading-relaxed">
+                  {t("personal_info_phone_note", "Contact number (for confirmed guests and Homyz to get in touch). You can add other numbers and choose how they're used.")}
                 </div>
               </div>
               <button
@@ -821,7 +833,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                 onClick={() => openEditRow("phone")}
                 className="text-sm font-semibold underline text-[#1F1F1F] hover:opacity-75 cursor-pointer shrink-0"
               >
-                {data.phone ? "Edit" : "Add"}
+                {data.phone ? t("personal_info_edit", "Edit") : t("personal_info_add", "Add")}
               </button>
             </div>
           )}
@@ -833,7 +845,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
         <div className="py-5">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0 flex-1">
-              <div className="text-base font-medium text-[#1F1F1F]">Identity verification</div>
+              <div className="text-base font-medium text-[#1F1F1F]">{t("personal_info_gov_id", "Identity verification")}</div>
               <div className="text-sm mt-1">
                 {data.identityStatus === "VERIFIED" ? (
                   <div className="space-y-1">
@@ -845,25 +857,32 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                           clipRule="evenodd"
                         />
                       </svg>
-                      Verified
+                      {t("personal_info_status_verified", "Verified")}
                     </span>
                     {data.identityDocument?.fileName && (
-                      <p className="text-xs text-[#727272]">
-                        Official ID: <span className="font-medium text-zinc-700">{data.identityDocument.fileName}</span>
+                      <p className="text-xs text-zinc-500">
+                        {t("personal_info_official_id", "Official ID:")} <span className="font-medium text-zinc-700">{data.identityDocument.fileName}</span>
                       </p>
                     )}
                   </div>
                 ) : data.identityStatus === "PENDING" ? (
                   <div className="space-y-1">
+                    <span className="inline-flex items-center gap-1.5 text-amber-600 font-medium">
+                      <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" className="opacity-25" />
+                        <path fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" className="opacity-75" />
+                      </svg>
+                      {t("personal_info_status_pending", "Pending review")}
+                    </span>
                     {data.identityDocument?.fileName && (
-                      <p className="text-xs text-[#727272]">
-                        Uploaded: <span className="font-medium text-zinc-700">{data.identityDocument.fileName}</span>
-                        <span className="text-[#727272]"> (Under review)</span>
+                      <p className="text-xs text-zinc-500">
+                        {t("personal_info_uploaded", "Uploaded:")} <span className="font-medium text-zinc-700">{data.identityDocument.fileName}</span>
+                        <span className="text-zinc-400"> ({t("personal_info_under_review", "Under review")})</span>
                       </p>
                     )}
                   </div>
                 ) : (
-                  <span className="text-[#727272]">Not started</span>
+                  <span className="text-zinc-500">{t("personal_info_not_provided", "Not provided")}</span>
                 )}
               </div>
             </div>
@@ -877,10 +896,10 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
               className="text-sm font-semibold underline text-[#1F1F1F] hover:opacity-75 cursor-pointer shrink-0"
             >
               {data.identityStatus === "NOT_STARTED"
-                ? "Start"
+                ? t("personal_info_id_start", "Start")
                 : data.identityStatus === "PENDING"
-                ? "Update ID"
-                : "Manage"}
+                ? t("personal_info_id_update", "Update ID")
+                : t("personal_info_id_manage", "Manage")}
             </button>
           </div>
         </div>
@@ -893,9 +912,9 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
             <form onSubmit={handleSaveResidentialAddress} className="space-y-4">
               <div className="flex items-start justify-between">
                 <div>
-                  <h3 className="text-base font-medium text-[#1F1F1F]">Residential address</h3>
-                  <p className="text-xs text-[#727272] mt-1">
-                    Your residential address is kept private and not shared publicly.
+                  <h3 className="text-base font-medium text-[#1F1F1F]">{t("personal_info_residential_address", "Residential address")}</h3>
+                  <p className="text-xs text-zinc-500 mt-1">
+                    {t("personal_info_residential_address_desc", "Your residential address is kept private and not shared publicly.")}
                   </p>
                 </div>
                 <button
@@ -903,34 +922,34 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                   onClick={closeEditRow}
                   className="text-sm font-semibold underline text-[#1F1F1F] hover:opacity-75 cursor-pointer shrink-0"
                 >
-                  Cancel
+                  {t("personal_info_cancel", "Cancel")}
                 </button>
               </div>
 
               <div className="space-y-3 pt-2">
                 <div>
-                  <label className="block text-xs font-medium text-zinc-700 mb-1">Country / Region</label>
+                  <label className="block text-xs font-medium text-zinc-700 mb-1">{t("personal_info_country", "Country / Region")}</label>
                   <input
                     type="text"
                     value={resCountry}
                     onChange={(e) => setResCountry(e.target.value)}
                     className="w-full rounded-xl border border-zinc-300 px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:border-zinc-900 focus:outline-none"
-                    placeholder="Country"
+                    placeholder={t("personal_info_country", "Country / Region")}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-zinc-700 mb-1">Street address</label>
+                  <label className="block text-xs font-medium text-zinc-700 mb-1">{t("personal_info_street", "Street address")}</label>
                   <input
                     type="text"
                     value={resStreet}
                     onChange={(e) => setResStreet(e.target.value)}
                     className="w-full rounded-xl border border-zinc-300 px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:border-zinc-900 focus:outline-none"
-                    placeholder="House number and street name"
+                    placeholder={t("personal_info_street_ph", "House number and street name")}
                   />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-zinc-700 mb-1">
-                    Flat, suite, unit (optional)
+                    {t("personal_info_apt", "Flat, suite, unit (optional)")}
                   </label>
                   <input
                     type="text"
@@ -942,33 +961,33 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
-                    <label className="block text-xs font-medium text-zinc-700 mb-1">City</label>
+                    <label className="block text-xs font-medium text-zinc-700 mb-1">{t("personal_info_city", "City")}</label>
                     <input
                       type="text"
                       value={resCity}
                       onChange={(e) => setResCity(e.target.value)}
                       className="w-full rounded-xl border border-zinc-300 px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:border-zinc-900 focus:outline-none"
-                      placeholder="City"
+                      placeholder={t("personal_info_city", "City")}
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-zinc-700 mb-1">State / Province</label>
+                    <label className="block text-xs font-medium text-zinc-700 mb-1">{t("personal_info_state", "State / Province")}</label>
                     <input
                       type="text"
                       value={resState}
                       onChange={(e) => setResState(e.target.value)}
                       className="w-full rounded-xl border border-zinc-300 px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:border-zinc-900 focus:outline-none"
-                      placeholder="State"
+                      placeholder={t("personal_info_state", "State / Province")}
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-zinc-700 mb-1">Postal code</label>
+                    <label className="block text-xs font-medium text-zinc-700 mb-1">{t("personal_info_postal_code", "Postal code")}</label>
                     <input
                       type="text"
                       value={resPostal}
                       onChange={(e) => setResPostal(e.target.value)}
                       className="w-full rounded-xl border border-zinc-300 px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:border-zinc-900 focus:outline-none"
-                      placeholder="Postal code"
+                      placeholder={t("personal_info_postal_code", "Postal code")}
                     />
                   </div>
                 </div>
@@ -980,16 +999,16 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                   disabled={isSubmitting}
                   className="rounded-xl bg-[#1F1F1F] px-5 py-2.5 text-sm font-medium text-white transition-all hover:bg-black disabled:opacity-50 cursor-pointer"
                 >
-                  {isSubmitting ? "Saving..." : "Save"}
+                  {isSubmitting ? t("personal_info_saving", "Saving...") : t("personal_info_save", "Save")}
                 </button>
               </div>
             </form>
           ) : (
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
-                <div className="text-base font-medium text-[#1F1F1F]">Residential address</div>
-                <div className="text-sm text-[#727272] mt-0.5">
-                  {formatAddressPreview(data.residentialAddress)}
+                <div className="text-base font-medium text-[#1F1F1F]">{t("personal_info_residential_address", "Residential address")}</div>
+                <div className="text-sm text-zinc-500 mt-0.5">
+                  {formatAddressPreviewLoc(data.residentialAddress)}
                 </div>
               </div>
               <button
@@ -997,7 +1016,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                 onClick={() => openEditRow("residentialAddress")}
                 className="text-sm font-semibold underline text-[#1F1F1F] hover:opacity-75 cursor-pointer shrink-0"
               >
-                {data.residentialAddress ? "Edit" : "Add"}
+                {data.residentialAddress ? t("personal_info_edit", "Edit") : t("personal_info_add", "Add")}
               </button>
             </div>
           )}
@@ -1011,9 +1030,9 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
             <form onSubmit={handleSavePostalAddress} className="space-y-4">
               <div className="flex items-start justify-between">
                 <div>
-                  <h3 className="text-base font-medium text-[#1F1F1F]">Postal address</h3>
-                  <p className="text-xs text-[#727272] mt-1">
-                    Where you receive physical correspondence.
+                  <h3 className="text-base font-medium text-[#1F1F1F]">{t("personal_info_postal_address", "Postal address")}</h3>
+                  <p className="text-xs text-zinc-500 mt-1">
+                    {t("personal_info_postal_address_desc", "Where you receive physical correspondence.")}
                   </p>
                 </div>
                 <button
@@ -1021,7 +1040,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                   onClick={closeEditRow}
                   className="text-sm font-semibold underline text-[#1F1F1F] hover:opacity-75 cursor-pointer shrink-0"
                 >
-                  Cancel
+                  {t("personal_info_cancel", "Cancel")}
                 </button>
               </div>
 
@@ -1035,7 +1054,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                     className="w-4 h-4 rounded border-zinc-300 text-[#1F1F1F] focus:ring-zinc-900 cursor-pointer"
                   />
                   <span className="text-sm font-medium text-[#1F1F1F]">
-                    Same as residential address
+                    {t("personal_info_same_as_residential", "Same as residential address")}
                   </span>
                 </label>
               </div>
@@ -1043,28 +1062,28 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
               {!sameAsRes ? (
                 <div className="space-y-3 pt-2">
                   <div>
-                    <label className="block text-xs font-medium text-zinc-700 mb-1">Country / Region</label>
+                    <label className="block text-xs font-medium text-zinc-700 mb-1">{t("personal_info_country", "Country / Region")}</label>
                     <input
                       type="text"
                       value={postCountry}
                       onChange={(e) => setPostCountry(e.target.value)}
                       className="w-full rounded-xl border border-zinc-300 px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:border-zinc-900 focus:outline-none"
-                      placeholder="Country"
+                      placeholder={t("personal_info_country", "Country / Region")}
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-zinc-700 mb-1">Street address</label>
+                    <label className="block text-xs font-medium text-zinc-700 mb-1">{t("personal_info_street", "Street address")}</label>
                     <input
                       type="text"
                       value={postStreet}
                       onChange={(e) => setPostStreet(e.target.value)}
                       className="w-full rounded-xl border border-zinc-300 px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:border-zinc-900 focus:outline-none"
-                      placeholder="Street address"
+                      placeholder={t("personal_info_street", "Street address")}
                     />
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-zinc-700 mb-1">
-                      Flat, suite, unit (optional)
+                      {t("personal_info_apt", "Flat, suite, unit (optional)")}
                     </label>
                     <input
                       type="text"
@@ -1076,40 +1095,40 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
-                      <label className="block text-xs font-medium text-zinc-700 mb-1">City</label>
+                      <label className="block text-xs font-medium text-zinc-700 mb-1">{t("personal_info_city", "City")}</label>
                       <input
                         type="text"
                         value={postCity}
                         onChange={(e) => setPostCity(e.target.value)}
                         className="w-full rounded-xl border border-zinc-300 px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:border-zinc-900 focus:outline-none"
-                        placeholder="City"
+                        placeholder={t("personal_info_city", "City")}
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-zinc-700 mb-1">State / Province</label>
+                      <label className="block text-xs font-medium text-zinc-700 mb-1">{t("personal_info_state", "State / Province")}</label>
                       <input
                         type="text"
                         value={postState}
                         onChange={(e) => setPostState(e.target.value)}
                         className="w-full rounded-xl border border-zinc-300 px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:border-zinc-900 focus:outline-none"
-                        placeholder="State"
+                        placeholder={t("personal_info_state", "State / Province")}
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-zinc-700 mb-1">Postal code</label>
+                      <label className="block text-xs font-medium text-zinc-700 mb-1">{t("personal_info_postal_code", "Postal code")}</label>
                       <input
                         type="text"
                         value={postPostal}
                         onChange={(e) => setPostPostal(e.target.value)}
                         className="w-full rounded-xl border border-zinc-300 px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:border-zinc-900 focus:outline-none"
-                        placeholder="Postal code"
+                        placeholder={t("personal_info_postal_code", "Postal code")}
                       />
                     </div>
                   </div>
                 </div>
               ) : (
-                <p className="text-xs text-[#727272] italic bg-zinc-50 p-3 rounded-xl border border-zinc-200">
-                  Using your residential address as your postal address.
+                <p className="text-xs text-zinc-500 italic bg-zinc-50 p-3 rounded-xl border border-zinc-200">
+                  {t("personal_info_using_residential", "Using your residential address as your postal address.")}
                 </p>
               )}
 
@@ -1119,18 +1138,18 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                   disabled={isSubmitting}
                   className="rounded-xl bg-[#1F1F1F] px-5 py-2.5 text-sm font-medium text-white transition-all hover:bg-black disabled:opacity-50 cursor-pointer"
                 >
-                  {isSubmitting ? "Saving..." : "Save"}
+                  {isSubmitting ? t("personal_info_saving", "Saving...") : t("personal_info_save", "Save")}
                 </button>
               </div>
             </form>
           ) : (
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
-                <div className="text-base font-medium text-[#1F1F1F]">Postal address</div>
-                <div className="text-sm text-[#727272] mt-0.5">
+                <div className="text-base font-medium text-[#1F1F1F]">{t("personal_info_postal_address", "Postal address")}</div>
+                <div className="text-sm text-zinc-500 mt-0.5">
                   {data.sameAsResidential
-                    ? "Provided"
-                    : formatAddressPreview(data.postalAddress)}
+                    ? t("personal_info_provided", "Provided")
+                    : formatAddressPreviewLoc(data.postalAddress)}
                 </div>
               </div>
               <button
@@ -1138,7 +1157,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                 onClick={() => openEditRow("postalAddress")}
                 className="text-sm font-semibold underline text-[#1F1F1F] hover:opacity-75 cursor-pointer shrink-0"
               >
-                {data.postalAddress || data.sameAsResidential ? "Edit" : "Add"}
+                {data.postalAddress || data.sameAsResidential ? t("personal_info_edit", "Edit") : t("personal_info_add", "Add")}
               </button>
             </div>
           )}
@@ -1152,9 +1171,9 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
             <form onSubmit={handleSaveEmergencyContact} className="space-y-4">
               <div className="flex items-start justify-between">
                 <div>
-                  <h3 className="text-base font-medium text-[#1F1F1F]">Emergency contact</h3>
-                  <p className="text-xs text-[#727272] mt-1">
-                    A trusted contact we can alert in an urgent situation.
+                  <h3 className="text-base font-medium text-[#1F1F1F]">{t("personal_info_emergency_contact", "Emergency contact")}</h3>
+                  <p className="text-xs text-zinc-500 mt-1">
+                    {t("personal_info_emergency_contact_desc", "A trusted contact we can alert in an urgent situation.")}
                   </p>
                 </div>
                 <button
@@ -1162,20 +1181,20 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                   onClick={closeEditRow}
                   className="text-sm font-semibold underline text-[#1F1F1F] hover:opacity-75 cursor-pointer shrink-0"
                 >
-                  Cancel
+                  {t("personal_info_cancel", "Cancel")}
                 </button>
               </div>
 
               <div className="space-y-3 pt-2">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-medium text-zinc-700 mb-1">Name</label>
+                    <label className="block text-xs font-medium text-zinc-700 mb-1">{t("personal_info_contact_name", "Contact name")}</label>
                     <input
                       type="text"
                       value={emName}
                       onChange={(e) => setEmName(e.target.value)}
                       className="w-full rounded-xl border border-zinc-300 px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:border-zinc-900 focus:outline-none"
-                      placeholder="Contact name"
+                      placeholder={t("personal_info_contact_name", "Contact name")}
                       required
                     />
                     {fieldErrors.name && (
@@ -1183,13 +1202,13 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                     )}
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-zinc-700 mb-1">Relationship</label>
+                    <label className="block text-xs font-medium text-zinc-700 mb-1">{t("personal_info_relationship", "Relationship")}</label>
                     <input
                       type="text"
                       value={emRelationship}
                       onChange={(e) => setEmRelationship(e.target.value)}
                       className="w-full rounded-xl border border-zinc-300 px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:border-zinc-900 focus:outline-none"
-                      placeholder="e.g. Spouse, Parent, Friend"
+                      placeholder={t("personal_info_relationship_ph", "e.g. Spouse, Parent, Friend")}
                       required
                     />
                   </div>
@@ -1197,7 +1216,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
 
                 <div className="flex flex-col sm:flex-row gap-2">
                   <div className="w-full sm:w-44">
-                    <label className="block text-xs font-medium text-zinc-700 mb-1">Country code</label>
+                    <label className="block text-xs font-medium text-zinc-700 mb-1">{t("personal_info_country_code", "Country code")}</label>
                     <select
                       value={emCountryCode}
                       onChange={(e) => setEmCountryCode(e.target.value)}
@@ -1211,13 +1230,13 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                     </select>
                   </div>
                   <div className="flex-1">
-                    <label className="block text-xs font-medium text-zinc-700 mb-1">Phone number</label>
+                    <label className="block text-xs font-medium text-zinc-700 mb-1">{t("personal_info_phone", "Phone number")}</label>
                     <input
                       type="tel"
                       value={emPhone}
                       onChange={(e) => setEmPhone(e.target.value)}
                       className="w-full rounded-xl border border-zinc-300 px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:border-zinc-900 focus:outline-none"
-                      placeholder="Phone number"
+                      placeholder={t("personal_info_phone", "Phone number")}
                       required
                     />
                     {fieldErrors.phoneNumber && (
@@ -1229,7 +1248,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-medium text-zinc-700 mb-1">
-                      Email address (optional)
+                      {t("personal_info_contact_email_opt", "Email address (optional)")}
                     </label>
                     <input
                       type="email"
@@ -1241,7 +1260,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-zinc-700 mb-1">
-                      Preferred language (optional)
+                      {t("personal_info_contact_lang_opt", "Preferred language (optional)")}
                     </label>
                     <input
                       type="text"
@@ -1260,18 +1279,18 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                   disabled={isSubmitting}
                   className="rounded-xl bg-[#1F1F1F] px-5 py-2.5 text-sm font-medium text-white transition-all hover:bg-black disabled:opacity-50 cursor-pointer"
                 >
-                  {isSubmitting ? "Saving..." : "Save"}
+                  {isSubmitting ? t("personal_info_saving", "Saving...") : t("personal_info_save", "Save")}
                 </button>
               </div>
             </form>
           ) : (
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
-                <div className="text-base font-medium text-[#1F1F1F]">Emergency contact</div>
-                <div className="text-sm text-[#727272] mt-0.5 truncate">
+                <div className="text-base font-medium text-[#1F1F1F]">{t("personal_info_emergency_contact", "Emergency contact")}</div>
+                <div className="text-sm text-zinc-500 mt-0.5 truncate">
                   {data.emergencyContact
                     ? `${data.emergencyContact.name} (${data.emergencyContact.relationship})`
-                    : "Not provided"}
+                    : t("personal_info_not_provided", "Not provided")}
                 </div>
               </div>
               <button
@@ -1279,7 +1298,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                 onClick={() => openEditRow("emergencyContact")}
                 className="text-sm font-semibold underline text-[#1F1F1F] hover:opacity-75 cursor-pointer shrink-0"
               >
-                {data.emergencyContact ? "Edit" : "Add"}
+                {data.emergencyContact ? t("personal_info_edit", "Edit") : t("personal_info_add", "Add")}
               </button>
             </div>
           )}
@@ -1301,10 +1320,10 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
           </div>
           <div>
             <h4 className="text-sm font-semibold text-[#1F1F1F]">
-              Why isn’t my info shown here?
+              {t("personal_info_card_why_title", "Why isn’t my info shown here?")}
             </h4>
-            <p className="text-xs text-[#727272] mt-1 leading-relaxed">
-              We’re hiding some account details to protect your identity.
+            <p className="text-xs text-zinc-500 mt-1 leading-relaxed">
+              {t("personal_info_card_why_desc", "We’re hiding some account details to protect your identity.")}
             </p>
           </div>
         </div>
@@ -1321,10 +1340,10 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
           </div>
           <div>
             <h4 className="text-sm font-semibold text-[#1F1F1F]">
-              Which details can be edited?
+              {t("personal_info_card_edit_title", "Which details can be edited?")}
             </h4>
-            <p className="text-xs text-[#727272] mt-1 leading-relaxed">
-              Contact info and personal details can be edited. If this info was used to verify your identity, you’ll need to get verified again the next time you book – or to continue hosting.
+            <p className="text-xs text-zinc-500 mt-1 leading-relaxed">
+              {t("personal_info_card_edit_desc", "Contact info and personal details can be edited. If this info was used to verify your identity, you’ll need to get verified again the next time you book – or to continue hosting.")}
             </p>
           </div>
         </div>
@@ -1342,10 +1361,10 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
           </div>
           <div>
             <h4 className="text-sm font-semibold text-[#1F1F1F]">
-              What info is shared with others?
+              {t("personal_info_card_share_title", "What info is shared with others?")}
             </h4>
-            <p className="text-xs text-[#727272] mt-1 leading-relaxed">
-              Homyz only releases contact information for Hosts and guests after a reservation is confirmed.
+            <p className="text-xs text-zinc-500 mt-1 leading-relaxed">
+              {t("personal_info_card_share_desc", "Homyz only releases contact information for Hosts and guests after a reservation is confirmed.")}
             </p>
           </div>
         </div>
@@ -1365,10 +1384,10 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
             <div className="flex items-start justify-between">
               <div>
                 <h3 id="identity-modal-title" className="text-lg font-semibold text-[#1F1F1F]">
-                  Identity Verification
+                  {t("personal_info_modal_id_title", "Identity Verification")}
                 </h3>
-                <p className="text-xs text-[#727272] mt-1 leading-relaxed">
-                  Upload an official government-issued ID to verify your identity. Your document will be securely stored and reviewed by our verification team.
+                <p className="text-xs text-zinc-500 mt-1 leading-relaxed">
+                  {t("personal_info_modal_id_desc", "Upload an official government-issued ID to verify your identity. Your document will be securely stored and reviewed by our verification team.")}
                 </p>
               </div>
               <button
@@ -1378,8 +1397,8 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                   setSelectedDocFile(null);
                   setDocUploadError(null);
                 }}
-                className="rounded-full p-1 text-[#727272] hover:bg-zinc-100 hover:text-zinc-600 transition-colors"
-                aria-label="Close modal"
+                className="rounded-full p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 transition-colors"
+                aria-label={t("personal_info_close", "Close")}
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -1398,10 +1417,10 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                       clipRule="evenodd"
                     />
                   </svg>
-                  Identity Verified
+                  {t("personal_info_modal_id_verified_title", "Identity Verified")}
                 </div>
                 <p>
-                  Your identity has been verified by the Homyz team.
+                  {t("personal_info_modal_id_verified_desc", "Your identity has been verified by the Homyz team.")}
                   {data.identityDocument?.fileName && (
                     <> Verified document: <span className="font-semibold">{data.identityDocument.fileName}</span>.</>
                   )}
@@ -1414,14 +1433,13 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                     <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" className="opacity-25" />
                     <path fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" className="opacity-75" />
                   </svg>
-                  Pending Administrative Review
+                  {t("personal_info_modal_id_pending_title", "Pending Administrative Review")}
                 </div>
                 <p>
-                  Your document is currently under review by our verification team.
+                  {t("personal_info_modal_id_pending_desc", "Your document is currently under review by our verification team.")}
                   {data.identityDocument?.fileName && (
                     <> Current submission: <span className="font-semibold">{data.identityDocument.fileName}</span>.</>
                   )}
-                  {" "}Uploading a new document below will replace your current submission.
                 </p>
               </div>
             ) : null}
@@ -1429,12 +1447,12 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
             {/* Document Selection */}
             <div className="space-y-2 pt-1">
               <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-600">
-                Choose ID Document Type
+                {t("personal_info_modal_choose_doc_type", "Choose ID Document Type")}
               </label>
               {[
-                { id: "passport", label: "Passport", desc: "Most international travelers" },
-                { id: "license", label: "Driver’s License", desc: "National or state driving license" },
-                { id: "national_id", label: "National ID Card", desc: "Government issued identity card" },
+                { id: "passport", label: t("personal_info_doc_passport", "Passport"), desc: t("personal_info_doc_passport_desc", "Most international travelers") },
+                { id: "license", label: t("personal_info_doc_license", "Driver’s License"), desc: t("personal_info_doc_license_desc", "National or state driving license") },
+                { id: "national_id", label: t("personal_info_doc_national_id", "National ID Card"), desc: t("personal_info_doc_national_id_desc", "Government issued identity card") },
               ].map((opt) => (
                 <label
                   key={opt.id}
@@ -1462,7 +1480,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
             {/* File Upload / Dropzone */}
             <div className="space-y-2">
               <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-600">
-                Upload Document File
+                {t("personal_info_modal_upload_file", "Upload Document File")}
               </label>
 
               <input
@@ -1502,10 +1520,10 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                     </svg>
                   </div>
                   <p className="text-sm font-medium text-[#1F1F1F]">
-                    Click to upload <span className="font-normal text-[#727272]">or drag and drop</span>
+                    {t("personal_info_modal_drag_drop", "Click to upload or drag and drop")}
                   </p>
-                  <p className="text-xs text-[#727272] mt-1">
-                    JPG, PNG, WebP or PDF (up to 15MB)
+                  <p className="text-xs text-zinc-400 mt-1">
+                    {t("personal_info_modal_file_formats", "JPG, PNG, WebP or PDF (up to 15MB)")}
                   </p>
                 </div>
               ) : (
@@ -1527,8 +1545,8 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                       setSelectedDocFile(null);
                       if (fileInputRef.current) fileInputRef.current.value = "";
                     }}
-                    className="p-1.5 rounded-lg text-[#727272] hover:text-red-600 hover:bg-zinc-100 transition-colors cursor-pointer"
-                    aria-label="Remove selected file"
+                    className="p-1.5 rounded-lg text-zinc-400 hover:text-red-600 hover:bg-zinc-100 transition-colors cursor-pointer"
+                    aria-label={t("personal_info_cancel", "Cancel")}
                   >
                     <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -1548,10 +1566,10 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                 <svg className="w-4 h-4 text-[#727272]" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
                 </svg>
-                Secure & Confidential Review
+                {t("personal_info_modal_secure_title", "Secure & Confidential Review")}
               </div>
               <p>
-                Self-verification is not permitted. Once uploaded, your document will be submitted to the Homyz verification team for secure review. Your files are encrypted and never shared publicly.
+                {t("personal_info_modal_secure_desc", "Self-verification is not permitted. Once uploaded, your document will be submitted to the Homyz verification team for secure review. Your files are encrypted and never shared publicly.")}
               </p>
             </div>
 
@@ -1566,7 +1584,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                 }}
                 className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-zinc-300 text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors cursor-pointer"
               >
-                {data.identityStatus === "VERIFIED" ? "Close" : "Cancel"}
+                {data.identityStatus === "VERIFIED" ? t("personal_info_close", "Close") : t("personal_info_cancel", "Cancel")}
               </button>
 
               <button
@@ -1581,10 +1599,10 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                       <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" className="opacity-25" />
                       <path fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" className="opacity-75" />
                     </svg>
-                    Uploading document...
+                    {t("personal_info_uploading", "Uploading document...")}
                   </>
                 ) : (
-                  "Upload and submit for review"
+                  t("personal_info_upload_submit", "Upload and submit for review")
                 )}
               </button>
             </div>

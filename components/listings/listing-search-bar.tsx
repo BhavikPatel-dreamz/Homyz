@@ -219,9 +219,9 @@ export function ListingSearchBar() {
   const { t, language } = useLanguage();
 
   // URL Query Parameters
-  const urlDest = searchParams.get("destination") || searchParams.get("city") || searchParams.get("placeName") || "";
-  const urlCheckIn = searchParams.get("checkIn") || searchParams.get("startDate") || "";
-  const urlCheckOut = searchParams.get("checkOut") || searchParams.get("endDate") || "";
+  const urlDest = searchParams.get("location") || searchParams.get("destination") || searchParams.get("city") || searchParams.get("placeName") || "";
+  const urlCheckIn = searchParams.get("checkIn") || searchParams.get("checkin") || searchParams.get("startDate") || "";
+  const urlCheckOut = searchParams.get("checkOut") || searchParams.get("checkout") || searchParams.get("endDate") || "";
   const urlAdults = parseInt(searchParams.get("adults") || "0", 10);
   const urlChildren = parseInt(searchParams.get("children") || "0", 10);
   const urlInfants = parseInt(searchParams.get("infants") || "0", 10);
@@ -623,10 +623,20 @@ export function ListingSearchBar() {
     // Dates
     const appliedCheckIn = datePreferences.mode === "dates" ? checkIn : "";
     const appliedCheckOut = datePreferences.mode === "dates" ? checkOut : "";
-    if (appliedCheckIn) sp.set("checkIn", appliedCheckIn);
-    else sp.delete("checkIn");
-    if (appliedCheckOut) sp.set("checkOut", appliedCheckOut);
-    else sp.delete("checkOut");
+    if (appliedCheckIn) {
+      sp.set("checkIn", appliedCheckIn);
+      sp.delete("checkin");
+    } else {
+      sp.delete("checkin");
+      sp.delete("checkIn");
+    }
+    if (appliedCheckOut) {
+      sp.set("checkOut", appliedCheckOut);
+      sp.delete("checkout");
+    } else {
+      sp.delete("checkout");
+      sp.delete("checkOut");
+    }
 
     // Guests
     sp.set("guests", String(guestCountForSearch));
@@ -1088,10 +1098,10 @@ export function ListingSearchBar() {
             }`}
           >
             <span className="block text-base font-normal text-[#1f1f1f] cursor-pointer">
-              {t("home_search_when", undefined, "When")}
+              {t("home_check_in", "Check in")}
             </span>
             <span className="block truncate text-sm font-normal text-[#727272]">
-              {datePreferences.mode !== "dates" ? "Flexible" : formatShortDate(checkIn) || t("home_search_add_dates", undefined, "Add dates")}
+              {datePreferences.mode !== "dates" ? t("home_when_tab_flexible", "Flexible") : formatShortDate(checkIn) || t("home_search_add_dates", undefined, "Add dates")}
             </span>
           </button>
 
@@ -1112,10 +1122,10 @@ export function ListingSearchBar() {
             }`}
           >
             <span className="block text-base font-normal text-[#1f1f1f] cursor-pointer">
-              {t("home_search_when", undefined, "When")}
+              {t("home_check_out", "Check out")}
             </span>
             <span className="block truncate text-sm font-normal text-[#727272]">
-              {datePreferences.mode !== "dates" ? "Flexible" : formatShortDate(checkOut) || t("home_search_add_dates", undefined, "Add dates")}
+              {datePreferences.mode !== "dates" ? t("home_when_tab_flexible", "Flexible") : formatShortDate(checkOut) || t("home_search_add_dates", undefined, "Add dates")}
             </span>
           </button>
 
@@ -1429,4 +1439,3 @@ export function ListingSearchBar() {
     </div>
   );
 }
-

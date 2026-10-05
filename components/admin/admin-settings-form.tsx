@@ -242,7 +242,7 @@ export function AdminSettingsForm({
                 <span>Tax Protection Guaranteed</span>
               </div>
               <p className="text-[11px] text-[var(--muted-foreground)] leading-relaxed">
-                The Guest Service Fee is strictly excluded from the taxable base. Tax rules apply only to the stay amount and eligible cleaning fees, never on top of the Guest Service Fee.
+                The platform service fee is strictly excluded from the taxable base. Tax rules apply only to the stay amount and supported guest charges.
               </p>
             </div>
 
@@ -293,7 +293,7 @@ export function AdminSettingsForm({
             </div>
 
             <div className="mt-4 pt-3 border-t border-[var(--border-subtle)] text-[10px] text-[var(--muted-foreground)]">
-              Formula: Host Payout = Stay Amount + Cleaning Fee - Guest Service Fee
+              Formula: Host Payout = Stay Amount + supported host charges - Platform Service Fee
             </div>
           </div>
         </form>

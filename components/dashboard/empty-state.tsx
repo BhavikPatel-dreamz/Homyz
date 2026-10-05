@@ -2,18 +2,24 @@
 
 import React from "react";
 import Link from "next/link";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 export function EmptyState({
-  title = "No upcoming reservations",
-  description = "You don't have any active stay reservations at the moment. Explore listings or create a new booking.",
+  title,
+  description,
   actionHref = "/host/listings",
-  actionText = "Explore Listings",
+  actionText,
 }: {
   title?: string;
   description?: string;
   actionHref?: string;
   actionText?: string;
 }) {
+  const { t } = useLanguage();
+  const displayTitle = title ?? t("dashboard_empty_upcoming_title", "No upcoming reservations");
+  const displayDescription = description ?? t("dashboard_empty_upcoming_desc", "You don't have any active stay reservations at the moment. Explore listings or create a new booking.");
+  const displayActionText = actionText ?? t("dashboard_empty_explore_action", "Explore Listings");
+
   return (
     <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-[var(--border)] bg-[var(--surface-secondary)]/50 p-12 text-center my-6">
       <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#FBDE9B] text-[#291E05] shadow-xs mb-4 dark:bg-[#f59e0b] dark:text-zinc-950">
@@ -21,16 +27,16 @@ export function EmptyState({
           <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
         </svg>
       </div>
-      <h3 className="text-xl font-semibold text-muted-foreground">{title}</h3>
+      <h3 className="text-xl font-semibold text-muted-foreground">{displayTitle}</h3>
       <p className="mt-1.5 text-xs text-[var(--muted-foreground)] max-w-sm leading-relaxed">
-        {description}
+        {displayDescription}
       </p>
       {actionHref && (
         <Link
           href={actionHref}
           className="mt-6 rounded-full bg-[var(--primary)] px-5 py-2.5 text-xs font-semibold text-primary-foreground hover:opacity-90 transition-opacity shadow-xs"
         >
-          {actionText}
+          {displayActionText}
         </Link>
       )}
     </div>

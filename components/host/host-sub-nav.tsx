@@ -138,12 +138,25 @@ export function HostSubNav({
   const { t } = useLanguage();
 
   let activeTab = explicitActiveTab;
-  if (!activeTab) {
-    if (pathname?.includes("/host/today")) activeTab = "today";
-    else if (pathname?.includes("/host/calendar")) activeTab = "calendar";
-    else if (pathname?.includes("/host/messages")) activeTab = "messages";
-    else activeTab = "listing";
+  if (!activeTab && pathname) {
+    if (pathname === "/host/today" || pathname.startsWith("/host/today/")) {
+      activeTab = "today";
+    } else if (pathname === "/host/calendar" || pathname.startsWith("/host/calendar/")) {
+      activeTab = "calendar";
+    } else if (pathname === "/host/messages" || pathname.startsWith("/host/messages/")) {
+      activeTab = "messages";
+    } else if (pathname === "/host/listings" || pathname.startsWith("/host/listings/")) {
+      activeTab = "listing";
+    }
   }
+
+  const handleMenuClick = () => {
+    if (onMenuClick) {
+      onMenuClick();
+    } else {
+      window.dispatchEvent(new CustomEvent("homyz:toggle-menu"));
+    }
+  };
 
   const listingHref = "/host/listings";
 
@@ -185,8 +198,9 @@ export function HostSubNav({
     },
   ];
 
-  const mobileActiveIndex = Math.max(0, tabs.findIndex((tab) => tab.id === activeTab));
-  const notchX = 81.9 + mobileActiveIndex * 70.2;
+  const activeTabIndex = tabs.findIndex((tab) => tab.id === activeTab);
+  const hasActiveTab = activeTabIndex !== -1;
+  const notchX = hasActiveTab ? 81.9 + activeTabIndex * 70.2 : -100;
 
   return (
     <>
@@ -267,7 +281,8 @@ export function HostSubNav({
                 {/* Menu Button */}
                 <button
                   type="button"
-                  onClick={onMenuClick}
+                  onClick={handleMenuClick}
+                  aria-label={t("host_nav_menu") || "Host menu"}
                   className="group flex h-[76px] w-[78px] shrink-0 flex-col items-center justify-center gap-1 rounded-[20px] bg-white border border-[#727272] text-[#727272] hover:border-[#1F1F1F] hover:text-[#1F1F1F] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 cursor-pointer dark:bg-zinc-800/80 dark:border-zinc-700 dark:text-zinc-300 dark:hover:border-zinc-500 dark:hover:text-zinc-100"
                 >
                   <MenuNavIcon className="shrink-0" />

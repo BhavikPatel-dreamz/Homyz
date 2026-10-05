@@ -6,6 +6,8 @@ import Link from "next/link";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import type { GuestAuthoredReviewDTO } from "@/lib/profile/profile-loader";
 
+import { useLanguage } from "@/lib/i18n/language-context";
+
 interface MyReviewsSectionProps {
   reviews: GuestAuthoredReviewDTO[];
   className?: string;
@@ -29,6 +31,7 @@ function StarRating({ rating }: { rating: number }) {
 
 export function MyReviewsSection({ reviews, className = "" }: MyReviewsSectionProps) {
   const [selectedReview, setSelectedReview] = useState<GuestAuthoredReviewDTO | null>(null);
+  const { t } = useLanguage();
 
   return (
     <section className={`w-full flex flex-col ${className}`} aria-labelledby="my-reviews-heading">
@@ -46,10 +49,10 @@ export function MyReviewsSection({ reviews, className = "" }: MyReviewsSectionPr
             </svg>
           </div>
           <h3 className="mt-3 text-base font-semibold text-[#1F1F1F]">
-            You haven&apos;t written any reviews yet.
+            {t("profile_reviews_empty_title", "You haven't written any reviews yet.")}
           </h3>
-          <p className="mt-1 text-xs sm:text-sm text-[#727272] max-w-sm mx-auto">
-            Once you complete a stay, you can share feedback with the host and community here.
+          <p className="mt-1 text-xs sm:text-sm text-zinc-500 max-w-sm mx-auto">
+            {t("profile_reviews_empty_desc", "Once you complete a stay, you can share feedback with the host and community here.")}
           </p>
         </div>
       ) : (
@@ -124,7 +127,7 @@ export function MyReviewsSection({ reviews, className = "" }: MyReviewsSectionPr
                       onClick={() => setSelectedReview(rev)}
                       className="rounded-full bg-[#FFE29A] px-5 py-2 text-xs font-medium text-[#1F1F1F] transition-colors hover:bg-[#f7d57e] cursor-pointer"
                     >
-                      Show review
+                      {t("profile_reviews_show_review", "Show review")}
                     </button>
                   </div>
                 )}
@@ -201,7 +204,7 @@ export function MyReviewsSection({ reviews, className = "" }: MyReviewsSectionPr
                 onClick={() => setSelectedReview(null)}
                 className="rounded-full bg-[#1F1F1F] px-6 py-2.5 text-sm font-semibold text-white hover:bg-zinc-800 transition-colors"
               >
-                Close
+                {t("profile_reviews_close", "Close")}
               </button>
             </div>
           </div>

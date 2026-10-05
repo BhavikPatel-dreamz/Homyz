@@ -1,15 +1,16 @@
 import { prisma } from "@/lib/db/prisma";
+import { bookingDateKey } from "@/lib/booking/booking-date";
 import { AppError } from "@/lib/api/errors";
 import type { AuthUser } from "@/lib/auth/types";
 import { resolveTaxJurisdiction } from "@/lib/tax/jurisdiction-resolver";
 import { TaxCalculator } from "@/lib/tax/tax-calculator";
+import { invalidateListingCache } from "@/lib/redis/invalidation";
 import type {
   ListingTaxDTO,
   TaxCalculationResult,
   TaxInvoiceData,
   TaxRegistrationDTO,
   TaxReportSummary,
-  TaxRuleDTO,
 } from "@/lib/tax/types";
 import type {
   createHostTaxSchema,
@@ -18,6 +19,7 @@ import type {
   updateHostTaxSchema,
 } from "@/lib/validation/tax";
 import type { z } from "zod";
+import type { Prisma } from "@/generated/prisma/client";
 
 export class TaxService {
   /**
@@ -26,7 +28,7 @@ export class TaxService {
   private async assertListingOwnership(actor: AuthUser, listingId: string) {
     const listing = await prisma.listing.findUnique({
       where: { id: listingId },
-      select: { id: true, hostId: true, city: true, country: true, address: true, postalCode: true, title: true, price: true, cleaningFee: true },
+      select: { id: true, hostId: true, city: true, country: true, address: true, postalCode: true, title: true, price: true },
     });
 
     if (!listing) {
@@ -113,15 +115,6 @@ export class TaxService {
       updatedAt: r.updatedAt.toISOString(),
     }));
 
-    // 4. Check for Potential Duplicate Warnings
-    const systemTaxTypes = new Set(resolved.systemRules.map((r) => r.taxType));
-    const duplicateWarnings = hostTaxes
-      .filter((ht) => systemTaxTypes.has(ht.taxType))
-      .map((ht) => ({
-        taxType: ht.taxType,
-        message: `A ${ht.taxType} tax is already collected and remitted automatically by Homyz for this jurisdiction.`,
-      }));
-
     return {
       listing: {
         id: listing.id,
@@ -129,13 +122,14 @@ export class TaxService {
         city: listing.city,
         country: listing.country,
         price: listing.price,
-        cleaningFee: listing.cleaningFee,
       },
       jurisdiction: resolved.jurisdiction,
       systemRules: resolved.systemRules,
       hostTaxes,
       registrations,
-      duplicateWarnings,
+      // Catalog rules are jurisdiction guidance only. A tax is charged only
+      // after the host explicitly configures it for this listing.
+      duplicateWarnings: [],
     };
   }
 
@@ -144,23 +138,6 @@ export class TaxService {
    */
   async createHostTax(actor: AuthUser, input: z.infer<typeof createHostTaxSchema>) {
     const listing = await this.assertListingOwnership(actor, input.listingId);
-
-    // 1. Resolve Jurisdiction
-    const resolved = resolveTaxJurisdiction({
-      country: listing.country,
-      city: listing.city,
-    });
-
-    // Check if platform already manages this tax type automatically
-    const isPlatformManaged = resolved.systemRules.some(
-      (r) => r.taxType === input.taxType && r.isActive
-    );
-
-    if (isPlatformManaged) {
-      throw AppError.conflict(
-        `This tax (${input.taxType}) is already automatically collected and remitted by Homyz for this jurisdiction.`
-      );
-    }
 
     // A listing may have several taxes of the same broad type. The selected
     // tax name is its user-facing, per-listing identity.
@@ -178,7 +155,7 @@ export class TaxService {
     // Keep the listing-tax record and its audit event in one transaction. A
     // failed audit write must not make the client receive an error for a tax
     // that was actually persisted.
-    const created = await prisma.$transaction(async (tx: any) => {
+    const created = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const tax = await tx.listingTax.create({
         data: {
           listingId: input.listingId,
@@ -192,7 +169,7 @@ export class TaxService {
           maximumAmountPerPersonPerNight: input.maximumAmountPerPersonPerNight ?? null,
           partialStayExemptionNights: input.partialStayExemptionNights ?? null,
           fullStayExemptionNights: input.fullStayExemptionNights ?? null,
-          longStayExemptionNights: input.longStayExemptionNights ?? null,
+          longStayExemptionNights: null,
           isActive: true,
         },
       });
@@ -202,13 +179,14 @@ export class TaxService {
           listingId: input.listingId,
           hostId: actor.id,
           action: "CREATE_TAX",
-          newValues: tax as any,
+          newValues: tax as unknown as Prisma.InputJsonValue,
         },
       });
 
       return tax;
     });
 
+    await invalidateListingCache(input.listingId, listing.hostId).catch(() => undefined);
     return created;
   }
 
@@ -221,7 +199,7 @@ export class TaxService {
     taxId: string,
     input: z.infer<typeof updateHostTaxSchema>
   ) {
-    await this.assertListingOwnership(actor, listingId);
+    const listing = await this.assertListingOwnership(actor, listingId);
 
     const existing = await prisma.listingTax.findFirst({
       where: { id: taxId, listingId },
@@ -231,46 +209,51 @@ export class TaxService {
       throw AppError.notFound("Tax configuration not found");
     }
 
-    const updated = await prisma.listingTax.update({
-      where: { id: taxId },
-      data: {
-        customName: input.customName !== undefined ? input.customName : existing.customName,
-        calculationMethod: input.calculationMethod || existing.calculationMethod,
-        rate: input.rate !== undefined ? input.rate : existing.rate,
-        amount: input.amount !== undefined ? input.amount : existing.amount,
-        taxableComponents: input.taxableComponents || existing.taxableComponents,
-        remittanceResponsibility: input.remittanceResponsibility || existing.remittanceResponsibility,
-        maximumAmountPerPersonPerNight:
-          input.maximumAmountPerPersonPerNight !== undefined
-            ? input.maximumAmountPerPersonPerNight
-            : existing.maximumAmountPerPersonPerNight,
-        partialStayExemptionNights:
-          input.partialStayExemptionNights !== undefined
-            ? input.partialStayExemptionNights
-            : existing.partialStayExemptionNights,
-        fullStayExemptionNights:
-          input.fullStayExemptionNights !== undefined
-            ? input.fullStayExemptionNights
-            : existing.fullStayExemptionNights,
-        longStayExemptionNights:
-          input.longStayExemptionNights !== undefined
-            ? input.longStayExemptionNights
-            : existing.longStayExemptionNights,
-        isActive: input.isActive !== undefined ? input.isActive : existing.isActive,
-      },
+    const updated = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      const tax = await tx.listingTax.update({
+        where: { id: taxId },
+        data: {
+          taxType: input.taxType ?? existing.taxType,
+          customName: input.customName !== undefined ? input.customName : existing.customName,
+          calculationMethod: input.calculationMethod || existing.calculationMethod,
+          rate: input.rate !== undefined ? input.rate : existing.rate,
+          amount: input.amount !== undefined ? input.amount : existing.amount,
+          taxableComponents: input.taxableComponents || existing.taxableComponents,
+          remittanceResponsibility: input.remittanceResponsibility || existing.remittanceResponsibility,
+          maximumAmountPerPersonPerNight:
+            input.maximumAmountPerPersonPerNight !== undefined
+              ? input.maximumAmountPerPersonPerNight
+              : existing.maximumAmountPerPersonPerNight,
+          partialStayExemptionNights:
+            input.partialStayExemptionNights !== undefined
+              ? input.partialStayExemptionNights
+              : existing.partialStayExemptionNights,
+          fullStayExemptionNights:
+            input.fullStayExemptionNights !== undefined
+              ? input.fullStayExemptionNights
+              : existing.fullStayExemptionNights,
+          // Clear the ambiguous legacy alias whenever the explicit full-stay
+          // value is saved. Unedited legacy records remain readable.
+          longStayExemptionNights:
+            input.fullStayExemptionNights !== undefined
+              ? null
+              : existing.longStayExemptionNights,
+          isActive: input.isActive !== undefined ? input.isActive : existing.isActive,
+        },
+      });
+      await tx.taxAuditLog.create({
+        data: {
+          listingId,
+          hostId: actor.id,
+          action: "UPDATE_TAX",
+          oldValues: existing as unknown as Prisma.InputJsonValue,
+          newValues: tax as unknown as Prisma.InputJsonValue,
+        },
+      });
+      return tax;
     });
 
-    // Audit Log
-    await prisma.taxAuditLog.create({
-      data: {
-        listingId,
-        hostId: actor.id,
-        action: "UPDATE_TAX",
-        oldValues: existing as any,
-        newValues: updated as any,
-      },
-    });
-
+    await invalidateListingCache(listingId, listing.hostId).catch(() => undefined);
     return updated;
   }
 
@@ -278,7 +261,7 @@ export class TaxService {
    * Deletes an existing host-managed tax configuration.
    */
   async deleteHostTax(actor: AuthUser, listingId: string, taxId: string) {
-    await this.assertListingOwnership(actor, listingId);
+    const listing = await this.assertListingOwnership(actor, listingId);
 
     const existing = await prisma.listingTax.findFirst({
       where: { id: taxId, listingId },
@@ -288,20 +271,19 @@ export class TaxService {
       throw AppError.notFound("Tax configuration not found");
     }
 
-    await prisma.listingTax.delete({
-      where: { id: taxId },
+    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      await tx.listingTax.delete({ where: { id: taxId } });
+      await tx.taxAuditLog.create({
+        data: {
+          listingId,
+          hostId: actor.id,
+          action: "DELETE_TAX",
+          oldValues: existing as unknown as Prisma.InputJsonValue,
+        },
+      });
     });
 
-    // Audit Log
-    await prisma.taxAuditLog.create({
-      data: {
-        listingId,
-        hostId: actor.id,
-        action: "DELETE_TAX",
-        oldValues: existing as any,
-      },
-    });
-
+    await invalidateListingCache(listingId, listing.hostId).catch(() => undefined);
     return { success: true };
   }
 
@@ -327,7 +309,7 @@ export class TaxService {
       },
     });
 
-    const record = await prisma.$transaction(async (tx: any) => {
+    const record = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const registration = existing
         ? await tx.taxRegistration.update({
             where: { id: existing.id },
@@ -377,7 +359,6 @@ export class TaxService {
     guests: number;
     pets?: number;
     baseNightlyPrice?: number;
-    cleaningFee?: number;
   }): Promise<TaxCalculationResult> {
     const listing = await prisma.listing.findUnique({
       where: { id: opts.listingId },
@@ -387,11 +368,6 @@ export class TaxService {
     if (!listing) {
       throw AppError.notFound("Listing not found");
     }
-
-    const resolved = resolveTaxJurisdiction({
-      country: listing.country,
-      city: listing.city,
-    });
 
     const hostTaxes: ListingTaxDTO[] = (listing.taxes || []).map((t: any) => ({
       id: t.id,
@@ -414,16 +390,14 @@ export class TaxService {
     }));
 
     const nightlyPrice = opts.baseNightlyPrice ?? listing.price;
-    const cleaningFee = opts.cleaningFee ?? (listing.cleaningFee || 0);
     const nights = Math.max(1, opts.nights);
     const nightlySubtotal = nightlyPrice * nights;
 
     return TaxCalculator.calculateTaxes({
       nights,
       nightlySubtotal,
-      cleaningFee,
       guests: opts.guests,
-      rules: resolved.systemRules,
+      rules: [],
       hostTaxes,
       currency: "SAR",
     });
@@ -573,9 +547,8 @@ export class TaxService {
     const pb = (booking as any).priceBreakdown;
     const nightlySubtotal = pb?.nightlySubtotal ?? ((booking.nightlyPrice || 0) * nights);
     const discountAmount = pb?.discountAmount ?? 0;
-    const cleaningFee = booking.cleaningFee || 0;
-    const hostServiceFee = pb?.hostServiceFee ?? 0;
-    const hostServiceFeePercentage = pb?.hostServiceFeePercentage ?? 15;
+    const extraGuestFee = pb?.extraGuestFee ?? 0;
+    const petFee = pb?.petFee ?? 0;
 
     const lineItems = [
       {
@@ -595,25 +568,25 @@ export class TaxService {
       });
     }
 
-    if (cleaningFee > 0) {
+    if (extraGuestFee > 0) {
       lineItems.push({
-        description: "Cleaning Fee",
+        description: "Extra guest fee",
         quantity: 1,
-        unitPrice: cleaningFee,
-        total: cleaningFee,
+        unitPrice: extraGuestFee,
+        total: extraGuestFee,
       });
     }
 
-    if (hostServiceFee > 0) {
+    if (petFee > 0) {
       lineItems.push({
-        description: `Guest Service Fee (${hostServiceFeePercentage}%)`,
+        description: "Pet fee",
         quantity: 1,
-        unitPrice: hostServiceFee,
-        total: hostServiceFee,
+        unitPrice: petFee,
+        total: petFee,
       });
     }
 
-    const subtotal = nightlySubtotal - discountAmount + cleaningFee + hostServiceFee;
+    const subtotal = nightlySubtotal - discountAmount + extraGuestFee + petFee;
     let taxTotal = 0;
 
     const taxBreakdown = booking.taxes.map((t: any) => {
@@ -632,8 +605,8 @@ export class TaxService {
       issueDate: booking.createdAt.toISOString(),
       bookingId: booking.id,
       stayDates: {
-        checkIn: booking.startDate.toISOString().split("T")[0],
-        checkOut: booking.endDate.toISOString().split("T")[0],
+        checkIn: bookingDateKey(booking.startDate),
+        checkOut: bookingDateKey(booking.endDate),
         nights,
       },
       supplier: {
@@ -655,7 +628,7 @@ export class TaxService {
       taxBreakdown,
       subtotal,
       taxTotal,
-      grandTotal: subtotal + taxTotal,
+      grandTotal: booking.totalPrice ?? subtotal + taxTotal,
       currency: booking.currency || "SAR",
     };
   }

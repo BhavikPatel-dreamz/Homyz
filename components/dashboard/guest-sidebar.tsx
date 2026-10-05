@@ -27,6 +27,20 @@ import {
   normalizeTabId,
 } from "@/lib/profile/tab-utils";
 
+import { useLanguage, type TranslationKey } from "@/lib/i18n/language-context";
+
+const NAV_ITEM_KEY_MAP: Record<string, TranslationKey> = {
+  about_me: "profile_nav_about_me",
+  upcoming_trips: "profile_nav_upcoming_trips",
+  past_bookings: "profile_nav_past_bookings",
+  invite: "profile_nav_invite_earn",
+  saved: "profile_nav_saved_listings",
+  profile_management: "profile_nav_profile_management",
+  account_settings: "profile_nav_account_settings",
+  support: "profile_nav_support",
+  notifications: "profile_nav_notifications",
+};
+
 export function GuestDashboardSidebar({
   activeId,
   onSelectTab,
@@ -37,17 +51,21 @@ export function GuestDashboardSidebar({
   avatarUrl?: string | null;
 }) {
   const currentActive = normalizeTabId(activeId);
+  const { t } = useLanguage();
 
   return (
     <aside className="order-2 w-full shrink-0 lg:order-1 lg:w-[300px] xl:w-[452px]">
       <h1 className="mb-7 hidden tracking-[-0.02em] text-[#1F1F1F] lg:block xl:mb-10">
-        My profile
+        {t("profile_nav_my_profile", "My profile")}
       </h1>
 
       <nav className="mobile-guest-grid grid md:grid-cols-3 grid-cols-2 gap-1.5 lg:block lg:mt-3 mt-5">
         {GUEST_NAV_ITEMS.map((item, index) => {
           const isActive = item.id === currentActive;
           const precedesActive = GUEST_NAV_ITEMS[index + 1]?.id === currentActive;
+          const translatedLabel = NAV_ITEM_KEY_MAP[item.id]
+            ? t(NAV_ITEM_KEY_MAP[item.id], item.label)
+            : item.label;
 
           return (
             <Link
@@ -108,7 +126,7 @@ export function GuestDashboardSidebar({
                   </span>
                 )}
               </div>
-              <span className="max-w-[120px] whitespace-normal lg:max-w-none lg:truncate lg:whitespace-nowrap">{item.label}</span>
+              <span className="max-w-[120px] whitespace-normal lg:max-w-none lg:truncate lg:whitespace-nowrap">{translatedLabel}</span>
             </Link>
           );
         })}

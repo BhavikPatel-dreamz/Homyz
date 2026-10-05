@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { ReservationCard, ReservationCardData } from "./reservation-card";
 import { FilterBar, FilterOptions } from "./filter-bar";
 import { LoadingSkeleton } from "./loading-skeleton";
@@ -9,6 +10,10 @@ import { ErrorState } from "./error-state";
 import { toReservationCardData } from "@/lib/profile/reservation-data";
 import { MyReviewsSection } from "@/components/profile/my-reviews-section";
 import type { GuestAuthoredReviewDTO } from "@/lib/profile/profile-loader";
+import type { BookingDTO } from "@/services/mappers";
+import { bookingDateEpoch, bookingDateYear } from "@/lib/booking/booking-date";
+import { isUpcomingBookingStatus } from "@/lib/booking/booking-status";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 export function ReservationDashboard({
   initialReservations,
@@ -24,9 +29,13 @@ export function ReservationDashboard({
   /** Enables five columns only for the full-width guest dashboard. */
   wideGuestGrid?: boolean;
 }) {
+  const searchParams = useSearchParams();
+  const requestedBookingView = searchParams.get("bookingView");
+  const resolvedInitialTab: FilterOptions["tab"] = requestedBookingView === "all" ? "all" : initialTab;
+  const { t } = useLanguage();
   const [reservations, setReservations] = useState<ReservationCardData[]>(initialReservations || []);
   const [filters, setFilters] = useState<FilterOptions>({
-    tab: initialTab,
+    tab: resolvedInitialTab,
     search: "",
     status: "ALL",
     dateRange: "ALL",
@@ -38,15 +47,9 @@ export function ReservationDashboard({
     : "grid grid-cols-1 items-start gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4";
 
   useEffect(() => {
-    if (initialReservations !== undefined) {
-      setReservations(initialReservations);
-      setLoading(false);
-      return;
-    }
+    if (initialReservations !== undefined) return;
 
     const controller = new AbortController();
-    setLoading(true);
-    setError(null);
 
     fetch("/api/v1/bookings?limit=50", {
       signal: controller.signal,
@@ -64,7 +67,7 @@ export function ReservationDashboard({
           : Array.isArray(json?.items)
             ? json.items
             : [];
-        const mapped = rawItems.map((b: any) => toReservationCardData(b));
+        const mapped = rawItems.map((booking: BookingDTO) => toReservationCardData(booking));
         setReservations(mapped);
       })
       .catch((err) => {
@@ -80,37 +83,41 @@ export function ReservationDashboard({
   }, [initialReservations]);
 
   const filteredItems = useMemo(() => {
-    const now = new Date();
-    const todayMidnight = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+    const todayMidnight = bookingDateEpoch(new Date());
 
     return reservations.filter((item) => {
       const status = item.status || "PENDING";
-      const startD = new Date(item.startDate);
-      const endD = new Date(item.endDate);
-      const endMidnight = Date.UTC(endD.getUTCFullYear(), endD.getUTCMonth(), endD.getUTCDate());
+      const endMidnight = bookingDateEpoch(item.endDate);
 
       // Tab Filter:
       // "today": check-in is today, or currently staying today
       if (filters.tab === "today") {
-        if (status === "CANCELLED" || !item.isToday) return false;
+        if (status === "CANCELLED" || status === "DECLINED" || status === "EXPIRED" || !item.isToday) return false;
       }
 
-      // "upcoming": active or future stay whose check-out date has not passed yet
+      // "upcoming": active future requests and confirmed stays whose check-out date has not passed.
       if (filters.tab === "upcoming") {
-        if (status === "CANCELLED") return false;
+        if (!isUpcomingBookingStatus(status)) return false;
         if (endMidnight < todayMidnight) return false;
       }
 
-      // "past": completed stay where check-out has passed
+      // "past": completed stay where check-out has passed or terminal cancelled/declined/expired requests
       if (filters.tab === "past") {
-        // Active/future stays do not belong in past
-        if (endMidnight >= todayMidnight && status !== "CANCELLED") return false;
-        // In past history tab, show completed stays or cancelled stays if matching status
+        const isTerminal = status === "CANCELLED" || status === "DECLINED" || status === "EXPIRED";
+        if (!isTerminal && endMidnight >= todayMidnight) return false;
       }
 
       // Status Filter
-      if (filters.status !== "ALL" && item.status !== filters.status) {
-        return false;
+      if (filters.status !== "ALL") {
+        if (filters.status === "CONFIRMED" && status !== "CONFIRMED" && status !== "CURRENT_STAY") {
+          return false;
+        }
+        if (filters.status === "CANCELLED" && status !== "CANCELLED" && status !== "DECLINED" && status !== "EXPIRED") {
+          return false;
+        }
+        if (filters.status === "PENDING" && status !== "PENDING") {
+          if (status !== "PENDING_HOST_CONFIRMATION") return false;
+        }
       }
 
       // Search Filter
@@ -127,21 +134,30 @@ export function ReservationDashboard({
       return true;
     }).sort((left, right) => {
       if (filters.tab === "past") {
-        return new Date(right.endDate).getTime() - new Date(left.endDate).getTime();
+        return bookingDateEpoch(right.endDate) - bookingDateEpoch(left.endDate);
       }
-      return new Date(left.startDate).getTime() - new Date(right.startDate).getTime();
+      return bookingDateEpoch(left.startDate) - bookingDateEpoch(right.startDate);
     });
   }, [reservations, filters]);
+
+  const upcomingGroups = useMemo(() => {
+    if (filters.tab !== "upcoming") return { pending: [], confirmed: [] };
+    return {
+      pending: filteredItems.filter((item) => item.status === "PENDING" || item.status === "PENDING_HOST_CONFIRMATION"),
+      confirmed: filteredItems.filter((item) => item.status === "CONFIRMED" || item.status === "CURRENT_STAY"),
+    };
+  }, [filteredItems, filters.tab]);
 
   // Group past bookings by stay completion year (newest year first, newest stay inside)
   const pastYearGroups = useMemo(() => {
     if (filters.tab !== "past") return [];
     const groups = new Map<number, ReservationCardData[]>();
     const sorted = [...filteredItems].sort(
-      (a, b) => new Date(b.endDate).getTime() - new Date(a.endDate).getTime(),
+      (a, b) => bookingDateEpoch(b.endDate) - bookingDateEpoch(a.endDate),
     );
     for (const item of sorted) {
-      const year = new Date(item.endDate).getUTCFullYear();
+      const year = bookingDateYear(item.endDate);
+      if (year === null) continue;
       const group = groups.get(year) ?? [];
       group.push(item);
       groups.set(year, group);
@@ -152,12 +168,14 @@ export function ReservationDashboard({
   }, [filteredItems, filters.tab]);
 
   const handleFilterChange = (updated: Partial<FilterOptions>) => {
-    setLoading(true);
-    setFilters((prev) => ({ ...prev, ...updated }));
-    if (updated.tab && onTabChange) {
-      onTabChange(updated.tab);
+    if (updated.tab) {
+      setLoading(true);
+      if (onTabChange) {
+        onTabChange(updated.tab);
+      }
+      setTimeout(() => setLoading(false), 200);
     }
-    setTimeout(() => setLoading(false), 200);
+    setFilters((prev) => ({ ...prev, ...updated }));
   };
 
   return (
@@ -177,18 +195,18 @@ export function ReservationDashboard({
       ) : filteredItems.length === 0 ? (
         filters.tab === "upcoming" && !filters.search ? (
           <EmptyState
-            title="No upcoming trips yet"
-            description="Time to dust off your bags and start planning your next great adventure."
+            title={t("dashboard_empty_upcoming_title", "No upcoming trips yet")}
+            description={t("dashboard_empty_upcoming_desc", "Time to dust off your bags and start planning your next great adventure.")}
             actionHref="/"
-            actionText="Explore stays"
+            actionText={t("dashboard_empty_explore_action", "Explore stays")}
           />
         ) : filters.tab === "past" && !filters.search ? (
           <div className="space-y-12">
             <EmptyState
-              title="No past bookings yet"
-              description="Once you complete trips with Homyz, your completed bookings will be cataloged here."
+              title={t("dashboard_empty_past_title", "No past bookings yet")}
+              description={t("dashboard_empty_past_desc", "Once you complete trips with Homyz, your completed bookings will be cataloged here.")}
               actionHref="/"
-              actionText="Explore stays"
+              actionText={t("dashboard_empty_explore_action", "Explore stays")}
             />
             {/* My Reviews Section below past bookings even if past bookings are empty */}
             <div className="pt-8 border-t border-zinc-200/80">
@@ -197,10 +215,38 @@ export function ReservationDashboard({
           </div>
         ) : (
           <EmptyState
-            title={`No ${filters.tab} reservations`}
-            description="Try adjusting your search criteria or switching filter tabs."
+            title={t("dashboard_empty_generic_title" as any, { tab: filters.tab }, `No ${filters.tab} reservations`)}
+            description={t("dashboard_empty_generic_desc" as any, "Try adjusting your search criteria or switching filter tabs.")}
           />
         )
+      ) : filters.tab === "upcoming" ? (
+        <div className="flex flex-col gap-10 sm:gap-12">
+          {upcomingGroups.pending.length > 0 && (
+            <section aria-labelledby="pending-requests-heading">
+              <h2 id="pending-requests-heading" className="mb-5 text-xl font-semibold leading-7 text-[#1F1F1F] sm:text-2xl">
+                Pending requests ({upcomingGroups.pending.length})
+              </h2>
+              <div className="grid max-w-[812px] grid-cols-1 items-start gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {upcomingGroups.pending.map((item) => (
+                  <ReservationCard key={item.id} data={item} href={`/bookings/${item.id}`} />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {upcomingGroups.confirmed.length > 0 && (
+            <section aria-labelledby="confirmed-trips-heading">
+              <h2 id="confirmed-trips-heading" className="mb-5 text-xl font-semibold leading-7 text-[#1F1F1F] sm:text-2xl">
+                Confirmed trips ({upcomingGroups.confirmed.length})
+              </h2>
+              <div className="grid max-w-[812px] grid-cols-1 items-start gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {upcomingGroups.confirmed.map((item) => (
+                  <ReservationCard key={item.id} data={item} href={`/bookings/${item.id}`} />
+                ))}
+              </div>
+            </section>
+          )}
+        </div>
       ) : filters.tab === "past" ? (
         <div className="flex flex-col gap-12 sm:gap-14">
           <div className="flex flex-col gap-12 sm:gap-14">

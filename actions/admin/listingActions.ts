@@ -15,6 +15,7 @@ import type { AuthUser } from "@/lib/auth/types";
 import { prisma } from "@/lib/db/prisma";
 import { userService } from "@/services/user.service";
 import { updateHostPublicProfileSchema } from "@/lib/validation/host-profile";
+import { bookingModePersistence } from "@/lib/booking/booking-mode";
 
 function revalidateListingLifecycle(id: string, customSlug?: string | null) {
   revalidatePath("/");
@@ -110,7 +111,9 @@ export async function adminUpdateListingDetailsAction(input: {
         ...(input.checkInEnd !== undefined && { checkInEnd: input.checkInEnd.trim() }),
         ...(input.checkOutTime !== undefined && { checkOutTime: input.checkOutTime.trim() }),
         ...(input.cancellationPolicy !== undefined && { cancellationPolicy: input.cancellationPolicy.trim() }),
-        ...(input.instantBook !== undefined && { instantBook: Boolean(input.instantBook) }),
+        ...(input.instantBook !== undefined && bookingModePersistence(
+          input.instantBook ? "INSTANT_BOOK" : "REQUEST_TO_BOOK",
+        )),
         ...(input.minNights !== undefined && { minNights: Number(input.minNights) }),
         ...(input.maxNights !== undefined && { maxNights: Number(input.maxNights) }),
         ...(input.blockedDates !== undefined && { blockedDates: input.blockedDates }),
@@ -138,7 +141,6 @@ export async function adminUpdateListingPricingAction(input: {
   listingId: string;
   price: number; // in cents
   weekdayBasePrice?: number;
-  cleaningFee?: number;
   securityDeposit?: number;
   weekendPrice?: number;
   extraGuestFee?: number;
@@ -155,7 +157,7 @@ export async function adminUpdateListingPricingAction(input: {
     const updated = await listingService.updateForAdmin(input.listingId, {
         price: effectiveWeekday,
         weekdayBasePrice: effectiveWeekday,
-        ...(input.cleaningFee !== undefined && { cleaningFee: Math.max(0, Math.round(input.cleaningFee)) }),
+        cleaningFee: 0,
         ...(input.securityDeposit !== undefined && { securityDeposit: Math.max(0, Math.round(input.securityDeposit)) }),
         ...(input.weekendPrice !== undefined && { weekendPrice: input.weekendPrice ? Math.max(0, Math.round(input.weekendPrice)) : null }),
         ...(input.extraGuestFee !== undefined && { extraGuestFee: Math.max(0, Math.round(input.extraGuestFee)) }),
@@ -444,4 +446,3 @@ export async function adminUpdateListingHostProfileAction(input: {
     return updatedUser.publicProfile as Record<string, unknown>;
   });
 }
-

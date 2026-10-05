@@ -3,6 +3,7 @@ import type { AuthUser } from "@/lib/auth/types";
 import { assertOwnership, authorize } from "@/lib/permissions/authorize";
 import { assertHostPermission } from "@/lib/permissions/host-permissions-server";
 import { prisma } from "@/lib/db/prisma";
+import { bookingDateKey, parseBookingDate, shiftBookingDateKey } from "@/lib/booking/booking-date";
 import { deleteCache, getCache, getCounter, getOrSetCache, incrCounter, setCache } from "@/lib/redis/cache";
 import { hashFilters, keys } from "@/lib/redis/keys";
 import type {
@@ -11,6 +12,8 @@ import type {
 } from "@/lib/validation/listing";
 import { BookingStatus, ListingCoHostStatus, ListingStatus, Role } from "@/generated/prisma/enums";
 import { Prisma } from "@/generated/prisma/client";
+import { getExpiryThresholdDate, isBookingRequestExpired } from "@/lib/booking/booking-expiry";
+import { validateStayAvailability } from "@/lib/booking/availability";
 
 import { auditService } from "./audit.service";
 import { qualificationService } from "./qualification.service";
@@ -31,6 +34,7 @@ import { LANGUAGE_OPTIONS } from "@/lib/utils/language-options";
 import { normalizeSlug } from "@/lib/utils/slug";
 import { deleteManagedMediaUrl, deleteManagedMediaUrls } from "@/lib/storage/media";
 import { normalizePhotoRoomAssignments } from "@/lib/listing/photo-room-assignments";
+import { bookingModePersistence, resolveBookingMode } from "@/lib/booking/booking-mode";
 import { calculateDistance } from "@/lib/location/places-search";
 import { forwardGeocodeQuery } from "@/lib/location/places-provider";
 import {
@@ -160,10 +164,16 @@ async function getPublishedReviewSummaries(listingIds: string[]): Promise<Map<st
   }]));
 }
 
-async function mapCardsWithReviewSummaries(items: PublicListingCardRecord[]): Promise<PublicListingCardDTO[]> {
+async function mapCardsWithReviewSummaries(
+  items: PublicListingCardRecord[],
+  pricingOptions?: { checkIn?: string | null; checkOut?: string | null; guests?: number | null },
+): Promise<PublicListingCardDTO[]> {
   if (!items.length) return [];
   const byListingId = await getPublishedReviewSummaries(items.map((item) => item.id));
-  return items.map((item) => toPublicListingCardDTO({ ...item, reviewSummary: byListingId.get(item.id) }));
+  return items.map((item) => toPublicListingCardDTO(
+    { ...item, reviewSummary: byListingId.get(item.id) },
+    pricingOptions,
+  ));
 }
 
 function getPublishReadiness(listing: {
@@ -365,6 +375,7 @@ function getGeoBoundsClause(lat: number, lng: number, radiusKm: number): Prisma.
 async function searchPublicListings(
   filters: PublicSearchFilters,
 ): Promise<PublicSearchResult> {
+  let requestedStay: { checkIn: string; checkOut: string } | null = null;
   let effectiveLat = typeof filters.lat === "number" && !isNaN(filters.lat) ? filters.lat : undefined;
   let effectiveLng = typeof filters.lng === "number" && !isNaN(filters.lng) ? filters.lng : undefined;
   let effectivePlaceName = filters.placeName || filters.destination || filters.city;
@@ -407,7 +418,13 @@ async function searchPublicListings(
 
   // Pets policy
   if (filters.pets && filters.pets > 0) {
-    baseClauses.push({ petsAllowed: true });
+    baseClauses.push({
+      petsAllowed: true,
+      OR: [
+        { maxPets: null },
+        { maxPets: { gte: filters.pets } },
+      ],
+    });
   }
 
   // Guest capacity
@@ -520,7 +537,7 @@ async function searchPublicListings(
     baseClauses.push({ beds: { gte: filters.beds } });
   }
   if (filters.instantBook === true) {
-    baseClauses.push({ instantBook: true });
+    baseClauses.push({ instantBook: true, bookingApprovalMode: "INSTANT" });
   }
   if (filters.featured === true) {
     baseClauses.push({ isFeatured: true });
@@ -537,30 +554,31 @@ async function searchPublicListings(
 
   // Availability: exclude listings with overlapping bookings + blockedDates
   if (filters.checkIn && filters.checkOut) {
-    const cIn = new Date(filters.checkIn);
-    const cOut = new Date(filters.checkOut);
+    const cIn = parseBookingDate(filters.checkIn);
+    const cOut = parseBookingDate(filters.checkOut);
     if (!isNaN(cIn.getTime()) && !isNaN(cOut.getTime()) && cOut > cIn) {
-      // 1. Confirmed / Pending bookings
-      const conflicts = await prisma.booking.findMany({
-        where: {
-          status: { in: [BookingStatus.PENDING, BookingStatus.CONFIRMED] },
-          startDate: { lt: cOut },
-          endDate: { gt: cIn },
+      requestedStay = { checkIn: bookingDateKey(cIn), checkOut: bookingDateKey(cOut) };
+      // 1. Confirmed / Active Pending bookings (unexpired date holds) — database relation filter with NOT EXISTS
+      const expiryThreshold = getExpiryThresholdDate();
+      baseClauses.push({
+        bookings: {
+          none: {
+            startDate: { lt: cOut },
+            endDate: { gt: cIn },
+            OR: [
+              { status: BookingStatus.CONFIRMED },
+              { status: BookingStatus.PENDING, createdAt: { gt: expiryThreshold } },
+            ],
+          },
         },
-        select: { listingId: true },
-        distinct: ["listingId"],
       });
-      if (conflicts.length > 0) {
-        const bookedIds = conflicts.map((c: { listingId: string }) => c.listingId);
-        baseClauses.push({ id: { notIn: bookedIds } });
-      }
 
       // 2. Listing blockedDates
       const requestedNights: string[] = [];
       const cur = new Date(cIn);
       while (cur < cOut) {
-        requestedNights.push(cur.toISOString().split("T")[0]);
-        cur.setDate(cur.getDate() + 1);
+        requestedNights.push(bookingDateKey(cur));
+        cur.setUTCDate(cur.getUTCDate() + 1);
       }
       if (requestedNights.length > 0) {
         baseClauses.push({
@@ -579,30 +597,35 @@ async function searchPublicListings(
   // Coordinate Search with Adaptive Radius Expansion
   if (effectiveLat !== undefined && effectiveLng !== undefined) {
     const initialGeoClause = getGeoBoundsClause(effectiveLat, effectiveLng, initialRadius);
-    const initialCount = await prisma.listing.count({
-      where: { AND: [...baseClauses, initialGeoClause] },
-    });
-
-    if (initialCount >= 3 || initialRadius >= 50) {
-      appliedRadius = initialRadius;
+    if (filters.radiusKm && filters.radiusKm >= 25) {
+      appliedRadius = filters.radiusKm;
       andClauses.push(initialGeoClause);
     } else {
-      // Expand radius: 10km -> 25km -> 50km
-      const tiers = [10, 25, 50].filter((t) => t > initialRadius);
-      let chosenTier = initialRadius;
-      for (const tier of tiers) {
-        const tierGeoClause = getGeoBoundsClause(effectiveLat, effectiveLng, tier);
-        const count = await prisma.listing.count({
-          where: { AND: [...baseClauses, tierGeoClause] },
-        });
-        chosenTier = tier;
-        if (count >= 3) break;
+      const initialCount = await prisma.listing.count({
+        where: { AND: [...baseClauses, initialGeoClause] },
+      });
+
+      if (initialCount >= 3 || initialRadius >= 50) {
+        appliedRadius = initialRadius;
+        andClauses.push(initialGeoClause);
+      } else {
+        // Expand radius: 10km -> 25km -> 50km
+        const tiers = [10, 25, 50].filter((t) => t > initialRadius);
+        let chosenTier = initialRadius;
+        for (const tier of tiers) {
+          const tierGeoClause = getGeoBoundsClause(effectiveLat, effectiveLng, tier);
+          const count = await prisma.listing.count({
+            where: { AND: [...baseClauses, tierGeoClause] },
+          });
+          chosenTier = tier;
+          if (count >= 3) break;
+        }
+        if (chosenTier > initialRadius) {
+          appliedRadius = chosenTier;
+          isRadiusExpanded = true;
+        }
+        andClauses.push(getGeoBoundsClause(effectiveLat, effectiveLng, appliedRadius));
       }
-      if (chosenTier > initialRadius) {
-        appliedRadius = chosenTier;
-        isRadiusExpanded = true;
-      }
-      andClauses.push(getGeoBoundsClause(effectiveLat, effectiveLng, appliedRadius));
     }
   } else if (filters.city && filters.city.trim()) {
     // Text-based fallback when coordinates could not be resolved
@@ -624,6 +647,53 @@ async function searchPublicListings(
     andClauses.push({
       country: { contains: filters.country.trim(), mode: "insensitive" },
     });
+  }
+
+  // Database range predicates above efficiently remove booking and blocked-date
+  // conflicts. Run the remaining host rules through the shared availability
+  // engine before pagination so counts and every result page stay authoritative.
+  if (requestedStay) {
+    const ruleCandidates: Array<{
+      id: string;
+      guests: number;
+      minNights: number;
+      maxNights: number;
+      advanceNotice: string;
+      sameDayCutoff: string;
+      allowSameDayRequests: boolean;
+      blockedDates: string[];
+      discounts: unknown;
+    }> = await prisma.listing.findMany({
+      // Keep availability eligibility independent of the optional price slider
+      // so the response's absolute price range can still expand again.
+      where: {
+        AND: priceClauses.length
+          ? andClauses.filter((clause) => !priceClauses.includes(clause))
+          : andClauses,
+      },
+      select: {
+        id: true,
+        guests: true,
+        minNights: true,
+        maxNights: true,
+        advanceNotice: true,
+        sameDayCutoff: true,
+        allowSameDayRequests: true,
+        blockedDates: true,
+        discounts: true,
+      },
+    });
+    const now = new Date();
+    const eligibleIds = ruleCandidates
+      .filter((listing) => validateStayAvailability({
+        listing,
+        checkIn: requestedStay!.checkIn,
+        checkOut: requestedStay!.checkOut,
+        guests: totalGuests || 1,
+        now,
+      }).available)
+      .map((listing) => listing.id);
+    andClauses.push({ id: { in: eligibleIds } });
   }
 
   const where: Prisma.ListingWhereInput = { AND: andClauses };
@@ -685,7 +755,11 @@ async function searchPublicListings(
         orderBy,
         select: publicListingCardSelect,
       });
-      return mapCardsWithReviewSummaries(records);
+      return mapCardsWithReviewSummaries(records, {
+        checkIn: requestedStay?.checkIn,
+        checkOut: requestedStay?.checkOut,
+        guests: totalGuests || 1,
+      });
     }
 
     const candidates: Array<{ id: string; isFeatured: boolean; createdAt: Date }> = await prisma.listing.findMany({
@@ -716,102 +790,65 @@ async function searchPublicListings(
     return pageIds.flatMap((id) => {
       const record = recordsById.get(id);
       if (!record) return [];
-      return [toPublicListingCardDTO({ ...record, reviewSummary: summaries.get(id) })];
+      return [toPublicListingCardDTO(
+        { ...record, reviewSummary: summaries.get(id) },
+        {
+          checkIn: requestedStay?.checkIn,
+          checkOut: requestedStay?.checkOut,
+          guests: totalGuests || 1,
+        },
+      )];
     });
   };
 
-  if (!hasDateFilter) {
-    const cacheVersion = await getCounter(keys.listingsPublicVersion());
-    const filterHash = hashFilters({
-      lat: effectiveLat ?? "",
-      lng: effectiveLng ?? "",
-      radiusKm: appliedRadius,
-      city: filters.city ?? "",
-      country: filters.country ?? "",
-      guests: totalGuests,
-      pets: filters.pets ?? 0,
-      propertyType: filters.propertyType ?? "",
-      propertyTypes: (filters.propertyTypes ?? []).slice().sort().join(","),
-      listingType: filters.listingType ?? "",
-      minPrice: filters.minPrice ?? 0,
-      maxPrice: filters.maxPrice ?? 0,
-      amenities: (filters.amenities ?? []).slice().sort().join(","),
-      accessibilityFeatures: (filters.accessibilityFeatures ?? []).slice().sort().join(","),
-      languages: languageIds.slice().sort().join(","),
-      bedrooms: filters.bedrooms ?? 0,
-      bathrooms: filters.bathrooms ?? 0,
-      beds: filters.beds ?? 0,
-      instantBook: filters.instantBook ?? false,
-      featured: filters.featured ?? false,
-      sortBy: filters.sortBy ?? "recommended",
-      includePriceRange,
-      mapBounds: filters.mapBounds
-        ? `${filters.mapBounds.swLat},${filters.mapBounds.swLng},${filters.mapBounds.neLat},${filters.mapBounds.neLng}`
-        : "",
-      skip,
-      take,
-    });
-    const cacheKey = `homyz:listings:search:card:v2:v${cacheVersion}:${filterHash}:s${skip}:t${take}`;
-    type CachePayload = {
-      items: PublicListingCardDTO[];
-      total: number;
-      priceRange?: { min: number; max: number };
-      appliedRadiusKm: number;
-      originalRadiusKm: number;
-      isRadiusExpanded: boolean;
-      locationContextName?: string;
-      targetCoords?: { lat: number; lng: number };
-    };
-    const cached = await getCache<CachePayload>(cacheKey);
-    if (cached) {
-      return { ...cached, page, totalPages: Math.ceil(cached.total / take) };
-    }
-
-    const [items, total, priceAgg] = await Promise.all([
-      findSortedCards(),
-      prisma.listing.count({ where }),
-      includePriceRange
-        ? prisma.listing.aggregate({ where: availablePriceWhere, _min: { price: true }, _max: { price: true } })
-        : Promise.resolve(null),
-    ]);
-    const priceRange = priceAgg
-      ? { min: priceAgg._min.price ?? 0, max: priceAgg._max.price ?? 0 }
-      : undefined;
-    let mappedItems: PublicListingCardDTO[] = items;
-
-    if (effectiveLat !== undefined && effectiveLng !== undefined) {
-      mappedItems = mappedItems.map((dto: PublicListingCardDTO): PublicListingCardDTO => {
-        if (dto.latitude != null && dto.longitude != null) {
-          const dist = calculateDistance(filters.lat! ?? effectiveLat!, filters.lng! ?? effectiveLng!, dto.latitude, dto.longitude);
-          return { ...dto, distanceKm: Math.round(dist * 10) / 10 };
-        }
-        return dto;
-      });
-      if (!filters.sortBy || filters.sortBy === "recommended") {
-        mappedItems.sort((a: PublicListingCardDTO, b: PublicListingCardDTO) => {
-          if (a.distanceKm != null && b.distanceKm != null) return a.distanceKm - b.distanceKm;
-          if (a.distanceKm != null) return -1;
-          if (b.distanceKm != null) return 1;
-          return 0;
-        });
-      }
-    }
-
-    const payload: CachePayload = {
-      items: mappedItems,
-      total,
-      priceRange,
-      appliedRadiusKm: appliedRadius,
-      originalRadiusKm: initialRadius,
-      isRadiusExpanded,
-      locationContextName: effectivePlaceName || filters.city || undefined,
-      targetCoords: (effectiveLat !== undefined && effectiveLng !== undefined) ? { lat: effectiveLat, lng: effectiveLng } : undefined,
-    };
-    await setCache(cacheKey, payload, 120);
-    return { ...payload, page, totalPages: Math.ceil(total / take) };
+  const cacheVersion = await getCounter(keys.listingsPublicVersion());
+  const filterHash = hashFilters({
+    lat: effectiveLat ?? "",
+    lng: effectiveLng ?? "",
+    radiusKm: appliedRadius,
+    city: filters.city ?? "",
+    country: filters.country ?? "",
+    checkIn: filters.checkIn ?? "",
+    checkOut: filters.checkOut ?? "",
+    guests: totalGuests,
+    pets: filters.pets ?? 0,
+    propertyType: filters.propertyType ?? "",
+    propertyTypes: (filters.propertyTypes ?? []).slice().sort().join(","),
+    listingType: filters.listingType ?? "",
+    minPrice: filters.minPrice ?? 0,
+    maxPrice: filters.maxPrice ?? 0,
+    amenities: (filters.amenities ?? []).slice().sort().join(","),
+    accessibilityFeatures: (filters.accessibilityFeatures ?? []).slice().sort().join(","),
+    languages: languageIds.slice().sort().join(","),
+    bedrooms: filters.bedrooms ?? 0,
+    bathrooms: filters.bathrooms ?? 0,
+    beds: filters.beds ?? 0,
+    instantBook: filters.instantBook ?? false,
+    featured: filters.featured ?? false,
+    sortBy: filters.sortBy ?? "recommended",
+    includePriceRange,
+    mapBounds: filters.mapBounds
+      ? `${filters.mapBounds.swLat},${filters.mapBounds.swLng},${filters.mapBounds.neLat},${filters.mapBounds.neLng}`
+      : "",
+    skip,
+    take,
+  });
+  const cacheKey = `homyz:listings:search:card:v2:v${cacheVersion}:${filterHash}:s${skip}:t${take}`;
+  type CachePayload = {
+    items: PublicListingCardDTO[];
+    total: number;
+    priceRange?: { min: number; max: number };
+    appliedRadiusKm: number;
+    originalRadiusKm: number;
+    isRadiusExpanded: boolean;
+    locationContextName?: string;
+    targetCoords?: { lat: number; lng: number };
+  };
+  const cached = await getCache<CachePayload>(cacheKey);
+  if (cached) {
+    return { ...cached, page, totalPages: Math.ceil(cached.total / take) };
   }
 
-  // Live path (availability check active)
   const [items, total, priceAgg] = await Promise.all([
     findSortedCards(),
     prisma.listing.count({ where }),
@@ -819,7 +856,11 @@ async function searchPublicListings(
       ? prisma.listing.aggregate({ where: availablePriceWhere, _min: { price: true }, _max: { price: true } })
       : Promise.resolve(null),
   ]);
+  const priceRange = priceAgg
+    ? { min: priceAgg._min.price ?? 0, max: priceAgg._max.price ?? 0 }
+    : undefined;
   let mappedItems: PublicListingCardDTO[] = items;
+
   if (effectiveLat !== undefined && effectiveLng !== undefined) {
     mappedItems = mappedItems.map((dto: PublicListingCardDTO): PublicListingCardDTO => {
       if (dto.latitude != null && dto.longitude != null) {
@@ -838,20 +879,18 @@ async function searchPublicListings(
     }
   }
 
-  return {
+  const payload: CachePayload = {
     items: mappedItems,
     total,
-    priceRange: priceAgg
-      ? { min: priceAgg._min.price ?? 0, max: priceAgg._max.price ?? 0 }
-      : undefined,
-    page,
-    totalPages: Math.ceil(total / take),
+    priceRange: priceRange,
     appliedRadiusKm: appliedRadius,
     originalRadiusKm: initialRadius,
     isRadiusExpanded,
     locationContextName: effectivePlaceName || filters.city || undefined,
     targetCoords: (effectiveLat !== undefined && effectiveLng !== undefined) ? { lat: effectiveLat, lng: effectiveLng } : undefined,
   };
+  await setCache(cacheKey, payload, hasDateFilter ? 60 : 120);
+  return { ...payload, page, totalPages: Math.ceil(total / take) };
 }
 
 type PublicListingDetail = PublicListingDTO & {
@@ -1202,6 +1241,8 @@ async function create(
     });
   }
 
+  const bookingSettings = bookingModePersistence(resolveBookingMode(input));
+
   // Ensure published is strictly false on creation unless Admin approves
   const listing = await prisma.listing.create({
     data: {
@@ -1304,15 +1345,17 @@ async function create(
       longTermCancellationPolicy: input.longTermCancellationPolicy || "FIRM",
       bookingMessage: input.bookingMessage ?? null,
       requireProfilePhoto: input.requireProfilePhoto ?? false,
+      requireGoodTrackRecord: input.requireGoodTrackRecord ?? false,
+      bookingApprovalMode: bookingSettings.bookingApprovalMode,
       minNights: input.minNights ?? 1,
       maxNights: input.maxNights ?? 365,
       advanceNotice: input.advanceNotice ?? "Same day",
       sameDayCutoff: input.sameDayCutoff ?? "12:00 AM",
       allowSameDayRequests: input.allowSameDayRequests ?? true,
-      instantBook: input.instantBook ?? true,
+      instantBook: bookingSettings.instantBook,
       isPaused: input.isPaused ?? false,
       blockedDates: input.blockedDates || [],
-      cleaningFee: input.cleaningFee ?? 0,
+      cleaningFee: 0,
       securityDeposit: input.securityDeposit ?? 0,
       weekendPrice: input.weekendPrice ?? null,
       weekendPremium: input.weekendPremium ?? null,
@@ -1355,6 +1398,9 @@ async function update(
 ): Promise<ListingDTO> {
   const existing = await prisma.listing.findUnique({ where: { id } });
   if (!existing) throw AppError.notFound("Listing not found");
+  if (existing.deletedAt !== null) {
+    throw AppError.forbidden("Cannot modify a removed listing");
+  }
   const isCoHost = await assertListingAccess(actor, id, existing.hostId);
 
   if (!isCoHost && actor.role === Role.HOST) {
@@ -1371,6 +1417,14 @@ async function update(
 
   // Hosts cannot directly change status to ACTIVE or published to true
   const dataToUpdate = { ...input };
+  if (dataToUpdate.bookingApprovalMode !== undefined || dataToUpdate.instantBook !== undefined) {
+    const nextMode = dataToUpdate.bookingApprovalMode !== undefined && dataToUpdate.instantBook !== undefined
+      ? resolveBookingMode(dataToUpdate)
+      : dataToUpdate.bookingApprovalMode !== undefined
+        ? dataToUpdate.bookingApprovalMode === "INSTANT" ? "INSTANT_BOOK" : "REQUEST_TO_BOOK"
+        : dataToUpdate.instantBook ? "INSTANT_BOOK" : "REQUEST_TO_BOOK";
+    Object.assign(dataToUpdate, bookingModePersistence(nextMode));
+  }
   if (actor.role !== Role.ADMIN) {
     delete dataToUpdate.published;
   }
@@ -1424,9 +1478,44 @@ async function update(
     (dataToUpdate as any).weekdayBasePrice = dataToUpdate.price;
   }
   if ((dataToUpdate as any).customPrices !== undefined) {
-    (dataToUpdate as any).customPrices = (dataToUpdate as any).customPrices
-      ? JSON.parse(JSON.stringify((dataToUpdate as any).customPrices))
-      : null;
+    const rawCustom = (dataToUpdate as any).customPrices;
+    if (rawCustom && typeof rawCustom === "object") {
+      const activeBookings = await prisma.booking.findMany({
+        where: {
+          listingId: id,
+          status: { in: [BookingStatus.CONFIRMED, BookingStatus.PENDING] },
+        },
+        select: { startDate: true, endDate: true, status: true, createdAt: true },
+      });
+      const now = new Date();
+      const bookedSet = new Set<string>();
+      for (const b of activeBookings) {
+        if (b.status === BookingStatus.PENDING && isBookingRequestExpired(b.createdAt, now, b.endDate)) {
+          continue;
+        }
+        let cur = bookingDateKey(b.startDate);
+        const end = bookingDateKey(b.endDate);
+        while (cur < end) {
+          bookedSet.add(cur);
+          cur = shiftBookingDateKey(cur, 1);
+        }
+      }
+      const existingCustom = ((existing.customPrices || {}) as Record<string, number>);
+      const sanitizedCustom: Record<string, number> = {};
+      for (const [k, val] of Object.entries(rawCustom)) {
+        if (bookedSet.has(k)) {
+          // Strictly protect confirmed/active reservations: preserve prior pricing snapshot
+          if (existingCustom[k] !== undefined) {
+            sanitizedCustom[k] = existingCustom[k];
+          }
+        } else if (typeof val === "number" && val > 0) {
+          sanitizedCustom[k] = Math.round(val);
+        }
+      }
+      (dataToUpdate as any).customPrices = sanitizedCustom;
+    } else {
+      (dataToUpdate as any).customPrices = null;
+    }
   }
   if ((dataToUpdate as any).extraGuestFee !== undefined) {
     (dataToUpdate as any).extraGuestFee = Math.max(0, Math.round(Number((dataToUpdate as any).extraGuestFee)));
@@ -2029,7 +2118,7 @@ async function duplicate(actor: AuthUser, id: string): Promise<ListingDTO> {
       instantBook: existing.instantBook,
       isPaused: false,
       blockedDates: existing.blockedDates,
-      cleaningFee: existing.cleaningFee,
+      cleaningFee: 0,
       securityDeposit: existing.securityDeposit,
       weekendPrice: existing.weekendPrice,
       weekendPremium: existing.weekendPremium,
@@ -2082,14 +2171,105 @@ async function togglePause(actor: AuthUser, id: string, isPaused: boolean): Prom
   return toListingDTO(updated);
 }
 
-async function updateAvailability(actor: AuthUser, id: string, blockedDates: string[]): Promise<ListingDTO> {
+export interface BulkAvailabilityResult {
+  listing: ListingDTO;
+  action: "BLOCK" | "UNBLOCK" | "RESTORE";
+  affectedCount: number;
+  protectedCount: number;
+  newlyBookedCount: number;
+  previousBlockedDates: string[];
+}
+
+async function bulkUpdateAvailability(
+  actor: AuthUser,
+  id: string,
+  input: {
+    action: "BLOCK" | "UNBLOCK" | "RESTORE";
+    dates: string[];
+  },
+): Promise<BulkAvailabilityResult> {
   const existing = await prisma.listing.findUnique({ where: { id } });
   if (!existing) throw AppError.notFound("Listing not found");
+  if (existing.deletedAt !== null) {
+    throw AppError.forbidden("Cannot modify availability for a removed listing");
+  }
   await assertListingAccess(actor, id, existing.hostId);
+
+  // 1. Fetch active bookings (CONFIRMED or non-expired PENDING) to establish immutable protected dates
+  const activeBookings = await prisma.booking.findMany({
+    where: {
+      listingId: id,
+      status: { in: [BookingStatus.CONFIRMED, BookingStatus.PENDING] },
+    },
+    select: { startDate: true, endDate: true, createdAt: true, status: true },
+  });
+
+  const now = new Date();
+  const protectedDatesSet = new Set<string>();
+  for (const b of activeBookings) {
+    if (b.status === BookingStatus.PENDING && isBookingRequestExpired(b.createdAt, now, b.endDate)) {
+      continue;
+    }
+    const startKey = bookingDateKey(b.startDate);
+    const endKey = bookingDateKey(b.endDate);
+    let cur = startKey;
+    while (cur < endKey) {
+      protectedDatesSet.add(cur);
+      cur = shiftBookingDateKey(cur, 1);
+    }
+  }
+
+  const previousBlockedDates = Array.isArray(existing.blockedDates) ? [...existing.blockedDates] : [];
+  let nextBlockedSet = new Set<string>(previousBlockedDates);
+  let affectedCount = 0;
+  let protectedCount = 0;
+  let newlyBookedCount = 0;
+
+  if (input.action === "RESTORE") {
+    // Revert to prior blocked dates, strictly excluding any dates that are currently booked
+    nextBlockedSet = new Set<string>();
+    for (const d of input.dates) {
+      if (protectedDatesSet.has(d)) {
+        newlyBookedCount++;
+      } else {
+        nextBlockedSet.add(d);
+      }
+    }
+    affectedCount = nextBlockedSet.size;
+  } else if (input.action === "BLOCK") {
+    for (const d of input.dates) {
+      if (protectedDatesSet.has(d)) {
+        protectedCount++;
+      } else {
+        if (!nextBlockedSet.has(d)) {
+          nextBlockedSet.add(d);
+          affectedCount++;
+        }
+      }
+    }
+  } else if (input.action === "UNBLOCK") {
+    for (const d of input.dates) {
+      if (protectedDatesSet.has(d)) {
+        protectedCount++;
+      } else {
+        if (nextBlockedSet.has(d)) {
+          nextBlockedSet.delete(d);
+          affectedCount++;
+        }
+      }
+    }
+  }
+
+  // Authoritative boundary: active reservations are never manually blocked
+  for (const p of protectedDatesSet) {
+    nextBlockedSet.delete(p);
+  }
+
+  const sortedBlockedDates = Array.from(nextBlockedSet).sort();
 
   const updated = await prisma.listing.update({
     where: { id },
-    data: { blockedDates },
+    data: { blockedDates: sortedBlockedDates },
   });
 
   await Promise.all([
@@ -2103,10 +2283,25 @@ async function updateAvailability(actor: AuthUser, id: string, blockedDates: str
     action: "LISTING_AVAILABILITY_UPDATED",
     resourceType: "Listing",
     resourceId: id,
-    description: `Updated blocked calendar dates for "${updated.title}"`,
+    description: `Bulk calendar availability update (${input.action}) for "${updated.title}"`,
   });
 
-  return toListingDTO(updated);
+  return {
+    listing: toListingDTO(updated),
+    action: input.action,
+    affectedCount,
+    protectedCount,
+    newlyBookedCount,
+    previousBlockedDates,
+  };
+}
+
+async function updateAvailability(actor: AuthUser, id: string, blockedDates: string[]): Promise<ListingDTO> {
+  const result = await bulkUpdateAvailability(actor, id, {
+    action: "RESTORE",
+    dates: blockedDates,
+  });
+  return result.listing;
 }
 
 export const listingService = {
@@ -2128,6 +2323,7 @@ export const listingService = {
   duplicate,
   togglePause,
   updateAvailability,
+  bulkUpdateAvailability,
   publish: publishListing,
   unpublish: unpublishListing,
   publishListing,

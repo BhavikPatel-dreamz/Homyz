@@ -5,6 +5,7 @@ import { AppError } from "@/lib/api/errors";
 import { getCounter, getOrSetCache, incrCounter } from "@/lib/redis/cache";
 import { CACHE_KEYS, hashFilters } from "@/lib/redis/keys";
 import { CACHE_TTL } from "@/lib/redis/ttl";
+import { bookingDateKey } from "@/lib/booking/booking-date";
 
 export type NotificationDTO = {
   id: string;
@@ -105,6 +106,8 @@ async function create(data: {
             message: data.message,
             link: data.link || existing.link,
             metadata: data.metadata ?? undefined,
+            isRead: false,
+            readAt: null,
           },
         });
         await invalidateUserNotifications(data.userId);
@@ -188,7 +191,7 @@ async function syncRealEventsForUser(userId: string): Promise<void> {
 
         if (!existingNotif) {
           const listingTitle = b.listing?.title || "Property";
-          const startStr = b.startDate.toISOString().slice(0, 10);
+          const startStr = bookingDateKey(b.startDate);
           const isConfirmed = b.status === BookingStatus.CONFIRMED;
           const isCancelled = b.status === BookingStatus.CANCELLED;
 
@@ -275,8 +278,8 @@ async function syncRealEventsForUser(userId: string): Promise<void> {
           if (!existingHostNotif) {
             const listingTitle = hb.listing?.title || "Property";
             const guestName = hb.user?.name || hb.user?.firstName || "A guest";
-            const startStr = hb.startDate.toISOString().slice(0, 10);
-            const endStr = hb.endDate.toISOString().slice(0, 10);
+            const startStr = bookingDateKey(hb.startDate);
+            const endStr = bookingDateKey(hb.endDate);
             const isConfirmed = hb.status === BookingStatus.CONFIRMED;
             const isCancelled = hb.status === BookingStatus.CANCELLED;
 
@@ -631,4 +634,3 @@ export const notificationService = {
   sendHostMessageNotification,
   sendMessageNotification,
 };
-

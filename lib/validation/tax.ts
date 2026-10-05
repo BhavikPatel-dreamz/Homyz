@@ -31,7 +31,6 @@ export const taxableComponentSchema = z.enum([
   "MANAGEMENT_FEE",
   "COMMUNITY_FEE",
   "LINEN_FEE",
-  "CLEANING_FEE",
   "PET_FEE",
   "GUEST_FEE",
   "RESORT_FEE",
@@ -43,21 +42,20 @@ export const createHostTaxSchema = z
     taxType: taxTypeSchema,
     customName: z.string().trim().min(2, "Tax name must be at least 2 characters").max(60).optional().nullable(),
     calculationMethod: taxCalculationMethodSchema.default("PERCENTAGE"),
-    rate: z.number().min(0.1, "Tax percentage must be at least 0.1%").max(100, "Tax percentage cannot exceed 100%").optional().nullable(),
-    amount: z.number().int().min(1, "Amount must be at least 1 cent").optional().nullable(),
+    rate: z.number().finite().min(0.1, "Tax percentage must be at least 0.1%").max(100, "Tax percentage cannot exceed 100%").optional().nullable(),
+    amount: z.number().finite().int().min(0, "Amount cannot be negative").optional().nullable(),
     taxableComponents: z.array(taxableComponentSchema).min(1, "At least one taxable component must be selected").default(["BASE_PRICE"]),
     remittanceResponsibility: taxRemittanceResponsibilitySchema.default("HOST"),
-    maximumAmountPerPersonPerNight: z.number().int().min(1).optional().nullable(),
-    partialStayExemptionNights: z.number().int().min(1).max(365).optional().nullable(),
-    fullStayExemptionNights: z.number().int().min(1).max(365).optional().nullable(),
-    longStayExemptionNights: z.number().int().min(1).max(365).optional().nullable(),
+    maximumAmountPerPersonPerNight: z.number().finite().int().min(1).optional().nullable(),
+    partialStayExemptionNights: z.number().finite().int().min(1).max(365).optional().nullable(),
+    fullStayExemptionNights: z.number().finite().int().min(1).max(365).optional().nullable(),
   })
   .refine(
     (data) => {
       if (data.calculationMethod === "PERCENTAGE") {
         return typeof data.rate === "number" && data.rate > 0;
       }
-      return typeof data.amount === "number" && data.amount > 0;
+      return typeof data.amount === "number" && data.amount >= 0;
     },
     {
       message: "A valid rate percentage or fixed amount is required for the chosen calculation method",
@@ -67,16 +65,16 @@ export const createHostTaxSchema = z
 
 export const updateHostTaxSchema = z
   .object({
+    taxType: taxTypeSchema.optional(),
     customName: z.string().trim().min(2).max(60).optional().nullable(),
     calculationMethod: taxCalculationMethodSchema.optional(),
-    rate: z.number().min(0.1).max(100).optional().nullable(),
-    amount: z.number().int().min(1).optional().nullable(),
+    rate: z.number().finite().min(0.1).max(100).optional().nullable(),
+    amount: z.number().finite().int().min(0).optional().nullable(),
     taxableComponents: z.array(taxableComponentSchema).min(1).optional(),
     remittanceResponsibility: taxRemittanceResponsibilitySchema.optional(),
-    maximumAmountPerPersonPerNight: z.number().int().min(1).optional().nullable(),
-    partialStayExemptionNights: z.number().int().min(1).max(365).optional().nullable(),
-    fullStayExemptionNights: z.number().int().min(1).max(365).optional().nullable(),
-    longStayExemptionNights: z.number().int().min(1).max(365).optional().nullable(),
+    maximumAmountPerPersonPerNight: z.number().finite().int().min(1).optional().nullable(),
+    partialStayExemptionNights: z.number().finite().int().min(1).max(365).optional().nullable(),
+    fullStayExemptionNights: z.number().finite().int().min(1).max(365).optional().nullable(),
     isActive: z.boolean().optional(),
   });
 
@@ -107,6 +105,5 @@ export const taxPreviewInputSchema = z.object({
   nights: z.number().int().min(1).default(1),
   guests: z.number().int().min(1).default(1),
   pets: z.number().int().min(0).default(0),
-  cleaningFee: z.number().int().min(0).default(0),
   baseNightlyPrice: z.number().int().min(0).default(10000), // in cents
 });

@@ -1,6 +1,12 @@
 import { apiHandler } from "@/lib/api/handler";
 import { ok } from "@/lib/api/response";
 import { prisma } from "@/lib/db/prisma";
+import { getExpiryThresholdDate } from "@/lib/booking/booking-expiry";
+import {
+  bookingDateKey,
+  parseBookingDate,
+  shiftBookingDateKey,
+} from "@/lib/booking/booking-date";
 
 /**
  * GET /api/v1/listings/[id]/booked-dates
@@ -10,8 +16,10 @@ import { prisma } from "@/lib/db/prisma";
 export const GET = apiHandler(
   async (req, context: { params: Promise<{ id: string }> }) => {
     const { id } = await context.params;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const now = new Date();
+    const today = parseBookingDate(
+      `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`,
+    );
     const startParam = req.nextUrl.searchParams.get("start");
     const endParam = req.nextUrl.searchParams.get("end");
     const requestedStart = parseCalendarDate(startParam) ?? today;
@@ -19,13 +27,17 @@ export const GET = apiHandler(
     const rangeStart = Number.isNaN(requestedStart.getTime()) ? today : requestedStart;
     const rangeEnd = requestedEnd && requestedEnd > rangeStart ? requestedEnd : null;
 
+    const expiryThreshold = getExpiryThresholdDate();
     const [bookings, listing] = await Promise.all([
       prisma.booking.findMany({
         where: {
           listingId: id,
-          status: { in: ["CONFIRMED", "PENDING"] },
           endDate: { gt: rangeStart },
           ...(rangeEnd ? { startDate: { lt: rangeEnd } } : {}),
+          OR: [
+            { status: "CONFIRMED" },
+            { status: "PENDING", createdAt: { gt: expiryThreshold } },
+          ],
         },
         select: { startDate: true, endDate: true },
         orderBy: { startDate: "asc" },
@@ -34,20 +46,18 @@ export const GET = apiHandler(
     ]);
 
     const bookingRanges = bookings.map((b: { startDate: Date; endDate: Date }) => ({
-      start: dateKeyForRange(b.startDate),
-      end: dateKeyForRange(b.endDate),
+      start: bookingDateKey(b.startDate),
+      end: bookingDateKey(b.endDate),
     }));
     // A blocked calendar day is an unavailable one-night range. It remains
     // intentionally compact and private: no booking or guest details leave
     // this public endpoint.
     const blockedRanges = (listing?.blockedDates ?? []).filter((date: string) => (
-      date >= dateKeyForRange(rangeStart) && (!rangeEnd || date < dateKeyForRange(rangeEnd))
+      date >= bookingDateKey(rangeStart) && (!rangeEnd || date < bookingDateKey(rangeEnd))
     )).map((date: string) => {
       const start = parseCalendarDate(date);
       if (!start) return null;
-      const end = new Date(start);
-      end.setDate(end.getDate() + 1);
-      return { start: date, end: dateKeyForRange(end) };
+      return { start: date, end: shiftBookingDateKey(date, 1) };
     }).filter((range: { start: string; end: string } | null): range is { start: string; end: string } => range !== null);
     const ranges = [...bookingRanges, ...blockedRanges];
 
@@ -55,13 +65,8 @@ export const GET = apiHandler(
   },
 );
 
-function dateKeyForRange(date: Date): string {
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-}
-
 function parseCalendarDate(value: string | null): Date | null {
   if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
-  const [year, month, day] = value.split("-").map(Number);
-  const date = new Date(year, month - 1, day);
-  return Number.isNaN(date.getTime()) || dateKeyForRange(date) !== value ? null : date;
+  const date = parseBookingDate(value);
+  return Number.isNaN(date.getTime()) || bookingDateKey(date) !== value ? null : date;
 }

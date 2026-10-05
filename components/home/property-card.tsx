@@ -7,6 +7,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCurrency } from "@/lib/currency-context";
 import { useLanguage } from "@/lib/i18n/language-context";
+import { buildListingDetailUrl, getLastSearch } from "@/lib/storage/client-history";
+import {
+  toPropertyCardPricingViewModel,
+  type PropertyCardPricingViewModel,
+} from "@/lib/booking/property-card-pricing";
 
 export interface PropertyCardData {
   id: string;
@@ -33,7 +38,12 @@ export interface PropertyCardData {
   guests?: number;
   propertyType?: string | null;
   alternativeDates?: string | null;
+  discounts?: unknown;
+  isNewListing?: boolean;
+  createdAt?: string | Date | null;
+  pricing?: PropertyCardPricingViewModel;
 }
+
 
 function PropertyCardComponent({
   id,
@@ -60,7 +70,12 @@ function PropertyCardComponent({
   canFavorite = false,
   currency,
   alternativeDates,
+  discounts,
+  isNewListing,
+  createdAt,
+  pricing: propPricing,
 }: PropertyCardData) {
+
   const { t } = useLanguage();
   const { formatPrice } = useCurrency();
   const router = useRouter();
@@ -135,6 +150,23 @@ function PropertyCardComponent({
   const formattedPrice =
     typeof rawPrice === "number" ? formatPrice(rawPrice, currency) : rawPrice;
 
+  const cardPricing =
+    propPricing ??
+    toPropertyCardPricingViewModel(
+      {
+        id,
+        price: typeof rawPrice === "number" ? rawPrice : Number(rawPrice) || 0,
+        country,
+        discounts,
+        isNewListing,
+        createdAt,
+      },
+      {
+        currency,
+      },
+    );
+
+
   const displaySubtitle =
     subtitle ||
     (city ? `${city}${country ? `, ${country}` : ""}` : country || "Location unavailable");
@@ -155,7 +187,16 @@ function PropertyCardComponent({
   const showSuperhost = !showGuestFavorite && (isSuperhost ?? (badge === "superhost"));
   const showFeatured = !showGuestFavorite && !showSuperhost && badge === "featured";
 
-  const targetHref = `/listings/${slug || id}`;
+  const [targetHref, setTargetHref] = useState(() => `/listings/${slug || id}`);
+
+  useEffect(() => {
+    const last = getLastSearch();
+    if (last && (last.checkIn || last.checkOut || last.guests)) {
+      setTargetHref(buildListingDetailUrl(slug || id, last));
+    } else {
+      setTargetHref(`/listings/${slug || id}`);
+    }
+  }, [slug, id]);
 
   return (
     <Link
@@ -187,15 +228,16 @@ function PropertyCardComponent({
 
         {showGuestFavorite && (
           <span className="absolute left-2.5 top-2.5 sm:left-3 sm:top-3 inline-flex items-center gap-1 rounded-full bg-[#ECA7B0] px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10.5px] sm:text-xs font-medium text-white shadow-xs backdrop-blur-md h-[26px]">
-            {t("home_guest_favorite")}
+            {t("home_guest_favorite") || "Guest favorite"}
           </span>
         )}
 
         {showSuperhost && (
           <span className="absolute left-2.5 top-2.5 sm:left-3 sm:top-3 inline-flex items-center rounded-full bg-[#eca7b0] px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10.5px] sm:text-xs font-medium text-white shadow-xs">
-            {t("home_superhost")}
+            {t("home_superhost") || "Superhost"}
           </span>
         )}
+
 
         {/* Heart Favorite Button (reusable) */}
         <WishlistButton listingId={id} className="right-2.5 top-2.5 sm:right-3 sm:top-3 h-6 w-6 sm:h-7 sm:w-7" />
@@ -217,10 +259,21 @@ function PropertyCardComponent({
         )}
         <div className="flex items-center justify-between text-[11px] sm:text-xs font-normal text-[#1f1f1f] leading-normal mt-0.5 whitespace-nowrap truncate">
           {/* Price per night */}
-          <span className="font-semibold text-[#1F1F1F]">
-            {formattedPrice}
-            <span className="font-normal text-[#727272] text-[11px] sm:text-xs"> / night</span>
-          </span>
+          {cardPricing.hasDiscount && cardPricing.discountedDisplayPrice != null ? (
+            <span className="font-semibold text-[#1F1F1F] flex items-baseline gap-1">
+              <span className="line-through text-[#727272] font-normal text-[10px] sm:text-[11px]">
+                {formatPrice(cardPricing.baseDisplayPrice, currency)}
+              </span>
+              <span>{formatPrice(cardPricing.discountedDisplayPrice, currency)}</span>
+              <span className="font-normal text-[#727272] text-[11px] sm:text-xs"> / night</span>
+            </span>
+          ) : (
+            <span className="font-semibold text-[#1F1F1F]">
+              {formattedPrice}
+              <span className="font-normal text-[#727272] text-[11px] sm:text-xs"> / night</span>
+            </span>
+          )}
+
 
           {/* Rating: Star icon + average rating + review count (zero fake ratings) */}
           {numericRating !== null ? (

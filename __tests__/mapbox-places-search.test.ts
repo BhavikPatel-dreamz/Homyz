@@ -114,9 +114,9 @@ async function runTests() {
   assert(listingServiceCode.includes("filters.lng"), "Listing service must accept filters.lng");
   assert(listingServiceCode.includes("deltaLat = r / 111"), "Listing service must compute bounding box latitude delta");
   assert(listingServiceCode.includes("deltaLng = r / (111 * Math.cos"), "Listing service must compute bounding box longitude delta");
-  assert(listingServiceCode.includes("latitude: { gte: filters.lat - deltaLat, lte: filters.lat + deltaLat }"), "Listing service must query latitude range");
-  assert(listingServiceCode.includes("longitude: { gte: filters.lng - deltaLng, lte: filters.lng + deltaLng }"), "Listing service must query longitude range");
-  assert(listingServiceCode.includes("calculateDistance(filters.lat!"), "Listing service must compute Haversine distanceKm for matched items");
+  assert(listingServiceCode.includes("latitude: { gte: lat - deltaLat, lte: lat + deltaLat }") || listingServiceCode.includes("latitude: { gte: filters.lat - deltaLat, lte: filters.lat + deltaLat }"), "Listing service must query latitude range");
+  assert(listingServiceCode.includes("longitude: { gte: lng - deltaLng, lte: lng + deltaLng }") || listingServiceCode.includes("longitude: { gte: filters.lng - deltaLng, lte: filters.lng + deltaLng }"), "Listing service must query longitude range");
+  assert(listingServiceCode.includes("calculateDistance(effectiveLat!") || listingServiceCode.includes("calculateDistance(filters.lat!"), "Listing service must compute Haversine distanceKm for matched items");
   assert(listingServiceCode.includes("a.distanceKm - b.distanceKm"), "Listing service must sort by distance when lat/lng are provided");
   console.log(" ✅ PASS: listing.service.ts implements geo-spatial bounding box, distanceKm attachment & proximity sorting");
 
@@ -136,7 +136,7 @@ async function runTests() {
 
   const searchMapCode = fs.readFileSync(path.resolve(__dirname, "../components/listings/search-map.tsx"), "utf-8");
   assert(searchMapCode.includes("center?: [number, number]"), "SearchMapProps must accept center coordinate array");
-  assert(searchMapCode.includes("map.setView(center"), "SearchMap must center view on selected coordinates");
+  assert(searchMapCode.includes("activeMap.setView(center") || searchMapCode.includes("map.setView(center"), "SearchMap must center view on selected coordinates");
   console.log(" ✅ PASS: Search page and client properly forward coordinates and center Leaflet map");
 
   // --- [7] HeroSection Airbnb UI & Debouncing ---

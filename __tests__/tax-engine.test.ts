@@ -75,17 +75,15 @@ const percentageRule: TaxRuleDTO = makeTaxRule({
 const resPercentage = TaxCalculator.calculateTaxes({
   nights: 5,
   nightlySubtotal: 100000, // 1000.00 SAR
-  cleaningFee: 15000,     // 150.00 SAR
   rules: [percentageRule],
   currency: "SAR",
 });
 
-// Taxable base = 100000 + 15000 = 115000 (1150.00 SAR)
-// VAT 15% of 115000 = 17250 (172.50 SAR)
+// Cleaning fee inputs are retired, so the taxable base is accommodation only.
 assert(resPercentage.taxes.length === 1, "Should calculate 1 tax item");
-assert(resPercentage.taxes[0].taxAmount === 17250, "VAT 15% of 1150.00 SAR must equal exactly 17250 halalas");
-assert(resPercentage.taxTotal === 17250, "Total tax should equal 17250 halalas");
-assert(resPercentage.guestTotal === 115000 + 17250, "Guest total must equal subtotal + tax = 132250 halalas");
+assert(resPercentage.taxes[0].taxAmount === 15000, "VAT 15% of 1000.00 SAR must equal exactly 15000 halalas");
+assert(resPercentage.taxTotal === 15000, "Total tax should equal 15000 halalas");
+assert(resPercentage.guestTotal === 115000, "Guest total must equal accommodation + tax with no cleaning charge");
 
 // Method B: FLAT_PER_BOOKING
 const flatRule: TaxRuleDTO = makeTaxRule({
@@ -184,7 +182,6 @@ const taxOnlyOnBase: TaxRuleDTO = makeTaxRule({
 const resBaseOnly = TaxCalculator.calculateTaxes({
   nights: 2,
   nightlySubtotal: 20000, // 200 SAR
-  cleaningFee: 5000,     // 50 SAR
   petFee: 3000,          // 30 SAR
   rules: [taxOnlyOnBase],
   currency: "SAR",
@@ -257,7 +254,6 @@ const hostCityTax: ListingTaxDTO = makeListingTax({
 const resRemittance = TaxCalculator.calculateTaxes({
   nights: 1,
   nightlySubtotal: 100000, // 1000.00 SAR
-  cleaningFee: 0,
   rules: [platformVat],
   hostTaxes: [hostCityTax],
   currency: "SAR",

@@ -8,6 +8,7 @@ import {
 
 export interface SearchContext {
   query: string;
+  location?: string | null;
   placeId?: string | null;
   placeType: LocationType | "general";
   displayName: string;
@@ -28,6 +29,7 @@ export interface SearchContext {
   infants?: number;
   pets?: number;
   radiusKm?: number;
+  specialOfferId?: string | null;
 }
 
 export interface RawSearchInput {

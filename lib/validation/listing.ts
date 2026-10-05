@@ -38,10 +38,58 @@ const normalizedListingType = z.preprocess(
   z.enum(LISTING_TYPES).nullable().optional(),
 );
 
-const percentageDiscountSchema = z.object({
+export const DISCOUNT_TYPES = [
+  "new_listing",
+  "last_minute",
+  "weekly",
+  "monthly",
+] as const;
+
+export type DiscountType = (typeof DISCOUNT_TYPES)[number];
+
+export const DISCOUNT_KEYS = {
+  NEW_LISTING: "new_listing",
+  LAST_MINUTE: "last_minute",
+  WEEKLY: "weekly",
+  MONTHLY: "monthly",
+} as const;
+
+export type DiscountKey = (typeof DISCOUNT_KEYS)[keyof typeof DISCOUNT_KEYS];
+
+export const DEFAULT_DISCOUNT_PERCENTAGES: Record<DiscountType, number> = {
+  new_listing: 20,
+  last_minute: 15,
+  weekly: 10,
+  monthly: 25,
+};
+
+export interface DiscountConfig {
+  enabled: boolean;
+  percentage: number | null;
+}
+
+export interface ListingDiscountsConfig {
+  new_listing?: DiscountConfig;
+  last_minute?: DiscountConfig;
+  weekly?: DiscountConfig;
+  monthly?: DiscountConfig;
+  [key: string]: unknown;
+}
+
+export const percentageDiscountSchema = z.object({
   enabled: z.boolean(),
-  percentage: z.number().finite().min(0).max(100),
-}).strict();
+  percentage: z.number().finite().min(0).max(100).nullable().optional(),
+}).passthrough().superRefine((data, ctx) => {
+  if (data.enabled) {
+    if (typeof data.percentage !== "number" || !Number.isFinite(data.percentage) || data.percentage <= 0 || data.percentage > 100) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Enabled discount must have a valid percentage between 1 and 100.",
+        path: ["percentage"],
+      });
+    }
+  }
+});
 
 const orgStaysDiscountSchema = z.object({
   enabled: z.boolean(),
@@ -49,7 +97,7 @@ const orgStaysDiscountSchema = z.object({
   discountPercentage: z.number().finite().min(5).max(100),
 }).strict();
 
-const discountsSchema = z.preprocess(
+export const discountsSchema = z.preprocess(
   (value) => {
     if (!Array.isArray(value)) return value;
     return Object.fromEntries(value.map((discount) => [String(discount), true]));
@@ -58,11 +106,17 @@ const discountsSchema = z.preprocess(
     weekly: z.union([z.boolean(), percentageDiscountSchema]).optional(),
     monthly: z.union([z.boolean(), percentageDiscountSchema]).optional(),
     last_minute: z.union([z.boolean(), percentageDiscountSchema]).optional(),
+    lastMinute: z.union([z.boolean(), percentageDiscountSchema]).optional(),
     new_listing: z.union([z.boolean(), percentageDiscountSchema]).optional(),
+    newListing: z.union([z.boolean(), percentageDiscountSchema]).optional(),
     early_bird: z.union([z.boolean(), percentageDiscountSchema]).optional(),
+    earlyBird: z.union([z.boolean(), percentageDiscountSchema]).optional(),
     custom_promotion: z.union([z.boolean(), percentageDiscountSchema]).optional(),
+    non_refundable: z.union([z.boolean(), percentageDiscountSchema]).optional(),
+    nonRefundable: z.union([z.boolean(), percentageDiscountSchema]).optional(),
     orgStays: orgStaysDiscountSchema.optional(),
   }).passthrough().optional().nullable(),
+
 );
 
 const listingPhotoUrl = z.string().trim().refine(
@@ -283,7 +337,7 @@ const listingFields = {
   weekdayBasePrice: z.number().int().min(0).optional().nullable(),
   weekendPrice: z.number().int().min(0).optional().nullable(),
   weekendPremium: z.number().int().min(0).max(100).optional().nullable(),
-  customPrices: z.record(z.string(), z.number().int().min(0)).optional().nullable(),
+  customPrices: z.record(z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format, expected YYYY-MM-DD"), z.number().int().min(0)).optional().nullable(),
   extraGuestFee: z.number().int().min(0).optional().default(0),
   discounts: discountsSchema,
   currentStep: z.number().int().min(1).max(MAX_ONBOARDING_STEP).optional().default(1),
@@ -323,3 +377,12 @@ export const updateListingSchema = z
     },
   );
 export type UpdateListingInput = z.infer<typeof updateListingSchema>;
+
+export const bulkAvailabilitySchema = z.object({
+  action: z.enum(["BLOCK", "UNBLOCK", "RESTORE"]),
+  dates: z
+    .array(z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format, expected YYYY-MM-DD"))
+    .min(1, "At least one date is required")
+    .max(1095, "Maximum 3 years of dates"),
+});
+export type BulkAvailabilityInput = z.infer<typeof bulkAvailabilitySchema>;

@@ -1,20 +1,21 @@
 import type { ReservationCardData } from "@/components/dashboard/reservation-card";
 import type { BookingDTO } from "@/services/mappers";
+import { computeBookingStatus } from "@/lib/booking/booking-status";
+import { bookingDateEpoch } from "@/lib/booking/booking-date";
 
 function calendarDay(date: Date | string): number {
-  const value = new Date(date);
-  return Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate());
+  return bookingDateEpoch(date);
 }
 
 function isStayToday(startDate: Date | string, endDate: Date | string): boolean {
   const now = new Date();
-  const today = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+  const today = bookingDateEpoch(now);
   return today >= calendarDay(startDate) && today <= calendarDay(endDate);
 }
 
 function getActionType(startDate: Date | string, endDate: Date | string): ReservationCardData["actionType"] {
   const now = new Date();
-  const today = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+  const today = bookingDateEpoch(now);
   if (today === calendarDay(startDate)) return "check_in";
   if (today === calendarDay(endDate)) return "check_out";
   return "reserved";
@@ -27,6 +28,22 @@ export function toReservationCardData(booking: BookingDTO, guestName: string = "
     .filter((value): value is string => typeof value === "string" && Boolean(value.trim()))
     .join(", ");
 
+  const breakdown = (booking.priceBreakdown as Record<string, any>) || {};
+  const rejection = breakdown.rejection || {};
+  const cancellation = breakdown.cancellation || {};
+
+  const statusDetails = computeBookingStatus({
+    dbStatus: booking.status,
+    startDate: booking.startDate,
+    endDate: booking.endDate,
+    checkInStart: listing?.checkInStart,
+    checkOutTime: listing?.checkOutTime,
+    createdAt: booking.createdAt,
+    rejectionReason: rejection.reason || cancellation.reason || null,
+    rejectionBy: rejection.rejectedBy || cancellation.cancelledBy || null,
+    isExpired: Boolean(breakdown.expiredAt || rejection.reason === "EXPIRED"),
+  });
+
   return {
     id: booking.id,
     listingId: booking.listingId,
@@ -38,7 +55,7 @@ export function toReservationCardData(booking: BookingDTO, guestName: string = "
     endDate: booking.endDate,
     guestName,
     guestCount: booking.guests,
-    status: booking.status,
+    status: statusDetails.status,
     checkInTime: listing?.checkInStart || undefined,
     checkOutTime: listing?.checkOutTime || undefined,
     actionType: getActionType(booking.startDate, booking.endDate),

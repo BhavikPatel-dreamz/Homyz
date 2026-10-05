@@ -1,9 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useCallback, useState } from "react";
+import "leaflet/dist/leaflet.css";
 import type { PublicListingCardDTO } from "@/services/mappers";
 import { getCurrencyForCountry } from "@/lib/currency";
 import { useCurrency } from "@/lib/currency-context";
+import { toPropertyCardPricingViewModel } from "@/lib/booking/property-card-pricing";
+
 
 // ─── Minimal Leaflet Type Stubs (SSR-safe) ────────────────────────────────────
 interface LeafletMap {
@@ -46,7 +49,7 @@ export function getCartoTileUrl(
   layer: CartoLayer = "voyager",
   options?: { retina?: boolean }
 ): string {
-  const rawKey = process.env.NEXT_PUBLIC_CARTO_API_KEY ?? "";
+  const rawKey = process.env.NEXT_PUBLIC_CARTO_API_KEY ?? "cb1_3pm0_1_c6dfead671deb20f865779db";
   const key = rawKey.trim().replace(/^["']|["']$/g, "");
   const retinaSuffix = options?.retina ? "{r}" : "";
   return `https://{s}.basemaps.cartocdn.com/rastertiles/${layer}/{z}/{x}/{y}${retinaSuffix}.png?key=${key}`;
@@ -93,8 +96,25 @@ export { CartoTileLayer } from "./carto-tile-layer";
 // ─── Types ────────────────────────────────────────────────────────────────────
 export type ListingForMap = Pick<
   PublicListingCardDTO,
-  "id" | "title" | "price" | "city" | "country" | "latitude" | "longitude"
->;
+  | "id"
+  | "title"
+  | "price"
+  | "city"
+  | "country"
+  | "latitude"
+  | "longitude"
+  | "weekdayBasePrice"
+  | "weekendPrice"
+  | "weekendPremium"
+  | "customPrices"
+  | "pricing"
+> & {
+  discounts?: unknown;
+  isNewListing?: boolean;
+  createdAt?: string | Date | null;
+  completedBookingsCount?: number | null;
+};
+
 
 export interface SearchMapProps {
   listings: ListingForMap[];
@@ -282,9 +302,13 @@ export function SearchMap({
   const buildDetailUrl = useCallback(
     (listingId: string) => {
       const params = new URLSearchParams();
-      if (checkIn) params.set("checkIn", checkIn);
-      if (checkOut) params.set("checkOut", checkOut);
-      if (guests && guests > 1) params.set("guests", String(guests));
+      if (checkIn) {
+        params.set("checkIn", checkIn);
+      }
+      if (checkOut) {
+        params.set("checkOut", checkOut);
+      }
+      if (guests && guests >= 1) params.set("guests", String(guests));
       const qs = params.toString();
       return `/listings/${listingId}${qs ? `?${qs}` : ""}`;
     },
@@ -324,14 +348,6 @@ export function SearchMap({
 
     (async () => {
       try {
-        if (!document.getElementById("leaflet-css")) {
-          const link = document.createElement("link");
-          link.id = "leaflet-css";
-          link.rel = "stylesheet";
-          link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
-          document.head.appendChild(link);
-        }
-
         const L = await loadLeaflet();
         if (!isMounted || !containerRef.current || mapRef.current) return;
 
@@ -442,7 +458,18 @@ export function SearchMap({
         const currency = getCurrencyForCountry(listing.country);
         // Match listing cards: show the selected stay total, or one night when
         // a complete date range has not been selected.
-        const priceLabel = formatPrice(listing.price * selectedStayNights, currency);
+        const cardPricing = listing.pricing ?? toPropertyCardPricingViewModel(listing, {
+          checkIn,
+          checkOut,
+          guests,
+          currency,
+        });
+        const activeNightlyPrice =
+          cardPricing.hasDiscount && cardPricing.discountedDisplayPrice != null
+            ? cardPricing.discountedDisplayPrice
+            : cardPricing.baseDisplayPrice;
+        const priceLabel = formatPrice(activeNightlyPrice * selectedStayNights, currency);
+
 
         const icon = L.divIcon({
           html: `<div style="${pillStyle(false)}">${priceLabel}</div>`,
@@ -495,7 +522,8 @@ export function SearchMap({
       isMounted = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mapInstance, listings, buildDetailUrl, onMarkerClick, formatPrice, selectedStayNights]);
+  }, [mapInstance, listings, buildDetailUrl, onMarkerClick, formatPrice, selectedStayNights, checkIn, checkOut]);
+
 
   // ── Effect 4: In-place highlight update — no marker rebuild ──────────────
   useEffect(() => {

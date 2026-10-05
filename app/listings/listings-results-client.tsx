@@ -10,9 +10,10 @@ import { ListingSearchBar } from "@/components/listings/listing-search-bar";
 import { ResultsSummaryBar } from "@/components/listings/results-summary-bar";
 import type { PublicListingCardDTO } from "@/services/mappers";
 import type { SortBy } from "@/services/listing.service";
-import { saveLastSearch, saveRecentSearchContext } from "@/lib/storage/client-history";
+import { saveLastSearch, saveRecentSearchContext, buildListingDetailUrl } from "@/lib/storage/client-history";
 import { getCurrencyForCountry, getCurrencySymbol } from "@/lib/currency";
 import { useCurrency } from "@/lib/currency-context";
+import { useLanguage } from "@/lib/i18n/language-context";
 import { trackListingEvent } from "@/lib/analytics/listing-analytics";
 import { getGoogleMapsUrl, trackGoogleMapsOpen } from "@/lib/location/google-maps";
 import { ListingFilterModal, type ListingFilterValues } from "@/components/listings/listing-filter-modal";
@@ -160,13 +161,22 @@ function SelectedPreviewCard({
   onClose,
   checkIn,
   checkOut,
+  guests,
+  adults,
+  children,
+  pets,
 }: {
   listing: PublicListingCardDTO;
   onClose: () => void;
   checkIn?: string;
   checkOut?: string;
+  guests?: number;
+  adults?: number;
+  children?: number;
+  pets?: number;
 }) {
   const { formatPrice } = useCurrency();
+  const { t } = useLanguage();
   const currency = getCurrencyForCountry(listing.country);
   const selectedStayNights = (() => {
     if (!checkIn || !checkOut) return 1;
@@ -177,19 +187,30 @@ function SelectedPreviewCard({
     const nights = (toUtcMidnight(checkOut) - toUtcMidnight(checkIn)) / 86_400_000;
     return Number.isFinite(nights) && nights > 0 ? nights : 1;
   })();
-  const formattedPrice = formatPrice(listing.price * selectedStayNights, currency);
+  const effectiveNightlyPrice = listing.pricing?.discountedDisplayPrice
+    ?? listing.pricing?.baseDisplayPrice
+    ?? listing.price;
+  const formattedPrice = formatPrice(effectiveNightlyPrice * selectedStayNights, currency);
 
   return (
     <div className="relative flex items-center gap-3 bg-white/95 backdrop-blur-md rounded-2xl p-2.5 shadow-xl border border-zinc-200">
       <Link
-        href={`/listings/${listing.customSlug || listing.id}`}
+        href={buildListingDetailUrl(listing.customSlug || listing.id, {
+          location: listing.city || undefined,
+          checkIn,
+          checkOut,
+          guests,
+          adults,
+          children,
+          pets,
+        })}
         className="flex items-center gap-3 flex-1 min-w-0 group"
       >
         <div className="relative h-16 w-20 shrink-0 rounded-xl overflow-hidden bg-zinc-100">
           {listing.photos && listing.photos.length > 0 ? (
             <img
               src={listing.photos[0]}
-              alt={listing.title || "Property"}
+              alt={listing.title || t("host_untitled_listing", "Property")}
               className="h-full w-full object-cover group-hover:scale-105 transition-transform"
             />
           ) : (
@@ -199,7 +220,7 @@ function SelectedPreviewCard({
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
             <h4 className="text-xs font-bold text-[#1F1F1F] truncate group-hover:text-amber-950 transition-colors">
-              {listing.title || "Untitled property"}
+              {listing.title || t("host_untitled_listing", "Untitled property")}
             </h4>
             {typeof listing.rating === "number" && listing.rating > 0 && (
               <span className="text-[11px] font-semibold text-zinc-800 flex items-center gap-0.5 shrink-0 ml-auto">
@@ -212,12 +233,12 @@ function SelectedPreviewCard({
           </div>
           <p className="text-[11px] text-[#727272] truncate">
             {listing.city || listing.country || "Saudi Arabia"}
-            {typeof listing.distanceKm === "number" ? ` · ${listing.distanceKm} km away` : ""}
+            {typeof listing.distanceKm === "number" ? t("listings_km_away", { distance: listing.distanceKm }, ` · ${listing.distanceKm} km away`) : ""}
           </p>
           <div className="text-xs font-bold text-zinc-950 mt-0.5">
             {formattedPrice}
             <span className="text-[10px] font-normal text-[#727272]">
-              {selectedStayNights === 1 ? " / night" : ` for ${selectedStayNights} nights`}
+              {selectedStayNights === 1 ? t("listings_per_night", " / night") : t("listings_for_nights", { count: selectedStayNights }, ` for ${selectedStayNights} nights`)}
             </span>
           </div>
         </div>
@@ -236,7 +257,7 @@ function SelectedPreviewCard({
                 trackGoogleMapsOpen(listing.id, "listing_marker_preview");
               }}
               aria-label={`Open ${listing.title || "property"} location in Google Maps`}
-              title="Open in Google Maps"
+              title={t("listings_open_google_maps", "Open in Google Maps")}
               className="h-7 w-7 rounded-full bg-zinc-100 hover:bg-zinc-200 flex items-center justify-center text-zinc-600 hover:text-[#1F1F1F] transition-colors cursor-pointer"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5" aria-hidden="true">
@@ -253,7 +274,7 @@ function SelectedPreviewCard({
             e.stopPropagation();
             onClose();
           }}
-          aria-label="Close preview"
+          aria-label={t("listings_close_preview", "Close preview")}
           className="h-7 w-7 rounded-full bg-zinc-100 hover:bg-zinc-200 flex items-center justify-center text-[#727272] hover:text-zinc-800 text-xs transition-colors cursor-pointer"
         >
           ✕
@@ -261,6 +282,57 @@ function SelectedPreviewCard({
       </div>
     </div>
   );
+}
+
+function deduplicateListings<T extends { id: string }>(items: T[]): T[] {
+  if (!Array.isArray(items)) return [];
+  const seen = new Set<string>();
+  const result: T[] = [];
+  for (const item of items) {
+    if (item && item.id && !seen.has(item.id)) {
+      seen.add(item.id);
+      result.push(item);
+    }
+  }
+  return result;
+}
+
+interface ClientSearchCacheEntry {
+  items: PublicListingCardDTO[];
+  total: number;
+  totalPages: number;
+  priceRange?: { min: number; max: number };
+  locationContextName?: string;
+  targetCoords?: { lat: number; lng: number };
+  appliedRadiusKm?: number;
+  isRadiusExpanded?: boolean;
+  timestamp: number;
+}
+
+const clientSearchCache = new Map<string, ClientSearchCacheEntry>();
+// Calendar mutations are booking-critical. Keep entries only as navigation
+// snapshots; every subsequent query/refetch must ask the versioned server cache.
+const CLIENT_CACHE_TTL_MS = 0;
+
+export function buildNormalizedSearchKey(params: URLSearchParams | string): string {
+  const sp = typeof params === "string" ? new URLSearchParams(params) : params;
+  const keysToInclude = [
+    "destination", "location", "city", "placeName", "lat", "lng", "radius",
+    "checkIn", "checkin", "startDate", "checkOut", "checkout", "endDate",
+    "guests", "adults", "children", "infants", "pets",
+    "propertyType", "propertyTypes", "listingType",
+    "minPrice", "maxPrice", "amenities", "accessibility", "languages",
+    "bedrooms", "bathrooms", "beds", "instantBook", "featured",
+    "sortBy", "neLat", "neLng", "swLat", "swLng", "page"
+  ];
+  const parts: string[] = [];
+  for (const k of keysToInclude.sort()) {
+    const v = sp.get(k);
+    if (v !== null && v !== "" && v !== "undefined") {
+      parts.push(`${k}=${v}`);
+    }
+  }
+  return parts.join("&");
 }
 
 // ─────────────────────────────────────────────
@@ -282,14 +354,26 @@ export function ListingsResultsClient({
   source,
 }: ListingsResultsClientProps) {
   const { currency: selectedCurrency } = useCurrency();
+  const { t } = useLanguage();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
 
+  const [activeFilters, setActiveFilters] = useState(currentFilters);
+  useEffect(() => {
+    setActiveFilters(currentFilters);
+  }, [currentFilters]);
+
+  const [activeStatus, setActiveStatus] = useState<"idle" | "loading" | "refining" | "error">(
+    hasError ? "error" : "idle"
+  );
+  const activeAbortControllerRef = useRef<AbortController | null>(null);
+
   // Synchronize active search URL/filter state into lastSearch context
   useEffect(() => {
     const destination =
+      searchParams.get("location") ||
       searchParams.get("destination") ||
       currentFilters.placeName ||
       currentFilters.city ||
@@ -298,8 +382,11 @@ export function ListingsResultsClient({
     const city = currentFilters.city || searchParams.get("city") || destination || null;
     const lat = typeof currentFilters.lat === "number" ? currentFilters.lat : targetCoords?.lat ?? null;
     const lng = typeof currentFilters.lng === "number" ? currentFilters.lng : targetCoords?.lng ?? null;
+    const checkIn = currentFilters.checkIn || searchParams.get("checkIn") || searchParams.get("checkin") || null;
+    const checkOut = currentFilters.checkOut || searchParams.get("checkOut") || searchParams.get("checkout") || null;
+    const guests = currentFilters.guests || Number(searchParams.get("guests")) || 1;
 
-    if (destination || city || (lat !== null && lng !== null)) {
+    if (destination || city || (lat !== null && lng !== null) || checkIn || checkOut) {
       const searchContext = {
         query: destination || city || "Stays",
         displayName: locationContextName || destination || city || "Stays",
@@ -308,9 +395,13 @@ export function ListingsResultsClient({
         latitude: lat,
         longitude: lng,
         city: city,
-        checkIn: currentFilters.checkIn || searchParams.get("checkIn") || null,
-        checkOut: currentFilters.checkOut || searchParams.get("checkOut") || null,
-        guests: currentFilters.guests || Number(searchParams.get("guests")) || 1,
+        checkIn,
+        checkOut,
+        guests,
+        adults: currentFilters.adults || (guests > 0 ? guests : 1),
+        children: currentFilters.children || 0,
+        infants: currentFilters.infants || 0,
+        pets: currentFilters.pets || 0,
         radiusKm: currentFilters.radiusKm || Number(searchParams.get("radius")) || undefined,
         filters: {
           minPrice: currentFilters.minPrice,
@@ -350,14 +441,16 @@ export function ListingsResultsClient({
       : 12;
 
   // All listings accumulated (for infinite scroll)
-  const [allListings, setAllListings] = useState<PublicListingCardDTO[]>(() => dedupeListings(initialListings));
+  const [allListings, setAllListings] = useState<PublicListingCardDTO[]>(() =>
+    deduplicateListings(initialListings)
+  );
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [hasMore, setHasMore] = useState(initialPage < initialTotalPages);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const isLoadingMoreRef = useRef(false);
   const [total, setTotal] = useState(initialTotal);
   // Track desktop vs mobile/tablet breakpoint (lg: 1024px)
-  const [isDesktop, setIsDesktop] = useState<boolean>(false);
+  const [isDesktop, setIsDesktop] = useState<boolean>(() => typeof window !== "undefined" && window.innerWidth >= 1024);
 
   useEffect(() => {
     const mql = window.matchMedia("(min-width: 1024px)");
@@ -550,20 +643,21 @@ export function ListingsResultsClient({
   // Compute active filter count for badge
   const availableMinPrice = priceRange?.min ?? 0;
   const availableMaxPrice = priceRange?.max ?? 0;
+  const effFilters = activeFilters || currentFilters;
   const activeFilterCount = [
-    typeof currentFilters.minPrice === "number" && currentFilters.minPrice > availableMinPrice,
-    typeof currentFilters.maxPrice === "number" && availableMaxPrice > 0 && currentFilters.maxPrice < availableMaxPrice,
-    currentFilters.propertyType || (currentFilters.propertyTypes ?? []).length > 0,
-    currentFilters.listingType,
-    (currentFilters.amenities ?? []).length > 0,
-    (currentFilters.accessibility ?? []).length > 0,
-    (currentFilters.languages ?? []).length > 0,
-    currentFilters.bedrooms && currentFilters.bedrooms > 0,
-    currentFilters.bathrooms && currentFilters.bathrooms > 0,
-    currentFilters.beds && currentFilters.beds > 0,
-    currentFilters.instantBook,
-    currentFilters.featured,
-    currentFilters.pets && currentFilters.pets > 0,
+    typeof effFilters.minPrice === "number" && effFilters.minPrice > availableMinPrice,
+    typeof effFilters.maxPrice === "number" && availableMaxPrice > 0 && effFilters.maxPrice < availableMaxPrice,
+    effFilters.propertyType || (effFilters.propertyTypes ?? []).length > 0,
+    effFilters.listingType,
+    (effFilters.amenities ?? []).length > 0,
+    (effFilters.accessibility ?? []).length > 0,
+    (effFilters.languages ?? []).length > 0,
+    effFilters.bedrooms && effFilters.bedrooms > 0,
+    effFilters.bathrooms && effFilters.bathrooms > 0,
+    effFilters.beds && effFilters.beds > 0,
+    effFilters.instantBook,
+    effFilters.featured,
+    effFilters.pets && effFilters.pets > 0,
   ].filter(Boolean).length;
 
   const currencySymbol = getCurrencySymbol(selectedCurrency);
@@ -586,7 +680,7 @@ export function ListingsResultsClient({
 
     if (allListings && allListings.length > 0) {
       allListings.forEach((listing) => {
-        const p = listing.price / 100;
+        const p = (listing.pricing?.discountedDisplayPrice ?? listing.pricing?.baseDisplayPrice ?? listing.price) / 100;
         if (p >= minB && p <= maxB) {
           const binIdx = Math.min(NUM_BINS - 1, Math.max(0, Math.floor((p - minB) / step)));
           counts[binIdx] += 1;
@@ -637,21 +731,160 @@ export function ListingsResultsClient({
     [pathname, searchParams],
   );
 
-  // Sort change — immediate URL navigation
+  // Seed client search cache with initial results
+  useEffect(() => {
+    const sp = new URLSearchParams(typeof window !== "undefined" ? window.location.search || searchParams.toString() : searchParams.toString());
+    const initialKey = buildNormalizedSearchKey(sp);
+    if (!clientSearchCache.has(initialKey)) {
+      clientSearchCache.set(initialKey, {
+        items: initialListings,
+        total: initialTotal,
+        totalPages: initialTotalPages,
+        priceRange,
+        locationContextName,
+        targetCoords,
+        appliedRadiusKm,
+        isRadiusExpanded,
+        timestamp: Date.now(),
+      });
+    }
+  }, [initialListings, initialTotal, initialTotalPages, priceRange, locationContextName, targetCoords, appliedRadiusKm, isRadiusExpanded, searchParams]);
+
+  // Fast client-side filter executor with caching and abort control
+  const executeFilterQuery = useCallback(
+    async (overrides: Record<string, string | number | boolean | undefined | null>, pushToHistory = true) => {
+      const currentQuery = typeof window !== "undefined" ? window.location.search || searchParams.toString() : searchParams.toString();
+      const params = new URLSearchParams(currentQuery);
+      for (const [k, v] of Object.entries(overrides)) {
+        if (v === null || v === undefined || v === "" || v === 0 || v === false) {
+          params.delete(k);
+        } else {
+          params.set(k, String(v));
+        }
+      }
+      params.delete("page");
+      const queryString = params.toString();
+      const targetUrl = `${pathname}${queryString ? `?${queryString}` : ""}`;
+
+      if (pushToHistory && typeof window !== "undefined") {
+        window.history.pushState(null, "", targetUrl);
+      }
+
+      // Update active filters state
+      const nextFilters: typeof currentFilters = {
+        ...activeFilters,
+        minPrice: params.has("minPrice") ? Number(params.get("minPrice")) : undefined,
+        maxPrice: params.has("maxPrice") ? Number(params.get("maxPrice")) : undefined,
+        propertyType: params.get("propertyType") || undefined,
+        propertyTypes: params.get("propertyTypes") ? params.get("propertyTypes")!.split(",") : undefined,
+        listingType: params.get("listingType") || undefined,
+        amenities: params.get("amenities") ? params.get("amenities")!.split(",") : undefined,
+        accessibility: params.get("accessibility") ? params.get("accessibility")!.split(",") : undefined,
+        languages: params.get("languages") ? params.get("languages")!.split(",") : undefined,
+        bedrooms: params.has("bedrooms") ? Number(params.get("bedrooms")) : undefined,
+        bathrooms: params.has("bathrooms") ? Number(params.get("bathrooms")) : undefined,
+        beds: params.has("beds") ? Number(params.get("beds")) : undefined,
+        instantBook: params.get("instantBook") === "true",
+        featured: params.get("featured") === "true",
+        pets: params.has("pets") ? Number(params.get("pets")) : undefined,
+        sortBy: (params.get("sortBy") as SortBy) || "recommended",
+      };
+      setActiveFilters(nextFilters);
+
+      const cacheKey = buildNormalizedSearchKey(params);
+      const cached = clientSearchCache.get(cacheKey);
+      const now = Date.now();
+      if (cached && now - cached.timestamp < CLIENT_CACHE_TTL_MS) {
+        setAllListings(cached.items);
+        setTotal(cached.total);
+        setCurrentPage(1);
+        setHasMore(1 < cached.totalPages);
+        setActiveStatus("idle");
+        return;
+      }
+
+      setActiveStatus(allListings.length > 0 ? "refining" : "loading");
+
+      if (activeAbortControllerRef.current) {
+        activeAbortControllerRef.current.abort();
+      }
+      const controller = new AbortController();
+      activeAbortControllerRef.current = controller;
+
+      try {
+        const res = await fetch(`/api/v1/listings?${queryString}`, {
+          credentials: "same-origin",
+          signal: controller.signal,
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          const items: PublicListingCardDTO[] = data.items ?? data.data ?? [];
+          const resTotal = data.total ?? data.pagination?.total ?? items.length;
+          const resTotalPages = data.totalPages ?? data.pagination?.totalPages ?? 1;
+
+          clientSearchCache.set(cacheKey, {
+            items,
+            total: resTotal,
+            totalPages: resTotalPages,
+            priceRange: data.priceRange,
+            locationContextName: data.locationContextName,
+            targetCoords: data.targetCoords,
+            appliedRadiusKm: data.appliedRadiusKm,
+            isRadiusExpanded: data.isRadiusExpanded,
+            timestamp: Date.now(),
+          });
+
+          setAllListings(items);
+          setTotal(resTotal);
+          setCurrentPage(1);
+          setHasMore(1 < resTotalPages);
+          setActiveStatus("idle");
+        } else {
+          setActiveStatus("error");
+        }
+      } catch (err: any) {
+        if (err?.name === "AbortError") return;
+        setActiveStatus("error");
+      }
+    },
+    [searchParams, pathname, activeFilters, allListings.length]
+  );
+
+  // Popstate listener for browser Back / Forward
+  useEffect(() => {
+    const handlePopState = () => {
+      if (typeof window === "undefined") return;
+      const sp = new URLSearchParams(window.location.search);
+      const cacheKey = buildNormalizedSearchKey(sp);
+      const cached = clientSearchCache.get(cacheKey);
+      if (cached && Date.now() - cached.timestamp < CLIENT_CACHE_TTL_MS) {
+        setAllListings(cached.items);
+        setTotal(cached.total);
+        setCurrentPage(1);
+        setHasMore(1 < cached.totalPages);
+        setActiveStatus("idle");
+      } else {
+        router.refresh();
+      }
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [router]);
+
+  // Sort change — immediate fast update
   const handleSortChange = (sort: SortBy) => {
     trackListingEvent({
       eventType: "listing_sort_changed",
       sortOption: sort,
       resultCount: total,
     });
-    startTransition(() => {
-      router.push(buildUrl({ sortBy: sort === "recommended" ? null : sort }));
-    });
+    executeFilterQuery({ sortBy: sort === "recommended" ? null : sort });
   };
 
   // Quick amenity chip toggle
   const handleAmenityChip = (amenityId: string) => {
-    const current = (currentFilters.amenities ?? []);
+    const current = (activeFilters.amenities ?? currentFilters.amenities ?? []);
     const next = current.includes(amenityId)
       ? current.filter((a) => a !== amenityId)
       : [...current, amenityId];
@@ -661,9 +894,7 @@ export function ListingsResultsClient({
       metadata: { action: current.includes(amenityId) ? "remove" : "add", amenities: next },
       resultCount: total,
     });
-    startTransition(() => {
-      router.push(buildUrl({ amenities: next.length ? next.join(",") : null }));
-    });
+    executeFilterQuery({ amenities: next.length ? next.join(",") : null });
   };
 
   // Apply filter panel
@@ -688,24 +919,20 @@ export function ListingsResultsClient({
       },
       resultCount: total,
     });
-    startTransition(() => {
-      router.push(
-        buildUrl({
-          minPrice: draftMinPrice > 0 ? draftMinPrice * 100 : null,
-          maxPrice: draftMaxPrice > 0 ? draftMaxPrice * 100 : null,
-          propertyType: draftPropertyType || null,
-          listingType: draftListingType || null,
-          amenities: draftAmenities.length ? draftAmenities.join(",") : null,
-          accessibility: draftAccessibility.length ? draftAccessibility.join(",") : null,
-          languages: draftHostLanguages.length ? draftHostLanguages.join(",") : null,
-          bedrooms: draftBedrooms > 0 ? draftBedrooms : null,
-          bathrooms: draftBathrooms > 0 ? draftBathrooms : null,
-          beds: draftBeds > 0 ? draftBeds : null,
-          instantBook: draftInstantBook ? "true" : null,
-          featured: draftFeatured || draftStandout ? "true" : null,
-          pets: draftPets ? 1 : null,
-        }),
-      );
+    executeFilterQuery({
+      minPrice: draftMinPrice > 0 ? draftMinPrice * 100 : null,
+      maxPrice: draftMaxPrice > 0 ? draftMaxPrice * 100 : null,
+      propertyType: draftPropertyType || null,
+      listingType: draftListingType || null,
+      amenities: draftAmenities.length ? draftAmenities.join(",") : null,
+      accessibility: draftAccessibility.length ? draftAccessibility.join(",") : null,
+      languages: draftHostLanguages.length ? draftHostLanguages.join(",") : null,
+      bedrooms: draftBedrooms > 0 ? draftBedrooms : null,
+      bathrooms: draftBathrooms > 0 ? draftBathrooms : null,
+      beds: draftBeds > 0 ? draftBeds : null,
+      instantBook: draftInstantBook ? "true" : null,
+      featured: draftFeatured || draftStandout ? "true" : null,
+      pets: draftPets ? 1 : null,
     });
   };
 
@@ -739,23 +966,21 @@ export function ListingsResultsClient({
       metadata: filters,
       resultCount: total,
     });
-    startTransition(() => {
-      router.push(buildUrl({
-        minPrice: selectedMinPrice > absoluteMinPrice ? selectedMinPrice * 100 : null,
-        maxPrice: absoluteMaxPrice > 0 && selectedMaxPrice < absoluteMaxPrice ? selectedMaxPrice * 100 : null,
-        propertyType: null,
-        propertyTypes: filters.propertyTypes.length ? filters.propertyTypes.join(",") : null,
-        listingType: filters.listingType || null,
-        amenities: filters.amenities.length ? filters.amenities.join(",") : null,
-        accessibility: filters.accessibility.length ? filters.accessibility.join(",") : null,
-        languages: filters.languages.length ? filters.languages.join(",") : null,
-        bedrooms: filters.bedrooms || null,
-        bathrooms: filters.bathrooms || null,
-        beds: filters.beds || null,
-        instantBook: filters.instantBook ? "true" : null,
-        featured: filters.featured ? "true" : null,
-        pets: filters.pets ? 1 : null,
-      }));
+    executeFilterQuery({
+      minPrice: selectedMinPrice > absoluteMinPrice ? selectedMinPrice * 100 : null,
+      maxPrice: absoluteMaxPrice > 0 && selectedMaxPrice < absoluteMaxPrice ? selectedMaxPrice * 100 : null,
+      propertyType: null,
+      propertyTypes: filters.propertyTypes.length ? filters.propertyTypes.join(",") : null,
+      listingType: filters.listingType || null,
+      amenities: filters.amenities.length ? filters.amenities.join(",") : null,
+      accessibility: filters.accessibility.length ? filters.accessibility.join(",") : null,
+      languages: filters.languages.length ? filters.languages.join(",") : null,
+      bedrooms: filters.bedrooms || null,
+      bathrooms: filters.bathrooms || null,
+      beds: filters.beds || null,
+      instantBook: filters.instantBook ? "true" : null,
+      featured: filters.featured ? "true" : null,
+      pets: filters.pets ? 1 : null,
     });
   };
 
@@ -775,24 +1000,28 @@ export function ListingsResultsClient({
       params.set("swLat", String(bounds.swLat.toFixed(6)));
       params.set("swLng", String(bounds.swLng.toFixed(6)));
       params.delete("page");
-      startTransition(() => {
-        router.push(`${pathname}?${params.toString()}`);
+
+      executeFilterQuery({
+        neLat: bounds.neLat.toFixed(6),
+        neLng: bounds.neLng.toFixed(6),
+        swLat: bounds.swLat.toFixed(6),
+        swLng: bounds.swLng.toFixed(6),
       });
     },
-    [pathname, searchParams, router],
+    [searchParams, executeFilterQuery],
   );
 
   // ── Infinite scroll ──────────────────────────
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!hasMore) return;
+    if (!hasMore || activeStatus === "refining" || activeStatus === "loading") return;
     const sentinel = sentinelRef.current;
     if (!sentinel) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0]?.isIntersecting && !isLoadingMore) {
+        if (entries[0]?.isIntersecting && !isLoadingMore && !isLoadingMoreRef.current) {
           loadNextPage();
         }
       },
@@ -802,7 +1031,7 @@ export function ListingsResultsClient({
     observer.observe(sentinel);
     return () => observer.disconnect();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasMore, isLoadingMore, currentPage]);
+  }, [hasMore, isLoadingMore, currentPage, activeStatus]);
 
   const loadNextPage = async () => {
     if (isLoadingMore || !hasMore || isLoadingMoreRef.current) return;
@@ -820,7 +1049,7 @@ export function ListingsResultsClient({
       eventType: "load_more",
       metadata: { nextPage, currentCount: allListings.length },
     });
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(typeof window !== "undefined" ? window.location.search || searchParams.toString() : searchParams.toString());
     params.set("page", String(nextPage));
 
     try {
@@ -831,11 +1060,7 @@ export function ListingsResultsClient({
       if (res.ok) {
         const data = await res.json();
         const newItems: PublicListingCardDTO[] = data.items ?? data.data ?? [];
-        setAllListings((prev) => {
-          const seen = new Set(prev.map((l) => l.id));
-          const unique = newItems.filter((item) => item?.id && !seen.has(item.id));
-          return [...prev, ...unique];
-        });
+        setAllListings((prev) => deduplicateListings([...prev, ...newItems]));
         setCurrentPage(nextPage);
         const totalPages = data.pagination?.totalPages ?? data.totalPages ?? initialTotalPages;
         setHasMore(nextPage < totalPages);
@@ -854,7 +1079,7 @@ export function ListingsResultsClient({
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
-    setAllListings(dedupeListings(initialListings));
+    setAllListings(deduplicateListings(initialListings));
     setCurrentPage(initialPage);
     setHasMore(initialPage < initialTotalPages);
     setTotal(initialTotal);
@@ -957,12 +1182,12 @@ export function ListingsResultsClient({
             type="button"
             onClick={() => setMobileViewMode("map")}
             className="absolute top-3 right-3 z-[1000] bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-full border border-zinc-200 shadow-md text-xs font-semibold text-zinc-800 hover:bg-zinc-100 flex items-center gap-1.5 cursor-pointer"
-            aria-label="Expand to map-focused mode"
+            aria-label={t("listings_focus_map", "Expand to map-focused mode")}
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5">
               <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
             </svg>
-            <span>Focus map</span>
+            <span>{t("listings_focus_map", "Focus map")}</span>
           </button>
 
           {/* Selected Property Preview (when a marker is tapped on mobile inline map) */}
@@ -973,6 +1198,10 @@ export function ListingsResultsClient({
                 onClose={() => setSelectedPropertyId(null)}
                 checkIn={currentFilters.checkIn}
                 checkOut={currentFilters.checkOut}
+                guests={currentFilters.guests}
+                adults={currentFilters.adults}
+                children={currentFilters.children}
+                pets={currentFilters.pets}
               />
             </div>
           )}
@@ -1001,7 +1230,7 @@ export function ListingsResultsClient({
             >
               <path d="M1 3.5a.5.5 0 0 1 .5-.5h2.086a2 2 0 0 1 3.828 0H14.5a.5.5 0 0 1 0 1H7.414a2 2 0 0 1-3.828 0H1.5a.5.5 0 0 1-.5-.5zm0 4.5a.5.5 0 0 1 .5-.5h6.086a2 2 0 0 1 3.828 0H14.5a.5.5 0 0 1 0 1h-3.086a2 2 0 0 1-3.828 0H1.5a.5.5 0 0 1-.5-.5zm0 4.5a.5.5 0 0 1 .5-.5h1.086a2 2 0 0 1 3.828 0H14.5a.5.5 0 0 1 0 1H6.414a2 2 0 0 1-3.828 0H1.5a.5.5 0 0 1-.5-.5z" />
             </svg>
-            <span>Filters</span>
+            <span>{t("listings_filters", "Filters")}</span>
             {activeFilterCount > 0 && (
               <span className="flex h-4 w-4 items-center justify-center rounded-full bg-white text-[10px] font-bold text-[#1F1F1F] ml-0.5">
                 {activeFilterCount}
@@ -1013,18 +1242,16 @@ export function ListingsResultsClient({
           <div className="h-6 w-px bg-zinc-200 shrink-0 mx-1" aria-hidden="true" />
 
           {/* Active Featured Chip */}
-          {currentFilters.featured && (
+          {(activeFilters.featured || currentFilters.featured) && (
             <button
               type="button"
               onClick={() => {
-                startTransition(() => {
-                  router.push(buildUrl({ featured: null }));
-                });
+                executeFilterQuery({ featured: null });
               }}
               className="flex items-center gap-1.5 rounded-full bg-zinc-900 text-white text-xs sm:text-[13px] font-semibold px-3.5 py-2 shadow-2xs hover:bg-zinc-800 transition-all shrink-0 cursor-pointer"
               aria-label="Clear featured filter"
             >
-              <span>✨ Featured</span>
+              <span>✨ {t("listings_guest_favourite", "Featured")}</span>
               <span className="text-[#727272] hover:text-white font-bold text-xs ml-0.5">✕</span>
             </button>
           )}
@@ -1035,25 +1262,38 @@ export function ListingsResultsClient({
             let handleClick = () => {};
 
             if (opt.type === "amenity") {
-              isSelected = (currentFilters.amenities ?? []).includes(opt.id);
+              const amenities = activeFilters.amenities ?? currentFilters.amenities ?? [];
+              isSelected = amenities.includes(opt.id);
               handleClick = () => handleAmenityChip(opt.id);
             } else if (opt.type === "bathrooms") {
+              const bathrooms = activeFilters.bathrooms ?? currentFilters.bathrooms;
               isSelected =
-                typeof currentFilters.bathrooms === "number" &&
-                currentFilters.bathrooms >= opt.count;
+                typeof bathrooms === "number" &&
+                bathrooms >= opt.count;
               handleClick = () => {
-                startTransition(() => {
-                  router.push(buildUrl({ bathrooms: isSelected ? null : opt.count }));
-                });
+                executeFilterQuery({ bathrooms: isSelected ? null : opt.count });
               };
             } else if (opt.type === "instantBook") {
-              isSelected = currentFilters.instantBook === true;
+              const instantBook = activeFilters.instantBook ?? currentFilters.instantBook;
+              isSelected = instantBook === true;
               handleClick = () => {
-                startTransition(() => {
-                  router.push(buildUrl({ instantBook: isSelected ? null : true }));
-                });
+                executeFilterQuery({ instantBook: isSelected ? null : true });
               };
             }
+
+            const translatedLabel =
+              opt.type === "amenity"
+                ? opt.id === "self_check_in" ? t("listings_self_check_in", "Self check-in")
+                  : opt.id === "free_parking" ? t("listings_free_parking", "Free parking")
+                  : opt.id === "air_conditioning" ? t("listings_air_conditioning", "Air conditioning")
+                  : opt.id === "wifi" ? t("listings_wifi", "Wifi")
+                  : opt.id === "washer" ? t("listings_washing_machine", "Washing machine")
+                  : opt.id === "pool" ? t("listings_pool", "Pool")
+                  : opt.id === "tv" ? t("listings_tv", "TV")
+                  : opt.label
+                : opt.type === "bathrooms"
+                ? t("listings_one_plus_bathrooms", "1+ bathrooms")
+                : t("listings_instant_book", "Instant Book");
 
             return (
               <button
@@ -1067,7 +1307,7 @@ export function ListingsResultsClient({
                     : "bg-white text-zinc-800 border-zinc-200 hover:border-zinc-900 font-medium"
                 }`}
               >
-                {opt.label}
+                {translatedLabel}
               </button>
             );
           })}
@@ -1077,16 +1317,16 @@ export function ListingsResultsClient({
         <div className="shrink-0 pl-1">
           <div className="relative shrink-0">
             <select
-              value={currentFilters.sortBy ?? "recommended"}
+              value={activeFilters.sortBy ?? currentFilters.sortBy ?? "recommended"}
               onChange={(e) => handleSortChange(e.target.value as SortBy)}
               className="appearance-none rounded-full border border-zinc-200 bg-white py-2 pl-3.5 pr-9 text-xs sm:text-[13px] font-medium text-zinc-800 outline-none hover:border-zinc-900 focus:border-zinc-900 cursor-pointer"
-              aria-label="Sort by"
+              aria-label={t("listings_sort_by", "Sort by")}
             >
-              {SORT_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
+              <option value="recommended">{t("listings_sort_recommended", "Recommended")}</option>
+              <option value="price_low">{t("listings_sort_price_low", "Price: Low to High")}</option>
+              <option value="price_high">{t("listings_sort_price_high", "Price: High to Low")}</option>
+              <option value="top_rated">{t("listings_sort_top_rated", "Top Rated")}</option>
+              <option value="most_reviewed">{t("listings_sort_most_reviewed", "Most Reviewed")}</option>
             </select>
             <svg
               aria-hidden="true"
@@ -1106,13 +1346,20 @@ export function ListingsResultsClient({
       <div className="flex flex-col lg:flex-row gap-6 items-start">
         {/* Left: listings list */}
         <div className={`w-full min-w-0 ${showMap ? "lg:w-[58%] xl:w-[56%]" : "w-full"}`}>
-          {isPending ? (
+          {/* Subtle top refining indicator while updating results */}
+          {activeStatus === "refining" && (
+            <div className="w-full h-1 bg-zinc-100 overflow-hidden rounded-full mb-3 -mt-2">
+              <div className="h-full bg-zinc-900 rounded-full animate-pulse w-1/3 mx-auto" />
+            </div>
+          )}
+
+          {(isPending || activeStatus === "loading") && allListings.length === 0 ? (
             <div className={`grid gap-5 ${showMap ? "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3" : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4"}`}>
               {Array.from({ length: 6 }).map((_, i) => (
                 <SkeletonCard key={i} />
               ))}
             </div>
-          ) : hasError ? (
+          ) : hasError || activeStatus === "error" ? (
             /* ── Error state ── */
             <div className="py-16 text-center space-y-4 max-w-md mx-auto">
               <div className="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center mx-auto text-2xl text-red-500">
@@ -1120,30 +1367,28 @@ export function ListingsResultsClient({
               </div>
               <div className="space-y-1.5">
                 <h2 className="text-base sm:text-lg font-bold text-[#1F1F1F]">
-                  We couldn&apos;t load these properties
+                  {t("listings_error_title", "We couldn't load these properties")}
                 </h2>
                 <p className="text-xs sm:text-sm text-[#727272] font-normal leading-relaxed">
-                  Something went wrong while searching. Please try again or clear your filters.
+                  {t("listings_error_desc", "Something went wrong while searching. Please try again or clear your filters.")}
                 </p>
               </div>
               <div className="pt-2 flex items-center justify-center gap-2.5">
                 <button
                   type="button"
                   onClick={() => {
-                    startTransition(() => {
-                      router.refresh();
-                    });
+                    executeFilterQuery({}, false);
                   }}
                   className="rounded-full bg-zinc-900 hover:bg-zinc-800 text-white font-semibold text-xs px-6 py-2.5 transition-all cursor-pointer shadow-xs inline-flex items-center gap-1.5"
                 >
-                  <span>Retry</span>
+                  <span>{t("listings_retry", "Retry")}</span>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5">
                     <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
                   </svg>
                 </button>
               </div>
             </div>
-          ) : allListings.length === 0 ? (
+          ) : allListings.length === 0 && activeStatus === "idle" && !isPending ? (
             /* ── No results ── */
             <div className="py-20 text-center space-y-4 max-w-md mx-auto">
               <div className="w-14 h-14 rounded-full bg-zinc-100 flex items-center justify-center mx-auto text-[#727272]">
@@ -1153,30 +1398,47 @@ export function ListingsResultsClient({
                 </svg>
               </div>
               <div className="space-y-1.5">
-                <h2 className="text-base sm:text-lg font-semibold text-[#1F1F1F]">No properties found for these search criteria</h2>
+                <h2 className="text-base sm:text-lg font-semibold text-[#1F1F1F]">{t("listings_empty_title", "No properties found for these search criteria")}</h2>
                 <p className="text-xs sm:text-sm text-[#727272] font-normal leading-relaxed">
-                  Try adjusting your destination, dates, or clearing some filters to find available homes.
+                  {t("listings_empty_desc", "Try adjusting your destination, dates, or clearing some filters to find available homes.")}
                 </p>
               </div>
               <div className="pt-2 flex flex-wrap items-center justify-center gap-2.5">
                 <button
                   type="button"
                   onClick={() => {
-                    startTransition(() => {
-                      router.push("/listings");
+                    executeFilterQuery({
+                      minPrice: null,
+                      maxPrice: null,
+                      propertyType: null,
+                      propertyTypes: null,
+                      listingType: null,
+                      amenities: null,
+                      accessibility: null,
+                      languages: null,
+                      bedrooms: null,
+                      bathrooms: null,
+                      beds: null,
+                      instantBook: null,
+                      featured: null,
+                      pets: null,
+                      neLat: null,
+                      neLng: null,
+                      swLat: null,
+                      swLng: null,
                     });
                   }}
-                      className="shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 min-[1440px]:inline-flex border border-transparent hover:border-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white"
+                  className="shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 min-[1440px]:inline-flex border border-transparent hover:border-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white"
                 >
-                  Clear all filters
+                  {t("listings_clear_all_filters", "Clear all filters")}
                 </button>
-                {currentFilters.amenities && currentFilters.amenities.length > 0 && (
+                {((activeFilters.amenities && activeFilters.amenities.length > 0) || (currentFilters.amenities && currentFilters.amenities.length > 0)) && (
                   <button
                     type="button"
-                    onClick={() => startTransition(() => router.push(buildUrl({ amenities: null })))}
+                    onClick={() => executeFilterQuery({ amenities: null })}
                     className="rounded-full border border-zinc-300 text-zinc-700 font-semibold text-xs px-6 py-2.5 transition-all hover:bg-zinc-50 cursor-pointer"
                   >
-                    Remove amenity filters
+                    {t("listings_remove_amenity_filters", "Remove amenity filters")}
                   </button>
                 )}
               </div>
@@ -1184,7 +1446,9 @@ export function ListingsResultsClient({
           ) : (
             <>
               <div
-                className={`grid gap-5 ${
+                className={`grid gap-5 transition-opacity duration-150 ${
+                  activeStatus === "refining" ? "opacity-75 pointer-events-none" : "opacity-100"
+                } ${
                   showMap
                     ? "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3"
                     : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4"
@@ -1214,6 +1478,10 @@ export function ListingsResultsClient({
                       priority={index < (isDesktop ? 4 : 2)}
                       checkIn={currentFilters.checkIn}
                       checkOut={currentFilters.checkOut}
+                      guests={currentFilters.guests}
+                      adults={currentFilters.adults}
+                      children={currentFilters.children}
+                      pets={currentFilters.pets}
                       variant="search-grid"
                     />
                   </div>
@@ -1226,7 +1494,7 @@ export function ListingsResultsClient({
                   {isLoadingMore && (
                     <div className="flex items-center gap-2 text-xs text-[#727272]">
                       <div className="h-4 w-4 border-2 border-zinc-300 border-t-zinc-900 rounded-full animate-spin" />
-                      Loading more stays…
+                      {t("listings_loading_more", "Loading more stays…")}
                     </div>
                   )}
                 </div>
@@ -1259,6 +1527,10 @@ export function ListingsResultsClient({
                   onClose={() => setSelectedPropertyId(null)}
                   checkIn={currentFilters.checkIn}
                   checkOut={currentFilters.checkOut}
+                  guests={currentFilters.guests}
+                  adults={currentFilters.adults}
+                  children={currentFilters.children}
+                  pets={currentFilters.pets}
                 />
               </div>
             )}
@@ -1274,20 +1546,20 @@ export function ListingsResultsClient({
             <div className="flex items-center gap-2 min-w-0">
               <span className="text-xs font-bold text-[#1F1F1F] truncate">
                 {currentFilters.placeName || currentFilters.city
-                  ? `Map: ${currentFilters.placeName || currentFilters.city}`
-                  : "Map view"}
+                  ? `${t("listings_map_view", "Map")}: ${currentFilters.placeName || currentFilters.city}`
+                  : t("listings_map_view", "Map view")}
               </span>
               <span className="text-[11px] font-semibold text-zinc-600 bg-zinc-100 px-2 py-0.5 rounded-full shrink-0">
-                {total} {total === 1 ? "place" : "places"}
+                {total === 1 ? t("listings_show_place", { count: total }, "1 place") : t("listings_show_places", { count: total.toLocaleString() }, `${total} places`)}
               </span>
             </div>
             <button
               type="button"
               onClick={() => setMobileViewMode("combined")}
               className="text-xs font-semibold text-zinc-700 bg-zinc-100 hover:bg-zinc-200 px-3.5 py-1.5 rounded-full transition-colors cursor-pointer shrink-0 flex items-center gap-1.5"
-              aria-label="Back to listings"
+              aria-label={t("listings_list_view", "Back to listings")}
             >
-              <span>List view</span>
+              <span>{t("listings_list_view", "List view")}</span>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5">
                 <path d="M4 6h16M4 12h16M4 18h16" />
               </svg>
@@ -1315,12 +1587,12 @@ export function ListingsResultsClient({
                 type="button"
                 onClick={() => setMobileViewMode("combined")}
                 className="flex items-center gap-2 bg-zinc-900 hover:bg-zinc-800 text-white font-semibold px-5 py-2.5 rounded-full shadow-2xl text-xs cursor-pointer transition-all hover:scale-105 active:scale-95 whitespace-nowrap"
-                aria-label={`Show ${total} ${total === 1 ? "place" : "places"}`}
+                aria-label={total === 1 ? t("listings_show_place", { count: total }, "Show 1 place") : t("listings_show_places", { count: total }, `Show ${total} places`)}
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-3.5 w-3.5">
                   <path d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
-                <span>Show {total} {total === 1 ? "place" : "places"}</span>
+                <span>{total === 1 ? t("listings_show_place", { count: total }, "Show 1 place") : t("listings_show_places", { count: total }, `Show ${total} places`)}</span>
               </button>
             </div>
 
@@ -1332,6 +1604,10 @@ export function ListingsResultsClient({
                   onClose={() => setSelectedPropertyId(null)}
                   checkIn={currentFilters.checkIn}
                   checkOut={currentFilters.checkOut}
+                  guests={currentFilters.guests}
+                  adults={currentFilters.adults}
+                  children={currentFilters.children}
+                  pets={currentFilters.pets}
                 />
               </div>
             )}
@@ -1358,14 +1634,14 @@ export function ListingsResultsClient({
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
                 <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
               </svg>
-              Hide map
+              {t("listings_hide_map", "Hide map")}
             </>
           ) : (
             <>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
                 <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" />
               </svg>
-              Show map
+              {t("listings_show_map", "Show map")}
             </>
           )}
         </span>
@@ -1375,14 +1651,14 @@ export function ListingsResultsClient({
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
                 <path d="M4 6h16M4 12h16M4 18h16" />
               </svg>
-              Show list
+              {t("listings_show_list", "Show list")}
             </>
           ) : (
             <>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
                 <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" />
               </svg>
-              Map view
+              {t("listings_map_view", "Map view")}
             </>
           )}
         </span>

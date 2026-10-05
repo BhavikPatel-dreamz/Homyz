@@ -10,6 +10,22 @@ export const ErrorCode = {
   NOT_FOUND: "NOT_FOUND",
   CONFLICT: "CONFLICT",
   RATE_LIMITED: "RATE_LIMITED",
+  SERVICE_UNAVAILABLE: "SERVICE_UNAVAILABLE",
+  PROPERTY_NOT_AVAILABLE: "PROPERTY_NOT_AVAILABLE",
+  INVALID_DATES: "INVALID_DATES",
+  DATES_NO_LONGER_AVAILABLE: "DATES_NO_LONGER_AVAILABLE",
+  INVALID_GUESTS: "INVALID_GUESTS",
+  PRICE_CHANGED: "PRICE_CHANGED",
+  BOOKING_MODE_CHANGED: "BOOKING_MODE_CHANGED",
+  INVALID_HOST_MESSAGE: "INVALID_HOST_MESSAGE",
+  PAYMENT_AUTHORIZATION_REQUIRED: "PAYMENT_AUTHORIZATION_REQUIRED",
+  PAYMENT_AUTHORIZATION_INVALID: "PAYMENT_AUTHORIZATION_INVALID",
+  DUPLICATE_REQUEST: "DUPLICATE_REQUEST",
+  REQUEST_EXPIRED: "REQUEST_EXPIRED",
+  REQUEST_ALREADY_PROCESSED: "REQUEST_ALREADY_PROCESSED",
+  REQUEST_NOT_PENDING: "REQUEST_NOT_PENDING",
+  UNAUTHORIZED_HOST: "UNAUTHORIZED_HOST",
+  BOOKING_CONFLICT: "BOOKING_CONFLICT",
   INTERNAL: "INTERNAL",
 } as const;
 export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];
@@ -57,6 +73,15 @@ export class AppError extends Error {
   }
   static rateLimited(message = "Too many requests. Please try again later.") {
     return new AppError(ErrorCode.RATE_LIMITED, message, 429);
+  }
+  static serviceUnavailable(message = "Service temporarily unavailable") {
+    return new AppError(ErrorCode.SERVICE_UNAVAILABLE, message, 503);
+  }
+  static checkoutConflict(code: ErrorCode, message: string) {
+    return new AppError(code, message, 409);
+  }
+  static checkoutValidation(code: ErrorCode, message: string) {
+    return new AppError(code, message, 422);
   }
   static internal(message = "Something went wrong") {
     return new AppError(ErrorCode.INTERNAL, message, 500);

@@ -1,3 +1,4 @@
+import "dotenv/config";
 import assert from "node:assert/strict";
 import { createBookingSchema, quoteBookingSchema } from "../lib/validation/booking";
 import { calculateBookingPrice } from "../services/pricing.service";

@@ -57,6 +57,12 @@ export function StepDiscounts({
       description: t("host_discount_monthly_desc"),
       percentage: 25,
     },
+    {
+      id: "early_bird",
+      title: t("host_discount_early_bird_title") || "Early-bird discount",
+      description: t("host_discount_early_bird_desc") || "Offer 10% off for bookings made 30 or more days before arrival.",
+      percentage: 10,
+    },
   ];
 
   return (

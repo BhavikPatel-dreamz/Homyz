@@ -5,6 +5,7 @@ import Link from "next/link";
 import { CurrencyPrice } from "@/components/ui/currency-price";
 import type { AuthoritativePriceBreakdown } from "@/lib/booking/booking-price";
 import type { BookingStatusDetails, BookingAvailableActions } from "@/lib/booking/booking-status";
+import { useCurrency } from "@/lib/currency-context";
 
 interface BookingPriceCardProps {
   photo: string | null;
@@ -35,6 +36,7 @@ export function BookingPriceCard({
   onOpenReceipt,
   onOpenContact,
 }: BookingPriceCardProps) {
+  const { currency: displayCurrency } = useCurrency();
   const listingHref = `/listings/${listingSlug || listingId}`;
   const { status, isCompleted, isCancelled, isCurrent, isUpcoming, isPending } = statusDetails;
 
@@ -96,12 +98,12 @@ export function BookingPriceCard({
           </div>
         )}
 
-        {pricing.cleaningFee > 0 && (
+        {pricing.petFee > 0 && (
           <div className="flex justify-between gap-4">
-            <dt className="text-zinc-600">Cleaning fee</dt>
+            <dt className="text-zinc-600">Pet fee</dt>
             <dd className="font-medium text-[#1F1F1F]">
               <CurrencyPrice
-                amountMinorUnits={pricing.cleaningFee}
+                amountMinorUnits={pricing.petFee}
                 sourceCurrency={pricing.currency}
                 fractionDigits={2}
               />
@@ -109,12 +111,12 @@ export function BookingPriceCard({
           </div>
         )}
 
-        {pricing.serviceFee > 0 && (
+        {pricing.cleaningFee > 0 && (
           <div className="flex justify-between gap-4">
-            <dt className="text-zinc-600">Service fee</dt>
+            <dt className="text-zinc-600">Cleaning fee</dt>
             <dd className="font-medium text-[#1F1F1F]">
               <CurrencyPrice
-                amountMinorUnits={pricing.serviceFee}
+                amountMinorUnits={pricing.cleaningFee}
                 sourceCurrency={pricing.currency}
                 fractionDigits={2}
               />
@@ -136,20 +138,17 @@ export function BookingPriceCard({
           </div>
         )}
 
-        {pricing.taxTotal > 0 && (
-          <div className="flex justify-between gap-4">
+        {pricing.taxes.map((tax, index) => (
+          <div key={`${tax.name}-${index}`} className="flex justify-between gap-4">
             <dt className="text-zinc-600">
-              {pricing.taxes.length === 1 ? pricing.taxes[0].name : "Taxes"}
+              {tax.name}
+              {tax.exemptionApplied && tax.exemptionReason ? ` · ${tax.exemptionReason}` : ""}
             </dt>
             <dd className="font-medium text-[#1F1F1F]">
-              <CurrencyPrice
-                amountMinorUnits={pricing.taxTotal}
-                sourceCurrency={pricing.currency}
-                fractionDigits={2}
-              />
+              <CurrencyPrice amountMinorUnits={tax.amountMinorUnits} sourceCurrency={pricing.currency} fractionDigits={2} />
             </dd>
           </div>
-        )}
+        ))}
 
         {pricing.otherCharges !== 0 && (
           <div className="flex justify-between gap-4 text-zinc-600">
@@ -172,6 +171,13 @@ export function BookingPriceCard({
               sourceCurrency={pricing.currency}
               fractionDigits={2}
             />
+          </dd>
+        </div>
+
+        <div className="flex items-center justify-between gap-4 border-t border-zinc-100 pt-3 text-xs text-zinc-600">
+          <dt className="font-medium">Payment</dt>
+          <dd className="font-semibold text-amber-900 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full">
+            Pending / Deferred
           </dd>
         </div>
       </dl>
@@ -318,4 +324,3 @@ export function BookingPriceCard({
     </aside>
   );
 }
-

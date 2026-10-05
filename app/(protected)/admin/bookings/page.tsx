@@ -14,6 +14,8 @@ export default async function AdminBookingsPage() {
     startDate: b.startDate.toISOString(),
     endDate: b.endDate.toISOString(),
     createdAt: b.createdAt.toISOString(),
+    totalPrice: b.totalPrice,
+    currency: b.currency,
     user: b.user,
     listing: b.listing,
   }));
