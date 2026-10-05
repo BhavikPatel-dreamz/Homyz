@@ -14,6 +14,7 @@ export interface AuthoritativePriceBreakdown {
   nightlySubtotal: number; // minor units
   extraGuestFee: number; // minor units
   petFee: number; // minor units
+  cleaningFee: number; // minor units
   discountAmount: number; // minor units
   taxTotal: number; // minor units
   taxes: TaxItemBreakdown[];
@@ -91,6 +92,7 @@ export function getAuthoritativePriceBreakdown(booking: {
   // Additional charges
   const extraGuestFee = safeNum(snapshot.extraGuestFee);
   const petFee = safeNum(snapshot.petFee);
+  const cleaningFee = safeNum(snapshot.cleaningFee) || safeNum(booking.cleaningFee);
   const discountAmount = safeNum(snapshot.discountAmount) || safeNum(snapshot.nonRefundableDiscount);
 
   // Taxes
@@ -111,18 +113,17 @@ export function getAuthoritativePriceBreakdown(booking: {
 
   // Calculate sum of known items
   const subtotalBeforeReconcile =
-    nightlySubtotal - discountAmount + extraGuestFee + petFee + taxTotal;
+    nightlySubtotal - discountAmount + extraGuestFee + petFee + cleaningFee + taxTotal;
 
   let otherCharges = 0;
 
-  // Reconcile legacy snapshots with storedTotal without reintroducing removed
-  // cleaning/service-fee labels. Historical payment totals remain immutable.
+  // Reconcile legacy snapshots while keeping historical payment totals immutable.
   if (storedTotal > 0 && subtotalBeforeReconcile !== storedTotal) {
     otherCharges = storedTotal - subtotalBeforeReconcile;
   }
 
   const computedTotal =
-    nightlySubtotal - discountAmount + extraGuestFee + petFee + taxTotal + otherCharges;
+    nightlySubtotal - discountAmount + extraGuestFee + petFee + cleaningFee + taxTotal + otherCharges;
 
   const authoritativeTotal = storedTotal > 0 ? storedTotal : computedTotal;
 
@@ -176,6 +177,7 @@ export function getAuthoritativePriceBreakdown(booking: {
     nightlySubtotal,
     extraGuestFee,
     petFee,
+    cleaningFee,
     discountAmount,
     taxTotal,
     taxes,

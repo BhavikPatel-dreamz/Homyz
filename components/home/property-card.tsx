@@ -266,11 +266,6 @@ function PropertyCardComponent({
               </span>
               <span>{formatPrice(cardPricing.discountedDisplayPrice, currency)}</span>
               <span className="font-normal text-[#727272] text-[11px] sm:text-xs"> / night</span>
-              {cardPricing.discountLabel && (
-                <span className="ml-1 text-[9px] sm:text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/70 px-1 py-0.5 rounded-full">
-                  {cardPricing.discountLabel}
-                </span>
-              )}
             </span>
           ) : (
             <span className="font-semibold text-[#1F1F1F]">

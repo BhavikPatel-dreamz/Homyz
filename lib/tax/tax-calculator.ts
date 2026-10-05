@@ -14,6 +14,7 @@ type TaxableAmounts = {
   accommodationSubtotal: number;
   petFee: number;
   extraGuestFee: number;
+  cleaningFee: number;
   feeAmounts: Partial<Record<TaxableComponent, number>>;
 };
 
@@ -55,12 +56,14 @@ export class TaxCalculator {
     const accommodationSubtotal = Math.max(0, nightlySubtotal - discountAmount);
     const petFee = Math.max(0, Math.round(params.petFee ?? 0));
     const extraGuestFee = Math.max(0, Math.round(params.extraGuestFee ?? 0));
+    const cleaningFee = Math.max(0, Math.round(params.cleaningFee ?? 0));
     const nightlyRates = this.normalizeNightlyRates(params.nightlyRates, nights, nightlySubtotal);
     const nightlyRatePrefix = this.buildPrefixSums(nightlyRates);
     const amounts: TaxableAmounts = {
       accommodationSubtotal,
       petFee,
       extraGuestFee,
+      cleaningFee,
       feeAmounts: params.feeAmounts || {},
     };
 
@@ -118,12 +121,13 @@ export class TaxCalculator {
     const hostServiceFee = params.hostServiceFee !== undefined
       ? Math.max(0, Math.round(params.hostServiceFee))
       : Math.round(accommodationSubtotal * (hostServiceFeePercentage / 100));
-    const netHostPayout = accommodationSubtotal + petFee + extraGuestFee
+    const netHostPayout = accommodationSubtotal + petFee + extraGuestFee + cleaningFee
       + hostRemittedTaxTotal - hostServiceFee;
 
     const payoutBreakdown: HostPayoutBreakdown = {
       accommodationSubtotal,
       petFee,
+      cleaningFee,
       taxesCollectedForHost: hostRemittedTaxTotal,
       taxesRemittedByPlatform: platformRemittedTaxTotal,
       platformServiceFee: hostServiceFee,
@@ -139,7 +143,7 @@ export class TaxCalculator {
       hostRemittedTaxTotal,
       hostServiceFee,
       hostServiceFeePercentage,
-      guestTotal: accommodationSubtotal + petFee + extraGuestFee + taxTotal,
+      guestTotal: accommodationSubtotal + petFee + extraGuestFee + cleaningFee + taxTotal,
       payoutBreakdown,
       currency,
     };
@@ -313,6 +317,7 @@ export class TaxCalculator {
       accommodationSubtotal,
       petFee: Math.round(opts.amounts.petFee * ratio),
       extraGuestFee: Math.round(opts.amounts.extraGuestFee * ratio),
+      cleaningFee: Math.round(opts.amounts.cleaningFee * ratio),
       feeAmounts,
     };
   }
@@ -324,13 +329,14 @@ export class TaxCalculator {
         case "BASE_PRICE": base += amounts.accommodationSubtotal; break;
         case "PET_FEE": base += amounts.petFee; break;
         case "GUEST_FEE": base += amounts.extraGuestFee; break;
+        case "CLEANING_FEE": base += amounts.cleaningFee; break;
         case "MANAGEMENT_FEE":
         case "COMMUNITY_FEE":
         case "LINEN_FEE":
         case "RESORT_FEE":
           base += Math.max(0, Math.round(amounts.feeAmounts[component] ?? 0));
           break;
-        default: break; // Includes retired CLEANING_FEE selections.
+        default: break;
       }
     }
     return base;

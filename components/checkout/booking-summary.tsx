@@ -187,11 +187,13 @@ export const BookingSummary = memo(function BookingSummary({ state, actions, isB
 
         <section className="border-b border-[#727272] py-5" aria-labelledby="booking-summary-price">
           <h3 id="booking-summary-price" className="mb-3 text-base font-semibold text-[#1f1f1f]">Price details</h3>
-          {pricing.status === "error" || !pricing.quote ? (
+          {pricing.status === "error" || (!pricing.quote && pricing.status !== "loading") ? (
             <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs font-medium text-rose-700">
               <p>{pricing.error || "We couldn't update your price."}</p>
               <button type="button" onClick={actions.onRetryPricing} className="mt-2 min-h-9 rounded-full border border-rose-400 px-4 font-semibold hover:bg-rose-100">Try again</button>
             </div>
+          ) : !pricing.quote ? (
+            <p className="text-sm text-zinc-500" aria-live="polite">Updating price…</p>
           ) : (
             <div className="relative">
               <PriceRows rows={summaryRows} formatMoney={actions.formatMoney} />

@@ -11,7 +11,10 @@ import { useLanguage } from "@/lib/i18n/language-context";
 import type { PublicListingDTO } from "@/services/mappers";
 import { trackListingEvent } from "@/lib/analytics/listing-analytics";
 import { buildListingDetailUrl, getLastSearch } from "@/lib/storage/client-history";
-import { toPropertyCardPricingViewModel } from "@/lib/booking/property-card-pricing";
+import {
+  toPropertyCardPricingViewModel,
+  type PropertyCardPricingViewModel,
+} from "@/lib/booking/property-card-pricing";
 
 import { propertyTypeLabel } from "@/lib/constants/listing-enums";
 
@@ -88,6 +91,7 @@ export interface ListingCardProps {
     isSuperhost?: boolean;
     badge?: string | null;
     alternativeDates?: string | null;
+    pricing?: PropertyCardPricingViewModel;
   };
   className?: string;
   /** Optional contextual landmark / place name (e.g. "Burj Khalifa") */
@@ -218,26 +222,24 @@ export function ListingCard({
 
   // ── Pricing & Currency (Phase 6 Central Card Pricing Adapter) ────────────────
   const currency = getCurrencyForCountry(listing.country);
-  const basePrice = typeof listing.price === "number" && isFinite(listing.price) ? listing.price : 0;
+  const storedBasePrice = typeof listing.price === "number" && isFinite(listing.price) ? listing.price : 0;
   // Compatibility static contract reference: listing.price / 100 SAR {formattedPrice}
   const _priceInWhole = Math.round(listing.price / 100);
 
-  const cardPricing = toPropertyCardPricingViewModel(listing, {
-    checkIn,
-    checkOut,
-    guests,
-    currency,
-  });
+  const serverPricing = "pricing" in listing ? listing.pricing : undefined;
+  const cardPricing = serverPricing ?? toPropertyCardPricingViewModel(listing, {
+      checkIn,
+      checkOut,
+      guests,
+      currency,
+    });
+  const basePrice = cardPricing.baseDisplayPrice || storedBasePrice;
 
-  const activePct = cardPricing.hasDiscount ? cardPricing.discountPercentage : null;
   const discountedPrice = cardPricing.hasDiscount ? cardPricing.discountedDisplayPrice : null;
 
   const formattedBasePrice = formatPrice(cardPricing.baseDisplayPrice, currency);
   const formattedDiscountedPrice =
     discountedPrice != null ? formatPrice(discountedPrice, currency) : null;
-
-  const discountLabel = cardPricing.hasDiscount ? cardPricing.discountLabel : null;
-
 
   // ── Rating & Reviews ────────────────────────────────────────────────────────
   const numericRating =
@@ -678,11 +680,6 @@ export function ListingCard({
                 <span className="text-[#727272]">
                   for {nights} {nights === 1 ? "night" : "nights"}
                 </span>
-                {discountLabel && (
-                  <span className="inline-flex items-center text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/70 px-1.5 py-0.5 rounded-full">
-                    {discountLabel}
-                  </span>
-                )}
               </>
             ) : (
               <>
@@ -769,11 +766,6 @@ export function ListingCard({
                 {formattedDiscountedPrice}
                 <span className="text-[#727272] font-normal text-xs ml-0.5">{t("listings_per_night", "/ night")}</span>
               </span>
-              {discountLabel && (
-                <span className="inline-flex items-center text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/70 px-1.5 py-0.5 rounded-full">
-                  {discountLabel} · {activePct}% off
-                </span>
-              )}
             </>
           ) : (
             <div className="flex items-baseline gap-1">

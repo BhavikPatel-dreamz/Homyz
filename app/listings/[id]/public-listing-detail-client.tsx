@@ -28,6 +28,12 @@ import { saveBookingQuote, readBookingQuote, fetchAuthoritativeQuote } from "@/l
 import { getLanguageDisplayNames } from "@/lib/utils/language-options";
 import useWishlist from "@/hooks/useWishlist";
 import { trackListingEvent } from "@/lib/analytics/listing-analytics";
+import { resolveCalendarDatePricing } from "@/lib/pricing/calendar-pricing";
+import {
+  getEarliestCheckInKey,
+  getMinimumStayForCheckIn,
+  isCheckInDateAllowed,
+} from "@/lib/booking/availability";
 
 // Reviews and the map sit below the booking decision. Split them out of the
 // initial route bundle, and keep a stable placeholder until each chunk loads.
@@ -382,6 +388,7 @@ function ListingAvailabilityCalendar({
   locationName,
   minimumNights,
   maximumNights,
+  earliestCheckIn,
 }: {
   month: Date;
   onMonthChange: (month: Date) => void;
@@ -396,6 +403,7 @@ function ListingAvailabilityCalendar({
   locationName: string;
   minimumNights: number;
   maximumNights?: number;
+  earliestCheckIn: string;
 }) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -416,7 +424,7 @@ function ListingAvailabilityCalendar({
 
   const chooseDate = (key: string) => {
     const selectedDate = new Date(`${key}T00:00:00`);
-    if (selectedDate < today) return;
+    if (key < earliestCheckIn) return;
 
     if (!checkIn || checkOut || key <= checkIn) {
       if (isUnavailableDate(selectedDate, ranges)) {
@@ -463,7 +471,7 @@ function ListingAvailabilityCalendar({
           {Array.from({ length: daysInMonth }, (_, index) => {
             const date = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), index + 1);
             const key = dateKey(date);
-            const past = date < today;
+            const past = key < earliestCheckIn;
             const unavailable = isUnavailableDate(date, ranges);
             const isStart = key === checkIn;
             const isEnd = key === checkOut;
@@ -575,6 +583,7 @@ export function PublicListingDetailClient({
   const { t } = useLanguage();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const specialOfferQueryId = searchParams.get("specialOfferId") || undefined;
   const wishlist = useWishlist();
   const { data: session, status: sessionStatus } = useSession();
   const isAuthenticated = sessionStatus === "authenticated" && Boolean(session?.user);
@@ -609,31 +618,32 @@ export function PublicListingDetailClient({
   const [infantsCount, setInfantsCount] = useState(() => searchInfants ?? 0);
   const [petsCount, setPetsCount] = useState(() => searchPets ?? 0);
   const [isNonRefundable, setIsNonRefundable] = useState(false);
-  const [quote, setQuote] = useState<BookingQuote | null>(() => {
-    if (searchCheckIn && searchCheckOut && isDateKey(searchCheckIn) && isDateKey(searchCheckOut)) {
-      return readBookingQuote<BookingQuote>({
-        listingId: listing.id,
-        checkIn: searchCheckIn,
-        checkOut: searchCheckOut,
-        guests: searchAdults ?? (searchGuests ? Math.max(1, searchGuests) : 1),
-        pets: searchPets ?? 0,
-        nonRefundable: false,
-        specialOfferId: initialSpecialOfferId,
-      });
-    }
-    return null;
-  });
+  // Keep the initial render deterministic for SSR. Cached quotes live in
+  // sessionStorage and are restored by the route-sync effect after hydration.
+  const [quote, setQuote] = useState<BookingQuote | null>(null);
   const lastQuoteQueryRef = useRef<string>("");
+  const quoteRequestKeyRef = useRef<string>("");
+  const quoteControllerRef = useRef<AbortController | null>(null);
+  const componentMountedRef = useRef(false);
   const isInstantBook = (quote?.bookingMode ?? listing.bookingMode) === "INSTANT_BOOK";
-  const [isQuoteLoading, setIsQuoteLoading] = useState(false);
+  // A URL with a complete stay selection needs a quote immediately after
+  // hydration. Deriving this from server-provided props keeps the first render
+  // deterministic while avoiding a misleading idle price state.
+  const [isQuoteLoading, setIsQuoteLoading] = useState(
+    Boolean(searchCheckIn && searchCheckOut && isDateKey(searchCheckIn) && isDateKey(searchCheckOut)),
+  );
   const [quoteError, setQuoteError] = useState<string | null>(null);
   const [isBookingSubmitting, setIsBookingSubmitting] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(false);
-  const [bookedDateRanges, setBookedDateRanges] = useState<BookedDateRange[]>([]);
+  const [bookedDateRanges, setBookedDateRanges] = useState<BookedDateRange[]>(() =>
+    (listing.blockedDates ?? []).map((date: string) => ({ start: date, end: addCalendarDays(date, 1) })),
+  );
   const [availabilityMonth, setAvailabilityMonth] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
   const [isAvailabilityLoading, setIsAvailabilityLoading] = useState(false);
   const [availabilityError, setAvailabilityError] = useState<string | null>(null);
-  const [availabilityRequested, setAvailabilityRequested] = useState(false);
+  // Availability is booking-critical, so load it with the detail page instead
+  // of waiting for a date-field focus event.
+  const [availabilityRequested, setAvailabilityRequested] = useState(true);
   const [availabilityRefreshVersion, setAvailabilityRefreshVersion] = useState(0);
   const [hostImageFailed, setHostImageFailed] = useState(false);
   const [isBookingPanelSticky, setIsBookingPanelSticky] = useState(true);
@@ -647,6 +657,13 @@ export function PublicListingDetailClient({
   const reviewSectionRef = useRef<HTMLDivElement>(null);
   const bookingPanelRef = useRef<HTMLDivElement>(null);
   const normalizedDescription = listing.description?.trim() ?? "";
+
+  useEffect(() => {
+    componentMountedRef.current = true;
+    return () => {
+      componentMountedRef.current = false;
+    };
+  }, []);
 
   const totalCapacityGuests = adultsCount + childrenCount;
   const canAddCapacityGuest = totalCapacityGuests < maximumGuests;
@@ -767,7 +784,19 @@ export function PublicListingDetailClient({
       setInfantsCount(nextInfants);
       setPetsCount(nextPets);
       setIsNonRefundable(false);
-      setQuote(null);
+      setQuote(
+        nextCheckIn && nextCheckOut
+          ? readBookingQuote<BookingQuote>({
+              listingId: listing.id,
+              checkIn: nextCheckIn,
+              checkOut: nextCheckOut,
+              guests: nextGuests,
+              pets: nextPets,
+              nonRefundable: false,
+              specialOfferId: initialSpecialOfferId || specialOfferQueryId,
+            })
+          : null,
+      );
       setQuoteError(null);
       setBookingSuccess(false);
       setHostImageFailed(false);
@@ -775,15 +804,17 @@ export function PublicListingDetailClient({
       setIsAllAmenitiesOpen(false);
       setIsGuestSelectorOpen(false);
       setAmenitySearchQuery("");
-      setBookedDateRanges([]);
+      setBookedDateRanges(
+        (listing.blockedDates ?? []).map((date: string) => ({ start: date, end: addCalendarDays(date, 1) })),
+      );
       setAvailabilityError(null);
-      setAvailabilityRequested(Boolean(nextCheckIn || nextCheckOut));
+      setAvailabilityRequested(true);
       setIsAvailabilityLoading(false);
       setAvailabilityMonth(nextCheckIn ? new Date(`${nextCheckIn}T00:00:00`) : new Date(new Date().getFullYear(), new Date().getMonth(), 1));
       setAvailabilityRefreshVersion((version) => version + 1);
     }, 0);
     return () => window.clearTimeout(timer);
-  }, [listing.id, searchCheckIn, searchCheckOut, searchGuests, searchAdults, searchChildren, searchInfants, searchPets]);
+  }, [listing.id, searchCheckIn, searchCheckOut, searchGuests, searchAdults, searchChildren, searchInfants, searchPets, initialSpecialOfferId, specialOfferQueryId]);
 
   useEffect(() => {
     if (!isAllAmenitiesOpen) return;
@@ -961,11 +992,57 @@ export function PublicListingDetailClient({
   }, [categorizedAmenities]);
 
   // Format price
-  const displayPrice = typeof listing.price === "number"
-    ? formatPrice(listing.price, listing.currency ?? getCurrencyForCountry(listing.country))
-    : null;
   const currencyCode = listing.currency ?? getCurrencyForCountry(listing.country);
-  const minimumNights = Math.max(1, listing.minNights || 1);
+  const effectiveSpecialOfferId = initialSpecialOfferId || specialOfferQueryId;
+
+  // Guest count is an occupancy constraint, not a pricing input. The quote
+  // remains reusable while the selector moves within the listing capacity.
+  const activeQuote = useMemo(() => {
+    if (!quote) return null;
+    if (
+      quote.listingId !== listing.id
+      || quote.checkIn !== checkIn
+      || quote.checkOut !== checkOut
+      || (quote.pets ?? 0) !== petsCount
+      || Boolean(quote.isNonRefundable) !== isNonRefundable
+      || (quote.specialOfferId ?? undefined) !== effectiveSpecialOfferId
+    ) {
+      return null;
+    }
+    return quote;
+  }, [quote, listing.id, checkIn, checkOut, petsCount, isNonRefundable, effectiveSpecialOfferId]);
+
+  const earliestCheckIn = getEarliestCheckInKey(listing);
+  let defaultDisplayDate = earliestCheckIn;
+  for (let offset = 0; offset < 366; offset += 1) {
+    const candidate = addCalendarDays(earliestCheckIn, offset);
+    const candidateMinimum = getMinimumStayForCheckIn(listing, candidate);
+    const candidateCheckout = addCalendarDays(candidate, candidateMinimum);
+    if (
+      isCheckInDateAllowed(listing, candidate) &&
+      !overlapsBookedRange(candidate, candidateCheckout, bookedDateRanges)
+    ) {
+      defaultDisplayDate = candidate;
+      break;
+    }
+  }
+  // Keep the no-quote detail price identical to homepage and search cards.
+  // All surfaces use the same calendar resolver and promotion rules.
+  const defaultCalendarPricing = resolveCalendarDatePricing({
+    dateKey: defaultDisplayDate,
+    listing: {
+      price: listing.price,
+      weekdayBasePrice: listing.weekdayBasePrice,
+      weekendPrice: listing.weekendPrice,
+      weekendPremium: listing.weekendPremium,
+      customPrices: listing.customPrices,
+      discounts: listing.discounts as Record<string, unknown> | null,
+    },
+  });
+  const effectiveDefaultPrice =
+    defaultCalendarPricing.promotion?.promotionalPrice ?? defaultCalendarPricing.originalPrice;
+  const displayPrice = effectiveDefaultPrice > 0 ? formatPrice(effectiveDefaultPrice, currencyCode) : null;
+  const minimumNights = getMinimumStayForCheckIn(listing, checkIn || earliestCheckIn);
   const maximumNights = Math.max(minimumNights, listing.maxNights || 365);
   const today = dateKey(new Date());
   const minimumCheckOut = checkIn
@@ -1181,7 +1258,14 @@ export function PublicListingDetailClient({
 
   // Fetch quote when valid dates are selected
   useEffect(() => {
+    const cancelPendingQuote = () => {
+      quoteControllerRef.current?.abort();
+      quoteControllerRef.current = null;
+      quoteRequestKeyRef.current = "";
+    };
+
     if (!checkIn || !checkOut) {
+      cancelPendingQuote();
       lastQuoteQueryRef.current = "";
       const timer = window.setTimeout(() => {
         setQuote(null);
@@ -1192,6 +1276,7 @@ export function PublicListingDetailClient({
     }
 
     if (totalCapacityGuests < 1 || totalCapacityGuests > maximumGuests) {
+      cancelPendingQuote();
       lastQuoteQueryRef.current = "";
       const timer = window.setTimeout(() => {
         setQuote(null);
@@ -1204,16 +1289,18 @@ export function PublicListingDetailClient({
     const cIn = new Date(`${checkIn}T00:00:00`);
     const cOut = new Date(`${checkOut}T00:00:00`);
     if (isNaN(cIn.getTime()) || isNaN(cOut.getTime()) || cOut <= cIn) {
+      cancelPendingQuote();
       lastQuoteQueryRef.current = "";
       const timer = window.setTimeout(() => {
         setQuote(null);
         setQuoteError("Checkout must be after check-in");
         setIsQuoteLoading(false);
       }, 0);
-      return () => clearTimeout(timer);
+      return () => window.clearTimeout(timer);
     }
 
     if (overlapsBookedRange(checkIn, checkOut, bookedDateRanges)) {
+      cancelPendingQuote();
       lastQuoteQueryRef.current = "";
       const timer = window.setTimeout(() => {
         setQuote(null);
@@ -1223,76 +1310,102 @@ export function PublicListingDetailClient({
       return () => window.clearTimeout(timer);
     }
 
-    const effectiveSpecialOffer = initialSpecialOfferId || searchParams.get("specialOfferId") || undefined;
-    const currentQueryKey = `${listing.id}:${checkIn}:${checkOut}:${totalCapacityGuests}:${petsCount}:${isNonRefundable}:${effectiveSpecialOffer || ""}`;
+    // Guest count is an occupancy constraint, not a pricing input. Reuse the
+    // same date/pet/rate quote while the selector moves within capacity.
+    const currentQueryKey = `${listing.id}:${checkIn}:${checkOut}:${petsCount}:${isNonRefundable}:${effectiveSpecialOfferId || ""}`;
 
-    if (lastQuoteQueryRef.current === currentQueryKey && quote) {
+    // Availability can update while the quote request is still in flight.
+    // Do not abort and restart the same request just because that independent
+    // state changed; a failed request clears the key below so a later render
+    // can retry normally.
+    if (lastQuoteQueryRef.current === currentQueryKey && (quoteRequestKeyRef.current === currentQueryKey || quote)) {
       return;
     }
 
-    let isMounted = true;
     const controller = new AbortController();
-    const timer = setTimeout(() => {
-      lastQuoteQueryRef.current = currentQueryKey;
-      setIsQuoteLoading(true);
-      setQuoteError(null);
+    const selection = {
+      listingId: listing.id,
+      checkIn,
+      checkOut,
+      guests: totalCapacityGuests,
+      pets: petsCount,
+      nonRefundable: isNonRefundable,
+      specialOfferId: effectiveSpecialOfferId,
+    };
+    // Reuse an exact session quote immediately when the guest returns to a
+    // previously priced selection, then revalidate it in the background.
+    const cachedQuote = readBookingQuote<BookingQuote>(selection);
+    if (cachedQuote) {
+      window.setTimeout(() => {
+        if (componentMountedRef.current && quoteRequestKeyRef.current === currentQueryKey) {
+          setQuote(cachedQuote);
+        }
+      }, 0);
+    }
+    lastQuoteQueryRef.current = currentQueryKey;
+    if (quoteRequestKeyRef.current && quoteRequestKeyRef.current !== currentQueryKey) {
+      quoteControllerRef.current?.abort();
+    }
+    quoteRequestKeyRef.current = currentQueryKey;
+    quoteControllerRef.current = controller;
+    // Start the authoritative request in this effect immediately. The old
+    // zero-delay timer made rapid date changes spend an extra event-loop turn
+    // in a stale/loading state and could leave the previous breakdown visible.
+    setIsQuoteLoading(true);
+    setQuoteError(null);
 
-      fetchAuthoritativeQuote<BookingQuote>(
-        {
-          listingId: listing.id,
+    fetchAuthoritativeQuote<BookingQuote>(
+      selection,
+      { signal: controller.signal },
+    )
+      .then((data) => {
+        if (!componentMountedRef.current || quoteRequestKeyRef.current !== currentQueryKey) return;
+        setQuote(data);
+        setQuoteError(null);
+        trackListingEvent({
+          eventType: "quote_calculated",
+          propertyId: listing.id,
+          city: listing.city,
+          country: listing.country,
           checkIn,
           checkOut,
-          guests: totalCapacityGuests,
-          pets: petsCount,
-          nonRefundable: isNonRefundable,
-          specialOfferId: effectiveSpecialOffer,
-        },
-        { signal: controller.signal },
-      )
-        .then((data) => {
-          if (!isMounted) return;
-          setQuote(data);
-          setQuoteError(null);
-          trackListingEvent({
-            eventType: "quote_calculated",
-            propertyId: listing.id,
-            city: listing.city,
-            country: listing.country,
-            checkIn,
-            checkOut,
-            guestCount: totalCapacityGuests,
-            metadata: {
-              nights: data.nights,
-              totalPrice: data.guestTotal ?? data.totalPrice,
-              extraGuestFee: data.extraGuestFee,
-              appliedDiscount: data.appliedDiscount?.name,
-              nonRefundable: isNonRefundable,
-            },
-          });
-        })
-        .catch((error: unknown) => {
-          if (!isMounted || (error instanceof DOMException && error.name === "AbortError")) return;
-          setQuote(null);
-          setQuoteError(error instanceof Error ? error.message : "Unable to calculate price quotation.");
-        })
-        .finally(() => {
-          if (isMounted) setIsQuoteLoading(false);
+          guestCount: totalCapacityGuests,
+          metadata: {
+            nights: data.nights,
+            totalPrice: data.guestTotal ?? data.totalPrice,
+            extraGuestFee: data.extraGuestFee,
+            appliedDiscount: data.appliedDiscount?.name,
+            nonRefundable: isNonRefundable,
+          },
         });
-    }, 0);
+      })
+      .catch((error: unknown) => {
+        if (!componentMountedRef.current || (error instanceof DOMException && error.name === "AbortError")) return;
+        lastQuoteQueryRef.current = "";
+        quoteRequestKeyRef.current = "";
+        setQuote(null);
+        setQuoteError(error instanceof Error ? error.message : "Unable to calculate price quotation.");
+      })
+      .finally(() => {
+        if (componentMountedRef.current && quoteRequestKeyRef.current === currentQueryKey) {
+          quoteRequestKeyRef.current = "";
+          setIsQuoteLoading(false);
+        }
+      });
 
     return () => {
-      isMounted = false;
-      controller.abort();
-      clearTimeout(timer);
+      // The next effect setup aborts only when its selection key differs.
+      // Leaving this request alive here avoids Strict Mode and availability
+      // refreshes cancelling an otherwise reusable quote request.
     };
-  }, [checkIn, checkOut, totalCapacityGuests, petsCount, isNonRefundable, listing.id, listing.city, listing.country, maximumGuests, initialSpecialOfferId, searchParams, bookedDateRanges]);
+  }, [checkIn, checkOut, totalCapacityGuests, petsCount, isNonRefundable, listing.id, listing.city, listing.country, maximumGuests, effectiveSpecialOfferId, bookedDateRanges, quote]);
 
   const isDateRangeValid = Boolean(
     isDateKey(checkIn) && isDateKey(checkOut) && checkOut > checkIn && !overlapsBookedRange(checkIn, checkOut, bookedDateRanges),
   );
   const isGuestSelectionValid = Number.isInteger(totalCapacityGuests) && totalCapacityGuests >= 1 && totalCapacityGuests <= maximumGuests;
   const hasValidQuote = Boolean(
-    isDateRangeValid && isGuestSelectionValid && quote && !quoteError && !isQuoteLoading && !isAvailabilityLoading && !availabilityError,
+    isDateRangeValid && isGuestSelectionValid && activeQuote && !quoteError && !isQuoteLoading && !isAvailabilityLoading && !availabilityError,
   );
 
   const clearBookingDates = () => {
@@ -1308,8 +1421,8 @@ export function PublicListingDetailClient({
   };
 
   const updateCheckIn = (nextCheckIn: string) => {
-    if (!isDateKey(nextCheckIn) || nextCheckIn < today) {
-      setQuoteError("Choose a future check-in date.");
+    if (!isDateKey(nextCheckIn) || !isCheckInDateAllowed(listing, nextCheckIn)) {
+      setQuoteError("That check-in date does not meet this property's advance-notice or same-day booking rules.");
       return;
     }
     if (isUnavailableDate(new Date(`${nextCheckIn}T00:00:00`), bookedDateRanges)) {
@@ -1535,8 +1648,8 @@ export function PublicListingDetailClient({
       return;
     }
 
-    if (checkIn < today) {
-      setQuoteError("Check-in date cannot be in the past.");
+    if (!isCheckInDateAllowed(listing, checkIn)) {
+      setQuoteError("That check-in date does not meet this property's advance-notice or same-day booking rules.");
       trackListingEvent({
         eventType: "reserve_validation_failed",
         propertyId: listing.id,
@@ -1604,7 +1717,7 @@ export function PublicListingDetailClient({
       return;
     }
 
-    if (!hasValidQuote || !quote) {
+    if (!hasValidQuote || !activeQuote) {
       setQuoteError("Unable to calculate price quotation for these dates. Please try another selection.");
       trackListingEvent({
         eventType: "reserve_validation_failed",
@@ -1613,8 +1726,6 @@ export function PublicListingDetailClient({
       });
       return;
     }
-
-    const effectiveSpecialOffer = initialSpecialOfferId || searchParams.get("specialOfferId") || undefined;
 
     setIsBookingSubmitting(true);
     setQuoteError(null);
@@ -1626,8 +1737,8 @@ export function PublicListingDetailClient({
         guests: totalCapacityGuests,
         pets: petsCount,
         nonRefundable: isNonRefundable,
-        specialOfferId: effectiveSpecialOffer,
-      }, quote);
+        specialOfferId: effectiveSpecialOfferId,
+      }, activeQuote);
       const checkoutUrl = buildBookingCheckoutUrl(
         listing.customSlug || listing.id,
         {
@@ -1639,11 +1750,11 @@ export function PublicListingDetailClient({
           children: childrenCount,
           infants: infantsCount,
           pets: petsCount,
-          specialOfferId: effectiveSpecialOffer,
+          specialOfferId: effectiveSpecialOfferId,
         },
         {
           ...(isNonRefundable ? { nonRefundable: "true" } : {}),
-          bookingMode: quote.bookingMode,
+          bookingMode: activeQuote.bookingMode,
         },
       );
 
@@ -1661,7 +1772,7 @@ export function PublicListingDetailClient({
           infants: infantsCount,
           pets: petsCount,
           isNonRefundable,
-          bookingMode: quote.bookingMode,
+          bookingMode: activeQuote.bookingMode,
         },
       });
 
@@ -1684,7 +1795,7 @@ export function PublicListingDetailClient({
         children: childrenCount,
         infants: infantsCount,
         pets: petsCount,
-        specialOfferId: effectiveSpecialOffer,
+        specialOfferId: effectiveSpecialOfferId,
       });
 
       if (!isAuthenticated) {
@@ -1964,6 +2075,7 @@ export function PublicListingDetailClient({
                     locationName={listing.city || listing.title || "this property"}
                     minimumNights={minimumNights}
                     maximumNights={maximumNights}
+                    earliestCheckIn={earliestCheckIn}
                     onDateRangeChange={(nextCheckIn, nextCheckOut) => {
                       if (nextCheckIn && !nextCheckOut) {
                         updateCheckIn(nextCheckIn);
@@ -2010,19 +2122,21 @@ export function PublicListingDetailClient({
                       <>
                         <div className="flex items-baseline justify-between border-b border-zinc-100 pb-4">
                           <div>
-                            {(quote?.selectedDiscount || quote?.nonRefundableDiscount) && quote.discountAmount > 0 && quote.nights > 0 ? (
+                            {(activeQuote?.selectedDiscount || activeQuote?.nonRefundableDiscount) && activeQuote.discountAmount > 0 && activeQuote.nights > 0 ? (
                               <div className="flex items-baseline gap-2">
                                 <span className="text-[20px] font-medium text-[#1F1F1F] underline underline-offset-4">
-                                  {formatPrice(quote.discountedDisplayPrice ?? Math.round((quote.accommodationSubtotal ?? (quote.nightlySubtotal - quote.discountAmount)) / quote.nights), currencyCode)}
+                                  {formatPrice(activeQuote.discountedDisplayPrice ?? Math.round((activeQuote.accommodationSubtotal ?? (activeQuote.nightlySubtotal - activeQuote.discountAmount)) / activeQuote.nights), currencyCode)}
                                 </span>
                                 <span className="text-sm text-[#727272] line-through font-normal">
-                                  {formatPrice(quote.originalDisplayPrice ?? quote.baseNightlyPrice, currencyCode)}
+                                  {formatPrice(activeQuote.originalDisplayPrice ?? activeQuote.baseNightlyPrice, currencyCode)}
                                 </span>
                                 <span className="text-base text-[#1F1F1F] font-normal"> / night</span>
                               </div>
                             ) : (
                               <div>
-                                <span className="text-[20px] font-medium text-[#1F1F1F] underline underline-offset-4">{displayPrice ?? "Price unavailable"}</span>
+                                <span className="text-[20px] font-medium text-[#1F1F1F] underline underline-offset-4">
+                                  {activeQuote ? formatPrice(activeQuote.discountedDisplayPrice ?? activeQuote.baseNightlyPrice, currencyCode) : displayPrice ?? "Price unavailable"}
+                                </span>
                                 <span className="text-base text-[#1F1F1F] font-normal"> / night</span>
                               </div>
                             )}
@@ -2043,7 +2157,7 @@ export function PublicListingDetailClient({
                               <input
                                 type="date"
                                 value={checkIn}
-                                min={today}
+                                min={earliestCheckIn}
                                 onFocus={() => setAvailabilityRequested(true)}
                                 onChange={(e) => updateCheckIn(e.target.value)}
                                 className="w-full bg-transparent outline-none font-normal text-[#727272] text-sm cursor-pointer"
@@ -2179,7 +2293,7 @@ export function PublicListingDetailClient({
                         )} */}
 
                         {/* Live Quote Breakdown */}
-                        {isQuoteLoading && !quote && (
+                        {isQuoteLoading && !activeQuote && (
                           <div className="py-4 text-center text-xs text-[#727272] animate-pulse font-medium">
                             {t("listing_detail_calculating_breakdown", "Calculating price breakdown...")}
                           </div>
@@ -2194,70 +2308,75 @@ export function PublicListingDetailClient({
                           </div>
                         )}
 
-                        {quote && (
+                        {activeQuote && (
                           <div className="space-y-2.5 pt-2 border-t border-zinc-100 text-sm">
-                            {isQuoteLoading && (
-                              <p className="text-xs font-medium text-[#727272]" aria-live="polite">Updating price…</p>
-                            )}
+                            {isQuoteLoading && <p className="text-xs font-medium text-[#727272]" aria-live="polite">Updating price…</p>}
                             <div className="flex items-center justify-between text-[#727272]">
                               <span>
-                                {new Set(quote.breakdown.map((night) => night.price)).size <= 1
-                                  ? `${formatPrice(quote.breakdown[0]?.price ?? quote.baseNightlyPrice, listing.currency ?? getCurrencyForCountry(listing.country))} × ${quote.nights} ${quote.nights === 1 ? "night" : "nights"}`
-                                  : `Accommodation · ${quote.nights} nights (varying rates)`}
+                                {new Set(activeQuote.breakdown.map((night) => night.price)).size <= 1
+                                  ? `${formatPrice(activeQuote.breakdown[0]?.price ?? activeQuote.baseNightlyPrice, listing.currency ?? getCurrencyForCountry(listing.country))} × ${activeQuote.nights} ${activeQuote.nights === 1 ? "night" : "nights"}`
+                                  : `Accommodation · ${activeQuote.nights} nights (varying rates)`}
                               </span>
-                              <span>{formatPrice(quote.nightlySubtotal, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
+                              <span>{formatPrice(activeQuote.nightlySubtotal, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                             </div>
 
-                            {quote.customPricedNights !== undefined && quote.customPricedNights > 0 && (
+                            {activeQuote.customPricedNights !== undefined && activeQuote.customPricedNights > 0 && (
                               <div className="flex items-center justify-between text-amber-700 text-sm font-medium bg-amber-50 px-2 py-0.5 rounded">
-                                <span>Includes {quote.customPricedNights} custom calendar rate {quote.customPricedNights === 1 ? "night" : "nights"}</span>
+                                <span>Includes {activeQuote.customPricedNights} custom calendar rate {activeQuote.customPricedNights === 1 ? "night" : "nights"}</span>
                               </div>
                             )}
 
-                            {quote.weekendNights > 0 && quote.weekendNightlyPrice && (
+                            {activeQuote.weekendNights > 0 && activeQuote.weekendNightlyPrice && (
                               <div className="flex items-center justify-between text-[#727272] text-sm">
-                                <span>Includes {quote.weekendNights} weekend nights</span>
-                                <span>{formatPrice(quote.weekendNightlyPrice, currencyCode)} / night</span>
+                                <span>Includes {activeQuote.weekendNights} weekend nights</span>
+                                <span>{formatPrice(activeQuote.weekendNightlyPrice, currencyCode)} / night</span>
                               </div>
                             )}
 
-                            {quote.extraGuestFee !== undefined && quote.extraGuestFee > 0 && (
+                            {activeQuote.petFee !== undefined && activeQuote.petFee > 0 && (
                               <div className="flex items-center justify-between text-[#727272]">
-                                <span>Extra guest fee</span>
-                                <span>{formatPrice(quote.extraGuestFee, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
+                                <span>Pet fee</span>
+                                <span>{formatPrice(activeQuote.petFee, currencyCode)}</span>
                               </div>
                             )}
 
-                            {quote.appliedDiscount && (
+                            {activeQuote.cleaningFee !== undefined && activeQuote.cleaningFee > 0 && (
+                              <div className="flex items-center justify-between text-[#727272]">
+                                <span>Cleaning fee</span>
+                                <span>{formatPrice(activeQuote.cleaningFee, currencyCode)}</span>
+                              </div>
+                            )}
+
+                            {activeQuote.appliedDiscount && (
                               <div className="flex items-center justify-between text-emerald-700 font-medium">
-                                <span>{quote.selectedDiscount?.label ? `${quote.selectedDiscount.label} (${quote.selectedDiscount.percentage}%)` : quote.appliedDiscount.name}</span>
-                                <span>−{formatPrice(quote.selectedDiscount?.amount ?? quote.appliedDiscount.amount, currencyCode)}</span>
+                                <span>{activeQuote.selectedDiscount?.label ? `${activeQuote.selectedDiscount.label} (${activeQuote.selectedDiscount.percentage}%)` : activeQuote.appliedDiscount.name}</span>
+                                <span>−{formatPrice(activeQuote.selectedDiscount?.amount ?? activeQuote.appliedDiscount.amount, currencyCode)}</span>
                               </div>
                             )}
 
-                            {quote.nonRefundableDiscount && (
+                            {activeQuote.nonRefundableDiscount && (
                               <div className="flex items-center justify-between text-emerald-700 font-medium">
-                                <span>{quote.nonRefundableDiscount.name} ({quote.nonRefundableDiscount.percentage}%)</span>
-                                <span>−{formatPrice(quote.nonRefundableDiscount.amount, currencyCode)}</span>
+                                <span>{activeQuote.nonRefundableDiscount.name} ({activeQuote.nonRefundableDiscount.percentage}%)</span>
+                                <span>−{formatPrice(activeQuote.nonRefundableDiscount.amount, currencyCode)}</span>
                               </div>
                             )}
 
-                            {quote.taxes && quote.taxes.length > 0 ? (
+                            {activeQuote.taxes && activeQuote.taxes.length > 0 ? (
                               <>
                                 <div className="pt-2 border-t border-zinc-100 space-y-1.5">
                                   <div className="flex items-center justify-between text-[#727272]">
                                     <span className="flex items-center gap-1.5 font-medium">
                                       {t("listing_detail_taxes_and_fees", "Taxes & fees")}
-                                      {quote.taxes.some((tax) => tax.exemptionApplied) && (
+                                      {activeQuote.taxes.some((tax) => tax.exemptionApplied) && (
                                         <span className="text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-1.5 py-0.5 rounded-full font-semibold">
                                           Exemption applied
                                         </span>
                                       )}
                                     </span>
-                                    <span className="font-medium">{formatPrice(quote.taxTotal, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
+                                    <span className="font-medium">{formatPrice(activeQuote.taxTotal, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                                   </div>
                                     <div className="pl-2.5 space-y-1 border-l-2 border-[#FCDF9C] text-sm font-light text-[#727272]">
-                                    {quote.taxes.map((tax, idx) => (
+                                    {activeQuote.taxes.map((tax, idx) => (
                                       <div key={idx} className="flex items-center justify-between">
                                         <span>
                                           {tax.taxName}
@@ -2272,13 +2391,13 @@ export function PublicListingDetailClient({
 
                                 <div className="pt-2 border-t border-zinc-200 flex items-center justify-between text-lg font-bold text-[#1f1f1f]">
                                   <span>{t("listing_detail_total", "Total")}</span>
-                                  <span>{formatPrice((quote.guestTotal ?? quote.totalPrice) || 0, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
+                                  <span>{formatPrice((activeQuote.guestTotal ?? activeQuote.totalPrice) || 0, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                                 </div>
                               </>
                             ) : (
-                                  <div className="pt-2 border-t border-zinc-200 flex items-center justify-between text-lg font-bold text-[#1f1f1f]">
-                                <span>{t("listing_detail_total", "Total")}</span>
-                                <span>{formatPrice((quote.guestTotal ?? quote.totalPrice) || 0, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
+                                <div className="pt-2 border-t border-zinc-200 flex items-center justify-between text-lg font-bold text-[#1f1f1f]">
+                                  <span>{t("listing_detail_total", "Total")}</span>
+                                <span>{formatPrice((activeQuote.guestTotal ?? activeQuote.totalPrice) || 0, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                               </div>
                             )}
                           </div>
@@ -2736,12 +2855,12 @@ export function PublicListingDetailClient({
           <div className="min-w-0">
             <div className="flex items-baseline gap-1 truncate">
               <span className="text-[20px] font-normal text-[#1f1f1f] sm:text-lg">
-                {quote?.guestTotal || quote?.totalPrice
-                  ? formatPrice((quote.guestTotal ?? quote.totalPrice) || 0, currencyCode)
+                {activeQuote?.guestTotal || activeQuote?.totalPrice
+                  ? formatPrice((activeQuote.guestTotal ?? activeQuote.totalPrice) || 0, currencyCode)
                   : displayPrice ?? "Price unavailable"}
               </span>
               <span className="text-xs font-normal text-[#727272]">
-                {quote?.nights ? `total · ${quote.nights} ${quote.nights === 1 ? "night" : "nights"}` : ` ${t("listing_detail_per_night", "/ night")}`}
+                {activeQuote?.nights ? `total · ${activeQuote.nights} ${activeQuote.nights === 1 ? "night" : "nights"}` : ` ${t("listing_detail_per_night", "/ night")}`}
               </span>
             </div>
             <div className="truncate text-xs font-medium text-[#727272]">

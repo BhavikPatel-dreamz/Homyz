@@ -426,7 +426,6 @@ export function HostListingEditorClient({
   const [customPromoDiscount, setCustomPromoDiscount] = useState(() => discountPercentage(listing.discounts, "custom_promotion"));
   const [customPromoEnabled, setCustomPromoEnabled] = useState(() => isDiscountEnabled(listing.discounts, "custom_promotion"));
   const [cleaningFee, setCleaningFee] = useState(() => ((listing.cleaningFee || 0) / 100));
-  const [extraGuestFee, setExtraGuestFee] = useState(() => (((listing as any).extraGuestFee || 0) / 100));
 
   const handleDiscardPricing = useCallback(() => {
     setEditPrice(((listing.weekdayBasePrice ?? listing.price) || 0) / 100);
@@ -451,7 +450,6 @@ export function HostListingEditorClient({
     setCustomPromoDiscount(discountPercentage(listing.discounts, "custom_promotion"));
     setCustomPromoEnabled(isDiscountEnabled(listing.discounts, "custom_promotion"));
     setCleaningFee((listing.cleaningFee || 0) / 100);
-    setExtraGuestFee(((listing as any).extraGuestFee || 0) / 100);
   }, [listing]);
 
   // Availability
@@ -931,7 +929,6 @@ export function HostListingEditorClient({
         return;
       }
       const parsedCleaningFee = Math.max(0, Math.round(Number(cleaningFee || 0) * 100));
-      const parsedExtraGuestFee = Math.max(0, Math.round(Number(extraGuestFee || 0) * 100));
       const manualPricing = !smartPricing;
       const nextDiscounts = {
         ...(typeof listing.discounts === "object" && listing.discounts ? listing.discounts : {}),
@@ -969,7 +966,6 @@ export function HostListingEditorClient({
         price: Math.round(editPrice * 100),
         weekdayBasePrice: Math.round(editPrice * 100),
         cleaningFee: parsedCleaningFee,
-        extraGuestFee: parsedExtraGuestFee,
         smartPricing,
         smartPricingMinPrice: smartPricing ? Math.round(Number(smartPricingMinPrice || 0) * 100) : listing.smartPricingMinPrice ?? null,
         smartPricingMaxPrice: smartPricing ? Math.round(Number(smartPricingMaxPrice || 0) * 100) : listing.smartPricingMaxPrice ?? null,
@@ -1281,9 +1277,6 @@ export function HostListingEditorClient({
         }
         if (payload.cleaningFee !== undefined) {
           setCleaningFee((Number((res.data as any).cleaningFee ?? payload.cleaningFee ?? 0)) / 100);
-        }
-        if (payload.extraGuestFee !== undefined) {
-          setExtraGuestFee((Number((res.data as any).extraGuestFee ?? payload.extraGuestFee ?? 0)) / 100);
         }
         if (payload.amenities !== undefined) {
           const freshAmenities = normalizeAmenities((res.data as any).amenities || payload.amenities);
@@ -1809,8 +1802,6 @@ export function HostListingEditorClient({
             setCustomPromoEnabled={setCustomPromoEnabled}
             cleaningFee={cleaningFee}
             setCleaningFee={setCleaningFee}
-            extraGuestFee={extraGuestFee}
-            setExtraGuestFee={setExtraGuestFee}
             onDiscardPricing={handleDiscardPricing}
             minNights={minNights}
             setMinNights={setMinNights}
@@ -2086,7 +2077,6 @@ export function HostListingEditorClient({
           weeklyDiscount={weeklyDiscount}
           monthlyDiscount={monthlyDiscount}
           cleaningFee={cleaningFee}
-          extraGuestFee={extraGuestFee}
           minNights={minNights}
           maxNights={maxNights}
           advanceNotice={advanceNotice}

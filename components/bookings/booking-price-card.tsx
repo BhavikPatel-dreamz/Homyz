@@ -111,6 +111,19 @@ export function BookingPriceCard({
           </div>
         )}
 
+        {pricing.cleaningFee > 0 && (
+          <div className="flex justify-between gap-4">
+            <dt className="text-zinc-600">Cleaning fee</dt>
+            <dd className="font-medium text-[#1F1F1F]">
+              <CurrencyPrice
+                amountMinorUnits={pricing.cleaningFee}
+                sourceCurrency={pricing.currency}
+                fractionDigits={2}
+              />
+            </dd>
+          </div>
+        )}
+
         {pricing.discountAmount > 0 && (
           <div className="flex justify-between gap-4 text-emerald-700">
             <dt>Discount</dt>

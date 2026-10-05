@@ -20,6 +20,7 @@ type HostPriceBreakdown = {
   discountAmount?: number;
   extraGuestFee?: number;
   petFee?: number;
+  cleaningFee?: number;
   hostServiceFeePercentage?: number;
   hostServiceFee?: number;
   taxTotal?: number;
@@ -43,6 +44,7 @@ type HostPriceBreakdown = {
   payoutBreakdown?: {
     accommodationSubtotal?: number;
     petFee?: number;
+    cleaningFee?: number;
     taxesCollectedForHost?: number;
     taxesRemittedByPlatform?: number;
     platformServiceFee?: number;
@@ -67,6 +69,7 @@ export type HostReservation = {
   guests?: number;
   totalPrice?: number | null;
   nightlyPrice?: number | null;
+  cleaningFee?: number | null;
   currency?: string;
   priceBreakdown?: HostPriceBreakdown;
   cancellationPolicy?: string | null;
@@ -255,6 +258,7 @@ export function ReservationDetails({
     endDate: booking.endDate,
     totalPrice: booking.totalPrice,
     nightlyPrice: booking.nightlyPrice,
+    cleaningFee: booking.cleaningFee,
     currency: sourceCurrency,
     priceBreakdown: pb,
     cancellationPolicy: booking.cancellationPolicy,
@@ -291,6 +295,7 @@ export function ReservationDetails({
   const payout = pb?.payoutBreakdown;
   const payoutAccommodation = payout?.accommodationSubtotal ?? 0;
   const payoutPetFee = payout?.petFee ?? 0;
+  const payoutCleaningFee = payout?.cleaningFee ?? pricing.cleaningFee;
   const payoutHostTax = payout?.taxesCollectedForHost ?? 0;
   const payoutServiceFee =
     payout?.platformServiceFee ?? payout?.hostServiceFee ?? 0;
@@ -298,6 +303,7 @@ export function ReservationDetails({
   const payoutKnownTotal =
     payoutAccommodation +
     payoutPetFee +
+    payoutCleaningFee +
     pricing.extraGuestFee +
     payoutHostTax -
     payoutServiceFee;
@@ -610,6 +616,12 @@ export function ReservationDetails({
                     value={formatPrice(pricing.petFee, sourceCurrency, 2)}
                   />
                 )}
+                {pricing.cleaningFee > 0 && (
+                  <PriceRow
+                    label="Cleaning fee"
+                    value={formatPrice(pricing.cleaningFee, sourceCurrency, 2)}
+                  />
+                )}
                 {pricing.taxTotal > 0 && taxItemsMatchTotal ? (
                   pricing.taxes.map((tax, index) => (
                     <PriceRow
@@ -672,12 +684,18 @@ export function ReservationDetails({
                       )}
                     />
                   )}
-                  {payoutPetFee > 0 && (
+                {payoutPetFee > 0 && (
                     <PriceRow
                       label="Pet fee"
                       value={formatPrice(payoutPetFee, sourceCurrency, 2)}
                     />
-                  )}
+                )}
+                {payoutCleaningFee > 0 && (
+                  <PriceRow
+                    label="Cleaning fee"
+                    value={formatPrice(payoutCleaningFee, sourceCurrency, 2)}
+                  />
+                )}
                   {payoutHostTax > 0 && (
                     <PriceRow
                       label="Taxes collected for host"

@@ -296,6 +296,7 @@ export function HomeView({
         rating: property.rating ?? null,
         reviewCount: property.reviewCount ?? null,
         alternativeDates: property.alternativeDates,
+        pricing: property.pricing,
         isFavorite: property.isFavorite ?? property.favoriteStatus,
         initialFavorite: property.favoriteStatus,
         canFavorite,
@@ -367,12 +368,41 @@ export function HomeView({
           rating: property.rating ?? null,
           reviewCount: property.reviewCount ?? null,
           alternativeDates: property.alternativeDates,
+          pricing: property.pricing,
           isFavorite: property.isFavorite ?? property.favoriteStatus,
           initialFavorite: property.favoriteStatus,
           canFavorite,
         })),
       }));
   }, [pastSearchSections, searchLocationSections, propertySections, mode, activeContext, searchContext, canFavorite]);
+
+  const recentlyViewedCards = useMemo(() => {
+    const currentCardsById = new Map(
+      [...propertySections, ...uniquePastSections].flatMap((section) =>
+        section.cards.map((card) => [card.id, card] as const),
+      ),
+    );
+
+    return recentlyViewed.map((item) => ({
+      id: item.id,
+      slug: item.slug,
+      name: item.title,
+      image: item.mainImage,
+      imageUrl: item.mainImage,
+      subtitle: [item.area, item.city].filter(Boolean).join(", ") || item.country || undefined,
+      pricePerNight: item.price,
+      price: item.price,
+      currency: item.currency,
+      city: item.city,
+      country: item.country,
+      guests: item.maxGuests,
+      propertyType: item.propertyType,
+      averageRating: item.rating ?? null,
+      rating: item.rating ?? null,
+      canFavorite,
+      ...currentCardsById.get(item.id),
+    }));
+  }, [recentlyViewed, propertySections, uniquePastSections, canFavorite]);
 
   return (
     <div className="flex min-h-screen flex-col bg-white font-sans text-[#1f1f1f] antialiased">
@@ -401,22 +431,7 @@ export function HomeView({
             <section className="mt-8 sm:mt-[92px]">
               <HomePropertySection
                 title={t("home_recently_viewed", "Recently viewed")}
-                cards={recentlyViewed.map((item) => ({
-                  id: item.id,
-                  name: item.title,
-                  image: item.mainImage,
-                  imageUrl: item.mainImage,
-                  subtitle: [item.area, item.city].filter(Boolean).join(", ") || item.country || undefined,
-                  pricePerNight: item.price,
-                  price: item.price,
-                  city: item.city,
-                  country: item.country,
-                  guests: item.maxGuests,
-                  propertyType: item.propertyType,
-                  averageRating: item.rating ?? null,
-                  rating: item.rating ?? null,
-                  canFavorite,
-                }))}
+                cards={recentlyViewedCards}
                 seeAllHref="/listings"
               />
             </section>

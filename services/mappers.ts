@@ -4,6 +4,10 @@ import { getMissingProfileFields } from "@/lib/auth/profile-completion";
 import { resolveBookingMode } from "@/lib/booking/booking-mode";
 import { bookingDateKey } from "@/lib/booking/booking-date";
 import { resolvePropertyCurrency } from "@/lib/currency";
+import {
+  toPropertyCardPricingViewModel,
+  type PropertyCardPricingOptions,
+} from "@/lib/booking/property-card-pricing";
 
 function getPublicCoordinates(
   latitude: number | null | undefined,
@@ -315,6 +319,10 @@ export function toPublicListingDTO(l: Listing | ListingDTO) {
     bookingMode: resolveBookingMode(l),
     minNights: l.minNights ?? 1,
     maxNights: l.maxNights ?? 365,
+    advanceNotice: (l as any).advanceNotice ?? "Same day",
+    sameDayCutoff: (l as any).sameDayCutoff ?? "12:00 AM",
+    allowSameDayRequests: (l as any).allowSameDayRequests ?? true,
+    blockedDates: Array.isArray((l as any).blockedDates) ? (l as any).blockedDates : [],
     instantBook: resolveBookingMode(l) === "INSTANT_BOOK",
     customSlug: (l as any).customSlug ?? null,
     cleaningFee: l.cleaningFee ?? 0,
@@ -339,6 +347,10 @@ export const publicListingCardSelect = {
   id: true,
   title: true,
   price: true,
+  weekdayBasePrice: true,
+  weekendPrice: true,
+  weekendPremium: true,
+  customPrices: true,
   propertyType: true,
   listingType: true,
   city: true,
@@ -367,13 +379,20 @@ export type ListingReviewSummary = {
 };
 
 /** Lightweight, privacy-safe DTO for discovery cards and map markers. */
-export function toPublicListingCardDTO(l: PublicListingCardRecord & { reviewSummary?: ListingReviewSummary }) {
+export function toPublicListingCardDTO(
+  l: PublicListingCardRecord & { reviewSummary?: ListingReviewSummary },
+  pricingOptions?: PropertyCardPricingOptions,
+) {
   const showExact = Boolean(l.showExactLocation);
   const publicCoordinates = getPublicCoordinates(l.latitude, l.longitude, showExact);
   return {
     id: l.id,
     title: l.title,
     price: l.price,
+    weekdayBasePrice: l.weekdayBasePrice ?? l.price,
+    weekendPrice: l.weekendPrice,
+    weekendPremium: l.weekendPremium,
+    customPrices: (l.customPrices as Record<string, number> | null) ?? {},
     propertyType: l.propertyType,
     listingType: l.listingType,
     city: l.city,
@@ -392,6 +411,18 @@ export function toPublicListingCardDTO(l: PublicListingCardRecord & { reviewSumm
     rating: l.reviewSummary?.averageRating ?? null,
     reviewsCount: l.reviewSummary?.totalCount ?? 0,
     distanceKm: null as number | null,
+    pricing: toPropertyCardPricingViewModel({
+      id: l.id,
+      price: l.price,
+      weekdayBasePrice: l.weekdayBasePrice,
+      weekendPrice: l.weekendPrice,
+      weekendPremium: l.weekendPremium,
+      customPrices: l.customPrices && typeof l.customPrices === "object" && !Array.isArray(l.customPrices)
+        ? l.customPrices as Record<string, number>
+        : {},
+      country: l.country,
+      discounts: l.discounts,
+    }, pricingOptions),
   };
 }
 export type PublicListingCardDTO = ReturnType<typeof toPublicListingCardDTO>;
@@ -451,6 +482,7 @@ export function toBookingDTO(b: BookingDTOInput) {
     guests: b.guests,
     totalPrice: b.totalPrice,
     nightlyPrice: b.nightlyPrice,
+    cleaningFee: b.cleaningFee,
     currency: b.currency,
     priceBreakdown: b.priceBreakdown,
     cancellationPolicy: b.cancellationPolicy,

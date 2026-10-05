@@ -96,7 +96,9 @@ export function resolveCalendarDatePricing(opts: {
     nights: 1,
     discounts: opts.listing.discounts,
     isNewListing: opts.listing.isNewListing,
-    includeNewListingPromotion: false,
+    // Calendar/browse prices must expose the same new-listing promotion as
+    // the authoritative booking quote.
+    includeNewListingPromotion: true,
   });
 
   const winning = resolveWinningDiscount(eligibility, originalPrice);
@@ -309,4 +311,3 @@ export function analyzeSelectionPromotion(opts: {
     maxGuestPrice,
   };
 }
-

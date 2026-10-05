@@ -25,7 +25,7 @@ import {
   type CheckoutStepNumber,
   type SafeCheckoutDraft,
 } from "@/lib/booking/checkout-wizard";
-import type { CheckoutSummaryQuote } from "@/lib/booking/checkout-summary";
+import { getCheckoutPriceRows, type CheckoutSummaryQuote } from "@/lib/booking/checkout-summary";
 import {
   FULL_PAYMENT_TIMING,
   PARTIAL_PAYMENT_TIMING,
@@ -543,7 +543,10 @@ export function BookingCheckoutClient({
       window.clearTimeout(requestTimer);
       controller.abort();
     };
-  }, [listing.id, checkIn, checkOut, guestsCount, petsCount, isNonRefundable, specialOfferId, quoteRefreshKey]);
+  // Guest count is validated for capacity at the API boundary, but does not
+  // change the inclusive accommodation price. Avoid refetching the full quote
+  // whenever the selector moves between 1 and the listing's max capacity.
+  }, [listing.id, checkIn, checkOut, petsCount, isNonRefundable, specialOfferId, quoteRefreshKey]);
 
   const checkoutTotalLabel = quote
     ? formatMoney(quote.guestTotal, 2)
@@ -973,7 +976,7 @@ export function BookingCheckoutClient({
                               </span>
                               <span className="mt-1 block text-xs text-zinc-500" aria-live="polite">
                                 {option.type === PARTIAL_PAYMENT_TIMING
-                                  ? `${formatMoney(partNowAmount, 2)} now, ${formatMoney(partLaterAmount, 2)} later. No extra fees.`
+                                  ? `${formatMoney(partNowAmount, 2)} now, ${formatMoney(partLaterAmount, 2)} later.`
                                   : option.type === PAY_OVER_TIME_PAYMENT_TIMING
                                     ? "Choose a flexible payment intent. A provider has not been selected yet."
                                     : "Full amount selected."}
@@ -983,6 +986,28 @@ export function BookingCheckoutClient({
                           </label>
                         ))}
                       </fieldset>
+
+                      {quote && !isQuoteLoading && !quoteError && (
+                        <section className="mt-5 border-t border-[#727272] pt-4" aria-labelledby="payment-price-details-heading">
+                          <h3 id="payment-price-details-heading" className="text-sm font-semibold text-[#1f1f1f]">
+                            Price details
+                          </h3>
+                          <dl className="mt-3 space-y-2 text-sm">
+                            {getCheckoutPriceRows(quote, { itemizeTaxes: true }).map((row) => (
+                              <div key={row.id} className="flex items-start justify-between gap-4">
+                                <dt className="min-w-0 text-zinc-600">{row.label}</dt>
+                                <dd className="shrink-0 font-medium text-zinc-900">
+                                  {row.subtract ? "−" : ""}{formatMoney(row.amount, 2)}
+                                </dd>
+                              </div>
+                            ))}
+                            <div className="flex items-center justify-between gap-4 border-t border-zinc-300 pt-3 font-semibold text-zinc-950">
+                              <dt>Total ({displayCurrency})</dt>
+                              <dd>{formatMoney(quote.guestTotal, 2)}</dd>
+                            </div>
+                          </dl>
+                        </section>
+                      )}
 
                       {paymentTimingError && (
                         <p id="payment-timing-error" role="alert" className="mb-4 text-center text-xs font-medium text-rose-700">
@@ -1730,14 +1755,14 @@ export function BookingCheckoutClient({
                 : `This property accommodates up to ${maximumGuests} ${maximumGuests === 1 ? "guest" : "guests"}.`}
             </p>
 
-            {isQuoteLoading ? (
+            {/* {isQuoteLoading ? (
               <p role="status" className="pt-3 text-sm font-medium text-zinc-600">Updating price…</p>
             ) : quoteError ? (
               <div role="alert" className="mt-3 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm font-medium text-rose-700">
                 <p>{quoteError}</p>
                 <button type="button" onClick={() => setQuoteRefreshKey((current) => current + 1)} className="mt-2 min-h-9 rounded-full border border-rose-400 px-4 font-semibold hover:bg-rose-100">Try again</button>
               </div>
-            ) : null}
+            ) : null} */}
 
             <div className="flex justify-end gap-3 pt-4 border-t border-[#727272]">
               <button

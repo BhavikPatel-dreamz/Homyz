@@ -831,37 +831,6 @@ export function PricingAndBookingViews({
                   </div>
                 </div>
 
-                {/* Extra guest fee card */}
-                <div className="rounded-xl border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4 space-y-3">
-                  <div className="space-y-0.5">
-                    <span className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 block">
-                      {t("host_extra_guest_fee_title") || "Extra guest fee"}
-                    </span>
-                    <span className="text-xs text-[#727272] dark:text-[#727272] font-normal leading-relaxed block">
-                      {t("host_extra_guest_fee_desc") || "Nightly charge for each guest above standard listing capacity."}
-                    </span>
-                  </div>
-                  <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-                    <div className="flex items-center gap-1 rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-1.5 focus-within:border-[#1F1F1F] dark:focus-within:border-zinc-100 focus-within:ring-1 focus-within:ring-[#1F1F1F] dark:focus-within:ring-zinc-100 transition-all">
-                      <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100">{displayCurrency}</span>
-                      <input
-                        type="number"
-                        min={0}
-                        step={1}
-                        value={extraGuestFee === 0 ? "" : toDisplayMajor(extraGuestFee)}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          setExtraGuestFee?.(val === "" ? 0 : Math.max(0, toSourceMajor(Number(val))));
-                        }}
-                        placeholder="0"
-                        className="w-20 text-center text-lg font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none bg-transparent placeholder:text-[#727272] dark:placeholder:text-[#727272] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      />
-                    </div>
-                    <span className="text-xs text-[#727272] dark:text-[#727272] font-normal">
-                      per extra guest / night (calculated at checkout)
-                    </span>
-                  </div>
-                </div>
               </div>
 
               {/* 5. Calendar notice card */}

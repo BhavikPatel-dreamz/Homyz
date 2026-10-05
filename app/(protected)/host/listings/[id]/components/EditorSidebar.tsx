@@ -1054,9 +1054,6 @@ export function EditorSidebar({
                     {typeof cleaningFee === "number" && cleaningFee > 0 && (
                       <p className="text-xs text-[#727272] pt-0.5">Cleaning: {formatMajor(cleaningFee, currency)}</p>
                     )}
-                    {typeof extraGuestFee === "number" && extraGuestFee > 0 && (
-                      <p className="text-xs text-[#727272]">Extra guest: {formatMajor(extraGuestFee, currency)}/night</p>
-                    )}
                   </div>
                 </div>
 

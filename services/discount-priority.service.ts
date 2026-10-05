@@ -288,7 +288,12 @@ export function resolveWinningDiscount(
   }
 
   // Extract eligible candidates from Phase 3 output
-  const candidates = extractEligibleCandidates(eligibilitySource, staySubtotal);
+  const explicitCandidates = input && typeof input === "object" && !Array.isArray(input)
+    ? (input as ResolveWinningDiscountOptions).candidates
+    : undefined;
+  const candidates = explicitCandidates
+    ? explicitCandidates.filter((candidate) => candidate.eligible && candidate.percentage > 0 && candidate.amount > 0).map((candidate) => ({ ...candidate }))
+    : extractEligibleCandidates(eligibilitySource, staySubtotal);
 
   // Case 1: ZERO ELIGIBLE DISCOUNTS (Section 8)
   if (candidates.length === 0) {
@@ -388,4 +393,3 @@ export function resolveWinningDiscount(
     tieBreakerApplied: isTie,
   };
 }
-

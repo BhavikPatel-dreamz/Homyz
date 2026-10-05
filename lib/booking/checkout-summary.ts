@@ -41,8 +41,9 @@ export type CheckoutSummaryQuote = {
     amount?: number;
   } | null;
 
-  /** @deprecated Ignored. Cleaning fees are no longer displayed or charged. */
+  /** Flat host cleaning charge for the stay, in minor currency units. */
   cleaningFee?: number;
+  /** Legacy quote field; inclusive occupancy quotes keep this at zero. */
   extraGuestFee: number;
   petFee?: number;
   hostServiceFee: number;
@@ -156,8 +157,8 @@ export function getCheckoutPriceRows(
     });
   }
 
-  if (quote.extraGuestFee > 0) rows.push({ id: "extra-guests", label: "Extra guest fee", amount: quote.extraGuestFee });
   if ((quote.petFee || 0) > 0) rows.push({ id: "pets", label: "Pet fee", amount: quote.petFee || 0 });
+  if ((quote.cleaningFee || 0) > 0) rows.push({ id: "cleaning", label: "Cleaning fee", amount: quote.cleaningFee || 0 });
 
   if (quote.taxes.length > 0) {
     if (options.itemizeTaxes && quote.taxes.length > 0) {

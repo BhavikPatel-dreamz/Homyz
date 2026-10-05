@@ -1,4 +1,6 @@
-const BOOKING_QUOTE_CACHE_PREFIX = "homyz_booking_quote_v1";
+// Bump the namespace when pricing eligibility changes so an old quote cannot
+// briefly show a previous discount before the authoritative quote refreshes.
+const BOOKING_QUOTE_CACHE_PREFIX = "homyz_booking_quote_v2";
 
 export type BookingQuoteSelection = {
   listingId: string;

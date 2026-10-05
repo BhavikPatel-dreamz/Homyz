@@ -48,6 +48,11 @@ import {
   differenceInBookingNights,
   parseBookingDate,
 } from "@/lib/booking/booking-date";
+import {
+  parseCutoffHour,
+  parseRequiredAdvanceDays,
+  validateStayAvailability,
+} from "@/lib/booking/availability";
 import { validateHostMessage } from "@/lib/booking/host-message";
 import { getPaymentPolicy } from "@/lib/booking/payment-policy";
 import {
@@ -75,8 +80,10 @@ export type BookingQuote = {
   discountAmount: number; // cents
   discountPercentage: number;
   appliedDiscount?: AppliedDiscount | null;
-  extraGuestFee?: number; // cents
+  /** Legacy response field; inclusive occupancy always returns zero. */
+  extraGuestFee?: number;
   petFee?: number; // cents
+  cleaningFee?: number; // cents flat per stay
   hostServiceFee: number; // cents
   hostServiceFeePercentage: number; // percentage e.g. 15
   subtotal: number; // accommodation + supported additional fees (cents)
@@ -133,43 +140,7 @@ export type BookingQuote = {
 
 type QuoteListing = Prisma.ListingGetPayload<{ include: { taxes: true } }>;
 
-export function parseCutoffHour(cutoff: string | null | undefined): number {
-  switch (cutoff?.trim().toUpperCase()) {
-    case "6:00 AM":
-      return 6;
-    case "12:00 PM":
-      return 12;
-    case "3:00 PM":
-      return 15;
-    case "6:00 PM":
-      return 18;
-    case "9:00 PM":
-      return 21;
-    case "12:00 AM":
-    default:
-      return 24;
-  }
-}
-
-export function parseRequiredAdvanceDays(notice: string | null | undefined): number {
-  switch (notice?.trim()) {
-    case "1 day":
-    case "At least 1 day":
-      return 1;
-    case "2 days":
-    case "At least 2 days":
-      return 2;
-    case "3 days":
-    case "At least 3 days":
-      return 3;
-    case "7 days":
-    case "At least 7 days":
-      return 7;
-    case "Same day":
-    default:
-      return 0;
-  }
-}
+export { parseCutoffHour, parseRequiredAdvanceDays };
 
 export async function getBookingQuote(opts: {
   listingId: string;
@@ -258,57 +229,27 @@ export async function getBookingQuote(opts: {
     validatedOffer = offer;
   }
 
-  const checkInKey = bookingDateKey(cIn);
-  const customMinStay = (listing.discounts as any)?.customMinNights?.[checkInKey];
-  const minN = typeof customMinStay === "number" && customMinStay > 0 ? customMinStay : (listing.minNights || 1);
-  const maxN = listing.maxNights || 365;
-
-  if (!validatedOffer && nights < minN) {
-    throw AppError.badRequest(`Minimum stay is ${minN} ${minN === 1 ? "night" : "nights"}`);
-  }
-  if (!validatedOffer && nights > maxN) {
-    throw AppError.badRequest(`Maximum stay is ${maxN} ${maxN === 1 ? "night" : "nights"}`);
-  }
-
-  // Validate availability constraints: advance notice & same-day settings
   const now = new Date();
-  const today = parseBookingDate(now);
-  const checkInDate = parseBookingDate(cIn);
-  const daysDifference = Math.round((checkInDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-
-  if (daysDifference < 0) {
-    throw AppError.badRequest("Check-in date cannot be in the past");
-  }
-
-  const requiredAdvanceDays = parseRequiredAdvanceDays(listing.advanceNotice);
-
-  if (daysDifference === 0) {
-    // Same-day check-in requested
-    if (listing.allowSameDayRequests === false) {
-      throw AppError.badRequest("Same-day bookings are not allowed for this property");
-    }
-    if (requiredAdvanceDays > 0) {
-      throw AppError.badRequest(
-        `This property requires at least ${requiredAdvanceDays} ${requiredAdvanceDays === 1 ? "day" : "days"} advance notice before arrival`
-      );
-    }
-    const cutoffHour = parseCutoffHour(listing.sameDayCutoff);
-    const currentHour = now.getHours() + now.getMinutes() / 60;
-    if (currentHour >= cutoffHour) {
-      throw AppError.badRequest(
-        `Same-day bookings for today closed at ${listing.sameDayCutoff || "12:00 AM"}`
-      );
-    }
-  } else if (daysDifference < requiredAdvanceDays) {
-    throw AppError.badRequest(
-      `This property requires at least ${requiredAdvanceDays} ${requiredAdvanceDays === 1 ? "day" : "days"} advance notice before arrival`
-    );
-  }
-
   const requestedGuests = opts.guests ?? 1;
-  const baseGuests = listing.guests || 1;
-  if (requestedGuests > baseGuests) {
-    throw AppError.badRequest(`Property accommodates a maximum of ${baseGuests} guests`);
+  // Keep the quote endpoint's capacity failure explicit. The shared validator
+  // repeats this rule so search, detail, checkout, and the final transaction
+  // cannot drift from one another.
+  if (requestedGuests > (listing.guests || 1)) {
+    throw AppError.badRequest(`Property accommodates a maximum of ${listing.guests || 1} guests`);
+  }
+  const ruleValidation = validateStayAvailability({
+    listing,
+    checkIn: bookingDateKey(cIn),
+    checkOut: bookingDateKey(cOut),
+    guests: requestedGuests,
+    now,
+    skipLengthRules: Boolean(validatedOffer),
+  });
+  if (!ruleValidation.available) {
+    if (ruleValidation.code === "BLOCKED_DATE" || ruleValidation.code === "BOOKING_OVERLAP") {
+      throw AppError.conflict(ruleValidation.message);
+    }
+    throw AppError.badRequest(ruleValidation.message);
   }
 
   // Quotes are used to decide whether Reserve is enabled, so they must use the
@@ -328,14 +269,6 @@ export async function getBookingQuote(opts: {
     select: { id: true },
   });
   if (overlappingBooking) throw AppError.conflict("The selected dates are not available");
-
-  const blockedDates = new Set(Array.isArray(listing.blockedDates) ? listing.blockedDates : []);
-  for (let date = new Date(cIn); date < cOut; date.setUTCDate(date.getUTCDate() + 1)) {
-    const dateKey = bookingDateKey(date);
-    if (blockedDates.has(dateKey)) {
-      throw AppError.conflict(`The date ${dateKey} is not available for booking`);
-    }
-  }
 
   const requestedPets = opts.pets ?? 0;
   if (requestedPets > 0) {
@@ -398,7 +331,7 @@ export async function getBookingQuote(opts: {
     ? await calculateSpecialOffer({
         specialOfferAmount: validatedOffer.subtotalPrice,
         nights,
-        extraGuestFee: (listing as any).extraGuestFee,
+        cleaningFee: listing.cleaningFee,
         petFee: listing.petFee,
         guests: requestedGuests,
         hostServiceFeePercentage,
@@ -413,14 +346,16 @@ export async function getBookingQuote(opts: {
         checkOut: bookingDateKey(cOut),
         weekdayBasePrice: (listing as any).weekdayBasePrice ?? listing.price,
         weekendPrice: usesManualAdjustments ? listing.weekendPrice : null,
+        weekendPremium: usesManualAdjustments ? listing.weekendPremium : null,
         customPrices: (listing as any).customPrices as Record<string, number> | null,
-        extraGuestFee: (listing as any).extraGuestFee,
-        baseGuests,
+        cleaningFee: listing.cleaningFee,
         guests: requestedGuests,
         pets: requestedPets,
         petFee: listing.petFee,
         discounts: usesManualAdjustments ? (listing.discounts as Record<string, unknown> | null) : null,
-        includeNewListingPromotion: false,
+        // The new-listing promotion is a real guest-facing discount, so keep
+        // it enabled in the authoritative quote used by detail and checkout.
+        includeNewListingPromotion: true,
         hostServiceFeePercentage,
         taxRules: [],
         hostTaxes,
@@ -428,7 +363,7 @@ export async function getBookingQuote(opts: {
         currency: getCurrencyForCountry(listing.country),
       });
 
-  const subtotal = pricing.accommodationSubtotal + pricing.extraGuestFee + pricing.petFee;
+  const subtotal = pricing.accommodationSubtotal + pricing.petFee + pricing.cleaningFee;
   const fallbackNightlyTotal = validatedOffer?.subtotalPrice ?? pricing.staySubtotal;
   const fallbackNightlyRates = allocateNightlyTotal(fallbackNightlyTotal, nights);
   const nightlyBreakdown = pricing.nightlyBreakdown.length > 0
@@ -474,6 +409,7 @@ export async function getBookingQuote(opts: {
     discountEligibility: pricing.discountEligibility,
     extraGuestFee: pricing.extraGuestFee,
     petFee: pricing.petFee,
+    cleaningFee: pricing.cleaningFee,
     hostServiceFee: pricing.hostServiceFee,
     hostServiceFeePercentage: pricing.hostServiceFeePercentage,
     subtotal,
@@ -643,6 +579,48 @@ async function create(
     }
     // Serialize booking attempts per listing so concurrent overlap checks cannot both win.
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${input.listingId}))`;
+    // Lock and reread the listing itself. Calendar/price writes that completed
+    // before this point must be reflected; writes that start after this point
+    // wait until the reservation transaction finishes.
+    await tx.$queryRaw`SELECT "id" FROM "Listing" WHERE "id" = ${input.listingId} FOR SHARE`;
+    const currentListing = await tx.listing.findUnique({
+      where: { id: input.listingId },
+      select: {
+        updatedAt: true,
+        guests: true,
+        minNights: true,
+        maxNights: true,
+        advanceNotice: true,
+        sameDayCutoff: true,
+        allowSameDayRequests: true,
+        blockedDates: true,
+        discounts: true,
+        published: true,
+        status: true,
+        isPaused: true,
+        deletedAt: true,
+      },
+    });
+    if (!currentListing || !currentListing.published || currentListing.status !== ListingStatus.ACTIVE || currentListing.isPaused || currentListing.deletedAt) {
+      throw AppError.conflict("This listing is no longer available");
+    }
+    if (currentListing.updatedAt.getTime() !== listing.updatedAt.getTime()) {
+      throw AppError.checkoutConflict(
+        ErrorCode.PRICE_CHANGED,
+        "The listing price or availability changed while you were reviewing. Refresh the quote before submitting again.",
+      );
+    }
+    const latestAvailability = validateStayAvailability({
+      listing: currentListing,
+      checkIn: bookingCheckIn,
+      checkOut: bookingCheckOut,
+      guests: input.guests,
+      now: new Date(),
+      skipLengthRules: Boolean(input.specialOfferId),
+    });
+    if (!latestAvailability.available) {
+      throw AppError.conflict(latestAvailability.message);
+    }
     const expiryThreshold = getExpiryThresholdDate();
     const conflict = await tx.booking.findFirst({
       where: {
@@ -668,7 +646,7 @@ async function create(
       guests: quote.guests,
       totalPrice: quote.guestTotal,
       nightlyPrice: quote.baseNightlyPrice,
-      cleaningFee: 0,
+      cleaningFee: quote.cleaningFee ?? 0,
       currency: quote.currency,
       priceBreakdown: {
         ...quote,
@@ -2340,7 +2318,7 @@ async function changeBookingReservation(
         guests: requestedGuests,
         totalPrice: preview.quote!.guestTotal,
         nightlyPrice: preview.quote!.baseNightlyPrice,
-        cleaningFee: 0,
+        cleaningFee: preview.quote!.cleaningFee ?? 0,
         currency: preview.quote!.currency,
         cancellationPolicy: preview.quote!.cancellationPolicy,
         isNonRefundable: preview.quote!.isNonRefundable,

@@ -96,7 +96,18 @@ export { CartoTileLayer } from "./carto-tile-layer";
 // ─── Types ────────────────────────────────────────────────────────────────────
 export type ListingForMap = Pick<
   PublicListingCardDTO,
-  "id" | "title" | "price" | "city" | "country" | "latitude" | "longitude"
+  | "id"
+  | "title"
+  | "price"
+  | "city"
+  | "country"
+  | "latitude"
+  | "longitude"
+  | "weekdayBasePrice"
+  | "weekendPrice"
+  | "weekendPremium"
+  | "customPrices"
+  | "pricing"
 > & {
   discounts?: unknown;
   isNewListing?: boolean;
@@ -447,7 +458,7 @@ export function SearchMap({
         const currency = getCurrencyForCountry(listing.country);
         // Match listing cards: show the selected stay total, or one night when
         // a complete date range has not been selected.
-        const cardPricing = toPropertyCardPricingViewModel(listing, {
+        const cardPricing = listing.pricing ?? toPropertyCardPricingViewModel(listing, {
           checkIn,
           checkOut,
           guests,

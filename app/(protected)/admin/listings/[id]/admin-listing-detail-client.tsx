@@ -165,7 +165,6 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
   const [editPrice, setEditPrice] = useState((listing.weekdayBasePrice ?? listing.price) / 100);
   const [editWeekendPrice, setEditWeekendPrice] = useState((listing.weekendPrice || 0) / 100);
   const [editSecurityDeposit, setEditSecurityDeposit] = useState((listing.securityDeposit || 0) / 100);
-  const [editExtraGuestFee, setEditExtraGuestFee] = useState((listing.extraGuestFee || 0) / 100);
   // Moderation & Delete state
   const [modReason, setModReason] = useState(listing.rejectionReason || "");
   const [isSaving, setIsSaving] = useState(false);
@@ -345,7 +344,6 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
       weekdayBasePrice: Math.round(editPrice * 100),
       weekendPrice: Math.round(editWeekendPrice * 100),
       securityDeposit: Math.round(editSecurityDeposit * 100),
-      extraGuestFee: Math.round(editExtraGuestFee * 100),
     });
     setIsSaving(false);
     if (res.ok) {
@@ -355,7 +353,6 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
         weekendPrice: Math.round(editWeekendPrice * 100),
         cleaningFee: 0,
         securityDeposit: Math.round(editSecurityDeposit * 100),
-        extraGuestFee: Math.round(editExtraGuestFee * 100),
       });
       setFeedbackMsg({ type: "success", text: "Pricing & fees updated successfully!" });
     } else {

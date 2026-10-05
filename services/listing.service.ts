@@ -13,6 +13,7 @@ import type {
 import { BookingStatus, ListingCoHostStatus, ListingStatus, Role } from "@/generated/prisma/enums";
 import { Prisma } from "@/generated/prisma/client";
 import { getExpiryThresholdDate, isBookingRequestExpired } from "@/lib/booking/booking-expiry";
+import { validateStayAvailability } from "@/lib/booking/availability";
 
 import { auditService } from "./audit.service";
 import { qualificationService } from "./qualification.service";
@@ -163,10 +164,16 @@ async function getPublishedReviewSummaries(listingIds: string[]): Promise<Map<st
   }]));
 }
 
-async function mapCardsWithReviewSummaries(items: PublicListingCardRecord[]): Promise<PublicListingCardDTO[]> {
+async function mapCardsWithReviewSummaries(
+  items: PublicListingCardRecord[],
+  pricingOptions?: { checkIn?: string | null; checkOut?: string | null; guests?: number | null },
+): Promise<PublicListingCardDTO[]> {
   if (!items.length) return [];
   const byListingId = await getPublishedReviewSummaries(items.map((item) => item.id));
-  return items.map((item) => toPublicListingCardDTO({ ...item, reviewSummary: byListingId.get(item.id) }));
+  return items.map((item) => toPublicListingCardDTO(
+    { ...item, reviewSummary: byListingId.get(item.id) },
+    pricingOptions,
+  ));
 }
 
 function getPublishReadiness(listing: {
@@ -368,6 +375,7 @@ function getGeoBoundsClause(lat: number, lng: number, radiusKm: number): Prisma.
 async function searchPublicListings(
   filters: PublicSearchFilters,
 ): Promise<PublicSearchResult> {
+  let requestedStay: { checkIn: string; checkOut: string } | null = null;
   let effectiveLat = typeof filters.lat === "number" && !isNaN(filters.lat) ? filters.lat : undefined;
   let effectiveLng = typeof filters.lng === "number" && !isNaN(filters.lng) ? filters.lng : undefined;
   let effectivePlaceName = filters.placeName || filters.destination || filters.city;
@@ -410,7 +418,13 @@ async function searchPublicListings(
 
   // Pets policy
   if (filters.pets && filters.pets > 0) {
-    baseClauses.push({ petsAllowed: true });
+    baseClauses.push({
+      petsAllowed: true,
+      OR: [
+        { maxPets: null },
+        { maxPets: { gte: filters.pets } },
+      ],
+    });
   }
 
   // Guest capacity
@@ -543,6 +557,7 @@ async function searchPublicListings(
     const cIn = parseBookingDate(filters.checkIn);
     const cOut = parseBookingDate(filters.checkOut);
     if (!isNaN(cIn.getTime()) && !isNaN(cOut.getTime()) && cOut > cIn) {
+      requestedStay = { checkIn: bookingDateKey(cIn), checkOut: bookingDateKey(cOut) };
       // 1. Confirmed / Active Pending bookings (unexpired date holds) — database relation filter with NOT EXISTS
       const expiryThreshold = getExpiryThresholdDate();
       baseClauses.push({
@@ -634,6 +649,53 @@ async function searchPublicListings(
     });
   }
 
+  // Database range predicates above efficiently remove booking and blocked-date
+  // conflicts. Run the remaining host rules through the shared availability
+  // engine before pagination so counts and every result page stay authoritative.
+  if (requestedStay) {
+    const ruleCandidates: Array<{
+      id: string;
+      guests: number;
+      minNights: number;
+      maxNights: number;
+      advanceNotice: string;
+      sameDayCutoff: string;
+      allowSameDayRequests: boolean;
+      blockedDates: string[];
+      discounts: unknown;
+    }> = await prisma.listing.findMany({
+      // Keep availability eligibility independent of the optional price slider
+      // so the response's absolute price range can still expand again.
+      where: {
+        AND: priceClauses.length
+          ? andClauses.filter((clause) => !priceClauses.includes(clause))
+          : andClauses,
+      },
+      select: {
+        id: true,
+        guests: true,
+        minNights: true,
+        maxNights: true,
+        advanceNotice: true,
+        sameDayCutoff: true,
+        allowSameDayRequests: true,
+        blockedDates: true,
+        discounts: true,
+      },
+    });
+    const now = new Date();
+    const eligibleIds = ruleCandidates
+      .filter((listing) => validateStayAvailability({
+        listing,
+        checkIn: requestedStay!.checkIn,
+        checkOut: requestedStay!.checkOut,
+        guests: totalGuests || 1,
+        now,
+      }).available)
+      .map((listing) => listing.id);
+    andClauses.push({ id: { in: eligibleIds } });
+  }
+
   const where: Prisma.ListingWhereInput = { AND: andClauses };
   const availablePriceWhere: Prisma.ListingWhereInput = {
     AND: priceClauses.length
@@ -693,7 +755,11 @@ async function searchPublicListings(
         orderBy,
         select: publicListingCardSelect,
       });
-      return mapCardsWithReviewSummaries(records);
+      return mapCardsWithReviewSummaries(records, {
+        checkIn: requestedStay?.checkIn,
+        checkOut: requestedStay?.checkOut,
+        guests: totalGuests || 1,
+      });
     }
 
     const candidates: Array<{ id: string; isFeatured: boolean; createdAt: Date }> = await prisma.listing.findMany({
@@ -724,7 +790,14 @@ async function searchPublicListings(
     return pageIds.flatMap((id) => {
       const record = recordsById.get(id);
       if (!record) return [];
-      return [toPublicListingCardDTO({ ...record, reviewSummary: summaries.get(id) })];
+      return [toPublicListingCardDTO(
+        { ...record, reviewSummary: summaries.get(id) },
+        {
+          checkIn: requestedStay?.checkIn,
+          checkOut: requestedStay?.checkOut,
+          guests: totalGuests || 1,
+        },
+      )];
     });
   };
 

@@ -23,7 +23,13 @@ import {
   resolveWinningDiscount,
   getDiscountFriendlyLabel,
 } from "@/services/discount-priority.service";
-import { differenceInBookingNights } from "./booking-date";
+import {
+  bookingDateKey,
+  differenceInBookingNights,
+  parseBookingDate,
+  shiftBookingDateKey,
+} from "./booking-date";
+import { resolveNightlyRate } from "@/lib/pricing/price-tips";
 
 export interface PropertyCardPricingViewModel {
   currency: string;
@@ -46,9 +52,13 @@ export interface PropertyCardPricingOptions {
 
 export interface ListingCardPricingInput {
   id?: string;
+  currency?: string | null;
   price?: number | null;
   weekdayBasePrice?: number | null;
   weekendPrice?: number | null;
+  weekendPremium?: number | null;
+  customPrices?: Record<string, number> | Map<string, number> | null;
+  nightlyPricing?: Record<string, number> | Map<string, number> | null;
   country?: string | null;
   discounts?: unknown;
   createdAt?: string | Date | null;
@@ -94,7 +104,7 @@ export function toPropertyCardPricingViewModel(
 
   const currency =
     options?.currency ||
-    (typeof (listingOrPricing as any).currency === "string" && (listingOrPricing as any).currency) ||
+    (typeof listingOrPricing.currency === "string" && listingOrPricing.currency) ||
     getCurrencyForCountry(listingOrPricing.country) ||
     "SAR";
 
@@ -144,12 +154,40 @@ export function toPropertyCardPricingViewModel(
     };
   }
 
-  // Raw listing price extraction
-  const rawPrice = listingOrPricing.price ?? listingOrPricing.weekdayBasePrice;
-  const baseDisplayPrice =
-    typeof rawPrice === "number" && Number.isFinite(rawPrice) && rawPrice >= 0
-      ? rawPrice
-      : 0;
+  // Resolve the displayed nightly price through the same calendar hierarchy as
+  // checkout: custom date > weekend > weekday/base. For a selected stay the
+  // card shows the effective average of every night, never a static base rate.
+  const rawPrice = listingOrPricing.weekdayBasePrice ?? listingOrPricing.price;
+  const weekdayBasePrice =
+    typeof rawPrice === "number" && Number.isFinite(rawPrice) && rawPrice >= 0 ? rawPrice : 0;
+  const selectedCheckIn = options?.checkIn ?? null;
+  const selectedCheckOut = options?.checkOut ?? null;
+  const selectedNights = selectedCheckIn && selectedCheckOut
+    ? differenceInBookingNights(selectedCheckIn, selectedCheckOut)
+    : 0;
+  const fallbackDate = options?.bookingDate
+    ? bookingDateKey(options.bookingDate)
+    : bookingDateKey(new Date());
+  const firstNight = selectedNights > 0 && selectedCheckIn ? selectedCheckIn : fallbackDate;
+  const nightsToPrice = selectedNights > 0 ? selectedNights : 1;
+  let staySubtotal = 0;
+  const nightlyRates: Array<{ date: string; rate: number }> = [];
+  for (let index = 0; index < nightsToPrice; index += 1) {
+    const dateKey = shiftBookingDateKey(firstNight, index);
+    const rate = resolveNightlyRate({
+      date: parseBookingDate(dateKey),
+      dateStr: dateKey,
+      weekdayBasePrice,
+      weekendPrice: listingOrPricing.weekendPrice,
+      weekendPremium: listingOrPricing.weekendPremium,
+      customPrices: listingOrPricing.customPrices ?? listingOrPricing.nightlyPricing,
+    }).price;
+    staySubtotal += rate;
+    nightlyRates.push({ date: dateKey, rate });
+  }
+  const baseDisplayPrice = nightsToPrice > 0
+    ? Math.round((staySubtotal / nightsToPrice) * 100) / 100
+    : weekdayBasePrice;
 
   if (baseDisplayPrice <= 0) {
     return {
@@ -199,8 +237,8 @@ export function toPropertyCardPricingViewModel(
   }
 
   // Date validation and calculation
-  const checkIn = options?.checkIn ?? null;
-  const checkOut = options?.checkOut ?? null;
+  const checkIn = selectedCheckIn;
+  const checkOut = selectedCheckOut;
   let nights: number | null = null;
   let datesValid = false;
 
@@ -231,18 +269,54 @@ export function toPropertyCardPricingViewModel(
 
   // Stay subtotal for discount resolution
   const effectiveNights = nights && nights > 0 ? nights : 1;
-  const staySubtotal = baseDisplayPrice * effectiveNights;
+  if (staySubtotal <= 0) staySubtotal = baseDisplayPrice * effectiveNights;
 
   // Resolve winning discount using Phase 4 engine
-  const winning = resolveWinningDiscount({
+  let winning = resolveWinningDiscount({
     eligibility,
     staySubtotal,
   });
 
+  const rawCustomPromotion = discountsObj.custom_promotion;
+  if (rawCustomPromotion && typeof rawCustomPromotion === "object" && !Array.isArray(rawCustomPromotion)) {
+    const promotion = rawCustomPromotion as Record<string, unknown>;
+    const percentage = typeof promotion.percentage === "number"
+      ? promotion.percentage
+      : typeof promotion.discountPercentage === "number"
+        ? promotion.discountPercentage
+        : 15;
+    const startDate = typeof promotion.startDate === "string" ? promotion.startDate : null;
+    const endDate = typeof promotion.endDate === "string" ? promotion.endDate : null;
+    const otherCandidates = winning.candidates.filter((candidate) => candidate.key !== "custom_promotion");
+    const eligibleSubtotal = nightlyRates.reduce((sum, night) => (
+      (!startDate || night.date >= startDate) && (!endDate || night.date <= endDate)
+        ? sum + night.rate
+        : sum
+    ), 0);
+    const amount = promotion.enabled === false || percentage <= 0 || percentage > 100
+      ? 0
+      : Math.round((eligibleSubtotal * percentage) / 100);
+    if (amount > 0) {
+      otherCandidates.push({
+        type: "CUSTOM_PROMOTION",
+        key: "custom_promotion",
+        name: typeof promotion.name === "string" ? promotion.name : "Custom Promotional Discount",
+        percentage,
+        amount,
+        eligible: true,
+        priorityOrder: 6,
+      });
+    }
+    winning = resolveWinningDiscount({ candidates: otherCandidates, staySubtotal });
+  }
+
   if (winning.selected && winning.percentage > 0 && winning.type) {
-    const discountMultiplier = Math.max(0, 1 - winning.percentage / 100);
-    const discountedDisplayPrice =
-      Math.round(baseDisplayPrice * discountMultiplier * 100) / 100;
+    // Standard stay-wide discounts retain the exact displayed percentage.
+    // A calendar-scoped promotion must instead use its eligible-night amount,
+    // because it may cover only part of the selected range.
+    const discountedDisplayPrice = winning.key === "custom_promotion"
+      ? Math.round(((staySubtotal - winning.amount) / effectiveNights) * 100) / 100
+      : Math.round((baseDisplayPrice * (1 - winning.percentage / 100)) * 100) / 100;
 
     return {
       currency,
@@ -265,4 +339,3 @@ export function toPropertyCardPricingViewModel(
     discountPercentage: null,
   };
 }
-

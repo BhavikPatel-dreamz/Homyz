@@ -141,6 +141,7 @@ export interface CalculatedTaxItem {
 export interface HostPayoutBreakdown {
   accommodationSubtotal: number; // nightly subtotal minus discounts
   petFee: number;
+  cleaningFee?: number;
   taxesCollectedForHost: number; // Host-remitted taxes collected from guest
   taxesRemittedByPlatform: number; // Platform-remitted taxes
   platformServiceFee: number; // Platform commission / host service fee
@@ -168,6 +169,7 @@ export interface TaxCalculationParams {
   discountAmount?: number; // in cents
   petFee?: number; // in cents
   extraGuestFee?: number; // in cents
+  cleaningFee?: number; // in cents, flat per stay
   feeAmounts?: Partial<Record<TaxableComponent, number>>;
   guests?: number;
   currency?: string;

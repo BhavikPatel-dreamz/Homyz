@@ -187,7 +187,10 @@ function SelectedPreviewCard({
     const nights = (toUtcMidnight(checkOut) - toUtcMidnight(checkIn)) / 86_400_000;
     return Number.isFinite(nights) && nights > 0 ? nights : 1;
   })();
-  const formattedPrice = formatPrice(listing.price * selectedStayNights, currency);
+  const effectiveNightlyPrice = listing.pricing?.discountedDisplayPrice
+    ?? listing.pricing?.baseDisplayPrice
+    ?? listing.price;
+  const formattedPrice = formatPrice(effectiveNightlyPrice * selectedStayNights, currency);
 
   return (
     <div className="relative flex items-center gap-3 bg-white/95 backdrop-blur-md rounded-2xl p-2.5 shadow-xl border border-zinc-200">
@@ -307,7 +310,9 @@ interface ClientSearchCacheEntry {
 }
 
 const clientSearchCache = new Map<string, ClientSearchCacheEntry>();
-const CLIENT_CACHE_TTL_MS = 180_000; // 3 minutes
+// Calendar mutations are booking-critical. Keep entries only as navigation
+// snapshots; every subsequent query/refetch must ask the versioned server cache.
+const CLIENT_CACHE_TTL_MS = 0;
 
 export function buildNormalizedSearchKey(params: URLSearchParams | string): string {
   const sp = typeof params === "string" ? new URLSearchParams(params) : params;
@@ -675,7 +680,7 @@ export function ListingsResultsClient({
 
     if (allListings && allListings.length > 0) {
       allListings.forEach((listing) => {
-        const p = listing.price / 100;
+        const p = (listing.pricing?.discountedDisplayPrice ?? listing.pricing?.baseDisplayPrice ?? listing.price) / 100;
         if (p >= minB && p <= maxB) {
           const binIdx = Math.min(NUM_BINS - 1, Math.max(0, Math.floor((p - minB) / step)));
           counts[binIdx] += 1;

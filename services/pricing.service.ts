@@ -78,15 +78,19 @@ export interface BookingPricingParams {
   weekdayBasePrice?: number; // cents (required if baseNightlyPrice omitted, > 0)
   baseNightlyPrice?: number; // alias for weekdayBasePrice
   weekendPrice?: number | null; // cents
+  weekendPremium?: number | null; // percentage fallback when no explicit weekend price
   customPrices?: Record<string, number> | Map<string, number> | null; // map of YYYY-MM-DD -> cents
   nightlyPricing?: Record<string, number> | Map<string, number> | null; // alias for customPrices
-  extraGuestFee?: number | null; // cents per extra guest per night
-  baseGuests?: number; // base guest capacity included in price (defaults to 1)
+  /** @deprecated Retained for backwards-compatible listing payloads; occupancy is inclusive. */
+  extraGuestFee?: number | null;
+  /** @deprecated Retained for backwards-compatible callers; max guests are all included. */
+  baseGuests?: number;
   guests?: number; // requested total guests (defaults to 1)
   adults?: number; // optional adult count
   children?: number; // optional children count
   pets?: number; // requested pets (defaults to 0)
   petFee?: number | null; // cents flat or per pet
+  cleaningFee?: number | null; // cents flat per stay
   discounts?: Record<string, unknown> | null;
   isNewListing?: boolean;
   /** Reservation quotes can opt out of the marketing-only new-listing promo. */
@@ -119,9 +123,11 @@ export interface BookingPricingResult {
   discountPercentage: number; // percentage applied (0 if none)
   accommodationSubtotal: number; // staySubtotal - discountAmount (cents)
   discountedAccommodationSubtotal: number; // cents (alias for accommodationSubtotal)
+  /** Always zero for new quotes; retained so legacy snapshots can be read. */
   extraGuestFee: number; // cents
   petFee: number; // cents
-  totalAdditionalFees: number; // extraGuestFee + petFee (cents)
+  cleaningFee: number; // cents flat per stay
+  totalAdditionalFees: number; // petFee + cleaningFee (cents)
   feeTotal: number; // cents (alias for totalAdditionalFees)
   feeBreakdown: NormalizedFeeItem[];
   hostServiceFeePercentage: number; // e.g. 15
@@ -159,8 +165,10 @@ export interface BookingPricingResult {
 export interface SpecialOfferPricingParams {
   specialOfferAmount: number; // cents (host-offered accommodation subtotal)
   nights: number;
+  /** @deprecated Legacy field ignored by the inclusive occupancy model. */
   extraGuestFee?: number | null;
   petFee?: number | null;
+  cleaningFee?: number | null;
   guests?: number;
   hostServiceFeePercentage?: number;
   taxRules?: TaxRuleDTO[];
@@ -281,7 +289,6 @@ export async function calculateBookingPrice(params: BookingPricingParams): Promi
 
   const computedGuests = params.guests ?? ((params.adults || 0) + (params.children || 0) || 1);
   const guests = Math.max(1, computedGuests);
-  const baseGuests = Math.max(1, params.baseGuests ?? 1);
   const currency = params.currency || "SAR";
 
   // Pre-index custom prices into a Map for O(1) date price lookups
@@ -308,12 +315,13 @@ export async function calculateBookingPrice(params: BookingPricingParams): Promi
       dateStr,
       weekdayBasePrice,
       weekendPrice,
+      weekendPremium: params.weekendPremium,
       customPrices: priceByDate,
     });
 
     if (resolved.rateSource === "CUSTOM") {
       customPricedNights++;
-    } else if (resolved.isWeekend && weekendPrice !== null) {
+    } else if (resolved.rateSource === "WEEKEND") {
       weekendNights++;
     } else {
       weekdayNights++;
@@ -342,17 +350,69 @@ export async function calculateBookingPrice(params: BookingPricingParams): Promi
     bookingCreatedAt: params.bookingCreatedAt ? new Date(params.bookingCreatedAt) : undefined,
   });
 
-  const appliedDiscount = resolveSingleDiscount({
-    staySubtotal,
-    nights,
-    checkIn: cIn,
-    discounts: params.discounts,
-    isNewListing: params.isNewListing,
-    includeNewListingPromotion: params.includeNewListingPromotion,
-    bookingCreatedAt: params.bookingCreatedAt ? new Date(params.bookingCreatedAt) : undefined,
-  });
+  const standardCandidates: WinningDiscountCandidate[] = discountEligibility.eligibleDiscounts
+    .filter((discount) => discount.key !== "custom_promotion")
+    .flatMap((discount) => {
+      const percentage = discount.percentage ?? 0;
+      if (percentage <= 0) return [];
+      return [{
+        type: String(discount.key).toUpperCase(),
+        key: String(discount.key),
+        name: discount.name,
+        percentage,
+        amount: Math.round((staySubtotal * percentage) / 100),
+        eligible: true,
+        priorityOrder: discount.priorityOrder,
+      }];
+    });
 
-  const winningDiscount = resolveWinningDiscount(discountEligibility, staySubtotal);
+  // Special-day promotions are calendar-scoped. Calculate their candidate
+  // value from eligible nights only, then let the existing single-winner rule
+  // compare it with weekly/monthly/other discounts. This prevents a one-day
+  // promotion from discounting the entire reservation.
+  const discountsRecordForPromotion = params.discounts && typeof params.discounts === "object"
+    ? params.discounts as Record<string, unknown>
+    : {};
+  const rawCustomPromotion = discountsRecordForPromotion.custom_promotion;
+  if (rawCustomPromotion && typeof rawCustomPromotion === "object" && !Array.isArray(rawCustomPromotion)) {
+    const promotion = rawCustomPromotion as Record<string, unknown>;
+    const enabled = promotion.enabled !== false;
+    const percentage = typeof promotion.percentage === "number"
+      ? promotion.percentage
+      : typeof promotion.discountPercentage === "number"
+        ? promotion.discountPercentage
+        : 15;
+    const startDate = typeof promotion.startDate === "string" ? promotion.startDate : null;
+    const endDate = typeof promotion.endDate === "string" ? promotion.endDate : null;
+    if (enabled && percentage > 0 && percentage <= 100) {
+      const eligibleSubtotal = breakdown.reduce((sum, night) => {
+        const eligible = (!startDate || night.date >= startDate) && (!endDate || night.date <= endDate);
+        return sum + (eligible ? night.price : 0);
+      }, 0);
+      const amount = Math.round((eligibleSubtotal * percentage) / 100);
+      if (amount > 0) {
+        standardCandidates.push({
+          type: "CUSTOM_PROMOTION",
+          key: "custom_promotion",
+          name: typeof promotion.name === "string" ? promotion.name : "Custom Promotional Discount",
+          percentage,
+          amount,
+          eligible: true,
+          priorityOrder: 6,
+        });
+      }
+    }
+  }
+
+  const winningDiscount = resolveWinningDiscount({ candidates: standardCandidates, staySubtotal });
+  const appliedDiscount: AppliedDiscount | null = winningDiscount.selected && winningDiscount.key
+    ? {
+        key: winningDiscount.key as AppliedDiscount["key"],
+        name: winningDiscount.name || winningDiscount.key,
+        percentage: winningDiscount.percentage,
+        amount: winningDiscount.amount,
+      }
+    : null;
 
   const selectedDiscount: SelectedDiscountQuote | null =
     winningDiscount.selected && winningDiscount.type
@@ -419,20 +479,20 @@ export async function calculateBookingPrice(params: BookingPricingParams): Promi
   const accommodationSubtotal = Math.max(0, staySubtotal - discountAmount);
 
 
-  // 3. Host-Defined Additional Charges. Cleaning fees are deliberately not a
-  // booking input: Homyz no longer charges them anywhere in the quote flow.
-  const extraGuestPerNightRate = Math.max(0, Math.round(params.extraGuestFee ?? 0));
-  const extraGuestCount = Math.max(0, guests - baseGuests);
-  const extraGuestFee = extraGuestCount * extraGuestPerNightRate * nights;
+  // 3. Inclusive occupancy: every guest through the listing capacity uses the
+  // same accommodation price. Legacy extra-guest settings remain readable,
+  // but are intentionally ignored for new quotes.
+  const extraGuestFee = 0;
   const petFee = Math.max(0, Math.round(params.petFee ?? 0));
-  const totalAdditionalFees = extraGuestFee + petFee;
+  const cleaningFee = Math.max(0, Math.round(params.cleaningFee ?? 0));
+  const totalAdditionalFees = petFee + cleaningFee;
 
   const feeBreakdown: NormalizedFeeItem[] = [];
-  if (extraGuestFee > 0) {
-    feeBreakdown.push({ id: "extra-guests", name: "Extra guest fee", amount: extraGuestFee });
-  }
   if (petFee > 0) {
     feeBreakdown.push({ id: "pets", name: "Pet fee", amount: petFee });
+  }
+  if (cleaningFee > 0) {
+    feeBreakdown.push({ id: "cleaning", name: "Cleaning fee", amount: cleaningFee });
   }
 
   // 4. Host Service Fee (Admin Configured, strictly excluded from Taxable Base)
@@ -446,7 +506,9 @@ export async function calculateBookingPrice(params: BookingPricingParams): Promi
     nightlyRates: breakdown.map((night) => night.price),
     discountAmount,
     petFee,
-    extraGuestFee,
+    extraGuestFee: 0,
+    cleaningFee,
+    feeAmounts: { CLEANING_FEE: cleaningFee },
     guests,
     rules: params.taxRules || [],
     hostTaxes: params.hostTaxes || [],
@@ -456,7 +518,7 @@ export async function calculateBookingPrice(params: BookingPricingParams): Promi
   });
 
   // 6. Final Guest Total & Host Payout
-  const taxableBase = accommodationSubtotal + petFee + extraGuestFee;
+  const taxableBase = accommodationSubtotal + petFee + cleaningFee;
   const guestTotal = taxResult.guestTotal;
   const payoutBreakdown = taxResult.payoutBreakdown;
 
@@ -484,6 +546,7 @@ export async function calculateBookingPrice(params: BookingPricingParams): Promi
     discountedAccommodationSubtotal: accommodationSubtotal,
     extraGuestFee,
     petFee,
+    cleaningFee,
     totalAdditionalFees,
     feeTotal: totalAdditionalFees,
     feeBreakdown,
@@ -523,13 +586,15 @@ export async function calculateBookingPrice(params: BookingPricingParams): Promi
 /**
  * Special Offer Pricing Calculator.
  * The host sets an explicit accommodation subtotal for the entire stay.
- * Extra guest fees, pet fees, and taxes are computed separately on top.
+ * Pet fees, cleaning fees, and taxes are computed separately on top. Legacy
+ * extra-guest settings are ignored because all occupancy is included.
  */
 export async function calculateSpecialOffer(params: SpecialOfferPricingParams): Promise<BookingPricingResult> {
   const nights = Math.max(1, params.nights);
   const specialOfferAmount = Math.max(0, Math.round(params.specialOfferAmount));
-  const extraGuestFee = Math.max(0, Math.round(params.extraGuestFee ?? 0));
+  const extraGuestFee = 0;
   const petFee = Math.max(0, Math.round(params.petFee ?? 0));
+  const cleaningFee = Math.max(0, Math.round(params.cleaningFee ?? 0));
   const guests = Math.max(1, params.guests ?? 1);
   const currency = params.currency || "SAR";
 
@@ -546,6 +611,8 @@ export async function calculateSpecialOffer(params: SpecialOfferPricingParams): 
     discountAmount: 0,
     petFee,
     extraGuestFee,
+    cleaningFee,
+    feeAmounts: { CLEANING_FEE: cleaningFee },
     guests,
     rules: params.taxRules || [],
     hostTaxes: params.hostTaxes || [],
@@ -554,15 +621,15 @@ export async function calculateSpecialOffer(params: SpecialOfferPricingParams): 
     hostServiceFee,
   });
 
-  const taxableBase = specialOfferAmount + petFee + extraGuestFee;
-  const totalAdditionalFees = extraGuestFee + petFee;
+  const taxableBase = specialOfferAmount + petFee + cleaningFee;
+  const totalAdditionalFees = petFee + cleaningFee;
 
   const feeBreakdown: NormalizedFeeItem[] = [];
-  if (extraGuestFee > 0) {
-    feeBreakdown.push({ id: "extra-guests", name: "Extra guest fee", amount: extraGuestFee });
-  }
   if (petFee > 0) {
     feeBreakdown.push({ id: "pets", name: "Pet fee", amount: petFee });
+  }
+  if (cleaningFee > 0) {
+    feeBreakdown.push({ id: "cleaning", name: "Cleaning fee", amount: cleaningFee });
   }
 
   const baseRate = Math.round(specialOfferAmount / nights);
@@ -585,6 +652,7 @@ export async function calculateSpecialOffer(params: SpecialOfferPricingParams): 
     discountedAccommodationSubtotal: specialOfferAmount,
     extraGuestFee,
     petFee,
+    cleaningFee,
     totalAdditionalFees,
     feeTotal: totalAdditionalFees,
     feeBreakdown,
