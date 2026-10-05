@@ -218,12 +218,12 @@ export function CancellationPolicyView({
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in max-w-2xl w-full pb-16 font-sans">
+    <div className="w-full max-w-[880px] space-y-8 pb-16 font-sans animate-in fade-in">
       {/* Header */}
-      <div className="space-y-1">
+      <div className="space-y-1.5">
         <div className="flex items-center gap-6">
           <BackButton onClick={() => setActiveSection("pricing")} />
-          <h1 className="tracking-[-0.02em] text-2xl font-semibold text-[#1F1F1F] dark:text-zinc-100">
+          <h1>
             {t("host_cancellation_policy_title")}
           </h1>
         </div>
@@ -233,27 +233,107 @@ export function CancellationPolicyView({
       {isLoading ? (
         <CancellationPolicySkeleton />
       ) : (
-        <div className="space-y-4 pt-1">
+        <div className="space-y-3 pt-1">
           {/* 1. Short-term stays Card */}
           <div
             onClick={() => {
               setDraftShortPolicy(cancellationPolicy || "FLEXIBLE");
               setIsShortTermModalOpen(true);
             }}
-            className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 cursor-pointer hover:border-zinc-400 dark:hover:border-zinc-700 hover:shadow-xs transition-all flex items-center justify-between group shadow-2xs"
+            className="group cursor-pointer sm:rounded-xl border border-zinc-200 bg-white p-5 shadow-[0_2px_3px_rgba(0,0,0,0.12)] transition-shadow hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900 sm:p-6"
           >
-            <div className="space-y-1">
-              <span className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-200 block">{t("host_short_term_stays_title")}</span>
-              <span className="text-sm text-[#727272] dark:text-[#727272] font-normal block">{t("host_short_term_stays_desc")}</span>
-              <span className="text-base font-semibold text-[#1F1F1F] dark:text-zinc-100 block pt-1">
-                {cancellationPolicyLabel(cancellationPolicy, t)}
+            <div className="border-b border-zinc-300 pb-4 dark:border-zinc-700">
+              <span className="inline-flex bg-zinc-100 px-3 py-1.5 sm:text-lg text-base sm:font-medium font-normal text-[#1F1F1F] dark:bg-zinc-800 dark:text-zinc-100">
+                {t("host_short_term_stays_title")}
               </span>
+                <p className="mt-3 max-w-2xl sm:text-base text-sm sm:leading-6 leading-5.25 text-[#727272] dark:text-zinc-300">
+                {t("host_short_term_stays_desc")}
+              </p>
             </div>
-            <div className="flex items-center gap-2 text-[#1f1f1f] dark:text-[#727272] group-hover:text-[#1f1f1f] dark:group-hover:text-zinc-300 transition-colors">
-              <span className="text-base font-medium text-[#1f1f1f] dark:text-[#727272] underline group-hover:text-[#1f1f1f] dark:group-hover:text-zinc-100">{t("host_edit")}</span>
-              <svg className="w-4 h-4" fill="none" stroke="#1f1f1f" strokeWidth="2" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-              </svg>
+
+            <div className="flex items-end justify-between gap-4 py-4">
+              <div>
+                <p className="text-base text-[#727272] dark:text-zinc-300">Your policy</p>
+                  <p className="mt-1 sm:text-lg text-base sm:font-semibold font-normal text-[#1F1F1F] dark:text-zinc-100">
+                  {cancellationPolicyLabel(cancellationPolicy, t)}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  setDraftShortPolicy(cancellationPolicy || "FLEXIBLE");
+                  setIsShortTermModalOpen(true);
+                }}
+                  className="shrink-0 rounded-full bg-[#FCDF9C] px-6 py-3 text-base font-medium text-[#1F1F1F] hover:text-white transition-colors hover:bg-[#1f1f1f] duration-300"
+              >
+                {t("host_edit")}
+              </button>
+            </div>
+
+            <div className="border-t border-zinc-200 pt-4 dark:border-zinc-800">
+              <div className="flex items-start justify-between gap-4">
+                <div className="max-w-2xl">
+                  <p className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">
+                    {t("host_non_refundable_option_title")}
+                  </p>
+                    <p className="mt-1 sm:text-base text-sm sm:leading-6 leading-5.25 text-[#727272] dark:text-zinc-300">
+                    {t("host_non_refundable_option_desc_pct", { percentage: nonRefundablePercentage })}{" "}
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        setIsLearnMoreOpen(true);
+                      }}
+                      className="font-medium text-[#1F1F1F] underline hover:text-zinc-700 dark:text-zinc-100 dark:hover:text-zinc-300"
+                    >
+                      {t("host_safety_learn_more")}
+                    </button>
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-label={t("host_toggle_non_refundable_aria")}
+                  aria-checked={nonRefundable}
+                  disabled={isSaving}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    void handleToggleNonRefundable();
+                  }}
+                  className={`relative mt-1 h-5 w-11 shrink-0 rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${nonRefundable ? "bg-[#DF4557] dark:bg-amber-400" : "bg-zinc-300 dark:bg-zinc-700"}`}
+                >
+                  <span className={`block h-4 w-4 rounded-full bg-white shadow-sm ring-1 ring-zinc-200 transition-transform dark:bg-zinc-900 dark:ring-zinc-700 ${nonRefundable ? "translate-x-6.5" : "translate-x-0.5"}`} />
+                </button>
+              </div>
+
+              {nonRefundable && (
+                <div className="mt-4 flex items-center justify-between gap-4 border-t border-zinc-200 pt-4 dark:border-zinc-800">
+                  <div>
+                    <label htmlFor="non-refundable-pct-input" className="block text-base font-medium text-[#1F1F1F] dark:text-zinc-100">Discount percentage</label>
+                      <span className="block mt-1 sm:text-base text-sm sm:leading-6 leading-5.25 text-[#727272] dark:text-zinc-300">Lower price offered to guests choosing non-refundable</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      id="non-refundable-pct-input"
+                      type="number"
+                      min={1}
+                      max={99}
+                      value={nonRefundablePercentage}
+                      onClick={(event) => event.stopPropagation()}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value, 10);
+                        if (!isNaN(val) && val >= 1 && val <= 99) setNonRefundablePercentage(val);
+                      }}
+                      onBlur={() => {
+                        if (onSaveCancellationPolicy) onSaveCancellationPolicy({ cancellationPolicy, longTermCancellationPolicy, nonRefundable: true, nonRefundablePercentage });
+                      }}
+                      className="w-20 rounded-lg border border-[#727272] bg-white px-3 py-1.5 text-right font-medium text-[#1F1F1F] focus:border-zinc-900 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+                    />
+                    <span className="text-sm font-medium text-[#727272]">%</span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -263,99 +343,35 @@ export function CancellationPolicyView({
               setDraftLongPolicy(longTermCancellationPolicy || "FIRM");
               setIsLongTermModalOpen(true);
             }}
-            className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 cursor-pointer hover:border-zinc-400 dark:hover:border-zinc-700 hover:shadow-xs transition-all flex items-center justify-between group shadow-2xs"
+            className="group cursor-pointer sm:rounded-xl rounded-lg border border-zinc-200 bg-white p-5 shadow-[0_2px_3px_rgba(0,0,0,0.12)] transition-shadow hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900 sm:p-6"
           >
-            <div className="space-y-1">
-              <span className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-200 block">{t("host_long_term_stays_title")}</span>
-              <span className="text-sm text-[#727272] dark:text-[#727272] font-normal block">{t("host_long_term_stays_desc")}</span>
-              <span className="text-base font-semibold text-[#1F1F1F] dark:text-zinc-100 block pt-1">
-                {longTermCancellationPolicy === "STRICT" ? t("host_strict_long_term") : t("host_firm_long_term")}
+            <div className="border-b border-zinc-300 pb-4 dark:border-zinc-700">
+                <span className="inline-flex bg-zinc-100 px-3 py-1.5 sm:text-lg text-base sm:font-medium font-normal text-[#1F1F1F] dark:bg-zinc-800 dark:text-zinc-100">
+                {t("host_long_term_stays_title")}
               </span>
+                <p className="mt-3 max-w-2xl sm:text-base text-sm sm:leading-6 leading-5.25 text-[#727272] dark:text-zinc-300">
+                {t("host_long_term_stays_desc")}
+              </p>
             </div>
-            <div className="flex items-center gap-2 text-[#1f1f1f] dark:text-[#727272] group-hover:text-[#1f1f1f] dark:group-hover:text-zinc-300 transition-colors">
-              <span className="text-base font-medium text-[#1f1f1f] dark:text-[#727272] underline group-hover:text-[#1f1f1f] dark:group-hover:text-zinc-100">{t("host_edit")}</span>
-              <svg className="w-4 h-4" fill="none" stroke="#1f1f1f" strokeWidth="2" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-              </svg>
-            </div>
-          </div>
-
-          {/* 3. Non-refundable option Card */}
-          <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5 space-y-4 shadow-2xs">
-            <div className="flex items-center justify-between gap-4">
-              <div className="space-y-1 max-w-md">
-                <span className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-200 block">
-                  {t("host_non_refundable_option_title")}
-                </span>
-                <p className="text-sm text-[#727272] dark:text-[#727272] font-normal leading-relaxed">
-                  {t("host_non_refundable_option_desc_pct", { percentage: nonRefundablePercentage })}{" "}
-                  <button
-                    type="button"
-                    onClick={() => setIsLearnMoreOpen(true)}
-                    className="text-[#1F1F1F] dark:text-zinc-100 underline font-medium hover:text-zinc-700 dark:hover:text-zinc-300 cursor-pointer"
-                  >
-                    {t("host_safety_learn_more")}
-                  </button>
+            <div className="flex items-end justify-between gap-4 pt-4">
+              <div>
+                <p className="text-base text-[#727272] dark:text-zinc-300">Your policy</p>
+                <p className="mt-1 sm:text-lg text-base sm:font-semibold font-normal text-[#1F1F1F] dark:text-zinc-100">
+                  {longTermCancellationPolicy === "STRICT" ? t("host_strict_long_term") : t("host_firm_long_term")}
                 </p>
               </div>
-
-              {/* Toggle switch matching other editor toggles */}
               <button
                 type="button"
-                role="switch"
-                aria-label={t("host_toggle_non_refundable_aria")}
-                aria-checked={nonRefundable}
-                disabled={isSaving}
-                onClick={handleToggleNonRefundable}
-                className={`relative h-6 w-11 shrink-0 rounded-full transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 ${nonRefundable ? "bg-[#DF4557] dark:bg-amber-400" : "bg-zinc-300 dark:bg-zinc-700"
-                  }`}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  setDraftLongPolicy(longTermCancellationPolicy || "FIRM");
+                  setIsLongTermModalOpen(true);
+                }}
+                className="shrink-0 rounded-full bg-[#FCDF9C] px-6 py-3 text-base font-medium text-[#1F1F1F] hover:text-white transition-colors hover:bg-[#1f1f1f] duration-300"
               >
-                <span
-                  className={`block h-5 w-5 rounded-full bg-white dark:bg-zinc-900 shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-700 transition-transform ${nonRefundable ? "translate-x-5.5" : "translate-x-0.5"
-                    }`}
-                />
+                {t("host_edit")}
               </button>
             </div>
-
-            {nonRefundable && (
-              <div className="pt-3 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between gap-4">
-                <div>
-                  <label htmlFor="non-refundable-pct-input" className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-200 block">
-                    Discount percentage
-                  </label>
-                  <span className="text-xs text-[#727272] dark:text-zinc-400 block">
-                    Lower price offered to guests choosing non-refundable
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <input
-                    id="non-refundable-pct-input"
-                    type="number"
-                    min={1}
-                    max={99}
-                    value={nonRefundablePercentage}
-                    onChange={(e) => {
-                      const val = parseInt(e.target.value, 10);
-                      if (!isNaN(val) && val >= 1 && val <= 99) {
-                        setNonRefundablePercentage(val);
-                      }
-                    }}
-                    onBlur={() => {
-                      if (onSaveCancellationPolicy) {
-                        onSaveCancellationPolicy({
-                          cancellationPolicy,
-                          longTermCancellationPolicy,
-                          nonRefundable: true,
-                          nonRefundablePercentage,
-                        });
-                      }
-                    }}
-                    className="w-20 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-1.5 text-right font-medium text-[#1F1F1F] dark:text-zinc-100 focus:border-zinc-900 focus:outline-none"
-                  />
-                  <span className="text-sm font-medium text-[#727272]">%</span>
-                </div>
-              </div>
-            )}
           </div>
         </div>
       )}
@@ -378,14 +394,14 @@ export function CancellationPolicyView({
       {/* ============================================================ */}
       {isShortTermModalOpen && (
         <ModalOverlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-zinc-900 rounded-[28px] max-w-xl w-full max-h-[88vh] flex flex-col shadow-2xl animate-in zoom-in-95 border border-zinc-150 dark:border-zinc-800 overflow-hidden">
+          <div className="bg-white dark:bg-zinc-900 rounded-xl max-w-xl w-full max-h-[88vh] flex flex-col animate-in zoom-in-95 dark:border-zinc-800 overflow-hidden">
             {/* Modal Header */}
             <div className="p-6 border-b border-zinc-200/80 dark:border-zinc-800 flex items-start justify-between">
               <div className="space-y-0.5">
-                <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">
+                <h3 className="font-medium text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">
                   {t("host_short_term_stays_title")}
                 </h3>
-                <p className="text-xs text-[#727272] dark:text-[#727272] font-normal">
+                <p className="text-sm text-[#727272] dark:text-[#727272] font-normal">
                   {t("host_short_term_stays_desc")}
                 </p>
               </div>
@@ -395,7 +411,7 @@ export function CancellationPolicyView({
                   setDraftShortPolicy(cancellationPolicy || "FLEXIBLE");
                   setIsShortTermModalOpen(false);
                 }}
-                className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 flex items-center justify-center text-xs font-semibold text-zinc-600 dark:text-zinc-300 transition-colors cursor-pointer shrink-0"
+                className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 flex items-center justify-center text-base font-medium text-zinc-600 dark:text-zinc-300 transition-colors cursor-pointer shrink-0"
               >
                 ✕
               </button>
@@ -409,13 +425,13 @@ export function CancellationPolicyView({
                   <div
                     key={option.id}
                     onClick={() => setDraftShortPolicy(option.id)}
-                    className={`p-4 rounded-2xl border transition-all cursor-pointer relative shadow-2xs ${isSelected
-                      ? "border-2 border-zinc-900 dark:border-zinc-100 bg-zinc-50/40 dark:bg-zinc-800/60 shadow-xs"
-                      : "border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 hover:border-zinc-300 dark:hover:border-zinc-600"
+                    className={`p-4 rounded-lg border border-[#727272] transition-all cursor-pointer relative ${isSelected
+                      ? "border border-[#1f1f1f] dark:border-zinc-100 bg-zinc-50/40 dark:bg-zinc-800/60"
+                      : "border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 hover:border-zinc-300 dark:hover:border-zinc-600"
                       }`}
                   >
                     <div className="flex items-start justify-between">
-                      <span className="text-sm font-bold text-[#1F1F1F] dark:text-zinc-100 block">{option.title}</span>
+                      <span className="text-base font-semibold text-[#1F1F1F] dark:text-zinc-100 block">{option.title}</span>
                       <button
                         type="button"
                         aria-label={t("host_cancellation_info_aria", { title: option.title })}
@@ -423,12 +439,12 @@ export function CancellationPolicyView({
                           e.stopPropagation();
                           setInfoModalTopic({ title: option.title, info: option.info });
                         }}
-                        className="w-5 h-5 rounded-full border border-zinc-300 dark:border-zinc-600 text-[#727272] dark:text-[#727272] hover:text-[#1F1F1F] dark:hover:text-zinc-100 hover:border-zinc-900 dark:hover:border-zinc-100 flex items-center justify-center text-xs font-serif italic cursor-pointer transition-colors"
+                        className="w-5 h-5 rounded-full border border-[#727272] dark:border-zinc-600 text-[#727272] dark:text-[#727272] hover:text-[#1F1F1F] dark:hover:text-zinc-100 hover:border-zinc-900 dark:hover:border-zinc-100 flex items-center justify-center text-xs font-serif italic cursor-pointer transition-colors"
                       >
                         i
                       </button>
                     </div>
-                    <ul className="mt-2 space-y-1 text-xs text-zinc-600 dark:text-zinc-300">
+                    <ul className="mt-2 space-y-1 text-sm text-[#727272] dark:text-zinc-300">
                       {option.bullets.map((bullet, idx) => (
                         <li key={idx} className="flex items-start gap-1.5 leading-relaxed">
                           <span className="text-[#727272] dark:text-[#727272] select-none">•</span>
@@ -456,8 +472,9 @@ export function CancellationPolicyView({
               <button
                 type="button"
                 disabled={isSaving}
+                aria-busy={isSaving || undefined}
                 onClick={handleSaveShortTerm}
-                className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F] hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
+                className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F] hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
                 {isSaving && (
                   <svg className="w-3.5 h-3.5 animate-spin text-current" fill="none" viewBox="0 0 24 24">
@@ -477,14 +494,14 @@ export function CancellationPolicyView({
       {/* ============================================================ */}
       {isLongTermModalOpen && (
         <ModalOverlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-zinc-900 rounded-[28px] max-w-xl w-full max-h-[88vh] flex flex-col shadow-2xl animate-in zoom-in-95 border border-zinc-150 dark:border-zinc-800 overflow-hidden">
+          <div className="bg-white dark:bg-zinc-900 rounded-xl max-w-xl w-full max-h-[88vh] flex flex-col shadow-2xl animate-in zoom-in-95 dark:border-zinc-800 overflow-hidden">
             {/* Modal Header */}
             <div className="p-6 border-b border-zinc-200/80 dark:border-zinc-800 flex items-start justify-between">
               <div className="space-y-0.5">
                 <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">
                   {t("host_long_term_stays_title")}
                 </h3>
-                <p className="text-xs text-[#727272] dark:text-[#727272] font-normal">
+                <p className="text-sm text-[#727272] dark:text-[#727272] font-normal">
                   {t("host_long_term_stays_desc")}
                 </p>
               </div>
@@ -494,7 +511,7 @@ export function CancellationPolicyView({
                   setDraftLongPolicy(longTermCancellationPolicy || "FIRM");
                   setIsLongTermModalOpen(false);
                 }}
-                className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 flex items-center justify-center text-xs font-semibold text-zinc-600 dark:text-zinc-300 transition-colors cursor-pointer shrink-0"
+                className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 flex items-center justify-center text-base font-medium text-zinc-600 dark:text-zinc-300 transition-colors cursor-pointer shrink-0"
               >
                 ✕
               </button>
@@ -508,13 +525,13 @@ export function CancellationPolicyView({
                   <div
                     key={option.id}
                     onClick={() => setDraftLongPolicy(option.id)}
-                    className={`p-4 rounded-2xl border transition-all cursor-pointer relative shadow-2xs ${isSelected
-                      ? "border-2 border-zinc-900 dark:border-zinc-100 bg-zinc-50/40 dark:bg-zinc-800/60 shadow-xs"
-                      : "border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 hover:border-zinc-300 dark:hover:border-zinc-600"
+                    className={`p-4 rounded-lg border border-[#727272] transition-all cursor-pointer relative ${isSelected
+                      ? "border border-[#1f1f1f] dark:border-zinc-100 bg-zinc-50/40 dark:bg-zinc-800/60"
+                      : "border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 hover:border-zinc-300 dark:hover:border-zinc-600"
                       }`}
                   >
                     <div className="flex items-start justify-between">
-                      <span className="text-sm font-bold text-[#1F1F1F] dark:text-zinc-100 block">{option.title}</span>
+                      <span className="text-base font-semibold text-[#1F1F1F] dark:text-zinc-100 block">{option.title}</span>
                       <button
                         type="button"
                         aria-label={t("host_cancellation_info_aria", { title: option.title })}
@@ -522,12 +539,12 @@ export function CancellationPolicyView({
                           e.stopPropagation();
                           setInfoModalTopic({ title: option.title, info: option.info });
                         }}
-                        className="w-5 h-5 rounded-full border border-zinc-300 dark:border-zinc-600 text-[#727272] dark:text-[#727272] hover:text-[#1F1F1F] dark:hover:text-zinc-100 hover:border-zinc-900 dark:hover:border-zinc-100 flex items-center justify-center text-xs font-serif italic cursor-pointer transition-colors"
+                        className="w-5 h-5 rounded-full border border-[#727272] dark:border-zinc-600 text-[#1f1f1f] dark:text-[#727272] hover:text-[#1F1F1F] dark:hover:text-zinc-100 hover:border-zinc-900 dark:hover:border-zinc-100 flex items-center justify-center text-xs font-serif italic cursor-pointer transition-colors"
                       >
                         i
                       </button>
                     </div>
-                    <ul className="mt-2 space-y-1 text-xs text-zinc-600 dark:text-zinc-300">
+                    <ul className="mt-2 space-y-1 text-sm text-[#727272] dark:text-zinc-300">
                       {option.bullets.map((bullet, idx) => (
                         <li key={idx} className="flex items-start gap-1.5 leading-relaxed">
                           <span className="text-[#727272] dark:text-[#727272] select-none">•</span>
@@ -555,8 +572,9 @@ export function CancellationPolicyView({
               <button
                 type="button"
                 disabled={isSaving}
+                aria-busy={isSaving || undefined}
                 onClick={handleSaveLongTerm}
-                className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F] hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
+                className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F] hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
                 {isSaving && (
                   <svg className="w-3.5 h-3.5 animate-spin text-current" fill="none" viewBox="0 0 24 24">
@@ -627,7 +645,7 @@ export function CancellationPolicyView({
               <p>
                 {t("host_non_refundable_learn_p1")}
               </p>
-              <div className="rounded-2xl bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700 p-4 space-y-2">
+              <div className="sm:rounded-xl rounded-lg bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700 p-4 space-y-2">
                 <span className="font-semibold text-[#1F1F1F] dark:text-zinc-100 block">{t("host_non_refundable_learn_how")}</span>
                 <ul className="space-y-1.5 list-disc list-inside text-zinc-600 dark:text-zinc-300">
                   <li>{t("host_non_refundable_learn_b1")}</li>
