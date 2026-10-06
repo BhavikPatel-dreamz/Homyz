@@ -36,7 +36,7 @@ export function BookingStatusTimeline({ events, className = "" }: BookingStatusT
       className={`rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6 shadow-2xs ${className}`}
     >
       <div className="flex items-center justify-between border-b border-zinc-100 pb-3.5 mb-5">
-        <h3 id="booking-timeline-heading" className="text-base sm:text-lg font-semibold text-[#1F1F1F]">
+        <h3 id="booking-timeline-heading" className="text-base sm:text-lg font-medium text-[#1F1F1F]">
           Reservation timeline
         </h3>
         <span className="text-xs text-zinc-500 font-medium">Status updates & milestones</span>

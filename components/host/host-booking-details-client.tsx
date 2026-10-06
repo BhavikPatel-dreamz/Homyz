@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import type { HostBookingRequestDetails } from "@/services/booking.service";
 import { BookingStatusTimeline } from "@/components/bookings/booking-status-timeline";
+import { BackButton } from "@/components/ui/back-button";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { formatExpiryCountdown } from "@/lib/booking/booking-expiry";
 import { differenceInBookingNights, formatBookingDate } from "@/lib/booking/booking-date";
@@ -94,17 +95,15 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
   const totalPrice = details.totalPrice ?? breakdown.guestTotal ?? breakdown.totalPrice ?? 0;
 
   return (
-    <div className="mx-auto w-full max-w-6xl pb-20 pt-6 text-[#1F1F1F]">
+    <div className="mx-auto w-full max-w-380 pb-20 pt-6 text-[#1F1F1F]">
       {/* Back button */}
-      <Link
-        href="/host/bookings"
-        className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-zinc-700 underline underline-offset-4 hover:text-zinc-900 transition-colors"
-      >
-        <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-        </svg>
-        <span>Back to reservations</span>
-      </Link>
+      <div className="inline-flex min-h-11 items-center gap-2">
+        <BackButton
+          onClick={() => router.push("/host/bookings")}
+          aria-label="Back to reservations"
+        />
+        <span className="text-sm font-semibold text-zinc-700">Back to reservations</span>
+      </div>
 
       {/* Header */}
       <div className="mt-4 flex flex-wrap items-start justify-between gap-4 border-b border-zinc-200 pb-6">
@@ -112,7 +111,7 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
           <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
             Reservation #{details.id.slice(-8).toUpperCase()}
           </p>
-          <h1 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight text-[#1F1F1F]">
+          <h1>
             {details.listing.title}
           </h1>
           <p className="mt-1 text-sm text-zinc-600">
@@ -199,8 +198,8 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
         {/* Left Column */}
         <div className="space-y-6">
           {/* Guest Profile Card */}
-          <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-2xs">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-500 mb-4">
+          <section className="rounded-2xl border border-[#d7d7d7] bg-white p-6">
+            <h3 className="text-lg font-medium text-[#1f1f1f] mb-4">
               Guest details
             </h3>
             <div className="flex items-center gap-4">
@@ -219,13 +218,13 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <h4 className="text-base font-bold text-zinc-900 truncate">
+                <h4 className="text-base font-medium text-[#1f1f1f] truncate">
                   {details.guest.name || "Guest"}
                 </h4>
                 {details.guest.email && (
-                  <p className="text-xs text-zinc-500 truncate">{details.guest.email}</p>
+                  <p className="text-sm text-zinc-500 truncate">{details.guest.email}</p>
                 )}
-                <p className="text-xs text-zinc-500 mt-0.5">
+                <p className="text-sm text-zinc-500 mt-0.5">
                   Member since {new Date(details.guest.createdAt).getFullYear()}
                 </p>
               </div>
@@ -233,7 +232,7 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
               {details.conversationId && (
                 <Link
                   href={`/host/messages?id=${details.conversationId}`}
-                  className="rounded-full border border-zinc-300 bg-white px-4 py-2 text-xs font-semibold text-zinc-800 hover:bg-zinc-50 transition-colors whitespace-nowrap"
+                  className="rounded-full border border-transparent bg-[#FCDF9C] px-4 py-2 text-sm font-medium text-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white transition-colors whitespace-nowrap"
                 >
                   Message guest
                 </Link>
@@ -257,26 +256,26 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
           )}
 
           {/* Trip Dates & Guests Info */}
-          <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-2xs">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-500 mb-4">
+          <section className="rounded-2xl border border-[#d7d7d7] bg-white p-6 shadow-2xs">
+            <h3 className="text-lg font-medium text-[#1f1f1f] mb-4">
               Stay details
             </h3>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-              <div className="rounded-xl border border-zinc-100 bg-zinc-50 p-3.5">
-                <span className="text-xs text-zinc-500 font-medium">Check-in</span>
-                <p className="mt-1 text-sm font-bold text-zinc-900">
+              <div className="rounded-xl bg-[#F3F4F5] p-3.5">
+                <span className="text-sm text-[#727272] font-medium">Check-in</span>
+                <p className="mt-1 text-base font-medium text-[#1f1f1f]">
                   {formatBookingDate(details.startDate, { weekday: true })}
                 </p>
               </div>
-              <div className="rounded-xl border border-zinc-100 bg-zinc-50 p-3.5">
-                <span className="text-xs text-zinc-500 font-medium">Check-out</span>
-                <p className="mt-1 text-sm font-bold text-zinc-900">
+              <div className="rounded-xl bg-[#F3F4F5] p-3.5">
+                <span className="text-sm text-[#727272]  font-medium">Check-out</span>
+                <p className="mt-1 text-base font-medium text-[#1f1f1f]">
                   {formatBookingDate(details.endDate, { weekday: true })}
                 </p>
               </div>
-              <div className="rounded-xl border border-zinc-100 bg-zinc-50 p-3.5">
-                <span className="text-xs text-zinc-500 font-medium">Guests</span>
-                <p className="mt-1 text-sm font-bold text-zinc-900">
+              <div className="rounded-xl bg-[#F3F4F5] p-3.5">
+                <span className="text-sm text-[#727272]  font-medium">Guests</span>
+                <p className="mt-1 text-base font-medium text-[#1f1f1f]">
                   {details.guests} {details.guests === 1 ? "guest" : "guests"} · {nights} nights
                 </p>
               </div>
@@ -287,7 +286,7 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
         {/* Right Column: Pricing & CTAs */}
         <div>
           <aside className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm lg:sticky lg:top-28">
-            <h3 className="text-base font-bold text-zinc-900 border-b border-zinc-100 pb-3">
+            <h3 className="text-lg font-semibold text-zinc-900 border-b border-zinc-100 pb-3">
               Payout & pricing breakdown
             </h3>
 
@@ -334,16 +333,16 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
                 <div className="flex justify-between gap-4"><dt className="text-zinc-600">Taxes</dt><dd className="font-medium text-zinc-900">{formatMoney(taxTotal, details.currency)}</dd></div>
               )}
 
-              <div className="flex justify-between gap-4 border-t border-zinc-200 pt-4 text-base font-bold text-zinc-900">
+              <div className="flex justify-between gap-4 border-t border-zinc-200 pt-4 text-base font-semibold text-[#1f1f1f]">
                 <dt>Total ({displayCurrency})</dt>
-                <dd className="text-lg text-emerald-800 font-extrabold">
+                <dd className="text-lg text-emerald-800 font-semibold">
                   {formatMoney(totalPrice, details.currency)}
                 </dd>
               </div>
 
-              <div className="flex items-center justify-between gap-4 border-t border-zinc-100 pt-3 text-xs text-zinc-600">
+              <div className="flex items-center justify-between gap-4 border-t border-zinc-100 pt-3 text-sm text-[#727272]">
                 <dt className="font-medium">Payment status</dt>
-                <dd className="font-semibold text-amber-900 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full">
+                <dd className="font-medium text-amber-900 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full">
                   Pending / Deferred
                 </dd>
               </div>
@@ -356,32 +355,36 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
                   <button
                     type="button"
                     onClick={() => setIsAcceptModalOpen(true)}
-                    className="flex min-h-12 w-full items-center justify-center rounded-xl bg-[#FCDF9C] hover:bg-amber-400 text-zinc-900 font-bold text-sm transition-colors shadow-2xs cursor-pointer"
+                    className="flex min-h-12 w-full items-center justify-center rounded-lg bg-[#FCDF9C] hover:bg-amber-400 text-[#1f1f1f] font-medium text-base transition-colors cursor-pointer"
                   >
                     Accept request
                   </button>
                   <button
                     type="button"
                     onClick={() => setIsDeclineModalOpen(true)}
-                    className="flex min-h-11 w-full items-center justify-center rounded-xl border border-zinc-300 hover:bg-zinc-100 text-zinc-700 font-semibold text-sm transition-colors cursor-pointer"
+                    className="flex min-h-11 w-full items-center justify-center rounded-lg border border-[#1f1f1f] hover:bg-white text-[#1f1f1f] font-medium text-base transition-colors duration-300 cursor-pointer"
                   >
                     Decline request
                   </button>
                 </>
               ) : isExpired ? (
-                <div className="rounded-xl bg-slate-50 border border-slate-200 p-3 text-center text-xs font-medium text-slate-600">
+                <div className="rounded-lg bg-slate-50 border border-slate-200 p-3 text-center text-xs font-medium text-slate-600">
                   This request has expired and can no longer be accepted.
                 </div>
               ) : details.status === "CONFIRMED" ? (
-                <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-3 text-center text-xs font-semibold text-emerald-800">
-                  ✓ Booking confirmed
+                <div className="flex items-center justify-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-center text-sm font-medium text-emerald-800">
+                  <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" className="size-5 shrink-0" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="9" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="m8 12 2.5 2.5L16 9" />
+                  </svg>
+                  <span>Booking confirmed</span>
                 </div>
               ) : null}
 
               {details.conversationId && (
                 <Link
                   href={`/host/messages?id=${details.conversationId}`}
-                  className="flex min-h-11 w-full items-center justify-center rounded-xl border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-800 font-medium text-xs transition-colors"
+                  className="flex min-h-11 w-full items-center justify-center rounded-lg border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-800 font-medium text-sm transition-colors"
                 >
                   Open conversation with guest
                 </Link>

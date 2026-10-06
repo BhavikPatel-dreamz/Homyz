@@ -439,7 +439,7 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
                   <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                     <div className="flex items-start gap-2 flex-col flex-wrap">
                       <span
-                        className={`inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[11px] font-medium ${badge.bgClass}`}
+                        className={`inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs font-normal ${badge.bgClass}`}
                       >
                         {badge.icon}
                         <span>{badge.label}</span>
@@ -447,8 +447,8 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
 
                       <h3
                         className={`text-sm sm:text-base leading-snug truncate ${!item.isRead
-                            ? "font-medium text-[#1F1F1F]"
-                            : "font-medium text-zinc-800"
+                          ? "font-normal text-[#1F1F1F]"
+                          : "font-normal text-zinc-800"
                           }`}
                       >
                         {item.title}
