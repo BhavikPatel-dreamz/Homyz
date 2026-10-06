@@ -4,18 +4,21 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { useLanguage, type TranslationKey } from "@/lib/i18n/language-context";
 
-const links = [
-  { href: "/host/today", label: "Today" },
-  { href: "/host/calendar", label: "Calendar" },
-  { href: "/host/listings", label: "Listing" },
-  { href: "/host/messages", label: "Messages" },
+const links: { href: string; labelKey: TranslationKey; fallback: string }[] = [
+  { href: "/host/today", labelKey: "host_nav_today", fallback: "Today" },
+  { href: "/host/calendar", labelKey: "host_nav_calendar", fallback: "Calendar" },
+  { href: "/host/listings", labelKey: "host_nav_listing", fallback: "Listing" },
+  { href: "/host/messages", labelKey: "host_nav_messages", fallback: "Messages" },
 ];
 
 export function MessagesHeader() {
   const pathname = usePathname();
   const { data: session } = useSession();
   const user = session?.user;
+  const { t } = useLanguage();
+
   return (
     <header className="sticky top-0 z-40 bg-white/95 text-[#1F1F1F] backdrop-blur">
       <div className="mx-auto flex h-[76px] w-full max-w-[1520px] items-center justify-between px-5 sm:px-6 lg:h-[88px]">
@@ -38,7 +41,7 @@ export function MessagesHeader() {
           />
         </Link>
         <nav
-          aria-label="Host navigation"
+          aria-label={t("header_aria_host_navigation" as any, "Host navigation")}
           className="hidden items-center gap-5 text-base text-[#727272] font-medium md:flex xl:gap-8"
         >
           {links.map((link) => (
@@ -51,7 +54,7 @@ export function MessagesHeader() {
                   : "transition-colors hover:text-zinc-950"
               }
             >
-              {link.label}
+              {t(link.labelKey, link.fallback)}
             </Link>
           ))}
         </nav>
@@ -60,7 +63,7 @@ export function MessagesHeader() {
             href="/dashboard"
             className="hidden rounded-full bg-[#FCDF9C] px-4 py-2 text-sm font-medium transition-colors hover:bg-[#F7D37D] xl:block"
           >
-            Switch to traveling
+            {t("header_switch_traveling", "Switch to traveling")}
           </Link>
           {user?.image ? (
             <Link
@@ -69,7 +72,7 @@ export function MessagesHeader() {
             >
               <Image
                 src={user.image}
-                alt={user.name || "Profile"}
+                alt={user.name || t("header_profile", "Profile")}
                 width={32}
                 height={32}
                 className="size-8 object-cover"
@@ -78,7 +81,7 @@ export function MessagesHeader() {
           ) : null}
           <Link
             href="/profile"
-            aria-label="Open menu"
+            aria-label={t("header_open_menu", "Open menu")}
             className="flex size-10 items-center justify-center rounded-full bg-zinc-100 transition-colors hover:bg-zinc-200"
           >
             <Image
