@@ -206,20 +206,20 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
             {sessionLoading ? (
               <div
                 aria-label="Loading account"
-                className="hidden h-12 w-[168px] shrink-0 animate-pulse rounded-full bg-zinc-100 sm:block"
+                className="hidden h-12 w-[168px] shrink-0 animate-pulse rounded-full bg-zinc-100 min-[992px]:block"
               />
             ) : isHost ? (
               isHostRoute ? (
                 <Link
                   href="/dashboard"
-                  className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-4 py-2.5 md:px-6 md:py-3 lg:text-base text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 sm:inline-flex ${primaryButtonInteractionClass}`}
+                  className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-4 py-2.5 md:px-6 md:py-3 lg:text-base text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 min-[992px]:inline-flex ${primaryButtonInteractionClass}`}
                 >
                   {t("header_switch_traveling") || "Switch to traveling"}
                 </Link>
               ) : (
                 <Link
                   href="/host/today"
-                  className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-4 py-2.5 md:px-6 md:py-3 lg:text-base text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 sm:inline-flex ${primaryButtonInteractionClass}`}
+                  className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-4 py-2.5 md:px-6 md:py-3 lg:text-base text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 min-[992px]:inline-flex ${primaryButtonInteractionClass}`}
                 >
                   {t("header_switch_hosting") || "Switch to hosting"}
                 </Link>
@@ -229,33 +229,33 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                 type="button"
                 onClick={handleBecomeHost}
                 disabled={isConvertingRole}
-                className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 lg:text-base text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 sm:inline-flex ${primaryButtonInteractionClass}`}
+                className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 lg:text-base text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 min-[992px]:inline-flex ${primaryButtonInteractionClass}`}
               >
                 {isConvertingRole ? (t("host_loading") || "Loading...") : (t("header_become_a_host") || "Become a host")}
               </button>
             ) : (
               <Link
                 href="/login?callbackUrl=/host/onboarding"
-                className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 lg:text-base text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 sm:inline-flex ${primaryButtonInteractionClass}`}
+                className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 lg:text-base text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 min-[992px]:inline-flex ${primaryButtonInteractionClass}`}
               >
                 {t("header_become_a_host") || "Become a host"}
               </Link>
             )}
 
             {sessionLoading ? (
-              <div className="hidden h-9 w-9 shrink-0 animate-pulse rounded-full bg-zinc-100 md:block" aria-hidden="true" />
+              <div className="hidden h-9 w-9 shrink-0 animate-pulse rounded-full bg-zinc-100 min-[992px]:block" aria-hidden="true" />
             ) : user?.image ? (
-              <Link href="/profile" className="relative hidden h-9 w-9 shrink-0 overflow-hidden rounded-full transition-opacity hover:opacity-80 md:block" title="Profile">
+              <Link href="/profile" className="relative hidden h-9 w-9 shrink-0 overflow-hidden rounded-full transition-opacity hover:opacity-80 min-[992px]:block" title="Profile">
                 <Image src={user.image} alt={user.name || "User avatar"} fill className="object-cover" sizes="36px" priority />
               </Link>
             ) : user ? (
-              <Link href="/profile" className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5] text-[#727272] transition-colors hover:bg-zinc-200 md:flex" title="Profile">
+              <Link href="/profile" className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5] text-[#727272] transition-colors hover:bg-zinc-200 min-[992px]:flex" title="Profile">
                 <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
                 </svg>
               </Link>
             ) : (
-              <button type="button" onClick={() => setMenuOpen(!menuOpen)} className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5] text-[#727272] transition-colors hover:bg-zinc-200 md:flex" title="Account">
+              <button type="button" onClick={() => setMenuOpen(!menuOpen)} className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5] text-[#727272] transition-colors hover:bg-zinc-200 min-[992px]:flex" title="Account">
                 <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
                 </svg>
@@ -266,7 +266,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
             {user && (
               <Link
                 href="/profile/tab/notifications"
-                className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5] text-[#1F1F1F] transition-colors hover:bg-zinc-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 md:h-9 md:w-9"
+                className="relative hidden h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5] text-[#1F1F1F] transition-colors hover:bg-zinc-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 min-[992px]:flex min-[992px]:h-9 min-[992px]:w-9"
                 aria-label={unreadCount > 0 ? `${t("header_notifications") || "Notifications"}, ${unreadCount} unread` : (t("header_notifications") || "Notifications")}
                 title={t("header_notifications") || "Notifications"}
               >
@@ -288,7 +288,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
               </Link>
             )}
 
-            <button type="button" onClick={() => setLangModalOpen(!langModalOpen)} className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5] transition-colors hover:bg-zinc-200 sm:flex" title="Language" aria-label="Choose language and currency">
+            <button type="button" onClick={() => setLangModalOpen(!langModalOpen)} className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5] transition-colors hover:bg-zinc-200 min-[992px]:flex" title="Language" aria-label="Choose language and currency">
               <Image src="/images/icons/translate-icon.svg" alt="" width={24} height={24} className="h-6 w-6" />
             </button>
 
@@ -298,7 +298,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
 
             {/* Logged-in menus keep their account details and sign-out action visible; only their links scroll. */}
             {menuOpen && !sessionLoading && (
-              <div className={`absolute right-0 top-full z-50 max-h-[calc(100dvh-2rem)] w-72 max-w-[calc(100vw-2rem)] rounded-[16px] border-2 border-white bg-[#F3F4F5] p-3.5 pr-2.5 text-[#1F1F1F] shadow-2xl animate-in fade-in zoom-in-95 sm:w-80 lg:max-h-[620px] ${user ? "flex flex-col overflow-hidden" : "visible-scrollbar overflow-x-hidden overflow-y-auto overscroll-contain"}`}>
+              <div className={`absolute right-0 top-full z-50 max-h-[calc(100dvh-2rem)] w-72 max-w-[calc(100vw-2rem)] rounded-[16px] border-2 border-white bg-[#F3F4F5] p-3.5 pr-2.5 text-[#1F1F1F] shadow-2xl animate-in fade-in zoom-in-95 sm:w-80 lg:max-h-[620px] ${user ? "flex h-[calc(100dvh-11.25rem-env(safe-area-inset-bottom))] max-h-[calc(100dvh-11.25rem-env(safe-area-inset-bottom))] flex-col overflow-hidden sm:h-auto sm:max-h-[calc(100dvh-2rem)]" : "visible-scrollbar overflow-x-hidden overflow-y-auto overscroll-contain"}`}>
                 {!user ? (
                   /* ------------------------------------------------------------- */
                   /* LOGGED OUT DROPDOWN MENU (100% Matches Reference Screenshot 3)*/
@@ -397,7 +397,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                   /* HOSTING MENU (Active when host is in hosting mode /host/*)    */
                   /* ------------------------------------------------------------- */
                   <div className="flex min-h-0 flex-1 flex-col">
-                    <div className="mb-1 shrink-0 border-b border-[#727272]/30 px-3.5 py-3">
+                    <div className="mb-1 shrink-0 border-b border-[#727272]/30 px-2 pb-2 sm:px-3.5 sm:py-3">
                       <p className="text-sm font-semibold text-[#1F1F1F] truncate">{user.name || user.email}</p>
                       <div className="flex items-center justify-between gap-5">
                         <p className="text-sm text-[#727272] truncate mt-0.5">{user.email}</p>
@@ -407,7 +407,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                       </div>
                     </div>
 
-                    <div className="visible-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">
+                    <div className="visible-scrollbar min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-contain pr-1">
                       <div className="space-y-1">
                         {/* Switch to traveling action */}
                         <div className="pt-0.5 pb-1">
@@ -607,7 +607,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                       </div>
                     </div>
 
-                    <div className="visible-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">
+                    <div className="visible-scrollbar min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-contain pr-1">
                       <div className="space-y-1">
                         {/* Switch to hosting (only if user is host/admin) */}
                         {isHost && (
