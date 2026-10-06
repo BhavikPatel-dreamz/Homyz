@@ -204,17 +204,17 @@ export function WorkspaceDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className={`${variant === "listing-filter" ? "h-dvh max-h-dvh p-5 shadow-[0_2px_6px_rgba(0,0,0,0.25)] sm:h-auto sm:max-h-[calc(100dvh-48px)] sm:rounded-2xl sm:p-6" : variant === "reservation-details" ? "flex h-dvh max-h-dvh flex-col overflow-hidden shadow-2xl sm:h-auto sm:max-h-[88dvh] sm:rounded-[20px]" : "max-h-[88dvh] overflow-y-auto overscroll-contain rounded-2xl p-6 shadow-2xl"} w-full min-w-0 ${maxWidth} outline-none ${dark ? "bg-[#1F1F1F] text-white" : "bg-white text-[#1F1F1F]"}`}
+        className={`${variant === "listing-filter" ? "h-dvh max-h-dvh p-5 shadow-[0_2px_6px_rgba(0,0,0,0.25)] sm:h-auto sm:max-h-[calc(100dvh-48px)] sm:rounded-[20px] sm:p-6" : variant === "reservation-details" ? "flex h-dvh max-h-dvh flex-col overflow-hidden shadow-2xl sm:h-auto sm:max-h-[88dvh] sm:rounded-[20px]" : "max-h-[88dvh] overflow-y-auto overscroll-contain rounded-2xl p-6 shadow-2xl"} w-full min-w-0 ${maxWidth} outline-none ${dark ? "bg-[#1F1F1F] text-white" : "bg-white text-[#1F1F1F]"}`}
       >
         <div
-          className={`flex items-center justify-between gap-3 border-b ${variant === "listing-filter" ? "mb-3 border-[#D7D7D7] pb-2 sm:mb-4 sm:pb-4" : variant === "reservation-details" ? "z-10 shrink-0 border-zinc-200 bg-white px-5 py-4 sm:px-6 sm:py-5 dark:border-white/10 dark:bg-[#1F1F1F]" : "mb-5 border-zinc-100 pb-4 dark:border-white/10"}`}
+          className={`flex items-center justify-between gap-3 border-b ${variant === "listing-filter" ? "mb-3 border-[#D7D7D7] pb-2 sm:mb-4 sm:pb-4" : variant === "reservation-details" ? "z-10 shrink-0 border-zinc-200 bg-white px-5 py-2.5 sm:px-6 sm:py-3 dark:border-white/10 dark:bg-[#1F1F1F]" : "mb-5 border-zinc-100 pb-4 dark:border-white/10"}`}
         >
           <h2
             id={titleId}
             className={
               variant === "listing-filter"
-                ? "text-lg font-normal leading-7 sm:font-medium"
-                : "text-lg font-semibold tracking-tight"
+                ? "text-xl font-medium leading-7 sm:font-medium"
+                : "text-xl font-medium tracking-tight"
             }
           >
             {title}
@@ -466,7 +466,7 @@ export function ReservationDetails({
                 </div>
                 {booking.guestId && (
                   <Link
-                    href={`/profile/${booking.guestId}`}
+                    href={`/users/profile/${booking.guestId}`}
                     className="shrink-0 text-sm font-normal text-[#727272] underline underline-offset-2 hover:text-[#1f1f1f] dark:text-zinc-100"
                   >
                     View profile

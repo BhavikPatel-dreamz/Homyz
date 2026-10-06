@@ -661,10 +661,10 @@ export function GuestMessagesWorkspace({
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-1 mb-0.5">
-                        <span className={`text-sm truncate ${hasUnread ? "font-bold text-[#1F1F1F]" : "font-semibold text-zinc-800"}`}>
+                        <span className={`text-sm truncate ${hasUnread ? "font-medium text-[#1F1F1F]" : "font-semibold text-zinc-800"}`}>
                           {conv.host.name || "Host"}
                         </span>
-                        <span className="text-[11px] text-zinc-400 shrink-0">
+                        <span className="text-xs text-[#727272] shrink-0">
                           {formatConversationListDate(conv.lastMessageAt, initialRenderedAt)}
                         </span>
                       </div>

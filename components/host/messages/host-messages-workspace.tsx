@@ -848,7 +848,7 @@ export function HostMessagesWorkspace({
       if (!element) return;
       const hasOverflow = element.scrollHeight > element.clientHeight + 1;
       const trackHeight = rightPanelScrollTrackRef.current?.clientHeight || element.clientHeight;
-      const arrowSpace = 28;
+      const arrowSpace = 32;
       const usableTrackHeight = Math.max(0, trackHeight - arrowSpace * 2);
       const height = hasOverflow ? Math.min(60, usableTrackHeight) : 0;
       const maxTop = Math.max(0, usableTrackHeight - height);
@@ -879,43 +879,43 @@ export function HostMessagesWorkspace({
     switch (status) {
       case "CONFIRMED":
         return (
-          <span className="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-800 border border-emerald-300">
+          <span className="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-800 border border-emerald-300">
             Confirmed stay
           </span>
         );
       case "PENDING":
         return (
-          <span className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-800 border border-amber-300">
+          <span className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800 border border-amber-300">
             Pending
           </span>
         );
       case "CANCELLED":
         return (
-          <span className="inline-flex items-center rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-semibold text-rose-800 border border-rose-300">
+          <span className="inline-flex items-center rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-medium text-rose-800 border border-rose-300">
             Cancelled
           </span>
         );
       case "REJECTED":
         return (
-          <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-semibold text-zinc-700 border border-zinc-300">
+          <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-700 border border-zinc-300">
             Declined
           </span>
         );
       case "EXPIRED":
         return (
-          <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-semibold text-zinc-600 border border-zinc-300">
+          <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-600 border border-zinc-300">
             Expired
           </span>
         );
       case "COMPLETED":
         return (
-          <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-semibold text-zinc-700 border border-zinc-300">
+          <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-700 border border-zinc-300">
             Completed
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-semibold text-zinc-700 border border-zinc-300 capitalize">
+          <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-700 border border-zinc-300 capitalize">
             {status.replaceAll("_", " ").toLowerCase()}
           </span>
         );
@@ -1117,10 +1117,10 @@ export function HostMessagesWorkspace({
                     {/* Details */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-1 mb-0.5">
-                        <span className={`text-sm truncate ${hasUnread ? "font-bold text-[#1F1F1F]" : "font-normal text-[#242424]"}`}>
+                        <span className={`text-sm truncate ${hasUnread ? "font-medium text-[#1F1F1F]" : "font-normal text-[#242424]"}`}>
                           {conv.guest.name || "Guest"}
                         </span>
-                        <span className="text-[11px] text-zinc-400 shrink-0">
+                        <span className="text-xs text-[#727272] shrink-0">
                           {formatListDate(conv.lastMessageAt)}
                         </span>
                       </div>
@@ -2010,13 +2010,13 @@ export function HostMessagesWorkspace({
             )}
           </aside>
           {rightPanelScrollThumb.visible && (
-            <div ref={rightPanelScrollTrackRef} className="absolute inset-y-0 right-0 hidden w-[22px] rounded-[30px] bg-white lg:block">
-              <button type="button" aria-label="Scroll message details up" onClick={() => scrollRightPanelByPage("up")} className="absolute left-0 top-1 z-10 flex size-[22px] items-center justify-center rounded-full text-[#727272] transition hover:bg-white/70 hover:text-[#1f1f1f]">
-                <svg aria-hidden="true" className="size-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m18 15-6-6-6 6" /></svg>
+            <div ref={rightPanelScrollTrackRef} className="absolute inset-y-0 right-0 hidden w-[22px] rounded-[30px] bg-[#F3F4F5] lg:block">
+              <button type="button" aria-label="Scroll message details up" onClick={() => scrollRightPanelByPage("up")} className="absolute left-0 top-1 z-10 flex h-[28px] w-[24px] items-center justify-center rounded-full bg-[#DDDDDE] text-[#727272] shadow-[0px_2px_4px_rgba(0,0,0,0.25)] transition hover:bg-white/70 hover:text-[#1f1f1f]">
+                <svg aria-hidden="true" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m6 15 6-6 6 6" /></svg>
               </button>
               <div onPointerDown={onRightPanelThumbPointerDown} className={`absolute left-0 top-0 w-[22px] touch-none select-none rounded-[30px] border border-white bg-[#DDDDDE] shadow-[0_2px_4px_rgba(0,0,0,0.25)] will-change-transform ${isRightPanelScrollbarDragging ? "cursor-grabbing" : "cursor-grab"}`} style={{ height: `${rightPanelScrollThumb.height}px`, transform: `translate3d(0, ${rightPanelScrollThumb.top}px, 0)` }} />
-              <button type="button" aria-label="Scroll message details down" onClick={() => scrollRightPanelByPage("down")} className="absolute bottom-1 left-0 z-10 flex size-[22px] items-center justify-center rounded-full text-[#727272] transition hover:bg-white/70 hover:text-[#1f1f1f]">
-                <svg aria-hidden="true" className="size-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m6 9 6 6 6-6" /></svg>
+              <button type="button" aria-label="Scroll message details down" onClick={() => scrollRightPanelByPage("down")} className="absolute bottom-1 left-0 z-10 flex h-[28px] w-[24px] items-center justify-center rounded-full bg-[#DDDDDE] text-[#727272] shadow-[0px_2px_4px_rgba(0,0,0,0.25)] transition hover:bg-white/70 hover:text-[#1f1f1f]">
+                <svg aria-hidden="true" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m6 9 6 6 6-6" /></svg>
               </button>
             </div>
           )}
