@@ -593,6 +593,12 @@ export function CalendarSettingsPanel({
             const cleaning = data.get("cleaningFee")
               ? Math.round(toNativeMajor(num("cleaningFee")) * 100)
               : 0;
+            const extraGuest = data.get("extraGuestFee")
+              ? Math.round(toNativeMajor(num("extraGuestFee")) * 100)
+              : 0;
+            const includedGuestsVal = data.get("includedGuests")
+              ? Math.max(1, Math.round(Number(data.get("includedGuests"))))
+              : (rawDiscounts.includedGuests ?? rawDiscounts.baseGuests ?? 1);
 
             if (
               !Number.isFinite(price) ||
@@ -649,6 +655,8 @@ export function CalendarSettingsPanel({
                   enabled: customPromoIsEnabled,
                   percentage: customPromo,
                 },
+              includedGuests: includedGuestsVal,
+              baseGuests: includedGuestsVal,
             };
 
             await onSave({
@@ -657,6 +665,7 @@ export function CalendarSettingsPanel({
               weekendPrice: weekendPriceVal,
               discounts: updatedDiscounts,
               cleaningFee: cleaning,
+              extraGuestFee: extraGuest,
             });
             setDirty(false);
           }}
@@ -922,6 +931,35 @@ export function CalendarSettingsPanel({
               step: "0.01",
               inputMode: "decimal",
               helperText: "One-time host cleaning fee recorded with property.",
+            })}
+
+            {renderInputField({
+              name: "extraGuestFee",
+              label: "Extra guest fee",
+              defaultValue: toDisplayMajor(((listing as any).extraGuestFee || 0) / 100),
+              prefix: displayCurrency,
+              suffix: "/ guest / night",
+              min: 0,
+              max: 10000,
+              step: "0.01",
+              inputMode: "decimal",
+              helperText: "Fee charged per extra guest per night beyond included guest capacity.",
+            })}
+
+            {renderInputField({
+              name: "includedGuests",
+              label: "Included guests",
+              defaultValue: String(
+                rawDiscounts.includedGuests ??
+                rawDiscounts.baseGuests ??
+                1
+              ),
+              suffix: "guests",
+              min: 1,
+              max: listing.guests || 20,
+              step: "1",
+              inputMode: "numeric",
+              helperText: `Base capacity included before extra guest fee applies (max capacity: ${listing.guests || 1}).`,
             })}
           </section>
 

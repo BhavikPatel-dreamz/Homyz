@@ -43,7 +43,7 @@ export type CheckoutSummaryQuote = {
 
   /** Flat host cleaning charge for the stay, in minor currency units. */
   cleaningFee?: number;
-  /** Legacy quote field; inclusive occupancy quotes keep this at zero. */
+  /** Per-extra-guest, per-night charge already calculated by the server. */
   extraGuestFee: number;
   petFee?: number;
   hostServiceFee: number;
@@ -157,6 +157,7 @@ export function getCheckoutPriceRows(
     });
   }
 
+  if (quote.extraGuestFee > 0) rows.push({ id: "extra-guests", label: "Extra guest fee", amount: quote.extraGuestFee });
   if ((quote.petFee || 0) > 0) rows.push({ id: "pets", label: "Pet fee", amount: quote.petFee || 0 });
   if ((quote.cleaningFee || 0) > 0) rows.push({ id: "cleaning", label: "Cleaning fee", amount: quote.cleaningFee || 0 });
 

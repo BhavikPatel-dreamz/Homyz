@@ -403,29 +403,42 @@ runTest("9. Discounts: Highest percentage wins; ties broken by Monthly > Weekly 
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 10. HOST FEES & CLEANING FEE ARCHITECTURAL ISOLATION
+// 10. HOST FEES & CLEANING FEE ARCHITECTURAL INTEGRATION
 // ─────────────────────────────────────────────────────────────────────────────
 
-runTest("10. Fees: Extra guest fee applied per guest per night; cleaning fee strictly excluded from guest checkout", async () => {
+runTest("10. Fees: Inclusive occupancy model with cleaning fee and pet fee support", async () => {
   const quote = await calculateBookingPrice({
     checkIn: "2026-10-01",
     checkOut: "2026-10-03", // 2 nights
     weekdayBasePrice: 40000, // 400 SAR / night = 800 SAR subtotal
     baseGuests: 2,
-    guests: 4, // 2 extra guests
-    extraGuestFee: 5000, // 50 SAR per extra guest per night = 2 * 50 * 2 = 200 SAR (20000 cents)
-    petFee: 10000, // 100 SAR (10000 cents)
+    guests: 4, // 4 guests (2 exceeding baseGuests threshold of 2)
+    extraGuestFee: 5000, // 50 SAR per extra guest per night
+    cleaningFee: 15000, // 150 SAR cleaning fee
+    petFee: 10000, // 100 SAR pet fee
     hostServiceFeePercentage: 15,
   });
 
   assert.equal(quote.staySubtotal, 80000);
-  assert.equal(quote.extraGuestFee, 20000);
+  assert.equal(quote.extraGuestFee, 20000, "Extra guest fee: 2 extra guests * 50 SAR * 2 nights = 200 SAR");
+  assert.equal(quote.cleaningFee, 15000);
   assert.equal(quote.petFee, 10000);
-  assert.equal(quote.totalAdditionalFees, 30000);
+  assert.equal(quote.totalAdditionalFees, 45000);
 
-  // Cleaning fee is absent from quote fees
+  // Test guest count at or below baseGuests threshold produces 0 extra guest fee
+  const quoteWithinThreshold = await calculateBookingPrice({
+    checkIn: "2026-10-01",
+    checkOut: "2026-10-03",
+    weekdayBasePrice: 40000,
+    baseGuests: 2,
+    guests: 2,
+    extraGuestFee: 5000,
+  });
+  assert.equal(quoteWithinThreshold.extraGuestFee, 0, "No extra fee when guests <= baseGuests threshold");
+
+  // Cleaning fee is present in quote fees when configured > 0
   const hasCleaningFee = quote.feeBreakdown.some((f) => f.id === "cleaning");
-  assert.equal(hasCleaningFee, false, "Cleaning fee must never be charged in guest quote flow");
+  assert.equal(hasCleaningFee, true, "Cleaning fee is present in feeBreakdown");
 });
 
 // ─────────────────────────────────────────────────────────────────────────────

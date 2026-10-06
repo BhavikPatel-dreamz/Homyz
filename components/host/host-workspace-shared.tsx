@@ -29,6 +29,11 @@ type HostPriceBreakdown = {
   paymentMode?: string;
   paymentStatus?: string;
   cancellationPolicySnapshot?: string;
+  cancellation?: {
+    cancelledBy?: string;
+    reason?: string | null;
+    guestRefundAmount?: number;
+  };
   breakdown?: Array<{ price?: number }>;
   taxes?: Array<{
     taxName?: string;
@@ -43,6 +48,7 @@ type HostPriceBreakdown = {
   nonRefundableDiscount?: { amount?: number } | null;
   payoutBreakdown?: {
     accommodationSubtotal?: number;
+    extraGuestFee?: number;
     petFee?: number;
     cleaningFee?: number;
     taxesCollectedForHost?: number;
@@ -374,6 +380,32 @@ export function ReservationDetails({
                   #{confirmationCode}
                 </span>
               </div>
+
+              {/* Cancellation Notice Banner */}
+              {(booking.status === "CANCELLED" || pb?.cancellation) && (
+                <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50/80 p-3.5 text-xs text-rose-950 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-200">
+                  <p className="font-semibold text-rose-900 dark:text-rose-100 flex items-center gap-1.5">
+                    <span className="size-2 rounded-full bg-rose-600 inline-block" />
+                    Reservation Cancelled
+                  </p>
+                  <div className="mt-2 space-y-1 text-[11px] text-rose-900/90 dark:text-rose-200/90">
+                    <p>
+                      Cancelled by:{" "}
+                      <span className="font-medium capitalize">
+                        {String(pb?.cancellation?.cancelledBy || "Guest").toLowerCase()}
+                      </span>
+                    </p>
+                    {pb?.cancellation?.reason && (
+                      <p>Reason: {String(pb.cancellation.reason)}</p>
+                    )}
+                    {typeof pb?.cancellation?.guestRefundAmount === "number" && (
+                      <p>
+                        Guest refund: {formatPrice(pb.cancellation.guestRefundAmount, sourceCurrency, 2)}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Property Details */}
               <div className="flex items-start gap-3.5 sm:gap-4">

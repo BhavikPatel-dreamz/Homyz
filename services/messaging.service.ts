@@ -1560,6 +1560,98 @@ async function declineInquiry(
   return getConversationById(actor, conversationId);
 }
 
+export interface HostResponseMetrics {
+  totalGuestInquiries: number;
+  respondedCount: number;
+  respondedWithin24hCount: number;
+  // A rate cannot be inferred until there has been at least one guest inquiry.
+  responseRatePercentage: number | null;
+  averageResponseTimeMinutes: number | null;
+}
+
+/**
+ * Calculates authoritative host response metrics for guest inquiries over a rolling window.
+ * Evaluates whether the host replied within the 24-hour SLA required for Superhost.
+ */
+async function calculateHostResponseMetrics(
+  hostId: string,
+  windowMonths: number = 12,
+  asOf: Date = new Date(),
+): Promise<HostResponseMetrics> {
+  const windowStart = new Date(asOf);
+  windowStart.setMonth(windowStart.getMonth() - windowMonths);
+
+  const conversations = await prisma.conversation.findMany({
+    where: {
+      hostId,
+      createdAt: { gte: windowStart, lte: asOf },
+    },
+    include: {
+      messages: {
+        orderBy: { createdAt: "asc" },
+        select: {
+          id: true,
+          senderId: true,
+          type: true,
+          createdAt: true,
+        },
+      },
+    },
+  });
+
+  let totalGuestInquiries = 0;
+  let respondedCount = 0;
+  let respondedWithin24hCount = 0;
+  let totalResponseTimeMinutes = 0;
+  const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
+
+  for (const conv of conversations) {
+    if (!conv.messages || conv.messages.length === 0) continue;
+
+    // Count an actual guest-authored message, never a sender-less system event.
+    const firstGuestMsg = conv.messages.find(
+      (m: { id: string; senderId: string | null; type: string; createdAt: Date }) =>
+        m.senderId === conv.guestId && m.type !== "SYSTEM",
+    );
+    if (!firstGuestMsg) continue;
+
+    totalGuestInquiries++;
+
+    // Find the first host reply following the guest's message
+    const firstHostReply = conv.messages.find(
+      (m: { id: string; senderId: string | null; createdAt: Date }) =>
+        m.senderId === hostId && m.createdAt > firstGuestMsg.createdAt,
+    );
+
+    if (firstHostReply) {
+      respondedCount++;
+      const responseTimeMs = firstHostReply.createdAt.getTime() - firstGuestMsg.createdAt.getTime();
+      const responseTimeMinutes = Math.max(1, Math.round(responseTimeMs / (60 * 1000)));
+      totalResponseTimeMinutes += responseTimeMinutes;
+
+      if (responseTimeMs <= TWENTY_FOUR_HOURS_MS) {
+        respondedWithin24hCount++;
+      }
+    }
+  }
+
+  const responseRatePercentage =
+    totalGuestInquiries > 0
+      ? Math.round((respondedWithin24hCount / totalGuestInquiries) * 1000) / 10
+      : null;
+
+  const averageResponseTimeMinutes =
+    respondedCount > 0 ? Math.round(totalResponseTimeMinutes / respondedCount) : null;
+
+  return {
+    totalGuestInquiries,
+    respondedCount,
+    respondedWithin24hCount,
+    responseRatePercentage,
+    averageResponseTimeMinutes,
+  };
+}
+
 export const messagingService = {
   listConversationsForUser,
   getConversationById,
@@ -1576,4 +1668,5 @@ export const messagingService = {
   sendSpecialOffer,
   acceptSpecialOffer,
   declineInquiry,
+  calculateHostResponseMetrics,
 };

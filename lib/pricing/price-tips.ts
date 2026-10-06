@@ -281,8 +281,18 @@ export function calculatePriceTips({
       continue;
     }
 
-    // Case 2: Insufficient data for this property -> INSUFFICIENT_DATA
-    if (!hasReliableData) {
+    // Case 2: Insufficient data for this date -> INSUFFICIENT_DATA
+    const hasDateSignals =
+      hasReliableData ||
+      isWeekend ||
+      Boolean(
+        (typeof listing.weekendPrice === "number" && listing.weekendPrice > 0) ||
+        (typeof listing.weekendPremium === "number" && listing.weekendPremium > 0) ||
+        (typeof listing.smartPricingMinPrice === "number" && listing.smartPricingMinPrice > 0) ||
+        (typeof listing.smartPricingMaxPrice === "number" && listing.smartPricingMaxPrice > 0)
+      );
+
+    if (!hasDateSignals) {
       insufficientDataCount++;
       applicableCount++;
       totalCurrent += current;
@@ -340,7 +350,7 @@ export function calculatePriceTips({
         weekendCode = "CONFIGURED_WEEKEND_PREMIUM";
       } else {
         baseline = Math.round((baseRate * 1.15) / 100) * 100;
-        weekendReason = "Middle East weekend night demand (Thursday/Friday)";
+        weekendReason = "Weekend night demand adjustment (Thursday/Friday)";
         weekendCode = "WEEKEND_NIGHT_DEMAND";
       }
     }
@@ -443,10 +453,10 @@ export function calculatePriceTips({
       target = current; // Suggested matches current
       difference = 0;
       percentChange = 0;
-      reasons.length = 0;
-      reasonCodes.length = 0;
-      reasons.push("Your current nightly rate is already well-aligned with demand signals for this date");
-      reasonCodes.push("OPTIMAL_RATE");
+      if (reasons.length === 0) {
+        reasons.push("Your current nightly rate is already well-aligned with demand signals for this date");
+        reasonCodes.push("OPTIMAL_RATE");
+      }
       noChangeCount++;
     } else if (target > current) {
       action = "INCREASE";

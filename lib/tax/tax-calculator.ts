@@ -126,6 +126,7 @@ export class TaxCalculator {
 
     const payoutBreakdown: HostPayoutBreakdown = {
       accommodationSubtotal,
+      extraGuestFee,
       petFee,
       cleaningFee,
       taxesCollectedForHost: hostRemittedTaxTotal,

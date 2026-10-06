@@ -14,104 +14,24 @@ async function runPropertyCardAudit() {
   console.log("==================================================================\n");
 
   // -------------------------------------------------------------------------
-  // [1] Centralized isGuestFavorite Qualification Formula Audit
+  // [1] Persisted Guest Favorite Badge Audit
   // -------------------------------------------------------------------------
-  console.log("--- [1] isGuestFavorite Formula Audit ---");
+  console.log("--- [1] isGuestFavorite Official Status Audit ---");
 
-  // 1.1 High rating with sufficient reviews qualifies
-  const topRated = isGuestFavorite({
-    isFeatured: false,
-    rating: 4.92,
-    reviewCount: 18,
-    bookings: [{ status: "CONFIRMED" }, { status: "CONFIRMED" }],
-  });
-  assert.equal(topRated, true, "Listing with rating >= 4.85 and >= 3 reviews must qualify as Guest Favorite");
-  console.log("  ✓ Listing with 4.92 rating and 18 reviews qualifies as Guest Favorite");
-
-  // 1.2 Low rating does NOT qualify even with high reviews
-  const lowRating = isGuestFavorite({
-    isFeatured: false,
-    rating: 4.2,
-    reviewCount: 50,
-    bookings: [{ status: "CONFIRMED" }],
-  });
-  assert.equal(lowRating, false, "Listing with rating < 4.85 must NOT qualify as Guest Favorite");
-  console.log("  ✓ Listing with 4.20 rating does NOT qualify (no fake badge)");
-
-  // 1.3 Unrated listing does NOT qualify
-  const unrated = isGuestFavorite({
-    isFeatured: false,
-    rating: null,
-    reviewCount: 0,
-    bookings: [],
-  });
-  assert.equal(unrated, false, "Unrated listing with 0 reviews must NOT qualify as Guest Favorite");
-  console.log("  ✓ Unrated listing with 0 reviews correctly returns false");
-
-  // 1.4 Featured listing with confirmed booking track record qualifies
-  const featuredWithBooking = isGuestFavorite({
-    isFeatured: true,
-    rating: null,
-    bookings: [{ status: "CONFIRMED" }],
-  });
-  assert.equal(featuredWithBooking, true, "Featured listing with confirmed booking qualifies");
-  console.log("  ✓ Featured listing with confirmed booking track record qualifies");
-
-  // 1.5 Custom criteria override works without touching UI
-  const customQualified = isGuestFavorite(
-    { rating: 4.7, reviewCount: 10 },
-    { minRating: 4.6, minReviews: 5 }
-  );
-  assert.equal(customQualified, true, "Configurable thresholds can be customized safely");
-  console.log("  ✓ Configurable threshold override verified");
+  assert.equal(isGuestFavorite({ isGuestFavorite: true }), true, "Persisted official status displays the badge");
+  assert.equal(isGuestFavorite({ rating: 5, reviewCount: 50 }), false, "Live rating cannot award a badge");
+  assert.equal(isGuestFavorite({ isFeatured: true, bookings: [{ status: "CONFIRMED" }] }), false, "Featured status cannot award a badge");
+  console.log("  ✓ Guest Favorite cards rely only on the persisted daily status");
 
   // -------------------------------------------------------------------------
-  // [2] Centralized isSuperhost Qualification Formula Audit
+  // [2] Persisted Official Superhost Badge Audit
   // -------------------------------------------------------------------------
-  console.log("\n--- [2] isSuperhost Formula Audit ---");
+  console.log("\n--- [2] isSuperhost Official Status Audit ---");
 
-  // 2.1 Explicit superhost in verified system profile qualifies
-  const verifiedProfileSuperhost = isSuperhost({
-    publicProfile: { isSuperhost: true },
-  });
-  assert.equal(verifiedProfileSuperhost, true, "Host with verified isSuperhost flag must qualify");
-  console.log("  ✓ Host with verified system profile flag qualifies as Superhost");
-
-  // 2.2 Host with >= 3 confirmed bookings, low cancellations, and good tenure qualifies
-  const qualifiedHost = isSuperhost({
-    createdAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000), // 60 days tenure
-    publicProfile: { rating: 4.9 },
-    bookings: [
-      { status: "CONFIRMED" },
-      { status: "CONFIRMED" },
-      { status: "CONFIRMED" },
-      { status: "CONFIRMED" },
-    ],
-  });
-  assert.equal(qualifiedHost, true, "Host with high performance qualifies as Superhost");
-  console.log("  ✓ Host with 4 confirmed bookings, 0 cancellations, 4.9 rating qualifies");
-
-  // 2.3 Host with high cancellation rate (> 5%) does NOT qualify
-  const highCancellationHost = isSuperhost({
-    createdAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000),
-    publicProfile: { rating: 4.9 },
-    bookings: [
-      { status: "CONFIRMED" },
-      { status: "CONFIRMED" },
-      { status: "CANCELLED" }, // 1 cancelled out of 3 = 33% cancellation
-    ],
-  });
-  assert.equal(highCancellationHost, false, "Host with excessive cancellation rate must NOT qualify");
-  console.log("  ✓ Host with 33% cancellation rate rejected as Superhost");
-
-  // 2.4 New host with < 3 completed bookings does NOT qualify
-  const newHost = isSuperhost({
-    createdAt: new Date(),
-    publicProfile: {},
-    bookings: [{ status: "CONFIRMED" }],
-  });
-  assert.equal(newHost, false, "New host with < 3 bookings must NOT qualify as Superhost");
-  console.log("  ✓ New host with only 1 booking correctly rejected (no fake Superhost badge)");
+  assert.equal(isSuperhost({ isSuperhost: true }), true, "Persisted official status displays the badge");
+  assert.equal(isSuperhost({ publicProfile: { isSuperhost: true } }), false, "Profile JSON cannot award the badge");
+  assert.equal(isSuperhost({ bookings: [{ status: "CONFIRMED" }] }), false, "Live booking data cannot award the badge");
+  console.log("  ✓ Superhost cards rely only on the persisted quarterly status");
 
   // -------------------------------------------------------------------------
   // [3] Property Card Data Contract & Static Code Audit

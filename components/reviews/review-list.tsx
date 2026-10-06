@@ -166,7 +166,7 @@ export function ReviewList({ listingId, isGuestFavorite = false, onStatsChange }
           <Image src="/images/icons/filled-leaves-right.svg" alt="" width={70} height={127} className="h-[90px] w-[57px] sm:h-[127px] sm:w-[70px]" />
         </div>
         <h2 id="guest-reviews-heading" className="mt-4 text-base font-normal text-[#1f1f1f]">{isGuestFavorite ? t("listing_detail_guest_favourite", "Guest favourite") : t("reviews_guest_reviews", "Guest reviews")}</h2>
-        <p className="mt-1 text-base text-[#727272]">{isGuestFavorite ? t("reviews_top_five_percent", "This home is in the top 5% of eligible listings based on ratings, reviews, and reliability") : (stats.totalCount === 1 ? t("reviews_one_guest_shared", "{count} guest has shared their stay.").replace("{count}", "1") : t("reviews_many_guests_shared", "{count} guests have shared their stay.").replace("{count}", String(stats.totalCount)))}</p>
+        <p className="mt-1 text-base text-[#727272]">{isGuestFavorite ? t("listing_detail_guest_favourite_desc", "Highly rated by guests who have stayed here.") : (stats.totalCount === 1 ? t("reviews_one_guest_shared", "{count} guest has shared their stay.").replace("{count}", "1") : t("reviews_many_guests_shared", "{count} guests have shared their stay.").replace("{count}", String(stats.totalCount)))}</p>
       </div>
 
       <div className="mt-10">
