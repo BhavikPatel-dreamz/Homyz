@@ -6,6 +6,7 @@ import { ModalOverlay } from "@/components/ui/modal-overlay";
 import type { ReservationCardData } from "./reservation-card";
 import type { TaxInvoiceData } from "@/lib/tax/types";
 import { useCurrency } from "@/lib/currency-context";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 1. CANCEL BOOKING CONFIRMATION MODAL
@@ -24,6 +25,7 @@ export function CancelBookingModal({
   onClose,
   onCancelled,
 }: CancelBookingModalProps) {
+  const { t } = useLanguage();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -62,7 +64,7 @@ export function CancelBookingModal({
         const errorMsg =
           data?.error?.message ||
           (typeof data?.error === "string" ? data.error : null) ||
-          "Failed to cancel reservation";
+          t("booking_details_failed_cancel", "Failed to cancel reservation");
         throw new Error(errorMsg);
       }
 
@@ -70,7 +72,7 @@ export function CancelBookingModal({
       onClose();
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "An unexpected error occurred.",
+        err instanceof Error ? err.message : t("booking_details_unexpected_error", "An unexpected error occurred."),
       );
     } finally {
       setSubmitting(false);
@@ -128,10 +130,10 @@ export function CancelBookingModal({
               id="cancel-modal-title"
               className="text-xl font-semibold text-[#1F1F1F]"
             >
-              Cancel reservation?
+              {t("booking_details_cancel_modal_title", "Cancel reservation?")}
             </h2>
             <p className="text-xs text-[#727272]">
-              Reference #{booking.id.slice(-8).toUpperCase()}
+              {t("booking_details_cancel_modal_ref", { code: booking.id.slice(-8).toUpperCase() }, "Reference #{code}")}
             </p>
           </div>
         </div>
@@ -146,23 +148,19 @@ export function CancelBookingModal({
         <div className="mt-4 space-y-3 text-sm text-zinc-600">
           {booking.isNonRefundable ? (
             <div className="rounded-xl border border-amber-200 bg-amber-50/80 p-3.5 text-xs text-amber-900">
-              <span className="font-semibold">Non-refundable booking:</span>{" "}
-              This reservation was confirmed under non-refundable rate terms. No
-              refund will be issued upon cancellation.
+              <span className="font-semibold">{t("booking_details_non_ref_tag", "Non-refundable booking:")}</span>{" "}
+              {t("booking_details_non_ref_desc", "This reservation was confirmed under non-refundable rate terms. No refund will be issued upon cancellation.")}
             </div>
           ) : (
             <p className="text-xs text-zinc-600">
-              Cancellation is governed by the host&apos;s standard policy (
-              <span className="font-semibold text-zinc-800">
-                {booking.cancellationPolicy || "Flexible"}
-              </span>
-              ). Please review your stay terms before confirming.
+              {t("booking_details_flex_modal_notice", {
+                policy: booking.cancellationPolicy || "Flexible",
+              }, "Cancellation is governed by the host's standard policy ({policy}). Please review your stay terms before confirming.")}
             </p>
           )}
 
           <p className="text-xs text-[#727272]">
-            Once cancelled, your reserved dates will be released and this action
-            cannot be undone.
+            {t("booking_details_cancel_notice", "Once cancelled, your reserved dates will be released and this action cannot be undone.")}
           </p>
         </div>
 
@@ -179,7 +177,7 @@ export function CancelBookingModal({
             disabled={submitting}
             className="flex h-11 items-center justify-center rounded-full border border-zinc-300 px-5 text-sm font-semibold text-zinc-700 hover:bg-zinc-100 disabled:opacity-50"
           >
-            Keep reservation
+            {t("booking_details_keep_reservation", "Keep reservation")}
           </button>
           <button
             type="button"
@@ -208,10 +206,10 @@ export function CancelBookingModal({
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   />
                 </svg>
-                <span>Cancelling...</span>
+                <span>{t("booking_details_cancelling", "Cancelling...")}</span>
               </>
             ) : (
-              <span>Confirm cancellation</span>
+              <span>{t("booking_details_confirm_cancellation", "Confirm cancellation")}</span>
             )}
           </button>
         </div>
@@ -236,6 +234,7 @@ export function ReceiptModal({
   onClose,
 }: ReceiptModalProps) {
   const { formatPrice } = useCurrency();
+  const { t } = useLanguage();
   const [invoice, setInvoice] = useState<TaxInvoiceData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -258,7 +257,7 @@ export function ReceiptModal({
           const errorMsg =
             json?.error?.message ||
             (typeof json?.error === "string" ? json.error : null) ||
-            "Failed to load tax invoice.";
+            t("booking_details_failed_tax_invoice", "Failed to load tax invoice.");
           throw new Error(errorMsg);
         }
         return json.data !== undefined ? json.data : json;
@@ -267,7 +266,7 @@ export function ReceiptModal({
         if (isMounted) setInvoice(data);
       })
       .catch((err) => {
-        if (isMounted) setError(err.message || "Failed to load receipt.");
+        if (isMounted) setError(err.message || t("booking_details_failed_receipt", "Failed to load receipt."));
       })
       .finally(() => {
         if (isMounted) setLoading(false);
@@ -276,7 +275,7 @@ export function ReceiptModal({
     return () => {
       isMounted = false;
     };
-  }, [isOpen, bookingId]);
+  }, [isOpen, bookingId, t]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -301,13 +300,13 @@ export function ReceiptModal({
         <div className="flex items-start justify-between border-b border-zinc-200 pb-5">
           <div>
             <span className="text-xs font-semibold tracking-wider text-emerald-700 uppercase">
-              Official Tax Invoice & Receipt
+              {t("booking_details_official_receipt", "Official Tax Invoice & Receipt")}
             </span>
             <h2
               id="receipt-modal-title"
               className="mt-1 text-2xl font-bold tracking-tight text-[#1F1F1F]"
             >
-              {invoice?.invoiceNumber || "Booking Receipt"}
+              {invoice?.invoiceNumber || t("booking_details_booking_receipt", "Booking Receipt")}
             </h2>
           </div>
           <button
@@ -354,7 +353,7 @@ export function ReceiptModal({
               />
             </svg>
             <p className="text-sm text-[#727272]">
-              Generating authoritative receipt...
+              {t("booking_details_generating_receipt", "Generating authoritative receipt...")}
             </p>
           </div>
         ) : error ? (
@@ -365,7 +364,7 @@ export function ReceiptModal({
               onClick={onClose}
               className="mt-3 rounded-full bg-red-600 px-4 py-1.5 text-xs font-semibold text-white"
             >
-              Dismiss
+              {t("booking_details_dismiss", "Dismiss")}
             </button>
           </div>
         ) : invoice ? (
@@ -373,7 +372,7 @@ export function ReceiptModal({
             {/* Header Meta */}
             <div className="grid grid-cols-2 gap-4 text-xs sm:text-sm">
               <div>
-                <span className="text-[#727272] block">Issue Date</span>
+                <span className="text-[#727272] block">{t("booking_details_issue_date", "Issue Date")}</span>
                 <span className="font-medium">
                   {invoice.issueDate
                     ? new Date(invoice.issueDate).toLocaleDateString("en-US", {
@@ -385,7 +384,7 @@ export function ReceiptModal({
                 </span>
               </div>
               <div>
-                <span className="text-[#727272] block">Booking Reference</span>
+                <span className="text-[#727272] block">{t("booking_details_booking_reference", "Booking Reference")}</span>
                 <span className="font-mono font-medium">
                   {(invoice.bookingId || bookingId || "")
                     .slice(-8)
@@ -398,7 +397,7 @@ export function ReceiptModal({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:rounded-2xl rounded-lg shadow-md bg-white p-4 text-xs sm:text-sm">
               <div>
                 <span className="font-semibold text-zinc-800 block mb-1">
-                  Host / Supplier
+                  {t("booking_details_supplier", "Host / Supplier")}
                 </span>
                 <p className="font-medium text-[#1F1F1F]">
                   {invoice.supplier?.name || "Host"}
@@ -416,7 +415,7 @@ export function ReceiptModal({
               </div>
               <div>
                 <span className="font-semibold text-zinc-800 block mb-1">
-                  Guest
+                  {t("booking_details_guest_label", "Guest")}
                 </span>
                 <p className="font-medium text-[#1F1F1F]">
                   {invoice.guest?.name || "Guest"}
@@ -430,7 +429,7 @@ export function ReceiptModal({
             {/* Stay Details */}
             <div className="rounded-2xl border border-zinc-200 p-4 text-xs sm:text-sm space-y-1">
               <span className="font-semibold text-zinc-800 block mb-1">
-                Property & Stay
+                {t("booking_details_property_stay", "Property & Stay")}
               </span>
               <p className="font-medium text-[#1F1F1F]">
                 {invoice.property?.title || "Property Stay"}
@@ -450,7 +449,7 @@ export function ReceiptModal({
                 <p className="text-zinc-600 pt-1 font-medium">
                   {invoice.stayDates.checkIn} – {invoice.stayDates.checkOut} (
                   {invoice.stayDates.nights}{" "}
-                  {invoice.stayDates.nights === 1 ? "night" : "nights"})
+                  {invoice.stayDates.nights === 1 ? t("booking_details_night_singular", "night") : t("booking_details_nights_plural", "nights")})
                 </p>
               )}
             </div>
@@ -460,12 +459,12 @@ export function ReceiptModal({
               <table className="w-full text-left text-xs sm:text-sm">
                 <thead className="bg-zinc-100 text-zinc-700">
                   <tr>
-                    <th className="px-4 py-2.5 font-semibold">Description</th>
+                    <th className="px-4 py-2.5 font-semibold">{t("booking_details_description", "Description")}</th>
                     <th className="px-4 py-2.5 font-semibold text-center">
-                      Qty
+                      {t("booking_details_qty", "Qty")}
                     </th>
                     <th className="px-4 py-2.5 font-semibold text-right">
-                      Amount
+                      {t("booking_details_amount", "Amount")}
                     </th>
                   </tr>
                 </thead>
@@ -496,7 +495,7 @@ export function ReceiptModal({
                 <tfoot className="border-t-2 border-zinc-300 bg-zinc-50 font-semibold text-[#1F1F1F]">
                   <tr>
                     <td className="px-4 py-3" colSpan={2}>
-                      Grand Total Paid
+                      {t("booking_details_grand_total", "Grand Total Paid")}
                     </td>
                     <td className="px-4 py-3 text-right text-base text-emerald-700 font-bold">
                       {formatPrice(
@@ -512,7 +511,7 @@ export function ReceiptModal({
             {/* Actions */}
             <div className="flex items-center justify-between pt-2">
               <span className="text-xs text-[#727272]">
-                Authorized electronic receipt generated by Homyz
+                {t("booking_details_authorized_receipt_note", "Authorized electronic receipt generated by Homyz")}
               </span>
               <div className="flex gap-3">
                 <button
@@ -533,14 +532,14 @@ export function ReceiptModal({
                       d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
                     />
                   </svg>
-                  <span>Print / PDF</span>
+                  <span>{t("booking_details_print_pdf", "Print / PDF")}</span>
                 </button>
                 <button
                   type="button"
                   onClick={onClose}
                   className="rounded-full bg-[#FCDF9C] px-5 py-2 text-base font-medium text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] transition-colors"
                 >
-                  Done
+                  {t("booking_details_done", "Done")}
                 </button>
               </div>
             </div>
@@ -566,6 +565,8 @@ export function ContactHostModal({
   isOpen,
   onClose,
 }: ContactHostModalProps) {
+  const { t } = useLanguage();
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {
@@ -628,10 +629,10 @@ export function ContactHostModal({
               id="contact-modal-title"
               className="text-xl font-semibold text-[#1F1F1F]"
             >
-              Contact Host
+              {t("booking_details_contact_host_title", "Contact Host")}
             </h2>
             <p className="text-xs text-[#727272]">
-              Booking #{booking.id.slice(-8).toUpperCase()}
+              {t("booking_details_booking_ref_short", { code: booking.id.slice(-8).toUpperCase() }, "Booking #{code}")}
             </p>
           </div>
         </div>
@@ -643,17 +644,13 @@ export function ContactHostModal({
 
         <div className="mt-4 space-y-3 text-xs sm:text-sm text-zinc-600 leading-relaxed">
           <p>
-            Direct peer-to-peer guest messaging is currently being finalized. To
-            protect host and guest privacy, private personal contact details are
-            kept secure.
+            {t("booking_details_contact_host_notice", "Direct peer-to-peer guest messaging is currently being finalized. To protect host and guest privacy, private personal contact details are kept secure.")}
           </p>
           <div className="rounded-xl border border-blue-100 bg-blue-50/80 p-3 text-xs text-blue-900">
             <span className="font-semibold block mb-0.5">
-              Need immediate assistance with this stay?
+              {t("booking_details_immediate_assist", "Need immediate assistance with this stay?")}
             </span>
-            Our 24/7 Concierge & Support desk can liaise directly with your host
-            regarding arrival check-in, key handover, or special accommodation
-            requests.
+            {t("booking_details_concierge_liaise", "Our 24/7 Concierge & Support desk can liaise directly with your host regarding arrival check-in, key handover, or special accommodation requests.")}
           </div>
         </div>
 
@@ -663,14 +660,14 @@ export function ContactHostModal({
             onClick={onClose}
             className="flex h-11 items-center justify-center rounded-full border border-zinc-300 px-5 text-sm font-semibold text-zinc-700 hover:bg-[#1f1f1f] hover:text-white transition-colors duration-300"
           >
-            Close
+            {t("booking_details_close", "Close")}
           </button>
           <Link
             href="/messages"
             onClick={onClose}
             className="flex h-11 items-center justify-center gap-2 rounded-full bg-[#FCDF9C] px-6 text-sm font-medium text-[#1F1F1F] hover:bg-[#1f1f1f] hover:text-white transition-colors duration-300"
           >
-            <span>Message Host</span>
+            <span>{t("booking_details_message_host_btn", "Message Host")}</span>
           </Link>
         </div>
       </div>

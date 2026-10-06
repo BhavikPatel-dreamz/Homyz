@@ -11,6 +11,7 @@ import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { BookingSummary } from "@/components/checkout/booking-summary";
 import { BookingConfirmation } from "@/components/checkout/booking-confirmation";
 import { ReviewRequestStep } from "@/components/checkout/review-request-step";
+import { useLanguage } from "@/lib/i18n/language-context";
 import type { PublicListingDTO } from "@/services/mappers";
 import { formatListingPrice, getCurrencyForCountry } from "@/lib/currency";
 import { useCurrency } from "@/lib/currency-context";
@@ -119,6 +120,7 @@ export function BookingCheckoutClient({
   initialSpecialOfferId,
 }: BookingCheckoutClientProps) {
   const { currency: displayCurrency, formatPrice } = useCurrency();
+  const { t } = useLanguage();
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: session } = useSession();
@@ -805,10 +807,14 @@ export function BookingCheckoutClient({
     ? Math.max(0, new Date().getFullYear() - hostCreatedAt.getFullYear())
     : null;
   const hostMetadata = [
-    listing.host?.isSuperhost === true ? "Superhost" : null,
-    hostYears === null ? null : hostYears === 0 ? "New host" : `${hostYears} ${hostYears === 1 ? "year" : "years"} hosting`,
+    listing.host?.isSuperhost === true ? t("book_superhost", "Superhost") : null,
+    hostYears === null
+      ? null
+      : hostYears === 0
+        ? t("book_new_host", "New host")
+        : t("book_years_hosting", { count: hostYears }, `${hostYears} ${hostYears === 1 ? "year" : "years"} hosting`),
   ].filter(Boolean).join(" · ");
-  const propertyLocation = [listing.city, listing.country].filter(Boolean).join(", ") || "Location unavailable";
+  const propertyLocation = [listing.city, listing.country].filter(Boolean).join(", ") || t("book_location_unavailable", "Location unavailable");
   const summaryState = useMemo(() => ({
     property: {
       title: listing.title,
@@ -898,14 +904,14 @@ export function BookingCheckoutClient({
                 type="button"
                 onClick={() => router.back()}
                 className="flex h-10 w-10 items-center justify-center rounded-full border border-zinc-200 bg-white hover:bg-zinc-100 transition-colors cursor-pointer text-zinc-700 shadow-2xs"
-                aria-label="Back to listing"
+                aria-label={t("book_back_button", "Back")}
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <path d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
               <h1>
-                {isInstantBook ? "Confirm booking" : "Request to book"}
+                {isInstantBook ? t("book_title_instant", "Confirm booking") : t("book_title_request", "Request to book")}
               </h1>
             </div>
 
@@ -941,7 +947,7 @@ export function BookingCheckoutClient({
                         tabIndex={-1}
                         className="mb-5 text-center font-medium text-[#1f1f1f] text-lg focus:outline-none"
                       >
-                        {REQUEST_BOOK_STEPS[0].title}
+                        {t("book_step_1_title", REQUEST_BOOK_STEPS[0].title)}
                       </h2>
 
                       <fieldset
@@ -950,7 +956,7 @@ export function BookingCheckoutClient({
                         aria-describedby={paymentTimingError ? "payment-timing-error" : undefined}
                         className="focus:outline-none"
                       >
-                        <legend className="sr-only">Choose when to pay</legend>
+                        <legend className="sr-only">{t("book_step_1_title", "Choose how to pay")}</legend>
                         {paymentTimingOptions.map((option) => (
                           <label
                             key={option.type}
@@ -967,20 +973,19 @@ export function BookingCheckoutClient({
                             <span className="min-w-0 flex-1">
                               <span className="block text-sm font-normal text-zinc-900">
                                 {option.type === FULL_PAYMENT_TIMING ? (
-                                  <>Pay <strong className="font-semibold">{checkoutTotalLabel}</strong> now</>
+                                  <>{t("book_pay_in_full", "Pay in full")} (<strong className="font-semibold">{checkoutTotalLabel}</strong>)</>
                                 ) : option.type === PARTIAL_PAYMENT_TIMING ? (
-                                  <>Pay <strong className="font-semibold">part now, part later</strong></>
+                                  <>{t("book_pay_part_now", "Pay part now, part later")}</>
                                 ) : (
-                                  <>Pay over time</>
+                                  <>{t("book_pay_over_time", "Pay over time")}</>
                                 )}
                               </span>
                               <span className="mt-1 block text-xs text-zinc-500" aria-live="polite">
                                 {option.type === PARTIAL_PAYMENT_TIMING
-                                  ? `${formatMoney(partNowAmount, 2)} now, ${formatMoney(partLaterAmount, 2)} later.`
+                                  ? t("book_pay_part_now_desc", { initialAmount: formatMoney(partNowAmount, 2), remainingAmount: formatMoney(partLaterAmount, 2) }, `${formatMoney(partNowAmount, 2)} now, ${formatMoney(partLaterAmount, 2)} later.`)
                                   : option.type === PAY_OVER_TIME_PAYMENT_TIMING
-                                    ? "Choose a flexible payment intent. A provider has not been selected yet."
-                                    : "Full amount selected."}
-                                {" "}No payment is processed in test mode.
+                                    ? t("book_pay_over_time_desc", "Split into interest-free monthly payments. Option available at checkout.")
+                                    : t("book_pay_in_full_desc", { amount: checkoutTotalLabel }, `Pay the total now (${checkoutTotalLabel}).`)}
                               </span>
                             </span>
                           </label>
@@ -990,7 +995,7 @@ export function BookingCheckoutClient({
                       {quote && !isQuoteLoading && !quoteError && (
                         <section className="mt-5 border-t border-[#727272] pt-4" aria-labelledby="payment-price-details-heading">
                           <h3 id="payment-price-details-heading" className="text-sm font-semibold text-[#1f1f1f]">
-                            Price details
+                            {t("book_price_details", "Price details")}
                           </h3>
                           <dl className="mt-3 space-y-2 text-sm">
                             {getCheckoutPriceRows(quote, { itemizeTaxes: true }).map((row) => (
@@ -1002,7 +1007,7 @@ export function BookingCheckoutClient({
                               </div>
                             ))}
                             <div className="flex items-center justify-between gap-4 border-t border-zinc-300 pt-3 font-semibold text-zinc-950">
-                              <dt>Total ({displayCurrency})</dt>
+                              <dt>{t("book_total", { currency: displayCurrency }, `Total (${displayCurrency})`)}</dt>
                               <dd>{formatMoney(quote.guestTotal, 2)}</dd>
                             </div>
                           </dl>
@@ -1035,7 +1040,7 @@ export function BookingCheckoutClient({
                           disabled={isQuoteLoading || isStep1Finalizing || Boolean(quoteError) || !quote}
                           className="min-h-[45px] min-w-[136px] cursor-pointer rounded-full border border-[#1f1f1f] bg-[#FCDF9C] px-8 py-2.5 text-base font-medium text-[#1f1f1f] transition-all duration-300 hover:bg-[#1f1f1f] hover:text-white disabled:cursor-not-allowed disabled:opacity-50 sm:min-h-[56px] sm:text-lg"
                         >
-                          {isStep1Finalizing ? "Continuing…" : "Next"}
+                          {isStep1Finalizing ? t("book_btn_confirming", "Continuing…") : t("book_next_add_payment", "Next")}
                         </button>
                       </div>
                     </div>
@@ -1044,7 +1049,7 @@ export function BookingCheckoutClient({
                     <div className="relative z-10 flex sm:flex-nowrap flex-wrap sm:gap-0 gap-5 items-center justify-between px-6 pb-7.5 sm:pt-15 pt-10 min-h-[143px]">
                       <div>
                         <h3 id="checkout-step-1-title" className="text-lg sm:text-xl font-medium text-[#1f1f1f]">
-                          {REQUEST_BOOK_STEPS[0].title}
+                          {t("book_step_1_title", REQUEST_BOOK_STEPS[0].title)}
                         </h3>
                         <p className="mt-1 text-base font-normal text-[#1F1F1F]">
                           {paymentPlan
@@ -1059,14 +1064,14 @@ export function BookingCheckoutClient({
                         aria-expanded="false"
                         className="rounded-full border border-[#1F1F1F] bg-[#F3F4F5] px-4 py-1.5 sm:text-lg text-base font-medium text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] transition-colors duration-300 cursor-pointer min-w-[121px] min-h-[48px] ml-auto"
                       >
-                        Change
+                        {t("book_change", "Change")}
                       </button>
                     </div>
                   ) : (
                     // INACTIVE COLLAPSED PILL
                     <div className="relative z-10 px-6 py-6 text-center">
                       <span id="checkout-step-1-title" className="text-lg sm:text-base sm:font-medium font-normal text-[#1F1F1F]">
-                        {REQUEST_BOOK_STEPS[0].title}
+                        {t("book_step_1_title", REQUEST_BOOK_STEPS[0].title)}
                       </span>
                     </div>
                   )}
@@ -1095,14 +1100,14 @@ export function BookingCheckoutClient({
                         tabIndex={-1}
                         className="text-lg sm:text-xl sm:font-medium font-normal text-[#1f1f1f] mb-4 text-center focus:outline-none"
                       >
-                        {REQUEST_BOOK_STEPS[1].title}
+                        {t("book_step_2_title", REQUEST_BOOK_STEPS[1].title)}
                       </h2>
 
                       {/* Development / Test Mode Banner */}
                       <div role="status" className="mb-6 rounded-2xl border border-amber-200 bg-amber-50/80 p-4 text-xs sm:text-sm text-amber-900 shadow-2xs">
                         <div className="flex items-center gap-2 font-semibold">
                           <span className="inline-block size-2 rounded-full bg-amber-500 animate-pulse" />
-                          Test payment mode
+                          {t("book_mock_payment_notice", "This is a mock payment step. No real money will be charged.")}
                         </div>
                         <p className="mt-1 text-xs text-amber-800 leading-relaxed">
                           No real payment will be processed. Do not enter a real card. Use mock test card <span className="font-mono font-semibold">4242 4242 4242 4242</span>, expiry <span className="font-mono font-semibold">12/30</span>, CVC <span className="font-mono font-semibold">123</span>.
@@ -1124,14 +1129,14 @@ export function BookingCheckoutClient({
                               }}
                               className="mt-0.5 size-6 shrink-0 cursor-pointer appearance-none rounded-full border border-[#1F1F1F] bg-white checked:border-[7px] checked:border-[#1F1F1F] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1F1F1F]"
                             />
-                            <span className="text-base font-semibold text-[#1f1f1f]">Credit / debit card</span>
+                            <span className="text-base font-semibold text-[#1f1f1f]">{t("book_credit_or_debit_card", "Credit or debit card")}</span>
                           </label>
 
                           {selectedMethodType === "card" && (
                             <div className="mt-6">
                               <div>
                                 <label htmlFor="mock-card-number" className="mb-3 block text-base font-normal text-[#1F1F1F]">
-                                  Card Number *
+                                  {t("book_card_number", "Card number")} *
                                 </label>
                                 <div className="relative">
                                   <input
@@ -1154,7 +1159,7 @@ export function BookingCheckoutClient({
                               <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-2">
                                 <div>
                                   <label htmlFor="mock-card-expiry" className="mb-3 block text-base font-normal text-[#1F1F1F]">
-                                    Expiry Date *
+                                    {t("book_expiration", "Expiration")} *
                                   </label>
                                   <input
                                     id="mock-card-expiry"
@@ -1171,7 +1176,7 @@ export function BookingCheckoutClient({
                                 </div>
                                 <div>
                                   <label htmlFor="mock-card-cvc" className="mb-3 block text-base font-normal text-[#1F1F1F]">
-                                    Card Code (CVC) *
+                                    {t("book_cvv", "CVV")} *
                                   </label>
                                   <input
                                     id="mock-card-cvc"
@@ -1247,8 +1252,8 @@ export function BookingCheckoutClient({
                               className="mt-0.5 size-6 shrink-0 cursor-pointer appearance-none rounded-full border border-[#1F1F1F] bg-white checked:border-[7px] checked:border-[#1F1F1F] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1F1F1F]"
                             />
                             <div className="flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:gap-3">
-                              <span className="text-base font-semibold text-[#1f1f1f]">Local gateways</span>
-                              <span className="text-xs text-zinc-500">(mada · mock/deferred)</span>
+                              <span className="text-base font-semibold text-[#1f1f1f]">mada</span>
+                              <span className="text-xs text-zinc-500">(mock/deferred)</span>
                             </div>
                           </label>
                         </div>
@@ -1261,7 +1266,7 @@ export function BookingCheckoutClient({
                           onClick={handleStep2Next}
                           className="min-h-[45px] min-w-[100px] cursor-pointer rounded-full border border-[#1f1f1f] bg-[#FCDF9C] px-8 py-2.5 text-base font-medium text-[#1f1f1f] transition-all duration-300 hover:bg-[#1f1f1f] hover:text-white sm:min-h-[56px] sm:min-w-[136px] sm:text-lg"
                         >
-                          Next
+                          {t("book_next_message_host", "Next")}
                         </button>
                       </div>
                     </div>
@@ -1270,12 +1275,12 @@ export function BookingCheckoutClient({
                     <div className="relative z-10 flex sm:flex-nowrap flex-wrap sm:gap-0 gap-5 items-center justify-between px-6 pb-7.5 sm:pt-15 pt-10 min-h-[143px]">
                       <div>
                         <h3 id="checkout-step-2-title" className="text-lg sm:text-xl font-medium text-[#1f1f1f]">
-                          {REQUEST_BOOK_STEPS[1].title}
+                          {t("book_step_2_title", REQUEST_BOOK_STEPS[1].title)}
                         </h3>
                         <p className="mt-1 text-base font-normal text-[#1f1f1f]">
-                          {checkoutDraft.paymentMethod ? checkoutDraft.paymentMethod.displayLabel : "Credit / debit card"}
+                          {checkoutDraft.paymentMethod ? checkoutDraft.paymentMethod.displayLabel : t("book_credit_or_debit_card", "Credit or debit card")}
                         </p>
-                        <p className="text-xs text-zinc-500 font-medium mt-0.5">Payment status: Pending (Deferred)</p>
+                        <p className="text-xs text-zinc-500 font-medium mt-0.5">{t("book_payment_status_pending", "Payment status: Pending / Deferred")}</p>
                       </div>
                       <button
                         type="button"
@@ -1284,14 +1289,14 @@ export function BookingCheckoutClient({
                         aria-expanded="false"
                         className="rounded-full border border-[#1F1F1F] bg-[#F3F4F5] px-4 py-1.5 sm:text-lg text-base font-medium text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] transition-colors duration-300 cursor-pointer min-w-[121px] min-h-[48px] ml-auto"
                       >
-                        Change
+                        {t("book_change", "Change")}
                       </button>
                     </div>
                   ) : (
                     // INACTIVE COLLAPSED PILL
                     <div className="relative z-10 flex min-h-[91px] items-center justify-center px-6 pt-10 pb-6 text-center sm:min-h-[108px]">
                       <span id="checkout-step-2-title" className="text-lg sm:text-base sm:font-medium font-normal text-[#1F1F1F]">
-                        {REQUEST_BOOK_STEPS[1].title}
+                        {t("book_step_2_title", REQUEST_BOOK_STEPS[1].title)}
                       </span>
                     </div>
                   )}
@@ -1320,12 +1325,12 @@ export function BookingCheckoutClient({
                         tabIndex={-1}
                         className="text-lg sm:text-xl font-medium text-[#1F1F1F] mb-2 text-center focus:outline-none"
                       >
-                        {REQUEST_BOOK_STEPS[2].title}
+                        {t("book_step_3_title", REQUEST_BOOK_STEPS[2].title)}
                       </h2>
                       <p id="checkout-host-message-help" className="text-sm sm:text-base text-[#727272] text-left mb-4">
                         {isInstantBook
-                          ? `Optionally let ${hostName} know a little about your trip before your booking is confirmed.`
-                          : `Introduce yourself, share basic trip context, and let ${hostName} know why their place is a good fit.`}
+                          ? t("book_step_3_help_instant", { hostName }, `Optionally let ${hostName} know a little about your trip before your booking is confirmed.`)
+                          : t("book_step_3_help_request", { hostName }, `Introduce yourself, share basic trip context, and let ${hostName} know why their place is a good fit.`)}
                       </p>
 
                       {/* Host Snippet Card */}
@@ -1346,7 +1351,7 @@ export function BookingCheckoutClient({
                         </div>
                         <div>
                           <h4 className="text-base font-normal text-[#1F1F1F]">
-                            Hosted by {hostName}
+                            {t("book_hosted_by", { hostName }, `Hosted by ${hostName}`)}
                           </h4>
                           {hostMetadata && (
                             <p className="mt-1 text-sm text-[#1f1f1f]">{hostMetadata}</p>
@@ -1357,7 +1362,7 @@ export function BookingCheckoutClient({
                       {/* Message Textarea */}
                       <div>
                         <label htmlFor="checkout-host-message" className="block text-sm font-normal text-[#1f1f1f] mb-2">
-                          Write a message
+                          {t("book_write_message_label", "Write a message")}
                         </label>
                         <textarea
                           id="checkout-host-message"
@@ -1372,8 +1377,8 @@ export function BookingCheckoutClient({
                           aria-invalid={Boolean(hostMessageError)}
                           aria-describedby={`checkout-host-message-help checkout-host-message-count${hostMessageError ? " checkout-host-message-error" : ""}`}
                           placeholder={isInstantBook
-                            ? `Hi ${hostName}, I'm looking forward to staying at your place.`
-                            : `Hi ${hostName}, I'm visiting the area and would love to stay at your place…`}
+                            ? t("book_message_placeholder_instant", { hostName }, `Hi ${hostName}, I'm looking forward to staying at your place.`)
+                            : t("book_message_placeholder_request", { hostName }, `Hi ${hostName}, I'm visiting the area and would love to stay at your place…`)}
                           className="w-full sm:rounded-[20px] rounded-[10px] border border-[#727272] bg-white sm:p-4 p-3 sm:text-base text-sm text-[#1f1f1f] placeholder:text-[rgba(31,31,31,0.5)] focus:border-zinc-900 focus:outline-none transition-colors resize-none"
                         />
                         <p id="checkout-host-message-count" className="mt-1 text-right text-xs text-zinc-500" aria-live="polite">
@@ -1394,7 +1399,7 @@ export function BookingCheckoutClient({
                           onClick={handleStep3Next}
                           className="rounded-full bg-[#FCDF9C] hover:bg-[#1f1f1f] text-[#1f1f1f] border border-[#1f1f1f] hover:text-white font-medium px-8 py-2.5 text-lg transition-all duration-300 cursor-pointer min-w-[136px] sm:min-h-[56px] min-h-[45px]"
                         >
-                          Next
+                          {t("book_next_review", "Next")}
                         </button>
                       </div>
                     </div>
@@ -1403,10 +1408,10 @@ export function BookingCheckoutClient({
                     <div className="relative z-10 flex sm:flex-nowrap flex-wrap sm:gap-0 gap-5 items-center justify-between px-6 pb-7.5 sm:pt-15 pt-10 min-h-[143px]">
                       <div className="min-w-0 pr-4">
                         <h3 id="checkout-step-3-title" className="text-lg sm:text-xl font-medium text-[#1f1f1f]">
-                          {REQUEST_BOOK_STEPS[2].title}
+                          {t("book_step_3_title", REQUEST_BOOK_STEPS[2].title)}
                         </h3>
                         <p className="mt-1 line-clamp-2 text-base font-normal text-[#1f1f1f]">
-                          {hostMessage.trim() ? `“${formatHostMessagePreview(hostMessage)}”` : "No message added"}
+                          {hostMessage.trim() ? `“${formatHostMessagePreview(hostMessage)}”` : t("book_no_message_added", "No message added")}
                         </p>
                       </div>
                       <button
@@ -1416,14 +1421,14 @@ export function BookingCheckoutClient({
                         aria-expanded="false"
                         className="rounded-full border border-[#1F1F1F] bg-[#F3F4F5] px-4 py-1.5 sm:text-lg text-base font-medium text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] transition-colors duration-300 cursor-pointer min-w-[121px] min-h-[48px] ml-auto"
                       >
-                        Change
+                        {t("book_change", "Change")}
                       </button>
                     </div>
                   ) : (
                     // INACTIVE COLLAPSED PILL
                     <div className="relative z-10 flex min-h-[91px] items-center justify-center px-6 pt-10 pb-6 text-center sm:min-h-[108px]">
                       <span id="checkout-step-3-title" className="text-lg sm:text-base sm:font-medium font-normal text-[#1F1F1F]">
-                        {REQUEST_BOOK_STEPS[2].title}
+                        {t("book_step_3_title", REQUEST_BOOK_STEPS[2].title)}
                       </span>
                     </div>
                   )}
@@ -1452,7 +1457,7 @@ export function BookingCheckoutClient({
                         tabIndex={-1}
                         className="text-lg sm:text-xl font-medium text-[#1f1f1f] mb-3 text-center focus:outline-none"
                       >
-                        {isInstantBook ? "Review and confirm" : REQUEST_BOOK_STEPS[3].title}
+                        {isInstantBook ? t("book_step_4_title_instant", "Review and confirm") : t("book_step_4_title", REQUEST_BOOK_STEPS[3].title)}
                       </h2>
                       {submitError && (
                         <div role="alert" className="mt-4 p-3.5 rounded-xl bg-red-50 border border-red-200 text-xs font-medium text-red-700 text-center">
@@ -1483,7 +1488,7 @@ export function BookingCheckoutClient({
 
                       {!bookingSuccess && isQuoteLoading && (
                         <div role="status" aria-live="polite" className="mt-5 space-y-3" aria-label="Refreshing review details">
-                          <p className="text-sm font-medium text-zinc-600">Refreshing availability and price…</p>
+                          <p className="text-sm font-medium text-zinc-600">{t("book_refreshing_availability", "Refreshing availability and price…")}</p>
                           <div className="h-20 animate-pulse rounded-2xl bg-zinc-100" />
                           <div className="h-32 animate-pulse rounded-2xl bg-zinc-100" />
                         </div>
@@ -1492,7 +1497,7 @@ export function BookingCheckoutClient({
                       {!bookingSuccess && !isQuoteLoading && quoteError && (
                         <div role="alert" className="mt-5 rounded-xl border border-rose-200 bg-rose-50 p-3.5 text-sm font-medium text-rose-700">
                           <p>{quoteError}</p>
-                          <button type="button" onClick={() => setQuoteRefreshKey((current) => current + 1)} className="mt-3 min-h-10 rounded-full border border-rose-400 px-4 font-semibold hover:bg-rose-100">Try again</button>
+                          <button type="button" onClick={() => setQuoteRefreshKey((current) => current + 1)} className="mt-3 min-h-10 rounded-full border border-rose-400 px-4 font-semibold hover:bg-rose-100">{t("book_try_again", "Try again")}</button>
                         </div>
                       )}
 
@@ -1520,7 +1525,7 @@ export function BookingCheckoutClient({
                     // INACTIVE COLLAPSED PILL
                     <div className="relative z-10 flex min-h-[91px] items-center justify-center px-6 pt-10 pb-6 text-center sm:min-h-[108px]">
                       <span id="checkout-step-4-title" className="text-lg sm:text-xl sm:font-medium font-normal text-[#1F1F1F]">
-                        {isInstantBook ? "Review and confirm" : REQUEST_BOOK_STEPS[3].title}
+                        {isInstantBook ? t("book_step_4_title_instant", "Review and confirm") : t("book_step_4_title", REQUEST_BOOK_STEPS[3].title)}
                       </span>
                     </div>
                   )}
@@ -1563,7 +1568,7 @@ export function BookingCheckoutClient({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between pb-4 border-b border-[#727272]">
-              <h3 id="change-dates-title" className="text-lg font-medium text-[#1f1f1f]">Change dates</h3>
+              <h3 id="change-dates-title" className="text-lg font-medium text-[#1f1f1f]">{t("book_change_dates_title", "Change dates")}</h3>
               <button
                 type="button"
                 onClick={() => setIsDatesModalOpen(false)}
@@ -1578,7 +1583,7 @@ export function BookingCheckoutClient({
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <label htmlFor="checkout-change-checkin" className="block text-sm font-normal text-[#1f1f1f] mb-2">
-                    Check-in date
+                    {t("book_check_in_date_label", "Check-in date")}
                   </label>
                   <input
                     id="checkout-change-checkin"
@@ -1591,7 +1596,7 @@ export function BookingCheckoutClient({
                 </div>
                 <div>
                   <label htmlFor="checkout-change-checkout" className="block text-sm font-normal text-[#1f1f1f] mb-2">
-                    Check-out date
+                    {t("book_check_out_date_label", "Check-out date")}
                   </label>
                   <input
                     id="checkout-change-checkout"
@@ -1604,17 +1609,17 @@ export function BookingCheckoutClient({
                 </div>
               </div>
               <p className="text-xs text-[#727272]">
-                Minimum stay: {listing.minNights || 1} {listing.minNights === 1 ? "night" : "nights"}. Price and availability update automatically.
+                {t("book_min_stay_notice", { count: listing.minNights || 1 }, `Minimum stay: ${listing.minNights || 1} ${listing.minNights === 1 ? "night" : "nights"}. Price and availability update automatically.`)}
               </p>
               {isQuoteLoading ? (
-                <p role="status" className="text-sm font-medium text-zinc-600">Checking availability and updating price…</p>
+                <p role="status" className="text-sm font-medium text-zinc-600">{t("book_checking_availability", "Checking availability and updating price…")}</p>
               ) : quoteError ? (
                 <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm font-medium text-rose-700">
                   <p>{quoteError}</p>
-                  <button type="button" onClick={() => setQuoteRefreshKey((current) => current + 1)} className="mt-2 min-h-9 rounded-full border border-rose-400 px-4 font-semibold hover:bg-rose-100">Try again</button>
+                  <button type="button" onClick={() => setQuoteRefreshKey((current) => current + 1)} className="mt-2 min-h-9 rounded-full border border-rose-400 px-4 font-semibold hover:bg-rose-100">{t("book_try_again", "Try again")}</button>
                 </div>
               ) : quote ? (
-                <p role="status" className="text-sm font-medium text-emerald-700">Dates are available and the price is current.</p>
+                <p role="status" className="text-sm font-medium text-emerald-700">{t("book_dates_available_current", "Dates are available and the price is current.")}</p>
               ) : null}
             </div>
 
@@ -1625,7 +1630,7 @@ export function BookingCheckoutClient({
                 disabled={isQuoteLoading || Boolean(quoteError) || !quote}
                 className="rounded-full border border-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white text-[#1f1f1f] font-semibold px-6 py-2.5 text-sm bg-[#FCDF9C] transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Apply dates
+                {t("book_apply_dates", "Apply dates")}
               </button>
             </div>
           </div>
@@ -1648,7 +1653,7 @@ export function BookingCheckoutClient({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between pb-4 border-b border-[#727272]">
-              <h3 id="change-guests-title" className="text-lg font-medium text-[#1f1f1f]">Guests</h3>
+              <h3 id="change-guests-title" className="text-lg font-medium text-[#1f1f1f]">{t("book_guests_modal_title", "Guests")}</h3>
               <button
                 type="button"
                 onClick={() => setIsGuestsModalOpen(false)}
@@ -1663,8 +1668,8 @@ export function BookingCheckoutClient({
               {/* Adults */}
               <div className="flex items-center justify-between py-2">
                 <div>
-                  <h4 className="text-sm font-normal text-[#1F1F1F]">Adults</h4>
-                  <p className="text-xs text-[#727272]">Age 13+</p>
+                  <h4 className="text-sm font-normal text-[#1F1F1F]">{t("book_adults", "Adults")}</h4>
+                  <p className="text-xs text-[#727272]">{t("book_adults_desc", "Age 13+")}</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <button
@@ -1694,8 +1699,8 @@ export function BookingCheckoutClient({
               {/* Children */}
               <div className="flex items-center justify-between py-2">
                 <div>
-                  <h4 className="text-sm font-normal text-zinc-900">Children</h4>
-                  <p className="text-xs text-zinc-500">Ages 2–12{!allowsChildren ? " · Not allowed" : ""}</p>
+                  <h4 className="text-sm font-normal text-zinc-900">{t("book_children", "Children")}</h4>
+                  <p className="text-xs text-zinc-500">{t("book_children_desc", "Ages 2–12")}{!allowsChildren ? ` · ${t("book_not_allowed", "Not allowed")}` : ""}</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <button type="button" disabled={childrenCount <= 0} onClick={() => updateChildren(-1)} aria-label="Remove one child" className="flex size-8 items-center justify-center rounded-full border border-zinc-300 hover:border-zinc-900 disabled:cursor-not-allowed disabled:opacity-40">−</button>
@@ -1707,8 +1712,8 @@ export function BookingCheckoutClient({
               {/* Infants */}
               <div className="flex items-center justify-between py-2">
                 <div>
-                  <h4 className="text-sm font-normal text-zinc-900">Infants</h4>
-                  <p className="text-xs text-zinc-500">Under 2{!allowsInfants ? " · Not allowed" : ""}</p>
+                  <h4 className="text-sm font-normal text-zinc-900">{t("book_infants", "Infants")}</h4>
+                  <p className="text-xs text-zinc-500">{t("book_infants_desc", "Under 2")}{!allowsInfants ? ` · ${t("book_not_allowed", "Not allowed")}` : ""}</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <button type="button" disabled={infantsCount <= 0} onClick={() => updateInfants(-1)} aria-label="Remove one infant" className="flex size-8 items-center justify-center rounded-full border border-zinc-300 hover:border-zinc-900 disabled:cursor-not-allowed disabled:opacity-40">−</button>
@@ -1720,8 +1725,8 @@ export function BookingCheckoutClient({
               {/* Pets */}
               <div className="flex items-center justify-between py-2">
                 <div>
-                  <h4 className="text-sm font-normal text-zinc-900">Pets</h4>
-                  <p className="text-xs text-zinc-500">{allowsPets ? `Up to ${maximumPets}` : "Not allowed"}</p>
+                  <h4 className="text-sm font-normal text-zinc-900">{t("book_pets", "Pets")}</h4>
+                  <p className="text-xs text-zinc-500">{allowsPets ? t("book_up_to_pets", { count: maximumPets }, `Up to ${maximumPets}`) : t("book_not_allowed", "Not allowed")}</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <button
@@ -1751,8 +1756,8 @@ export function BookingCheckoutClient({
 
             <p className="pt-3 text-xs text-zinc-500">
               {guestsCount >= maximumGuests
-                ? `Maximum property capacity of ${maximumGuests} ${maximumGuests === 1 ? "guest" : "guests"} reached.`
-                : `This property accommodates up to ${maximumGuests} ${maximumGuests === 1 ? "guest" : "guests"}.`}
+                ? t("book_max_capacity_reached", { count: maximumGuests }, `Maximum property capacity of ${maximumGuests} ${maximumGuests === 1 ? "guest" : "guests"} reached.`)
+                : t("book_accommodates_up_to", { count: maximumGuests }, `This property accommodates up to ${maximumGuests} ${maximumGuests === 1 ? "guest" : "guests"}.`)}
             </p>
 
             {/* {isQuoteLoading ? (
@@ -1771,7 +1776,7 @@ export function BookingCheckoutClient({
                 disabled={isQuoteLoading || Boolean(quoteError) || !quote}
                 className="rounded-full border border-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white text-[#1f1f1f] font-semibold px-6 py-2.5 text-sm bg-[#FCDF9C] transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Done
+                {t("book_done", "Done")}
               </button>
             </div>
           </div>
@@ -1794,7 +1799,7 @@ export function BookingCheckoutClient({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between pb-4 border-b border-[#727272]">
-              <h3 id="cancellation-policy-title" className="text-lg font-medium text-[#1f1f1f]">Cancellation policy</h3>
+              <h3 id="cancellation-policy-title" className="text-lg font-medium text-[#1f1f1f]">{t("book_cancellation_policy_title", "Cancellation policy")}</h3>
               <button
                 type="button"
                 onClick={() => setIsPolicyModalOpen(false)}
@@ -1809,39 +1814,39 @@ export function BookingCheckoutClient({
               {isNonRefundable ? (
                 <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200">
                   <h4 className="font-bold text-[#1F1F1F] mb-1">
-                    Non-refundable rate
+                    {t("book_non_refundable_notice_title", "Non-refundable rate")}
                   </h4>
                   <p className="text-xs text-[#727272]">
-                    This reservation is non-refundable. If you cancel or change your reservation, you will not receive a refund.
+                    {t("book_non_refundable_notice_desc", "This reservation is non-refundable. If you cancel or change your reservation, you will not receive a refund.")}
                   </p>
                 </div>
               ) : (
                 <div className="p-4 rounded-2xl bg-zinc-50 border border-zinc-100">
                   <h4 className="font-bold text-[#1F1F1F] mb-1">
-                    Full refund before {formatCancellationCutoff(checkIn)}
+                    {t("book_full_refund_before", { cutoff: formatCancellationCutoff(checkIn) }, `Full refund before ${formatCancellationCutoff(checkIn)}`)}
                   </h4>
                   <p className="text-xs text-[#727272]">
-                    Cancel up to 72 hours before check-in for a full refund minus processing fees.
+                    {t("book_full_refund_desc", "Cancel up to 72 hours before check-in for a full refund minus processing fees.")}
                   </p>
                 </div>
               )}
 
               <div>
                 <h5 className="font-bold text-[#1F1F1F] text-xs uppercase tracking-wider mb-2">
-                  {isNonRefundable ? "Non-refundable Terms" : "Standard Terms"}
+                  {isNonRefundable ? t("book_non_refundable_terms", "Non-refundable Terms") : t("book_standard_terms", "Standard Terms")}
                 </h5>
                 <ul className="list-disc list-inside space-y-1.5 text-xs text-zinc-600">
                   {isNonRefundable ? (
                     <>
-                      <li>Non-refundable bookings receive a lower price in exchange for no refund if cancelled.</li>
-                      <li>Cleaning fees may be refunded if cancelled prior to check-in, subject to host policy.</li>
-                      <li>In the event of declared extenuating circumstances, special refund considerations may apply.</li>
+                      <li>{t("book_policy_nonref_1", "Non-refundable bookings receive a lower price in exchange for no refund if cancelled.")}</li>
+                      <li>{t("book_policy_nonref_2", "Cleaning fees may be refunded if cancelled prior to check-in, subject to host policy.")}</li>
+                      <li>{t("book_policy_extenuating", "In the event of declared extenuating circumstances, special refund considerations may apply.")}</li>
                     </>
                   ) : (
                     <>
-                      <li>If you cancel less than 72 hours before check-in, the first night is non-refundable.</li>
-                      <li>Cleanings fees are always refunded if the reservation is cancelled before check-in.</li>
-                      <li>In the event of extenuating circumstances, special refund considerations may apply.</li>
+                      <li>{t("book_policy_std_1", "If you cancel less than 72 hours before check-in, the first night is non-refundable.")}</li>
+                      <li>{t("book_policy_std_2", "Cleanings fees are always refunded if the reservation is cancelled before check-in.")}</li>
+                      <li>{t("book_policy_extenuating", "In the event of declared extenuating circumstances, special refund considerations may apply.")}</li>
                     </>
                   )}
                 </ul>
@@ -1854,7 +1859,7 @@ export function BookingCheckoutClient({
                 onClick={() => setIsPolicyModalOpen(false)}
                 className="rounded-full bg-zinc-900 text-white font-semibold px-6 py-2.5 text-sm hover:bg-zinc-800 transition-colors cursor-pointer"
               >
-                Close
+                {t("book_close", "Close")}
               </button>
             </div>
           </div>

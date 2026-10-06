@@ -2,6 +2,7 @@
 
 import React from "react";
 import type { BookingStatusTimelineEvent } from "@/lib/booking/booking-status";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 interface BookingStatusTimelineProps {
   events: BookingStatusTimelineEvent[];
@@ -28,6 +29,8 @@ function formatTimelineDate(timestampStr: string | null): string {
 }
 
 export function BookingStatusTimeline({ events, className = "" }: BookingStatusTimelineProps) {
+  const { t } = useLanguage();
+
   if (!events || events.length === 0) return null;
 
   return (
@@ -37,9 +40,11 @@ export function BookingStatusTimeline({ events, className = "" }: BookingStatusT
     >
       <div className="flex items-center justify-between border-b border-zinc-100 pb-3.5 mb-5">
         <h3 id="booking-timeline-heading" className="text-base sm:text-lg font-semibold text-[#1F1F1F]">
-          Reservation timeline
+          {t("booking_details_timeline_title", "Reservation timeline")}
         </h3>
-        <span className="text-xs text-zinc-500 font-medium">Status updates & milestones</span>
+        <span className="text-xs text-zinc-500 font-medium">
+          {t("booking_details_timeline_subtitle", "Status updates & milestones")}
+        </span>
       </div>
 
       <ol role="list" className="relative space-y-6">

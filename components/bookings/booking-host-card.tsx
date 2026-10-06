@@ -1,4 +1,5 @@
 import React from "react";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 interface BookingHostCardProps {
   hostName: string | null;
@@ -22,6 +23,7 @@ export function BookingHostCard({
   isConfirmed,
   onContactHost,
 }: BookingHostCardProps) {
+  const { t } = useLanguage();
   const displayName = hostName || "Host";
   const initials = displayName
     .split(" ")
@@ -50,14 +52,14 @@ export function BookingHostCard({
           )}
           <div>
             <span className="text-xs font-semibold uppercase tracking-wider text-[#727272]">
-              Property Host
+              {t("booking_details_property_host", "Property Host")}
             </span>
             <h2 id="host-heading" className="text-lg font-semibold text-[#1F1F1F]">
-              Hosted by {displayName}
+              {t("booking_details_hosted_by", { name: displayName }, "Hosted by {name}")}
             </h2>
             {memberYear && (
               <p className="text-xs text-[#727272] mt-0.5">
-                Hosting on Homyz since {memberYear}
+                {t("booking_details_hosting_since", { year: memberYear }, "Hosting on Homyz since {year}")}
               </p>
             )}
           </div>
@@ -72,7 +74,7 @@ export function BookingHostCard({
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
-            <span>Message host</span>
+            <span>{t("booking_details_message_host_btn", "Message host")}</span>
           </button>
         </div>
       </div>
