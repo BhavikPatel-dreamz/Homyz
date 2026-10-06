@@ -231,10 +231,10 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
       prev.map((n) =>
         n.id === item.id
           ? {
-              ...n,
-              isRead: newIsRead,
-              readAt: newIsRead ? new Date().toISOString() : null,
-            }
+            ...n,
+            isRead: newIsRead,
+            readAt: newIsRead ? new Date().toISOString() : null,
+          }
           : n,
       ),
     );
@@ -335,12 +335,12 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
               {t("profile_notif_title", "Notifications")}
             </h2>
             {unreadCount > 0 && (
-              <span className="inline-flex items-center justify-center rounded-full bg-[#1F1F1F] text-white text-xs font-semibold px-2.5 py-0.5 shadow-2xs">
+              <span className="inline-flex items-center justify-center rounded-full bg-[#1F1F1F] text-white text-xs font-normal px-2.5 py-1">
                 {unreadCount} {t("profile_notif_new_badge", "new")}
               </span>
             )}
           </div>
-          <p className="mt-1 text-sm leading-5 text-[#727272] sm:text-base sm:leading-6">
+          <p className="mt-1 text-sm leading-5 text-[#727272] lg:text-base sm:leading-6">
             {t("profile_notif_subtitle", "Stay updated on booking confirmations, messages from hosts, promotions, and system alerts.")}
           </p>
         </div>
@@ -349,7 +349,7 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
           <button
             type="button"
             onClick={handleMarkAllRead}
-            className="rounded-full border border-[#D7D7D7] bg-white px-4 py-2 text-xs font-semibold text-[#1F1F1F] hover:bg-zinc-50 hover:border-zinc-400 transition-all self-start sm:self-auto cursor-pointer shadow-2xs shrink-0"
+            className="rounded-full border border-transparent bg-[#FCDF9C] px-4 py-2 text-sm font-medium text-[#1F1F1F] hover:text-white hover:bg-[#1f1f1f] hover:border-[#1f1f1f] transition-all duration-300 self-start sm:self-auto cursor-pointer shrink-0"
           >
             {t("profile_notif_mark_all_read", "Mark all as read")}
           </button>
@@ -384,11 +384,10 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
             key={btn.id}
             type="button"
             onClick={() => setFilter(btn.id)}
-            className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
-              filter === btn.id
+            className={`rounded-full px-4 py-1.5 text-xs font-medium transition-all cursor-pointer whitespace-nowrap ${filter === btn.id
                 ? "bg-[#1F1F1F] text-white shadow-2xs"
                 : "border border-[#D7D7D7] bg-white text-[#727272] hover:text-[#1F1F1F] hover:border-zinc-400"
-            }`}
+              }`}
           >
             {btn.label}
           </button>
@@ -412,7 +411,7 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
           </p>
         </div>
       ) : (
-        <div className="divide-y divide-zinc-200/80 rounded-2xl border border-zinc-200 bg-white overflow-hidden shadow-xs">
+        <div className="visible-scrollbar max-h-[65dvh] divide-y divide-[#d7d7d7] overflow-y-auto overscroll-contain rounded-lg border border-[#d7d7d7] bg-white shadow-xs sm:max-h-[calc(100dvh-20rem)] sm:rounded-2xl">
           {filtered.map((item) => {
             const badge = getTypeBadge(item.type, item.entityType, item.metadata, t);
             const isClickable = Boolean(item.link || item.entityId);
@@ -421,16 +420,15 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
               <div
                 key={item.id}
                 onClick={() => handleNotificationClick(item)}
-                className={`group flex items-start gap-4 p-4 sm:p-5 transition-all cursor-pointer ${
-                  !item.isRead
-                    ? "bg-[#FFFDF7] hover:bg-[#FFF8E8] border-l-4 border-l-amber-400"
+                className={`group flex items-start gap-4 p-4 sm:p-5 transition-all cursor-pointer ${!item.isRead
+                    ? "bg-[#FEF3D7] hover:bg-[#FFF8E8] border-l-4 border-l-[#EBA900]"
                     : "hover:bg-zinc-50/80 border-l-4 border-l-transparent"
-                }`}
+                  }`}
               >
                 {/* Unread indicator dot */}
                 <div className="mt-1.5 flex h-2.5 w-2.5 shrink-0 items-center justify-center">
                   {!item.isRead ? (
-                    <span className="h-2.5 w-2.5 rounded-full bg-amber-500 ring-4 ring-amber-100 animate-pulse" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-[#EBA900] ring-4 ring-amber-200 animate-pulse" />
                   ) : (
                     <span className="h-2 w-2 rounded-full bg-transparent" />
                   )}
@@ -438,8 +436,8 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
 
                 {/* Main Content */}
                 <div className="flex-1 min-w-0">
-                  <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
-                    <div className="flex items-center gap-2 flex-wrap">
+                  <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                    <div className="flex items-start gap-2 flex-col flex-wrap">
                       <span
                         className={`inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[11px] font-medium ${badge.bgClass}`}
                       >
@@ -448,17 +446,16 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
                       </span>
 
                       <h3
-                        className={`text-sm sm:text-base leading-snug truncate ${
-                          !item.isRead
-                            ? "font-semibold text-[#1F1F1F]"
+                        className={`text-sm sm:text-base leading-snug truncate ${!item.isRead
+                            ? "font-medium text-[#1F1F1F]"
                             : "font-medium text-zinc-800"
-                        }`}
+                          }`}
                       >
                         {item.title}
                       </h3>
                     </div>
 
-                    <span className="shrink-0 text-xs text-zinc-400">
+                    <span className="shrink-0 text-xs text-[#727272]">
                       {formatRelativeTime(item.createdAt, t)}
                     </span>
                   </div>
@@ -470,9 +467,9 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
                   {/* Action row */}
                   <div className="mt-2.5 flex items-center gap-3">
                     {isClickable && (
-                      <span className="text-xs font-semibold text-[#1F1F1F] group-hover:underline inline-flex items-center gap-1">
+                      <span className="text-sm font-medium text-[#1F1F1F] group-hover:underline inline-flex items-center gap-1">
                         <span>{t("profile_notif_view_details", "View details")}</span>
-                        <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                           <polyline points="9 18 15 12 9 6" />
                         </svg>
                       </span>
@@ -481,7 +478,7 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
                     <button
                       type="button"
                       onClick={(e) => handleToggleRead(e, item)}
-                      className="text-xs text-zinc-400 hover:text-zinc-700 transition-colors ml-auto cursor-pointer"
+                      className="text-sm text-[#727272] hover:text-[#1f1f1f] underline underline-offset-3 transition-colors duration-300 ml-auto cursor-pointer"
                       title={item.isRead ? t("profile_notif_mark_unread", "Mark as unread") : t("profile_notif_mark_read", "Mark as read")}
                     >
                       {item.isRead ? t("profile_notif_mark_unread", "Mark as unread") : t("profile_notif_mark_read", "Mark as read")}
