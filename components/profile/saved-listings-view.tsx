@@ -150,14 +150,14 @@ export function SavedListingsView({ initialFavorites, initialTotal = 0 }: SavedL
   return (
     <div className="flex min-w-0 w-full flex-col animate-in fade-in duration-300">
       {/* Title Header */}
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between xl:mb-8">
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between lg:flex-col lg:items-start 2xl:flex-row 2xl:items-start xl:mb-8">
         <div className="min-w-0">
           <div className="flex items-center gap-3">
             <h2 className="text-[22px] leading-[30px] font-medium tracking-[-0.02em] text-[#1F1F1F] sm:text-[28px] sm:leading-[36px] lg:text-[32px] lg:leading-[40px] xl:text-[36px] xl:leading-[44px]">
               {t("profile_saved_title", "Wishlists")}
             </h2>
             {validItems.length > 0 && (
-              <span className="inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">
+              <span className="inline-flex shrink-0 items-center whitespace-nowrap rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">
                 {validItems.length === 1
                   ? t("profile_saved_count_one", { count: 1 }, "1 saved stay")
                   : t("profile_saved_count_many", { count: validItems.length }, `${validItems.length} saved stays`)}
@@ -168,7 +168,7 @@ export function SavedListingsView({ initialFavorites, initialTotal = 0 }: SavedL
 
         {/* Category Filter Pills (if multiple categories available) */}
         {availableCategories.length > 0 && (
-          <div className="flex w-full min-w-0 max-w-full items-center gap-1.5 overflow-x-auto rounded-full border border-[#D7D7D7] bg-[#F5F5F5] p-1 sm:ml-4 sm:w-auto sm:max-w-[58%]">
+          <div className="flex w-full min-w-0 max-w-full items-center gap-1.5 overflow-x-auto rounded-full border border-[#D7D7D7] bg-[#F5F5F5] p-1 sm:ml-4 sm:w-auto sm:max-w-[58%] lg:ml-0 lg:w-full lg:max-w-full 2xl:ml-4 2xl:w-auto 2xl:max-w-[58%]">
             <button
               type="button"
               onClick={() => setCategoryFilter("ALL")}

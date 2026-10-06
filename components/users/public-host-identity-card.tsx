@@ -27,7 +27,7 @@ export function PublicHostIdentityCard({ name, image, isSuperhost, reviewCount, 
             <div aria-hidden="true" className="flex size-[104px] shrink-0 items-center justify-center rounded-full border border-amber-200 bg-amber-100 text-2xl font-bold text-amber-900">{initial}</div>
           )}
           <div className="pt-4 text-center">
-            <p className="break-words text-lg font-semibold capitalize text-[#1f1f1f] sm:text-[20px]">{name}</p>
+            <p className="break-words text-lg font-semibold capitalize text-[#1f1f1f] sm:text-[20px] leading-6">{name}</p>
             <p className="mt-1 text-base font-light text-[#1f1f1f] sm:mt-2">{isSuperhost ? "Superhost" : "Host"}</p>
           </div>
         </div>

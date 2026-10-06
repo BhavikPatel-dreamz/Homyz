@@ -1286,7 +1286,7 @@ export function HostMessagesWorkspace({
                                         Booked & Confirmed
                                       </span>
                                     ) : isExpired ? (
-                                        <span className="inline-flex items-center rounded-full bg-zinc-200 px-2 py-0.5 text-[10px] font-semibold text-zinc-600 border border-zinc-300 whitespace-nowrap leading-4">
+                                        <span className="inline-flex items-center rounded-full bg-zinc-200 px-2 py-0.5 text-[10px] font-medium text-zinc-600 border border-zinc-300 whitespace-nowrap leading-4">
                                         Expired
                                       </span>
                                     ) : isDeclined ? (

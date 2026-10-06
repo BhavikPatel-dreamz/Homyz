@@ -88,16 +88,16 @@ export function ReservationCard({
 }: {
   data: ReservationCardData;
   href?: string;
-  variant?: "default" | "past";
+  variant?: "default" | "past" | "compact";
 }) {
   const { t } = useLanguage();
   const [failedImage, setFailedImage] = useState<string | null>(null);
   const title = data.propertyName || "Property stay";
-  const isPastVariant = variant === "past";
+  const isCompactVariant = variant === "past" || variant === "compact";
   const detailsHref = href || `/bookings/${data.id}`;
   return (
     <article
-      className={isPastVariant
+      className={isCompactVariant
         ? "group flex flex-col"
         : "group flex min-h-[304px] flex-col overflow-hidden rounded-[24px] border border-zinc-200 bg-white p-4 shadow-[0_2px_4px_rgba(0,0,0,0.08)] transition-[border-color,box-shadow] duration-300 hover:border-zinc-300 hover:shadow-[0_8px_20px_rgba(0,0,0,0.10)]"}
     >
@@ -105,7 +105,7 @@ export function ReservationCard({
         {/* IMAGE WITH FLOATING BADGE OVERLAY */}
         <Link
           href={detailsHref}
-          className={isPastVariant
+          className={isCompactVariant
             ? "relative block h-[207px] w-full overflow-hidden rounded-[18px] bg-[#F5F3EE]"
             : "relative block aspect-[16/10] w-full overflow-hidden rounded-[18px] bg-[#F5F3EE]"}
         >
@@ -131,8 +131,8 @@ export function ReservationCard({
         </Link>
 
         {/* PROPERTY INFO */}
-        <div className={isPastVariant ? "mt-3 flex flex-col" : "mt-3.5"}>
-          <p className={isPastVariant
+        <div className={isCompactVariant ? "mt-3 flex flex-col" : "mt-3.5"}>
+          <p className={isCompactVariant
             ? "order-2 mt-1 text-sm leading-6 text-[#727272]"
             : "text-[11px] font-semibold uppercase tracking-[0.04em] text-slate-500"}
           >
@@ -141,7 +141,7 @@ export function ReservationCard({
 
           <Link
             href={detailsHref}
-            className={isPastVariant
+            className={isCompactVariant
               ? "order-1 block truncate text-base font-semibold leading-6 text-[#1F1F1F] transition-colors group-hover:text-zinc-700"
               : "mt-1 block min-h-12 text-base font-semibold leading-6 text-[#1F1F1F] transition-colors group-hover:text-zinc-700 line-clamp-2"}
             title={title}
@@ -150,7 +150,7 @@ export function ReservationCard({
           </Link>
 
           {data.location && (
-            <p className={isPastVariant
+            <p className={isCompactVariant
               ? "order-3 mt-1 line-clamp-1 text-xs leading-4 text-[#727272]"
               : "mt-1 line-clamp-1 text-sm leading-5 text-[#727272]"}
             >
@@ -158,7 +158,7 @@ export function ReservationCard({
             </p>
           )}
 
-          <p className={isPastVariant
+          <p className={isCompactVariant
             ? "order-4 mt-1 text-[10px] font-medium tracking-[0.02em] text-[#727272]"
             : "mt-2 text-[10px] font-medium tracking-[0.02em] text-[#727272]"}>
             Booking #{data.id.slice(-8).toUpperCase()}

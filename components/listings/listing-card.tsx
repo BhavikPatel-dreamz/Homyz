@@ -458,7 +458,7 @@ export function ListingCard({
       )}
       {/* ── Image Carousel ── */}
       <div
-        className={`relative aspect-[4/3] w-full overflow-hidden bg-zinc-100 select-none ${isSearchGridCard ? "rounded-none shadow-none" : "rounded-2xl shadow-xs"}`}
+        className={`relative aspect-[4/4] w-full overflow-hidden bg-zinc-100 select-none ${isSearchGridCard ? "rounded-none shadow-none" : "rounded-2xl shadow-xs"}`}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
