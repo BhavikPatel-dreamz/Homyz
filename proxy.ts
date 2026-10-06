@@ -12,19 +12,6 @@ import type { NextRequest } from "next/server";
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  const host = request.headers.get("x-forwarded-host") || request.headers.get("host");
-  if (host) {
-    const isLocal = host.includes("localhost") || host.includes("127.0.0.1");
-    const isIp = /^\d+\.\d+\.\d+\.\d+/.test(host);
-    const forwardedProto = request.headers.get("x-forwarded-proto");
-    const proto = forwardedProto || (isLocal || isIp ? "http" : "https");
-    const detectedOrigin = `${proto}://${host}`;
-
-    process.env.NEXTAUTH_URL = detectedOrigin;
-    process.env.APP_URL = detectedOrigin;
-    process.env.AUTH_TRUST_HOST = "true";
-  }
-
   let token = await getToken({
     req: request,
     secret: process.env.NEXTAUTH_SECRET,

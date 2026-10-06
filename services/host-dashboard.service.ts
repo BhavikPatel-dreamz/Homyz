@@ -355,7 +355,10 @@ export async function getHostDashboardData(
   const isAccountInGoodStanding = accountStatus === UserStatus.ACTIVE;
 
   // 2. Fetch all host listings (owned or accepted co-host)
-  const { items: listings } = await listingService.listForHost(actor, { take: 100 });
+  // Dashboard aggregates must include every listing the host can access. A
+  // paginated first page silently undercounted hosts with more than 100
+  // properties, causing incorrect earnings, occupancy, and qualification data.
+  const { items: listings } = await listingService.listForHost(actor, { take: null });
   const allListingIds = listings.map((l) => l.id);
 
   if (allListingIds.length === 0) {
@@ -395,7 +398,6 @@ export async function getHostDashboardData(
           id: true,
           name: true,
           image: true,
-          personalInfo: true,
         },
       },
       listing: {
@@ -413,6 +415,27 @@ export async function getHostDashboardData(
     },
     orderBy: { startDate: "asc" },
   });
+
+  // Only the six-month completed-stay analytics need residential origin. Do
+  // not join private profile JSON onto every historical or future booking.
+  const guestIdsNeedingOrigin = [...new Set(
+    allBookings
+      .filter((booking: (typeof allBookings)[number]) => (
+        booking.status === BookingStatus.CONFIRMED
+        && booking.endDate >= sixMonthsAgo
+        && booking.endDate <= now
+      ))
+      .map((booking: (typeof allBookings)[number]) => booking.userId),
+  )];
+  const guestOriginProfiles = guestIdsNeedingOrigin.length > 0
+    ? await prisma.user.findMany({
+        where: { id: { in: guestIdsNeedingOrigin } },
+        select: { id: true, personalInfo: true },
+      })
+    : [];
+  const personalInfoByGuestId = new Map(
+    guestOriginProfiles.map((guest: (typeof guestOriginProfiles)[number]) => [guest.id, guest.personalInfo]),
+  );
 
   // 5. Categorize reservations & calculate earnings
   let upcomingCount = 0;
@@ -536,7 +559,7 @@ export async function getHostDashboardData(
           completedGuestStaysCount++;
           guestBookingCounts.set(b.userId, (guestBookingCounts.get(b.userId) ?? 0) + 1);
 
-          const personalInfo = b.user?.personalInfo as Record<string, unknown> | null;
+          const personalInfo = personalInfoByGuestId.get(b.userId) as Record<string, unknown> | null | undefined;
           const address = personalInfo?.residentialAddress as Record<string, unknown> | null;
           const country = typeof address?.country === "string" ? address.country.trim() : "";
           const city = typeof address?.city === "string" ? address.city.trim() : "";

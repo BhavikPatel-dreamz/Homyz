@@ -1,18 +1,30 @@
 import { NextResponse } from "next/server";
-import path from "path";
 import { getSessionUser } from "@/lib/auth/session";
 import { savePublicMedia } from "@/lib/storage/media";
 import { prisma } from "@/lib/db/prisma";
 import { Role } from "@/generated/prisma/enums";
+import { checkRateLimitAsync } from "@/lib/services/rate-limit";
+import { validatePublicImageUpload } from "@/lib/media/public-image-validation";
 
-const MAX_GUIDEBOOK_PHOTO_SIZE = 10 * 1024 * 1024;
-const ACCEPTED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/avif"]);
+const UPLOAD_RATE_LIMIT = 20;
+const UPLOAD_RATE_WINDOW_SECONDS = 10 * 60;
 
 export async function POST(req: Request) {
   try {
     const actor = await getSessionUser();
     if (!actor) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const rateLimit = await checkRateLimitAsync(
+      `public-image-upload:${actor.id}`,
+      UPLOAD_RATE_LIMIT,
+      UPLOAD_RATE_WINDOW_SECONDS,
+    );
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: "Too many uploads. Please wait and try again." },
+        { status: 429, headers: { "Retry-After": String(rateLimit.retryAfter) } },
+      );
     }
 
     const formData = await req.formData();
@@ -38,34 +50,17 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "No image file provided." }, { status: 400 });
     }
 
-    if (!ACCEPTED_IMAGE_TYPES.has(file.type)) {
-      return NextResponse.json(
-        { error: "Only JPEG, PNG, WebP, and AVIF images are supported." },
-        { status: 415 },
-      );
-    }
-    const uploadedExtension = path.extname(file.name).toLowerCase();
-    const allowedExtensionsByMimeType: Record<string, string[]> = {
-      "image/jpeg": [".jpg", ".jpeg"],
-      "image/png": [".png"],
-      "image/webp": [".webp"],
-      "image/avif": [".avif"],
-    };
-    if (!allowedExtensionsByMimeType[file.type]?.includes(uploadedExtension)) {
-      return NextResponse.json(
-        { error: "The file extension does not match its image type." },
-        { status: 415 },
-      );
-    }
-    if (file.size <= 0 || file.size > MAX_GUIDEBOOK_PHOTO_SIZE) {
-      return NextResponse.json(
-        { error: "Each guidebook photo must be between 1 byte and 10 MB." },
-        { status: 413 },
-      );
-    }
-
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
+    const validation = validatePublicImageUpload({
+      fileName: file.name,
+      mimeType: file.type,
+      size: file.size,
+      buffer,
+    });
+    if (validation) {
+      return NextResponse.json({ error: validation.message }, { status: validation.status });
+    }
 
     const extensionByMimeType: Record<string, string> = {
       "image/jpeg": ".jpg",
@@ -73,7 +68,7 @@ export async function POST(req: Request) {
       "image/webp": ".webp",
       "image/avif": ".avif",
     };
-    const cleanExt = extensionByMimeType[file.type] ?? uploadedExtension;
+    const cleanExt = extensionByMimeType[file.type];
 
     const fileName = `guidebook_${Date.now()}_${Math.random().toString(36).slice(2, 8)}${cleanExt}`;
     const contentType = file.type || "image/jpeg";
@@ -90,8 +85,7 @@ export async function POST(req: Request) {
       fileName: saved.fileName,
     });
   } catch (err: unknown) {
-    console.error("Guidebook photo upload error:", err);
-    const message = err instanceof Error ? err.message : "Failed to upload photo.";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("[upload] guidebook photo upload failed");
+    return NextResponse.json({ error: "Failed to upload photo." }, { status: 500 });
   }
 }

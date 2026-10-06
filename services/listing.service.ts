@@ -1148,14 +1148,14 @@ async function getEditorWorkspaceListing(id: string) {
 // Listings a host owns or has accepted a co-host role for.
 async function listForHost(
   actor: AuthUser,
-  opts?: { skip?: number; take?: number },
+  opts?: { skip?: number; take?: number | null },
 ): Promise<{ items: ListingDTO[]; total: number }> {
   authorize(actor, [Role.HOST, Role.USER, Role.ADMIN]);
   if (actor.role === Role.HOST) {
     await assertHostPermission(actor.id, "listing.view");
   }
   const skip = opts?.skip ?? 0;
-  const take = opts?.take ?? 50;
+  const take = opts?.take === undefined ? 50 : opts.take;
   const where: Prisma.ListingWhereInput = actor.role === Role.ADMIN
     ? { hostId: actor.id, deletedAt: null }
     : {
@@ -1176,7 +1176,7 @@ async function listForHost(
     prisma.listing.findMany({
       where,
       skip,
-      take,
+      ...(take === null ? {} : { take }),
       orderBy: { createdAt: "desc" },
     }),
     prisma.listing.count({ where }),

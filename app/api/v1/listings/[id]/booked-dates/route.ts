@@ -1,12 +1,16 @@
 import { apiHandler } from "@/lib/api/handler";
 import { ok } from "@/lib/api/response";
 import { prisma } from "@/lib/db/prisma";
+import { AppError } from "@/lib/api/errors";
+import { ListingStatus } from "@/generated/prisma/enums";
 import { getExpiryThresholdDate } from "@/lib/booking/booking-expiry";
 import {
   bookingDateKey,
   parseBookingDate,
   shiftBookingDateKey,
 } from "@/lib/booking/booking-date";
+
+const MAX_CALENDAR_RANGE_DAYS = 366;
 
 /**
  * GET /api/v1/listings/[id]/booked-dates
@@ -25,7 +29,13 @@ export const GET = apiHandler(
     const requestedStart = parseCalendarDate(startParam) ?? today;
     const requestedEnd = parseCalendarDate(endParam);
     const rangeStart = Number.isNaN(requestedStart.getTime()) ? today : requestedStart;
-    const rangeEnd = requestedEnd && requestedEnd > rangeStart ? requestedEnd : null;
+    const maximumEnd = parseBookingDate(
+      shiftBookingDateKey(bookingDateKey(rangeStart), MAX_CALENDAR_RANGE_DAYS),
+    );
+    if (requestedEnd && requestedEnd > maximumEnd) {
+      throw AppError.badRequest(`Calendar ranges cannot exceed ${MAX_CALENDAR_RANGE_DAYS} days.`);
+    }
+    const rangeEnd = requestedEnd && requestedEnd > rangeStart ? requestedEnd : maximumEnd;
 
     const expiryThreshold = getExpiryThresholdDate();
     const [bookings, listing] = await Promise.all([
@@ -42,8 +52,18 @@ export const GET = apiHandler(
         select: { startDate: true, endDate: true },
         orderBy: { startDate: "asc" },
       }),
-      prisma.listing.findUnique({ where: { id }, select: { blockedDates: true } }),
+      prisma.listing.findFirst({
+        where: {
+          id,
+          published: true,
+          status: ListingStatus.ACTIVE,
+          isPaused: false,
+          deletedAt: null,
+        },
+        select: { blockedDates: true },
+      }),
     ]);
+    if (!listing) throw AppError.notFound("Listing is not available");
 
     const bookingRanges = bookings.map((b: { startDate: Date; endDate: Date }) => ({
       start: bookingDateKey(b.startDate),
@@ -52,8 +72,8 @@ export const GET = apiHandler(
     // A blocked calendar day is an unavailable one-night range. It remains
     // intentionally compact and private: no booking or guest details leave
     // this public endpoint.
-    const blockedRanges = (listing?.blockedDates ?? []).filter((date: string) => (
-      date >= bookingDateKey(rangeStart) && (!rangeEnd || date < bookingDateKey(rangeEnd))
+    const blockedRanges = listing.blockedDates.filter((date: string) => (
+      date >= bookingDateKey(rangeStart) && date < bookingDateKey(rangeEnd)
     )).map((date: string) => {
       const start = parseCalendarDate(date);
       if (!start) return null;
