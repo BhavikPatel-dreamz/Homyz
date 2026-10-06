@@ -754,6 +754,7 @@ model Review {
   locationRating      Int?
   valueRating         Int?
   comment             String       @db.Text // Empty string allowed for rating-only reviews
+  privateNoteToHost   String       @db.Text @default("") // Private feedback only visible to host and guest
   topics              String[]     @default([])
   status              ReviewStatus @default(PUBLISHED)
 

@@ -27,6 +27,7 @@ export type CreateReviewInput = {
   bookingId: string;
   rating: number;
   comment: string;
+  privateNoteToHost?: string;
   categoryRatings?: ReviewCategoryRatings;
 };
 
@@ -192,6 +193,15 @@ export const reviewService = {
         throw AppError.validation("Category ratings must be integers between 1 and 5");
       }
     }
+    // Validate text field lengths on backend (defense against client-side bypass)
+    const comment = (input.comment || "").trim();
+    if (comment.length > 5000) {
+      throw AppError.validation("Review text cannot exceed 5000 characters");
+    }
+    const privateNote = (input.privateNoteToHost || "").trim();
+    if (privateNote.length > 5000) {
+      throw AppError.validation("Private note cannot exceed 5000 characters");
+    }
 
     const booking = await prisma.booking.findFirst({
       where: {
@@ -214,7 +224,8 @@ export const reviewService = {
         authorId: input.authorId,
         bookingId: input.bookingId,
         rating: input.rating,
-        comment: input.comment.trim(),
+        comment: comment,
+        privateNoteToHost: privateNote,
         topics: extractTopics(input.comment),
         ...categoryData(input.categoryRatings),
         status: "PUBLISHED",
@@ -289,5 +300,64 @@ export const reviewService = {
           }
         : null,
     }));
+  },
+
+  /** Get reviews for a listing (host-facing, includes private notes). Only include published reviews. */
+  async getListingReviewsForHost(
+    listingId: string,
+    page = 1,
+    pageSize = REVIEWS_PAGE_SIZE,
+  ): Promise<{
+    reviews: Array<{
+      id: string;
+      listingId: string;
+      rating: number;
+      comment: string;
+      privateNoteToHost: string;
+      topics: string[];
+      author: { id: string; name: string | null; image: string | null };
+      createdAt: Date;
+    }>;
+    total: number;
+    page: number;
+    totalPages: number;
+  }> {
+    const safePage = Math.max(1, Math.trunc(page));
+    const safePageSize = Math.min(Math.max(1, Math.trunc(pageSize)), 24);
+    const where = {
+      listingId,
+      status: "PUBLISHED" as const,
+    };
+
+    const [total, reviews] = await prisma.$transaction([
+      prisma.review.count({ where }),
+      prisma.review.findMany({
+        where,
+        include: { author: { select: { id: true, name: true, image: true } } },
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+        skip: (safePage - 1) * safePageSize,
+        take: safePageSize,
+      }),
+    ]);
+
+    return {
+      reviews: reviews.map((r) => ({
+        id: r.id,
+        listingId: r.listingId,
+        rating: r.rating,
+        comment: r.comment,
+        privateNoteToHost: r.privateNoteToHost,
+        topics: r.topics,
+        author: {
+          id: r.author.id,
+          name: r.author.name,
+          image: r.author.image,
+        },
+        createdAt: r.createdAt,
+      })),
+      total,
+      page: safePage,
+      totalPages: Math.ceil(total / safePageSize),
+    };
   },
 };
