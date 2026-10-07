@@ -21,31 +21,37 @@ function ExpandControl({
 }) {
   return (
     <details
-      className="group rounded-xl border border-zinc-200 dark:border-zinc-700/80 bg-zinc-50/60 dark:bg-zinc-800/40 overflow-hidden transition-colors"
+      className="group overflow-hidden rounded-xl border border-[#dedede] bg-white transition-all duration-200 hover:border-[#bdbdbd] group-open:border-[#bdbdbd] group-open:shadow-[0_3px_12px_rgba(31,31,31,0.06)] dark:border-zinc-700/80 dark:bg-zinc-800/40 dark:hover:border-zinc-600 dark:group-open:border-zinc-600"
       open={defaultOpen}
     >
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-3.5 hover:bg-zinc-100/70 dark:hover:bg-zinc-800/70 transition-colors [&::-webkit-details-marker]:hidden">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 transition-colors hover:bg-[#fafafa] dark:hover:bg-zinc-800/70 [&::-webkit-details-marker]:hidden">
         <div className="min-w-0 flex-1">
-          <span className="block text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+          <span className="block text-sm font-medium text-[#1f1f1f] dark:text-zinc-100">
             {title}
           </span>
           {subtitle && (
-            <span className="mt-0.5 block text-[11px] leading-4 text-zinc-500 dark:text-zinc-400 font-normal">
+            <span className="mt-1 block text-xs font-normal leading-normal text-[#727272] dark:text-zinc-400">
               {subtitle}
             </span>
           )}
         </div>
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2.5">
           {trailing}
-          <span
+          <svg
             aria-hidden="true"
-            className="text-base font-medium leading-none text-zinc-400 group-open:rotate-180 transition-transform duration-200"
+            className="size-4 text-[#1F1F1F] transition-transform duration-200 group-open:rotate-180 dark:text-zinc-300"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           >
-            ▾
-          </span>
+            <path d="m6 9 6 6 6-6" />
+          </svg>
         </div>
       </summary>
-      <div className="border-t border-zinc-200/80 dark:border-zinc-700/80 p-3.5 space-y-3 bg-white/70 dark:bg-zinc-900/40">
+      <div className="space-y-3 border-t border-[#ececec] bg-[#fafafa] p-4 dark:border-zinc-700/80 dark:bg-zinc-900/40">
         {children}
       </div>
     </details>
@@ -245,10 +251,10 @@ export function CalendarSettingsPanel({
     readOnly?: boolean;
   }) => (
     <div className="space-y-1">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col items-start justify-between">
         <label
           htmlFor={`input-${name}`}
-          className="text-xs font-semibold text-zinc-800 dark:text-zinc-200"
+          className="text-sm font-medium text-[#1f1f1f] dark:text-zinc-200"
         >
           {label}
         </label>
@@ -256,16 +262,16 @@ export function CalendarSettingsPanel({
           <button
             type="button"
             onClick={onClear}
-            className="text-[11px] font-medium text-zinc-500 hover:text-rose-600 dark:text-zinc-400 dark:hover:text-rose-400 transition-colors cursor-pointer"
+            className="text-xs font-medium text-[#727272] hover:text-rose-600 dark:text-zinc-400 dark:hover:text-rose-400 transition-colors cursor-pointer text-left"
           >
             {clearLabel || "Remove"}
           </button>
         )}
       </div>
 
-      <div className="relative flex items-center rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 shadow-2xs transition-all focus-within:border-zinc-900 focus-within:ring-2 focus-within:ring-zinc-900/10 dark:focus-within:border-amber-400 dark:focus-within:ring-amber-400/20 hover:border-zinc-400 dark:hover:border-zinc-600">
+      <div className="relative flex items-center rounded-lg border border-[#727272] sm:min-h-[56px] min-h-[45px] dark:border-zinc-700 bg-white dark:bg-zinc-800 shadow-2xs transition-all focus-within:outline-0 hover:border-zinc-400 dark:hover:border-zinc-600">
         {prefix ? (
-          <span className="pl-3.5 pr-1 text-xs font-bold text-zinc-500 dark:text-zinc-400 select-none shrink-0">
+          <span className="pl-3.5 pr-1 text-xs font-semibold text-zinc-500 dark:text-zinc-400 select-none shrink-0">
             {prefix}
           </span>
         ) : null}
@@ -288,14 +294,14 @@ export function CalendarSettingsPanel({
         />
 
         {suffix ? (
-          <span className="pr-3.5 pl-1 text-xs font-bold text-zinc-500 dark:text-zinc-400 select-none shrink-0">
+          <span className="pr-3.5 pl-1 text-xs font-medium capitalize text-[#727272] dark:text-zinc-400 select-none shrink-0">
             {suffix}
           </span>
         ) : null}
       </div>
 
       {helperText && (
-        <p className="text-[11px] leading-relaxed text-zinc-500 dark:text-zinc-400">
+        <p className="text-xs leading-relaxed text-[#727272] dark:text-zinc-400">
           {helperText}
         </p>
       )}
@@ -305,47 +311,62 @@ export function CalendarSettingsPanel({
   if (panel === "overview") {
     return (
       <div className="text-sm text-[#222222] dark:text-zinc-100">
-        <div className="divide-y divide-[#eeeeee] dark:divide-zinc-800">
+        <div className="divide-y divide-[#DDDDDE] dark:divide-zinc-800">
           <button
             type="button"
-            className="group flex w-full items-start justify-between gap-4 py-2.5 text-left transition-colors hover:text-zinc-950 dark:hover:text-white cursor-pointer"
+            className="group flex w-full items-start justify-between gap-4 pb-8 text-left transition-colors hover:text-zinc-950 dark:hover:text-white cursor-pointer"
             onClick={() => setPanel("pricing")}
           >
             <div className="min-w-0">
-              <p className="text-sm font-medium text-[#222222] dark:text-zinc-100">
+              <p className="text-base font-medium text-[#222222] dark:text-zinc-100">
                 Price settings
               </p>
-              <p className="mt-3 text-xs leading-5 text-[#717171] dark:text-zinc-400">
-                {formatMajor(((listing as any).weekdayBasePrice ?? listing.price) / 100, listingCurrency)} per night
-                <br />
-                {weeklyDiscount}% weekly discount
-                <br />
-                {monthlyDiscount}% monthly discount
-              </p>
+              <div className="mt-3 flex flex-col gap-1.5 text-sm leading-5 text-[#727272] dark:text-[#727272]">
+                <div>{formatMajor(((listing as any).weekdayBasePrice ?? listing.price) / 100, listingCurrency)} per night</div>
+                <div>{weeklyDiscount}% weekly discount</div>
+                <div>{monthlyDiscount}% monthly discount</div>
+              </div>
             </div>
-            <span className="mt-0.5 text-2xl font-light leading-none text-[#222222] transition-transform group-hover:translate-x-0.5 dark:text-zinc-200">
-              ›
-            </span>
+            <svg
+              className="mt-0.5 size-5 shrink-0 text-[#222222] transition-transform group-hover:translate-x-0.5 dark:text-zinc-200"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.75"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m9 18 6-6-6-6" />
+            </svg>
           </button>
 
           <button
             type="button"
-            className="group flex w-full items-start justify-between gap-4 py-7 text-left transition-colors hover:text-zinc-950 dark:hover:text-white cursor-pointer"
+            className="group flex w-full items-start justify-between gap-4 py-8 text-left transition-colors hover:text-zinc-950 dark:hover:text-white cursor-pointer"
             onClick={() => setPanel("availability")}
           >
             <div className="min-w-0">
-              <p className="text-sm font-medium text-[#222222] dark:text-zinc-100">
+              <p className="text-base font-medium text-[#222222] dark:text-zinc-100">
                 Availability settings
               </p>
-              <p className="mt-3 text-xs leading-5 text-[#717171] dark:text-zinc-400">
-                {listing.minNights ?? 1}–{listing.maxNights ?? 365} night stays
-                <br />
-                {(listing as any).advanceNotice || "Same day"} advance notice
-              </p>
+              <div className="mt-3 flex flex-col gap-1.5 text-sm font-normal leading-5 text-[#727272] dark:text-zinc-400">
+                <div>{listing.minNights ?? 1}–{listing.maxNights ?? 365} night stays</div>
+                <div>{(listing as any).advanceNotice || "Same day"} advance notice</div>
+              </div>
             </div>
-            <span className="mt-0.5 text-2xl font-light leading-none text-[#222222] transition-transform group-hover:translate-x-0.5 dark:text-zinc-200">
-              ›
-            </span>
+            <svg
+              className="mt-0.5 size-5 shrink-0 text-[#222222] transition-transform group-hover:translate-x-0.5 dark:text-zinc-200"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.75"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m9 18 6-6-6-6" />
+            </svg>
           </button>
         </div>
       </div>
@@ -413,7 +434,7 @@ export function CalendarSettingsPanel({
             <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
               Availability settings
             </h2>
-            <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+            <p className="mt-1 text-sm text-[#727272] dark:text-zinc-400">
               Set global trip length rules and booking notice requirements.
             </p>
           </div>
@@ -455,16 +476,16 @@ export function CalendarSettingsPanel({
             <div className="space-y-1">
               <label
                 htmlFor="advanceNoticeSelect"
-                className="block text-xs font-semibold text-zinc-800 dark:text-zinc-200"
+                className="block text-sm font-medium text-[#1f1f1f] dark:text-zinc-200"
               >
                 Advance notice
               </label>
-              <div className="relative flex items-center rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 shadow-2xs focus-within:border-zinc-900 focus-within:ring-2 focus-within:ring-zinc-900/10 dark:focus-within:border-amber-400 dark:focus-within:ring-amber-400/20 hover:border-zinc-400 dark:hover:border-zinc-600">
+              <div className="relative flex items-center">
                 <select
                   id="advanceNoticeSelect"
                   name="advanceNotice"
                   defaultValue={(listing as any).advanceNotice || "Same day"}
-                  className="w-full appearance-none bg-transparent px-3.5 py-2.5 text-sm font-medium text-zinc-900 dark:text-zinc-100 outline-none cursor-pointer pr-9"
+                  className="w-full appearance-none bg-transparent px-3.5 py-2.5 text-sm font-medium text-zinc-900 dark:text-zinc-100 outline-none cursor-pointer pr-9 border border-[#727272] sm:min-h-[56px] min-h-[45px] focus-within:outline-0 focus-within:shadow-none focus-visible:outline-0 focus-visible:shadow-none rounded-lg"
                 >
                   <option value="Same day">Same day</option>
                   <option value="At least 1 day">At least 1 day</option>
@@ -476,7 +497,7 @@ export function CalendarSettingsPanel({
                   ▾
                 </span>
               </div>
-              <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+              <p className="text-xs text-[#727272] dark:text-zinc-400">
                 Required lead time before a guest can check in.
               </p>
             </div>
@@ -484,11 +505,11 @@ export function CalendarSettingsPanel({
             <div className="space-y-1">
               <label
                 htmlFor="sameDayCutoffSelect"
-                className="block text-xs font-semibold text-zinc-800 dark:text-zinc-200"
+                className="block text-sm font-medium text-[#1f1f1f] dark:text-zinc-200"
               >
                 Same-day booking cutoff
               </label>
-              <div className="relative flex items-center rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 shadow-2xs focus-within:border-zinc-900 focus-within:ring-2 focus-within:ring-zinc-900/10 dark:focus-within:border-amber-400 dark:focus-within:ring-amber-400/20 hover:border-zinc-400 dark:hover:border-zinc-600">
+              <div className="w-full appearance-none bg-transparent px-3.5 py-2.5 text-sm font-medium text-zinc-900 dark:text-zinc-100 outline-none cursor-pointer pr-9 border border-[#727272] sm:min-h-[56px] min-h-[45px] focus-within:outline-0 focus-within:shadow-none focus-visible:outline-0 focus-visible:shadow-none rounded-lg">
                 <select
                   id="sameDayCutoffSelect"
                   name="sameDayCutoff"
@@ -506,17 +527,17 @@ export function CalendarSettingsPanel({
                   ▾
                 </span>
               </div>
-              <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+              <p className="text-xs text-[#727272] dark:text-zinc-400">
                 Time after which guests cannot book a same-day reservation.
               </p>
             </div>
 
             <label className="flex items-center justify-between gap-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50/70 dark:bg-zinc-800/40 p-3.5 hover:bg-zinc-100/70 dark:hover:bg-zinc-800/80 transition-colors cursor-pointer">
               <div className="min-w-0 flex-1">
-                <span className="block text-xs font-semibold text-zinc-800 dark:text-zinc-200">
+                <span className="block text-sm font-medium text-[#1f1f1f] dark:text-zinc-200">
                   Allow same-day booking requests
                 </span>
-                <span className="block text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+                <span className="block text-xs text-[#727272] dark:text-zinc-400 mt-0.5">
                   Let guests book on the day of arrival before the cutoff time.
                 </span>
               </div>
@@ -524,7 +545,7 @@ export function CalendarSettingsPanel({
                 type="checkbox"
                 name="allowSameDayRequests"
                 defaultChecked={(listing as any).allowSameDayRequests !== false}
-                className="size-4.5 rounded border-zinc-300 text-amber-500 focus:ring-amber-400 cursor-pointer accent-amber-500"
+                className="size-5 rounded border-zinc-300 text-amber-500 focus:ring-amber-400 cursor-pointer accent-[#1f1f1f]"
               />
             </label>
           </div>
@@ -676,7 +697,7 @@ export function CalendarSettingsPanel({
           {/* Base & Weekend Rates */}
           <section className="space-y-3">
             <div>
-              <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+              <h2 className="text-base font-medium text-[#1f1f1f] dark:text-zinc-100">
                 Base Nightly Rates
               </h2>
               <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
@@ -736,10 +757,10 @@ export function CalendarSettingsPanel({
           {/* Discounts */}
           <section className="space-y-3 border-t border-zinc-200 dark:border-zinc-800 pt-5">
             <div>
-              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+              <h3 className="text-base font-medium text-zinc-900 dark:text-zinc-100">
                 Stay Length Discounts
               </h3>
-              <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+              <p className="mt-0.5 text-xs text-[#727272] dark:text-zinc-400">
                 Encourage longer reservations with stay duration discounts.
               </p>
             </div>
@@ -844,7 +865,7 @@ export function CalendarSettingsPanel({
           {/* Promotions */}
           <section className="space-y-3 border-t border-zinc-200 dark:border-zinc-800 pt-5">
             <div>
-              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+              <h3 className="text-base font-medium text-zinc-900 dark:text-zinc-100">
                 Promotions
               </h3>
               <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
@@ -914,7 +935,7 @@ export function CalendarSettingsPanel({
           {/* Additional Charges */}
           <section className="space-y-3 border-t border-zinc-200 dark:border-zinc-800 pt-5">
             <div>
-              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+              <h3 className="text-base font-medium text-zinc-900 dark:text-zinc-100">
                 Additional Charges
               </h3>
               <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
