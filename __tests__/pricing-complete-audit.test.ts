@@ -211,8 +211,8 @@ describe("Complete Property Pricing & Fee System Audit Suite (16 Business Rules)
     assert.equal(res.totalAdditionalFees, 30000);
   });
 
-  // 10. Cleaning fee is absent from current pricing contracts and results
-  it("10. Cleaning fee is never charged", async () => {
+  // 10. An unset cleaning fee remains zero and does not affect the guest total.
+  it("10. Unset cleaning fee is not charged", async () => {
     const res = await calculateBookingPrice({
       checkIn: "2026-10-04",
       checkOut: "2026-10-07",
@@ -221,7 +221,7 @@ describe("Complete Property Pricing & Fee System Audit Suite (16 Business Rules)
     });
 
     assert.equal(res.staySubtotal, 120000);
-    assert.equal("cleaningFee" in res, false);
+    assert.equal(res.cleaningFee, 0);
     assert.equal(res.totalAdditionalFees, 0);
     assert.equal(res.guestTotal, 120000, "Cleaning fee is excluded from the guest total");
   });
@@ -253,7 +253,7 @@ describe("Complete Property Pricing & Fee System Audit Suite (16 Business Rules)
     });
 
     assert.equal(res.accommodationSubtotal, 100000);
-    assert.equal("cleaningFee" in res, false);
+    assert.equal(res.cleaningFee, 0);
     assert.equal(res.hostServiceFee, 15000);
 
     assert.equal(res.taxableBase, 100000);
@@ -276,7 +276,7 @@ describe("Complete Property Pricing & Fee System Audit Suite (16 Business Rules)
 
     assert.equal(res.accommodationSubtotal, 60000);
     assert.equal(res.extraGuestFee, 10000);
-    assert.equal("cleaningFee" in res, false);
+    assert.equal(res.cleaningFee, 0);
     assert.equal(res.taxableBase, 70000);
     assert.equal(res.taxTotal, 10500);
     assert.equal(res.guestTotal, 60000 + 10000 + 10500);
@@ -293,7 +293,7 @@ describe("Complete Property Pricing & Fee System Audit Suite (16 Business Rules)
     });
 
     assert.equal(res.accommodationSubtotal, 100000);
-    assert.equal("cleaningFee" in res, false);
+    assert.equal(res.cleaningFee, 0);
     assert.equal(res.hostServiceFee, 15000);
 
     assert.equal(res.payoutBreakdown.netHostPayout, 85000);
@@ -312,7 +312,7 @@ describe("Complete Property Pricing & Fee System Audit Suite (16 Business Rules)
     });
 
     assert.equal(res.accommodationSubtotal, 200000);
-    assert.equal("cleaningFee" in res, false);
+    assert.equal(res.cleaningFee, 0);
     assert.equal(res.extraGuestFee, 10000);
     // Host fee = 15% on 200,000 = 30,000 cents
     assert.equal(res.hostServiceFee, 30000);

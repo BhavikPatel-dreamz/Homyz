@@ -34,11 +34,12 @@ export async function GET(
       status: 200,
       headers: {
         "Content-Type": file.contentType,
+        "X-Content-Type-Options": "nosniff",
         "Cache-Control": "public, max-age=31536000, immutable",
       },
     });
   } catch (err) {
-    console.error("Public media proxy error:", err);
+    console.error("[uploads] public media proxy failed");
     return NextResponse.json({ error: "Media unavailable." }, { status: 502 });
   }
 }

@@ -20,9 +20,11 @@ type ReviewDraft = {
   rating: number;
   categoryRatings: Partial<Record<CategoryKey, number>>;
   comment: string;
+  privateNoteToHost: string;
+  requestId?: string; // Idempotency key to prevent duplicate submissions
 };
 
-const steps: Array<{ key: "intro" | "overall" | CategoryKey | "comment"; title: (listingName: string) => string; subtitle: string }> = [
+const steps: Array<{ key: "intro" | "overall" | CategoryKey | "comment" | "privateNote"; title: (listingName: string) => string; subtitle: string }> = [
   { key: "intro", title: (listingName) => `Write a review for ${listingName}`, subtitle: "Your feedback helps hosts improve and helps future guests choose with confidence." },
   { key: "overall", title: () => "How was your stay?", subtitle: "Your overall rating will appear with your public review." },
   { key: "checkIn", title: (listingName) => `How was check-in at ${listingName}?`, subtitle: "Consider how easy it was to arrive and get settled." },
@@ -32,6 +34,7 @@ const steps: Array<{ key: "intro" | "overall" | CategoryKey | "comment"; title: 
   { key: "location", title: () => "What did you think of the location?", subtitle: "Think about convenience, surroundings, and access." },
   { key: "value", title: () => "Was this stay worth what you paid?", subtitle: "Your feedback helps guests understand the value of a stay." },
   { key: "comment", title: () => "Write a public review", subtitle: "Share a few words about your stay. This will be visible on the property page." },
+  { key: "privateNote", title: () => "Write a private note", subtitle: "Share any constructive feedback that only the host will see. This is optional and private." },
 ];
 
 const ratingLabels = ["", "Needs improvement", "Not great", "Good", "Great stay", "Excellent"];
@@ -47,7 +50,7 @@ function StarRating({ value, onChange, label }: { value: number; onChange: (rati
 
 export function BookingReviewWizard(props: ReviewWizardProps) {
   const storageKey = `homyz:review-draft:${props.bookingId}`;
-  const [draft, setDraft] = useState<ReviewDraft>({ step: 0, rating: 0, categoryRatings: {}, comment: "" });
+  const [draft, setDraft] = useState<ReviewDraft>({ step: 0, rating: 0, categoryRatings: {}, comment: "", privateNoteToHost: "" });
   const hasLoadedDraft = useRef(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -61,10 +64,13 @@ export function BookingReviewWizard(props: ReviewWizardProps) {
         if (stored) {
           const parsed = JSON.parse(stored) as Partial<ReviewDraft>;
           if (typeof parsed.step === "number" && parsed.step >= 0 && parsed.step < steps.length) {
-            setDraft({ step: parsed.step, rating: parsed.rating || 0, categoryRatings: parsed.categoryRatings || {}, comment: typeof parsed.comment === "string" ? parsed.comment : "" });
+            setDraft({ step: parsed.step, rating: parsed.rating || 0, categoryRatings: parsed.categoryRatings || {}, comment: typeof parsed.comment === "string" ? parsed.comment : "", privateNoteToHost: typeof parsed.privateNoteToHost === "string" ? parsed.privateNoteToHost : "", requestId: typeof parsed.requestId === "string" ? parsed.requestId : undefined });
           }
         }
-      } catch { /* A review draft is optional; storage failures should not block reviewing. */ }
+      } catch (e) {
+        console.warn("Failed to restore draft from sessionStorage", e);
+        // Continue without draft; user can still review
+      }
       hasLoadedDraft.current = true;
     }, 0);
     return () => window.clearTimeout(restoreDraft);
@@ -72,11 +78,16 @@ export function BookingReviewWizard(props: ReviewWizardProps) {
 
   useEffect(() => {
     if (!hasLoadedDraft.current || submitted) return;
-    window.sessionStorage.setItem(storageKey, JSON.stringify(draft));
+    try {
+      window.sessionStorage.setItem(storageKey, JSON.stringify(draft));
+    } catch (e) {
+      console.warn("Failed to save draft to sessionStorage", e);
+      // Continue without persistence; user can still submit
+    }
   }, [draft, storageKey, submitted]);
 
-  const activeRating = active.key === "overall" ? draft.rating : active.key !== "intro" && active.key !== "comment" ? draft.categoryRatings[active.key] || 0 : 0;
-  const canContinue = active.key === "intro" || active.key === "comment" || activeRating > 0;
+  const activeRating = active.key === "overall" ? draft.rating : active.key !== "intro" && active.key !== "comment" && active.key !== "privateNote" ? draft.categoryRatings[active.key] || 0 : 0;
+  const canContinue = active.key === "intro" || active.key === "comment" || active.key === "privateNote" || activeRating > 0;
   const progress = Math.round((draft.step / (steps.length - 1)) * 100);
   const summary = useMemo(() => [props.stayDates, props.location].filter(Boolean).join(" · "), [props.location, props.stayDates]);
 
@@ -89,17 +100,56 @@ export function BookingReviewWizard(props: ReviewWizardProps) {
     setSubmitting(true);
     setError(null);
     try {
-      const response = await fetch(`/api/v1/listings/${props.listingId}/reviews`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ bookingId: props.bookingId, rating: draft.rating, categoryRatings: draft.categoryRatings, comment: draft.comment }),
-      });
-      const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error?.message || payload?.message || "Unable to submit your review right now.");
-      window.sessionStorage.removeItem(storageKey);
-      setSubmitted(true);
+      // Generate idempotency key on first attempt to prevent duplicate submissions
+      const requestId = draft.requestId || `review-${props.bookingId}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      if (!draft.requestId) {
+        setDraft((current) => ({ ...current, requestId }));
+      }
+
+      // 10 second timeout for submission
+      const controller = new AbortController();
+      const timeoutId = window.setTimeout(() => controller.abort(), 10000);
+
+      try {
+        const response = await fetch(`/api/v1/listings/${props.listingId}/reviews`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Idempotency-Key": requestId },
+          body: JSON.stringify({ bookingId: props.bookingId, rating: draft.rating, categoryRatings: draft.categoryRatings, comment: draft.comment, privateNoteToHost: draft.privateNoteToHost }),
+          signal: controller.signal,
+        });
+        window.clearTimeout(timeoutId);
+        const payload = await response.json().catch(() => null);
+        if (!response.ok) {
+          // Categorize error for better UX
+          const errorCode = payload?.error?.code || payload?.code;
+          let userMessage = "Unable to submit your review right now.";
+          if (errorCode === "DUPLICATE") {
+            userMessage = "This review has already been submitted. Your submission was successful on the first attempt.";
+          } else if (errorCode === "INVALID_RATING") {
+            userMessage = "Please select a valid rating for your stay.";
+          } else if (errorCode === "BOOKING_NOT_FOUND") {
+            userMessage = "We couldn't find your booking. Please contact support if this continues.";
+          } else if (errorCode === "BOOKING_NOT_COMPLETED") {
+            userMessage = "You can only review stays that have been completed.";
+          }
+          throw new Error(userMessage);
+        }
+        try {
+          window.sessionStorage.removeItem(storageKey);
+        } catch (e) {
+          console.warn("Failed to clear draft", e);
+        }
+        setSubmitted(true);
+      } catch (fetchError) {
+        window.clearTimeout(timeoutId);
+        if (fetchError instanceof Error && fetchError.name === "AbortError") {
+          throw new Error("Request timed out. Your draft has been saved. Please try again.");
+        }
+        throw fetchError;
+      }
     } catch (submissionError) {
-      setError(submissionError instanceof Error ? submissionError.message : "Unable to submit your review right now.");
+      const message = submissionError instanceof Error ? submissionError.message : "Unable to submit your review right now.";
+      setError(message);
     } finally {
       setSubmitting(false);
     }
@@ -120,9 +170,10 @@ export function BookingReviewWizard(props: ReviewWizardProps) {
         <p className="text-xs font-medium text-[#727272]">Step {draft.step + 1} of {steps.length}</p>
         <h1 id="review-step-title" className="mt-5 text-3xl font-semibold leading-tight tracking-tight text-[#1F1F1F] sm:text-4xl">{active.title(props.listingName)}</h1>
         <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-zinc-600">{active.subtitle}</p>
-        {active.key !== "intro" && active.key !== "comment" && <StarRating value={activeRating} onChange={setRating} label={active.title(props.listingName)} />}
+        {active.key !== "intro" && active.key !== "comment" && active.key !== "privateNote" && <StarRating value={activeRating} onChange={setRating} label={active.title(props.listingName)} />}
         {active.key === "comment" && <textarea value={draft.comment} onChange={(event) => setDraft((current) => ({ ...current, comment: event.target.value.slice(0, 5000) }))} maxLength={5000} placeholder="Say a few words about your stay" className="mt-8 min-h-40 w-full resize-y rounded-2xl border border-zinc-300 p-4 text-sm leading-6 text-[#1F1F1F] outline-none placeholder:text-[#727272] focus:border-zinc-900" />}
-        {error && <p role="alert" className="mt-5 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
+        {active.key === "privateNote" && <textarea value={draft.privateNoteToHost} onChange={(event) => setDraft((current) => ({ ...current, privateNoteToHost: event.target.value.slice(0, 5000) }))} maxLength={5000} placeholder="Share constructive feedback for the host (optional)" className="mt-8 min-h-40 w-full resize-y rounded-2xl border border-zinc-300 p-4 text-sm leading-6 text-[#1F1F1F] outline-none placeholder:text-[#727272] focus:border-zinc-900" />}
+        {error && <div role="alert" className="mt-5 space-y-3 rounded-xl bg-red-50 px-4 py-3"><p className="text-sm text-red-700">{error}</p><button type="button" onClick={submit} disabled={submitting} className="text-sm font-semibold text-red-600 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-50">Try again</button></div>}
       </div>
       <div className="mx-auto mt-8 w-full max-w-xl">
         <div className="h-1 overflow-hidden rounded-full bg-zinc-200"><div className="h-full rounded-full bg-zinc-700 transition-all" style={{ width: `${progress}%` }} /></div>

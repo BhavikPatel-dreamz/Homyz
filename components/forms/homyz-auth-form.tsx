@@ -130,7 +130,7 @@ export function HomyzAuthForm({
       return "/admin";
     }
     if (session?.user?.role === "HOST" && (targetCallbackUrl === "/" || targetCallbackUrl === "/dashboard")) {
-      return "/host/today";
+      return "/host/dashboard";
     }
     // A guest should never receive the legacy dashboard landing route after
     // authentication. Preserve any other explicit callback (booking, listing,

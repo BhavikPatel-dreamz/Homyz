@@ -1,0 +1,4 @@
+/** Matches the centered form footprint supplied by the auth route layout. */
+export function AuthPageSkeleton() {
+  return <div aria-busy="true" aria-label="Loading account form" className="mx-auto w-full max-w-md px-6"><div className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8"><div className="mx-auto h-9 w-28 rounded skeleton-shimmer" /><div className="mx-auto mt-8 h-8 w-2/3 rounded skeleton-shimmer" /><div className="mx-auto mt-3 h-4 w-4/5 rounded skeleton-shimmer" /><div className="mt-8 space-y-5">{Array.from({ length: 3 }).map((_, index) => <div key={index} className="space-y-2"><div className="h-4 w-24 rounded skeleton-shimmer" /><div className="h-12 w-full rounded-xl skeleton-shimmer" /></div>)}<div className="h-12 w-full rounded-xl skeleton-shimmer" /></div></div></div>;
+}

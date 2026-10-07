@@ -140,12 +140,6 @@ function toPublicHostProfile(value: unknown): Record<string, unknown> | null {
   };
 }
 
-function hasVerifiedSuperhostFlag(profile: unknown): boolean {
-  if (!profile || typeof profile !== "object" || Array.isArray(profile)) return false;
-  const source = profile as Record<string, unknown>;
-  return source.isSuperhost === true || source.superhost === true;
-}
-
 function roundRating(value: number | null): number | null {
   return value === null ? null : Math.round(value * 100) / 100;
 }
@@ -920,6 +914,7 @@ async function getPublicListingDetail(
           image: true,
           createdAt: true,
           publicProfile: true,
+          isSuperhost: true,
         },
       },
     },
@@ -931,25 +926,12 @@ async function getPublicListingDetail(
 
   // These independent aggregates are latency-bound against the database, so
   // run them together rather than making the public page wait for each one.
-  const [reviewSummary, confirmedBookingCount, bookingGroups, hostReviewSummary] = await Promise.all([
+  const [reviewSummary, hostReviewSummary] = await Promise.all([
     prisma.review.aggregate({
       where: { listingId: listing.id, status: "PUBLISHED" },
       _avg: { rating: true },
       _count: { _all: true },
     }),
-    prisma.booking.count({
-      where: { listingId: listing.id, status: BookingStatus.CONFIRMED },
-    }),
-    listing.host && !hasVerifiedSuperhostFlag(listing.host.publicProfile)
-      ? prisma.booking.groupBy({
-          by: ["status"],
-          where: {
-            listing: { hostId: listing.host.id },
-            status: { in: [BookingStatus.CONFIRMED, BookingStatus.CANCELLED] },
-          },
-          _count: { _all: true },
-        })
-      : Promise.resolve([]),
     listing.hostId
       ? prisma.review.aggregate({
           where: {
@@ -963,31 +945,9 @@ async function getPublicListingDetail(
   ]);
   const propertyRating = roundRating(reviewSummary._avg.rating);
   const propertyReviewCount = reviewSummary._count._all;
-  const isGuestFavorite = qualificationService.isGuestFavorite({
-    isFeatured: listing.isFeatured,
-    rating: propertyRating,
-    reviewCount: propertyReviewCount,
-    confirmedBookingCount,
-    status: listing.status,
-    published: listing.published,
-  });
+  const isGuestFavorite = qualificationService.isGuestFavorite(listing);
 
-  let isSuperhost = false;
-  if (listing.host) {
-    if (hasVerifiedSuperhostFlag(listing.host.publicProfile)) {
-      isSuperhost = true;
-    } else {
-      const bookingSummary = {
-        confirmed: bookingGroups.find((group: { status: BookingStatus; _count: { _all: number } }) => group.status === BookingStatus.CONFIRMED)?._count._all ?? 0,
-        cancelled: bookingGroups.find((group: { status: BookingStatus; _count: { _all: number } }) => group.status === BookingStatus.CANCELLED)?._count._all ?? 0,
-      };
-      isSuperhost = qualificationService.isSuperhost({
-        createdAt: listing.host.createdAt,
-        publicProfile: listing.host.publicProfile as Record<string, unknown> | null,
-        bookingSummary,
-      });
-    }
-  }
+  const isSuperhost = qualificationService.isSuperhost(listing.host);
 
   const publicDTO = toPublicListingDTO(listing);
   return {
@@ -1188,14 +1148,14 @@ async function getEditorWorkspaceListing(id: string) {
 // Listings a host owns or has accepted a co-host role for.
 async function listForHost(
   actor: AuthUser,
-  opts?: { skip?: number; take?: number },
+  opts?: { skip?: number; take?: number | null },
 ): Promise<{ items: ListingDTO[]; total: number }> {
   authorize(actor, [Role.HOST, Role.USER, Role.ADMIN]);
   if (actor.role === Role.HOST) {
     await assertHostPermission(actor.id, "listing.view");
   }
   const skip = opts?.skip ?? 0;
-  const take = opts?.take ?? 50;
+  const take = opts?.take === undefined ? 50 : opts.take;
   const where: Prisma.ListingWhereInput = actor.role === Role.ADMIN
     ? { hostId: actor.id, deletedAt: null }
     : {
@@ -1216,7 +1176,7 @@ async function listForHost(
     prisma.listing.findMany({
       where,
       skip,
-      take,
+      ...(take === null ? {} : { take }),
       orderBy: { createdAt: "desc" },
     }),
     prisma.listing.count({ where }),
@@ -1355,7 +1315,9 @@ async function create(
       instantBook: bookingSettings.instantBook,
       isPaused: input.isPaused ?? false,
       blockedDates: input.blockedDates || [],
-      cleaningFee: 0,
+      // Fees are stored in minor units and are quoted again server-side during
+      // checkout. Do not discard a host-configured fee on initial creation.
+      cleaningFee: input.cleaningFee ?? 0,
       securityDeposit: input.securityDeposit ?? 0,
       weekendPrice: input.weekendPrice ?? null,
       weekendPremium: input.weekendPremium ?? null,
@@ -1480,35 +1442,9 @@ async function update(
   if ((dataToUpdate as any).customPrices !== undefined) {
     const rawCustom = (dataToUpdate as any).customPrices;
     if (rawCustom && typeof rawCustom === "object") {
-      const activeBookings = await prisma.booking.findMany({
-        where: {
-          listingId: id,
-          status: { in: [BookingStatus.CONFIRMED, BookingStatus.PENDING] },
-        },
-        select: { startDate: true, endDate: true, status: true, createdAt: true },
-      });
-      const now = new Date();
-      const bookedSet = new Set<string>();
-      for (const b of activeBookings) {
-        if (b.status === BookingStatus.PENDING && isBookingRequestExpired(b.createdAt, now, b.endDate)) {
-          continue;
-        }
-        let cur = bookingDateKey(b.startDate);
-        const end = bookingDateKey(b.endDate);
-        while (cur < end) {
-          bookedSet.add(cur);
-          cur = shiftBookingDateKey(cur, 1);
-        }
-      }
-      const existingCustom = ((existing.customPrices || {}) as Record<string, number>);
       const sanitizedCustom: Record<string, number> = {};
       for (const [k, val] of Object.entries(rawCustom)) {
-        if (bookedSet.has(k)) {
-          // Strictly protect confirmed/active reservations: preserve prior pricing snapshot
-          if (existingCustom[k] !== undefined) {
-            sanitizedCustom[k] = existingCustom[k];
-          }
-        } else if (typeof val === "number" && val > 0) {
+        if (typeof val === "number" && val > 0) {
           sanitizedCustom[k] = Math.round(val);
         }
       }

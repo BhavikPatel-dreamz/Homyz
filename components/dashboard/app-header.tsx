@@ -218,7 +218,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                 </Link>
               ) : (
                 <Link
-                  href="/host/today"
+                  href="/host/dashboard"
                   className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-4 py-2.5 md:px-6 md:py-3 lg:text-base text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 sm:inline-flex ${primaryButtonInteractionClass}`}
                 >
                   {t("header_switch_hosting") || "Switch to hosting"}
@@ -410,7 +410,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                     <div className="visible-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1">
                       <div className="space-y-1">
                         {/* Switch to traveling action */}
-                        <div className="pt-0.5 pb-1">
+                        {/* <div className="pt-0.5 pb-1">
                           <Link
                             href="/dashboard"
                             onClick={() => setMenuOpen(false)}
@@ -421,12 +421,28 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                             </span>
                             <span>{t("header_switch_traveling") || "Switch to traveling"}</span>
                           </Link>
-                        </div>
+                        </div> */}
 
                         <div className="my-1 border-t border-zinc-200/80" />
 
                         {/* Host Navigation */}
                         <div className="py-0.5 space-y-1">
+                          {/* Dashboard */}
+                          <Link
+                            href="/host/dashboard"
+                            onClick={() => setMenuOpen(false)}
+                            className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${
+                              pathname === "/host/dashboard" ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
+                            }`}
+                          >
+                            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
+                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                                <path d="M4 19V9m6 10V5m6 14v-7m4 7H2" strokeLinecap="round" strokeLinejoin="round" />
+                              </svg>
+                            </span>
+                            <span>Dashboard</span>
+                          </Link>
+
                           {/* Today */}
                           <Link
                             href="/host/today"
@@ -613,7 +629,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                         {isHost && (
                           <div className="pt-0.5 pb-1">
                             <Link
-                              href="/host/today"
+                              href="/host/dashboard"
                               onClick={() => setMenuOpen(false)}
                               className="flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-medium text-[#1F1F1F] bg-[#FCDF9C]/50 hover:bg-[#FCDF9C] rounded-2xl transition-colors"
                             >

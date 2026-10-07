@@ -10,7 +10,7 @@ import type { CreateBookingInput } from "@/lib/validation/booking";
 
 import { reviveBookingDTO, toBookingDTO, type BookingDTO } from "./mappers";
 
-import { BookingStatus, ListingStatus, NotificationType, Role, ConversationStatus, SpecialOfferStatus, MessageType } from "@/generated/prisma/enums";
+import { BookingStatus, ListingStatus, NotificationType, Role, ConversationStatus, SpecialOfferStatus, MessageType, ListingCoHostStatus } from "@/generated/prisma/enums";
 import { notificationService } from "./notification.service";
 import { messagingService } from "./messaging.service";
 import { auditService } from "./audit.service";
@@ -42,6 +42,7 @@ import {
   getAuthoritativePriceBreakdown,
   type AuthoritativePriceBreakdown,
 } from "@/lib/booking/booking-price";
+import { extractStoredGuestTotal } from "@/lib/booking/booking-financials";
 import { resolveBookingMode } from "@/lib/booking/booking-mode";
 import {
   bookingDateKey,
@@ -333,7 +334,10 @@ export async function getBookingQuote(opts: {
         nights,
         cleaningFee: listing.cleaningFee,
         petFee: listing.petFee,
+        extraGuestFee: (listing as any).extraGuestFee,
+        baseGuests: (listing.discounts as any)?.baseGuests ?? (listing.discounts as any)?.includedGuests ?? (listing as any).baseGuests,
         guests: requestedGuests,
+        pets: requestedPets,
         hostServiceFeePercentage,
         taxRules: [],
         hostTaxes,
@@ -349,6 +353,8 @@ export async function getBookingQuote(opts: {
         weekendPremium: usesManualAdjustments ? listing.weekendPremium : null,
         customPrices: (listing as any).customPrices as Record<string, number> | null,
         cleaningFee: listing.cleaningFee,
+        extraGuestFee: (listing as any).extraGuestFee,
+        baseGuests: (listing.discounts as any)?.baseGuests ?? (listing.discounts as any)?.includedGuests ?? (listing as any).baseGuests,
         guests: requestedGuests,
         pets: requestedPets,
         petFee: listing.petFee,
@@ -363,7 +369,7 @@ export async function getBookingQuote(opts: {
         currency: getCurrencyForCountry(listing.country),
       });
 
-  const subtotal = pricing.accommodationSubtotal + pricing.petFee + pricing.cleaningFee;
+  const subtotal = pricing.accommodationSubtotal + pricing.petFee + pricing.cleaningFee + (pricing.extraGuestFee ?? 0);
   const fallbackNightlyTotal = validatedOffer?.subtotalPrice ?? pricing.staySubtotal;
   const fallbackNightlyRates = allocateNightlyTotal(fallbackNightlyTotal, nights);
   const nightlyBreakdown = pricing.nightlyBreakdown.length > 0
@@ -1731,7 +1737,7 @@ async function cancelBookingByGuest(actor: AuthUser, id: string): Promise<Bookin
         cancelledBy: "GUEST",
         isNonRefundable: Boolean(booking.isNonRefundable),
         policy: booking.cancellationPolicy || "FLEXIBLE",
-        guestRefundAmount: booking.isNonRefundable ? 0 : (booking.totalPrice ?? 0),
+        guestRefundAmount: booking.isNonRefundable ? 0 : (extractStoredGuestTotal(booking) ?? 0),
         hostPayoutRetained: booking.isNonRefundable ? hostPayoutRetained : 0,
       },
     } as Prisma.InputJsonValue;
@@ -1797,6 +1803,102 @@ async function cancelBookingByGuest(actor: AuthUser, id: string): Promise<Bookin
 
   return toBookingDTO(cancelled);
 
+}
+
+async function cancelBookingByHost(
+  actor: AuthUser,
+  id: string,
+  reason?: string,
+  isExcluded = false,
+): Promise<BookingDTO> {
+  const cancelled = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    const booking = await tx.booking.findUnique({
+      where: { id },
+      include: { listing: true, user: true },
+    });
+    if (!booking) throw AppError.notFound("Booking not found");
+
+    if (booking.listing.hostId !== actor.id && actor.role !== Role.ADMIN) {
+      const coHost = await tx.listingCoHost.findFirst({
+        where: {
+          listingId: booking.listingId,
+          userId: actor.id,
+          status: ListingCoHostStatus.ACCEPTED,
+        },
+      });
+      if (!coHost) {
+        throw AppError.forbidden("Only the listing owner or accepted co-host can cancel this reservation");
+      }
+    }
+
+    if (booking.status === BookingStatus.CANCELLED) {
+      throw AppError.conflict("This reservation has already been cancelled.");
+    }
+
+    const now = new Date();
+    const originalSnapshot =
+      booking.priceBreakdown &&
+      typeof booking.priceBreakdown === "object" &&
+      !Array.isArray(booking.priceBreakdown)
+        ? (booking.priceBreakdown as Record<string, unknown>)
+        : {};
+
+    const priceBreakdown = {
+      ...originalSnapshot,
+      cancellation: {
+        cancelledAt: now.toISOString(),
+        cancelledBy: "HOST",
+        hostId: actor.id,
+        reason: reason?.trim() || null,
+        isExcluded: Boolean(isExcluded),
+        guestRefundAmount: extractStoredGuestTotal(booking) ?? 0,
+        hostPayoutRetained: 0,
+      },
+    } as Prisma.InputJsonValue;
+
+    const updated = await tx.booking.update({
+      where: { id: booking.id },
+      data: { status: BookingStatus.CANCELLED, priceBreakdown },
+    });
+    return { ...updated, listing: booking.listing, user: booking.user };
+  });
+
+  await invalidateBookingCache(cancelled.id, cancelled.userId, cancelled.listing.hostId);
+
+  try {
+    await notificationService.create({
+      userId: cancelled.userId,
+      type: NotificationType.BOOKING,
+      title: `Reservation Cancelled by Host: ${cancelled.listing.title}`,
+      message: `The host had to cancel your reservation for ${cancelled.listing.title}. A full refund of SAR ${((cancelled.totalPrice ?? 0) / 100).toFixed(2)} has been issued.`,
+      entityId: cancelled.id,
+      entityType: "booking",
+      link: "/profile/tab/past",
+      metadata: {
+        bookingId: cancelled.id,
+        listingId: cancelled.listingId,
+        status: BookingStatus.CANCELLED,
+        cancelledBy: "HOST",
+        reason: reason?.trim() || null,
+        role: "guest",
+      },
+    });
+  } catch (err) {
+    console.warn("[booking.service] Failed to create cancellation notification for guest:", err);
+  }
+
+  try {
+    await messagingService.recordBookingStatusMessage({
+      bookingId: cancelled.id,
+      statusText: `Host cancelled this reservation${reason ? `: "${reason.trim()}"` : "."}`,
+      newBookingStatus: BookingStatus.CANCELLED,
+      conversationStatus: ConversationStatus.CANCELLED,
+    });
+  } catch (err) {
+    console.warn("[booking.service] Failed to record conversation cancellation status:", err);
+  }
+
+  return toBookingDTO(cancelled);
 }
 
 async function listForAdminDashboard() {
@@ -2370,5 +2472,6 @@ export const bookingService = {
   expireStaleBookingRequests,
   cancelNonRefundableByGuest,
   cancelBookingByGuest,
+  cancelBookingByHost,
   listForAdminDashboard,
 };

@@ -2,7 +2,7 @@ import { z } from "zod";
 import { apiHandler } from "@/lib/api/handler";
 import { AppError } from "@/lib/api/errors";
 import { buildPagination, parsePagination } from "@/lib/api/pagination";
-import { created, paginated } from "@/lib/api/response";
+import { created, ok, paginated } from "@/lib/api/response";
 import { getSessionUser } from "@/lib/auth/session";
 import { reviewService } from "@/services/review.service";
 
@@ -21,6 +21,7 @@ const createReviewSchema = z.object({
   bookingId: z.string().min(1),
   rating: z.number().int().min(1).max(5),
   comment: z.string().trim().max(5000).default(""),
+  privateNoteToHost: z.string().trim().max(5000).default(""),
   categoryRatings: categoryRatingSchema.optional(),
 });
 
@@ -46,10 +47,38 @@ export const POST = apiHandler(async (req, ctx: Ctx) => {
 
   const { id } = await ctx.params;
   const input = createReviewSchema.parse(await req.json());
-  const review = await reviewService.createReview({
-    listingId: id,
-    authorId: actor.id,
-    ...input,
-  });
-  return created(review);
+  try {
+    const review = await reviewService.createReview({
+      listingId: id,
+      authorId: actor.id,
+      ...input,
+    });
+    return created(review);
+  } catch (error) {
+    // Provide more specific error codes for frontend error categorization
+    if (error instanceof AppError) {
+      if (error.status === 409) {
+        // Duplicate review
+        return ok(
+          { code: "DUPLICATE", message: "Review already submitted" },
+          409,
+        );
+      }
+      if (error.status === 403) {
+        // Booking not eligible
+        return ok(
+          { code: "BOOKING_NOT_COMPLETED", message: error.message },
+          403,
+        );
+      }
+      if (error.status === 400) {
+        // Validation error
+        return ok(
+          { code: "VALIDATION_ERROR", message: error.message },
+          400,
+        );
+      }
+    }
+    throw error;
+  }
 });

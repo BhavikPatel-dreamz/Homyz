@@ -89,7 +89,7 @@ export interface BookingPricingParams {
   adults?: number; // optional adult count
   children?: number; // optional children count
   pets?: number; // requested pets (defaults to 0)
-  petFee?: number | null; // cents flat or per pet
+  petFee?: number | null; // cents flat per stay when one or more pets are booked
   cleaningFee?: number | null; // cents flat per stay
   discounts?: Record<string, unknown> | null;
   isNewListing?: boolean;
@@ -165,11 +165,13 @@ export interface BookingPricingResult {
 export interface SpecialOfferPricingParams {
   specialOfferAmount: number; // cents (host-offered accommodation subtotal)
   nights: number;
-  /** @deprecated Legacy field ignored by the inclusive occupancy model. */
+  /** Per-extra-guest, per-night rate when baseGuests is configured. */
   extraGuestFee?: number | null;
+  baseGuests?: number;
   petFee?: number | null;
   cleaningFee?: number | null;
   guests?: number;
+  pets?: number;
   hostServiceFeePercentage?: number;
   taxRules?: TaxRuleDTO[];
   hostTaxes?: ListingTaxDTO[];
@@ -479,15 +481,35 @@ export async function calculateBookingPrice(params: BookingPricingParams): Promi
   const accommodationSubtotal = Math.max(0, staySubtotal - discountAmount);
 
 
-  // 3. Inclusive occupancy: every guest through the listing capacity uses the
-  // same accommodation price. Legacy extra-guest settings remain readable,
-  // but are intentionally ignored for new quotes.
-  const extraGuestFee = 0;
-  const petFee = Math.max(0, Math.round(params.petFee ?? 0));
+  // 3. Host-Defined Additional Charges
+  // Extra guest fee begins ONLY after the configured included guest threshold (baseGuests).
+  const extraGuestPerNightRate = Math.max(0, Math.round(params.extraGuestFee ?? 0));
+  const configuredBaseGuests =
+    typeof params.baseGuests === "number" && params.baseGuests > 0
+      ? Math.round(params.baseGuests)
+      : typeof discountsRecord?.baseGuests === "number" && (discountsRecord.baseGuests as number) > 0
+      ? Math.round(discountsRecord.baseGuests as number)
+      : typeof discountsRecord?.includedGuests === "number" && (discountsRecord.includedGuests as number) > 0
+      ? Math.round(discountsRecord.includedGuests as number)
+      : null;
+
+  const extraGuestCount =
+    configuredBaseGuests !== null
+      ? Math.max(0, guests - configuredBaseGuests)
+      : 0;
+  const extraGuestFee = extraGuestCount * extraGuestPerNightRate * nights;
+  // Pet fees are configured per stay. They are never charged simply because a
+  // listing accepts pets; at least one pet must be part of this reservation.
+  const petFee = Math.max(0, Math.round(params.pets ?? 0)) > 0
+    ? Math.max(0, Math.round(params.petFee ?? 0))
+    : 0;
   const cleaningFee = Math.max(0, Math.round(params.cleaningFee ?? 0));
-  const totalAdditionalFees = petFee + cleaningFee;
+  const totalAdditionalFees = extraGuestFee + petFee + cleaningFee;
 
   const feeBreakdown: NormalizedFeeItem[] = [];
+  if (extraGuestFee > 0) {
+    feeBreakdown.push({ id: "extra-guests", name: "Extra guest fee", amount: extraGuestFee });
+  }
   if (petFee > 0) {
     feeBreakdown.push({ id: "pets", name: "Pet fee", amount: petFee });
   }
@@ -506,9 +528,13 @@ export async function calculateBookingPrice(params: BookingPricingParams): Promi
     nightlyRates: breakdown.map((night) => night.price),
     discountAmount,
     petFee,
-    extraGuestFee: 0,
+    extraGuestFee,
     cleaningFee,
-    feeAmounts: { CLEANING_FEE: cleaningFee },
+    feeAmounts: {
+      ...(cleaningFee > 0 ? { CLEANING_FEE: cleaningFee } : {}),
+      ...(extraGuestFee > 0 ? { EXTRA_GUEST_FEE: extraGuestFee } : {}),
+      ...(petFee > 0 ? { PET_FEE: petFee } : {}),
+    },
     guests,
     rules: params.taxRules || [],
     hostTaxes: params.hostTaxes || [],
@@ -518,7 +544,7 @@ export async function calculateBookingPrice(params: BookingPricingParams): Promi
   });
 
   // 6. Final Guest Total & Host Payout
-  const taxableBase = accommodationSubtotal + petFee + cleaningFee;
+  const taxableBase = accommodationSubtotal + petFee + cleaningFee + extraGuestFee;
   const guestTotal = taxResult.guestTotal;
   const payoutBreakdown = taxResult.payoutBreakdown;
 
@@ -592,10 +618,21 @@ export async function calculateBookingPrice(params: BookingPricingParams): Promi
 export async function calculateSpecialOffer(params: SpecialOfferPricingParams): Promise<BookingPricingResult> {
   const nights = Math.max(1, params.nights);
   const specialOfferAmount = Math.max(0, Math.round(params.specialOfferAmount));
-  const extraGuestFee = 0;
-  const petFee = Math.max(0, Math.round(params.petFee ?? 0));
-  const cleaningFee = Math.max(0, Math.round(params.cleaningFee ?? 0));
   const guests = Math.max(1, params.guests ?? 1);
+  const baseGuests = typeof params.baseGuests === "number" && params.baseGuests > 0
+    ? Math.round(params.baseGuests)
+    : null;
+  // Existing direct callers without an included-guest threshold pass an
+  // already-calculated legacy amount. Quotes always provide the threshold and
+  // therefore apply the same per-extra-guest/per-night formula as standard
+  // reservations.
+  const extraGuestFee = baseGuests === null
+    ? Math.max(0, Math.round(params.extraGuestFee ?? 0))
+    : Math.max(0, guests - baseGuests) * Math.max(0, Math.round(params.extraGuestFee ?? 0)) * nights;
+  const petFee = Math.max(0, Math.round(params.pets ?? 0)) > 0
+    ? Math.max(0, Math.round(params.petFee ?? 0))
+    : 0;
+  const cleaningFee = Math.max(0, Math.round(params.cleaningFee ?? 0));
   const currency = params.currency || "SAR";
 
   const hostServiceFeePercentage = params.hostServiceFeePercentage ?? (await getAuthoritativeHostServiceFee());
@@ -612,7 +649,11 @@ export async function calculateSpecialOffer(params: SpecialOfferPricingParams): 
     petFee,
     extraGuestFee,
     cleaningFee,
-    feeAmounts: { CLEANING_FEE: cleaningFee },
+    feeAmounts: {
+      ...(cleaningFee > 0 ? { CLEANING_FEE: cleaningFee } : {}),
+      ...(extraGuestFee > 0 ? { EXTRA_GUEST_FEE: extraGuestFee } : {}),
+      ...(petFee > 0 ? { PET_FEE: petFee } : {}),
+    },
     guests,
     rules: params.taxRules || [],
     hostTaxes: params.hostTaxes || [],
@@ -621,10 +662,13 @@ export async function calculateSpecialOffer(params: SpecialOfferPricingParams): 
     hostServiceFee,
   });
 
-  const taxableBase = specialOfferAmount + petFee + cleaningFee;
-  const totalAdditionalFees = petFee + cleaningFee;
+  const taxableBase = specialOfferAmount + petFee + cleaningFee + extraGuestFee;
+  const totalAdditionalFees = extraGuestFee + petFee + cleaningFee;
 
   const feeBreakdown: NormalizedFeeItem[] = [];
+  if (extraGuestFee > 0) {
+    feeBreakdown.push({ id: "extra-guests", name: "Extra guest fee", amount: extraGuestFee });
+  }
   if (petFee > 0) {
     feeBreakdown.push({ id: "pets", name: "Pet fee", amount: petFee });
   }
