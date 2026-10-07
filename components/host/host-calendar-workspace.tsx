@@ -197,15 +197,13 @@ function MobileCalendarIndex({
                 onOpenCalendar();
               }}
               aria-pressed={selected}
-              className={`flex w-full items-center gap-3 py-3 text-left transition-colors ${
-                selected ? "bg-[#fafafa]" : "bg-white"
-              }`}
+              className={`flex w-full items-center gap-3 py-3 text-left transition-colors ${selected ? "bg-[#fafafa]" : "bg-white"
+                }`}
             >
               <PropertyPhoto
                 listing={listing}
-                className={`size-[106px] shrink-0 rounded-xl object-cover ${
-                  selected ? "ring-[3px] ring-[#a5a0ff] ring-offset-1" : "border border-[#9b9b9b]"
-                }`}
+                className={`size-[106px] shrink-0 rounded-xl object-cover ${selected ? "ring-[3px] ring-[#a5a0ff] ring-offset-1" : "border border-[#9b9b9b]"
+                  }`}
               />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium text-[#303030]">
@@ -227,9 +225,8 @@ function MobileCalendarIndex({
                   return (
                     <span
                       key={dot}
-                      className={`mx-auto size-2 rounded-full ${
-                        booked || active ? "bg-[#a5b4fc]" : "bg-[#dedede]"
-                      }`}
+                      className={`mx-auto size-2 rounded-full ${booked || active ? "bg-[#a5b4fc]" : "bg-[#dedede]"
+                        }`}
                     />
                   );
                 })}
@@ -341,9 +338,8 @@ function MobileYearCalendar({
                     return (
                       <span
                         key={cell}
-                        className={`mx-auto size-1.5 rounded-full transition-transform group-hover:scale-125 ${
-                          unavailable ? "bg-[#252525] dark:bg-amber-300" : isToday ? "bg-[#8b6400]" : "bg-[#858585] dark:bg-zinc-500"
-                        }`}
+                        className={`mx-auto size-1.5 rounded-full transition-transform group-hover:scale-125 ${unavailable ? "bg-[#252525] dark:bg-amber-300" : isToday ? "bg-[#8b6400]" : "bg-[#858585] dark:bg-zinc-500"
+                          }`}
                       />
                     );
                   })}
@@ -405,9 +401,8 @@ function MonthGrid({
     <div className="min-w-0 select-none">
       {/* Weekday headers */}
       <div
-        className={`mb-3 grid grid-cols-7 border-b border-b-[#dddddd] pb-3 text-center text-sm font-medium text-[#343434] dark:border-b-zinc-800 dark:text-zinc-300 ${
-          compact ? "max-sm:hidden text-[12px]" : ""
-        }`}
+        className={`mb-3 grid grid-cols-7 border-b border-b-[#dddddd] py-3 text-center text-base font-medium text-[#1F1F1F] dark:border-b-zinc-800 dark:text-zinc-300 ${compact ? "max-sm:hidden text-[12px]" : ""
+          }`}
       >
         {weekdays.map((d) => (
           <span key={d}>
@@ -419,9 +414,8 @@ function MonthGrid({
 
       {/* Days grid */}
       <div
-        className={`grid grid-cols-7 gap-1 ${
-          compact ? "" : "lg:grid-cols-[repeat(7,136px)] lg:justify-center"
-        }`}
+        className={`grid grid-cols-7 gap-1 ${compact ? "" : "lg:grid-cols-[repeat(7,136px)] lg:justify-center"
+          }`}
       >
         {Array.from({ length: offset }, (_, i) => (
           <span key={`blank-${i}`} aria-hidden="true" />
@@ -453,11 +447,11 @@ function MonthGrid({
           // Continuous reservation bar calculation
           const activeRange = primaryReservation
             ? bookingRanges.find(
-                (r) =>
-                  r.booking.id === primaryReservation.id &&
-                  r.start <= key &&
-                  r.end > key,
-              )
+              (r) =>
+                r.booking.id === primaryReservation.id &&
+                r.start <= key &&
+                r.end > key,
+            )
             : null;
 
           const isBookingStart =
@@ -480,31 +474,27 @@ function MonthGrid({
                 onClick={(e) => onDayClick(key, undefined, dayBookings, e.shiftKey)}
                 onKeyDown={(e) => onKeyDown?.(key, e)}
                 aria-label={`${key}, ${bookedCount} reserved of ${listingsCount} listings`}
-                className={`group relative flex min-w-0 flex-col items-center justify-between rounded-xl border transition-all duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 ${
-                  compact
-                    ? "min-h-3 rounded-full p-0 sm:min-h-[64px] sm:rounded-[10px] sm:py-1.5"
-                    : "min-h-20 p-2 sm:min-h-24 lg:min-h-32"
-                } ${
-                  bookedCount > 0
+                className={`group relative flex min-w-0 flex-col items-center justify-between rounded-xl border transition-all duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 ${compact
+                  ? "min-h-3 rounded-full p-0 sm:min-h-[64px] sm:rounded-[10px] sm:py-1.5"
+                  : "min-h-20 p-2 sm:min-h-24 lg:min-h-32"
+                  } ${bookedCount > 0
                     ? "border-zinc-800 dark:border-zinc-700 bg-zinc-900 text-white shadow-xs"
                     : isPast
                       ? "border-transparent bg-zinc-100/40 dark:bg-zinc-800/40 opacity-70 text-[#727272]"
                       : "border-transparent bg-[#F3F4F5] dark:bg-zinc-800/80 hover:border-zinc-300 dark:hover:border-zinc-600 text-[#1F1F1F] dark:text-zinc-100"
-                }`}
+                  }`}
               >
                 {/* Day number */}
                 <span
-                  className={`flex items-center justify-center rounded-full font-normal transition-transform ${
-                    compact
+                  className={`flex items-center justify-center rounded-full font-normal transition-transform ${compact
                     ? "size-1 max-sm:bg-zinc-500 text-xs sm:size-6 sm:border sm:border-zinc-300 dark:sm:border-zinc-600 sm:bg-white dark:sm:bg-zinc-700 sm:text-[#403C34] dark:sm:text-zinc-200 sm:text-[12px]"
-                      : "size-6 text-xs sm:size-7 sm:text-xs"
-                  } ${
-                    isToday
-                    ? "bg-[#FCDF9C] dark:bg-[#EBA900] text-[#403C34] dark:text-[#403C34] font-semibold shadow-xs"
+                    : "size-6 text-xs sm:size-7 sm:text-xs"
+                    } ${isToday
+                      ? "border border-[#EBA900] bg-[#FCDF9C] text-[#403C34] font-semibold shadow-xs sm:border-[#EBA900] dark:border-[#EBA900] dark:bg-[#FCDF9C] dark:text-[#403C34]"
                       : bookedCount > 0
                         ? "bg-zinc-800 text-white"
                         : "text-zinc-800 dark:text-zinc-200 bg-white dark:bg-zinc-700"
-                  }`}
+                    }`}
                 >
                   {dayNum}
                 </span>
@@ -512,11 +502,10 @@ function MonthGrid({
                 {/* Status for All Listings */}
                 <div className="w-full text-center mt-1">
                   <span
-                    className={`${compact ? "hidden text-[11px] font-normal sm:block" : "text-[13px] font-medium block"} ${
-                      bookedCount > 0
-                        ? "text-amber-300"
-                        : "text-zinc-600 dark:text-zinc-300"
-                    }`}
+                    className={`${compact ? "hidden text-[11px] font-normal sm:block" : "text-[13px] font-medium block"} ${bookedCount > 0
+                      ? "text-amber-300"
+                      : "text-zinc-600 dark:text-zinc-300"
+                      }`}
                   >
                     {bookedCount > 0
                       ? `${bookedCount} booked`
@@ -543,8 +532,8 @@ function MonthGrid({
             customPrice !== null
               ? customPrice
               : isWeekend &&
-                  listing?.weekendPrice != null &&
-                  listing.weekendPrice > 0
+                listing?.weekendPrice != null &&
+                listing.weekendPrice > 0
                 ? listing.weekendPrice
                 : weekdayBase;
 
@@ -621,28 +610,25 @@ function MonthGrid({
               onKeyDown={(e) => onKeyDown?.(key, e)}
               aria-label={`${key}, ${statusDescription}, ${promo?.applied ? `${formatMoney(promo.promotionalPrice, sourceCurrency, 2)} (${promo.percentage}% promo, regular ${formatMoney(rate, sourceCurrency, 2)})` : formatMoney(rate, sourceCurrency, 2)}${isSelected ? ", selected" : ""}`}
               aria-pressed={isSelected}
-              className={`group relative flex min-w-0 flex-col items-center justify-center border transition-all duration-100 focus-visible:outline-2 focus-visible:outline-offset-2 ${cellRoundingClass} ${cellBgClass} ${
-                compact
-                  ? "min-h-[48px] p-1 sm:min-h-[68px] sm:py-1.5"
-                  : "min-h-[84px] p-2 sm:min-h-[104px] lg:h-[146px] lg:min-h-[146px]"
-              }`}
+              className={`group relative flex min-w-0 flex-col items-center justify-center border transition-all duration-100 focus-visible:outline-2 focus-visible:outline-offset-2 ${cellRoundingClass} ${cellBgClass} ${compact
+                ? "min-h-[48px] p-1 sm:min-h-[68px] sm:py-1.5"
+                : "min-h-[84px] p-2 sm:min-h-[104px] lg:h-[146px] lg:min-h-[146px]"
+                }`}
             >
               {/* Day number */}
               <div className="flex w-full items-center justify-center px-1">
                 <span
-                  className={`flex items-center justify-center rounded-full font-normal transition-transform ${
-                    compact
-                      ? "size-5 text-[11px] sm:size-6 sm:border sm:border-zinc-300 dark:sm:border-zinc-600 sm:bg-white dark:sm:bg-zinc-700 sm:text-zinc-800 dark:sm:text-zinc-200 sm:text-[12px]"
-                      : "size-6 text-xs sm:size-7 sm:text-xs"
-                  } ${
-                    isToday
-                      ? "bg-[#FDE29B] dark:bg-amber-400 text-[#1F1F1F] dark:text-zinc-950 font-bold shadow-xs ring-1 ring-amber-500/50"
+                  className={`flex items-center justify-center rounded-full font-normal transition-transform ${compact
+                    ? "size-5 text-[11px] sm:size-6 sm:border sm:border-zinc-300 dark:sm:border-zinc-600 sm:bg-white dark:sm:bg-zinc-700 sm:text-zinc-800 dark:sm:text-zinc-200 sm:text-[12px]"
+                    : "size-6 text-xs sm:size-7 sm:text-xs"
+                    } ${isToday
+                      ? "border border-[#EBA900] bg-[#FCDF9C] text-[#1F1F1F] font-bold shadow-xs sm:border-[#EBA900] dark:border-[#EBA900] dark:bg-[#FCDF9C] dark:text-[#1F1F1F]"
                       : primaryReservation
                         ? "bg-white text-zinc-800"
                         : isSelected
                           ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 font-semibold"
                           : "text-zinc-800 dark:text-zinc-200 bg-white dark:bg-zinc-700"
-                  } ${blocked ? "line-through text-[#727272]" : ""}`}
+                    } ${blocked ? "line-through text-[#727272]" : ""}`}
                 >
                   {dayNum}
                 </span>
@@ -654,7 +640,7 @@ function MonthGrid({
                 {blocked ? (
                   <span className="text-xs text-[#727272] line-through font-medium">Blocked</span>
                 ) : primaryReservation ? (
-                  <span className="text-xs leading-tight font-medium tracking-normal text-[#1F1F1F] dark:text-zinc-100">{formatMoney(rate, sourceCurrency, 2)}</span>
+                  <span className="text-sm leading-tight font-medium tracking-normal text-[#1F1F1F] dark:text-zinc-100">{formatMoney(rate, sourceCurrency, 2)}</span>
                 ) : isPast ? (
                   <span className="text-xs text-[#727272] line-through font-medium">{formatMoney(rate, sourceCurrency, 2)}</span>
                 ) : promo?.applied ? (
@@ -669,14 +655,14 @@ function MonthGrid({
                     </>
                   ) : (
                     <>
-                      <span className="text-[11px] text-zinc-400 dark:text-zinc-500 line-through leading-none block">
+                      <span className="text-xs text-[#727272] dark:text-zinc-500 line-through leading-none block mb-1">
                         {formatMoney(dayPricing?.originalPrice ?? rate, sourceCurrency, 2)}
                       </span>
-                      <span className="text-[14px] sm:text-[16px] font-semibold text-emerald-700 dark:text-emerald-400 leading-tight block">
+                      <span className="text-[14px] sm:text-[14px] font-medium text-emerald-700 dark:text-emerald-400 leading-tight block">
                         {formatMoney(promo.promotionalPrice, sourceCurrency, 2)}
                       </span>
                       <div className="flex items-center gap-1 mt-0.5">
-                        <span className="text-[9px] font-semibold uppercase tracking-tight text-emerald-800 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/80 px-1.5 py-0.2 rounded-md">
+                        <span className="text-[10px] font-medium capitalize tracking-tight text-[#08785d] border border-[#a7e9ce] dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/80 px-1.5 py-0.2 rounded-md">
                           {promo.percentage}% promo
                         </span>
                         {customPrice !== null && (
@@ -690,15 +676,14 @@ function MonthGrid({
                 ) : (
                   <>
                     <span
-                      className={`${compact ? "mt-0.5 block text-[12px] font-normal text-[#1F1F1F] dark:text-zinc-100" : "font-['Poppins'] text-[16px] leading-6 tracking-normal font-medium"} ${
-                        compact
-                          ? ""
-                          : customPrice !== null
-                            ? "text-amber-600 dark:text-amber-400 font-bold"
-                            : isSelected
-                              ? "text-zinc-950 dark:text-amber-300 font-bold"
-                              : "text-[#1F1F1F] dark:text-zinc-100"
-                      }`}
+                      className={`${compact ? "mt-0.5 block text-[12px] font-normal text-[#1F1F1F] dark:text-zinc-100" : "font-['Poppins'] text-[16px] leading-6 tracking-normal font-medium"} ${compact
+                        ? ""
+                        : customPrice !== null
+                          ? "text-amber-600 dark:text-amber-400 font-bold"
+                          : isSelected
+                            ? "text-zinc-950 dark:text-amber-300 font-bold"
+                            : "text-[#1F1F1F] dark:text-zinc-100"
+                        }`}
                     >
                       {formatMoney(rate, sourceCurrency, 2)}
                     </span>
@@ -713,25 +698,27 @@ function MonthGrid({
 
               {/* Continuous Reservation Bar — hidden in the compact Year view. */}
               {primaryReservation && !compact ? (
-                <div className="flex w-full items-center gap-1 truncate rounded-lg bg-[#1F1F1F] px-2 py-2 text-xs font-medium text-white">
+                <div className="mt-3 flex items-center gap-1 truncate rounded-lg bg-[#1F1F1F] pr-2 pl-0 min-h-8 text-xs font-medium text-white relative w-full">
                   {isBookingStart && (
                     primaryReservation.guestImage ? (
                       // Reservation data already supplies an optional guest image.
                       // Keeping the image inside the existing booking bar makes the
                       // status easier to scan without changing its interaction.
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={primaryReservation.guestImage}
-                        alt=""
-                        className="size-4 shrink-0 rounded-full border border-white/50 object-cover"
-                      />
+                      <span className="flex size-8 shrink-0 items-center justify-center rounded-sm bg-amber-300 text-xs font-medium text-[#1F1F1F]">
+                        <img
+                          src={primaryReservation.guestImage}
+                          alt=""
+                          className="size-4 shrink-0 rounded-lg border border-white/50 object-cover"
+                        />
+                      </span>
                     ) : (
-                      <span className="flex size-4 shrink-0 items-center justify-center rounded-full bg-amber-300 text-[8px] font-bold text-[#1F1F1F]">
+                      <span className="flex size-8 shrink-0 items-center justify-center rounded-sm bg-amber-300 text-xs font-medium text-[#1F1F1F]">
                         {primaryReservation.guestName[0]}
                       </span>
                     )
                   )}
-                  <span className="truncate">
+                  <span className="truncate pl-2">
                     {isBookingStart
                       ? primaryReservation.guestName
                       : `Stay · ${primaryReservation.guestName}`}
@@ -927,8 +914,8 @@ function ContextualManagementPanel({
   const [minStayValidationError, setMinStayValidationError] = useState("");
   const isDirty = Boolean(
     customPriceInput ||
-      customMinStayInput ||
-      specialDaysDiscountInput !== String(stats.promoStats.percentage || 15),
+    customMinStayInput ||
+    specialDaysDiscountInput !== String(stats.promoStats.percentage || 15),
   );
 
   const handleClearWithConfirm = () => {
@@ -952,8 +939,8 @@ function ContextualManagementPanel({
 
   const activePromo =
     rawDiscounts.custom_promotion &&
-    typeof rawDiscounts.custom_promotion === "object" &&
-    rawDiscounts.custom_promotion.enabled
+      typeof rawDiscounts.custom_promotion === "object" &&
+      rawDiscounts.custom_promotion.enabled
       ? rawDiscounts.custom_promotion
       : null;
 
@@ -1011,10 +998,10 @@ function ContextualManagementPanel({
   const formattedDateRange =
     range.start === range.end
       ? new Date(`${range.start}T12:00:00Z`).toLocaleDateString("en-US", {
-          month: "long",
-          day: "numeric",
-          year: "numeric",
-        })
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      })
       : formatBookingDateRange(range.start, shiftDateKey(range.end, 1));
 
   return (
@@ -1106,11 +1093,10 @@ function ContextualManagementPanel({
               setPanelMode("price");
               setValidationError("");
             }}
-            className={`rounded-lg py-1.5 text-xs font-semibold transition-all cursor-pointer ${
-              panelMode === "price"
-                ? "bg-white dark:bg-zinc-900 text-[#1F1F1F] dark:text-zinc-100 shadow-sm"
-                : "text-[#727272] hover:text-[#1F1F1F] dark:text-zinc-400 dark:hover:text-zinc-200"
-            }`}
+            className={`rounded-lg py-1.5 text-xs font-semibold transition-all cursor-pointer ${panelMode === "price"
+              ? "bg-white dark:bg-zinc-900 text-[#1F1F1F] dark:text-zinc-100 shadow-sm"
+              : "text-[#727272] hover:text-[#1F1F1F] dark:text-zinc-400 dark:hover:text-zinc-200"
+              }`}
           >
             Price
           </button>
@@ -1123,11 +1109,10 @@ function ContextualManagementPanel({
               setValidationError("");
               setMinStayValidationError("");
             }}
-            className={`rounded-lg py-1.5 text-xs font-semibold transition-all cursor-pointer ${
-              panelMode === "availability"
-                ? "bg-white dark:bg-zinc-900 text-[#1F1F1F] dark:text-zinc-100 shadow-sm"
-                : "text-[#727272] hover:text-[#1F1F1F] dark:text-zinc-400 dark:hover:text-zinc-200"
-            }`}
+            className={`rounded-lg py-1.5 text-xs font-semibold transition-all cursor-pointer ${panelMode === "availability"
+              ? "bg-white dark:bg-zinc-900 text-[#1F1F1F] dark:text-zinc-100 shadow-sm"
+              : "text-[#727272] hover:text-[#1F1F1F] dark:text-zinc-400 dark:hover:text-zinc-200"
+              }`}
           >
             Availability
           </button>
@@ -1392,11 +1377,10 @@ function ContextualManagementPanel({
                   Special days discount
                 </span>
               </div>
-              <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                stats.promoStats.enabled
-                  ? "bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300"
-                  : "bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300"
-              }`}>
+              <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${stats.promoStats.enabled
+                ? "bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300"
+                : "bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300"
+                }`}>
                 {stats.promoStats.enabled ? `${stats.promoStats.percentage}% active` : "Disabled"}
               </span>
             </div>
@@ -1613,21 +1597,19 @@ function ContextualManagementPanel({
             </p>
             <div className="mt-1 flex items-center gap-2">
               <span
-                className={`size-2.5 rounded-full ${
-                  stats.commonAvailability === "booked"
-                    ? "bg-zinc-900 dark:bg-zinc-500"
-                    : stats.commonAvailability === "blocked"
-                      ? "bg-zinc-400"
-                      : stats.commonAvailability === "available"
-                        ? "bg-emerald-500"
-                        : "bg-amber-500"
-                }`}
+                className={`size-2.5 rounded-full ${stats.commonAvailability === "booked"
+                  ? "bg-zinc-900 dark:bg-zinc-500"
+                  : stats.commonAvailability === "blocked"
+                    ? "bg-zinc-400"
+                    : stats.commonAvailability === "available"
+                      ? "bg-emerald-500"
+                      : "bg-amber-500"
+                  }`}
               />
               <span className="text-sm font-semibold capitalize text-zinc-900 dark:text-zinc-100">
                 {stats.isMixedAvailability
-                  ? `Mixed (${stats.availableCount} available, ${stats.blockedCount} blocked${
-                      stats.bookedCount > 0 ? `, ${stats.bookedCount} reserved` : ""
-                    })`
+                  ? `Mixed (${stats.availableCount} available, ${stats.blockedCount} blocked${stats.bookedCount > 0 ? `, ${stats.bookedCount} reserved` : ""
+                  })`
                   : stats.commonAvailability === "available"
                     ? `Available (${stats.availableCount} open)`
                     : stats.commonAvailability === "blocked"
@@ -1883,13 +1865,12 @@ function ContextualManagementPanel({
       {notice && (
         <div
           role="status"
-          className={`rounded-xl p-3 text-xs font-medium leading-relaxed ${
-            notice.includes("Could not") || notice.includes("Failed") || notice.includes("Error")
-              ? "bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 text-rose-800 dark:text-rose-300"
-              : notice.includes("Note:") || notice.includes("protected") || notice.includes("reserved")
-                ? "bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 text-amber-900 dark:text-amber-300"
-                : "bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/60 text-emerald-800 dark:text-emerald-300"
-          }`}
+          className={`rounded-xl p-3 text-xs font-medium leading-relaxed ${notice.includes("Could not") || notice.includes("Failed") || notice.includes("Error")
+            ? "bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 text-rose-800 dark:text-rose-300"
+            : notice.includes("Note:") || notice.includes("protected") || notice.includes("reserved")
+              ? "bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/60 text-amber-900 dark:text-amber-300"
+              : "bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/60 text-emerald-800 dark:text-emerald-300"
+            }`}
         >
           {notice}
         </div>
@@ -2534,8 +2515,8 @@ export function HostCalendarWorkspace({
           custom !== undefined
             ? custom
             : isWeekendDay(k) &&
-                selectedListing.weekendPrice &&
-                selectedListing.weekendPrice > 0
+              selectedListing.weekendPrice &&
+              selectedListing.weekendPrice > 0
               ? selectedListing.weekendPrice
               : weekdayBase;
         prices.push(price);
@@ -2728,8 +2709,8 @@ export function HostCalendarWorkspace({
                   {isAllListings
                     ? `${listings.length} properties total`
                     : [selectedListing?.district, selectedListing?.city]
-                        .filter(Boolean)
-                        .join(", ") || selectedListing?.country}
+                      .filter(Boolean)
+                      .join(", ") || selectedListing?.country}
                 </p>
               </div>
             </div>
@@ -2746,7 +2727,7 @@ export function HostCalendarWorkspace({
         </div>
 
         {/* Top Control Bar: Month Selector, Prev/Next, Today, Price Tips, View Switcher */}
-        <div className="relative mb-6 hidden flex-wrap items-center justify-between gap-4 pb-5 after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-[#d8d8d8] sm:flex sm:pl-[120px] sm:after:left-[129px] dark:after:bg-zinc-700">
+        <div className="relative hidden flex-wrap items-center justify-between gap-4 pb-5 after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-[#d8d8d8] sm:flex sm:pl-[120px] sm:after:left-[129px] dark:after:bg-zinc-700">
           {/* Left: Month Navigation Controls */}
           <div className="flex items-center gap-2 sm:gap-3">
             {/* Month/Year Title & Dropdown Trigger */}
@@ -2839,11 +2820,10 @@ export function HostCalendarWorkspace({
                             setShowMonthDropdown(false);
                             if (view === "year") handleSelectView("month");
                           }}
-                          className={`rounded-xl py-2 text-xs font-medium transition-colors cursor-pointer ${
-                            isSelected
-                              ? "bg-[#FDE29B] dark:bg-amber-400 text-[#1F1F1F] dark:text-zinc-950 font-bold shadow-xs"
-                              : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                          }`}
+                          className={`rounded-xl py-2 text-xs font-medium transition-colors cursor-pointer ${isSelected
+                            ? "bg-[#FDE29B] dark:bg-amber-400 text-[#1F1F1F] dark:text-zinc-950 font-bold shadow-xs"
+                            : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                            }`}
                         >
                           {m.slice(0, 3)}
                         </button>
@@ -2928,11 +2908,10 @@ export function HostCalendarWorkspace({
                         role="menuitemradio"
                         aria-checked={isSelected}
                         onClick={() => handleSelectView(option)}
-                        className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium capitalize transition-colors cursor-pointer ${
-                          isSelected
-                            ? "bg-[#FDE29B] text-[#1F1F1F] dark:bg-amber-400 dark:text-zinc-950"
-                            : "text-[#525252] hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
-                        }`}
+                        className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium capitalize transition-colors cursor-pointer ${isSelected
+                          ? "bg-[#FDE29B] text-[#1F1F1F] dark:bg-amber-400 dark:text-zinc-950"
+                          : "text-[#525252] hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                          }`}
                       >
                         {option}
                         {isSelected && <span aria-hidden="true">✓</span>}
@@ -2969,11 +2948,10 @@ export function HostCalendarWorkspace({
                 title="All listings overview"
                 aria-label="All listings"
                 aria-pressed={isAllListings}
-                className={`group relative flex h-[94px] w-[105px] shrink-0 flex-col items-center justify-center rounded-2xl transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a5a0ff] cursor-pointer ${
-                  isAllListings
-                    ? "border-[4px] border-[#a5a0ff] bg-zinc-900 text-white shadow-md dark:border-amber-400"
-                    : "border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 hover:border-[#8d88ee] text-zinc-700 dark:text-zinc-300"
-                }`}
+                className={`group relative flex h-[94px] w-[105px] shrink-0 flex-col items-center justify-center rounded-2xl transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a5a0ff] cursor-pointer ${isAllListings
+                  ? "border-[4px] border-[#a5a0ff] bg-zinc-900 text-white shadow-md dark:border-amber-400"
+                  : "border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 hover:border-[#8d88ee] text-zinc-700 dark:text-zinc-300"
+                  }`}
               >
                 <svg
                   className="size-6"
@@ -3007,11 +2985,10 @@ export function HostCalendarWorkspace({
                   title={l.title}
                   aria-label={l.title}
                   aria-pressed={isSelected}
-                  className={`group relative h-[94px] w-[105px] shrink-0 overflow-hidden rounded-2xl transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a5a0ff] cursor-pointer ${
-                    isSelected
-                      ? "border-[4px] border-[#a5a0ff] shadow-md ring-2 ring-[#a5a0ff]/20 dark:border-amber-400"
-                      : "border border-zinc-300 dark:border-zinc-700 hover:border-[#8d88ee] dark:hover:border-zinc-500 opacity-80 hover:opacity-100"
-                  }`}
+                  className={`group relative h-[94px] w-[105px] shrink-0 overflow-hidden rounded-2xl transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a5a0ff] cursor-pointer ${isSelected
+                    ? "border-[4px] border-[#a5a0ff] shadow-md ring-2 ring-[#a5a0ff]/20 dark:border-amber-400"
+                    : "border border-zinc-300 dark:border-zinc-700 hover:border-[#8d88ee] dark:hover:border-zinc-500 opacity-80 hover:opacity-100"
+                    }`}
                 >
                   <PropertyPhoto
                     listing={l}
@@ -3289,11 +3266,10 @@ export function HostCalendarWorkspace({
                   <button
                     type="button"
                     onClick={() => handleSelectProperty("all")}
-                    className={`flex w-full items-center gap-3.5 rounded-2xl p-3 text-left transition-colors cursor-pointer ${
-                      isAllListings
-                        ? "bg-[#FDE29B] dark:bg-amber-400 text-zinc-950 font-bold"
-                        : "hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-700"
-                    }`}
+                    className={`flex w-full items-center gap-3.5 rounded-2xl p-3 text-left transition-colors cursor-pointer ${isAllListings
+                      ? "bg-[#FDE29B] dark:bg-amber-400 text-zinc-950 font-bold"
+                      : "hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-700"
+                      }`}
                   >
                     <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-zinc-900 text-white font-bold text-xs">
                       ALL
@@ -3317,11 +3293,10 @@ export function HostCalendarWorkspace({
                       key={l.id}
                       type="button"
                       onClick={() => handleSelectProperty(l.id)}
-                      className={`flex w-full items-center gap-3.5 rounded-2xl p-3 text-left transition-colors cursor-pointer ${
-                        isSelected
-                          ? "bg-[#FDE29B] dark:bg-amber-400 text-zinc-950 font-semibold"
-                          : "hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-700"
-                      }`}
+                      className={`flex w-full items-center gap-3.5 rounded-2xl p-3 text-left transition-colors cursor-pointer ${isSelected
+                        ? "bg-[#FDE29B] dark:bg-amber-400 text-zinc-950 font-semibold"
+                        : "hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-700"
+                        }`}
                     >
                       <PropertyPhoto
                         listing={l}
