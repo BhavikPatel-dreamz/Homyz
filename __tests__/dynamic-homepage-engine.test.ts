@@ -174,14 +174,14 @@ async function runTestSuite() {
   // --- [6] Server Page URL State Audit ---
   console.log("\n--- [6] Server Page URL State Audit ---");
 
-  const pagePath = path.resolve(__dirname, "../app/page.tsx");
+  const pagePath = path.resolve(__dirname, "../app/(home)/page.tsx");
   const pageCode = fs.readFileSync(pagePath, "utf-8");
   assert(pageCode.includes("resolveSearchContext"), "app/page.tsx must resolve search context");
   assert(pageCode.includes("destination"), "app/page.tsx must accept destination search param");
   assert(pageCode.includes("checkIn"), "app/page.tsx must accept checkIn search param");
   assert(pageCode.includes("checkOut"), "app/page.tsx must accept checkOut search param");
   assert(pageCode.includes("guests"), "app/page.tsx must accept guests search param");
-  console.log("  ✓ Server page.tsx search parameters & SearchContext resolution verified");
+  console.log("  ✓ Home route search parameters & SearchContext resolution verified");
 
   // --- [7] Strict Location Gating & Never-Show-Different-Location Audit ---
   console.log("\n--- [7] Strict Location Gating & Never-Show-Different-Location Audit ---");
