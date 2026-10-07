@@ -373,7 +373,7 @@ function MonthGrid({
                   bookedCount > 0
                     ? "border-zinc-800 dark:border-zinc-700 bg-zinc-900 text-white shadow-xs"
                     : isPast
-                      ? "border-transparent bg-zinc-100/40 dark:bg-zinc-800/40 opacity-50 text-[#727272]"
+                      ? "border-transparent bg-zinc-100/40 dark:bg-zinc-800/40 opacity-70 text-[#727272]"
                       : "border-transparent bg-[#F3F4F5] dark:bg-zinc-800/80 hover:border-zinc-300 dark:hover:border-zinc-600 text-[#1F1F1F] dark:text-zinc-100"
                 }`}
               >
@@ -381,14 +381,14 @@ function MonthGrid({
                 <span
                   className={`flex items-center justify-center rounded-full font-normal transition-transform ${
                     compact
-                      ? "size-1 max-sm:bg-zinc-500 text-[0px] sm:size-5 sm:border sm:border-zinc-300 dark:sm:border-zinc-600 sm:bg-white dark:sm:bg-zinc-700 sm:text-zinc-800 dark:sm:text-zinc-200 sm:text-[12px]"
+                    ? "size-1 max-sm:bg-zinc-500 text-xs sm:size-5 sm:border sm:border-zinc-300 dark:sm:border-zinc-600 sm:bg-white dark:sm:bg-zinc-700 sm:text-[#403C34] dark:sm:text-zinc-200 sm:text-[12px]"
                       : "size-6 text-xs sm:size-7 sm:text-xs"
                   } ${
                     isToday
                       ? "bg-[#FDE29B] dark:bg-amber-400 text-[#1F1F1F] dark:text-zinc-950 font-bold shadow-xs"
                       : bookedCount > 0
                         ? "bg-zinc-800 text-white"
-                        : "text-zinc-800 dark:text-zinc-200 bg-white dark:bg-zinc-700 group-hover:bg-zinc-200 dark:group-hover:bg-zinc-600"
+                        : "text-zinc-800 dark:text-zinc-200 bg-white dark:bg-zinc-700"
                   }`}
                 >
                   {dayNum}
@@ -452,7 +452,7 @@ function MonthGrid({
           } else if (isPast) {
             // Past state
             cellBgClass =
-              "border-transparent bg-zinc-100/50 dark:bg-zinc-800/40 opacity-50 text-[#727272]";
+              "border-transparent bg-zinc-100/50 dark:bg-zinc-800/40 opacity-70 text-[#727272]";
           }
 
           // Selection highlight override
@@ -526,7 +526,7 @@ function MonthGrid({
                         ? "bg-white text-zinc-800"
                         : isSelected
                           ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 font-semibold"
-                          : "text-zinc-800 dark:text-zinc-200 bg-white dark:bg-zinc-700 group-hover:bg-zinc-200 dark:group-hover:bg-zinc-600"
+                          : "text-zinc-800 dark:text-zinc-200 bg-white dark:bg-zinc-700"
                   } ${blocked ? "line-through text-[#727272]" : ""}`}
                 >
                   {dayNum}
@@ -557,11 +557,11 @@ function MonthGrid({
                       <span className="text-[11px] text-zinc-400 dark:text-zinc-500 line-through leading-none block">
                         {formatMoney(dayPricing?.originalPrice ?? rate, sourceCurrency, 2)}
                       </span>
-                      <span className="text-[14px] sm:text-[16px] font-bold text-emerald-700 dark:text-emerald-400 leading-tight block">
+                      <span className="text-[14px] sm:text-[16px] font-semibold text-emerald-700 dark:text-emerald-400 leading-tight block">
                         {formatMoney(promo.promotionalPrice, sourceCurrency, 2)}
                       </span>
                       <div className="flex items-center gap-1 mt-0.5">
-                        <span className="text-[9px] font-bold uppercase tracking-tight text-emerald-800 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/80 px-1.5 py-0.2 rounded-md">
+                        <span className="text-[9px] font-semibold uppercase tracking-tight text-emerald-800 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/80 px-1.5 py-0.2 rounded-md">
                           {promo.percentage}% promo
                         </span>
                         {customPrice !== null && (
@@ -599,8 +599,8 @@ function MonthGrid({
                 <div
                   className={`flex w-full items-center gap-1 truncate bg-[#1F1F1F] font-medium text-white ${
                     compact
-                      ? "px-1 py-0 text-[8px]"
-                      : "h-10 rounded-lg px-1.5 text-xs"
+                      ? "px-2 py-2 text-xs"
+                      : "rounded-lg px-2 py-2 text-xs"
                   }`}
                 >
                   {isBookingStart && (
@@ -1180,7 +1180,7 @@ function ContextualManagementPanel({
                       onPreviewPrice?.(null);
                       await onSave({ customPrices: nextCustom });
                     }}
-                    className="rounded-lg bg-amber-400 hover:bg-amber-300 px-3 py-1.5 text-xs font-bold text-zinc-950 transition-colors cursor-pointer disabled:opacity-50 shadow-xs"
+                    className="rounded-lg bg-amber-400 hover:bg-amber-300 px-3 py-1.5 text-xs font-bold text-zinc-950 transition-colors cursor-pointer disabled:opacity-70 shadow-xs"
                   >
                     {saving
                       ? "Applying…"
@@ -1244,7 +1244,7 @@ function ContextualManagementPanel({
                 <button
                   type="submit"
                   disabled={saving || !customPriceInput}
-                  className="rounded-xl bg-amber-400 hover:bg-amber-300 px-4 py-2.5 text-xs font-bold text-zinc-950 transition-colors cursor-pointer disabled:opacity-50 shrink-0 shadow-xs h-[42px]"
+                  className="rounded-xl bg-amber-400 hover:bg-amber-300 px-4 py-2.5 text-xs font-bold text-zinc-950 transition-colors cursor-pointer disabled:opacity-70 shrink-0 shadow-xs h-[42px]"
                 >
                   {saving ? "Saving…" : "Apply"}
                 </button>
@@ -1270,7 +1270,7 @@ function ContextualManagementPanel({
                 onPreviewPrice?.(null);
                 await onSave({ customPrices: nextCustom });
               }}
-              className="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/80 px-3.5 py-2.5 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors cursor-pointer disabled:opacity-50"
+              className="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/80 px-3.5 py-2.5 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors cursor-pointer disabled:opacity-70"
             >
               Reset to base rates
             </button>
@@ -1417,7 +1417,7 @@ function ContextualManagementPanel({
                     type="button"
                     disabled={saving}
                     onClick={saveSpecialDaysDiscount}
-                    className="h-10 shrink-0 rounded-lg bg-emerald-600 px-3.5 text-[11px] font-bold text-white transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="h-10 shrink-0 rounded-lg bg-emerald-600 px-3.5 text-[11px] font-bold text-white transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
                   >
                     {saving ? "Applying…" : "Apply to dates"}
                   </button>
@@ -1447,7 +1447,7 @@ function ContextualManagementPanel({
                     onClick={async () => {
                       await saveSpecialDaysDiscount();
                     }}
-                    className="w-full rounded-lg border border-emerald-300 dark:border-emerald-700 bg-white dark:bg-zinc-800 hover:bg-emerald-50 dark:hover:bg-zinc-700 px-2.5 py-1.5 text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 transition-colors cursor-pointer disabled:opacity-50 text-center"
+                    className="w-full rounded-lg border border-emerald-300 dark:border-emerald-700 bg-white dark:bg-zinc-800 hover:bg-emerald-50 dark:hover:bg-zinc-700 px-2.5 py-1.5 text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 transition-colors cursor-pointer disabled:opacity-70 text-center"
                   >
                     Set window to selected dates ({range.start} – {range.end})
                   </button>
@@ -1718,7 +1718,7 @@ function ContextualManagementPanel({
                   },
                 });
               }}
-              className="w-full text-left text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:underline cursor-pointer disabled:opacity-50"
+              className="w-full text-left text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:underline cursor-pointer disabled:opacity-70"
             >
               Reset to property default ({listing.minNights ?? 1} nights)
             </button>
@@ -3471,7 +3471,7 @@ export function HostCalendarWorkspace({
                                   await save({ customPrices: nextCustom });
                                   setTips(false);
                                 }}
-                                className="rounded-full bg-amber-400 hover:bg-amber-300 px-5 py-2 text-xs font-bold text-zinc-950 transition-colors cursor-pointer disabled:opacity-50"
+                                className="rounded-full bg-amber-400 hover:bg-amber-300 px-5 py-2 text-xs font-bold text-zinc-950 transition-colors cursor-pointer disabled:opacity-70"
                               >
                                 {saving ? "Applying…" : `Apply to ${rangeTips.increaseCount + rangeTips.decreaseCount} dates`}
                               </button>
