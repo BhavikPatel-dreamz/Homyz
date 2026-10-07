@@ -22,6 +22,17 @@ export function ReservationCard({
     ? booking.guestName.charAt(0).toUpperCase()
     : "G";
   const guestCount = booking.guests || 1;
+  const showReviewStatus = event.eventType === "completed";
+  const hostReviewLabel = booking.hostReview?.status === "REVIEW_SUBMITTED"
+    ? "Review submitted ✓"
+    : booking.hostReview?.status === "REVIEW_WINDOW_EXPIRED"
+      ? "Review expired"
+      : booking.hostReview?.status === "NOT_ELIGIBLE"
+        ? "Review unavailable"
+        : "Review pending";
+  const guestReviewLabel = booking.guestReview?.status === "RECEIVED"
+    ? "Guest reviewed"
+    : "Guest pending";
 
   return (
     <div
@@ -128,6 +139,35 @@ export function ReservationCard({
             </svg>
             <span>{guestCount} {guestCount === 1 ? "guest" : "guests"}</span>
           </div>
+
+          {showReviewStatus && (
+            <div
+              className="flex min-h-[18px] w-full flex-wrap items-center justify-center gap-x-2 gap-y-0.5 text-center text-[10px] leading-4"
+              aria-label={`${hostReviewLabel}. ${guestReviewLabel}.`}
+            >
+              <span
+                className={
+                  booking.hostReview?.status === "REVIEW_SUBMITTED"
+                    ? "font-semibold text-emerald-700"
+                    : booking.hostReview?.status === "REVIEW_WINDOW_EXPIRED"
+                      ? "font-medium text-amber-800"
+                      : "font-medium text-[#727272]"
+                }
+              >
+                {hostReviewLabel}
+              </span>
+              <span aria-hidden="true" className="text-zinc-300">•</span>
+              <span
+                className={
+                  booking.guestReview?.status === "RECEIVED"
+                    ? "font-semibold text-emerald-700"
+                    : "font-medium text-[#727272]"
+                }
+              >
+                {guestReviewLabel}
+              </span>
+            </div>
+          )}
 
           <div
             className={`flex h-[32px] w-[32px] items-center justify-center rounded-full border border-[#1F1F1F] transition-colors duration-300 ease-in-out ${

@@ -11,7 +11,7 @@ export const revalidate = 0;
 
 export default async function HostTodayPage() {
   const actor = await requirePageRole([Role.HOST, Role.ADMIN]);
-  const data = await getHostWorkspace(actor);
+  const data = await getHostWorkspace(actor, { includeCancelled: true });
   const renderedAt = new Date();
   const today = bookingDateKey(renderedAt);
   const initialCurrentTimeMinutes = renderedAt.getHours() * 60 + renderedAt.getMinutes();

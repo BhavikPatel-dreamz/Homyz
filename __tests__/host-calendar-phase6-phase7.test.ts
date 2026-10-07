@@ -49,8 +49,9 @@ runTest("Active confirmed and non-expired pending bookings protect calendar date
     "host-workspace.service must filter out expired pending bookings to release dates"
   );
   assert.ok(
-    !hostWorkspaceServiceCode.includes("BookingStatus.CANCELLED"),
-    "Cancelled bookings must not block calendar availability"
+    hostWorkspaceServiceCode.includes("includeCancelled = false") &&
+      hostWorkspaceServiceCode.includes("BookingStatus.CANCELLED"),
+    "Cancelled bookings must be opt-in so calendar callers retain active bookings only"
   );
 });
 
@@ -180,4 +181,3 @@ console.log("==================================================================\
 if (passed !== total) {
   process.exitCode = 1;
 }
-
