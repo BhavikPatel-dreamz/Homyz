@@ -31,6 +31,29 @@ export type CreateReviewInput = {
   categoryRatings?: ReviewCategoryRatings;
 };
 
+type GuestReviewWithRelations = {
+  id: string;
+  listingId: string;
+  bookingId: string;
+  rating: number;
+  comment: string;
+  topics: string[];
+  createdAt: Date;
+  listing: {
+    id: string;
+    title: string;
+    photos: string[];
+    city: string | null;
+    country: string | null;
+    customSlug: string | null;
+  };
+  booking: {
+    id: string;
+    startDate: Date;
+    endDate: Date;
+  } | null;
+};
+
 const TOPIC_KEYWORDS: Record<string, readonly string[]> = {
   Pool: ["pool", "swimming"],
   View: ["view", "views", "balcony", "scenery"],
@@ -283,7 +306,7 @@ export const reviewService = {
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       take: 24,
     });
-    return (reviews as any[]).map((r: any) => ({
+    return (reviews as GuestReviewWithRelations[]).map((r) => ({
       id: r.id,
       listingId: r.listingId,
       bookingId: r.bookingId,
@@ -341,7 +364,16 @@ export const reviewService = {
     ]);
 
     return {
-      reviews: reviews.map((r) => ({
+      reviews: reviews.map((r: {
+        id: string;
+        listingId: string;
+        rating: number;
+        comment: string;
+        privateNoteToHost: string;
+        topics: string[];
+        author: { id: string; name: string | null; image: string | null };
+        createdAt: Date;
+      }) => ({
         id: r.id,
         listingId: r.listingId,
         rating: r.rating,

@@ -2,7 +2,7 @@ import { z } from "zod";
 import { apiHandler } from "@/lib/api/handler";
 import { AppError } from "@/lib/api/errors";
 import { buildPagination, parsePagination } from "@/lib/api/pagination";
-import { created, paginated } from "@/lib/api/response";
+import { created, ok, paginated } from "@/lib/api/response";
 import { getSessionUser } from "@/lib/auth/session";
 import { reviewService } from "@/services/review.service";
 
@@ -41,14 +41,11 @@ export const GET = apiHandler(async (req, ctx: Ctx) => {
 
 // POST /api/v1/listings/[id]/reviews
 // A guest can submit one review for each confirmed stay that has ended.
-// Supports Idempotency-Key header for duplicate detection on client retry.
 export const POST = apiHandler(async (req, ctx: Ctx) => {
   const actor = await getSessionUser();
   if (!actor) throw AppError.unauthorized();
 
   const { id } = await ctx.params;
-  const idempotencyKey = req.headers.get("idempotency-key");
-
   const input = createReviewSchema.parse(await req.json());
   try {
     const review = await reviewService.createReview({
@@ -60,25 +57,25 @@ export const POST = apiHandler(async (req, ctx: Ctx) => {
   } catch (error) {
     // Provide more specific error codes for frontend error categorization
     if (error instanceof AppError) {
-      if (error.statusCode === 409) {
+      if (error.status === 409) {
         // Duplicate review
-        return created(
+        return ok(
           { code: "DUPLICATE", message: "Review already submitted" },
-          { statusCode: 409 }
+          409,
         );
       }
-      if (error.statusCode === 403) {
+      if (error.status === 403) {
         // Booking not eligible
-        return created(
+        return ok(
           { code: "BOOKING_NOT_COMPLETED", message: error.message },
-          { statusCode: 403 }
+          403,
         );
       }
-      if (error.statusCode === 400) {
+      if (error.status === 400) {
         // Validation error
-        return created(
+        return ok(
           { code: "VALIDATION_ERROR", message: error.message },
-          { statusCode: 400 }
+          400,
         );
       }
     }
