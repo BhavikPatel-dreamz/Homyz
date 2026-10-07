@@ -64,7 +64,9 @@ export function CalendarSettingsPanel({
   onSave: (values: Record<string, unknown>) => Promise<void>;
 }) {
   const { currency: displayCurrency, formatMajor } = useCurrency();
-  const [panel, setPanel] = useState<"pricing" | "overview" | "availability">("pricing");
+  // The calendar opens on the concise Figma-style overview. Pricing and
+  // availability retain their existing full editors one click away.
+  const [panel, setPanel] = useState<"pricing" | "overview" | "availability">("overview");
   const [dirty, setDirty] = useState(false);
   const [validation, setValidation] = useState("");
   const [formKey, setFormKey] = useState(0);
@@ -302,46 +304,46 @@ export function CalendarSettingsPanel({
 
   if (panel === "overview") {
     return (
-      <div className="space-y-6 text-sm text-[#1F1F1F] dark:text-zinc-100">
-        <div>
-          <h2 className="text-base font-semibold">Calendar Settings</h2>
-          <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-            Configure rates, stay discounts, and booking availability rules.
-          </p>
-        </div>
-        <div className="space-y-2.5">
+      <div className="text-sm text-[#222222] dark:text-zinc-100">
+        <div className="divide-y divide-[#eeeeee] dark:divide-zinc-800">
           <button
             type="button"
-            className="flex w-full items-center justify-between rounded-xl bg-white dark:bg-zinc-800 p-4 border border-zinc-200 dark:border-zinc-700 text-left hover:border-zinc-400 dark:hover:border-zinc-500 hover:shadow-xs transition-all cursor-pointer group"
+            className="group flex w-full items-start justify-between gap-4 py-2.5 text-left transition-colors hover:text-zinc-950 dark:hover:text-white cursor-pointer"
             onClick={() => setPanel("pricing")}
           >
-            <div>
-              <p className="font-semibold text-sm text-zinc-900 dark:text-zinc-100 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-[#222222] dark:text-zinc-100">
                 Price settings
               </p>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-                Base rate, weekend pricing, discounts, and fees
+              <p className="mt-3 text-xs leading-5 text-[#717171] dark:text-zinc-400">
+                {formatMajor(((listing as any).weekdayBasePrice ?? listing.price) / 100, listingCurrency)} per night
+                <br />
+                {weeklyDiscount}% weekly discount
+                <br />
+                {monthlyDiscount}% monthly discount
               </p>
             </div>
-            <span className="text-zinc-400 text-lg group-hover:translate-x-0.5 transition-transform">
+            <span className="mt-0.5 text-2xl font-light leading-none text-[#222222] transition-transform group-hover:translate-x-0.5 dark:text-zinc-200">
               ›
             </span>
           </button>
 
           <button
             type="button"
-            className="flex w-full items-center justify-between rounded-xl bg-white dark:bg-zinc-800 p-4 border border-zinc-200 dark:border-zinc-700 text-left hover:border-zinc-400 dark:hover:border-zinc-500 hover:shadow-xs transition-all cursor-pointer group"
+            className="group flex w-full items-start justify-between gap-4 py-7 text-left transition-colors hover:text-zinc-950 dark:hover:text-white cursor-pointer"
             onClick={() => setPanel("availability")}
           >
-            <div>
-              <p className="font-semibold text-sm text-zinc-900 dark:text-zinc-100 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-[#222222] dark:text-zinc-100">
                 Availability settings
               </p>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-                Trip length limits, advance notice, and guest capacity
+              <p className="mt-3 text-xs leading-5 text-[#717171] dark:text-zinc-400">
+                {listing.minNights ?? 1}–{listing.maxNights ?? 365} night stays
+                <br />
+                {(listing as any).advanceNotice || "Same day"} advance notice
               </p>
             </div>
-            <span className="text-zinc-400 text-lg group-hover:translate-x-0.5 transition-transform">
+            <span className="mt-0.5 text-2xl font-light leading-none text-[#222222] transition-transform group-hover:translate-x-0.5 dark:text-zinc-200">
               ›
             </span>
           </button>
