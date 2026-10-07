@@ -352,8 +352,8 @@ describe("HOMYZ — Phase 1 Central Pricing Engine Verification Suite", () => {
     assert.equal(formatMoney(10_000, "USD"), "$100");
   });
 
-  // Test: Cleaning fee is strictly 0 and absent from quote calculation
-  it("Cleaning fee is strictly absent from quote and totals", async () => {
+  // Test: An unset cleaning fee stays zero and is not added to totals.
+  it("Unset cleaning fee remains zero in quote and totals", async () => {
     const result = await calculateBookingPrice({
       checkIn: "2026-10-04",
       checkOut: "2026-10-07",
@@ -361,7 +361,7 @@ describe("HOMYZ — Phase 1 Central Pricing Engine Verification Suite", () => {
       hostServiceFeePercentage: 15,
     });
 
-    assert.equal("cleaningFee" in result, false);
+    assert.equal(result.cleaningFee, 0);
+    assert.equal(result.feeBreakdown.some((fee) => fee.id === "cleaning"), false);
   });
 });
-

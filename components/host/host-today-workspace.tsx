@@ -19,6 +19,7 @@ import {
   deduplicateHostReservations,
   filterOperationalEventsByProperty,
   selectPriorityReservationId,
+  type ReservationPeriod,
 } from "@/lib/booking/host-reservation-events";
 import { useHostDashboardState } from "./host-dashboard-state";
 
@@ -27,8 +28,11 @@ export function HostTodayWorkspace({
   bookings,
   today,
   initialCurrentTimeMinutes,
-}: HostWorkspaceProps & { today: string; initialCurrentTimeMinutes: number }) {
-  const [tab, setTab] = useState<"today" | "upcoming">("today");
+}: HostWorkspaceProps & {
+  today: string;
+  initialCurrentTimeMinutes: number;
+}) {
+  const [tab, setTab] = useState<ReservationPeriod>("today");
   const [filtersOpen, setFiltersOpen] = useState(false);
   const { selectedPropertyId, setSelectedPropertyId } = useHostDashboardState();
   const [draftPropertyId, setDraftPropertyId] = useState<string | null>(null);
@@ -164,34 +168,33 @@ export function HostTodayWorkspace({
           <div className="mb-6 flex w-full items-center justify-between gap-3 border-b border-[#727272] pb-5 sm:mb-10 sm:w-fit sm:pb-7">
             {/* Reservation Period Pill Switcher */}
             <div
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1"
               role="tablist"
               aria-label="Reservation period"
             >
-              <button
-                role="tab"
-                aria-selected={tab === "today"}
-                onClick={() => setTab("today")}
-                className={`rounded-full px-4 py-3 text-base sm:px-4.25 sm:py-2.75 font-medium transition-all duration-300 ease-in-out font-sans ${
-                  tab === "today"
-                    ? "bg-[#1F1F1F] text-white shadow-xs"
-                    : "bg-[#F3F4F5] text-[#1F1F1F] hover:bg-zinc-200"
-                }`}
-              >
-                Today
-              </button>
-              <button
-                role="tab"
-                aria-selected={tab === "upcoming"}
-                onClick={() => setTab("upcoming")}
-                className={`rounded-full px-4 py-3 text-base sm:py-2.75 font-medium transition-all duration-300 ease-in-out font-sans ${
-                  tab === "upcoming"
-                    ? "bg-[#1F1F1F] text-white shadow-xs"
-                    : "bg-[#F3F4F5] text-[#1F1F1F] border border-transparent hover:bg-[#1F1F1F] hover:text-white hover:border-[#1F1F1F]"
-                }`}
-              >
-                Upcoming
-              </button>
+              {[
+                { id: "today", label: "Today" },
+                { id: "upcoming", label: "Upcoming" },
+                { id: "staying", label: "Current stays" },
+                { id: "completed", label: "Completed" },
+                { id: "pending", label: "Pending" },
+                { id: "cancelled", label: "Cancelled" },
+                { id: "all", label: "All" },
+              ].map((filterTab) => (
+                <button
+                  key={filterTab.id}
+                  role="tab"
+                  aria-selected={tab === filterTab.id}
+                  onClick={() => setTab(filterTab.id as ReservationPeriod)}
+                  className={`rounded-full px-4 py-2.5 text-sm sm:px-4.5 sm:py-2.5 font-medium transition-all duration-200 shrink-0 font-sans cursor-pointer ${
+                    tab === filterTab.id
+                      ? "bg-[#1F1F1F] text-white shadow-xs"
+                      : "bg-[#F3F4F5] text-[#1F1F1F] hover:bg-zinc-200"
+                  }`}
+                >
+                  {filterTab.label}
+                </button>
+              ))}
             </div>
 
             {/* Mobile Filter Button */}
@@ -230,7 +233,17 @@ export function HostTodayWorkspace({
           {/* Section Headline */}
           <h1 className="mb-6 break-words font-sans text-[24px] leading-8 font-medium text-[#1F1F1F] tracking-normal sm:mb-8 sm:text-[32px] sm:leading-10 xl:text-[36px] xl:leading-[44px]">
             You have {displayedEvents.length}{" "}
-            {tab === "upcoming" ? "upcoming " : ""}
+            {tab === "upcoming"
+              ? "upcoming "
+              : tab === "staying"
+              ? "current "
+              : tab === "completed"
+              ? "completed "
+              : tab === "pending"
+              ? "pending "
+              : tab === "cancelled"
+              ? "cancelled "
+              : ""}
             {displayedEvents.length === 1 ? "reservation" : "reservations"}
           </h1>
 
@@ -245,7 +258,7 @@ export function HostTodayWorkspace({
               <button
                 type="button"
                 onClick={() => void refreshReservations()}
-                className="font-semibold underline underline-offset-4"
+                className="font-semibold underline underline-offset-4 cursor-pointer"
               >
                 Retry
               </button>
@@ -264,6 +277,12 @@ export function HostTodayWorkspace({
                   priorityLabel={
                     event.eventType === "staying"
                       ? "Now"
+                      : event.eventType === "cancelled"
+                      ? "Cancelled"
+                      : event.eventType === "pending"
+                      ? "Pending"
+                      : event.eventType === "completed"
+                      ? "Past"
                       : tab === "today"
                         ? "Next up"
                         : "Upcoming"
@@ -282,14 +301,34 @@ export function HostTodayWorkspace({
                   ? "No reservations found for this property"
                   : tab === "today"
                     ? "No reservations today"
-                    : "No upcoming reservations"}
+                    : tab === "upcoming"
+                    ? "No upcoming reservations"
+                    : tab === "staying"
+                    ? "No current stays"
+                    : tab === "completed"
+                    ? "No completed stays yet"
+                    : tab === "pending"
+                    ? "No pending requests"
+                    : tab === "cancelled"
+                    ? "No cancelled reservations"
+                    : "No reservations found"}
               </p>
               <p className="mt-2 text-sm text-[#727272]">
                 {appliedPropertyId
                   ? "Try clearing your listing filter to see all reservations."
                   : tab === "today"
                     ? "You don't have any check-ins, check-outs, or active stays scheduled for today."
-                    : "Your next reservations will appear here once guests book your space."}
+                    : tab === "upcoming"
+                    ? "Your next reservations will appear here once guests book your space."
+                    : tab === "staying"
+                    ? "Guests who are currently checking in or staying will appear here."
+                    : tab === "completed"
+                    ? "Past completed stays will be listed here after checkout."
+                    : tab === "pending"
+                    ? "Reservation requests awaiting your review will appear here."
+                    : tab === "cancelled"
+                    ? "Cancelled reservations and refund records will appear here."
+                    : "Your reservations will appear here once guests book your space."}
               </p>
               {appliedPropertyId ? (
                 <button

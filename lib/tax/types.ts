@@ -140,6 +140,7 @@ export interface CalculatedTaxItem {
 
 export interface HostPayoutBreakdown {
   accommodationSubtotal: number; // nightly subtotal minus discounts
+  extraGuestFee: number;
   petFee: number;
   cleaningFee?: number;
   taxesCollectedForHost: number; // Host-remitted taxes collected from guest

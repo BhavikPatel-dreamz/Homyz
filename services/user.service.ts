@@ -14,7 +14,7 @@ import type { UpdateHostPublicProfileInput } from "@/lib/validation/host-profile
 
 import { deleteManagedMediaUrl } from "@/lib/storage/media";
 import type { Prisma } from "@/generated/prisma/client";
-import { BookingStatus, ListingStatus, ReviewStatus } from "@/generated/prisma/enums";
+import { ListingStatus, ReviewStatus } from "@/generated/prisma/enums";
 import { qualificationService } from "@/services/qualification.service";
 import { getMissingProfileFields, hasUsableProfileEmail } from "@/lib/auth/profile-completion";
 import { normalizeEmail, normalizePhone } from "@/lib/auth/normalization";
@@ -353,7 +353,7 @@ async function getPublicHostProfile(userId: string, options: { reviewLimit?: num
   const reviewLimit = Math.min(100, Math.max(1, options.reviewLimit ?? 3));
   const host = await prisma.user.findUnique({
     where: { id: userId },
-    select: { id: true, name: true, image: true, createdAt: true, publicProfile: true },
+    select: { id: true, name: true, image: true, createdAt: true, publicProfile: true, isSuperhost: true },
   });
   if (!host) throw AppError.notFound("Host not found");
 
@@ -368,7 +368,7 @@ async function getPublicHostProfile(userId: string, options: { reviewLimit?: num
     isPaused: false,
     deletedAt: null,
   };
-  const [listings, reviewSummary, latestReviews, bookingGroups] = await Promise.all([
+  const [listings, reviewSummary, latestReviews] = await Promise.all([
     prisma.listing.findMany({
       where: publicListingWhere,
       select: { id: true, customSlug: true, title: true, photos: true, city: true, country: true, listingType: true, price: true },
@@ -386,16 +386,7 @@ async function getPublicHostProfile(userId: string, options: { reviewLimit?: num
       orderBy: { createdAt: "desc" },
       take: reviewLimit,
     }),
-    prisma.booking.groupBy({
-      by: ["status"],
-      where: { listing: { hostId: host.id }, status: { in: [BookingStatus.CONFIRMED, BookingStatus.CANCELLED] } },
-      _count: { _all: true },
-    }),
   ]);
-  const bookingSummary = {
-    confirmed: bookingGroups.find((group: { status: BookingStatus; _count: { _all: number } }) => group.status === BookingStatus.CONFIRMED)?._count._all ?? 0,
-    cancelled: bookingGroups.find((group: { status: BookingStatus; _count: { _all: number } }) => group.status === BookingStatus.CANCELLED)?._count._all ?? 0,
-  };
 
   return {
     host: {
@@ -404,7 +395,7 @@ async function getPublicHostProfile(userId: string, options: { reviewLimit?: num
       image: host.image,
       createdAt: host.createdAt,
       publicProfile: profile,
-      isSuperhost: qualificationService.isSuperhost({ createdAt: host.createdAt, publicProfile: profile, bookingSummary }),
+      isSuperhost: qualificationService.isSuperhost(host),
     },
     stats: {
       reviewCount: reviewSummary._count._all,

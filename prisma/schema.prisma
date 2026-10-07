@@ -182,27 +182,33 @@ enum SpecialOfferStatus {
 // ─────────────────────────────────────────────────────────────────────────────
 
 model User {
-  id            String     @id @default(cuid())
-  name          String?
-  email         String?    @unique
-  emailVerified DateTime?
-  image         String?
-  publicProfile Json? // Stores bio, prompts, stamps visibility, etc.
+  id                        String     @id @default(cuid())
+  name                      String?
+  email                     String?    @unique
+  emailVerified             DateTime?
+  image                     String?
+  publicProfile             Json? // Stores bio, prompts, stamps visibility, etc.
   // Local credentials + custom fields
-  passwordHash  String?
-  role          Role       @default(USER)
-  status        UserStatus @default(ACTIVE)
-  lastLoginAt   DateTime?
-  adminRoleId   String?
-  phone         String?    @unique
-  phoneVerified DateTime?
-  birthDate     DateTime?  @db.Date
-  personalInfo  Json? // Stores private account settings: legalName, preferredName, identityStatus, addresses, emergencyContact
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
-  tokenVersion  Int        @default(0)
-  referralCode  String?    @unique
-  referredById  String?
+  passwordHash              String?
+  role                      Role       @default(USER)
+  status                    UserStatus @default(ACTIVE)
+  lastLoginAt               DateTime?
+  adminRoleId               String?
+  phone                     String?    @unique
+  phoneVerified             DateTime?
+  birthDate                 DateTime?  @db.Date
+  personalInfo              Json? // Stores private account settings: legalName, preferredName, identityStatus, addresses, emergencyContact
+  // Official Superhost state. Live qualification is calculated separately and
+  // may only update these fields at a quarterly evaluation checkpoint.
+  isSuperhost               Boolean    @default(false)
+  superhostQualifiedAt      DateTime?
+  superhostLastEvaluatedAt  DateTime?
+  superhostNextEvaluationAt DateTime?
+  createdAt                 DateTime   @default(now())
+  updatedAt                 DateTime   @updatedAt
+  tokenVersion              Int        @default(0)
+  referralCode              String?    @unique
+  referredById              String?
 
   accounts                        Account[]
   sessions                        Session[]
@@ -251,11 +257,41 @@ model User {
   sentMessages                    Message[]                  @relation("SentMessages")
   guestSpecialOffers              SpecialOffer[]             @relation("GuestSpecialOffers")
   hostSpecialOffers               SpecialOffer[]             @relation("HostSpecialOffers")
+  superhostEvaluations            SuperhostEvaluation[]
 
   @@index([role])
   @@index([adminRoleId])
   @@index([status])
   @@index([referredById])
+  @@index([isSuperhost])
+}
+
+model SuperhostEvaluation {
+  id                             String   @id @default(cuid())
+  hostId                         String
+  evaluationDate                 DateTime @db.Date
+  windowStart                    DateTime @db.Date
+  windowEnd                      DateTime @db.Date
+  completedReservations          Int
+  completedNights                Int
+  overallRating                  Float?
+  publishedReviewCount           Int
+  responseRatePercentage         Float?
+  totalGuestInquiries            Int
+  hostCancellationRatePercentage Float
+  hostCancellationCount          Int
+  cancellationDenominator        Int
+  accountGoodStanding            Boolean
+  qualified                      Boolean
+  failureReasons                 String[] @default([])
+  createdAt                      DateTime @default(now())
+  updatedAt                      DateTime @updatedAt
+
+  host User @relation(fields: [hostId], references: [id], onDelete: Cascade)
+
+  @@unique([hostId, evaluationDate])
+  @@index([evaluationDate])
+  @@index([hostId, evaluationDate])
 }
 
 model Notification {
@@ -505,21 +541,26 @@ model Listing {
   lockboxCode          String?
 
   // Step 4 — Policies & Constraints
-  cancellationPolicy         String? @default("FLEXIBLE") // Short stays: FLEXIBLE, MODERATE, LIMITED, FIRM, STRICT
-  longTermCancellationPolicy String? @default("FIRM") // Stays of 28+ nights: FIRM or STRICT
-  bookingMessage             String? @db.Text // Public pre-booking message from the host
-  requireProfilePhoto        Boolean @default(false) // Host requires a guest profile photo before booking
-  requireGoodTrackRecord     Boolean @default(false) // Instant Book requires a completed confirmed stay
-  bookingApprovalMode        String  @default("INSTANT") // FIRST_THREE, INSTANT, or MANUAL
-  minNights                  Int     @default(1)
-  maxNights                  Int     @default(365)
-  advanceNotice              String  @default("Same day")
-  sameDayCutoff              String  @default("12:00 AM")
-  allowSameDayRequests       Boolean @default(true)
-  instantBook                Boolean @default(true)
-  isPaused                   Boolean @default(false)
-  isFeatured                 Boolean @default(false)
-  customSlug                 String? @unique
+  cancellationPolicy           String?   @default("FLEXIBLE") // Short stays: FLEXIBLE, MODERATE, LIMITED, FIRM, STRICT
+  longTermCancellationPolicy   String?   @default("FIRM") // Stays of 28+ nights: FIRM or STRICT
+  bookingMessage               String?   @db.Text // Public pre-booking message from the host
+  requireProfilePhoto          Boolean   @default(false) // Host requires a guest profile photo before booking
+  requireGoodTrackRecord       Boolean   @default(false) // Instant Book requires a completed confirmed stay
+  bookingApprovalMode          String    @default("INSTANT") // FIRST_THREE, INSTANT, or MANUAL
+  minNights                    Int       @default(1)
+  maxNights                    Int       @default(365)
+  advanceNotice                String    @default("Same day")
+  sameDayCutoff                String    @default("12:00 AM")
+  allowSameDayRequests         Boolean   @default(true)
+  instantBook                  Boolean   @default(true)
+  isPaused                     Boolean   @default(false)
+  isFeatured                   Boolean   @default(false)
+  // Official listing-level Guest Favorite state. The daily evaluator owns
+  // these fields; they are never inferred from featured status or live UI data.
+  isGuestFavorite              Boolean   @default(false)
+  guestFavoriteSince           DateTime?
+  guestFavoriteLastEvaluatedAt DateTime?
+  customSlug                   String?   @unique
 
   // Step 5 — Availability & Dates
   blockedDates String[] @default([]) // Array of YYYY-MM-DD blocked dates
@@ -556,16 +597,17 @@ model Listing {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  host              User               @relation(fields: [hostId], references: [id], onDelete: Cascade)
-  bookings          Booking[]
-  favorites         ListingFavorite[]
-  coHosts           ListingCoHost[]
-  guidebookListings GuidebookListing[]
-  taxes             ListingTax[]
-  taxAuditLogs      TaxAuditLog[]
-  reviews           Review[]           @relation("ListingReviews")
-  conversations     Conversation[]
-  specialOffers     SpecialOffer[]
+  host                     User                      @relation(fields: [hostId], references: [id], onDelete: Cascade)
+  bookings                 Booking[]
+  favorites                ListingFavorite[]
+  coHosts                  ListingCoHost[]
+  guidebookListings        GuidebookListing[]
+  taxes                    ListingTax[]
+  taxAuditLogs             TaxAuditLog[]
+  reviews                  Review[]                  @relation("ListingReviews")
+  conversations            Conversation[]
+  specialOffers            SpecialOffer[]
+  guestFavoriteEvaluations GuestFavoriteEvaluation[]
 
   @@index([hostId])
   @@index([published])
@@ -576,6 +618,30 @@ model Listing {
   @@index([price])
   @@index([guests])
   @@index([status, published, isPaused, deletedAt])
+  @@index([isGuestFavorite])
+}
+
+model GuestFavoriteEvaluation {
+  id                               String   @id @default(cuid())
+  listingId                        String
+  evaluationDate                   DateTime @db.Date
+  publishedReviewCount             Int
+  overallRating                    Float?
+  subratings                       Json?
+  totalBookings                    Int
+  hostCancellationCount            Int
+  reliabilityFailureRatePercentage Float
+  qualityIncidentDataStatus        String
+  qualified                        Boolean
+  failureReasons                   String[] @default([])
+  createdAt                        DateTime @default(now())
+  updatedAt                        DateTime @updatedAt
+
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@unique([listingId, evaluationDate])
+  @@index([evaluationDate])
+  @@index([listingId, evaluationDate])
 }
 
 model ListingFavorite {
@@ -688,6 +754,7 @@ model Review {
   locationRating      Int?
   valueRating         Int?
   comment             String       @db.Text // Empty string allowed for rating-only reviews
+  privateNoteToHost   String       @db.Text @default("") // Private feedback only visible to host and guest
   topics              String[]     @default([])
   status              ReviewStatus @default(PUBLISHED)
 
@@ -1048,9 +1115,9 @@ model Guidebook {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
-  host     User               @relation(fields: [hostId], references: [id], onDelete: Cascade)
-  listings GuidebookListing[]
-  items    GuidebookItem[]
+  host       User                @relation(fields: [hostId], references: [id], onDelete: Cascade)
+  listings   GuidebookListing[]
+  items      GuidebookItem[]
   categories GuidebookCategory[]
 
   @@index([hostId])

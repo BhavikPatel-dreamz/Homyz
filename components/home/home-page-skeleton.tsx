@@ -1,9 +1,9 @@
-import React from "react";
 import { AppHeader } from "@/components/dashboard/app-header";
 import { Container } from "@/components/ui";
-import { HomepageLoadingState } from "@/components/home/home-section-skeleton";
+import { HomepageLoadingState } from "./home-section-skeleton";
 
-export default function HomeLoading() {
+/** The root discovery-page loading contract. Keep this scoped to the home route. */
+export function HomePageSkeleton() {
   return (
     <div className="flex min-h-screen flex-col bg-white font-sans text-[#1f1f1f] antialiased">
       {/* Render actual AppHeader so header remains solid and doesn't flicker into a skeleton */}

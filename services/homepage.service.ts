@@ -140,6 +140,7 @@ export type DiscoveryListing = {
   amenities?: string[];
   description?: string | null;
   isFeatured: boolean;
+  isGuestFavorite: boolean;
   blockedDates: string[];
   minNights: number;
   maxNights: number;
@@ -152,7 +153,7 @@ export type DiscoveryListing = {
     name: string | null;
     createdAt: Date;
     publicProfile: Record<string, unknown> | null;
-    bookings?: Array<{ status: BookingStatus }>;
+    isSuperhost: boolean;
   } | null;
   bookings: Array<{ startDate: Date; endDate: Date; status: BookingStatus; createdAt: Date }>;
 };
@@ -195,14 +196,7 @@ function toProperty(
       ? hostProfile.reviewsCount
       : null;
 
-  const isGuestFav = qualificationService.isGuestFavorite({
-    isFeatured: listing.isFeatured,
-    rating: genuineRating,
-    reviewCount: genuineReviews,
-    bookings: listing.bookings,
-    status: ListingStatus.ACTIVE,
-    published: true,
-  });
+  const isGuestFav = qualificationService.isGuestFavorite(listing);
 
   const isSuperh = qualificationService.isSuperhost(listing.host);
 
@@ -519,6 +513,7 @@ export async function getDiscoveryCandidateListings(): Promise<DiscoveryListing[
           amenities: true,
           description: true,
           isFeatured: true,
+          isGuestFavorite: true,
           blockedDates: true,
           minNights: true,
           maxNights: true,
@@ -532,9 +527,7 @@ export async function getDiscoveryCandidateListings(): Promise<DiscoveryListing[
               name: true,
               createdAt: true,
               publicProfile: true,
-              bookings: {
-                select: { status: true },
-              },
+              isSuperhost: true,
             },
           },
           bookings: {
@@ -828,14 +821,7 @@ async function assembleHomepageData(params: {
 
     // Guest favourites in {location}
     const guestFavourites = destinationCandidates.filter((c) =>
-      qualificationService.isGuestFavorite({
-        isFeatured: c.listing.isFeatured,
-        rating: (c.listing.host?.publicProfile as any)?.rating,
-        reviewCount: (c.listing.host?.publicProfile as any)?.reviewCount,
-        bookings: c.listing.bookings,
-        status: ListingStatus.ACTIVE,
-        published: true,
-      }),
+      qualificationService.isGuestFavorite(c.listing),
     );
     if (locationSectionCount < 3 && guestFavourites.length >= MIN_PROPERTY_CAROUSEL) {
       addSection({
@@ -934,10 +920,7 @@ async function assembleHomepageData(params: {
           type: "PROPERTY",
           source: "RECOMMENDATION",
           priority: 130,
-          candidates: topRatedCandidates.map((listing) => ({
-            listing,
-            extra: { badge: "guest_favorite" as const },
-          })),
+          candidates: topRatedCandidates.map((listing) => ({ listing })),
           seeAllHref: "/listings?sortBy=top_rated",
         });
       }
@@ -1181,10 +1164,7 @@ async function assembleHomepageData(params: {
           type: "PROPERTY",
           source: "RECOMMENDATION",
           priority: 130,
-          candidates: topRatedCandidates.map((listing) => ({
-            listing,
-            extra: { badge: "guest_favorite" as const },
-          })),
+          candidates: topRatedCandidates.map((listing) => ({ listing })),
           seeAllHref: "/listings?sortBy=top_rated",
         });
       }
@@ -1336,16 +1316,7 @@ async function assembleHomepageData(params: {
     };
 
     // 1. Priority 50: Guest favourites
-    const guestFavourites = allListings.filter((l) =>
-      qualificationService.isGuestFavorite({
-        isFeatured: l.isFeatured,
-        rating: (l.host?.publicProfile as any)?.rating,
-        reviewCount: (l.host?.publicProfile as any)?.reviewCount,
-        bookings: l.bookings,
-        status: ListingStatus.ACTIVE,
-        published: true,
-      }),
-    );
+    const guestFavourites = allListings.filter((l) => qualificationService.isGuestFavorite(l));
     if (guestFavourites.length >= MIN_PROPERTY_CAROUSEL) {
       addSection({
         id: "guest-favourites",

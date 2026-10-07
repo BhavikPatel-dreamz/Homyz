@@ -14,7 +14,7 @@ export function ReservationCard({
   event: OperationalEvent;
   selected: boolean;
   isActive: boolean;
-  priorityLabel: "Now" | "Next up" | "Upcoming";
+  priorityLabel?: string;
   onSelect: () => void;
 }) {
   const { booking, listing } = event;
