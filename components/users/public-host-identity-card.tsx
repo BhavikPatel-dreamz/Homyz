@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 type Props = {
   name: string;
@@ -13,6 +14,7 @@ type Props = {
 
 /** Matches the host summary card displayed on public listing pages. */
 export function PublicHostIdentityCard({ name, image, isSuperhost, reviewCount, averageRating, tenure }: Props) {
+  const { t } = useLanguage();
   const [imageFailed, setImageFailed] = useState(false);
   const initial = name.charAt(0).toUpperCase() || "H";
 
@@ -22,19 +24,39 @@ export function PublicHostIdentityCard({ name, image, isSuperhost, reviewCount, 
         <div className="flex flex-col items-center justify-center text-center">
           {image && !imageFailed ? (
             // eslint-disable-next-line @next/next/no-img-element -- host avatars can be remote user media.
-            <img src={image} alt="Host profile photo" loading="lazy" decoding="async" onError={() => setImageFailed(true)} className="size-[104px] shrink-0 rounded-full border border-zinc-200 object-cover" />
+            <img
+              src={image}
+              alt={t("public_host_card_photo_alt", "Host profile photo")}
+              loading="lazy"
+              decoding="async"
+              onError={() => setImageFailed(true)}
+              className="size-[104px] shrink-0 rounded-full border border-zinc-200 object-cover"
+            />
           ) : (
             <div aria-hidden="true" className="flex size-[104px] shrink-0 items-center justify-center rounded-full border border-amber-200 bg-amber-100 text-2xl font-bold text-amber-900">{initial}</div>
           )}
           <div className="pt-4 text-center">
             <p className="break-words text-lg font-semibold capitalize text-[#1f1f1f] sm:text-[20px]">{name}</p>
-            <p className="mt-1 text-base font-light text-[#1f1f1f] sm:mt-2">{isSuperhost ? "Superhost" : "Host"}</p>
+            <p className="mt-1 text-base font-light text-[#1f1f1f] sm:mt-2">
+              {isSuperhost ? t("public_host_card_superhost", "Superhost") : t("public_host_card_host", "Host")}
+            </p>
           </div>
         </div>
         <div className="min-w-0 divide-y divide-[#dedede]">
-          <div className="pb-4"><p className="text-lg font-normal leading-5 text-[#1f1f1f] sm:text-[20px]">{reviewCount || "—"}</p><p className="mt-1 text-xs font-normal text-[#727272]">Reviews</p></div>
-          <div className="py-4"><p className="flex items-center gap-1 text-lg font-normal leading-5 text-[#1f1f1f] sm:text-[20px]">{averageRating?.toFixed(2) ?? "—"}<span className="text-[#e9a400]">★</span></p><p className="mt-2 text-xs font-normal text-[#727272]">Rating</p></div>
-          <div className="pt-4"><p className="text-base font-normal leading-5 text-[#1f1f1f] sm:text-[20px]">{tenure}</p><p className="mt-2 text-xs font-normal text-[#727272]">time hosting</p></div>
+          <div className="pb-4">
+            <p className="text-lg font-normal leading-5 text-[#1f1f1f] sm:text-[20px]">{reviewCount || "—"}</p>
+            <p className="mt-1 text-xs font-normal text-[#727272]">{t("public_host_card_reviews_label", "Reviews")}</p>
+          </div>
+          <div className="py-4">
+            <p className="flex items-center gap-1 text-lg font-normal leading-5 text-[#1f1f1f] sm:text-[20px]">
+              {averageRating?.toFixed(2) ?? "—"}<span className="text-[#e9a400]">★</span>
+            </p>
+            <p className="mt-2 text-xs font-normal text-[#727272]">{t("public_host_card_rating_label", "Rating")}</p>
+          </div>
+          <div className="pt-4">
+            <p className="text-base font-normal leading-5 text-[#1f1f1f] sm:text-[20px]">{tenure}</p>
+            <p className="mt-2 text-xs font-normal text-[#727272]">{t("public_host_card_tenure_label", "time hosting")}</p>
+          </div>
         </div>
       </div>
     </div>

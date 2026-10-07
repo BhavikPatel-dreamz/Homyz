@@ -10,12 +10,14 @@ import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { formatExpiryCountdown } from "@/lib/booking/booking-expiry";
 import { differenceInBookingNights, formatBookingDate } from "@/lib/booking/booking-date";
 import { useCurrency } from "@/lib/currency-context";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 interface HostBookingDetailsClientProps {
   details: HostBookingRequestDetails;
 }
 
 export function HostBookingDetailsClient({ details }: HostBookingDetailsClientProps) {
+  const { t } = useLanguage();
   const { currency: displayCurrency, formatPrice } = useCurrency();
   const formatMoney = (amount: number | null | undefined, sourceCurrency = "SAR") =>
     formatPrice(typeof amount === "number" ? amount : 0, sourceCurrency, 2);
@@ -50,8 +52,8 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
       }
       setIsAcceptModalOpen(false);
       router.refresh();
-    } catch (err: any) {
-      setActionError(err.message || "Failed to accept booking request");
+    } catch (err: unknown) {
+      setActionError(err instanceof Error ? err.message : "Failed to accept booking request");
     } finally {
       setIsSubmitting(false);
     }
@@ -72,8 +74,8 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
       }
       setIsDeclineModalOpen(false);
       router.refresh();
-    } catch (err: any) {
-      setActionError(err.message || "Failed to decline booking request");
+    } catch (err: unknown) {
+      setActionError(err instanceof Error ? err.message : "Failed to decline booking request");
     } finally {
       setIsSubmitting(false);
     }
@@ -103,14 +105,14 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
         <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
         </svg>
-        <span>Back to reservations</span>
+        <span>{t("host_booking_details_back", "Back to reservations")}</span>
       </Link>
 
       {/* Header */}
       <div className="mt-4 flex flex-wrap items-start justify-between gap-4 border-b border-zinc-200 pb-6">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
-            Reservation #{details.id.slice(-8).toUpperCase()}
+            {t("host_booking_details_res_num", "Reservation #{id}").replace("{id}", details.id.slice(-8).toUpperCase())}
           </p>
           <h1 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight text-[#1F1F1F]">
             {details.listing.title}
@@ -125,22 +127,22 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
           {details.status === "CONFIRMED" ? (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3.5 py-1 text-sm font-semibold text-emerald-800 border border-emerald-200 shadow-2xs">
               <span className="size-2 rounded-full bg-emerald-500" />
-              Confirmed
+              {t("host_booking_details_status_confirmed", "Confirmed")}
             </span>
           ) : isExpired ? (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3.5 py-1 text-sm font-semibold text-slate-700 border border-slate-300 shadow-2xs">
               <span className="size-2 rounded-full bg-slate-400" />
-              Expired
+              {t("host_booking_details_status_expired", "Expired")}
             </span>
           ) : details.status === "CANCELLED" ? (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-50 px-3.5 py-1 text-sm font-semibold text-rose-800 border border-rose-200 shadow-2xs">
               <span className="size-2 rounded-full bg-rose-500" />
-              Declined / Cancelled
+              {t("host_booking_details_status_cancelled", "Declined / Cancelled")}
             </span>
           ) : (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3.5 py-1 text-sm font-semibold text-amber-900 border border-amber-200 shadow-2xs">
               <span className="size-2 rounded-full bg-amber-500 animate-pulse" />
-              Pending confirmation
+              {t("host_booking_details_status_pending", "Pending confirmation")}
             </span>
           )}
         </div>
@@ -151,9 +153,11 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
         <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50/80 p-5 text-amber-950 shadow-2xs">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="text-base font-semibold">Response deadline: {countdown?.text}</h2>
+              <h2 className="text-base font-semibold">
+                {t("host_booking_details_deadline_banner_title", "Response deadline: {time}").replace("{time}", countdown?.text || "")}
+              </h2>
               <p className="mt-1 text-xs sm:text-sm text-amber-900 leading-relaxed">
-                Accept or decline this request before the 24-hour window expires. Calendar dates are currently held for this guest.
+                {t("host_booking_details_deadline_banner_desc", "Accept or decline this request before the 24-hour window expires. Calendar dates are currently held for this guest.")}
               </p>
             </div>
             <div className="flex gap-2">
@@ -162,14 +166,14 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
                 onClick={() => setIsDeclineModalOpen(true)}
                 className="rounded-full border border-zinc-300 bg-white px-4 py-2 text-xs font-semibold text-zinc-800 hover:bg-zinc-100 transition-colors cursor-pointer"
               >
-                Decline
+                {t("host_booking_details_decline", "Decline")}
               </button>
               <button
                 type="button"
                 onClick={() => setIsAcceptModalOpen(true)}
                 className="rounded-full bg-[#FCDF9C] px-5 py-2 text-xs font-semibold text-zinc-900 hover:bg-amber-400 transition-colors shadow-2xs cursor-pointer"
               >
-                Accept request
+                {t("host_booking_details_accept", "Accept request")}
               </button>
             </div>
           </div>
@@ -178,18 +182,18 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
 
       {isExpired && (
         <div className="mt-6 rounded-2xl border border-slate-300 bg-slate-50 p-5 text-slate-800 shadow-2xs">
-          <h2 className="text-base font-semibold">Response deadline expired</h2>
+          <h2 className="text-base font-semibold">{t("host_booking_details_expired_banner_title", "Response deadline expired")}</h2>
           <p className="mt-1 text-xs sm:text-sm text-slate-600 leading-relaxed">
-            This booking request was not confirmed within the 24-hour response window. It has expired and dates have been released back to your calendar.
+            {t("host_booking_details_expired_banner_desc", "This booking request was not confirmed within the 24-hour response window. It has expired and dates have been released back to your calendar.")}
           </p>
         </div>
       )}
 
       {details.status === "CONFIRMED" && (
         <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50/80 p-5 text-emerald-950 shadow-2xs">
-          <h2 className="text-base font-semibold">Reservation confirmed</h2>
+          <h2 className="text-base font-semibold">{t("host_booking_details_confirmed_banner_title", "Reservation confirmed")}</h2>
           <p className="mt-1 text-xs sm:text-sm text-emerald-900 leading-relaxed">
-            You confirmed this booking request. Calendar dates are booked. Payment is pending/deferred.
+            {t("host_booking_details_confirmed_banner_desc", "You confirmed this booking request. Calendar dates are booked. Payment is pending/deferred.")}
           </p>
         </div>
       )}
@@ -201,7 +205,7 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
           {/* Guest Profile Card */}
           <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-2xs">
             <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-500 mb-4">
-              Guest details
+              {t("host_booking_details_guest_details", "Guest details")}
             </h3>
             <div className="flex items-center gap-4">
               <div className="relative size-16 shrink-0 rounded-full overflow-hidden bg-zinc-200 border border-zinc-200">
@@ -226,7 +230,7 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
                   <p className="text-xs text-zinc-500 truncate">{details.guest.email}</p>
                 )}
                 <p className="text-xs text-zinc-500 mt-0.5">
-                  Member since {new Date(details.guest.createdAt).getFullYear()}
+                  {t("host_booking_details_member_since", "Member since {year}").replace("{year}", String(new Date(details.guest.createdAt).getFullYear()))}
                 </p>
               </div>
 
@@ -235,7 +239,7 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
                   href={`/host/messages?id=${details.conversationId}`}
                   className="rounded-full border border-zinc-300 bg-white px-4 py-2 text-xs font-semibold text-zinc-800 hover:bg-zinc-50 transition-colors whitespace-nowrap"
                 >
-                  Message guest
+                  {t("host_booking_details_message_guest", "Message guest")}
                 </Link>
               )}
             </div>
@@ -243,7 +247,7 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
             {/* Guest Initial Message */}
             {details.guestMessage && (
               <div className="mt-5 rounded-xl border border-zinc-200 bg-zinc-50 p-4">
-                <p className="text-xs font-semibold text-zinc-600 mb-1">Message from guest:</p>
+                <p className="text-xs font-semibold text-zinc-600 mb-1">{t("host_booking_details_guest_msg_heading", "Message from guest:")}</p>
                 <p className="text-sm text-zinc-800 italic leading-relaxed">
                   &ldquo;{details.guestMessage}&rdquo;
                 </p>
@@ -259,25 +263,25 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
           {/* Trip Dates & Guests Info */}
           <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-2xs">
             <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-500 mb-4">
-              Stay details
+              {t("host_booking_details_stay_details", "Stay details")}
             </h3>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <div className="rounded-xl border border-zinc-100 bg-zinc-50 p-3.5">
-                <span className="text-xs text-zinc-500 font-medium">Check-in</span>
+                <span className="text-xs text-zinc-500 font-medium">{t("host_booking_details_checkin", "Check-in")}</span>
                 <p className="mt-1 text-sm font-bold text-zinc-900">
                   {formatBookingDate(details.startDate, { weekday: true })}
                 </p>
               </div>
               <div className="rounded-xl border border-zinc-100 bg-zinc-50 p-3.5">
-                <span className="text-xs text-zinc-500 font-medium">Check-out</span>
+                <span className="text-xs text-zinc-500 font-medium">{t("host_booking_details_checkout", "Check-out")}</span>
                 <p className="mt-1 text-sm font-bold text-zinc-900">
                   {formatBookingDate(details.endDate, { weekday: true })}
                 </p>
               </div>
               <div className="rounded-xl border border-zinc-100 bg-zinc-50 p-3.5">
-                <span className="text-xs text-zinc-500 font-medium">Guests</span>
+                <span className="text-xs text-zinc-500 font-medium">{t("host_booking_details_guests", "Guests")}</span>
                 <p className="mt-1 text-sm font-bold text-zinc-900">
-                  {details.guests} {details.guests === 1 ? "guest" : "guests"} · {nights} nights
+                  {details.guests} {details.guests === 1 ? t("booking_details_guest_singular", "guest") : t("booking_details_guests_plural", "guests")} · {nights} {nights === 1 ? t("host_booking_details_unit_night", "night") : t("host_booking_details_unit_nights", "nights")}
                 </p>
               </div>
             </div>
@@ -288,15 +292,15 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
         <div>
           <aside className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm lg:sticky lg:top-28">
             <h3 className="text-base font-bold text-zinc-900 border-b border-zinc-100 pb-3">
-              Payout & pricing breakdown
+              {t("host_booking_details_payout_pricing", "Payout & pricing breakdown")}
             </h3>
 
             <dl className="mt-4 space-y-3 text-sm text-zinc-700">
               <div className="flex justify-between gap-4">
                 <dt className="text-zinc-600">
                   {hasVaryingRates
-                    ? `Accommodation · ${nights} nights (varying rates)`
-                    : `${formatMoney(nightlyRates[0]?.price ?? details.nightlyPrice ?? 0, details.currency)} × ${nights} ${nights === 1 ? "night" : "nights"}`}
+                    ? `${t("host_booking_details_accommodation", "Accommodation")} · ${nights} ${nights === 1 ? t("host_booking_details_unit_night", "night") : t("host_booking_details_unit_nights", "nights")} (varying rates)`
+                    : `${formatMoney(nightlyRates[0]?.price ?? details.nightlyPrice ?? 0, details.currency)} × ${nights} ${nights === 1 ? t("host_booking_details_unit_night", "night") : t("host_booking_details_unit_nights", "nights")}`}
                 </dt>
                 <dd className="font-medium text-zinc-900">
                   {formatMoney(nightlySubtotal, details.currency)}
@@ -305,46 +309,54 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
 
               {discountAmount > 0 && (
                 <div className="flex justify-between gap-4">
-                  <dt className="text-emerald-700">Discount</dt>
+                  <dt className="text-emerald-700">{t("host_booking_details_discount", "Discount")}</dt>
                   <dd className="font-medium text-emerald-700">−{formatMoney(discountAmount, details.currency)}</dd>
                 </div>
               )}
 
               {extraGuestFee > 0 && (
                 <div className="flex justify-between gap-4">
-                  <dt className="text-zinc-600">Extra guest fee</dt>
+                  <dt className="text-zinc-600">{t("host_booking_details_extra_guest_fee", "Extra guest fee")}</dt>
                   <dd className="font-medium text-zinc-900">
                     {formatMoney(extraGuestFee, details.currency)}
                   </dd>
                 </div>
               )}
 
-              {petFee > 0 && <div className="flex justify-between gap-4"><dt className="text-zinc-600">Pet fee</dt><dd className="font-medium text-zinc-900">{formatMoney(petFee, details.currency)}</dd></div>}
+              {petFee > 0 && (
+                <div className="flex justify-between gap-4">
+                  <dt className="text-zinc-600">{t("host_booking_details_pet_fee", "Pet fee")}</dt>
+                  <dd className="font-medium text-zinc-900">{formatMoney(petFee, details.currency)}</dd>
+                </div>
+              )}
 
               {taxItems.map((tax: { taxName?: string; taxAmount?: number; exemptionApplied?: boolean; exemptionReason?: string }, index: number) => (
                 <div key={`${tax.taxName || "Tax"}-${index}`} className="flex justify-between gap-4">
                   <dt className="text-zinc-600">
-                    {tax.taxName || "Tax"}
+                    {tax.taxName || t("host_booking_details_taxes", "Tax")}
                     {tax.exemptionApplied && tax.exemptionReason ? ` · ${tax.exemptionReason}` : ""}
                   </dt>
                   <dd className="font-medium text-zinc-900">{formatMoney(tax.taxAmount ?? 0, details.currency)}</dd>
                 </div>
               ))}
               {taxItems.length === 0 && taxTotal > 0 && (
-                <div className="flex justify-between gap-4"><dt className="text-zinc-600">Taxes</dt><dd className="font-medium text-zinc-900">{formatMoney(taxTotal, details.currency)}</dd></div>
+                <div className="flex justify-between gap-4">
+                  <dt className="text-zinc-600">{t("host_booking_details_taxes", "Taxes")}</dt>
+                  <dd className="font-medium text-zinc-900">{formatMoney(taxTotal, details.currency)}</dd>
+                </div>
               )}
 
               <div className="flex justify-between gap-4 border-t border-zinc-200 pt-4 text-base font-bold text-zinc-900">
-                <dt>Total ({displayCurrency})</dt>
+                <dt>{t("host_booking_details_total", "Total ({currency})").replace("{currency}", displayCurrency)}</dt>
                 <dd className="text-lg text-emerald-800 font-extrabold">
                   {formatMoney(totalPrice, details.currency)}
                 </dd>
               </div>
 
               <div className="flex items-center justify-between gap-4 border-t border-zinc-100 pt-3 text-xs text-zinc-600">
-                <dt className="font-medium">Payment status</dt>
+                <dt className="font-medium">{t("host_booking_details_payment_status", "Payment status")}</dt>
                 <dd className="font-semibold text-amber-900 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full">
-                  Pending / Deferred
+                  {t("host_booking_details_deferred", "Pending / Deferred")}
                 </dd>
               </div>
             </dl>
@@ -358,23 +370,23 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
                     onClick={() => setIsAcceptModalOpen(true)}
                     className="flex min-h-12 w-full items-center justify-center rounded-xl bg-[#FCDF9C] hover:bg-amber-400 text-zinc-900 font-bold text-sm transition-colors shadow-2xs cursor-pointer"
                   >
-                    Accept request
+                    {t("host_booking_details_accept", "Accept request")}
                   </button>
                   <button
                     type="button"
                     onClick={() => setIsDeclineModalOpen(true)}
                     className="flex min-h-11 w-full items-center justify-center rounded-xl border border-zinc-300 hover:bg-zinc-100 text-zinc-700 font-semibold text-sm transition-colors cursor-pointer"
                   >
-                    Decline request
+                    {t("host_booking_details_confirm_decline", "Decline request")}
                   </button>
                 </>
               ) : isExpired ? (
                 <div className="rounded-xl bg-slate-50 border border-slate-200 p-3 text-center text-xs font-medium text-slate-600">
-                  This request has expired and can no longer be accepted.
+                  {t("host_booking_details_expired_banner_title", "This request has expired and can no longer be accepted.")}
                 </div>
               ) : details.status === "CONFIRMED" ? (
                 <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-3 text-center text-xs font-semibold text-emerald-800">
-                  ✓ Booking confirmed
+                  ✓ {t("host_booking_details_status_confirmed", "Booking confirmed")}
                 </div>
               ) : null}
 
@@ -383,7 +395,7 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
                   href={`/host/messages?id=${details.conversationId}`}
                   className="flex min-h-11 w-full items-center justify-center rounded-xl border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-800 font-medium text-xs transition-colors"
                 >
-                  Open conversation with guest
+                  {t("host_booking_details_open_conversation", "Open conversation with guest")}
                 </Link>
               )}
             </div>
@@ -395,11 +407,12 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
       {isAcceptModalOpen && (
         <ModalOverlay>
           <div className="w-full max-w-md rounded-3xl bg-white p-6 sm:p-8 shadow-2xl text-[#1F1F1F]">
-            <h3 className="text-xl font-bold text-zinc-900">Accept booking request?</h3>
+            <h3 className="text-xl font-bold text-zinc-900">{t("host_booking_details_accept_modal_title", "Accept booking request?")}</h3>
             <p className="mt-2 text-sm text-zinc-600 leading-relaxed">
-              Confirming this request will permanently book your property for {details.guest.name || "the guest"} from{" "}
-              <span className="font-semibold text-zinc-800">{formatBookingDate(details.startDate, { weekday: true })}</span> to{" "}
-              <span className="font-semibold text-zinc-800">{formatBookingDate(details.endDate, { weekday: true })}</span>.
+              {t("host_booking_details_accept_modal_desc", "Confirming this request will permanently book your property for {name} from {start} to {end}.")
+                .replace("{name}", details.guest.name || "the guest")
+                .replace("{start}", formatBookingDate(details.startDate, { weekday: true }))
+                .replace("{end}", formatBookingDate(details.endDate, { weekday: true }))}
             </p>
 
             {actionError && (
@@ -415,7 +428,7 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
                 onClick={() => setIsAcceptModalOpen(false)}
                 className="rounded-full border border-zinc-300 px-5 py-2.5 text-sm font-semibold text-zinc-700 hover:bg-zinc-100 transition-colors disabled:opacity-50"
               >
-                Cancel
+                {t("host_cancel", "Cancel")}
               </button>
               <button
                 type="button"
@@ -423,7 +436,7 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
                 onClick={handleAccept}
                 className="rounded-full bg-[#FCDF9C] hover:bg-amber-400 px-6 py-2.5 text-sm font-bold text-zinc-900 transition-colors shadow-2xs disabled:opacity-50"
               >
-                {isSubmitting ? "Confirming..." : "Confirm & Accept"}
+                {isSubmitting ? t("host_booking_details_confirming", "Confirming...") : t("host_booking_details_confirm_accept", "Confirm & Accept")}
               </button>
             </div>
           </div>
@@ -434,21 +447,21 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
       {isDeclineModalOpen && (
         <ModalOverlay>
           <div className="w-full max-w-md rounded-3xl bg-white p-6 sm:p-8 shadow-2xl text-[#1F1F1F]">
-            <h3 className="text-xl font-bold text-zinc-900">Decline booking request?</h3>
+            <h3 className="text-xl font-bold text-zinc-900">{t("host_booking_details_decline_modal_title", "Decline booking request?")}</h3>
             <p className="mt-2 text-sm text-zinc-600 leading-relaxed">
-              Declining will immediately release the held calendar dates back to other guests.
+              {t("host_booking_details_decline_modal_desc", "Declining will immediately release the held calendar dates back to other guests.")}
             </p>
 
             <div className="mt-4">
               <label htmlFor="decline-reason" className="block text-xs font-semibold text-zinc-700 mb-1">
-                Reason for declining (optional note to guest):
+                {t("host_booking_details_decline_reason_label", "Reason for declining (optional note to guest):")}
               </label>
               <textarea
                 id="decline-reason"
                 rows={3}
                 value={declineReason}
                 onChange={(e) => setDeclineReason(e.target.value)}
-                placeholder="e.g. Property is undergoing maintenance on these dates."
+                placeholder={t("host_booking_details_decline_reason_ph", "e.g. Property is undergoing maintenance on these dates.")}
                 className="w-full rounded-xl border border-zinc-300 p-3 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none"
               />
             </div>
@@ -466,7 +479,7 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
                 onClick={() => setIsDeclineModalOpen(false)}
                 className="rounded-full border border-zinc-300 px-5 py-2.5 text-sm font-semibold text-zinc-700 hover:bg-zinc-100 transition-colors disabled:opacity-50"
               >
-                Back
+                {t("host_back", "Back")}
               </button>
               <button
                 type="button"
@@ -474,7 +487,7 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
                 onClick={handleDecline}
                 className="rounded-full bg-rose-600 hover:bg-rose-700 px-6 py-2.5 text-sm font-bold text-white transition-colors shadow-2xs disabled:opacity-50"
               >
-                {isSubmitting ? "Declining..." : "Decline request"}
+                {isSubmitting ? t("host_booking_details_declining", "Declining...") : t("host_booking_details_confirm_decline", "Decline request")}
               </button>
             </div>
           </div>

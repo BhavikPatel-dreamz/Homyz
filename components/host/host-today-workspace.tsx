@@ -22,6 +22,7 @@ import {
   type ReservationPeriod,
 } from "@/lib/booking/host-reservation-events";
 import { useHostDashboardState } from "./host-dashboard-state";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 export function HostTodayWorkspace({
   listings,
@@ -32,6 +33,7 @@ export function HostTodayWorkspace({
   today: string;
   initialCurrentTimeMinutes: number;
 }) {
+  const { t } = useLanguage();
   const [tab, setTab] = useState<ReservationPeriod>("today");
   const [filtersOpen, setFiltersOpen] = useState(false);
   const { selectedPropertyId, setSelectedPropertyId } = useHostDashboardState();
@@ -173,13 +175,13 @@ export function HostTodayWorkspace({
               aria-label="Reservation period"
             >
               {[
-                { id: "today", label: "Today" },
-                { id: "upcoming", label: "Upcoming" },
-                { id: "staying", label: "Current stays" },
-                { id: "completed", label: "Completed" },
-                { id: "pending", label: "Pending" },
-                { id: "cancelled", label: "Cancelled" },
-                { id: "all", label: "All" },
+                { id: "today", label: t("host_today_tab_today", "Today") },
+                { id: "upcoming", label: t("host_today_tab_upcoming", "Upcoming") },
+                { id: "staying", label: t("host_today_tab_staying", "Current stays") },
+                { id: "completed", label: t("host_today_tab_completed", "Completed") },
+                { id: "pending", label: t("host_today_tab_pending", "Pending") },
+                { id: "cancelled", label: t("host_today_tab_cancelled", "Cancelled") },
+                { id: "all", label: t("host_today_tab_all", "All") },
               ].map((filterTab) => (
                 <button
                   key={filterTab.id}
@@ -232,19 +234,14 @@ export function HostTodayWorkspace({
 
           {/* Section Headline */}
           <h1 className="mb-6 break-words font-sans text-[24px] leading-8 font-medium text-[#1F1F1F] tracking-normal sm:mb-8 sm:text-[32px] sm:leading-10 xl:text-[36px] xl:leading-[44px]">
-            You have {displayedEvents.length}{" "}
-            {tab === "upcoming"
-              ? "upcoming "
-              : tab === "staying"
-              ? "current "
-              : tab === "completed"
-              ? "completed "
-              : tab === "pending"
-              ? "pending "
-              : tab === "cancelled"
-              ? "cancelled "
-              : ""}
-            {displayedEvents.length === 1 ? "reservation" : "reservations"}
+            {t("host_today_headline", `You have ${displayedEvents.length} ${
+              tab === "upcoming" ? "upcoming " : tab === "staying" ? "current " : tab === "completed" ? "completed " : tab === "pending" ? "pending " : tab === "cancelled" ? "cancelled " : ""
+            }${displayedEvents.length === 1 ? "reservation" : "reservations"}`)
+              .replace("{count}", String(displayedEvents.length))
+              .replace("{period}", tab === "upcoming" ? t("host_today_period_upcoming", "upcoming") : tab === "staying" ? t("host_today_period_staying", "current") : tab === "completed" ? t("host_today_period_completed", "completed") : tab === "pending" ? t("host_today_period_pending", "pending") : tab === "cancelled" ? t("host_today_period_cancelled", "cancelled") : "")
+              .replace("{unit}", displayedEvents.length === 1 ? t("host_today_unit_single", "reservation") : t("host_today_unit_plural", "reservations"))
+              .replace(/\s+/g, " ")
+              .trim()}
           </h1>
 
           {refreshError && (
@@ -253,14 +250,14 @@ export function HostTodayWorkspace({
               role="status"
             >
               <span>
-                Reservations could not be refreshed. Showing the last available data.
+                {t("host_today_refresh_error", "Reservations could not be refreshed. Showing the last available data.")}
               </span>
               <button
                 type="button"
                 onClick={() => void refreshReservations()}
                 className="font-semibold underline underline-offset-4 cursor-pointer"
               >
-                Retry
+                {t("host_today_retry", "Retry")}
               </button>
             </div>
           )}
@@ -276,16 +273,16 @@ export function HostTodayWorkspace({
                   isActive={priorityReservationId === event.booking.id}
                   priorityLabel={
                     event.eventType === "staying"
-                      ? "Now"
+                      ? t("host_today_priority_now", "Now")
                       : event.eventType === "cancelled"
-                      ? "Cancelled"
+                      ? t("host_today_priority_cancelled", "Cancelled")
                       : event.eventType === "pending"
-                      ? "Pending"
+                      ? t("host_today_priority_pending", "Pending")
                       : event.eventType === "completed"
-                      ? "Past"
+                      ? t("host_today_priority_past", "Past")
                       : tab === "today"
-                        ? "Next up"
-                        : "Upcoming"
+                        ? t("host_today_priority_next_up", "Next up")
+                        : t("host_today_priority_upcoming", "Upcoming")
                   }
                   onSelect={() => setSelected(event.booking)}
                 />
@@ -298,37 +295,37 @@ export function HostTodayWorkspace({
               </span>
               <p className="text-lg font-semibold text-[#1F1F1F]">
                 {appliedPropertyId
-                  ? "No reservations found for this property"
+                  ? t("host_today_empty_property", "No reservations found for this property")
                   : tab === "today"
-                    ? "No reservations today"
+                    ? t("host_today_empty_today", "No reservations today")
                     : tab === "upcoming"
-                    ? "No upcoming reservations"
+                    ? t("host_today_empty_upcoming", "No upcoming reservations")
                     : tab === "staying"
-                    ? "No current stays"
+                    ? t("host_today_empty_staying", "No current stays")
                     : tab === "completed"
-                    ? "No completed stays yet"
+                    ? t("host_today_empty_completed", "No completed stays yet")
                     : tab === "pending"
-                    ? "No pending requests"
+                    ? t("host_today_empty_pending", "No pending requests")
                     : tab === "cancelled"
-                    ? "No cancelled reservations"
-                    : "No reservations found"}
+                    ? t("host_today_empty_cancelled", "No cancelled reservations")
+                    : t("host_today_empty_default", "No reservations found")}
               </p>
               <p className="mt-2 text-sm text-[#727272]">
                 {appliedPropertyId
-                  ? "Try clearing your listing filter to see all reservations."
+                  ? t("host_today_empty_property_desc", "Try clearing your listing filter to see all reservations.")
                   : tab === "today"
-                    ? "You don't have any check-ins, check-outs, or active stays scheduled for today."
+                    ? t("host_today_empty_today_desc", "You don't have any check-ins, check-outs, or active stays scheduled for today.")
                     : tab === "upcoming"
-                    ? "Your next reservations will appear here once guests book your space."
+                    ? t("host_today_empty_upcoming_desc", "Your next reservations will appear here once guests book your space.")
                     : tab === "staying"
-                    ? "Guests who are currently checking in or staying will appear here."
+                    ? t("host_today_empty_staying_desc", "Guests who are currently checking in or staying will appear here.")
                     : tab === "completed"
-                    ? "Past completed stays will be listed here after checkout."
+                    ? t("host_today_empty_completed_desc", "Past completed stays will be listed here after checkout.")
                     : tab === "pending"
-                    ? "Reservation requests awaiting your review will appear here."
+                    ? t("host_today_empty_pending_desc", "Reservation requests awaiting your review will appear here.")
                     : tab === "cancelled"
-                    ? "Cancelled reservations and refund records will appear here."
-                    : "Your reservations will appear here once guests book your space."}
+                    ? t("host_today_empty_cancelled_desc", "Cancelled reservations and refund records will appear here.")
+                    : t("host_today_empty_default_desc", "Your reservations will appear here once guests book your space.")}
               </p>
               {appliedPropertyId ? (
                 <button
@@ -336,14 +333,14 @@ export function HostTodayWorkspace({
                   onClick={() => setSelectedPropertyId(null)}
                   className="mt-6 rounded-full bg-[#1F1F1F] px-6 py-2.5 text-xs font-semibold text-white hover:bg-black transition-colors cursor-pointer"
                 >
-                  Clear filters
+                  {t("host_today_clear_filters", "Clear filters")}
                 </button>
               ) : (
                 <Link
                   href="/host/calendar"
                   className="mt-6 rounded-full bg-[#1F1F1F] px-6 py-2.5 text-xs font-semibold text-white hover:bg-black transition-colors"
                 >
-                  View calendar
+                  {t("host_today_view_calendar", "View calendar")}
                 </Link>
               )}
             </div>
@@ -352,7 +349,7 @@ export function HostTodayWorkspace({
           {/* Filter Listings Modal */}
           {filtersOpen && (
             <WorkspaceDialog
-              title="Filter listings"
+              title={t("host_today_filter_title", "Filter listings")}
               onClose={() => setFiltersOpen(false)}
               maxWidth="max-w-[520px]"
               variant="listing-filter"
@@ -375,7 +372,7 @@ export function HostTodayWorkspace({
                     </svg>
                   </span>
                   <span className="min-w-0 flex-1 text-sm leading-5 font-normal text-[#1F1F1F] sm:text-base sm:leading-6">
-                    All properties
+                    {t("host_today_all_properties", "All properties")}
                   </span>
                   <input
                     type="radio"
@@ -388,7 +385,7 @@ export function HostTodayWorkspace({
                 </label>
                 {listings.length === 0 ? (
                   <p className="py-4 text-center text-sm text-[#727272]">
-                    No listings available.
+                    {t("host_today_no_listings", "No listings available.")}
                   </p>
                 ) : (
                   listings.map((l) => (
@@ -426,7 +423,7 @@ export function HostTodayWorkspace({
                   }}
                   className="min-h-11 text-sm sm:text-base font-normal text-[#727272] underline underline-offset-4 hover:text-[#1F1F1F]"
                 >
-                  Clear filters
+                  {t("host_today_clear_filters", "Clear filters")}
                 </button>
                 <button
                   type="button"
@@ -440,7 +437,7 @@ export function HostTodayWorkspace({
                   }}
                   className="min-h-12 rounded-full border border-[#727272] bg-[#FCDF9C] px-7 py-3 text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-[#F7D37D] sm:text-base sm:min-h-11 sm:border-transparent sm:px-7 sm:py-2.5"
                 >
-                  Apply
+                  {t("host_today_apply", "Apply")}
                 </button>
               </div>
             </WorkspaceDialog>
