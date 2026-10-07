@@ -34,7 +34,7 @@ function runTests() {
   // 2. Reference English Dictionary
   logSection("2. English Reference Dictionary Integrity");
   const enKeys = Object.keys(MESSAGES.en) as TranslationKey[];
-  assert(enKeys.length === 3986, `English dictionary must have all 3,986 keys (found ${enKeys.length})`);
+  assert(enKeys.length === 4104, `English dictionary must have all 4,104 keys (found ${enKeys.length})`);
 
   // 3. Symmetrical 1:1 Key Parity (Both Directions)
   logSection("3. Symmetrical 1:1 Key Parity Across All 6 Locales");
@@ -787,6 +787,56 @@ function runTests() {
   assert(MESSAGES.de.host_app_warn_missing_fields_title === "Antrag kann nicht eingereicht werden — Pflichtfelder fehlen", "DE host_app_warn_missing_fields_title");
   assert(MESSAGES.hi.host_app_warn_missing_fields_title === "आवेदन प्रस्तुत नहीं किया जा सकता — अनिवार्य फ़ील्ड अनुपलब्ध हैं", "HI host_app_warn_missing_fields_title");
   assert(MESSAGES.ar.host_app_warn_missing_fields_title === "لا يمكن تقديم الطلب — حقول مطلوبة مفقودة", "AR host_app_warn_missing_fields_title");
+
+  console.log("\n--- 7v. Host Performance & KPI Dashboard (/host/dashboard) ---");
+  assert(MESSAGES.en.host_dash_header_title === "Performance overview", "EN host_dash_header_title");
+  assert(MESSAGES.es.host_dash_header_title === "Resumen de rendimiento", "ES host_dash_header_title");
+  assert(MESSAGES.fr.host_dash_header_title === "Aperçu des performances", "FR host_dash_header_title");
+  assert(MESSAGES.de.host_dash_header_title === "Leistungsübersicht", "DE host_dash_header_title");
+  assert(MESSAGES.hi.host_dash_header_title === "प्रदर्शन अवलोकन", "HI host_dash_header_title");
+  assert(MESSAGES.ar.host_dash_header_title === "نظرة عامة على الأداء", "AR host_dash_header_title");
+
+  assert(MESSAGES.en.host_dash_kpi_monthly_earnings === "Monthly earnings", "EN host_dash_kpi_monthly_earnings");
+  assert(MESSAGES.es.host_dash_kpi_monthly_earnings === "Ganancias mensuales", "ES host_dash_kpi_monthly_earnings");
+  assert(MESSAGES.fr.host_dash_kpi_monthly_earnings === "Revenus mensuels", "FR host_dash_kpi_monthly_earnings");
+  assert(MESSAGES.de.host_dash_kpi_monthly_earnings === "Monatliche Einnahmen", "DE host_dash_kpi_monthly_earnings");
+  assert(MESSAGES.hi.host_dash_kpi_monthly_earnings === "मासिक कमाई", "HI host_dash_kpi_monthly_earnings");
+  assert(MESSAGES.ar.host_dash_kpi_monthly_earnings === "الأرباح الشهرية", "AR host_dash_kpi_monthly_earnings");
+
+  assert(MESSAGES.en.host_dash_kpi_occupancy === "Occupancy", "EN host_dash_kpi_occupancy");
+  assert(MESSAGES.es.host_dash_kpi_occupancy === "Ocupación", "ES host_dash_kpi_occupancy");
+  assert(MESSAGES.fr.host_dash_kpi_occupancy === "Taux d’occupation", "FR host_dash_kpi_occupancy");
+  assert(MESSAGES.de.host_dash_kpi_occupancy === "Belegungsrate", "DE host_dash_kpi_occupancy");
+  assert(MESSAGES.hi.host_dash_kpi_occupancy === "ऑक्यूपेंसी (अधिभोग)", "HI host_dash_kpi_occupancy");
+  assert(MESSAGES.ar.host_dash_kpi_occupancy === "نسبة الإشغال", "AR host_dash_kpi_occupancy");
+
+  assert(MESSAGES.en.host_dash_detailed_earnings === "Detailed earnings", "EN host_dash_detailed_earnings");
+  assert(MESSAGES.es.host_dash_detailed_earnings === "Ganancias detalladas", "ES host_dash_detailed_earnings");
+  assert(MESSAGES.fr.host_dash_detailed_earnings === "Détail des revenus", "FR host_dash_detailed_earnings");
+  assert(MESSAGES.de.host_dash_detailed_earnings === "Detaillierte Einnahmen", "DE host_dash_detailed_earnings");
+  assert(MESSAGES.hi.host_dash_detailed_earnings === "विस्तृत कमाई", "HI host_dash_detailed_earnings");
+  assert(MESSAGES.ar.host_dash_detailed_earnings === "تفاصيل الأرباح", "AR host_dash_detailed_earnings");
+
+  assert(MESSAGES.en.host_dash_insights_title === "Actionable insights", "EN host_dash_insights_title");
+  assert(MESSAGES.es.host_dash_insights_title === "Información práctica", "ES host_dash_insights_title");
+  assert(MESSAGES.fr.host_dash_insights_title === "Conseils pratiques", "FR host_dash_insights_title");
+  assert(MESSAGES.de.host_dash_insights_title === "Handlungsrelevante Einblicke", "DE host_dash_insights_title");
+  assert(MESSAGES.hi.host_dash_insights_title === "कार्रवाई योग्य अंतर्दृष्टि", "HI host_dash_insights_title");
+  assert(MESSAGES.ar.host_dash_insights_title === "رؤى قابلة للتنفيذ", "AR host_dash_insights_title");
+
+  assert(MESSAGES.en.host_dash_upcoming_res_title === "Upcoming reservation", "EN host_dash_upcoming_res_title");
+  assert(MESSAGES.es.host_dash_upcoming_res_title === "Próxima reserva", "ES host_dash_upcoming_res_title");
+  assert(MESSAGES.fr.host_dash_upcoming_res_title === "Prochaine réservation", "FR host_dash_upcoming_res_title");
+  assert(MESSAGES.de.host_dash_upcoming_res_title === "Anstehende Reservierung", "DE host_dash_upcoming_res_title");
+  assert(MESSAGES.hi.host_dash_upcoming_res_title === "आगामी आरक्षण", "HI host_dash_upcoming_res_title");
+  assert(MESSAGES.ar.host_dash_upcoming_res_title === "الحجز القادم", "AR host_dash_upcoming_res_title");
+
+  assert(MESSAGES.en.host_dash_status_title === "Host & listing status", "EN host_dash_status_title");
+  assert(MESSAGES.es.host_dash_status_title === "Estado del anfitrión y del anuncio", "ES host_dash_status_title");
+  assert(MESSAGES.fr.host_dash_status_title === "Statut de l’hôte et de l’annonce", "FR host_dash_status_title");
+  assert(MESSAGES.de.host_dash_status_title === "Gastgeber- & Unterkunftsstatus", "DE host_dash_status_title");
+  assert(MESSAGES.hi.host_dash_status_title === "मेजबान और लिस्टिंग स्थिति", "HI host_dash_status_title");
+  assert(MESSAGES.ar.host_dash_status_title === "حالة المضيف والإعلان", "AR host_dash_status_title");
 
   console.log(`\n🎉 All ${passedCount}/${totalCount} tests passed cleanly!`);
 }
