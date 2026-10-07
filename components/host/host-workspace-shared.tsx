@@ -8,6 +8,7 @@ import { ReceiptModal } from "@/components/dashboard/trip-modals";
 import type { ListingDTO } from "@/services/mappers";
 import { resolvePropertyCurrency } from "@/lib/currency";
 import { useCurrency } from "@/lib/currency-context";
+import { useLanguage } from "@/lib/i18n/language-context";
 import {
   differenceInBookingNights,
   formatBookingDate,
@@ -253,6 +254,7 @@ export function ReservationDetails({
   onClose: () => void;
   onMoney?: () => void;
 }) {
+  const { t } = useLanguage();
   const { formatPrice } = useCurrency();
   const [showInvoice, setShowInvoice] = useState(false);
   const [codeCopied, setCodeCopied] = useState(false);
@@ -279,10 +281,15 @@ export function ReservationDetails({
     booking.isNonRefundable || pb?.rateType === "NON_REFUNDABLE";
   const discountLabel =
     pricing.automaticDiscount?.label ??
-    (hasNonRefundableDiscount ? "Non-refundable discount" : "Discount");
+    (hasNonRefundableDiscount
+      ? t("host_cal_res_discount_non_ref", "Non-refundable discount")
+      : t("host_cal_res_discount_auto", "Discount"));
   const cancellationPolicyLabel = hasNonRefundableDiscount
-    ? "Non-refundable"
-    : pricing.cancellationPolicySnapshot || booking.cancellationPolicy || listing.cancellationPolicy || "Flexible";
+    ? t("booking_details_non_refundable", "Non-refundable")
+    : pricing.cancellationPolicySnapshot ||
+      booking.cancellationPolicy ||
+      listing.cancellationPolicy ||
+      t("host_cancellation_policy_flexible", "Flexible");
   const taxItemsMatchTotal =
     pricing.taxes.reduce((sum, tax) => sum + tax.amountMinorUnits, 0) ===
     pricing.taxTotal;
@@ -327,11 +334,11 @@ export function ReservationDetails({
       Math.abs(hostServiceFeeAmount - pricing.otherCharges) <= 1);
   const otherChargeLabel = isPlatformServiceFee
     ? typeof pb?.hostServiceFeePercentage === "number"
-      ? `Platform service fee (${pb.hostServiceFeePercentage}%)`
-      : "Platform service fee"
+      ? `${t("host_cal_res_platform_fee", "Platform service fee")} (${pb.hostServiceFeePercentage}%)`
+      : t("host_cal_res_platform_fee", "Platform service fee")
     : pricing.otherCharges > 0
-      ? "Service fee"
-      : "Pricing adjustment";
+      ? t("host_cal_res_service_fee", "Service fee")
+      : t("host_cal_res_price_adjustment", "Pricing adjustment");
 
   const confirmationCode = booking.id.slice(-8).toUpperCase();
   const handleCopyCode = () => {
@@ -350,7 +357,7 @@ export function ReservationDetails({
     <>
       {!showInvoice && (
         <WorkspaceDialog
-          title="Reservation details"
+          title={t("host_cal_res_modal_title", "Reservation details")}
           onClose={onClose}
           maxWidth="max-w-[580px]"
           variant="reservation-details"
@@ -362,7 +369,7 @@ export function ReservationDetails({
               className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 sm:p-5 dark:border-zinc-700 dark:bg-zinc-800/80"
             >
               <h3 id="reservation-summary-heading" className="sr-only">
-                Reservation summary
+                {t("host_cal_res_sr_summary", "Reservation summary")}
               </h3>
               <div className="mb-4 flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
@@ -386,21 +393,21 @@ export function ReservationDetails({
                 <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50/80 p-3.5 text-xs text-rose-950 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-200">
                   <p className="font-semibold text-rose-900 dark:text-rose-100 flex items-center gap-1.5">
                     <span className="size-2 rounded-full bg-rose-600 inline-block" />
-                    Reservation Cancelled
+                    {t("host_cal_res_cancelled_banner", "Reservation Cancelled")}
                   </p>
                   <div className="mt-2 space-y-1 text-[11px] text-rose-900/90 dark:text-rose-200/90">
                     <p>
-                      Cancelled by:{" "}
+                      {t("host_cal_res_cancelled_by", "Cancelled by:")}{" "}
                       <span className="font-medium capitalize">
-                        {String(pb?.cancellation?.cancelledBy || "Guest").toLowerCase()}
+                        {String(pb?.cancellation?.cancelledBy || t("host_cal_res_guest_default", "Guest")).toLowerCase()}
                       </span>
                     </p>
                     {pb?.cancellation?.reason && (
-                      <p>Reason: {String(pb.cancellation.reason)}</p>
+                      <p>{t("host_cal_res_reason", "Reason:")} {String(pb.cancellation.reason)}</p>
                     )}
                     {typeof pb?.cancellation?.guestRefundAmount === "number" && (
                       <p>
-                        Guest refund: {formatPrice(pb.cancellation.guestRefundAmount, sourceCurrency, 2)}
+                        {t("host_cal_res_guest_refund", "Guest refund:")} {formatPrice(pb.cancellation.guestRefundAmount, sourceCurrency, 2)}
                       </p>
                     )}
                   </div>
@@ -415,7 +422,7 @@ export function ReservationDetails({
                 />
                 <div className="min-w-0 flex-1">
                   <p className="text-[11px] font-semibold uppercase tracking-wider text-[#727272]">
-                    Property
+                    {t("host_cal_res_property_label", "Property")}
                   </p>
                   <Link
                     href={`/host/listings/${listing.id}`}
@@ -435,7 +442,7 @@ export function ReservationDetails({
               <div className="mt-4 grid grid-cols-2 gap-3 border-t border-zinc-200/80 pt-3 text-xs dark:border-zinc-700/80">
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-wider text-[#727272]">
-                    Guest
+                    {t("host_cal_res_guest_label", "Guest")}
                   </p>
                   <p className="mt-0.5 font-semibold text-zinc-900 dark:text-zinc-100 truncate">
                     {booking.guestName}
@@ -443,14 +450,14 @@ export function ReservationDetails({
                 </div>
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-wider text-[#727272]">
-                    Dates
+                    {t("host_cal_res_dates_label", "Dates")}
                   </p>
                   <p className="mt-0.5 font-medium text-zinc-800 dark:text-zinc-200">
                     {shortDate(booking.startDate)} – {shortDate(booking.endDate)}
                   </p>
                   <p className="text-[11px] text-[#727272]">
-                    {nights} {nights === 1 ? "night" : "nights"} · {guestCount}{" "}
-                    {guestCount === 1 ? "guest" : "guests"}
+                    {nights} {nights === 1 ? t("host_dash_night_singular", "night") : t("host_dash_night_plural", "nights")} · {guestCount}{" "}
+                    {guestCount === 1 ? t("host_dash_guest_singular", "guest") : t("host_dash_guest_plural", "guests")}
                   </p>
                 </div>
               </div>
@@ -462,7 +469,7 @@ export function ReservationDetails({
                 id="guest-heading"
                 className="mb-3 text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100"
               >
-                Guest
+                {t("host_cal_res_guest_label", "Guest")}
               </h3>
               <div className="flex items-center gap-3 rounded-2xl border border-zinc-200 p-4 dark:border-zinc-700">
                 {booking.guestImage ? (
@@ -491,7 +498,7 @@ export function ReservationDetails({
                   )}
                   {booking.guestCreatedAt && (
                     <p className="mt-1 text-xs text-[#727272]">
-                      Member since{" "}
+                      {t("host_cal_res_member_since", "Member since")}{" "}
                       {new Date(booking.guestCreatedAt).getUTCFullYear()}
                     </p>
                   )}
@@ -501,7 +508,7 @@ export function ReservationDetails({
                     href={`/profile/${booking.guestId}`}
                     className="shrink-0 text-xs font-semibold text-[#1F1F1F] underline underline-offset-2 hover:text-black dark:text-zinc-100"
                   >
-                    View profile
+                    {t("host_cal_res_view_profile", "View profile")}
                   </Link>
                 )}
               </div>
@@ -521,14 +528,14 @@ export function ReservationDetails({
                   onClick={onMoney}
                   className="min-h-11 w-full rounded-full border border-zinc-900 px-4 py-3 text-xs font-medium text-[#1F1F1F] transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-800"
                 >
-                  Send or request money
+                  {t("host_cal_res_btn_money", "Send or request money")}
                 </button>
               )}
               <Link
                 href={messageHref}
                 className="flex min-h-11 w-full items-center justify-center rounded-full bg-[#1F1F1F] px-4 py-3 text-center text-xs font-semibold text-white transition-colors hover:bg-black dark:bg-zinc-100 dark:text-[#1F1F1F] dark:hover:bg-white"
               >
-                Message guest
+                {t("host_cal_res_btn_message", "Message guest")}
               </Link>
             </div>
 
@@ -538,31 +545,31 @@ export function ReservationDetails({
                 id="stay-details-heading"
                 className="mb-3 text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100"
               >
-                Stay details
+                {t("host_cal_res_heading_stay", "Stay details")}
               </h3>
               <dl className="divide-y divide-zinc-100 text-xs dark:divide-zinc-800">
                 <DetailRow
-                  label="Guests"
-                  value={`${guestCount} ${guestCount === 1 ? "guest" : "guests"}`}
+                  label={t("host_cal_res_label_guests", "Guests")}
+                  value={`${guestCount} ${guestCount === 1 ? t("host_dash_guest_singular", "guest") : t("host_dash_guest_plural", "guests")}`}
                 />
                 <DetailRow
-                  label="Check-in"
+                  label={t("host_cal_res_label_checkin", "Check-in")}
                   value={`${shortDate(booking.startDate)} · ${formatTime12h(listing.checkInStart, "3:00 PM")}`}
                 />
                 <DetailRow
-                  label="Check-out"
+                  label={t("host_cal_res_label_checkout", "Check-out")}
                   value={`${shortDate(booking.endDate)} · ${formatTime12h(listing.checkOutTime, "11:00 AM")}`}
                 />
                 <DetailRow
-                  label="Length of stay"
-                  value={`${nights} ${nights === 1 ? "night" : "nights"}`}
+                  label={t("host_cal_res_label_length", "Length of stay")}
+                  value={`${nights} ${nights === 1 ? t("host_dash_night_singular", "night") : t("host_dash_night_plural", "nights")}`}
                 />
                 <DetailRow
-                  label="Booking date"
+                  label={t("host_cal_res_label_booking_date", "Booking date")}
                   value={shortDate(booking.createdAt)}
                 />
                 <div className="flex items-center justify-between gap-4 py-2.5">
-                  <dt className="text-[#727272]">Confirmation code</dt>
+                  <dt className="text-[#727272]">{t("host_cal_res_label_code", "Confirmation code")}</dt>
                   <dd className="flex items-center gap-2">
                     <span className="font-mono font-medium text-zinc-900 dark:text-zinc-100">
                       {confirmationCode}
@@ -575,17 +582,17 @@ export function ReservationDetails({
                     >
                       {codeCopied ? (
                         <span className="text-emerald-600 dark:text-emerald-400 font-semibold">
-                          Copied!
+                          {t("host_cal_res_copied", "Copied!")}
                         </span>
                       ) : (
-                        <span>Copy</span>
+                        <span>{t("host_cal_res_copy_btn", "Copy")}</span>
                       )}
                     </button>
                   </dd>
                 </div>
                 {cancellationPolicyLabel && (
                   <DetailRow
-                    label="Cancellation policy"
+                    label={t("host_cal_res_label_cancellation", "Cancellation policy")}
                     value={cancellationPolicyLabel
                       .replaceAll("_", " ")
                       .toLowerCase()}
@@ -597,7 +604,7 @@ export function ReservationDetails({
                 href="/host/calendar"
                 className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-[#1F1F1F] underline underline-offset-2 hover:text-black dark:text-zinc-100"
               >
-                View in calendar →
+                {t("host_cal_res_view_in_cal", "View in calendar →")}
               </Link>
             </section>
 
@@ -610,14 +617,14 @@ export function ReservationDetails({
                 id="guest-paid-heading"
                 className="mb-3 text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100"
               >
-                Guest paid
+                {t("host_cal_res_heading_guest_paid", "Guest paid")}
               </h3>
               <dl className="space-y-2 text-xs">
                 <PriceRow
                   label={
                     hasVaryingRates
-                      ? `${nights} nights · varying rates`
-                      : `${formatPrice(pricing.nightlyPrice, sourceCurrency, 2)} × ${nights} ${nights === 1 ? "night" : "nights"}`
+                      ? `${nights} ${nights === 1 ? t("host_dash_night_singular", "night") : t("host_dash_night_plural", "nights")} · ${t("host_cal_res_varying_rates", "varying rates")}`
+                      : `${formatPrice(pricing.nightlyPrice, sourceCurrency, 2)} × ${nights} ${nights === 1 ? t("host_dash_night_singular", "night") : t("host_dash_night_plural", "nights")}`
                   }
                   value={formatPrice(
                     pricing.nightlySubtotal,
@@ -634,7 +641,7 @@ export function ReservationDetails({
                 )}
                 {pricing.extraGuestFee > 0 && (
                   <PriceRow
-                    label="Extra guest fee"
+                    label={t("host_cal_res_extra_guest_fee", "Extra guest fee")}
                     value={formatPrice(
                       pricing.extraGuestFee,
                       sourceCurrency,
@@ -644,13 +651,13 @@ export function ReservationDetails({
                 )}
                 {pricing.petFee > 0 && (
                   <PriceRow
-                    label="Pet fee"
+                    label={t("host_cal_res_pet_fee", "Pet fee")}
                     value={formatPrice(pricing.petFee, sourceCurrency, 2)}
                   />
                 )}
                 {pricing.cleaningFee > 0 && (
                   <PriceRow
-                    label="Cleaning fee"
+                    label={t("host_cal_res_cleaning_fee", "Cleaning fee")}
                     value={formatPrice(pricing.cleaningFee, sourceCurrency, 2)}
                   />
                 )}
@@ -668,7 +675,7 @@ export function ReservationDetails({
                   ))
                 ) : pricing.taxTotal > 0 ? (
                   <PriceRow
-                    label="Taxes"
+                    label={t("host_cal_res_taxes", "Taxes")}
                     value={formatPrice(pricing.taxTotal, sourceCurrency, 2)}
                   />
                 ) : null}
@@ -683,7 +690,7 @@ export function ReservationDetails({
                   />
                 )}
                 <div className="flex justify-between gap-4 border-t border-zinc-100 pt-2 text-sm font-semibold dark:border-zinc-800">
-                  <dt>Total paid by guest ({sourceCurrency})</dt>
+                  <dt>{t("host_cal_res_total_paid_guest", "Total paid by guest")} ({sourceCurrency})</dt>
                   <dd>{formatPrice(pricing.totalPrice, sourceCurrency, 2)}</dd>
                 </div>
               </dl>
@@ -699,16 +706,16 @@ export function ReservationDetails({
                   id="host-payout-heading"
                   className="mb-3 text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100"
                 >
-                  Your payout
+                  {t("host_cal_res_heading_payout", "Your payout")}
                 </h3>
                 <dl className="space-y-2 text-xs">
                   <PriceRow
-                    label="Accommodation amount"
+                    label={t("host_cal_res_accommodation_amt", "Accommodation amount")}
                     value={formatPrice(payoutAccommodation, sourceCurrency, 2)}
                   />
                   {pricing.extraGuestFee > 0 && (
                     <PriceRow
-                      label="Extra guest fee"
+                      label={t("host_cal_res_extra_guest_fee", "Extra guest fee")}
                       value={formatPrice(
                         pricing.extraGuestFee,
                         sourceCurrency,
@@ -718,19 +725,19 @@ export function ReservationDetails({
                   )}
                 {payoutPetFee > 0 && (
                     <PriceRow
-                      label="Pet fee"
+                      label={t("host_cal_res_pet_fee", "Pet fee")}
                       value={formatPrice(payoutPetFee, sourceCurrency, 2)}
                     />
                 )}
                 {payoutCleaningFee > 0 && (
                   <PriceRow
-                    label="Cleaning fee"
+                    label={t("host_cal_res_cleaning_fee", "Cleaning fee")}
                     value={formatPrice(payoutCleaningFee, sourceCurrency, 2)}
                   />
                 )}
                   {payoutHostTax > 0 && (
                     <PriceRow
-                      label="Taxes collected for host"
+                      label={t("host_cal_res_taxes_host", "Taxes collected for host")}
                       value={formatPrice(payoutHostTax, sourceCurrency, 2)}
                     />
                   )}
@@ -747,7 +754,7 @@ export function ReservationDetails({
                   )}
                   {payoutAdjustment !== 0 && (
                     <PriceRow
-                      label="Payout adjustment"
+                      label={t("host_cal_res_payout_adj", "Payout adjustment")}
                       value={
                         payoutAdjustment > 0
                           ? formatPrice(payoutAdjustment, sourceCurrency, 2)
@@ -756,7 +763,7 @@ export function ReservationDetails({
                     />
                   )}
                   <div className="flex justify-between gap-4 border-t border-zinc-100 pt-2 text-sm font-semibold dark:border-zinc-800">
-                    <dt>Total host payout ({sourceCurrency})</dt>
+                    <dt>{t("host_cal_res_total_host_payout", "Total host payout")} ({sourceCurrency})</dt>
                     <dd className="text-emerald-700 dark:text-emerald-400 font-bold">
                       {formatPrice(payoutTotal, sourceCurrency, 2)}
                     </dd>
@@ -767,7 +774,7 @@ export function ReservationDetails({
 
             {/* 7. Documents & Payment Records */}
             <section
-              aria-label="Documents and payment details"
+              aria-label={t("host_cal_res_aria_docs_payment", "Documents and payment details")}
               className="border-t border-zinc-200 pt-4 text-xs dark:border-zinc-800 space-y-2.5"
             >
               {pricing.taxTotal > 0 && (
@@ -776,7 +783,7 @@ export function ReservationDetails({
                   onClick={() => setShowInvoice(true)}
                   className="flex min-h-11 w-full items-center justify-between rounded-xl border border-zinc-200 p-3 text-zinc-700 hover:bg-zinc-50 hover:text-zinc-950 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-white transition-colors"
                 >
-                  <span className="font-medium">View VAT invoice</span>
+                  <span className="font-medium">{t("host_cal_res_view_vat_invoice", "View VAT invoice")}</span>
                   <span aria-hidden="true" className="text-base text-zinc-400">›</span>
                 </button>
               )}
@@ -784,25 +791,25 @@ export function ReservationDetails({
               {/* Payment Details Summary */}
               <div className="rounded-xl border border-zinc-200 bg-zinc-50/70 p-3.5 dark:border-zinc-700 dark:bg-zinc-800/50 text-xs">
                 <p className="font-semibold text-zinc-800 dark:text-zinc-200 mb-2">
-                  Payment record
+                  {t("host_cal_res_payment_record", "Payment record")}
                 </p>
                 <div className="space-y-1.5 text-zinc-600 dark:text-zinc-400">
                   <div className="flex justify-between">
-                    <span>Payment mode</span>
+                    <span>{t("host_cal_res_payment_mode", "Payment mode")}</span>
                     <span className="font-medium text-zinc-800 dark:text-zinc-200 capitalize">
-                      {pb?.paymentMode?.toLowerCase() || "Standard"}
+                      {pb?.paymentMode?.toLowerCase() || t("host_cal_res_standard_mode", "Standard")}
                     </span>
                   </div>
                   {pb?.paymentStatus && (
                     <div className="flex justify-between">
-                      <span>Payment status</span>
+                      <span>{t("host_cal_res_payment_status", "Payment status")}</span>
                       <span className="font-medium text-zinc-800 dark:text-zinc-200 capitalize">
                         {pb.paymentStatus.replaceAll("_", " ").toLowerCase()}
                       </span>
                     </div>
                   )}
                   <div className="flex justify-between">
-                    <span>Booking reference</span>
+                    <span>{t("host_cal_res_booking_ref", "Booking reference")}</span>
                     <span className="font-mono text-zinc-800 dark:text-zinc-200">
                       {confirmationCode}
                     </span>
@@ -877,6 +884,7 @@ export function MoneyDialog({
   booking: HostReservation;
   onClose: () => void;
 }) {
+  const { t } = useLanguage();
   const nights = Math.max(
     1,
     differenceInBookingNights(booking.startDate, booking.endDate),
@@ -884,29 +892,29 @@ export function MoneyDialog({
 
   return (
     <WorkspaceDialog
-      title="Send or request money"
+      title={t("host_cal_money_title", "Send or request money")}
       onClose={onClose}
       maxWidth="max-w-md"
     >
       <div className="space-y-5 text-sm">
         <div className="rounded-xl bg-zinc-50 dark:bg-zinc-800/80 p-4 border border-zinc-100 dark:border-zinc-700">
           <p className="text-[11px] font-semibold uppercase tracking-wider text-[#727272]">
-            From
+            {t("host_cal_money_from", "From")}
           </p>
           <p className="my-1 font-bold text-base text-[#1F1F1F] dark:text-zinc-100">
             {booking.guestName}
           </p>
           <p className="text-xs text-[#727272] dark:text-[#727272]">
             {shortDate(booking.startDate)} – {shortDate(booking.endDate)} (
-            {nights} {nights === 1 ? "night" : "nights"}) •{" "}
+            {nights} {nights === 1 ? t("host_dash_night_singular", "night") : t("host_dash_night_plural", "nights")}) •{" "}
             {booking.guests || 1}{" "}
-            {(booking.guests || 1) === 1 ? "guest" : "guests"}
+            {(booking.guests || 1) === 1 ? t("host_dash_guest_singular", "guest") : t("host_dash_guest_plural", "guests")}
           </p>
         </div>
 
         <fieldset className="space-y-3">
           <legend className="mb-2 font-semibold text-[#1F1F1F] dark:text-zinc-100 text-sm">
-            What would you like to do?
+            {t("host_cal_money_question", "What would you like to do?")}
           </legend>
           <label className="flex items-center gap-3 p-3 rounded-xl border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 cursor-pointer transition-colors">
             <input
@@ -916,7 +924,7 @@ export function MoneyDialog({
               className="size-4 accent-[#1F1F1F] dark:accent-amber-400"
             />
             <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
-              Send money
+              {t("host_cal_money_send", "Send money")}
             </span>
           </label>
           <label className="flex items-center gap-3 p-3 rounded-xl border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 cursor-pointer transition-colors">
@@ -926,14 +934,13 @@ export function MoneyDialog({
               className="size-4 accent-[#1F1F1F] dark:accent-amber-400"
             />
             <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
-              Request money
+              {t("host_cal_money_request", "Request money")}
             </span>
           </label>
         </fieldset>
 
         <p className="rounded-xl bg-amber-50 dark:bg-amber-950/40 p-3.5 text-xs text-amber-900 dark:text-amber-300 leading-relaxed border border-amber-200/60 dark:border-amber-900/60">
-          Payments are securely handled via Homyz escrow. You can also contact
-          your guest directly through Messages.
+          {t("host_cal_money_disclaimer", "Payments are securely handled via Homyz escrow. You can also contact your guest directly through Messages.")}
         </p>
 
         <div className="mt-6 flex items-center justify-between border-t border-zinc-100 dark:border-zinc-800 pt-4">
@@ -942,13 +949,13 @@ export function MoneyDialog({
             onClick={onClose}
             className="text-sm font-medium text-zinc-600 dark:text-[#727272] hover:text-[#1F1F1F] dark:hover:text-zinc-100 underline"
           >
-            Cancel
+            {t("host_cal_money_cancel", "Cancel")}
           </button>
           <a
             href="/host/messages"
             className="rounded-full bg-[#1F1F1F] dark:bg-zinc-100 px-6 py-2.5 text-xs font-semibold text-white dark:text-[#1F1F1F] hover:bg-black dark:hover:bg-white transition-colors"
           >
-            Next
+            {t("host_cal_money_next", "Next")}
           </a>
         </div>
       </div>

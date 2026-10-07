@@ -34,7 +34,7 @@ function runTests() {
   // 2. Reference English Dictionary
   logSection("2. English Reference Dictionary Integrity");
   const enKeys = Object.keys(MESSAGES.en) as TranslationKey[];
-  assert(enKeys.length === 4104, `English dictionary must have all 4,104 keys (found ${enKeys.length})`);
+  assert(enKeys.length === 4161, `English dictionary must have all 4,161 keys (found ${enKeys.length})`);
 
   // 3. Symmetrical 1:1 Key Parity (Both Directions)
   logSection("3. Symmetrical 1:1 Key Parity Across All 6 Locales");
@@ -54,11 +54,11 @@ function runTests() {
       assert(key in MESSAGES.en, `[${lang}] Extra key '${key}' not in English`, false);
     }
 
-    console.log(`  ✓ [${lang}] Symmetrical 1:1 key parity verified (3,986 keys, 0 missing, 0 extra)`);
+    console.log(`  ✓ [${lang}] Symmetrical 1:1 key parity verified (4,161 keys, 0 missing, 0 extra)`);
   }
 
   // 4. Non-Empty String Value Integrity
-  logSection("4. Non-Empty String Value Integrity (22,404 Entries)");
+  logSection("4. Non-Empty String Value Integrity (24,966 Entries)");
   for (const lang of supportedLangs) {
     const langDict = MESSAGES[lang];
     for (const key of enKeys) {
@@ -69,7 +69,7 @@ function runTests() {
         false
       );
     }
-    console.log(`  ✓ [${lang}] All 3,734 keys verified as valid, non-empty, trimmed strings`);
+    console.log(`  ✓ [${lang}] All 4,161 keys verified as valid, non-empty, trimmed strings`);
   }
 
   // 5. Dynamic Placeholder Syntax Validation
@@ -837,6 +837,42 @@ function runTests() {
   assert(MESSAGES.de.host_dash_status_title === "Gastgeber- & Unterkunftsstatus", "DE host_dash_status_title");
   assert(MESSAGES.hi.host_dash_status_title === "मेजबान और लिस्टिंग स्थिति", "HI host_dash_status_title");
   assert(MESSAGES.ar.host_dash_status_title === "حالة المضيف والإعلان", "AR host_dash_status_title");
+
+  console.log("\n--- 7w. Calendar Reservation Details & Money Modals (/host/calendar modals) ---");
+  assert(MESSAGES.en.host_cal_res_modal_title === "Reservation details", "EN host_cal_res_modal_title");
+  assert(MESSAGES.es.host_cal_res_modal_title === "Detalles de la reserva", "ES host_cal_res_modal_title");
+  assert(MESSAGES.fr.host_cal_res_modal_title === "Détails de la réservation", "FR host_cal_res_modal_title");
+  assert(MESSAGES.de.host_cal_res_modal_title === "Reservierungsdetails", "DE host_cal_res_modal_title");
+  assert(MESSAGES.hi.host_cal_res_modal_title === "आरक्षण विवरण", "HI host_cal_res_modal_title");
+  assert(MESSAGES.ar.host_cal_res_modal_title === "تفاصيل الحجز", "AR host_cal_res_modal_title");
+
+  assert(MESSAGES.en.host_cal_res_cancelled_banner === "Reservation Cancelled", "EN host_cal_res_cancelled_banner");
+  assert(MESSAGES.es.host_cal_res_cancelled_banner === "Reserva cancelada", "ES host_cal_res_cancelled_banner");
+  assert(MESSAGES.fr.host_cal_res_cancelled_banner === "Réservation annulée", "FR host_cal_res_cancelled_banner");
+  assert(MESSAGES.de.host_cal_res_cancelled_banner === "Reservierung storniert", "DE host_cal_res_cancelled_banner");
+  assert(MESSAGES.hi.host_cal_res_cancelled_banner === "आरक्षण रद्द कर दिया गया", "HI host_cal_res_cancelled_banner");
+  assert(MESSAGES.ar.host_cal_res_cancelled_banner === "تم إلغاء الحجز", "AR host_cal_res_cancelled_banner");
+
+  assert(MESSAGES.en.host_cal_res_view_vat_invoice === "View VAT invoice", "EN host_cal_res_view_vat_invoice");
+  assert(MESSAGES.es.host_cal_res_view_vat_invoice === "Ver factura con IVA", "ES host_cal_res_view_vat_invoice");
+  assert(MESSAGES.fr.host_cal_res_view_vat_invoice === "Afficher la facture avec TVA", "FR host_cal_res_view_vat_invoice");
+  assert(MESSAGES.de.host_cal_res_view_vat_invoice === "MwSt.-Rechnung anzeigen", "DE host_cal_res_view_vat_invoice");
+  assert(MESSAGES.hi.host_cal_res_view_vat_invoice === "वैट चालान देखें", "HI host_cal_res_view_vat_invoice");
+  assert(MESSAGES.ar.host_cal_res_view_vat_invoice === "عرض فاتورة ضريبة القيمة المضافة", "AR host_cal_res_view_vat_invoice");
+
+  assert(MESSAGES.en.host_cal_money_title === "Send or request money", "EN host_cal_money_title");
+  assert(MESSAGES.es.host_cal_money_title === "Enviar o solicitar dinero", "ES host_cal_money_title");
+  assert(MESSAGES.fr.host_cal_money_title === "Envoyer ou demander de l'argent", "FR host_cal_money_title");
+  assert(MESSAGES.de.host_cal_money_title === "Geld senden oder anfordern", "DE host_cal_money_title");
+  assert(MESSAGES.hi.host_cal_money_title === "पैसे भेजें या अनुरोध करें", "HI host_cal_money_title");
+  assert(MESSAGES.ar.host_cal_money_title === "إرسال أو طلب أموال", "AR host_cal_money_title");
+
+  assert(MESSAGES.en.host_cal_money_send === "Send money", "EN host_cal_money_send");
+  assert(MESSAGES.es.host_cal_money_send === "Enviar dinero", "ES host_cal_money_send");
+  assert(MESSAGES.fr.host_cal_money_send === "Envoyer de l'argent", "FR host_cal_money_send");
+  assert(MESSAGES.de.host_cal_money_send === "Geld senden", "DE host_cal_money_send");
+  assert(MESSAGES.hi.host_cal_money_send === "पैसे भेजें", "HI host_cal_money_send");
+  assert(MESSAGES.ar.host_cal_money_send === "إرسال أموال", "AR host_cal_money_send");
 
   console.log(`\n🎉 All ${passedCount}/${totalCount} tests passed cleanly!`);
 }
