@@ -136,9 +136,9 @@ describe("Host Today reservation core flow", () => {
 
     assert.equal(page.match(/getHostWorkspace\(/g)?.length, 1);
     assert.match(page, /today=\{today\}/);
-    assert.match(workspace, /buildOperationalEvents\(reservations, listingsMap, tab, currentDate\)/);
+    assert.match(workspace, /buildOperationalEvents\(reservations, listingsMap, tab, currentDate, currentTimeMinutes\)/);
     assert.match(workspace, /<ReservationCard/);
-    assert.equal(workspace.match(/fetch\("\/api\/v1\/host\/workspace"/g)?.length, 1);
+    assert.equal(workspace.match(/fetch\("\/api\/v1\/host\/workspace\?includeCancelled=1"/g)?.length, 1);
     assert.match(card, /PropertyPhoto/);
     assert.match(card, /guestCount/);
   });

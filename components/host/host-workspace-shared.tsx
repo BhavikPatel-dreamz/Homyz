@@ -59,6 +59,22 @@ type HostPriceBreakdown = {
   };
 };
 
+type GuestReviewDetails = {
+  id: string;
+  rating: number;
+  cleanlinessRating: number | null;
+  accuracyRating: number | null;
+  checkInRating: number | null;
+  communicationRating: number | null;
+  locationRating: number | null;
+  valueRating: number | null;
+  comment: string;
+  privateNoteToHost: string;
+  topics?: string[];
+  createdAt: string;
+  author: { id: string; name: string | null; image: string | null };
+};
+
 export type HostReservation = {
   id: string;
   listingId: string;
@@ -80,6 +96,16 @@ export type HostReservation = {
   priceBreakdown?: HostPriceBreakdown;
   cancellationPolicy?: string | null;
   isNonRefundable?: boolean;
+  hostReview?: {
+    eligible: boolean;
+    status: "REVIEW_PENDING" | "REVIEW_SUBMITTED" | "REVIEW_WINDOW_EXPIRED" | "NOT_ELIGIBLE";
+    reviewDeadline: string | null;
+    reviewSubmitted: boolean;
+  };
+  guestReview?: {
+    status: "PENDING" | "RECEIVED";
+    reviewId: string | null;
+  };
   listing?: {
     id: string;
     title: string;
@@ -247,15 +273,21 @@ export function ReservationDetails({
   listing,
   onClose,
   onMoney,
+  onHostReview,
 }: {
   booking: HostReservation;
   listing: ListingDTO;
   onClose: () => void;
   onMoney?: () => void;
+  /** Wired by the host-review flow once its submission UI exists. */
+  onHostReview?: () => void;
 }) {
   const { formatPrice } = useCurrency();
   const [showInvoice, setShowInvoice] = useState(false);
   const [codeCopied, setCodeCopied] = useState(false);
+  const [guestReview, setGuestReview] = useState<GuestReviewDetails | null>(null);
+  const [guestReviewLoading, setGuestReviewLoading] = useState(false);
+  const [guestReviewError, setGuestReviewError] = useState<string | null>(null);
   const sourceCurrency =
     booking.currency || resolvePropertyCurrency(listing);
   const pb = booking.priceBreakdown;
@@ -345,6 +377,32 @@ export function ReservationDetails({
   const messageHref = booking.conversationId
     ? `/host/messages?id=${encodeURIComponent(booking.conversationId)}`
     : "/host/messages";
+  const hasCompletedReviewState = booking.hostReview?.status === "REVIEW_PENDING"
+    || booking.hostReview?.status === "REVIEW_SUBMITTED"
+    || booking.hostReview?.status === "REVIEW_WINDOW_EXPIRED";
+
+  const loadGuestReview = async () => {
+    if (guestReviewLoading || guestReview) return;
+    setGuestReviewLoading(true);
+    setGuestReviewError(null);
+    try {
+      const response = await fetch(
+        `/api/v1/listings/${encodeURIComponent(listing.id)}/reviews/host?bookingId=${encodeURIComponent(booking.id)}`,
+        { headers: { Accept: "application/json" } },
+      );
+      const payload = await response.json().catch(() => null);
+      if (!response.ok || !payload?.success || !payload.data?.review) {
+        throw new Error(payload?.error?.message || "Unable to load this guest review.");
+      }
+      setGuestReview(payload.data.review as GuestReviewDetails);
+    } catch (error) {
+      setGuestReviewError(
+        error instanceof Error ? error.message : "Unable to load this guest review.",
+      );
+    } finally {
+      setGuestReviewLoading(false);
+    }
+  };
 
   return (
     <>
@@ -602,7 +660,37 @@ export function ReservationDetails({
               </Link>
             </section>
 
-            {/* 5. Guest Paid (Authoritative Pricing Breakdown) */}
+            {hasCompletedReviewState && (
+              <section
+                aria-labelledby="reviews-heading"
+                className="border-t border-zinc-200 pt-5 dark:border-zinc-800"
+              >
+                <h3
+                  id="reviews-heading"
+                  className="mb-3 text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100"
+                >
+                  Reviews
+                </h3>
+                <div className="space-y-3">
+                  <ReviewStatusPanel
+                    title="Your review of the guest"
+                    bookingId={booking.id}
+                    hostReview={booking.hostReview}
+                    onHostReview={onHostReview}
+                  />
+                  <GuestReviewPanel
+                    guestName={booking.guestName}
+                    reviewStatus={booking.guestReview?.status ?? "PENDING"}
+                    review={guestReview}
+                    loading={guestReviewLoading}
+                    error={guestReviewError}
+                    onView={() => void loadGuestReview()}
+                  />
+                </div>
+              </section>
+            )}
+
+            {/* 6. Guest Paid (Authoritative Pricing Breakdown) */}
             <section
               aria-labelledby="guest-paid-heading"
               className="border-t border-zinc-200 pt-5 dark:border-zinc-800"
@@ -822,6 +910,253 @@ export function ReservationDetails({
         onClose={() => setShowInvoice(false)}
       />
     </>
+  );
+}
+
+type HostGuestReviewDetails = {
+  cleanlinessRating: number;
+  houseRulesRating: number;
+  communicationRating: number;
+  recommendGuest: boolean;
+  publicReview: string | null;
+  privateNote: string | null;
+};
+
+function ReviewStatusPanel({
+  title,
+  bookingId,
+  hostReview,
+  onHostReview,
+}: {
+  title: string;
+  bookingId?: string;
+  hostReview: HostReservation["hostReview"];
+  onHostReview?: () => void;
+}) {
+  const status = hostReview?.status ?? "NOT_ELIGIBLE";
+  const isPending = status === "REVIEW_PENDING";
+  const [review, setReview] = useState<HostGuestReviewDetails | null>(null);
+  const [loadingReview, setLoadingReview] = useState(false);
+  const [reviewError, setReviewError] = useState<string | null>(null);
+
+  const loadReview = async () => {
+    if (!bookingId || loadingReview || review) return;
+    setLoadingReview(true);
+    setReviewError(null);
+    try {
+      const response = await fetch(
+        `/api/v1/host/reviews?bookingId=${encodeURIComponent(bookingId)}`,
+        { headers: { Accept: "application/json" } },
+      );
+      const payload = await response.json().catch(() => null);
+      if (!response.ok || !payload?.success || !payload.data?.review) {
+        throw new Error(payload?.error?.message || "Unable to load review details.");
+      }
+      setReview(payload.data.review as HostGuestReviewDetails);
+    } catch (err) {
+      setReviewError(err instanceof Error ? err.message : "Unable to load review details.");
+    } finally {
+      setLoadingReview(false);
+    }
+  };
+
+  return (
+    <div className="rounded-2xl border border-zinc-200 p-4 dark:border-zinc-700">
+      <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">{title}</p>
+      {isPending ? (
+        <>
+          <p className="mt-1 text-sm font-medium text-zinc-900 dark:text-zinc-100">
+            Review your guest
+          </p>
+          <p className="mt-1 text-xs leading-5 text-[#727272]">
+            Share your experience hosting this guest to help other hosts.
+          </p>
+          {onHostReview ? (
+            <button
+              type="button"
+              onClick={onHostReview}
+              className="mt-3 min-h-10 rounded-full bg-[#1F1F1F] px-4 text-xs font-semibold text-white transition-colors hover:bg-black dark:bg-zinc-100 dark:text-[#1F1F1F]"
+            >
+              Write a review
+            </button>
+          ) : bookingId ? (
+            <Link
+              href={`/host/reviews/${encodeURIComponent(bookingId)}`}
+              className="mt-3 inline-flex min-h-10 items-center justify-center rounded-full bg-[#1F1F1F] px-4 text-xs font-semibold text-white transition-colors hover:bg-black dark:bg-zinc-100 dark:text-[#1F1F1F]"
+            >
+              Write a review
+            </Link>
+          ) : null}
+        </>
+      ) : status === "REVIEW_SUBMITTED" ? (
+        <>
+          <div className="mt-1 flex flex-wrap items-center justify-between gap-2">
+            <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
+              Review submitted ✓
+            </p>
+            {bookingId && !review && (
+              <button
+                type="button"
+                onClick={() => void loadReview()}
+                disabled={loadingReview}
+                className="min-h-9 rounded-full border border-zinc-300 px-3 text-xs font-semibold text-[#1F1F1F] transition-colors hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-600 dark:text-zinc-100 dark:hover:bg-zinc-800"
+              >
+                {loadingReview ? "Loading…" : "View review"}
+              </button>
+            )}
+          </div>
+          {reviewError && (
+            <div role="alert" className="mt-3 flex flex-wrap items-center gap-2 rounded-xl bg-rose-50 px-3 py-2 text-xs text-rose-800 dark:bg-rose-950/40 dark:text-rose-200">
+              <span>{reviewError}</span>
+              <button type="button" onClick={() => void loadReview()} className="font-semibold underline underline-offset-2">
+                Retry
+              </button>
+            </div>
+          )}
+          {review && (
+            <div className="mt-3 space-y-2.5 border-t border-zinc-100 pt-3 text-xs dark:border-zinc-800">
+              <div className="flex flex-wrap gap-x-4 gap-y-1 font-medium text-zinc-700 dark:text-zinc-300">
+                <span>Cleanliness: {review.cleanlinessRating}/5</span>
+                <span>House rules: {review.houseRulesRating}/5</span>
+                <span>Communication: {review.communicationRating}/5</span>
+                <span>Recommended: {review.recommendGuest ? "Yes" : "No"}</span>
+              </div>
+              {review.publicReview && (
+                <p className="leading-5 text-[#1F1F1F] dark:text-zinc-200">{review.publicReview}</p>
+              )}
+              {review.privateNote && (
+                <div className="rounded-xl bg-zinc-50 p-2.5 leading-5 text-zinc-600 dark:bg-zinc-800/80 dark:text-zinc-400">
+                  <span className="font-semibold text-zinc-800 dark:text-zinc-200">Private note to guest: </span>
+                  {review.privateNote}
+                </div>
+              )}
+            </div>
+          )}
+        </>
+      ) : status === "REVIEW_WINDOW_EXPIRED" ? (
+        <p className="mt-1 text-sm font-medium text-amber-800 dark:text-amber-300">
+          Review window expired
+        </p>
+      ) : (
+        <p className="mt-1 text-xs leading-5 text-[#727272]">
+          This reservation is not eligible for a guest review.
+        </p>
+      )}
+    </div>
+  );
+}
+
+function GuestReviewPanel({
+  guestName,
+  reviewStatus,
+  review,
+  loading,
+  error,
+  onView,
+}: {
+  guestName: string;
+  reviewStatus: "PENDING" | "RECEIVED";
+  review: GuestReviewDetails | null;
+  loading: boolean;
+  error: string | null;
+  onView: () => void;
+}) {
+  const ratings = review
+    ? [
+        ["Check-in", review.checkInRating],
+        ["Cleanliness", review.cleanlinessRating],
+        ["Accuracy", review.accuracyRating],
+        ["Communication", review.communicationRating],
+        ["Location", review.locationRating],
+        ["Value", review.valueRating],
+      ].filter(([, value]) => typeof value === "number") as Array<[string, number]>
+    : [];
+
+  return (
+    <div className="rounded-2xl border border-zinc-200 p-4 dark:border-zinc-700">
+      <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+        Guest review of your property
+      </p>
+      {reviewStatus === "PENDING" ? (
+        <p className="mt-1 text-sm font-medium text-[#727272]">Awaiting guest review</p>
+      ) : (
+        <>
+          <div className="mt-1 flex flex-wrap items-center justify-between gap-2">
+            <p className="text-sm font-medium text-emerald-700 dark:text-emerald-400">
+              Guest review received
+            </p>
+            {!review && (
+              <button
+                type="button"
+                onClick={onView}
+                disabled={loading}
+                aria-label="View guest review"
+                className="min-h-9 rounded-full border border-zinc-300 px-3 text-xs font-semibold text-[#1F1F1F] transition-colors hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-600 dark:text-zinc-100 dark:hover:bg-zinc-800"
+              >
+                {loading ? "Loading…" : "View review"}
+              </button>
+            )}
+          </div>
+          {error && (
+            <div role="alert" className="mt-3 flex flex-wrap items-center gap-2 rounded-xl bg-rose-50 px-3 py-2 text-xs text-rose-800 dark:bg-rose-950/40 dark:text-rose-200">
+              <span>{error}</span>
+              <button type="button" onClick={onView} className="font-semibold underline underline-offset-2">
+                Retry
+              </button>
+            </div>
+          )}
+          {review && (
+            <div className="mt-3 space-y-3 border-t border-zinc-100 pt-3 text-xs dark:border-zinc-800">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="font-semibold text-zinc-900 dark:text-zinc-100">
+                  {review.author?.name || guestName}
+                </p>
+                <p className="font-medium text-amber-700 dark:text-amber-300">
+                  ★ {review.rating} / 5 overall
+                </p>
+              </div>
+              {ratings.length > 0 && (
+                <dl className="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-3">
+                  {ratings.map(([label, value]) => (
+                    <div key={label} className="flex justify-between gap-2 text-[#727272]">
+                      <dt>{label}</dt>
+                      <dd className="font-medium text-zinc-800 dark:text-zinc-200">{value}/5</dd>
+                    </div>
+                  ))}
+                </dl>
+              )}
+              {review.topics && review.topics.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {review.topics.map((t) => (
+                    <span
+                      key={t}
+                      className="rounded-full bg-zinc-100 px-2.5 py-0.5 text-[11px] font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+                    >
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              )}
+              {review.comment && (
+                <div>
+                  <p className="font-semibold text-zinc-900 dark:text-zinc-100">Public review</p>
+                  <p className="mt-1 whitespace-pre-wrap break-words leading-5 text-[#727272]">{review.comment}</p>
+                </div>
+              )}
+              {review.privateNoteToHost && (
+                <div className="rounded-xl border border-amber-200 bg-amber-50 p-3.5 dark:border-amber-900/60 dark:bg-amber-950/30">
+                  <p className="font-semibold text-amber-900 dark:text-amber-200">Private feedback from guest</p>
+                  <p className="mt-0.5 text-[11px] text-amber-800/80 dark:text-amber-300/80">Private note to host · Only you and the guest can see this note.</p>
+                  <p className="mt-2 whitespace-pre-wrap break-words leading-5 text-amber-950/90 dark:text-amber-100/90">
+                    {review.privateNoteToHost}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </>
+      )}
+    </div>
   );
 }
 

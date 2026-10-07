@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { StarRating } from "./star-rating";
 
 type CategoryKey = "checkIn" | "cleanliness" | "accuracy" | "communication" | "location" | "value";
 
@@ -36,17 +37,6 @@ const steps: Array<{ key: "intro" | "overall" | CategoryKey | "comment" | "priva
   { key: "comment", title: () => "Write a public review", subtitle: "Share a few words about your stay. This will be visible on the property page." },
   { key: "privateNote", title: () => "Write a private note", subtitle: "Share any constructive feedback that only the host will see. This is optional and private." },
 ];
-
-const ratingLabels = ["", "Needs improvement", "Not great", "Good", "Great stay", "Excellent"];
-
-function StarRating({ value, onChange, label }: { value: number; onChange: (rating: number) => void; label: string }) {
-  return <div className="mt-8" role="radiogroup" aria-label={label}>
-    <div className="flex justify-center gap-2 sm:gap-3">
-      {[1, 2, 3, 4, 5].map((star) => <button key={star} type="button" role="radio" aria-checked={value === star} aria-label={`${star} out of 5 stars`} onClick={() => onChange(star)} className={`text-4xl leading-none transition-transform hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-zinc-900 sm:text-5xl ${star <= value ? "text-[#4D7CFE]" : "text-zinc-200"}`}>★</button>)}
-    </div>
-    <p className="mt-3 min-h-5 text-center text-sm font-medium text-zinc-600" aria-live="polite">{value > 0 ? ratingLabels[value] : "Select a rating"}</p>
-  </div>;
-}
 
 export function BookingReviewWizard(props: ReviewWizardProps) {
   const storageKey = `homyz:review-draft:${props.bookingId}`;

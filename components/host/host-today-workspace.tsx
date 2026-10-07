@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { HostSubNav } from "./host-sub-nav";
 import { ReservationCard } from "./reservation-card";
 import {
@@ -32,7 +33,18 @@ export function HostTodayWorkspace({
   today: string;
   initialCurrentTimeMinutes: number;
 }) {
-  const [tab, setTab] = useState<ReservationPeriod>("today");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const requestedTab = searchParams.get("tab");
+  const initialTab: ReservationPeriod = requestedTab === "upcoming"
+    || requestedTab === "staying"
+    || requestedTab === "completed"
+    || requestedTab === "pending"
+    || requestedTab === "cancelled"
+    || requestedTab === "all"
+    ? requestedTab
+    : "today";
+  const [tab, setTab] = useState<ReservationPeriod>(initialTab);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const { selectedPropertyId, setSelectedPropertyId } = useHostDashboardState();
   const [draftPropertyId, setDraftPropertyId] = useState<string | null>(null);
@@ -51,7 +63,7 @@ export function HostTodayWorkspace({
     if (refreshInFlightRef.current) return;
     refreshInFlightRef.current = true;
     try {
-      const response = await fetch("/api/v1/host/workspace", {
+      const response = await fetch("/api/v1/host/workspace?includeCancelled=1", {
         cache: "no-store",
         headers: { Accept: "application/json" },
       });
@@ -82,10 +94,16 @@ export function HostTodayWorkspace({
     const refreshWhenVisible = () => {
       if (document.visibilityState === "visible") void refreshReservations();
     };
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === "homyz:reservations-updated") {
+        void refreshReservations();
+      }
+    };
     const interval = window.setInterval(refreshWhenVisible, 60_000);
     window.addEventListener("focus", refreshWhenVisible);
     document.addEventListener("visibilitychange", refreshWhenVisible);
     window.addEventListener("homyz:reservations-updated", refreshWhenVisible);
+    window.addEventListener("storage", onStorage);
     return () => {
       window.clearInterval(interval);
       window.removeEventListener("focus", refreshWhenVisible);
@@ -94,8 +112,23 @@ export function HostTodayWorkspace({
         "homyz:reservations-updated",
         refreshWhenVisible,
       );
+      window.removeEventListener("storage", onStorage);
     };
   }, [refreshReservations]);
+
+  useEffect(() => {
+    if (
+      requestedTab === "upcoming" ||
+      requestedTab === "staying" ||
+      requestedTab === "completed" ||
+      requestedTab === "pending" ||
+      requestedTab === "cancelled" ||
+      requestedTab === "all" ||
+      requestedTab === "today"
+    ) {
+      setTab(requestedTab);
+    }
+  }, [requestedTab]);
 
   useEffect(() => {
     const updateCurrentTime = () => {
@@ -123,9 +156,27 @@ export function HostTodayWorkspace({
       ? selectedPropertyId
       : null;
 
+  useEffect(() => {
+    const requestedListingId = searchParams.get("listing");
+    if (requestedListingId && listingsMap.has(requestedListingId)) {
+      setSelectedPropertyId(requestedListingId);
+    }
+  }, [listingsMap, searchParams, setSelectedPropertyId]);
+
+  useEffect(() => {
+    const requestedReservationId = searchParams.get("reservation");
+    if (!requestedReservationId) return;
+    const requestedReservation = reservations.find(
+      (reservation) => reservation.id === requestedReservationId,
+    );
+    if (!requestedReservation) return;
+    const openId = window.setTimeout(() => setSelected(requestedReservation), 0);
+    return () => window.clearTimeout(openId);
+  }, [reservations, searchParams]);
+
   const operationalEvents = useMemo(
-    () => buildOperationalEvents(reservations, listingsMap, tab, currentDate),
-    [reservations, listingsMap, tab, currentDate],
+    () => buildOperationalEvents(reservations, listingsMap, tab, currentDate, currentTimeMinutes),
+    [reservations, listingsMap, tab, currentDate, currentTimeMinutes],
   );
 
   // Apply listing filter
@@ -153,6 +204,14 @@ export function HostTodayWorkspace({
     if (selected.listing) return selected.listing as unknown as ListingDTO;
     return listings[0] || null;
   }, [selected, listingsMap, listings]);
+
+  const closeReservationDetails = () => {
+    setSelected(null);
+    const nextParams = new URLSearchParams(searchParams.toString());
+    nextParams.delete("reservation");
+    const query = nextParams.toString();
+    router.replace(query ? `/host/today?${query}` : "/host/today", { scroll: false });
+  };
 
   return (
     <>
@@ -451,7 +510,8 @@ export function HostTodayWorkspace({
             <ReservationDetails
               booking={selected}
               listing={selectedListing}
-              onClose={() => setSelected(null)}
+              onClose={closeReservationDetails}
+              onHostReview={() => router.push(`/host/reviews/${encodeURIComponent(selected.id)}`)}
             />
           )}
         </Container>
