@@ -343,7 +343,7 @@ export function CalendarSettingsPanel({
 
           <button
             type="button"
-            className="group flex w-full items-start justify-between gap-4 py-8 text-left transition-colors hover:text-zinc-950 dark:hover:text-white cursor-pointer"
+            className="group flex w-full items-start justify-between gap-4 sm:py-8 py-5 text-left transition-colors hover:text-zinc-950 dark:hover:text-white cursor-pointer"
             onClick={() => setPanel("availability")}
           >
             <div className="min-w-0">

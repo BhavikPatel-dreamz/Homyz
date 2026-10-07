@@ -185,7 +185,7 @@ function MobileCalendarIndex({
       <h1 className="mb-6 text-[26px] font-semibold tracking-[-0.03em] text-[#222222]">
         Calendars
       </h1>
-      <div className="divide-y divide-[#dddddd] border-y border-[#dddddd]">
+      <div className="mb-6 divide-y divide-[#dddddd] border-b border-[#dddddd]">
         {listings.map((listing, index) => {
           const selected = listing.id === selectedId;
           return (
@@ -202,7 +202,7 @@ function MobileCalendarIndex({
             >
               <PropertyPhoto
                 listing={listing}
-                className={`size-[106px] shrink-0 rounded-xl object-cover ${selected ? "ring-[3px] ring-[#a5a0ff] ring-offset-1" : "border border-[#9b9b9b]"
+                className={`size-[106px] shrink-0 rounded-[10px] object-cover ${selected ? "ring-[3px] ring-[#a5a0ff] ring-offset-1" : "border border-[#727272]"
                   }`}
               />
               <div className="min-w-0 flex-1">
@@ -272,16 +272,16 @@ function MobileYearCalendar({
   return (
     <section className="sm:hidden">
       <div className="mb-8 flex items-center justify-between">
-        <h1 className="text-[28px] font-semibold tracking-[-0.035em] text-[#222222] dark:text-zinc-100">
+        <h1 className="text-[24px] font-medium tracking-0 text-[#1F1F1F] dark:text-zinc-100">
           Calendars
         </h1>
         <button
           type="button"
           onClick={onOpenSettings}
           aria-label="Calendar settings"
-          className="flex size-14 items-center justify-center rounded-full bg-[#f5f5f5] text-[#222222] transition-colors hover:bg-[#ebebeb] dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700"
+          className="flex size-10 items-center justify-center rounded-full bg-[#F3F4F5] text-[#1F1F1F] transition-colors hover:bg-[#ebebeb] dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700"
         >
-          <svg className="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" aria-hidden="true">
+          <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" aria-hidden="true">
             <path d="M5 4v16M12 4v16M19 4v16" />
             <path d="M3 8h4M10 16h4M17 9h4" />
           </svg>
@@ -299,7 +299,7 @@ function MobileYearCalendar({
             <path d="m15 18-6-6 6-6" />
           </svg>
         </button>
-        <p className="truncate text-[19px] font-medium text-[#303030] dark:text-zinc-100">
+        <p className="truncate text-base font-medium text-[#303030] dark:text-zinc-100">
           {propertyLabel}{location ? `, ${location}` : ""}
         </p>
       </div>
@@ -414,7 +414,7 @@ function MonthGrid({
 
       {/* Days grid */}
       <div
-        className={`grid grid-cols-7 gap-1 ${compact ? "" : "lg:grid-cols-[repeat(7,136px)] lg:justify-center"
+        className={`grid grid-cols-7 md:gap-1 gap-[2px] ${compact ? "" : "lg:grid-cols-[repeat(7,136px)] lg:justify-center"
           }`}
       >
         {Array.from({ length: offset }, (_, i) => (
@@ -486,11 +486,11 @@ function MonthGrid({
               >
                 {/* Day number */}
                 <span
-                  className={`flex items-center justify-center rounded-full font-normal transition-transform ${compact
-                    ? "size-1 max-sm:bg-zinc-500 text-xs sm:size-6 sm:border sm:border-zinc-300 dark:sm:border-zinc-600 sm:bg-white dark:sm:bg-zinc-700 sm:text-[#403C34] dark:sm:text-zinc-200 sm:text-[12px]"
+                  className={`flex size-8.5 items-center justify-center rounded-full font-normal transition-transform ${compact
+                    ? "size-1 shrink-0 max-sm:bg-zinc-500 text-xs sm:size-6 sm:border sm:border-zinc-300 dark:sm:border-zinc-600 sm:bg-white dark:sm:bg-zinc-700 sm:text-[#403C34] dark:sm:text-zinc-200 sm:text-[12px]"
                     : "size-6 text-xs sm:size-7 sm:text-xs"
                     } ${isToday
-                      ? "border border-[#EBA900] bg-[#FCDF9C] text-[#403C34] font-semibold shadow-xs sm:border-[#EBA900] dark:border-[#EBA900] dark:bg-[#FCDF9C] dark:text-[#403C34]"
+                      ? "border border-[#EBA900] bg-[#FCDF9C] text-[#403C34] font-semibold shadow-xs sm:!border-[#EBA900] sm:!bg-[#FCDF9C] dark:border-[#EBA900] dark:bg-[#FCDF9C] dark:text-[#403C34]"
                       : bookedCount > 0
                         ? "bg-zinc-800 text-white"
                         : "text-zinc-800 dark:text-zinc-200 bg-white dark:bg-zinc-700"
@@ -540,7 +540,7 @@ function MonthGrid({
           // Compute cell visual styles
           let cellBgClass =
             "border-transparent bg-[#F3F4F5] text-[#1F1F1F] hover:bg-[#ededee] dark:bg-zinc-800/80 dark:text-zinc-100 dark:hover:border-zinc-600";
-          let cellRoundingClass = compact ? "rounded-[10px]" : "rounded-[20px]";
+          let cellRoundingClass = compact ? "rounded-[10px]" : "md:rounded-[20px] rounded-[10px]";
 
           if (primaryReservation) {
             // Keep the reservation treatment inside the tile. The dark stay strip
@@ -548,7 +548,7 @@ function MonthGrid({
             // the scan-friendly month grid used by the host calendar.
             cellBgClass =
               "border border-[#1F1F1F] bg-[#DDDDDE] text-[#1F1F1F] shadow-xs dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-100";
-            cellRoundingClass = compact ? "rounded-[10px]" : "rounded-[20px]";
+            cellRoundingClass = compact ? "rounded-[10px]" : "md:rounded-[20px] rounded-[10px]";
           } else if (blocked) {
             // Blocked state
             cellBgClass =
@@ -556,7 +556,7 @@ function MonthGrid({
           } else if (isPast) {
             // Past state
             cellBgClass =
-              "border-transparent bg-zinc-100/50 dark:bg-zinc-800/40 opacity-70 text-[#727272]";
+              "border-transparent bg-[#F3F4F5] dark:bg-[#F3F4F5] opacity-70 text-[#727272]";
           }
 
           // Selection highlight override
@@ -612,17 +612,17 @@ function MonthGrid({
               aria-pressed={isSelected}
               className={`group relative flex min-w-0 flex-col items-center justify-center border transition-all duration-100 focus-visible:outline-2 focus-visible:outline-offset-2 ${cellRoundingClass} ${cellBgClass} ${compact
                 ? "min-h-[48px] p-1 sm:min-h-[68px] sm:py-1.5"
-                : "min-h-[84px] p-2 sm:min-h-[104px] lg:h-[146px] lg:min-h-[146px]"
+                : "min-h-[84px] sm:p-2 p-1 sm:min-h-[126px] lg:h-[146px] lg:min-h-[146px]"
                 }`}
             >
               {/* Day number */}
               <div className="flex w-full items-center justify-center px-1">
                 <span
                   className={`flex items-center justify-center rounded-full font-normal transition-transform ${compact
-                    ? "size-5 text-[11px] sm:size-6 sm:border sm:border-zinc-300 dark:sm:border-zinc-600 sm:bg-white dark:sm:bg-zinc-700 sm:text-zinc-800 dark:sm:text-zinc-200 sm:text-[12px]"
+                    ? "size-5 max-[360px]:text-[9px] text-[11px] sm:size-6 sm:border sm:border-zinc-300 dark:sm:border-zinc-600 sm:bg-white dark:sm:bg-zinc-700 sm:text-zinc-800 dark:sm:text-zinc-200 sm:text-[12px]"
                     : "size-6 text-xs sm:size-7 sm:text-xs"
                     } ${isToday
-                      ? "border border-[#EBA900] bg-[#FCDF9C] text-[#1F1F1F] font-bold shadow-xs sm:border-[#EBA900] dark:border-[#EBA900] dark:bg-[#FCDF9C] dark:text-[#1F1F1F]"
+                      ? "border border-[#EBA900] bg-[#FCDF9C] text-[#1F1F1F] font-bold shadow-xs sm:!border-[#EBA900] sm:!bg-[#FCDF9C] dark:border-[#EBA900] dark:bg-[#FCDF9C] dark:text-[#1F1F1F]"
                       : primaryReservation
                         ? "bg-white text-zinc-800"
                         : isSelected
@@ -638,31 +638,31 @@ function MonthGrid({
               {/* Price / Status */}
               <div className="flex flex-col items-center justify-center mt-2 w-full px-0.5 text-center">
                 {blocked ? (
-                  <span className="text-xs text-[#727272] line-through font-medium">Blocked</span>
+                  <span className="sm:text-sm text-[10px] leading-tight text-[#727272] line-through font-medium">Blocked</span>
                 ) : primaryReservation ? (
-                  <span className="text-sm leading-tight font-medium tracking-normal text-[#1F1F1F] dark:text-zinc-100">{formatMoney(rate, sourceCurrency, 2)}</span>
+                  <span className="sm:text-sm text-[10px] leading-tight font-medium tracking-normal text-[#1F1F1F] dark:text-zinc-100">{formatMoney(rate, sourceCurrency, 2)}</span>
                 ) : isPast ? (
-                  <span className="text-xs text-[#727272] line-through font-medium">{formatMoney(rate, sourceCurrency, 2)}</span>
+                  <span className="sm:text-sm text-[10px] leading-tight text-[#727272] line-through font-medium">{formatMoney(rate, sourceCurrency, 2)}</span>
                 ) : promo?.applied ? (
                   compact ? (
                     <>
                       <span className="mt-0.5 block text-[12px] font-medium leading-4 text-[#08785d] dark:text-emerald-400">
                         {formatMoney(promo.promotionalPrice, sourceCurrency, 2)}
                       </span>
-                      <span className="mt-0.5 rounded-sm border border-[#a7e9ce] bg-[#d9f7eb] px-0.5 py-[2px] text-[8px] font-medium leading-3 text-[#08785d] dark:border-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300">
+                            <span className="mt-0.5 rounded-sm border border-[#a7e9ce] bg-[#d9f7eb] px-0.5 py-[2px] sm:text-[10px] text-[8px] font-medium leading-tight text-[#08785d] dark:border-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300">
                         {promo.percentage}% promo
                       </span>
                     </>
                   ) : (
                     <>
-                      <span className="text-xs text-[#727272] dark:text-zinc-500 line-through leading-none block mb-1">
+                      <span className="text-[10px] sm:text-xs text-[#727272] dark:text-zinc-500 line-through leading-none block mb-1">
                         {formatMoney(dayPricing?.originalPrice ?? rate, sourceCurrency, 2)}
                       </span>
-                      <span className="text-[14px] sm:text-[14px] font-medium text-emerald-700 dark:text-emerald-400 leading-tight block">
+                      <span className="text-[10px] sm:text-[14px] font-medium text-emerald-700 dark:text-emerald-400 leading-tight block">
                         {formatMoney(promo.promotionalPrice, sourceCurrency, 2)}
                       </span>
                       <div className="flex items-center gap-1 mt-0.5">
-                        <span className="text-[10px] font-medium capitalize tracking-tight text-[#08785d] border border-[#a7e9ce] dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/80 px-1.5 py-0.2 rounded-md">
+                        <span className="sm:text-[10px] text-[8px] font-medium capitalize tracking-tight text-[#08785d] border border-[#a7e9ce] dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/80 px-1.5 py-1 sm:rounded-md roudned leading-tight">
                           {promo.percentage}% promo
                         </span>
                         {customPrice !== null && (
@@ -698,7 +698,7 @@ function MonthGrid({
 
               {/* Continuous Reservation Bar — hidden in the compact Year view. */}
               {primaryReservation && !compact ? (
-                <div className="mt-3 flex items-center gap-1 truncate rounded-lg bg-[#1F1F1F] pr-2 pl-0 min-h-8 text-xs font-medium text-white relative w-full">
+                <div className="mt-3 md:flex hidden items-center gap-1 truncate rounded-lg bg-[#1F1F1F] pr-2 pl-0 min-h-8 text-xs font-medium text-white relative w-full">
                   {isBookingStart && (
                     primaryReservation.guestImage ? (
                       // Reservation data already supplies an optional guest image.
@@ -2646,7 +2646,61 @@ export function HostCalendarWorkspace({
       <HostSubNav activeTab="calendar" />
 
       <main className="mx-auto w-full max-w-[1600px] flex-1 px-4 pb-28 pt-6 sm:px-8 sm:pt-8">
-        {view === "year" && selectedListing ? (
+        {mobileCalendarOpen && selectedListing ? (
+          <section className="sm:hidden">
+            <h1 className="mb-7 text-[24px] font-medium text-[#1f1f1f] dark:text-zinc-100">
+              Calendars
+            </h1>
+
+            <div className="mb-8 flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setMobileCalendarOpen(false)}
+                aria-label="Back to calendars"
+                className="flex size-10 shrink-0 items-center justify-center rounded-full border border-[#bdbdbd] text-[#555555] transition-colors hover:bg-[#f7f7f7] dark:border-zinc-600 dark:text-zinc-300 dark:hover:bg-zinc-800"
+              >
+                <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="m15 18-6-6 6-6" />
+                </svg>
+              </button>
+              <p className="truncate text-base font-medium text-[#303030] dark:text-zinc-100">
+                {selectedListing.title || "Property name"}{[selectedListing.district, selectedListing.city].filter(Boolean).join(", ") || selectedListing.country ? `, ${[selectedListing.district, selectedListing.city].filter(Boolean).join(", ") || selectedListing.country}` : ""}
+              </p>
+            </div>
+
+            <div className="mb-5 flex items-center justify-between border-b border-[#d5d5d5] pb-3 dark:border-zinc-700">
+              <h2 className="text-base font-medium text-[#272727] dark:text-zinc-100">
+                {monthName(month)}
+              </h2>
+              <div className="flex items-center sm:gap-3 gap-2">
+                <button type="button" onClick={handlePrev} aria-label="Previous month" className="flex sm:size-9 size-7 items-center justify-center rounded-full border border-[#bdbdbd] bg-[#F3F4F5] text-[#1f1f1f] transition-colors hover:bg-[#f5f5f5] dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800">
+                  <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+                </button>
+                <button type="button" onClick={handleNext} aria-label="Next month" className="flex sm:size-9 size-7 items-center justify-center rounded-full border border-[#bdbdbd] bg-[#F3F4F5] text-[#1f1f1f] transition-colors hover:bg-[#f5f5f5] dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800">
+                  <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+                </button>
+              </div>
+            </div>
+
+            <MonthGrid
+              month={month}
+              listing={selectedListing}
+              bookingsByDate={bookingsByDate}
+              bookingRanges={bookingRanges}
+              blockedDatesSet={blockedDatesSet}
+              customPricesMap={customPricesMap}
+              selection={selection}
+              focusedDateKey={focusedDateKey}
+              isAllListings={false}
+              listingsCount={listings.length}
+              compact={false}
+              onDayClick={handleDayClick}
+              onDayPointerDown={handleDayPointerDown}
+              onDayPointerEnter={handleDayPointerEnter}
+              onKeyDown={handleKeyDown}
+            />
+          </section>
+        ) : view === "year" && selectedListing ? (
           <MobileYearCalendar
             startMonth={month}
             listing={selectedListing}
@@ -2742,7 +2796,7 @@ export function HostCalendarWorkspace({
                 aria-expanded={showMonthDropdown}
                 aria-haspopup="dialog"
                 aria-label="Select month and year"
-                className="flex items-center gap-2 *:text-4xl font-medium tracking-tight text-[#1f1f1f] cursor-pointer dark:text-zinc-100 dark:hover:bg-zinc-800/60"
+                className="flex items-center gap-2 font-medium tracking-tight text-[#1f1f1f] cursor-pointer text-xl lg:text-2xl xl:text-4xl dark:text-zinc-100 dark:hover:bg-zinc-800/60"
               >
                 <span>
                   {view === "year"
@@ -2839,7 +2893,7 @@ export function HostCalendarWorkspace({
               type="button"
               onClick={handleToday}
               aria-label="Jump to current month"
-              className="hidden md:flex items-center gap-1.5 rounded-full bg-[#F3F4F5] dark:bg-zinc-800 px-4 py-2 text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 border border-transparent hover:border-[#1F1F1F] dark:hover:border-zinc-600 transition-colors shadow-2xs cursor-pointer"
+              className="hidden md:flex items-center gap-1.5 rounded-full bg-[#F3F4F5] dark:bg-zinc-800 px-4 py-2 lg:text-base text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 border border-transparent hover:border-[#1F1F1F] dark:hover:border-zinc-600 transition-colors shadow-2xs cursor-pointer"
             >
               Today
             </button>
@@ -2851,7 +2905,7 @@ export function HostCalendarWorkspace({
             <button
               type="button"
               onClick={() => setTips(true)}
-              className="hidden md:flex items-center gap-1.5 rounded-full bg-[#F3F4F5] dark:bg-zinc-800 px-4 py-2 text-base font-medium text-[#1F1F1F] dark:text-zinc-100 border border-transparent hover:border-[#1F1F1F] dark:hover:border-zinc-600 transition-colors shadow-2xs cursor-pointer"
+              className="hidden md:flex items-center gap-1.5 rounded-full bg-[#F3F4F5] dark:bg-zinc-800 px-4 py-2 lg:text-base text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 border border-transparent hover:border-[#1F1F1F] dark:hover:border-zinc-600 transition-colors shadow-2xs cursor-pointer"
             >
               <span className="text-amber-500">
                 <Image
@@ -2876,7 +2930,7 @@ export function HostCalendarWorkspace({
                 aria-expanded={showViewDropdown}
                 aria-haspopup="menu"
                 aria-label="Calendar view"
-                className="hidden md:flex items-center gap-1.5 rounded-full bg-[#F3F4F5] dark:bg-zinc-800 px-4 py-2 text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 border border-transparent hover:border-[#1F1F1F] dark:hover:border-zinc-600 transition-colors shadow-2xs cursor-pointer"
+                className="hidden md:flex items-center gap-1.5 rounded-full bg-[#F3F4F5] dark:bg-zinc-800 px-4 py-2 lg:text-base text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 border border-transparent hover:border-[#1F1F1F] dark:hover:border-zinc-600 transition-colors shadow-2xs cursor-pointer"
               >
                 {view === "month" ? "Month" : "Year"}
                 <svg
@@ -2926,7 +2980,7 @@ export function HostCalendarWorkspace({
             <button
               type="button"
               onClick={() => setMobileSettingsOpen(true)}
-              className="hidden sm:block lg:hidden rounded-full bg-[#1F1F1F] dark:bg-zinc-100 px-4 py-2 text-xs font-semibold text-white dark:text-[#1F1F1F] cursor-pointer"
+              className="hidden sm:block lg:hidden rounded-full bg-[#1F1F1F] dark:bg-zinc-100 px-4 py-2 text-sm font-medium text-white dark:text-[#1F1F1F] cursor-pointer"
             >
               {normalizedSelectedRange ? "Edit selected" : "Settings"}
             </button>
@@ -2985,7 +3039,7 @@ export function HostCalendarWorkspace({
                   title={l.title}
                   aria-label={l.title}
                   aria-pressed={isSelected}
-                  className={`group relative h-[94px] w-[105px] shrink-0 overflow-hidden rounded-2xl transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a5a0ff] cursor-pointer ${isSelected
+                  className={`group relative h-[94px] w-[94px] xl:w-[105px] shrink-0 overflow-hidden rounded-lg lg:rounded-2xl transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a5a0ff] cursor-pointer ${isSelected
                     ? "border-[4px] border-[#a5a0ff] shadow-md ring-2 ring-[#a5a0ff]/20 dark:border-amber-400"
                     : "border border-zinc-300 dark:border-zinc-700 hover:border-[#8d88ee] dark:hover:border-zinc-500 opacity-80 hover:opacity-100"
                     }`}
@@ -3026,7 +3080,7 @@ export function HostCalendarWorkspace({
               />
             ) : (
               /* 12+ Months Year View with Lazy Loading */
-              <div className="grid grid-cols-1 gap-x-8 gap-y-10 sm:grid-cols-2">
+              <div className="grid grid-cols-1 min-[1366px]:grid-cols-2 gap-x-8 xl:gap-y-6 gap-y-6 mt-6">
                 {Array.from({ length: 12 }, (_, i) => {
                   const d = new Date(
                     month.getFullYear(),
@@ -3036,7 +3090,7 @@ export function HostCalendarWorkspace({
                   return (
                     <Fragment key={d.toISOString()}>
                       {i > 0 && d.getMonth() === 0 && (
-                        <h2 className="col-span-full border-t border-zinc-100 dark:border-zinc-800 pt-5 text-xl font-bold dark:text-zinc-100">
+                        <h2 className="col-span-full dark:border-zinc-800 text-xl font-semibold dark:text-zinc-100">
                           {d.getFullYear()}
                         </h2>
                       )}
@@ -3066,7 +3120,7 @@ export function HostCalendarWorkspace({
           {/* 3. Right Settings / Contextual Management Panel (Desktop Sidebar) */}
           <aside
             aria-label="Calendar settings"
-            className="hidden h-full w-[300px] shrink-0 overflow-y-auto overscroll-contain border-y border-[#dddddd] border-l border-l-[#eeeeee] px-5 py-5 font-['Poppins'] lg:block xl:w-[338px] calendar-panel-scrollbar dark:border-zinc-800 dark:border-l-zinc-800"
+            className="hidden h-full w-[300px] shrink-0 overflow-y-auto overscroll-contain border-l border-l-[#eeeeee] px-5 py-5 font-['Poppins'] lg:block xl:w-[338px] calendar-panel-scrollbar dark:border-zinc-800 dark:border-l-zinc-800"
           >
             {isAllListings ? (
               <AllListingsOverviewPanel
@@ -3155,36 +3209,6 @@ export function HostCalendarWorkspace({
                 onSave={save}
               />
             ) : null}
-          </WorkspaceDialog>
-        )}
-
-        {mobileCalendarOpen && selectedListing && (
-          <WorkspaceDialog
-            title={`${monthName(month)} ${month.getFullYear()}`}
-            onClose={() => setMobileCalendarOpen(false)}
-            maxWidth="max-w-4xl"
-          >
-            <div className="mb-4 flex items-center justify-between">
-              <button type="button" onClick={handlePrev} aria-label="Previous month" className="rounded-full border border-[#dddddd] px-3 py-1.5 text-[#222222]">←</button>
-              <button type="button" onClick={handleNext} aria-label="Next month" className="rounded-full border border-[#dddddd] px-3 py-1.5 text-[#222222]">→</button>
-            </div>
-            <MonthGrid
-              month={month}
-              listing={selectedListing}
-              bookingsByDate={bookingsByDate}
-              bookingRanges={bookingRanges}
-              blockedDatesSet={blockedDatesSet}
-              customPricesMap={customPricesMap}
-              selection={selection}
-              focusedDateKey={focusedDateKey}
-              isAllListings={false}
-              listingsCount={listings.length}
-              compact={false}
-              onDayClick={handleDayClick}
-              onDayPointerDown={handleDayPointerDown}
-              onDayPointerEnter={handleDayPointerEnter}
-              onKeyDown={handleKeyDown}
-            />
           </WorkspaceDialog>
         )}
 
@@ -3588,37 +3612,55 @@ export function HostCalendarWorkspace({
                 </div>
               ) : (
                 /* Overall listing tips */
-                <div className="space-y-4">
-                  <div className="rounded-xl bg-amber-50 dark:bg-amber-950/40 p-4 border border-amber-200/60 dark:border-amber-900/60">
-                    <h4 className="font-bold text-[#1F1F1F] dark:text-zinc-100 text-sm mb-1">
-                      Property Pricing Insights
-                    </h4>
-                    <p className="text-xs text-amber-900 dark:text-amber-300 leading-relaxed">
-                      Optimize earnings by setting weekend premiums, configuring Smart Pricing limits, and applying promotional discounts for longer stays.
-                    </p>
+                <div className="space-y-5">
+                  <div className="rounded-lg border border-[#f1dc94] bg-[#fffaf0] p-4 dark:border-amber-900/60 dark:bg-amber-950/30">
+                    <div className="flex items-start gap-3">
+                      <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-[#FCDF9C] text-[#6f4c00]">
+                        <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <path d="M12 3v2M12 19v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M3 12h2M19 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+                          <circle cx="12" cy="12" r="4" />
+                        </svg>
+                      </span>
+                      <div>
+                        <h4 className="text-base font-semibold text-[#1F1F1F] dark:text-zinc-100">
+                          Property Pricing Insights
+                        </h4>
+                        <p className="mt-1 text-sm leading-5 text-[#76500b] dark:text-amber-200">
+                          Optimize earnings with weekend premiums, Smart Pricing limits, and longer-stay promotions.
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <ul className="space-y-2 text-xs text-zinc-600 dark:text-[#727272] list-disc list-inside">
-                    <li>
-                      <strong>Weekend Pricing:</strong> Configure weekend rates to capture higher weekend demand (Thursday &amp; Friday nights).
-                    </li>
-                    <li>
-                      <strong>Select Dates:</strong> Click or drag on the calendar to view tailored price recommendations for specific dates.
-                    </li>
-                    <li>
-                      <strong>Smart Pricing Limits:</strong> Set minimum and maximum price boundaries in your listing settings to safeguard profitability.
-                    </li>
-                    <li>
-                      <strong>Weekly &amp; Monthly Discounts:</strong> Offer discounts to attract longer-stay guests and increase occupancy.
-                    </li>
-                  </ul>
-                  <div className="rounded-lg bg-zinc-100 dark:bg-zinc-800/80 p-3 text-xs text-[#727272] dark:text-zinc-400">
-                    External market competitor data is currently unavailable. Suggestions are generated from your property&apos;s rules and calendar lead time.
+
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-3">
+                      <span className="mt-1 flex size-4 shrink-0 items-center justify-center rounded-full bg-[#DDDDDE] text-[9px] font-semibold text-[#6f4c00]">1</span>
+                      <p className="text-sm leading-6 text-[#595959] dark:text-zinc-300"><strong className="font-semibold text-[#1F1F1F] dark:text-zinc-100">Weekend Pricing</strong><span className="text-[#727272] dark:text-zinc-400"> · Configure weekend rates to capture higher demand on Thursday and Friday nights.</span></p>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <span className="mt-1 flex size-4 shrink-0 items-center justify-center rounded-full bg-[#DDDDDE] text-[9px] font-semibold text-[#6f4c00]">2</span>
+                      <p className="text-sm leading-6 text-[#595959] dark:text-zinc-300"><strong className="font-semibold text-[#1F1F1F] dark:text-zinc-100">Select Dates</strong><span className="text-[#727272] dark:text-zinc-400"> · Click or drag on the calendar to view tailored recommendations for specific dates.</span></p>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <span className="mt-1 flex size-4 shrink-0 items-center justify-center rounded-full bg-[#DDDDDE] text-[9px] font-semibold text-[#6f4c00]">3</span>
+                      <p className="text-sm leading-6 text-[#595959] dark:text-zinc-300"><strong className="font-semibold text-[#1F1F1F] dark:text-zinc-100">Smart Pricing Limits</strong><span className="text-[#727272] dark:text-zinc-400"> · Set minimum and maximum prices to safeguard profitability.</span></p>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <span className="mt-1 flex size-4 shrink-0 items-center justify-center rounded-full bg[#DDDDDE] text-[9px] font-semibold text-[#6f4c00]">4</span>
+                      <p className="text-sm leading-6 text-[#595959] dark:text-zinc-300"><strong className="font-semibold text-[#1F1F1F] dark:text-zinc-100">Stay Length Discounts</strong><span className="text-[#727272] dark:text-zinc-400"> · Offer discounts to attract longer stays and increase occupancy.</span></p>
+                    </div>
                   </div>
-                  <div className="pt-2 text-right">
+
+                  <div className="flex items-start gap-2.5 rounded-xl border border-[#e7e7e7] bg-[#f7f7f7] p-3 text-sm leading-6 text-[#727272] dark:border-zinc-700 dark:bg-zinc-800/80 dark:text-zinc-400">
+                    <svg className="mt-0.5 size-4 shrink-0 text-[#727272]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 10v6M12 7h.01" strokeLinecap="round" /></svg>
+                    <p>External market competitor data is currently unavailable. Suggestions use your property&apos;s rules and calendar lead time.</p>
+                  </div>
+
+                  <div className="flex justify-end border-t border-[#e7e7e7] pt-4 dark:border-zinc-800">
                     <button
                       type="button"
                       onClick={() => setTips(false)}
-                      className="rounded-full bg-[#1F1F1F] dark:bg-zinc-100 px-6 py-2 text-xs font-semibold text-white dark:text-[#1F1F1F] hover:bg-black dark:hover:bg-white transition-colors cursor-pointer"
+                      className="rounded-full bg-[#1F1F1F] px-6 py-2.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-[#3a3a3a] dark:bg-zinc-100 dark:text-[#1F1F1F] dark:hover:bg-white cursor-pointer"
                     >
                       Got it
                     </button>
