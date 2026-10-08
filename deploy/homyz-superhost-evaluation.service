@@ -1,0 +1,12 @@
+[Unit]
+Description=Homyz quarterly Superhost evaluation
+After=default.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/homyz
+EnvironmentFile=-%h/homyz/.env
+ExecStart=/usr/bin/env bash %h/homyz/scripts/deploy/run-superhost-evaluation.sh
+TimeoutStartSec=45min
+SyslogIdentifier=homyz-superhost-evaluation
+

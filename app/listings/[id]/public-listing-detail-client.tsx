@@ -968,6 +968,8 @@ export function PublicListingDetailClient({
         rating: null,
         maxGuests: listing.guests,
         propertyType: listing.propertyType,
+        isGuestFavorite: listing.isGuestFavorite === true,
+        isSuperhost: listing.host?.isSuperhost === true,
       });
     }
   }, [listing]);

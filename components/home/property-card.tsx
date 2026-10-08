@@ -12,6 +12,7 @@ import {
   toPropertyCardPricingViewModel,
   type PropertyCardPricingViewModel,
 } from "@/lib/booking/property-card-pricing";
+import { getPrimaryListingBadge } from "@/lib/listings/card-badge";
 
 export interface PropertyCardData {
   id: string;
@@ -182,10 +183,8 @@ function PropertyCardComponent({
       : null;
   const resolvedReviews = reviewCount ?? reviewsCount ?? null;
 
-  // Badge resolution: backend controlled formula
-  const showGuestFavorite = isGuestFavorite ?? (badge === "guest_favorite");
-  const showSuperhost = !showGuestFavorite && (isSuperhost ?? (badge === "superhost"));
-  const showFeatured = !showGuestFavorite && !showSuperhost && badge === "featured";
+  const primaryBadge = getPrimaryListingBadge({ isGuestFavorite, isSuperhost });
+  const showFeatured = primaryBadge === null && badge === "featured";
 
   const [targetHref, setTargetHref] = useState(() => `/listings/${slug || id}`);
 
@@ -220,22 +219,26 @@ function PropertyCardComponent({
         )}
 
         {/* Badges: Only rendered when qualified by backend formula */}
-        {showFeatured && (
-          <span className="absolute left-2.5 top-2.5 sm:left-3 sm:top-3 inline-flex items-center gap-1 rounded-full bg-white/60 backdrop-blur-md px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10.5px] sm:text-xs font-medium text-[#1F1F1F] shadow-xs border border-white/60">
-            {t("home_featured")}
-          </span>
-        )}
+        {(primaryBadge || showFeatured) && (
+          <div className="absolute left-2.5 top-2.5 sm:left-3 sm:top-3 z-20 flex flex-wrap items-center gap-1.5 max-w-[calc(100%-4.25rem)] pointer-events-none">
+            {primaryBadge === "guest_favorite" && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-[#ECA7B0] px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10.5px] sm:text-xs font-medium text-white shadow-xs backdrop-blur-md h-[26px]">
+                {t("home_guest_favorite") || "Guest favorite"}
+              </span>
+            )}
 
-        {showGuestFavorite && (
-          <span className="absolute left-2.5 top-2.5 sm:left-3 sm:top-3 inline-flex items-center gap-1 rounded-full bg-[#ECA7B0] px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10.5px] sm:text-xs font-medium text-white shadow-xs backdrop-blur-md h-[26px]">
-            {t("home_guest_favorite") || "Guest favorite"}
-          </span>
-        )}
+            {primaryBadge === "superhost" && (
+              <span className="inline-flex items-center rounded-full bg-[#1F1F1F]/80 backdrop-blur-md px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10.5px] sm:text-xs font-medium text-white shadow-xs h-[26px]">
+                {t("home_superhost") || "Superhost"}
+              </span>
+            )}
 
-        {showSuperhost && (
-          <span className="absolute left-2.5 top-2.5 sm:left-3 sm:top-3 inline-flex items-center rounded-full bg-[#eca7b0] px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10.5px] sm:text-xs font-medium text-white shadow-xs">
-            {t("home_superhost") || "Superhost"}
-          </span>
+            {showFeatured && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-white/60 backdrop-blur-md px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10.5px] sm:text-xs font-medium text-[#1F1F1F] shadow-xs border border-white/60 h-[26px]">
+                {t("home_featured")}
+              </span>
+            )}
+          </div>
         )}
 
 

@@ -1,0 +1,12 @@
+[Unit]
+Description=Run Homyz Guest Favorite evaluation daily
+
+[Timer]
+# A randomized delay avoids a fixed-time thundering herd after host restarts.
+OnCalendar=*-*-* 03:15:00 UTC
+Persistent=true
+RandomizedDelaySec=10m
+Unit=homyz-guest-favorite-evaluation.service
+
+[Install]
+WantedBy=timers.target

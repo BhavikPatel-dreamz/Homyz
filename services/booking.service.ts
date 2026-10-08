@@ -65,6 +65,27 @@ import {
   formatExpiryCountdown,
 } from "@/lib/booking/booking-expiry";
 
+/**
+ * Re-evaluate only the affected listing after a host-caused cancellation.
+ * The import is lazy so the booking flow stays independent of the Guest
+ * Favorite evaluator and a transient evaluator failure cannot roll back a
+ * completed cancellation. The daily evaluator remains the reconciliation
+ * path for any failed immediate update.
+ */
+async function triggerGuestFavoriteReevaluation(listingId: string): Promise<void> {
+  try {
+    const { evaluateListingGuestFavoriteDaily } = await import(
+      "@/services/guest-favorite.service"
+    );
+    await evaluateListingGuestFavoriteDaily(listingId);
+  } catch (error) {
+    console.error(
+      `[booking.service] Immediate Guest Favorite recalculation failed for listing ${listingId}:`,
+      error,
+    );
+  }
+}
+
 export type BookingQuote = {
   listingId: string;
   bookingMode: "INSTANT_BOOK" | "REQUEST_TO_BOOK";
@@ -1864,6 +1885,7 @@ async function cancelBookingByHost(
   });
 
   await invalidateBookingCache(cancelled.id, cancelled.userId, cancelled.listing.hostId);
+  await triggerGuestFavoriteReevaluation(cancelled.listingId);
 
   try {
     await notificationService.create({

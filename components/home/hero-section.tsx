@@ -1200,7 +1200,11 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
       </div>
 
       {/* Desktop / Tablet Hero Section (screens >= md) */}
-      <section className="relative z-20 hidden md:flex min-h-[410px] w-full items-center rounded-[32px] bg-[#ddd] sm:min-h-[460px] lg:min-h-[512px] lg:rounded-[60px]">
+      <section
+        className={`relative isolate hidden min-h-[410px] w-full items-center rounded-[32px] bg-[#ddd] md:flex sm:min-h-[460px] lg:min-h-[512px] lg:rounded-[60px] ${
+          desktopPanel ? "z-[60]" : "z-20"
+        }`}
+      >
         {/* Background Travel Imagery */}
         <div className="absolute inset-0 z-0 overflow-hidden rounded-[32px] lg:rounded-[60px]">
           <Image
@@ -1412,7 +1416,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                     ? "Guests"
                     : "Choose dates"
                 }
-                className={`absolute top-full z-999 mt-3 max-h-[min(600px,75dvh)] max-w-full origin-top overflow-y-auto rounded-[16px] bg-[#F3F4F5] p-5 shadow-[0_20px_50px_rgba(0,0,0,0.18)] animate-in fade-in slide-in-from-top-2 zoom-in-95 transition-[width,left,right] duration-200 ease-out ${
+                className={`absolute top-full z-[70] mt-3 max-h-[min(600px,75dvh)] max-w-full origin-top overflow-y-auto rounded-[16px] bg-[#F3F4F5] p-5 shadow-[0_20px_50px_rgba(0,0,0,0.18)] animate-in fade-in slide-in-from-top-2 zoom-in-95 transition-[width,left,right] duration-200 ease-out ${
                   desktopPanel === "where"
                     ? "left-0 w-[400px] sm:w-[480px]"
                     : desktopPanel === "who"

@@ -2,8 +2,7 @@ import { Prisma } from "@/generated/prisma/client";
 import { BookingStatus } from "@/generated/prisma/enums";
 import { AppError } from "@/lib/api/errors";
 import { prisma } from "@/lib/db/prisma";
-import { incrCounter } from "@/lib/redis/cache";
-import { keys } from "@/lib/redis/keys";
+import { invalidateListingCache } from "@/lib/redis/invalidation";
 import { toPublicReviewDTO, toReviewDTO, type PublicReviewDTO, type ReviewDTO } from "./mappers";
 
 const REVIEWS_PAGE_SIZE = 6;
@@ -94,6 +93,27 @@ function categoryData(categoryRatings?: ReviewCategoryRatings) {
     locationRating: categoryRatings?.location,
     valueRating: categoryRatings?.value,
   };
+}
+
+/**
+ * Guest Favorite reads the listing's published guest reviews directly. Reuse
+ * its existing listing-level evaluator after a review lifecycle change rather
+ * than maintaining a second communication aggregate or qualification formula.
+ * A review is already durable when this runs, so a transient evaluation error
+ * is logged and reconciled by the daily evaluator without rejecting the review.
+ */
+async function triggerGuestFavoriteReevaluation(listingId: string): Promise<void> {
+  try {
+    const { evaluateListingGuestFavoriteDaily } = await import(
+      "@/services/guest-favorite.service"
+    );
+    await evaluateListingGuestFavoriteDaily(listingId);
+  } catch (error) {
+    console.error("[Review] Immediate Guest Favorite recalculation failed", {
+      listingId,
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
 }
 
 /** Database operations for the public, property-specific review experience. */
@@ -255,7 +275,10 @@ export const reviewService = {
       },
       include: { author: { select: { id: true, name: true, image: true } } },
     });
-    await incrCounter(keys.listingsPublicVersion());
+    // Rating, review count, and review-derived public details change together.
+    // Invalidate the listing boundary before its qualification re-evaluation.
+    await invalidateListingCache(review.listingId);
+    await triggerGuestFavoriteReevaluation(review.listingId);
     return toPublicReviewDTO(review);
   },
 
@@ -268,8 +291,13 @@ export const reviewService = {
   },
 
   async deleteReview(reviewId: string): Promise<void> {
-    await prisma.review.update({ where: { id: reviewId }, data: { status: "DELETED" } });
-    await incrCounter(keys.listingsPublicVersion());
+    const review = await prisma.review.update({
+      where: { id: reviewId },
+      data: { status: "DELETED" },
+      select: { listingId: true },
+    });
+    await invalidateListingCache(review.listingId);
+    await triggerGuestFavoriteReevaluation(review.listingId);
   },
 
   async getUserReviews(userId: string): Promise<PublicReviewDTO[]> {

@@ -1,5 +1,6 @@
-import { redisConfig } from "./config";
+import { isRedisConfigured, redisConfig } from "./config";
 import { getRedisClient, isRedisAvailable } from "./client";
+import { randomUUID } from "crypto";
 
 // The ONE cache abstraction the rest of the app uses. Services call these;
 // nothing else touches the Redis client directly (spec §5).
@@ -26,6 +27,7 @@ interface MemoryCacheEntry {
 
 const memoryCache = new Map<string, MemoryCacheEntry>();
 const memoryCounters = new Map<string, number>();
+const processLocks = new Set<string>();
 const MAX_MEMORY_ENTRIES = 500;
 
 function getFromMemoryCache<T>(key: string): T | typeof CACHE_MISS {
@@ -183,6 +185,67 @@ export async function getCounter(key: string): Promise<number> {
   } catch (err) {
     logOpFailure("get", err);
     return memoryCounters.get(key) || 0;
+  }
+}
+
+export type CacheLease = {
+  key: string;
+  token: string;
+  distributed: boolean;
+};
+
+/**
+ * Acquire a short-lived lease for singleton background work. Redis is the
+ * cross-process coordination layer when configured; a deliberately Redis-free
+ * local install still receives duplicate protection within one process.
+ */
+export async function acquireCacheLease(key: string, ttlSeconds: number): Promise<CacheLease | null> {
+  if (processLocks.has(key)) return null;
+
+  const token = randomUUID();
+  const ttl = Math.max(1, Math.trunc(ttlSeconds));
+  if (isRedisConfigured()) {
+    try {
+      const client = await getRedisClient();
+      if (!client || !isRedisAvailable()) return null;
+      const acquired = await withTimeout(
+        client.set(key, token, "EX", ttl, "NX"),
+        redisConfig.connectTimeout,
+      );
+      if (acquired !== "OK") return null;
+      processLocks.add(key);
+      return { key, token, distributed: true };
+    } catch (err) {
+      logOpFailure("acquire lease", err);
+      return null;
+    }
+  }
+
+  // A local development install may deliberately run without Redis. It still
+  // receives duplicate-trigger protection inside the one application process.
+  processLocks.add(key);
+  return { key, token, distributed: false };
+}
+
+/** Release a lease only when this caller still owns it. */
+export async function releaseCacheLease(lease: CacheLease): Promise<void> {
+  processLocks.delete(lease.key);
+  if (!lease.distributed) return;
+
+  try {
+    const client = await getRedisClient();
+    if (!client || !isRedisAvailable()) return;
+    await withTimeout(
+      client.eval(
+        "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) end return 0",
+        1,
+        lease.key,
+        lease.token,
+      ),
+      redisConfig.connectTimeout,
+    );
+  } catch (err) {
+    logOpFailure("release lease", err);
   }
 }
 

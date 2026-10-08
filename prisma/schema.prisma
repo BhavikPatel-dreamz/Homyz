@@ -176,6 +176,29 @@ enum SpecialOfferStatus {
   EXPIRED
 }
 
+enum QualityIncidentStatus {
+  PENDING
+  CONFIRMED
+  REJECTED
+  RESOLVED
+}
+
+enum QualityIncidentCategory {
+  PROPERTY_CONDITION
+  LISTING_ACCURACY
+  CLEANLINESS
+  SAFETY_HAZARD
+  HOST_SERVICE
+  OTHER
+}
+
+enum QualityIncidentSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Auth / identity (NextAuth adapter models: User, Account, Session,
 // VerificationToken — shapes required by @next-auth/prisma-adapter)
@@ -260,6 +283,7 @@ model User {
   guestSpecialOffers              SpecialOffer[]             @relation("GuestSpecialOffers")
   hostSpecialOffers               SpecialOffer[]             @relation("HostSpecialOffers")
   superhostEvaluations            SuperhostEvaluation[]
+  reportedQualityIncidents        ListingQualityIncident[]   @relation("ReportedQualityIncidents")
 
   @@index([role])
   @@index([adminRoleId])
@@ -610,6 +634,7 @@ model Listing {
   conversations            Conversation[]
   specialOffers            SpecialOffer[]
   guestFavoriteEvaluations GuestFavoriteEvaluation[]
+  qualityIncidents         ListingQualityIncident[]
 
   @@index([hostId])
   @@index([published])
@@ -632,6 +657,7 @@ model GuestFavoriteEvaluation {
   subratings                       Json?
   totalBookings                    Int
   hostCancellationCount            Int
+  qualityIncidentCount             Int      @default(0)
   reliabilityFailureRatePercentage Float
   qualityIncidentDataStatus        String
   qualified                        Boolean
@@ -714,6 +740,7 @@ model Booking {
   hostGuestReview HostGuestReview?
   referralReward ReferralReward?
   conversations  Conversation[]
+  qualityIncidents ListingQualityIncident[]
 
   @@index([userId, createdAt])
   @@index([listingId])
@@ -1521,5 +1548,30 @@ model MessageAttachment {
 
   @@index([conversationId])
   @@index([messageId])
+  @@index([createdAt])
+}
+
+model ListingQualityIncident {
+  id              String                  @id @default(cuid())
+  listingId       String
+  bookingId       String?
+  reportedById    String?
+  category        QualityIncidentCategory
+  status          QualityIncidentStatus   @default(PENDING)
+  severity        QualityIncidentSeverity?
+  description     String?                 @db.Text
+  resolutionNotes String?                 @db.Text
+  metadata        Json?
+  createdAt       DateTime                @default(now())
+  resolvedAt      DateTime?
+  updatedAt       DateTime                @updatedAt
+
+  listing    Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  booking    Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  reportedBy User?    @relation("ReportedQualityIncidents", fields: [reportedById], references: [id], onDelete: SetNull)
+
+  @@index([listingId])
+  @@index([listingId, status])
+  @@index([bookingId])
   @@index([createdAt])
 }
