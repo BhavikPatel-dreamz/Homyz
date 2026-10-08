@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import Image from "next/image";
 import { BackButton } from "@/components/ui/back-button";
 import type { ListingDTO } from "@/services/mappers";
@@ -60,6 +60,104 @@ function ExpandControl({
         {children}
       </div>
     </details>
+  );
+}
+
+function AvailabilityDropdown({
+  name,
+  label,
+  defaultValue,
+  options,
+  onValueChange,
+}: {
+  name: string;
+  label: string;
+  defaultValue: string;
+  options: Array<{ value: string; label: string }>;
+  onValueChange: () => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [value, setValue] = useState(defaultValue);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const listboxId = useId();
+  const selectedLabel = options.find((option) => option.value === value)?.label ?? value;
+
+  useEffect(() => {
+    const closeWhenClickingAway = (event: MouseEvent) => {
+      if (!dropdownRef.current?.contains(event.target as Node)) setIsOpen(false);
+    };
+    document.addEventListener("mousedown", closeWhenClickingAway);
+    return () => document.removeEventListener("mousedown", closeWhenClickingAway);
+  }, []);
+
+  return (
+    <div ref={dropdownRef} className="relative">
+      <input type="hidden" name={name} value={value} />
+      <button
+        type="button"
+        aria-expanded={isOpen}
+        aria-haspopup="listbox"
+        aria-controls={listboxId}
+        onClick={() => setIsOpen((open) => !open)}
+        onKeyDown={(event) => {
+          if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+            event.preventDefault();
+            setIsOpen(true);
+          }
+          if (event.key === "Escape") setIsOpen(false);
+        }}
+        className="relative flex h-[76px] w-full cursor-pointer items-end rounded-[12px] border border-white bg-[#F3F4F5] px-5 pb-3 pr-12 text-left shadow-[0px_2px_4px_0px_#00000040] transition-[box-shadow,background-color] hover:bg-[#eeeeef] focus:outline-none focus:ring-2 focus:ring-[#1f1f1f]/15 dark:border-white/20 dark:bg-zinc-800 dark:hover:bg-zinc-700"
+      >
+        <span className="pointer-events-none absolute left-5 top-3 text-[13px] leading-4 text-[#727272] dark:text-zinc-400">
+          {label}
+        </span>
+        <span className="block truncate text-[15px] font-medium leading-5 text-[#1f1f1f] dark:text-zinc-100">
+          {selectedLabel}
+        </span>
+        <svg
+          className={`pointer-events-none absolute right-5 top-1/2 size-5 -translate-y-1/2 text-[#1f1f1f] transition-transform dark:text-zinc-200 ${isOpen ? "rotate-180" : ""}`}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <path d="m6 9 6 6 6-6" />
+        </svg>
+      </button>
+
+      {isOpen && (
+        <div
+          id={listboxId}
+          role="listbox"
+          aria-label={label}
+          className="absolute inset-x-0 top-[calc(100%+6px)] z-30 max-h-60 overflow-y-auto rounded-[12px] border border-white bg-white p-1.5 shadow-[0px_4px_12px_0px_#00000026] dark:border-white/20 dark:bg-zinc-800"
+        >
+          {options.map((option) => {
+            const selected = option.value === value;
+            return (
+              <button
+                key={option.value}
+                type="button"
+                role="option"
+                aria-selected={selected}
+                onClick={() => {
+                  setValue(option.value);
+                  setIsOpen(false);
+                  onValueChange();
+                }}
+                className={`flex w-full cursor-pointer items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm transition-colors ${selected ? "bg-[#E7E7E7] font-medium text-[#1f1f1f] dark:bg-zinc-700 dark:text-zinc-100" : "text-[#4b4b4b] hover:bg-[#F3F4F5] dark:text-zinc-300 dark:hover:bg-zinc-700"}`}
+              >
+                {option.label}
+                {selected ? <span aria-hidden="true">✓</span> : null}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -311,6 +409,41 @@ export function CalendarSettingsPanel({
     </div>
   );
 
+  const renderAvailabilityNumberRow = ({
+    name,
+    label,
+    defaultValue,
+    min,
+    max,
+  }: {
+    name: string;
+    label: string;
+    defaultValue: number;
+    min: number;
+    max: number;
+  }) => (
+    <label
+      htmlFor={`input-${name}`}
+      className="flex min-h-[60px] cursor-text items-center gap-3 rounded-[12px] border border-white bg-[#F3F4F5] px-5 py-3 shadow-[0px_2px_4px_0px_#00000040] transition-shadow focus-within:ring-2 focus-within:ring-[#1f1f1f]/15 dark:border-white/20 dark:bg-zinc-800"
+    >
+      <span className="min-w-0 flex-1 text-sm text-[#727272] dark:text-zinc-400">
+        {label}
+      </span>
+      <input
+        id={`input-${name}`}
+        aria-label={label}
+        name={name}
+        type="number"
+        defaultValue={defaultValue}
+        min={min}
+        max={max}
+        step="1"
+        inputMode="numeric"
+        className="w-16 bg-transparent text-right text-base font-medium text-[#1f1f1f] outline-none [appearance:textfield] dark:text-zinc-100 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+      />
+    </label>
+  );
+
   if (panel === "overview") {
     return (
       <div className="text-sm text-[#222222] dark:text-zinc-100">
@@ -431,127 +564,103 @@ export function CalendarSettingsPanel({
             });
             setDirty(false);
           }}
-          className="space-y-5 pb-6"
+          className="space-y-7 pb-6"
         >
           <div>
-            <h2 className="text-base font-medium text-[#1f1f1f] dark:text-zinc-100">
-              Availability settings
+            <h2 className="text-[20px] font-medium tracking-[-0.02em] text-[#1f1f1f] dark:text-zinc-100">
+              Available settings
             </h2>
-            <p className="mt-1 text-sm text-[#727272] dark:text-zinc-400">
-              Set global trip length rules and booking notice requirements.
+            <p className="mt-1 text-[15px] leading-6 text-[#727272] dark:text-zinc-400">
+              These apply to all nights, unless you customize them by date.
             </p>
           </div>
 
-          <div className="space-y-4">
-            {renderInputField({
+          <section className="border-y border-[#E7E7E7] py-5 dark:border-zinc-800">
+            <h3 className="text-base font-medium text-[#1f1f1f] dark:text-zinc-100">
+              Trip length
+            </h3>
+            <div className="mt-5 space-y-3">
+              {renderAvailabilityNumberRow({
               name: "minNights",
-              label: "Minimum stay",
+              label: "Minimum nights",
               defaultValue: listing.minNights ?? 1,
-              suffix: "nights",
               min: 1,
               max: 365,
-              inputMode: "numeric",
-              helperText: "Shortest reservation length guests can book.",
             })}
 
-            {renderInputField({
+              {renderAvailabilityNumberRow({
               name: "maxNights",
-              label: "Maximum stay",
+              label: "Maximum nights",
               defaultValue: listing.maxNights ?? 365,
-              suffix: "nights",
               min: 1,
               max: 365,
-              inputMode: "numeric",
-              helperText: "Longest reservation length guests can book.",
             })}
-
-            {renderInputField({
-              name: "guests",
-              label: "Maximum guest capacity",
-              defaultValue: (listing as any).guests ?? 1,
-              suffix: "guests",
-              min: 1,
-              max: 50,
-              inputMode: "numeric",
-              helperText: "Maximum number of guests allowed per booking.",
-            })}
-
-            <div className="space-y-1">
-              <label
-                htmlFor="advanceNoticeSelect"
-                className="block text-sm font-medium text-[#1f1f1f] dark:text-zinc-200"
-              >
-                Advance notice
-              </label>
-              <div className="relative flex items-center">
-                <select
-                  id="advanceNoticeSelect"
-                  name="advanceNotice"
-                  defaultValue={(listing as any).advanceNotice || "Same day"}
-                  className="w-full appearance-none bg-transparent px-3.5 py-2.5 text-sm font-medium text-zinc-900 dark:text-zinc-100 outline-none cursor-pointer pr-9 border border-[#727272] sm:min-h-[56px] min-h-[45px] focus-within:outline-0 focus-within:shadow-none focus-visible:outline-0 focus-visible:shadow-none rounded-lg"
-                >
-                  <option value="Same day">Same day</option>
-                  <option value="At least 1 day">At least 1 day</option>
-                  <option value="At least 2 days">At least 2 days</option>
-                  <option value="At least 3 days">At least 3 days</option>
-                  <option value="At least 7 days">At least 7 days</option>
-                </select>
-                <span className="pointer-events-none absolute right-3.5 text-xs text-zinc-400">
-                  ▾
-                </span>
-              </div>
-              <p className="text-xs text-[#727272] dark:text-zinc-400">
-                Required lead time before a guest can check in.
-              </p>
             </div>
+          </section>
 
-            <div className="space-y-1">
-              <label
-                htmlFor="sameDayCutoffSelect"
-                className="block text-sm font-medium text-[#1f1f1f] dark:text-zinc-200"
-              >
-                Same-day booking cutoff
-              </label>
-              <div className="w-full appearance-none bg-transparent px-3.5 py-2.5 text-sm font-medium text-zinc-900 dark:text-zinc-100 outline-none cursor-pointer pr-9 border border-[#727272] sm:min-h-[56px] min-h-[45px] focus-within:outline-0 focus-within:shadow-none focus-visible:outline-0 focus-visible:shadow-none rounded-lg">
-                <select
-                  id="sameDayCutoffSelect"
-                  name="sameDayCutoff"
-                  defaultValue={(listing as any).sameDayCutoff || "12:00 AM"}
-                  className="w-full appearance-none bg-transparent px-3.5 py-2.5 text-sm font-medium text-zinc-900 dark:text-zinc-100 outline-none cursor-pointer pr-9"
-                >
-                  <option value="12:00 AM">12:00 AM (Midnight)</option>
-                  <option value="6:00 AM">6:00 AM</option>
-                  <option value="12:00 PM">12:00 PM (Noon)</option>
-                  <option value="3:00 PM">3:00 PM</option>
-                  <option value="6:00 PM">6:00 PM</option>
-                  <option value="9:00 PM">9:00 PM</option>
-                </select>
-                <span className="pointer-events-none absolute right-3.5 text-xs text-zinc-400">
-                  ▾
-                </span>
-              </div>
-              <p className="text-xs text-[#727272] dark:text-zinc-400">
-                Time after which guests cannot book a same-day reservation.
-              </p>
-            </div>
-
-            <label className="flex items-center justify-between gap-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50/70 dark:bg-zinc-800/40 p-3.5 hover:bg-zinc-100/70 dark:hover:bg-zinc-800/80 transition-colors cursor-pointer">
-              <div className="min-w-0 flex-1">
-                <span className="block text-sm font-medium text-[#1f1f1f] dark:text-zinc-200">
-                  Allow same-day booking requests
-                </span>
-                <span className="block text-xs text-[#727272] dark:text-zinc-400 mt-0.5">
-                  Let guests book on the day of arrival before the cutoff time.
-                </span>
-              </div>
-              <input
-                type="checkbox"
-                name="allowSameDayRequests"
-                defaultChecked={(listing as any).allowSameDayRequests !== false}
-                className="size-5 rounded border-zinc-300 text-amber-500 focus:ring-amber-400 cursor-pointer accent-[#1f1f1f]"
+          <section>
+            <h3 className="text-base font-medium text-[#1f1f1f] dark:text-zinc-100">
+              Availability
+            </h3>
+            <div className="mt-5 space-y-3">
+              <AvailabilityDropdown
+                name="advanceNotice"
+                label="Advance notice"
+                defaultValue={(listing as any).advanceNotice || "Same day"}
+                onValueChange={() => setDirty(true)}
+                options={[
+                  { value: "Same day", label: "Same day" },
+                  { value: "At least 1 day", label: "At least 1 day" },
+                  { value: "At least 2 days", label: "At least 2 days" },
+                  { value: "At least 3 days", label: "At least 3 days" },
+                  { value: "At least 7 days", label: "At least 7 days" },
+                ]}
               />
-            </label>
-          </div>
+
+              <AvailabilityDropdown
+                name="sameDayCutoff"
+                label="Same-day booking cutoff"
+                defaultValue={(listing as any).sameDayCutoff || "12:00 AM"}
+                onValueChange={() => setDirty(true)}
+                options={[
+                  { value: "12:00 AM", label: "12:00 AM (Midnight)" },
+                  { value: "6:00 AM", label: "6:00 AM" },
+                  { value: "12:00 PM", label: "12:00 PM (Noon)" },
+                  { value: "3:00 PM", label: "3:00 PM" },
+                  { value: "6:00 PM", label: "6:00 PM" },
+                  { value: "9:00 PM", label: "9:00 PM" },
+                ]}
+              />
+
+              <details className="group overflow-hidden rounded-[12px] border border-white bg-[#F3F4F5] shadow-[0px_2px_4px_0px_#00000040] dark:border-white/20 dark:bg-zinc-800">
+                <summary className="flex min-h-[76px] cursor-pointer list-none items-center justify-between gap-3 px-5 [&::-webkit-details-marker]:hidden">
+                  <span className="min-w-0">
+                    <span className="block text-[13px] leading-4 text-[#727272] dark:text-zinc-400">More availability settings</span>
+                    <span className="mt-1 block truncate text-[15px] font-medium leading-5 text-[#1f1f1f] dark:text-zinc-100">Guest capacity and same-day bookings</span>
+                  </span>
+                  <svg className="shrink-0 size-5 text-[#1f1f1f] transition-transform group-open:rotate-180 dark:text-zinc-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+                </summary>
+                <div className="space-y-3 border-t border-[#dedfe0] bg-white px-4 pb-4 pt-3 dark:border-zinc-700 dark:bg-zinc-900/20">
+                  {renderAvailabilityNumberRow({
+                    name: "guests",
+                    label: "Maximum guests",
+                    defaultValue: (listing as any).guests ?? 1,
+                    min: 1,
+                    max: 50,
+                  })}
+                  <label className="flex cursor-pointer items-center justify-between gap-3 rounded-[12px] border border-white bg-white/70 p-3 shadow-[0px_2px_4px_0px_#00000040] dark:border-white/20 dark:bg-zinc-900/40">
+                    <span className="text-sm text-[#1f1f1f] dark:text-zinc-200">Allow same-day booking requests</span>
+                    <input
+                      type="checkbox"
+                      name="allowSameDayRequests"
+                      defaultChecked={(listing as any).allowSameDayRequests !== false}
+                      className="size-5 rounded border-zinc-300 accent-[#1f1f1f]"
+                    />
+                  </label>
+                </div>
+              </details>
+            </div>
+          </section>
 
           {(validation || notice) && (
             <div

@@ -1083,7 +1083,7 @@ function ContextualManagementPanel({
         <div
           role="tablist"
           aria-label="Contextual panel mode"
-          className="grid grid-cols-2 rounded-[10px] bg-[#F3F4F5] dark:bg-zinc-800 p-1 shadow-[0px_2px_4px_0px_#00000040] border border-white"
+          className="mx-auto flex w-full overflow-hidden rounded-full border border-white bg-white p-1 gap-1 shadow-[0px_2px_4px_0px_#00000040] dark:border-white/20 dark:bg-zinc-900"
         >
           <button
             type="button"
@@ -1093,9 +1093,9 @@ function ContextualManagementPanel({
               setPanelMode("price");
               setValidationError("");
             }}
-            className={`rounded-lg py-1.5 text-sm font-medium transition-all cursor-pointer ${panelMode === "price"
-              ? "bg-white dark:bg-zinc-900 text-[#1F1F1F] dark:text-zinc-100 shadow-sm"
-              : "text-[#727272] hover:text-[#1F1F1F] dark:text-zinc-400 dark:hover:text-zinc-200"
+            className={`flex h-9 min-w-0 flex-1 items-center justify-center rounded-full px-3 text-[14px] font-normal leading-none text-[#1F1F1F] transition-colors duration-300 cursor-pointer dark:text-zinc-100 ${panelMode === "price"
+              ? "bg-[#DDDDDE] dark:bg-zinc-700"
+              : "hover:bg-[#DDDDDE] dark:hover:bg-zinc-700"
               }`}
           >
             Price
@@ -1109,9 +1109,9 @@ function ContextualManagementPanel({
               setValidationError("");
               setMinStayValidationError("");
             }}
-            className={`rounded-lg py-1.5 text-sm font-medium transition-all cursor-pointer ${panelMode === "availability"
-              ? "bg-white dark:bg-zinc-900 text-[#1F1F1F] dark:text-zinc-100 shadow-sm"
-              : "text-[#727272] hover:text-[#1F1F1F] dark:text-zinc-400 dark:hover:text-zinc-200"
+            className={`flex h-9 min-w-0 flex-1 items-center justify-center rounded-full px-3 text-[14px] font-normal leading-none text-[#1F1F1F] transition-colors duration-300 cursor-pointer dark:text-zinc-100 ${panelMode === "availability"
+              ? "bg-[#DDDDDE] dark:bg-zinc-700"
+              : "hover:bg-[#DDDDDE] dark:hover:bg-zinc-700"
               }`}
           >
             Availability

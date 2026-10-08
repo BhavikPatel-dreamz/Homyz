@@ -30,7 +30,7 @@ export default async function HostReviewPage({
   const returnHref = `/host/today?tab=completed&reservation=${encodeURIComponent(context.bookingId)}&listing=${encodeURIComponent(context.listing.id)}`;
 
   return (
-    <div className="flex min-h-screen flex-col bg-white pb-[calc(110px+env(safe-area-inset-bottom))] text-zinc-900 sm:pb-0">
+    <div className="flex min-h-screen flex-col bg-white text-zinc-900 sm:pb-0">
       <HostHeader />
       <HostSubNav activeTab="today" />
       <main className="flex-1 py-8 sm:py-12">

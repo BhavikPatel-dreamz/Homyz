@@ -175,14 +175,14 @@ export function HostKpiOverview({
   return (
     <section
       aria-label="Host performance and earnings summary"
-      className="mx-auto mb-10 w-full font-sans"
+      className="mx-auto mb-4 w-full font-sans sm:mb-10"
     >
       <header className="mb-7 flex flex-wrap items-end justify-between gap-4 border-b border-[#1F1F1F]/10 pb-5 sm:mb-8">
         <div>
           <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#727272]">
             Hosting dashboard
           </p>
-          <h1 className="text-3xl font-semibold tracking-[-0.035em] text-[#1F1F1F] sm:text-4xl">
+          <h1>
             Performance overview
           </h1>
           <p className="mt-1.5 text-sm text-[#727272] sm:text-base">
@@ -345,7 +345,7 @@ export function HostKpiOverview({
       </div>
 
       <details className={`group mt-4 ${cardClass} px-4 py-3.5 sm:px-5`}>
-        <summary className="flex cursor-pointer list-none items-start justify-between gap-3 text-base font-medium text-[#1F1F1F] sm:items-center sm:gap-4 [&::-webkit-details-marker]:hidden">
+        <summary className="flex cursor-pointer list-none justify-between gap-3 text-base font-medium text-[#1F1F1F] items-center sm:gap-4 [&::-webkit-details-marker]:hidden">
           <span>Detailed earnings</span>
           <span className="ml-auto flex shrink-0 items-center gap-2 text-xs font-normal text-[#727272] sm:gap-3">
             {isRefreshing ? (
@@ -842,7 +842,7 @@ function PrimaryKpi({
         {refreshing ? (
           <div className="mt-2 h-7 w-28 animate-pulse rounded bg-zinc-100" />
         ) : (
-          <p className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-[#1F1F1F]">
+            <p className="mt-3 lg:text-2xl text-xl font-semibold tracking-[-0.04em] text-[#1F1F1F]">
             {value}
           </p>
         )}
@@ -1362,7 +1362,7 @@ export function HostDashboardOverviewSkeleton() {
     <section
       aria-label="Loading host performance dashboard"
       aria-busy="true"
-      className="mx-auto mb-10 w-full animate-pulse font-sans"
+      className="mx-auto mb-4 w-full animate-pulse font-sans sm:mb-10"
     >
       <div className="mb-7 flex items-end justify-between gap-4 border-b border-[#1F1F1F]/10 pb-5 sm:mb-8">
         <div>

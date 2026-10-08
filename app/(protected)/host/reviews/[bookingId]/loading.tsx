@@ -5,7 +5,7 @@ import { Container } from "@/components/ui";
 
 export default function HostReviewLoading() {
   return (
-    <div className="flex min-h-screen flex-col bg-white pb-[calc(110px+env(safe-area-inset-bottom))] sm:pb-0">
+    <div className="flex min-h-screen flex-col bg-white sm:pb-0">
       <HostHeader />
       <HostSubNav activeTab="today" />
       <main className="flex-1 py-8 sm:py-12" aria-busy="true" aria-label="Loading host review">

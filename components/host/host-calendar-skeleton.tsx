@@ -4,7 +4,7 @@ import { HostSubNav } from "./host-sub-nav";
 
 export function HostCalendarSkeleton() {
   return (
-    <div className="flex min-h-screen flex-col bg-white pb-[calc(110px+env(safe-area-inset-bottom))] font-sans text-[#1F1F1F] sm:pb-0">
+    <div className="flex min-h-screen flex-col bg-white pb-0 font-sans text-[#1F1F1F]">
       <HostHeader />
       <HostSubNav activeTab="calendar" />
       <main aria-busy="true" aria-label="Loading calendar" className="mx-auto w-full max-w-[1600px] flex-1 px-4 pb-28 pt-6 sm:px-8 sm:pt-8">
