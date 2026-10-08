@@ -676,7 +676,7 @@ function MonthGrid({
                 ) : (
                   <>
                     <span
-                      className={`${compact ? "mt-0.5 block text-[12px] font-normal text-[#1F1F1F] dark:text-zinc-100" : "font-['Poppins'] text-[16px] leading-6 tracking-normal font-medium"} ${compact
+                              className={`${compact ? "mt-0.5 block font-normal text-[#1F1F1F] dark:text-zinc-100 text-[12px] leading-normal " : "font-['Poppins'] text-[10px] lg:text-[16px] lg:leading-6 leading-normal tracking-normal font-medium"} ${compact
                         ? ""
                         : customPrice !== null
                           ? "text-amber-600 dark:text-amber-400 font-bold"
@@ -3240,31 +3240,31 @@ export function HostCalendarWorkspace({
         {normalizedSelectedRange && selectedDatesStats && !mobileSettingsOpen && (
           <aside
             aria-label="Selection summary bar"
-            className="fixed inset-x-0 bottom-0 z-40 border-t border-[#d7d7d7] dark:border-zinc-800 bg-white dark:bg-zinc-900 p-3 lg:hidden shadow-xl flex items-center justify-between gap-3 animate-in slide-in-from-bottom duration-200"
+            className="fixed inset-x-0 bottom-0 z-40 flex flex-col gap-3 border-t border-white bg-[#F3F4F5] p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-[0px_-2px_12px_0px_#0000001F] animate-in slide-in-from-bottom duration-200 dark:border-white/20 dark:bg-zinc-900 sm:inset-x-4 sm:bottom-4 sm:rounded-[12px] sm:border sm:p-3 md:flex-row md:items-center md:justify-between lg:hidden"
           >
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-bold text-[#1F1F1F] dark:text-zinc-100 truncate">
+            <div className="min-w-0 rounded-[12px] border border-white bg-white/70 px-3 py-2.5 dark:border-white/20 dark:bg-zinc-800/70 md:flex-1">
+              <p className="truncate text-sm font-medium text-[#1F1F1F] dark:text-zinc-100">
                 {selectedDatesStats.totalNights} {selectedDatesStats.totalNights === 1 ? "night selected" : "nights selected"}
               </p>
-              <p className="text-xs text-[#727272] truncate mt-0.5">
+              <p className="mt-0.5 truncate text-xs text-[#727272] dark:text-zinc-400">
                 {selectedDatesStats.editableKeys.length} editable · {selectedDatesStats.bookedCount} reserved
               </p>
             </div>
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="grid grid-cols-2 gap-2 md:flex md:shrink-0">
               <button
                 type="button"
                 onClick={() => {
                   setSelection({ start: null, end: null, isDragging: false });
                   setPreviewPrice(null);
                 }}
-                className="rounded-full px-3 py-1.5 text-xs font-semibold text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 cursor-pointer"
+                className="min-h-10 rounded-full border border-white bg-white px-4 py-2 text-sm font-medium text-[#1F1F1F] shadow-[0px_2px_4px_0px_#00000040] transition-colors hover:bg-[#DDDDDE] dark:border-white/20 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700 cursor-pointer"
               >
                 Clear
               </button>
               <button
                 type="button"
                 onClick={() => setMobileSettingsOpen(true)}
-                className="rounded-full bg-amber-400 hover:bg-amber-300 px-4 py-1.5 text-xs font-bold text-zinc-950 shadow-xs transition-colors cursor-pointer"
+                className="min-h-10 rounded-full border border-transparent bg-[#FCDF9C] px-4 py-2 text-sm font-medium text-[#1F1F1F] shadow-[0px_2px_4px_0px_#00000040] transition-colors hover:border-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white dark:bg-amber-400 dark:text-zinc-950 dark:hover:bg-zinc-700 dark:hover:text-white cursor-pointer"
               >
                 Edit dates
               </button>

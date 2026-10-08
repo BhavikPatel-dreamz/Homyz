@@ -291,14 +291,14 @@ export function ReceiptModal({
   if (!isOpen) return null;
 
   return (
-    <ModalOverlay className="fixed inset-0 z-[110] flex items-center justify-center overflow-y-auto bg-black/60 p-4 backdrop-blur-xs">
+    <ModalOverlay className="fixed inset-0 z-[110] flex items-end justify-center overflow-hidden bg-black/60 p-0 backdrop-blur-xs sm:items-center sm:p-4">
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="receipt-modal-title"
-        className="relative my-8 w-full max-w-2xl rounded-[20px] bg-white p-6 sm:p-9 shadow-2xl transition-all"
+        className="relative flex max-h-[100dvh] w-full max-w-2xl flex-col overflow-y-auto overscroll-contain rounded-t-[20px] bg-white p-5 shadow-2xl transition-all sm:max-h-[calc(100dvh-2rem)] sm:rounded-[20px] sm:p-9"
       >
-        <div className="flex items-start justify-between border-b border-[#d7d7d7] pb-5">
+        <div className="flex shrink-0 items-start justify-between gap-4 border-b border-[#d7d7d7] pb-4 sm:pb-5">
           <div>
             <span className="text-xs font-semibold tracking-wider text-emerald-700 uppercase">
               Official Tax Invoice & Receipt
@@ -314,7 +314,7 @@ export function ReceiptModal({
             type="button"
             onClick={onClose}
             aria-label="Close dialog"
-            className="flex h-9 w-9 items-center justify-center rounded-full text-[#727272] hover:bg-zinc-100 hover:text-zinc-800"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[#727272] hover:bg-zinc-100 hover:text-zinc-800"
           >
             <svg
               className="h-5 w-5"
@@ -369,7 +369,7 @@ export function ReceiptModal({
             </button>
           </div>
         ) : invoice ? (
-          <div className="mt-6 space-y-6 text-[#1F1F1F]">
+          <div className="mt-5 space-y-5 text-[#1F1F1F] sm:mt-6 sm:space-y-6">
             {/* Header Meta */}
             <div className="grid grid-cols-2 gap-4 text-xs sm:text-sm">
               <div>
@@ -395,7 +395,7 @@ export function ReceiptModal({
             </div>
 
             {/* Parties */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border border-white rounded-lg shadow-[0px_2px_4px_0px_#00000040] bg-[#F3F4F5] p-4 text-xs sm:text-sm">
+            <div className="grid grid-cols-1 gap-4 rounded-[12px] border border-white bg-[#F3F4F5] p-4 text-xs shadow-[0px_2px_4px_0px_#00000040] sm:grid-cols-2 sm:text-sm">
               <div>
                 <span className="font-semibold text-zinc-800 block mb-1">
                   Host / Supplier
@@ -428,7 +428,7 @@ export function ReceiptModal({
             </div>
 
             {/* Stay Details */}
-                <div className="rounded-lg border border-white bg-[#F3F4F5] shadow-[0px_2px_4px_0px_#00000040] p-4 text-xs sm:text-sm space-y-1">
+            <div className="space-y-1 rounded-[12px] border border-white bg-[#F3F4F5] p-4 text-xs shadow-[0px_2px_4px_0px_#00000040] sm:text-sm">
               <span className="font-semibold text-zinc-800 block mb-1">
                 Property & Stay
               </span>
@@ -456,15 +456,17 @@ export function ReceiptModal({
             </div>
 
             {/* Line Items Table */}
-            <div className="overflow-hidden rounded-lg border border-[#d7d7d7]">
-              <table className="w-full text-left text-xs sm:text-sm">
-                    <thead className="bg-[#F3F4F5] text-zinc-700">
+            <div className="overflow-hidden rounded-[12px] border border-[#d7d7d7]">
+              <table className="w-full table-fixed text-left text-xs sm:text-sm">
+                <thead className="bg-[#F3F4F5] text-zinc-700">
                   <tr>
-                    <th className="px-4 py-2.5 font-semibold">Description</th>
-                    <th className="px-4 py-2.5 font-semibold text-center">
+                    <th className="w-[54%] px-3 py-2.5 font-semibold sm:px-4">
+                      Description
+                    </th>
+                    <th className="w-[16%] px-2 py-2.5 text-center font-semibold sm:px-4">
                       Qty
                     </th>
-                    <th className="px-4 py-2.5 font-semibold text-right">
+                    <th className="w-[30%] px-3 py-2.5 text-right font-semibold sm:px-4">
                       Amount
                     </th>
                   </tr>
@@ -472,22 +474,24 @@ export function ReceiptModal({
                 <tbody className="divide-y divide-zinc-200">
                   {(invoice.lineItems || []).map((item, idx) => (
                     <tr key={idx} className="hover:bg-zinc-50/50">
-                      <td className="px-4 py-2.5">{item.description}</td>
-                      <td className="px-4 py-2.5 text-center text-[#727272]">
+                      <td className="break-words px-3 py-2.5 sm:px-4">
+                        {item.description}
+                      </td>
+                      <td className="px-2 py-2.5 text-center text-[#727272] sm:px-4">
                         {item.quantity}
                       </td>
-                      <td className="px-4 py-2.5 text-right font-medium">
+                      <td className="whitespace-nowrap px-3 py-2.5 text-right font-medium sm:px-4">
                         {formatPrice(item.total, invoice.currency || "SAR")}
                       </td>
                     </tr>
                   ))}
                   {(invoice.taxBreakdown || []).map((tax, idx) => (
                     <tr key={`tax-${idx}`} className="text-zinc-600">
-                      <td className="px-4 py-2">
+                      <td className="break-words px-3 py-2 sm:px-4">
                         {tax.taxName}
                       </td>
-                      <td className="px-4 py-2 text-center">—</td>
-                      <td className="px-4 py-2 text-right">
+                      <td className="px-2 py-2 text-center sm:px-4">—</td>
+                      <td className="whitespace-nowrap px-3 py-2 text-right sm:px-4">
                         {formatPrice(tax.taxAmount, invoice.currency || "SAR")}
                       </td>
                     </tr>
@@ -495,10 +499,10 @@ export function ReceiptModal({
                 </tbody>
                 <tfoot className="border-t-2 border-zinc-300 bg-zinc-50 font-semibold text-[#1F1F1F]">
                   <tr>
-                    <td className="px-4 py-3" colSpan={2}>
+                    <td className="px-3 py-3 sm:px-4" colSpan={2}>
                       Grand Total Paid
                     </td>
-                    <td className="px-4 py-3 text-right text-base text-emerald-700 font-semibold">
+                    <td className="whitespace-nowrap px-3 py-3 text-right text-base font-semibold text-emerald-700 sm:px-4">
                       {formatPrice(
                         invoice.grandTotal ?? 0,
                         invoice.currency || "SAR",
@@ -510,15 +514,15 @@ export function ReceiptModal({
             </div>
 
             {/* Actions */}
-            <div className="flex items-center justify-between pt-2">
-              <span className="text-xs text-[#727272]">
+            <div className="flex flex-col gap-3 border-t border-[#ececec] pt-4 sm:flex-row sm:items-center sm:justify-between sm:border-t-0 sm:pt-2">
+              <span className="max-w-xs text-xs leading-4 text-[#727272]">
                 Authorized electronic receipt generated by Homyz
               </span>
-              <div className="flex gap-3">
+              <div className="flex w-full gap-3 sm:w-auto">
                 <button
                   type="button"
                   onClick={() => window.print()}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-[#1f1f1f] px-4 py-2 text-base font-medium text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] transition-colors"
+                  className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-full border border-[#1f1f1f] px-4 py-2 text-sm font-medium text-[#1f1f1f] transition-colors hover:bg-[#1f1f1f] hover:text-white sm:flex-none sm:text-base"
                 >
                   <svg
                     className="h-4 w-4"
@@ -538,7 +542,7 @@ export function ReceiptModal({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="rounded-full bg-[#FCDF9C] px-5 py-2 text-base font-medium text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] transition-colors"
+                  className="flex-1 rounded-full bg-[#FCDF9C] px-5 py-2 text-sm font-medium text-[#1f1f1f] transition-colors hover:bg-[#1f1f1f] hover:text-white sm:flex-none sm:text-base"
                 >
                   Done
                 </button>
