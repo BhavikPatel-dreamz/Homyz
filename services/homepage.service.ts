@@ -20,6 +20,7 @@ import { getCurrencyForCountry } from "@/lib/currency";
 import type { SearchContext } from "@/lib/location/search-context";
 import { qualificationService } from "@/services/qualification.service";
 import { getPublishedReviewSummaries } from "@/services/listing.service";
+import { getPrimaryListingBadge } from "@/lib/listings/card-badge";
 
 export const SECTION_LIMIT = 12;
 const CANDIDATE_LIMIT = 200;
@@ -161,6 +162,12 @@ export type DiscoveryListing = {
   bookings: Array<{ startDate: Date; endDate: Date; status: BookingStatus; createdAt: Date }>;
 };
 
+type ListingQualificationFlags = {
+  id: string;
+  isGuestFavorite: boolean;
+  host: { isSuperhost: boolean } | null;
+};
+
 function startOfDay(value = new Date()): Date {
   return new Date(value.getFullYear(), value.getMonth(), value.getDate());
 }
@@ -201,7 +208,8 @@ function toProperty(
   const isSuperh = qualificationService.isSuperhost(listing.host);
 
   const calculatedBadge: "guest_favorite" | "superhost" | "featured" | null =
-    extra?.badge ?? (isGuestFav ? "guest_favorite" : isSuperh ? "superhost" : listing.isFeatured ? "featured" : null);
+    getPrimaryListingBadge({ isGuestFavorite: isGuestFav, isSuperhost: isSuperh }) ??
+    (extra?.badge === "featured" || listing.isFeatured ? "featured" : null);
 
   const displayDate = getDefaultDisplayDate(listing);
   const resolvedPricing = resolveCalendarDatePricing({
@@ -471,7 +479,7 @@ function createSectionBuilder(seenListingIds: Set<string>, sections: HomepageSec
 export async function getDiscoveryCandidateListings(): Promise<DiscoveryListing[]> {
   const version = await getCounter(CACHE_KEYS.LISTINGS_PUBLIC_VER());
   const cacheKey = `homyz:discovery:candidates:${version}`;
-  return getOrSetCache(
+  const cachedCandidates = await getOrSetCache<DiscoveryListing[]>(
     cacheKey,
     async () => {
       const expiryThreshold = getExpiryThresholdDate();
@@ -551,6 +559,37 @@ export async function getDiscoveryCandidateListings(): Promise<DiscoveryListing[
     },
     { ttl: CACHE_TTL.HOMEPAGE_DISCOVERY },
   );
+
+  // Qualification flags are intentionally persisted by their server-side
+  // evaluators. Refresh just these volatile flags on each homepage request so
+  // a badge change is visible even while the broader discovery payload is in
+  // its short-lived cache (for example, when an evaluation runs in another
+  // process). All other discovery fields retain the existing cache behavior.
+  if (!cachedCandidates.length) return cachedCandidates;
+
+  const currentQualifications = await prisma.listing.findMany({
+    where: { id: { in: cachedCandidates.map((listing) => listing.id) } },
+    select: {
+      id: true,
+      isGuestFavorite: true,
+      host: { select: { isSuperhost: true } },
+    },
+  }) as ListingQualificationFlags[];
+  const qualificationByListingId = new Map(
+    currentQualifications.map((listing) => [listing.id, listing]),
+  );
+
+  return cachedCandidates.map((listing) => {
+    const current = qualificationByListingId.get(listing.id);
+    if (!current) return listing;
+    return {
+      ...listing,
+      isGuestFavorite: current.isGuestFavorite,
+      host: listing.host
+        ? { ...listing.host, isSuperhost: current.host?.isSuperhost ?? listing.host.isSuperhost }
+        : listing.host,
+    };
+  });
 }
 
 async function loadTrendingLocations(): Promise<TrendingLocation[]> {
@@ -835,10 +874,7 @@ async function assembleHomepageData(params: {
         type: "PROPERTY",
         source: "SEARCH",
         priority: 50,
-        candidates: guestFavourites.map((c) => ({
-          listing: c.listing,
-          extra: { badge: "guest_favorite" as const },
-        })),
+        candidates: guestFavourites.map((c) => ({ listing: c.listing })),
         seeAllHref: `${searchHrefBase}&featured=true`,
       });
       locationSectionCount++;
@@ -1021,10 +1057,7 @@ async function assembleHomepageData(params: {
           type: "PROPERTY",
           source: "RECOMMENDATION",
           priority: 155,
-          candidates: superhostCandidates.map((listing) => ({
-            listing,
-            extra: { badge: "superhost" as const },
-          })),
+          candidates: superhostCandidates.map((listing) => ({ listing })),
           seeAllHref: "/listings?featured=true",
         });
       }
@@ -1257,10 +1290,7 @@ async function assembleHomepageData(params: {
           type: "PROPERTY",
           source: "RECOMMENDATION",
           priority: 155,
-          candidates: superhostCandidates.map((listing) => ({
-            listing,
-            extra: { badge: "superhost" as const },
-          })),
+          candidates: superhostCandidates.map((listing) => ({ listing })),
           seeAllHref: "/listings?featured=true",
         });
       }
@@ -1313,10 +1343,7 @@ async function assembleHomepageData(params: {
         type: "FEATURED",
         source: "RECOMMENDATION",
         priority: 50,
-        candidates: guestFavourites.map((listing) => ({
-          listing,
-          extra: { badge: "guest_favorite" as const },
-        })),
+        candidates: guestFavourites.map((listing) => ({ listing })),
         seeAllHref: "/listings?featured=true",
       });
     }
@@ -1421,7 +1448,7 @@ async function getHomepageData(input: {
   const cacheKey = `${CACHE_KEYS.HOMEPAGE_DISCOVERY(version, cacheKeyCity)}:${cacheMode}:${cacheQuery}`;
 
   // Cache public discovery response
-  const publicData = await getOrSetCache(
+  const publicData = await getOrSetCache<HomepageData>(
     cacheKey,
     () => assembleHomepageData({
       searchContext: input.searchContext,
@@ -1431,15 +1458,58 @@ async function getHomepageData(input: {
     { ttl: CACHE_TTL.HOMEPAGE_DISCOVERY },
   );
 
-  if (!input.userId) return publicData;
+  // The complete homepage response is also cached. Rehydrate the persisted
+  // qualification flags here so cached card DTOs cannot outlive a Guest
+  // Favorite or Superhost status change.
+  const listingIds = [...new Set(publicData.sections.flatMap((section) =>
+    section.properties.map((property) => property.id),
+  ))];
+  const qualifications: ListingQualificationFlags[] = listingIds.length
+    ? (await prisma.listing.findMany({
+        where: { id: { in: listingIds } },
+        select: {
+          id: true,
+          isGuestFavorite: true,
+          host: { select: { isSuperhost: true } },
+        },
+      })) as ListingQualificationFlags[]
+    : [];
+  const qualificationByListingId = new Map(
+    qualifications.map((listing) => [listing.id, listing]),
+  );
+  const withCurrentQualifications = (property: HomepageProperty): HomepageProperty => {
+    const qualification = qualificationByListingId.get(property.id);
+    if (!qualification) return property;
+    const isGuestFavorite = qualification.isGuestFavorite;
+    const isSuperhost = qualification.host?.isSuperhost === true;
+    return {
+      ...property,
+      isGuestFavorite,
+      isSuperhost,
+      badge: getPrimaryListingBadge({ isGuestFavorite, isSuperhost }) ??
+        (property.badge === "featured" ? "featured" : null),
+    };
+  };
+  const currentPublicData: HomepageData = {
+    ...publicData,
+    sections: publicData.sections.map((section) => {
+      const properties = section.properties.map(withCurrentQualifications);
+      return {
+        ...section,
+        properties,
+        items: section.items?.map(withCurrentQualifications),
+      };
+    }),
+  };
+
+  if (!input.userId) return currentPublicData;
 
   try {
-    const listingIds = publicData.sections.flatMap((s) => s.properties.map((p) => p.id));
     const favoriteIds = await favoriteService.getFavoriteListingIds(input.userId, listingIds);
 
     return {
-      ...publicData,
-      sections: publicData.sections.map((section) => ({
+      ...currentPublicData,
+      sections: currentPublicData.sections.map((section) => ({
         ...section,
         properties: section.properties.map((property) => ({
           ...property,
@@ -1454,7 +1524,7 @@ async function getHomepageData(input: {
       })),
     };
   } catch {
-    return publicData;
+    return currentPublicData;
   }
 }
 

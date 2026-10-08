@@ -5,6 +5,7 @@ import { BookingStatus, ListingStatus } from "@/generated/prisma/enums";
 import { computeBookingStatus } from "@/lib/booking/booking-status";
 import { prisma } from "@/lib/db/prisma";
 import { acquireCacheLease, incrCounter, releaseCacheLease } from "@/lib/redis/cache";
+import { invalidateListingCache } from "@/lib/redis/invalidation";
 import { CACHE_KEYS, keys } from "@/lib/redis/keys";
 import {
   evaluateGuestFavoriteRequirements,
@@ -162,36 +163,40 @@ export function calculateGuestFavoriteProgress(data: ListingEvaluationData, asOf
   };
 }
 
-const evaluationInclude = {
-  reviews: {
-    // `Review` is the guest-to-property model, but retain only reviews tied
-    // to a completed confirmed stay. This excludes legacy/draft-orphan rows
-    // from the documented minimum-review and subrating inputs.
-    where: {
-      status: "PUBLISHED" as const,
-      booking: {
-        is: {
-          status: BookingStatus.CONFIRMED,
+function getEvaluationInclude(asOf: Date) {
+  return {
+    reviews: {
+      // `Review` is the guest-to-property model, but retain only reviews tied
+      // to a completed confirmed stay. This excludes legacy/draft-orphan rows
+      // and reviews from stays that have not ended from the documented
+      // minimum-review and subrating inputs.
+      where: {
+        status: "PUBLISHED" as const,
+        booking: {
+          is: {
+            status: BookingStatus.CONFIRMED,
+            endDate: { lt: asOf },
+          },
         },
       },
+      select: {
+        rating: true,
+        cleanlinessRating: true,
+        accuracyRating: true,
+        checkInRating: true,
+        communicationRating: true,
+        locationRating: true,
+        valueRating: true,
+      },
     },
-    select: {
-      rating: true,
-      cleanlinessRating: true,
-      accuracyRating: true,
-      checkInRating: true,
-      communicationRating: true,
-      locationRating: true,
-      valueRating: true,
+    bookings: {
+      where: { status: { in: [BookingStatus.CONFIRMED, BookingStatus.CANCELLED] } },
+      select: { status: true, startDate: true, endDate: true, priceBreakdown: true },
     },
-  },
-  bookings: {
-    where: { status: { in: [BookingStatus.CONFIRMED, BookingStatus.CANCELLED] } },
-    select: { status: true, startDate: true, endDate: true, priceBreakdown: true },
-  },
-} satisfies Prisma.ListingInclude;
+  } satisfies Prisma.ListingInclude;
+}
 
-async function loadListingEvaluationData(listingId: string): Promise<ListingEvaluationData | null> {
+async function loadListingEvaluationData(listingId: string, asOf: Date): Promise<ListingEvaluationData | null> {
   return prisma.listing.findUnique({
     where: { id: listingId },
     select: {
@@ -202,13 +207,13 @@ async function loadListingEvaluationData(listingId: string): Promise<ListingEval
       guestFavoriteLastEvaluatedAt: true,
       checkInStart: true,
       checkOutTime: true,
-      ...evaluationInclude,
+      ...getEvaluationInclude(asOf),
     },
   }) as Promise<ListingEvaluationData | null>;
 }
 
 export async function getGuestFavoriteStatus(listingId: string, asOf = new Date()): Promise<GuestFavoriteStatus | null> {
-  const listing = await loadListingEvaluationData(listingId);
+  const listing = await loadListingEvaluationData(listingId, asOf);
   if (!listing) return null;
   const qualityIncidentCount = await getConfirmedQualityIncidentCount(listingId);
   return {
@@ -263,7 +268,7 @@ async function persistDailyEvaluation(listing: ListingEvaluationData, evaluation
   });
   const statusChanged = listing.isGuestFavorite !== progress.eligibleNow;
   if (statusChanged) {
-    await incrCounter(keys.listingsPublicVersion());
+    await invalidateListingCache(listing.id, listing.hostId);
     await notificationService.create({
       userId: listing.hostId,
       type: "SYSTEM",
@@ -281,7 +286,7 @@ async function persistDailyEvaluation(listing: ListingEvaluationData, evaluation
 }
 
 export async function evaluateListingGuestFavoriteDaily(listingId: string, asOf = new Date()) {
-  const listing = await loadListingEvaluationData(listingId);
+  const listing = await loadListingEvaluationData(listingId, asOf);
   if (!listing) throw new Error("Listing not found");
   const qualityIncidentCount = await getConfirmedQualityIncidentCount(listingId);
   return persistDailyEvaluation({ ...listing, qualityIncidentCount }, startOfUtcDay(asOf), asOf);
@@ -348,7 +353,7 @@ export async function runDailyGuestFavoriteEvaluation(asOf = new Date()): Promis
         guestFavoriteLastEvaluatedAt: true,
         checkInStart: true,
         checkOutTime: true,
-        ...evaluationInclude,
+        ...getEvaluationInclude(asOf),
       },
     }) as ListingEvaluationData[];
     if (listings.length === 0) break;

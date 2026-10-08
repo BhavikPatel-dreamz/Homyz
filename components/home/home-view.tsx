@@ -25,6 +25,7 @@ import { HomepageLoadingState } from "./home-section-skeleton";
 import { Container } from "../ui";
 import { ContinueSearchingBar } from "./continue-searching-bar";
 import { useLanguage } from "@/lib/i18n/language-context";
+import { getPrimaryListingBadge } from "@/lib/listings/card-badge";
 
 export interface HomeViewProps {
   sections?: HomepageSection[];
@@ -460,7 +461,8 @@ export function HomeView({
         rating: current?.rating ?? item.rating ?? null,
         isGuestFavorite,
         isSuperhost,
-        badge: (isGuestFavorite ? "guest_favorite" : isSuperhost ? "superhost" : current?.badge === "featured" ? "featured" : null) as "guest_favorite" | "superhost" | "featured" | null,
+        badge: (getPrimaryListingBadge({ isGuestFavorite, isSuperhost }) ??
+          (current?.badge === "featured" ? "featured" : null)) as "guest_favorite" | "superhost" | "featured" | null,
         canFavorite,
       }];
     });

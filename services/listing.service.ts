@@ -5,6 +5,7 @@ import { assertHostPermission } from "@/lib/permissions/host-permissions-server"
 import { prisma } from "@/lib/db/prisma";
 import { bookingDateKey, parseBookingDate, shiftBookingDateKey } from "@/lib/booking/booking-date";
 import { deleteCache, getCache, getCounter, getOrSetCache, incrCounter, setCache } from "@/lib/redis/cache";
+import { invalidateListingCache } from "@/lib/redis/invalidation";
 import { hashFilters, keys } from "@/lib/redis/keys";
 import type {
   CreateListingInput,
@@ -1513,10 +1514,9 @@ async function update(
     }
     throw error;
   }
-  await Promise.all([
-    deleteCache(keys.listing(id)),
-    incrCounter(keys.listingsPublicVersion()),
-  ]);
+  // Covers all public card/detail inputs updated through the listing editor,
+  // including price, calendar pricing, discounts, text, photos, and location.
+  await invalidateListingCache(id, existing.hostId);
 
   await auditService.record({
     actorId: actor.id,

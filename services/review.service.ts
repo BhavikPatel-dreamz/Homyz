@@ -2,8 +2,7 @@ import { Prisma } from "@/generated/prisma/client";
 import { BookingStatus } from "@/generated/prisma/enums";
 import { AppError } from "@/lib/api/errors";
 import { prisma } from "@/lib/db/prisma";
-import { incrCounter } from "@/lib/redis/cache";
-import { keys } from "@/lib/redis/keys";
+import { invalidateListingCache } from "@/lib/redis/invalidation";
 import { toPublicReviewDTO, toReviewDTO, type PublicReviewDTO, type ReviewDTO } from "./mappers";
 
 const REVIEWS_PAGE_SIZE = 6;
@@ -276,7 +275,9 @@ export const reviewService = {
       },
       include: { author: { select: { id: true, name: true, image: true } } },
     });
-    await incrCounter(keys.listingsPublicVersion());
+    // Rating, review count, and review-derived public details change together.
+    // Invalidate the listing boundary before its qualification re-evaluation.
+    await invalidateListingCache(review.listingId);
     await triggerGuestFavoriteReevaluation(review.listingId);
     return toPublicReviewDTO(review);
   },
@@ -295,7 +296,7 @@ export const reviewService = {
       data: { status: "DELETED" },
       select: { listingId: true },
     });
-    await incrCounter(keys.listingsPublicVersion());
+    await invalidateListingCache(review.listingId);
     await triggerGuestFavoriteReevaluation(review.listingId);
   },
 

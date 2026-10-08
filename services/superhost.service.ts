@@ -378,7 +378,7 @@ export async function evaluateHostAtQuarterlyCheckpoint(hostId: string, evaluati
     });
   }
 
-  return { history, progress, statusChanged };
+  return { history: result, progress, statusChanged };
 }
 
 export async function runQuarterlySuperhostEvaluation(evaluationDate = new Date()) {
