@@ -218,16 +218,6 @@ export function CalendarSettingsPanel({
     setValidation("");
   };
 
-  const handleReturnToOverview = () => {
-    if (dirty && typeof window !== "undefined") {
-      if (!window.confirm("You have unsaved changes. Discard them?")) {
-        return;
-      }
-    }
-    handleDiscard();
-    setPanel("overview");
-  };
-
   const renderInputField = ({
     name,
     label,
@@ -388,32 +378,19 @@ export function CalendarSettingsPanel({
 
   return (
     <div className="text-[#1F1F1F] dark:text-zinc-100">
-      {panel === "availability" ? (
-        <button
-          type="button"
-          aria-label="Close availability settings"
-          onClick={handleReturnToOverview}
-          className="mb-4 flex size-7.5 cursor-pointer items-center justify-center rounded-full bg-[#F3F4F5] text-[#727272] transition-colors hover:bg-zinc-200 hover:text-zinc-900 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:hover:text-zinc-100"
-        >
-          <svg
-            className="size-4"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            aria-hidden="true"
-          >
-            <path d="M18 6 6 18M6 6l12 12" />
-          </svg>
-        </button>
-      ) : (
-        <BackButton
-          aria-label="Back to calendar settings"
-          onClick={handleReturnToOverview}
-          className="mb-4 cursor-pointer"
-        />
-      )}
+      <BackButton
+        aria-label="Back to calendar settings"
+        onClick={() => {
+          if (dirty && typeof window !== "undefined") {
+            if (!window.confirm("You have unsaved changes. Discard them?")) {
+              return;
+            }
+          }
+          handleDiscard();
+          setPanel("overview");
+        }}
+        className="mb-4 cursor-pointer"
+      />
 
       {panel === "availability" ? (
         /* Availability Settings Form */
