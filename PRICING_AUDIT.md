@@ -708,8 +708,8 @@ model ReservationTax {
   - Smart pricing toggle
   - Nightly price input
   - Weekend adjustment slider
-  - Weekly discount (7+ nights)
-  - Monthly discount (28+ nights)
+  - Weekly (7+ nights)
+  - Monthly (28+ nights)
 
 ### Host Workspace Reservation Details
 - **File:** [components/host/host-workspace-shared.tsx](components/host/host-workspace-shared.tsx#L299-L330)

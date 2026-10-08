@@ -480,7 +480,7 @@ function MonthGrid({
                   } ${bookedCount > 0
                     ? "border-zinc-800 dark:border-zinc-700 bg-zinc-900 text-white shadow-xs"
                     : isPast
-                      ? "border-transparent bg-zinc-100/40 dark:bg-zinc-800/40 opacity-70 text-[#727272]"
+                      ? "border-transparent bg-[#F3F4F5]/40 dark:bg-zinc-800/40 opacity-70 text-[#727272]"
                       : "border-transparent bg-[#F3F4F5] dark:bg-zinc-800/80 hover:border-zinc-300 dark:hover:border-zinc-600 text-[#1F1F1F] dark:text-zinc-100"
                   }`}
               >
@@ -502,7 +502,7 @@ function MonthGrid({
                 {/* Status for All Listings */}
                 <div className="w-full text-center mt-1">
                   <span
-                    className={`${compact ? "hidden text-[11px] font-normal sm:block" : "text-[13px] font-medium block"} ${bookedCount > 0
+                    className={`${compact ? "hidden text-xs font-normal sm:block" : "text-sm font-medium block"} ${bookedCount > 0
                       ? "text-amber-300"
                       : "text-zinc-600 dark:text-zinc-300"
                       }`}
@@ -539,7 +539,7 @@ function MonthGrid({
 
           // Compute cell visual styles
           let cellBgClass =
-            "border-transparent bg-[#F3F4F5] text-[#1F1F1F] hover:bg-[#ededee] dark:bg-zinc-800/80 dark:text-zinc-100 dark:hover:border-zinc-600";
+            "border-transparent bg-[#F3F4F5] text-[#1F1F1F] hover:bg-[#DDDDDE] dark:bg-zinc-800/80 dark:text-zinc-100 dark:hover:border-zinc-600";
           let cellRoundingClass = compact ? "rounded-[10px]" : "md:rounded-[20px] rounded-[10px]";
 
           if (primaryReservation) {
@@ -552,7 +552,7 @@ function MonthGrid({
           } else if (blocked) {
             // Blocked state
             cellBgClass =
-              "border-zinc-200 dark:border-zinc-800 bg-zinc-100/80 dark:bg-zinc-900/60 opacity-70 text-[#727272]";
+              "border-[#d7d7d7] dark:border-zinc-800 bg-[#F3F4F5]/80 dark:bg-zinc-900/60 opacity-70 text-[#727272]";
           } else if (isPast) {
             // Past state
             cellBgClass =
@@ -562,19 +562,19 @@ function MonthGrid({
           // Selection highlight override
           if (isSelected) {
             if (isSingleSelection) {
-              cellRoundingClass = `${compact ? "rounded-[10px]" : "rounded-xl"} ring-2 ring-zinc-950 dark:ring-amber-400`;
+              cellRoundingClass = `${compact ? "rounded-[10px]" : "md:rounded-[20px] rounded-[10px]"}`;
               if (!primaryReservation) {
                 cellBgClass =
-                  "border-zinc-950 dark:border-amber-400 bg-amber-50 dark:bg-amber-950/60 text-[#1F1F1F] dark:text-zinc-100 shadow-sm";
+                  "border-zinc-950 dark:border-amber-400 bg-[#DDDDDE] dark:bg-[#DDDDDE] text-[#1F1F1F] dark:text-zinc-100 shadow-sm";
               }
             } else if (isRangeStart) {
-              cellRoundingClass = `${compact ? "rounded-l-[10px]" : "rounded-l-xl"} rounded-r-none border-r-0 ring-2 ring-zinc-950 dark:ring-amber-400`;
+              cellRoundingClass = `${compact ? "rounded-l-[10px]" : "rounded-l-xl"} rounded-r-none border-r-0`;
               if (!primaryReservation) {
                 cellBgClass =
                   "border-y-2 border-l-2 border-zinc-950 dark:border-amber-400 bg-amber-100/90 dark:bg-amber-950/70 text-[#1F1F1F] dark:text-zinc-100 shadow-sm";
               }
             } else if (isRangeEnd) {
-              cellRoundingClass = `${compact ? "rounded-r-[10px]" : "rounded-r-xl"} rounded-l-none border-l-0 ring-2 ring-zinc-950 dark:ring-amber-400`;
+              cellRoundingClass = `${compact ? "rounded-r-[10px]" : "rounded-r-xl"} rounded-l-none border-l-0`;
               if (!primaryReservation) {
                 cellBgClass =
                   "border-y-2 border-r-2 border-zinc-950 dark:border-amber-400 bg-amber-100/90 dark:bg-amber-950/70 text-[#1F1F1F] dark:text-zinc-100 shadow-sm";
@@ -619,7 +619,7 @@ function MonthGrid({
               <div className="flex w-full items-center justify-center px-1">
                 <span
                   className={`flex items-center justify-center rounded-full font-normal transition-transform ${compact
-                    ? "size-5 max-[360px]:text-[9px] text-[11px] sm:size-6 sm:border sm:border-zinc-300 dark:sm:border-zinc-600 sm:bg-white dark:sm:bg-zinc-700 sm:text-zinc-800 dark:sm:text-zinc-200 sm:text-[12px]"
+                    ? "size-5 max-[360px]:text-[9px] text-xs sm:size-6 sm:border sm:border-zinc-300 dark:sm:border-zinc-600 sm:bg-white dark:sm:bg-zinc-700 sm:text-zinc-800 dark:sm:text-zinc-200 sm:text-[12px]"
                     : "size-6 text-xs sm:size-7 sm:text-xs"
                     } ${isToday
                       ? "border border-[#EBA900] bg-[#FCDF9C] text-[#1F1F1F] font-bold shadow-xs sm:!border-[#EBA900] sm:!bg-[#FCDF9C] dark:border-[#EBA900] dark:bg-[#FCDF9C] dark:text-[#1F1F1F]"
@@ -655,7 +655,7 @@ function MonthGrid({
                     </>
                   ) : (
                     <>
-                      <span className="text-[10px] sm:text-xs text-[#727272] dark:text-zinc-500 line-through leading-none block mb-1">
+                      <span className="text-[10px] sm:text-xs text-[#727272] dark:text-[#727272] line-through leading-none block mb-1">
                         {formatMoney(dayPricing?.originalPrice ?? rate, sourceCurrency, 2)}
                       </span>
                       <span className="text-[10px] sm:text-[14px] font-medium text-emerald-700 dark:text-emerald-400 leading-tight block">
@@ -688,7 +688,7 @@ function MonthGrid({
                       {formatMoney(rate, sourceCurrency, 2)}
                     </span>
                     {customPrice !== null && (
-                      <span className="text-[9px] font-semibold text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/60 px-1 rounded mt-0.5">
+                              <span className="text-[9px] font-semibold text-[#1f1f1f] dark:text-amber-300 bg-[#FCDF9C] dark:bg-amber-950/60 px-1.5 py-1 rounded mt-0.5 border border-[#EBA900] leading-tight capitalize">
                         custom
                       </span>
                     )}
@@ -1005,25 +1005,25 @@ function ContextualManagementPanel({
       : formatBookingDateRange(range.start, shiftDateKey(range.end, 1));
 
   return (
-    <div className="space-y-5 text-[#1F1F1F] dark:text-zinc-100">
+    <div className="space-y-5 font-['Poppins'] text-[#1F1F1F] dark:text-zinc-100">
       {/* Header */}
-      <div className="border-b border-zinc-200 dark:border-zinc-800 pb-4">
+      <div className="rounded-[18px] border border-white bg-[#F3F4F5] px-5 py-4 shadow-[0_2px_4px_rgb(31_31_31_/_0.16)] dark:border-zinc-700/80 dark:bg-zinc-800/70">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+            <p className="mb-2 block text-[13px] font-normal text-[#727272] dark:text-zinc-400">
               Selected Range
             </p>
-            <h2 className="text-base font-semibold truncate mt-0.5">
+            <h2 className="truncate text-[17px] font-medium leading-tight text-[#1F1F1F] dark:text-zinc-100">
               {formattedDateRange}
             </h2>
-            <p className="text-xs text-[#727272] truncate">
+            <p className="mt-1 truncate text-[12px] text-[#727272] dark:text-zinc-400">
               {stats.totalNights} {stats.totalNights === 1 ? "night" : "nights"} · {listing.title}
             </p>
           </div>
           <button
             type="button"
             onClick={handleClearWithConfirm}
-            className="rounded-full bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 p-1 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors cursor-pointer"
+            className="cursor-pointer rounded-full bg-white p-1.5 text-[#727272] transition-colors hover:bg-zinc-200 hover:text-zinc-900 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:hover:text-zinc-100"
             aria-label="Clear date selection"
           >
             <svg
@@ -1039,8 +1039,8 @@ function ContextualManagementPanel({
         </div>
 
         {/* Breakdown Badges */}
-        <div className="mt-3 flex flex-wrap gap-1.5 text-[11px]">
-          <span className="rounded-full bg-zinc-100 dark:bg-zinc-800 px-2.5 py-0.5 font-medium text-zinc-700 dark:text-zinc-300">
+        <div className="mt-3 flex flex-wrap gap-1.5 text-xs">
+          <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
             {stats.editableKeys.length} editable
           </span>
           {stats.bookedCount > 0 && (
@@ -1049,7 +1049,7 @@ function ContextualManagementPanel({
             </span>
           )}
           {stats.pastCount > 0 && (
-            <span className="rounded-full bg-zinc-200 dark:bg-zinc-800 px-2.5 py-0.5 font-medium text-zinc-500">
+            <span className="rounded-full bg-zinc-200 dark:bg-zinc-800 px-2.5 py-0.5 font-medium text-[#727272]">
               {stats.pastCount} past (read-only)
             </span>
           )}
@@ -1060,7 +1060,7 @@ function ContextualManagementPanel({
       {stats.bookedCount > 0 && stats.editableKeys.length > 0 && (
         <div className="rounded-xl bg-amber-50 dark:bg-amber-950/40 p-3 border border-amber-200/60 dark:border-amber-900/60 text-xs text-amber-900 dark:text-amber-300">
           <p className="font-semibold mb-0.5">Protected Reservations</p>
-          <p className="text-[11px] leading-relaxed">
+          <p className="text-xs leading-relaxed">
             {stats.bookedCount} {stats.bookedCount === 1 ? "night has" : "nights have"} confirmed reservations.
             Updates will safely apply only to the {stats.editableKeys.length} editable dates.
           </p>
@@ -1068,11 +1068,11 @@ function ContextualManagementPanel({
       )}
 
       {stats.editableKeys.length === 0 && (
-        <div className="rounded-xl bg-zinc-100 dark:bg-zinc-800/80 p-3.5 border border-zinc-200 dark:border-zinc-700 text-xs text-zinc-700 dark:text-zinc-300">
+        <div className="rounded-xl bg-[#F3F4F5] dark:bg-zinc-800/80 p-3.5 border border-[#d7d7d7] dark:border-zinc-700 text-xs text-zinc-700 dark:text-zinc-300">
           <p className="font-semibold text-zinc-900 dark:text-zinc-100 mb-1">
             Confirmed Reservation
           </p>
-          <p className="text-[11px] leading-relaxed">
+          <p className="text-xs leading-relaxed">
             All selected dates are part of an active reservation and cannot be edited.
           </p>
         </div>
@@ -1083,7 +1083,7 @@ function ContextualManagementPanel({
         <div
           role="tablist"
           aria-label="Contextual panel mode"
-          className="grid grid-cols-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 p-1 border border-zinc-200/60 dark:border-zinc-700"
+          className="grid grid-cols-2 rounded-[10px] bg-[#F3F4F5] dark:bg-zinc-800 p-1"
         >
           <button
             type="button"
@@ -1093,7 +1093,7 @@ function ContextualManagementPanel({
               setPanelMode("price");
               setValidationError("");
             }}
-            className={`rounded-lg py-1.5 text-xs font-semibold transition-all cursor-pointer ${panelMode === "price"
+            className={`rounded-lg py-1.5 text-sm font-medium transition-all cursor-pointer ${panelMode === "price"
               ? "bg-white dark:bg-zinc-900 text-[#1F1F1F] dark:text-zinc-100 shadow-sm"
               : "text-[#727272] hover:text-[#1F1F1F] dark:text-zinc-400 dark:hover:text-zinc-200"
               }`}
@@ -1109,7 +1109,7 @@ function ContextualManagementPanel({
               setValidationError("");
               setMinStayValidationError("");
             }}
-            className={`rounded-lg py-1.5 text-xs font-semibold transition-all cursor-pointer ${panelMode === "availability"
+            className={`rounded-lg py-1.5 text-sm font-medium transition-all cursor-pointer ${panelMode === "availability"
               ? "bg-white dark:bg-zinc-900 text-[#1F1F1F] dark:text-zinc-100 shadow-sm"
               : "text-[#727272] hover:text-[#1F1F1F] dark:text-zinc-400 dark:hover:text-zinc-200"
               }`}
@@ -1123,30 +1123,30 @@ function ContextualManagementPanel({
       {panelMode === "price" && stats.editableKeys.length > 0 && (
         <div className="space-y-4">
           {/* Base Listing Rate Card */}
-          <div className="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50/70 dark:bg-zinc-800/40 p-3.5 space-y-1.5">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+          <div className="space-y-3">
+            <div className="rounded-[18px] border border-white bg-[#F3F4F5] px-5 py-4 shadow-[0_2px_4px_0px_#00000040] dark:border-zinc-700/80 dark:bg-zinc-800/70">
+              <span className="block text-[13px] font-normal text-[#727272] dark:text-zinc-400">
                 Base Nightly Price
               </span>
-              <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100">
-                {formatMoney(weekdayBasePrice, sourceCurrency, 2)} / night
-              </span>
+              <p className="mt-2 text-[17px] font-medium leading-none text-[#1F1F1F] dark:text-zinc-100">
+                {formatMoney(weekdayBasePrice, sourceCurrency, 2)} <span className="text-[13px] font-normal text-[#727272] dark:text-zinc-400">/ Night</span>
+              </p>
             </div>
             {weekendPrice && weekendPrice > 0 ? (
-              <div className="flex items-center justify-between border-t border-zinc-200/60 dark:border-zinc-700/60 pt-1.5">
-                <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+              <div className="rounded-[18px] border border-white bg-[#F3F4F5] px-5 py-4 shadow-[0_2px_4px_0px_#00000040] dark:border-zinc-700/80 dark:bg-zinc-800/70">
+                <span className="block text-[13px] font-normal text-[#727272] dark:text-zinc-400">
                   Weekend Rate
                 </span>
-                <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100">
-                  {formatMoney(weekendPrice, sourceCurrency, 2)} / night
-                </span>
+                <p className="mt-2 text-[17px] font-medium leading-none text-[#1F1F1F] dark:text-zinc-100">
+                  {formatMoney(weekendPrice, sourceCurrency, 2)} <span className="text-[13px] font-normal text-[#727272] dark:text-zinc-400">/ Night</span>
+                </p>
               </div>
             ) : null}
           </div>
 
           {/* Current Effective Rate for Selection */}
-          <div className="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50/70 dark:bg-zinc-800/40 p-3.5">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+          <div className="rounded-[18px] border border-white bg-[#F3F4F5] px-5 py-4 shadow-[0_2px_4px_0px_#00000040] dark:border-zinc-700/80 dark:bg-zinc-800/70">
+            <p className="text-xs font-normal text-[#727272] dark:text-zinc-400 block">
               Effective Selection Rate
             </p>
             {stats.isMixedPrice ? (
@@ -1160,37 +1160,36 @@ function ContextualManagementPanel({
                 </p>
               </div>
             ) : (
-              <p className="mt-1 text-lg font-bold text-zinc-900 dark:text-zinc-100">
+              <p className="mt-1 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
                 {formatMoney(stats.commonPrice ?? 0, sourceCurrency, 2)}{" "}
-                <span className="text-xs font-normal text-zinc-500 dark:text-zinc-400">/ night</span>
+                <span className="text-xs font-medium text-[#727272] dark:text-zinc-400">/ Night</span>
               </p>
             )}
           </div>
 
           {/* Phase 14 & Phase 20: Advisory Price Tip Recommendation Card */}
           {priceTipsResult && priceTipsResult.applicableCount > 0 && (
-            <div className="rounded-xl border border-amber-300 dark:border-amber-800 bg-amber-50/80 dark:bg-amber-950/40 p-3.5 space-y-2.5">
-              <div className="flex items-center justify-between">
+            <div className="space-y-3 rounded-[18px] bg-[#FEF3D7] border border-white p-4 shadow-[0_2px_4px_0px_#00000040] dark:border-amber-800 dark:bg-amber-950/40">
+              <div className="flex items-start flex-col justify-between">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-base" aria-hidden="true">💡</span>
-                  <span className="text-xs font-bold text-amber-950 dark:text-amber-200">
+                  <span className="text-base font-semibold text-[#1F1F1F] dark:text-amber-100 mb-3">
                     Price Tip Recommendation
                   </span>
                 </div>
                 {priceTipsResult.overallAction === "INCREASE" ? (
-                  <span className="rounded-md bg-amber-200 dark:bg-amber-900/80 px-2 py-0.5 text-[10px] font-bold text-amber-950 dark:text-amber-200">
+                  <span className="rounded-full bg-[#FCDF9C] px-2.5 py-1 text-sm font-medium text-[#1F1F1F] dark:bg-amber-900/80 dark:text-amber-100">
                     Demand Surge
                   </span>
                 ) : priceTipsResult.overallAction === "DECREASE" ? (
-                  <span className="rounded-md bg-blue-100 dark:bg-blue-950 px-2 py-0.5 text-[10px] font-bold text-blue-900 dark:text-blue-200">
+                  <span className="rounded-full bg-[#E9EBFF] px-2.5 py-1.5 text-sm font-medium text-[#394280] dark:bg-blue-950 dark:text-blue-200">
                     Booking Incentive
                   </span>
                 ) : priceTipsResult.overallAction === "NO_CHANGE" ? (
-                  <span className="rounded-md bg-emerald-100 dark:bg-emerald-950 px-2 py-0.5 text-[10px] font-bold text-emerald-900 dark:text-emerald-200">
+                  <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-sm font-medium text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200">
                     Optimal
                   </span>
                 ) : (
-                  <span className="rounded-md bg-zinc-200 dark:bg-zinc-800 px-2 py-0.5 text-[10px] font-bold text-zinc-700 dark:text-zinc-300">
+                  <span className="rounded-full bg-zinc-200 px-2.5 py-1 text-sm font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
                     Advisory
                   </span>
                 )}
@@ -1199,35 +1198,35 @@ function ContextualManagementPanel({
               {/* Price comparison */}
               <div className="flex items-baseline justify-between pt-0.5">
                 <div>
-                  <span className="text-[10px] text-zinc-500 dark:text-zinc-400 block font-medium">
+                  <span className="text-xs font-normal text-[#727272] dark:text-zinc-400 block">
                     Current rate
                   </span>
-                  <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                  <span className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-200">
                     {formatMoney(priceTipsResult.averageCurrentPrice, sourceCurrency, 2)}
-                    <span className="text-[10px] font-normal text-zinc-500"> / night</span>
+                    <span className="text-xs font-normal text-[#727272] leading-tight"> / Night</span>
                   </span>
                 </div>
                 {priceTipsResult.overallAction !== "NO_CHANGE" && priceTipsResult.overallAction !== "INSUFFICIENT_DATA" && (
-                  <span className="text-zinc-400 text-xs">→</span>
+                  <span className="text-sm text-[#727272]">→</span>
                 )}
                 <div className="text-right">
-                  <span className="text-[10px] text-zinc-500 dark:text-zinc-400 block font-medium">
+                  <span className="text-xs font-normal text-[#727272] dark:text-zinc-400 block">
                     {priceTipsResult.overallAction === "NO_CHANGE"
                       ? "Recommended"
                       : priceTipsResult.overallAction === "INSUFFICIENT_DATA"
                         ? "Active rate"
                         : "Suggested"}
                   </span>
-                  <span className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                  <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100">
                     {formatMoney(priceTipsResult.averageSuggestedPrice, sourceCurrency, 2)}
-                    <span className="text-[10px] font-normal text-zinc-500"> / night</span>
+                    <span className="text-xs font-normal text-[#727272] leading-tight"> / Night</span>
                   </span>
                 </div>
               </div>
 
               {/* Multi-date breakdown summary if applicable */}
               {priceTipsResult.applicableCount > 1 && (
-                <div className="rounded-lg bg-white/60 dark:bg-zinc-900/60 p-2 text-[11px] text-zinc-600 dark:text-zinc-300 flex items-center justify-between border border-amber-200/50 dark:border-amber-900/40">
+                <div className="flex items-center justify-between rounded-xl border border-[#F5D98C]/70 bg-white/70 p-2.5 text-[12px] text-[#5F5F5F] dark:border-amber-900/40 dark:bg-zinc-900/60 dark:text-zinc-300">
                   <span>{priceTipsResult.applicableCount} nights selected</span>
                   <span className="font-semibold text-zinc-700 dark:text-zinc-200">
                     {priceTipsResult.increaseCount > 0 ? `${priceTipsResult.increaseCount} increase ` : ""}
@@ -1238,17 +1237,17 @@ function ContextualManagementPanel({
               )}
 
               {/* Reasons list */}
-              <div className="text-xs text-zinc-600 dark:text-zinc-300 space-y-1">
+              <div className="space-y-1.5 text-xs leading-normal text-[#5F5F5F] dark:text-zinc-300">
                 {priceTipsResult.reasons.map((r, idx) => (
-                  <p key={idx} className="flex items-start gap-1 text-[11px] leading-tight">
-                    <span className="text-amber-500 font-bold shrink-0">•</span> <span>{r}</span>
+                  <p key={idx} className="flex items-start gap-1.5 leading-5">
+                    <span className="text-[#727272] font-bold shrink-0">•</span> <span>{r}</span>
                   </p>
                 ))}
               </div>
 
               {/* Action bar with difference and Apply button */}
-              <div className="flex items-center justify-between border-t border-amber-200/60 dark:border-amber-900/60 pt-2">
-                <span className="text-[11px] font-medium text-zinc-600 dark:text-zinc-400">
+              <div className="flex items-center justify-between border-t border-[#d7d7d7] pt-3 dark:border-amber-900/60">
+                <span className="text-sm font-semibold text-[#f1f1f1f] dark:text-zinc-400">
                   {priceTipsResult.averageDifference !== 0
                     ? `${priceTipsResult.averageDifference > 0 ? "+" : ""}${formatMoney(priceTipsResult.averageDifference, sourceCurrency, 2)} (${priceTipsResult.averagePercentChange > 0 ? "+" : ""}${priceTipsResult.averagePercentChange}%)`
                     : priceTipsResult.overallAction === "INSUFFICIENT_DATA"
@@ -1272,7 +1271,7 @@ function ContextualManagementPanel({
                       onPreviewPrice?.(null);
                       await onSave({ customPrices: nextCustom });
                     }}
-                    className="rounded-lg bg-amber-400 hover:bg-amber-300 px-3 py-1.5 text-xs font-bold text-zinc-950 transition-colors cursor-pointer disabled:opacity-70 shadow-xs"
+                    className="cursor-pointer rounded-full bg-[#FCDF9C] px-3.5 py-2 text-[12px] font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 hover:bg-[#1f1f1f] disabled:opacity-70"
                   >
                     {saving
                       ? "Applying…"
@@ -1281,13 +1280,13 @@ function ContextualManagementPanel({
                         : "Apply tip"}
                   </button>
                 ) : (
-                  <span className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 italic">
+                  <span className="text-[12px] font-medium italic text-[#727272] dark:text-zinc-400">
                     {priceTipsResult.overallAction === "NO_CHANGE" ? "Already optimal" : "Manual rate active"}
                   </span>
                 )}
               </div>
 
-              <p className="text-[10px] text-zinc-400 dark:text-zinc-500 italic leading-tight">
+              <p className="text-xs leading-normal text-[#727272] dark:text-[#727272]">
                 {priceTipsResult.marketDataNote}
               </p>
             </div>
@@ -1318,7 +1317,7 @@ function ContextualManagementPanel({
             <div>
               <label
                 htmlFor="contextualCustomPrice"
-                className="block text-xs font-semibold text-zinc-800 dark:text-zinc-200 mb-1.5"
+                className="block font-medium text-[#1F1F1F] dark:text-zinc-200 text-base mb-3"
               >
                 Set custom nightly rate
               </label>
@@ -1336,7 +1335,7 @@ function ContextualManagementPanel({
                 <button
                   type="submit"
                   disabled={saving || !customPriceInput}
-                  className="rounded-xl bg-amber-400 hover:bg-amber-300 px-4 py-2.5 text-xs font-bold text-zinc-950 transition-colors cursor-pointer disabled:opacity-70 shrink-0 shadow-xs h-[42px]"
+                  className="h-[42px] shrink-0 cursor-pointer rounded-full bg-[#FCDF9C] px-5 py-2.5 text-[12px] font-medium text-[#1F1F1F] transition-colors hover:bg-[#1f1f1f] hover:text-white disabled:opacity-70"
                 >
                   {saving ? "Saving…" : "Apply"}
                 </button>
@@ -1362,22 +1361,21 @@ function ContextualManagementPanel({
                 onPreviewPrice?.(null);
                 await onSave({ customPrices: nextCustom });
               }}
-              className="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/80 px-3.5 py-2.5 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors cursor-pointer disabled:opacity-70"
+              className="w-full cursor-pointer rounded-full border border-[#727272] hover:border-[#1f1f1f] bg-white px-3.5 py-2.5 text-sm font-medium text-[#3E3E3E] hover:text-white transition-colors hover:bg-[#1f1f1f] disabled:opacity-70 dark:border-zinc-700 dark:bg-zinc-800/80 dark:text-zinc-300 dark:hover:bg-zinc-700"
             >
               Reset to base rates
             </button>
           </form>
 
           {/* Selected-date promotion */}
-          <div className="rounded-xl border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50/50 dark:bg-emerald-950/30 p-3.5 space-y-3">
-            <div className="flex items-center justify-between">
+          <div className="space-y-3 rounded-lg border border-emerald-200 bg-emerald-50/50 p-4 dark:border-emerald-800/60 dark:bg-emerald-950/30 shadow-[0_2px_4px_0px_#00000040]">
+            <div className="flex flex-col items-start justify-between gap-2">
               <div className="flex items-center gap-1.5">
-                <span className="text-sm select-none" aria-hidden="true">🏷️</span>
-                <span className="text-[11px] font-semibold uppercase tracking-wider text-emerald-900 dark:text-emerald-200">
+                <span className="text-base font-semibold text-[#1F1F1F] dark:text-emerald-200">
                   Special days discount
                 </span>
               </div>
-              <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${stats.promoStats.enabled
+              <span className={`rounded-full px-2.5 py-1 text-sm font-medium ${stats.promoStats.enabled
                 ? "bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300"
                 : "bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300"
                 }`}>
@@ -1396,7 +1394,7 @@ function ContextualManagementPanel({
                     </span>
                   </div>
 
-                  <div className="rounded-lg bg-white/80 dark:bg-zinc-900/60 p-2.5 space-y-1.5 border border-emerald-100 dark:border-emerald-900/40 text-[11px]">
+                  <div className="rounded-lg bg-white/80 dark:bg-zinc-900/60 p-2.5 space-y-1.5 border border-emerald-100 dark:border-emerald-900/40 text-xs">
                     <div className="flex justify-between">
                       <span className="text-zinc-600 dark:text-zinc-400">
                         {stats.promoStats.eligibleCount} promotion eligible {stats.promoStats.eligibleCount === 1 ? "date" : "dates"}:
@@ -1414,7 +1412,7 @@ function ContextualManagementPanel({
                       </span>
                     </div>
                     {stats.promoStats.dateRangeText && (
-                      <div className="flex justify-between pt-1 border-t border-zinc-100 dark:border-zinc-800 text-[10px] text-zinc-500">
+                      <div className="flex justify-between pt-1 border-t border-zinc-100 dark:border-zinc-800 text-[10px] text-[#727272]">
                         <span>Eligible window:</span>
                         <span>{stats.promoStats.dateRangeText}</span>
                       </div>
@@ -1430,7 +1428,7 @@ function ContextualManagementPanel({
                       <span>Guest price after promotion</span>
                       <span className="text-emerald-700 dark:text-emerald-400">
                         {formatMoney(stats.promoStats.avgGuestPrice, sourceCurrency, 2)}{" "}
-                        <span className="text-[10px] font-normal text-zinc-500">avg / night</span>
+                        <span className="text-[10px] font-normal text-[#727272]">avg / Night</span>
                       </span>
                     </div>
                   </div>
@@ -1456,7 +1454,7 @@ function ContextualManagementPanel({
                       {stats.isMixedPrice
                         ? `${formatMoney(stats.promoStats.minGuestPrice ?? 0, sourceCurrency, 2)} – ${formatMoney(stats.promoStats.maxGuestPrice ?? 0, sourceCurrency, 2)}`
                         : formatMoney(stats.promoStats.commonGuestPrice ?? 0, sourceCurrency, 2)}{" "}
-                      <span className="text-[10px] font-normal text-zinc-500">/ night</span>
+                      <span className="text-[10px] font-normal text-[#727272]">/ Night</span>
                     </span>
                   </div>
                 </div>
@@ -1471,22 +1469,22 @@ function ContextualManagementPanel({
                       Promotion window: {stats.promoStats.dateRangeText}
                     </p>
                   )}
-                  <p className="text-[11px] text-zinc-500">
-                    Guests pay regular rate: {stats.isMixedPrice ? `${formatMoney(stats.minPrice ?? 0, sourceCurrency, 2)} – ${formatMoney(stats.maxPrice ?? 0, sourceCurrency, 2)}` : formatMoney(stats.commonPrice ?? 0, sourceCurrency, 2)} / night
+                  <p className="text-xs text-[#727272]">
+                    Guests pay regular rate: {stats.isMixedPrice ? `${formatMoney(stats.minPrice ?? 0, sourceCurrency, 2)} – ${formatMoney(stats.maxPrice ?? 0, sourceCurrency, 2)}` : formatMoney(stats.commonPrice ?? 0, sourceCurrency, 2)} / Night
                   </p>
                 </div>
               )
             ) : (
               <div className="space-y-2.5">
-                <p className="text-xs text-zinc-600 dark:text-zinc-400">
+                <p className="text-xs leading-normal text-[#5F5F5F] dark:text-zinc-400">
                   Add a discount only to the selected {stats.totalNights === 1 ? "date" : "dates"}.
                 </p>
-                <div className="flex items-end gap-2">
-                  <label className="min-w-0 flex-1">
-                    <span className="mb-1 block text-[11px] font-semibold text-zinc-700 dark:text-zinc-300">
+                <div className="flex flex-col items-start w-full gap-2">
+                  <label className="min-w-0 w-full">
+                      <span className="mb-1.5 block text-sm font-medium text-[#1f1f1f] dark:text-zinc-300">
                       Discount percentage
                     </span>
-                    <span className="flex h-10 items-center rounded-lg border border-emerald-300 bg-white px-3 focus-within:border-emerald-600 focus-within:ring-2 focus-within:ring-emerald-100 dark:border-emerald-800 dark:bg-zinc-900 dark:focus-within:border-emerald-500">
+                    <span className="flex h-[42px] items-center rounded-lg border border-emerald-300 bg-white px-3 focus-within:border-emerald-600 focus-within:ring-2 focus-within:ring-emerald-100 dark:border-emerald-800 dark:bg-zinc-900 dark:focus-within:border-emerald-500">
                       <input
                         type="number"
                         min={1}
@@ -1499,22 +1497,22 @@ function ContextualManagementPanel({
                           if (promoValidationError) setPromoValidationError("");
                         }}
                         aria-label="Special days discount percentage"
-                        className="min-w-0 flex-1 bg-transparent text-sm font-semibold text-zinc-900 outline-none dark:text-zinc-100"
+                          className="min-w-0 flex-1 bg-transparent text-sm font-medium text-[#1f1f1f] outline-none dark:text-zinc-100"
                       />
-                      <span className="text-sm font-semibold text-zinc-500">%</span>
+                      <span className="text-sm font-semibold text-[#727272]">%</span>
                     </span>
                   </label>
                   <button
                     type="button"
                     disabled={saving}
                     onClick={saveSpecialDaysDiscount}
-                    className="h-10 shrink-0 rounded-lg bg-emerald-600 px-3.5 text-[11px] font-bold text-white transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
+                    className="h-[42px] shrink-0 rounded-full bg-emerald-600 px-4 text-[12px] font-medium text-white transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
                   >
                     {saving ? "Applying…" : "Apply to dates"}
                   </button>
                 </div>
                 {promoValidationError ? (
-                  <p role="alert" className="text-[11px] font-medium text-rose-600 dark:text-rose-400">
+                  <p role="alert" className="text-xs font-medium text-rose-600 dark:text-rose-400">
                     {promoValidationError}
                   </p>
                 ) : null}
@@ -1522,9 +1520,9 @@ function ContextualManagementPanel({
             )}
 
             {/* Selected-range source */}
-            <div className="flex items-center justify-between pt-2 border-t border-emerald-200/60 dark:border-emerald-900/40 text-[11px]">
-              <span className="text-zinc-500 dark:text-zinc-400">
-                Applies only to: <strong className="text-zinc-700 dark:text-zinc-200">{formattedDateRange}</strong>
+            <div className="flex items-center justify-between border-t border-emerald-200/60 pt-2.5 text-sm dark:border-emerald-900/40">
+              <span className="text-[#727272] dark:text-zinc-400 font-normal">
+                Applies only to: <strong className="text-[#1f1f1f] font-semibold dark:text-zinc-200">{formattedDateRange}</strong>
               </span>
             </div>
 
@@ -1538,7 +1536,7 @@ function ContextualManagementPanel({
                     onClick={async () => {
                       await saveSpecialDaysDiscount();
                     }}
-                    className="w-full rounded-lg border border-emerald-300 dark:border-emerald-700 bg-white dark:bg-zinc-800 hover:bg-emerald-50 dark:hover:bg-zinc-700 px-2.5 py-1.5 text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 transition-colors cursor-pointer disabled:opacity-70 text-center"
+                    className="w-full cursor-pointer rounded-xl border border-emerald-300 bg-white px-3 py-2 text-[12px] font-medium text-emerald-800 transition-colors hover:bg-emerald-50 disabled:opacity-70 dark:border-emerald-700 dark:bg-zinc-800 dark:text-emerald-300 dark:hover:bg-zinc-700"
                   >
                     Set window to selected dates ({range.start} – {range.end})
                   </button>
@@ -1548,29 +1546,42 @@ function ContextualManagementPanel({
           </div>
 
           {/* Phase 9 & 10: Property Stay Discounts & Additional Charges (Collapsible) */}
-          <details className="group rounded-xl border border-zinc-200 dark:border-zinc-700/80 bg-zinc-50/60 dark:bg-zinc-800/40 overflow-hidden transition-colors">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-3.5 hover:bg-zinc-100/70 dark:hover:bg-zinc-800/70 transition-colors [&::-webkit-details-marker]:hidden">
-              <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+          <details className="group overflow-hidden rounded-[18px] border border-white bg-[#F3F4F5] shadow-[0_2px_4px_0px_#00000040] transition-colors dark:border-zinc-700/80 dark:bg-zinc-800/40">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 transition-colors [&::-webkit-details-marker]:hidden">
+              <span className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100">
                 Discounts & Additional Charges
               </span>
-              <span className="text-sm font-medium text-zinc-400 group-open:rotate-180 transition-transform duration-200">
-                ▾
+              <span className="relative size-4 shrink-0" aria-hidden="true">
+                <Image
+                  src="/images/icons/homyz/stroke/Plus.svg"
+                  alt=""
+                  width={16}
+                  height={16}
+                  className="size-4 transition-opacity duration-200 group-open:opacity-0"
+                />
+                <Image
+                  src="/images/icons/minus-icon.svg"
+                  alt=""
+                  width={14}
+                  height={1}
+                  className="absolute left-1/2 top-1/2 hidden h-px w-3.5 -translate-x-1/2 -translate-y-1/2 group-open:block"
+                />
               </span>
             </summary>
-            <div className="border-t border-zinc-200/80 dark:border-zinc-700/80 p-3.5 space-y-2 bg-white/70 dark:bg-zinc-900/40 text-xs text-zinc-600 dark:text-zinc-300">
+            <div className="border-t border-[#d7d7d7]/80 dark:border-zinc-700/80 p-3.5 space-y-2 bg-white/70 dark:bg-zinc-900/40 text-xs text-[#727272] dark:text-zinc-300">
               <div className="flex justify-between items-center">
-                <span>Weekly discount (7+ nights)</span>
+                <span>Weekly (7+ nights)</span>
                 <span className="font-semibold text-zinc-800 dark:text-zinc-200">{weeklyPct}%</span>
               </div>
               <div className="flex justify-between items-center">
-                <span>Monthly discount (28+ nights)</span>
+                <span>Monthly (28+ nights)</span>
                 <span className="font-semibold text-zinc-800 dark:text-zinc-200">{monthlyPct}%</span>
               </div>
-              <div className="flex justify-between items-center pt-1 border-t border-zinc-200/60 dark:border-zinc-700/60">
+              <div className="flex justify-between items-center pt-1 border-t border-[#d7d7d7]/60 dark:border-zinc-700/60">
                 <span>Extra guest fee</span>
                 <span className="font-semibold text-zinc-800 dark:text-zinc-200">
                   {listing.extraGuestFee && listing.extraGuestFee > 0
-                    ? `${formatMoney(listing.extraGuestFee, sourceCurrency, 2)} / guest / night`
+                    ? `${formatMoney(listing.extraGuestFee, sourceCurrency, 2)} / Guest / Night`
                     : "None"}
                 </span>
               </div>
@@ -1591,8 +1602,8 @@ function ContextualManagementPanel({
       {panelMode === "availability" && stats.editableKeys.length > 0 && (
         <div className="space-y-4">
           {/* Current Availability Card */}
-          <div className="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50/70 dark:bg-zinc-800/40 p-3.5">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+          <div className="rounded-xl bg-[#F3F4F5] dark:bg-zinc-800/40 p-3.5">
+            <p className="text-xs font-normal text-[#727272] dark:text-zinc-400 block">
               Current Status
             </p>
             <div className="mt-1 flex items-center gap-2">
@@ -1621,15 +1632,15 @@ function ContextualManagementPanel({
 
           {/* Availability Action Buttons */}
           <div className="space-y-2">
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            <p className="text-xs text-[#727272] dark:text-zinc-400">
               Change availability for {stats.editableKeys.length} {stats.editableKeys.length === 1 ? "date" : "dates"}:
               {stats.bookedCount > 0 && (
-                <span className="block text-[11px] text-zinc-500 mt-0.5">
+                <span className="block text-xs text-[#727272] mt-0.5">
                   ({stats.bookedCount} reserved {stats.bookedCount === 1 ? "date is" : "dates are"} protected and will not change)
                 </span>
               )}
               {stats.pastCount > 0 && (
-                <span className="block text-[11px] text-zinc-400 mt-0.5">
+                <span className="block text-xs text-zinc-400 mt-0.5">
                   ({stats.pastCount} past {stats.pastCount === 1 ? "date is" : "dates are"} historical)
                 </span>
               )}
@@ -1690,7 +1701,7 @@ function ContextualManagementPanel({
 
             {/* Undo Toast / Banner */}
             {lastUndo && (
-              <div className="mt-2 flex items-center justify-between rounded-xl bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 p-2.5 text-xs font-medium animate-in fade-in duration-200">
+              <div className="mt-2 flex items-center justify-between rounded-xl bg-zinc-900 text-white dark:bg-[#F3F4F5] dark:text-zinc-900 p-2.5 text-xs font-medium animate-in fade-in duration-200">
                 <span className="truncate mr-2">
                   {lastUndo.affectedCount} dates {lastUndo.action === "BLOCK" ? "blocked" : "made available"}
                   {lastUndo.protectedCount > 0 ? ` (${lastUndo.protectedCount} reserved unchanged)` : ""}.
@@ -1713,9 +1724,9 @@ function ContextualManagementPanel({
           </div>
 
           {/* Phase 11: Selected-Date Minimum Stay Override */}
-          <div className="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50/70 dark:bg-zinc-800/40 p-3.5 space-y-3">
+          <div className="rounded-xl bg-[#F3F4F5] dark:bg-zinc-800/40 p-3.5 space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+              <span className="text-xs font-normal text-[#727272] dark:text-zinc-400 block">
                 Minimum Stay Override
               </span>
               {stats.isMixedMinStay ? (
@@ -1729,7 +1740,7 @@ function ContextualManagementPanel({
               )}
             </div>
 
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            <p className="text-xs text-[#727272] dark:text-zinc-400">
               Set a required minimum stay for guests booking during these selected dates.
             </p>
 
@@ -1772,14 +1783,14 @@ function ContextualManagementPanel({
                     }}
                     className="w-full bg-transparent px-3 py-2 text-xs font-medium text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                   />
-                  <span className="pr-3 text-xs font-bold text-zinc-500 dark:text-zinc-400 select-none shrink-0">
+                  <span className="pr-3 text-xs font-bold text-[#727272] dark:text-zinc-400 select-none shrink-0">
                     nights
                   </span>
                 </div>
                 <button
                   type="submit"
                   disabled={saving || !customMinStayInput}
-                  className="rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:hover:bg-white dark:text-zinc-900 px-3.5 py-2 text-xs font-semibold transition-colors cursor-pointer disabled:opacity-40 shrink-0 shadow-xs"
+                  className="rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-[#F3F4F5] dark:hover:bg-white dark:text-zinc-900 px-3.5 py-2 text-xs font-semibold transition-colors cursor-pointer disabled:opacity-40 shrink-0 shadow-xs"
                 >
                   Apply min stay
                 </button>
@@ -1814,8 +1825,8 @@ function ContextualManagementPanel({
           </div>
 
           {/* Phase 11: Property Availability Rules (Collapsible) */}
-          <details className="group rounded-xl border border-zinc-200 dark:border-zinc-700/80 bg-zinc-50/60 dark:bg-zinc-800/40 overflow-hidden transition-colors">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-3.5 hover:bg-zinc-100/70 dark:hover:bg-zinc-800/70 transition-colors [&::-webkit-details-marker]:hidden">
+          <details className="group rounded-xl border border-[#d7d7d7] dark:border-zinc-700/80 bg-zinc-50/60 dark:bg-zinc-800/40 overflow-hidden transition-colors">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-3.5 hover:bg-[#F3F4F5]/70 dark:hover:bg-zinc-800/70 transition-colors [&::-webkit-details-marker]:hidden">
               <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
                 Property Availability Rules
               </span>
@@ -1823,7 +1834,7 @@ function ContextualManagementPanel({
                 ▾
               </span>
             </summary>
-            <div className="border-t border-zinc-200/80 dark:border-zinc-700/80 p-3.5 space-y-2 bg-white/70 dark:bg-zinc-900/40 text-xs text-zinc-600 dark:text-zinc-300">
+            <div className="border-t border-[#d7d7d7]/80 dark:border-zinc-700/80 p-3.5 space-y-2 bg-white/70 dark:bg-zinc-900/40 text-xs text-[#727272] dark:text-zinc-300">
               <div className="flex justify-between items-center">
                 <span>Default minimum stay</span>
                 <span className="font-semibold text-zinc-800 dark:text-zinc-200">
@@ -1850,7 +1861,7 @@ function ContextualManagementPanel({
                     : "Not allowed"}
                 </span>
               </div>
-              <div className="flex justify-between items-center pt-1 border-t border-zinc-200/60 dark:border-zinc-700/60">
+              <div className="flex justify-between items-center pt-1 border-t border-[#d7d7d7]/60 dark:border-zinc-700/60">
                 <span>Guest capacity</span>
                 <span className="font-semibold text-zinc-800 dark:text-zinc-200">
                   {listing.guests} guests max
@@ -1881,7 +1892,7 @@ function ContextualManagementPanel({
         <button
           type="button"
           onClick={handleClearWithConfirm}
-          className="w-full text-center text-xs font-medium text-[#727272] hover:text-[#1F1F1F] dark:hover:text-zinc-200 underline cursor-pointer"
+          className="w-full text-center text-sm font-medium text-[#DF4557] hover:text-[#1F1F1F] dark:hover:text-zinc-200 underline cursor-pointer"
         >
           Cancel & Clear Selection
         </button>
@@ -1920,13 +1931,13 @@ function AllListingsOverviewPanel({
 
       <div className="grid grid-cols-2 gap-3">
         <div className="rounded-xl bg-[#F3F4F5] dark:bg-zinc-800/80 p-3.5 border border-white dark:border-zinc-700">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-[#727272]">
+          <p className="text-xs font-semibold uppercase tracking-wider text-[#727272]">
             Listings
           </p>
           <p className="mt-1 text-2xl font-bold">{listings.length}</p>
         </div>
         <div className="rounded-xl bg-[#F3F4F5] dark:bg-zinc-800/80 p-3.5 border border-white dark:border-zinc-700">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-[#727272]">
+          <p className="text-xs font-semibold uppercase tracking-wider text-[#727272]">
             Active Stays
           </p>
           <p className="mt-1 text-2xl font-bold">{activeBookingsCount}</p>
@@ -1943,7 +1954,7 @@ function AllListingsOverviewPanel({
               key={l.id}
               type="button"
               onClick={() => onSelectListing(l.id)}
-              className="flex w-full items-center gap-3 rounded-xl border border-zinc-200 dark:border-zinc-700 p-2.5 text-left transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800 cursor-pointer"
+              className="flex w-full items-center gap-3 rounded-xl border border-[#d7d7d7] dark:border-zinc-700 p-2.5 text-left transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800 cursor-pointer"
             >
               <PropertyPhoto
                 listing={l}
@@ -1953,7 +1964,7 @@ function AllListingsOverviewPanel({
                 <p className="truncate text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100">
                   {l.title}
                 </p>
-                <p className="truncate text-[11px] text-[#727272]">
+                <p className="truncate text-xs text-[#727272]">
                   {[l.district, l.city].filter(Boolean).join(", ") || l.country}
                 </p>
               </div>
@@ -2628,7 +2639,7 @@ export function HostCalendarWorkspace({
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
             <Link
               href="/become-a-host"
-              className="rounded-full bg-[#1F1F1F] dark:bg-zinc-100 px-6 py-3 text-sm font-semibold text-white dark:text-zinc-950 shadow-sm transition-all hover:bg-black dark:hover:bg-white"
+              className="rounded-full bg-[#1F1F1F] dark:bg-[#F3F4F5] px-6 py-3 text-sm font-semibold text-white dark:text-zinc-950 shadow-sm transition-all hover:bg-black dark:hover:bg-white"
             >
               Create a listing
             </Link>
@@ -2731,7 +2742,7 @@ export function HostCalendarWorkspace({
             <button
               type="button"
               onClick={() => setMobileSettingsOpen(true)}
-              className="rounded-full bg-[#1F1F1F] dark:bg-zinc-100 px-3.5 py-1.5 text-xs font-semibold text-white dark:text-zinc-950"
+              className="rounded-full bg-[#1F1F1F] dark:bg-[#F3F4F5] px-3.5 py-1.5 text-xs font-semibold text-white dark:text-zinc-950"
             >
               {normalizedSelectedRange ? "Edit selected" : "Settings"}
             </button>
@@ -2742,7 +2753,7 @@ export function HostCalendarWorkspace({
             type="button"
             onClick={() => setMobilePropertySelectorOpen(true)}
             aria-label="Change selected property"
-            className="flex items-center justify-between gap-3 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-[#F3F4F5] dark:bg-zinc-800 p-2.5 shadow-2xs"
+            className="flex items-center justify-between gap-3 rounded-2xl border border-[#d7d7d7] dark:border-zinc-700 bg-[#F3F4F5] dark:bg-zinc-800 p-2.5 shadow-2xs"
           >
             <div className="flex items-center gap-2.5 min-w-0">
               {isAllListings ? (
@@ -2818,14 +2829,14 @@ export function HostCalendarWorkspace({
 
               {/* Month/Year Picker Dropdown */}
               {showMonthDropdown && (
-                <div className="absolute left-0 top-full z-50 mt-2 w-72 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-4 shadow-2xl">
+                <div className="absolute left-0 top-full z-50 mt-2 w-72 rounded-2xl border border-[#d7d7d7] dark:border-zinc-700 bg-white dark:bg-zinc-900 p-4 shadow-2xl">
                   {/* Year Stepper */}
                   <div className="mb-3 flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-3">
                     <button
                       type="button"
                       onClick={() => setPickerYear((y) => y - 1)}
                       aria-label="Previous year in picker"
-                      className="rounded-lg p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
+                      className="rounded-lg p-1.5 hover:bg-[#F3F4F5] dark:hover:bg-zinc-800 cursor-pointer"
                     >
                       <svg
                         className="size-4"
@@ -2844,7 +2855,7 @@ export function HostCalendarWorkspace({
                       type="button"
                       onClick={() => setPickerYear((y) => y + 1)}
                       aria-label="Next year in picker"
-                      className="rounded-lg p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
+                      className="rounded-lg p-1.5 hover:bg-[#F3F4F5] dark:hover:bg-zinc-800 cursor-pointer"
                     >
                       <svg
                         className="size-4"
@@ -2876,7 +2887,7 @@ export function HostCalendarWorkspace({
                           }}
                           className={`rounded-xl py-2 text-xs font-medium transition-colors cursor-pointer ${isSelected
                             ? "bg-[#FDE29B] dark:bg-amber-400 text-[#1F1F1F] dark:text-zinc-950 font-bold shadow-xs"
-                            : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                            : "text-zinc-700 dark:text-zinc-300 hover:bg-[#F3F4F5] dark:hover:bg-zinc-800"
                             }`}
                         >
                           {m.slice(0, 3)}
@@ -2951,7 +2962,7 @@ export function HostCalendarWorkspace({
                 <div
                   role="menu"
                   aria-label="Calendar view switcher"
-                  className="absolute right-0 top-full z-50 mt-2 w-32 overflow-hidden rounded-xl border border-zinc-200 bg-white p-1.5 shadow-xl dark:border-zinc-700 dark:bg-zinc-900"
+                  className="absolute right-0 top-full z-50 mt-2 w-32 overflow-hidden rounded-xl border border-[#d7d7d7] bg-white p-1.5 shadow-xl dark:border-zinc-700 dark:bg-zinc-900"
                 >
                   {(["month", "year"] as const).map((option) => {
                     const isSelected = view === option;
@@ -2964,7 +2975,7 @@ export function HostCalendarWorkspace({
                         onClick={() => handleSelectView(option)}
                         className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium capitalize transition-colors cursor-pointer ${isSelected
                           ? "bg-[#FDE29B] text-[#1F1F1F] dark:bg-amber-400 dark:text-zinc-950"
-                          : "text-[#525252] hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                          : "text-[#525252] hover:bg-[#F3F4F5] dark:text-zinc-300 dark:hover:bg-zinc-800"
                           }`}
                       >
                         {option}
@@ -2980,7 +2991,7 @@ export function HostCalendarWorkspace({
             <button
               type="button"
               onClick={() => setMobileSettingsOpen(true)}
-              className="hidden sm:block lg:hidden rounded-full bg-[#1F1F1F] dark:bg-zinc-100 px-4 py-2 text-sm font-medium text-white dark:text-[#1F1F1F] cursor-pointer"
+              className="hidden sm:block lg:hidden rounded-full bg-[#1F1F1F] dark:bg-[#F3F4F5] px-4 py-2 text-sm font-medium text-white dark:text-[#1F1F1F] cursor-pointer"
             >
               {normalizedSelectedRange ? "Edit selected" : "Settings"}
             </button>
@@ -3021,7 +3032,7 @@ export function HostCalendarWorkspace({
                   <rect x="14" y="14" width="7" height="7" />
                   <rect x="3" y="14" width="7" height="7" />
                 </svg>
-                <span className="mt-1 text-[11px] font-bold">All listings</span>
+                <span className="mt-1 text-xs font-bold">All listings</span>
                 <span className="text-[9px] text-[#727272] dark:text-zinc-400">
                   {listings.length} stays
                 </span>
@@ -3120,7 +3131,7 @@ export function HostCalendarWorkspace({
           {/* 3. Right Settings / Contextual Management Panel (Desktop Sidebar) */}
           <aside
             aria-label="Calendar settings"
-            className="hidden h-full w-[300px] shrink-0 overflow-y-auto overscroll-contain border-l border-l-[#eeeeee] px-5 py-5 font-['Poppins'] lg:block xl:w-[338px] calendar-panel-scrollbar dark:border-zinc-800 dark:border-l-zinc-800"
+            className="hidden h-full w-[300px] shrink-0 overflow-y-auto border-l border-l-[#eeeeee] px-5 py-5 font-['Poppins'] lg:block xl:w-[338px] calendar-panel-scrollbar dark:border-zinc-800 dark:border-l-zinc-800"
           >
             {isAllListings ? (
               <AllListingsOverviewPanel
@@ -3216,13 +3227,13 @@ export function HostCalendarWorkspace({
         {normalizedSelectedRange && selectedDatesStats && !mobileSettingsOpen && (
           <aside
             aria-label="Selection summary bar"
-            className="fixed inset-x-0 bottom-0 z-40 border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-3 lg:hidden shadow-xl flex items-center justify-between gap-3 animate-in slide-in-from-bottom duration-200"
+            className="fixed inset-x-0 bottom-0 z-40 border-t border-[#d7d7d7] dark:border-zinc-800 bg-white dark:bg-zinc-900 p-3 lg:hidden shadow-xl flex items-center justify-between gap-3 animate-in slide-in-from-bottom duration-200"
           >
             <div className="min-w-0 flex-1">
               <p className="text-xs font-bold text-[#1F1F1F] dark:text-zinc-100 truncate">
                 {selectedDatesStats.totalNights} {selectedDatesStats.totalNights === 1 ? "night selected" : "nights selected"}
               </p>
-              <p className="text-[11px] text-[#727272] truncate">
+              <p className="text-xs text-[#727272] truncate mt-0.5">
                 {selectedDatesStats.editableKeys.length} editable · {selectedDatesStats.bookedCount} reserved
               </p>
             </div>
@@ -3278,7 +3289,7 @@ export function HostCalendarWorkspace({
                     placeholder="Search properties..."
                     value={propertySearchQuery}
                     onChange={(e) => setPropertySearchQuery(e.target.value)}
-                    className="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 px-3.5 py-2 text-sm text-[#1F1F1F] dark:text-zinc-100 placeholder:text-[#727272] outline-none focus:ring-2 focus:ring-amber-400"
+                    className="w-full rounded-xl border border-[#d7d7d7] dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 px-3.5 py-2 text-sm text-[#1F1F1F] dark:text-zinc-100 placeholder:text-[#727272] outline-none focus:ring-2 focus:ring-amber-400"
                   />
                 </div>
               )}
@@ -3292,7 +3303,7 @@ export function HostCalendarWorkspace({
                     onClick={() => handleSelectProperty("all")}
                     className={`flex w-full items-center gap-3.5 rounded-2xl p-3 text-left transition-colors cursor-pointer ${isAllListings
                       ? "bg-[#FDE29B] dark:bg-amber-400 text-zinc-950 font-bold"
-                      : "hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-700"
+                      : "hover:bg-[#F3F4F5] dark:hover:bg-zinc-800 border border-[#d7d7d7] dark:border-zinc-700"
                       }`}
                   >
                     <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-zinc-900 text-white font-bold text-xs">
@@ -3319,7 +3330,7 @@ export function HostCalendarWorkspace({
                       onClick={() => handleSelectProperty(l.id)}
                       className={`flex w-full items-center gap-3.5 rounded-2xl p-3 text-left transition-colors cursor-pointer ${isSelected
                         ? "bg-[#FDE29B] dark:bg-amber-400 text-zinc-950 font-semibold"
-                        : "hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-700"
+                        : "hover:bg-[#F3F4F5] dark:hover:bg-zinc-800 border border-[#d7d7d7] dark:border-zinc-700"
                         }`}
                     >
                       <PropertyPhoto
@@ -3374,7 +3385,7 @@ export function HostCalendarWorkspace({
                     {allListingsDayBookings.bookings.map((b) => (
                       <div
                         key={b.id}
-                        className="flex items-center justify-between rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 p-3"
+                        className="flex items-center justify-between rounded-xl border border-[#d7d7d7] dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 p-3"
                       >
                         <div className="min-w-0 flex-1">
                           <p className="truncate font-semibold text-xs text-[#1F1F1F] dark:text-zinc-100">
@@ -3394,7 +3405,7 @@ export function HostCalendarWorkspace({
                             setAllListingsDayBookings(null);
                             setSelectedBooking(b);
                           }}
-                          className="ml-3 shrink-0 rounded-lg bg-zinc-900 dark:bg-zinc-100 px-3 py-1.5 text-xs font-semibold text-white dark:text-zinc-950 hover:bg-black dark:hover:bg-white cursor-pointer"
+                          className="ml-3 shrink-0 rounded-lg bg-zinc-900 dark:bg-[#F3F4F5] px-3 py-1.5 text-xs font-semibold text-white dark:text-zinc-950 hover:bg-black dark:hover:bg-white cursor-pointer"
                         >
                           Details
                         </button>
@@ -3425,7 +3436,7 @@ export function HostCalendarWorkspace({
                     .map((l) => (
                       <div
                         key={l.id}
-                        className="flex items-center justify-between rounded-xl border border-zinc-200 dark:border-zinc-700 p-2.5"
+                        className="flex items-center justify-between rounded-xl border border-[#d7d7d7] dark:border-zinc-700 p-2.5"
                       >
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-xs font-medium">
@@ -3490,7 +3501,7 @@ export function HostCalendarWorkspace({
                       <span className="text-xs font-bold uppercase tracking-wider text-amber-900 dark:text-amber-200">
                         Selected Dates Recommendation
                       </span>
-                      <span className="text-xs text-zinc-500 font-medium">
+                      <span className="text-xs text-[#727272] font-medium">
                         {selectedDatesStats.totalNights} {selectedDatesStats.totalNights === 1 ? "night" : "nights"}
                       </span>
                     </div>
@@ -3503,7 +3514,7 @@ export function HostCalendarWorkspace({
                       return (
                         <div className="space-y-3">
                           <div className="flex items-center justify-between">
-                            <span className="text-xs text-zinc-500 font-medium">
+                            <span className="text-xs text-[#727272] font-medium">
                               Recommendation Status
                             </span>
                             {rangeTips.overallAction === "INCREASE" ? (
@@ -3527,7 +3538,7 @@ export function HostCalendarWorkspace({
 
                           <div className="flex items-baseline justify-between pt-1">
                             <div>
-                              <span className="text-xs text-zinc-500 block">Current avg</span>
+                              <span className="text-xs text-[#727272] block">Current avg</span>
                               <span className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
                                 {formatMoney(rangeTips.averageCurrentPrice, sourceCurrency, 2)}
                               </span>
@@ -3536,7 +3547,7 @@ export function HostCalendarWorkspace({
                               <span className="text-zinc-400">→</span>
                             )}
                             <div className="text-right">
-                              <span className="text-xs text-zinc-500 block">
+                              <span className="text-xs text-[#727272] block">
                                 {rangeTips.overallAction === "NO_CHANGE"
                                   ? "Recommended avg"
                                   : rangeTips.overallAction === "INSUFFICIENT_DATA"
@@ -3550,7 +3561,7 @@ export function HostCalendarWorkspace({
                           </div>
 
                           {rangeTips.applicableCount > 1 && (
-                            <div className="rounded-lg bg-white/60 dark:bg-zinc-900/60 p-2 text-[11px] text-zinc-600 dark:text-zinc-300 flex items-center justify-between border border-amber-200/50 dark:border-amber-900/40">
+                            <div className="rounded-lg bg-white/60 dark:bg-zinc-900/60 p-2 text-xs text-zinc-600 dark:text-zinc-300 flex items-center justify-between border border-amber-200/50 dark:border-amber-900/40">
                               <span>Breakdown</span>
                               <span className="font-semibold text-zinc-700 dark:text-zinc-200">
                                 {rangeTips.increaseCount > 0 ? `${rangeTips.increaseCount} increase ` : ""}
@@ -3597,7 +3608,7 @@ export function HostCalendarWorkspace({
                                 {saving ? "Applying…" : `Apply to ${rangeTips.increaseCount + rangeTips.decreaseCount} dates`}
                               </button>
                             ) : (
-                              <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 italic">
+                              <span className="text-xs font-semibold text-[#727272] dark:text-zinc-400 italic">
                                 {rangeTips.overallAction === "NO_CHANGE" ? "Optimal rate active" : "Manual rate active"}
                               </span>
                             )}
@@ -3646,7 +3657,7 @@ export function HostCalendarWorkspace({
                       <p className="text-sm leading-6 text-[#595959] dark:text-zinc-300"><strong className="font-semibold text-[#1F1F1F] dark:text-zinc-100">Smart Pricing Limits</strong><span className="text-[#727272] dark:text-zinc-400"> · Set minimum and maximum prices to safeguard profitability.</span></p>
                     </div>
                     <div className="flex items-start gap-3">
-                      <span className="mt-1 flex size-4 shrink-0 items-center justify-center rounded-full bg[#DDDDDE] text-[9px] font-semibold text-[#6f4c00]">4</span>
+                      <span className="mt-1 flex size-4 shrink-0 items-center justify-center rounded-full bg-[#DDDDDE] text-[9px] font-semibold text-[#6f4c00]">4</span>
                       <p className="text-sm leading-6 text-[#595959] dark:text-zinc-300"><strong className="font-semibold text-[#1F1F1F] dark:text-zinc-100">Stay Length Discounts</strong><span className="text-[#727272] dark:text-zinc-400"> · Offer discounts to attract longer stays and increase occupancy.</span></p>
                     </div>
                   </div>
@@ -3660,7 +3671,7 @@ export function HostCalendarWorkspace({
                     <button
                       type="button"
                       onClick={() => setTips(false)}
-                      className="rounded-full bg-[#1F1F1F] px-6 py-2.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-[#3a3a3a] dark:bg-zinc-100 dark:text-[#1F1F1F] dark:hover:bg-white cursor-pointer"
+                      className="rounded-full bg-[#1F1F1F] px-6 py-2.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-[#3a3a3a] dark:bg-[#F3F4F5] dark:text-[#1F1F1F] dark:hover:bg-white cursor-pointer"
                     >
                       Got it
                     </button>
