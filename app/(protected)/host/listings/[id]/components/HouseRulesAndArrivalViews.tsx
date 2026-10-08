@@ -38,26 +38,33 @@ function AllowDenyButtons({
   label: string;
 }) {
   return (
-    <div className="flex shrink-0 items-center gap-2" aria-label={label}>
+    <div className="flex shrink-0 items-center gap-3" aria-label={label}>
       <button
         type="button"
         aria-label={`Do not allow ${label}`}
         aria-pressed={value === false}
         onClick={() => onChange(false)}
-        className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition-all cursor-pointer ${value === false
-          ? "border border-[#1f1f1f] bg-[#1f1f1f] text-white shadow-xs"
+        className={`flex size-10 cursor-pointer items-center justify-center rounded-full text-xs font-semibold transition-all ${value === false
+          ? "border border-[#FCDF9C] bg-[#FCDF9C] text-[#1f1f1f] shadow-xs"
           : "border border-[#727272] bg-white text-[#727272] hover:bg-zinc-200/80"
           }`}
       >
-        <CloseIcon className="size-4 stroke-[2.5]" />
+        <Image
+          src="/images/icons/close-icon.svg"
+          alt=""
+          aria-hidden="true"
+          width={14}
+          height={14}
+          className={`size-3.5 ${value === true ? "" : ""}`}
+        />
       </button>
       <button
         type="button"
         aria-label={`Allow ${label}`}
         aria-pressed={value === true}
         onClick={() => onChange(true)}
-        className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition-all cursor-pointer ${value === true
-          ? "border border-[#1f1f1f] bg-[#1f1f1f] text-white shadow-xs"
+        className={`flex size-10 cursor-pointer items-center justify-center rounded-full text-xs font-semibold transition-all ${value === true
+          ? "border border-[#FCDF9C] bg-[#FCDF9C] text-[#1f1f1f] shadow-xs"
           : "border border-[#727272] bg-white text-[#727272] hover:bg-zinc-200/80"
           }`}
       >
@@ -67,7 +74,7 @@ function AllowDenyButtons({
           aria-hidden="true"
           width={14}
           height={14}
-          className={`size-3.5 ${value === true ? "brightness-0 invert" : ""}`}
+          className={`size-3.5 ${value === true ? "" : ""}`}
         />
       </button>
     </div>
@@ -313,15 +320,15 @@ export function HouseRulesAndArrivalViews({
                 <div className="py-5 space-y-4">
                   <div className="flex items-start justify-between gap-4">
                     <div className="space-y-1">
-                      <span className="font-normal text-base text-[#1F1F1F] dark:text-[#1f1f1f] block">{t("host_pets_allowed") || "Pets allowed"}</span>
-                      <p className="text-sm text-[#727272] dark:text-[#727272] leading-relaxed max-w-md">
+                      <span className="font-medium text-lg text-[#1F1F1F] dark:text-[#1f1f1f] block">{t("host_pets_allowed") || "Pets allowed"}</span>
+                      <p className="text-base text-[#727272] dark:text-[#727272] leading-relaxed">
                         {t("host_pets_allowed_desc") || "You can refuse pets, but must reasonably accommodate service animals."}{" "}
                         <a
                           href="#service-animals"
                           onClick={(e) => e.preventDefault()}
-                          className="underline font-semibold text-[#1f1f1f] dark:text-zinc-100 hover:text-[#727272] dark:hover:text-amber-400 inline-block duration-300"
+                          className="underline font-normal text-[#1f1f1f] dark:text-zinc-100 hover:text-[#727272] dark:hover:text-amber-400 inline-block duration-300"
                         >
-                          {t("host_learn_more") || "Learn more"}
+                          {t("host_learn_more") || "learn more"}
                         </a>
                       </p>
                     </div>
@@ -334,16 +341,16 @@ export function HouseRulesAndArrivalViews({
 
                   {/* Conditional Pet Details */}
                   {petsAllowed === true && (
-                    <div className="rounded-2xl bg-zinc-50/80 dark:bg-zinc-800/60 border border-zinc-200/80 dark:border-zinc-700 p-4 space-y-4">
+                    <div className="rounded-2xl bg-[#F3F4F5] dark:bg-zinc-800/60 p-4 space-y-4">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">{t("host_max_pets_allowed") || "Maximum number of pets allowed"}</span>
+                        <span className="text-base font-medium text-[#1f1f1f] dark:text-zinc-200">{t("host_max_pets_allowed") || "Maximum number of pets allowed"}</span>
                         <div className="flex items-center gap-3 shrink-0">
                           <button
                             type="button"
                             aria-label={t("host_decrease_max_pets_aria") || "Decrease maximum pets"}
                             disabled={(maxPetsCount || 1) <= 1}
                             onClick={() => setMaxPetsCount?.(Math.max(1, (maxPetsCount || 1) - 1))}
-                            className="w-8 h-8 rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-sm font-medium text-zinc-600 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                            className="w-8 h-8 rounded-full border border-[#1f1f1f] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-sm font-medium text-zinc-600 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors"
                           >
                             <Image src="/images/icons/minus-icon.svg" alt={t("host_decrease_max_pets_aria") || "Decrease maximum pets"} width={14} height={14} className="size-3.5 object-contain dark:invert" />
                           </button>
@@ -355,36 +362,36 @@ export function HouseRulesAndArrivalViews({
                             aria-label={t("host_increase_max_pets_aria") || "Increase maximum pets"}
                             disabled={(maxPetsCount || 1) >= 10}
                             onClick={() => setMaxPetsCount?.(Math.min(10, (maxPetsCount || 1) + 1))}
-                            className="w-8 h-8 rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-sm font-medium text-zinc-600 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                            className="w-8 h-8 rounded-full border border-[#1f1f1f] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-sm font-medium text-zinc-600 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors"
                           >
                             <Image src="/images/icons/add-icon.svg" alt={t("host_increase_max_pets_aria") || "Increase maximum pets"} width={14} height={14} className="size-3.5 object-contain dark:invert" />
                           </button>
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-3 pt-2 border-t border-zinc-200/60 dark:border-zinc-700">
+                      <div className="grid grid-cols-2 gap-3 pt-4 border-t border-[#727272] dark:border-zinc-700">
                         <label className="flex items-center gap-2 cursor-pointer">
                           <input
                             type="checkbox"
                             checked={dogsAllowed ?? true}
                             onChange={(e) => setDogsAllowed?.(e.target.checked)}
-                            className="rounded text-amber-500 accent-zinc-900"
+                            className="rounded text-amber-500 accent-[#1f1f1f] w-4 h-4"
                           />
-                          <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">{t("host_dogs_allowed") || "Dogs allowed"}</span>
+                          <span className=" text-base font-normal text-[#1f1f1f] dark:text-zinc-300">{t("host_dogs_allowed") || "Dogs allowed"}</span>
                         </label>
                         <label className="flex items-center gap-2 cursor-pointer">
                           <input
                             type="checkbox"
                             checked={catsAllowed ?? true}
                             onChange={(e) => setCatsAllowed?.(e.target.checked)}
-                            className="rounded text-amber-500 accent-zinc-900"
+                            className="rounded text-amber-500 accent-[#1f1f1f] w-4 h-4"
                           />
-                          <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">{t("host_cats_allowed") || "Cats allowed"}</span>
+                          <span className="text-base font-normal text-[#1f1f1f] dark:text-zinc-300">{t("host_cats_allowed") || "Cats allowed"}</span>
                         </label>
                       </div>
 
                       <div className="space-y-3 pt-1">
-                        <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                        <label className="block text-sm font-medium text-[#1f1f1f] dark:text-zinc-300">
                           {t("host_pet_fee_label") || "Pet fee per stay (optional, SAR)"}
                         </label>
                         <input
@@ -393,12 +400,12 @@ export function HouseRulesAndArrivalViews({
                           value={petFee ?? ""}
                           onChange={(e) => setPetFee?.(e.target.value)}
                           placeholder={t("host_pet_fee_placeholder") || "e.g. 50"}
-                          className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2.5 text-xs text-zinc-800 dark:text-zinc-100 outline-none focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs placeholder:text-[#727272] dark:placeholder:text-[#727272] font-medium"
+                          className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2.5 text-base text-[#1f1f1f] dark:text-zinc-100 outline-none focus:border-zinc-900 dark:focus:border-zinc-100 placeholder:text-[#727272] dark:placeholder:text-[#727272] font-normal min-h-[56px]"
                         />
                       </div>
 
                       <div className="space-y-3">
-                        <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                        <label className="block text-sm font-medium text-[#1f1f1f] dark:text-zinc-300">
                           {t("host_pet_restrictions_label") || "Pet restrictions or guidelines"}
                         </label>
                         <input
@@ -406,7 +413,7 @@ export function HouseRulesAndArrivalViews({
                           value={petRestrictions || ""}
                           onChange={(e) => setPetRestrictions?.(e.target.value)}
                           placeholder={t("host_pet_restrictions_placeholder") || "e.g. Under 20kg only, house-trained, please bring own bed"}
-                          className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2.5 text-xs text-zinc-800 dark:text-zinc-100 outline-none focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs placeholder:text-[#727272] dark:placeholder:text-[#727272] font-medium"
+                          className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2.5 text-base text-[#1f1f1f] dark:text-zinc-100 outline-none focus:border-zinc-900 dark:focus:border-zinc-100 placeholder:text-[#727272] dark:placeholder:text-[#727272] font-normal min-h-[56px]"
                         />
                       </div>
                     </div>
@@ -416,7 +423,7 @@ export function HouseRulesAndArrivalViews({
                 {/* Row 2: Events allowed */}
                 <div className="py-5 flex items-center justify-between">
                   <div>
-                    <span className="font-normal text-base text-[#1F1F1F] dark:text-[#1f1f1f] block">{t("host_events_allowed") || "Events allowed"}</span>
+                    <span className="font-medium text-lg text-[#1F1F1F] dark:text-[#1f1f1f] block">{t("host_events_allowed") || "Events allowed"}</span>
                   </div>
                   <AllowDenyButtons
                     label="events"
@@ -428,7 +435,7 @@ export function HouseRulesAndArrivalViews({
                 {/* Row 3: Smoking, vaping, e-cigarettes allowed */}
                 <div className="py-5 flex items-center justify-between">
                   <div>
-                    <span className="font-normal text-base text-[#1F1F1F] dark:text-[#1f1f1f] block">{t("host_smoking_allowed") || "Smoking, vaping, e-cigarettes allowed"}</span>
+                    <span className="font-medium text-lg text-[#1F1F1F] dark:text-[#1f1f1f] block">{t("host_smoking_allowed") || "Smoking, vaping, e-cigarettes allowed"}</span>
                   </div>
                   <AllowDenyButtons
                     label="smoking"
@@ -441,7 +448,7 @@ export function HouseRulesAndArrivalViews({
                 <div className="py-5 space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <span className="font-normal text-base text-[#1F1F1F] dark:text-[#1f1f1f] block">{t("host_quiet_hours") || "Quiet hours"}</span>
+                      <span className="font-medium text-lg text-[#1F1F1F] dark:text-[#1f1f1f] block">{t("host_quiet_hours") || "Quiet hours"}</span>
                     </div>
                     <AllowDenyButtons
                       label="quiet hours"
@@ -503,7 +510,7 @@ export function HouseRulesAndArrivalViews({
                 {/* Row 5: Commercial photography and filming allowed */}
                 <div className="py-5 flex items-center justify-between gap-5">
                   <div>
-                    <span className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">{t("host_commercial_filming_allowed") || "Commercial photography and filming allowed"}</span>
+                    <span className="font-medium text-lg text-[#1F1F1F] dark:text-[#1f1f1f] block">{t("host_commercial_filming_allowed") || "Commercial photography and filming allowed"}</span>
                   </div>
                   <AllowDenyButtons
                     label="commercial photography and filming"
@@ -515,7 +522,7 @@ export function HouseRulesAndArrivalViews({
                 {/* Row 6: Number of guests */}
                 <div className="py-5 flex items-center justify-between gap-5">
                   <div>
-                    <span className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">{t("host_number_of_guests") || "Number of guests"}</span>
+                    <span className="font-medium text-lg text-[#1F1F1F] dark:text-[#1f1f1f] block">{t("host_number_of_guests") || "Number of guests"}</span>
                   </div>
                   <div className="flex shrink-0 items-center gap-3">
                     <button
@@ -547,11 +554,11 @@ export function HouseRulesAndArrivalViews({
                   className="flex w-full items-center justify-between gap-5 py-5 text-left transition-colors hover:text-zinc-600 dark:hover:text-zinc-300 cursor-pointer group"
                 >
                   <div className="space-y-0.5">
-                    <span className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">{t("host_check_in_out_times_title") || "Check-in and checkout times"}</span>
-                    <p className="text-xs text-[#727272] dark:text-[#727272] font-normal">
+                    <span className="font-medium text-lg text-[#1F1F1F] dark:text-[#1f1f1f] block">{t("host_check_in_out_times_title") || "Check-in and checkout times"}</span>
+                    <p className="text-base text-[#727272] dark:text-[#727272] font-normal">
                       {t("host_arrive_between", { start: formatTimeDisplay(checkInStart, "3:00 pm"), end: checkInEnd && checkInEnd !== "Flexible" ? formatTimeDisplay(checkInEnd) : (t("host_flexible") || "Flexible") }) || `Arrive between ${formatTimeDisplay(checkInStart, "3:00 pm")} and ${checkInEnd && checkInEnd !== "Flexible" ? formatTimeDisplay(checkInEnd) : "Flexible"}`}
                     </p>
-                    <p className="text-xs text-[#727272] dark:text-[#727272] font-normal">
+                    <p className="text-base text-[#727272] dark:text-[#727272] font-normal">
                       {t("host_leave_before", { time: formatTimeDisplay(checkOutTime, "6:00 pm") }) || `Leave before ${formatTimeDisplay(checkOutTime, "6:00 pm")}`}
                     </p>
                   </div>
@@ -567,8 +574,8 @@ export function HouseRulesAndArrivalViews({
                   className="flex w-full items-center justify-between gap-5 py-5 text-left transition-colors hover:text-zinc-600 dark:hover:text-zinc-300 cursor-pointer group"
                 >
                   <div className="space-y-0.5 max-w-md">
-                    <span className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">{t("host_additional_rules_title") || "Additional rules"}</span>
-                    <p className="text-xs text-[#727272] dark:text-[#727272] font-normal line-clamp-2">
+                      <span className="font-medium text-lg text-[#1F1F1F] dark:text-[#1f1f1f] block">{t("host_additional_rules_title") || "Additional rules"}</span>
+                    <p className="text-base text-[#727272] dark:text-[#727272] font-normal line-clamp-2">
                       {additionalHouseRules?.trim() || (t("host_add_rules_placeholder") || "Add rules")}
                     </p>
                   </div>
@@ -584,14 +591,14 @@ export function HouseRulesAndArrivalViews({
                   type="button"
                   disabled={isSaving}
                   onClick={() => handleSaveSection("house-rules")}
-                  className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
+                  className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-base px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
                 >
                   {isSaving ? (t("host_saving") || "Saving...") : (t("host_save") || "Save")}
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveSection("description")}
-                  className="rounded-full border border-[#1f1f1f] hover:border-[#1f1f1f] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] font-medium hover:text-white text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
+                  className="rounded-full border border-[#1f1f1f] hover:border-[#1f1f1f] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] font-medium hover:text-white text-base px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
                 >
                   {t("host_house_rules_cancel") || "Cancel"}
                 </button>
@@ -739,23 +746,41 @@ export function HouseRulesAndArrivalViews({
               <div className="flex items-center gap-1.5">
                 <button
                   type="button"
+                  aria-label="Parking is not available"
+                  aria-pressed={parkingAvailable === false}
                   onClick={() => setParkingAvailable?.(false)}
-                  className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold cursor-pointer transition-all ${parkingAvailable === false
+                  className={`flex size-8 cursor-pointer items-center justify-center rounded-full border text-xs font-semibold transition-all ${parkingAvailable === false
                     ? "bg-[#FEE08B] dark:bg-amber-400 border-amber-300 dark:border-amber-400 text-zinc-950 shadow-2xs"
                     : "bg-white dark:bg-zinc-800 border-[#727272] dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
                     }`}
                 >
-                  ✕
+                  <Image
+                    src="/images/icons/close-icon.svg"
+                    alt=""
+                    aria-hidden="true"
+                    width={14}
+                    height={14}
+                    className="size-3"
+                  />
                 </button>
                 <button
                   type="button"
+                  aria-label="Parking is available"
+                  aria-pressed={parkingAvailable === true}
                   onClick={() => setParkingAvailable?.(true)}
-                  className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold cursor-pointer transition-all ${parkingAvailable === true
+                  className={`flex size-8 cursor-pointer items-center justify-center rounded-full border text-xs font-semibold transition-all ${parkingAvailable === true
                     ? "bg-[#FEE08B] dark:bg-amber-400 border-amber-300 dark:border-amber-400 text-zinc-950 shadow-2xs"
                     : "bg-white dark:bg-zinc-800 border-[#727272] dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
                     }`}
                 >
-                  ✓
+                  <Image
+                    src="/images/icons/right-mark.svg"
+                    alt=""
+                    aria-hidden="true"
+                    width={14}
+                    height={14}
+                    className="size-3"
+                  />
                 </button>
               </div>
             </div>
@@ -770,8 +795,8 @@ export function HouseRulesAndArrivalViews({
                     <button
                       type="button"
                       onClick={() => setParkingType?.("FREE")}
-                      className={`px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${parkingType === "FREE"
-                        ? "bg-[#FEE08B] dark:bg-amber-400 border border-amber-300 dark:border-amber-400 text-zinc-950 shadow-2xs"
+                      className={`px-3 py-1 rounded-full text-sm font-medium transition-all cursor-pointer ${parkingType === "FREE"
+                        ? "bg-[#FEE08B] dark:bg-amber-400 border border-amber-300 dark:border-amber-400 text-[#1f1f1f] "
                         : "bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
                         }`}
                     >
@@ -780,8 +805,8 @@ export function HouseRulesAndArrivalViews({
                     <button
                       type="button"
                       onClick={() => setParkingType?.("PAID")}
-                      className={`px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${parkingType === "PAID"
-                        ? "bg-[#FEE08B] dark:bg-amber-400 border border-amber-300 dark:border-amber-400 text-zinc-950 shadow-2xs"
+                      className={`px-3 py-1 rounded-full text-sm font-medium transition-all cursor-pointer ${parkingType === "PAID"
+                        ? "bg-[#FEE08B] dark:bg-amber-400 border border-amber-300 dark:border-amber-400 text-[#1f1f1f] "
                         : "bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
                         }`}
                     >
@@ -797,7 +822,7 @@ export function HouseRulesAndArrivalViews({
                     <button
                       type="button"
                       onClick={() => setParkingSpaces?.(Math.max(1, (parkingSpaces || 1) - 1))}
-                      className="w-7 h-7 rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-xs font-semibold text-zinc-700 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-700 cursor-pointer"
+                      className="w-8 h-8 rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-xs font-semibold text-zinc-700 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-700 cursor-pointer"
                     >
                       <Image src="/images/icons/minus-icon.svg" alt={t("host_decrease_parking_spaces") || "Decrease parking spaces"} width={12} height={12} className="size-3 object-contain dark:invert" />
                     </button>
@@ -805,9 +830,9 @@ export function HouseRulesAndArrivalViews({
                     <button
                       type="button"
                       onClick={() => setParkingSpaces?.((parkingSpaces || 1) + 1)}
-                      className="w-7 h-7 rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-xs font-semibold text-zinc-700 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-700 cursor-pointer"
+                      className="w-8 h-8 rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-xs font-semibold text-zinc-700 dark:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-700 cursor-pointer"
                     >
-                      <Image src="/images/icons/add-icon.svg" alt={t("host_increase_parking_spaces") || "Increase parking spaces"} width={14} height={14} className="size-3.5 object-contain dark:invert" />
+                      <Image src="/images/icons/add-icon.svg" alt={t("host_increase_parking_spaces") || "Increase parking spaces"} width={14} height={14} className="size-3 object-contain dark:invert" />
                     </button>
                   </div>
                 </div>
@@ -818,30 +843,48 @@ export function HouseRulesAndArrivalViews({
                   <div className="flex items-center gap-1.5">
                     <button
                       type="button"
+                      aria-label="Parking reservation is not required"
+                      aria-pressed={parkingReservation === false}
                       onClick={() => setParkingReservation?.(false)}
-                      className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold cursor-pointer transition-all ${parkingReservation === false
+                      className={`flex size-8 cursor-pointer items-center justify-center rounded-full border text-xs font-semibold transition-all ${parkingReservation === false
                         ? "bg-[#FEE08B] dark:bg-amber-400 border-amber-300 dark:border-amber-400 text-zinc-950 shadow-2xs"
                         : "bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
                         }`}
                     >
-                      ✕
+                      <Image
+                        src="/images/icons/close-icon.svg"
+                        alt=""
+                        aria-hidden="true"
+                        width={14}
+                        height={14}
+                        className="size-3"
+                      />
                     </button>
                     <button
                       type="button"
+                      aria-label="Parking reservation is required"
+                      aria-pressed={parkingReservation === true}
                       onClick={() => setParkingReservation?.(true)}
-                      className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold cursor-pointer transition-all ${parkingReservation === true
+                      className={`flex size-8 cursor-pointer items-center justify-center rounded-full border text-xs font-semibold transition-all ${parkingReservation === true
                         ? "bg-[#FEE08B] dark:bg-amber-400 border-amber-300 dark:border-amber-400 text-zinc-950 shadow-2xs"
                         : "bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
                         }`}
                     >
-                      ✓
+                      <Image
+                        src="/images/icons/right-mark.svg"
+                        alt=""
+                        aria-hidden="true"
+                        width={14}
+                        height={14}
+                        className="size-3"
+                      />
                     </button>
                   </div>
                 </div>
 
                 {/* Parking Instructions */}
                 <div className="space-y-3">
-                  <label className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">{t("host_parking_instructions_label") || "Parking instructions for guests"}</label>
+                  <label className="font-medium text-lg text-[#1F1F1F] dark:text-[#1f1f1f] block">{t("host_parking_instructions_label") || "Parking instructions for guests"}</label>
                   <textarea
                     rows={4}
                     value={parkingInstructions}
@@ -860,14 +903,14 @@ export function HouseRulesAndArrivalViews({
               type="button"
               disabled={isSaving}
               onClick={() => handleSaveSection("parking")}
-              className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
+              className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-base px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
             >
               {isSaving ? (t("host_saving") || "Saving...") : (t("host_save") || "Save")}
             </button>
             <button
               type="button"
               onClick={() => setActiveSection("arrival-guide")}
-              className="rounded-full border border-[#1f1f1f] hover:border-[#1f1f1f] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] font-medium hover:text-white text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
+              className="rounded-full border border-[#1f1f1f] hover:border-[#1f1f1f] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] font-medium hover:text-white text-base px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
             >
               {t("host_cancel") || "Cancel"}
             </button>
@@ -1247,8 +1290,8 @@ function CheckOutInstructionsView({
         <div className="rounded-2xl border border-zinc-200/90 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-5 space-y-4 shadow-2xs">
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-3 min-w-0 flex-1">
-              <span className="text-xs font-semibold text-[#727272] dark:text-[#727272] block">{t("host_instructions_for_guests") || "Instructions for guests"}</span>
-              <p className="text-xs text-zinc-800 dark:text-zinc-200 font-medium whitespace-pre-line leading-relaxed">
+              <span className="text-base font-medium text-[#1f1f1f] dark:text-[#727272] block">{t("host_instructions_for_guests") || "Instructions for guests"}</span>
+              <p className="text-sm text-[#727272] dark:text-zinc-200 font-normal whitespace-pre-line leading-relaxed">
                 {checkOutInstructions}
               </p>
             </div>
@@ -1258,7 +1301,7 @@ function CheckOutInstructionsView({
                 setDraftInstructions(checkOutInstructions);
                 setIsModalOpen(true);
               }}
-              className="shrink-0 flex items-center justify-center w-8 h-8 rounded-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 transition-all cursor-pointer shadow-2xs"
+              className="shrink-0 flex items-center justify-center w-8 h-8 rounded-full border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 transition-all cursor-pointer shadow-2xs"
               aria-label={t("host_edit_instructions") || "Edit check-out instructions"}
             >
               <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -1268,7 +1311,7 @@ function CheckOutInstructionsView({
           </div>
 
           <div className="pt-3 border-t border-zinc-100 dark:border-zinc-700 flex items-center justify-between">
-            <div className="flex items-center gap-1.5 text-xs text-[#1f1f1f] dark:text-[#727272]">
+            <div className="flex items-center gap-1.5 text-sm text-[#1f1f1f] dark:text-[#727272]">
               <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <circle cx="12" cy="12" r="9" />
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 7v5l3 3" />
@@ -1279,7 +1322,7 @@ function CheckOutInstructionsView({
               type="button"
               disabled={isSaving}
               onClick={handleDelete}
-              className="text-[11px] font-semibold text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors cursor-pointer disabled:opacity-50"
+              className="text-sm font-medium text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors cursor-pointer disabled:opacity-50"
             >
               {t("host_remove_btn") || "Remove"}
             </button>
@@ -1325,7 +1368,20 @@ function CheckOutInstructionsView({
             }}
             className="inline-flex items-center gap-1.5 rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1f1f1f] hover:text-white font-medium text-sm px-4 py-2.5 transition-all cursor-pointer border border-transparent hover:border-[#1F1F1F] duration-300 dark:bg-amber-400 dark:text-zinc-950 dark:hover:bg-zinc-700 dark:hover:text-white dark:hover:border-zinc-600"
           >
-            <span className="text-sm font-semibold leading-none">✎</span>
+            <svg
+              aria-hidden="true"
+              className="size-4"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+              />
+            </svg>
             {t("host_edit_instructions") || "Edit instructions"}
           </button>
         </div>
@@ -1404,7 +1460,7 @@ function CheckOutInstructionsView({
                 type="button"
                 disabled={isSaving}
                 onClick={() => setIsModalOpen(false)}
-                className="rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-[#1f1f1f] dark:hover:bg-zinc-700 text-[#1f1f1f] hover:text-white dark:text-zinc-200 font-semibold text-sm px-7 py-2.5 transition-all cursor-pointer disabled:opacity-50"
+                className="rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-[#1f1f1f] dark:hover:bg-zinc-700 text-[#1f1f1f] hover:text-white dark:text-zinc-200 font-medium text-sm px-7 py-2.5 transition-all cursor-pointer disabled:opacity-50"
               >
                 {t("host_cancel") || "Cancel"}
               </button>
@@ -2152,7 +2208,7 @@ function DirectionsView({
       </div>
 
       {/* Privacy Notice Banner */}
-      <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-xs text-amber-900 dark:text-amber-200 font-medium">
+      <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-amber-50/80 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-sm text-amber-900 dark:text-amber-200 font-medium">
         <svg aria-hidden="true" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 shrink-0 text-amber-800 dark:text-amber-400">
           <path fillRule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clipRule="evenodd" />
         </svg>
@@ -2164,34 +2220,34 @@ function DirectionsView({
         <span className="text-base font-normal text-[#1f1f1f] dark:text-zinc-300 block">{t("host_recommended_arrival_details") || "Recommended arrival details to include:"}</span>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           <div className="rounded-xl border border-white bg-white p-4 shadow-[0px_2px_4px_0px_#00000040] space-y-3 transition-all duration-300 dark:bg-zinc-800/90 dark:border-zinc-700">
-            <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5">
+            <span className="text-base font-medium text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5">
               {t("host_driving_directions_title") || "Driving directions"}
             </span>
-            <p className="text-xs text-[#727272] dark:text-[#727272] leading-snug font-normal">
+            <p className="text-sm text-[#727272] dark:text-[#727272] leading-snug font-normal">
               {t("host_driving_directions_desc") || "Key highway exits, turns, or community gate codes."}
             </p>
           </div>
           <div className="rounded-xl border border-white bg-white p-4 shadow-[0px_2px_4px_0px_#00000040] space-y-3 transition-all duration-300 dark:bg-zinc-800/90 dark:border-zinc-700">
-            <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5">
+            <span className="text-base font-medium text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5">
               {t("host_parking_instructions_title") || "Parking instructions"}
             </span>
-            <p className="text-xs text-[#727272] dark:text-[#727272] leading-snug font-normal">
+            <p className="text-sm text-[#727272] dark:text-[#727272] leading-snug font-normal">
               {t("host_parking_instructions_desc") || "Designated stall number, garage ramp, or street spots."}
             </p>
           </div>
           <div className="rounded-xl border border-white bg-white p-4 shadow-[0px_2px_4px_0px_#00000040] space-y-3 transition-all duration-300 dark:bg-zinc-800/90 dark:border-zinc-700">
-            <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5">
+            <span className="text-base font-medium text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5">
               {t("host_public_transportation_title") || "Public transportation"}
             </span>
-            <p className="text-xs text-[#727272] dark:text-[#727272] leading-snug font-normal">
+            <p className="text-sm text-[#727272] dark:text-[#727272] leading-snug font-normal">
               {t("host_public_transportation_desc") || "Nearby metro or bus stations and walking path."}
             </p>
           </div>
           <div className="rounded-xl border border-white bg-white p-4 shadow-[0px_2px_4px_0px_#00000040] space-y-3 transition-all duration-300 dark:bg-zinc-800/90 dark:border-zinc-700">
-            <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5">
+            <span className="text-base font-medium text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5">
               {t("host_landmarks_entrance_title") || "Landmarks & entrance"}
             </span>
-            <p className="text-xs text-[#727272] dark:text-[#727272] leading-snug font-normal">
+            <p className="text-sm text-[#727272] dark:text-[#727272] leading-snug font-normal">
               {t("host_landmarks_entrance_desc") || "Notable buildings, shops, or signs to find the door."}
             </p>
           </div>
@@ -2222,14 +2278,14 @@ function DirectionsView({
           type="button"
           disabled={isSaving}
           onClick={() => handleSaveSection("directions")}
-          className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
+          className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-base px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
         >
           {isSaving ? (t("host_saving") || "Saving…") : (t("host_save") || "Save")}
         </button>
         <button
           type="button"
           onClick={() => setActiveSection("check-in-out")}
-          className="rounded-full border border-[#1f1f1f] hover:border-[#1f1f1f] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] font-medium hover:text-white text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
+          className="rounded-full border border-[#1f1f1f] hover:border-[#1f1f1f] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] font-medium hover:text-white text-base px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
         >
           {t("host_cancel") || "Cancel"}
         </button>
@@ -2488,7 +2544,7 @@ function CheckInMethodView({
           <button
             type="button"
             onClick={() => setIsSelectModalOpen(true)}
-            className="shrink-0 flex items-center justify-center w-8 h-8 rounded-full border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 transition-all cursor-pointer shadow-2xs"
+            className="shrink-0 flex items-center justify-center w-8 h-8 rounded-full border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 transition-all cursor-pointer shadow-2xs"
             aria-label={t("host_change_checkin_method_aria") || "Change check-in method"}
           >
             <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -2590,7 +2646,7 @@ function CheckInMethodView({
                       <CheckInMethodIcon id={method.id} />
                     </div>
                     <div className="min-w-0">
-                      <span className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100 mb-0.5">{method.label}</span>
+                      <span className="font-medium text-lg text-[#1F1F1F] dark:text-[#1f1f1f] block mb-0.5">{method.label}</span>
                       <p className="text-sm text-[#727272] dark:text-[#727272] leading-relaxed font-normal">{method.description}</p>
                     </div>
                   </button>
@@ -2628,7 +2684,7 @@ function CheckInMethodView({
             </div>
             {selectedDetailMethod.hasCode && (
               <div className="rounded-lg border border-[#727272] dark:border-zinc-700 bg-zinc-50/60 dark:bg-zinc-800/60 p-4 space-y-2 mb-6">
-                <label className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">
+                <label className="font-medium text-lg text-[#1F1F1F] dark:text-[#1f1f1f] block">
                   {selectedDetailMethod.codeLabel}{" "}
                   <span className="font-normal text-[#727272] dark:text-[#727272]">{t("host_confidential_tag") || "(Confidential)"}</span>
                 </label>
@@ -2649,7 +2705,7 @@ function CheckInMethodView({
                 type="button"
                 disabled={isSaving}
                 onClick={() => setIsDetailModalOpen(false)}
-                className="rounded-full border border-[#1f1f1f] dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-[#1f1f1f] dark:hover:bg-zinc-700 text-[#1f1f1f] hover:text-white dark:text-zinc-200 font-semibold text-sm px-7 py-2.5 transition-all cursor-pointer disabled:opacity-50"
+                className="rounded-full border border-[#1f1f1f] dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-[#1f1f1f] dark:hover:bg-zinc-700 text-[#1f1f1f] hover:text-white dark:text-zinc-200 font-medium text-sm px-7 py-2.5 transition-all cursor-pointer disabled:opacity-50"
               >
                 {t("host_cancel") || "Cancel"}
               </button>
@@ -2689,7 +2745,7 @@ function CheckInMethodView({
               </p>
             </div>
             <div className="rounded-lg border border-[#727272] dark:border-zinc-700 bg-zinc-50/60 dark:bg-zinc-800/60 p-4 space-y-2 mb-6">
-              <label className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">{t("host_instructions_for_guests_label") || "Instructions for guests"}</label>
+              <label className="font-medium text-lg text-[#1F1F1F] dark:text-[#1f1f1f] block">{t("host_instructions_for_guests_label") || "Instructions for guests"}</label>
               <textarea
                 rows={5}
                 value={checkInInstructions || ""}
@@ -2710,7 +2766,7 @@ function CheckInMethodView({
                 type="button"
                 disabled={isSaving}
                 onClick={() => setIsInstructionModalOpen(false)}
-                className="rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-[#1f1f1f] hover:text-white dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 font-semibold text-sm px-7 py-2.5 transition-all cursor-pointer disabled:opacity-50"
+                className="rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-[#1f1f1f] hover:text-white dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 font-medium text-sm px-7 py-2.5 transition-all cursor-pointer disabled:opacity-50"
               >
                 {t("host_cancel") || "Cancel"}
               </button>
@@ -2844,7 +2900,7 @@ function RegulationsView({
                     <p className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100">{regNumber}</p>
                   </div>
                   <div>
-                      <p className="text-sm text-[#727272] font-normal">Address, Country</p>
+                    <p className="text-sm text-[#727272] font-normal">Address, Country</p>
                     <p className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100">{regAddress}</p>
                   </div>
                 </div>

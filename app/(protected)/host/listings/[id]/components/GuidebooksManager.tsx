@@ -1077,7 +1077,7 @@ export function GuidebooksManager({
             <button
               type="button"
               onClick={() => setView("create")}
-              className="rounded-full bg-[#FCDF9C] px-5 py-3 text-sm font-semibold hover:bg-[#222] hover:text-white"
+              className="rounded-full bg-[#FCDF9C] px-5 py-3 text-sm font-medium hover:bg-[#222] hover:text-white"
             >
               Create guidebook
             </button>
@@ -1142,7 +1142,7 @@ export function GuidebooksManager({
                       <button
                         type="button"
                         onClick={() => void openGuidebook(item.id)}
-                        className="rounded-xl bg-[#222] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-black"
+                        className="rounded-xl bg-[#222] px-5 py-2.5 text-sm font-medium text-white transition hover:bg-black"
                       >
                         Edit
                       </button>
@@ -1155,7 +1155,7 @@ export function GuidebooksManager({
                           });
                           setModal("delete-guidebook");
                         }}
-                        className="rounded-xl border border-zinc-200 px-4 py-2.5 text-sm font-semibold text-rose-600 transition hover:border-rose-200 hover:bg-rose-50"
+                        className="rounded-xl border border-rose-600 px-4 py-2.5 text-sm font-medium text-rose-600 transition hover:border-rose-200 hover:bg-rose-50"
                       >
                         Delete
                       </button>

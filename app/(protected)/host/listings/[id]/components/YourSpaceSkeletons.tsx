@@ -889,40 +889,42 @@ export const GuestsSafetyBoxSkeleton = GuestsSafetySkeleton;
 
 export function CancellationPolicySkeleton() {
   return (
-    <div className="space-y-4 pt-1 font-sans animate-in fade-in">
+    <div className="space-y-3 pt-1 font-sans animate-in fade-in">
       {/* Short-term stays Card */}
-      <SkeletonCard className="flex items-center justify-between">
-        <div className="space-y-1.5">
-          <SkeletonText className="h-3.5 w-28" />
-          <SkeletonText className="h-3 w-36" />
-          <SkeletonText className="h-5 w-24 pt-1" />
+      <SkeletonCard className="space-y-4 border-zinc-200 p-5 shadow-[0_2px_3px_rgba(0,0,0,0.12)] sm:p-6">
+        <div className="space-y-3 border-b border-zinc-300 pb-4">
+          <SkeletonText className="h-8 w-36" />
+          <SkeletonText className="h-4 w-3/4" />
         </div>
-        <div className="flex items-center gap-2">
-          <SkeletonText className="h-3 w-8" />
-          <SkeletonBox className="w-4 h-4 rounded-xs" />
+        <div className="flex items-end justify-between gap-4 border-b border-zinc-200 pb-4">
+          <div className="space-y-2">
+            <SkeletonText className="h-4 w-24" />
+            <SkeletonText className="h-5 w-28" />
+          </div>
+          <SkeletonButton className="h-11 w-20" />
+        </div>
+        <div className="flex items-start justify-between gap-4 pt-0.5">
+          <div className="space-y-2">
+            <SkeletonText className="h-4 w-40" />
+            <SkeletonText className="h-4 w-72" />
+          </div>
+          <SkeletonToggle />
         </div>
       </SkeletonCard>
 
       {/* Long-term stays Card */}
-      <SkeletonCard className="flex items-center justify-between">
-        <div className="space-y-1.5">
-          <SkeletonText className="h-3.5 w-28" />
-          <SkeletonText className="h-3 w-36" />
-          <SkeletonText className="h-5 w-32 pt-1" />
+      <SkeletonCard className="space-y-4 border-zinc-200 p-5 shadow-[0_2px_3px_rgba(0,0,0,0.12)] sm:p-6">
+        <div className="space-y-3 border-b border-zinc-300 pb-4">
+          <SkeletonText className="h-8 w-36" />
+          <SkeletonText className="h-4 w-2/3" />
         </div>
-        <div className="flex items-center gap-2">
-          <SkeletonText className="h-3 w-8" />
-          <SkeletonBox className="w-4 h-4 rounded-xs" />
+        <div className="flex items-end justify-between gap-4 pt-0.5">
+          <div className="space-y-2">
+            <SkeletonText className="h-4 w-24" />
+            <SkeletonText className="h-5 w-32" />
+          </div>
+          <SkeletonButton className="h-11 w-20" />
         </div>
-      </SkeletonCard>
-
-      {/* Non-refundable Card */}
-      <SkeletonCard className="flex items-center justify-between gap-4">
-        <div className="space-y-1.5 max-w-md">
-          <SkeletonText className="h-3.5 w-40" />
-          <SkeletonText className="h-3 w-72" />
-        </div>
-        <SkeletonToggle />
       </SkeletonCard>
     </div>
   );
@@ -1164,4 +1166,3 @@ export function YourSpaceEditorSkeleton({ section = "propertyType" }: { section?
     </div>
   );
 }
-

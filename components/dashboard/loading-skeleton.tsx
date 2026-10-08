@@ -5,11 +5,14 @@ export function LoadingSkeleton({
   tab = "upcoming",
   showFilterBar = true,
   wideGuestGrid = false,
+  compactCards = false,
 }: {
   count?: number;
   tab?: "today" | "upcoming" | "past" | "all" | string;
   showFilterBar?: boolean;
   wideGuestGrid?: boolean;
+  /** Matches the compact card treatment used by profile trip lists. */
+  compactCards?: boolean;
 }) {
   const isPast = tab === "past";
 
@@ -84,14 +87,19 @@ export function LoadingSkeleton({
       ) : (
         <div className={wideGuestGrid
           ? "grid grid-cols-1 items-start gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5"
+          : compactCards
+            ? "grid grid-cols-1 items-start gap-5 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4"
           : "grid max-w-[812px] grid-cols-1 items-start gap-5 sm:grid-cols-2 lg:grid-cols-3"}>
           {Array.from({ length: count }).map((_, i) => (
-            <div key={i} className="min-h-[304px] rounded-[24px] border border-zinc-200 bg-white p-4 shadow-2xs">
-              <div className="aspect-[16/10] w-full rounded-[18px] bg-zinc-200 skeleton-shimmer" />
-              <div className="mt-3.5 h-3.5 w-1/2 rounded bg-zinc-200 skeleton-shimmer" />
-              <div className="mt-2 h-5 w-4/5 rounded bg-zinc-200 skeleton-shimmer" />
-              <div className="mt-1.5 h-4 w-3/5 rounded bg-zinc-100 skeleton-shimmer" />
-              <div className="mt-3 h-3 w-2/5 rounded bg-zinc-100 skeleton-shimmer" />
+            <div key={i} className={compactCards ? "" : "min-h-[304px] rounded-[24px] border border-zinc-200 bg-white p-4 shadow-2xs"}>
+              <div className={compactCards
+                ? "h-[207px] w-full rounded-[18px] bg-zinc-200 skeleton-shimmer"
+                : "aspect-[16/10] w-full rounded-[18px] bg-zinc-200 skeleton-shimmer"}
+              />
+              <div className={compactCards ? "mt-3 h-5 w-4/5 rounded bg-zinc-200 skeleton-shimmer" : "mt-3.5 h-3.5 w-1/2 rounded bg-zinc-200 skeleton-shimmer"} />
+              <div className={compactCards ? "mt-1 h-4 w-3/5 rounded bg-zinc-100 skeleton-shimmer" : "mt-2 h-5 w-4/5 rounded bg-zinc-200 skeleton-shimmer"} />
+              <div className={compactCards ? "mt-1 h-3 w-2/5 rounded bg-zinc-100 skeleton-shimmer" : "mt-1.5 h-4 w-3/5 rounded bg-zinc-100 skeleton-shimmer"} />
+              {!compactCards && <div className="mt-3 h-3 w-2/5 rounded bg-zinc-100 skeleton-shimmer" />}
             </div>
           ))}
         </div>

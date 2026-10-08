@@ -848,7 +848,7 @@ export function HostMessagesWorkspace({
       if (!element) return;
       const hasOverflow = element.scrollHeight > element.clientHeight + 1;
       const trackHeight = rightPanelScrollTrackRef.current?.clientHeight || element.clientHeight;
-      const arrowSpace = 28;
+      const arrowSpace = 32;
       const usableTrackHeight = Math.max(0, trackHeight - arrowSpace * 2);
       const height = hasOverflow ? Math.min(60, usableTrackHeight) : 0;
       const maxTop = Math.max(0, usableTrackHeight - height);
@@ -879,43 +879,43 @@ export function HostMessagesWorkspace({
     switch (status) {
       case "CONFIRMED":
         return (
-          <span className="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-800 border border-emerald-300">
+          <span className="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-800 border border-emerald-300">
             Confirmed stay
           </span>
         );
       case "PENDING":
         return (
-          <span className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-800 border border-amber-300">
+          <span className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800 border border-amber-300">
             Pending
           </span>
         );
       case "CANCELLED":
         return (
-          <span className="inline-flex items-center rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-semibold text-rose-800 border border-rose-300">
+          <span className="inline-flex items-center rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-medium text-rose-800 border border-rose-300">
             Cancelled
           </span>
         );
       case "REJECTED":
         return (
-          <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-semibold text-zinc-700 border border-zinc-300">
+          <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-700 border border-zinc-300">
             Declined
           </span>
         );
       case "EXPIRED":
         return (
-          <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-semibold text-zinc-600 border border-zinc-300">
+          <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-600 border border-zinc-300">
             Expired
           </span>
         );
       case "COMPLETED":
         return (
-          <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-semibold text-zinc-700 border border-zinc-300">
+          <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-700 border border-zinc-300">
             Completed
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-semibold text-zinc-700 border border-zinc-300 capitalize">
+          <span className="inline-flex items-center rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-700 border border-zinc-300 capitalize">
             {status.replaceAll("_", " ").toLowerCase()}
           </span>
         );
@@ -1117,10 +1117,10 @@ export function HostMessagesWorkspace({
                     {/* Details */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-1 mb-0.5">
-                        <span className={`text-sm truncate ${hasUnread ? "font-bold text-[#1F1F1F]" : "font-normal text-[#242424]"}`}>
+                        <span className={`text-sm truncate ${hasUnread ? "font-medium text-[#1F1F1F]" : "font-normal text-[#242424]"}`}>
                           {conv.guest.name || "Guest"}
                         </span>
-                        <span className="text-[11px] text-zinc-400 shrink-0">
+                        <span className="text-xs text-[#727272] shrink-0">
                           {formatListDate(conv.lastMessageAt)}
                         </span>
                       </div>
@@ -1275,10 +1275,10 @@ export function HostMessagesWorkspace({
 
                           return (
                             <div key={m.id} className="flex justify-center my-3">
-                              <div className="max-w-md w-full rounded-2xl border border-amber-300 bg-amber-50/90 p-4 shadow-2xs space-y-3">
+                              <div className="max-w-md w-full rounded-lg border border-amber-300 bg-amber-50/90 p-4 shadow-2xs space-y-3">
                                 <div className="flex items-center justify-between flex-wrap">
                                   <div className="flex items-center gap-2">
-                                    <span className="text-xs font-bold text-amber-900 uppercase tracking-wider">
+                                    <span className="text-xs font-medium text-amber-900 uppercase tracking-wider">
                                       Special Offer Sent
                                     </span>
                                     {hasBooking ? (
@@ -1286,15 +1286,15 @@ export function HostMessagesWorkspace({
                                         Booked & Confirmed
                                       </span>
                                     ) : isExpired ? (
-                                        <span className="inline-flex items-center rounded-full bg-zinc-200 px-2 py-0.5 text-[10px] font-semibold text-zinc-600 border border-zinc-300 whitespace-nowrap leading-4">
+                                      <span className="inline-flex items-center rounded-full bg-zinc-200 px-2 py-0.5 text-[10px] font-medium text-zinc-600 border border-zinc-300 whitespace-nowrap leading-4">
                                         Expired
                                       </span>
                                     ) : isDeclined ? (
-                                          <span className="inline-flex items-center rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-semibold text-rose-700 border border-rose-200 whitespace-nowrap">
+                                      <span className="inline-flex items-center rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-semibold text-rose-700 border border-rose-200 whitespace-nowrap">
                                         Declined
                                       </span>
                                     ) : isAccepted ? (
-                                            <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800 border border-emerald-300 whitespace-nowrap">
+                                      <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800 border border-emerald-300 whitespace-nowrap">
                                         Accepted by Guest
                                       </span>
                                     ) : (
@@ -1316,7 +1316,7 @@ export function HostMessagesWorkspace({
                                     </div>
                                     <div>
                                       <span className="text-zinc-500 block">Total Offer:</span>
-                                      <span className="font-bold text-amber-900 text-sm">
+                                      <span className="font-medium text-amber-900 text-sm">
                                         {formatPrice(
                                           Number(m.metadata.subtotalPrice) || 0,
                                           String(m.metadata.currency || "SAR"),
@@ -1394,7 +1394,7 @@ export function HostMessagesWorkspace({
                                 ? "bg-[#E9EBFF] text-zinc-800 rounded-tr-none"
                                 : "bg-zinc-100 text-zinc-800 rounded-tl-none rounded-bl-sm"
                                 }`}
-                            >                              
+                            >
 
                               {/* Render Attachments if present */}
                               {hasAttachments && (
@@ -1674,349 +1674,349 @@ export function HostMessagesWorkspace({
               : "fixed inset-0 z-[60] flex min-h-0 bg-white"
             : `relative hidden min-h-0 xl:flex xl:w-auto xl:border-l-0 xl:shadow-none ${laptopDetailsOpen ? "lg:fixed lg:bottom-0 lg:right-0 lg:top-[88px] lg:z-50 lg:flex lg:w-[362px] lg:border-l lg:border-zinc-200 lg:shadow-[-12px_0_28px_rgba(0,0,0,0.12)]" : ""}`}
         >
-          <aside id={panelIsModal ? "mobile-message-details" : "laptop-message-details"} ref={rightPanelScrollRef} onScroll={updateRightPanelScrollThumb} className={`custom-scrollbar flex h-full w-full flex-col gap-3 overflow-y-auto overscroll-contain bg-white ${panelIsModal ? isTabletViewport ? "max-w-[760px] border border-zinc-200 px-8 pb-8 pt-16 shadow-[0_8px_28px_rgba(0,0,0,0.08)]" : "pl-5.25 pr-5.25 pb-10 pt-[70px]" : "pl-5.25 pr-[38px] py-12"}`}>
-          <button
-            type="button"
-            onClick={() => setLaptopDetailsOpen(false)}
-            className={panelIsModal
-              ? isTabletViewport
-                ? "absolute right-8 top-8 flex size-10 items-center justify-center rounded-full border border-zinc-200 bg-white text-[#1A1A1A] shadow-sm transition-colors hover:bg-zinc-50"
-                : "absolute right-6 top-8 flex size-9 items-center justify-center rounded-full text-[#1A1A1A] transition-colors hover:bg-zinc-100"
-              : "ml-auto hidden rounded-full border border-zinc-300 px-3 py-1.5 text-xs font-medium text-[#1F1F1F] transition-colors hover:bg-zinc-50 lg:flex xl:hidden"}
-            aria-label="Close inquiry details"
-          >
-            {panelIsModal ? (
-              <svg className="size-6" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
-            ) : "Close details"}
-          </button>
-          {selectedConversation ? (
-            <>
-              {/* 1. Header Section */}
-              <section className="border-b border-[#D7D7D7] pb-4">
-                <p className="text-xs text-zinc-500">Inquiry</p>
-                <h2 id={panelIsModal ? "mobile-message-details-title" : undefined} className="guest-name mt-1 text-xl font-medium text-[#727272]"><span className="text-[#1f1f1f]">{selectedConversation.guest.name || "Guest"}</span> asked about your trip</h2>
-                <p className="property-location mt-3 text-sm text-[#1f1f1f] font-normal">{selectedConversation.listing.title}</p>
-                <p className="countryname text-sm text-[#727272]">{[selectedConversation.listing.city, selectedConversation.listing.country].filter(Boolean).join(", ")}</p>
-                {selectedConversation.status !== "CONFIRMED" && selectedConversation.status !== "DECLINED" && (
-                  <div className={isTabletViewport ? "mt-5 grid grid-cols-2 gap-2" : "mt-6 space-y-3"}>
-                    <button type="button" onClick={() => setPreApproveModalOpen(true)} className="flex h-10 w-full items-center justify-center rounded-xl border border-emerald-200 bg-emerald-50 px-3 text-sm font-medium text-emerald-900 transition-colors hover:bg-emerald-100">Pre-approve</button>
-                    <button type="button" onClick={openSpecialOfferModal} className="flex h-10 w-full items-center justify-center rounded-xl border border-amber-200 bg-[#FCDF9C] px-3 text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-[#F7D37D]">Special offer</button>
-                    <button type="button" onClick={() => setDeclineModalOpen(true)} className={`${isTabletViewport ? "col-span-2" : ""} flex h-10 w-full items-center justify-center rounded-xl border border-zinc-300 px-3 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50`}>Decline</button>
-                  </div>
-                )}
-              </section>
-
-              {/* 2. Listing Card */}
-              <div className="rounded-[10px] border border-[#E5E5E5] bg-white p-3.5 shadow-[0_2px_5px_rgba(0,0,0,0.12)] space-y-2.5">
-                <h4 className="text-base font-medium text-[#1F1F1F]">Listing</h4>
-                <div className="flex gap-3 items-center">
-                  {selectedConversation.listing.photos[0] ? (
-                    <Image
-                      src={selectedConversation.listing.photos[0]}
-                      alt={selectedConversation.listing.title}
-                      width={64}
-                      height={64}
-                      className="size-14 rounded-[10px] object-cover shrink-0 border border-zinc-200"
-                    />
-                  ) : (
-                    <div className="size-14 rounded-[10px] bg-zinc-100 shrink-0 border border-zinc-200" />
-                  )}
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-[#1F1F1F] truncate">
-                      {selectedConversation.listing.title}
-                    </p>
-                    {listingLocation && (
-                      <p className="text-xs text-zinc-500 truncate">
-                        {listingLocation}
-                      </p>
-                    )}
-                    <p className="text-xs font-semibold text-zinc-800 mt-1">
-                      {formatPrice(selectedConversation.listing.price, "SAR", 0)}{" "}
-                      <span className="font-normal text-zinc-500">/ night</span>
-                    </p>
-                  </div>
-                </div>
-                <Link
-                  href={`/listings/${selectedConversation.listing.id}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block text-center w-full py-2 rounded-[8px] border border-[#D7D7D7] text-sm font-medium text-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white transition-colors"
-                >
-                  View Listing
-                </Link>
-              </div>
-
-              {/* 3. Guest Profile Card */}
-              <div className="rounded-[10px] border border-[#E5E5E5] bg-white p-3.5 shadow-[0_2px_5px_rgba(0,0,0,0.12)] space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-base font-medium text-[#1F1F1F]">About the Guest</h4>
-                  {selectedConversation.guest.id && (
-                    <Link
-                      href={`/users/profile/${selectedConversation.guest.id}`}
-                      className="text-xs font-medium text-[#1F1F1F] underline underline-offset-2 hover:text-black"
-                    >
-                      View profile
-                    </Link>
-                  )}
-                </div>
-                <div className="flex items-center gap-3">
-                  {selectedConversation.guest.image ? (
-                    <Image
-                      src={selectedConversation.guest.image}
-                      alt={selectedConversation.guest.name || "Guest"}
-                      width={48}
-                      height={48}
-                      className="size-10 rounded-full object-cover border border-zinc-200"
-                    />
-                  ) : (
-                    <div className="size-10 rounded-full bg-amber-200 text-amber-900 flex items-center justify-center font-bold text-sm">
-                      {(selectedConversation.guest.name || "G")[0].toUpperCase()}
+          <aside id={panelIsModal ? "mobile-message-details" : "laptop-message-details"} ref={rightPanelScrollRef} onScroll={updateRightPanelScrollThumb} className={`custom-scrollbar flex h-full w-full flex-col gap-6 overflow-y-auto overscroll-contain bg-white ${panelIsModal ? isTabletViewport ? "max-w-[760px] border border-zinc-200 px-8 pb-8 pt-16 shadow-[0_8px_28px_rgba(0,0,0,0.08)]" : "pl-5.25 pr-5.25 pb-10 pt-[70px]" : "pl-5.25 pr-[38px] py-12"}`}>
+            <button
+              type="button"
+              onClick={() => setLaptopDetailsOpen(false)}
+              className={panelIsModal
+                ? isTabletViewport
+                  ? "absolute right-8 top-8 flex size-10 items-center justify-center rounded-full border border-zinc-200 bg-white text-[#1A1A1A] shadow-sm transition-colors hover:bg-zinc-50"
+                  : "absolute right-6 top-8 flex size-9 items-center justify-center rounded-full text-[#1A1A1A] transition-colors hover:bg-zinc-100"
+                : "ml-auto hidden rounded-full border border-zinc-300 px-3 py-1.5 text-xs font-medium text-[#1F1F1F] transition-colors hover:bg-zinc-50 lg:flex xl:hidden"}
+              aria-label="Close inquiry details"
+            >
+              {panelIsModal ? (
+                <svg className="size-6" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
+              ) : "Close details"}
+            </button>
+            {selectedConversation ? (
+              <>
+                {/* 1. Header Section */}
+                <section className="border-b border-[#D7D7D7] pb-6">
+                  <p className="text-xs text-zinc-500">Inquiry</p>
+                  <h2 id={panelIsModal ? "mobile-message-details-title" : undefined} className="guest-name mt-1 text-xl font-medium text-[#727272]"><span className="text-[#1f1f1f]">{selectedConversation.guest.name || "Guest"}</span> asked about your trip</h2>
+                  <p className="property-location mt-3 text-sm text-[#1f1f1f] font-normal">{selectedConversation.listing.title}</p>
+                  <p className="countryname text-sm text-[#727272]">{[selectedConversation.listing.city, selectedConversation.listing.country].filter(Boolean).join(", ")}</p>
+                  {selectedConversation.status !== "CONFIRMED" && selectedConversation.status !== "DECLINED" && (
+                    <div className={isTabletViewport ? "mt-5 grid grid-cols-2 gap-2" : "mt-6 space-y-3"}>
+                      <button type="button" onClick={() => setPreApproveModalOpen(true)} className="flex min-h-[46px] w-full items-center justify-center rounded-lg border border-emerald-200 bg-emerald-50 px-3 text-base font-normal text-emerald-900 transition-colors hover:bg-emerald-100">Pre-approve</button>
+                      <button type="button" onClick={openSpecialOfferModal} className="flex min-h-[46px] min-h-[46px] w-full items-center justify-center rounded-lg border border-amber-200 bg-[#FCDF9C] px-3 text-base font-normal text-[#1F1F1F] transition-colors hover:bg-[#F7D37D]">Special offer</button>
+                      <button type="button" onClick={() => setDeclineModalOpen(true)} className={`${isTabletViewport ? "col-span-2" : ""} flex min-h-[46px] w-full items-center justify-center rounded-lg border border-zinc-300 hover:border-[#1f1f1f] px-3 text-base font-normal text-[#1F1F1F] hover:text-white transition-colors hover:bg-[#1f1f1f]`}>Decline</button>
                     </div>
                   )}
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-[#1F1F1F] truncate">
-                      {selectedConversation.guest.name || "Guest"}
-                    </p>
-                    {selectedConversation.guest.createdAt && (
-                      <p className="text-sm text-[#727272]">
-                        Member since {new Date(selectedConversation.guest.createdAt).getUTCFullYear()}
-                      </p>
+                </section>
+
+                {/* 2. Listing Card */}
+                <div className="rounded-[10px] border border-[#E5E5E5] bg-white p-3.5 shadow-[0_2px_5px_rgba(0,0,0,0.12)] space-y-2.5">
+                  <h4 className="text-base font-medium text-[#1F1F1F]">Listing</h4>
+                  <div className="flex gap-3 items-center">
+                    {selectedConversation.listing.photos[0] ? (
+                      <Image
+                        src={selectedConversation.listing.photos[0]}
+                        alt={selectedConversation.listing.title}
+                        width={64}
+                        height={64}
+                        className="size-14 rounded-[10px] object-cover shrink-0 border border-zinc-200"
+                      />
+                    ) : (
+                      <div className="size-14 rounded-[10px] bg-zinc-100 shrink-0 border border-zinc-200" />
                     )}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-[#1F1F1F] truncate">
+                        {selectedConversation.listing.title}
+                      </p>
+                      {listingLocation && (
+                        <p className="text-xs text-zinc-500 truncate">
+                          {listingLocation}
+                        </p>
+                      )}
+                      <p className="text-xs font-semibold text-zinc-800 mt-1">
+                        {formatPrice(selectedConversation.listing.price, "SAR", 0)}{" "}
+                        <span className="font-normal text-zinc-500">/ night</span>
+                      </p>
+                    </div>
                   </div>
+                  <Link
+                    href={`/listings/${selectedConversation.listing.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block w-full py-2.5 rounded-lg border border-zinc-400 hover:border-[#1f1f1f] text-[#1F1F1F] hover:text-white text-base font-medium hover:bg-[#1f1f1f] transition-colors duration-300 cursor-pointer text-center"
+                  >
+                    View Listing
+                  </Link>
                 </div>
 
-                {/* Real verifications only */}
-                {(selectedConversation.guest.identityVerified || selectedConversation.guest.emailVerified) && (
-                  <div className="pt-2 border-t border-[#E5E5E5] text-sm text-[#727272] space-y-1.5">
+                {/* 3. Guest Profile Card */}
+                <section className="space-y-4 sm:rounded-2xl rounded-lg border border-[#E5E5E5] bg-white p-5 shadow-[0_2px_5px_rgba(0,0,0,0.12)] sm:p-6">
+                  <h4 className="text-xl font-medium leading-tight text-[#1F1F1F]">
+                    <span className="text-[#727272]">About </span>
+                    <span className="break-words">{selectedConversation.guest.name || "Guest"}</span>
+                  </h4>
+
+                  <div className="space-y-2.5 text-base text-[#727272]">
+                    <div className="flex items-center gap-3">
+                      <span className="flex size-8 shrink-0 items-center justify-center rounded-full border border-[#1F1F1F] text-[#1F1F1F]">
+                        <Image src="/images/icons/upcoming-trips.svg" alt="upcoming-trips.svg" width={16} height={16} className="w-4" />
+                      </span>
+                      <span>
+                        {selectedConversation.booking
+                          ? `Booking ${selectedConversation.booking.status.toLowerCase().replaceAll("_", " ")}`
+                          : "New guest inquiry"}
+                      </span>
+                    </div>
+
+                    {selectedConversation.guest.createdAt && (
+                      <div className="flex items-center gap-3">
+                        <span className="flex size-8 shrink-0 items-center justify-center text-[#1554D1]" aria-hidden="true">
+                          <Image src="/images/icons/homyz-icon.svg" alt="homyz-icon.svg" width={24} height={20} className="w-6" />
+                        </span>
+                        <span>Joined Homyz in {new Date(selectedConversation.guest.createdAt).getUTCFullYear()}</span>
+                      </div>
+                    )}
+
                     {selectedConversation.guest.identityVerified && (
-                      <div className="flex items-center gap-2">
-                        <svg className="size-4 text-emerald-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                        </svg>
+                      <div className="flex items-center gap-3">
+                        <span className="flex size-8 shrink-0 items-center justify-center text-emerald-600" aria-hidden="true">
+                          <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                          </svg>
+                        </span>
                         <span>Identity confirmed</span>
                       </div>
                     )}
+
                     {selectedConversation.guest.emailVerified && (
-                      <div className="flex items-center gap-2">
-                        <svg className="size-4 text-emerald-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                        </svg>
+                      <div className="flex items-center gap-3">
+                        <span className="flex size-8 shrink-0 items-center justify-center text-emerald-600" aria-hidden="true">
+                          <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                          </svg>
+                        </span>
                         <span>Email verified</span>
                       </div>
                     )}
                   </div>
-                )}
-              </div>
 
-              {/* Booking details */}
-              {selectedConversation.booking ? (() => {
-                const b = selectedConversation.booking!;
-                const isConfirmed = b.status === "CONFIRMED";
-                const isPending = b.status === "PENDING";
-                const isCancelled = b.status === "CANCELLED";
-                const cardClass = "rounded-[10px] bg-white px-4 py-3 shadow-[0_2px_5px_rgba(0,0,0,0.12)] border border-[#E5E5E5]";
-                return (
-                  <section className="border-t border-[#E5E5E5] pt-5 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <h4 className="text-xl font-medium text-[#1F1F1F]">Booking details</h4>
-                      {getBookingStatusBadge(b.status)}
-                    </div>
+                  {selectedConversation.guest.id && (
+                    <Link
+                      href={`/users/profile/${selectedConversation.guest.id}`}
+                      className="inline-flex text-base font-medium text-[#1F1F1F] underline underline-offset-4 transition-colors hover:text-[#727272]"
+                    >
+                      Show profile
+                    </Link>
+                  )}
+                </section>
 
-                    <div className="space-y-3">
-                      <div className={cardClass}>
-                        <p className="text-base font-medium text-[#1F1F1F]">Guests</p>
-                        <p className="text-base text-zinc-500">
-                          {b.guests} {b.guests === 1 ? "guest" : "guests"}
-                        </p>
+                {/* Booking details */}
+                {selectedConversation.booking ? (() => {
+                  const b = selectedConversation.booking!;
+                  const isConfirmed = b.status === "CONFIRMED";
+                  const isPending = b.status === "PENDING";
+                  const isCancelled = b.status === "CANCELLED";
+                  const cardClass = "rounded-[10px] bg-white px-4 py-3 shadow-[0_2px_5px_rgba(0,0,0,0.12)] border border-[#E5E5E5]";
+                  return (
+                    <section className="border-t border-[#E5E5E5] pt-5 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-xl font-medium text-[#1F1F1F]">Booking details</h4>
+                        {getBookingStatusBadge(b.status)}
                       </div>
 
-                      <div className={cardClass}>
-                        <p className="text-base font-medium text-[#1F1F1F]">Check-in</p>
-                        <p className="text-base text-zinc-500">
-                          {formatBookingDate(b.startDate, { weekday: true })}
-                        </p>
-                      </div>
-
-                      <div className={cardClass}>
-                        <p className="text-base font-medium text-[#1F1F1F]">Check-out</p>
-                        <p className="text-base text-zinc-500">
-                          {formatBookingDate(b.endDate, { weekday: true })}
-                        </p>
-                      </div>
-
-                      {b.totalPrice != null && (
+                      <div className="space-y-3">
                         <div className={cardClass}>
-                          <p className="text-base font-medium text-[#1F1F1F]">Total price</p>
-                          <p className="text-base font-semibold text-zinc-900">
-                            {formatPrice(b.totalPrice, b.currency || "SAR", 2)}
-                          </p>
-                        </div>
-                      )}
-
-                      {(b.cancellationPolicy || selectedConversation.listing.cancellationPolicy) && (
-                        <div className={cardClass}>
-                          <p className="text-base font-medium text-[#1F1F1F]">Cancellation policy</p>
-                          <p className="text-base text-zinc-500 capitalize">
-                            {(b.cancellationPolicy || selectedConversation.listing.cancellationPolicy || "Flexible")
-                              .replaceAll("_", " ")
-                              .toLowerCase()}
-                          </p>
-                        </div>
-                      )}
-
-                      <Link
-                        href={`/host/calendar?listingId=${selectedConversation.listing.id}`}
-                        className="inline-block text-base font-medium text-[#1F1F1F] underline underline-offset-2 hover:text-black"
-                      >
-                        View in calendar →
-                      </Link>
-
-                      {(isConfirmed || isPending || isCancelled) && (
-                        <button
-                          type="button"
-                          onClick={() => setShowReservationDetails(true)}
-                          className="block text-center w-full py-3 rounded-lg bg-[#FCDF9C] text-[#1F1F1F] hover:text-white text-base font-medium hover:bg-[#1F1F1F] transition-colors cursor-pointer"
-                        >
-                          View Reservation Details
-                        </button>
-                      )}
-                    </div>
-                  </section>
-                );
-              })() : (
-                <section className="border-t border-[#E5E5E5] pt-5 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h4 className="sm:text-xl text-lg font-medium text-[#1F1F1F]">Booking details</h4>
-                    {getStatusBadge(selectedConversation.status, selectedConversation.activeSpecialOffer)}
-                  </div>
-
-                  <div className="space-y-3 text-sm text-zinc-600">
-                    <p>This is a pre-booking inquiry. The guest has not yet confirmed a reservation.</p>
-                  </div>
-
-                  {inquiryDetails?.hasDetails ? (
-                    <div className="space-y-3">
-                      {inquiryDetails.guests != null && (
-                        <div className="rounded-[10px] bg-white px-4 py-3 shadow-[0_2px_5px_rgba(0,0,0,0.12)] border border-[#E5E5E5]">
                           <p className="text-base font-medium text-[#1F1F1F]">Guests</p>
                           <p className="text-base text-zinc-500">
-                            {inquiryDetails.guests} {inquiryDetails.guests === 1 ? "guest" : "guests"}
+                            {b.guests} {b.guests === 1 ? "guest" : "guests"}
                           </p>
                         </div>
-                      )}
 
-                      {inquiryDetails.startDate && (
-                        <div className="rounded-[10px] bg-white px-4 py-3 shadow-[0_2px_5px_rgba(0,0,0,0.12)] border border-[#E5E5E5]">
-                          <p className="text-base font-medium text-[#1F1F1F]">Requested check-in</p>
+                        <div className={cardClass}>
+                          <p className="text-base font-medium text-[#1F1F1F]">Check-in</p>
                           <p className="text-base text-zinc-500">
-                            {formatBookingDate(inquiryDetails.startDate, { weekday: true })}
+                            {formatBookingDate(b.startDate, { weekday: true })}
                           </p>
                         </div>
-                      )}
 
-                      {inquiryDetails.endDate && (
-                        <div className="rounded-[10px] bg-white px-4 py-3 shadow-[0_2px_5px_rgba(0,0,0,0.12)] border border-[#E5E5E5]">
-                          <p className="text-base font-medium text-[#1F1F1F]">Requested check-out</p>
+                        <div className={cardClass}>
+                          <p className="text-base font-medium text-[#1F1F1F]">Check-out</p>
                           <p className="text-base text-zinc-500">
-                            {formatBookingDate(inquiryDetails.endDate, { weekday: true })}
+                            {formatBookingDate(b.endDate, { weekday: true })}
                           </p>
                         </div>
-                      )}
 
-                      {inquiryDetails.createdAt && (
-                        <div className="rounded-[10px] bg-white px-4 py-3 shadow-[0_2px_5px_rgba(0,0,0,0.12)] border border-[#E5E5E5]">
-                          <p className="text-base font-medium text-[#1F1F1F]">Inquiry sent</p>
-                          <p className="text-base text-zinc-500">
-                            {formatBookingDate(inquiryDetails.createdAt, { weekday: true })}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="rounded-[10px] bg-zinc-50 p-4 text-sm text-[#727272] border border-zinc-200">
-                      This is a pre-booking inquiry. The guest has not yet confirmed a reservation.
-                    </div>
-                  )}
+                        {b.totalPrice != null && (
+                          <div className={cardClass}>
+                            <p className="text-base font-medium text-[#1F1F1F]">Total price</p>
+                            <p className="text-base font-semibold text-zinc-900">
+                              {formatPrice(b.totalPrice, b.currency || "SAR", 2)}
+                            </p>
+                          </div>
+                        )}
 
-                  {selectedConversation.status !== "DECLINED" && (
-                    <div className="pt-2 space-y-2.5">
-                      <button
-                        type="button"
-                        onClick={() => setPreApproveModalOpen(true)}
-                        className="w-full py-2.5 rounded-[10px] border border-zinc-400 text-[#1F1F1F] text-base font-medium hover:bg-zinc-50 transition-colors cursor-pointer"
-                      >
-                        Pre-approve
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setSpecialOfferModalOpen(true)}
-                        className="w-full py-2.5 rounded-[10px] border border-zinc-400 text-[#1F1F1F] text-base font-medium hover:bg-zinc-50 transition-colors cursor-pointer"
-                      >
-                        Special offer
-                      </button>
-                    </div>
-                  )}
-                 </section>
-              )}
+                        {(b.cancellationPolicy || selectedConversation.listing.cancellationPolicy) && (
+                          <div className={cardClass}>
+                            <p className="text-base font-medium text-[#1F1F1F]">Cancellation policy</p>
+                            <p className="text-base text-zinc-500 capitalize">
+                              {(b.cancellationPolicy || selectedConversation.listing.cancellationPolicy || "Flexible")
+                                .replaceAll("_", " ")
+                                .toLowerCase()}
+                            </p>
+                          </div>
+                        )}
 
-              {/* 5. Active Special Offer Section (if present and stay not confirmed) */}
-              {selectedConversation.activeSpecialOffer &&
-                (!selectedConversation.booking ||
-                  selectedConversation.booking.status !== "CONFIRMED") && (
+                        <Link
+                          href={`/host/calendar?listingId=${selectedConversation.listing.id}`}
+                          className="inline-flex items-center gap-1 text-base font-medium text-[#1F1F1F] hover:text-[#727272]"
+                        >
+                          <span className="underline underline-offset-2">View in calendar</span>
+                          <span aria-hidden="true">→</span>
+                        </Link>
+
+                        {(isConfirmed || isPending || isCancelled) && (
+                          <button
+                            type="button"
+                            onClick={() => setShowReservationDetails(true)}
+                            className="mt-3 block text-center w-full py-3 rounded-full bg-[#FCDF9C] text-[#1F1F1F] hover:text-white text-base font-medium hover:bg-[#1F1F1F] transition-colors cursor-pointer duration-300"
+                          >
+                            View Reservation Details
+                          </button>
+                        )}
+                      </div>
+                    </section>
+                  );
+                })() : (
                   <section className="border-t border-[#E5E5E5] pt-5 space-y-3">
                     <div className="flex items-center justify-between">
-                      <h4 className="text-base font-medium text-[#1F1F1F]">Active special offer</h4>
-                      <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-800 border border-amber-200 capitalize">
-                        {selectedConversation.activeSpecialOffer.status.toLowerCase()}
-                      </span>
+                      <h4 className="sm:text-xl text-lg font-medium text-[#1F1F1F]">Booking details</h4>
+                      {getStatusBadge(selectedConversation.status, selectedConversation.activeSpecialOffer)}
                     </div>
-                    <div className="rounded-[10px] bg-white px-4 py-3 shadow-[0_2px_5px_rgba(0,0,0,0.12)] border border-[#E5E5E5]">
-                      <p className="text-xs text-zinc-500">Dates</p>
-                      <p className="text-sm font-medium text-zinc-800 mt-0.5">
-                        {formatBookingDateRange(
-                          selectedConversation.activeSpecialOffer.startDate,
-                          selectedConversation.activeSpecialOffer.endDate,
+
+                    <div className="space-y-3 text-sm text-zinc-600">
+                      <p>This is a pre-booking inquiry. The guest has not yet confirmed a reservation.</p>
+                    </div>
+
+                    {inquiryDetails?.hasDetails ? (
+                      <div className="space-y-3">
+                        {inquiryDetails.guests != null && (
+                          <div className="rounded-[10px] bg-white px-4 py-3 shadow-[0_2px_5px_rgba(0,0,0,0.12)] border border-[#E5E5E5]">
+                            <p className="text-base font-medium text-[#1F1F1F]">Guests</p>
+                            <p className="text-base text-zinc-500">
+                              {inquiryDetails.guests} {inquiryDetails.guests === 1 ? "guest" : "guests"}
+                            </p>
+                          </div>
                         )}
-                      </p>
-                      <p className="text-xs text-zinc-600 mt-1">
-                        {selectedConversation.activeSpecialOffer.guests}{" "}
-                        {selectedConversation.activeSpecialOffer.guests === 1
-                          ? "guest"
-                          : "guests"}
-                      </p>
-                      <div className="mt-2.5 pt-2 border-t border-zinc-100 flex justify-between items-center text-sm">
-                        <span className="text-zinc-600 font-medium">Offer total</span>
-                        <span className="font-semibold text-zinc-900">
-                          {formatPrice(
-                            selectedConversation.activeSpecialOffer.subtotalPrice || 0,
-                            selectedConversation.activeSpecialOffer.currency || "SAR",
-                            2,
-                          )}
-                        </span>
+
+                        {inquiryDetails.startDate && (
+                          <div className="rounded-[10px] bg-white px-4 py-3 shadow-[0_2px_5px_rgba(0,0,0,0.12)] border border-[#E5E5E5]">
+                            <p className="text-base font-medium text-[#1F1F1F]">Requested check-in</p>
+                            <p className="text-base text-zinc-500">
+                              {formatBookingDate(inquiryDetails.startDate, { weekday: true })}
+                            </p>
+                          </div>
+                        )}
+
+                        {inquiryDetails.endDate && (
+                          <div className="rounded-[10px] bg-white px-4 py-3 shadow-[0_2px_5px_rgba(0,0,0,0.12)] border border-[#E5E5E5]">
+                            <p className="text-base font-medium text-[#1F1F1F]">Requested check-out</p>
+                            <p className="text-base text-zinc-500">
+                              {formatBookingDate(inquiryDetails.endDate, { weekday: true })}
+                            </p>
+                          </div>
+                        )}
+
+                        {inquiryDetails.createdAt && (
+                          <div className="rounded-[10px] bg-white px-4 py-3 shadow-[0_2px_5px_rgba(0,0,0,0.12)] border border-[#E5E5E5]">
+                            <p className="text-base font-medium text-[#1F1F1F]">Inquiry sent</p>
+                            <p className="text-base text-zinc-500">
+                              {formatBookingDate(inquiryDetails.createdAt, { weekday: true })}
+                            </p>
+                          </div>
+                        )}
                       </div>
-                    </div>
+                    ) : (
+                      <div className="rounded-[10px] bg-zinc-50 p-4 text-sm text-[#727272] border border-zinc-200">
+                        This is a pre-booking inquiry. The guest has not yet confirmed a reservation.
+                      </div>
+                    )}
+
+                    {selectedConversation.status !== "DECLINED" && (
+                      <div className="pt-2 space-y-2.5">
+                        <button
+                          type="button"
+                          onClick={() => setPreApproveModalOpen(true)}
+                          className="w-full py-2.5 rounded-lg border border-zinc-400 hover:border-[#1f1f1f] text-[#1F1F1F] hover:text-white text-base font-medium hover:bg-[#1f1f1f] transition-colors duration-300 cursor-pointer"
+                        >
+                          Pre-approve
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setSpecialOfferModalOpen(true)}
+                            className="w-full py-2.5 rounded-lg border border-zinc-400 hover:border-[#1f1f1f] text-[#1F1F1F] hover:text-white text-base font-medium hover:bg-[#1f1f1f] transition-colors duration-300 cursor-pointer"
+                        >
+                          Special offer
+                        </button>
+                      </div>
+                    )}
                   </section>
                 )}
-            </>
-          ) : (
-            <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 text-center text-sm text-[#727272]">
-              <p className="font-medium text-[#1F1F1F] mb-1">
-                Select a conversation to view details
-              </p>
-              <p className="text-xs text-zinc-500">
-                Choose a guest from the left panel to review inquiries, send special offers, or respond to booking messages.
-              </p>
-            </div>
-          )}
+
+                {/* 5. Active Special Offer Section (if present and stay not confirmed) */}
+                {selectedConversation.activeSpecialOffer &&
+                  (!selectedConversation.booking ||
+                    selectedConversation.booking.status !== "CONFIRMED") && (
+                    <section className="border-t border-[#E5E5E5] pt-5 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-base font-medium text-[#1F1F1F]">Active special offer</h4>
+                        <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-800 border border-amber-200 capitalize">
+                          {selectedConversation.activeSpecialOffer.status.toLowerCase()}
+                        </span>
+                      </div>
+                      <div className="rounded-[10px] bg-white px-4 py-3 shadow-[0_2px_5px_rgba(0,0,0,0.12)] border border-[#E5E5E5]">
+                        <p className="text-xs text-zinc-500">Dates</p>
+                        <p className="text-sm font-medium text-zinc-800 mt-0.5">
+                          {formatBookingDateRange(
+                            selectedConversation.activeSpecialOffer.startDate,
+                            selectedConversation.activeSpecialOffer.endDate,
+                          )}
+                        </p>
+                        <p className="text-xs text-zinc-600 mt-1">
+                          {selectedConversation.activeSpecialOffer.guests}{" "}
+                          {selectedConversation.activeSpecialOffer.guests === 1
+                            ? "guest"
+                            : "guests"}
+                        </p>
+                        <div className="mt-2.5 pt-2 border-t border-zinc-100 flex justify-between items-center text-sm">
+                          <span className="text-zinc-600 font-medium">Offer total</span>
+                          <span className="font-semibold text-zinc-900">
+                            {formatPrice(
+                              selectedConversation.activeSpecialOffer.subtotalPrice || 0,
+                              selectedConversation.activeSpecialOffer.currency || "SAR",
+                              2,
+                            )}
+                          </span>
+                        </div>
+                      </div>
+                    </section>
+                  )}
+              </>
+            ) : (
+              <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 text-center text-sm text-[#727272]">
+                <p className="font-medium text-[#1F1F1F] mb-1">
+                  Select a conversation to view details
+                </p>
+                <p className="text-xs text-zinc-500">
+                  Choose a guest from the left panel to review inquiries, send special offers, or respond to booking messages.
+                </p>
+              </div>
+            )}
           </aside>
           {rightPanelScrollThumb.visible && (
-            <div ref={rightPanelScrollTrackRef} className="absolute inset-y-0 right-0 hidden w-[22px] rounded-[30px] bg-white lg:block">
-              <button type="button" aria-label="Scroll message details up" onClick={() => scrollRightPanelByPage("up")} className="absolute left-0 top-1 z-10 flex size-[22px] items-center justify-center rounded-full text-[#727272] transition hover:bg-white/70 hover:text-[#1f1f1f]">
-                <svg aria-hidden="true" className="size-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m18 15-6-6-6 6" /></svg>
+            <div ref={rightPanelScrollTrackRef} className="absolute inset-y-0 right-0 hidden w-[22px] rounded-[30px] bg-[#F3F4F5] lg:block">
+              <button type="button" aria-label="Scroll message details up" onClick={() => scrollRightPanelByPage("up")} className="absolute left-0 top-1 z-10 flex h-[28px] w-[24px] items-center justify-center rounded-full bg-[#DDDDDE] text-[#727272] shadow-[0px_2px_4px_rgba(0,0,0,0.25)] transition hover:bg-white/70 hover:text-[#1f1f1f]">
+                <svg aria-hidden="true" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m6 15 6-6 6 6" /></svg>
               </button>
               <div onPointerDown={onRightPanelThumbPointerDown} className={`absolute left-0 top-0 w-[22px] touch-none select-none rounded-[30px] border border-white bg-[#DDDDDE] shadow-[0_2px_4px_rgba(0,0,0,0.25)] will-change-transform ${isRightPanelScrollbarDragging ? "cursor-grabbing" : "cursor-grab"}`} style={{ height: `${rightPanelScrollThumb.height}px`, transform: `translate3d(0, ${rightPanelScrollThumb.top}px, 0)` }} />
-              <button type="button" aria-label="Scroll message details down" onClick={() => scrollRightPanelByPage("down")} className="absolute bottom-1 left-0 z-10 flex size-[22px] items-center justify-center rounded-full text-[#727272] transition hover:bg-white/70 hover:text-[#1f1f1f]">
-                <svg aria-hidden="true" className="size-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m6 9 6 6 6-6" /></svg>
+              <button type="button" aria-label="Scroll message details down" onClick={() => scrollRightPanelByPage("down")} className="absolute bottom-1 left-0 z-10 flex h-[28px] w-[24px] items-center justify-center rounded-full bg-[#DDDDDE] text-[#727272] shadow-[0px_2px_4px_rgba(0,0,0,0.25)] transition hover:bg-white/70 hover:text-[#1f1f1f]">
+                <svg aria-hidden="true" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m6 9 6 6 6-6" /></svg>
               </button>
             </div>
           )}

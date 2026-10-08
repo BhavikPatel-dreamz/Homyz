@@ -661,10 +661,10 @@ export function GuestMessagesWorkspace({
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-1 mb-0.5">
-                        <span className={`text-sm truncate ${hasUnread ? "font-bold text-[#1F1F1F]" : "font-semibold text-zinc-800"}`}>
+                        <span className={`text-sm truncate ${hasUnread ? "font-medium text-[#1F1F1F]" : "font-semibold text-zinc-800"}`}>
                           {conv.host.name || "Host"}
                         </span>
-                        <span className="text-[11px] text-zinc-400 shrink-0">
+                        <span className="text-xs text-[#727272] shrink-0">
                           {formatConversationListDate(conv.lastMessageAt, initialRenderedAt)}
                         </span>
                       </div>
@@ -822,10 +822,10 @@ export function GuestMessagesWorkspace({
 
                       return (
                         <div key={m.id} className="flex justify-center my-3">
-                          <div className="max-w-md w-full rounded-2xl border-2 border-amber-300 bg-amber-50 p-5 shadow-sm space-y-3">
+                          <div className="max-w-md w-full rounded-lg border-2 border-amber-300 bg-amber-50 p-5 shadow-sm space-y-3">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2">
-                                <span className="text-xs font-bold text-amber-900 uppercase tracking-wider">
+                                <span className="text-xs font-medium text-amber-900 uppercase tracking-wider">
                                   Special Offer from Host
                                 </span>
                                 {hasBooking ? (
@@ -865,7 +865,7 @@ export function GuestMessagesWorkspace({
                                 </div>
                                 <div>
                                   <span className="text-zinc-500 block">Special Price:</span>
-                                  <span className="font-bold text-amber-900 text-sm">
+                                  <span className="font-medium text-amber-900 text-sm">
                                     {formatPrice(subtotalPrice, currency, 2)}
                                   </span>
                                 </div>

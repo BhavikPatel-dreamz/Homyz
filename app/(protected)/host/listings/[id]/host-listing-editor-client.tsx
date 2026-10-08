@@ -2288,7 +2288,7 @@ export function HostListingEditorClient({
                 type="button"
                 disabled={isSaving}
                 onClick={() => setIsTurnOffInstantBookModalOpen(false)}
-                className="rounded-full border border-[#1f1f1f] hover:border-[#1f1f1f] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] font-medium hover:text-white text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
+                className="rounded-full border border-[#1f1f1f] hover:border-[#1f1f1f] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] font-medium hover:text-white text-base px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
                 {t("host_booking_modal_cancel_button") || "Cancel"}
               </button>
@@ -2349,7 +2349,7 @@ export function HostListingEditorClient({
                 onClick={() => {
                   setIsCustomMessageModalOpen(false);
                 }}
-                className="rounded-full border border-[#1f1f1f] hover:border-[#1f1f1f] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] font-medium hover:text-white text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
+                className="rounded-full border border-[#1f1f1f] hover:border-[#1f1f1f] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] font-medium hover:text-white text-base px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
                 {t("host_booking_custom_message_cancel") || "Cancel"}
               </button>
@@ -2400,14 +2400,14 @@ export function HostListingEditorClient({
               value={additionalHouseRules}
               onChange={(e) => setAdditionalHouseRules(e.target.value)}
               placeholder={t("host_additional_house_rules_placeholder")}
-              className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4 text-xs text-zinc-800 dark:text-zinc-100 font-medium outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition-colors shadow-2xs placeholder:text-[#727272] dark:placeholder:text-[#727272]"
+              className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4 text-sm text-[#1f1f1f] dark:text-zinc-100 font-normal outline-none focus:border-zinc-900 dark:focus:border-zinc-100 transition-colors shadow-2xs placeholder:text-[#727272] dark:placeholder:text-[#727272]"
             />
 
             <div className="flex items-center justify-between gap-3 pt-2">
               <button
                 type="button"
                 onClick={() => setIsEditingAdditionalRulesModalOpen(false)}
-                className="rounded-full border border-[#1f1f1f] hover:border-[#1f1f1f] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] font-medium hover:text-white text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
+                className="rounded-full border border-[#1f1f1f] hover:border-[#1f1f1f] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] font-medium hover:text-white text-base px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
                 {t("host_additional_house_rules_cancel")}
               </button>

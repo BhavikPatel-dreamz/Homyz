@@ -571,7 +571,7 @@ export function EditorSidebar({
                 setEditorTab("space");
                 setActiveSection("description");
               }}
-              className={`min-h-11 flex-1 rounded-full px-3 py-1.5 text-xs font-medium transition-all cursor-pointer sm:text-sm lg:min-h-[48px] lg:px-4 duration-300 ${editorTab === "space"
+              className={`min-h-11 flex-1 rounded-full px-3 py-1.5 text-base font-medium transition-all cursor-pointer sm:text-sm lg:min-h-[48px] lg:px-4 duration-300 ${editorTab === "space"
                 ? "bg-[#FEE08B] text-[#1F1F1F] shadow-2xs dark:bg-amber-400 dark:text-zinc-950"
                 : "text-[#1F1F1F] hover:text-white hover:bg-[#1F1F1F] dark:text-zinc-300 dark:hover:bg-zinc-700 dark:hover:text-white"
                 }`}
@@ -585,7 +585,7 @@ export function EditorSidebar({
                 setEditorTab("arrival");
                 setActiveSection("check-in-out");
               }}
-              className={`min-h-11 flex-1 rounded-full px-3 py-1.5 text-xs font-medium transition-all cursor-pointer sm:text-sm lg:min-h-[48px] lg:px-4 duration-300 ${editorTab === "arrival"
+              className={`min-h-11 flex-1 rounded-full px-3 py-1.5 text-base font-medium transition-all cursor-pointer sm:text-sm lg:min-h-[48px] lg:px-4 duration-300 ${editorTab === "arrival"
                 ? "bg-[#FEE08B] text-[#1F1F1F] shadow-2xs dark:bg-amber-400 dark:text-zinc-950"
                 : "text-[#1F1F1F] hover:text-white hover:bg-[#1F1F1F] dark:text-zinc-300 dark:hover:bg-zinc-700 dark:hover:text-white"
                 }`}
@@ -601,7 +601,7 @@ export function EditorSidebar({
               setEditorTab("preferences");
               setActiveSection("listing-status");
             }}
-            className={`group flex h-11 w-11 shrink-0 items-center justify-center rounded-full border text-xs transition-all  duration-300 cursor-pointer lg:h-12 lg:w-12 ${editorTab === "preferences"
+            className={`group flex h-11 w-11 shrink-0 items-center justify-center rounded-full border text-base transition-all  duration-300 cursor-pointer lg:h-12 lg:w-12 ${editorTab === "preferences"
               ? "bg-[#FEE08B] hover:bg-[#1f1f1f] border-transparent text-[#1f1f1f] hover:text-white hover:border-[#1f1f1f]"
               : "bg-white border-[#1F1F1F] text-[#727272] hover:bg-[#1F1F1F] dark:bg-zinc-800 dark:border-zinc-700 dark:text-[#727272] dark:hover:bg-zinc-700"
               }`}
@@ -886,7 +886,7 @@ export function EditorSidebar({
                 {activeSection !== "about-host" && (
                   <div
                     onClick={() => setActiveSection("photos")}
-                    className={`relative min-w-0 cursor-pointer group mb-[72px] rounded-3xl transition-all ${activeSection === "photos"
+                    className={`relative min-w-0 cursor-pointer group sm:mb-[72px] mb-[40px] rounded-3xl transition-all ${activeSection === "photos"
                       ? ""
                       : "hover:bg-zinc-100/50"
                       }`}
@@ -1491,9 +1491,9 @@ export function EditorSidebar({
                   type="button"
                   onClick={() => setActiveSection("check-in-out")}
                   aria-current={activeSection === "check-in-out" || activeSection === "arrival-guide" ? "page" : undefined}
-                  className={`w-full rounded-xl border border-white bg-white px-4 py-3 text-left shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all ${activeSection === "check-in-out" || activeSection === "arrival-guide"
+                  className={`w-full rounded-xl bg-white px-4 py-3 text-left shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all ${activeSection === "check-in-out" || activeSection === "arrival-guide"
                     ? "border-transparent !bg-[#E9EBFF]"
-                    : "border-white bg-white hover:border-white"
+                    : "bg-white"
                     }`}
                 >
                   <span className="mb-1 block text-base font-medium text-[#1F1F1F]">{t("host_checkin")}</span>
@@ -1505,9 +1505,9 @@ export function EditorSidebar({
                 {/* Card 2: Check-in method */}
                 <div
                   onClick={() => setActiveSection("check-in-method")}
-                  className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "check-in-method"
-                    ? "!bg-[#E9EBFF] border-transparent shadow-2xs"
-                    : "bg-white border-white hover:border-white"
+                  className={`rounded-xl bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "check-in-method"
+                    ? "!bg-[#E9EBFF] shadow-2xs"
+                    : "bg-white"
                     }`}
                 >
                   <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
@@ -1521,9 +1521,9 @@ export function EditorSidebar({
                 {/* Card 2: Wifi details */}
                 <div
                   onClick={() => setActiveSection("wifi-details")}
-                  className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "wifi-details"
-                    ? "!bg-[#E9EBFF] border-transparent shadow-2xs"
-                    : "bg-white border-white hover:border-white"
+                  className={`rounded-xl bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "wifi-details"
+                    ? "!bg-[#E9EBFF] shadow-2xs"
+                    : "bg-white"
                     }`}
                 >
                   <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
@@ -1536,9 +1536,9 @@ export function EditorSidebar({
 
                 <div
                   onClick={() => setActiveSection("directions")}
-                  className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "directions"
-                    ? "!bg-[#E9EBFF] border-transparent shadow-2xs"
-                    : "bg-white border-white hover:border-white"
+                  className={`rounded-xl bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "directions"
+                    ? "!bg-[#E9EBFF] shadow-2xs"
+                    : "bg-white"
                     }`}
                 >
                   <div className="flex items-center justify-between mb-0.5">
@@ -1555,9 +1555,9 @@ export function EditorSidebar({
                 {/* Card 3: House manual */}
                 <div
                   onClick={() => setActiveSection("house-manual")}
-                  className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "house-manual"
-                    ? "!bg-[#E9EBFF] border-transparent shadow-2xs"
-                    : "bg-white border-white hover:border-white"
+                  className={`rounded-xl bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "house-manual"
+                    ? "!bg-[#E9EBFF] shadow-2xs"
+                    : "bg-white"
                     }`}
                 >
                   <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
@@ -1571,9 +1571,9 @@ export function EditorSidebar({
                 {/* Card 3b: Parking */}
                 <div
                   onClick={() => setActiveSection("parking")}
-                  className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "parking"
-                    ? "!bg-[#E9EBFF] border-transparent shadow-2xs"
-                    : "bg-white border-white hover:border-white"
+                  className={`rounded-xl bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "parking"
+                    ? "!bg-[#E9EBFF] shadow-2xs"
+                    : "bg-white"
                     }`}
                 >
                   <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
@@ -1591,8 +1591,8 @@ export function EditorSidebar({
                     activeSection === "check-out-instructions" ||
                     activeSection === "checkout" ||
                     activeSection === "check-out"
-                    ? "!bg-[#E9EBFF] border-transparent shadow-2xs"
-                    : "bg-white border-white hover:border-white"
+                    ? "!bg-[#E9EBFF] shadow-2xs"
+                    : "bg-white"
                     }`}
                 >
                   <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
@@ -1606,8 +1606,8 @@ export function EditorSidebar({
                 <div
                   onClick={() => setActiveSection("guidebooks")}
                   className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "guidebooks" || activeSection === "guidebook"
-                    ? "!bg-[#E9EBFF] border-transparent shadow-2xs"
-                    : "bg-white border-white hover:border-white"
+                    ? "!bg-[#E9EBFF] shadow-2xs"
+                    : "bg-white"
                     }`}
                 >
                   <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
@@ -1624,8 +1624,8 @@ export function EditorSidebar({
                   className={`rounded-xl border border-white bg-white px-4 py-3 shadow-[0_2px_4px_rgba(0,0,0,0.25)] transition-all cursor-pointer ${activeSection === "interaction-preferences" ||
                     activeSection === "interactionpreferences" ||
                     activeSection === "interaction"
-                    ? "!bg-[#E9EBFF] border-transparent shadow-2xs"
-                    : "bg-white border-white hover:border-white"
+                    ? "!bg-[#E9EBFF] shadow-2xs"
+                    : "bg-white"
                     }`}
                 >
                   <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">

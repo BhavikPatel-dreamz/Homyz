@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import type { HostBookingRequestDetails } from "@/services/booking.service";
 import { BookingStatusTimeline } from "@/components/bookings/booking-status-timeline";
+import { BackButton } from "@/components/ui/back-button";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { formatExpiryCountdown } from "@/lib/booking/booking-expiry";
 import { differenceInBookingNights, formatBookingDate } from "@/lib/booking/booking-date";
@@ -50,8 +51,8 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
       }
       setIsAcceptModalOpen(false);
       router.refresh();
-    } catch (err: any) {
-      setActionError(err.message || "Failed to accept booking request");
+    } catch (err: unknown) {
+      setActionError(err instanceof Error ? err.message : "Failed to accept booking request");
     } finally {
       setIsSubmitting(false);
     }
@@ -72,8 +73,8 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
       }
       setIsDeclineModalOpen(false);
       router.refresh();
-    } catch (err: any) {
-      setActionError(err.message || "Failed to decline booking request");
+    } catch (err: unknown) {
+      setActionError(err instanceof Error ? err.message : "Failed to decline booking request");
     } finally {
       setIsSubmitting(false);
     }
@@ -94,25 +95,23 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
   const totalPrice = details.totalPrice ?? breakdown.guestTotal ?? breakdown.totalPrice ?? 0;
 
   return (
-    <div className="mx-auto w-full max-w-6xl pb-20 pt-6 text-[#1F1F1F]">
+    <div className="mx-auto w-full max-w-380 pb-28 pt-4 text-[#1F1F1F] sm:pb-20 sm:pt-6">
       {/* Back button */}
-      <Link
-        href="/host/bookings"
-        className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-zinc-700 underline underline-offset-4 hover:text-zinc-900 transition-colors"
-      >
-        <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-        </svg>
-        <span>Back to reservations</span>
-      </Link>
+      <div className="inline-flex min-h-11 items-center gap-2">
+        <BackButton
+          onClick={() => router.push("/host/bookings")}
+          aria-label="Back to reservations"
+        />
+        <span className="text-sm font-semibold text-zinc-700">Back to reservations</span>
+      </div>
 
       {/* Header */}
-      <div className="mt-4 flex flex-wrap items-start justify-between gap-4 border-b border-zinc-200 pb-6">
-        <div>
+      <div className="mt-4 flex items-end justify-between gap-3 border-b border-zinc-200 pb-5 sm:gap-4 sm:pb-6">
+        <div className="min-w-0 flex-1">
           <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
             Reservation #{details.id.slice(-8).toUpperCase()}
           </p>
-          <h1 className="mt-1 text-2xl sm:text-3xl font-bold tracking-tight text-[#1F1F1F]">
+          <h1 className="break-words text-2xl font-semibold leading-tight sm:text-3xl">
             {details.listing.title}
           </h1>
           <p className="mt-1 text-sm text-zinc-600">
@@ -121,7 +120,7 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
         </div>
 
         {/* Status Badge */}
-        <div>
+        <div className="shrink-0">
           {details.status === "CONFIRMED" ? (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3.5 py-1 text-sm font-semibold text-emerald-800 border border-emerald-200 shadow-2xs">
               <span className="size-2 rounded-full bg-emerald-500" />
@@ -148,26 +147,26 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
 
       {/* Contextual Status Banner */}
       {isPending && !isExpired && (
-        <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50/80 p-5 text-amber-950 shadow-2xs">
-          <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="mt-6 rounded-lg border border-amber-200 bg-amber-50/80 p-4 text-amber-950 shadow-2xs sm:rounded-2xl sm:p-5">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
             <div>
               <h2 className="text-base font-semibold">Response deadline: {countdown?.text}</h2>
               <p className="mt-1 text-xs sm:text-sm text-amber-900 leading-relaxed">
                 Accept or decline this request before the 24-hour window expires. Calendar dates are currently held for this guest.
               </p>
             </div>
-            <div className="flex gap-2">
+            <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto">
               <button
                 type="button"
                 onClick={() => setIsDeclineModalOpen(true)}
-                className="rounded-full border border-zinc-300 bg-white px-4 py-2 text-xs font-semibold text-zinc-800 hover:bg-zinc-100 transition-colors cursor-pointer"
+                className="w-full rounded-full border border-zinc-300 bg-white px-4 py-2 text-xs font-semibold text-zinc-800 transition-colors hover:bg-zinc-100 sm:w-auto cursor-pointer"
               >
                 Decline
               </button>
               <button
                 type="button"
                 onClick={() => setIsAcceptModalOpen(true)}
-                className="rounded-full bg-[#FCDF9C] px-5 py-2 text-xs font-semibold text-zinc-900 hover:bg-amber-400 transition-colors shadow-2xs cursor-pointer"
+                className="w-full rounded-full bg-[#FCDF9C] px-5 py-2 text-xs font-semibold text-zinc-900 shadow-2xs transition-colors hover:bg-amber-400 sm:w-auto cursor-pointer"
               >
                 Accept request
               </button>
@@ -177,7 +176,7 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
       )}
 
       {isExpired && (
-        <div className="mt-6 rounded-2xl border border-slate-300 bg-slate-50 p-5 text-slate-800 shadow-2xs">
+        <div className="mt-6 sm:rounded-2xl rounded-lg border border-slate-300 bg-slate-50 p-5 text-slate-800 shadow-2xs">
           <h2 className="text-base font-semibold">Response deadline expired</h2>
           <p className="mt-1 text-xs sm:text-sm text-slate-600 leading-relaxed">
             This booking request was not confirmed within the 24-hour response window. It has expired and dates have been released back to your calendar.
@@ -186,7 +185,7 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
       )}
 
       {details.status === "CONFIRMED" && (
-        <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50/80 p-5 text-emerald-950 shadow-2xs">
+        <div className="mt-6 sm:rounded-2xl rounded-lg border border-emerald-200 bg-emerald-50/80 p-5 text-emerald-950 shadow-2xs">
           <h2 className="text-base font-semibold">Reservation confirmed</h2>
           <p className="mt-1 text-xs sm:text-sm text-emerald-900 leading-relaxed">
             You confirmed this booking request. Calendar dates are booked. Payment is pending/deferred.
@@ -195,45 +194,47 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
       )}
 
       {/* Main Grid: Content (Left) & Sidebar (Right) */}
-      <div className="mt-8 grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-12">
+      <div className="mt-6 grid grid-cols-1 gap-6 sm:mt-8 sm:gap-8 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-12">
         {/* Left Column */}
         <div className="space-y-6">
           {/* Guest Profile Card */}
-          <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-2xs">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-500 mb-4">
+          <section className="rounded-lg border border-[#d7d7d7] bg-white p-4 sm:rounded-2xl sm:p-6">
+            <h3 className="text-lg font-medium text-[#1f1f1f] mb-4">
               Guest details
             </h3>
-            <div className="flex items-center gap-4">
-              <div className="relative size-16 shrink-0 rounded-full overflow-hidden bg-zinc-200 border border-zinc-200">
-                {details.guest.image ? (
-                  <Image
-                    src={details.guest.image}
-                    alt={details.guest.name || "Guest"}
-                    fill
-                    className="object-cover"
-                  />
-                ) : (
-                  <div className="size-full flex items-center justify-center text-xl font-bold bg-amber-100 text-amber-900">
-                    {(details.guest.name || "G").charAt(0).toUpperCase()}
-                  </div>
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <h4 className="text-base font-bold text-zinc-900 truncate">
-                  {details.guest.name || "Guest"}
-                </h4>
-                {details.guest.email && (
-                  <p className="text-xs text-zinc-500 truncate">{details.guest.email}</p>
-                )}
-                <p className="text-xs text-zinc-500 mt-0.5">
-                  Member since {new Date(details.guest.createdAt).getFullYear()}
-                </p>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+              <div className="flex min-w-0 flex-1 items-center gap-4">
+                <div className="relative size-16 shrink-0 overflow-hidden rounded-full border border-zinc-200 bg-zinc-200">
+                  {details.guest.image ? (
+                    <Image
+                      src={details.guest.image}
+                      alt={details.guest.name || "Guest"}
+                      fill
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="flex size-full items-center justify-center bg-amber-100 text-xl font-bold text-amber-900">
+                      {(details.guest.name || "G").charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h4 className="truncate text-base font-medium text-[#1f1f1f]">
+                    {details.guest.name || "Guest"}
+                  </h4>
+                  {details.guest.email && (
+                    <p className="truncate text-sm text-zinc-500">{details.guest.email}</p>
+                  )}
+                  <p className="mt-0.5 text-sm text-zinc-500">
+                    Member since {new Date(details.guest.createdAt).getFullYear()}
+                  </p>
+                </div>
               </div>
 
               {details.conversationId && (
                 <Link
                   href={`/host/messages?id=${details.conversationId}`}
-                  className="rounded-full border border-zinc-300 bg-white px-4 py-2 text-xs font-semibold text-zinc-800 hover:bg-zinc-50 transition-colors whitespace-nowrap"
+                  className="w-full rounded-full border border-transparent bg-[#FCDF9C] px-4 py-2 text-center text-sm font-medium whitespace-nowrap text-[#1f1f1f] transition-colors duration-300 hover:bg-[#1f1f1f] hover:text-white sm:w-auto sm:shrink-0"
                 >
                   Message guest
                 </Link>
@@ -242,7 +243,7 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
 
             {/* Guest Initial Message */}
             {details.guestMessage && (
-              <div className="mt-5 rounded-xl border border-zinc-200 bg-zinc-50 p-4">
+              <div className="mt-5 rounded-xl border border-zinc-200 bg-zinc-50 p-3 sm:p-4">
                 <p className="text-xs font-semibold text-zinc-600 mb-1">Message from guest:</p>
                 <p className="text-sm text-zinc-800 italic leading-relaxed">
                   &ldquo;{details.guestMessage}&rdquo;
@@ -257,26 +258,26 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
           )}
 
           {/* Trip Dates & Guests Info */}
-          <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-2xs">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-500 mb-4">
+          <section className="rounded-lg border border-[#d7d7d7] bg-white p-4 shadow-2xs sm:rounded-2xl sm:p-6">
+            <h3 className="text-lg font-medium text-[#1f1f1f] mb-4">
               Stay details
             </h3>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-              <div className="rounded-xl border border-zinc-100 bg-zinc-50 p-3.5">
-                <span className="text-xs text-zinc-500 font-medium">Check-in</span>
-                <p className="mt-1 text-sm font-bold text-zinc-900">
+              <div className="rounded-xl bg-[#F3F4F5] p-3.5">
+                <span className="text-sm text-[#727272] font-medium">Check-in</span>
+                <p className="mt-1 xl:text-base text-sm leading-6 font-medium text-[#1f1f1f]">
                   {formatBookingDate(details.startDate, { weekday: true })}
                 </p>
               </div>
-              <div className="rounded-xl border border-zinc-100 bg-zinc-50 p-3.5">
-                <span className="text-xs text-zinc-500 font-medium">Check-out</span>
-                <p className="mt-1 text-sm font-bold text-zinc-900">
+              <div className="rounded-xl bg-[#F3F4F5] p-3.5">
+                <span className="text-sm text-[#727272]  font-medium">Check-out</span>
+                <p className="mt-1 xl:text-base text-sm leading-6 font-medium text-[#1f1f1f]">
                   {formatBookingDate(details.endDate, { weekday: true })}
                 </p>
               </div>
-              <div className="rounded-xl border border-zinc-100 bg-zinc-50 p-3.5">
-                <span className="text-xs text-zinc-500 font-medium">Guests</span>
-                <p className="mt-1 text-sm font-bold text-zinc-900">
+              <div className="rounded-xl bg-[#F3F4F5] p-3.5">
+                <span className="text-sm text-[#727272]  font-medium">Guests</span>
+                <p className="mt-1 xl:text-base text-sm leading-6 font-medium text-[#1f1f1f]">
                   {details.guests} {details.guests === 1 ? "guest" : "guests"} · {nights} nights
                 </p>
               </div>
@@ -286,19 +287,19 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
 
         {/* Right Column: Pricing & CTAs */}
         <div>
-          <aside className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm lg:sticky lg:top-28">
-            <h3 className="text-base font-bold text-zinc-900 border-b border-zinc-100 pb-3">
+          <aside className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm sm:rounded-2xl sm:p-6 lg:sticky lg:top-28">
+            <h3 className="text-lg font-semibold text-zinc-900 border-b border-zinc-100 pb-3">
               Payout & pricing breakdown
             </h3>
 
             <dl className="mt-4 space-y-3 text-sm text-zinc-700">
               <div className="flex justify-between gap-4">
-                <dt className="text-zinc-600">
+                <dt className="min-w-0 text-zinc-600">
                   {hasVaryingRates
                     ? `Accommodation · ${nights} nights (varying rates)`
                     : `${formatMoney(nightlyRates[0]?.price ?? details.nightlyPrice ?? 0, details.currency)} × ${nights} ${nights === 1 ? "night" : "nights"}`}
                 </dt>
-                <dd className="font-medium text-zinc-900">
+                <dd className="shrink-0 whitespace-nowrap text-right font-medium text-zinc-900">
                   {formatMoney(nightlySubtotal, details.currency)}
                 </dd>
               </div>
@@ -306,44 +307,44 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
               {discountAmount > 0 && (
                 <div className="flex justify-between gap-4">
                   <dt className="text-emerald-700">Discount</dt>
-                  <dd className="font-medium text-emerald-700">−{formatMoney(discountAmount, details.currency)}</dd>
+                  <dd className="shrink-0 whitespace-nowrap text-right font-medium text-emerald-700">−{formatMoney(discountAmount, details.currency)}</dd>
                 </div>
               )}
 
               {extraGuestFee > 0 && (
                 <div className="flex justify-between gap-4">
                   <dt className="text-zinc-600">Extra guest fee</dt>
-                  <dd className="font-medium text-zinc-900">
+                  <dd className="shrink-0 whitespace-nowrap text-right font-medium text-zinc-900">
                     {formatMoney(extraGuestFee, details.currency)}
                   </dd>
                 </div>
               )}
 
-              {petFee > 0 && <div className="flex justify-between gap-4"><dt className="text-zinc-600">Pet fee</dt><dd className="font-medium text-zinc-900">{formatMoney(petFee, details.currency)}</dd></div>}
+              {petFee > 0 && <div className="flex justify-between gap-4"><dt className="min-w-0 text-zinc-600">Pet fee</dt><dd className="shrink-0 whitespace-nowrap text-right font-medium text-zinc-900">{formatMoney(petFee, details.currency)}</dd></div>}
 
               {taxItems.map((tax: { taxName?: string; taxAmount?: number; exemptionApplied?: boolean; exemptionReason?: string }, index: number) => (
                 <div key={`${tax.taxName || "Tax"}-${index}`} className="flex justify-between gap-4">
-                  <dt className="text-zinc-600">
+                  <dt className="min-w-0 text-zinc-600">
                     {tax.taxName || "Tax"}
                     {tax.exemptionApplied && tax.exemptionReason ? ` · ${tax.exemptionReason}` : ""}
                   </dt>
-                  <dd className="font-medium text-zinc-900">{formatMoney(tax.taxAmount ?? 0, details.currency)}</dd>
+                  <dd className="shrink-0 whitespace-nowrap text-right font-medium text-zinc-900">{formatMoney(tax.taxAmount ?? 0, details.currency)}</dd>
                 </div>
               ))}
               {taxItems.length === 0 && taxTotal > 0 && (
-                <div className="flex justify-between gap-4"><dt className="text-zinc-600">Taxes</dt><dd className="font-medium text-zinc-900">{formatMoney(taxTotal, details.currency)}</dd></div>
+                <div className="flex justify-between gap-4"><dt className="min-w-0 text-zinc-600">Taxes</dt><dd className="shrink-0 whitespace-nowrap text-right font-medium text-zinc-900">{formatMoney(taxTotal, details.currency)}</dd></div>
               )}
 
-              <div className="flex justify-between gap-4 border-t border-zinc-200 pt-4 text-base font-bold text-zinc-900">
+              <div className="flex justify-between gap-4 border-t border-zinc-200 pt-4 text-base font-semibold text-[#1f1f1f]">
                 <dt>Total ({displayCurrency})</dt>
-                <dd className="text-lg text-emerald-800 font-extrabold">
+                <dd className="text-lg text-emerald-800 font-semibold">
                   {formatMoney(totalPrice, details.currency)}
                 </dd>
               </div>
 
-              <div className="flex items-center justify-between gap-4 border-t border-zinc-100 pt-3 text-xs text-zinc-600">
+              <div className="flex flex-col items-start gap-2 border-t border-zinc-100 pt-3 text-sm text-[#727272] xs:flex-row xs:items-center xs:justify-between xs:gap-4">
                 <dt className="font-medium">Payment status</dt>
-                <dd className="font-semibold text-amber-900 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full">
+                <dd className="font-medium text-amber-900 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full">
                   Pending / Deferred
                 </dd>
               </div>
@@ -356,32 +357,36 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
                   <button
                     type="button"
                     onClick={() => setIsAcceptModalOpen(true)}
-                    className="flex min-h-12 w-full items-center justify-center rounded-xl bg-[#FCDF9C] hover:bg-amber-400 text-zinc-900 font-bold text-sm transition-colors shadow-2xs cursor-pointer"
+                    className="flex min-h-12 w-full items-center justify-center rounded-lg bg-[#FCDF9C] hover:bg-amber-400 text-[#1f1f1f] font-medium text-base transition-colors cursor-pointer"
                   >
                     Accept request
                   </button>
                   <button
                     type="button"
                     onClick={() => setIsDeclineModalOpen(true)}
-                    className="flex min-h-11 w-full items-center justify-center rounded-xl border border-zinc-300 hover:bg-zinc-100 text-zinc-700 font-semibold text-sm transition-colors cursor-pointer"
+                    className="flex min-h-11 w-full items-center justify-center rounded-lg border border-[#1f1f1f] hover:bg-white text-[#1f1f1f] font-medium text-base transition-colors duration-300 cursor-pointer"
                   >
                     Decline request
                   </button>
                 </>
               ) : isExpired ? (
-                <div className="rounded-xl bg-slate-50 border border-slate-200 p-3 text-center text-xs font-medium text-slate-600">
+                <div className="rounded-lg bg-slate-50 border border-slate-200 p-3 text-center text-xs font-medium text-slate-600">
                   This request has expired and can no longer be accepted.
                 </div>
               ) : details.status === "CONFIRMED" ? (
-                <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-3 text-center text-xs font-semibold text-emerald-800">
-                  ✓ Booking confirmed
+                <div className="flex items-center justify-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-center text-sm font-medium text-emerald-800">
+                  <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" className="size-5 shrink-0" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="9" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="m8 12 2.5 2.5L16 9" />
+                  </svg>
+                  <span>Booking confirmed</span>
                 </div>
               ) : null}
 
               {details.conversationId && (
                 <Link
                   href={`/host/messages?id=${details.conversationId}`}
-                  className="flex min-h-11 w-full items-center justify-center rounded-xl border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-800 font-medium text-xs transition-colors"
+                  className="flex min-h-11 w-full items-center justify-center rounded-lg border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-800 font-medium text-sm transition-colors"
                 >
                   Open conversation with guest
                 </Link>
@@ -393,8 +398,8 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
 
       {/* ACCEPT MODAL with ModalOverlay */}
       {isAcceptModalOpen && (
-        <ModalOverlay>
-          <div className="w-full max-w-md rounded-3xl bg-white p-6 sm:p-8 shadow-2xl text-[#1F1F1F]">
+        <ModalOverlay className="fixed inset-0 z-[60] flex items-center justify-center overflow-y-auto bg-black/40 p-4">
+          <div className="max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-3xl bg-white p-5 text-[#1F1F1F] shadow-2xl sm:p-8">
             <h3 className="text-xl font-bold text-zinc-900">Accept booking request?</h3>
             <p className="mt-2 text-sm text-zinc-600 leading-relaxed">
               Confirming this request will permanently book your property for {details.guest.name || "the guest"} from{" "}
@@ -408,12 +413,12 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
               </div>
             )}
 
-            <div className="mt-6 flex justify-end gap-3">
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
               <button
                 type="button"
                 disabled={isSubmitting}
                 onClick={() => setIsAcceptModalOpen(false)}
-                className="rounded-full border border-zinc-300 px-5 py-2.5 text-sm font-semibold text-zinc-700 hover:bg-zinc-100 transition-colors disabled:opacity-50"
+                className="w-full rounded-full border border-zinc-300 px-5 py-2.5 text-sm font-semibold text-zinc-700 transition-colors hover:bg-zinc-100 disabled:opacity-50 sm:w-auto"
               >
                 Cancel
               </button>
@@ -421,7 +426,7 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
                 type="button"
                 disabled={isSubmitting}
                 onClick={handleAccept}
-                className="rounded-full bg-[#FCDF9C] hover:bg-amber-400 px-6 py-2.5 text-sm font-bold text-zinc-900 transition-colors shadow-2xs disabled:opacity-50"
+                className="w-full rounded-full bg-[#FCDF9C] px-6 py-2.5 text-sm font-bold text-zinc-900 shadow-2xs transition-colors hover:bg-amber-400 disabled:opacity-50 sm:w-auto"
               >
                 {isSubmitting ? "Confirming..." : "Confirm & Accept"}
               </button>
@@ -432,8 +437,8 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
 
       {/* DECLINE MODAL with ModalOverlay */}
       {isDeclineModalOpen && (
-        <ModalOverlay>
-          <div className="w-full max-w-md rounded-3xl bg-white p-6 sm:p-8 shadow-2xl text-[#1F1F1F]">
+        <ModalOverlay className="fixed inset-0 z-[60] flex items-center justify-center overflow-y-auto bg-black/40 p-4">
+          <div className="max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-3xl bg-white p-5 text-[#1F1F1F] shadow-2xl sm:p-8">
             <h3 className="text-xl font-bold text-zinc-900">Decline booking request?</h3>
             <p className="mt-2 text-sm text-zinc-600 leading-relaxed">
               Declining will immediately release the held calendar dates back to other guests.
@@ -459,12 +464,12 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
               </div>
             )}
 
-            <div className="mt-6 flex justify-end gap-3">
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
               <button
                 type="button"
                 disabled={isSubmitting}
                 onClick={() => setIsDeclineModalOpen(false)}
-                className="rounded-full border border-zinc-300 px-5 py-2.5 text-sm font-semibold text-zinc-700 hover:bg-zinc-100 transition-colors disabled:opacity-50"
+                className="w-full rounded-full border border-zinc-300 px-5 py-2.5 text-sm font-semibold text-zinc-700 transition-colors hover:bg-zinc-100 disabled:opacity-50 sm:w-auto"
               >
                 Back
               </button>
@@ -472,7 +477,7 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
                 type="button"
                 disabled={isSubmitting}
                 onClick={handleDecline}
-                className="rounded-full bg-rose-600 hover:bg-rose-700 px-6 py-2.5 text-sm font-bold text-white transition-colors shadow-2xs disabled:opacity-50"
+                className="w-full rounded-full bg-rose-600 px-6 py-2.5 text-sm font-bold text-white shadow-2xs transition-colors hover:bg-rose-700 disabled:opacity-50 sm:w-auto"
               >
                 {isSubmitting ? "Declining..." : "Decline request"}
               </button>

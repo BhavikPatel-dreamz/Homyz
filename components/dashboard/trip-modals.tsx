@@ -136,7 +136,7 @@ export function CancelBookingModal({
           </div>
         </div>
 
-        <div className="mt-5 rounded-2xl border border-zinc-200 bg-zinc-50/80 p-4">
+        <div className="mt-5 rounded-2xl border border-[#d7d7d7] bg-zinc-50/80 p-4">
           <h3 className="font-semibold text-sm text-[#1F1F1F] line-clamp-1">
             {booking.propertyName}
           </h3>
@@ -296,16 +296,16 @@ export function ReceiptModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="receipt-modal-title"
-        className="relative my-8 w-full max-w-2xl rounded-3xl bg-white p-6 sm:p-9 shadow-2xl transition-all"
+        className="relative my-8 w-full max-w-2xl rounded-[20px] bg-white p-6 sm:p-9 shadow-2xl transition-all"
       >
-        <div className="flex items-start justify-between border-b border-zinc-200 pb-5">
+        <div className="flex items-start justify-between border-b border-[#d7d7d7] pb-5">
           <div>
             <span className="text-xs font-semibold tracking-wider text-emerald-700 uppercase">
               Official Tax Invoice & Receipt
             </span>
             <h2
               id="receipt-modal-title"
-              className="mt-1 text-2xl font-bold tracking-tight text-[#1F1F1F]"
+              className="mt-1 text-xl font-medium tracking-tight text-[#1F1F1F]"
             >
               {invoice?.invoiceNumber || "Booking Receipt"}
             </h2>
@@ -395,7 +395,7 @@ export function ReceiptModal({
             </div>
 
             {/* Parties */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:rounded-2xl rounded-lg shadow-md bg-white p-4 text-xs sm:text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 rounded-lg shadow-md bg-white p-4 text-xs sm:text-sm">
               <div>
                 <span className="font-semibold text-zinc-800 block mb-1">
                   Host / Supplier
@@ -404,12 +404,12 @@ export function ReceiptModal({
                   {invoice.supplier?.name || "Host"}
                 </p>
                 {invoice.supplier?.taxId && (
-                  <p className="text-[#727272] text-xs">
+                  <p className="text-[#727272] text-xs sm:text-sm">
                     VAT: {invoice.supplier.taxId}
                   </p>
                 )}
                 {invoice.supplier?.address && (
-                  <p className="text-[#727272] text-xs">
+                  <p className="text-[#727272] text-xs sm:text-sm">
                     {invoice.supplier.address}
                   </p>
                 )}
@@ -421,14 +421,14 @@ export function ReceiptModal({
                 <p className="font-medium text-[#1F1F1F]">
                   {invoice.guest?.name || "Guest"}
                 </p>
-                <p className="text-[#727272] text-xs">
+                <p className="text-[#727272] text-xs sm:text-sm">
                   {invoice.guest?.email || ""}
                 </p>
               </div>
             </div>
 
             {/* Stay Details */}
-            <div className="rounded-2xl border border-zinc-200 p-4 text-xs sm:text-sm space-y-1">
+            <div className="rounded-lg border border-[#d7d7d7] p-4 text-xs sm:text-sm space-y-1">
               <span className="font-semibold text-zinc-800 block mb-1">
                 Property & Stay
               </span>
@@ -456,7 +456,7 @@ export function ReceiptModal({
             </div>
 
             {/* Line Items Table */}
-            <div className="overflow-hidden rounded-2xl border border-zinc-200">
+            <div className="overflow-hidden rounded-lg border border-[#d7d7d7]">
               <table className="w-full text-left text-xs sm:text-sm">
                 <thead className="bg-zinc-100 text-zinc-700">
                   <tr>

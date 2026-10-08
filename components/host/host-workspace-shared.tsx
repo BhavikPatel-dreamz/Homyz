@@ -236,17 +236,17 @@ export function WorkspaceDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className={`${variant === "listing-filter" ? "h-dvh max-h-dvh rounded-none p-5 shadow-[0_2px_6px_rgba(0,0,0,0.25)] sm:h-auto sm:max-h-[calc(100dvh-48px)] sm:rounded-[28px] sm:p-6" : variant === "reservation-details" ? "flex h-dvh max-h-dvh flex-col overflow-hidden rounded-none shadow-2xl sm:h-auto sm:max-h-[88dvh] sm:rounded-3xl" : "max-h-[88dvh] overflow-y-auto overscroll-contain rounded-2xl p-6 shadow-2xl"} w-full min-w-0 ${maxWidth} outline-none ${dark ? "bg-[#1F1F1F] text-white" : "bg-white text-[#1F1F1F]"}`}
+        className={`${variant === "listing-filter" ? "h-dvh max-h-dvh p-5 shadow-[0_2px_6px_rgba(0,0,0,0.25)] sm:h-auto sm:max-h-[calc(100dvh-48px)] sm:rounded-[20px] sm:p-6" : variant === "reservation-details" ? "flex h-dvh max-h-dvh flex-col overflow-hidden shadow-2xl sm:h-auto sm:max-h-[88dvh] sm:rounded-[20px]" : "max-h-[88dvh] overflow-y-auto overscroll-contain rounded-2xl p-6 shadow-2xl"} w-full min-w-0 ${maxWidth} outline-none ${dark ? "bg-[#1F1F1F] text-white" : "bg-white text-[#1F1F1F]"}`}
       >
         <div
-          className={`flex items-center justify-between gap-3 border-b ${variant === "listing-filter" ? "mb-3 border-[#D7D7D7] pb-2 sm:mb-4 sm:pb-4" : variant === "reservation-details" ? "z-10 shrink-0 border-zinc-200 bg-white px-5 py-4 sm:px-6 sm:py-5 dark:border-white/10 dark:bg-[#1F1F1F]" : "mb-5 border-zinc-100 pb-4 dark:border-white/10"}`}
+          className={`flex items-center justify-between gap-3 border-b ${variant === "listing-filter" ? "mb-3 border-[#DDDDDE] pb-2 sm:mb-3 sm:pb-3" : variant === "reservation-details" ? "z-10 shrink-0 border-[#DDDDDE] bg-white px-5 py-2.5 sm:px-6 sm:py-3 dark:border-white/10 dark:bg-[#1F1F1F]" : "mb-5 border-zinc-100 pb-4 dark:border-white/10"}`}
         >
           <h2
             id={titleId}
             className={
               variant === "listing-filter"
-                ? "text-lg font-normal leading-7 sm:font-medium"
-                : "text-lg font-semibold tracking-tight"
+                ? "text-xl font-medium leading-7 sm:font-medium"
+                : "text-xl font-medium tracking-tight"
             }
           >
             {title}
@@ -257,7 +257,7 @@ export function WorkspaceDialog({
           />
         </div>
         {variant === "reservation-details" ? (
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-5 sm:px-6 sm:py-6">
+          <div className="visible-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-5 sm:px-6 sm:py-6">
             {children}
           </div>
         ) : (
@@ -417,7 +417,7 @@ export function ReservationDetails({
             {/* 1. Reservation Summary Card with Distinct Property & Guest Identity */}
             <section
               aria-labelledby="reservation-summary-heading"
-              className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 sm:p-5 dark:border-zinc-700 dark:bg-zinc-800/80"
+              className="rounded-lg bg-[#F3F4F5] p-4 sm:p-5 dark:border-zinc-700 dark:bg-zinc-800/80"
             >
               <h3 id="reservation-summary-heading" className="sr-only">
                 Reservation summary
@@ -472,7 +472,7 @@ export function ReservationDetails({
                   className="size-20 shrink-0 rounded-xl border border-zinc-200 object-cover dark:border-zinc-700"
                 />
                 <div className="min-w-0 flex-1">
-                  <p className="text-[11px] font-semibold uppercase tracking-wider text-[#727272]">
+                  <p className="text-xs font-medium uppercase tracking-wider text-[#727272]">
                     Property
                   </p>
                   <Link
@@ -492,21 +492,21 @@ export function ReservationDetails({
               {/* Explicit Guest & Dates Context */}
               <div className="mt-4 grid grid-cols-2 gap-3 border-t border-zinc-200/80 pt-3 text-xs dark:border-zinc-700/80">
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-wider text-[#727272]">
+                  <p className="text-xs font-medium uppercase tracking-wider text-[#727272]">
                     Guest
                   </p>
-                  <p className="mt-0.5 font-semibold text-zinc-900 dark:text-zinc-100 truncate">
+                  <p className="mt-0.5 text-sm font-semibold text-zinc-900 dark:text-zinc-100 truncate">
                     {booking.guestName}
                   </p>
                 </div>
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-wider text-[#727272]">
+                  <p className="text-xs font-medium uppercase tracking-wider text-[#727272]">
                     Dates
                   </p>
-                  <p className="mt-0.5 font-medium text-zinc-800 dark:text-zinc-200">
+                  <p className="mt-0.5 text-sm font-medium text-[#1f1f1f] dark:text-zinc-200">
                     {shortDate(booking.startDate)} – {shortDate(booking.endDate)}
                   </p>
-                  <p className="text-[11px] text-[#727272]">
+                  <p className="text-sm text-[#727272]">
                     {nights} {nights === 1 ? "night" : "nights"} · {guestCount}{" "}
                     {guestCount === 1 ? "guest" : "guests"}
                   </p>
@@ -518,11 +518,11 @@ export function ReservationDetails({
             <section aria-labelledby="guest-heading">
               <h3
                 id="guest-heading"
-                className="mb-3 text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100"
+                className="mb-3 text-base font-semibold text-[#1F1F1F] dark:text-zinc-100"
               >
                 Guest
               </h3>
-              <div className="flex items-center gap-3 rounded-2xl border border-zinc-200 p-4 dark:border-zinc-700">
+              <div className="flex items-center gap-3 rounded-lg border border-[#d7d7d7] p-4 dark:border-zinc-700">
                 {booking.guestImage ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -543,12 +543,12 @@ export function ReservationDetails({
                     {booking.guestName}
                   </p>
                   {booking.guestEmail && (
-                    <p className="truncate text-xs text-[#727272]">
+                    <p className="truncate text-xs text-[#727272] font-normal">
                       {booking.guestEmail}
                     </p>
                   )}
                   {booking.guestCreatedAt && (
-                    <p className="mt-1 text-xs text-[#727272]">
+                    <p className="mt-1 text-xs text-[#727272] font-normal">
                       Member since{" "}
                       {new Date(booking.guestCreatedAt).getUTCFullYear()}
                     </p>
@@ -556,8 +556,8 @@ export function ReservationDetails({
                 </div>
                 {booking.guestId && (
                   <Link
-                    href={`/profile/${booking.guestId}`}
-                    className="shrink-0 text-xs font-semibold text-[#1F1F1F] underline underline-offset-2 hover:text-black dark:text-zinc-100"
+                    href={`/users/profile/${booking.guestId}`}
+                    className="shrink-0 text-sm font-normal text-[#727272] underline underline-offset-2 hover:text-[#1f1f1f] dark:text-zinc-100"
                   >
                     View profile
                   </Link>
@@ -584,7 +584,7 @@ export function ReservationDetails({
               )}
               <Link
                 href={messageHref}
-                className="flex min-h-11 w-full items-center justify-center rounded-full bg-[#1F1F1F] px-4 py-3 text-center text-xs font-semibold text-white transition-colors hover:bg-black dark:bg-zinc-100 dark:text-[#1F1F1F] dark:hover:bg-white"
+                className="flex min-h-11 w-full items-center justify-center rounded-full bg-[#FCDF9C] px-4 py-3 text-center text-base font-semibold text-[#1f1f1f] hover:text-white transition-colors duration-300 hover:bg-black dark:bg-zinc-100 dark:text-[#1F1F1F] dark:hover:bg-white"
               >
                 Message guest
               </Link>
@@ -594,11 +594,11 @@ export function ReservationDetails({
             <section aria-labelledby="stay-details-heading">
               <h3
                 id="stay-details-heading"
-                className="mb-3 text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100"
+                className="mb-3 text-base font-semibold text-[#1F1F1F] dark:text-zinc-100"
               >
                 Stay details
               </h3>
-              <dl className="divide-y divide-zinc-100 text-xs dark:divide-zinc-800">
+              <dl className="divide-y divide-[#d7d7d7] text-sm dark:divide-zinc-800">
                 <DetailRow
                   label="Guests"
                   value={`${guestCount} ${guestCount === 1 ? "guest" : "guests"}`}
@@ -628,7 +628,7 @@ export function ReservationDetails({
                     <button
                       type="button"
                       onClick={handleCopyCode}
-                      className="inline-flex items-center gap-1 rounded-md border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[11px] font-medium text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 transition-colors dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 cursor-pointer"
+                      className="inline-flex items-center gap-1 rounded-md border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-xs font-medium text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 transition-colors dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 cursor-pointer"
                       title="Copy confirmation code"
                     >
                       {codeCopied ? (
@@ -653,9 +653,10 @@ export function ReservationDetails({
               </dl>
               <Link
                 href="/host/calendar"
-                className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-[#1F1F1F] underline underline-offset-2 hover:text-black dark:text-zinc-100"
+                className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-[#1F1F1F] hover:text-[#727272] dark:text-zinc-100"
               >
-                View in calendar →
+                <span className="underline underline-offset-2">View in calendar </span>
+                <span>→</span>
               </Link>
             </section>
 
@@ -696,11 +697,11 @@ export function ReservationDetails({
             >
               <h3
                 id="guest-paid-heading"
-                className="mb-3 text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100"
+                className="mb-3 text-base font-semibold text-[#1F1F1F] dark:text-zinc-100"
               >
                 Guest paid
               </h3>
-              <dl className="space-y-2 text-xs">
+              <dl className="space-y-2 text-sm">
                 <PriceRow
                   label={
                     hasVaryingRates
@@ -770,7 +771,7 @@ export function ReservationDetails({
                     }
                   />
                 )}
-                <div className="flex justify-between gap-4 border-t border-zinc-100 pt-2 text-sm font-semibold dark:border-zinc-800">
+                <div className="flex justify-between gap-4 border-t border-[#d7d7d7] pt-4 text-sm font-semibold dark:border-zinc-800">
                   <dt>Total paid by guest ({sourceCurrency})</dt>
                   <dd>{formatPrice(pricing.totalPrice, sourceCurrency, 2)}</dd>
                 </div>
@@ -781,15 +782,15 @@ export function ReservationDetails({
             {payout && typeof payoutTotal === "number" && (
               <section
                 aria-labelledby="host-payout-heading"
-                className="border-t border-zinc-200 pt-5 dark:border-zinc-800"
+                className="border-t border-[#d7d7d7] pt-5 dark:border-zinc-800"
               >
                 <h3
                   id="host-payout-heading"
-                  className="mb-3 text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100"
+                  className="mb-3 text-base font-semibold text-[#1F1F1F] dark:text-zinc-100"
                 >
                   Your payout
                 </h3>
-                <dl className="space-y-2 text-xs">
+                <dl className="space-y-2 text-sm">
                   <PriceRow
                     label="Accommodation amount"
                     value={formatPrice(payoutAccommodation, sourceCurrency, 2)}
@@ -843,7 +844,7 @@ export function ReservationDetails({
                       }
                     />
                   )}
-                  <div className="flex justify-between gap-4 border-t border-zinc-100 pt-2 text-sm font-semibold dark:border-zinc-800">
+                  <div className="flex justify-between gap-4 border-t border-[#d7d7d7] pt-4 text-sm font-semibold dark:border-zinc-800">
                     <dt>Total host payout ({sourceCurrency})</dt>
                     <dd className="text-emerald-700 dark:text-emerald-400 font-bold">
                       {formatPrice(payoutTotal, sourceCurrency, 2)}
@@ -862,19 +863,21 @@ export function ReservationDetails({
                 <button
                   type="button"
                   onClick={() => setShowInvoice(true)}
-                  className="flex min-h-11 w-full items-center justify-between rounded-xl border border-zinc-200 p-3 text-zinc-700 hover:bg-zinc-50 hover:text-zinc-950 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-white transition-colors"
+                  className="flex min-h-11 w-full items-center justify-between rounded-lg border border-[#d7d7d7] p-3 text-zinc-700 hover:bg-zinc-50 hover:text-zinc-950 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-white transition-colors"
                 >
-                  <span className="font-medium">View VAT invoice</span>
-                  <span aria-hidden="true" className="text-base text-zinc-400">›</span>
+                  <span className="text-base font-medium">View VAT invoice</span>
+                  <svg aria-hidden="true" className="size-4 shrink-0 text-[#1f1f1f]" viewBox="0 0 24 24" fill="none">
+                    <path d="m9 18 6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
                 </button>
               )}
 
               {/* Payment Details Summary */}
-              <div className="rounded-xl border border-zinc-200 bg-zinc-50/70 p-3.5 dark:border-zinc-700 dark:bg-zinc-800/50 text-xs">
-                <p className="font-semibold text-zinc-800 dark:text-zinc-200 mb-2">
+              <div className="rounded-lg border border-[#d7d7d7] bg-[#F3F4F5] p-3.5 dark:border-zinc-700 dark:bg-zinc-800/50 text-xs">
+                <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-200 mb-2">
                   Payment record
                 </p>
-                <div className="space-y-1.5 text-zinc-600 dark:text-zinc-400">
+                <div className="space-y-1.5 text-[#1f1f1f] dark:text-zinc-400 text-sm">
                   <div className="flex justify-between">
                     <span>Payment mode</span>
                     <span className="font-medium text-zinc-800 dark:text-zinc-200 capitalize">
@@ -891,7 +894,7 @@ export function ReservationDetails({
                   )}
                   <div className="flex justify-between">
                     <span>Booking reference</span>
-                    <span className="font-mono text-zinc-800 dark:text-zinc-200">
+                    <span className="text-sm font-medium font-mono text-zinc-800 dark:text-zinc-200">
                       {confirmationCode}
                     </span>
                   </div>
@@ -1225,7 +1228,7 @@ export function MoneyDialog({
     >
       <div className="space-y-5 text-sm">
         <div className="rounded-xl bg-zinc-50 dark:bg-zinc-800/80 p-4 border border-zinc-100 dark:border-zinc-700">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-[#727272]">
+          <p className="text-xs font-medium uppercase tracking-wider text-[#727272]">
             From
           </p>
           <p className="my-1 font-bold text-base text-[#1F1F1F] dark:text-zinc-100">

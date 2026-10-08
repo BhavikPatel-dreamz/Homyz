@@ -33,10 +33,10 @@ export function BookingStatusTimeline({ events, className = "" }: BookingStatusT
   return (
     <section
       aria-labelledby="booking-timeline-heading"
-      className={`rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6 shadow-2xs ${className}`}
+      className={`rounded-lg border border-zinc-200 bg-white p-4 shadow-2xs sm:rounded-2xl sm:p-6 ${className}`}
     >
-      <div className="flex items-center justify-between border-b border-zinc-100 pb-3.5 mb-5">
-        <h3 id="booking-timeline-heading" className="text-base sm:text-lg font-semibold text-[#1F1F1F]">
+      <div className="mb-5 flex flex-col gap-1.5 border-b border-zinc-100 pb-3.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+        <h3 id="booking-timeline-heading" className="text-base sm:text-lg font-medium text-[#1F1F1F]">
           Reservation timeline
         </h3>
         <span className="text-xs text-zinc-500 font-medium">Status updates & milestones</span>
@@ -66,7 +66,7 @@ export function BookingStatusTimeline({ events, className = "" }: BookingStatusT
           }
 
           return (
-            <li key={evt.id} role="listitem" className="relative flex items-start gap-4">
+          <li key={evt.id} role="listitem" className="relative flex items-start gap-3.5 sm:gap-4">
               {/* Connecting vertical line */}
               {!isLast && (
                 <div
@@ -106,12 +106,12 @@ export function BookingStatusTimeline({ events, className = "" }: BookingStatusT
 
               {/* Text content */}
               <div className="flex-1 min-w-0 pt-0.5">
-                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-2">
                   <h4 className="text-sm font-semibold text-zinc-900 leading-tight">
                     {evt.title}
                   </h4>
                   {formattedTime && (
-                    <time dateTime={evt.timestamp || undefined} className="text-xs font-normal text-zinc-500 whitespace-nowrap">
+                    <time dateTime={evt.timestamp || undefined} className="text-xs font-normal text-zinc-500 sm:whitespace-nowrap">
                       {formattedTime}
                     </time>
                   )}
@@ -127,4 +127,3 @@ export function BookingStatusTimeline({ events, className = "" }: BookingStatusT
     </section>
   );
 }
-

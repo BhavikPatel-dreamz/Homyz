@@ -66,12 +66,10 @@ runTest("Month calculations handle month boundaries, year increment/decrement, a
   assert.equal(new Date(2026, 9 + 1, 0).getDate(), 31, "October should have 31 days");
 });
 
-runTest("HostCalendarWorkspace implements Previous, Next, and Today controls with accessible labels", () => {
+runTest("HostCalendarWorkspace implements Month picker and Today controls with accessible labels", () => {
   assert.ok(
-    calendarWorkspaceCode.includes('aria-label={') &&
-      calendarWorkspaceCode.includes('"Previous month"') &&
-      calendarWorkspaceCode.includes('"Next month"'),
-    "Previous and Next month buttons must have accessible aria-labels"
+    calendarWorkspaceCode.includes('aria-label="Select month and year"'),
+    "Month picker must have an accessible aria-label"
   );
   assert.ok(
     calendarWorkspaceCode.includes("handleToday") || calendarWorkspaceCode.includes("Today"),
@@ -79,16 +77,17 @@ runTest("HostCalendarWorkspace implements Previous, Next, and Today controls wit
   );
 });
 
-runTest("HostCalendarWorkspace implements Airbnb-style Month/Year view switcher segmented control", () => {
+runTest("HostCalendarWorkspace implements an accessible Month/Year view dropdown", () => {
   assert.ok(
     calendarWorkspaceCode.includes('aria-label="Calendar view switcher"') ||
       calendarWorkspaceCode.includes('aria-label="Calendar view"'),
-    "Calendar view switcher must have accessible group label"
+    "Calendar view dropdown must have an accessible label"
   );
   assert.ok(
-    calendarWorkspaceCode.includes('aria-pressed={view === "month"}') &&
-      calendarWorkspaceCode.includes('aria-pressed={view === "year"}'),
-    "View buttons must use aria-pressed for accessible toggle state"
+    calendarWorkspaceCode.includes('aria-haspopup="menu"') &&
+      calendarWorkspaceCode.includes('role="menuitemradio"') &&
+      calendarWorkspaceCode.includes("aria-checked={isSelected}"),
+    "View dropdown must expose an accessible selected option"
   );
 });
 
@@ -232,4 +231,3 @@ console.log("==================================================================\
 if (passed !== total) {
   process.exitCode = 1;
 }
-

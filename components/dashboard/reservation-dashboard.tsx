@@ -191,7 +191,7 @@ export function ReservationDashboard({
       {error ? (
         <ErrorState message={error} onRetry={() => setError(null)} />
       ) : loading ? (
-        <LoadingSkeleton count={4} wideGuestGrid={wideGuestGrid} />
+        <LoadingSkeleton count={4} wideGuestGrid={wideGuestGrid} compactCards={filters.tab === "upcoming"} />
       ) : filteredItems.length === 0 ? (
         filters.tab === "upcoming" && !filters.search ? (
           <EmptyState
@@ -226,9 +226,9 @@ export function ReservationDashboard({
               <h2 id="pending-requests-heading" className="mb-5 text-xl font-semibold leading-7 text-[#1F1F1F] sm:text-2xl">
                 Pending requests ({upcomingGroups.pending.length})
               </h2>
-              <div className="grid max-w-[812px] grid-cols-1 items-start gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-1 items-start gap-5 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
                 {upcomingGroups.pending.map((item) => (
-                  <ReservationCard key={item.id} data={item} href={`/bookings/${item.id}`} />
+                  <ReservationCard key={item.id} data={item} href={`/bookings/${item.id}`} variant="compact" />
                 ))}
               </div>
             </section>
@@ -239,9 +239,9 @@ export function ReservationDashboard({
               <h2 id="confirmed-trips-heading" className="mb-5 text-xl font-semibold leading-7 text-[#1F1F1F] sm:text-2xl">
                 Confirmed trips ({upcomingGroups.confirmed.length})
               </h2>
-              <div className="grid max-w-[812px] grid-cols-1 items-start gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-1 items-start gap-5 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
                 {upcomingGroups.confirmed.map((item) => (
-                  <ReservationCard key={item.id} data={item} href={`/bookings/${item.id}`} />
+                  <ReservationCard key={item.id} data={item} href={`/bookings/${item.id}`} variant="compact" />
                 ))}
               </div>
             </section>

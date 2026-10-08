@@ -64,6 +64,7 @@ function getPrismaClient() {
     typeof existing.adminInvitation !== "undefined" &&
     typeof existing.listingCoHost !== "undefined" &&
     typeof existing.appSettings !== "undefined" &&
+    typeof existing.hostGuestReview !== "undefined" &&
     typeof existing.listing !== "undefined"
   ) {
     return existing;
