@@ -417,7 +417,7 @@ export function ReservationDetails({
             {/* 1. Reservation Summary Card with Distinct Property & Guest Identity */}
             <section
               aria-labelledby="reservation-summary-heading"
-              className="rounded-lg bg-[#F3F4F5] p-4 sm:p-5 dark:border-zinc-700 dark:bg-zinc-800/80"
+              className="rounded-lg bg-[#F3F4F5] shadow-[0px_2px_4px_0px_#00000040] border border-white p-4 sm:p-5 dark:border-zinc-700 dark:bg-zinc-800/80"
             >
               <h3 id="reservation-summary-heading" className="sr-only">
                 Reservation summary
@@ -518,11 +518,11 @@ export function ReservationDetails({
             <section aria-labelledby="guest-heading">
               <h3
                 id="guest-heading"
-                className="mb-3 text-base font-semibold text-[#1F1F1F] dark:text-zinc-100"
+                className="mb-3 text-base font-medium text-[#1F1F1F] dark:text-zinc-100"
               >
                 Guest
               </h3>
-              <div className="flex items-center gap-3 rounded-lg border border-[#d7d7d7] p-4 dark:border-zinc-700">
+              <div className="flex items-center gap-3 rounded-lg shadow-[0px_2px_4px_0px_#00000040] bg-[#F3F4F5] border border-white p-4 dark:border-zinc-700">
                 {booking.guestImage ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -577,14 +577,14 @@ export function ReservationDetails({
                 <button
                   type="button"
                   onClick={onMoney}
-                  className="min-h-11 w-full rounded-full border border-zinc-900 px-4 py-3 text-xs font-medium text-[#1F1F1F] transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-800"
+                  className="min-h-11 w-full rounded-full border border-[#1F1F1F] px-4 py-3 text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-[#1F1F1F] hover:text-white dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-800"
                 >
                   Send or request money
                 </button>
               )}
               <Link
                 href={messageHref}
-                className="flex min-h-11 w-full items-center justify-center rounded-full bg-[#FCDF9C] px-4 py-3 text-center text-base font-semibold text-[#1f1f1f] hover:text-white transition-colors duration-300 hover:bg-black dark:bg-zinc-100 dark:text-[#1F1F1F] dark:hover:bg-white"
+                className="flex min-h-11 w-full items-center justify-center rounded-full bg-[#FCDF9C] px-4 py-3 text-center text-sm font-semibold text-[#1f1f1f] hover:text-white transition-colors duration-300 hover:bg-black dark:bg-zinc-100 dark:text-[#1F1F1F] dark:hover:bg-white"
               >
                 Message guest
               </Link>
@@ -594,7 +594,7 @@ export function ReservationDetails({
             <section aria-labelledby="stay-details-heading">
               <h3
                 id="stay-details-heading"
-                className="mb-3 text-base font-semibold text-[#1F1F1F] dark:text-zinc-100"
+                className="mb-3 text-base font-medium text-[#1F1F1F] dark:text-zinc-100"
               >
                 Stay details
               </h3>
@@ -667,7 +667,7 @@ export function ReservationDetails({
               >
                 <h3
                   id="reviews-heading"
-                  className="mb-3 text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100"
+                  className="mb-3 text-base font-medium text-[#1F1F1F] dark:text-zinc-100"
                 >
                   Reviews
                 </h3>
@@ -697,7 +697,7 @@ export function ReservationDetails({
             >
               <h3
                 id="guest-paid-heading"
-                className="mb-3 text-base font-semibold text-[#1F1F1F] dark:text-zinc-100"
+                className="mb-3 text-base font-medium text-[#1F1F1F] dark:text-zinc-100"
               >
                 Guest paid
               </h3>
@@ -786,7 +786,7 @@ export function ReservationDetails({
               >
                 <h3
                   id="host-payout-heading"
-                  className="mb-3 text-base font-semibold text-[#1F1F1F] dark:text-zinc-100"
+                  className="mb-3 text-base font-medium text-[#1F1F1F] dark:text-zinc-100"
                 >
                   Your payout
                 </h3>
@@ -873,7 +873,7 @@ export function ReservationDetails({
               )}
 
               {/* Payment Details Summary */}
-              <div className="rounded-lg border border-[#d7d7d7] bg-[#F3F4F5] p-3.5 dark:border-zinc-700 dark:bg-zinc-800/50 text-xs">
+              <div className="rounded-lg border border-white bg-[#F3F4F5] p-3.5 dark:border-zinc-700 dark:bg-zinc-800/50 text-xs shadow-[0px_2px_4px_0px_#00000040]">
                 <p className="text-sm font-semibold text-zinc-800 dark:text-zinc-200 mb-2">
                   Payment record
                 </p>
@@ -962,13 +962,13 @@ function ReviewStatusPanel({
 
   return (
     <div className="rounded-2xl border border-zinc-200 p-4 dark:border-zinc-700">
-      <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">{title}</p>
+      <p className="text-base font-medium text-[#1f1f1f] dark:text-zinc-100">{title}</p>
       {isPending ? (
         <>
-          <p className="mt-1 text-sm font-medium text-zinc-900 dark:text-zinc-100">
+          <p className="mt-1 text-sm font-medium text-[#1f1f1f] dark:text-zinc-100">
             Review your guest
           </p>
-          <p className="mt-1 text-xs leading-5 text-[#727272]">
+          <p className="mt-1 text-sm leading-5 text-[#727272]">
             Share your experience hosting this guest to help other hosts.
           </p>
           {onHostReview ? (
@@ -1074,7 +1074,7 @@ function GuestReviewPanel({
 
   return (
     <div className="rounded-2xl border border-zinc-200 p-4 dark:border-zinc-700">
-      <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+      <p className="text-sm font-medium text-[#1f1f1f] dark:text-zinc-100">
         Guest review of your property
       </p>
       {reviewStatus === "PENDING" ? (
