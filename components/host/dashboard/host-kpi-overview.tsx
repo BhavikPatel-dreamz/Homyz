@@ -14,9 +14,9 @@ interface HostKpiOverviewProps {
 }
 
 const primaryKpiGridClass =
-  "grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4";
+  "grid grid-cols-1 gap-3 min-[480px]:grid-cols-2 lg:grid-cols-4";
 const secondaryKpiGridClass =
-  "grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5";
+  "grid grid-cols-1 gap-3 min-[480px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-5";
 const cardClass =
   "flex flex-col justify-between rounded-[12px] border border-white bg-[#F3F4F5] shadow-[0_2px_4px_0px_#00000040]";
 const insetSurfaceClass = "rounded-[10px] bg-white/70";
@@ -345,13 +345,13 @@ export function HostKpiOverview({
       </div>
 
       <details className={`group mt-4 ${cardClass} px-4 py-3.5 sm:px-5`}>
-        <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-base font-medium text-[#1F1F1F] [&::-webkit-details-marker]:hidden">
+        <summary className="flex cursor-pointer list-none items-start justify-between gap-3 text-base font-medium text-[#1F1F1F] sm:items-center sm:gap-4 [&::-webkit-details-marker]:hidden">
           <span>Detailed earnings</span>
-          <span className="flex items-center gap-3 text-xs font-normal text-[#727272]">
+          <span className="ml-auto flex shrink-0 items-center gap-2 text-xs font-normal text-[#727272] sm:gap-3">
             {isRefreshing ? (
               <span className="h-3 w-28 animate-pulse rounded bg-zinc-100" />
             ) : (
-              <span>
+              <span className="hidden min-[400px]:inline">
                 Net payout{" "}
                 {formatCurrency(
                   earnings.itemizedBreakdown.netHostPayoutCents,
@@ -364,7 +364,7 @@ export function HostKpiOverview({
             </span>
           </span>
         </summary>
-        <div className="mt-4 border-t border-zinc-100 pt-4">
+        <div className="mt-3 border-t border-[#1F1F1F]/10 pt-4">
           {isRefreshing ? (
             <EarningsDetailsSkeleton />
           ) : (
@@ -431,8 +431,7 @@ export function HostKpiOverview({
               Actionable insights
             </h2>
             <p className="mt-1 text-sm text-[#727272]">
-              Based on recorded dashboard metrics. No projected revenue or
-              market data is inferred.
+              Based on recorded dashboard metrics. No projected revenue or market data is inferred.
             </p>
           </div>
           <div className="mt-4 grid gap-3 border-t border-zinc-100 pt-4 lg:grid-cols-2">
@@ -447,7 +446,7 @@ export function HostKpiOverview({
                   className={`${insetSurfaceClass} border border-white/80 px-4 py-3.5 transition-shadow hover:shadow-[0_2px_8px_rgba(31,31,31,0.08)]`}
                 >
                   <div className="flex items-start justify-between gap-3">
-                    <div>
+                    <div className="min-w-0">
                       <h3 className="text-base font-medium text-[#1F1F1F]">
                         {recommendation.title}
                       </h3>
@@ -474,7 +473,7 @@ export function HostKpiOverview({
         className={`mt-4 ${cardClass} p-4 sm:p-5`}
         aria-labelledby="upcoming-reservation-heading"
       >
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2
               id="upcoming-reservation-heading"
@@ -488,7 +487,7 @@ export function HostKpiOverview({
           </div>
           <Link
             href="/host/today"
-            className="rounded-full bg-[#FCDF9C] px-3.5 py-2 text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-[#1F1F1F] hover:text-white"
+            className="shrink-0 rounded-full bg-[#FCDF9C] px-3.5 py-2 text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-[#1F1F1F] hover:text-white"
           >
             View reservations
           </Link>
@@ -833,10 +832,10 @@ function PrimaryKpi({
     >
       <div>
         <div className="flex items-start justify-between gap-2">
-          <p className="text-sm font-medium text-[#727272]">
+          <p className="min-w-0 text-sm font-medium text-[#727272]">
             {label}
           </p>
-          <span className="max-w-28 rounded-full bg-white/80 px-2 py-1 text-right text-[11px] font-medium text-[#1F1F1F]">
+          <span className="shrink-0 whitespace-nowrap rounded-full bg-white/80 px-2 py-1 text-right text-[11px] font-medium text-[#1F1F1F]">
             {period}
           </span>
         </div>
@@ -970,7 +969,7 @@ function SectionRowSkeleton({ count }: { count: number }) {
 function ReservationSkeleton() {
   return (
     <div className="mt-4 grid gap-4 border-t border-zinc-100 pt-4 md:grid-cols-[minmax(0,1fr)_auto]">
-      <div className="flex items-start gap-3">
+      <div className="flex min-w-0 items-start gap-3">
         <div className="size-10 animate-pulse rounded-full bg-zinc-100" />
         <div className="flex-1">
           <div className="h-4 w-44 animate-pulse rounded bg-zinc-100" />
@@ -1082,7 +1081,7 @@ function UpcomingReservation({
 }) {
   return (
     <div className="mt-4 grid gap-4 border-t border-zinc-100 pt-4 md:grid-cols-[minmax(0,1fr)_auto]">
-      <div className="flex items-start gap-3">
+      <div className="flex min-w-0 items-start gap-3">
         <div className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white border border-[#727272] text-sm font-semibold text-zinc-700">
           {reservation.guestImage ? (
             <Image
@@ -1097,7 +1096,7 @@ function UpcomingReservation({
             reservation.guestName.charAt(0).toUpperCase()
           )}
         </div>
-        <div>
+        <div className="min-w-0">
           <p className="text-base font-medium text-[#1F1F1F]">
             {reservation.guestName}{" "}
             <span className="font-normal text-[#727272] text-sm">
