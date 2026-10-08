@@ -345,6 +345,8 @@ export type PublicHostProfile = {
     country: string | null;
     listingType: string | null;
     price: number;
+    isGuestFavorite?: boolean;
+    isSuperhost?: boolean;
   }>;
 };
 
@@ -371,7 +373,7 @@ async function getPublicHostProfile(userId: string, options: { reviewLimit?: num
   const [listings, reviewSummary, latestReviews] = await Promise.all([
     prisma.listing.findMany({
       where: publicListingWhere,
-      select: { id: true, customSlug: true, title: true, photos: true, city: true, country: true, listingType: true, price: true },
+      select: { id: true, customSlug: true, title: true, photos: true, city: true, country: true, listingType: true, price: true, isGuestFavorite: true },
       orderBy: { updatedAt: "desc" },
       take: 12,
     }),
@@ -388,6 +390,8 @@ async function getPublicHostProfile(userId: string, options: { reviewLimit?: num
     }),
   ]);
 
+  const isSuperhost = qualificationService.isSuperhost(host);
+
   return {
     host: {
       id: host.id,
@@ -395,7 +399,7 @@ async function getPublicHostProfile(userId: string, options: { reviewLimit?: num
       image: host.image,
       createdAt: host.createdAt,
       publicProfile: profile,
-      isSuperhost: qualificationService.isSuperhost(host),
+      isSuperhost,
     },
     stats: {
       reviewCount: reviewSummary._count._all,
@@ -403,7 +407,28 @@ async function getPublicHostProfile(userId: string, options: { reviewLimit?: num
       listingCount: listings.length,
     },
     reviews: latestReviews,
-    listings,
+    listings: (listings as Array<{
+      id: string;
+      customSlug: string | null;
+      title: string;
+      photos: string[];
+      city: string | null;
+      country: string | null;
+      listingType: string | null;
+      price: number;
+      isGuestFavorite?: boolean | null;
+    }>).map((l) => ({
+      id: l.id,
+      customSlug: l.customSlug,
+      title: l.title,
+      photos: l.photos,
+      city: l.city,
+      country: l.country,
+      listingType: l.listingType,
+      price: l.price,
+      isGuestFavorite: qualificationService.isGuestFavorite(l),
+      isSuperhost,
+    })),
   };
 }
 

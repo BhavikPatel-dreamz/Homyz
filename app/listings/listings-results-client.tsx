@@ -218,6 +218,20 @@ function SelectedPreviewCard({
           )}
         </div>
         <div className="min-w-0 flex-1">
+          {(listing.isGuestFavorite || listing.isSuperhost) && (
+            <div className="flex flex-wrap items-center gap-1 mb-1">
+              {listing.isGuestFavorite && (
+                <span className="inline-flex items-center rounded-full bg-amber-50 border border-amber-200 px-1.5 py-0.2 text-[9px] font-semibold text-amber-950 leading-tight">
+                  {t("listings_guest_favourite", "Guest favourite")}
+                </span>
+              )}
+              {listing.isSuperhost && (
+                <span className="inline-flex items-center rounded-full bg-zinc-900 px-1.5 py-0.2 text-[9px] font-medium text-white leading-tight">
+                  {t("listings_superhost", "Superhost")}
+                </span>
+              )}
+            </div>
+          )}
           <div className="flex items-center gap-1.5">
             <h4 className="text-xs font-bold text-[#1F1F1F] truncate group-hover:text-amber-950 transition-colors">
               {listing.title || t("host_untitled_listing", "Untitled property")}

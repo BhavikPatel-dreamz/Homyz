@@ -19,6 +19,7 @@ import { calculateDistance } from "@/lib/location/places-search";
 import { getCurrencyForCountry } from "@/lib/currency";
 import type { SearchContext } from "@/lib/location/search-context";
 import { qualificationService } from "@/services/qualification.service";
+import { getPublishedReviewSummaries } from "@/services/listing.service";
 
 export const SECTION_LIMIT = 12;
 const CANDIDATE_LIMIT = 200;
@@ -148,6 +149,8 @@ export type DiscoveryListing = {
   sameDayCutoff: string | null;
   allowSameDayRequests: boolean;
   createdAt: Date;
+  rating?: number | null;
+  reviewsCount?: number;
   host?: {
     id: string;
     name: string | null;
@@ -186,15 +189,12 @@ function toProperty(
   },
 ): HomepageProperty {
   const currency = getCurrencyForCountry(listing.country);
-  const hostProfile = (listing.host?.publicProfile || {}) as Record<string, unknown>;
+  // Source genuine rating and review count from the listing's own published guest reviews.
+  // Never read host-level publicProfile rating/reviewCount for individual property cards.
   const genuineRating =
-    typeof hostProfile.rating === "number" && hostProfile.rating > 0 ? hostProfile.rating : null;
+    typeof listing.rating === "number" && listing.rating > 0 ? listing.rating : null;
   const genuineReviews =
-    typeof hostProfile.reviewCount === "number"
-      ? hostProfile.reviewCount
-      : typeof hostProfile.reviewsCount === "number"
-      ? hostProfile.reviewsCount
-      : null;
+    typeof listing.reviewsCount === "number" ? listing.reviewsCount : null;
 
   const isGuestFav = qualificationService.isGuestFavorite(listing);
 
@@ -406,14 +406,8 @@ function calculateTrendingScore(listing: DiscoveryListing, searchFrequency: numb
  */
 function calculatePopularityScore(listing: DiscoveryListing): number {
   const bookingsCount = listing.bookings?.length || 0;
-  const hostProfile = (listing.host?.publicProfile || {}) as Record<string, unknown>;
-  const rating = typeof hostProfile.rating === "number" && hostProfile.rating > 0 ? hostProfile.rating : 4.5;
-  const reviewCount =
-    typeof hostProfile.reviewCount === "number"
-      ? hostProfile.reviewCount
-      : typeof hostProfile.reviewsCount === "number"
-      ? hostProfile.reviewsCount
-      : 0;
+  const rating = typeof listing.rating === "number" && listing.rating > 0 ? listing.rating : 4.5;
+  const reviewCount = typeof listing.reviewsCount === "number" ? listing.reviewsCount : 0;
   const isFav = listing.isFeatured ? 5 : 1;
   return bookingsCount * 4 + rating * 3 + Math.min(reviewCount, 25) * 0.5 + isFav * 2;
 }
@@ -481,7 +475,7 @@ export async function getDiscoveryCandidateListings(): Promise<DiscoveryListing[
     cacheKey,
     async () => {
       const expiryThreshold = getExpiryThresholdDate();
-      return (await prisma.listing.findMany({
+      const listings = (await prisma.listing.findMany({
         where: {
           published: true,
           status: ListingStatus.ACTIVE,
@@ -542,7 +536,18 @@ export async function getDiscoveryCandidateListings(): Promise<DiscoveryListing[
         },
         orderBy: [{ isFeatured: "desc" }, { createdAt: "desc" }],
         take: CANDIDATE_LIMIT,
-      })) as DiscoveryListing[];
+      })) as Omit<DiscoveryListing, "rating" | "reviewsCount">[];
+
+      const reviewSummaries = await getPublishedReviewSummaries(listings.map((l) => l.id));
+
+      return listings.map((l) => {
+        const summary = reviewSummaries.get(l.id);
+        return {
+          ...l,
+          rating: summary?.averageRating ?? null,
+          reviewsCount: summary?.totalCount ?? 0,
+        };
+      });
     },
     { ttl: CACHE_TTL.HOMEPAGE_DISCOVERY },
   );
@@ -902,16 +907,8 @@ async function assembleHomepageData(params: {
       // 3. Top-rated 5-star stays
       const topRatedCandidates = allListings
         .slice()
-        .filter((l) => {
-          const hostProfile = (l.host?.publicProfile || {}) as Record<string, unknown>;
-          const r = typeof hostProfile.rating === "number" ? hostProfile.rating : null;
-          return r != null && r >= 4.7;
-        })
-        .sort((a, b) => {
-          const rA = ((a.host?.publicProfile || {}) as any).rating || 0;
-          const rB = ((b.host?.publicProfile || {}) as any).rating || 0;
-          return rB - rA;
-        });
+        .filter((l) => typeof l.rating === "number" && l.rating >= 4.7)
+        .sort((a, b) => (b.rating || 0) - (a.rating || 0));
 
       if (topRatedCandidates.length >= MIN_PROPERTY_CAROUSEL) {
         addSection({
@@ -1146,16 +1143,8 @@ async function assembleHomepageData(params: {
       // 3. Top-rated 5-star stays
       const topRatedCandidates = allListings
         .slice()
-        .filter((l) => {
-          const hostProfile = (l.host?.publicProfile || {}) as Record<string, unknown>;
-          const r = typeof hostProfile.rating === "number" ? hostProfile.rating : null;
-          return r != null && r >= 4.7;
-        })
-        .sort((a, b) => {
-          const rA = ((a.host?.publicProfile || {}) as any).rating || 0;
-          const rB = ((b.host?.publicProfile || {}) as any).rating || 0;
-          return rB - rA;
-        });
+        .filter((l) => typeof l.rating === "number" && l.rating >= 4.7)
+        .sort((a, b) => (b.rating || 0) - (a.rating || 0));
 
       if (topRatedCandidates.length >= MIN_PROPERTY_CAROUSEL) {
         addSection({

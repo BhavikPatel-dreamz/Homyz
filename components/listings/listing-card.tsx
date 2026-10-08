@@ -256,14 +256,18 @@ export function ListingCard({
       : 0;
 
   // ── Badges (Guest Favourite / Superhost / Featured) ─────────────────────────
-  const isGuestFav =
+  // Qualification is evaluated strictly on the backend and persisted at the listing/host level.
+  // The UI consumes only the persisted backend qualification state.
+  const isGuestFav = Boolean(
     (listing as any).isGuestFavorite === true ||
-    (listing as any).badge === "guest_favorite" ||
-    ((numericRating ?? 0) >= 4.85 && reviewCount >= 3);
+    (listing as any).badge === "guest_favorite",
+  );
 
-  const isSuper =
-    !isGuestFav &&
-    ((listing as any).isSuperhost === true || (listing as any).badge === "superhost");
+  const isSuper = Boolean(
+    (listing as any).isSuperhost === true ||
+    (listing as any).host?.isSuperhost === true ||
+    (listing as any).badge === "superhost",
+  );
 
   const isFeat = !isGuestFav && !isSuper && Boolean(listing.isFeatured);
 
@@ -502,19 +506,25 @@ export function ListingCard({
         )}
 
         {/* ── Badges (Top Left) ── */}
-        {isGuestFav ? (
-          <span className="absolute left-3 top-3 z-20 inline-flex items-center rounded-full bg-white px-3 py-1 text-[11px] sm:text-xs font-semibold text-[#1F1F1F] shadow-md border border-black/5">
-            {t("listings_guest_favourite", "Guest favourite")}
-          </span>
-        ) : isSuper ? (
-          <span className="absolute left-3 top-3 z-20 inline-flex items-center rounded-full bg-black/60 backdrop-blur-md px-3 py-1 text-[11px] sm:text-xs font-medium text-white shadow-md">
-            {t("listings_superhost", "Superhost")}
-          </span>
-        ) : isFeat ? (
-          <span className="absolute left-3 top-3 z-20 inline-flex items-center rounded-full bg-white/90 backdrop-blur-md px-2.5 py-1 text-[11px] sm:text-xs font-semibold text-[#1F1F1F] shadow-xs border border-white/60">
-            {t("listings_featured_badge", "Featured")}
-          </span>
-        ) : null}
+        {(isGuestFav || isSuper || isFeat) && (
+          <div className="absolute left-3 top-3 z-20 flex flex-wrap items-center gap-1.5 max-w-[calc(100%-4.5rem)] pointer-events-none">
+            {isGuestFav && (
+              <span className="inline-flex items-center rounded-full bg-white px-2.5 py-1 text-[11px] sm:text-xs font-semibold text-[#1F1F1F] shadow-md border border-black/5">
+                {t("listings_guest_favourite", "Guest favourite")}
+              </span>
+            )}
+            {isSuper && (
+              <span className="inline-flex items-center rounded-full bg-black/70 backdrop-blur-md px-2.5 py-1 text-[11px] sm:text-xs font-medium text-white shadow-md">
+                {t("listings_superhost", "Superhost")}
+              </span>
+            )}
+            {isFeat && (
+              <span className="inline-flex items-center rounded-full bg-white/90 backdrop-blur-md px-2.5 py-1 text-[11px] sm:text-xs font-semibold text-[#1F1F1F] shadow-xs border border-white/60">
+                {t("listings_featured_badge", "Featured")}
+              </span>
+            )}
+          </div>
+        )}
 
         {/* ── Favorite Button (Top Right) ── */}
         {showFavorite && (

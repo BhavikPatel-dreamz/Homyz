@@ -144,7 +144,7 @@ function roundRating(value: number | null): number | null {
   return value === null ? null : Math.round(value * 100) / 100;
 }
 
-async function getPublishedReviewSummaries(listingIds: string[]): Promise<Map<string, ListingReviewSummary>> {
+export async function getPublishedReviewSummaries(listingIds: string[]): Promise<Map<string, ListingReviewSummary>> {
   if (!listingIds.length) return new Map();
   const summaries = await prisma.review.groupBy({
     by: ["listingId"],
@@ -168,6 +168,32 @@ async function mapCardsWithReviewSummaries(
     { ...item, reviewSummary: byListingId.get(item.id) },
     pricingOptions,
   ));
+}
+
+/**
+ * Resolves a small, ordered batch of current public card DTOs. This is used by
+ * client-side history surfaces so saved snapshots never become an independent
+ * source of truth for Guest Favorite or Superhost badges.
+ */
+async function getPublicCardsByIds(listingIds: string[]): Promise<PublicListingCardDTO[]> {
+  const ids = [...new Set(listingIds.filter((id) => typeof id === "string" && id.trim()))].slice(0, 12);
+  if (!ids.length) return [];
+
+  const records = await prisma.listing.findMany({
+    where: {
+      id: { in: ids },
+      published: true,
+      status: ListingStatus.ACTIVE,
+      isPaused: false,
+      deletedAt: null,
+    },
+    select: publicListingCardSelect,
+  });
+  const cardsById = new Map((await mapCardsWithReviewSummaries(records)).map((card) => [card.id, card]));
+  return ids.flatMap((id) => {
+    const card = cardsById.get(id);
+    return card ? [card] : [];
+  });
 }
 
 function getPublishReadiness(listing: {
@@ -2272,4 +2298,6 @@ export const listingService = {
   remove,
   permanentDeleteForAdmin,
   toPublic: toPublicListingDTO,
+  getPublishedReviewSummaries,
+  getPublicCardsByIds,
 };

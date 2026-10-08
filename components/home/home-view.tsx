@@ -43,6 +43,11 @@ export interface HomeViewProps {
   }>;
 }
 
+type CurrentRecentBadgeState = Record<string, {
+  isGuestFavorite: boolean;
+  isSuperhost: boolean;
+}>;
+
 export function HomeView({
   sections = [],
   recentSearchSections = [],
@@ -55,6 +60,10 @@ export function HomeView({
   const { t } = useLanguage();
   const [isNavigatingSearch, setIsNavigatingSearch] = useState(false);
   const [recentlyViewed, setRecentlyViewed] = useState<ViewedPropertyItem[]>([]);
+  // Client history is only a display snapshot. Keep badge flags separate so
+  // Recently Viewed always obtains its current qualification state in one
+  // bounded backend request before rendering the row.
+  const [currentRecentBadges, setCurrentRecentBadges] = useState<CurrentRecentBadgeState | null>(null);
   const [activeContext, setActiveContext] = useState<SearchContext | PersistedSearchContext | null>(searchContext);
   const [showContinueSearchingBar, setShowContinueSearchingBar] = useState(false);
   const [pastSearchSections, setPastSearchSections] = useState<HomepageSection[]>(recentSearchSections);
@@ -113,6 +122,45 @@ export function HomeView({
         }
       }
   }, [searchContext]);
+
+  useEffect(() => {
+    if (recentlyViewed.length === 0) {
+      return;
+    }
+
+    const controller = new AbortController();
+    const ids = recentlyViewed.map((item) => item.id).filter(Boolean).slice(0, 12);
+    if (!ids.length) {
+      return;
+    }
+
+    setCurrentRecentBadges(null);
+    void fetch(`/api/v1/listings/cards?ids=${encodeURIComponent(ids.join(","))}`, {
+      credentials: "same-origin",
+      signal: controller.signal,
+    })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((payload) => {
+        if (controller.signal.aborted || !payload) return;
+        const cards = Array.isArray(payload?.data?.items) ? payload.data.items : [];
+        const states: CurrentRecentBadgeState = {};
+        for (const card of cards) {
+          if (typeof card?.id !== "string") continue;
+          states[card.id] = {
+            isGuestFavorite: card.isGuestFavorite === true,
+            isSuperhost: card.isSuperhost === true,
+          };
+        }
+        setCurrentRecentBadges(states);
+      })
+      .catch((error: unknown) => {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+        // Do not fall back to potentially months-old qualification flags.
+        // A later navigation retries this lightweight, current-state request.
+      });
+
+    return () => controller.abort();
+  }, [recentlyViewed]);
 
   // Sync activeContext with incoming searchContext from SSR or navigation
   useEffect(() => {
@@ -383,26 +431,40 @@ export function HomeView({
       ),
     );
 
-    return recentlyViewed.map((item) => ({
-      id: item.id,
-      slug: item.slug,
-      name: item.title,
-      image: item.mainImage,
-      imageUrl: item.mainImage,
-      subtitle: [item.area, item.city].filter(Boolean).join(", ") || item.country || undefined,
-      pricePerNight: item.price,
-      price: item.price,
-      currency: item.currency,
-      city: item.city,
-      country: item.country,
-      guests: item.maxGuests,
-      propertyType: item.propertyType,
-      averageRating: item.rating ?? null,
-      rating: item.rating ?? null,
-      canFavorite,
-      ...currentCardsById.get(item.id),
-    }));
-  }, [recentlyViewed, propertySections, uniquePastSections, canFavorite]);
+    if (currentRecentBadges === null) return [];
+
+    return recentlyViewed.flatMap((item) => {
+      const currentBadgeState = currentRecentBadges[item.id];
+      // A missing card from the public batch means the listing is no longer
+      // public. Avoid displaying its retained local snapshot.
+      if (!currentBadgeState) return [];
+      const current = currentCardsById.get(item.id);
+      const isGuestFavorite = currentBadgeState.isGuestFavorite;
+      const isSuperhost = currentBadgeState.isSuperhost;
+      return [{
+        ...(current || {}),
+        id: item.id,
+        slug: current?.slug ?? item.slug,
+        name: current?.name ?? item.title,
+        image: current?.image ?? item.mainImage,
+        imageUrl: current?.imageUrl ?? item.mainImage,
+        subtitle: current?.subtitle ?? ([item.area, item.city].filter(Boolean).join(", ") || item.country || undefined),
+        pricePerNight: current?.pricePerNight ?? item.price,
+        price: current?.price ?? item.price,
+        currency: current?.currency ?? item.currency,
+        city: current?.city ?? item.city,
+        country: current?.country ?? item.country,
+        guests: current?.guests ?? item.maxGuests,
+        propertyType: current?.propertyType ?? item.propertyType,
+        averageRating: current?.averageRating ?? item.rating ?? null,
+        rating: current?.rating ?? item.rating ?? null,
+        isGuestFavorite,
+        isSuperhost,
+        badge: (isGuestFavorite ? "guest_favorite" : isSuperhost ? "superhost" : current?.badge === "featured" ? "featured" : null) as "guest_favorite" | "superhost" | "featured" | null,
+        canFavorite,
+      }];
+    });
+  }, [recentlyViewed, currentRecentBadges, propertySections, uniquePastSections, canFavorite]);
 
   return (
     <div className="flex min-h-screen flex-col bg-white font-sans text-[#1f1f1f] antialiased">
@@ -425,9 +487,10 @@ export function HomeView({
             </div>
           )}
 
+
        
           {/* Recently Viewed Client Section */}
-          {recentlyViewed.length >= 2 && !propertySections.some((s) => s.id === "recently-viewed") && (
+          {recentlyViewedCards.length >= 2 && !propertySections.some((s) => s.id === "recently-viewed") && (
             <section className="mt-8 sm:mt-[92px]">
               <HomePropertySection
                 title={t("home_recently_viewed", "Recently viewed")}

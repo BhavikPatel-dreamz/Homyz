@@ -7,8 +7,8 @@
 
 export interface GuestFavoriteListingInput {
   /** Persisted by the daily listing evaluator. */
-  isGuestFavorite?: boolean;
-  isFeatured?: boolean;
+  isGuestFavorite?: boolean | null;
+  isFeatured?: boolean | null;
   rating?: number | string | null;
   reviewCount?: number | null;
   reviewsCount?: number | null;
@@ -23,7 +23,7 @@ export interface SuperhostHostInput {
   id?: string;
   name?: string | null;
   /** Persisted by the quarterly Superhost evaluator. */
-  isSuperhost?: boolean;
+  isSuperhost?: boolean | null;
   /** @deprecated Ignored for Superhost status; retained for source compatibility. */
   createdAt?: Date | string | null;
   /** @deprecated Ignored for Superhost status; retained for source compatibility. */
@@ -40,23 +40,12 @@ export interface SuperhostHostInput {
   };
 }
 
-export interface QualificationConfig {
-  guestFavorite: {
-    minRating: number; // e.g. 4.85
-    minReviews: number; // e.g. 3
-    minConfirmedBookings: number; // e.g. 2
-    allowFeaturedWithConfirmedBookings: boolean;
-  };
-}
-
-export const DEFAULT_QUALIFICATION_CONFIG: QualificationConfig = {
-  guestFavorite: {
-    minRating: 4.85,
-    minReviews: 3,
-    minConfirmedBookings: 2,
-    allowFeaturedWithConfirmedBookings: true,
-  },
-};
+/**
+ * Legacy configuration export retained strictly for source compatibility.
+ * Authoritative evaluation configuration lives in lib/guest-favorite/rules.ts
+ * (GUEST_FAVORITE_INTERNAL_CONFIG).
+ */
+export const DEFAULT_QUALIFICATION_CONFIG = {} as const;
 
 /**
  * Resolves the official, persisted Guest Favorite badge. Qualification lives in
@@ -66,9 +55,7 @@ export const DEFAULT_QUALIFICATION_CONFIG: QualificationConfig = {
  */
 export function isGuestFavorite(
   property: GuestFavoriteListingInput | null | undefined,
-  // Retained for callers compiled against the retired live formula. Official
-  // Guest Favorite status is persisted and cannot be overridden at render time.
-  _customConfig?: Partial<QualificationConfig["guestFavorite"]>,
+  _customConfig?: unknown,
 ): boolean {
   return property?.isGuestFavorite === true;
 }

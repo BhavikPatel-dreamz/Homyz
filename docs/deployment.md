@@ -197,6 +197,57 @@ Copy `.env.example` → `/opt/homyz/.env`. Production:
 
 Never commit `.env`.
 
+### Daily Guest Favorite evaluation
+
+Guest Favorite is an official, persisted listing status. The daily evaluator
+must run for new reviews, cancellations, and ordinary listing activity to be
+reconciled into the public badge. It runs through an authenticated loopback
+endpoint and is protected by a Redis lease when Redis is available.
+
+1. Add a unique `GUEST_FAVORITE_EVALUATION_CRON_SECRET` to the deployed app's
+   `.env` file (for the current host deployment, `~/homyz/.env`):
+
+   ```bash
+   openssl rand -base64 32
+   ```
+
+2. Install and enable the **user** timer after deploying the application files.
+   It intentionally uses the same non-root account and `~/homyz/.env` as the
+   current host-node release workflow:
+
+   ```bash
+   mkdir -p ~/.config/systemd/user
+   cp ~/homyz/deploy/homyz-guest-favorite-evaluation.{service,timer} ~/.config/systemd/user/
+   cp ~/homyz/deploy/homyz-superhost-evaluation.{service,timer} ~/.config/systemd/user/
+   systemctl --user daemon-reload
+   systemctl --user enable --now homyz-guest-favorite-evaluation.timer
+   systemctl --user enable --now homyz-superhost-evaluation.timer
+   systemctl --user list-timers homyz-guest-favorite-evaluation.timer homyz-superhost-evaluation.timer
+   ```
+
+   Enable user lingering once as an administrator so the timer continues after
+   the deploy user logs out:
+
+   ```bash
+   sudo loginctl enable-linger "$(whoami)"
+   ```
+
+3. To run it manually from the host, use the same systemd unit rather than
+   exposing the endpoint publicly:
+
+   ```bash
+   systemctl --user start homyz-guest-favorite-evaluation.service
+   systemctl --user start homyz-superhost-evaluation.service
+   journalctl --user -u homyz-superhost-evaluation.service -n 100 --no-pager
+   ```
+
+The timers are persistent (a missed run is made up after the host returns) and
+call `http://127.0.0.1:3000` by default. If the app binds elsewhere, set
+`HOMYZ_APP_INTERNAL_URL` in the same `.env` file. For the Docker `/opt/homyz`
+deployment variant, install copies of these units as system units with `%h/homyz`
+replaced by `/opt/homyz`. A second trigger safely returns a skipped result while
+the current run owns the evaluation lease.
+
 Never commit `.env`.
 
 ---

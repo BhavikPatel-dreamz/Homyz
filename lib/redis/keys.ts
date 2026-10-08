@@ -40,6 +40,9 @@ export const CACHE_KEYS = {
   HOMEPAGE_DISCOVERY: (ver: number, city: string) =>
     `${NS}:home:discovery:v${ver}:city:${city}`,
 
+  /** Short-lived lease preventing concurrent marketplace-wide daily evaluations. */
+  GUEST_FAVORITE_EVALUATION_LOCK: () => `${NS}:guest-favorite:evaluation:lock`,
+
   /** Bookings */
   BOOKING: (bookingId: string) => `${NS}:booking:${bookingId}:v3`,
   BOOKINGS_USER: (userId: string, scope: string = "all", skip: number = 0, take: number = 20) =>

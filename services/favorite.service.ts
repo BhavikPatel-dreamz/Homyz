@@ -67,9 +67,13 @@ async function listUserFavoriteCards(
   const skip = Math.max(0, Math.trunc(options.skip ?? 0));
   const take = options.take ?? 48;
   const safeTake = Math.min(100, Math.max(1, Math.trunc(take)));
-  const version = await getCounter(CACHE_KEYS.FAVORITES_VER(userId));
+  const [userFavVersion, catalogueVersion] = await Promise.all([
+    getCounter(CACHE_KEYS.FAVORITES_VER(userId)),
+    getCounter(CACHE_KEYS.LISTINGS_PUBLIC_VER()),
+  ]);
+  const cacheKey = `${CACHE_KEYS.FAVORITES_CARDS(userId, userFavVersion, skip, safeTake)}:cv${catalogueVersion}`;
   return getOrSetCache(
-    CACHE_KEYS.FAVORITES_CARDS(userId, version, skip, safeTake),
+    cacheKey,
     async () => {
       const [favorites, total] = await Promise.all([
         prisma.listingFavorite.findMany({

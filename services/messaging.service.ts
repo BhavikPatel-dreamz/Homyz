@@ -1575,16 +1575,14 @@ export interface HostResponseMetrics {
  */
 async function calculateHostResponseMetrics(
   hostId: string,
-  windowMonths: number = 12,
-  asOf: Date = new Date(),
+  window: { windowStart: Date; windowEndExclusive: Date },
 ): Promise<HostResponseMetrics> {
-  const windowStart = new Date(asOf);
-  windowStart.setMonth(windowStart.getMonth() - windowMonths);
-
   const conversations = await prisma.conversation.findMany({
     where: {
       hostId,
-      createdAt: { gte: windowStart, lte: asOf },
+      // The Superhost evaluator supplies its single canonical 12-month
+      // period. This avoids a separate rolling-month boundary for messaging.
+      createdAt: { gte: window.windowStart, lt: window.windowEndExclusive },
     },
     include: {
       messages: {
@@ -1608,7 +1606,10 @@ async function calculateHostResponseMetrics(
   for (const conv of conversations) {
     if (!conv.messages || conv.messages.length === 0) continue;
 
-    // Count an actual guest-authored message, never a sender-less system event.
+    // Count the first actual guest-authored inquiry in the conversation,
+    // never a sender-less system event. The existing conversation model has
+    // no separate inquiry entity; subsequent guest messages before a reply
+    // remain part of this same inquiry rather than becoming duplicate SLA rows.
     const firstGuestMsg = conv.messages.find(
       (m: { id: string; senderId: string | null; type: string; createdAt: Date }) =>
         m.senderId === conv.guestId && m.type !== "SYSTEM",
@@ -1637,7 +1638,9 @@ async function calculateHostResponseMetrics(
 
   const responseRatePercentage =
     totalGuestInquiries > 0
-      ? Math.round((respondedWithin24hCount / totalGuestInquiries) * 1000) / 10
+      // Keep comparison precision intact for the >= 90% Superhost threshold.
+      // Formatting belongs at the presentation boundary, not the rules engine.
+      ? (respondedWithin24hCount / totalGuestInquiries) * 100
       : null;
 
   const averageResponseTimeMinutes =

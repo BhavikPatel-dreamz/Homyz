@@ -236,6 +236,7 @@ export function toPublicListingDTO(l: Listing | ListingDTO) {
     listingType: l.listingType,
     isFeatured: (l as any).isFeatured ?? false,
     isGuestFavorite: (l as any).isGuestFavorite ?? false,
+    isSuperhost: Boolean((l as any).isSuperhost ?? (l as any).host?.isSuperhost ?? false),
     rating: (l as any).rating ?? null,
     reviewsCount: (l as any).reviewsCount ?? 0,
     // When showExactLocation is false, mask exact street address and unit
@@ -372,6 +373,11 @@ export const publicListingCardSelect = {
   petsAllowed: true,
   discounts: true,
   customSlug: true,
+  host: {
+    select: {
+      isSuperhost: true,
+    },
+  },
 } satisfies Prisma.ListingSelect;
 
 export type PublicListingCardRecord = Prisma.ListingGetPayload<{
@@ -390,6 +396,9 @@ export function toPublicListingCardDTO(
 ) {
   const showExact = Boolean(l.showExactLocation);
   const publicCoordinates = getPublicCoordinates(l.latitude, l.longitude, showExact);
+  const isSuperhost = Boolean(
+    (l as any).isSuperhost ?? (l as any).host?.isSuperhost ?? false,
+  );
   return {
     id: l.id,
     title: l.title,
@@ -411,6 +420,7 @@ export function toPublicListingCardDTO(
     photos: l.photos,
     isFeatured: l.isFeatured,
     isGuestFavorite: l.isGuestFavorite,
+    isSuperhost,
     petsAllowed: l.petsAllowed,
     discounts: l.discounts,
     customSlug: l.customSlug,

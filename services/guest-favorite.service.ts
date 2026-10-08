@@ -4,8 +4,8 @@ import type { Prisma } from "@/generated/prisma/client";
 import { BookingStatus, ListingStatus } from "@/generated/prisma/enums";
 import { computeBookingStatus } from "@/lib/booking/booking-status";
 import { prisma } from "@/lib/db/prisma";
-import { incrCounter } from "@/lib/redis/cache";
-import { keys } from "@/lib/redis/keys";
+import { acquireCacheLease, incrCounter, releaseCacheLease } from "@/lib/redis/cache";
+import { CACHE_KEYS, keys } from "@/lib/redis/keys";
 import {
   evaluateGuestFavoriteRequirements,
   GUEST_FAVORITE_CATEGORY_KEYS,
@@ -14,6 +14,10 @@ import {
   type GuestFavoriteCategoryMetric,
 } from "@/lib/guest-favorite/rules";
 import { notificationService } from "@/services/notification.service";
+import {
+  getConfirmedQualityIncidentCount,
+  getConfirmedQualityIncidentCounts,
+} from "@/services/quality-incident.service";
 
 export type GuestFavoriteProgress = {
   publishedReviewCount: number;
@@ -21,13 +25,15 @@ export type GuestFavoriteProgress = {
   categoryRatings: Record<GuestFavoriteCategoryKey, GuestFavoriteCategoryMetric>;
   totalBookings: number;
   hostCancellationCount: number;
+  qualityIncidentCount?: number | null;
   reliabilityFailureRatePercentage: number;
   minimumReviewsMet: boolean;
   overallRatingMet: boolean;
   subratingCoverageMet: boolean;
   subratingConsistencyMet: boolean;
   reliabilityMet: boolean;
-  qualityIncidentDataStatus: "DATA_UNAVAILABLE";
+  reliabilityStatus?: "FULL" | "PARTIAL";
+  qualityIncidentDataStatus: "DATA_UNAVAILABLE" | "AVAILABLE";
   qualityIncidentMessage: string;
   eligibleNow: boolean;
   failureReasons: string[];
@@ -39,6 +45,18 @@ export type GuestFavoriteStatus = GuestFavoriteProgress & {
   lastEvaluatedAt: Date | null;
 };
 
+export type DailyGuestFavoriteEvaluationResult = {
+  evaluationDate: Date;
+  evaluatedListings: number;
+  qualifiedListings: number;
+  disqualifiedListings: number;
+  inactiveBadgesRemoved: number;
+  statusChanges: number;
+  failures: number;
+  skipped: boolean;
+  durationMs: number;
+};
+
 type ListingEvaluationData = {
   id: string;
   hostId: string;
@@ -47,6 +65,7 @@ type ListingEvaluationData = {
   guestFavoriteLastEvaluatedAt: Date | null;
   checkInStart: string | null;
   checkOutTime: string | null;
+  qualityIncidentCount?: number | null;
   reviews: Array<{
     rating: number;
     cleanlinessRating: number | null;
@@ -120,6 +139,7 @@ export function calculateGuestFavoriteProgress(data: ListingEvaluationData, asOf
     categoryRatings,
     totalBookings,
     hostCancellationCount,
+    qualityIncidentCount: typeof data.qualityIncidentCount === "number" ? data.qualityIncidentCount : null,
   });
   return {
     publishedReviewCount: data.reviews.length,
@@ -127,14 +147,16 @@ export function calculateGuestFavoriteProgress(data: ListingEvaluationData, asOf
     categoryRatings,
     totalBookings,
     hostCancellationCount,
+    qualityIncidentCount: requirements.qualityIncidentCount,
     reliabilityFailureRatePercentage: requirements.reliabilityFailureRatePercentage,
     minimumReviewsMet: requirements.minimumReviewsMet,
     overallRatingMet: requirements.overallRatingMet,
     subratingCoverageMet: requirements.subratingCoverageMet,
     subratingConsistencyMet: requirements.subratingConsistencyMet,
     reliabilityMet: requirements.reliabilityMet,
-    qualityIncidentDataStatus: "DATA_UNAVAILABLE",
-    qualityIncidentMessage: "Property-level support and quality incident tracking is not currently instrumented.",
+    reliabilityStatus: requirements.reliabilityStatus,
+    qualityIncidentDataStatus: requirements.qualityIncidentDataStatus,
+    qualityIncidentMessage: requirements.qualityIncidentMessage,
     eligibleNow: requirements.eligibleNow,
     failureReasons: requirements.failureReasons,
   };
@@ -142,7 +164,17 @@ export function calculateGuestFavoriteProgress(data: ListingEvaluationData, asOf
 
 const evaluationInclude = {
   reviews: {
-    where: { status: "PUBLISHED" as const },
+    // `Review` is the guest-to-property model, but retain only reviews tied
+    // to a completed confirmed stay. This excludes legacy/draft-orphan rows
+    // from the documented minimum-review and subrating inputs.
+    where: {
+      status: "PUBLISHED" as const,
+      booking: {
+        is: {
+          status: BookingStatus.CONFIRMED,
+        },
+      },
+    },
     select: {
       rating: true,
       cleanlinessRating: true,
@@ -178,8 +210,9 @@ async function loadListingEvaluationData(listingId: string): Promise<ListingEval
 export async function getGuestFavoriteStatus(listingId: string, asOf = new Date()): Promise<GuestFavoriteStatus | null> {
   const listing = await loadListingEvaluationData(listingId);
   if (!listing) return null;
+  const qualityIncidentCount = await getConfirmedQualityIncidentCount(listingId);
   return {
-    ...calculateGuestFavoriteProgress(listing, asOf),
+    ...calculateGuestFavoriteProgress({ ...listing, qualityIncidentCount }, asOf),
     officialStatus: listing.isGuestFavorite,
     since: listing.guestFavoriteSince,
     lastEvaluatedAt: listing.guestFavoriteLastEvaluatedAt,
@@ -199,6 +232,7 @@ async function persistDailyEvaluation(listing: ListingEvaluationData, evaluation
         subratings: progress.categoryRatings,
         totalBookings: progress.totalBookings,
         hostCancellationCount: progress.hostCancellationCount,
+        qualityIncidentCount: progress.qualityIncidentCount ?? 0,
         reliabilityFailureRatePercentage: progress.reliabilityFailureRatePercentage,
         qualityIncidentDataStatus: progress.qualityIncidentDataStatus,
         qualified: progress.eligibleNow,
@@ -210,6 +244,7 @@ async function persistDailyEvaluation(listing: ListingEvaluationData, evaluation
         subratings: progress.categoryRatings,
         totalBookings: progress.totalBookings,
         hostCancellationCount: progress.hostCancellationCount,
+        qualityIncidentCount: progress.qualityIncidentCount ?? 0,
         reliabilityFailureRatePercentage: progress.reliabilityFailureRatePercentage,
         qualityIncidentDataStatus: progress.qualityIncidentDataStatus,
         qualified: progress.eligibleNow,
@@ -248,11 +283,38 @@ async function persistDailyEvaluation(listing: ListingEvaluationData, evaluation
 export async function evaluateListingGuestFavoriteDaily(listingId: string, asOf = new Date()) {
   const listing = await loadListingEvaluationData(listingId);
   if (!listing) throw new Error("Listing not found");
-  return persistDailyEvaluation(listing, startOfUtcDay(asOf), asOf);
+  const qualityIncidentCount = await getConfirmedQualityIncidentCount(listingId);
+  return persistDailyEvaluation({ ...listing, qualityIncidentCount }, startOfUtcDay(asOf), asOf);
 }
 
-export async function runDailyGuestFavoriteEvaluation(asOf = new Date()) {
+export async function runDailyGuestFavoriteEvaluation(asOf = new Date()): Promise<DailyGuestFavoriteEvaluationResult> {
+  const startedAt = Date.now();
   const evaluationDate = startOfUtcDay(asOf);
+  const lease = await acquireCacheLease(CACHE_KEYS.GUEST_FAVORITE_EVALUATION_LOCK(), 30 * 60);
+  if (!lease) {
+    console.info("[guest-favorite-evaluation] skipped", {
+      evaluationDate: evaluationDate.toISOString(),
+      reason: "already_running",
+    });
+    return {
+      evaluationDate,
+      evaluatedListings: 0,
+      qualifiedListings: 0,
+      disqualifiedListings: 0,
+      inactiveBadgesRemoved: 0,
+      statusChanges: 0,
+      failures: 0,
+      skipped: true,
+      durationMs: Date.now() - startedAt,
+    };
+  }
+
+  console.info("[guest-favorite-evaluation] started", {
+    evaluationDate: evaluationDate.toISOString(),
+    lease: lease.distributed ? "redis" : "process",
+  });
+
+  try {
   const inactive = await prisma.listing.updateMany({
     where: {
       isGuestFavorite: true,
@@ -265,7 +327,8 @@ export async function runDailyGuestFavoriteEvaluation(asOf = new Date()) {
     },
     data: { isGuestFavorite: false, guestFavoriteSince: null },
   });
-  const results: Array<{ statusChanged: boolean }> = [];
+  const results: Array<{ statusChanged: boolean; qualified: boolean }> = [];
+  let failures = 0;
   const listingPageSize = 100;
   const evaluationBatchSize = 20;
   let cursor: string | undefined;
@@ -289,19 +352,83 @@ export async function runDailyGuestFavoriteEvaluation(asOf = new Date()) {
       },
     }) as ListingEvaluationData[];
     if (listings.length === 0) break;
+
+    // Batch load quality incident counts for this page of listings - NO N+1 queries
+    const listingIds = listings.map((l) => l.id);
+    let incidentCountsMap: Map<string, number>;
+    try {
+      incidentCountsMap = await getConfirmedQualityIncidentCounts(listingIds);
+    } catch (error) {
+      // Never treat an unavailable incident count as zero: skip this page and
+      // let the next daily run reconcile it from the source of truth.
+      failures += listings.length;
+      console.error("[guest-favorite-evaluation] incident lookup failed", {
+        evaluationDate: evaluationDate.toISOString(),
+        listingCount: listings.length,
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
+      if (listings.length < listingPageSize) break;
+      cursor = listings[listings.length - 1].id;
+      continue;
+    }
+
     for (let index = 0; index < listings.length; index += evaluationBatchSize) {
-      results.push(...await Promise.all(
-        listings.slice(index, index + evaluationBatchSize).map((listing) => persistDailyEvaluation(listing, evaluationDate, asOf)),
-      ));
+      const batchResults = await Promise.all(
+        listings.slice(index, index + evaluationBatchSize).map((listing) => {
+          const qualityIncidentCount = incidentCountsMap.get(listing.id) ?? 0;
+          return persistDailyEvaluation({ ...listing, qualityIncidentCount }, evaluationDate, asOf)
+            .then((result) => ({
+              statusChanged: result.statusChanged,
+              qualified: result.progress.eligibleNow,
+            }))
+            .catch((error) => {
+              console.error("[guest-favorite-evaluation] listing evaluation failed", {
+                listingId: listing.id,
+                error: error instanceof Error ? error.message : "Unknown error",
+              });
+              return null;
+            });
+        }),
+      );
+      for (const result of batchResults) {
+        if (result) results.push(result);
+        else failures += 1;
+      }
     }
     if (listings.length < listingPageSize) break;
     cursor = listings[listings.length - 1].id;
   }
   if (inactive.count > 0) await incrCounter(keys.listingsPublicVersion());
-  return {
+  const summary: DailyGuestFavoriteEvaluationResult = {
     evaluationDate,
     evaluatedListings: results.length,
+    qualifiedListings: results.filter((result) => result.qualified).length,
+    disqualifiedListings: results.filter((result) => !result.qualified).length,
     inactiveBadgesRemoved: inactive.count,
     statusChanges: results.filter((result) => result.statusChanged).length + inactive.count,
+    failures,
+    skipped: false,
+    durationMs: Date.now() - startedAt,
   };
+  console.info("[guest-favorite-evaluation] completed", {
+    evaluationDate: evaluationDate.toISOString(),
+    evaluatedListings: summary.evaluatedListings,
+    qualifiedListings: summary.qualifiedListings,
+    disqualifiedListings: summary.disqualifiedListings,
+    inactiveBadgesRemoved: summary.inactiveBadgesRemoved,
+    statusChanges: summary.statusChanges,
+    failures: summary.failures,
+    durationMs: summary.durationMs,
+  });
+  return summary;
+  } catch (error) {
+    console.error("[guest-favorite-evaluation] failed", {
+      evaluationDate: evaluationDate.toISOString(),
+      durationMs: Date.now() - startedAt,
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+    throw error;
+  } finally {
+    await releaseCacheLease(lease);
+  }
 }

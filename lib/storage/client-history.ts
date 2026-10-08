@@ -24,6 +24,8 @@ export interface ViewedPropertyItem {
   maxGuests?: number;
   propertyType?: string | null;
   currency?: string;
+  isGuestFavorite?: boolean;
+  isSuperhost?: boolean;
   viewedAt: string;
 }
 

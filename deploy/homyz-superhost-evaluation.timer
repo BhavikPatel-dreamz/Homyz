@@ -1,0 +1,13 @@
+[Unit]
+Description=Run Homyz Superhost evaluation quarterly
+
+[Timer]
+# Runs at 03:30 UTC on the 1st of January, April, July, and October
+OnCalendar=*-01,04,07,10-01 03:30:00 UTC
+Persistent=true
+RandomizedDelaySec=15m
+Unit=homyz-superhost-evaluation.service
+
+[Install]
+WantedBy=timers.target
+
