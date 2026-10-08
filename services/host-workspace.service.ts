@@ -1,12 +1,14 @@
 import "server-only";
 import { prisma } from "@/lib/db/prisma";
 import { BookingStatus, ReviewStatus } from "@/generated/prisma/enums";
+import type { Prisma } from "@/generated/prisma/client";
 import type { AuthUser } from "@/lib/auth/types";
 import { listingService } from "@/services/listing.service";
 import { bookingDateKey } from "@/lib/booking/booking-date";
-import { isBookingRequestExpired } from "@/lib/booking/booking-expiry";
+import { getExpiryThresholdDate } from "@/lib/booking/booking-expiry";
 import { getHostReviewEligibility } from "@/lib/booking/host-review-eligibility";
 import type { HostReservation } from "@/components/host/host-workspace-shared";
+import type { ReservationPeriod } from "@/lib/booking/host-reservation-events";
 
 type WorkspaceBooking = {
   id: string;
@@ -19,18 +21,18 @@ type WorkspaceBooking = {
   nightlyPrice: number | null;
   cleaningFee: number | null;
   currency: string;
-  priceBreakdown: HostReservation["priceBreakdown"];
-  cancellationPolicy: string | null;
+  priceBreakdown?: HostReservation["priceBreakdown"];
+  cancellationPolicy?: string | null;
   isNonRefundable: boolean;
   createdAt: Date;
   user: {
     id: string;
     name: string | null;
     image: string | null;
-    email: string | null;
-    createdAt: Date;
+    email?: string | null;
+    createdAt?: Date;
   };
-  conversations: Array<{ id: string }>;
+  conversations?: Array<{ id: string }>;
   hostGuestReview: { submittedAt: Date } | null;
   reviews: Array<{ id: string }>;
   listing: {
@@ -44,147 +46,312 @@ type WorkspaceBooking = {
     checkInEnd: string | null;
     checkOutTime: string | null;
     price: number;
-    hostId: string;
   };
 };
 
+export type GetHostWorkspaceOptions = {
+  includeCancelled?: boolean;
+  tab?: ReservationPeriod;
+  propertyId?: string | null;
+  page?: number;
+  limit?: number;
+  lightweight?: boolean;
+};
+
+type ReservationQuery = {
+  where: Prisma.BookingWhereInput;
+  orderBy: Prisma.BookingOrderByWithRelationInput[];
+};
+
+/** One shared scope keeps tab cards and their count in sync. */
+export function buildHostReservationQuery({
+  listingIds,
+  propertyId,
+  tab,
+  includeCancelled,
+  now,
+}: {
+  listingIds: string[];
+  propertyId?: string | null;
+  tab?: ReservationPeriod;
+  includeCancelled: boolean;
+  now: Date;
+}): ReservationQuery {
+  const today = new Date(`${bookingDateKey(now)}T00:00:00.000Z`);
+  const listingScope: Prisma.BookingWhereInput =
+    propertyId && listingIds.includes(propertyId)
+      ? { listingId: propertyId }
+      : { listingId: { in: listingIds } };
+  const activePending: Prisma.BookingWhereInput = {
+    status: BookingStatus.PENDING,
+    createdAt: { gt: getExpiryThresholdDate(now) },
+    endDate: { gt: today },
+  };
+
+  if (tab === "today") {
+    const todayScope: Prisma.BookingWhereInput = {
+      startDate: { lte: today },
+      endDate: { gte: today },
+    };
+    return {
+      where: {
+        ...listingScope,
+        OR: [
+          { status: BookingStatus.CONFIRMED, ...todayScope },
+          { AND: [activePending, todayScope] },
+        ],
+      },
+      orderBy: [{ startDate: "asc" }, { endDate: "asc" }, { id: "asc" }],
+    };
+  }
+
+  if (tab === "upcoming") {
+    const future: Prisma.BookingWhereInput = { startDate: { gt: today } };
+    return {
+      where: {
+        ...listingScope,
+        OR: [
+          { status: BookingStatus.CONFIRMED, ...future },
+          { AND: [activePending, future] },
+        ],
+      },
+      orderBy: [{ startDate: "asc" }, { createdAt: "asc" }, { id: "asc" }],
+    };
+  }
+
+  if (tab === "staying") {
+    return {
+      where: {
+        ...listingScope,
+        status: BookingStatus.CONFIRMED,
+        startDate: { lte: today },
+        endDate: { gt: today },
+      },
+      orderBy: [{ startDate: "asc" }, { id: "asc" }],
+    };
+  }
+
+  if (tab === "completed") {
+    return {
+      where: {
+        ...listingScope,
+        status: BookingStatus.CONFIRMED,
+        endDate: { lte: today },
+      },
+      orderBy: [{ endDate: "desc" }, { id: "asc" }],
+    };
+  }
+
+  if (tab === "pending") {
+    return {
+      where: { ...listingScope, ...activePending },
+      orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+    };
+  }
+
+  if (tab === "cancelled") {
+    return {
+      where: { ...listingScope, status: BookingStatus.CANCELLED },
+      orderBy: [{ endDate: "desc" }, { id: "asc" }],
+    };
+  }
+
+  if (tab === "all") {
+    return {
+      where: {
+        ...listingScope,
+        OR: [
+          { status: { in: [BookingStatus.CONFIRMED, BookingStatus.CANCELLED] } },
+          activePending,
+        ],
+      },
+      orderBy: [{ endDate: "desc" }, { id: "asc" }],
+    };
+  }
+
+  const statuses = includeCancelled
+    ? [BookingStatus.CONFIRMED, BookingStatus.CANCELLED]
+    : [BookingStatus.CONFIRMED];
+
+  return {
+    where: { ...listingScope, OR: [{ status: { in: statuses } }, activePending] },
+    orderBy: [{ startDate: "asc" }, { createdAt: "asc" }, { id: "asc" }],
+  };
+}
+
 export async function getHostWorkspace(
   actor: AuthUser,
-  { includeCancelled = false }: { includeCancelled?: boolean } = {},
+  {
+    includeCancelled = false,
+    tab,
+    propertyId,
+    page,
+    limit,
+    lightweight = false,
+  }: GetHostWorkspaceOptions = {},
 ) {
-  const { items: listings } = await listingService.listForHost(actor, {
-    take: 100,
-  });
-
+  const { items: listings } = await listingService.listForHost(actor, { take: 100 });
   const listingIds = listings.map((listing) => listing.id);
-  if (listingIds.length === 0) {
+
+  const isPaginated = tab !== undefined || page !== undefined || limit !== undefined;
+  const safePage = Math.max(1, page ?? 1);
+  const safeLimit = Math.min(100, Math.max(1, limit ?? 12));
+
+  if (!listingIds.length) {
     return {
       listings: [],
       bookings: [],
+      items: [],
+      total: 0,
+      totalCount: 0,
+      page: safePage,
+      totalPages: 0,
+      hasMore: false,
+      nextCursor: null,
     };
   }
 
   const now = new Date();
-
-  const bookingStatuses = includeCancelled
-    ? [BookingStatus.CONFIRMED, BookingStatus.PENDING, BookingStatus.CANCELLED]
-    : [BookingStatus.CONFIRMED, BookingStatus.PENDING];
-
-  const bookings = await prisma.booking.findMany({
-    where: {
-      listingId: { in: listingIds },
-      status: { in: bookingStatuses },
-    },
-    include: {
-      user: {
-        select: {
-          id: true,
-          name: true,
-          image: true,
-          email: true,
-          createdAt: true,
-        },
-      },
-      conversations: {
-        select: { id: true },
-        orderBy: { updatedAt: "desc" },
-        take: 1,
-      },
-      hostGuestReview: {
-        select: { submittedAt: true },
-      },
-      // List cards need only whether the guest has submitted a public review.
-      // The review text and private note are loaded on demand from the modal.
-      reviews: {
-        where: { status: ReviewStatus.PUBLISHED },
-        select: { id: true },
-        take: 1,
-      },
-      listing: {
-        select: {
-          id: true,
-          title: true,
-          city: true,
-          district: true,
-          country: true,
-          photos: true,
-          checkInStart: true,
-          checkInEnd: true,
-          checkOutTime: true,
-          price: true,
-          hostId: true,
-        },
-      },
-    },
-    orderBy: [{ startDate: "asc" }, { createdAt: "asc" }],
+  const { where, orderBy } = buildHostReservationQuery({
+    listingIds,
+    propertyId,
+    tab,
+    includeCancelled,
+    now,
   });
 
-  // Filter out expired pending requests. Cancelled bookings are included only
-  // for the Today page; calendar callers retain the active-booking default.
-  const visibleBookings = (bookings as unknown as WorkspaceBooking[]).filter((b) => {
-    if (b.status === BookingStatus.PENDING) {
-      return !isBookingRequestExpired(b.createdAt, now, b.endDate);
-    }
-    return b.status === BookingStatus.CONFIRMED
-      || (includeCancelled && b.status === BookingStatus.CANCELLED);
-  });
+  const select = {
+    id: true,
+    listingId: true,
+    status: true,
+    startDate: true,
+    endDate: true,
+    guests: true,
+    totalPrice: true,
+    nightlyPrice: true,
+    cleaningFee: true,
+    currency: true,
+    isNonRefundable: true,
+    createdAt: true,
+    ...(lightweight ? {} : { priceBreakdown: true, cancellationPolicy: true }),
+    user: {
+      select: {
+        id: true,
+        name: true,
+        image: true,
+        ...(lightweight ? {} : { email: true, createdAt: true }),
+      },
+    },
+    conversations: {
+      select: { id: true },
+      orderBy: { updatedAt: "desc" },
+      take: 1,
+    },
+    hostGuestReview: { select: { submittedAt: true } },
+    reviews: {
+      where: { status: ReviewStatus.PUBLISHED },
+      select: { id: true },
+      take: 1,
+    },
+    listing: {
+      select: {
+        id: true,
+        title: true,
+        city: true,
+        district: true,
+        country: true,
+        photos: true,
+        checkInStart: true,
+        checkInEnd: true,
+        checkOutTime: true,
+        price: true,
+      },
+    },
+  } satisfies Prisma.BookingSelect;
+
+  const [rows, totalCount] = await Promise.all([
+    isPaginated
+      ? prisma.booking.findMany({
+          where,
+          select,
+          orderBy,
+          skip: (safePage - 1) * safeLimit,
+          take: safeLimit,
+        })
+      : prisma.booking.findMany({ where, select, orderBy }),
+    prisma.booking.count({ where }),
+  ]);
+
+  const bookings = (rows as unknown as WorkspaceBooking[]).map((booking) =>
+    mapBooking(booking, now),
+  );
+  const totalPages = isPaginated ? Math.ceil(totalCount / safeLimit) : 1;
 
   return {
     listings,
-    bookings: visibleBookings.map((b) => ({
-      id: b.id,
-      listingId: b.listingId,
-      status: b.status,
-      startDate: bookingDateKey(b.startDate),
-      endDate: bookingDateKey(b.endDate),
-      guests: b.guests || 1,
-      totalPrice: b.totalPrice,
-      nightlyPrice: b.nightlyPrice,
-      currency: b.currency || "SAR",
-      priceBreakdown: b.priceBreakdown,
-      cancellationPolicy: b.cancellationPolicy,
-      isNonRefundable: b.isNonRefundable,
-      hostReview: (() => {
-        const eligibility = getHostReviewEligibility({
-          // The query is already scoped to listing IDs returned by
-          // listForHost(actor), including accepted co-host assignments.
-          isAuthorizedHost: true,
-          bookingStatus: b.status,
-          endDate: b.endDate,
-          checkOutTime: b.listing.checkOutTime,
-          hasHostReview: Boolean(b.hostGuestReview),
-          now,
-        });
-        return {
-          eligible: eligibility.eligible,
-          status: eligibility.status,
-          reviewDeadline: eligibility.reviewDeadline?.toISOString() ?? null,
-          reviewSubmitted: eligibility.reviewSubmitted,
-        };
-      })(),
-      guestReview: {
-        status: b.reviews.length > 0 ? "RECEIVED" as const : "PENDING" as const,
-        reviewId: b.reviews[0]?.id ?? null,
-      },
-      createdAt: b.createdAt.toISOString(),
-      guestName: b.user?.name || "Guest",
-      guestId: b.user?.id,
-      guestImage: b.user?.image || null,
-      guestEmail: b.user?.email || null,
-      guestCreatedAt: b.user?.createdAt?.toISOString() || null,
-      conversationId: b.conversations?.[0]?.id || null,
-      listing: {
-        id: b.listing.id,
-        title: b.listing.title,
-        city: b.listing.city,
-        district: b.listing.district,
-        country: b.listing.country,
-        photos: b.listing.photos,
-        checkInStart: b.listing.checkInStart || "15:00",
-        checkInEnd: b.listing.checkInEnd || "22:00",
-        checkOutTime: b.listing.checkOutTime || "11:00",
-        price: b.listing.price,
-      },
-    })),
+    bookings,
+    items: bookings,
+    total: totalCount,
+    totalCount,
+    page: safePage,
+    totalPages,
+    hasMore: isPaginated ? safePage < totalPages : false,
+    nextCursor: null,
+  };
+}
+
+function mapBooking(booking: WorkspaceBooking, now: Date): HostReservation {
+  const eligibility = getHostReviewEligibility({
+    isAuthorizedHost: true,
+    bookingStatus: booking.status,
+    endDate: booking.endDate,
+    checkOutTime: booking.listing.checkOutTime,
+    hasHostReview: Boolean(booking.hostGuestReview),
+    now,
+  });
+
+  return {
+    id: booking.id,
+    listingId: booking.listingId,
+    status: booking.status,
+    startDate: bookingDateKey(booking.startDate),
+    endDate: bookingDateKey(booking.endDate),
+    guests: booking.guests || 1,
+    totalPrice: booking.totalPrice,
+    nightlyPrice: booking.nightlyPrice,
+    cleaningFee: booking.cleaningFee,
+    currency: booking.currency || "SAR",
+    priceBreakdown: booking.priceBreakdown,
+    cancellationPolicy: booking.cancellationPolicy,
+    isNonRefundable: booking.isNonRefundable,
+    hostReview: {
+      eligible: eligibility.eligible,
+      status: eligibility.status,
+      reviewDeadline: eligibility.reviewDeadline?.toISOString() ?? null,
+      reviewSubmitted: eligibility.reviewSubmitted,
+    },
+    guestReview: {
+      status: booking.reviews.length ? "RECEIVED" : "PENDING",
+      reviewId: booking.reviews[0]?.id ?? null,
+    },
+    createdAt: booking.createdAt.toISOString(),
+    guestName: booking.user.name || "Guest",
+    guestId: booking.user.id,
+    guestImage: booking.user.image || null,
+    guestEmail: booking.user.email || null,
+    guestCreatedAt: booking.user.createdAt?.toISOString() || null,
+    conversationId: booking.conversations?.[0]?.id || null,
+    listing: {
+      id: booking.listing.id,
+      title: booking.listing.title,
+      city: booking.listing.city,
+      district: booking.listing.district,
+      country: booking.listing.country,
+      photos: booking.listing.photos,
+      checkInStart: booking.listing.checkInStart || "15:00",
+      checkInEnd: booking.listing.checkInEnd || "22:00",
+      checkOutTime: booking.listing.checkOutTime || "11:00",
+      price: booking.listing.price,
+    },
   };
 }

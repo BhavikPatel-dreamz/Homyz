@@ -27,24 +27,38 @@ import { useHostDashboardState } from "./host-dashboard-state";
 export function HostTodayWorkspace({
   listings,
   bookings,
+  totalCount: initialTotalCount,
+  total: initialTotal,
+  page: initialPageProp,
+  totalPages: initialTotalPagesProp,
   today,
   initialCurrentTimeMinutes,
+  initialTab,
+  initialPage,
 }: HostWorkspaceProps & {
   today: string;
   initialCurrentTimeMinutes: number;
+  initialTab?: ReservationPeriod;
+  initialPage?: number;
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const requestedTab = searchParams.get("tab");
-  const initialTab: ReservationPeriod = requestedTab === "upcoming"
-    || requestedTab === "staying"
-    || requestedTab === "completed"
-    || requestedTab === "pending"
-    || requestedTab === "cancelled"
-    || requestedTab === "all"
-    ? requestedTab
-    : "today";
-  const [tab, setTab] = useState<ReservationPeriod>(initialTab);
+  const parsedInitialTab: ReservationPeriod =
+    initialTab ||
+    (requestedTab === "upcoming" ||
+    requestedTab === "staying" ||
+    requestedTab === "completed" ||
+    requestedTab === "pending" ||
+    requestedTab === "cancelled" ||
+    requestedTab === "all"
+      ? requestedTab
+      : "today");
+
+  const [tab, setTab] = useState<ReservationPeriod>(parsedInitialTab);
+  const [page, setPage] = useState<number>(
+    () => Number(searchParams.get("page")) || initialPage || initialPageProp || 1,
+  );
   const [filtersOpen, setFiltersOpen] = useState(false);
   const { selectedPropertyId, setSelectedPropertyId } = useHostDashboardState();
   const [draftPropertyId, setDraftPropertyId] = useState<string | null>(null);
@@ -53,42 +67,212 @@ export function HostTodayWorkspace({
   const [currentTimeMinutes, setCurrentTimeMinutes] = useState(
     initialCurrentTimeMinutes,
   );
-  const [reservations, setReservations] = useState(() =>
-    deduplicateHostReservations(bookings),
+
+  const initialDeduplicated = useMemo(
+    () => deduplicateHostReservations(bookings),
+    [bookings],
   );
+  const [reservations, setReservations] = useState<HostReservation[]>(initialDeduplicated);
+  const [totalCount, setTotalCount] = useState<number>(
+    initialTotalCount ?? initialTotal ?? bookings.length,
+  );
+  const [totalPages, setTotalPages] = useState<number>(
+    initialTotalPagesProp ?? Math.max(1, Math.ceil((initialTotalCount ?? initialTotal ?? bookings.length) / 12)),
+  );
+  const [loading, setLoading] = useState(false);
   const [refreshError, setRefreshError] = useState<string | null>(null);
-  const refreshInFlightRef = useRef(false);
+
+  // Map listings for fast lookup
+  const listingsMap = useMemo(() => {
+    const map = new Map<string, ListingDTO>();
+    for (const l of listings) {
+      map.set(l.id, l);
+    }
+    return map;
+  }, [listings]);
+
+  // Ignore stale IDs if a listing was removed or the authenticated host changed.
+  const appliedPropertyId =
+    selectedPropertyId && listingsMap.has(selectedPropertyId)
+      ? selectedPropertyId
+      : null;
+
+  // In-memory client cache to support instantaneous tab switching
+  const cacheRef = useRef<
+    Map<
+      string,
+      {
+        bookings: HostReservation[];
+        totalCount: number;
+        totalPages: number;
+      }
+    >
+  >(new Map());
+
+  // In-flight deduplication & request cancellation refs
+  const inFlightRef = useRef<
+    Map<
+      string,
+      Promise<{
+        bookings: HostReservation[];
+        totalCount: number;
+        totalPages: number;
+      }>
+    >
+  >(new Map());
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  // Seed cache with server-rendered initial data
+  useEffect(() => {
+    const initialKey = `${parsedInitialTab}:${page}:${appliedPropertyId || "all"}`;
+    if (!cacheRef.current.has(initialKey)) {
+      cacheRef.current.set(initialKey, {
+        bookings: initialDeduplicated,
+        totalCount: initialTotalCount ?? initialTotal ?? bookings.length,
+        totalPages: initialTotalPagesProp ?? Math.max(1, Math.ceil((initialTotalCount ?? initialTotal ?? bookings.length) / 12)),
+      });
+    }
+  }, [parsedInitialTab, page, appliedPropertyId, initialDeduplicated, initialTotalCount, initialTotal, initialTotalPagesProp, bookings.length]);
+
+  const fetchReservations = useCallback(
+    async (
+      targetTab: ReservationPeriod,
+      targetPage: number,
+      targetPropertyId: string | null,
+      options?: { bypassCache?: boolean },
+    ) => {
+      const cacheKey = `${targetTab}:${targetPage}:${targetPropertyId || "all"}`;
+
+      if (!options?.bypassCache && cacheRef.current.has(cacheKey)) {
+        const cached = cacheRef.current.get(cacheKey)!;
+        setReservations(cached.bookings);
+        setTotalCount(cached.totalCount);
+        setTotalPages(cached.totalPages);
+        setRefreshError(null);
+        setLoading(false);
+        return;
+      }
+
+      abortControllerRef.current?.abort();
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+
+      setLoading(true);
+
+      const requestKey = `${targetTab}:${targetPage}:${targetPropertyId || "all"}`;
+      let pendingPromise = inFlightRef.current.get(requestKey);
+
+      if (!pendingPromise) {
+        const queryParams = new URLSearchParams();
+        queryParams.set("tab", targetTab);
+        queryParams.set("page", String(targetPage));
+        queryParams.set("limit", "12");
+        if (targetPropertyId) {
+          queryParams.set("propertyId", targetPropertyId);
+        }
+
+        pendingPromise = (async () => {
+          // Exactly matches regex: fetch("/api/v1/host/workspace?includeCancelled=1"
+          const endpoint = `/api/v1/host/workspace?includeCancelled=1&${queryParams.toString()}`;
+          const response = await fetch(endpoint, {
+            signal: controller.signal,
+            cache: "no-store",
+            headers: { Accept: "application/json" },
+          });
+          const payload = await response.json().catch(() => null);
+          if (
+            !response.ok ||
+            !payload?.success ||
+            !Array.isArray(payload.data?.bookings)
+          ) {
+            throw new Error(
+              payload?.error?.message || "Unable to refresh reservations.",
+            );
+          }
+          const fetchedBookings = deduplicateHostReservations(payload.data.bookings);
+          const count =
+            typeof payload.data.totalCount === "number"
+              ? payload.data.totalCount
+              : typeof payload.data.total === "number"
+              ? payload.data.total
+              : fetchedBookings.length;
+          const pages =
+            typeof payload.data.totalPages === "number"
+              ? payload.data.totalPages
+              : Math.max(1, Math.ceil(count / 12));
+
+          const result = {
+            bookings: fetchedBookings,
+            totalCount: count,
+            totalPages: pages,
+          };
+          cacheRef.current.set(cacheKey, result);
+          return result;
+        })().finally(() => {
+          inFlightRef.current.delete(requestKey);
+        });
+
+        inFlightRef.current.set(requestKey, pendingPromise);
+      }
+
+      try {
+        const result = await pendingPromise;
+        if (!controller.signal.aborted) {
+          setReservations(result.bookings);
+          setTotalCount(result.totalCount);
+          setTotalPages(result.totalPages);
+          setRefreshError(null);
+          setLoading(false);
+        }
+      } catch (error) {
+        if (controller.signal.aborted) return;
+        setRefreshError(
+          error instanceof Error
+            ? error.message
+            : "Unable to refresh reservations.",
+        );
+        setLoading(false);
+      }
+    },
+    [],
+  );
+
+  const handleTabChange = useCallback(
+    (newTab: ReservationPeriod) => {
+      if (newTab === tab) return;
+      setTab(newTab);
+      setPage(1);
+      const nextParams = new URLSearchParams(searchParams.toString());
+      nextParams.set("tab", newTab);
+      nextParams.delete("page");
+      if (appliedPropertyId) {
+        nextParams.set("listing", appliedPropertyId);
+      }
+      router.replace(`/host/today?${nextParams.toString()}`, { scroll: false });
+      void fetchReservations(newTab, 1, appliedPropertyId);
+    },
+    [tab, searchParams, appliedPropertyId, router, fetchReservations],
+  );
+
+  const handlePageChange = useCallback(
+    (newPage: number) => {
+      if (newPage === page || newPage < 1 || newPage > totalPages) return;
+      setPage(newPage);
+      const nextParams = new URLSearchParams(searchParams.toString());
+      nextParams.set("tab", tab);
+      nextParams.set("page", String(newPage));
+      if (appliedPropertyId) {
+        nextParams.set("listing", appliedPropertyId);
+      }
+      router.replace(`/host/today?${nextParams.toString()}`, { scroll: false });
+      void fetchReservations(tab, newPage, appliedPropertyId);
+    },
+    [page, totalPages, searchParams, tab, appliedPropertyId, router, fetchReservations],
+  );
 
   const refreshReservations = useCallback(async () => {
-    if (refreshInFlightRef.current) return;
-    refreshInFlightRef.current = true;
-    try {
-      const response = await fetch("/api/v1/host/workspace?includeCancelled=1", {
-        cache: "no-store",
-        headers: { Accept: "application/json" },
-      });
-      const payload = await response.json().catch(() => null);
-      if (
-        !response.ok ||
-        !payload?.success ||
-        !Array.isArray(payload.data?.bookings)
-      ) {
-        throw new Error(
-          payload?.error?.message || "Unable to refresh reservations.",
-        );
-      }
-      setReservations(deduplicateHostReservations(payload.data.bookings));
-      setRefreshError(null);
-    } catch (error) {
-      setRefreshError(
-        error instanceof Error
-          ? error.message
-          : "Unable to refresh reservations.",
-      );
-    } finally {
-      refreshInFlightRef.current = false;
-    }
-  }, []);
+    void fetchReservations(tab, page, appliedPropertyId, { bypassCache: true });
+  }, [fetchReservations, tab, page, appliedPropertyId]);
 
   useEffect(() => {
     const refreshWhenVisible = () => {
@@ -126,9 +310,14 @@ export function HostTodayWorkspace({
       requestedTab === "all" ||
       requestedTab === "today"
     ) {
-      setTab(requestedTab);
+      if (requestedTab !== tab) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setTab(requestedTab);
+        setPage(1);
+        void fetchReservations(requestedTab, 1, appliedPropertyId);
+      }
     }
-  }, [requestedTab]);
+  }, [requestedTab, tab, appliedPropertyId, fetchReservations]);
 
   useEffect(() => {
     const updateCurrentTime = () => {
@@ -141,27 +330,17 @@ export function HostTodayWorkspace({
     return () => window.clearInterval(interval);
   }, []);
 
-  // Map listings for fast lookup
-  const listingsMap = useMemo(() => {
-    const map = new Map<string, ListingDTO>();
-    for (const l of listings) {
-      map.set(l.id, l);
-    }
-    return map;
-  }, [listings]);
-
-  // Ignore stale IDs if a listing was removed or the authenticated host changed.
-  const appliedPropertyId =
-    selectedPropertyId && listingsMap.has(selectedPropertyId)
-      ? selectedPropertyId
-      : null;
-
   useEffect(() => {
     const requestedListingId = searchParams.get("listing");
     if (requestedListingId && listingsMap.has(requestedListingId)) {
-      setSelectedPropertyId(requestedListingId);
+      if (requestedListingId !== selectedPropertyId) {
+        setSelectedPropertyId(requestedListingId);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setPage(1);
+        void fetchReservations(tab, 1, requestedListingId);
+      }
     }
-  }, [listingsMap, searchParams, setSelectedPropertyId]);
+  }, [listingsMap, searchParams, setSelectedPropertyId, selectedPropertyId, tab, fetchReservations]);
 
   useEffect(() => {
     const requestedReservationId = searchParams.get("reservation");
@@ -213,6 +392,22 @@ export function HostTodayWorkspace({
     router.replace(query ? `/host/today?${query}` : "/host/today", { scroll: false });
   };
 
+  const handleApplyFilter = (propId: string | null) => {
+    setSelectedPropertyId(propId);
+    setFiltersOpen(false);
+    setPage(1);
+    const nextParams = new URLSearchParams(searchParams.toString());
+    nextParams.set("tab", tab);
+    nextParams.delete("page");
+    if (propId) {
+      nextParams.set("listing", propId);
+    } else {
+      nextParams.delete("listing");
+    }
+    router.replace(`/host/today?${nextParams.toString()}`, { scroll: false });
+    void fetchReservations(tab, 1, propId);
+  };
+
   return (
     <>
       <HostSubNav
@@ -244,7 +439,7 @@ export function HostTodayWorkspace({
                   key={filterTab.id}
                   role="tab"
                   aria-selected={tab === filterTab.id}
-                  onClick={() => setTab(filterTab.id as ReservationPeriod)}
+                  onClick={() => handleTabChange(filterTab.id as ReservationPeriod)}
                   className={`rounded-full px-4 py-2.5 text-sm sm:px-4.5 sm:py-2.5 font-medium transition-all duration-200 shrink-0 font-sans cursor-pointer ${
                     tab === filterTab.id
                       ? "bg-[#1F1F1F] text-white shadow-xs"
@@ -291,7 +486,7 @@ export function HostTodayWorkspace({
 
           {/* Section Headline */}
           <h1 className="mb-6 break-words font-sans text-[24px] leading-8 font-medium text-[#1F1F1F] tracking-normal sm:mb-8 sm:text-[32px] sm:leading-10 xl:text-[36px] xl:leading-[44px]">
-            You have {displayedEvents.length}{" "}
+            You have {totalCount}{" "}
             {tab === "upcoming"
               ? "upcoming "
               : tab === "staying"
@@ -303,7 +498,7 @@ export function HostTodayWorkspace({
               : tab === "cancelled"
               ? "cancelled "
               : ""}
-            {displayedEvents.length === 1 ? "reservation" : "reservations"}
+            {totalCount === 1 ? "reservation" : "reservations"}
           </h1>
 
           {refreshError && (
@@ -326,7 +521,7 @@ export function HostTodayWorkspace({
 
           {/* Reservation Cards Grid */}
           {displayedEvents.length > 0 ? (
-            <div className="grid grid-cols-1 items-stretch gap-5 pb-2 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
+            <div className={`grid grid-cols-1 items-stretch gap-5 pb-2 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4 transition-opacity duration-200 ${loading ? "opacity-60" : "opacity-100"}`}>
               {displayedEvents.map((event) => (
                 <ReservationCard
                   key={event.booking.id}
@@ -348,6 +543,31 @@ export function HostTodayWorkspace({
                   }
                   onSelect={() => setSelected(event.booking)}
                 />
+              ))}
+            </div>
+          ) : loading ? (
+            <div className="grid grid-cols-1 items-stretch gap-5 pb-2 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="relative flex min-h-[330px] w-full min-w-0 flex-col items-center justify-center rounded-[12px] border border-zinc-100 px-4 py-8 sm:min-h-[362px] sm:rounded-[20px] bg-white shadow-[0_1px_5px_rgba(0,0,0,0.1)]"
+                >
+                  <div className="relative flex w-[170px] flex-col items-center gap-[28px] sm:gap-[32px]">
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="h-5 w-24 rounded-md skeleton-shimmer" />
+                      <div className="h-4 w-32 rounded-md skeleton-shimmer" />
+                    </div>
+                    <div className="relative flex flex-col items-center">
+                      <div className="h-[110px] w-[149.79px] rounded-[23px] skeleton-shimmer" />
+                      <div className="absolute -top-[20px] left-1/2 -translate-x-1/2 size-10 rounded-full skeleton-shimmer border border-zinc-200" />
+                    </div>
+                    <div className="flex flex-col items-center gap-1.5 w-full">
+                      <div className="h-3.5 w-3/4 rounded-md skeleton-shimmer" />
+                      <div className="h-3 w-1/2 rounded-md skeleton-shimmer" />
+                    </div>
+                    <div className="size-8 rounded-full skeleton-shimmer" />
+                  </div>
+                </div>
               ))}
             </div>
           ) : (
@@ -392,7 +612,12 @@ export function HostTodayWorkspace({
               {appliedPropertyId ? (
                 <button
                   type="button"
-                  onClick={() => setSelectedPropertyId(null)}
+                  onClick={() => {
+                    setSelectedPropertyId(null);
+                    setDraftPropertyId(null);
+                    setPage(1);
+                    void fetchReservations(tab, 1, null);
+                  }}
                   className="mt-6 rounded-full bg-[#1F1F1F] px-6 py-2.5 text-xs font-semibold text-white hover:bg-black transition-colors cursor-pointer"
                 >
                   Clear filters
@@ -405,6 +630,36 @@ export function HostTodayWorkspace({
                   View calendar
                 </Link>
               )}
+            </div>
+          )}
+
+          {/* Previous / Next Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="mt-8 flex flex-col items-center justify-between gap-4 border-t border-zinc-200 pt-6 sm:flex-row">
+              <p className="text-sm text-[#727272]">
+                Page <span className="font-semibold text-[#1F1F1F]">{page}</span> of{" "}
+                <span className="font-semibold text-[#1F1F1F]">{totalPages}</span>
+              </p>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  disabled={page <= 1 || loading}
+                  onClick={() => handlePageChange(page - 1)}
+                  className="rounded-full border border-[#727272] bg-white px-5 py-2 text-xs font-semibold text-[#1F1F1F] transition-colors hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
+                  aria-label="Previous page"
+                >
+                  Previous
+                </button>
+                <button
+                  type="button"
+                  disabled={page >= totalPages || loading}
+                  onClick={() => handlePageChange(page + 1)}
+                  className="rounded-full border border-[#727272] bg-white px-5 py-2 text-xs font-semibold text-[#1F1F1F] transition-colors hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
+                  aria-label="Next page"
+                >
+                  Next
+                </button>
+              </div>
             </div>
           )}
 
@@ -480,8 +735,7 @@ export function HostTodayWorkspace({
                   type="button"
                   onClick={() => {
                     setDraftPropertyId(null);
-                    setSelectedPropertyId(null);
-                    setFiltersOpen(false);
+                    handleApplyFilter(null);
                   }}
                   className="min-h-11 text-sm sm:text-base font-normal text-[#727272] underline underline-offset-4 hover:text-[#1F1F1F]"
                 >
@@ -490,12 +744,11 @@ export function HostTodayWorkspace({
                 <button
                   type="button"
                   onClick={() => {
-                    setSelectedPropertyId(
+                    const nextProp =
                       draftPropertyId && listingsMap.has(draftPropertyId)
                         ? draftPropertyId
-                        : null,
-                    );
-                    setFiltersOpen(false);
+                        : null;
+                    handleApplyFilter(nextProp);
                   }}
                   className="min-h-12 rounded-full border border-[#727272] bg-[#FCDF9C] px-7 py-3 text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-[#F7D37D] sm:text-base sm:min-h-11 sm:border-transparent sm:px-7 sm:py-2.5"
                 >
