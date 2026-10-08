@@ -162,7 +162,7 @@ function MonthGrid({
   onKeyDown,
 }: MonthGridProps) {
   const { formatPrice: formatMoney } = useCurrency();
-  const { language } = useLanguage();
+  const { t, language } = useLanguage();
   const sourceCurrency = resolvePropertyCurrency(listing);
 
   const year = month.getFullYear();
@@ -457,7 +457,7 @@ function MonthGrid({
               {/* Price / Status */}
               <div className="flex flex-col items-center justify-center my-auto w-full px-0.5 text-center">
                 {blocked ? (
-                  <span className="text-xs text-[#727272] line-through font-medium">Blocked</span>
+                  <span className="text-xs text-[#727272] line-through font-medium">{t("host_cal_blocked_label", "Blocked")}</span>
                 ) : primaryReservation ? (
                   <span className="text-xs text-zinc-400 font-medium">{formatMoney(rate, sourceCurrency, 2)}</span>
                 ) : isPast ? (
@@ -1221,7 +1221,7 @@ function ContextualManagementPanel({
                 /* Mixed promotion eligibility across selected dates */
                 <div className="space-y-2.5 text-xs">
                   <div className="flex justify-between items-center">
-                    <span className="text-zinc-600 dark:text-zinc-400">Promotion eligibility</span>
+                    <span className="text-zinc-600 dark:text-zinc-400">{t("host_cal_promo_eligibility", "Promotion eligibility")}</span>
                     <span className="font-bold text-amber-800 dark:text-amber-200 bg-amber-100 dark:bg-amber-950/70 px-2 py-0.5 rounded-full text-[10px]">
                       {t("host_calendar_promo_mixed", "Promotion: Mixed")}
                     </span>

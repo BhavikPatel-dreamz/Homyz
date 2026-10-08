@@ -1259,7 +1259,7 @@ export function HostMessagesWorkspace({
                     <>
                       <div className="pb-12 text-center">
                         <p className="text-sm font-semibold text-zinc-900">{t("messages_today_label", "Today")}</p>
-                        <p className="mt-0.5 text-[11px] text-zinc-400">Inquiry sent · Date · Time</p>
+                        <p className="mt-0.5 text-[11px] text-zinc-400">{t("messages_inquiry_meta", "Inquiry sent · Date · Time")}</p>
                       </div>
                       {messages.map((m) => {
                         const isHost = m.isOwn;
@@ -1977,7 +1977,7 @@ export function HostMessagesWorkspace({
                       </span>
                     </div>
                     <div className="rounded-[10px] bg-white px-4 py-3 shadow-[0_2px_5px_rgba(0,0,0,0.12)] border border-[#E5E5E5]">
-                      <p className="text-xs text-zinc-500">Dates</p>
+                      <p className="text-xs text-zinc-500">{t("messages_dates_label", "Dates")}</p>
                       <p className="text-sm font-medium text-zinc-800 mt-0.5">
                         {formatBookingDateRange(
                           selectedConversation.activeSpecialOffer.startDate,

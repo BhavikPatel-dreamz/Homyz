@@ -3,8 +3,11 @@
 import React from "react";
 import Link from "next/link";
 import { Container } from "@/components/ui/container";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 export function Footer() {
+  const { t } = useLanguage();
+
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -15,7 +18,7 @@ export function Footer() {
         <div className="border-t border-[rgba(31,31,31,0.9)] pt-8 sm:pt-12 pb-6">
           {/* Columns Grid */}
           <div className="relative grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-3">
-            <button type="button" onClick={scrollToTop} aria-label="Scroll to top" className="absolute right-0 top-0 flex h-8 w-8 items-center justify-center rounded-full border border-[#D8B86F] bg-[#FCDF9C] text-[#727272] sm:hidden">
+            <button type="button" onClick={scrollToTop} aria-label={t("footer_scroll_to_top", "Scroll to top")} className="absolute right-0 top-0 flex h-8 w-8 items-center justify-center rounded-full border border-[#D8B86F] bg-[#FCDF9C] text-[#727272] sm:hidden">
               <svg
                 aria-hidden="true"
                 className="h-4 w-4"
@@ -32,32 +35,32 @@ export function Footer() {
             {/* Column 1: Support */}
             <div className="flex flex-col">
               <h4 className="lg:text-lg text-base font-medium text-[#1F1F1F] lg:mb-6 mb-5">
-                Support
+                {t("footer_col_support", "Support")}
               </h4>
               <ul className="flex flex-col space-y-3">
                 <li>
-                  <Link href="#" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
-                    Help Center
+                  <Link href="/help" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
+                    {t("footer_link_help_center", "Help Center")}
                   </Link>
                 </li>
                 <li>
                   <Link href="#" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
-                    Get help with a safety issue
+                    {t("footer_link_safety_issue", "Get help with a safety issue")}
                   </Link>
                 </li>
                 <li>
                   <Link href="#" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
-                    Disability support
+                    {t("footer_link_disability_support", "Disability support")}
                   </Link>
                 </li>
                 <li>
                   <Link href="#" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
-                    Cancellation options
+                    {t("footer_link_cancellation_options", "Cancellation options")}
                   </Link>
                 </li>
                 <li>
                   <Link href="#" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
-                    Report neighborhood concern
+                    {t("footer_link_report_neighborhood", "Report neighborhood concern")}
                   </Link>
                 </li>
               </ul>
@@ -66,47 +69,47 @@ export function Footer() {
             {/* Column 2: Hosting */}
             <div className="flex flex-col">
               <h4 className="lg:text-lg text-base font-medium text-[#1F1F1F] lg:mb-6 mb-5">
-                Hosting
+                {t("footer_col_hosting", "Hosting")}
               </h4>
               <ul className="flex flex-col space-y-3">
                 <li>
-                  <Link href="#" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
-                    Homyz your home
+                  <Link href="/become-a-host" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
+                    {t("footer_link_homyz_home", "Homyz your home")}
                   </Link>
                 </li>
                 <li>
                   <Link href="#" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
-                    Homyz your experience
+                    {t("footer_link_homyz_experience", "Homyz your experience")}
                   </Link>
                 </li>
                 <li>
                   <Link href="#" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
-                    Homyz your service
+                    {t("footer_link_homyz_service", "Homyz your service")}
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/host/onboarding" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
+                    {t("footer_link_homyz_for_hosts", "Homyz for Hosts")}
                   </Link>
                 </li>
                 <li>
                   <Link href="#" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
-                    Homyz for Hosts
+                    {t("footer_link_hosting_resources", "Hosting resources")}
                   </Link>
                 </li>
                 <li>
                   <Link href="#" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
-                    Hosting resources
+                    {t("footer_link_community_forum", "Community forum")}
                   </Link>
                 </li>
                 <li>
                   <Link href="#" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
-                    Community forum
+                    {t("footer_link_hosting_responsibly", "Hosting responsibly")}
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
-                    Hosting responsibly
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
-                    Find a co-host
+                  <Link href="/host/co-host" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
+                    {t("footer_link_find_cohost", "Find a co-host")}
                   </Link>
                 </li>
               </ul>
@@ -115,37 +118,37 @@ export function Footer() {
             {/* Column 3: Homyz */}
             <div className="flex flex-col">
               <h4 className="lg:text-lg text-base font-medium text-[#1F1F1F] lg:mb-6 mb-5">
-                Homyz
+                {t("footer_col_homyz", "Homyz")}
               </h4>
               <ul className="flex flex-col space-y-3">
                 <li>
                   <Link href="#" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
-                    2025 Summer Release
+                    {t("footer_link_summer_release", "2025 Summer Release")}
                   </Link>
                 </li>
                 <li>
                   <Link href="#" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
-                    Newsroom
+                    {t("footer_link_newsroom", "Newsroom")}
                   </Link>
                 </li>
                 <li>
                   <Link href="#" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
-                    Careers
+                    {t("footer_link_careers", "Careers")}
                   </Link>
                 </li>
                 <li>
                   <Link href="#" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
-                    Investors
+                    {t("footer_link_investors", "Investors")}
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/giftcards" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
+                    {t("footer_link_gift_cards", "Gift cards")}
                   </Link>
                 </li>
                 <li>
                   <Link href="#" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
-                    Gift cards
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
-                    Homyz.com emergency stays
+                    {t("footer_link_emergency_stays", "Homyz.com emergency stays")}
                   </Link>
                 </li>
               </ul>
@@ -191,8 +194,8 @@ export function Footer() {
               <button
                 type="button"
                 onClick={scrollToTop}
-                title="Scroll to top"
-                aria-label="Scroll to top"
+                title={t("footer_scroll_to_top", "Scroll to top")}
+                aria-label={t("footer_scroll_to_top", "Scroll to top")}
                 className="absolute top-0 right-0 hidden h-8 w-8 items-center justify-center rounded-full bg-[#FBDE9B] hover:bg-[#F3F4F5] border border-transparent hover:border-[#1F1F1F] text-[#291E05] transition-transform sm:flex dark:bg-[#f59e0b] dark:text-[#1F1F1F] transition-colors"
               >
                 <svg
@@ -214,13 +217,13 @@ export function Footer() {
           {/* Divider & Bottom Section */}
           <div className="flex flex-col-reverse items-start justify-between gap-5 pt-6 lg:text-base text-sm sm:flex-row sm:items-center sm:gap-4 sm:pt-6 text-black font-normal">
             <div className="flex flex-wrap items-center gap-4">
-              <span>© 2026 Homyz, Inc.</span>
+              <span>{t("footer_copyright", "© 2026 Homyz, Inc.")}</span>
               <span className="hidden sm:inline">·</span>
-              <Link href="#" className="hidden hover:underline sm:inline">Privacy</Link>
+              <Link href="#" className="hidden hover:underline sm:inline">{t("footer_link_privacy", "Privacy")}</Link>
               <span className="hidden sm:inline">·</span>
-              <Link href="#" className="hidden hover:underline sm:inline">Terms</Link>
+              <Link href="#" className="hidden hover:underline sm:inline">{t("footer_link_terms", "Terms")}</Link>
               <span className="hidden sm:inline">·</span>
-              <Link href="#" className="hidden hover:underline sm:inline">Sitemap</Link>
+              <Link href="#" className="hidden hover:underline sm:inline">{t("footer_link_sitemap", "Sitemap")}</Link>
             </div>
 
             

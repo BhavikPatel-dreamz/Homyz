@@ -882,7 +882,7 @@ export function BookingCheckoutClient({
                 </div>
                 <div className="h-[560px] rounded-[30px] bg-zinc-100" />
               </div>
-              <span className="sr-only">Restoring your checkout progress.</span>
+              <span className="sr-only">{t("checkout_restoring_progress", "Restoring your checkout progress.")}</span>
             </div>
           </Container>
         </main>
@@ -1253,7 +1253,7 @@ export function BookingCheckoutClient({
                             />
                             <div className="flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:gap-3">
                               <span className="text-base font-semibold text-[#1f1f1f]">mada</span>
-                              <span className="text-xs text-zinc-500">(mock/deferred)</span>
+                              <span className="text-xs text-zinc-500">{t("checkout_payment_deferred", "(mock/deferred)")}</span>
                             </div>
                           </label>
                         </div>

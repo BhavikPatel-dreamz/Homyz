@@ -34,7 +34,7 @@ function runTests() {
   // 2. Reference English Dictionary
   logSection("2. English Reference Dictionary Integrity");
   const enKeys = Object.keys(MESSAGES.en) as TranslationKey[];
-  assert(enKeys.length === 4161, `English dictionary must have all 4,161 keys (found ${enKeys.length})`);
+  assert(enKeys.length === 4269, `English dictionary must have all 4,269 keys (found ${enKeys.length})`);
 
   // 3. Symmetrical 1:1 Key Parity (Both Directions)
   logSection("3. Symmetrical 1:1 Key Parity Across All 6 Locales");
@@ -873,6 +873,35 @@ function runTests() {
   assert(MESSAGES.de.host_cal_money_send === "Geld senden", "DE host_cal_money_send");
   assert(MESSAGES.hi.host_cal_money_send === "पैसे भेजें", "HI host_cal_money_send");
   assert(MESSAGES.ar.host_cal_money_send === "إرسال أموال", "AR host_cal_money_send");
+
+  console.log("\n--- 7x. Footer, Wizard, Host Workspace Modal & Checkout Translations ---");
+  assert(MESSAGES.en.footer_col_support === "Support", "EN footer_col_support");
+  assert(MESSAGES.es.footer_col_support === "Asistencia", "ES footer_col_support");
+  assert(MESSAGES.fr.footer_col_support === "Assistance", "FR footer_col_support");
+  assert(MESSAGES.de.footer_col_support === "Hilfe & Support", "DE footer_col_support");
+  assert(MESSAGES.hi.footer_col_support === "सहायता", "HI footer_col_support");
+  assert(MESSAGES.ar.footer_col_support === "الدعم", "AR footer_col_support");
+
+  assert(MESSAGES.en.wizard_error_complete_step === "Complete this step", "EN wizard_error_complete_step");
+  assert(MESSAGES.es.wizard_error_complete_step === "Completa este paso", "ES wizard_error_complete_step");
+  assert(MESSAGES.fr.wizard_error_complete_step === "Terminez cette étape", "FR wizard_error_complete_step");
+  assert(MESSAGES.de.wizard_error_complete_step === "Diesen Schritt abschließen", "DE wizard_error_complete_step");
+  assert(MESSAGES.hi.wizard_error_complete_step === "इस चरण को पूरा करें", "HI wizard_error_complete_step");
+  assert(MESSAGES.ar.wizard_error_complete_step === "أكمل هذه الخطوة", "AR wizard_error_complete_step");
+
+  assert(MESSAGES.en.host_listings_modal_title === "Listing Title *", "EN host_listings_modal_title");
+  assert(MESSAGES.es.host_listings_modal_title === "Título del anuncio *", "ES host_listings_modal_title");
+  assert(MESSAGES.fr.host_listings_modal_title === "Titre de l'annonce *", "FR host_listings_modal_title");
+  assert(MESSAGES.de.host_listings_modal_title === "Inseratstitel *", "DE host_listings_modal_title");
+  assert(MESSAGES.hi.host_listings_modal_title === "लिस्टिंग शीर्षक *", "HI host_listings_modal_title");
+  assert(MESSAGES.ar.host_listings_modal_title === "عنوان الإعلان *", "AR host_listings_modal_title");
+
+  assert(MESSAGES.en.checkout_payment_deferred === "(mock/deferred)", "EN checkout_payment_deferred");
+  assert(MESSAGES.es.checkout_payment_deferred === "(simulado/diferido)", "ES checkout_payment_deferred");
+  assert(MESSAGES.fr.checkout_payment_deferred === "(simulé/différé)", "FR checkout_payment_deferred");
+  assert(MESSAGES.de.checkout_payment_deferred === "(simuliert/aufgeschoben)", "DE checkout_payment_deferred");
+  assert(MESSAGES.hi.checkout_payment_deferred === "(मॉक/स्थगित)", "HI checkout_payment_deferred");
+  assert(MESSAGES.ar.checkout_payment_deferred === "(تجريبي/مؤجل)", "AR checkout_payment_deferred");
 
   console.log(`\n🎉 All ${passedCount}/${totalCount} tests passed cleanly!`);
 }

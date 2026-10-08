@@ -2147,9 +2147,9 @@ export function PublicListingDetailClient({
                               <div id="guest-selector" className="mt-3 space-y-3.5 rounded-xl border border-zinc-200 bg-zinc-50 p-3.5 text-sm" aria-label="Guest selection">
                                 {/* Adults */}
                                 <div className="flex items-center justify-between gap-3">
-                                  <div>
+                                   <div>
                                     <p className="font-semibold text-[#1f1f1f]">{t("home_adults", "Adults")}</p>
-                                    <p className="text-xs text-[#727272]">Age 13+</p>
+                                    <p className="text-xs text-[#727272]">{t("listing_detail_age_adults", "Age 13+")}</p>
                                   </div>
                                   <div className="flex items-center gap-2">
                                     <button type="button" onClick={() => updateAdults(-1)} disabled={adultsCount <= 1} aria-label="Remove one adult" className="flex size-7 items-center justify-center rounded-full border border-[#1f1f1f] text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">−</button>
@@ -2162,7 +2162,7 @@ export function PublicListingDetailClient({
                                 <div className="flex items-center justify-between gap-3 border-t border-zinc-200/80 pt-3">
                                   <div>
                                     <p className="font-medium text-[#1f1f1f]">{t("home_children", "Children")}</p>
-                                    <p className="text-xs text-[#727272]">Ages 2–12</p>
+                                    <p className="text-xs text-[#727272]">{t("listing_detail_age_children", "Ages 2–12")}</p>
                                   </div>
                                   <div className="flex items-center gap-2">
                                     <button type="button" onClick={() => updateChildren(-1)} disabled={childrenCount <= 0} aria-label="Remove one child" className="flex size-7 items-center justify-center rounded-full border border-[#1f1f1f] text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">−</button>
@@ -2277,7 +2277,7 @@ export function PublicListingDetailClient({
 
                             {quote.extraGuestFee !== undefined && quote.extraGuestFee > 0 && (
                               <div className="flex items-center justify-between text-[#727272]">
-                                <span>Extra guest fee</span>
+                                <span>{t("listing_detail_extra_guest_fee", "Extra guest fee")}</span>
                                 <span>{formatPrice(quote.extraGuestFee, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                               </div>
                             )}
@@ -2547,8 +2547,8 @@ export function PublicListingDetailClient({
                 {guidebooks.length > 0 && (
                   <div className="pt-5 border-t border-zinc-200/80 space-y-3">
                     <div className="flex items-center justify-between">
-                      <h4 className="font-bold text-sm text-[#1f1f1f]">Local Host Guidebook</h4>
-                      <span className="text-[11px] text-[#727272]">Curated recommendations</span>
+                      <h4 className="font-bold text-sm text-[#1f1f1f]">{t("listing_detail_guidebook_heading", "Local Host Guidebook")}</h4>
+                      <span className="text-[11px] text-[#727272]">{t("listing_detail_guidebook_sub", "Curated recommendations")}</span>
                     </div>
                     <div className="space-y-2.5">
                       {guidebooks.map((gb) => (
@@ -2563,7 +2563,7 @@ export function PublicListingDetailClient({
                             <div className="min-w-0">
                               <h5 className="text-xs font-bold text-[#1f1f1f] truncate">{gb.title}</h5>
                               <p className="text-base font-light text-[#1F1F1F] truncate">
-                                {gb.itemsCount} recommendations by {gb.host?.name || "Host"}
+                                {t("listing_detail_guidebook_count", { count: gb.itemsCount, host: gb.host?.name || "Host" }, "{count} recommendations by {host}")}
                               </p>
                             </div>
                           </div>
@@ -2571,7 +2571,7 @@ export function PublicListingDetailClient({
                             href={`/guidebooks/${gb.id}`}
                             className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-4 py-2 shadow-2xs shrink-0 transition-all"
                           >
-                            View guidebook
+                            {t("listing_detail_guidebook_heading", "View guidebook")}
                           </Link>
                         </div>
                       ))}
