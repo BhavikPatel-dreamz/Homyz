@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import Image from "next/image";
 import { BackButton } from "@/components/ui/back-button";
 import type { ListingDTO } from "@/services/mappers";
 import { convertCurrency, resolvePropertyCurrency } from "@/lib/currency";
@@ -11,20 +12,20 @@ function ExpandControl({
   subtitle,
   children,
   defaultOpen = false,
-  trailing,
+  control,
 }: {
   title: string;
   subtitle?: string;
   children: ReactNode;
   defaultOpen?: boolean;
-  trailing?: ReactNode;
+  control?: ReactNode;
 }) {
   return (
     <details
-      className="group overflow-hidden rounded-xl border border-[#dedede] bg-white transition-all duration-200 hover:border-[#bdbdbd] group-open:border-[#bdbdbd] group-open:shadow-[0_3px_12px_rgba(31,31,31,0.06)] dark:border-zinc-700/80 dark:bg-zinc-800/40 dark:hover:border-zinc-600 dark:group-open:border-zinc-600"
+      className="group overflow-hidden rounded-[12px] border border-[#FFFFFF] bg-[#F3F4F5] transition-all duration-200 group-open:border-[#bdbdbd] group-open:shadow-[0_3px_12px_rgba(31,31,31,0.06)] dark:border-zinc-700/80 dark:bg-zinc-800/40 dark:hover:border-zinc-600 dark:group-open:border-zinc-600 shadow-[0px_2px_4px_0px_#00000040]"
       open={defaultOpen}
     >
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 transition-colors hover:bg-[#fafafa] dark:hover:bg-zinc-800/70 [&::-webkit-details-marker]:hidden">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 transition-colors dark:hover:bg-zinc-800/70 [&::-webkit-details-marker]:hidden">
         <div className="min-w-0 flex-1">
           <span className="block text-sm font-medium text-[#1f1f1f] dark:text-zinc-100">
             {title}
@@ -34,21 +35,25 @@ function ExpandControl({
               {subtitle}
             </span>
           )}
+          {control && <div className="mt-3">{control}</div>}
         </div>
         <div className="flex shrink-0 items-center gap-2.5">
-          {trailing}
-          <svg
-            aria-hidden="true"
-            className="size-4 text-[#1F1F1F] transition-transform duration-200 group-open:rotate-180 dark:text-zinc-300"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="m6 9 6 6 6-6" />
-          </svg>
+          <span className="relative size-4" aria-hidden="true">
+            <Image
+              src="/images/icons/homyz/stroke/Plus.svg"
+              alt=""
+              width={16}
+              height={16}
+              className="size-4 transition-opacity duration-200 group-open:opacity-0"
+            />
+            <Image
+              src="/images/icons/minus-icon.svg"
+              alt=""
+              width={14}
+              height={1}
+              className="absolute left-1/2 top-1/2 hidden h-px w-3.5 -translate-x-1/2 -translate-y-1/2 group-open:block"
+            />
+          </span>
         </div>
       </summary>
       <div className="space-y-3 border-t border-[#ececec] bg-[#fafafa] p-4 dark:border-zinc-700/80 dark:bg-zinc-900/40">
@@ -176,14 +181,12 @@ export function CalendarSettingsPanel({
           setEnabled(!enabled);
           setDirty(true);
         }}
-        className={`relative h-6 w-11 shrink-0 rounded-full transition-colors cursor-pointer ${
-          enabled ? "bg-[#DF4557]" : "bg-zinc-300 dark:bg-zinc-600"
-        }`}
+        className={`relative h-6 w-11 shrink-0 rounded-full transition-colors cursor-pointer ${enabled ? "bg-[#DF4557]" : "bg-zinc-300 dark:bg-zinc-600"
+          }`}
       >
         <span
-          className={`absolute left-0.5 top-0.5 size-5 rounded-full bg-white shadow-xs transition-transform ${
-            enabled ? "translate-x-5" : "translate-x-0"
-          }`}
+          className={`absolute left-0.5 top-0.5 size-5 rounded-full bg-white shadow-xs transition-transform ${enabled ? "translate-x-5" : "translate-x-0"
+            }`}
         />
       </button>
     </>
@@ -251,10 +254,10 @@ export function CalendarSettingsPanel({
     readOnly?: boolean;
   }) => (
     <div className="space-y-1">
-      <div className="flex flex-col items-start justify-between">
+      <div className="flex items-center justify-between">
         <label
           htmlFor={`input-${name}`}
-          className="text-sm font-medium text-[#1f1f1f] dark:text-zinc-200"
+          className="text-sm font-normal text-[#1f1f1f] dark:text-zinc-200"
         >
           {label}
         </label>
@@ -262,7 +265,7 @@ export function CalendarSettingsPanel({
           <button
             type="button"
             onClick={onClear}
-            className="text-xs font-medium text-[#727272] hover:text-rose-600 dark:text-zinc-400 dark:hover:text-rose-400 transition-colors cursor-pointer text-left"
+            className="text-xs font-medium text-[#DF4557] hover:text-rose-600 dark:text-zinc-400 dark:hover:text-rose-400 transition-colors cursor-pointer text-left"
           >
             {clearLabel || "Remove"}
           </button>
@@ -431,7 +434,7 @@ export function CalendarSettingsPanel({
           className="space-y-5 pb-6"
         >
           <div>
-            <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
+            <h2 className="text-base font-medium text-[#1f1f1f] dark:text-zinc-100">
               Availability settings
             </h2>
             <p className="mt-1 text-sm text-[#727272] dark:text-zinc-400">
@@ -553,11 +556,10 @@ export function CalendarSettingsPanel({
           {(validation || notice) && (
             <div
               role={validation ? "alert" : "status"}
-              className={`rounded-xl p-3 text-xs leading-5 font-medium ${
-                validation
-                  ? "bg-rose-50 text-rose-800 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/60"
-                  : "bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/60"
-              }`}
+              className={`rounded-xl p-3 text-xs leading-5 font-medium ${validation
+                ? "bg-rose-50 text-rose-800 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/60"
+                : "bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/60"
+                }`}
             >
               {validation || notice}
             </div>
@@ -570,14 +572,14 @@ export function CalendarSettingsPanel({
                 type="button"
                 onClick={handleDiscard}
                 disabled={saving}
-                className="flex-1 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 font-semibold py-2.5 text-xs transition-colors cursor-pointer disabled:opacity-50"
+                className="flex-1 rounded-lg border border-zinc-300 dark:border-[#1f1f1f] bg-white dark:bg-[#1f1f1f] hover:bg-zinc-100 dark:hover:bg-[#1f1f1f] text-[#1f1f1f] hover:text-white dark:text-zinc-300 font-medium py-2.5 text-sm transition-colors cursor-pointer disabled:opacity-50"
               >
                 Discard
               </button>
               <button
                 type="submit"
                 disabled={saving}
-                className="flex-1 rounded-xl bg-amber-400 hover:bg-amber-300 text-zinc-950 font-bold py-2.5 text-xs transition-colors cursor-pointer disabled:opacity-50 shadow-xs"
+                className="flex-1 rounded-lg bg-[#FCDF9C] hover:bg-amber-300 text-[#1f1f1f] hover:text-white font-medium py-2.5 text-sm transition-colors cursor-pointer disabled:opacity-50 shadow-xs"
               >
                 {saving ? "Saving…" : "Save availability"}
               </button>
@@ -657,27 +659,27 @@ export function CalendarSettingsPanel({
               weekly: { enabled: weeklyIsEnabled, percentage: weekly },
               monthly: { enabled: monthlyIsEnabled, percentage: monthly },
               early_bird:
-                {
-                  enabled: earlyBirdIsEnabled,
-                  percentage: earlyBird,
-                  daysInAdvance: earlyBirdDaysInAdvance,
-                },
+              {
+                enabled: earlyBirdIsEnabled,
+                percentage: earlyBird,
+                daysInAdvance: earlyBirdDaysInAdvance,
+              },
               last_minute:
-                {
-                  enabled: lastMinuteIsEnabled,
-                  percentage: lastMinute,
-                  daysBefore: lastMinuteDaysBefore,
-                },
+              {
+                enabled: lastMinuteIsEnabled,
+                percentage: lastMinute,
+                daysBefore: lastMinuteDaysBefore,
+              },
               new_listing:
                 { enabled: newListingIsEnabled, percentage: newListing },
               custom_promotion:
-                {
-                  ...(typeof rawDiscounts.custom_promotion === "object"
-                    ? rawDiscounts.custom_promotion
-                    : {}),
-                  enabled: customPromoIsEnabled,
-                  percentage: customPromo,
-                },
+              {
+                ...(typeof rawDiscounts.custom_promotion === "object"
+                  ? rawDiscounts.custom_promotion
+                  : {}),
+                enabled: customPromoIsEnabled,
+                percentage: customPromo,
+              },
               includedGuests: includedGuestsVal,
               baseGuests: includedGuestsVal,
             };
@@ -698,10 +700,10 @@ export function CalendarSettingsPanel({
           <section className="space-y-3">
             <div>
               <h2 className="text-base font-medium text-[#1f1f1f] dark:text-zinc-100">
-                Base Nightly Rates
+                Price settings
               </h2>
-              <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
-                Default rates applied unless customized for specific calendar dates.
+              <p className="mt-0.5 text-sm text-[#727272] dark:text-[#727272]">
+                These apply to all nights, unless you customize them by date.
               </p>
             </div>
 
@@ -745,11 +747,11 @@ export function CalendarSettingsPanel({
                   "Applies to Thursday & Friday nights. Leave empty to use the weekday base rate.",
                 onClear: customWeekendPriceVal
                   ? () => {
-                      setCustomWeekendPriceVal("");
-                      setDirty(true);
-                    }
+                    setCustomWeekendPriceVal("");
+                    setDirty(true);
+                  }
                   : undefined,
-                clearLabel: "Clear weekend rate",
+                clearLabel: "Clear",
               })}
             </ExpandControl>
           </section>
@@ -758,18 +760,18 @@ export function CalendarSettingsPanel({
           <section className="space-y-3 border-t border-zinc-200 dark:border-zinc-800 pt-5">
             <div>
               <h3 className="text-base font-medium text-zinc-900 dark:text-zinc-100">
-                Stay Length Discounts
+                Discounts
               </h3>
-              <p className="mt-0.5 text-xs text-[#727272] dark:text-zinc-400">
+              <p className="mt-0.5 text-sm text-[#727272] dark:text-[#727272]">
                 Encourage longer reservations with stay duration discounts.
               </p>
             </div>
 
             <ExpandControl
-              title="Weekly discount (7+ nights)"
+              title="Weekly ( 7 nights + )"
               subtitle="Applied automatically to bookings of 7 nights or more."
               defaultOpen={weeklyEnabled}
-              trailing={discountToggle(
+              control={discountToggle(
                 "weeklyEnabled",
                 "Toggle weekly discount",
                 weeklyEnabled,
@@ -790,10 +792,10 @@ export function CalendarSettingsPanel({
             </ExpandControl>
 
             <ExpandControl
-              title="Monthly discount (28+ nights)"
+              title="Monthly (28+ nights)"
               subtitle="Applied automatically to bookings of 28 nights or more."
               defaultOpen={monthlyEnabled}
-              trailing={discountToggle(
+              control={discountToggle(
                 "monthlyEnabled",
                 "Toggle monthly discount",
                 monthlyEnabled,
@@ -814,10 +816,10 @@ export function CalendarSettingsPanel({
             </ExpandControl>
 
             <ExpandControl
-              title="Early-bird discount (30+ days advance)"
+              title="Early-bird (30+ days advance)"
               subtitle="For bookings made at least 30 days before arrival."
               defaultOpen={earlyBirdEnabled}
-              trailing={discountToggle(
+              control={discountToggle(
                 "earlyBirdEnabled",
                 "Toggle early-bird discount",
                 earlyBirdEnabled,
@@ -838,10 +840,10 @@ export function CalendarSettingsPanel({
             </ExpandControl>
 
             <ExpandControl
-              title="Last-minute discount (within 2 days)"
+              title="Last-minute (within 2 days)"
               subtitle="For bookings made within 2 days before arrival."
               defaultOpen={lastMinuteEnabled}
-              trailing={discountToggle(
+              control={discountToggle(
                 "lastMinuteEnabled",
                 "Toggle last-minute discount",
                 lastMinuteEnabled,
@@ -868,7 +870,7 @@ export function CalendarSettingsPanel({
               <h3 className="text-base font-medium text-zinc-900 dark:text-zinc-100">
                 Promotions
               </h3>
-              <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+              <p className="mt-0.5 text-sm text-[#727272] dark:text-zinc-400">
                 Special promotional offers across your listing.
               </p>
             </div>
@@ -881,7 +883,7 @@ export function CalendarSettingsPanel({
                   : "No new listing promotion configured"
               }
               defaultOpen={newListingEnabled}
-              trailing={discountToggle(
+              control={discountToggle(
                 "newListingEnabled",
                 "Toggle new listing promotion",
                 newListingEnabled,
@@ -910,7 +912,7 @@ export function CalendarSettingsPanel({
                   : "Property-wide promotional discount"
               }
               defaultOpen={customPromoEnabled}
-              trailing={discountToggle(
+              control={discountToggle(
                 "customPromoEnabled",
                 "Toggle custom promotion",
                 customPromoEnabled,
@@ -938,7 +940,7 @@ export function CalendarSettingsPanel({
               <h3 className="text-base font-medium text-zinc-900 dark:text-zinc-100">
                 Additional Charges
               </h3>
-              <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+              <p className="mt-0.5 text-sm text-[#727272] dark:text-zinc-400">
                 Host-defined fees for guests and cleaning.
               </p>
             </div>
@@ -989,11 +991,10 @@ export function CalendarSettingsPanel({
           {(validation || notice) && (
             <div
               role={validation ? "alert" : "status"}
-              className={`rounded-xl p-3 text-xs leading-5 font-medium ${
-                validation
-                  ? "bg-rose-50 text-rose-800 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/60"
-                  : "bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/60"
-              }`}
+              className={`rounded-xl p-3 text-xs leading-5 font-medium ${validation
+                ? "bg-rose-50 text-rose-800 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900/60"
+                : "bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/60"
+                }`}
             >
               {validation || notice}
             </div>
@@ -1001,19 +1002,19 @@ export function CalendarSettingsPanel({
 
           {/* Sticky Action Footer */}
           {(dirty || saving) && (
-            <div className="sticky bottom-0 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xs pt-3 pb-1 border-t border-zinc-200 dark:border-zinc-800 flex items-center gap-2 z-10 animate-in fade-in duration-150">
+              <div className="sticky bottom-0 bg-white/95 dark:bg-[#1f1f1f] backdrop-blur-xs py-3 pb-1 border-t border-zinc-200 dark:border-zinc-800 flex items-center gap-2 z-10 animate-in fade-in duration-150">
               <button
                 type="button"
                 onClick={handleDiscard}
                 disabled={saving}
-                className="flex-1 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 font-semibold py-2.5 text-xs transition-colors cursor-pointer disabled:opacity-50"
+                  className="rounded-lg border border-[#1f1f1f] bg-white dark:bg-[#1f1f1f] hover:bg-zinc-100 dark:hover:bg-[#1f1f1f] text-[#1f1f1f] dark:text-white font-medium py-2.5 text-xs transition-colors cursor-pointer disabled:opacity-50 px-2 flex-1"
               >
                 Discard
               </button>
               <button
                 type="submit"
                 disabled={saving}
-                className="flex-1 rounded-xl bg-amber-400 hover:bg-amber-300 text-zinc-950 font-bold py-2.5 text-xs transition-colors cursor-pointer disabled:opacity-50 shadow-xs"
+                  className="rounded-lg bg-[#FCDF9C] hover:bg-[#1f1f1f] text-[#1f1f1f] hover:text-white font-medium py-2.5 text-xs transition-colors cursor-pointer disabled:opacity-50 px-2 flex-1"
               >
                 {saving ? "Saving…" : "Save price settings"}
               </button>

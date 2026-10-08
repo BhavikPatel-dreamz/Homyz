@@ -117,15 +117,15 @@ export const MoneyInput = forwardRef<HTMLInputElement, MoneyInputProps>(
     return (
       <div className={`w-full ${className}`}>
         <div
-          className={`relative flex items-center rounded-xl border bg-white dark:bg-zinc-800 transition-all ${
+          className={`relative flex items-center rounded-lg border bg-white dark:bg-zinc-800 transition-all min-h-[45px] ${
             error
-              ? "border-rose-500 focus-within:ring-2 focus-within:ring-rose-500/20"
-              : "border-zinc-300 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-600 focus-within:border-zinc-900 focus-within:ring-2 focus-within:ring-zinc-900/10 dark:focus-within:border-zinc-100"
+              ? "border-rose-500"
+            : "border-[#727272] dark:border-zinc-700 dark:hover:border-[#727272] focus-within:border-zinc-900 dark:focus-within:border-zinc-100"
           } ${disabled ? "opacity-50 cursor-not-allowed bg-zinc-100 dark:bg-zinc-900" : ""}`}
         >
           {currencyPosition === "prefix" && (
             <span
-              className={`font-bold text-zinc-500 dark:text-zinc-400 select-none shrink-0 ${currencyBadgeSize}`}
+              className={`font-medium text-[#1f1f1f] dark:text-zinc-400 select-none shrink-0 ${currencyBadgeSize}`}
               aria-hidden="true"
             >
               {normalizedCurrency}
@@ -149,7 +149,7 @@ export const MoneyInput = forwardRef<HTMLInputElement, MoneyInputProps>(
             autoFocus={autoFocus}
             aria-label={ariaLabel || `Amount in ${normalizedCurrency}`}
             aria-invalid={Boolean(error)}
-            className={`w-full bg-transparent font-medium text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${sizeClasses}`}
+            className={`w-full bg-transparent font-medium text-[#1f1f1f] dark:text-zinc-100 placeholder:text-[#727272] outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${sizeClasses}`}
           />
 
           {currencyPosition === "suffix" && (
