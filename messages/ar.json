@@ -4267,5 +4267,16 @@
   "support_channel_help": "مركز المساعدة",
   "reviews_no_written_comment": "تم تقديم تقييم بدون تعليق مكتوب.",
   "messages_inquiry_meta": "تم إرسال الاستفسار · التاريخ · الوقت",
-  "messages_dates_label": "التواريخ"
+  "messages_dates_label": "التواريخ",
+  "page_not_available_title": "هذه الصفحة غير متوفرة حالياً",
+  "page_not_available_desc": "نحن نعمل على توفير هذه الصفحة قريباً. يرجى التحقق مرة أخرى لاحقاً.",
+  "page_not_available_badge": "قيد التطوير",
+  "page_not_available_requested_page": "الصفحة المطلوبة",
+  "page_not_available_back_home": "العودة إلى الصفحة الرئيسية",
+  "page_not_available_explore_stays": "استكشاف أماكن الإقامة",
+  "page_not_available_help_center": "مركز المساعدة",
+  "page_not_available_explore_stays_desc": "تصفح المنازل والفلل والشقق المعتمدة.",
+  "page_not_available_help_center_desc": "اعثر على إجابات للأسئلة واحصل على دعم على مدار الساعة.",
+  "page_not_available_become_host": "كن مضيفاً",
+  "page_not_available_become_host_desc": "ابدأ في تحقيق الدخل من خلال مشاركة مساحتك على هوميز."
 }

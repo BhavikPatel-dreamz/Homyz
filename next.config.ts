@@ -114,6 +114,14 @@ const nextConfig: NextConfig = {
         source: "/properties/:id*",
         destination: "/listings/:id*",
       },
+      {
+        source: "/page-not-available",
+        destination: "/not-available",
+      },
+      {
+        source: "/unavailable",
+        destination: "/not-available",
+      },
     ];
   },
 };

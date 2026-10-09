@@ -4267,5 +4267,16 @@
   "support_channel_help": "Hilfe-Center",
   "reviews_no_written_comment": "Bewertung ohne schriftlichen Kommentar abgegeben.",
   "messages_inquiry_meta": "Anfrage gesendet · Datum · Uhrzeit",
-  "messages_dates_label": "Reisedaten"
+  "messages_dates_label": "Reisedaten",
+  "page_not_available_title": "Diese Seite ist derzeit nicht verfügbar",
+  "page_not_available_desc": "Wir arbeiten daran, diese Seite bald verfügbar zu machen. Bitte versuchen Sie es später noch einmal.",
+  "page_not_available_badge": "In Entwicklung",
+  "page_not_available_requested_page": "Angeforderte Seite",
+  "page_not_available_back_home": "Zur Startseite",
+  "page_not_available_explore_stays": "Unterkünfte entdecken",
+  "page_not_available_help_center": "Hilfe-Center",
+  "page_not_available_explore_stays_desc": "Durchsuchen Sie verifizierte Häuser, Villen und Apartments.",
+  "page_not_available_help_center_desc": "Finden Sie Antworten und erhalten Sie rund um die Uhr Unterstützung.",
+  "page_not_available_become_host": "Gastgeber werden",
+  "page_not_available_become_host_desc": "Verdienen Sie Geld, indem Sie Ihre Unterkunft auf Homyz teilen."
 }

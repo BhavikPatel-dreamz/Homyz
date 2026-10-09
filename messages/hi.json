@@ -4267,5 +4267,16 @@
   "support_channel_help": "सहायता केंद्र",
   "reviews_no_written_comment": "बिना लिखित टिप्पणी के रेटिंग दी गई।",
   "messages_inquiry_meta": "पूछताछ भेजी गई · दिनांक · समय",
-  "messages_dates_label": "तारीखें"
+  "messages_dates_label": "तारीखें",
+  "page_not_available_title": "वर्तमान में यह पृष्ठ उपलब्ध नहीं है",
+  "page_not_available_desc": "हम इस पृष्ठ को जल्द ही आपके लिए उपलब्ध कराने पर काम कर रहे हैं। कृपया बाद में पुनः प्रयास करें।",
+  "page_not_available_badge": "विकास में",
+  "page_not_available_requested_page": "अनुरोधित पृष्ठ",
+  "page_not_available_back_home": "होम पेज पर वापस जाएं",
+  "page_not_available_explore_stays": "ठहरने के स्थान खोजें",
+  "page_not_available_help_center": "सहायता केंद्र",
+  "page_not_available_explore_stays_desc": "सत्यापित घरों, विला और अपार्टमेंट को देखें।",
+  "page_not_available_help_center_desc": "प्रश्नों के उत्तर पाएं और 24/7 सहायता प्राप्त करें।",
+  "page_not_available_become_host": "होस्ट बनें",
+  "page_not_available_become_host_desc": "Homyz पर अपनी जगह साझा करके कमाई शुरू करें।"
 }

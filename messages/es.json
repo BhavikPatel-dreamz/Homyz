@@ -4267,5 +4267,16 @@
   "support_channel_help": "Centro de ayuda",
   "reviews_no_written_comment": "Calificación proporcionada sin comentario escrito.",
   "messages_inquiry_meta": "Consulta enviada · Fecha · Hora",
-  "messages_dates_label": "Fechas"
+  "messages_dates_label": "Fechas",
+  "page_not_available_title": "Actualmente esta página no está disponible",
+  "page_not_available_desc": "Estamos trabajando para ofrecerte esta página pronto. Por favor vuelve a consultar más tarde.",
+  "page_not_available_badge": "En desarrollo",
+  "page_not_available_requested_page": "Página solicitada",
+  "page_not_available_back_home": "Volver al inicio",
+  "page_not_available_explore_stays": "Explorar estancias",
+  "page_not_available_help_center": "Centro de ayuda",
+  "page_not_available_explore_stays_desc": "Explora casas, villas y apartamentos verificados.",
+  "page_not_available_help_center_desc": "Encuentra respuestas y recibe soporte las 24 horas.",
+  "page_not_available_become_host": "Conviértete en anfitrión",
+  "page_not_available_become_host_desc": "Comienza a generar ingresos compartiendo tu espacio en Homyz."
 }
