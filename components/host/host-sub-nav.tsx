@@ -18,30 +18,15 @@ export interface HostSubNavProps {
 
 export function TodayNavIcon({ className = "" }: { className?: string }) {
   return (
-    <svg
-      width="24"
-      height="26"
-      viewBox="0 0 28 30"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
+    <Image
+      src="/images/icons/today-icon.svg"
+      alt="Today Icon"
+      width={24}
+      height={19}
       className={className}
-      aria-hidden="true"
-    >
-      <path
-        d="M5.5 4.8C9.5 4.3 18.5 4.3 22.5 4.8C23.3 4.9 23.8 5.6 23.7 6.4L22.8 25.4C22.7 26.1 21.9 26.5 21.3 26.1L14 21.2L6.7 26.1C6.1 26.5 5.3 26.1 5.2 25.4L4.3 6.4C4.2 5.6 4.7 4.9 5.5 4.8Z"
-        stroke="currentColor"
-        strokeWidth="1.9"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M9.5 13.8L13 17.5L19.2 10"
-        stroke="currentColor"
-        strokeWidth="2.1"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
+      style={{ width: "auto", height: "auto" }}
+      priority
+    />
   );
 }
 
@@ -179,14 +164,7 @@ export function HostSubNav({
       id: "listing",
       label: t("host_nav_listing"),
       href: listingHref,
-      icon: (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-          <polyline points="14 2 14 8 20 8" />
-          <path d="M10 13h4M10 17h3" />
-          <path d="M16 11l2-2" />
-        </svg>
-      ),
+      icon: <ListingNavIcon />,
       minWidthClass: "w-[98px] shrink-0",
     },
     {

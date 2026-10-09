@@ -62,9 +62,10 @@
 .label {
   font-family: var(--font-poppins, "Poppins"), sans-serif;
   font-size: 12px;
-  font-weight: 400;
+  font-weight: 500;
   line-height: 18px;
   white-space: nowrap;
+  color: #1F1F1F;
 }
 .active .label {
   position: absolute;
