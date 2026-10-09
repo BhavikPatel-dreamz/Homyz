@@ -633,8 +633,18 @@ export type ReviewDTO = ReturnType<typeof toReviewDTO>;
  * Only includes published reviews with public reviewer data.
  * Never includes moderation fields, rejection reasons, or non-public statuses.
  */
+export type PublicReviewHostResponseDTO = {
+  comment: string;
+  createdAt: Date | string;
+  hostName?: string | null;
+  hostImage?: string | null;
+};
+
 export function toPublicReviewDTO(
-  r: Review & { author?: Pick<User, "id" | "name" | "image"> | null },
+  r: Review & {
+    author?: (Pick<User, "id" | "name" | "image"> & { createdAt?: Date }) | null;
+    hostResponse?: PublicReviewHostResponseDTO | null;
+  },
 ) {
   return {
     id: r.id,
@@ -646,8 +656,10 @@ export function toPublicReviewDTO(
       id: r.author.id,
       name: r.author.name,
       image: r.author.image,
+      createdAt: r.author.createdAt,
     } : null,
     createdAt: r.createdAt,
+    hostResponse: (r as any).hostResponse ?? null,
   };
 }
 export type PublicReviewDTO = ReturnType<typeof toPublicReviewDTO>;
@@ -666,5 +678,13 @@ export function revivePublicReviewDTO(r: PublicReviewDTO): PublicReviewDTO {
   return {
     ...r,
     createdAt: new Date(r.createdAt),
+    author: r.author ? {
+      ...r.author,
+      createdAt: r.author.createdAt ? new Date(r.author.createdAt) : undefined,
+    } : null,
+    hostResponse: r.hostResponse ? {
+      ...r.hostResponse,
+      createdAt: new Date(r.hostResponse.createdAt),
+    } : null,
   };
 }

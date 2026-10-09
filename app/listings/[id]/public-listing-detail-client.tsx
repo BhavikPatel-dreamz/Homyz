@@ -2546,7 +2546,7 @@ export function PublicListingDetailClient({
                     {t("listing_detail_map_unavailable", "Map location is not available for this listing.")}
                   </p>
                 )}
-                {guidebooks.length > 0 && (
+                {/* {guidebooks.length > 0 && (
                   <div className="pt-5 border-t border-zinc-200/80 space-y-3">
                     <div className="flex items-center justify-between">
                       <h4 className="font-bold text-sm text-[#1f1f1f]">Local Host Guidebook</h4>
@@ -2579,7 +2579,7 @@ export function PublicListingDetailClient({
                       ))}
                     </div>
                   </div>
-                )}
+                )} */}
               </div>
             </div>
           </div>

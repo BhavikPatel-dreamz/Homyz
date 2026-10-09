@@ -53,13 +53,28 @@ type GuestReviewWithRelations = {
   } | null;
 };
 
+export type ReviewSortOption = "relevant" | "recent" | "oldest" | "highest" | "lowest";
+
+export interface GetListingReviewsOptions {
+  page?: number;
+  pageSize?: number;
+  topic?: string;
+  mention?: string;
+  search?: string;
+  sort?: ReviewSortOption;
+  rating?: number;
+}
+
 const TOPIC_KEYWORDS: Record<string, readonly string[]> = {
   Pool: ["pool", "swimming"],
-  View: ["view", "views", "balcony", "scenery"],
+  Hospitality: ["hospitality", "welcoming", "welcome", "host", "friendly", "helpful"],
+  Cleanliness: ["clean", "cleanliness", "spotless", "tidy", "immaculate"],
+  Condition: ["condition", "maintained", "maintenance", "renovated", "upkeep", "modern"],
+  Comfort: ["comfortable", "comfort", "cozy", "cosy", "relaxing", "peaceful"],
+  Family: ["family", "families", "kids", "children", "kid-friendly", "child"],
+  Accuracy: ["accurate", "accuracy", "as described", "as pictured", "as advertised"],
   Location: ["location", "located", "neighborhood", "neighbourhood", "nearby"],
-  Cleanliness: ["clean", "cleanliness", "spotless", "tidy"],
-  Hospitality: ["hospitality", "welcoming", "welcome", "host"],
-  Comfort: ["comfortable", "comfort", "cozy", "cosy"],
+  View: ["view", "views", "balcony", "scenery"],
   "Indoor spaces": ["living room", "indoor", "spacious", "space"],
   Kitchen: ["kitchen", "cook", "cooking"],
   Parking: ["parking", "parked", "garage"],
@@ -128,7 +143,7 @@ export const reviewService = {
 
   async getListingReviews(
     listingId: string,
-    page = 1,
+    pageOrOptions?: number | GetListingReviewsOptions,
     pageSize = REVIEWS_PAGE_SIZE,
     topic?: string,
   ): Promise<{
@@ -136,31 +151,112 @@ export const reviewService = {
     total: number;
     page: number;
     totalPages: number;
+    hasMore: boolean;
   }> {
+    let page = 1;
+    let safePageSize = REVIEWS_PAGE_SIZE;
+    let filterTopic: string | undefined = topic;
+    let search: string | undefined;
+    let sort: ReviewSortOption = "recent";
+    let rating: number | undefined;
+
+    if (typeof pageOrOptions === "object" && pageOrOptions !== null) {
+      page = pageOrOptions.page ?? 1;
+      safePageSize = pageOrOptions.pageSize ?? REVIEWS_PAGE_SIZE;
+      filterTopic = pageOrOptions.mention ?? pageOrOptions.topic;
+      search = pageOrOptions.search;
+      sort = pageOrOptions.sort ?? "recent";
+      rating = pageOrOptions.rating;
+    } else if (typeof pageOrOptions === "number") {
+      page = pageOrOptions;
+      safePageSize = pageSize;
+      filterTopic = topic;
+    }
+
     const safePage = Math.max(1, Math.trunc(page));
-    const safePageSize = Math.min(Math.max(1, Math.trunc(pageSize)), 24);
-    const where = {
+    safePageSize = Math.min(Math.max(1, Math.trunc(safePageSize)), 24);
+
+    const where: Prisma.ReviewWhereInput = {
       listingId,
       status: "PUBLISHED" as const,
-      ...(topic ? { topics: { has: topic } } : {}),
     };
+
+    if (filterTopic) {
+      const keywords = TOPIC_KEYWORDS[filterTopic] || [filterTopic.toLowerCase()];
+      where.OR = [
+        { topics: { has: filterTopic } },
+        ...keywords.map((kw) => ({
+          comment: { contains: kw, mode: "insensitive" as const },
+        })),
+      ];
+    }
+
+    if (search && search.trim()) {
+      const trimmed = search.trim();
+      const searchCondition: Prisma.ReviewWhereInput = {
+        OR: [
+          { comment: { contains: search.trim(), mode: "insensitive" as const } },
+          { author: { name: { contains: trimmed, mode: "insensitive" as const } } },
+        ],
+      };
+      if (where.OR) {
+        where.AND = [
+          { OR: where.OR },
+          searchCondition,
+        ];
+        delete where.OR;
+      } else {
+        where.AND = [searchCondition];
+      }
+    }
+
+    if (rating !== undefined && Number.isInteger(rating) && rating >= 1 && rating <= 5) {
+      if (where.AND && Array.isArray(where.AND)) {
+        where.AND.push({ rating });
+      } else {
+        where.rating = rating;
+      }
+    }
+
+    let orderBy: Prisma.ReviewOrderByWithRelationInput[];
+    switch (sort) {
+      case "highest":
+        orderBy = [{ rating: "desc" }, { createdAt: "desc" }, { id: "desc" }];
+        break;
+      case "lowest":
+        orderBy = [{ rating: "asc" }, { createdAt: "desc" }, { id: "desc" }];
+        break;
+      case "oldest":
+        orderBy = [{ createdAt: "asc" }, { id: "asc" }];
+        break;
+      case "recent":
+        orderBy = [{ createdAt: "desc" }, { id: "desc" }];
+        break;
+      case "relevant":
+      default:
+        // Relevance fallback: deterministic ordering by recency and id
+        orderBy = [{ createdAt: "desc" }, { id: "desc" }];
+        break;
+    }
 
     const [total, reviews] = await prisma.$transaction([
       prisma.review.count({ where }),
       prisma.review.findMany({
         where,
-        include: { author: { select: { id: true, name: true, image: true } } },
-        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+        include: { author: { select: { id: true, name: true, image: true, createdAt: true } } },
+        orderBy,
         skip: (safePage - 1) * safePageSize,
         take: safePageSize,
       }),
     ]);
 
+    const totalPages = Math.ceil(total / safePageSize);
     return {
       reviews: reviews.map(toPublicReviewDTO),
       total,
       page: safePage,
-      totalPages: Math.ceil(total / safePageSize),
+      totalPages,
+      hasMore: safePage < totalPages,
     };
   },
 
@@ -218,12 +314,39 @@ export const reviewService = {
       if (average !== undefined) categoryRatings[key] = average;
     }
 
+    let mentions: ReviewMention[] = Array.isArray(topicGroups)
+      ? topicGroups.map((topic) => ({ topic: topic.topic, count: Number(topic.count) }))
+      : [];
+
+    if (mentions.length === 0 && aggregates._count._all > 0) {
+      try {
+        const publishedReviews = await prisma.review.findMany({
+          where,
+          select: { comment: true },
+          take: 100,
+        });
+        const topicCounts: Record<string, number> = {};
+        for (const r of publishedReviews) {
+          const extracted = extractTopics(r.comment);
+          for (const t of extracted) {
+            topicCounts[t] = (topicCounts[t] || 0) + 1;
+          }
+        }
+        mentions = Object.entries(topicCounts)
+          .map(([topic, count]) => ({ topic, count }))
+          .sort((a, b) => b.count - a.count || a.topic.localeCompare(b.topic))
+          .slice(0, 12);
+      } catch {
+        // Fallback silently if extraction query encounters an issue
+      }
+    }
+
     return {
       averageRating: aggregates._count._all ? roundedAverage(aggregates._avg.rating) ?? null : null,
       totalCount: aggregates._count._all,
       ratingDistribution,
       categoryRatings,
-      mentions: topicGroups.map((topic) => ({ topic: topic.topic, count: Number(topic.count) })),
+      mentions,
     };
   },
 
@@ -273,7 +396,7 @@ export const reviewService = {
         ...categoryData(input.categoryRatings),
         status: "PUBLISHED",
       },
-      include: { author: { select: { id: true, name: true, image: true } } },
+      include: { author: { select: { id: true, name: true, image: true, createdAt: true } } },
     });
     // Rating, review count, and review-derived public details change together.
     // Invalidate the listing boundary before its qualification re-evaluation.
@@ -303,7 +426,7 @@ export const reviewService = {
   async getUserReviews(userId: string): Promise<PublicReviewDTO[]> {
     const reviews = await prisma.review.findMany({
       where: { authorId: userId, status: "PUBLISHED" },
-      include: { author: { select: { id: true, name: true, image: true } } },
+      include: { author: { select: { id: true, name: true, image: true, createdAt: true } } },
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     });
     return reviews.map(toPublicReviewDTO);
