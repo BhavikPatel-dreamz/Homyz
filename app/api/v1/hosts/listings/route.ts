@@ -9,10 +9,18 @@ import { Role } from "@/generated/prisma/enums";
 // A host only ever sees resources they own.
 export const GET = apiHandler(async (req) => {
   const actor = await requireApiRole(req, [Role.HOST, Role.ADMIN]);
-  const { page, limit, skip, take } = parsePagination(req.nextUrl.searchParams);
-  const { items, total } = await listingService.listForHost(actor, {
+  const { searchParams } = req.nextUrl;
+  const { page, limit, skip, take } = parsePagination(searchParams);
+  const tab = searchParams.get("tab") || searchParams.get("status") || "ALL";
+  const search = searchParams.get("search") || searchParams.get("q") || "";
+
+  const { items, total, totalCount } = await listingService.listForHost(actor, {
     skip,
     take,
+    page,
+    limit,
+    tab,
+    search,
   });
-  return paginated(items, buildPagination(page, limit, total));
+  return paginated(items, buildPagination(page, limit, totalCount ?? total));
 });

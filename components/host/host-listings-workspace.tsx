@@ -1,12 +1,12 @@
 "use client";
 
 import { ModalOverlay } from "@/components/ui/modal-overlay";
-import { useState, useEffect, useTransition } from "react";
+import { useState, useEffect, useTransition, useCallback, useRef } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { HostHeader } from "./host-header";
 import { HostSubNav } from "./host-sub-nav";
-import { HostListingsSkeleton } from "./host-listings-skeleton";
+import { HostListingCardsSkeleton } from "./host-listings-skeleton";
 import { BecomeHostModal } from "./become-host-modal";
 import { Footer } from "@/components/dashboard/footer";
 import {
@@ -19,12 +19,45 @@ import {
   togglePauseListingAction,
   updateListingAvailabilityAction,
 } from "@/actions/host/listings";
-import type { ListingDTO } from "@/services/mappers";
+import type { HostListingCardDTO, ListingDTO } from "@/services/mappers";
 import { Container } from "../ui";
 import { normalizeAmenities } from "@/lib/constants/amenities";
 import { isSaudiArabia } from "@/lib/location/address-countries";
 import { useLanguage } from "@/lib/i18n/language-context";
 import { getCurrencyForCountry } from "@/lib/currency";
+
+export const LISTING_TABS = [
+  { id: "ALL", label: "All" },
+  { id: "ACTIVE", label: "Listed" },
+  { id: "PENDING_REVIEW", label: "Pending review" },
+  { id: "CHANGES_REQUESTED", label: "Changes requested" },
+  { id: "DRAFT", label: "Draft" },
+  { id: "PAUSED", label: "Paused" },
+  { id: "REJECTED", label: "Rejected" },
+] as const;
+
+function isOptimizableImage(src: string): boolean {
+  if (!src) return false;
+  if (src.startsWith("/")) return true;
+  try {
+    const url = new URL(src);
+    const host = url.hostname;
+    return (
+      host === "localhost" ||
+      host === "127.0.0.1" ||
+      host.endsWith(".googleusercontent.com") ||
+      host === "platform-lookaside.fbsbx.com" ||
+      host === "images.unsplash.com" ||
+      host.endsWith(".amazonaws.com") ||
+      host.endsWith(".cloudfront.net") ||
+      host === "media.homyz.co" ||
+      host === "homyz.co" ||
+      host.endsWith(".dynamicdreamz.net")
+    );
+  } catch {
+    return false;
+  }
+}
 
 const AMENITY_OPTIONS = [
   { id: "wifi", label: "High-speed Wi-Fi", icon: "📶" },
@@ -74,6 +107,18 @@ function errorMessage(error: unknown, fallback: string) {
   return error instanceof Error && error.message ? error.message : fallback;
 }
 
+type ListingPageResult = {
+  items: HostListingCardDTO[];
+  totalCount: number;
+  totalPages: number;
+  counts?: Record<string, number>;
+};
+
+function replaceListingsUrl(params: URLSearchParams) {
+  const query = params.toString();
+  window.history.replaceState({}, "", query ? `/host/listings?${query}` : "/host/listings");
+}
+
 function EmptyListingsState({
   onCreate,
   pending,
@@ -107,37 +152,304 @@ function EmptyListingsState({
 
 export function HostListingsWorkspace({
   initialListings,
+  initialTotalCount,
+  initialTotalPages,
+  initialTab = "ALL",
+  initialPage = 1,
+  initialCounts,
   currentUserId,
   initialShowSearch = false,
   initialSearchQuery = "",
-  isLoading = false,
 }: {
-  initialListings: ListingDTO[];
+  initialListings: HostListingCardDTO[];
+  initialTotalCount?: number;
+  initialTotalPages?: number;
+  initialTab?: string;
+  initialPage?: number;
+  initialCounts?: Record<string, number>;
   currentUserId: string;
   initialShowSearch?: boolean;
   initialSearchQuery?: string;
-  isLoading?: boolean;
 }) {
-  if (isLoading) {
-    return <HostListingsSkeleton />;
-  }
-
-  const router = useRouter();
   const { t } = useLanguage();
-  const [activeTab, setActiveTab] = useState<string>("ALL");
+  const [activeTab, setActiveTab] = useState<string>(initialTab);
+  const [page, setPage] = useState<number>(initialPage);
+  const [listings, setListings] = useState<HostListingCardDTO[]>(initialListings);
+  const [totalCount, setTotalCount] = useState<number>(
+    initialTotalCount ?? initialListings.length,
+  );
+  const [totalPages, setTotalPages] = useState<number>(
+    initialTotalPages ?? Math.max(1, Math.ceil((initialTotalCount ?? initialListings.length) / 12)),
+  );
+  const [counts, setCounts] = useState<Record<string, number> | undefined>(initialCounts);
   const [showSearch, setShowSearch] = useState(initialShowSearch);
   const [compactGrid, setCompactGrid] = useState(false);
   const [searchQuery, setSearchQuery] = useState<string>(initialSearchQuery);
+  const [loading, setLoading] = useState(false);
+  const [refreshError, setRefreshError] = useState<string | null>(null);
   const [becomeHostModalOpen, setBecomeHostModalOpen] = useState(false);
   const [becomeHostModalStep, setBecomeHostModalStep] = useState<1 | 2>(1);
+
+  const cacheRef = useRef<
+    Map<string, ListingPageResult>
+  >(new Map());
+  const inFlightRef = useRef<
+    Map<string, { controller: AbortController; promise: Promise<ListingPageResult> }>
+  >(new Map());
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const latestRequestKeyRef = useRef<string | null>(null);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Seed cache with server-rendered initial data
+  useEffect(() => {
+    const initialKey = `${initialTab}:${initialPage}:${initialSearchQuery.trim().toLowerCase()}`;
+    if (!cacheRef.current.has(initialKey)) {
+      cacheRef.current.set(initialKey, {
+        items: initialListings,
+        totalCount: initialTotalCount ?? initialListings.length,
+        totalPages:
+          initialTotalPages ??
+          Math.max(1, Math.ceil((initialTotalCount ?? initialListings.length) / 12)),
+        counts: initialCounts,
+      });
+    }
+  }, [
+    initialTab,
+    initialPage,
+    initialSearchQuery,
+    initialListings,
+    initialTotalCount,
+    initialTotalPages,
+    initialCounts,
+  ]);
+
+  const fetchListings = useCallback(
+    async (
+      targetTab: string,
+      targetPage: number,
+      targetSearch: string,
+      options?: { bypassCache?: boolean },
+    ) => {
+      const normalizedSearch = targetSearch.trim().toLowerCase();
+      const cacheKey = `${targetTab}:${targetPage}:${normalizedSearch}`;
+      latestRequestKeyRef.current = cacheKey;
+
+      if (!options?.bypassCache && cacheRef.current.has(cacheKey)) {
+        abortControllerRef.current?.abort();
+        const cached = cacheRef.current.get(cacheKey)!;
+        setListings(cached.items);
+        setTotalCount(cached.totalCount);
+        setTotalPages(cached.totalPages);
+        if (cached.counts) setCounts(cached.counts);
+        setRefreshError(null);
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+
+      let inFlight = inFlightRef.current.get(cacheKey);
+      if (!inFlight) {
+        abortControllerRef.current?.abort();
+        const controller = new AbortController();
+        abortControllerRef.current = controller;
+        const queryParams = new URLSearchParams();
+        queryParams.set("tab", targetTab);
+        queryParams.set("page", String(targetPage));
+        queryParams.set("limit", "12");
+        if (targetSearch.trim()) {
+          queryParams.set("q", targetSearch.trim());
+        }
+
+        const promise = (async () => {
+          const endpoint = `/api/v1/host/listings?${queryParams.toString()}`;
+          const response = await fetch(endpoint, {
+            signal: controller.signal,
+            cache: "no-store",
+            headers: { Accept: "application/json" },
+          });
+          const payload = await response.json().catch(() => null);
+          if (
+            !response.ok ||
+            !payload?.success ||
+            !Array.isArray(payload.data?.items)
+          ) {
+            throw new Error(
+              payload?.error?.message || "Unable to refresh listings.",
+            );
+          }
+
+          const fetchedItems = payload.data.items as HostListingCardDTO[];
+          const count =
+            typeof payload.data.totalCount === "number"
+              ? payload.data.totalCount
+              : typeof payload.data.total === "number"
+              ? payload.data.total
+              : fetchedItems.length;
+          const pages =
+            typeof payload.data.totalPages === "number"
+              ? payload.data.totalPages
+              : Math.max(1, Math.ceil(count / 12));
+          const fetchedCounts = payload.data.counts as Record<string, number> | undefined;
+
+          const result = {
+            items: fetchedItems,
+            totalCount: count,
+            totalPages: pages,
+            counts: fetchedCounts,
+          };
+          cacheRef.current.set(cacheKey, result);
+          return result;
+        })().finally(() => {
+          inFlightRef.current.delete(cacheKey);
+        });
+
+        inFlight = { controller, promise };
+        inFlightRef.current.set(cacheKey, inFlight);
+      }
+
+      try {
+        const result = await inFlight.promise;
+        if (latestRequestKeyRef.current === cacheKey) {
+          setListings(result.items);
+          setTotalCount(result.totalCount);
+          setTotalPages(result.totalPages);
+          if (result.counts) setCounts(result.counts);
+          setRefreshError(null);
+          setLoading(false);
+        }
+      } catch (error) {
+        if (inFlight.controller.signal.aborted || latestRequestKeyRef.current !== cacheKey) return;
+        setRefreshError(
+          error instanceof Error ? error.message : "Unable to refresh listings.",
+        );
+        setLoading(false);
+      }
+    },
+    [],
+  );
+
+  const handleTabChange = useCallback(
+    (newTab: string) => {
+      if (newTab === activeTab) return;
+      setActiveTab(newTab);
+      setPage(1);
+      const nextParams = new URLSearchParams(window.location.search);
+      nextParams.set("tab", newTab);
+      nextParams.delete("page");
+      if (searchQuery.trim()) {
+        nextParams.set("q", searchQuery.trim());
+      }
+      replaceListingsUrl(nextParams);
+      void fetchListings(newTab, 1, searchQuery.trim());
+    },
+    [activeTab, searchQuery, fetchListings],
+  );
+
+  const handlePageChange = useCallback(
+    (newPage: number) => {
+      if (newPage === page || newPage < 1 || newPage > totalPages) return;
+      setPage(newPage);
+      const nextParams = new URLSearchParams(window.location.search);
+      nextParams.set("tab", activeTab);
+      nextParams.set("page", String(newPage));
+      if (searchQuery.trim()) {
+        nextParams.set("q", searchQuery.trim());
+      }
+      replaceListingsUrl(nextParams);
+      void fetchListings(activeTab, newPage, searchQuery.trim());
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    },
+    [page, totalPages, activeTab, searchQuery, fetchListings],
+  );
+
+  const handleSearchChange = (val: string) => {
+    setSearchQuery(val);
+    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+    searchTimeoutRef.current = setTimeout(() => {
+      setPage(1);
+      const params = new URLSearchParams(window.location.search);
+      if (val.trim()) {
+        params.set("q", val.trim());
+      } else {
+        params.delete("q");
+      }
+      params.delete("page");
+      replaceListingsUrl(params);
+      void fetchListings(activeTab, 1, val.trim());
+    }, 300);
+  };
+
+  const handleCancelSearch = () => {
+    setShowSearch(false);
+    setSearchQuery("");
+    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+    if (searchQuery.trim()) {
+      setPage(1);
+      const params = new URLSearchParams(window.location.search);
+      params.delete("q");
+      params.delete("page");
+      replaceListingsUrl(params);
+      void fetchListings(activeTab, 1, "");
+    }
+  };
+
+  const refreshListings = useCallback(async () => {
+    cacheRef.current.clear();
+    void fetchListings(activeTab, page, searchQuery.trim(), { bypassCache: true });
+  }, [fetchListings, activeTab, page, searchQuery]);
+
+  // Request cancellation belongs to the component lifecycle, not the listener
+  // lifecycle below. That listener needs to be refreshed as the active tab,
+  // page, or search changes; cancelling there would abort the request that a
+  // page or tab change has just started.
+  useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+      abortControllerRef.current?.abort();
+    };
+  }, []);
+
+  useEffect(() => {
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === "homyz:listings-updated") {
+        void refreshListings();
+      }
+    };
+    const onListingsUpdated = () => {
+      void refreshListings();
+    };
+    const onPopState = () => {
+      const params = new URLSearchParams(window.location.search);
+      const urlTab = (params.get("tab") || "ALL").toUpperCase();
+      const urlPage = Math.max(1, parseInt(params.get("page") || "1", 10) || 1);
+      const urlSearch = params.get("q") || "";
+      setActiveTab(urlTab);
+      setPage(urlPage);
+      setSearchQuery(urlSearch);
+      void fetchListings(urlTab, urlPage, urlSearch);
+    };
+
+    window.addEventListener("storage", onStorage);
+    window.addEventListener("homyz:listings-updated", onListingsUpdated);
+    window.addEventListener("popstate", onPopState);
+
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      window.removeEventListener("homyz:listings-updated", onListingsUpdated);
+      window.removeEventListener("popstate", onPopState);
+    };
+  }, [refreshListings, fetchListings]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       if (params.get("create") === "open") {
-        setBecomeHostModalStep(2);
-        setBecomeHostModalOpen(true);
         window.history.replaceState({}, "", "/host/listings");
+        setTimeout(() => {
+          setBecomeHostModalStep(2);
+          setBecomeHostModalOpen(true);
+        }, 0);
       }
     }
   }, []);
@@ -156,7 +468,7 @@ export function HostListingsWorkspace({
 
   // Delete Modal State
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [listingToDelete, setListingToDelete] = useState<ListingDTO | null>(null);
+  const [listingToDelete, setListingToDelete] = useState<HostListingCardDTO | null>(null);
 
   const [pending, startTransition] = useTransition();
 
@@ -300,7 +612,12 @@ export function HostListingsWorkspace({
           showToast("Listing created as Draft!", "success");
         }
         setShowEditorModal(false);
-        router.refresh();
+        cacheRef.current.clear();
+        void fetchListings(activeTab, page, searchQuery.trim(), { bypassCache: true });
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new CustomEvent("homyz:listings-updated"));
+          localStorage.setItem("homyz:listings-updated", String(Date.now()));
+        }
       } catch (err: unknown) {
         showToast(errorMessage(err, "Failed to save listing."), "error");
       }
@@ -320,7 +637,12 @@ export function HostListingsWorkspace({
           return;
         }
         showToast("Listing submitted for Admin Review!", "success");
-        router.refresh();
+        cacheRef.current.clear();
+        void fetchListings(activeTab, page, searchQuery.trim(), { bypassCache: true });
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new CustomEvent("homyz:listings-updated"));
+          localStorage.setItem("homyz:listings-updated", String(Date.now()));
+        }
       } catch (err: unknown) {
         showToast(errorMessage(err, "Failed to submit listing."), "error");
       }
@@ -338,7 +660,12 @@ export function HostListingsWorkspace({
           return;
         }
         showToast(nextState ? "Listing paused (unpublished from search)." : "Listing resumed!", "success");
-        router.refresh();
+        cacheRef.current.clear();
+        void fetchListings(activeTab, page, searchQuery.trim(), { bypassCache: true });
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new CustomEvent("homyz:listings-updated"));
+          localStorage.setItem("homyz:listings-updated", String(Date.now()));
+        }
       } catch (err: unknown) {
         showToast(errorMessage(err, "Failed to update listing state."), "error");
       }
@@ -355,7 +682,12 @@ export function HostListingsWorkspace({
           return;
         }
         showToast("Listing duplicated to new Draft!", "success");
-        router.refresh();
+        cacheRef.current.clear();
+        void fetchListings(activeTab, 1, searchQuery.trim(), { bypassCache: true });
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new CustomEvent("homyz:listings-updated"));
+          localStorage.setItem("homyz:listings-updated", String(Date.now()));
+        }
       } catch (err: unknown) {
         showToast(errorMessage(err, "Failed to duplicate listing."), "error");
       }
@@ -375,7 +707,14 @@ export function HostListingsWorkspace({
         showToast("Listing deleted successfully.", "success");
         setShowDeleteModal(false);
         setListingToDelete(null);
-        router.refresh();
+        const targetPage = listings.length === 1 && page > 1 ? page - 1 : page;
+        setPage(targetPage);
+        cacheRef.current.clear();
+        void fetchListings(activeTab, targetPage, searchQuery.trim(), { bypassCache: true });
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new CustomEvent("homyz:listings-updated"));
+          localStorage.setItem("homyz:listings-updated", String(Date.now()));
+        }
       } catch (err: unknown) {
         showToast(errorMessage(err, "Failed to delete listing."), "error");
       }
@@ -402,37 +741,17 @@ export function HostListingsWorkspace({
         }
         showToast("Blocked dates saved!", "success");
         setShowAvailabilityModal(false);
-        router.refresh();
+        cacheRef.current.clear();
+        void fetchListings(activeTab, page, searchQuery.trim(), { bypassCache: true });
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new CustomEvent("homyz:listings-updated"));
+          localStorage.setItem("homyz:listings-updated", String(Date.now()));
+        }
       } catch (err: unknown) {
         showToast(errorMessage(err, "Failed to update availability."), "error");
       }
     });
   }
-
-  // Filter listings
-  const filteredListings = initialListings.filter((item) => {
-    const matchesSearch =
-      !searchQuery ||
-      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (item.city && item.city.toLowerCase().includes(searchQuery.toLowerCase()));
-
-    if (!matchesSearch) return false;
-
-    if (activeTab === "ALL") return true;
-    if (activeTab === "ACTIVE") return item.status === "ACTIVE" || (item.published && !item.isPaused);
-    if (activeTab === "PENDING_REVIEW") return item.status === "PENDING_REVIEW";
-    if (activeTab === "CHANGES_REQUESTED") return item.status === "CHANGES_REQUESTED";
-    if (activeTab === "DRAFT") return item.status === "DRAFT";
-    if (activeTab === "PAUSED") return item.isPaused;
-    if (activeTab === "REJECTED") return item.status === "REJECTED";
-    return true;
-  });
-
-  // KPI Metrics
-  const totalCount = initialListings.length;
-  const activeCount = initialListings.filter((l) => l.status === "ACTIVE" || (l.published && !l.isPaused)).length;
-  const pendingCount = initialListings.filter((l) => l.status === "PENDING_REVIEW").length;
-  const pausedCount = initialListings.filter((l) => l.isPaused).length;
 
   return (
     <div className="min-h-screen bg-white text-[#1F1F1F] font-sans flex flex-col selection:bg-[#FEE08B]">
@@ -448,6 +767,20 @@ export function HostListingsWorkspace({
             <div className={`fixed top-5 right-4 left-4 sm:left-auto sm:max-w-md z-50 px-4 py-3 rounded-2xl shadow-xl border text-xs font-semibold transition-all ${toastMsg.type === "success" ? "bg-emerald-50 text-emerald-800 border-emerald-200" : "bg-rose-50 text-rose-800 border-rose-200"
               }`}>
               {toastMsg.text}
+            </div>
+          )}
+
+          {/* Refresh Error Alert */}
+          {refreshError && (
+            <div className="mb-6 flex items-center justify-between rounded-2xl border border-rose-200 bg-rose-50 p-4 text-xs font-semibold text-rose-800">
+              <span>{refreshError}</span>
+              <button
+                type="button"
+                onClick={() => fetchListings(activeTab, page, searchQuery.trim(), { bypassCache: true })}
+                className="ml-4 rounded-full bg-rose-600 px-3 py-1 text-xs font-semibold text-white hover:bg-rose-700 cursor-pointer"
+              >
+                Retry
+              </button>
             </div>
           )}
 
@@ -475,7 +808,7 @@ export function HostListingsWorkspace({
                   type="search"
                   autoFocus
                   value={searchQuery}
-                  onChange={(event) => setSearchQuery(event.target.value)}
+                  onChange={(event) => handleSearchChange(event.target.value)}
                   placeholder=""
                   aria-label={t("host_search_listings_aria")}
                   className="h-11 w-full rounded-full border border-[#727272] bg-[#f3f4f6] pl-11 pr-4 font-['Poppins'] text-base text-[#1F1F1F] outline-none transition-colors focus:border-[#1F1F1F]"
@@ -483,10 +816,7 @@ export function HostListingsWorkspace({
               </div>
               <button
                 type="button"
-                onClick={() => {
-                  setShowSearch(false);
-                  setSearchQuery("");
-                }}
+                onClick={handleCancelSearch}
                 className="flex h-11 shrink-0 items-center justify-center rounded-full border border-[#727272] bg-white px-6 font-['Poppins'] text-base font-normal text-[#717171] transition-colors hover:bg-zinc-50 active:scale-95 cursor-pointer"
               >
                 {t("host_search_cancel")}
@@ -532,7 +862,7 @@ export function HostListingsWorkspace({
                   type="button"
                   onClick={handleOpenCreate}
                   disabled={pending}
-                  className="inline-flex items-center justify-center w-11 h-11 rounded-full bg-[#f5f5f5] text-[#1F1F1F] font-normal text-[28px] shadow-xs"
+                  className="inline-flex items-center justify-center w-11 h-11 rounded-full bg-[#f5f5f5] text-[#1F1F1F] font-normal text-[28px] shadow-xs cursor-pointer"
                   title={t("host_create_new_listing")}
                 >
                   +
@@ -546,165 +876,302 @@ export function HostListingsWorkspace({
             <h1>
               {t("host_listings_title")}
             </h1>
-            <button
-              type="button"
-              onClick={handleOpenCreate}
-              disabled={pending}
-              className="inline-flex min-h-11 items-center gap-2 whitespace-nowrap rounded-full border border-transparent hover:border-[#1F1F1F] bg-[#FEE08B] hover:bg-[#1F1F1F] text-[#1F1F1F] hover:text-white font-medium text-base px-5 py-2.5 transition-all shadow-2xs"
-            >
-              {t("host_create_new_listing")}
-            </button>
+            <div className="flex items-center gap-3">
+              {/* Desktop Search Bar */}
+              <div className="relative w-64 lg:w-80">
+                <div className="pointer-events-none absolute inset-y-0 left-3.5 flex items-center">
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#717171"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <circle cx="10.5" cy="10.5" r="7" />
+                    <path d="m16 16 5 5" />
+                  </svg>
+                </div>
+                <input
+                  type="search"
+                  value={searchQuery}
+                  onChange={(e) => handleSearchChange(e.target.value)}
+                  placeholder="Search listings..."
+                  aria-label={t("host_search_listings_aria")}
+                  className="h-11 w-full rounded-full border border-zinc-300 bg-[#f9fafb] pl-10 pr-9 font-['Poppins'] text-sm text-[#1F1F1F] outline-none transition-colors focus:border-[#1F1F1F] focus:bg-white"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => handleSearchChange("")}
+                    className="absolute inset-y-0 right-3 flex items-center text-zinc-400 hover:text-zinc-600"
+                    title="Clear search"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={handleOpenCreate}
+                disabled={pending}
+                className="inline-flex min-h-11 items-center gap-2 whitespace-nowrap rounded-full border border-transparent hover:border-[#1F1F1F] bg-[#FEE08B] hover:bg-[#1F1F1F] text-[#1F1F1F] hover:text-white font-medium text-base px-5 py-2.5 transition-all shadow-2xs cursor-pointer"
+              >
+                {t("host_create_new_listing")}
+              </button>
+            </div>
           </div>
 
-          {/* Mobile Search View (100% matches listing-search-mobile.jpg) */}
-          {showSearch && (
-            <div className="sm:hidden">
-              {filteredListings.length === 0 && searchQuery ? (
-                <p className="py-10 text-center text-[#727272]">{t("host_no_listings_matching_search")}</p>
-              ) : filteredListings.length === 0 ? (
-                <EmptyListingsState onCreate={handleOpenCreate} pending={pending} />
-              ) : (
-                <div className="flex flex-col space-y-5">
-                  {filteredListings.map((item) => {
-                    const photos = Array.isArray(item.photos) ? item.photos : [];
-                    const coverPhoto = photos[0] || null;
-                    const isListed = !item.isPaused && (item.status === "ACTIVE" || item.published);
+          {/* Status Tabs Pill Switcher matching /host/today style */}
+          <div className="mb-6 flex w-full items-center justify-between gap-3 border-b border-[#727272] pb-5 sm:mb-8 sm:w-fit sm:pb-6">
+            <div
+              className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1"
+              role="tablist"
+              aria-label="Listing status"
+            >
+              {LISTING_TABS.map((tabItem) => {
+                const isSelected = activeTab === tabItem.id;
+                const count = counts?.[tabItem.id];
+                return (
+                  <button
+                    key={tabItem.id}
+                    role="tab"
+                    aria-selected={isSelected}
+                    onClick={() => handleTabChange(tabItem.id)}
+                    className={`rounded-full px-4 py-2.5 text-sm sm:px-4.5 sm:py-2.5 font-medium transition-all duration-200 shrink-0 font-sans cursor-pointer ${
+                      isSelected
+                        ? "bg-[#1F1F1F] text-white shadow-xs"
+                        : "bg-[#F3F4F6] text-[#717171] hover:bg-zinc-200 hover:text-[#1F1F1F]"
+                    }`}
+                  >
+                    <span>{tabItem.label}</span>
+                    {count !== undefined && (
+                      <span className={`ml-1.5 text-xs ${isSelected ? "text-zinc-300" : "text-zinc-500"}`}>
+                        ({count})
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
-                    return (
-                      <Link
-                        key={item.id}
-                        href={
-                          `/host/listings/${item.id}`
-                        }
-                        className="group flex w-full items-start gap-4 text-left cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900"
+          <div aria-busy={loading}>
+            {loading ? (
+              <HostListingCardsSkeleton cardCount={12} compact={compactGrid} />
+            ) : (
+              <>
+              {/* Mobile Search View (100% matches listing-search-mobile.jpg) */}
+              {showSearch && (
+                <div className="sm:hidden">
+                  {listings.length === 0 && searchQuery ? (
+                    <div className="py-10 text-center text-[#727272]">
+                      <p>{t("host_no_listings_matching_search")}</p>
+                      <button
+                        type="button"
+                        onClick={() => handleSearchChange("")}
+                        className="mt-3 text-sm text-[#1F1F1F] underline cursor-pointer"
                       >
-                        <div className="relative aspect-[442/394] w-[110px] shrink-0 overflow-hidden rounded-[18px] border border-[#777] bg-[#f1f1f1]">
-                          {coverPhoto ? (
-                            <img
-                              src={coverPhoto}
-                              alt={item.title || t("host_no_photo_yet")}
-                              className="h-full w-full object-cover"
-                            />
-                          ) : (
-                            <div className="grid h-full w-full place-items-center bg-[#F1F1F1] text-xs text-[#717171]">{t("host_no_photo_yet")}</div>
-                          )}
-                          <span className="absolute top-2 left-2 flex size-5 items-center justify-center rounded-full bg-white shadow-xs">
-                            <span className={`size-2 shrink-0 rounded-full ${isListed ? "bg-[#37BE01]" : "bg-rose-500"}`} />
-                          </span>
-                        </div>
-                        <div className="flex min-w-0 flex-1 flex-col justify-start pt-1.5">
-                          <h3 className="truncate font-['Poppins'] text-[17px] font-semibold leading-tight text-[#1F1F1F]">
-                            {item.title === "Draft Listing" ? t("host_untitled_draft") : item.title || t("host_untitled_listing")}
-                          </h3>
-                          <p className="mt-1 truncate font-['Poppins'] text-sm leading-tight text-[#717171]">
-                            {item.city || item.country
-                              ? `${item.city || ""}${item.city && item.country ? ", " : ""}${item.country || ""}`
-                              : t("host_no_location_yet")}
-                          </p>
-                        </div>
-                      </Link>
-                    );
-                  })}
+                        Clear search
+                      </button>
+                    </div>
+                  ) : listings.length === 0 ? (
+                    <EmptyListingsState onCreate={handleOpenCreate} pending={pending} />
+                  ) : (
+                    <div className="flex flex-col space-y-5">
+                      {listings.map((item) => {
+                        const photos = Array.isArray(item.photos) ? item.photos : [];
+                        const coverPhoto = photos[0] || null;
+                        const isListed = !item.isPaused && (item.status === "ACTIVE" || item.published);
+
+                        return (
+                          <Link
+                            key={item.id}
+                            href={`/host/listings/${item.id}`}
+                            className="group flex w-full items-start gap-4 text-left cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900"
+                          >
+                            <div className="relative aspect-[442/394] w-[110px] shrink-0 overflow-hidden rounded-[18px] border border-[#777] bg-[#f1f1f1]">
+                              {coverPhoto ? (
+                                <Image
+                                  src={coverPhoto}
+                                  alt={item.title || t("host_no_photo_yet")}
+                                  fill
+                                  sizes="110px"
+                                  className="h-full w-full object-cover"
+                                  loading="lazy"
+                                  unoptimized={!isOptimizableImage(coverPhoto)}
+                                />
+                              ) : (
+                                <div className="grid h-full w-full place-items-center bg-[#F1F1F1] text-xs text-[#717171]">{t("host_no_photo_yet")}</div>
+                              )}
+                              <span className="absolute top-2 left-2 flex size-5 items-center justify-center rounded-full bg-white shadow-xs">
+                                <span className={`size-2 shrink-0 rounded-full ${isListed ? "bg-[#37BE01]" : "bg-rose-500"}`} />
+                              </span>
+                            </div>
+                            <div className="flex min-w-0 flex-1 flex-col justify-start pt-1.5">
+                              <h3 className="truncate font-['Poppins'] text-[17px] font-semibold leading-tight text-[#1F1F1F]">
+                                {item.title === "Draft Listing" ? t("host_untitled_draft") : item.title || t("host_untitled_listing")}
+                              </h3>
+                              <p className="mt-1 truncate font-['Poppins'] text-sm leading-tight text-[#717171]">
+                                {item.city || item.country
+                                  ? `${item.city || ""}${item.city && item.country ? ", " : ""}${item.country || ""}`
+                                  : t("host_no_location_yet")}
+                              </p>
+                            </div>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               )}
-            </div>
-          )}
 
-          {/* Property Cards Grid (Shown on desktop, and on mobile only when search is not active) */}
-          <div className={showSearch ? "hidden sm:block" : "block"}>
-            {filteredListings.length === 0 && searchQuery ? (
-              <p className="py-10 text-center text-[#727272]">{t("host_no_listings_matching_search")}</p>
-            ) : filteredListings.length === 0 ? (
-              <EmptyListingsState onCreate={handleOpenCreate} pending={pending} />
-            ) : (
-              <div className={`host-listing-workspace grid ${compactGrid ? "grid-cols-2" : "grid-cols-1"} gap-x-4 gap-y-8 sm:grid-cols-2 sm:gap-x-5 sm:gap-y-8 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-6 xl:gap-y-8`}>
-                {filteredListings.map((item) => {
-                  const photos = Array.isArray(item.photos) ? item.photos : [];
-                  const coverPhoto = photos[0] || null;
-                  const isListed = !item.isPaused && (item.status === "ACTIVE" || item.published);
-                  const isCoHosted = item.hostId !== currentUserId;
-                  const adminFeedback = item.rejectionReason
-                    || (typeof item.requestedChanges === "string" ? item.requestedChanges : null);
-
-                  return (
-                    <div
-                      key={item.id}
-                      className="group relative min-w-0 text-left"
+              {/* Property Cards Grid (Shown on desktop, and on mobile only when search is not active) */}
+              <div className={showSearch ? "hidden sm:block" : "block"}>
+                {listings.length === 0 && searchQuery ? (
+                  <div className="py-10 text-center text-[#727272]">
+                    <p>{t("host_no_listings_matching_search")}</p>
+                    <button
+                      type="button"
+                      onClick={() => handleSearchChange("")}
+                      className="mt-3 text-sm text-[#1F1F1F] underline cursor-pointer"
                     >
-                      {/* Photo Container */}
-                      <div className="relative aspect-[375/352] sm:aspect-[490/514] w-full overflow-hidden rounded-xl sm:rounded-[22px] border border-[#777] bg-[#f1f1f1]">
-                        {coverPhoto ? (
-                          <img
-                            src={coverPhoto}
-                            alt={item.title || t("host_no_photo_yet")}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          />
-                        ) : (
-                          <div className="grid h-full w-full place-items-center bg-[#F1F1F1] text-sm text-[#717171]">{t("host_no_photo_yet")}</div>
-                        )}
+                      Clear search
+                    </button>
+                  </div>
+                ) : listings.length === 0 ? (
+                  <EmptyListingsState onCreate={handleOpenCreate} pending={pending} />
+                ) : (
+                  <div className={`host-listing-workspace grid ${compactGrid ? "grid-cols-2" : "grid-cols-1"} gap-x-4 gap-y-8 sm:grid-cols-2 sm:gap-x-5 sm:gap-y-8 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-6 xl:gap-y-8`}>
+                    {listings.map((item) => {
+                      const photos = Array.isArray(item.photos) ? item.photos : [];
+                      const coverPhoto = photos[0] || null;
+                      const isListed = !item.isPaused && (item.status === "ACTIVE" || item.published);
+                      const isCoHosted = item.hostId !== currentUserId;
+                      const adminFeedback = item.rejectionReason
+                        || (typeof item.requestedChanges === "string" ? item.requestedChanges : null);
 
-                        {/* White Pill Badge matching screenshot */}
-                        <div className="absolute top-4 left-4 flex items-center gap-1.5 rounded-full bg-[#FFFFFF99] px-2.5 py-1 text-sm leading-5 text-[#252525]">
-                          <span className={`w-2 h-2 rounded-full ${isListed ? "bg-[#37BE01]" : "bg-[#E1473D]"}`}></span>
-                          {isCoHosted ? t("host_badge_cohost") : isListed ? t("host_badge_listed") : t("host_badge_action_required")}
+                      return (
+                        <div
+                          key={item.id}
+                          className="group relative min-w-0 text-left"
+                        >
+                          {/* Photo Container */}
+                          <div className="relative aspect-[375/352] sm:aspect-[490/514] w-full overflow-hidden rounded-xl sm:rounded-[22px] border border-[#777] bg-[#f1f1f1]">
+                            {coverPhoto ? (
+                              <Image
+                                src={coverPhoto}
+                                alt={item.title || t("host_no_photo_yet")}
+                                fill
+                                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                loading="lazy"
+                                unoptimized={!isOptimizableImage(coverPhoto)}
+                              />
+                            ) : (
+                              <div className="grid h-full w-full place-items-center bg-[#F1F1F1] text-sm text-[#717171]">{t("host_no_photo_yet")}</div>
+                            )}
+
+                            {/* White Pill Badge matching screenshot */}
+                            <div className="absolute top-4 left-4 flex items-center gap-1.5 rounded-full bg-[#FFFFFF99] px-2.5 py-1 text-sm leading-5 text-[#252525]">
+                              <span className={`w-2 h-2 rounded-full ${isListed ? "bg-[#37BE01]" : "bg-[#E1473D]"}`}></span>
+                              {isCoHosted ? t("host_badge_cohost") : isListed ? t("host_badge_listed") : t("host_badge_action_required")}
+                            </div>
+
+                            {/* Delete Action Icon Button */}
+                            {!isCoHosted && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setListingToDelete(item);
+                                  setShowDeleteModal(true);
+                                }}
+                                aria-label={t("host_delete_property_aria")}
+                                title={t("host_delete_property_aria")}
+                                className="absolute z-20 top-3 right-3 flex size-8 items-center justify-center rounded-full bg-white text-xs text-rose-600 shadow-2xs backdrop-blur-xs transition-colors duration-200 ease-out hover:bg-rose-600 hover:text-white max-sm:hidden cursor-pointer"
+                              >
+                                <svg
+                                  aria-hidden="true"
+                                  className="size-4 transition-colors duration-200 ease-out"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                  strokeWidth={1.8}
+                                >
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673A2.25 2.25 0 0 1 15.916 21H8.084a2.25 2.25 0 0 1-2.244-1.327L4.772 5.79m14.456 0A48.108 48.108 0 0 0 15.75 5.25M4.772 5.79A48.11 48.11 0 0 1 8.25 5.25m0 0V4.5c0-1.02.78-1.86 1.794-1.921a51.966 51.966 0 0 1 3.912 0A1.98 1.98 0 0 1 15.75 4.5v.75m-7.5 0h7.5" />
+                                </svg>
+                              </button>
+                            )}
+                          </div>
+
+                          {/* Below Card Information */}
+                          <div className="px-0 pt-3 sm:px-3 lg:pt-6">
+                            <h3 className="truncate text-base font-semibold leading-6 text-[#252525]">
+                              <Link
+                                href={`/host/listings/${item.id}`}
+                                className="after:absolute after:inset-0 after:rounded-[22px] focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:outline-offset-4"
+                              >
+                                {item.title === "Draft Listing" ? t("host_untitled_draft") : item.title || t("host_untitled_listing")}
+                              </Link>
+                            </h3>
+                            <p className="mt-1 truncate text-sm leading-6 text-[#858585]">
+                              {item.city || item.country ? `${item.city || ""}${item.city && item.country ? ", " : ""}${item.country || ""}` : t("host_no_location_yet")}
+                            </p>
+                            {item.status === "PENDING_REVIEW" && (
+                              <p className="mt-1 text-xs font-medium text-amber-700">
+                                {isSaudiArabia(item.country) ? t("host_ready_to_publish") : t("host_submitted_for_admin_approval")}
+                              </p>
+                            )}
+                            {(item.status === "CHANGES_REQUESTED" || item.status === "REJECTED") && adminFeedback && (
+                              <p className="mt-1 line-clamp-2 text-xs font-medium text-rose-700" title={adminFeedback}>
+                                {t("host_admin_feedback", { feedback: adminFeedback })}
+                              </p>
+                            )}
+                          </div>
                         </div>
-
-                        {/* Delete Action Icon Button */}
-                        {!isCoHosted && (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setListingToDelete(item);
-                              setShowDeleteModal(true);
-                            }}
-                            aria-label={t("host_delete_property_aria")}
-                            title={t("host_delete_property_aria")}
-                            className="absolute z-20 top-3 right-3 flex size-8 items-center justify-center rounded-full bg-white text-xs text-rose-600 shadow-2xs backdrop-blur-xs transition-colors duration-200 ease-out hover:bg-rose-600 hover:text-white max-sm:hidden"
-                          >
-                            <svg
-                              aria-hidden="true"
-                              className="size-4 transition-colors duration-200 ease-out"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              strokeWidth={1.8}
-                            >
-                              <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673A2.25 2.25 0 0 1 15.916 21H8.084a2.25 2.25 0 0 1-2.244-1.327L4.772 5.79m14.456 0A48.108 48.108 0 0 0 15.75 5.25M4.772 5.79A48.11 48.11 0 0 1 8.25 5.25m0 0V4.5c0-1.02.78-1.86 1.794-1.921a51.966 51.966 0 0 1 3.912 0A1.98 1.98 0 0 1 15.75 4.5v.75m-7.5 0h7.5" />
-                            </svg>
-                          </button>
-                        )}
-                      </div>
-
-                      {/* Below Card Information */}
-                      <div className="px-0 pt-3 sm:px-3 lg:pt-6">
-                        <h3 className="truncate text-base font-semibold leading-6 text-[#252525]">
-                          <Link
-                            href={ `/host/listings/${item.id}`
-                            }
-                            className="after:absolute after:inset-0 after:rounded-[22px] focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:outline-offset-4"
-                          >
-                            {item.title === "Draft Listing" ? t("host_untitled_draft") : item.title || t("host_untitled_listing")}
-                          </Link>
-                        </h3>
-                        <p className="mt-1 truncate text-sm leading-6 text-[#858585]">
-                          {item.city || item.country ? `${item.city || ""}${item.city && item.country ? ", " : ""}${item.country || ""}` : t("host_no_location_yet")}
-                        </p>
-                        {item.status === "PENDING_REVIEW" && (
-                          <p className="mt-1 text-xs font-medium text-amber-700">
-                            {isSaudiArabia(item.country) ? t("host_ready_to_publish") : t("host_submitted_for_admin_approval")}
-                          </p>
-                        )}
-                        {(item.status === "CHANGES_REQUESTED" || item.status === "REJECTED") && adminFeedback && (
-                          <p className="mt-1 line-clamp-2 text-xs font-medium text-rose-700" title={adminFeedback}>
-                            {t("host_admin_feedback", { feedback: adminFeedback })}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
+                      );
+                    })}
+                  </div>
+                )}
               </div>
+
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <nav
+                  aria-label="Listings pagination"
+                  className="mt-10 flex items-center justify-between border-t border-zinc-200 pt-6"
+                >
+                  <button
+                    type="button"
+                    onClick={() => handlePageChange(page - 1)}
+                    disabled={page <= 1 || loading}
+                    className="inline-flex min-h-10 items-center justify-center rounded-full border border-zinc-300 bg-white px-5 text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-zinc-50 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
+                  >
+                    ← Previous
+                  </button>
+                  <span className="text-sm font-medium text-zinc-600">
+                    Page {page} of {Math.max(1, totalPages)}
+                    {totalCount > 0 && (
+                      <span className="ml-1.5 text-xs text-zinc-400">
+                        ({totalCount} {totalCount === 1 ? "listing" : "listings"})
+                      </span>
+                    )}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handlePageChange(page + 1)}
+                    disabled={page >= totalPages || loading}
+                    className="inline-flex min-h-10 items-center justify-center rounded-full border border-zinc-300 bg-white px-5 text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-zinc-50 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
+                  >
+                    Next →
+                  </button>
+                </nav>
+              )}
+              </>
             )}
           </div>
         </Container>
@@ -1031,7 +1498,7 @@ export function HostListingsWorkspace({
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
                     {formData.photos.map((url, idx) => (
                       <div key={idx} className="relative aspect-4/3 rounded-xl overflow-hidden border border-[var(--border-subtle)] bg-zinc-100 group">
-                        <img src={url} alt={`Photo ${idx + 1}`} className="w-full h-full object-cover" />
+                        <Image src={url} alt={`Photo ${idx + 1}`} fill sizes="200px" className="w-full h-full object-cover" unoptimized={!isOptimizableImage(url)} />
                         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                           <button
                             type="button"

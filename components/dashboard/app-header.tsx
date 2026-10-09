@@ -13,6 +13,11 @@ import dynamic from "next/dynamic";
 import { useLanguage } from "@/lib/i18n/language-context";
 import { DISPLAY_CURRENCIES, useCurrency } from "@/lib/currency-context";
 import { ListingHeaderSearch } from "@/components/listings/listing-header-search";
+import {
+  invalidateUnreadNotificationCount,
+  refreshUnreadNotificationCount,
+  useUnreadNotificationCount,
+} from "@/lib/notifications/unread-count-store";
 
 const BecomeHostModal = dynamic(
   () => import("@/components/host/become-host-modal").then((mod) => mod.BecomeHostModal),
@@ -35,6 +40,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
   const router = useRouter();
   const { data: session, status: sessionStatus, update } = useSession();
   const user = session?.user ?? initialUser ?? null;
+  const hasUser = Boolean(user);
   const sessionLoading = sessionStatus === "loading" && !initialUser;
   const role = user?.role;
   const [isConvertingRole, setIsConvertingRole] = useState(false);
@@ -43,7 +49,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
   const [menuOpen, setMenuOpen] = useState(false);
   const [langModalOpen, setLangModalOpen] = useState(false);
   const [becomeHostModalOpen, setBecomeHostModalOpen] = useState(false);
-  const [unreadCount, setUnreadCount] = useState<number>(0);
+  const unreadCount = useUnreadNotificationCount();
   const { currency: selectedCurrency, setCurrency: setSelectedCurrency } = useCurrency();
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -75,35 +81,19 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
   }, []);
 
   useEffect(() => {
-    if (!user) return;
-    let isMounted = true;
+    if (!hasUser) return;
 
-    const fetchUnread = () => {
-      fetch("/api/v1/notifications?take=1&unreadOnly=true")
-        .then((res) => (res.ok ? res.json() : null))
-        .then((data) => {
-          if (!isMounted || !data) return;
-          const count =
-            typeof data.unreadCount === "number"
-              ? data.unreadCount
-              : typeof data.total === "number"
-                ? data.total
-                : 0;
-          setUnreadCount(count);
-        })
-        .catch(() => {});
+    const handleNotificationsUpdated = () => {
+      invalidateUnreadNotificationCount();
+      void refreshUnreadNotificationCount({ force: true });
     };
 
-    fetchUnread();
-    window.addEventListener("focus", fetchUnread);
-    window.addEventListener("homyz:notifications-updated", fetchUnread);
+    window.addEventListener("homyz:notifications-updated", handleNotificationsUpdated);
 
     return () => {
-      isMounted = false;
-      window.removeEventListener("focus", fetchUnread);
-      window.removeEventListener("homyz:notifications-updated", fetchUnread);
+      window.removeEventListener("homyz:notifications-updated", handleNotificationsUpdated);
     };
-  }, [user]);
+  }, [hasUser]);
 
   const isHostRoute = pathname?.startsWith("/host") ?? false;
   const logoHref = "/";
@@ -267,7 +257,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
               <Link
                 href="/profile/tab/notifications"
                 className="relative hidden h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5] text-[#1F1F1F] transition-colors hover:bg-zinc-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 min-[992px]:flex min-[992px]:h-9 min-[992px]:w-9"
-                aria-label={unreadCount > 0 ? `${t("header_notifications") || "Notifications"}, ${unreadCount} unread` : (t("header_notifications") || "Notifications")}
+                aria-label={unreadCount !== null && unreadCount > 0 ? `${t("header_notifications") || "Notifications"}, ${unreadCount} unread` : (t("header_notifications") || "Notifications")}
                 title={t("header_notifications") || "Notifications"}
               >
                 <Image
@@ -277,7 +267,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                   height={18}
                   className="size-[18px] object-contain"
                 />
-                {unreadCount > 0 && (
+                {unreadCount !== null && unreadCount > 0 && (
                   <span
                     aria-label={`${unreadCount} unread notifications`}
                     className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white shadow-xs"

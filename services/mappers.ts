@@ -211,6 +211,27 @@ export function toListingDTO(l: Listing) {
 }
 export type ListingDTO = ReturnType<typeof toListingDTO>;
 
+// The host listings workspace only needs these card fields. Keeping this
+// projection separate prevents an index page from serializing editor-only and
+// sensitive listing data such as access instructions and door codes.
+export const hostListingCardSelect = {
+  id: true,
+  hostId: true,
+  title: true,
+  photos: true,
+  city: true,
+  country: true,
+  published: true,
+  status: true,
+  isPaused: true,
+  rejectionReason: true,
+  requestedChanges: true,
+} satisfies Prisma.ListingSelect;
+
+export type HostListingCardDTO = Prisma.ListingGetPayload<{
+  select: typeof hostListingCardSelect;
+}>;
+
 /**
  * Strips internal admin fields, hides apartment, and rounds coordinates
  * when exact location is not explicitly opted in by the host.
