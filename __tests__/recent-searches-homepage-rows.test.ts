@@ -133,7 +133,10 @@ async function runRecentSearchesHomepageRowsSuite() {
   // Test 2.2: Titles & structure
   for (const s of sections) {
     assert(s.id.startsWith("recent-search-"), "Section id must have prefix 'recent-search-'");
-    assert(s.title.startsWith("Homes in") || s.title.startsWith("Homes near"), "Section title must follow 'Homes in/near {location}'");
+    assert(
+      s.title.startsWith("Homes in") || s.title.startsWith("Homes near") || s.title.startsWith("Stays in") || s.title.startsWith("Stays near"),
+      "Section title must follow 'Homes/Stays in/near {location}'",
+    );
     assert(s.seeAllHref.startsWith("/listings?"), "seeAllHref must target /listings");
     assert(s.properties.length > 0, "Sections must not be empty");
     assert(Array.isArray(s.properties), "Must supply property cards in properties array");

@@ -1,13 +1,10 @@
 "use client";
 
-import React, { useState, useEffect, memo } from "react";
+import React, { useState, memo } from "react";
 import { WishlistButton } from "@/components/wishlist/WishlistButton";
-import useWishlist from "@/hooks/useWishlist";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useCurrency } from "@/lib/currency-context";
 import { useLanguage } from "@/lib/i18n/language-context";
-import { buildListingDetailUrl, getLastSearch } from "@/lib/storage/client-history";
 import {
   toPropertyCardPricingViewModel,
   type PropertyCardPricingViewModel,
@@ -43,8 +40,8 @@ export interface PropertyCardData {
   isNewListing?: boolean;
   createdAt?: string | Date | null;
   pricing?: PropertyCardPricingViewModel;
+  href?: string;
 }
-
 
 function PropertyCardComponent({
   id,
@@ -66,86 +63,17 @@ function PropertyCardComponent({
   country,
   guests,
   propertyType,
-  isFavorite: propFavorite,
-  initialFavorite = false,
-  canFavorite = false,
   currency,
   alternativeDates,
   discounts,
   isNewListing,
   createdAt,
   pricing: propPricing,
+  href,
 }: PropertyCardData) {
-
   const { t } = useLanguage();
   const { formatPrice } = useCurrency();
-  const router = useRouter();
-  const isAuthenticated = canFavorite;
-
-  const [isFavorite, setIsFavorite] = useState(
-    propFavorite !== undefined ? propFavorite : initialFavorite,
-  );
-  const [isFavoriting, setIsFavoriting] = useState(false);
   const [imageError, setImageError] = useState(false);
-
-  // Sync state if prop changes from parent hydration
-  useEffect(() => {
-    if (propFavorite !== undefined) {
-      setIsFavorite(propFavorite);
-    }
-  }, [propFavorite]);
-
-  const wishlist = useWishlist();
-
-  // Sync with centralized wishlist when loaded
-  useEffect(() => {
-    if (!wishlist) return;
-    if (!wishlist.loading) {
-      setIsFavorite(wishlist.has(id));
-    }
-  }, [wishlist, id, wishlist?.loading]);
-
-  // Keep all duplicate card instances for this property in sync across the page
-  useEffect(() => {
-    function onFavoriteChanged(event: Event) {
-      const customEvent = event as CustomEvent<{ listingId: string; isFavorite: boolean }>;
-      if (customEvent.detail && customEvent.detail.listingId === id) {
-        setIsFavorite(customEvent.detail.isFavorite);
-      }
-    }
-    window.addEventListener("homyz:favorite-changed", onFavoriteChanged);
-    return () => window.removeEventListener("homyz:favorite-changed", onFavoriteChanged);
-  }, [id]);
-
-  const toggleFavorite = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (isFavoriting) return;
-
-    if (!isAuthenticated) {
-      const currentUrl =
-        typeof window !== "undefined"
-          ? window.location.pathname + window.location.search
-          : `/listings/${slug || id}`;
-      router.push(`/login?callbackUrl=${encodeURIComponent(currentUrl)}`);
-      return;
-    }
-
-    const nextFavorite = !isFavorite;
-    setIsFavoriting(true);
-    setIsFavorite(nextFavorite);
-    try {
-      if (nextFavorite) {
-        await wishlist.add(id);
-      } else {
-        await wishlist.remove(id);
-      }
-    } catch {
-      setIsFavorite(!nextFavorite);
-    } finally {
-      setIsFavoriting(false);
-    }
-  };
 
   const rawPrice = pricePerNight ?? price;
   const formattedPrice =
@@ -167,7 +95,6 @@ function PropertyCardComponent({
       },
     );
 
-
   const displaySubtitle =
     subtitle ||
     (city ? `${city}${country ? `, ${country}` : ""}` : country || "Location unavailable");
@@ -185,17 +112,7 @@ function PropertyCardComponent({
 
   const primaryBadge = getPrimaryListingBadge({ isGuestFavorite, isSuperhost });
   const showFeatured = primaryBadge === null && badge === "featured";
-
-  const [targetHref, setTargetHref] = useState(() => `/listings/${slug || id}`);
-
-  useEffect(() => {
-    const last = getLastSearch();
-    if (last && (last.checkIn || last.checkOut || last.guests)) {
-      setTargetHref(buildListingDetailUrl(slug || id, last));
-    } else {
-      setTargetHref(`/listings/${slug || id}`);
-    }
-  }, [slug, id]);
+  const targetHref = href || `/listings/${slug || id}`;
 
   return (
     <Link
@@ -204,12 +121,14 @@ function PropertyCardComponent({
     >
       <div className="relative aspect-[233/246] w-full overflow-hidden bg-zinc-100">
         {displayImage ? (
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             alt={name || "Property photo"}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
             src={displayImage}
             onError={() => setImageError(true)}
             loading="lazy"
+            decoding="async"
           />
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center text-[#727272] bg-zinc-50">

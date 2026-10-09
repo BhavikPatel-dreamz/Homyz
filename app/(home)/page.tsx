@@ -9,7 +9,7 @@ import {
   parseServerRecentSearches,
   LAST_SEARCH_COOKIE,
   RECENT_SEARCHES_COOKIE,
-  SEARCH_SESSION_COOKIE,
+  type StoredSearchContext,
 } from "@/lib/storage/client-history";
 import { getUserRecentSearches } from "@/services/search-analytics.service";
 
@@ -53,6 +53,7 @@ export default async function HomePage({
   }>;
 }) {
   let sections: HomepageSection[] = [];
+  let recentSearchSections: HomepageSection[] = [];
   let trendingLocations: Awaited<ReturnType<typeof homepageService.getHomepageData>>["trendingLocations"] = [];
   let mode: "DEFAULT" | "SEARCH" = "DEFAULT";
   let resolvedContext: SearchContext | null = null;
@@ -118,7 +119,7 @@ export default async function HomePage({
       : resolvedContext?.longitude ?? null;
 
     // Concurrently fetch homepage discovery and recent search sections in parallel
-    const resolveRecentSearches = async (): Promise<any[]> => {
+    const resolveRecentSearches = async (): Promise<Array<SearchContext | StoredSearchContext>> => {
       if (isExplicitClear) return [];
       if (user?.id) {
         const userRecent = await getUserRecentSearches(user.id);
@@ -158,25 +159,15 @@ export default async function HomePage({
       },
     });
 
-    const [homepage, recentSearchSections] = await Promise.all([
+    const [homepage, resolvedRecentSearchSections] = await Promise.all([
       homepagePromise,
       recentSearchesPromise,
     ]);
 
     sections = homepage.sections;
     trendingLocations = homepage.trendingLocations;
+    recentSearchSections = resolvedRecentSearchSections;
     mode = hasSearch ? "SEARCH" : "DEFAULT";
-
-    return (
-      <HomeView
-        sections={sections}
-        recentSearchSections={recentSearchSections}
-        trendingLocations={trendingLocations}
-        canFavorite={Boolean(user)}
-        mode={mode}
-        searchContext={resolvedContext}
-      />
-    );
   } catch (error) {
     console.error("Failed to load homepage discovery data:", error);
   }
@@ -184,7 +175,7 @@ export default async function HomePage({
   return (
     <HomeView
       sections={sections}
-      recentSearchSections={[]}
+      recentSearchSections={recentSearchSections}
       trendingLocations={trendingLocations}
       canFavorite={Boolean(user)}
       mode={mode}
