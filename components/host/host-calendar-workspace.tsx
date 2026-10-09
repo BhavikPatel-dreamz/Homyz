@@ -168,23 +168,96 @@ interface MonthGridProps {
   onKeyDown?: (key: string, e: KeyboardEvent) => void;
 }
 
+function MobileViewSelector({
+  view,
+  onSelectView,
+}: {
+  view: "month" | "year";
+  onSelectView: (view: "month" | "year") => void;
+}) {
+  const [isViewMenuOpen, setIsViewMenuOpen] = useState(false);
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setIsViewMenuOpen((isOpen) => !isOpen)}
+        aria-expanded={isViewMenuOpen}
+        aria-haspopup="menu"
+        aria-label="Calendar view"
+        className="flex items-center gap-1.5 rounded-full bg-[#F3F4F5] px-3.5 py-2 text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-[#e9e9e9]"
+      >
+        {view === "month" ? "Month" : "Year"}
+        <svg
+          className={`size-4 transition-transform ${isViewMenuOpen ? "rotate-180" : ""}`}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <path d="m6 9 6 6 6-6" />
+        </svg>
+      </button>
+
+      {isViewMenuOpen && (
+        <div
+          role="menu"
+          aria-label="Calendar view switcher"
+          className="absolute right-0 top-full z-20 mt-2 w-28 overflow-hidden rounded-xl border border-[#d7d7d7] bg-white p-1.5 shadow-xl"
+        >
+          {(["month", "year"] as const).map((option) => {
+            const isSelected = view === option;
+            return (
+              <button
+                key={option}
+                type="button"
+                role="menuitemradio"
+                aria-checked={isSelected}
+                onClick={() => {
+                  onSelectView(option);
+                  setIsViewMenuOpen(false);
+                }}
+                className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium capitalize ${isSelected
+                  ? "bg-[#FDE29B] text-[#1F1F1F]"
+                  : "text-[#525252] hover:bg-[#F3F4F5]"
+                  }`}
+              >
+                {option}
+                {isSelected && <span aria-hidden="true">✓</span>}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /** The calendar index shown before a host opens an individual property's grid. */
 function MobileCalendarIndex({
   listings,
   selectedId,
   onSelect,
   onOpenCalendar,
+  view,
+  onSelectView,
 }: {
   listings: ListingDTO[];
   selectedId: string;
   onSelect: (id: string) => void;
   onOpenCalendar: () => void;
+  view: "month" | "year";
+  onSelectView: (view: "month" | "year") => void;
 }) {
   return (
     <section className="sm:hidden">
-      <h1 className="mb-6">
-        Calendars
-      </h1>
+      <div className="mb-6 flex items-center justify-between gap-3">
+        <h1>Calendars</h1>
+        <MobileViewSelector view={view} onSelectView={onSelectView} />
+      </div>
       <div
         className={`mb-6 divide-y divide-[#dddddd] ${listings.length > 1 ? "border-b border-[#dddddd]" : ""}`}
       >
@@ -254,6 +327,8 @@ function MobileYearCalendar({
   onBack,
   onOpenSettings,
   onOpenMonth,
+  view,
+  onSelectView,
 }: {
   startMonth: Date;
   listing: ListingDTO | null;
@@ -262,6 +337,8 @@ function MobileYearCalendar({
   onBack: () => void;
   onOpenSettings: () => void;
   onOpenMonth: (month: Date) => void;
+  view: "month" | "year";
+  onSelectView: (view: "month" | "year") => void;
 }) {
   const months = Array.from(
     { length: 12 },
@@ -270,6 +347,21 @@ function MobileYearCalendar({
   const today = dateKey(new Date());
   const propertyLabel = listing?.title || "Property name";
   const location = [listing?.district, listing?.city].filter(Boolean).join(", ") || listing?.country;
+  const monthGroups = months.reduce<Array<{ year: number; months: Date[] }>>(
+    (groups, calendarMonth) => {
+      const year = calendarMonth.getFullYear();
+      const currentGroup = groups[groups.length - 1];
+
+      if (!currentGroup || currentGroup.year !== year) {
+        groups.push({ year, months: [calendarMonth] });
+      } else {
+        currentGroup.months.push(calendarMonth);
+      }
+
+      return groups;
+    },
+    [],
+  );
 
   return (
     <section className="sm:hidden">
@@ -277,20 +369,23 @@ function MobileYearCalendar({
         <h1 className="text-[24px] font-medium tracking-0 text-[#1F1F1F] dark:text-zinc-100">
           Calendars
         </h1>
-        <button
-          type="button"
-          onClick={onOpenSettings}
-          aria-label="Calendar settings"
-          className="flex size-10 items-center justify-center rounded-full bg-[#F3F4F5] text-[#1F1F1F] transition-colors hover:bg-[#ebebeb] dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700"
-        >
-          <Image
-            src="/images/icons/filter-icon.svg"
-            alt=""
-            width={18}
-            height={18}
-            aria-hidden="true"
-          />
-        </button>
+        <div className="flex items-center gap-2">
+          <MobileViewSelector view={view} onSelectView={onSelectView} />
+          <button
+            type="button"
+            onClick={onOpenSettings}
+            aria-label="Calendar settings"
+            className="flex size-10 items-center justify-center rounded-full bg-[#F3F4F5] text-[#1F1F1F] transition-colors hover:bg-[#ebebeb] dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700"
+          >
+            <Image
+              src="/images/icons/filter-icon.svg"
+              alt=""
+              width={18}
+              height={18}
+              aria-hidden="true"
+            />
+          </button>
+        </div>
       </div>
 
       <div className="mb-8 flex items-center gap-3">
@@ -310,49 +405,53 @@ function MobileYearCalendar({
       </div>
 
       <div>
-        {months.map((calendarMonth, index) => {
-          const beginsYear = index === 0 || calendarMonth.getMonth() === 0;
-          const year = calendarMonth.getFullYear();
-          const monthIndex = calendarMonth.getMonth();
-          const days = new Date(year, monthIndex + 1, 0).getDate();
-          const offset = new Date(year, monthIndex, 1).getDay();
+        {monthGroups.map((group, groupIndex) => (
+          <section key={group.year} className={groupIndex > 0 ? "mt-8 border-t border-[#d5d5d5] pt-8 dark:border-zinc-700" : ""}>
+            {groupIndex > 0 && (
+              <h2 className="mb-5 text-xl font-medium text-[#1f1f1f] dark:text-zinc-100">
+                {group.year}
+              </h2>
+            )}
+            <div className="grid grid-cols-3 items-start gap-y-5">
+              {group.months.map((calendarMonth, index) => {
+                const year = calendarMonth.getFullYear();
+                const monthIndex = calendarMonth.getMonth();
+                const days = new Date(year, monthIndex + 1, 0).getDate();
+                const offset = new Date(year, monthIndex, 1).getDay();
 
-          return (
-            <Fragment key={formatMonthKey(calendarMonth)}>
-              {beginsYear && (
-                <h2 className={`text-xl font-medium text-[#1f1f1f] dark:text-zinc-100 ${index === 0 ? "sr-only" : "mt-8 pt-8 mb-8 border-t border-[#d5d5d5] dark:border-zinc-700"}`}>
-                  {year}
-                </h2>
-              )}
-              <button
-                type="button"
-                onClick={() => onOpenMonth(calendarMonth)}
-                aria-label={`Open ${monthName(calendarMonth)} ${year}`}
-                className={`group inline-flex w-1/3 flex-col pr-3 text-left align-top ${index > 2 ? "mt-5" : ""} ${index === 2 ? "pr-0" : ""}`}
-              >
-                <span className="mb-5 text-sm font-normal text-[#1f1f1f] transition-colors group-hover:text-[#8b6400] dark:text-zinc-100 dark:group-hover:text-amber-300">
-                  {monthName(calendarMonth).slice(0, 3)}
-                </span>
-                <span className="grid grid-cols-7 gap-x-1 gap-y-2" aria-hidden="true">
-                  {Array.from({ length: 42 }, (_, cell) => {
-                    const day = cell - offset + 1;
-                    if (day < 1 || day > days) return <span key={cell} className="mx-auto size-1.25" />;
-                    const key = dateKey(new Date(year, monthIndex, day));
-                    const unavailable = bookingsByDate.has(key) || blockedDatesSet.has(key);
-                    const isToday = key === today;
-                    return (
-                      <span
-                        key={cell}
-                        className={`mx-auto size-1.5 rounded-full transition-transform group-hover:scale-125 ${unavailable ? "bg-[#1F1F1F] dark:bg-amber-300" : isToday ? "bg-[#8b6400]" : "bg-[#1F1F1F99] dark:bg-[#1F1F1F99]"
-                          }`}
-                      />
-                    );
-                  })}
-                </span>
-              </button>
-            </Fragment>
-          );
-        })}
+                return (
+                  <button
+                    key={formatMonthKey(calendarMonth)}
+                    type="button"
+                    onClick={() => onOpenMonth(calendarMonth)}
+                    aria-label={`Open ${monthName(calendarMonth)} ${year}`}
+                    className={`group flex w-full self-start flex-col pr-3 text-left ${index % 3 === 2 ? "pr-0" : ""}`}
+                  >
+                    <span className="mb-5 text-sm font-normal text-[#1f1f1f] transition-colors group-hover:text-[#8b6400] dark:text-zinc-100 dark:group-hover:text-amber-300">
+                      {monthName(calendarMonth).slice(0, 3)}
+                    </span>
+                    <span className="grid grid-cols-7 gap-x-1 gap-y-2" aria-hidden="true">
+                      {Array.from({ length: 42 }, (_, cell) => {
+                        const day = cell - offset + 1;
+                        if (day < 1 || day > days) return <span key={cell} className="mx-auto size-1.25" />;
+                        const key = dateKey(new Date(year, monthIndex, day));
+                        const unavailable = bookingsByDate.has(key) || blockedDatesSet.has(key);
+                        const isToday = key === today;
+                        return (
+                          <span
+                            key={cell}
+                            className={`mx-auto size-1.5 rounded-full transition-transform group-hover:scale-125 ${unavailable ? "bg-[#1F1F1F] dark:bg-amber-300" : isToday ? "bg-[#8b6400]" : "bg-[#1F1F1F99] dark:bg-[#1F1F1F99]"
+                              }`}
+                          />
+                        );
+                      })}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+        ))}
       </div>
     </section>
   );
@@ -2747,6 +2846,8 @@ export function HostCalendarWorkspace({
               handleSelectMonth(targetMonth);
               setMobileCalendarOpen(true);
             }}
+            view={view}
+            onSelectView={handleSelectView}
           />
         ) : (
           <MobileCalendarIndex
@@ -2754,6 +2855,8 @@ export function HostCalendarWorkspace({
             selectedId={selectedId}
             onSelect={handleSelectProperty}
             onOpenCalendar={() => setMobileCalendarOpen(true)}
+            view={view}
+            onSelectView={handleSelectView}
           />
         )}
 
@@ -3125,7 +3228,7 @@ export function HostCalendarWorkspace({
                   return (
                     <Fragment key={d.toISOString()}>
                       {i > 0 && d.getMonth() === 0 && (
-                        <h2 className="col-span-full dark:border-zinc-800 text-xl font-semibold dark:text-zinc-100">
+                        <h2 className="col-span-full dark:border-zinc-800 text-xl sm:text-2xl font-medium text-[#1f1f1f] dark:text-zinc-100">
                           {d.getFullYear()}
                         </h2>
                       )}
