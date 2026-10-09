@@ -320,7 +320,7 @@ function MobileYearCalendar({
           return (
             <Fragment key={formatMonthKey(calendarMonth)}>
               {beginsYear && (
-                <h2 className={`text-xl font-medium text-[#1f1f1f] dark:text-zinc-100 ${index === 0 ? "sr-only" : "mt-8 border-t border-[#d5d5d5] pt-8 dark:border-zinc-700"}`}>
+                <h2 className={`text-xl font-medium text-[#1f1f1f] dark:text-zinc-100 ${index === 0 ? "sr-only" : "mt-8 pt-8 mb-8 border-t border-[#d5d5d5] dark:border-zinc-700"}`}>
                   {year}
                 </h2>
               )}
@@ -627,13 +627,9 @@ function MonthGrid({
                   className={`flex items-center justify-center rounded-full font-medium transition-transform ${compact
                     ? "size-5 max-[360px]:text-[9px] text-xs sm:size-6 sm:border sm:border-zinc-300 dark:sm:border-zinc-600 sm:bg-white dark:sm:bg-zinc-700 sm:text-zinc-800 dark:sm:text-zinc-200 sm:text-[12px]"
                     : "size-6 text-xs sm:size-7 sm:text-xs"
-                    } ${isSelected
-                    ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 font-medium"
-                      : isToday
-                        ? "border border-[#EBA900] bg-[#FCDF9C] text-[#1F1F1F] font-bold shadow-xs sm:!border-[#EBA900] sm:!bg-[#FCDF9C] dark:border-[#EBA900] dark:bg-[#FCDF9C] dark:text-[#1F1F1F]"
-                        : primaryReservation
-                          ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 font-medium"
-                          : "text-zinc-800 dark:text-zinc-200 bg-white dark:bg-zinc-700"
+                    } ${isToday
+                    ? "border border-[#EBA900] bg-[#FCDF9C] text-[#1F1F1F] font-bold shadow-xs sm:!border-[#EBA900] sm:!bg-[#FCDF9C] dark:border-[#EBA900] dark:bg-[#FCDF9C] dark:text-[#1F1F1F]"
+                      : "text-zinc-800 dark:text-zinc-200 bg-white dark:bg-zinc-700"
                     } ${blocked ? "line-through text-[#727272]" : ""} ${isSelected || primaryReservation ? "!text-xs" : ""}`}
                 >
                   {dayNum}
@@ -646,7 +642,10 @@ function MonthGrid({
                 {blocked ? (
                   <span className="sm:text-sm text-[10px] leading-tight text-[#727272] line-through font-medium">Blocked</span>
                 ) : primaryReservation ? (
-                  <span className="font-['Poppins'] text-[10px] leading-normal tracking-normal font-medium text-[#1F1F1F] dark:text-zinc-100 lg:text-[12px]">{formatMoney(rate, sourceCurrency, 2)}</span>
+                  <span className={`font-['Poppins'] leading-normal tracking-normal text-[#1F1F1F] dark:text-zinc-100 ${compact
+                    ? "mt-0.5 block text-[12px] font-medium"
+                    : "text-[10px] lg:text-[16px] font-medium"
+                    }`}>{formatMoney(rate, sourceCurrency, 2)}</span>
                 ) : isPast ? (
                   <span className="sm:text-sm text-[10px] leading-tight text-[#727272] line-through font-medium">{formatMoney(rate, sourceCurrency, 2)}</span>
                 ) : promo?.applied ? (
@@ -682,12 +681,17 @@ function MonthGrid({
                 ) : (
                   <>
                     <span
-                      className={`${compact ? "mt-0.5 block font-normal text-[#1F1F1F] dark:text-zinc-100 text-[12px] leading-normal " : "font-['Poppins'] text-[10px] lg:text-[16px] lg:leading-6 leading-normal tracking-normal font-medium"} ${compact
+                      className={`${compact
+                        ? `mt-0.5 block text-[#1F1F1F] dark:text-zinc-100 text-[12px] leading-normal ${isSelected ? "font-medium" : "font-normal"}`
+                        : `font-['Poppins'] text-[10px] lg:text-[16px] lg:leading-6 leading-normal tracking-normal ${isSelected ? "font-medium" : "font-normal"}`
+                        } ${compact
                         ? ""
-                        : customPrice !== null
-                          ? "text-amber-600 dark:text-amber-400 font-bold"
-                          : isSelected
-                            ? "text-zinc-950 dark:text-amber-300 font-medium"
+                        : isSelected
+                          ? customPrice !== null
+                            ? "text-amber-600 dark:text-amber-400"
+                            : "text-zinc-950 dark:text-amber-300"
+                          : customPrice !== null
+                            ? "text-amber-600 dark:text-amber-400 font-bold"
                             : "text-[#1F1F1F] dark:text-zinc-100"
                         }`}
                     >
@@ -731,8 +735,6 @@ function MonthGrid({
                       : `Stay · ${primaryReservation.guestName}`}
                   </span>
                 </div>
-              ) : !compact ? (
-                <div className="hidden h-8 md:block" aria-hidden="true" />
               ) : null}
             </button>
           );
@@ -2701,7 +2703,7 @@ export function HostCalendarWorkspace({
               </p>
             </div>
 
-            <div className="mb-5 flex items-center justify-between border-b border-[#d5d5d5] pb-3 dark:border-zinc-700">
+            <div className="flex items-center justify-between border-b border-[#d5d5d5] pb-3 dark:border-zinc-700">
               <h2 className="text-base font-medium text-[#272727] dark:text-zinc-100">
                 {monthName(month)}
               </h2>
