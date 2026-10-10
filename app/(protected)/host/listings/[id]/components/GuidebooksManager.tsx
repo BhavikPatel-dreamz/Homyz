@@ -85,6 +85,8 @@ interface GuidebookDetailData {
 
 interface GuidebooksManagerProps {
   listingId: string;
+  hostId?: string;
+  presentation?: "host" | "admin";
   listingCity?: string;
   listingCountry?: string;
   listingLatitude?: number | null;
@@ -662,6 +664,8 @@ function GuidebookRecommendationForm({
 
 export function GuidebooksManager({
   listingId,
+  hostId,
+  presentation = "host",
   listingCity,
   listingCountry,
   listingLatitude,
@@ -711,7 +715,7 @@ export function GuidebooksManager({
 
   const loadGuidebooks = async () => {
     setLoading(true);
-    const result = await getGuidebooksAction();
+    const result = await getGuidebooksAction(hostId, listingId);
     if (result.ok && Array.isArray(result.data))
       setGuidebooks(result.data as GuidebookSummary[]);
     else toast.error(actionError(result, "Could not load guidebooks."));
@@ -719,7 +723,12 @@ export function GuidebooksManager({
   };
 
   useEffect(() => {
-    if (initialGuidebooks === undefined) void loadGuidebooks();
+    if (initialGuidebooks !== undefined) {
+      setGuidebooks(initialGuidebooks);
+      setLoading(false);
+    } else {
+      void loadGuidebooks();
+    }
   }, [initialGuidebooks]);
 
   useEffect(() => {
@@ -1076,7 +1085,13 @@ export function GuidebooksManager({
         <div className="mx-auto max-w-5xl space-y-8">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="flex items-start gap-5">
-              <BackButton onClick={() => setActiveSection("arrival-guide")} />
+              <BackButton
+                onClick={() =>
+                  setActiveSection(
+                    presentation === "admin" ? "check-in-out" : "arrival-guide",
+                  )
+                }
+              />
               <div>
                 <h1 className="text-3xl font-semibold">{t("host_guidebooks_title", "Guidebooks")}</h1>
                 <p className="mt-2 text-[#727272]">

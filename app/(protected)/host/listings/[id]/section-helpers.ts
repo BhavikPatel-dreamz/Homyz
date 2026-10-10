@@ -216,6 +216,7 @@ export const CHECK_OUT_TIMES = ALL_HOURS_OPTIONS;
 
 export interface HostListingData {
   id: string;
+  hostId?: string;
   title: string;
   description: string;
   descriptionSections?: Record<string, unknown> | null;
@@ -399,6 +400,7 @@ export function serializeListingForEditor(
 
   return {
     id: listing.id,
+    hostId: listing.hostId ?? listing.host?.id ?? "",
     title: listing.title,
     description: listing.description,
     descriptionSections: typeof listing.descriptionSections === "string"

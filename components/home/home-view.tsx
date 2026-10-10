@@ -61,6 +61,7 @@ export function HomeView({
   const { t } = useLanguage();
   const [isNavigatingSearch, startTransition] = useTransition();
   const [recentlyViewed, setRecentlyViewed] = useState<ViewedPropertyItem[]>([]);
+  const recentlyViewedTotal = recentlyViewed.length;
   // Client history is only a display snapshot. Keep badge flags separate so
   // Recently Viewed always obtains its current qualification state in one
   // bounded backend request before rendering the row.
@@ -484,12 +485,15 @@ export function HomeView({
 
        
           {/* Recently Viewed Client Section */}
-          {recentlyViewedCards.length >= 2 && !propertySections.some((s) => s.id === "recently-viewed") && (
+          {recentlyViewedCards.length > 0 && !propertySections.some((s) => s.id === "recently-viewed") && (
             <section className="mt-8 sm:mt-[92px]">
               <HomePropertySection
                 title={t("home_recently_viewed", "Recently viewed")}
                 cards={recentlyViewedCards}
                 seeAllHref="/listings"
+                totalCount={recentlyViewedTotal}
+                showMoreCard={recentlyViewedTotal > 10}
+                showSeeAllCard={recentlyViewedTotal > 10}
               />
             </section>
           )}

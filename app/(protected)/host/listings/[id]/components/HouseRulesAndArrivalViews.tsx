@@ -180,6 +180,7 @@ interface HouseRulesAndArrivalViewsProps {
   listingLatitude?: number | null;
   listingLongitude?: number | null;
   guidebooksEnabled?: boolean;
+  presentation?: "host" | "admin";
   listingDiscounts?: any;
   onSaveOrgStays?: (cfg: any) => Promise<void>;
   initialGuidebooks?: any[];
@@ -197,6 +198,7 @@ export function HouseRulesAndArrivalViews({
   listingLatitude,
   listingLongitude,
   guidebooksEnabled = true,
+  presentation = "host",
   listingDiscounts,
   onSaveOrgStays,
   activeSection,
@@ -1079,6 +1081,8 @@ export function HouseRulesAndArrivalViews({
       {guidebooksEnabled && (activeSection === "guidebooks" || activeSection === "guidebook") && (
         <GuidebooksManager
           listingId={listingId || ""}
+          hostId={listing?.hostId || listing?.host?.id}
+          presentation={presentation}
           listingCity={listingCity}
           listingCountry={listingCountry}
           listingLatitude={listingLatitude}

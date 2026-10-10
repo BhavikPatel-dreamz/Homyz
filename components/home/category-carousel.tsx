@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { PropertyCard, PropertyCardData } from "./property-card";
-import { SeeAllCard } from "./see-all-card";
+import { SeeAllCard, SeeAllCard as ShowMoreCard } from "./see-all-card";
 import { useLanguage } from "@/lib/i18n/language-context";
 
 interface HomePropertySectionProps {
@@ -12,6 +12,8 @@ interface HomePropertySectionProps {
   seeAllHref?: string;
   previewImages?: string[];
   totalCount?: number;
+  showMoreCard?: boolean;
+  showSeeAllCard?: boolean;
 }
 
 export function getTranslatedSectionTitle(
@@ -116,6 +118,8 @@ function HomePropertySectionComponent({
   seeAllHref,
   previewImages,
   totalCount,
+  showMoreCard,
+  showSeeAllCard,
 }: HomePropertySectionProps) {
   const { t } = useLanguage();
   const displayTitle = getTranslatedSectionTitle(title, t);
@@ -128,7 +132,19 @@ function HomePropertySectionComponent({
   // Each listing is shown once. Repeating cards makes a short discovery
   // section look like it contains duplicate properties.
   const displayCards = cards;
-  const hasSeeAll = Boolean(seeAllHref);
+  const isRecentlyViewed =
+    title === "Recently viewed" ||
+    title === t("home_recently_viewed", "Recently viewed");
+  const isSeeAllCardVisible =
+    Boolean(seeAllHref) &&
+    (showMoreCard !== undefined
+      ? showMoreCard
+      : showSeeAllCard !== undefined
+        ? showSeeAllCard
+        : isRecentlyViewed && totalCount !== undefined
+          ? totalCount > 10
+          : true);
+  const hasSeeAll = isSeeAllCardVisible;
 
   const measureSlideStep = useCallback(() => {
     const track = containerRef.current;
@@ -322,9 +338,9 @@ function HomePropertySectionComponent({
             <PropertyCard {...card} />
           </div>
         ))}
-        {seeAllHref && (
+        {isSeeAllCardVisible && seeAllHref && (
           <div className="min-w-0 snap-start">
-            <SeeAllCard
+            <ShowMoreCard
               href={seeAllHref}
               previewImages={previewImages}
               title={title}
@@ -361,3 +377,4 @@ function HomePropertySectionComponent({
 // domain-oriented name above.
 export const HomePropertySection = React.memo(HomePropertySectionComponent);
 export const CategoryCarousel = HomePropertySection;
+export { SeeAllCard, ShowMoreCard };

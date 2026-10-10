@@ -222,7 +222,7 @@
   box-shadow: none !important;
 }
 
-.admin-listing-editor main button[class*="bg-[#1F1F1F]"]:not([class*="hover:bg"]) {
+.admin-listing-editor main button:is([class*="bg-[#1F1F1F]"], [class*="bg-[#222]"]):not([class*="hover:bg"]) {
   background-color: #18181b !important;
 }
 

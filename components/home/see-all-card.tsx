@@ -83,3 +83,5 @@ export function SeeAllCard({
     </Link>
   );
 }
+
+export const ShowMoreCard = SeeAllCard;

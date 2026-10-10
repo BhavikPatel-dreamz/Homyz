@@ -1894,7 +1894,8 @@ export function HostListingEditorClient({
             listingCountry={editCountry || listing.country}
             listingLatitude={listing.latitude}
             listingLongitude={listing.longitude}
-            guidebooksEnabled={presentation === "host"}
+            guidebooksEnabled={true}
+            presentation={presentation}
             listingDiscounts={listing.discounts}
             onSaveOrgStays={handleSaveOrgStays}
             initialGuidebooks={initialGuidebooks}
