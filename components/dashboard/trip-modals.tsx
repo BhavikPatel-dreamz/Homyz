@@ -395,7 +395,7 @@ export function ReceiptModal({
             </div>
 
             {/* Parties */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 rounded-lg shadow-md bg-white p-4 text-xs sm:text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border border-white rounded-lg shadow-[0px_2px_4px_0px_#00000040] bg-[#F3F4F5] p-4 text-xs sm:text-sm">
               <div>
                 <span className="font-semibold text-zinc-800 block mb-1">
                   Host / Supplier
@@ -428,7 +428,7 @@ export function ReceiptModal({
             </div>
 
             {/* Stay Details */}
-            <div className="rounded-lg border border-[#d7d7d7] p-4 text-xs sm:text-sm space-y-1">
+                <div className="rounded-lg border border-white bg-[#F3F4F5] shadow-[0px_2px_4px_0px_#00000040] p-4 text-xs sm:text-sm space-y-1">
               <span className="font-semibold text-zinc-800 block mb-1">
                 Property & Stay
               </span>
@@ -458,7 +458,7 @@ export function ReceiptModal({
             {/* Line Items Table */}
             <div className="overflow-hidden rounded-lg border border-[#d7d7d7]">
               <table className="w-full text-left text-xs sm:text-sm">
-                <thead className="bg-zinc-100 text-zinc-700">
+                    <thead className="bg-[#F3F4F5] text-zinc-700">
                   <tr>
                     <th className="px-4 py-2.5 font-semibold">Description</th>
                     <th className="px-4 py-2.5 font-semibold text-center">
@@ -483,11 +483,11 @@ export function ReceiptModal({
                   ))}
                   {(invoice.taxBreakdown || []).map((tax, idx) => (
                     <tr key={`tax-${idx}`} className="text-zinc-600">
-                      <td className="px-4 py-2 text-xs italic">
+                      <td className="px-4 py-2">
                         {tax.taxName}
                       </td>
-                      <td className="px-4 py-2 text-center text-xs">—</td>
-                      <td className="px-4 py-2 text-right text-xs">
+                      <td className="px-4 py-2 text-center">—</td>
+                      <td className="px-4 py-2 text-right">
                         {formatPrice(tax.taxAmount, invoice.currency || "SAR")}
                       </td>
                     </tr>
@@ -498,7 +498,7 @@ export function ReceiptModal({
                     <td className="px-4 py-3" colSpan={2}>
                       Grand Total Paid
                     </td>
-                    <td className="px-4 py-3 text-right text-base text-emerald-700 font-bold">
+                    <td className="px-4 py-3 text-right text-base text-emerald-700 font-semibold">
                       {formatPrice(
                         invoice.grandTotal ?? 0,
                         invoice.currency || "SAR",

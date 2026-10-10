@@ -1007,7 +1007,7 @@ function ContextualManagementPanel({
   return (
     <div className="space-y-5 font-['Poppins'] text-[#1F1F1F] dark:text-zinc-100">
       {/* Header */}
-      <div className="rounded-[18px] border border-white bg-[#F3F4F5] px-5 py-4 shadow-[0_2px_4px_rgb(31_31_31_/_0.16)] dark:border-zinc-700/80 dark:bg-zinc-800/70">
+      <div className="rounded-[12px] border border-white bg-[#F3F4F5] px-5 py-4 shadow-[0_2px_4px_rgb(31_31_31_/_0.16)] dark:border-zinc-700/80 dark:bg-zinc-800/70">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
             <p className="mb-2 block text-[13px] font-normal text-[#727272] dark:text-zinc-400">
@@ -1083,7 +1083,7 @@ function ContextualManagementPanel({
         <div
           role="tablist"
           aria-label="Contextual panel mode"
-          className="grid grid-cols-2 rounded-[10px] bg-[#F3F4F5] dark:bg-zinc-800 p-1"
+          className="grid grid-cols-2 rounded-[10px] bg-[#F3F4F5] dark:bg-zinc-800 p-1 shadow-[0px_2px_4px_0px_#00000040] border border-white"
         >
           <button
             type="button"
@@ -1124,7 +1124,7 @@ function ContextualManagementPanel({
         <div className="space-y-4">
           {/* Base Listing Rate Card */}
           <div className="space-y-3">
-            <div className="rounded-[18px] border border-white bg-[#F3F4F5] px-5 py-4 shadow-[0_2px_4px_0px_#00000040] dark:border-zinc-700/80 dark:bg-zinc-800/70">
+            <div className="rounded-[12px] border border-white bg-[#F3F4F5] px-5 py-4 shadow-[0_2px_4px_0px_#00000040] dark:border-zinc-700/80 dark:bg-zinc-800/70">
               <span className="block text-[13px] font-normal text-[#727272] dark:text-zinc-400">
                 Base Nightly Price
               </span>
@@ -1133,7 +1133,7 @@ function ContextualManagementPanel({
               </p>
             </div>
             {weekendPrice && weekendPrice > 0 ? (
-              <div className="rounded-[18px] border border-white bg-[#F3F4F5] px-5 py-4 shadow-[0_2px_4px_0px_#00000040] dark:border-zinc-700/80 dark:bg-zinc-800/70">
+              <div className="rounded-[12px] border border-white bg-[#F3F4F5] px-5 py-4 shadow-[0_2px_4px_0px_#00000040] dark:border-zinc-700/80 dark:bg-zinc-800/70">
                 <span className="block text-[13px] font-normal text-[#727272] dark:text-zinc-400">
                   Weekend Rate
                 </span>
@@ -1145,7 +1145,7 @@ function ContextualManagementPanel({
           </div>
 
           {/* Current Effective Rate for Selection */}
-          <div className="rounded-[18px] border border-white bg-[#F3F4F5] px-5 py-4 shadow-[0_2px_4px_0px_#00000040] dark:border-zinc-700/80 dark:bg-zinc-800/70">
+          <div className="rounded-[12px] border border-white bg-[#F3F4F5] px-5 py-4 shadow-[0_2px_4px_0px_#00000040] dark:border-zinc-700/80 dark:bg-zinc-800/70">
             <p className="text-xs font-normal text-[#727272] dark:text-zinc-400 block">
               Effective Selection Rate
             </p>
@@ -1169,7 +1169,7 @@ function ContextualManagementPanel({
 
           {/* Phase 14 & Phase 20: Advisory Price Tip Recommendation Card */}
           {priceTipsResult && priceTipsResult.applicableCount > 0 && (
-            <div className="space-y-3 rounded-[18px] bg-[#FEF3D7] border border-white p-4 shadow-[0_2px_4px_0px_#00000040] dark:border-amber-800 dark:bg-amber-950/40">
+            <div className="space-y-3 rounded-[12px] bg-[#FEF3D7] border border-white p-4 shadow-[0_2px_4px_0px_#00000040] dark:border-amber-800 dark:bg-amber-950/40">
               <div className="flex items-start flex-col justify-between">
                 <div className="flex items-center gap-1.5">
                   <span className="text-base font-semibold text-[#1F1F1F] dark:text-amber-100 mb-3">
@@ -1368,7 +1368,7 @@ function ContextualManagementPanel({
           </form>
 
           {/* Selected-date promotion */}
-          <div className="space-y-3 rounded-lg border border-emerald-200 bg-emerald-50/50 p-4 dark:border-emerald-800/60 dark:bg-emerald-950/30 shadow-[0_2px_4px_0px_#00000040]">
+          <div className="space-y-3 rounded-[12px] border border-emerald-200 bg-emerald-50/50 p-4 dark:border-emerald-800/60 dark:bg-emerald-950/30 shadow-[0_2px_4px_0px_#00000040]">
             <div className="flex flex-col items-start justify-between gap-2">
               <div className="flex items-center gap-1.5">
                 <span className="text-base font-semibold text-[#1F1F1F] dark:text-emerald-200">
@@ -1546,7 +1546,7 @@ function ContextualManagementPanel({
           </div>
 
           {/* Phase 9 & 10: Property Stay Discounts & Additional Charges (Collapsible) */}
-          <details className="group overflow-hidden rounded-[18px] border border-white bg-[#F3F4F5] shadow-[0_2px_4px_0px_#00000040] transition-colors dark:border-zinc-700/80 dark:bg-zinc-800/40">
+          <details className="group overflow-hidden rounded-[12px] border border-white bg-[#F3F4F5] shadow-[0_2px_4px_0px_#00000040] transition-colors dark:border-zinc-700/80 dark:bg-zinc-800/40">
             <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 transition-colors [&::-webkit-details-marker]:hidden">
               <span className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100">
                 Discounts & Additional Charges
@@ -1602,7 +1602,7 @@ function ContextualManagementPanel({
       {panelMode === "availability" && stats.editableKeys.length > 0 && (
         <div className="space-y-4">
           {/* Current Availability Card */}
-          <div className="rounded-xl bg-[#F3F4F5] dark:bg-zinc-800/40 p-3.5">
+          <div className="rounded-xl bg-[#F3F4F5] dark:bg-zinc-800/40 p-3.5 shadow-[0px_2px_4px_0px_#00000040] border border-white">
             <p className="text-xs font-normal text-[#727272] dark:text-zinc-400 block">
               Current Status
             </p>
@@ -1617,7 +1617,7 @@ function ContextualManagementPanel({
                       : "bg-amber-500"
                   }`}
               />
-              <span className="text-sm font-semibold capitalize text-zinc-900 dark:text-zinc-100">
+              <span className="text-sm font-medium capitalize text-[#1f1f1f] dark:text-zinc-100">
                 {stats.isMixedAvailability
                   ? `Mixed (${stats.availableCount} available, ${stats.blockedCount} blocked${stats.bookedCount > 0 ? `, ${stats.bookedCount} reserved` : ""
                   })`
@@ -1632,7 +1632,7 @@ function ContextualManagementPanel({
 
           {/* Availability Action Buttons */}
           <div className="space-y-2">
-            <p className="text-xs text-[#727272] dark:text-zinc-400">
+            <p className="text-sm text-[#1f1f1f] dark:text-zinc-400">
               Change availability for {stats.editableKeys.length} {stats.editableKeys.length === 1 ? "date" : "dates"}:
               {stats.bookedCount > 0 && (
                 <span className="block text-xs text-[#727272] mt-0.5">
@@ -1667,7 +1667,7 @@ function ContextualManagementPanel({
                     await onSave({ blockedDates: nextBlocked });
                   }
                 }}
-                className="rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-2.5 text-xs font-bold transition-colors cursor-pointer disabled:opacity-40"
+                className="rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-2.5 text-xs font-medium transition-colors cursor-pointer disabled:opacity-40"
               >
                 Make available
               </button>
@@ -1693,7 +1693,7 @@ function ContextualManagementPanel({
                     await onSave({ blockedDates: nextBlocked });
                   }
                 }}
-                className="rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white dark:bg-zinc-700 dark:hover:bg-zinc-600 px-3 py-2.5 text-xs font-bold transition-colors cursor-pointer disabled:opacity-40"
+                className="rounded-lg bg-[#1f1f1f] hover:bg-zinc-700 text-white dark:bg-zinc-700 dark:hover:bg-zinc-600 px-3 py-2.5 text-xs font-medium transition-colors cursor-pointer disabled:opacity-40"
               >
                 Block dates
               </button>
@@ -1715,7 +1715,7 @@ function ContextualManagementPanel({
                       setLastUndo(null);
                     }
                   }}
-                  className="rounded-lg bg-white/20 dark:bg-zinc-900/10 hover:bg-white/30 px-2.5 py-1 text-xs font-bold cursor-pointer transition-colors shrink-0"
+                  className="rounded-lg bg-white/20 dark:bg-zinc-900/10 hover:bg-white/30 px-2.5 py-1 text-xs font-medium cursor-pointer transition-colors shrink-0"
                 >
                   Undo
                 </button>
@@ -1724,17 +1724,17 @@ function ContextualManagementPanel({
           </div>
 
           {/* Phase 11: Selected-Date Minimum Stay Override */}
-          <div className="rounded-xl bg-[#F3F4F5] dark:bg-zinc-800/40 p-3.5 space-y-3">
-            <div className="flex items-center justify-between">
+          <div className="rounded-xl bg-[#F3F4F5] dark:bg-zinc-800/40 p-3.5 space-y-3 shadow-[0px_2px_4px_0px_#00000040] border border-white">
+            <div className="flex flex-col items-start justify-between">
               <span className="text-xs font-normal text-[#727272] dark:text-zinc-400 block">
                 Minimum Stay Override
               </span>
               {stats.isMixedMinStay ? (
-                <span className="rounded-full bg-amber-100 dark:bg-amber-950/60 px-2 py-0.5 text-[10px] font-bold text-amber-800 dark:text-amber-300">
+                <span className="text-base font-medium text-amber-800 dark:text-amber-300 mt-2">
                   Mixed stays
                 </span>
               ) : (
-                <span className="rounded-full bg-zinc-200 dark:bg-zinc-700 px-2 py-0.5 text-[10px] font-bold text-zinc-800 dark:text-zinc-200">
+                  <span className="text-sm font-medium text-[#1f1f1f] dark:text-zinc-200 mt-2">
                   {stats.commonMinStay ?? listing.minNights ?? 1} nights
                 </span>
               )}
@@ -1769,7 +1769,7 @@ function ContextualManagementPanel({
               className="space-y-2"
             >
               <div className="flex gap-2">
-                <div className="relative flex flex-1 items-center rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 shadow-2xs transition-all focus-within:border-zinc-900 focus-within:ring-2 focus-within:ring-zinc-900/10 dark:focus-within:border-amber-400 dark:focus-within:ring-amber-400/20 hover:border-zinc-400 dark:hover:border-zinc-600">
+                <div className="relative flex flex-1 items-center rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 shadow-2xs transition-all focus-within:border-zinc-900 focus-within:ring-2 focus-within:ring-zinc-900/10 dark:focus-within:border-amber-400 dark:focus-within:ring-amber-400/20 hover:border-zinc-400 dark:hover:border-zinc-600">
                   <input
                     type="number"
                     min="1"
@@ -1783,14 +1783,14 @@ function ContextualManagementPanel({
                     }}
                     className="w-full bg-transparent px-3 py-2 text-xs font-medium text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                   />
-                  <span className="pr-3 text-xs font-bold text-[#727272] dark:text-zinc-400 select-none shrink-0">
-                    nights
+                  <span className="pr-3 text-xs font-medium text-[#727272] dark:text-zinc-400 select-none shrink-0">
+                    Nights
                   </span>
                 </div>
                 <button
                   type="submit"
                   disabled={saving || !customMinStayInput}
-                  className="rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-[#F3F4F5] dark:hover:bg-white dark:text-zinc-900 px-3.5 py-2 text-xs font-semibold transition-colors cursor-pointer disabled:opacity-40 shrink-0 shadow-xs"
+                  className="rounded-lg bg-[#1f1f1f] hover:bg-[#727272] text-white dark:bg-[#F3F4F5] dark:hover:bg-white dark:text-zinc-900 px-3.5 py-2 text-xs font-medium transition-colors cursor-pointer disabled:opacity-40 shrink-0 shadow-xs"
                 >
                   Apply min stay
                 </button>
@@ -1818,23 +1818,36 @@ function ContextualManagementPanel({
                   },
                 });
               }}
-              className="w-full text-left text-xs font-semibold text-zinc-600 dark:text-zinc-400 hover:underline cursor-pointer disabled:opacity-70"
+              className="w-full text-left text-xs font-medium text-[#1f1f1f] hover:text-[#727272] underline underline-offset-2 dark:text-zinc-400 hover:underline cursor-pointer disabled:opacity-70"
             >
               Reset to property default ({listing.minNights ?? 1} nights)
             </button>
           </div>
 
           {/* Phase 11: Property Availability Rules (Collapsible) */}
-          <details className="group rounded-xl border border-[#d7d7d7] dark:border-zinc-700/80 bg-zinc-50/60 dark:bg-zinc-800/40 overflow-hidden transition-colors">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-3.5 hover:bg-[#F3F4F5]/70 dark:hover:bg-zinc-800/70 transition-colors [&::-webkit-details-marker]:hidden">
-              <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+          <details className="group rounded-xl shadow-[0px_2px_4px_0px_#00000040] border border-white dark:border-zinc-700/80 bg-[#F3F4F5] dark:bg-zinc-800/40 overflow-hidden transition-colors">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-3.5 transition-colors [&::-webkit-details-marker]:hidden shadow-[0px_2px_4px_0px_#00000040] border border-white">
+              <span className="text-sm font-medium text-[#1f1f1f] dark:text-zinc-100">
                 Property Availability Rules
               </span>
-              <span className="text-sm font-medium text-zinc-400 group-open:rotate-180 transition-transform duration-200">
-                ▾
+              <span className="relative size-4 shrink-0" aria-hidden="true">
+                <Image
+                  src="/images/icons/homyz/stroke/Plus.svg"
+                  alt=""
+                  width={16}
+                  height={16}
+                  className="size-4 transition-opacity duration-200 group-open:opacity-0"
+                />
+                <Image
+                  src="/images/icons/minus-icon.svg"
+                  alt=""
+                  width={14}
+                  height={1}
+                  className="absolute left-1/2 top-1/2 hidden h-px w-3.5 -translate-x-1/2 -translate-y-1/2 group-open:block"
+                />
               </span>
             </summary>
-            <div className="border-t border-[#d7d7d7]/80 dark:border-zinc-700/80 p-3.5 space-y-2 bg-white/70 dark:bg-zinc-900/40 text-xs text-[#727272] dark:text-zinc-300">
+            <div className="p-3.5 space-y-2 bg-white dark:bg-zinc-900/40 text-xs text-[#727272] dark:text-zinc-300">
               <div className="flex justify-between items-center">
                 <span>Default minimum stay</span>
                 <span className="font-semibold text-zinc-800 dark:text-zinc-200">
@@ -1861,7 +1874,7 @@ function ContextualManagementPanel({
                     : "Not allowed"}
                 </span>
               </div>
-              <div className="flex justify-between items-center pt-1 border-t border-[#d7d7d7]/60 dark:border-zinc-700/60">
+              <div className="pt-3 flex justify-between items-center border-t border-[#d7d7d7] dark:border-zinc-700/60">
                 <span>Guest capacity</span>
                 <span className="font-semibold text-zinc-800 dark:text-zinc-200">
                   {listing.guests} guests max
