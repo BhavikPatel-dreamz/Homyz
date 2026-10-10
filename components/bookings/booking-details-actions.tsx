@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { CancelBookingModal, ReceiptModal, ContactHostModal } from "@/components/dashboard/trip-modals";
 import type { ReservationCardData } from "@/components/dashboard/reservation-card";
 import { compareBookingDates } from "@/lib/booking/booking-date";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 interface BookingDetailsActionsProps {
   booking: ReservationCardData;
@@ -17,6 +18,7 @@ function isStartDateInFuture(startDate: Date | string): boolean {
 
 export function BookingDetailsActions({ booking }: BookingDetailsActionsProps) {
   const router = useRouter();
+  const { t } = useLanguage();
   const [isCancelOpen, setIsCancelOpen] = useState(false);
   const [isReceiptOpen, setIsReceiptOpen] = useState(false);
   const [isContactOpen, setIsContactOpen] = useState(false);
@@ -36,7 +38,7 @@ export function BookingDetailsActions({ booking }: BookingDetailsActionsProps) {
   return (
     <div className="space-y-6 pt-7 border-t border-zinc-200" aria-labelledby="manage-reservation-heading">
       <h2 id="manage-reservation-heading" className="text-xl font-semibold text-[#1F1F1F]">
-        Manage your reservation
+        {t("booking_details_manage_reservation", "Manage your reservation")}
       </h2>
 
       <div className="grid gap-4 sm:grid-cols-1">
@@ -50,10 +52,10 @@ export function BookingDetailsActions({ booking }: BookingDetailsActionsProps) {
             </div>
             <div>
               <h3 className="text-base font-semibold text-[#1F1F1F]">
-                Getting help with your stay
+                {t("booking_details_getting_help", "Getting help with your stay")}
               </h3>
               <p className="mt-1 text-sm text-zinc-600 leading-relaxed max-w-xl">
-                Have questions about check-in instructions, key exchange, directions, or arrival time? Reach out to your host or connect with our 24/7 concierge support.
+                {t("booking_details_getting_help_desc", "Have questions about check-in instructions, key exchange, directions, or arrival time? Reach out to your host or connect with our 24/7 concierge support.")}
               </p>
             </div>
           </div>
@@ -63,7 +65,7 @@ export function BookingDetailsActions({ booking }: BookingDetailsActionsProps) {
               onClick={() => setIsContactOpen(true)}
               className="inline-flex min-h-10 items-center justify-center rounded-xl border border-zinc-300 bg-white px-4 py-2 text-sm font-semibold text-zinc-800 hover:bg-zinc-50 hover:border-zinc-400 transition-colors cursor-pointer"
             >
-              Contact host
+              {t("booking_details_contact_host", "Contact host")}
             </button>
           </div>
         </section>
@@ -78,10 +80,10 @@ export function BookingDetailsActions({ booking }: BookingDetailsActionsProps) {
             </div>
             <div>
               <h3 className="text-base font-semibold text-[#1F1F1F]">
-                Payment info & official receipt
+                {t("booking_details_payment_info_title", "Payment info & official receipt")}
               </h3>
               <p className="mt-1 text-sm text-zinc-600 leading-relaxed max-w-xl">
-                Download or print an authoritative electronic VAT invoice and payment receipt for your personal records or company expense reimbursement.
+                {t("booking_details_payment_info_desc", "Download or print an authoritative electronic VAT invoice and payment receipt for your personal records or company expense reimbursement.")}
               </p>
             </div>
           </div>
@@ -91,7 +93,7 @@ export function BookingDetailsActions({ booking }: BookingDetailsActionsProps) {
               onClick={() => setIsReceiptOpen(true)}
               className="inline-flex min-h-10 items-center justify-center rounded-xl border border-zinc-300 bg-white px-4 py-2 text-sm font-semibold text-zinc-800 hover:bg-zinc-50 hover:border-zinc-400 transition-colors cursor-pointer"
             >
-              View receipt
+              {t("booking_details_view_receipt", "View receipt")}
             </button>
           </div>
         </section>
@@ -107,18 +109,18 @@ export function BookingDetailsActions({ booking }: BookingDetailsActionsProps) {
               </div>
               <div>
                 <h3 className="text-base font-semibold text-[#1F1F1F]">
-                  Cancellation policy
+                  {t("booking_details_cancellation_policy", "Cancellation policy")}
                 </h3>
                 <p className="mt-1 text-sm text-zinc-600 leading-relaxed max-w-xl">
                   {booking.isNonRefundable
-                    ? "This reservation is non-refundable. Cancellations are final with zero guest refund according to the selected booking terms."
+                    ? t("booking_details_non_ref_policy_desc", "This reservation is non-refundable. Cancellations are final with zero guest refund according to the selected booking terms.")
                     : booking.cancellationPolicy
-                      ? `Policy: ${booking.cancellationPolicy}. You can cancel before check-in according to this policy.`
-                      : "Standard cancellation policy applies. You can cancel this reservation before your scheduled check-in date."}
+                      ? t("booking_details_policy_desc", { policy: booking.cancellationPolicy }, "Policy: {policy}. You can cancel before check-in according to this policy.")
+                      : t("booking_details_standard_policy_desc", "Standard cancellation policy applies. You can cancel this reservation before your scheduled check-in date.")}
                 </p>
                 {!checkinInFuture && (
                   <p className="mt-2 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 inline-block">
-                    Check-in date has passed — cancellations are no longer accepted.
+                    {t("booking_details_checkin_passed_notice", "Check-in date has passed — cancellations are no longer accepted.")}
                   </p>
                 )}
               </div>
@@ -130,7 +132,7 @@ export function BookingDetailsActions({ booking }: BookingDetailsActionsProps) {
                   onClick={() => setIsCancelOpen(true)}
                   className="inline-flex min-h-10 items-center justify-center rounded-xl border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 hover:border-red-300 transition-colors cursor-pointer"
                 >
-                  Cancel reservation
+                  {t("booking_details_cancel_reservation", "Cancel reservation")}
                 </button>
               ) : (
                 <button
@@ -139,7 +141,7 @@ export function BookingDetailsActions({ booking }: BookingDetailsActionsProps) {
                   aria-disabled="true"
                   className="inline-flex min-h-10 cursor-not-allowed items-center justify-center rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2 text-sm font-semibold text-[#727272]"
                 >
-                  Cannot cancel
+                  {t("booking_details_cannot_cancel_btn", "Cannot cancel")}
                 </button>
               )}
             </div>
@@ -155,9 +157,11 @@ export function BookingDetailsActions({ booking }: BookingDetailsActionsProps) {
               </svg>
             </div>
             <div>
-              <h3 className="text-base font-semibold text-zinc-700">Reservation cancelled</h3>
+              <h3 className="text-base font-semibold text-zinc-700">
+                {t("booking_details_reservation_cancelled_title", "Reservation cancelled")}
+              </h3>
               <p className="mt-1 text-sm text-[#727272] leading-relaxed">
-                This reservation has been cancelled. No further action is required. If you have a question about your refund, please contact support.
+                {t("booking_details_reservation_cancelled_desc", "This reservation has been cancelled. No further action is required. If you have a question about your refund, please contact support.")}
               </p>
             </div>
           </section>

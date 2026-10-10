@@ -45,7 +45,7 @@ function StatusBadge({ status }: { status?: string }) {
     return (
       <span className="inline-flex items-center gap-1.5 rounded-full bg-white/95 backdrop-blur-xs px-2.5 py-1 text-xs font-medium text-zinc-700 border border-zinc-200 shadow-2xs">
         <span className="h-1.5 w-1.5 rounded-full bg-zinc-400" />
-        Completed
+        {t("dashboard_status_completed", "Completed")}
       </span>
     );
   }
@@ -53,7 +53,7 @@ function StatusBadge({ status }: { status?: string }) {
     return (
       <span className="inline-flex items-center gap-1.5 rounded-full bg-white/95 backdrop-blur-xs px-2.5 py-1 text-xs font-medium text-zinc-500 border border-zinc-200 shadow-2xs">
         <span className="h-1.5 w-1.5 rounded-full bg-zinc-400" />
-        Expired
+        {t("dashboard_status_expired", "Expired")}
       </span>
     );
   }
@@ -61,7 +61,7 @@ function StatusBadge({ status }: { status?: string }) {
     return (
       <span className="inline-flex items-center gap-1.5 rounded-full bg-white/95 backdrop-blur-xs px-2.5 py-1 text-xs font-medium text-zinc-600 border border-zinc-200 shadow-2xs">
         <span className="h-1.5 w-1.5 rounded-full bg-zinc-400" />
-        Declined
+        {t("dashboard_status_declined", "Declined")}
       </span>
     );
   }
@@ -161,7 +161,7 @@ export function ReservationCard({
           <p className={isCompactVariant
             ? "order-4 mt-1 text-[10px] font-medium tracking-[0.02em] text-[#727272]"
             : "mt-2 text-[10px] font-medium tracking-[0.02em] text-[#727272]"}>
-            Booking #{data.id.slice(-8).toUpperCase()}
+            {t("booking_details_booking_ref_short", { code: data.id.slice(-8).toUpperCase() }, `Booking #${data.id.slice(-8).toUpperCase()}`)}
           </p>
 
 

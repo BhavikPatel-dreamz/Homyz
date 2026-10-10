@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { StarRating } from "./star-rating";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 type CategoryKey = "checkIn" | "cleanliness" | "accuracy" | "communication" | "location" | "value";
 
@@ -25,20 +25,41 @@ type ReviewDraft = {
   requestId?: string; // Idempotency key to prevent duplicate submissions
 };
 
-const steps: Array<{ key: "intro" | "overall" | CategoryKey | "comment" | "privateNote"; title: (listingName: string) => string; subtitle: string }> = [
-  { key: "intro", title: (listingName) => `Write a review for ${listingName}`, subtitle: "Your feedback helps hosts improve and helps future guests choose with confidence." },
-  { key: "overall", title: () => "How was your stay?", subtitle: "Your overall rating will appear with your public review." },
-  { key: "checkIn", title: (listingName) => `How was check-in at ${listingName}?`, subtitle: "Consider how easy it was to arrive and get settled." },
-  { key: "cleanliness", title: (listingName) => `How clean was ${listingName}?`, subtitle: "Your rating helps keep stays comfortable for everyone." },
-  { key: "accuracy", title: (listingName) => `How accurately did ${listingName} match its listing?`, subtitle: "Think about the photos, description, and amenities." },
-  { key: "communication", title: () => "How was host communication?", subtitle: "Consider clarity, helpfulness, and responsiveness." },
-  { key: "location", title: () => "What did you think of the location?", subtitle: "Think about convenience, surroundings, and access." },
-  { key: "value", title: () => "Was this stay worth what you paid?", subtitle: "Your feedback helps guests understand the value of a stay." },
-  { key: "comment", title: () => "Write a public review", subtitle: "Share a few words about your stay. This will be visible on the property page." },
-  { key: "privateNote", title: () => "Write a private note", subtitle: "Share any constructive feedback that only the host will see. This is optional and private." },
-];
+function StarRating({ value, onChange, label }: { value: number; onChange: (rating: number) => void; label: string }) {
+  const { t } = useLanguage();
+  const getRatingLabel = (val: number) => {
+    switch (val) {
+      case 1: return t("review_rating_1", "Needs improvement");
+      case 2: return t("review_rating_2", "Not great");
+      case 3: return t("review_rating_3", "Good");
+      case 4: return t("review_rating_4", "Great stay");
+      case 5: return t("review_rating_5", "Excellent");
+      default: return t("review_select_rating", "Select a rating");
+    }
+  };
+
+  return <div className="mt-8" role="radiogroup" aria-label={label}>
+    <div className="flex justify-center gap-2 sm:gap-3">
+      {[1, 2, 3, 4, 5].map((star) => <button key={star} type="button" role="radio" aria-checked={value === star} aria-label={`${star} out of 5 stars`} onClick={() => onChange(star)} className={`text-4xl leading-none transition-transform hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-zinc-900 sm:text-5xl ${star <= value ? "text-[#4D7CFE]" : "text-zinc-200"}`}>★</button>)}
+    </div>
+    <p className="mt-3 min-h-5 text-center text-sm font-medium text-zinc-600" aria-live="polite">{getRatingLabel(value)}</p>
+  </div>;
+}
 
 export function BookingReviewWizard(props: ReviewWizardProps) {
+  const { t } = useLanguage();
+  const steps: Array<{ key: "intro" | "overall" | CategoryKey | "comment" | "privateNote"; title: (listingName: string) => string; subtitle: string }> = [
+    { key: "intro", title: (listingName) => t("review_intro_title", `Write a review for ${listingName}`).replace("{name}", listingName), subtitle: t("review_intro_desc", "Your feedback helps hosts improve and helps future guests choose with confidence.") },
+    { key: "overall", title: () => t("review_overall_title", "How was your stay?"), subtitle: t("review_overall_desc", "Your overall rating will appear with your public review.") },
+    { key: "checkIn", title: (listingName) => t("review_checkin_title", `How was check-in at ${listingName}?`).replace("{name}", listingName), subtitle: t("review_checkin_desc", "Consider how easy it was to arrive and get settled.") },
+    { key: "cleanliness", title: (listingName) => t("review_cleanliness_title", `How clean was ${listingName}?`).replace("{name}", listingName), subtitle: t("review_cleanliness_desc", "Your rating helps keep stays comfortable for everyone.") },
+    { key: "accuracy", title: (listingName) => t("review_accuracy_title", `How accurately did ${listingName} match its listing?`).replace("{name}", listingName), subtitle: t("review_accuracy_desc", "Think about the photos, description, and amenities.") },
+    { key: "communication", title: () => t("review_communication_title", "How was host communication?"), subtitle: t("review_communication_desc", "Consider clarity, helpfulness, and responsiveness.") },
+    { key: "location", title: () => t("review_location_title", "What did you think of the location?"), subtitle: t("review_location_desc", "Think about convenience, surroundings, and access.") },
+    { key: "value", title: () => t("review_value_title", "Was this stay worth what you paid?"), subtitle: t("review_value_desc", "Your feedback helps guests understand the value of a stay.") },
+    { key: "comment", title: () => t("review_comment_title", "Write a public review"), subtitle: t("review_comment_desc", "Share a few words about your stay. This will be visible on the property page.") },
+    { key: "privateNote", title: () => t("review_private_title", "Write a private note"), subtitle: t("review_private_desc", "Share any constructive feedback that only the host will see. This is optional and private.") },
+  ];
   const storageKey = `homyz:review-draft:${props.bookingId}`;
   const [draft, setDraft] = useState<ReviewDraft>({ step: 0, rating: 0, categoryRatings: {}, comment: "", privateNoteToHost: "" });
   const hasLoadedDraft = useRef(false);
@@ -112,15 +133,15 @@ export function BookingReviewWizard(props: ReviewWizardProps) {
         if (!response.ok) {
           // Categorize error for better UX
           const errorCode = payload?.error?.code || payload?.code;
-          let userMessage = "Unable to submit your review right now.";
+          let userMessage = t("review_err_default", "Unable to submit your review right now.");
           if (errorCode === "DUPLICATE") {
-            userMessage = "This review has already been submitted. Your submission was successful on the first attempt.";
+            userMessage = t("review_err_duplicate", "This review has already been submitted. Your submission was successful on the first attempt.");
           } else if (errorCode === "INVALID_RATING") {
-            userMessage = "Please select a valid rating for your stay.";
+            userMessage = t("review_err_invalid_rating", "Please select a valid rating for your stay.");
           } else if (errorCode === "BOOKING_NOT_FOUND") {
-            userMessage = "We couldn't find your booking. Please contact support if this continues.";
+            userMessage = t("review_err_not_found", "We couldn't find your booking. Please contact support if this continues.");
           } else if (errorCode === "BOOKING_NOT_COMPLETED") {
-            userMessage = "You can only review stays that have been completed.";
+            userMessage = t("review_err_not_completed", "You can only review stays that have been completed.");
           }
           throw new Error(userMessage);
         }
@@ -133,23 +154,23 @@ export function BookingReviewWizard(props: ReviewWizardProps) {
       } catch (fetchError) {
         window.clearTimeout(timeoutId);
         if (fetchError instanceof Error && fetchError.name === "AbortError") {
-          throw new Error("Request timed out. Your draft has been saved. Please try again.");
+          throw new Error(t("review_err_timeout", "Request timed out. Your draft has been saved. Please try again."));
         }
         throw fetchError;
       }
     } catch (submissionError) {
-      const message = submissionError instanceof Error ? submissionError.message : "Unable to submit your review right now.";
+      const message = submissionError instanceof Error ? submissionError.message : t("review_err_default", "Unable to submit your review right now.");
       setError(message);
     } finally {
       setSubmitting(false);
     }
   };
 
-  if (submitted) return <section className="mx-auto flex min-h-[55vh] max-w-xl flex-col items-center justify-center text-center"><span className="flex size-16 items-center justify-center rounded-full bg-emerald-100 text-3xl text-emerald-700">✓</span><h1 className="mt-6 text-3xl font-semibold tracking-tight text-[#1F1F1F]">Thanks for sharing your stay</h1><p className="mt-3 max-w-md text-sm leading-6 text-zinc-600">Your review has been submitted and will help future guests.</p><Link href={`/bookings/${props.bookingId}`} className="mt-7 inline-flex min-h-11 items-center rounded-xl bg-[#1F1F1F] px-6 text-sm font-semibold text-white hover:bg-zinc-700">Back to reservation</Link></section>;
+  if (submitted) return <section className="mx-auto flex min-h-[55vh] max-w-xl flex-col items-center justify-center text-center"><span className="flex size-16 items-center justify-center rounded-full bg-emerald-100 text-3xl text-emerald-700">✓</span><h1 className="mt-6 text-3xl font-semibold tracking-tight text-[#1F1F1F]">{t("review_success_title", "Thanks for sharing your stay")}</h1><p className="mt-3 max-w-md text-sm leading-6 text-zinc-600">{t("review_success_desc", "Your review has been submitted and will help future guests.")}</p><Link href={`/bookings/${props.bookingId}`} className="mt-7 inline-flex min-h-11 items-center rounded-xl bg-[#1F1F1F] px-6 text-sm font-semibold text-white hover:bg-zinc-700">{t("review_btn_back_res", "Back to reservation")}</Link></section>;
 
   return <div className="mx-auto grid w-full max-w-6xl gap-8 lg:grid-cols-[300px_minmax(0,1fr)] lg:gap-14">
     <aside className="h-fit rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm lg:sticky lg:top-28">
-      {props.listingPhoto ? <img src={props.listingPhoto} alt={props.listingName} className="aspect-[4/3] w-full rounded-2xl object-cover" /> : <div className="flex aspect-[4/3] items-center justify-center rounded-2xl bg-zinc-100 text-sm text-[#727272]">Photo unavailable</div>}
+      {props.listingPhoto ? <img src={props.listingPhoto} alt={props.listingName} className="aspect-[4/3] w-full rounded-2xl object-cover" /> : <div className="flex aspect-[4/3] items-center justify-center rounded-2xl bg-zinc-100 text-sm text-[#727272]">{t("review_photo_unavailable", "Photo unavailable")}</div>}
       <h2 className="mt-4 text-lg font-semibold text-[#1F1F1F]">{props.listingName}</h2>
       {summary && <p className="mt-2 text-sm leading-5 text-zinc-600">{summary}</p>}
       <p className="mt-4 border-t border-zinc-200 pt-4 text-sm font-medium text-[#1F1F1F]">{props.totalPaid}</p>
@@ -157,19 +178,19 @@ export function BookingReviewWizard(props: ReviewWizardProps) {
 
     <section className="flex min-h-[560px] flex-col rounded-3xl bg-white px-2 py-3 sm:px-8 sm:py-8" aria-labelledby="review-step-title">
       <div className="mx-auto flex w-full max-w-xl flex-1 flex-col justify-center text-center">
-        <p className="text-xs font-medium text-[#727272]">Step {draft.step + 1} of {steps.length}</p>
+        <p className="text-xs font-medium text-[#727272]">{t("review_step_indicator", `Step ${draft.step + 1} of ${steps.length}`).replace("{current}", String(draft.step + 1)).replace("{total}", String(steps.length))}</p>
         <h1 id="review-step-title" className="mt-5 text-3xl font-semibold leading-tight tracking-tight text-[#1F1F1F] sm:text-4xl">{active.title(props.listingName)}</h1>
         <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-zinc-600">{active.subtitle}</p>
         {active.key !== "intro" && active.key !== "comment" && active.key !== "privateNote" && <StarRating value={activeRating} onChange={setRating} label={active.title(props.listingName)} />}
-        {active.key === "comment" && <textarea value={draft.comment} onChange={(event) => setDraft((current) => ({ ...current, comment: event.target.value.slice(0, 5000) }))} maxLength={5000} placeholder="Say a few words about your stay" className="mt-8 min-h-40 w-full resize-y rounded-2xl border border-zinc-300 p-4 text-sm leading-6 text-[#1F1F1F] outline-none placeholder:text-[#727272] focus:border-zinc-900" />}
-        {active.key === "privateNote" && <textarea value={draft.privateNoteToHost} onChange={(event) => setDraft((current) => ({ ...current, privateNoteToHost: event.target.value.slice(0, 5000) }))} maxLength={5000} placeholder="Share constructive feedback for the host (optional)" className="mt-8 min-h-40 w-full resize-y rounded-2xl border border-zinc-300 p-4 text-sm leading-6 text-[#1F1F1F] outline-none placeholder:text-[#727272] focus:border-zinc-900" />}
-        {error && <div role="alert" className="mt-5 space-y-3 rounded-xl bg-red-50 px-4 py-3"><p className="text-sm text-red-700">{error}</p><button type="button" onClick={submit} disabled={submitting} className="text-sm font-semibold text-red-600 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-50">Try again</button></div>}
+        {active.key === "comment" && <textarea value={draft.comment} onChange={(event) => setDraft((current) => ({ ...current, comment: event.target.value.slice(0, 5000) }))} maxLength={5000} placeholder={t("review_comment_ph", "Say a few words about your stay")} className="mt-8 min-h-40 w-full resize-y rounded-2xl border border-zinc-300 p-4 text-sm leading-6 text-[#1F1F1F] outline-none placeholder:text-[#727272] focus:border-zinc-900" />}
+        {active.key === "privateNote" && <textarea value={draft.privateNoteToHost} onChange={(event) => setDraft((current) => ({ ...current, privateNoteToHost: event.target.value.slice(0, 5000) }))} maxLength={5000} placeholder={t("review_private_ph", "Share constructive feedback for the host (optional)")} className="mt-8 min-h-40 w-full resize-y rounded-2xl border border-zinc-300 p-4 text-sm leading-6 text-[#1F1F1F] outline-none placeholder:text-[#727272] focus:border-zinc-900" />}
+        {error && <div role="alert" className="mt-5 space-y-3 rounded-xl bg-red-50 px-4 py-3"><p className="text-sm text-red-700">{error}</p><button type="button" onClick={submit} disabled={submitting} className="text-sm font-semibold text-red-600 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-50">{t("review_btn_try_again", "Try again")}</button></div>}
       </div>
       <div className="mx-auto mt-8 w-full max-w-xl">
         <div className="h-1 overflow-hidden rounded-full bg-zinc-200"><div className="h-full rounded-full bg-zinc-700 transition-all" style={{ width: `${progress}%` }} /></div>
         <div className="mt-5 flex items-center justify-between gap-3">
-          {draft.step > 0 ? <button type="button" onClick={() => setDraft((current) => ({ ...current, step: current.step - 1 }))} className="min-h-11 rounded-xl px-5 text-sm font-semibold text-zinc-700 hover:bg-zinc-100">Back</button> : <Link href={`/bookings/${props.bookingId}`} className="inline-flex min-h-11 items-center rounded-xl px-5 text-sm font-semibold text-zinc-700 hover:bg-zinc-100">Cancel</Link>}
-          {draft.step < steps.length - 1 ? <button type="button" disabled={!canContinue} onClick={() => setDraft((current) => ({ ...current, step: current.step + 1 }))} className="min-h-11 rounded-xl bg-[#1F1F1F] px-8 text-sm font-semibold text-white transition-colors hover:bg-zinc-700 disabled:cursor-not-allowed disabled:bg-zinc-300">Continue</button> : <button type="button" disabled={!draft.rating || submitting} onClick={submit} className="min-h-11 rounded-xl bg-[#1F1F1F] px-8 text-sm font-semibold text-white transition-colors hover:bg-zinc-700 disabled:cursor-not-allowed disabled:bg-zinc-300">{submitting ? "Submitting…" : "Submit review"}</button>}
+          {draft.step > 0 ? <button type="button" onClick={() => setDraft((current) => ({ ...current, step: current.step - 1 }))} className="min-h-11 rounded-xl px-5 text-sm font-semibold text-zinc-700 hover:bg-zinc-100">{t("review_btn_back", "Back")}</button> : <Link href={`/bookings/${props.bookingId}`} className="inline-flex min-h-11 items-center rounded-xl px-5 text-sm font-semibold text-zinc-700 hover:bg-zinc-100">{t("review_btn_cancel", "Cancel")}</Link>}
+          {draft.step < steps.length - 1 ? <button type="button" disabled={!canContinue} onClick={() => setDraft((current) => ({ ...current, step: current.step + 1 }))} className="min-h-11 rounded-xl bg-[#1F1F1F] px-8 text-sm font-semibold text-white transition-colors hover:bg-zinc-700 disabled:cursor-not-allowed disabled:bg-zinc-300">{t("review_btn_continue", "Continue")}</button> : <button type="button" disabled={!draft.rating || submitting} onClick={submit} className="min-h-11 rounded-xl bg-[#1F1F1F] px-8 text-sm font-semibold text-white transition-colors hover:bg-zinc-700 disabled:cursor-not-allowed disabled:bg-zinc-300">{submitting ? t("review_btn_submitting", "Submitting…") : t("review_btn_submit", "Submit review")}</button>}
         </div>
       </div>
     </section>

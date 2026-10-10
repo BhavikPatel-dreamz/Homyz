@@ -71,6 +71,7 @@ export function GuestDashboardSidebar({
             <Link
               key={item.id}
               href={item.href}
+              prefetch={false}
               scroll={false}
               aria-current={isActive ? "page" : undefined}
               onClick={(e) => {

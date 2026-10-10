@@ -211,11 +211,11 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
   const handleSaveLegalName = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!legalFirst.trim()) {
-      setFieldErrors({ firstName: "First name is required" });
+      setFieldErrors({ firstName: t("personal_info_err_first_name_req", "First name is required") });
       return;
     }
     if (!legalLast.trim()) {
-      setFieldErrors({ lastName: "Last name is required" });
+      setFieldErrors({ lastName: t("personal_info_err_last_name_req", "Last name is required") });
       return;
     }
 
@@ -229,15 +229,15 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
 
       if (!res.ok) {
         if (res.fieldErrors) setFieldErrors(res.fieldErrors);
-        toast.error(res.error, { title: "Update failed" });
+        toast.error(res.error, { title: t("personal_info_toast_update_failed_title", "Update failed") });
         return;
       }
 
       setData(res.data);
       closeEditRow();
-      toast.success("Legal name updated successfully");
+      toast.success(t("personal_info_toast_legal_name_updated", "Legal name updated successfully"));
     } catch {
-      toast.error("Please try again later.", { title: "An error occurred" });
+      toast.error(t("personal_info_toast_try_again_later", "Please try again later."), { title: t("personal_info_toast_error_title", "An error occurred") });
     } finally {
       setIsSubmitting(false);
     }
@@ -254,15 +254,15 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
 
       if (!res.ok) {
         if (res.fieldErrors) setFieldErrors(res.fieldErrors);
-        toast.error(res.error, { title: "Update failed" });
+        toast.error(res.error, { title: t("personal_info_toast_update_failed_title", "Update failed") });
         return;
       }
 
       setData(res.data);
       closeEditRow();
-      toast.success("Preferred name updated");
+      toast.success(t("personal_info_toast_preferred_name_updated", "Preferred name updated"));
     } catch {
-      toast.error("Please try again later.", { title: "An error occurred" });
+      toast.error(t("personal_info_toast_try_again_later", "Please try again later."), { title: t("personal_info_toast_error_title", "An error occurred") });
     } finally {
       setIsSubmitting(false);
     }
@@ -271,7 +271,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
   const handleSaveEmail = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!emailVal.trim() || !emailVal.includes("@")) {
-      setFieldErrors({ email: "Please enter a valid email address" });
+      setFieldErrors({ email: t("personal_info_err_email_invalid", "Please enter a valid email address") });
       return;
     }
 
@@ -282,15 +282,15 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
 
       if (!res.ok) {
         if (res.fieldErrors) setFieldErrors(res.fieldErrors);
-        toast.error(res.error, { title: "Update failed" });
+        toast.error(res.error, { title: t("personal_info_toast_update_failed_title", "Update failed") });
         return;
       }
 
       setData(res.data);
       closeEditRow();
-      toast.success("Email updated successfully");
+      toast.success(t("personal_info_toast_email_updated", "Email updated successfully"));
     } catch {
-      toast.error("Please try again later.", { title: "An error occurred" });
+      toast.error(t("personal_info_toast_try_again_later", "Please try again later."), { title: t("personal_info_toast_error_title", "An error occurred") });
     } finally {
       setIsSubmitting(false);
     }
@@ -300,7 +300,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
     e.preventDefault();
     const cleanNum = phoneNum.trim().replace(/^0+/, "");
     if (!cleanNum) {
-      setFieldErrors({ phone: "Please enter your phone number" });
+      setFieldErrors({ phone: t("personal_info_err_phone_req", "Please enter your phone number") });
       return;
     }
 
@@ -312,15 +312,15 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
 
       if (!res.ok) {
         if (res.fieldErrors) setFieldErrors(res.fieldErrors);
-        toast.error(res.error, { title: "Update failed" });
+        toast.error(res.error, { title: t("personal_info_toast_update_failed_title", "Update failed") });
         return;
       }
 
       setData(res.data);
       closeEditRow();
-      toast.success("Phone number updated successfully");
+      toast.success(t("personal_info_toast_phone_updated", "Phone number updated successfully"));
     } catch {
-      toast.error("Please try again later.", { title: "An error occurred" });
+      toast.error(t("personal_info_toast_try_again_later", "Please try again later."), { title: t("personal_info_toast_error_title", "An error occurred") });
     } finally {
       setIsSubmitting(false);
     }
@@ -342,15 +342,15 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
 
       if (!res.ok) {
         if (res.fieldErrors) setFieldErrors(res.fieldErrors);
-        toast.error(res.error, { title: "Update failed" });
+        toast.error(res.error, { title: t("personal_info_toast_update_failed_title", "Update failed") });
         return;
       }
 
       setData(res.data);
       closeEditRow();
-      toast.success("Residential address saved");
+      toast.success(t("personal_info_toast_residential_saved", "Residential address saved"));
     } catch {
-      toast.error("Please try again.", { title: "An error occurred" });
+      toast.error(t("personal_info_toast_try_again", "Please try again."), { title: t("personal_info_toast_error_title", "An error occurred") });
     } finally {
       setIsSubmitting(false);
     }
@@ -373,15 +373,15 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
 
       if (!res.ok) {
         if (res.fieldErrors) setFieldErrors(res.fieldErrors);
-        toast.error(res.error, { title: "Update failed" });
+        toast.error(res.error, { title: t("personal_info_toast_update_failed_title", "Update failed") });
         return;
       }
 
       setData(res.data);
       closeEditRow();
-      toast.success("Postal address saved");
+      toast.success(t("personal_info_toast_postal_saved", "Postal address saved"));
     } catch {
-      toast.error("Please try again.", { title: "An error occurred" });
+      toast.error(t("personal_info_toast_try_again", "Please try again."), { title: t("personal_info_toast_error_title", "An error occurred") });
     } finally {
       setIsSubmitting(false);
     }
@@ -390,11 +390,11 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
   const handleSaveEmergencyContact = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!emName.trim()) {
-      setFieldErrors({ name: "Contact name is required" });
+      setFieldErrors({ name: t("personal_info_err_contact_name_req", "Contact name is required") });
       return;
     }
     if (!emPhone.trim()) {
-      setFieldErrors({ phoneNumber: "Phone number is required" });
+      setFieldErrors({ phoneNumber: t("personal_info_err_phone_contact_req", "Phone number is required") });
       return;
     }
 
@@ -412,15 +412,15 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
 
       if (!res.ok) {
         if (res.fieldErrors) setFieldErrors(res.fieldErrors);
-        toast.error(res.error, { title: "Update failed" });
+        toast.error(res.error, { title: t("personal_info_toast_update_failed_title", "Update failed") });
         return;
       }
 
       setData(res.data);
       closeEditRow();
-      toast.success("Emergency contact saved");
+      toast.success(t("personal_info_toast_emergency_saved", "Emergency contact saved"));
     } catch {
-      toast.error("Please try again.", { title: "An error occurred" });
+      toast.error(t("personal_info_toast_try_again", "Please try again."), { title: t("personal_info_toast_error_title", "An error occurred") });
     } finally {
       setIsSubmitting(false);
     }
@@ -435,13 +435,13 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
 
     const allowedTypes = ["image/jpeg", "image/png", "image/webp", "application/pdf"];
     if (!allowedTypes.includes(file.type)) {
-      setDocUploadError("Please select a JPEG, PNG, WebP image or PDF document.");
+      setDocUploadError(t("personal_info_err_doc_file_type", "Please select a JPEG, PNG, WebP image or PDF document."));
       return;
     }
 
     const maxBytes = 15 * 1024 * 1024; // 15MB
     if (file.size > maxBytes) {
-      setDocUploadError("File size exceeds 15 MB limit. Please choose a smaller file.");
+      setDocUploadError(t("personal_info_err_doc_file_size", "File size exceeds 15 MB limit. Please choose a smaller file."));
       return;
     }
 
@@ -457,7 +457,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
   const handleUploadDocument = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!selectedDocFile) {
-      setDocUploadError("Please select a document file to upload.");
+      setDocUploadError(t("personal_info_err_doc_select_file", "Please select a document file to upload."));
       return;
     }
 
@@ -490,12 +490,12 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
       if (!response.ok || !result?.success) {
         const message =
           response.status === 413
-            ? "File size exceeds 15 MB. Please choose a smaller document."
+            ? t("personal_info_err_doc_exceeds_15mb", "File size exceeds 15 MB. Please choose a smaller document.")
             : result && !result.success && result.error?.message
               ? result.error.message
-              : "Failed to upload document. Please try again.";
+              : t("personal_info_err_doc_upload_failed", "Failed to upload document. Please try again.");
         setDocUploadError(message);
-        toast.error(message, { title: "Upload failed" });
+        toast.error(message, { title: t("personal_info_toast_upload_failed_title", "Upload failed") });
         return;
       }
 
@@ -503,12 +503,12 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
       setSelectedDocFile(null);
       setIdentityModalOpen(false);
       toast.success(
-        "Your document has been submitted and is currently under review by our verification team.",
-        { title: "Document submitted" },
+        t("personal_info_toast_doc_submitted_desc", "Your document has been submitted and is currently under review by our verification team."),
+        { title: t("personal_info_toast_doc_submitted_title", "Document submitted") },
       );
     } catch {
-      setDocUploadError("An error occurred while uploading. Please try again.");
-      toast.error("Please try again later.", { title: "Upload failed" });
+      setDocUploadError(t("personal_info_err_doc_upload_error", "An error occurred while uploading. Please try again."));
+      toast.error(t("personal_info_toast_try_again_later", "Please try again later."), { title: t("personal_info_toast_upload_failed_title", "Upload failed") });
     } finally {
       setIsUploadingDoc(false);
     }
@@ -956,7 +956,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                     value={resApt}
                     onChange={(e) => setResApt(e.target.value)}
                     className="w-full rounded-xl border border-zinc-300 px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:border-zinc-900 focus:outline-none"
-                    placeholder="Apt, Suite, Bldg"
+                    placeholder={t("personal_info_apt_ph", "Apt, Suite, Bldg")}
                   />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -1090,7 +1090,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                       value={postApt}
                       onChange={(e) => setPostApt(e.target.value)}
                       className="w-full rounded-xl border border-zinc-300 px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:border-zinc-900 focus:outline-none"
-                      placeholder="Apt, Suite"
+                      placeholder={t("personal_info_apt_suite_ph", "Apt, Suite")}
                     />
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -1267,7 +1267,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                       value={emLang}
                       onChange={(e) => setEmLang(e.target.value)}
                       className="w-full rounded-xl border border-zinc-300 px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:border-zinc-900 focus:outline-none"
-                      placeholder="e.g. English"
+                      placeholder={t("personal_info_lang_ph", "e.g. English")}
                     />
                   </div>
                 </div>
@@ -1422,7 +1422,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                 <p>
                   {t("personal_info_modal_id_verified_desc", "Your identity has been verified by the Homyz team.")}
                   {data.identityDocument?.fileName && (
-                    <> Verified document: <span className="font-semibold">{data.identityDocument.fileName}</span>.</>
+                    <> {t("personal_info_modal_verified_doc", "Verified document:")} <span className="font-semibold">{data.identityDocument.fileName}</span>.</>
                   )}
                 </p>
               </div>
@@ -1438,7 +1438,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                 <p>
                   {t("personal_info_modal_id_pending_desc", "Your document is currently under review by our verification team.")}
                   {data.identityDocument?.fileName && (
-                    <> Current submission: <span className="font-semibold">{data.identityDocument.fileName}</span>.</>
+                    <> {t("personal_info_modal_current_sub", "Current submission:")} <span className="font-semibold">{data.identityDocument.fileName}</span>.</>
                   )}
                 </p>
               </div>

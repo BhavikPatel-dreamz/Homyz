@@ -1,10 +1,8 @@
-import Link from "next/link";
-
-import { Alert, buttonClass, Card } from "@/components/ui";
 import { authService } from "@/services/auth.service";
+import { VerifyClient } from "./verify-client";
 
 // Server-side verification: consume the token directly via the service, then
-// render the outcome. No client round-trip needed.
+// render the outcome with client localization.
 export default async function VerifyEmailPage({
   searchParams,
 }: {
@@ -24,23 +22,5 @@ export default async function VerifyEmailPage({
     }
   }
 
-  return (
-    <Card>
-      <h1 className="mb-4">
-        Email verification
-      </h1>
-      {success ? (
-        <Alert tone="success">
-          Your email is verified. You can now sign in.
-        </Alert>
-      ) : (
-        <Alert>{message}</Alert>
-      )}
-      <div className="mt-5">
-        <Link href="/login" className={buttonClass}>
-          Go to sign in
-        </Link>
-      </div>
-    </Card>
-  );
+  return <VerifyClient success={success} message={message} />;
 }

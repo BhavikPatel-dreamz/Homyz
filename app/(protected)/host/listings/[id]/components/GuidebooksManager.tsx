@@ -6,6 +6,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { BackButton } from "@/components/ui/back-button";
 import { toast } from "@/components/ui/toast";
+import { useLanguage } from "@/lib/i18n/language-context";
 import type { PlaceSearchResult } from "@/lib/location/places-search";
 import {
   searchLocations,
@@ -100,22 +101,6 @@ interface GuidebookSummary {
   listings?: ListingOption[];
   [key: string]: unknown;
 }
-
-const ADVICE_TYPES = [
-  { id: "GETTING_AROUND", label: "Getting around" },
-  { id: "DONT_MISS", label: "Don't miss" },
-  { id: "CUSTOMS_CULTURE", label: "Customs and culture" },
-  { id: "WAYS_TO_SAVE", label: "Ways to save" },
-  { id: "BOOK_BEFORE", label: "Book before you go" },
-  { id: "WHAT_TO_PACK", label: "What to pack" },
-  { id: "USEFUL_PHRASES", label: "Useful phrases" },
-  { id: "TRAVELLING_WITH_KIDS", label: "Travelling with kids" },
-] as const;
-
-const REFERENCE_CATEGORIES = [
-  { id: "FOOD_AND_DRINK", label: "Food scene" },
-  { id: "SIGHTSEEING", label: "Sightseeing" },
-];
 
 function actionError(result: unknown, fallback: string) {
   if (
@@ -379,7 +364,7 @@ function ModalFooter({
   save,
   disabled,
   saving,
-  saveLabel = "Save",
+  saveLabel,
 }: {
   cancel: () => void;
   save: () => void;
@@ -387,6 +372,7 @@ function ModalFooter({
   saving?: boolean;
   saveLabel?: string;
 }) {
+  const { t } = useLanguage();
   return (
     <>
       <button
@@ -394,7 +380,7 @@ function ModalFooter({
         onClick={cancel}
         className="text-sm font-medium underline underline-offset-2"
       >
-        Cancel
+        {t("host_cancel", "Cancel")}
       </button>
       <button
         type="button"
@@ -402,7 +388,7 @@ function ModalFooter({
         disabled={disabled || saving}
         className="min-w-28 rounded-xl bg-[#222] px-7 py-3 text-sm font-semibold text-white transition hover:bg-black disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-400"
       >
-        {saving ? "Saving…" : saveLabel}
+        {saving ? t("host_guidebook_saving", "Saving…") : (saveLabel || t("host_guidebooks_save", "Save"))}
       </button>
     </>
   );
@@ -451,6 +437,7 @@ function PhotoUploader({
   uploading: boolean;
   single?: boolean;
 }) {
+  const { t } = useLanguage();
   return (
     <div className="space-y-3">
       {photos.length > 0 && (
@@ -487,10 +474,10 @@ function PhotoUploader({
       {photos.length < (single ? 1 : 8) && (
         <label className="inline-flex min-h-11 cursor-pointer items-center rounded-lg bg-zinc-100 px-4 text-sm font-medium hover:bg-zinc-200">
           {uploading
-            ? "Uploading…"
+            ? t("host_guidebook_uploading", "Uploading…")
             : photos.length
-              ? "Add more photos"
-              : "Add photos"}
+              ? t("host_guidebook_add_more_photos", "Add more photos")
+              : t("host_guidebook_add_photos", "Add photos")}
           <input
             type="file"
             multiple={!single}
@@ -545,6 +532,7 @@ function GuidebookRecommendationForm({
   onSave: () => void;
 }) {
   const isPlace = kind === "place";
+  const { t } = useLanguage();
   return (
     <GuidebookModal
       onClose={onCancel}
@@ -589,7 +577,7 @@ function GuidebookRecommendationForm({
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-[12px] font-semibold uppercase tracking-wider text-[#717171]">
-              {isPlace ? "Point of interest" : "Neighbourhood"}
+              {isPlace ? t("host_guidebook_poi_label", "Point of interest") : t("host_guidebook_neighbourhood_label", "Neighbourhood")}
             </p>
             <input
               autoFocus={!title}
@@ -597,15 +585,15 @@ function GuidebookRecommendationForm({
               maxLength={150}
               onChange={(event) => setTitle(event.target.value)}
               className="mt-0.5 w-full border-0 border-b border-transparent py-0.5 text-xl sm:text-2xl font-semibold text-[#222] outline-none placeholder:text-zinc-400 focus:border-zinc-400"
-              placeholder={isPlace ? "Place name" : "Neighbourhood name"}
+              placeholder={isPlace ? t("host_guidebook_place_name_ph", "Place name") : t("host_guidebook_neighbourhood_name_ph", "Neighbourhood name")}
             />
             <div className="mt-3">
               <label className="inline-flex cursor-pointer items-center rounded-full border border-zinc-900 bg-white px-4 py-1.5 text-xs font-semibold text-zinc-900 transition hover:bg-zinc-50">
                 {uploading
-                  ? "Uploading…"
+                  ? t("host_guidebook_uploading", "Uploading…")
                   : photos.length > 0
-                    ? "Change photo"
-                    : "Add photos"}
+                    ? t("host_guidebook_change_photo", "Change photo")
+                    : t("host_guidebook_add_photos", "Add photos")}
                 <input
                   type="file"
                   accept="image/jpeg,image/png,image/webp,image/avif"
@@ -625,7 +613,7 @@ function GuidebookRecommendationForm({
         <div>
           <label className="block">
             <span className="mb-2 block text-base sm:text-lg font-semibold text-[#222]">
-              Why do you recommend this {kind}?
+              {isPlace ? t("host_guidebook_why_recommend_place", "Why do you recommend this place?") : t("host_guidebook_why_recommend_neighbourhood", "Why do you recommend this neighbourhood?")}
             </span>
             <textarea
               rows={4}
@@ -635,8 +623,8 @@ function GuidebookRecommendationForm({
               className="w-full rounded-2xl border border-zinc-300 p-4 text-sm text-[#222] placeholder:text-[#717171] outline-none transition focus:border-black"
               placeholder={
                 isPlace
-                  ? "Write a tip that will help travellers get the most out of their visit."
-                  : "Share what travellers should know about this area."
+                  ? t("host_guidebook_tip_placeholder", "Write a tip that will help travellers get the most out of their visit.")
+                  : t("host_guidebook_area_tip_placeholder", "Share what travellers should know about this area.")
               }
             />
           </label>
@@ -644,11 +632,10 @@ function GuidebookRecommendationForm({
 
         <div>
           <h3 className="text-base sm:text-lg font-semibold text-[#222]">
-            Categorise this {kind} (Required)
+            {isPlace ? t("host_guidebook_categorise_place", "Categorise this place (Required)") : t("host_guidebook_categorise_neighbourhood", "Categorise this neighbourhood (Required)")}
           </h3>
           <p className="mb-3.5 mt-1 text-sm text-[#717171]">
-            Organise your recommendations by theme to help travellers find what
-            they&apos;re looking for.
+            {t("host_guidebook_categorise_desc", "Organise your recommendations by theme to help travellers find what they're looking for.")}
           </p>
           <CategoryCards
             categories={categories}
@@ -665,7 +652,7 @@ function GuidebookRecommendationForm({
             onClick={onCreateCategory}
             className="mt-4 text-sm font-semibold underline underline-offset-2 text-[#222] hover:text-black"
           >
-            ✎ Create a category
+            ✎ {t("host_guidebook_create_category", "Create a category")}
           </button>
         </div>
       </div>
@@ -682,6 +669,7 @@ export function GuidebooksManager({
   setActiveSection,
   initialGuidebooks,
 }: GuidebooksManagerProps) {
+  const { t } = useLanguage();
   const [view, setView] = useState<"list" | "create" | "editor">("list");
   const [guidebooks, setGuidebooks] = useState<GuidebookSummary[]>(
     initialGuidebooks || [],
@@ -873,15 +861,37 @@ export function GuidebooksManager({
     setUploading(false);
   };
 
+  const referenceCategories = useMemo(
+    () => [
+      { id: "FOOD_AND_DRINK", label: t("host_guidebook_cat_food_scene", "Food scene") },
+      { id: "SIGHTSEEING", label: t("host_guidebook_cat_sightseeing", "Sightseeing") },
+    ],
+    [t],
+  );
+
   const categoryOptions = useMemo(
     () => [
-      ...REFERENCE_CATEGORIES,
+      ...referenceCategories,
       ...(guidebook?.categories || []).map((category) => ({
         id: `CUSTOM:${category.id}`,
         label: category.name,
       })),
     ],
-    [guidebook?.categories],
+    [referenceCategories, guidebook?.categories],
+  );
+
+  const adviceTypes = useMemo(
+    () => [
+      { id: "GETTING_AROUND", label: t("host_guidebook_advice_getting_around", "Getting around") },
+      { id: "DONT_MISS", label: t("host_guidebook_advice_dont_miss", "Don't miss") },
+      { id: "CUSTOMS_CULTURE", label: t("host_guidebook_advice_customs_culture", "Customs and culture") },
+      { id: "WAYS_TO_SAVE", label: t("host_guidebook_advice_ways_to_save", "Ways to save") },
+      { id: "BOOK_BEFORE", label: t("host_guidebook_advice_book_before", "Book before you go") },
+      { id: "WHAT_TO_PACK", label: t("host_guidebook_advice_what_to_pack", "What to pack") },
+      { id: "USEFUL_PHRASES", label: t("host_guidebook_advice_useful_phrases", "Useful phrases") },
+      { id: "TRAVELLING_WITH_KIDS", label: t("host_guidebook_advice_with_kids", "Travelling with kids") },
+    ],
+    [t],
   );
 
   const saveCustomCategory = async () => {
@@ -913,7 +923,7 @@ export function GuidebooksManager({
       category: type === "CITY_ADVICE" ? adviceType : formCategory,
       categoryLabel:
         type === "CITY_ADVICE"
-          ? ADVICE_TYPES.find((item) => item.id === adviceType)?.label
+          ? adviceTypes.find((item) => item.id === adviceType)?.label
           : formCategoryLabel || getCategoryLabel(formCategory),
       adviceType: type === "CITY_ADVICE" ? adviceType : null,
       description: formText.trim(),
@@ -1068,9 +1078,9 @@ export function GuidebooksManager({
             <div className="flex items-start gap-5">
               <BackButton onClick={() => setActiveSection("arrival-guide")} />
               <div>
-                <h1 className="text-3xl font-semibold">Guidebooks</h1>
+                <h1 className="text-3xl font-semibold">{t("host_guidebooks_title", "Guidebooks")}</h1>
                 <p className="mt-2 text-[#727272]">
-                  Share your favorite places and local tips with guests.
+                  {t("host_guidebooks_subtext", "Share your favorite places and local tips with guests.")}
                 </p>
               </div>
             </div>
@@ -1079,7 +1089,7 @@ export function GuidebooksManager({
               onClick={() => setView("create")}
               className="rounded-full bg-[#FCDF9C] px-5 py-3 text-sm font-medium hover:bg-[#222] hover:text-white"
             >
-              Create guidebook
+              {t("host_guidebooks_create_title", "Create a guidebook")}
             </button>
           </div>
           {loading ? (
@@ -1095,18 +1105,17 @@ export function GuidebooksManager({
             <div className="mx-auto max-w-xl rounded-3xl border border-zinc-200 bg-white px-8 py-14 text-center">
               <div className="text-4xl">📖</div>
               <h2 className="mt-4 text-2xl font-semibold">
-                Create a guidebook
+                {t("host_guidebooks_create_title", "Create a guidebook")}
               </h2>
               <p className="mt-2 text-[#727272]">
-                Help guests discover the places and local knowledge that make
-                your area special.
+                {t("host_guidebooks_create_desc", "Create a guidebook to easily share local tips with guests.")}
               </p>
               <button
                 type="button"
                 onClick={() => setView("create")}
                 className="mt-6 rounded-xl bg-[#222] px-6 py-3 text-sm font-semibold text-white"
               >
-                Create guidebook
+                {t("host_guidebooks_create_title", "Create a guidebook")}
               </button>
             </div>
           ) : (
@@ -1135,7 +1144,7 @@ export function GuidebooksManager({
                   <div className="p-5">
                     <h2 className="text-xl font-semibold">{item.title}</h2>
                     <p className="mt-1 text-sm text-[#727272]">
-                      {item.itemsCount || 0} recommendations ·{" "}
+                      {t("host_guidebooks_recs_count", "{count} recommendations").replace("{count}", String(item.itemsCount || 0))} ·{" "}
                       {item.listings?.length || 0} listings
                     </p>
                     <div className="mt-5 flex items-center justify-between gap-3">
@@ -1173,10 +1182,9 @@ export function GuidebooksManager({
           <div className="mb-7 flex items-start gap-5">
             <BackButton onClick={() => setView("list")} />
             <div>
-              <h1 className="text-3xl font-semibold">Create a guidebook</h1>
+              <h1 className="text-3xl font-semibold">{t("host_guidebooks_create_title", "Create a guidebook")}</h1>
               <p className="mt-2 text-[#727272]">
-                Start with a title and location. You can add recommendations
-                next.
+                {t("host_guidebook_create_intro", "Start with a title and location. You can add recommendations next.")}
               </p>
             </div>
           </div>
@@ -1185,7 +1193,7 @@ export function GuidebooksManager({
             className="space-y-6 rounded-3xl border border-zinc-200 bg-white p-7"
           >
             <label className="block">
-              <span className="mb-2 block font-semibold">Guidebook title</span>
+              <span className="mb-2 block font-semibold">{t("host_guidebook_title_label", "Guidebook title")}</span>
               <input
                 required
                 minLength={2}
@@ -1193,11 +1201,11 @@ export function GuidebooksManager({
                 value={createTitle}
                 onChange={(event) => setCreateTitle(event.target.value)}
                 className="w-full rounded-xl border border-zinc-400 px-4 py-3 outline-none focus:border-black"
-                placeholder="e.g. Shihab's guide to Mumbai"
+                placeholder={t("host_guidebook_create_title_ph", "e.g. Shihab's guide to Mumbai")}
               />
             </label>
             <label className="relative block">
-              <span className="mb-2 block font-semibold">Primary location</span>
+              <span className="mb-2 block font-semibold">{t("host_guidebook_primary_location", "Primary location")}</span>
               <input
                 value={createLocation}
                 onChange={(event) => {
@@ -1205,7 +1213,7 @@ export function GuidebooksManager({
                   setCreateLocationDetails(null);
                 }}
                 className="w-full rounded-xl border border-zinc-400 px-4 py-3 outline-none focus:border-black"
-                placeholder="City or neighbourhood"
+                placeholder={t("host_guidebook_city_or_neighbourhood", "City or neighbourhood")}
               />
               {locationResults.length > 0 && (
                 <div className="absolute z-20 mt-2 max-h-52 w-full overflow-auto rounded-xl border bg-white p-2 shadow-xl">
@@ -1235,13 +1243,13 @@ export function GuidebooksManager({
                 onClick={() => setView("list")}
                 className="px-5 py-3 text-sm font-semibold underline"
               >
-                Cancel
+                {t("host_cancel", "Cancel")}
               </button>
               <button
                 disabled={saving || createTitle.trim().length < 2}
                 className="rounded-xl bg-[#222] px-6 py-3 text-sm font-semibold text-white disabled:bg-zinc-200"
               >
-                {saving ? "Creating…" : "Create guidebook"}
+                {saving ? t("host_guidebook_creating", "Creating…") : t("host_create_guidebook", "Create guidebook")}
               </button>
             </div>
           </form>
@@ -1260,15 +1268,15 @@ export function GuidebooksManager({
               />
               <div>
                 <p className="text-sm uppercase tracking-wide text-[#727272]">
-                  Host guidebook
+                  {t("host_guidebook_badge", "Host guidebook")}
                 </p>
                 <h1 className="mt-1 text-3xl font-semibold">
                   {guidebook.host?.name
-                    ? `${guidebook.host.name}’s guidebook`
+                    ? t("host_guidebook_host_heading", "{name}’s guidebook").replace("{name}", guidebook.host.name)
                     : guidebook.title}
                 </h1>
                 <p className="mt-2 text-sm text-[#727272]">
-                  {guidebook.title} · {guidebook.items.length} recommendations
+                  {guidebook.title} · {t("host_guidebooks_recs_count", "{count} recommendations").replace("{count}", String(guidebook.items.length))}
                 </p>
               </div>
             </div>
@@ -1283,7 +1291,7 @@ export function GuidebooksManager({
                 }}
                 className="rounded-full border border-zinc-400 px-5 py-2.5 text-sm font-medium hover:border-black"
               >
-                Choose listings
+                {t("host_guidebook_choose_listings", "Choose listings")}
               </button>
               <button
                 type="button"
@@ -1295,7 +1303,7 @@ export function GuidebooksManager({
                 }}
                 className="rounded-full border border-zinc-400 px-5 py-2.5 text-sm font-medium hover:border-black"
               >
-                Edit cover
+                {t("host_guidebook_edit_cover", "Edit cover")}
               </button>
               <button
                 type="button"
@@ -1308,7 +1316,7 @@ export function GuidebooksManager({
                 }}
                 className="rounded-full border border-zinc-300 px-5 py-2.5 text-sm font-medium text-rose-600 hover:border-rose-300 hover:bg-rose-50"
               >
-                Delete guidebook
+                {t("host_delete_guidebook", "Delete guidebook")}
               </button>
             </div>
           </div>
@@ -1328,29 +1336,29 @@ export function GuidebooksManager({
             <div className="rounded-3xl border border-zinc-300 bg-white px-7 py-14 text-center">
               <div className="text-4xl">🗺️</div>
               <h2 className="mt-5 text-2xl font-medium">
-                Share your recommendations
+                {t("host_guidebook_share_recs_title", "Share your recommendations")}
               </h2>
               <p className="mt-2 text-[#727272]">
-                Suggest places to visit, where to eat and more.
+                {t("host_guidebook_share_recs_desc", "Suggest places to visit, where to eat and more.")}
               </p>
               <button
                 type="button"
                 onClick={openAddMenu}
                 className="mt-7 rounded-xl bg-[#222] px-7 py-3 text-sm font-semibold text-white"
               >
-                Add to guidebook
+                {t("host_guidebook_add_to_guidebook", "Add to guidebook")}
               </button>
             </div>
           ) : (
             <>
               <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-semibold">Recommendations</h2>
+                <h2 className="text-2xl font-semibold">{t("host_guidebook_recommendations_heading", "Recommendations")}</h2>
                 <button
                   type="button"
                   onClick={openAddMenu}
                   className="rounded-xl bg-[#222] px-6 py-3 text-sm font-semibold text-white"
                 >
-                  Add to guidebook
+                  {t("host_guidebook_add_to_guidebook", "Add to guidebook")}
                 </button>
               </div>
               {(["PLACE", "NEIGHBORHOOD", "CITY_ADVICE"] as const).map(
@@ -1359,10 +1367,10 @@ export function GuidebooksManager({
                     <section key={group} className="space-y-4">
                       <h3 className="text-xl font-semibold">
                         {group === "PLACE"
-                          ? "Places"
+                          ? t("host_guidebook_group_places", "Places")
                           : group === "NEIGHBORHOOD"
-                            ? "Neighbourhoods"
-                            : "City advice"}
+                            ? t("host_guidebook_group_neighbourhoods", "Neighbourhoods")
+                            : t("host_guidebook_group_city_advice", "City advice")}
                       </h3>
                       <div className="grid gap-4 sm:grid-cols-2">
                         {groupedItems[group].map((item) => (
@@ -1409,7 +1417,7 @@ export function GuidebooksManager({
                                   onClick={() => openItemForEdit(item)}
                                   className="underline"
                                 >
-                                  Edit
+                                  {t("host_guidebook_edit_action", "Edit")}
                                 </button>
                                 <button
                                   type="button"
@@ -1419,7 +1427,7 @@ export function GuidebooksManager({
                                   }}
                                   className="text-red-600 underline"
                                 >
-                                  Remove
+                                  {t("host_guidebook_remove_action", "Remove")}
                                 </button>
                               </div>
                             </div>
@@ -1435,28 +1443,28 @@ export function GuidebooksManager({
       )}
 
       {modal === "add-menu" && (
-        <GuidebookModal title="What do you want to add?" onClose={closeModal}>
+        <GuidebookModal title={t("host_guidebook_modal_add_title", "What do you want to add?")} onClose={closeModal}>
           <div className="space-y-4">
             {[
               {
-                title: "Places",
-                subtitle: "Where should travellers go?",
+                title: t("host_guidebook_opt_places", "Places"),
+                subtitle: t("host_guidebook_opt_places_desc", "Where should travellers go?"),
                 icon: "place" as const,
                 action: () => {
                   setModal("place-form");
                 },
               },
               {
-                title: "Neighbourhoods",
-                subtitle: "What are the areas like?",
+                title: t("host_guidebook_opt_neighbourhoods", "Neighbourhoods"),
+                subtitle: t("host_guidebook_opt_neighbourhoods_desc", "What are the areas like?"),
                 icon: "neighbourhood" as const,
                 action: () => {
                   setModal("neighborhood-form");
                 },
               },
               {
-                title: "City advice",
-                subtitle: "What should travellers know?",
+                title: t("host_guidebook_opt_city_advice", "City advice"),
+                subtitle: t("host_guidebook_opt_city_advice_desc", "What should travellers know?"),
                 icon: "advice" as const,
                 action: () => setModal("advice-form"),
               },
@@ -1508,7 +1516,7 @@ export function GuidebooksManager({
 
       {modal === "advice-form" && (
         <GuidebookModal
-          title="What's your advice about?"
+          title={t("host_guidebook_advice_modal_title", "What's your advice about?")}
           onClose={closeModal}
           footer={
             <ModalFooter
@@ -1520,7 +1528,7 @@ export function GuidebooksManager({
           }
         >
           <div className="grid grid-cols-4 gap-x-3 gap-y-7">
-            {ADVICE_TYPES.map((item) => (
+            {adviceTypes.map((item) => (
               <button
                 key={item.id}
                 type="button"
@@ -1539,19 +1547,19 @@ export function GuidebooksManager({
           <div className="mt-8 space-y-6">
             <label className="block">
               <span className="mb-2 block text-base sm:text-lg font-semibold text-[#222]">
-                Advice title
+                {t("host_guidebook_advice_title_label", "Advice title")}
               </span>
               <input
                 value={formTitle}
                 maxLength={150}
                 onChange={(event) => setFormTitle(event.target.value)}
                 className="w-full rounded-2xl border border-zinc-300 px-4 py-3.5 text-sm text-[#222] placeholder:text-[#717171] outline-none transition focus:border-black"
-                placeholder="E.g.: The underground is the fastest way to get around"
+                placeholder={t("host_guidebook_advice_title_ph", "E.g.: The underground is the fastest way to get around")}
               />
             </label>
             <label className="block">
               <span className="mb-2 block text-base sm:text-lg font-semibold text-[#222]">
-                Share your advice
+                {t("host_guidebook_your_advice_label", "Your advice")}
               </span>
               <textarea
                 rows={5}
@@ -1559,7 +1567,7 @@ export function GuidebooksManager({
                 value={formText}
                 onChange={(event) => setFormText(event.target.value)}
                 className="w-full rounded-2xl border border-zinc-300 p-4 text-sm text-[#222] placeholder:text-[#717171] outline-none transition focus:border-black resize-y"
-                placeholder="Give travellers some quick and easy advice."
+                placeholder={t("host_guidebook_advice_text_ph", "Write a tip that will help travellers get the most out of their visit.")}
               />
             </label>
           </div>
@@ -1568,7 +1576,7 @@ export function GuidebooksManager({
 
       {categoryDialog && (
         <GuidebookModal
-          title="Create a category"
+          title={t("host_guidebook_create_cat_title", "Create a category")}
           onClose={() => setCategoryDialog(false)}
           width="max-w-md"
           footer={
@@ -1581,14 +1589,14 @@ export function GuidebooksManager({
           }
         >
           <label className="block">
-            <span className="mb-2 block text-base font-semibold text-[#222]">Category name</span>
+            <span className="mb-2 block text-base font-semibold text-[#222]">{t("host_guidebook_cat_name_label", "Category name")}</span>
             <input
               autoFocus
               maxLength={80}
               value={newCategory}
               onChange={(event) => setNewCategory(event.target.value)}
               className="w-full rounded-2xl border border-zinc-300 px-4 py-3 text-sm text-[#222] placeholder:text-zinc-400 outline-none transition focus:border-black"
-              placeholder="e.g. Architecture"
+              placeholder={t("host_guidebook_cat_name_ph", "e.g. Architecture")}
             />
           </label>
         </GuidebookModal>
@@ -1596,7 +1604,7 @@ export function GuidebooksManager({
 
       {modal === "listings" && (
         <GuidebookModal
-          title="Choose listings"
+          title={t("host_guidebook_choose_listings", "Choose listings")}
           onClose={closeModal}
           footer={
             <ModalFooter
@@ -1607,7 +1615,7 @@ export function GuidebooksManager({
           }
         >
           <p className="mb-5 text-sm text-[#727272]">
-            Choose where guests can discover this guidebook.
+            {t("host_guidebook_choose_listings_desc", "Choose where guests can discover this guidebook.")}
           </p>
           <div className="space-y-3">
             {guidebook?.eligibleListings.map((listing) => (
@@ -1630,7 +1638,7 @@ export function GuidebooksManager({
                 <span className="min-w-0 flex-1">
                   <strong className="block truncate">{listing.title}</strong>
                   <span className="text-sm text-[#727272]">
-                    {listing.city || "Location not set"}
+                    {listing.city || t("host_guidebook_location_not_set", "Location not set")}
                   </span>
                 </span>
                 <input
@@ -1653,7 +1661,7 @@ export function GuidebooksManager({
 
       {modal === "cover" && (
         <GuidebookModal
-          title="Edit cover"
+          title={t("host_guidebook_edit_cover", "Edit cover")}
           onClose={closeModal}
           footer={
             <ModalFooter
@@ -1679,7 +1687,7 @@ export function GuidebooksManager({
       )}
       {modal === "delete-item" && (
         <GuidebookModal
-          title="Remove this recommendation?"
+          title={t("host_guidebook_remove_item_title", "Remove this recommendation?")}
           onClose={closeModal}
           width="max-w-md"
           footer={
@@ -1687,19 +1695,18 @@ export function GuidebooksManager({
               cancel={closeModal}
               save={() => void confirmDeleteItem()}
               saving={saving}
-              saveLabel="Remove"
+              saveLabel={t("host_guidebook_remove_btn", "Remove")}
             />
           }
         >
           <p className="text-[#727272]">
-            This removes “{deleteItem?.title}” from the guidebook. Other
-            recommendations will not be affected.
+            {t("host_guidebook_remove_item_desc", "This removes “{title}” from the guidebook. Other recommendations will not be affected.").replace("{title}", deleteItem?.title || "")}
           </p>
         </GuidebookModal>
       )}
       {modal === "delete-guidebook" && guidebookToDelete && (
         <GuidebookModal
-          title="Delete this guidebook?"
+          title={t("host_guidebook_delete_title", "Delete this guidebook?")}
           onClose={closeModal}
           width="max-w-md"
           footer={
@@ -1707,14 +1714,12 @@ export function GuidebooksManager({
               cancel={closeModal}
               save={() => void confirmDeleteGuidebook()}
               saving={saving}
-              saveLabel="Delete"
+              saveLabel={t("host_guidebook_delete_btn", "Delete")}
             />
           }
         >
           <p className="text-[#727272]">
-            Are you sure you want to delete “{guidebookToDelete.title}”? This
-            action cannot be undone and will permanently remove this guidebook
-            and its recommendations.
+            {t("host_guidebook_delete_desc", "Are you sure you want to delete “{title}”? This action cannot be undone and will permanently remove this guidebook and its recommendations.").replace("{title}", guidebookToDelete.title || "")}
           </p>
         </GuidebookModal>
       )}

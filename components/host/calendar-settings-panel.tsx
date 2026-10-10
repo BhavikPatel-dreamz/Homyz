@@ -6,6 +6,7 @@ import { BackButton } from "@/components/ui/back-button";
 import type { ListingDTO } from "@/services/mappers";
 import { convertCurrency, resolvePropertyCurrency } from "@/lib/currency";
 import { useCurrency } from "@/lib/currency-context";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 function ExpandControl({
   title,
@@ -75,6 +76,7 @@ export function CalendarSettingsPanel({
   onSave: (values: Record<string, unknown>) => Promise<void>;
 }) {
   const { currency: displayCurrency, formatMajor } = useCurrency();
+  const { t } = useLanguage();
   // The calendar opens on the concise Figma-style overview. Pricing and
   // availability retain their existing full editors one click away.
   const [panel, setPanel] = useState<"pricing" | "overview" | "availability">("overview");
@@ -379,7 +381,7 @@ export function CalendarSettingsPanel({
   return (
     <div className="text-[#1F1F1F] dark:text-zinc-100">
       <BackButton
-        aria-label="Back to calendar settings"
+        aria-label={t("host_calendar_back_to_settings", "Back to calendar settings")}
         onClick={() => {
           if (dirty && typeof window !== "undefined") {
             if (!window.confirm("You have unsaved changes. Discard them?")) {
@@ -445,35 +447,35 @@ export function CalendarSettingsPanel({
           <div className="space-y-4">
             {renderInputField({
               name: "minNights",
-              label: "Minimum stay",
+              label: t("host_calendar_min_stay_label", "Minimum stay"),
               defaultValue: listing.minNights ?? 1,
               suffix: "nights",
               min: 1,
               max: 365,
               inputMode: "numeric",
-              helperText: "Shortest reservation length guests can book.",
+              helperText: t("host_calendar_min_stay_helper", "Shortest reservation length guests can book."),
             })}
 
             {renderInputField({
               name: "maxNights",
-              label: "Maximum stay",
+              label: t("host_calendar_max_stay_label", "Maximum stay"),
               defaultValue: listing.maxNights ?? 365,
               suffix: "nights",
               min: 1,
               max: 365,
               inputMode: "numeric",
-              helperText: "Longest reservation length guests can book.",
+              helperText: t("host_calendar_max_stay_helper", "Longest reservation length guests can book."),
             })}
 
             {renderInputField({
               name: "guests",
-              label: "Maximum guest capacity",
+              label: t("host_calendar_max_guest_label", "Maximum guest capacity"),
               defaultValue: (listing as any).guests ?? 1,
               suffix: "guests",
               min: 1,
               max: 50,
               inputMode: "numeric",
-              helperText: "Maximum number of guests allowed per booking.",
+              helperText: t("host_calendar_max_guest_helper", "Maximum number of guests allowed per booking."),
             })}
 
             <div className="space-y-1">
@@ -481,7 +483,7 @@ export function CalendarSettingsPanel({
                 htmlFor="advanceNoticeSelect"
                 className="block text-sm font-medium text-[#1f1f1f] dark:text-zinc-200"
               >
-                Advance notice
+                {t("host_calendar_advance_notice_label", "Advance notice")}
               </label>
               <div className="relative flex items-center">
                 <select
@@ -510,7 +512,7 @@ export function CalendarSettingsPanel({
                 htmlFor="sameDayCutoffSelect"
                 className="block text-sm font-medium text-[#1f1f1f] dark:text-zinc-200"
               >
-                Same-day booking cutoff
+                {t("host_calendar_same_day_cutoff_label", "Same-day booking cutoff")}
               </label>
               <div className="w-full appearance-none bg-transparent px-3.5 py-2.5 text-sm font-medium text-zinc-900 dark:text-zinc-100 outline-none cursor-pointer pr-9 border border-[#727272] sm:min-h-[56px] min-h-[45px] focus-within:outline-0 focus-within:shadow-none focus-visible:outline-0 focus-visible:shadow-none rounded-lg">
                 <select
@@ -574,14 +576,14 @@ export function CalendarSettingsPanel({
                 disabled={saving}
                 className="flex-1 rounded-lg border border-zinc-300 dark:border-[#1f1f1f] bg-white dark:bg-[#1f1f1f] hover:bg-zinc-100 dark:hover:bg-[#1f1f1f] text-[#1f1f1f] hover:text-white dark:text-zinc-300 font-medium py-2.5 text-sm transition-colors cursor-pointer disabled:opacity-50"
               >
-                Discard
+                {t("host_calendar_discard", "Discard")}
               </button>
               <button
                 type="submit"
                 disabled={saving}
                 className="flex-1 rounded-lg bg-[#FCDF9C] hover:bg-amber-300 text-[#1f1f1f] hover:text-white font-medium py-2.5 text-sm transition-colors cursor-pointer disabled:opacity-50 shadow-xs"
               >
-                {saving ? "Saving…" : "Save availability"}
+                {saving ? t("host_calendar_saving", "Saving…") : t("host_calendar_save_avail", "Save availability")}
               </button>
             </div>
           )}
@@ -709,7 +711,7 @@ export function CalendarSettingsPanel({
 
             {renderInputField({
               name: "price",
-              label: "Weekday base rate",
+              label: t("host_calendar_weekday_base_rate", "Weekday base rate"),
               defaultValue:
                 toDisplayMajor(((listing as any).weekdayBasePrice ?? listing.price) / 100),
               prefix: displayCurrency,
@@ -717,21 +719,21 @@ export function CalendarSettingsPanel({
               max: 100000,
               step: "0.01",
               inputMode: "decimal",
-              helperText: "Applies to Sunday through Wednesday nights.",
+              helperText: t("host_calendar_weekday_helper", "Applies to Sunday through Wednesday nights."),
             })}
 
             <ExpandControl
-              title="Custom weekend price"
+              title={t("host_calendar_custom_weekend_price", "Custom weekend price")}
               subtitle={
                 customWeekendPriceVal
                   ? `${displayCurrency} ${Number(customWeekendPriceVal).toLocaleString("en", { maximumFractionDigits: 2 })} / night`
-                  : `Not configured (defaults to ${formatMajor(((listing as any).weekdayBasePrice ?? listing.price) / 100, listingCurrency)})`
+                  : `${t("host_calendar_weekend_not_configured", "Not configured")} (defaults to ${formatMajor(((listing as any).weekdayBasePrice ?? listing.price) / 100, listingCurrency)})`
               }
               defaultOpen={Boolean(listing.weekendPrice)}
             >
               {renderInputField({
                 name: "weekendPrice",
-                label: `Weekend rate (${displayCurrency})`,
+                label: `${t("host_calendar_custom_weekend_price", "Custom weekend price")} (${displayCurrency})`,
                 value: customWeekendPriceVal,
                 onChange: (e) => {
                   setCustomWeekendPriceVal(e.target.value);
@@ -744,7 +746,7 @@ export function CalendarSettingsPanel({
                 inputMode: "decimal",
                 placeholder: "Leave empty to use base rate",
                 helperText:
-                  "Applies to Thursday & Friday nights. Leave empty to use the weekday base rate.",
+                  t("host_calendar_weekend_helper", "Applies to Thursday & Friday nights. Leave empty to use the weekday base rate."),
                 onClear: customWeekendPriceVal
                   ? () => {
                     setCustomWeekendPriceVal("");
@@ -780,7 +782,7 @@ export function CalendarSettingsPanel({
             >
               {renderInputField({
                 name: "weekly",
-                label: "Weekly discount",
+                label: t("host_calendar_weekly_discount_label", "Weekly discount"),
                 defaultValue: weeklyDiscount,
                 suffix: "%",
                 min: 1,
@@ -804,7 +806,7 @@ export function CalendarSettingsPanel({
             >
               {renderInputField({
                 name: "monthly",
-                label: "Monthly discount",
+                label: t("host_calendar_monthly_discount_label", "Monthly discount"),
                 defaultValue: monthlyDiscount,
                 suffix: "%",
                 min: 1,
@@ -828,7 +830,7 @@ export function CalendarSettingsPanel({
             >
               {renderInputField({
                 name: "earlyBird",
-                label: "Early-bird discount",
+                label: t("host_calendar_early_bird_discount", "Early-bird discount"),
                 defaultValue: earlyBirdDiscount,
                 suffix: "%",
                 min: 1,
@@ -852,7 +854,7 @@ export function CalendarSettingsPanel({
             >
               {renderInputField({
                 name: "lastMinute",
-                label: "Last-minute discount",
+                label: t("host_calendar_last_minute_discount", "Last-minute discount"),
                 defaultValue: lastMinuteDiscount,
                 suffix: "%",
                 min: 1,
@@ -876,11 +878,11 @@ export function CalendarSettingsPanel({
             </div>
 
             <ExpandControl
-              title="New listing promotion"
+              title={t("host_calendar_new_listing_promo", "New listing promotion")}
               subtitle={
                 newListingEnabled && newListingDiscount > 0
-                  ? `${newListingDiscount}% promotion for the first eligible bookings`
-                  : "No new listing promotion configured"
+                  ? t("host_calendar_new_listing_sub", { pct: newListingDiscount }, `${newListingDiscount}% promotion for the first eligible bookings`)
+                  : t("host_calendar_no_new_listing_promo", "No new listing promotion configured")
               }
               defaultOpen={newListingEnabled}
               control={discountToggle(
@@ -892,7 +894,7 @@ export function CalendarSettingsPanel({
             >
               {renderInputField({
                 name: "newListing",
-                label: "New listing discount (first 3 bookings)",
+                label: t("host_calendar_new_listing_promo", "New listing discount (first 3 bookings)"),
                 defaultValue: newListingDiscount,
                 suffix: "%",
                 min: 1,
@@ -905,11 +907,11 @@ export function CalendarSettingsPanel({
             </ExpandControl>
 
             <ExpandControl
-              title="Custom promotion"
+              title={t("host_calendar_custom_promo", "Custom promotion")}
               subtitle={
                 customPromoEnabled && customPromoDiscount > 0
                   ? `${customPromoDiscount}% promotional discount configured`
-                  : "Property-wide promotional discount"
+                  : t("host_calendar_custom_promo", "Property-wide promotional discount")
               }
               defaultOpen={customPromoEnabled}
               control={discountToggle(
@@ -921,7 +923,7 @@ export function CalendarSettingsPanel({
             >
               {renderInputField({
                 name: "customPromo",
-                label: "Special promotional discount",
+                label: t("host_calendar_custom_promo", "Special promotional discount"),
                 defaultValue: customPromoDiscount,
                 suffix: "%",
                 min: 1,
@@ -947,7 +949,7 @@ export function CalendarSettingsPanel({
 
             {renderInputField({
               name: "cleaningFee",
-              label: "Cleaning fee",
+              label: t("host_calendar_cleaning_fee_label", "Cleaning fee"),
               defaultValue: toDisplayMajor(((listing as any).cleaningFee || 0) / 100),
               prefix: displayCurrency,
               suffix: "/ stay",
@@ -955,7 +957,7 @@ export function CalendarSettingsPanel({
               max: 10000,
               step: "0.01",
               inputMode: "decimal",
-              helperText: "One-time host cleaning fee recorded with property.",
+              helperText: t("host_calendar_cleaning_fee_helper", "One-time host cleaning fee recorded with property."),
             })}
 
             {renderInputField({
@@ -1009,14 +1011,14 @@ export function CalendarSettingsPanel({
                 disabled={saving}
                   className="rounded-lg border border-[#1f1f1f] bg-white dark:bg-[#1f1f1f] hover:bg-zinc-100 dark:hover:bg-[#1f1f1f] text-[#1f1f1f] dark:text-white font-medium py-2.5 text-xs transition-colors cursor-pointer disabled:opacity-50 px-2 flex-1"
               >
-                Discard
+                {t("host_calendar_discard", "Discard")}
               </button>
               <button
                 type="submit"
                 disabled={saving}
                   className="rounded-lg bg-[#FCDF9C] hover:bg-[#1f1f1f] text-[#1f1f1f] hover:text-white font-medium py-2.5 text-xs transition-colors cursor-pointer disabled:opacity-50 px-2 flex-1"
               >
-                {saving ? "Saving…" : "Save price settings"}
+                {saving ? t("host_calendar_saving", "Saving…") : t("host_calendar_save_price", "Save price settings")}
               </button>
             </div>
           )}

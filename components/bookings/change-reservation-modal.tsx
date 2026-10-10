@@ -5,6 +5,7 @@ import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { CurrencyPrice } from "@/components/ui/currency-price";
 import { useRouter } from "next/navigation";
 import { bookingDateKey, compareBookingDates } from "@/lib/booking/booking-date";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 interface ChangeReservationModalProps {
   isOpen: boolean;
@@ -32,6 +33,7 @@ export function ChangeReservationModal({
   propertyName,
 }: ChangeReservationModalProps) {
   const router = useRouter();
+  const { t } = useLanguage();
   const [startDate, setStartDate] = useState(bookingDateKey(currentStartDate));
   const [endDate, setEndDate] = useState(bookingDateKey(currentEndDate));
   const [guests, setGuests] = useState(currentGuests);
@@ -71,7 +73,7 @@ export function ChangeReservationModal({
 
     if (!startDate || !endDate) return;
     if (compareBookingDates(endDate, startDate) <= 0) {
-      setPreviewError("Check-out date must be after check-in date.");
+      setPreviewError(t("booking_details_checkout_after_checkin", "Check-out date must be after check-in date."));
       setPreviewData(null);
       return;
     }
@@ -90,7 +92,7 @@ export function ChangeReservationModal({
 
         const json = await res.json().catch(() => ({}));
         if (!res.ok) {
-          const msg = json?.error?.message || (typeof json?.error === "string" ? json.error : null) || "Unable to check availability.";
+          const msg = json?.error?.message || (typeof json?.error === "string" ? json.error : null) || t("booking_details_unable_check_avail", "Unable to check availability.");
           throw new Error(msg);
         }
 
@@ -98,7 +100,7 @@ export function ChangeReservationModal({
         if (!isMounted) return;
 
         if (!data.available) {
-          setPreviewError(data.reason || "The selected dates are unavailable.");
+          setPreviewError(data.reason || t("booking_details_dates_unavailable", "The selected dates are unavailable."));
           setPreviewData(null);
         } else {
           setPreviewData(data);
@@ -106,7 +108,7 @@ export function ChangeReservationModal({
         }
       } catch (err) {
         if (!isMounted) return;
-        setPreviewError(err instanceof Error ? err.message : "Failed to calculate quote.");
+        setPreviewError(err instanceof Error ? err.message : t("booking_details_failed_quote", "Failed to calculate quote."));
         setPreviewData(null);
       } finally {
         if (isMounted) setLoadingPreview(false);
@@ -117,7 +119,7 @@ export function ChangeReservationModal({
       isMounted = false;
       clearTimeout(timer);
     };
-  }, [isOpen, bookingId, startDate, endDate, guests]);
+  }, [isOpen, bookingId, startDate, endDate, guests, t]);
 
   const handleSubmit = async () => {
     if (submitting || !previewData?.available) return;
@@ -133,14 +135,14 @@ export function ChangeReservationModal({
 
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
-        const msg = json?.error?.message || (typeof json?.error === "string" ? json.error : null) || "Failed to update reservation.";
+        const msg = json?.error?.message || (typeof json?.error === "string" ? json.error : null) || t("booking_details_failed_update", "Failed to update reservation.");
         throw new Error(msg);
       }
 
       onClose();
       router.refresh();
     } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : "Failed to update reservation.");
+      setSubmitError(err instanceof Error ? err.message : t("booking_details_failed_update", "Failed to update reservation."));
     } finally {
       setSubmitting(false);
     }
@@ -181,7 +183,7 @@ export function ChangeReservationModal({
           </div>
           <div>
             <h2 id="change-modal-title" className="text-xl font-semibold text-[#1F1F1F]">
-              Change reservation
+              {t("booking_details_change_reservation", "Change reservation")}
             </h2>
             <p className="text-xs text-[#727272] line-clamp-1">{propertyName}</p>
           </div>
@@ -191,7 +193,7 @@ export function ChangeReservationModal({
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label htmlFor="change-checkin" className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider">
-                Check-in
+                {t("booking_details_check_in", "Check-in")}
               </label>
               <input
                 id="change-checkin"
@@ -205,7 +207,7 @@ export function ChangeReservationModal({
             </div>
             <div>
               <label htmlFor="change-checkout" className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider">
-                Check-out
+                {t("booking_details_check_out", "Check-out")}
               </label>
               <input
                 id="change-checkout"
@@ -222,13 +224,15 @@ export function ChangeReservationModal({
           <div>
             <div className="flex items-center justify-between">
               <label className="block text-xs font-semibold text-zinc-700 uppercase tracking-wider">
-                Guests
+                {t("booking_details_guests", "Guests")}
               </label>
-              <span className="text-xs text-[#727272]">Max {maxGuests} guests</span>
+              <span className="text-xs text-[#727272]">
+                {t("booking_details_max_guests_label", { count: maxGuests }, "Max {count} guests")}
+              </span>
             </div>
             <div className="mt-1.5 flex items-center justify-between rounded-xl border border-zinc-300 bg-white px-4 py-2.5">
               <span className="text-sm font-medium text-[#1F1F1F]">
-                {guests} {guests === 1 ? "guest" : "guests"}
+                {guests} {guests === 1 ? t("booking_details_guest_singular", "guest") : t("booking_details_guests_plural", "guests")}
               </span>
               <div className="flex items-center gap-2">
                 <button
@@ -262,7 +266,7 @@ export function ChangeReservationModal({
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
               </svg>
-              <span>Checking availability and recalculating pricing...</span>
+              <span>{t("booking_details_checking_quote", "Checking availability and recalculating pricing...")}</span>
             </div>
           ) : previewError ? (
             <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs font-medium text-red-700">
@@ -271,13 +275,18 @@ export function ChangeReservationModal({
           ) : previewData ? (
             <dl className="space-y-2 text-xs sm:text-sm">
               <div className="flex justify-between text-zinc-600">
-                <dt>Current reservation total</dt>
+                <dt>{t("booking_details_current_total", "Current reservation total")}</dt>
                 <dd>
                   <CurrencyPrice amountMinorUnits={currentTotalPrice} sourceCurrency={currency} fractionDigits={2} />
                 </dd>
               </div>
               <div className="flex justify-between font-semibold text-[#1F1F1F] border-t border-zinc-200/80 pt-2">
-                <dt>New total ({previewData.newNights} {previewData.newNights === 1 ? "night" : "nights"})</dt>
+                <dt>
+                  {t("booking_details_new_total", {
+                    count: previewData.newNights,
+                    nights: previewData.newNights === 1 ? t("booking_details_night_singular", "night") : t("booking_details_nights_plural", "nights"),
+                  }, "New total ({count} {nights})")}
+                </dt>
                 <dd>
                   <CurrencyPrice amountMinorUnits={previewData.newTotal} sourceCurrency={currency} fractionDigits={2} />
                 </dd>
@@ -285,10 +294,10 @@ export function ChangeReservationModal({
               <div className="flex justify-between font-bold pt-1">
                 <dt>
                   {previewData.difference > 0
-                    ? "Additional payment required"
+                    ? t("booking_details_add_payment", "Additional payment required")
                     : previewData.difference < 0
-                      ? "Refund due"
-                      : "Price adjustment"}
+                      ? t("booking_details_refund_due", "Refund due")
+                      : t("booking_details_price_adjust", "Price adjustment")}
                 </dt>
                 <dd className={previewData.difference > 0 ? "text-amber-700" : previewData.difference < 0 ? "text-emerald-700" : "text-zinc-700"}>
                   {previewData.difference > 0 ? "+" : previewData.difference < 0 ? "-" : ""}
@@ -298,7 +307,7 @@ export function ChangeReservationModal({
             </dl>
           ) : (
             <p className="text-center text-xs text-[#727272] py-2">
-              Select your new dates and guest count above to see availability and price updates.
+              {t("booking_details_change_instructions", "Select your new dates and guest count above to see availability and price updates.")}
             </p>
           )}
         </div>
@@ -316,7 +325,7 @@ export function ChangeReservationModal({
             disabled={submitting}
             className="flex h-11 items-center justify-center rounded-full border border-[#1F1F1F] px-5 text-sm font-medium text-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white disabled:opacity-50"
           >
-            Cancel
+            {t("booking_details_cancel", "Cancel")}
           </button>
           <button
             type="button"
@@ -330,10 +339,10 @@ export function ChangeReservationModal({
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                 </svg>
-                <span>Updating reservation...</span>
+                <span>{t("booking_details_updating_reservation", "Updating reservation...")}</span>
               </>
             ) : (
-              <span>Confirm changes</span>
+              <span>{t("booking_details_confirm_changes", "Confirm changes")}</span>
             )}
           </button>
         </div>

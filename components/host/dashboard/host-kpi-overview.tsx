@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import type { HostDashboardData } from "@/services/host-dashboard.service";
 import type { ListingDTO } from "@/services/mappers";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 interface HostKpiOverviewProps {
   initialData?: HostDashboardData | null;
@@ -30,11 +31,14 @@ function formatCurrency(cents: number, currency = "SAR") {
   return `${currency} ${(cents / 100).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 }
 
-function formatResponseTime(minutes: number | null) {
-  if (minutes === null) return "No inquiries yet";
-  if (minutes < 60) return `${minutes} min`;
+function formatResponseTime(minutes: number | null, t: (key: any, fallback?: string) => string) {
+  if (minutes === null) return t("host_dash_no_inquiries", "No inquiries yet");
+  if (minutes < 60) return `${minutes} ${t("host_dash_time_min", "min")}`;
   const hours = Math.floor(minutes / 60);
-  return minutes % 60 ? `${hours}h ${minutes % 60}m` : `${hours}h`;
+  const remainingMins = minutes % 60;
+  return remainingMins
+    ? `${hours}${t("host_dash_time_h", "h")} ${remainingMins}${t("host_dash_time_m", "m")}`
+    : `${hours}${t("host_dash_time_h", "h")}`;
 }
 
 export function HostKpiOverview({
@@ -43,6 +47,7 @@ export function HostKpiOverview({
   listings = [],
   onSelectBookingId,
 }: HostKpiOverviewProps) {
+  const { t } = useLanguage();
   const [data, setData] = useState<HostDashboardData | null>(
     initialData || null,
   );
@@ -183,10 +188,10 @@ export function HostKpiOverview({
             Hosting dashboard
           </p>
           <h1 className="text-3xl font-semibold tracking-[-0.035em] text-[#1F1F1F] sm:text-4xl">
-            Performance overview
+            {t("host_dash_header_title", "Performance overview")}
           </h1>
           <p className="mt-1.5 text-sm text-[#727272] sm:text-base">
-            {currentListing ? currentListing.title : "All properties"}
+            {currentListing ? currentListing.title : t("host_dash_all_properties", "All properties")}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -798,7 +803,7 @@ export function HostKpiOverview({
                 selectedHealthListing?.missingFields.length
                   ? `Needs: ${selectedHealthListing.missingFields.join(", ")}`
                   : "All stored checklist details are present.",
-                `Response time: ${formatResponseTime(listingHealth.averageResponseTimeMinutes)}`,
+                `Response time: ${formatResponseTime(listingHealth.averageResponseTimeMinutes, t)}`,
               ]}
             />
           </div>

@@ -269,8 +269,6 @@ model User {
   listingRemovalFeedbacks         ListingRemovalFeedback[]
   authoredReviews                 Review[]                   @relation("AuthoredReviews")
   moderatedReviews                Review[]                   @relation("ModeratedReviews")
-  authoredGuestReviews            HostGuestReview[]          @relation("HostGuestReviewsAuthored")
-  receivedGuestReviews            HostGuestReview[]          @relation("HostGuestReviewsReceived")
   referredBy                      User?                      @relation("GuestReferrals", fields: [referredById], references: [id], onDelete: SetNull)
   referredGuests                  User[]                     @relation("GuestReferrals")
   referralRewards                 ReferralReward[]           @relation("ReferralRewardInviter")
@@ -737,7 +735,6 @@ model Booking {
   listing        Listing          @relation(fields: [listingId], references: [id], onDelete: Restrict)
   taxes          ReservationTax[]
   reviews        Review[]
-  hostGuestReview HostGuestReview?
   referralReward ReferralReward?
   conversations  Conversation[]
   qualityIncidents ListingQualityIncident[]
@@ -807,36 +804,6 @@ model Review {
   @@index([listingId, status, createdAt])
   @@index([authorId])
   @@index([bookingId])
-}
-
-// Host-to-guest reviews use their own record. `Review` is guest-authored and
-// unique by booking, so reusing it would prevent each side of a stay from
-// reviewing independently.
-model HostGuestReview {
-  id                  String       @id @default(cuid())
-  bookingId           String       @unique
-  hostId              String
-  guestId             String
-  cleanlinessRating   Int          @default(5)
-  cleanlinessTags     String[]     @default([])
-  houseRulesRating    Int          @default(5)
-  communicationRating Int          @default(5)
-  communicationTags   String[]     @default([])
-  publicReview        String?      @db.Text
-  recommendGuest      Boolean      @default(true)
-  privateNote         String?      @db.Text
-  status              ReviewStatus @default(PUBLISHED)
-  submittedAt         DateTime     @default(now())
-  createdAt           DateTime     @default(now())
-  updatedAt           DateTime     @updatedAt
-
-  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  host    User    @relation("HostGuestReviewsAuthored", fields: [hostId], references: [id], onDelete: Cascade)
-  guest   User    @relation("HostGuestReviewsReceived", fields: [guestId], references: [id], onDelete: Cascade)
-
-  @@index([hostId, submittedAt])
-  @@index([guestId, submittedAt])
-  @@index([guestId, status])
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

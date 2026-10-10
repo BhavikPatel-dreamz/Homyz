@@ -1212,11 +1212,11 @@ export function HostListingsWorkspace({
             {/* Wizard Steps Navigation Bar */}
             <div className="flex items-center gap-1 overflow-x-auto pb-2 border-b border-[var(--border-subtle)] text-xs font-semibold scrollbar-none">
               {[
-                { step: 1, label: "1. Basic Info" },
-                { step: 2, label: "2. Location & Capacity" },
-                { step: 3, label: "3. Photos & Media" },
-                { step: 4, label: "4. Amenities & Rules" },
-                { step: 5, label: "5. Pricing & Policies" },
+                { step: 1, label: t("host_listings_modal_step_1", "1. Basic Info") },
+                { step: 2, label: t("host_listings_modal_step_2", "2. Location & Capacity") },
+                { step: 3, label: t("host_listings_modal_step_3", "3. Photos & Details") },
+                { step: 4, label: t("host_listings_modal_amenities", "4. Amenities & Rules") },
+                { step: 5, label: t("host_listings_modal_step_4", "5. Pricing & Policies") },
               ].map((s) => (
                 <button
                   key={s.step}
@@ -1238,45 +1238,45 @@ export function HostListingsWorkspace({
               {editorStep === 1 && (
                 <div className="space-y-4">
                   <div>
-                    <label className="block font-semibold text-muted-foreground mb-1">Listing Title *</label>
+                    <label className="block font-semibold text-muted-foreground mb-1">{t("host_listings_modal_title", "Listing Title *")}</label>
                     <input
                       type="text"
                       value={formData.title}
                       onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                       required
-                      placeholder="e.g. Modern Luxury Beachfront Villa with Ocean Views"
+                      placeholder={t("host_listings_modal_title_ph", "e.g. Modern Luxury Beachfront Villa with Ocean Views")}
                       className="w-full rounded-xl border border-[var(--border)] p-3 bg-[var(--surface)] text-muted-foreground outline-none focus:border-emerald-500 font-medium"
                     />
                   </div>
 
                   <div>
-                    <label className="block font-semibold text-muted-foreground mb-1">Detailed Description *</label>
+                    <label className="block font-semibold text-muted-foreground mb-1">{t("host_listings_modal_desc", "Detailed Description *")}</label>
                     <textarea
                       value={formData.description}
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                       required
                       rows={4}
-                      placeholder="Describe what makes your property unique, nearby attractions, neighborhood ambiance, and special features..."
+                      placeholder={t("host_listings_modal_desc_ph", "Describe what makes your property unique, nearby attractions, neighborhood ambiance, and special features...")}
                       className="w-full rounded-xl border border-[var(--border)] p-3 bg-[var(--surface)] text-muted-foreground outline-none focus:border-emerald-500"
                     />
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
-                      <label className="block font-semibold text-muted-foreground mb-1">Hosting Category</label>
+                      <label className="block font-semibold text-muted-foreground mb-1">{t("host_listings_modal_category", "Hosting Category")}</label>
                       <select
                         value={formData.hostingType}
                         onChange={(e) => setFormData({ ...formData, hostingType: e.target.value })}
                         className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground outline-none font-semibold"
                       >
-                        <option value="HOME">Residential Home</option>
-                        <option value="EXPERIENCE">Experience</option>
-                        <option value="SERVICE">Service</option>
+                        <option value="HOME">{t("host_listings_modal_cat_home", "Residential Home")}</option>
+                        <option value="EXPERIENCE">{t("host_listings_modal_cat_exp", "Experience")}</option>
+                        <option value="SERVICE">{t("host_listings_modal_cat_service", "Service")}</option>
                       </select>
                     </div>
 
                     <div>
-                      <label className="block font-semibold text-muted-foreground mb-1">Property Type</label>
+                      <label className="block font-semibold text-muted-foreground mb-1">{t("host_listings_modal_prop_type", "Property Type")}</label>
                       <select
                         value={formData.propertyType}
                         onChange={(e) => setFormData({ ...formData, propertyType: e.target.value })}
@@ -1289,7 +1289,7 @@ export function HostListingsWorkspace({
                     </div>
 
                     <div>
-                      <label className="block font-semibold text-muted-foreground mb-1">Listing Type</label>
+                      <label className="block font-semibold text-muted-foreground mb-1">{t("host_listings_modal_listing_type", "Listing Type")}</label>
                       <select
                         value={formData.listingType}
                         onChange={(e) => setFormData({ ...formData, listingType: e.target.value })}
@@ -1309,18 +1309,18 @@ export function HostListingsWorkspace({
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="sm:col-span-2">
-                      <label className="block font-semibold text-muted-foreground mb-1">Street Address *</label>
+                      <label className="block font-semibold text-muted-foreground mb-1">{t("host_listings_modal_street", "Street Address *")}</label>
                       <input
                         type="text"
                         value={formData.address}
                         onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                         required
-                        placeholder="e.g. 742 Evergreen Terrace"
+                        placeholder={t("host_listings_modal_street_ph", "e.g. 742 Evergreen Terrace")}
                         className="w-full rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block font-semibold text-muted-foreground mb-1">City / Region *</label>
+                      <label className="block font-semibold text-muted-foreground mb-1">{t("host_listings_modal_city", "City / Region *")}</label>
                       <input
                         type="text"
                         value={formData.city}
@@ -1331,7 +1331,7 @@ export function HostListingsWorkspace({
                       />
                     </div>
                     <div>
-                      <label className="block font-semibold text-muted-foreground mb-1">District / State</label>
+                      <label className="block font-semibold text-muted-foreground mb-1">{t("host_listings_modal_district", "District / State")}</label>
                       <input
                         type="text"
                         value={formData.district}
@@ -1341,7 +1341,7 @@ export function HostListingsWorkspace({
                       />
                     </div>
                     <div>
-                      <label className="block font-semibold text-muted-foreground mb-1">Postal Code</label>
+                      <label className="block font-semibold text-muted-foreground mb-1">{t("host_listings_modal_zip", "Postal Code")}</label>
                       <input
                         type="text"
                         value={formData.postalCode}
@@ -1351,7 +1351,7 @@ export function HostListingsWorkspace({
                       />
                     </div>
                     <div>
-                      <label className="block font-semibold text-muted-foreground mb-1">Country</label>
+                      <label className="block font-semibold text-muted-foreground mb-1">{t("host_listings_modal_country", "Country")}</label>
                       <input
                         type="text"
                         value={formData.country}
@@ -1363,10 +1363,10 @@ export function HostListingsWorkspace({
                   </div>
 
                   <div className="border-t border-[var(--border-subtle)] pt-4">
-                    <h4 className="font-semibold text-muted-foreground mb-3">Property Capacity</h4>
+                    <h4 className="font-semibold text-muted-foreground mb-3">{t("host_listings_modal_capacity", "Property Capacity")}</h4>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                       <div>
-                        <label className="block text-[var(--muted-foreground)] font-medium mb-1">Guests Capacity</label>
+                        <label className="block text-[var(--muted-foreground)] font-medium mb-1">{t("host_listings_modal_guests_cap", "Guests Capacity")}</label>
                         <input
                           type="number"
                           min={1}
@@ -1377,7 +1377,7 @@ export function HostListingsWorkspace({
                         />
                       </div>
                       <div>
-                        <label className="block text-[var(--muted-foreground)] font-medium mb-1">Bedrooms</label>
+                        <label className="block text-[var(--muted-foreground)] font-medium mb-1">{t("host_listings_modal_bedrooms", "Bedrooms")}</label>
                         <input
                           type="number"
                           min={0}
@@ -1388,7 +1388,7 @@ export function HostListingsWorkspace({
                         />
                       </div>
                       <div>
-                        <label className="block text-[var(--muted-foreground)] font-medium mb-1">Beds</label>
+                        <label className="block text-[var(--muted-foreground)] font-medium mb-1">{t("host_listings_modal_beds", "Beds")}</label>
                         <input
                           type="number"
                           min={1}
@@ -1399,7 +1399,7 @@ export function HostListingsWorkspace({
                         />
                       </div>
                       <div>
-                        <label className="block text-[var(--muted-foreground)] font-medium mb-1">Bathrooms</label>
+                        <label className="block text-[var(--muted-foreground)] font-medium mb-1">{t("host_listings_modal_bathrooms", "Bathrooms")}</label>
                         <input
                           type="number"
                           min={1}
@@ -1419,7 +1419,7 @@ export function HostListingsWorkspace({
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h4 className="font-semibold text-muted-foreground">Property Photos Gallery</h4>
+                      <h4 className="font-semibold text-muted-foreground">{t("host_listings_modal_photos", "Property Photos Gallery")}</h4>
                       <p className="text-[11px] text-[var(--muted-foreground)]">
                         Add high quality image URLs. Minimum 5 photos required for Admin review & approval.
                       </p>
@@ -1434,7 +1434,7 @@ export function HostListingsWorkspace({
                   <div className="space-y-2">
                     <div className="flex flex-col sm:flex-row gap-2">
                       <label className="cursor-pointer inline-flex items-center justify-center gap-2 rounded-xl bg-zinc-900 text-white dark:bg-zinc-100 dark:text-[#1F1F1F] font-semibold px-4 py-2.5 hover:opacity-90 transition-all shrink-0">
-                        <span>📁 Choose & Upload File</span>
+                        <span>{t("host_listings_modal_upload_btn", "📁 Choose & Upload File")}</span>
                         <input
                           type="file"
                           accept="image/*"
@@ -1525,8 +1525,8 @@ export function HostListingsWorkspace({
               {editorStep === 4 && (
                 <div className="space-y-6">
                   <div>
-                    <h4 className="font-semibold text-muted-foreground mb-1">Property Amenities</h4>
-                    <p className="text-[11px] text-[var(--muted-foreground)] mb-3">Select all amenities available to guests:</p>
+                    <h4 className="font-semibold text-muted-foreground mb-1">{t("host_listings_modal_amenities", "Property Amenities")}</h4>
+                    <p className="text-[11px] text-[var(--muted-foreground)] mb-3">{t("host_listings_modal_amenities_sub", "Select all amenities available to guests:")}</p>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                       {AMENITY_OPTIONS.map((item) => {
                         const isSelected = formData.amenities.includes(item.id);
@@ -1554,8 +1554,8 @@ export function HostListingsWorkspace({
                   </div>
 
                   <div className="border-t border-[var(--border-subtle)] pt-4 space-y-2">
-                    <h4 className="font-semibold text-muted-foreground">House Rules</h4>
-                    <p className="text-[11px] text-[var(--muted-foreground)]">Select house rules for guests staying at your place:</p>
+                    <h4 className="font-semibold text-muted-foreground">{t("host_listings_modal_rules", "House Rules")}</h4>
+                    <p className="text-[11px] text-[var(--muted-foreground)]">{t("host_listings_modal_rules_sub", "Select house rules for guests staying at your place:")}</p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {HOUSE_RULE_OPTIONS.map((rule) => {
                         const isChecked = formData.houseRules.includes(rule);
@@ -1585,7 +1585,7 @@ export function HostListingsWorkspace({
               {editorStep === 5 && (
                 <div className="space-y-6">
                   <div>
-                    <h4 className="font-semibold text-muted-foreground mb-3">Pricing</h4>
+                    <h4 className="font-semibold text-muted-foreground mb-3">{t("host_listings_modal_pricing", "Pricing")}</h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-[var(--muted-foreground)] font-medium mb-1">Nightly Rate ({getCurrencyForCountry(formData.country)}) *</label>
@@ -1612,10 +1612,10 @@ export function HostListingsWorkspace({
                   </div>
 
                   <div className="border-t border-[var(--border-subtle)] pt-4 space-y-4">
-                    <h4 className="font-semibold text-muted-foreground">Check-in Details & Policies</h4>
+                    <h4 className="font-semibold text-muted-foreground">{t("host_listings_modal_checkin_details", "Check-in Details & Policies")}</h4>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div>
-                        <label className="block text-[var(--muted-foreground)] font-medium mb-1">Check-in Method</label>
+                        <label className="block text-[var(--muted-foreground)] font-medium mb-1">{t("host_listings_modal_checkin_method", "Check-in Method")}</label>
                         <select
                           value={formData.checkInMethod}
                           onChange={(e) => setFormData({ ...formData, checkInMethod: e.target.value })}
@@ -1627,7 +1627,7 @@ export function HostListingsWorkspace({
                         </select>
                       </div>
                       <div>
-                        <label className="block text-[var(--muted-foreground)] font-medium mb-1">Check-in Window</label>
+                        <label className="block text-[var(--muted-foreground)] font-medium mb-1">{t("host_listings_modal_checkin_window", "Check-in Window")}</label>
                         <div className="flex items-center gap-2">
                           <input
                             type="time"
@@ -1645,7 +1645,7 @@ export function HostListingsWorkspace({
                         </div>
                       </div>
                       <div>
-                        <label className="block text-[var(--muted-foreground)] font-medium mb-1">Checkout Time</label>
+                        <label className="block text-[var(--muted-foreground)] font-medium mb-1">{t("host_listings_modal_checkout_time", "Checkout Time")}</label>
                         <input
                           type="time"
                           value={formData.checkOutTime}
@@ -1656,7 +1656,7 @@ export function HostListingsWorkspace({
                     </div>
 
                     <div>
-                      <label className="block text-[var(--muted-foreground)] font-medium mb-1">Cancellation Policy</label>
+                      <label className="block text-[var(--muted-foreground)] font-medium mb-1">{t("host_listings_modal_cancel_policy", "Cancellation Policy")}</label>
                       <select
                         value={formData.cancellationPolicy}
                         onChange={(e) => setFormData({ ...formData, cancellationPolicy: e.target.value })}
@@ -1676,7 +1676,7 @@ export function HostListingsWorkspace({
                           onChange={(e) => setFormData({ ...formData, instantBook: e.target.checked })}
                           className="rounded text-emerald-600 h-4 w-4"
                         />
-                        <span>Enable Instant Booking</span>
+                        <span>{t("host_listings_modal_instant_book", "Enable Instant Booking")}</span>
                       </label>
 
                       <label className="flex items-center gap-2 text-xs font-semibold text-zinc-600 dark:text-[#727272] cursor-pointer">
@@ -1686,7 +1686,7 @@ export function HostListingsWorkspace({
                           onChange={(e) => setFormData({ ...formData, isPaused: e.target.checked })}
                           className="rounded text-zinc-600 h-4 w-4"
                         />
-                        <span>Pause / Snooze Listing</span>
+                        <span>{t("host_listings_modal_pause", "Pause / Snooze Listing")}</span>
                       </label>
                     </div>
                   </div>
@@ -1765,7 +1765,7 @@ export function HostListingsWorkspace({
                 <span className="font-semibold text-muted-foreground block">Blocked Dates List ({tempBlockedDates.length})</span>
                 <div className="max-h-40 overflow-y-auto space-y-1.5 pr-1">
                   {tempBlockedDates.length === 0 ? (
-                    <p className="text-xs text-[var(--muted-foreground)] italic">No dates blocked.</p>
+                    <p className="text-xs text-[var(--muted-foreground)] italic">{t("host_listings_modal_no_dates_blocked", "No dates blocked.")}</p>
                   ) : (
                     tempBlockedDates.map((dateStr) => (
                       <div key={dateStr} className="flex items-center justify-between p-2 rounded-lg bg-[var(--surface-secondary)] border border-[var(--border-subtle)] font-mono font-semibold">
@@ -1808,7 +1808,7 @@ export function HostListingsWorkspace({
       {showDeleteModal && listingToDelete && (
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
           <div className="w-full max-w-sm max-h-[90dvh] overflow-y-auto rounded-2xl bg-[var(--surface)] p-6 shadow-xl space-y-4 border border-[var(--border)] font-sans">
-            <h3 className="text-base font-semibold text-rose-600">Delete Property Listing?</h3>
+            <h3 className="text-base font-semibold text-rose-600">{t("host_listings_modal_delete_confirm", "Delete Property Listing?")}</h3>
             <p className="text-xs text-[var(--muted-foreground)]">
               Are you sure you want to permanently delete <strong>{listingToDelete.title}</strong>? This action cannot be undone.
             </p>

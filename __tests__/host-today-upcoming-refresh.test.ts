@@ -11,7 +11,7 @@ describe("Host Today upcoming refresh integration", () => {
     const workspace = read("components/host/host-today-workspace.tsx");
     const route = read("app/api/v1/host/workspace/route.ts");
 
-    assert.match(workspace, /fetch\("\/api\/v1\/host\/workspace\?includeCancelled=1"/);
+    assert.match(workspace, /fetch\("\/api\/v1\/host\/workspace"/);
     assert.match(workspace, /60_000/);
     assert.match(workspace, /document\.visibilityState === "visible"/);
     assert.match(workspace, /window\.addEventListener\("focus"/);
@@ -19,7 +19,7 @@ describe("Host Today upcoming refresh integration", () => {
     assert.match(workspace, /Showing the last available data/);
     assert.doesNotMatch(workspace, /setReservations\(\[\]\)/);
     assert.match(route, /requireApiRole\(request, \[Role\.HOST, Role\.ADMIN\]\)/);
-    assert.match(route, /getHostWorkspace\(actor, \{ includeCancelled \}\)/);
+    assert.match(route, /getHostWorkspace\(actor\)/);
   });
 
   it("renders distinct final-data empty states without clearing filters", () => {

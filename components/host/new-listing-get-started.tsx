@@ -11,6 +11,7 @@ import { Footer } from "@/components/dashboard/footer";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { formatAddressCountry } from "@/lib/location/address-countries";
 import { getCurrencyForCountry } from "@/lib/currency";
+import { useLanguage, type TranslationKey } from "@/lib/i18n/language-context";
 
 import { PropertyCategory, PlaceTypeOption, LocationCoords, LocationDetails } from "./onboarding/types";
 import { StepOverview } from "./onboarding/step-overview";
@@ -57,18 +58,18 @@ function isDiscountEnabled(value: unknown): boolean {
   return (value as { enabled?: unknown }).enabled !== false;
 }
 
-const COMPLETION_REQUIREMENTS: Record<string, { message: string; step: number }> = {
-  propertyType: { message: "Choose the type of place you are hosting.", step: 2 },
-  listingType: { message: "Choose what guests will have.", step: 3 },
-  coordinates: { message: "Confirm your property location on the map.", step: 4 },
-  address: { message: "Add your street address, city, and country.", step: 5 },
-  capacity: { message: "Add valid guest and bed capacity details.", step: 6 },
-  photos: { message: "Upload at least five property photos.", step: 9 },
-  title: { message: "Use a listing title between 3 and 50 characters.", step: 11 },
-  highlights: { message: "Choose no more than three highlights.", step: 12 },
-  description: { message: "Write a description of at least 10 characters.", step: 13 },
-  weekdayPrice: { message: "Set a weekday price greater than zero.", step: 15 },
-  weekendPrice: { message: "Set a weekend price greater than zero.", step: 16 },
+const COMPLETION_REQUIREMENTS: Record<string, { key: TranslationKey; fallback: string; step: number }> = {
+  propertyType: { key: "wizard_req_property_type", fallback: "Choose the type of place you are hosting.", step: 2 },
+  listingType: { key: "wizard_req_listing_type", fallback: "Choose what guests will have.", step: 3 },
+  coordinates: { key: "wizard_req_coordinates", fallback: "Confirm your property location on the map.", step: 4 },
+  address: { key: "wizard_req_address", fallback: "Add your street address, city, and country.", step: 5 },
+  capacity: { key: "wizard_req_capacity", fallback: "Add valid guest and bed capacity details.", step: 6 },
+  photos: { key: "wizard_req_photos", fallback: "Upload at least five property photos.", step: 9 },
+  title: { key: "wizard_req_title", fallback: "Use a listing title between 3 and 50 characters.", step: 11 },
+  highlights: { key: "wizard_req_highlights", fallback: "Choose no more than three highlights.", step: 12 },
+  description: { key: "wizard_req_description", fallback: "Write a description of at least 10 characters.", step: 13 },
+  weekdayPrice: { key: "wizard_req_weekday_price", fallback: "Set a weekday price greater than zero.", step: 15 },
+  weekendPrice: { key: "wizard_req_weekend_price", fallback: "Set a weekend price greater than zero.", step: 16 },
 };
 
 const RESTORED_PROPERTY_TYPE_LABELS: Record<string, string> = {
@@ -116,6 +117,7 @@ export function NewListingGetStarted({
   initialAddressView = false,
 }: NewListingGetStartedProps) {
   const router = useRouter();
+  const { t } = useLanguage();
   const aosRef = useRef<typeof AOS | null>(null);
   const { data: session, update: updateSession } = useSession();
   const hostingType = initialHostingType;
@@ -350,44 +352,44 @@ export function NewListingGetStarted({
   const validateCurrentStep = (photosForValidation = photos): string[] | null => {
     switch (step) {
       case 2:
-        return selectedCategory ? null : ["Choose the type of place you want to host."];
+        return selectedCategory ? null : [t("wizard_req_property_type", "Choose the type of place you are hosting.")];
       case 3:
-        return selectedPlaceType ? null : ["Choose what guests will have."];
+        return selectedPlaceType ? null : [t("wizard_req_listing_type", "Choose what guests will have.")];
       case 4:
         return null;
       case 5: {
         const missing: string[] = [];
-        if (!streetAddress.trim()) missing.push("Enter a street address.");
-        if (!city.trim()) missing.push("Enter a city or town.");
-        if (!country.trim()) missing.push("Choose a country or region.");
+        if (!streetAddress.trim() || !city.trim() || !country.trim()) {
+          missing.push(t("wizard_req_address", "Add your street address, city, and country."));
+        }
         return missing.length > 0 ? missing : null;
       }
       case 6:
         return guests >= 1 && bedrooms >= 0 && beds >= 1 && bathrooms >= 0
           ? null
-          : ["Enter valid capacity values for your place."];
+          : [t("wizard_req_capacity", "Add valid guest and bed capacity details.")];
       case 7:
       case 8:
         return null;
       case 9:
       case 10:
-        return photosForValidation.length >= 5 ? null : ["Upload at least 5 successful property photos."];
+        return photosForValidation.length >= 5 ? null : [t("wizard_req_photos", "Upload at least five property photos.")];
       case 11:
         return title.trim().length >= 3 && title.trim().length <= 50
           ? null
-          : ["Use a listing title between 3 and 50 characters."];
+          : [t("wizard_req_title", "Use a listing title between 3 and 50 characters.")];
       case 12:
-        return selectedHighlights.length <= 3 ? null : ["Choose no more than 3 highlights."];
+        return selectedHighlights.length <= 3 ? null : [t("wizard_req_highlights", "Choose no more than three highlights.")];
       case 13:
         return description.trim().length >= 10 && description.trim().length <= 5000
           ? null
-          : ["Write a description between 10 and 5,000 characters."];
+          : [t("wizard_req_description", "Write a description of at least 10 characters.")];
       case 14:
         return null;
       case 15:
-        return price > 0 ? null : ["Set a weekday price greater than zero."];
+        return price > 0 ? null : [t("wizard_req_weekday_price", "Set a weekday price greater than zero.")];
       case 16:
-        return weekendPrice > 0 ? null : ["Set a weekend price greater than zero."];
+        return weekendPrice > 0 ? null : [t("wizard_req_weekend_price", "Set a weekend price greater than zero.")];
       case 17:
         return null;
       case 18:
@@ -480,8 +482,8 @@ export function NewListingGetStarted({
       window.scrollTo({ top: 0, behavior: "smooth" });
       return activeDraftId;
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "We couldn't save your listing.";
-      setWizardError({ title: "Your changes weren't saved", messages: [message] });
+      const message = error instanceof Error ? error.message : t("wizard_error_save_failed", "We couldn't save your listing. Please try again.");
+      setWizardError({ title: t("wizard_error_changes_not_saved", "Your changes weren't saved"), messages: [message] });
       return null;
     } finally {
       setIsSavingStep(false);
@@ -510,22 +512,22 @@ export function NewListingGetStarted({
       if (!readiness?.publishable) {
         const requirements = (readiness?.missing ?? [])
           .map((field) => COMPLETION_REQUIREMENTS[field])
-          .filter((requirement): requirement is { message: string; step: number } => Boolean(requirement));
+          .filter((requirement): requirement is { key: TranslationKey; fallback: string; step: number } => Boolean(requirement));
         setWizardError({
-          title: "Complete your listing",
+          title: t("wizard_error_complete_step", "Complete your listing"),
           messages: requirements.length > 0
-            ? requirements.map((requirement) => requirement.message)
-            : ["We couldn't confirm that all listing details are complete. Please review the form."],
+            ? requirements.map((requirement) => t(requirement.key, requirement.fallback))
+            : [t("wizard_error_save_failed", "We couldn't confirm that all listing details are complete. Please review the form.")],
           fixStep: requirements[0]?.step,
         });
         return;
       }
-      toast.success("Draft listing saved successfully!");
+      toast.success(t("wizard_toast_draft_saved", "Draft listing saved successfully!"));
       router.push("/host/listings");
     } catch (error: unknown) {
       setWizardError({
-        title: "We couldn't verify your listing",
-        messages: [error instanceof Error ? error.message : "Please try again."],
+        title: t("wizard_error_changes_not_saved", "We couldn't verify your listing"),
+        messages: [error instanceof Error ? error.message : t("wizard_error_save_failed", "Please try again.")],
       });
     }
   };
@@ -1173,7 +1175,7 @@ export function NewListingGetStarted({
                 onClick={() => setWizardError(null)}
                 className="rounded-full border border-zinc-300 px-5 py-2.5 text-sm font-semibold text-[#727272] hover:text-white hover:bg-[#1f1f1f] duration-300"
               >
-                Close
+                {t("wizard_btn_close", "Close")}
               </button>
               {errorFixStep !== undefined && (
                 <button
@@ -1184,7 +1186,7 @@ export function NewListingGetStarted({
                   }}
                   className="rounded-full bg-[#FCDF9C] px-5 py-2.5 text-sm font-semibold text-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white duration-300"
                 >
-                  Fix now
+                  {t("wizard_btn_fix_now", "Fix now")}
                 </button>
               )}
             </div>

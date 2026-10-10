@@ -5,6 +5,7 @@ import { useState, useTransition, type FormEvent } from "react";
 import { acceptInvitationAction } from "@/actions/admin/invitationActions";
 import { Alert, Button } from "@/components/ui";
 import { authFieldErrorClass, authLabelClass } from "@/components/auth/auth-form.styles";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 export function AcceptInvitationForm({
   token,
@@ -14,9 +15,10 @@ export function AcceptInvitationForm({
 }: {
   token: string;
   email: string;
-  name: string | null;
+  name?: string | null;
   roleName: string;
 }) {
+  const { t } = useLanguage();
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -44,19 +46,19 @@ export function AcceptInvitationForm({
     const errors: { password?: string; repeatPassword?: string } = {};
 
     if (!password) {
-      errors.password = "Password is required.";
+      errors.password = t("accept_inv_err_pwd_required", "Password is required.");
     } else if (password.length < 8) {
-      errors.password = "Password must be at least 8 characters long.";
+      errors.password = t("accept_inv_err_pwd_min_len", "Password must be at least 8 characters long.");
     } else if (!/[A-Z]/.test(password)) {
-      errors.password = "Password must contain at least one uppercase letter (A-Z).";
+      errors.password = t("accept_inv_err_pwd_uppercase", "Password must contain at least one uppercase letter (A-Z).");
     } else if (!/[0-9]/.test(password)) {
-      errors.password = "Password must contain at least one number (0-9).";
+      errors.password = t("accept_inv_err_pwd_number", "Password must contain at least one number (0-9).");
     }
 
     if (!repeatPassword) {
-      errors.repeatPassword = "Confirm password is required.";
+      errors.repeatPassword = t("accept_inv_err_confirm_required", "Confirm password is required.");
     } else if (password !== repeatPassword) {
-      errors.repeatPassword = "Passwords do not match.";
+      errors.repeatPassword = t("accept_inv_err_pwd_mismatch", "Passwords do not match.");
     }
 
     if (Object.keys(errors).length > 0) {
@@ -72,7 +74,7 @@ export function AcceptInvitationForm({
       });
 
       if (!res.ok) {
-        setError(res.error || "Failed to set password. Please check your invitation link.");
+        setError(res.error || t("accept_inv_err_fallback", "Failed to set password. Please check your invitation link."));
         return;
       }
 
@@ -91,22 +93,22 @@ export function AcceptInvitationForm({
 
         <div>
           <h2 className="text-2xl font-semibold text-zinc-950 font-['Poppins']">
-            Account Activated!
+            {t("accept_inv_success_title", "Account Activated!")}
           </h2>
           <p className="text-sm text-[#727272] mt-1.5 leading-relaxed font-['Poppins']">
-            Your administrator password has been set. You can now sign in to access the Homyz Admin Console.
+            {t("accept_inv_success_desc", "Your administrator password has been set. You can now sign in to access the Homyz Admin Console.")}
           </p>
         </div>
 
         <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-3.5 text-xs sm:text-sm text-emerald-900 font-medium font-['Poppins']">
-          Admin account for <strong className="font-semibold">{email}</strong> is now active.
+          {t("accept_inv_success_pill", "Admin account for {email} is now active.").replace("{email}", email)}
         </div>
 
         <Link
           href="/login"
           className="auth-action-button box-border inline-flex items-center justify-center gap-2 rounded-full font-sans font-medium text-[#1F1F1F] transition-colors focus-visible:outline-none disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-60 border border-[#727272] hover:border-[#1F1F1F] hover:bg-[#F3F4F5] hover:text-[#1F1F1F] h-12 min-h-12 sm:h-[56px] sm:min-h-[56px] bg-[#FCDF9C] px-6 py-4 sm:text-lg text-base leading-6 active:border-[#1F1F1F] active:bg-[#F3F4F5] w-full mt-2"
         >
-          Sign In to Admin Console →
+          {t("accept_inv_btn_signin_console", "Sign In to Admin Console →")}
         </Link>
       </div>
     );
@@ -121,7 +123,7 @@ export function AcceptInvitationForm({
       {/* Account Info Pill */}
       <div className="rounded-lg bg-zinc-50 border border-zinc-200/80 p-3 flex items-center justify-between gap-3 text-xs sm:text-sm font-['Poppins']">
         <div className="min-w-0 truncate">
-          <span className="text-[#727272]">Account for: </span>
+          <span className="text-[#727272]">{t("accept_inv_account_for", "Account for: ")}</span>
           <strong className="text-[#1F1F1F] font-semibold">{name ? `${name} (${email})` : email}</strong>
         </div>
         <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-900 border border-amber-300 shrink-0">
@@ -132,7 +134,7 @@ export function AcceptInvitationForm({
       {/* Password */}
       <div className="flex flex-col gap-2" suppressHydrationWarning>
         <label className={authLabelClass}>
-          Password *
+          {t("auth_password", "Password")} *
         </label>
         <div className="relative h-[56px]" suppressHydrationWarning>
           <input
@@ -153,7 +155,7 @@ export function AcceptInvitationForm({
             type="button"
             onClick={() => setShowPassword(!showPassword)}
             className="absolute right-4 top-1/2 -translate-y-1/2 text-[#727272] hover:text-zinc-700 transition-colors"
-            aria-label="Toggle password visibility"
+            aria-label={t("auth_toggle_password_visibility", "Toggle password visibility")}
           >
             {showPassword ? (
               <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -173,13 +175,13 @@ export function AcceptInvitationForm({
 
         {/* Password Requirements Box - Exactly matching register page */}
         <div className="rounded-lg bg-zinc-50 border border-zinc-200/80 p-3 text-zinc-600 flex flex-col gap-1 mt-1 font-['Poppins']">
-          <div className="font-semibold text-zinc-800 mb-0.5 text-xs sm:text-sm">Password Requirements:</div>
+          <div className="font-semibold text-zinc-800 mb-0.5 text-xs sm:text-sm">{t("auth_pwd_requirements", "Password Requirements:")}</div>
           <div className="flex items-center gap-2 text-xs sm:text-sm">
             <span className={hasMinLength ? "text-emerald-600 font-semibold" : "text-[#727272]"}>
               {hasMinLength ? "✓" : "○"}
             </span>
             <span className={hasMinLength ? "text-[#1F1F1F] font-medium" : "text-[#727272]"}>
-              Minimum 8 characters
+              {t("auth_pwd_min_length", "Minimum 8 characters")}
             </span>
           </div>
           <div className="flex items-center gap-2 text-xs sm:text-sm">
@@ -187,7 +189,7 @@ export function AcceptInvitationForm({
               {hasUppercase ? "✓" : "○"}
             </span>
             <span className={hasUppercase ? "text-[#1F1F1F] font-medium" : "text-[#727272]"}>
-              At least one uppercase letter (A-Z)
+              {t("auth_pwd_uppercase", "At least one uppercase letter (A-Z)")}
             </span>
           </div>
           <div className="flex items-center gap-2 text-xs sm:text-sm">
@@ -195,7 +197,7 @@ export function AcceptInvitationForm({
               {hasNumber ? "✓" : "○"}
             </span>
             <span className={hasNumber ? "text-[#1F1F1F] font-medium" : "text-[#727272]"}>
-              At least one number (0-9)
+              {t("auth_pwd_number", "At least one number (0-9)")}
             </span>
           </div>
         </div>
@@ -204,7 +206,7 @@ export function AcceptInvitationForm({
       {/* Repeat Password */}
       <div className="flex flex-col gap-2">
         <label className="font-['Poppins'] font-medium text-[15px] sm:text-[18px] leading-[23px] text-[#1F1F1F]">
-          Repeat password *
+          {t("auth_repeat_password", "Repeat password")} *
         </label>
         <div className="relative h-[56px]">
           <input
@@ -224,7 +226,7 @@ export function AcceptInvitationForm({
             type="button"
             onClick={() => setShowRepeatPassword(!showRepeatPassword)}
             className="absolute right-4 top-1/2 -translate-y-1/2 text-[#727272] hover:text-zinc-700 transition-colors"
-            aria-label="Toggle repeat password visibility"
+            aria-label={t("auth_toggle_password_visibility", "Toggle repeat password visibility")}
           >
             {showRepeatPassword ? (
               <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -249,10 +251,10 @@ export function AcceptInvitationForm({
         disabled={pending || !isFormValid}
         fullWidth
         isLoading={pending}
-        loadingText="Activating Account…"
+        loadingText={t("accept_inv_btn_activating", "Activating Account…")}
         className="auth-action-button mt-2"
       >
-        Set Password & Activate Account
+        {t("accept_inv_btn_submit", "Set Password & Activate Account")}
       </Button>
     </form>
   );
