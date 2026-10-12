@@ -264,17 +264,26 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
   const [internalIsSearching, setInternalIsSearching] = useState(false);
   const isSearching = externalIsSearching || internalIsSearching;
 
-  useEffect(() => {
+  const [prevExternal, setPrevExternal] = useState(externalIsSearching);
+  if (prevExternal !== externalIsSearching) {
+    setPrevExternal(externalIsSearching);
     if (!externalIsSearching) {
       setInternalIsSearching(false);
     }
-  }, [externalIsSearching]);
-  const [destination, setDestination] = useState("");
+  }
+
+  const searchParams = useSearchParams();
+
+  const [destination, setDestination] = useState(
+    () => searchParams?.get("destination") || searchParams?.get("city") || searchParams?.get("placeName") || "",
+  );
   const [selectedLocation, setSelectedLocation] = useState<SelectedLocationData | null>(null);
-  const [checkIn, setCheckIn] = useState("");
-  const [checkOut, setCheckOut] = useState("");
+  const [checkIn, setCheckIn] = useState(() => searchParams?.get("checkIn") || "");
+  const [checkOut, setCheckOut] = useState(() => searchParams?.get("checkOut") || "");
   const [desktopPanel, setDesktopPanel] = useState<"where" | "checkIn" | "checkOut" | "who" | null>(null);
-  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(
+    () => searchParams?.has("searchModal") ?? false,
+  );
   const [activeStep, setActiveStep] = useState<"where" | "when" | "who">("where");
   const desktopSearchRef = useRef<HTMLFormElement>(null);
   const desktopActivePillRef = useRef<HTMLDivElement>(null);
@@ -284,6 +293,24 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
     checkOut: null,
     who: null,
   });
+
+  // Sync state from URL search params across back/forward navigation
+  const [prevParams, setPrevParams] = useState(() => searchParams?.toString());
+  const currentParamsStr = searchParams?.toString();
+  if (prevParams !== currentParamsStr) {
+    setPrevParams(currentParamsStr);
+    const urlDest = searchParams?.get("destination") || searchParams?.get("city") || searchParams?.get("placeName");
+    if (urlDest && urlDest.trim()) {
+      setDestination(urlDest.trim());
+    } else if (currentParamsStr === "") {
+      setDestination("");
+      setSelectedLocation(null);
+    }
+    const urlIn = searchParams?.get("checkIn");
+    if (urlIn) setCheckIn(urlIn);
+    const urlOut = searchParams?.get("checkOut");
+    if (urlOut) setCheckOut(urlOut);
+  }
 
   // One shared pill moves between fields, which makes tab changes feel continuous
   // instead of each field independently appearing active.
@@ -329,39 +356,67 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  const searchParams = useSearchParams();
+  const fetchSuggestions = useCallback(async (q: string) => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
 
-  // Load recent searches and dynamic suggestions on mount
-  useEffect(() => {
-    setRecentSearches(getRecentSearches());
-    fetchSuggestions("");
+    setIsLoadingSuggestions(true);
     try {
-      const stored = localStorage.getItem("homyz_selected_location");
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (parsed?.name && typeof parsed?.latitude === "number") {
-          setSelectedLocation(parsed);
-          setDestination(parsed.name);
-        }
+      const res = await fetch(`/api/v1/listings/search-suggest?q=${encodeURIComponent(q)}`, {
+        credentials: "same-origin",
+        signal: controller.signal,
+      });
+      if (res.ok) {
+        const json = await res.json();
+        const payload = json.data ?? json;
+        setSuggestions({
+          primaryCity: payload?.primaryCity ?? null,
+          places: Array.isArray(payload?.places) ? payload.places : [],
+          districts: Array.isArray(payload?.districts) ? payload.districts : [],
+          cities: Array.isArray(payload?.cities) ? payload.cities : [],
+          properties: Array.isArray(payload?.properties) ? payload.properties : [],
+        });
       }
-    } catch {}
+    } catch (err: unknown) {
+      if ((err as Error)?.name !== "AbortError") {
+        setSuggestions({ primaryCity: null, places: [], districts: [], cities: [], properties: [] });
+      }
+    } finally {
+      if (!controller.signal.aborted) {
+        setIsLoadingSuggestions(false);
+      }
+    }
   }, []);
 
-  // Sync state from URL search params to preserve context across back/forward/refresh
+  const handleDestinationChange = useCallback((value: string) => {
+    setDestination(value);
+    setSelectedLocation(null);
+    setSuggestIndex(-1);
+    setLocationError(null);
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(() => fetchSuggestions(value), 180);
+  }, [fetchSuggestions]);
+
+  // Load recent searches and persisted location on mount without blocking initial paint
   useEffect(() => {
-    if (!searchParams) return;
-    const urlDest = searchParams.get("destination") || searchParams.get("city") || searchParams.get("placeName");
-    if (urlDest && urlDest.trim()) {
-      setDestination(urlDest.trim());
-    } else if (searchParams.toString() === "") {
-      setDestination("");
-      setSelectedLocation(null);
-    }
-    const urlIn = searchParams.get("checkIn");
-    if (urlIn) setCheckIn(urlIn);
-    const urlOut = searchParams.get("checkOut");
-    if (urlOut) setCheckOut(urlOut);
-  }, [searchParams]);
+    const timer = setTimeout(() => {
+      setRecentSearches(getRecentSearches());
+      try {
+        const stored = localStorage.getItem("homyz_selected_location");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed?.name && typeof parsed?.latitude === "number") {
+            setSelectedLocation(parsed);
+            setDestination(parsed.name);
+          }
+        }
+      } catch {}
+    }, 0);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleUseCurrentLocation = useCallback(() => {
     if (typeof window === "undefined" || !navigator.geolocation) {
@@ -424,49 +479,6 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
     );
   }, [isMobileSearchOpen]);
 
-  const fetchSuggestions = useCallback(async (q: string) => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-    const controller = new AbortController();
-    abortControllerRef.current = controller;
-
-    setIsLoadingSuggestions(true);
-    try {
-      const res = await fetch(`/api/v1/listings/search-suggest?q=${encodeURIComponent(q)}`, {
-        credentials: "same-origin",
-        signal: controller.signal,
-      });
-      if (res.ok) {
-        const json = await res.json();
-        const payload = json.data ?? json;
-        setSuggestions({
-          primaryCity: payload?.primaryCity ?? null,
-          places: Array.isArray(payload?.places) ? payload.places : [],
-          districts: Array.isArray(payload?.districts) ? payload.districts : [],
-          cities: Array.isArray(payload?.cities) ? payload.cities : [],
-          properties: Array.isArray(payload?.properties) ? payload.properties : [],
-        });
-      }
-    } catch (err: unknown) {
-      if ((err as Error)?.name !== "AbortError") {
-        setSuggestions({ primaryCity: null, places: [], districts: [], cities: [], properties: [] });
-      }
-    } finally {
-      if (!controller.signal.aborted) {
-        setIsLoadingSuggestions(false);
-      }
-    }
-  }, []);
-
-  const handleDestinationChange = useCallback((value: string) => {
-    setDestination(value);
-    setSelectedLocation(null);
-    setSuggestIndex(-1);
-    setLocationError(null);
-    if (debounceTimer.current) clearTimeout(debounceTimer.current);
-    debounceTimer.current = setTimeout(() => fetchSuggestions(value), 180);
-  }, [fetchSuggestions]);
 
   const handleClearDestination = useCallback((e?: React.MouseEvent) => {
     e?.stopPropagation();
@@ -499,7 +511,6 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
   }, [desktopPanel]);
   const [mobileGuests, setMobileGuests] = useState(emptyMobileGuests);
   const mobileGuestCount = mobileGuests.adults + mobileGuests.children;
-  const effectiveGuestCount = Math.max(1, mobileGuestCount);
   const mobileGuestSummary = [
     mobileGuestCount
       ? t(mobileGuestCount === 1 ? "home_guest_one" : "home_guest_many", { count: mobileGuestCount })
@@ -513,16 +524,6 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
   ].filter(Boolean).join(", ");
   const [datePreferences, setDatePreferences] = useState<DatePreferences>(initialDatePreferences);
   const destinationListRef = useRef<HTMLDivElement>(null);
-  const [destinationScroll, setDestinationScroll] = useState(0);
-
-  // Mobile search popup state
-
-
-  useEffect(() => {
-    if (typeof window !== "undefined" && new URLSearchParams(window.location.search).has("searchModal")) {
-      setIsMobileSearchOpen(true);
-    }
-  }, []);
 
   // Close mobile search with Escape; ModalOverlay owns background scroll locking.
   useEffect(() => {
@@ -549,13 +550,13 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
     setDesktopPanel(null);
   };
 
-  // Build a flat list of all suggestion items for keyboard nav
   const primaryCity = suggestions?.primaryCity;
-  const places = suggestions?.places ?? [];
-  const districts = suggestions?.districts ?? [];
-  const cities = suggestions?.cities ?? [];
-  const properties = suggestions?.properties ?? [];
+  const places = useMemo(() => suggestions?.places ?? [], [suggestions]);
+  const districts = useMemo(() => suggestions?.districts ?? [], [suggestions]);
+  const cities = useMemo(() => suggestions?.cities ?? [], [suggestions]);
+  const properties = useMemo(() => suggestions?.properties ?? [], [suggestions]);
 
+  // Build a flat list of all suggestion items for keyboard nav
   const allSuggestItems = useMemo(() => {
     const list: { label: string; sublabel?: string; raw?: SuggestionCityItem }[] = [];
     if (primaryCity) {
@@ -726,11 +727,6 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
       {/* Autocomplete suggestions panel */}
       <div
         ref={destinationListRef}
-        onScroll={(event) => {
-          const list = event.currentTarget;
-          const scrollableHeight = list.scrollHeight - list.clientHeight;
-          setDestinationScroll(scrollableHeight > 0 ? (list.scrollTop / scrollableHeight) * 100 : 0);
-        }}
         className="no-scrollbar max-h-[360px] w-full space-y-3 overflow-y-auto pr-1"
       >
         {/* Use Current Location Action Button */}
@@ -1509,6 +1505,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                     aria-autocomplete="list"
                     aria-expanded={true}
                     aria-haspopup="listbox"
+                    aria-controls="mobile-destination-suggestions-container"
                     data-form-type="other"
                     data-lpignore="true"
                     data-1p-ignore="true"
@@ -1562,7 +1559,9 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                 </div>
 
                 <p className="text-[11px] font-bold uppercase tracking-wider text-[#727272] mb-2">{t("home_search_where")}</p>
-                {destinationSuggestions}
+                <div id="mobile-destination-suggestions-container">
+                  {destinationSuggestions}
+                </div>
               </div>
             )}
 
@@ -1582,7 +1581,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                 {activeStep !== "when" && (
                   <span className="text-right text-[15px] font-semibold text-[#1F1F1F]">
                     {datePreferences.mode !== "dates"
-                      ? `${datePreferences.mode === "flexible" ? t(`home_when_stay_${datePreferences.stay.toLowerCase()}` as any) + " · " : ""}${
+                      ? `${datePreferences.mode === "flexible" ? t(`home_when_stay_${datePreferences.stay.toLowerCase()}` as Parameters<typeof t>[0]) + " · " : ""}${
                           datePreferences.months.length
                             ? datePreferences.months
                                 .map((m) =>
@@ -1656,7 +1655,6 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                   setCheckOut("");
                   setMobileGuests(emptyMobileGuests);
                   setDatePreferences(initialDatePreferences);
-                  setDestinationScroll(0);
                   setActiveStep("where");
                 }}
                 className="text-[14px] font-semibold underline text-zinc-700 cursor-pointer hover:text-zinc-950"

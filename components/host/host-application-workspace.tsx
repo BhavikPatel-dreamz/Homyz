@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "@/components/ui/toast";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 export interface HostDocItem {
   id: string;
@@ -60,14 +61,15 @@ export interface HostApplicationWorkspaceProps {
 }
 
 const DOCUMENT_TYPES_CONFIG = [
-  { value: "GOVERNMENT_ID", label: "Government Issued ID (Passport / Driver's License)", required: true },
-  { value: "PROOF_OF_ADDRESS", label: "Proof of Address (Utility Bill / Bank Statement)", required: true },
-  { value: "BUSINESS_LICENSE", label: "Business License / Registration", required: false },
-  { value: "PROPERTY_DEED", label: "Property Deed / Lease Agreement", required: false },
-  { value: "TAX_CERTIFICATE", label: "Tax Registration Certificate", required: false },
-];
+  { value: "GOVERNMENT_ID", labelKey: "host_app_doc_type_gov_id", defaultLabel: "Government Issued ID (Passport / Driver's License)", required: true },
+  { value: "PROOF_OF_ADDRESS", labelKey: "host_app_doc_type_proof_address", defaultLabel: "Proof of Address (Utility Bill / Bank Statement)", required: true },
+  { value: "BUSINESS_LICENSE", labelKey: "host_app_doc_type_business_license", defaultLabel: "Business License / Registration", required: false },
+  { value: "PROPERTY_DEED", labelKey: "host_app_doc_type_property_deed", defaultLabel: "Property Deed / Lease Agreement", required: false },
+  { value: "TAX_CERTIFICATE", labelKey: "host_app_doc_type_tax_cert", defaultLabel: "Tax Registration Certificate", required: false },
+] as const;
 
 export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspaceProps) {
+  const { t } = useLanguage();
   const router = useRouter();
   const searchParams = useSearchParams();
   const hostingTypeParam = searchParams ? searchParams.get("type") : null;
@@ -77,7 +79,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
 
   const [appState, setAppState] = useState(initialData);
 
-  const { application, progress, accountState, message } = appState;
+  const { application, accountState } = appState;
 
   // Active step for multi-step application form (1 to 6)
   const [activeStep, setActiveStep] = useState<number>(1);
@@ -101,6 +103,23 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
   const [isResubmitting, setIsResubmitting] = useState(false);
   const [isConverting, setIsConverting] = useState(false);
 
+  const getDocTypeLabel = (docType: string) => {
+    switch (docType) {
+      case "GOVERNMENT_ID":
+        return t("host_app_doc_type_gov_id", "Government Issued ID (Passport / Driver's License)");
+      case "PROOF_OF_ADDRESS":
+        return t("host_app_doc_type_proof_address", "Proof of Address (Utility Bill / Bank Statement)");
+      case "BUSINESS_LICENSE":
+        return t("host_app_doc_type_business_license", "Business License / Registration");
+      case "PROPERTY_DEED":
+        return t("host_app_doc_type_property_deed", "Property Deed / Lease Agreement");
+      case "TAX_CERTIFICATE":
+        return t("host_app_doc_type_tax_cert", "Tax Registration Certificate");
+      default:
+        return docType.replace(/_/g, " ");
+    }
+  };
+
   const handleConvertToHost = async () => {
     setIsConverting(true);
     try {
@@ -111,12 +130,12 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
       });
       const payload = await res.json();
       if (!res.ok) {
-        throw new Error(payload.error?.message || "Failed to convert account to Host.");
+        throw new Error(payload.error?.message || t("host_app_toast_convert_fail", "Failed to convert account to Host."));
       }
-      toast.success("Congratulations! Your account has been converted to a Host account.");
-      window.location.href = "/host/listings";
-    } catch (err: any) {
-      toast.error(err.message || "Failed to convert account.");
+      toast.success(t("host_app_toast_convert_success", "Congratulations! Your account has been converted to a Host account."));
+      router.push("/host/listings");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : t("host_app_toast_convert_fail", "Failed to convert account to Host."));
       setIsConverting(false);
     }
   };
@@ -202,13 +221,13 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
 
       const payload = await res.json();
       if (!res.ok) {
-        throw new Error(payload.error?.message || "Failed to save draft.");
+        throw new Error(payload.error?.message || t("host_app_toast_save_fail", "Failed to save draft."));
       }
 
-      showToast("Draft saved successfully!", "success");
+      showToast(t("host_app_toast_saved", "Draft saved successfully!"), "success");
       await refreshApplication();
-    } catch (err: any) {
-      showToast(err.message || "Failed to save draft.", "error");
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : t("host_app_toast_save_fail", "Failed to save draft."), "error");
     } finally {
       setIsSaving(false);
     }
@@ -217,13 +236,13 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
   // Step Validation Helpers
   const validateStep1 = (): boolean => {
     const errs: Record<string, string> = {};
-    if (!formData.applicantName.trim()) errs.applicantName = "Full legal name is required.";
-    if (!formData.applicantEmail.trim() || !formData.applicantEmail.includes("@")) errs.applicantEmail = "Valid email address is required.";
-    if (!formData.applicantPhone.trim()) errs.applicantPhone = "Phone number is required.";
+    if (!formData.applicantName.trim()) errs.applicantName = t("host_app_err_name_req", "Full legal name is required.");
+    if (!formData.applicantEmail.trim() || !formData.applicantEmail.includes("@")) errs.applicantEmail = t("host_app_err_email_req", "Valid email address is required.");
+    if (!formData.applicantPhone.trim()) errs.applicantPhone = t("host_app_err_phone_req", "Phone number is required.");
 
     if (Object.keys(errs).length > 0) {
       setFieldErrors((prev) => ({ ...prev, ...errs }));
-      showToast("Please fill in all required personal info fields.", "error");
+      showToast(t("host_app_toast_fill_personal", "Please fill in all required personal info fields."), "error");
       return false;
     }
     return true;
@@ -231,12 +250,12 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
 
   const validateStep3 = (): boolean => {
     const errs: Record<string, string> = {};
-    if (!formData.location.trim()) errs.location = "Primary operating address/location is required.";
-    if (formData.propertyCount < 1) errs.propertyCount = "Property count must be at least 1.";
+    if (!formData.location.trim()) errs.location = t("host_app_err_location_req", "Primary operating address/location is required.");
+    if (formData.propertyCount < 1) errs.propertyCount = t("host_app_err_prop_count_min", "Property count must be at least 1.");
 
     if (Object.keys(errs).length > 0) {
       setFieldErrors((prev) => ({ ...prev, ...errs }));
-      showToast("Please enter operating address/location.", "error");
+      showToast(t("host_app_toast_enter_location", "Please enter operating address/location."), "error");
       return false;
     }
     return true;
@@ -248,12 +267,12 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
     const hasAddress = docs.some((d) => d.documentType === "PROOF_OF_ADDRESS");
 
     const errs: Record<string, string> = {};
-    if (!hasGovId) errs.governmentId = "Government Issued ID is required.";
-    if (!hasAddress) errs.proofOfAddress = "Proof of Address document is required.";
+    if (!hasGovId) errs.governmentId = t("host_app_err_gov_id_req", "Government Issued ID is required.");
+    if (!hasAddress) errs.proofOfAddress = t("host_app_err_proof_address_req", "Proof of Address document is required.");
 
     if (Object.keys(errs).length > 0) {
       setFieldErrors((prev) => ({ ...prev, ...errs }));
-      showToast("Please upload mandatory Government ID & Proof of Address documents.", "error");
+      showToast(t("host_app_toast_upload_mandatory_docs", "Please upload mandatory Government ID & Proof of Address documents."), "error");
       return false;
     }
     return true;
@@ -275,20 +294,20 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
   const handleDocumentUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedFile) {
-      showToast("Please select a file to upload.", "error");
+      showToast(t("host_app_toast_select_file", "Please select a file to upload."), "error");
       return;
     }
 
     // Max file size: 10MB
     if (selectedFile.size > 10 * 1024 * 1024) {
-      showToast("File size exceeds maximum allowed limit of 10MB.", "error");
+      showToast(t("host_app_toast_file_size_limit", "File size exceeds maximum allowed limit of 10MB."), "error");
       return;
     }
 
     // Allowed file types: PDF, PNG, JPG, JPEG, WEBP
     const allowedTypes = ["application/pdf", "image/jpeg", "image/png", "image/jpg", "image/webp"];
     if (selectedFile.type && !allowedTypes.includes(selectedFile.type)) {
-      showToast("Invalid file type. Allowed formats: PDF, PNG, JPG, WEBP.", "error");
+      showToast(t("host_app_toast_invalid_file_type", "Invalid file type. Allowed formats: PDF, PNG, JPG, WEBP."), "error");
       return;
     }
 
@@ -305,10 +324,10 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
 
       const payload = await res.json();
       if (!res.ok) {
-        throw new Error(payload.error?.message || "Upload failed.");
+        throw new Error(payload.error?.message || t("host_app_toast_upload_fail", "Upload failed."));
       }
 
-      showToast(`Document uploaded successfully!`, "success");
+      showToast(t("host_app_toast_doc_uploaded", "Document uploaded successfully!"), "success");
       setSelectedFile(null);
       // clear doc field errors if resolved
       setFieldErrors((prev) => {
@@ -318,8 +337,8 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
         return next;
       });
       await refreshApplication();
-    } catch (err: any) {
-      showToast(err.message || "Upload failed.", "error");
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : t("host_app_toast_upload_fail", "Upload failed."), "error");
     } finally {
       setIsUploading(false);
     }
@@ -327,7 +346,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
 
   // Delete Document
   const handleRemoveDocument = async (documentId: string) => {
-    if (!confirm("Are you sure you want to remove this document?")) return;
+    if (!confirm(t("host_app_confirm_remove_doc", "Are you sure you want to remove this document?"))) return;
 
     try {
       const res = await fetch(`/api/v1/host/application/documents?documentId=${encodeURIComponent(documentId)}`, {
@@ -336,13 +355,13 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
 
       if (!res.ok) {
         const payload = await res.json();
-        throw new Error(payload.error?.message || "Failed to remove document.");
+        throw new Error(payload.error?.message || t("host_app_toast_remove_fail", "Failed to remove document."));
       }
 
-      showToast("Document removed.", "info");
+      showToast(t("host_app_toast_doc_removed", "Document removed."), "info");
       await refreshApplication();
-    } catch (err: any) {
-      showToast(err.message || "Failed to remove document.", "error");
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : t("host_app_toast_remove_fail", "Failed to remove document."), "error");
     }
   };
 
@@ -350,22 +369,22 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
   const handleSubmitApplication = async () => {
     const errs: Record<string, string> = {};
 
-    if (!formData.applicantName.trim()) errs.applicantName = "Full name is required.";
-    if (!formData.applicantEmail.trim()) errs.applicantEmail = "Valid email is required.";
-    if (!formData.applicantPhone.trim()) errs.applicantPhone = "Phone number is required.";
-    if (!formData.location.trim()) errs.location = "Location/address is required.";
-    if (formData.propertyCount < 1) errs.propertyCount = "Property count must be at least 1.";
+    if (!formData.applicantName.trim()) errs.applicantName = t("host_app_err_name_req", "Full legal name is required.");
+    if (!formData.applicantEmail.trim() || !formData.applicantEmail.includes("@")) errs.applicantEmail = t("host_app_err_email_req", "Valid email address is required.");
+    if (!formData.applicantPhone.trim()) errs.applicantPhone = t("host_app_err_phone_req", "Phone number is required.");
+    if (!formData.location.trim()) errs.location = t("host_app_err_location_req", "Primary operating address/location is required.");
+    if (formData.propertyCount < 1) errs.propertyCount = t("host_app_err_prop_count_min", "Property count must be at least 1.");
 
     const docs = application.documents || [];
     const hasGovId = docs.some((d) => d.documentType === "GOVERNMENT_ID");
     const hasAddress = docs.some((d) => d.documentType === "PROOF_OF_ADDRESS");
 
-    if (!hasGovId) errs.governmentId = "Government ID document is required.";
-    if (!hasAddress) errs.proofOfAddress = "Proof of Address document is required.";
+    if (!hasGovId) errs.governmentId = t("host_app_err_gov_id_req", "Government Issued ID is required.");
+    if (!hasAddress) errs.proofOfAddress = t("host_app_err_proof_address_req", "Proof of Address document is required.");
 
     if (Object.keys(errs).length > 0) {
       setFieldErrors(errs);
-      showToast("Please correct the missing required fields before submitting.", "error");
+      showToast(t("host_app_toast_correct_fields", "Please correct the missing required fields before submitting."), "error");
       setActiveStep(6); // Stay on step 6 to show prominent error summary & fix buttons
       return;
     }
@@ -383,14 +402,14 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
 
       const payload = await res.json();
       if (!res.ok) {
-        throw new Error(payload.error?.message || "Submission failed.");
+        throw new Error(payload.error?.message || t("host_app_toast_submit_fail", "Submission failed."));
       }
 
-      showToast("Application submitted successfully!", "success");
+      showToast(t("host_app_toast_submitted", "Application submitted successfully!"), "success");
       setSubmittedSuccess(true);
       await refreshApplication();
-    } catch (err: any) {
-      showToast(err.message || "Submission failed.", "error");
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : t("host_app_toast_submit_fail", "Submission failed."), "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -406,13 +425,13 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
 
       const payload = await res.json();
       if (!res.ok) {
-        throw new Error(payload.error?.message || "Resubmission failed.");
+        throw new Error(payload.error?.message || t("host_app_toast_resubmit_fail", "Resubmission failed."));
       }
 
-      showToast("Application resubmitted for review!", "success");
+      showToast(t("host_app_toast_resubmitted", "Application resubmitted for review!"), "success");
       await refreshApplication();
-    } catch (err: any) {
-      showToast(err.message || "Resubmission failed.", "error");
+    } catch (err: unknown) {
+      showToast(err instanceof Error ? err.message : t("host_app_toast_resubmit_fail", "Resubmission failed."), "error");
     } finally {
       setIsResubmitting(false);
     }
@@ -420,13 +439,13 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
 
   // Visual Onboarding Timeline stages
   const onboardingStepsTimeline = [
-    { key: "REGISTRATION", label: "Registration" },
-    { key: "SUBMITTED", label: "Application Submitted" },
-    { key: "DOCUMENTS", label: "Documents Verification" },
-    { key: "ADMIN_REVIEW", label: "Admin Review" },
-    { key: "COMPLIANCE", label: "Compliance Review" },
-    { key: "APPROVAL", label: "Approval Decision" },
-    { key: "COMPLETE", label: "Onboarding Complete" },
+    { key: "REGISTRATION", label: t("host_app_stage_registration", "Registration") },
+    { key: "SUBMITTED", label: t("host_app_stage_submitted", "Application Submitted") },
+    { key: "DOCUMENTS", label: t("host_app_stage_documents", "Documents Verification") },
+    { key: "ADMIN_REVIEW", label: t("host_app_stage_admin_review", "Admin Review") },
+    { key: "COMPLIANCE", label: t("host_app_stage_compliance", "Compliance Review") },
+    { key: "APPROVAL", label: t("host_app_stage_approval", "Approval Decision") },
+    { key: "COMPLETE", label: t("host_app_stage_complete", "Onboarding Complete") },
   ];
 
   const getTimelineStatus = (stepKey: string) => {
@@ -514,22 +533,22 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
           <div>
             <div className="flex flex-wrap items-center gap-3">
               <span className="rounded-full bg-[#FBDE9B] px-3 py-1 text-xs font-semibold text-[#291E05] shadow-xs dark:bg-amber-500 dark:text-zinc-950">
-                Host Onboarding Portal
+                {t("host_app_title", "Host Onboarding Portal")}
               </span>
               {hostingTypeLabel && (
                 <span className="rounded-full bg-zinc-900 text-white px-3 py-1 text-xs font-semibold shadow-xs">
-                  Hosting Type: {hostingTypeLabel}
+                  {t("host_app_badge_hosting_type", "Hosting Type:")} {hostingTypeLabel}
                 </span>
               )}
               <span className="text-xs font-medium text-[var(--muted-foreground)]">
-                Application ID: {application.applicationId}
+                {t("host_app_badge_app_id", "Application ID:")} {application.applicationId}
               </span>
             </div>
-            <h1 className="mt-2">
-              Become a Homyz Host
+            <h1 className="mt-2 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+              {t("host_app_header_title", "Become a Homyz Host")}
             </h1>
             <p className="mt-1 text-sm text-[var(--muted-foreground)]">
-              Register your properties, complete verification, and join our global hosting community.
+              {t("host_app_header_desc", "Register your properties, complete verification, and join our global hosting community.")}
             </p>
           </div>
 
@@ -542,7 +561,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                   disabled={isSaving || isConverting}
                   className="inline-flex items-center rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-semibold text-muted-foreground shadow-xs transition-all hover:bg-[var(--muted)] disabled:opacity-50"
                 >
-                  {isSaving ? "Saving Draft..." : "Save Draft"}
+                  {isSaving ? t("host_app_btn_saving_draft", "Saving Draft...") : t("host_app_btn_save_draft", "Save Draft")}
                 </button>
                 <button
                   type="button"
@@ -550,7 +569,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                   disabled={isSaving || isConverting}
                   className="inline-flex items-center rounded-full bg-[#FBDE9B] hover:bg-amber-400 px-5 py-2 text-xs font-semibold text-[#291E05] shadow-sm transition-all disabled:opacity-50"
                 >
-                  {isConverting ? "Converting Account..." : "⚡ Become a Host Now"}
+                  {isConverting ? t("host_app_btn_converting", "Converting Account...") : `⚡ ${t("host_app_convert_btn", "Become a Host Now")}`}
                 </button>
               </>
             )}
@@ -561,9 +580,9 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
         {accountState === "DRAFT" && (
           <div className="mt-6 border-t border-[var(--border)] pt-4">
             <div className="flex items-center justify-between text-xs font-semibold text-muted-foreground">
-              <span>Application Completion</span>
+              <span>{t("host_app_progress_title", "Application Completion")}</span>
               <span>
-                {liveCompletedSections} / 6 sections completed ({liveProgressPercent}%)
+                {liveCompletedSections} / 6 {t("host_app_progress_summary", "sections completed")} ({liveProgressPercent}%)
               </span>
             </div>
             <div className="mt-2 h-2.5 w-full overflow-hidden rounded-full bg-[var(--muted)]">
@@ -580,10 +599,10 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
       <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-xs">
         <div className="flex items-center justify-between">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">
-            Onboarding Workflow Progress
+            {t("host_app_workflow_title", "Onboarding Workflow Progress")}
           </h2>
           <span className="rounded-full bg-amber-500/10 px-3 py-0.5 text-[11px] font-semibold text-amber-600 dark:text-amber-400">
-            Stage: {(application.onboardingStage || accountState).replace(/_/g, " ")}
+            {t("host_app_workflow_stage", "Stage:")} {(application.onboardingStage || accountState).replace(/_/g, " ")}
           </span>
         </div>
 
@@ -644,14 +663,14 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                   }`}
                 >
                   {status === "completed"
-                    ? "Done"
+                    ? t("host_app_badge_done", "Done")
                     : status === "action_required"
-                    ? "Action Needed"
+                    ? t("host_app_badge_action_needed", "Action Needed")
                     : status === "in_progress"
-                    ? "In Review"
+                    ? t("host_app_status_submitted", "In Review")
                     : status === "failed"
-                    ? "Rejected"
-                    : "Pending"}
+                    ? t("host_app_badge_rejected", "Rejected")
+                    : t("host_app_badge_pending", "Pending")}
                 </span>
               </div>
             );
@@ -668,24 +687,24 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
             </div>
             <div className="flex-1">
               <h3 className="text-lg font-semibold text-rose-700 dark:text-rose-400">
-                Action Required on Your Application
+                {t("host_app_action_req_title", "Action Required on Your Application")}
               </h3>
               <p className="mt-1 text-xs text-rose-600 dark:text-rose-300">
-                Our verification team has requested updates or document re-submissions before your application can proceed.
+                {t("host_app_action_req_desc", "Our verification team has requested updates or document re-submissions before your application can proceed.")}
               </p>
 
               {/* Show rejected documents */}
               {application.documents.filter((d) => d.status === "REJECTED" || d.resubmissionRequested).map((doc) => (
                 <div key={doc.id} className="mt-3 rounded-2xl border border-rose-500/30 bg-[var(--surface)] p-3 text-xs">
                   <p className="font-semibold text-muted-foreground">
-                    Document: <span className="text-rose-600 dark:text-rose-400">{doc.documentType.replace(/_/g, " ")}</span>
+                    {t("host_app_action_doc_label", "Document:")} <span className="text-rose-600 dark:text-rose-400">{getDocTypeLabel(doc.documentType)}</span>
                   </p>
                   <p className="mt-0.5 text-[var(--muted-foreground)]">
-                    Reason: <span className="font-semibold text-rose-600 dark:text-rose-400">{doc.rejectionReason || "Re-submission requested"}</span>
+                    {t("host_app_action_reason_label", "Reason:")} <span className="font-semibold text-rose-600 dark:text-rose-400">{doc.rejectionReason || t("host_app_action_default_resub", "Re-submission requested")}</span>
                   </p>
                   {doc.resubmissionInstructions && (
                     <p className="mt-0.5 text-[var(--muted-foreground)]">
-                      Instructions: <span className="italic">{doc.resubmissionInstructions}</span>
+                      {t("host_app_action_inst_label", "Instructions:")} <span className="italic">{doc.resubmissionInstructions}</span>
                     </p>
                   )}
                 </div>
@@ -694,8 +713,8 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
               {/* Show info requests */}
               {application.infoRequests.filter((i) => i.status === "PENDING").map((info) => (
                 <div key={info.id} className="mt-3 rounded-2xl border border-amber-500/30 bg-[var(--surface)] p-3 text-xs">
-                  <p className="font-semibold text-amber-600 dark:text-amber-400">Information Required: {info.informationRequired}</p>
-                  <p className="mt-0.5 text-[var(--muted-foreground)]">Reason: {info.reason}</p>
+                  <p className="font-semibold text-amber-600 dark:text-amber-400">{t("host_app_action_info_req_label", "Information Required:")} {info.informationRequired}</p>
+                  <p className="mt-0.5 text-[var(--muted-foreground)]">{t("host_app_action_reason_label", "Reason:")} {info.reason}</p>
                 </div>
               ))}
 
@@ -705,7 +724,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                   onClick={() => setActiveStep(4)}
                   className="rounded-full bg-rose-600 px-4 py-2 text-xs font-semibold text-white shadow-xs hover:bg-rose-700"
                 >
-                  Upload New Document
+                  {t("host_app_btn_upload_new_doc", "Upload New Document")}
                 </button>
 
                 <button
@@ -714,7 +733,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                   disabled={isResubmitting}
                   className="rounded-full bg-[#FBDE9B] px-4 py-2 text-xs font-semibold text-[#291E05] shadow-xs hover:bg-amber-400 dark:bg-amber-500 dark:text-zinc-950"
                 >
-                  {isResubmitting ? "Resubmitting..." : "Resubmit Application"}
+                  {isResubmitting ? t("host_app_btn_resubmitting", "Resubmitting...") : t("host_app_btn_resubmit", "Resubmit Application")}
                 </button>
               </div>
             </div>
@@ -728,30 +747,30 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500 text-2xl font-semibold text-white shadow-lg">
             ✓
           </div>
-          <h2 className="mt-4 text-2xl font-semibold text-muted-foreground">Application Submitted Successfully!</h2>
+          <h2 className="mt-4 text-2xl font-semibold text-muted-foreground">{t("host_app_submitted_title", "Application Submitted Successfully!")}</h2>
           <p className="mx-auto mt-2 max-w-md text-sm text-[var(--muted-foreground)]">
-            Your host registration application <strong className="text-muted-foreground">{application.applicationId}</strong> has been received.
+            {t("host_app_submitted_desc", "Your host registration application has been received.")} (<strong className="text-muted-foreground">{application.applicationId}</strong>)
           </p>
 
           <div className="mx-auto mt-6 max-w-sm rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 text-left shadow-2xs">
             <div className="flex justify-between border-b border-[var(--border)] pb-2 text-xs">
-              <span className="text-[var(--muted-foreground)]">Application ID:</span>
+              <span className="text-[var(--muted-foreground)]">{t("host_app_info_app_id", "Application ID:")}</span>
               <span className="font-semibold text-muted-foreground">{application.applicationId}</span>
             </div>
             <div className="flex justify-between border-b border-[var(--border)] py-2 text-xs">
-              <span className="text-[var(--muted-foreground)]">Status:</span>
+              <span className="text-[var(--muted-foreground)]">{t("host_app_info_status", "Status:")}</span>
               <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-[10px] font-semibold text-amber-700 dark:text-amber-400">
-                {application.status || "Submitted / In Review"}
+                {application.status || t("host_app_info_status_in_review", "Submitted / In Review")}
               </span>
             </div>
             <div className="flex justify-between pt-2 text-xs">
-              <span className="text-[var(--muted-foreground)]">Next Step:</span>
-              <span className="font-semibold text-muted-foreground">Admin Review & Compliance</span>
+              <span className="text-[var(--muted-foreground)]">{t("host_app_info_next_step", "Next Step:")}</span>
+              <span className="font-semibold text-muted-foreground">{t("host_app_info_next_step_val", "Admin Review & Compliance")}</span>
             </div>
           </div>
 
           <p className="mt-6 text-xs text-[var(--muted-foreground)]">
-            Our verification team will inspect your submitted documents. You will receive an email update as soon as review is completed.
+            {t("host_app_submitted_footer", "Our verification team will inspect your submitted documents. You will receive an email update as soon as review is completed.")}
           </p>
         </div>
       )}
@@ -762,16 +781,16 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500 text-2xl font-semibold text-white shadow-lg">
             🎉
           </div>
-          <h2 className="mt-4 text-2xl font-semibold text-emerald-700 dark:text-emerald-400">Host Application Approved!</h2>
+          <h2 className="mt-4 text-2xl font-semibold text-emerald-700 dark:text-emerald-400">{t("host_app_approved_title", "Host Application Approved!")}</h2>
           <p className="mx-auto mt-2 max-w-md text-sm text-[var(--muted-foreground)]">
-            Your host account is fully activated. You can now start creating and publishing listings on Homyz.
+            {t("host_app_approved_desc", "Your host account is fully activated. You can now start creating and publishing listings on Homyz.")}
           </p>
           <div className="mt-6 flex justify-center gap-4">
             <Link
               href="/host/listings"
               className="rounded-full bg-[#FBDE9B] px-6 py-2.5 text-xs font-semibold text-[#291E05] shadow-md transition-all hover:scale-102 dark:bg-amber-500 dark:text-zinc-950"
             >
-              Go to Host Portal & Listings
+              {t("host_app_btn_go_to_portal", "Go to Host Portal & Listings")}
             </Link>
           </div>
         </div>
@@ -783,13 +802,13 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-rose-500 text-2xl font-semibold text-white shadow-lg">
             ✕
           </div>
-          <h2 className="mt-4 text-2xl font-semibold text-rose-700 dark:text-rose-400">Application Not Approved</h2>
+          <h2 className="mt-4 text-2xl font-semibold text-rose-700 dark:text-rose-400">{t("host_app_rejected_title", "Application Not Approved")}</h2>
           <p className="mx-auto mt-2 max-w-md text-sm text-[var(--muted-foreground)]">
-            We are unable to approve your application at this time.
+            {t("host_app_rejected_desc", "We are unable to approve your application at this time.")}
           </p>
           {application.rejectionReason && (
             <div className="mx-auto mt-4 max-w-md rounded-2xl border border-rose-500/30 bg-[var(--surface)] p-4 text-xs font-medium text-rose-600 dark:text-rose-400">
-              Reason: {application.rejectionReason}
+              {t("host_app_rejected_reason_label", "Reason:")} {application.rejectionReason}
             </div>
           )}
         </div>
@@ -801,12 +820,12 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
           {/* Stepper Tabs */}
           <div className="mb-8 flex flex-wrap gap-2 border-b border-[var(--border)] pb-4">
             {[
-              { num: 1, title: "1. Personal" },
-              { num: 2, title: "2. Business" },
-              { num: 3, title: "3. Address & Property" },
-              { num: 4, title: "4. Documents Upload" },
-              { num: 5, title: "5. Notes" },
-              { num: 6, title: "6. Review & Submit" },
+              { num: 1, title: `1. ${t("host_app_step_personal", "Personal")}` },
+              { num: 2, title: `2. ${t("host_app_step_business", "Business")}` },
+              { num: 3, title: `3. ${t("host_app_step_property", "Address & Property")}` },
+              { num: 4, title: `4. ${t("host_app_step_documents", "Documents Upload")}` },
+              { num: 5, title: `5. ${t("host_app_step_notes", "Notes")}` },
+              { num: 6, title: `6. ${t("host_app_step_review", "Review & Submit")}` },
             ].map((st) => (
               <button
                 key={st.num}
@@ -826,43 +845,43 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
           {/* STEP 1: Personal Information */}
           {activeStep === 1 && (
             <div className="space-y-6 animate-in fade-in">
-              <h3 className="text-lg font-semibold text-muted-foreground">Step 1: Personal Information</h3>
+              <h3 className="text-lg font-semibold text-muted-foreground">{t("host_app_step_1_title", "Step 1: Personal Information")}</h3>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="block text-xs font-semibold text-muted-foreground">Full Legal Name *</label>
+                  <label className="block text-xs font-semibold text-muted-foreground">{t("host_app_label_legal_name", "Full Legal Name *")}</label>
                   <input
                     type="text"
                     name="applicantName"
                     value={formData.applicantName}
                     onChange={handleInputChange}
-                    placeholder="e.g. John Smith"
+                    placeholder={t("host_app_ph_legal_name", "e.g. John Smith")}
                     className="mt-1 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] px-4 py-2.5 text-xs text-muted-foreground focus:border-amber-500 focus:outline-none"
                   />
                   {fieldErrors.applicantName && <p className="mt-1 text-[11px] text-rose-500">{fieldErrors.applicantName}</p>}
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-muted-foreground">Email Address *</label>
+                  <label className="block text-xs font-semibold text-muted-foreground">{t("host_app_label_email", "Email Address *")}</label>
                   <input
                     type="email"
                     name="applicantEmail"
                     value={formData.applicantEmail}
                     onChange={handleInputChange}
-                    placeholder="e.g. john@example.com"
+                    placeholder={t("host_app_ph_email", "e.g. john@example.com")}
                     className="mt-1 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] px-4 py-2.5 text-xs text-muted-foreground focus:border-amber-500 focus:outline-none"
                   />
                   {fieldErrors.applicantEmail && <p className="mt-1 text-[11px] text-rose-500">{fieldErrors.applicantEmail}</p>}
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-muted-foreground">Phone Number *</label>
+                  <label className="block text-xs font-semibold text-muted-foreground">{t("host_app_label_phone", "Phone Number *")}</label>
                   <input
                     type="tel"
                     name="applicantPhone"
                     value={formData.applicantPhone}
                     onChange={handleInputChange}
-                    placeholder="e.g. +1 (555) 019-2834"
+                    placeholder={t("host_app_ph_phone", "e.g. +1 (555) 019-2834")}
                     className="mt-1 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] px-4 py-2.5 text-xs text-muted-foreground focus:border-amber-500 focus:outline-none"
                   />
                   {fieldErrors.applicantPhone && <p className="mt-1 text-[11px] text-rose-500">{fieldErrors.applicantPhone}</p>}
@@ -875,7 +894,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                   onClick={handleNextFromStep1}
                   className="rounded-full bg-[#FBDE9B] px-6 py-2 text-xs font-semibold text-[#291E05] hover:bg-amber-400 dark:bg-amber-500 dark:text-zinc-950"
                 >
-                  Next: Business Info →
+                  {t("host_app_btn_next", "Next step")} →
                 </button>
               </div>
             </div>
@@ -884,31 +903,31 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
           {/* STEP 2: Business Information */}
           {activeStep === 2 && (
             <div className="space-y-6 animate-in fade-in">
-              <h3 className="text-lg font-semibold text-muted-foreground">Step 2: Business & Host Type</h3>
+              <h3 className="text-lg font-semibold text-muted-foreground">{t("host_app_step_2_title", "Step 2: Business & Host Type")}</h3>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="block text-xs font-semibold text-muted-foreground">Host Registration Type *</label>
+                  <label className="block text-xs font-semibold text-muted-foreground">{t("host_app_label_reg_type", "Host Registration Type *")}</label>
                   <select
                     name="registrationType"
                     value={formData.registrationType}
                     onChange={handleInputChange}
                     className="mt-1 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] px-4 py-2.5 text-xs text-muted-foreground focus:border-amber-500 focus:outline-none"
                   >
-                    <option value="INDIVIDUAL">Individual Owner</option>
-                    <option value="BUSINESS">Registered Business / LLC</option>
-                    <option value="PROPERTY_MANAGER">Property Management Agency</option>
+                    <option value="INDIVIDUAL">{t("host_app_opt_individual", "Individual Owner")}</option>
+                    <option value="BUSINESS">{t("host_app_opt_business", "Registered Business / LLC")}</option>
+                    <option value="PROPERTY_MANAGER">{t("host_app_opt_property_manager", "Property Management Agency")}</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-muted-foreground">Business Name (Optional)</label>
+                  <label className="block text-xs font-semibold text-muted-foreground">{t("host_app_label_biz_name", "Business Name (Optional)")}</label>
                   <input
                     type="text"
                     name="businessName"
                     value={formData.businessName}
                     onChange={handleInputChange}
-                    placeholder="e.g. Apex Hospitality Group"
+                    placeholder={t("host_app_ph_biz_name", "e.g. Apex Hospitality Group")}
                     className="mt-1 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] px-4 py-2.5 text-xs text-muted-foreground focus:border-amber-500 focus:outline-none"
                   />
                 </div>
@@ -920,14 +939,14 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                   onClick={() => setActiveStep(1)}
                   className="rounded-full border border-[var(--border)] px-6 py-2 text-xs font-semibold text-muted-foreground hover:bg-[var(--muted)]"
                 >
-                  ← Back
+                  ← {t("host_app_btn_back", "Back")}
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveStep(3)}
                   className="rounded-full bg-[#FBDE9B] px-6 py-2 text-xs font-semibold text-[#291E05] hover:bg-amber-400 dark:bg-amber-500 dark:text-zinc-950"
                 >
-                  Next: Address & Property →
+                  {t("host_app_btn_next", "Next step")} →
                 </button>
               </div>
             </div>
@@ -936,24 +955,24 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
           {/* STEP 3: Address & Property Details */}
           {activeStep === 3 && (
             <div className="space-y-6 animate-in fade-in">
-              <h3 className="text-lg font-semibold text-muted-foreground">Step 3: Address & Property Information</h3>
+              <h3 className="text-lg font-semibold text-muted-foreground">{t("host_app_step_3_title", "Step 3: Address & Property Information")}</h3>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-semibold text-muted-foreground">Primary Property / Operating Address *</label>
+                  <label className="block text-xs font-semibold text-muted-foreground">{t("host_app_label_location", "Primary Property / Operating Address *")}</label>
                   <input
                     type="text"
                     name="location"
                     value={formData.location}
                     onChange={handleInputChange}
-                    placeholder="e.g. 100 Ocean Drive, Miami Beach, FL 33139"
+                    placeholder={t("host_app_ph_location", "e.g. 100 Ocean Drive, Miami Beach, FL 33139")}
                     className="mt-1 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] px-4 py-2.5 text-xs text-muted-foreground focus:border-amber-500 focus:outline-none"
                   />
                   {fieldErrors.location && <p className="mt-1 text-[11px] text-rose-500">{fieldErrors.location}</p>}
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-muted-foreground">Number of Properties to List *</label>
+                  <label className="block text-xs font-semibold text-muted-foreground">{t("host_app_label_prop_count", "Number of Properties to List *")}</label>
                   <input
                     type="number"
                     name="propertyCount"
@@ -973,14 +992,14 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                   onClick={() => setActiveStep(2)}
                   className="rounded-full border border-[var(--border)] px-6 py-2 text-xs font-semibold text-muted-foreground hover:bg-[var(--muted)]"
                 >
-                  ← Back
+                  ← {t("host_app_btn_back", "Back")}
                 </button>
                 <button
                   type="button"
                   onClick={handleNextFromStep3}
                   className="rounded-full bg-[#FBDE9B] px-6 py-2 text-xs font-semibold text-[#291E05] hover:bg-amber-400 dark:bg-amber-500 dark:text-zinc-950"
                 >
-                  Next: Documents Upload →
+                  {t("host_app_btn_next", "Next step")} →
                 </button>
               </div>
             </div>
@@ -989,16 +1008,16 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
           {/* STEP 4: Document Verification Upload */}
           {activeStep === 4 && (
             <div className="space-y-6 animate-in fade-in">
-              <h3 className="text-lg font-semibold text-muted-foreground">Step 4: Upload Verification Documents</h3>
+              <h3 className="text-lg font-semibold text-muted-foreground">{t("host_app_step_4_title", "Step 4: Upload Verification Documents")}</h3>
               <p className="text-xs text-[var(--muted-foreground)]">
-                Upload clear digital copies of your identity and property ownership documents (Accepted: PDF, PNG, JPG, WEBP. Max: 10MB per file).
+                {t("host_app_step_4_desc", "Upload clear digital copies of your identity and property ownership documents (Accepted: PDF, PNG, JPG, WEBP. Max: 10MB per file).")}
               </p>
 
               {/* Upload Form Box */}
               <form onSubmit={handleDocumentUpload} className="rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)]/50 p-4 sm:p-6">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
-                    <label className="block text-xs font-semibold text-muted-foreground">Select Document Type *</label>
+                    <label className="block text-xs font-semibold text-muted-foreground">{t("host_app_label_select_doc_type", "Select Document Type *")}</label>
                     <select
                       value={selectedDocType}
                       onChange={(e) => setSelectedDocType(e.target.value)}
@@ -1006,14 +1025,14 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                     >
                       {DOCUMENT_TYPES_CONFIG.map((d) => (
                         <option key={d.value} value={d.value}>
-                          {d.label} {d.required ? "(Required)" : "(Optional)"}
+                          {t(d.labelKey, d.defaultLabel)} {d.required ? t("host_app_required_tag", "(Required)") : t("host_app_optional_tag", "(Optional)")}
                         </option>
                       ))}
                     </select>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-muted-foreground">Select File *</label>
+                    <label className="block text-xs font-semibold text-muted-foreground">{t("host_app_label_select_file", "Select File *")}</label>
                     <input
                       type="file"
                       accept=".pdf,.png,.jpg,.jpeg,.webp"
@@ -1029,7 +1048,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                     disabled={isUploading || !selectedFile}
                     className="rounded-full bg-[#FBDE9B] px-5 py-2 text-xs font-semibold text-[#291E05] shadow-xs hover:bg-amber-400 disabled:opacity-50 dark:bg-amber-500 dark:text-zinc-950"
                   >
-                    {isUploading ? "Uploading..." : "Upload Document"}
+                    {isUploading ? t("host_app_btn_uploading", "Uploading…") : t("host_app_btn_upload", "Upload document")}
                   </button>
                 </div>
               </form>
@@ -1040,11 +1059,11 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
               {/* Uploaded Documents List */}
               <div className="space-y-3 pt-2">
                 <h4 className="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">
-                  Uploaded Documents ({application.documents?.length || 0})
+                  {t("host_app_heading_uploaded_docs", "Uploaded Documents")} ({application.documents?.length || 0})
                 </h4>
 
                 {(!application.documents || application.documents.length === 0) ? (
-                  <p className="text-xs text-[var(--muted-foreground)] italic">No documents uploaded yet.</p>
+                  <p className="text-xs text-[var(--muted-foreground)] italic">{t("host_app_no_docs_yet", "No documents uploaded yet.")}</p>
                 ) : (
                   application.documents.map((doc) => (
                     <div
@@ -1053,7 +1072,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                     >
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-semibold text-xs text-muted-foreground">{doc.documentType.replace(/_/g, " ")}</span>
+                          <span className="font-semibold text-xs text-muted-foreground">{getDocTypeLabel(doc.documentType)}</span>
                           <span
                             className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
                               doc.status === "VERIFIED"
@@ -1067,11 +1086,11 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                           </span>
                         </div>
                         <p className="mt-0.5 text-[11px] text-[var(--muted-foreground)]">
-                          File: {doc.fileName} • {new Date(doc.uploadedAt).toLocaleDateString()}
+                          {t("host_app_doc_file_info", "File:")} {doc.fileName} • {new Date(doc.uploadedAt).toLocaleDateString()}
                         </p>
                         {doc.rejectionReason && (
                           <p className="mt-0.5 text-[11px] text-rose-500 font-semibold">
-                            Rejection Note: {doc.rejectionReason}
+                            {t("host_app_doc_rejection_note", "Rejection Note:")} {doc.rejectionReason}
                           </p>
                         )}
                       </div>
@@ -1083,14 +1102,14 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                           rel="noreferrer"
                           className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-[11px] font-semibold text-muted-foreground hover:bg-[var(--muted)]"
                         >
-                          View
+                          {t("host_app_btn_view", "View")}
                         </a>
                         <button
                           type="button"
                           onClick={() => handleRemoveDocument(doc.id)}
                           className="rounded-xl border border-rose-500/30 px-3 py-1 text-[11px] font-semibold text-rose-500 hover:bg-rose-500/10"
                         >
-                          Remove
+                          {t("host_app_btn_remove", "Remove")}
                         </button>
                       </div>
                     </div>
@@ -1104,14 +1123,14 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                   onClick={() => setActiveStep(3)}
                   className="rounded-full border border-[var(--border)] px-6 py-2 text-xs font-semibold text-muted-foreground hover:bg-[var(--muted)]"
                 >
-                  ← Back
+                  ← {t("host_app_btn_back", "Back")}
                 </button>
                 <button
                   type="button"
                   onClick={handleNextFromStep4}
                   className="rounded-full bg-[#FBDE9B] px-6 py-2 text-xs font-semibold text-[#291E05] hover:bg-amber-400 dark:bg-amber-500 dark:text-zinc-950"
                 >
-                  Next: Notes →
+                  {t("host_app_btn_next", "Next step")} →
                 </button>
               </div>
             </div>
@@ -1120,16 +1139,16 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
           {/* STEP 5: Notes & Additional Info */}
           {activeStep === 5 && (
             <div className="space-y-6 animate-in fade-in">
-              <h3 className="text-lg font-semibold text-muted-foreground">Step 5: Additional Information / Notes</h3>
+              <h3 className="text-lg font-semibold text-muted-foreground">{t("host_app_step_5_title", "Step 5: Additional Information / Notes")}</h3>
 
               <div>
-                <label className="block text-xs font-semibold text-muted-foreground">Notes for Review Team (Optional)</label>
+                <label className="block text-xs font-semibold text-muted-foreground">{t("host_app_label_notes", "Notes for Review Team (Optional)")}</label>
                 <textarea
                   name="notes"
                   rows={4}
                   value={formData.notes}
                   onChange={handleInputChange}
-                  placeholder="Mention any special details about your properties, hosting experience, or questions..."
+                  placeholder={t("host_app_ph_notes", "Mention any special details about your properties, hosting experience, or questions...")}
                   className="mt-1 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)] p-4 text-xs text-muted-foreground focus:border-amber-500 focus:outline-none"
                 />
               </div>
@@ -1140,14 +1159,14 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                   onClick={() => setActiveStep(4)}
                   className="rounded-full border border-[var(--border)] px-6 py-2 text-xs font-semibold text-muted-foreground hover:bg-[var(--muted)]"
                 >
-                  ← Back
+                  ← {t("host_app_btn_back", "Back")}
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveStep(6)}
                   className="rounded-full bg-[#FBDE9B] px-6 py-2 text-xs font-semibold text-[#291E05] hover:bg-amber-400 dark:bg-amber-500 dark:text-zinc-950"
                 >
-                  Review & Submit →
+                  {t("host_app_step_review", "Review & Submit")} →
                 </button>
               </div>
             </div>
@@ -1157,9 +1176,9 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
           {activeStep === 6 && (
             <div className="space-y-6 animate-in fade-in">
               <div>
-                <h3 className="text-lg font-semibold text-muted-foreground">Step 6: Review Application Summary</h3>
+                <h3 className="text-lg font-semibold text-muted-foreground">{t("host_app_step_6_title", "Step 6: Review Application Summary")}</h3>
                 <p className="text-xs text-[var(--muted-foreground)]">
-                  Review all information before submitting your application to the administrative team.
+                  {t("host_app_step_6_desc", "Review all information before submitting your application to the administrative team.")}
                 </p>
               </div>
 
@@ -1167,57 +1186,57 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
               {Object.keys(fieldErrors).length > 0 && (
                 <div className="rounded-2xl border border-rose-500/40 bg-rose-500/10 p-5 text-xs">
                   <div className="flex items-center gap-2 font-semibold text-rose-700 dark:text-rose-400 text-sm">
-                    <span>⚠️ Cannot Submit Application — Missing Required Fields</span>
+                    <span>⚠️ {t("host_app_warn_missing_fields_title", "Cannot Submit Application — Missing Required Fields")}</span>
                   </div>
                   <p className="mt-1 text-rose-600 dark:text-rose-300">
-                    Please complete all required fields highlighted below before submitting:
+                    {t("host_app_warn_missing_fields_desc", "Please complete all required fields highlighted below before submitting:")}
                   </p>
                   <ul className="mt-3 space-y-1.5 border-t border-rose-500/20 pt-3">
                     {fieldErrors.applicantName && (
                       <li className="flex items-center justify-between font-semibold text-rose-700 dark:text-rose-300">
-                        <span>• Full Legal Name is required</span>
+                        <span>• {t("host_app_warn_name_req", "Full Legal Name is required")}</span>
                         <button type="button" onClick={() => setActiveStep(1)} className="rounded-lg bg-rose-600 px-3 py-1 text-[11px] font-semibold text-white shadow-2xs hover:bg-rose-700">
-                          Edit Step 1 →
+                          {t("host_app_btn_edit_step_1", "Edit Step 1 →")}
                         </button>
                       </li>
                     )}
                     {fieldErrors.applicantEmail && (
                       <li className="flex items-center justify-between font-semibold text-rose-700 dark:text-rose-300">
-                        <span>• Valid Email Address is required</span>
+                        <span>• {t("host_app_warn_email_req", "Valid Email Address is required")}</span>
                         <button type="button" onClick={() => setActiveStep(1)} className="rounded-lg bg-rose-600 px-3 py-1 text-[11px] font-semibold text-white shadow-2xs hover:bg-rose-700">
-                          Edit Step 1 →
+                          {t("host_app_btn_edit_step_1", "Edit Step 1 →")}
                         </button>
                       </li>
                     )}
                     {fieldErrors.applicantPhone && (
                       <li className="flex items-center justify-between font-semibold text-rose-700 dark:text-rose-300">
-                        <span>• Phone Number is required</span>
+                        <span>• {t("host_app_warn_phone_req", "Phone Number is required")}</span>
                         <button type="button" onClick={() => setActiveStep(1)} className="rounded-lg bg-rose-600 px-3 py-1 text-[11px] font-semibold text-white shadow-2xs hover:bg-rose-700">
-                          Edit Step 1 →
+                          {t("host_app_btn_edit_step_1", "Edit Step 1 →")}
                         </button>
                       </li>
                     )}
                     {fieldErrors.location && (
                       <li className="flex items-center justify-between font-semibold text-rose-700 dark:text-rose-300">
-                        <span>• Operating Address / Location is required</span>
+                        <span>• {t("host_app_warn_location_req", "Operating Address / Location is required")}</span>
                         <button type="button" onClick={() => setActiveStep(3)} className="rounded-lg bg-rose-600 px-3 py-1 text-[11px] font-semibold text-white shadow-2xs hover:bg-rose-700">
-                          Edit Step 3 →
+                          {t("host_app_btn_edit_step_3", "Edit Step 3 →")}
                         </button>
                       </li>
                     )}
                     {fieldErrors.governmentId && (
                       <li className="flex items-center justify-between font-semibold text-rose-700 dark:text-rose-300">
-                        <span>• Government Issued ID document is required</span>
+                        <span>• {t("host_app_warn_gov_id_req", "Government Issued ID document is required")}</span>
                         <button type="button" onClick={() => setActiveStep(4)} className="rounded-lg bg-rose-600 px-3 py-1 text-[11px] font-semibold text-white shadow-2xs hover:bg-rose-700">
-                          Upload in Step 4 →
+                          {t("host_app_btn_upload_step_4", "Upload in Step 4 →")}
                         </button>
                       </li>
                     )}
                     {fieldErrors.proofOfAddress && (
                       <li className="flex items-center justify-between font-semibold text-rose-700 dark:text-rose-300">
-                        <span>• Proof of Address document is required</span>
+                        <span>• {t("host_app_warn_proof_address_req", "Proof of Address document is required")}</span>
                         <button type="button" onClick={() => setActiveStep(4)} className="rounded-lg bg-rose-600 px-3 py-1 text-[11px] font-semibold text-white shadow-2xs hover:bg-rose-700">
-                          Upload in Step 4 →
+                          {t("host_app_btn_upload_step_4", "Upload in Step 4 →")}
                         </button>
                       </li>
                     )}
@@ -1229,39 +1248,39 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                 {/* Summary Box 1: Personal & Contact */}
                 <div className={`rounded-2xl border p-4 ${!formData.applicantName || !formData.applicantPhone ? "border-rose-500/40 bg-rose-500/5" : "border-[var(--border)] bg-[var(--surface-secondary)]/30"}`}>
                   <div className="flex items-center justify-between">
-                    <h4 className="text-xs font-semibold uppercase text-muted-foreground">Personal & Contact</h4>
+                    <h4 className="text-xs font-semibold uppercase text-muted-foreground">{t("host_app_summary_personal_title", "Personal & Contact")}</h4>
                     <button onClick={() => setActiveStep(1)} className="text-[11px] font-semibold text-amber-600 hover:underline">
-                      Edit
+                      {t("host_app_btn_edit", "Edit")}
                     </button>
                   </div>
                   <div className="mt-2 text-xs space-y-1.5 text-[var(--muted-foreground)]">
                     <p className="flex items-center justify-between">
-                      <strong className="text-muted-foreground">Name:</strong>
+                      <strong className="text-muted-foreground">{t("host_app_sum_name", "Name:")}</strong>
                       {formData.applicantName.trim() ? (
                         <span>{formData.applicantName}</span>
                       ) : (
                         <span className="rounded-md bg-rose-500/20 px-2 py-0.5 text-[10px] font-semibold text-rose-600 dark:text-rose-400">
-                          Missing (Required)
+                          {t("host_app_sum_missing_tag", "Missing (Required)")}
                         </span>
                       )}
                     </p>
                     <p className="flex items-center justify-between">
-                      <strong className="text-muted-foreground">Email:</strong>
+                      <strong className="text-muted-foreground">{t("host_app_sum_email", "Email:")}</strong>
                       {formData.applicantEmail.trim() ? (
                         <span>{formData.applicantEmail}</span>
                       ) : (
                         <span className="rounded-md bg-rose-500/20 px-2 py-0.5 text-[10px] font-semibold text-rose-600 dark:text-rose-400">
-                          Missing (Required)
+                          {t("host_app_sum_missing_tag", "Missing (Required)")}
                         </span>
                       )}
                     </p>
                     <p className="flex items-center justify-between">
-                      <strong className="text-muted-foreground">Phone:</strong>
+                      <strong className="text-muted-foreground">{t("host_app_sum_phone", "Phone:")}</strong>
                       {formData.applicantPhone.trim() ? (
                         <span>{formData.applicantPhone}</span>
                       ) : (
                         <span className="rounded-md bg-rose-500/20 px-2 py-0.5 text-[10px] font-semibold text-rose-600 dark:text-rose-400">
-                          Missing (Required)
+                          {t("host_app_sum_missing_tag", "Missing (Required)")}
                         </span>
                       )}
                     </p>
@@ -1271,22 +1290,22 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                 {/* Summary Box 2: Business & Properties */}
                 <div className={`rounded-2xl border p-4 ${!formData.location ? "border-rose-500/40 bg-rose-500/5" : "border-[var(--border)] bg-[var(--surface-secondary)]/30"}`}>
                   <div className="flex items-center justify-between">
-                    <h4 className="text-xs font-semibold uppercase text-muted-foreground">Business & Properties</h4>
+                    <h4 className="text-xs font-semibold uppercase text-muted-foreground">{t("host_app_summary_business_title", "Business & Properties")}</h4>
                     <button onClick={() => setActiveStep(2)} className="text-[11px] font-semibold text-amber-600 hover:underline">
-                      Edit
+                      {t("host_app_btn_edit", "Edit")}
                     </button>
                   </div>
                   <div className="mt-2 text-xs space-y-1.5 text-[var(--muted-foreground)]">
-                    <p className="flex items-center justify-between"><strong className="text-muted-foreground">Host Type:</strong> <span>{formData.registrationType}</span></p>
-                    <p className="flex items-center justify-between"><strong className="text-muted-foreground">Business:</strong> <span>{formData.businessName || "Individual"}</span></p>
-                    <p className="flex items-center justify-between"><strong className="text-muted-foreground">Property Count:</strong> <span>{formData.propertyCount}</span></p>
+                    <p className="flex items-center justify-between"><strong className="text-muted-foreground">{t("host_app_sum_host_type", "Host Type:")}</strong> <span>{formData.registrationType}</span></p>
+                    <p className="flex items-center justify-between"><strong className="text-muted-foreground">{t("host_app_sum_business", "Business:")}</strong> <span>{formData.businessName || t("host_app_sum_individual_fallback", "Individual")}</span></p>
+                    <p className="flex items-center justify-between"><strong className="text-muted-foreground">{t("host_app_sum_prop_count", "Property Count:")}</strong> <span>{formData.propertyCount}</span></p>
                     <p className="flex items-center justify-between">
-                      <strong className="text-muted-foreground">Location:</strong>
+                      <strong className="text-muted-foreground">{t("host_app_sum_location", "Location:")}</strong>
                       {formData.location.trim() ? (
                         <span>{formData.location}</span>
                       ) : (
                         <span className="rounded-md bg-rose-500/20 px-2 py-0.5 text-[10px] font-semibold text-rose-600 dark:text-rose-400">
-                          Missing (Required)
+                          {t("host_app_sum_missing_tag", "Missing (Required)")}
                         </span>
                       )}
                     </p>
@@ -1297,26 +1316,26 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                 <div className="sm:col-span-2 rounded-2xl border border-[var(--border)] bg-[var(--surface-secondary)]/30 p-4">
                   <div className="flex items-center justify-between">
                     <h4 className="text-xs font-semibold uppercase text-muted-foreground">
-                      Uploaded Documents ({application.documents?.length || 0})
+                      {t("host_app_summary_docs_title", "Uploaded Documents")} ({application.documents?.length || 0})
                     </h4>
                     <button onClick={() => setActiveStep(4)} className="text-[11px] font-semibold text-amber-600 hover:underline">
-                      Manage Documents
+                      {t("host_app_btn_manage_docs", "Manage Documents")}
                     </button>
                   </div>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {application.documents?.map((d) => (
                       <span key={d.id} className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-[11px] font-semibold text-muted-foreground">
-                        ✓ {d.documentType.replace(/_/g, " ")} ({d.fileName})
+                        ✓ {getDocTypeLabel(d.documentType)} ({d.fileName})
                       </span>
                     ))}
                     {(!application.documents || !application.documents.some((d) => d.documentType === "GOVERNMENT_ID")) && (
                       <span className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-1 text-[11px] font-semibold text-rose-500">
-                        ✕ Missing: Government ID (Required)
+                        ✕ {t("host_app_sum_missing_gov_id", "Missing: Government ID (Required)")}
                       </span>
                     )}
                     {(!application.documents || !application.documents.some((d) => d.documentType === "PROOF_OF_ADDRESS")) && (
                       <span className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-1 text-[11px] font-semibold text-rose-500">
-                        ✕ Missing: Proof of Address (Required)
+                        ✕ {t("host_app_sum_missing_proof_address", "Missing: Proof of Address (Required)")}
                       </span>
                     )}
                   </div>
@@ -1329,7 +1348,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                   onClick={() => setActiveStep(5)}
                   className="rounded-full border border-[var(--border)] px-6 py-2 text-xs font-semibold text-muted-foreground hover:bg-[var(--muted)]"
                 >
-                  ← Back
+                  ← {t("host_app_btn_back", "Back")}
                 </button>
                 <button
                   type="button"
@@ -1337,7 +1356,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                   disabled={isSubmitting}
                   className="rounded-full bg-[#FBDE9B] px-8 py-3 text-xs font-semibold text-[#291E05] shadow-md transition-all hover:scale-102 disabled:opacity-50 dark:bg-amber-500 dark:text-zinc-950"
                 >
-                  {isSubmitting ? "Submitting Application..." : "Submit Application"}
+                  {isSubmitting ? t("host_app_btn_submitting", "Submitting…") : t("host_app_btn_submit", "Submit application")}
                 </button>
               </div>
             </div>

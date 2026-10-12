@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { PropertyCard, PropertyCardData } from "./property-card";
-import { SeeAllCard } from "./see-all-card";
+import { SeeAllCard, SeeAllCard as ShowMoreCard } from "./see-all-card";
 import { useLanguage } from "@/lib/i18n/language-context";
 
 interface HomePropertySectionProps {
@@ -12,9 +12,15 @@ interface HomePropertySectionProps {
   seeAllHref?: string;
   previewImages?: string[];
   totalCount?: number;
+  showMoreCard?: boolean;
+  showSeeAllCard?: boolean;
 }
 
-export function getTranslatedSectionTitle(title: string, t: (key: any, params?: any) => string): string {
+export function getTranslatedSectionTitle(
+  title: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  t: (key: any, ...args: any[]) => string,
+): string {
   if (!title) return title;
   const lower = title.trim().toLowerCase();
 
@@ -112,32 +118,51 @@ function HomePropertySectionComponent({
   seeAllHref,
   previewImages,
   totalCount,
+  showMoreCard,
+  showSeeAllCard,
 }: HomePropertySectionProps) {
   const { t } = useLanguage();
   const displayTitle = getTranslatedSectionTitle(title, t);
   const [activeIndex, setActiveIndex] = useState(0);
   const [pageCount, setPageCount] = useState(4);
   const containerRef = useRef<HTMLDivElement>(null);
+  const slideStepRef = useRef<number>(260);
+  const scrollRafRef = useRef<number | null>(null);
 
   // Each listing is shown once. Repeating cards makes a short discovery
   // section look like it contains duplicate properties.
   const displayCards = cards;
+  const isRecentlyViewed =
+    title === "Recently viewed" ||
+    title === t("home_recently_viewed", "Recently viewed");
+  const isSeeAllCardVisible =
+    Boolean(seeAllHref) &&
+    (showMoreCard !== undefined
+      ? showMoreCard
+      : showSeeAllCard !== undefined
+        ? showSeeAllCard
+        : isRecentlyViewed && totalCount !== undefined
+          ? totalCount > 10
+          : true);
+  const hasSeeAll = isSeeAllCardVisible;
 
-  const getSlideStep = useCallback(() => {
+  const measureSlideStep = useCallback(() => {
     const track = containerRef.current;
     const firstCard = track?.firstElementChild as HTMLElement | null;
 
     if (!track || !firstCard) return 260;
 
     const styles = window.getComputedStyle(track);
-    return firstCard.offsetWidth + Number.parseFloat(styles.columnGap || "16");
+    const measured = firstCard.offsetWidth + Number.parseFloat(styles.columnGap || "16");
+    slideStepRef.current = measured > 0 ? measured : 260;
+    return slideStepRef.current;
   }, []);
 
   const updateCarouselState = useCallback(() => {
     const track = containerRef.current;
-    const slideStep = getSlideStep();
-
-    if (!track || !slideStep) return;
+    if (!track) return;
+    const slideStep = measureSlideStep();
+    if (!slideStep) return;
 
     const maxScroll = Math.max(0, track.scrollWidth - track.clientWidth);
     const count = Math.max(1, Math.round(maxScroll / slideStep) + 1);
@@ -147,9 +172,36 @@ function HomePropertySectionComponent({
     );
 
     const visibleDots = Math.min(count, 6);
-    setPageCount(visibleDots);
-    setActiveIndex(Math.min(nextIndex, visibleDots - 1));
-  }, [getSlideStep]);
+    setPageCount((prev) => (prev !== visibleDots ? visibleDots : prev));
+    setActiveIndex((prev) => {
+      const bounded = Math.min(nextIndex, visibleDots - 1);
+      return prev !== bounded ? bounded : prev;
+    });
+  }, [measureSlideStep]);
+
+  const handleScroll = useCallback(() => {
+    if (scrollRafRef.current != null) return;
+    scrollRafRef.current = requestAnimationFrame(() => {
+      scrollRafRef.current = null;
+      const track = containerRef.current;
+      const slideStep = slideStepRef.current;
+      if (!track || !slideStep) return;
+
+      const maxScroll = Math.max(0, track.scrollWidth - track.clientWidth);
+      const count = Math.max(1, Math.round(maxScroll / slideStep) + 1);
+      const nextIndex = Math.min(
+        count - 1,
+        Math.max(0, Math.round(track.scrollLeft / slideStep)),
+      );
+
+      const visibleDots = Math.min(count, 6);
+      setPageCount((prev) => (prev !== visibleDots ? visibleDots : prev));
+      setActiveIndex((prev) => {
+        const bounded = Math.min(nextIndex, visibleDots - 1);
+        return prev !== bounded ? bounded : prev;
+      });
+    });
+  }, []);
 
   useEffect(() => {
     const track = containerRef.current;
@@ -159,12 +211,17 @@ function HomePropertySectionComponent({
     const resizeObserver = new ResizeObserver(updateCarouselState);
     resizeObserver.observe(track);
 
-    return () => resizeObserver.disconnect();
-  }, [displayCards.length, Boolean(seeAllHref), updateCarouselState]);
+    return () => {
+      resizeObserver.disconnect();
+      if (scrollRafRef.current != null) {
+        cancelAnimationFrame(scrollRafRef.current);
+      }
+    };
+  }, [displayCards.length, hasSeeAll, updateCarouselState]);
 
   const goToPage = (index: number) => {
     const track = containerRef.current;
-    const slideStep = getSlideStep();
+    const slideStep = slideStepRef.current;
     if (!track || !slideStep) return;
 
     const maxScroll = Math.max(0, track.scrollWidth - track.clientWidth);
@@ -177,7 +234,7 @@ function HomePropertySectionComponent({
 
   const handlePrev = () => {
     const track = containerRef.current;
-    const slideStep = getSlideStep();
+    const slideStep = slideStepRef.current;
     if (!track || !slideStep) return;
 
     const maxScroll = Math.max(0, track.scrollWidth - track.clientWidth);
@@ -192,7 +249,7 @@ function HomePropertySectionComponent({
 
   const handleNext = () => {
     const track = containerRef.current;
-    const slideStep = getSlideStep();
+    const slideStep = slideStepRef.current;
     if (!track || !slideStep) return;
 
     const maxScroll = Math.max(0, track.scrollWidth - track.clientWidth);
@@ -273,7 +330,7 @@ function HomePropertySectionComponent({
       {/* Horizontally scrollable, snap-aligned card track */}
       <div
         ref={containerRef}
-        onScroll={updateCarouselState}
+        onScroll={handleScroll}
         className="no-scrollbar grid snap-x snap-mandatory grid-flow-col gap-3 overflow-x-auto overscroll-x-contain auto-cols-[calc((100%-0.75rem)/2.16)] sm:gap-4 sm:auto-cols-[calc((100%-2rem)/3)] md:gap-4 md:auto-cols-[calc((100%-2rem)/3)] lg:gap-4 lg:auto-cols-[calc((100%-3rem)/4)] xl:gap-5 xl:auto-cols-[calc((100%-5rem)/5)] 2xl:gap-6 2xl:auto-cols-[calc((100%-7.5rem)/6)]"
       >
         {displayCards.map((card) => (
@@ -281,9 +338,9 @@ function HomePropertySectionComponent({
             <PropertyCard {...card} />
           </div>
         ))}
-        {seeAllHref && (
+        {isSeeAllCardVisible && seeAllHref && (
           <div className="min-w-0 snap-start">
-            <SeeAllCard
+            <ShowMoreCard
               href={seeAllHref}
               previewImages={previewImages}
               title={title}
@@ -320,3 +377,4 @@ function HomePropertySectionComponent({
 // domain-oriented name above.
 export const HomePropertySection = React.memo(HomePropertySectionComponent);
 export const CategoryCarousel = HomePropertySection;
+export { SeeAllCard, ShowMoreCard };

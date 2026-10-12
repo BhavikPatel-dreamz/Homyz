@@ -72,7 +72,7 @@ export async function loadProfilePageData(tab?: string, subTab?: string, booking
     isAboutMe ||
     normalizedTab === "past_bookings" ||
     normalizedTab === "past";
-  const needsNotifications = shouldLoadAll || isNotifications;
+  const needsNotifications = isNotifications;
   const needsPersonalInfo = shouldLoadAll || isAccountSettings;
 
   const [

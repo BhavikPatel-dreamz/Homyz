@@ -1,11 +1,26 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import Image from "next/image";
 import { BackButton } from "@/components/ui/back-button";
 import type { ListingDTO } from "@/services/mappers";
 import { convertCurrency, resolvePropertyCurrency } from "@/lib/currency";
 import { useCurrency } from "@/lib/currency-context";
+import { useLanguage } from "@/lib/i18n/language-context";
+
+type DiscountDetails = {
+  enabled?: boolean;
+  percentage?: number;
+  discountPercentage?: number;
+  daysInAdvance?: number;
+  daysBefore?: number;
+};
+
+function asDiscountDetails(value: unknown): DiscountDetails | undefined {
+  return typeof value === "object" && value !== null
+    ? (value as DiscountDetails)
+    : undefined;
+}
 
 function ExpandControl({
   title,
@@ -63,104 +78,6 @@ function ExpandControl({
   );
 }
 
-function AvailabilityDropdown({
-  name,
-  label,
-  defaultValue,
-  options,
-  onValueChange,
-}: {
-  name: string;
-  label: string;
-  defaultValue: string;
-  options: Array<{ value: string; label: string }>;
-  onValueChange: () => void;
-}) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [value, setValue] = useState(defaultValue);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const listboxId = useId();
-  const selectedLabel = options.find((option) => option.value === value)?.label ?? value;
-
-  useEffect(() => {
-    const closeWhenClickingAway = (event: MouseEvent) => {
-      if (!dropdownRef.current?.contains(event.target as Node)) setIsOpen(false);
-    };
-    document.addEventListener("mousedown", closeWhenClickingAway);
-    return () => document.removeEventListener("mousedown", closeWhenClickingAway);
-  }, []);
-
-  return (
-    <div ref={dropdownRef} className="relative">
-      <input type="hidden" name={name} value={value} />
-      <button
-        type="button"
-        aria-expanded={isOpen}
-        aria-haspopup="listbox"
-        aria-controls={listboxId}
-        onClick={() => setIsOpen((open) => !open)}
-        onKeyDown={(event) => {
-          if (event.key === "ArrowDown" || event.key === "ArrowUp") {
-            event.preventDefault();
-            setIsOpen(true);
-          }
-          if (event.key === "Escape") setIsOpen(false);
-        }}
-        className="relative flex h-[76px] w-full cursor-pointer items-end rounded-[12px] border border-white bg-[#F3F4F5] px-5 pb-3 pr-12 text-left shadow-[0px_2px_4px_0px_#00000040] transition-[box-shadow,background-color] hover:bg-[#eeeeef] focus:outline-none focus:ring-2 focus:ring-[#1f1f1f]/15 dark:border-white/20 dark:bg-zinc-800 dark:hover:bg-zinc-700"
-      >
-        <span className="pointer-events-none absolute left-5 top-3 text-[13px] leading-4 text-[#727272] dark:text-zinc-400">
-          {label}
-        </span>
-        <span className="block truncate text-[15px] font-medium leading-5 text-[#1f1f1f] dark:text-zinc-100">
-          {selectedLabel}
-        </span>
-        <svg
-          className={`pointer-events-none absolute right-5 top-1/2 size-5 -translate-y-1/2 text-[#1f1f1f] transition-transform dark:text-zinc-200 ${isOpen ? "rotate-180" : ""}`}
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden="true"
-        >
-          <path d="m6 9 6 6 6-6" />
-        </svg>
-      </button>
-
-      {isOpen && (
-        <div
-          id={listboxId}
-          role="listbox"
-          aria-label={label}
-          className="absolute inset-x-0 top-[calc(100%+6px)] z-30 max-h-60 overflow-y-auto rounded-[12px] border border-white bg-white p-1.5 shadow-[0px_4px_12px_0px_#00000026] dark:border-white/20 dark:bg-zinc-800"
-        >
-          {options.map((option) => {
-            const selected = option.value === value;
-            return (
-              <button
-                key={option.value}
-                type="button"
-                role="option"
-                aria-selected={selected}
-                onClick={() => {
-                  setValue(option.value);
-                  setIsOpen(false);
-                  onValueChange();
-                }}
-                className={`flex w-full cursor-pointer items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm transition-colors ${selected ? "bg-[#E7E7E7] font-medium text-[#1f1f1f] dark:bg-zinc-700 dark:text-zinc-100" : "text-[#4b4b4b] hover:bg-[#F3F4F5] dark:text-zinc-300 dark:hover:bg-zinc-700"}`}
-              >
-                {option.label}
-                {selected ? <span aria-hidden="true">✓</span> : null}
-              </button>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
-}
-
 export function CalendarSettingsPanel({
   listing,
   saving,
@@ -173,6 +90,7 @@ export function CalendarSettingsPanel({
   onSave: (values: Record<string, unknown>) => Promise<void>;
 }) {
   const { currency: displayCurrency, formatMajor } = useCurrency();
+  const { t } = useLanguage();
   // The calendar opens on the concise Figma-style overview. Pricing and
   // availability retain their existing full editors one click away.
   const [panel, setPanel] = useState<"pricing" | "overview" | "availability">("overview");
@@ -182,55 +100,58 @@ export function CalendarSettingsPanel({
 
   const rawDiscounts =
     typeof listing.discounts === "object" && listing.discounts !== null
-      ? (listing.discounts as Record<string, any>)
+      ? (listing.discounts as Record<string, unknown>)
       : {};
+  const weeklyDetails = asDiscountDetails(rawDiscounts.weekly);
+  const monthlyDetails = asDiscountDetails(rawDiscounts.monthly);
+  const earlyBirdDetails = asDiscountDetails(rawDiscounts.early_bird);
+  const lastMinuteDetails = asDiscountDetails(rawDiscounts.last_minute);
+  const customPromoDetails = asDiscountDetails(rawDiscounts.custom_promotion);
 
   const weeklyDiscount =
-    typeof rawDiscounts.weekly === "object"
-      ? rawDiscounts.weekly?.percentage ?? 10
+    weeklyDetails
+      ? weeklyDetails.percentage ?? 10
       : Number(rawDiscounts.weekly || 0);
 
   const monthlyDiscount =
-    typeof rawDiscounts.monthly === "object"
-      ? rawDiscounts.monthly?.percentage ?? 25
+    monthlyDetails
+      ? monthlyDetails.percentage ?? 25
       : Number(rawDiscounts.monthly || 0);
 
   const earlyBirdDiscount =
-    typeof rawDiscounts.early_bird === "object"
-      ? rawDiscounts.early_bird?.percentage ?? 10
+    earlyBirdDetails
+      ? earlyBirdDetails.percentage ?? 10
       : Number(rawDiscounts.early_bird || 0);
   const earlyBirdDaysInAdvance =
-    typeof rawDiscounts.early_bird === "object"
-      ? Number(rawDiscounts.early_bird?.daysInAdvance ?? 30)
+    earlyBirdDetails
+      ? Number(earlyBirdDetails.daysInAdvance ?? 30)
       : 30;
 
   const lastMinuteDiscount =
-    typeof rawDiscounts.last_minute === "object"
-      ? rawDiscounts.last_minute?.percentage ?? 10
+    lastMinuteDetails
+      ? lastMinuteDetails.percentage ?? 10
       : Number(rawDiscounts.last_minute || 0);
   const lastMinuteDaysBefore =
-    typeof rawDiscounts.last_minute === "object"
-      ? Number(rawDiscounts.last_minute?.daysBefore ?? 2)
+    lastMinuteDetails
+      ? Number(lastMinuteDetails.daysBefore ?? 2)
       : 2;
 
   const customPromoDiscount =
-    typeof rawDiscounts.custom_promotion === "object"
-      ? rawDiscounts.custom_promotion?.percentage ?? 15
+    customPromoDetails
+      ? customPromoDetails.percentage ?? 15
       : Number(rawDiscounts.custom_promotion || 0);
 
   const newListingEntry = rawDiscounts.new_listing ?? rawDiscounts.newListing;
+  const newListingDetails = asDiscountDetails(newListingEntry);
   const newListingDiscount =
-    typeof newListingEntry === "object" && newListingEntry !== null
-      ? Number(newListingEntry.percentage ?? newListingEntry.discountPercentage ?? 20)
+    newListingDetails
+      ? Number(newListingDetails.percentage ?? newListingDetails.discountPercentage ?? 20)
       : newListingEntry === true
         ? 20
         : Number(newListingEntry || 0);
 
   const discountEnabled = (entry: unknown, percentage: number) => {
-    if (typeof entry === "object" && entry !== null) {
-      return (entry as Record<string, unknown>).enabled !== false && percentage > 0;
-    }
-    return percentage > 0;
+    return asDiscountDetails(entry)?.enabled !== false && percentage > 0;
   };
 
   const [weeklyEnabled, setWeeklyEnabled] = useState(() =>
@@ -458,7 +379,7 @@ export function CalendarSettingsPanel({
                 Price settings
               </p>
               <div className="mt-3 flex flex-col gap-1.5 text-sm leading-5 text-[#727272] dark:text-[#727272]">
-                <div>{formatMajor(((listing as any).weekdayBasePrice ?? listing.price) / 100, listingCurrency)} per night</div>
+                <div>{formatMajor(listing.weekdayBasePrice / 100, listingCurrency)} per night</div>
                 <div>{weeklyDiscount}% weekly discount</div>
                 <div>{monthlyDiscount}% monthly discount</div>
               </div>
@@ -488,7 +409,7 @@ export function CalendarSettingsPanel({
               </p>
               <div className="mt-3 flex flex-col gap-1.5 text-sm font-normal leading-5 text-[#727272] dark:text-zinc-400">
                 <div>{listing.minNights ?? 1}–{listing.maxNights ?? 365} night stays</div>
-                <div>{(listing as any).advanceNotice || "Same day"} advance notice</div>
+                <div>{listing.advanceNotice || "Same day"} advance notice</div>
               </div>
             </div>
             <svg
@@ -512,7 +433,7 @@ export function CalendarSettingsPanel({
   return (
     <div className="text-[#1F1F1F] dark:text-zinc-100">
       <BackButton
-        aria-label="Back to calendar settings"
+        aria-label={t("host_calendar_back_to_settings", "Back to calendar settings")}
         onClick={() => {
           if (dirty && typeof window !== "undefined") {
             if (!window.confirm("You have unsaved changes. Discard them?")) {
@@ -581,85 +502,108 @@ export function CalendarSettingsPanel({
             </h3>
             <div className="mt-5 space-y-3">
               {renderAvailabilityNumberRow({
-              name: "minNights",
-              label: "Minimum nights",
-              defaultValue: listing.minNights ?? 1,
-              min: 1,
-              max: 365,
-            })}
+                name: "minNights",
+                label: t("host_calendar_min_stay_label", "Minimum stay"),
+                defaultValue: listing.minNights ?? 1,
+                min: 1,
+                max: 365,
+              })}
 
               {renderAvailabilityNumberRow({
-              name: "maxNights",
-              label: "Maximum nights",
-              defaultValue: listing.maxNights ?? 365,
+                name: "maxNights",
+                label: t("host_calendar_max_stay_label", "Maximum stay"),
+                defaultValue: listing.maxNights ?? 365,
+                min: 1,
+                max: 365,
+              })}
+
+            {renderInputField({
+              name: "guests",
+              label: t("host_calendar_max_guest_label", "Maximum guest capacity"),
+              defaultValue: listing.guests ?? 1,
+              suffix: "guests",
               min: 1,
-              max: 365,
+              max: 50,
+              inputMode: "numeric",
+              helperText: t("host_calendar_max_guest_helper", "Maximum number of guests allowed per booking."),
             })}
+
+            <div className="space-y-1">
+              <label
+                htmlFor="advanceNoticeSelect"
+                className="block text-sm font-medium text-[#1f1f1f] dark:text-zinc-200"
+              >
+                {t("host_calendar_advance_notice_label", "Advance notice")}
+              </label>
+              <div className="relative flex items-center">
+                <select
+                  id="advanceNoticeSelect"
+                  name="advanceNotice"
+                  defaultValue={listing.advanceNotice || "Same day"}
+                  className="w-full appearance-none bg-transparent px-3.5 py-2.5 text-sm font-medium text-zinc-900 dark:text-zinc-100 outline-none cursor-pointer pr-9 border border-[#727272] sm:min-h-[56px] min-h-[45px] focus-within:outline-0 focus-within:shadow-none focus-visible:outline-0 focus-visible:shadow-none rounded-lg"
+                >
+                  <option value="Same day">Same day</option>
+                  <option value="At least 1 day">At least 1 day</option>
+                  <option value="At least 2 days">At least 2 days</option>
+                  <option value="At least 3 days">At least 3 days</option>
+                  <option value="At least 7 days">At least 7 days</option>
+                </select>
+                <span className="pointer-events-none absolute right-3.5 text-xs text-zinc-400">
+                  ▾
+                </span>
+              </div>
+              <p className="text-xs text-[#727272] dark:text-zinc-400">
+                Required lead time before a guest can check in.
+              </p>
             </div>
-          </section>
 
-          <section>
-            <h3 className="text-base font-medium text-[#1f1f1f] dark:text-zinc-100">
-              Availability
-            </h3>
-            <div className="mt-5 space-y-3">
-              <AvailabilityDropdown
-                name="advanceNotice"
-                label="Advance notice"
-                defaultValue={(listing as any).advanceNotice || "Same day"}
-                onValueChange={() => setDirty(true)}
-                options={[
-                  { value: "Same day", label: "Same day" },
-                  { value: "At least 1 day", label: "At least 1 day" },
-                  { value: "At least 2 days", label: "At least 2 days" },
-                  { value: "At least 3 days", label: "At least 3 days" },
-                  { value: "At least 7 days", label: "At least 7 days" },
-                ]}
-              />
-
-              <AvailabilityDropdown
-                name="sameDayCutoff"
-                label="Same-day booking cutoff"
-                defaultValue={(listing as any).sameDayCutoff || "12:00 AM"}
-                onValueChange={() => setDirty(true)}
-                options={[
-                  { value: "12:00 AM", label: "12:00 AM (Midnight)" },
-                  { value: "6:00 AM", label: "6:00 AM" },
-                  { value: "12:00 PM", label: "12:00 PM (Noon)" },
-                  { value: "3:00 PM", label: "3:00 PM" },
-                  { value: "6:00 PM", label: "6:00 PM" },
-                  { value: "9:00 PM", label: "9:00 PM" },
-                ]}
-              />
-
-              <details className="group overflow-hidden rounded-[12px] border border-white bg-[#F3F4F5] shadow-[0px_2px_4px_0px_#00000040] dark:border-white/20 dark:bg-zinc-800">
-                <summary className="flex min-h-[76px] cursor-pointer list-none items-center justify-between gap-3 px-5 [&::-webkit-details-marker]:hidden">
-                  <span className="min-w-0">
-                    <span className="block text-[13px] leading-4 text-[#727272] dark:text-zinc-400">More availability settings</span>
-                    <span className="mt-1 block truncate text-[15px] font-medium leading-5 text-[#1f1f1f] dark:text-zinc-100">Guest capacity and same-day bookings</span>
-                  </span>
-                  <svg className="shrink-0 size-5 text-[#1f1f1f] transition-transform group-open:rotate-180 dark:text-zinc-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
-                </summary>
-                <div className="space-y-3 border-t border-[#dedfe0] bg-white px-4 pb-4 pt-3 dark:border-zinc-700 dark:bg-zinc-900/20">
-                  {renderAvailabilityNumberRow({
-                    name: "guests",
-                    label: "Maximum guests",
-                    defaultValue: (listing as any).guests ?? 1,
-                    min: 1,
-                    max: 50,
-                  })}
-                  <label className="flex cursor-pointer items-center justify-between gap-3 rounded-[12px] border border-white bg-white/70 p-3 shadow-[0px_2px_4px_0px_#00000040] dark:border-white/20 dark:bg-zinc-900/40">
-                    <span className="text-sm text-[#1f1f1f] dark:text-zinc-200">Allow same-day booking requests</span>
-                    <input
-                      type="checkbox"
-                      name="allowSameDayRequests"
-                      defaultChecked={(listing as any).allowSameDayRequests !== false}
-                      className="size-5 rounded border-zinc-300 accent-[#1f1f1f]"
-                    />
-                  </label>
-                </div>
-              </details>
+            <div className="space-y-1">
+              <label
+                htmlFor="sameDayCutoffSelect"
+                className="block text-sm font-medium text-[#1f1f1f] dark:text-zinc-200"
+              >
+                {t("host_calendar_same_day_cutoff_label", "Same-day booking cutoff")}
+              </label>
+              <div className="w-full appearance-none bg-transparent px-3.5 py-2.5 text-sm font-medium text-zinc-900 dark:text-zinc-100 outline-none cursor-pointer pr-9 border border-[#727272] sm:min-h-[56px] min-h-[45px] focus-within:outline-0 focus-within:shadow-none focus-visible:outline-0 focus-visible:shadow-none rounded-lg">
+                <select
+                  id="sameDayCutoffSelect"
+                  name="sameDayCutoff"
+                  defaultValue={listing.sameDayCutoff || "12:00 AM"}
+                  className="w-full appearance-none bg-transparent px-3.5 py-2.5 text-sm font-medium text-zinc-900 dark:text-zinc-100 outline-none cursor-pointer pr-9"
+                >
+                  <option value="12:00 AM">12:00 AM (Midnight)</option>
+                  <option value="6:00 AM">6:00 AM</option>
+                  <option value="12:00 PM">12:00 PM (Noon)</option>
+                  <option value="3:00 PM">3:00 PM</option>
+                  <option value="6:00 PM">6:00 PM</option>
+                  <option value="9:00 PM">9:00 PM</option>
+                </select>
+                <span className="pointer-events-none absolute right-3.5 text-xs text-zinc-400">
+                  ▾
+                </span>
+              </div>
+              <p className="text-xs text-[#727272] dark:text-zinc-400">
+                Time after which guests cannot book a same-day reservation.
+              </p>
             </div>
+
+            <label className="flex items-center justify-between gap-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50/70 dark:bg-zinc-800/40 p-3.5 hover:bg-zinc-100/70 dark:hover:bg-zinc-800/80 transition-colors cursor-pointer">
+              <div className="min-w-0 flex-1">
+                <span className="block text-sm font-medium text-[#1f1f1f] dark:text-zinc-200">
+                  Allow same-day booking requests
+                </span>
+                <span className="block text-xs text-[#727272] dark:text-zinc-400 mt-0.5">
+                  Let guests book on the day of arrival before the cutoff time.
+                </span>
+              </div>
+              <input
+                type="checkbox"
+                name="allowSameDayRequests"
+                defaultChecked={listing.allowSameDayRequests !== false}
+                className="size-5 rounded border-zinc-300 text-amber-500 focus:ring-amber-400 cursor-pointer accent-[#1f1f1f]"
+              />
+            </label>
+          </div>
           </section>
 
           {(validation || notice) && (
@@ -683,14 +627,14 @@ export function CalendarSettingsPanel({
                 disabled={saving}
                 className="flex-1 rounded-lg border border-zinc-300 dark:border-[#1f1f1f] bg-white dark:bg-[#1f1f1f] hover:bg-zinc-100 dark:hover:bg-[#1f1f1f] text-[#1f1f1f] hover:text-white dark:text-zinc-300 font-medium py-2.5 text-sm transition-colors cursor-pointer disabled:opacity-50"
               >
-                Discard
+                {t("host_calendar_discard", "Discard")}
               </button>
               <button
                 type="submit"
                 disabled={saving}
                 className="flex-1 rounded-lg bg-[#FCDF9C] hover:bg-amber-300 text-[#1f1f1f] hover:text-white font-medium py-2.5 text-sm transition-colors cursor-pointer disabled:opacity-50 shadow-xs"
               >
-                {saving ? "Saving…" : "Save availability"}
+                {saving ? t("host_calendar_saving", "Saving…") : t("host_calendar_save_avail", "Save availability")}
               </button>
             </div>
           )}
@@ -783,9 +727,7 @@ export function CalendarSettingsPanel({
                 { enabled: newListingIsEnabled, percentage: newListing },
               custom_promotion:
               {
-                ...(typeof rawDiscounts.custom_promotion === "object"
-                  ? rawDiscounts.custom_promotion
-                  : {}),
+                ...customPromoDetails,
                 enabled: customPromoIsEnabled,
                 percentage: customPromo,
               },
@@ -818,29 +760,29 @@ export function CalendarSettingsPanel({
 
             {renderInputField({
               name: "price",
-              label: "Weekday base rate",
+              label: t("host_calendar_weekday_base_rate", "Weekday base rate"),
               defaultValue:
-                toDisplayMajor(((listing as any).weekdayBasePrice ?? listing.price) / 100),
+                toDisplayMajor(listing.weekdayBasePrice / 100),
               prefix: displayCurrency,
               min: 1,
               max: 100000,
               step: "0.01",
               inputMode: "decimal",
-              helperText: "Applies to Sunday through Wednesday nights.",
+              helperText: t("host_calendar_weekday_helper", "Applies to Sunday through Wednesday nights."),
             })}
 
             <ExpandControl
-              title="Custom weekend price"
+              title={t("host_calendar_custom_weekend_price", "Custom weekend price")}
               subtitle={
                 customWeekendPriceVal
                   ? `${displayCurrency} ${Number(customWeekendPriceVal).toLocaleString("en", { maximumFractionDigits: 2 })} / night`
-                  : `Not configured (defaults to ${formatMajor(((listing as any).weekdayBasePrice ?? listing.price) / 100, listingCurrency)})`
+                  : `${t("host_calendar_weekend_not_configured", "Not configured")} (defaults to ${formatMajor(listing.weekdayBasePrice / 100, listingCurrency)})`
               }
               defaultOpen={Boolean(listing.weekendPrice)}
             >
               {renderInputField({
                 name: "weekendPrice",
-                label: `Weekend rate (${displayCurrency})`,
+                label: `${t("host_calendar_custom_weekend_price", "Custom weekend price")} (${displayCurrency})`,
                 value: customWeekendPriceVal,
                 onChange: (e) => {
                   setCustomWeekendPriceVal(e.target.value);
@@ -853,7 +795,7 @@ export function CalendarSettingsPanel({
                 inputMode: "decimal",
                 placeholder: "Leave empty to use base rate",
                 helperText:
-                  "Applies to Thursday & Friday nights. Leave empty to use the weekday base rate.",
+                  t("host_calendar_weekend_helper", "Applies to Thursday & Friday nights. Leave empty to use the weekday base rate."),
                 onClear: customWeekendPriceVal
                   ? () => {
                     setCustomWeekendPriceVal("");
@@ -889,7 +831,7 @@ export function CalendarSettingsPanel({
             >
               {renderInputField({
                 name: "weekly",
-                label: "Weekly discount",
+                label: t("host_calendar_weekly_discount_label", "Weekly discount"),
                 defaultValue: weeklyDiscount,
                 suffix: "%",
                 min: 1,
@@ -913,7 +855,7 @@ export function CalendarSettingsPanel({
             >
               {renderInputField({
                 name: "monthly",
-                label: "Monthly discount",
+                label: t("host_calendar_monthly_discount_label", "Monthly discount"),
                 defaultValue: monthlyDiscount,
                 suffix: "%",
                 min: 1,
@@ -937,7 +879,7 @@ export function CalendarSettingsPanel({
             >
               {renderInputField({
                 name: "earlyBird",
-                label: "Early-bird discount",
+                label: t("host_calendar_early_bird_discount", "Early-bird discount"),
                 defaultValue: earlyBirdDiscount,
                 suffix: "%",
                 min: 1,
@@ -961,7 +903,7 @@ export function CalendarSettingsPanel({
             >
               {renderInputField({
                 name: "lastMinute",
-                label: "Last-minute discount",
+                label: t("host_calendar_last_minute_discount", "Last-minute discount"),
                 defaultValue: lastMinuteDiscount,
                 suffix: "%",
                 min: 1,
@@ -985,11 +927,11 @@ export function CalendarSettingsPanel({
             </div>
 
             <ExpandControl
-              title="New listing promotion"
+              title={t("host_calendar_new_listing_promo", "New listing promotion")}
               subtitle={
                 newListingEnabled && newListingDiscount > 0
-                  ? `${newListingDiscount}% promotion for the first eligible bookings`
-                  : "No new listing promotion configured"
+                  ? t("host_calendar_new_listing_sub", { pct: newListingDiscount }, `${newListingDiscount}% promotion for the first eligible bookings`)
+                  : t("host_calendar_no_new_listing_promo", "No new listing promotion configured")
               }
               defaultOpen={newListingEnabled}
               control={discountToggle(
@@ -1001,7 +943,7 @@ export function CalendarSettingsPanel({
             >
               {renderInputField({
                 name: "newListing",
-                label: "New listing discount (first 3 bookings)",
+                label: t("host_calendar_new_listing_promo", "New listing discount (first 3 bookings)"),
                 defaultValue: newListingDiscount,
                 suffix: "%",
                 min: 1,
@@ -1014,11 +956,11 @@ export function CalendarSettingsPanel({
             </ExpandControl>
 
             <ExpandControl
-              title="Custom promotion"
+              title={t("host_calendar_custom_promo", "Custom promotion")}
               subtitle={
                 customPromoEnabled && customPromoDiscount > 0
                   ? `${customPromoDiscount}% promotional discount configured`
-                  : "Property-wide promotional discount"
+                  : t("host_calendar_custom_promo", "Property-wide promotional discount")
               }
               defaultOpen={customPromoEnabled}
               control={discountToggle(
@@ -1030,7 +972,7 @@ export function CalendarSettingsPanel({
             >
               {renderInputField({
                 name: "customPromo",
-                label: "Special promotional discount",
+                label: t("host_calendar_custom_promo", "Special promotional discount"),
                 defaultValue: customPromoDiscount,
                 suffix: "%",
                 min: 1,
@@ -1056,21 +998,21 @@ export function CalendarSettingsPanel({
 
             {renderInputField({
               name: "cleaningFee",
-              label: "Cleaning fee",
-              defaultValue: toDisplayMajor(((listing as any).cleaningFee || 0) / 100),
+              label: t("host_calendar_cleaning_fee_label", "Cleaning fee"),
+              defaultValue: toDisplayMajor((listing.cleaningFee || 0) / 100),
               prefix: displayCurrency,
               suffix: "/ stay",
               min: 0,
               max: 10000,
               step: "0.01",
               inputMode: "decimal",
-              helperText: "One-time host cleaning fee recorded with property.",
+              helperText: t("host_calendar_cleaning_fee_helper", "One-time host cleaning fee recorded with property."),
             })}
 
             {renderInputField({
               name: "extraGuestFee",
               label: "Extra guest fee",
-              defaultValue: toDisplayMajor(((listing as any).extraGuestFee || 0) / 100),
+              defaultValue: toDisplayMajor((listing.extraGuestFee || 0) / 100),
               prefix: displayCurrency,
               suffix: "/ guest / night",
               min: 0,
@@ -1118,14 +1060,14 @@ export function CalendarSettingsPanel({
                 disabled={saving}
                   className="rounded-lg border border-[#1f1f1f] bg-white dark:bg-[#1f1f1f] hover:bg-zinc-100 dark:hover:bg-[#1f1f1f] text-[#1f1f1f] dark:text-white font-medium py-2.5 text-xs transition-colors cursor-pointer disabled:opacity-50 px-2 flex-1"
               >
-                Discard
+                {t("host_calendar_discard", "Discard")}
               </button>
               <button
                 type="submit"
                 disabled={saving}
                   className="rounded-lg bg-[#FCDF9C] hover:bg-[#1f1f1f] text-[#1f1f1f] hover:text-white font-medium py-2.5 text-xs transition-colors cursor-pointer disabled:opacity-50 px-2 flex-1"
               >
-                {saving ? "Saving…" : "Save price settings"}
+                {saving ? t("host_calendar_saving", "Saving…") : t("host_calendar_save_price", "Save price settings")}
               </button>
             </div>
           )}

@@ -25,7 +25,7 @@ const createReviewSchema = z.object({
   categoryRatings: categoryRatingSchema.optional(),
 });
 
-// GET /api/v1/listings/[id]/reviews?page=1&limit=6&topic=Location
+// GET /api/v1/listings/[id]/reviews?page=1&limit=6&topic=Location&mention=Pool&search=quiet&sort=recent
 export const GET = apiHandler(async (req, ctx: Ctx) => {
   const { id } = await ctx.params;
   const { page, limit } = parsePagination(req.nextUrl.searchParams, {
@@ -33,9 +33,41 @@ export const GET = apiHandler(async (req, ctx: Ctx) => {
     maxLimit: 24,
   });
   const topic = req.nextUrl.searchParams.get("topic")?.trim() || undefined;
-  if (topic && topic.length > 80) throw AppError.badRequest("Invalid review topic");
+  const mention = req.nextUrl.searchParams.get("mention")?.trim() || undefined;
+  const search = req.nextUrl.searchParams.get("search")?.trim() || undefined;
+  const sortParam = req.nextUrl.searchParams.get("sort")?.trim() || undefined;
+  const ratingParam = req.nextUrl.searchParams.get("rating")?.trim() || undefined;
 
-  const result = await reviewService.getListingReviews(id, page, limit, topic);
+  const validSorts = ["relevant", "recent", "highest", "lowest"] as const;
+  const allValidSorts = [...validSorts, "oldest"] as const;
+  type ValidSort = (typeof allValidSorts)[number];
+  const isSortValid = (val: string | undefined): val is ValidSort =>
+    Boolean(val && (allValidSorts as readonly string[]).includes(val));
+  const sort: ValidSort = isSortValid(sortParam) ? sortParam : "recent";
+
+  let rating: number | undefined;
+  if (ratingParam) {
+    const parsed = Number.parseInt(ratingParam, 10);
+    if (!Number.isNaN(parsed) && parsed >= 1 && parsed <= 5) {
+      rating = parsed;
+    } else {
+      throw AppError.badRequest("Invalid rating filter");
+    }
+  }
+
+  if (topic && topic.length > 80) throw AppError.badRequest("Invalid review topic");
+  if (mention && mention.length > 80) throw AppError.badRequest("Invalid review mention");
+  if (search && search.length > 200) throw AppError.badRequest("Search query is too long");
+
+  const result = await reviewService.getListingReviews(id, {
+    page,
+    pageSize: limit,
+    topic,
+    mention,
+    search,
+    sort,
+    rating,
+  });
   return paginated(result.reviews, buildPagination(result.page, limit, result.total));
 });
 

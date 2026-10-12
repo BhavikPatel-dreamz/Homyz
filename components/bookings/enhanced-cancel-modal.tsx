@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { CurrencyPrice } from "@/components/ui/currency-price";
 import { useRouter } from "next/navigation";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 interface EnhancedCancelModalProps {
   isOpen: boolean;
@@ -31,6 +32,7 @@ export function EnhancedCancelModal({
   onCancelled,
 }: EnhancedCancelModalProps) {
   const router = useRouter();
+  const { t } = useLanguage();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -67,7 +69,7 @@ export function EnhancedCancelModal({
         const msg =
           json?.error?.message ||
           (typeof json?.error === "string" ? json.error : null) ||
-          "Failed to cancel reservation.";
+          t("booking_details_failed_cancel", "Failed to cancel reservation.");
         throw new Error(msg);
       }
 
@@ -75,7 +77,7 @@ export function EnhancedCancelModal({
       onClose();
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An unexpected error occurred.");
+      setError(err instanceof Error ? err.message : t("booking_details_unexpected_error", "An unexpected error occurred."));
     } finally {
       setSubmitting(false);
     }
@@ -109,10 +111,10 @@ export function EnhancedCancelModal({
           </div>
           <div>
             <h2 id="cancel-title" className="text-xl font-semibold text-[#1F1F1F]">
-              Cancel reservation?
+              {t("booking_details_cancel_modal_title", "Cancel reservation?")}
             </h2>
             <p className="text-xs text-[#727272]">
-              Reference #{bookingId.slice(-8).toUpperCase()}
+              {t("booking_details_cancel_modal_ref", { code: bookingId.slice(-8).toUpperCase() }, "Reference #{code}")}
             </p>
           </div>
         </div>
@@ -126,41 +128,41 @@ export function EnhancedCancelModal({
         <div className="mt-5 space-y-3">
           <div className="rounded-xl border border-zinc-200 bg-white p-4">
             <h4 className="text-xs font-semibold text-[#727272] uppercase tracking-wider">
-              Cancellation Policy & Terms
+              {t("booking_details_cancel_policy_terms", "Cancellation Policy & Terms")}
             </h4>
             <p className="mt-1 text-sm font-medium text-[#1F1F1F]">
               {isNonRefundable
-                ? "Non-refundable Rate"
-                : `${cancellationPolicy.charAt(0).toUpperCase() + cancellationPolicy.slice(1).toLowerCase()} Policy`}
+                ? t("booking_details_non_refundable", "Non-refundable Rate")
+                : `${cancellationPolicy.charAt(0).toUpperCase() + cancellationPolicy.slice(1).toLowerCase()} ${t("booking_details_cancellation_policy", "Policy")}`}
             </p>
             <p className="mt-1 text-xs text-zinc-600 leading-relaxed">
               {isNonRefundable
-                ? "This booking was booked under a non-refundable discount rate. No refund is granted for guest cancellations."
-                : `Under the ${cancellationPolicy.toLowerCase()} cancellation policy, cancelling before check-in qualifies for a full refund of your reservation total.`}
+                ? t("booking_details_non_ref_desc", "This booking was booked under a non-refundable discount rate. No refund is granted for guest cancellations.")
+                : t("booking_details_flex_desc", "Under the flexible cancellation policy, cancelling before check-in qualifies for a full refund of your reservation total.")}
             </p>
           </div>
 
           <div className="rounded-xl border border-zinc-200 bg-white p-4">
             <h4 className="text-xs font-semibold text-[#727272] uppercase tracking-wider mb-2">
-              Refund Summary
+              {t("booking_details_refund_summary", "Refund Summary")}
             </h4>
             <dl className="space-y-2 text-xs sm:text-sm">
               <div className="flex justify-between text-zinc-600">
-                <dt>Total paid</dt>
+                <dt>{t("booking_details_total_paid_label", "Total paid")}</dt>
                 <dd>
                   <CurrencyPrice amountMinorUnits={totalPaid} sourceCurrency={currency} fractionDigits={2} />
                 </dd>
               </div>
               {nonRefundableAmount > 0 && (
                 <div className="flex justify-between text-zinc-600">
-                  <dt>Non-refundable fees</dt>
+                  <dt>{t("booking_details_non_ref_fees", "Non-refundable fees")}</dt>
                   <dd className="text-red-700">
                     -<CurrencyPrice amountMinorUnits={nonRefundableAmount} sourceCurrency={currency} fractionDigits={2} />
                   </dd>
                 </div>
               )}
               <div className="flex justify-between border-t border-zinc-200 pt-2 font-semibold text-[#1F1F1F]">
-                <dt>Expected refund</dt>
+                <dt>{t("booking_details_expected_refund", "Expected refund")}</dt>
                 <dd className={expectedRefund > 0 ? "text-emerald-700" : "text-zinc-700"}>
                   <CurrencyPrice amountMinorUnits={expectedRefund} sourceCurrency={currency} fractionDigits={2} />
                 </dd>
@@ -169,7 +171,7 @@ export function EnhancedCancelModal({
           </div>
 
           <p className="text-xs text-[#727272] leading-relaxed">
-            By confirming cancellation, your dates will be immediately released to other guests and this reservation will be closed.
+            {t("booking_details_cancel_notice", "By confirming cancellation, your dates will be immediately released to other guests and this reservation will be closed.")}
           </p>
         </div>
 
@@ -186,7 +188,7 @@ export function EnhancedCancelModal({
             disabled={submitting}
             className="flex h-11 items-center justify-center rounded-full border border-[#1f1f1f] px-5 text-sm font-medium text-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white disabled:opacity-50 duration-300"
           >
-            Keep reservation
+            {t("booking_details_keep_reservation", "Keep reservation")}
           </button>
           <button
             type="button"
@@ -200,10 +202,10 @@ export function EnhancedCancelModal({
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                 </svg>
-                <span>Cancelling...</span>
+                <span>{t("booking_details_cancelling", "Cancelling...")}</span>
               </>
             ) : (
-              <span>Confirm cancellation</span>
+              <span>{t("booking_details_confirm_cancellation", "Confirm cancellation")}</span>
             )}
           </button>
         </div>

@@ -7,6 +7,7 @@ import { HostListingEditorClient, type HostListingData } from "@/app/(protected)
 import { slugToSection, serializeListingForEditor } from "@/app/(protected)/host/listings/[id]/section-helpers";
 import { listingService } from "@/services/listing.service";
 import { getNonRefundableDiscountPercentage } from "@/services/app-settings.service";
+import { guidebookService } from "@/services/guidebook.service";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -45,8 +46,11 @@ export default async function AdminListingDetailPage({ params, searchParams }: P
     approvedBy,
   });
 
-  // TEMPORARILY DISABLED: guidebooks are intentionally off in admin until the feature is ready.
-  const initialGuidebooks: any[] = [];
+  const initialGuidebooks = await guidebookService.getGuidebooksForHost(
+    admin,
+    listing.hostId,
+    listing.id,
+  );
 
   return (
     <HostListingEditorClient

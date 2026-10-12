@@ -186,6 +186,7 @@ export function AdminHeader({
                 <div className="flex flex-col gap-0.5">
                   <Link
                     href="/profile"
+                    prefetch={false}
                     onClick={() => setMenuOpen(false)}
                     className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-xl text-muted-foreground hover:bg-[var(--surface-secondary)] transition-colors"
                   >
@@ -197,6 +198,7 @@ export function AdminHeader({
 
                   <Link
                     href="/admin/security"
+                    prefetch={false}
                     onClick={() => setMenuOpen(false)}
                     className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium rounded-xl text-muted-foreground hover:bg-[var(--surface-secondary)] transition-colors"
                   >

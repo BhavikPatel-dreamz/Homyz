@@ -11,6 +11,12 @@ export const GET = apiHandler(async (req) => {
   const actor = await requireApiAuth(req);
   const searchParams = req.nextUrl.searchParams;
 
+  if (searchParams.get("countOnly") === "true") {
+    const response = ok({ unreadCount: await notificationService.getUnreadCount(actor.id) });
+    response.headers.set("Cache-Control", "private, no-store, max-age=0");
+    return response;
+  }
+
   const rawType = searchParams.get("type");
   const type =
     rawType && Object.values(NotificationType).includes(rawType as NotificationType)
@@ -33,4 +39,3 @@ export const GET = apiHandler(async (req) => {
   response.headers.set("Cache-Control", "private, no-store, max-age=0");
   return response;
 });
-

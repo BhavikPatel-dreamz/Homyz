@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { GuidebookMap, MapPlacePin } from "@/components/guidebook/guidebook-map";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
+import { useLanguage } from "@/lib/i18n/language-context";
 import {
   GUIDEBOOK_CATEGORIES,
   getCategoryLabel,
@@ -56,6 +57,7 @@ export function GuestGuidebookClient({
   guidebook: PublicGuidebookData;
   viewerId?: string | null;
 }) {
+  const { t } = useLanguage();
   const [activeCategory, setActiveCategory] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
   const [activePlaceId, setActivePlaceId] = useState<string | null>(null);
@@ -125,7 +127,7 @@ export function GuestGuidebookClient({
       {copyToast && (
         <div className="fixed bottom-6 right-6 z-50 rounded-2xl bg-zinc-900 text-white px-5 py-3 text-xs font-semibold shadow-xl border border-zinc-700 animate-in fade-in slide-in-from-bottom-2 flex items-center gap-2">
           <span>✓</span>
-          <span>Guidebook link copied to clipboard!</span>
+          <span>{t("guidebook_link_copied", "Guidebook link copied to clipboard!")}</span>
         </div>
       )}
 
@@ -136,7 +138,7 @@ export function GuestGuidebookClient({
             href="/"
             className="text-sm font-bold text-[#1F1F1F] hover:text-zinc-700 transition-colors"
           >
-            ← Back to Homyz
+            {t("guidebook_back_to_homyz", "← Back to Homyz")}
           </Link>
           <span className="text-zinc-300">|</span>
           <span className="text-xs font-semibold text-[#727272] truncate max-w-xs">
@@ -147,7 +149,7 @@ export function GuestGuidebookClient({
         <div className="flex items-center gap-2">
           {isOwner && (
             <span className="text-[10px] font-semibold bg-amber-100 text-amber-900 px-2.5 py-1 rounded-full">
-              Preview Mode
+              {t("guidebook_preview_mode", "Preview Mode")}
             </span>
           )}
           <button
@@ -156,7 +158,7 @@ export function GuestGuidebookClient({
             className="rounded-full border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-800 text-xs font-semibold px-4 py-1.5 shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer"
           >
             <span>🔗</span>
-            <span>Share</span>
+            <span>{t("guidebook_share", "Share")}</span>
           </button>
         </div>
       </header>
@@ -171,14 +173,14 @@ export function GuestGuidebookClient({
           <div className="absolute bottom-6 left-6 right-6 text-white flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div className="space-y-2">
               <span className="text-xs font-bold uppercase tracking-wider text-amber-300">
-                Local Host Guidebook
+                {t("guidebook_local_host", "Local Host Guidebook")}
               </span>
               <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight leading-tight">
                 {guidebook.title}
               </h1>
               <p className="text-xs sm:text-sm text-zinc-200 font-medium">
                 {guidebook.city ? `${guidebook.city}${guidebook.country ? `, ${guidebook.country}` : ""} · ` : ""}
-                {guidebook.items.length} curated recommendations
+                {t("guidebook_curated_recs", `${guidebook.items.length} curated recommendations`).replace("{count}", String(guidebook.items.length))}
               </p>
             </div>
 
@@ -201,8 +203,8 @@ export function GuestGuidebookClient({
                 </span>
                 <span className="text-[11px] text-zinc-300 font-medium block">
                   {guidebook.host.yearsHosting > 0
-                    ? `${guidebook.host.yearsHosting} years hosting`
-                    : "Verified Host"}
+                    ? t("guidebook_years_hosting", `${guidebook.host.yearsHosting} years hosting`).replace("{years}", String(guidebook.host.yearsHosting))
+                    : t("guidebook_verified_host", "Verified Host")}
                 </span>
               </div>
             </div>
@@ -231,7 +233,7 @@ export function GuestGuidebookClient({
                   : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200"
               }`}
             >
-              All ({guidebook.items.length})
+              {t("guidebook_cat_all", `All (${guidebook.items.length})`).replace("{count}", String(guidebook.items.length))}
             </button>
 
             {guidebook.items.some((it) => it.isFavorite) && (
@@ -244,7 +246,7 @@ export function GuestGuidebookClient({
                     : "bg-amber-50 border border-amber-200 text-amber-900 hover:bg-amber-100"
                 }`}
               >
-                ⭐ Host favorites
+                {t("guidebook_cat_favorites", "⭐ Host favorites")}
               </button>
             )}
 
@@ -291,7 +293,7 @@ export function GuestGuidebookClient({
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search this guidebook..."
+              placeholder={t("guidebook_search_placeholder", "Search this guidebook...")}
               className="w-full rounded-full border border-zinc-200 bg-zinc-50 py-1.5 pl-8 pr-3 text-xs font-medium text-[#1F1F1F] outline-none focus:bg-white focus:border-zinc-400 shadow-2xs"
             />
             <span className="absolute left-2.5 top-2 text-xs text-[#727272]">🔍</span>
@@ -305,9 +307,9 @@ export function GuestGuidebookClient({
             {filteredItems.length === 0 ? (
               <div className="rounded-3xl border border-zinc-200 bg-white p-12 text-center space-y-2">
                 <span className="text-3xl">🔍</span>
-                <h3 className="text-sm font-bold text-[#1F1F1F]">No matching recommendations</h3>
+                <h3 className="text-sm font-bold text-[#1F1F1F]">{t("guidebook_no_recs_title", "No matching recommendations")}</h3>
                 <p className="text-xs text-[#727272] font-normal">
-                  Try clearing your search query or selecting a different category filter.
+                  {t("guidebook_no_recs_desc", "Try clearing your search query or selecting a different category filter.")}
                 </p>
               </div>
             ) : (
@@ -337,7 +339,7 @@ export function GuestGuidebookClient({
                       )}
                       {item.isFavorite && (
                         <div className="absolute top-2 left-2 bg-amber-400 text-zinc-950 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-xs">
-                          ⭐ Favorite
+                          {t("guidebook_favorite_badge", "⭐ Favorite")}
                         </div>
                       )}
                     </div>
@@ -368,7 +370,7 @@ export function GuestGuidebookClient({
                         <div className="p-2.5 rounded-2xl bg-amber-50/80 border border-amber-200/60 text-xs text-amber-900 font-medium flex items-start gap-2">
                           <span className="shrink-0 text-sm">💡</span>
                           <span className="leading-relaxed">
-                            <strong className="font-bold">Host tip: </strong>
+                            <strong className="font-bold">{t("guidebook_host_tip", "Host tip:")} </strong>
                             {item.hostTip}
                           </span>
                         </div>
@@ -385,9 +387,9 @@ export function GuestGuidebookClient({
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-[#1F1F1F] uppercase tracking-wider">
-                  Area Map ({mapPins.length} locations)
+                  {t("guidebook_area_map", `Area Map (${mapPins.length} locations)`).replace("{count}", String(mapPins.length))}
                 </span>
-                <span className="text-[11px] text-[#727272]">Interactive recommendations map</span>
+                <span className="text-[11px] text-[#727272]">{t("guidebook_map_subtitle", "Interactive recommendations map")}</span>
               </div>
               <div className="h-[560px]">
                 <GuidebookMap
@@ -412,7 +414,7 @@ export function GuestGuidebookClient({
             className="rounded-full bg-zinc-900 text-white font-semibold text-xs px-5 py-3 shadow-xl flex items-center gap-2 border border-zinc-700 cursor-pointer"
           >
             <span>🗺️</span>
-            <span>Show Map ({mapPins.length})</span>
+            <span>{t("guidebook_show_map", `Show Map (${mapPins.length})`).replace("{count}", String(mapPins.length))}</span>
           </button>
         </div>
       )}
@@ -423,7 +425,7 @@ export function GuestGuidebookClient({
           <div className="bg-white rounded-t-3xl w-full h-[85vh] p-4 flex flex-col space-y-3 animate-in slide-in-from-bottom">
             <div className="flex items-center justify-between border-b border-zinc-200 pb-2">
               <span className="text-xs font-bold text-[#1F1F1F]">
-                Guidebook Map ({mapPins.length} places)
+                {t("guidebook_map_modal_title", `Guidebook Map (${mapPins.length} places)`).replace("{count}", String(mapPins.length))}
               </span>
               <button
                 type="button"

@@ -1,12 +1,11 @@
 import "server-only";
 import { prisma } from "@/lib/db/prisma";
-import { BookingStatus, ReviewStatus } from "@/generated/prisma/enums";
+import { BookingStatus } from "@/generated/prisma/enums";
 import type { Prisma } from "@/generated/prisma/client";
 import type { AuthUser } from "@/lib/auth/types";
 import { listingService } from "@/services/listing.service";
 import { bookingDateKey } from "@/lib/booking/booking-date";
 import { getExpiryThresholdDate } from "@/lib/booking/booking-expiry";
-import { getHostReviewEligibility } from "@/lib/booking/host-review-eligibility";
 import type { HostReservation } from "@/components/host/host-workspace-shared";
 import type { ReservationPeriod } from "@/lib/booking/host-reservation-events";
 
@@ -33,8 +32,6 @@ type WorkspaceBooking = {
     createdAt?: Date;
   };
   conversations?: Array<{ id: string }>;
-  hostGuestReview: { submittedAt: Date } | null;
-  reviews: Array<{ id: string }>;
   listing: {
     id: string;
     title: string;
@@ -247,12 +244,6 @@ export async function getHostWorkspace(
       orderBy: { updatedAt: "desc" },
       take: 1,
     },
-    hostGuestReview: { select: { submittedAt: true } },
-    reviews: {
-      where: { status: ReviewStatus.PUBLISHED },
-      select: { id: true },
-      take: 1,
-    },
     listing: {
       select: {
         id: true,
@@ -301,15 +292,6 @@ export async function getHostWorkspace(
 }
 
 function mapBooking(booking: WorkspaceBooking, now: Date): HostReservation {
-  const eligibility = getHostReviewEligibility({
-    isAuthorizedHost: true,
-    bookingStatus: booking.status,
-    endDate: booking.endDate,
-    checkOutTime: booking.listing.checkOutTime,
-    hasHostReview: Boolean(booking.hostGuestReview),
-    now,
-  });
-
   return {
     id: booking.id,
     listingId: booking.listingId,
@@ -324,16 +306,6 @@ function mapBooking(booking: WorkspaceBooking, now: Date): HostReservation {
     priceBreakdown: booking.priceBreakdown,
     cancellationPolicy: booking.cancellationPolicy,
     isNonRefundable: booking.isNonRefundable,
-    hostReview: {
-      eligible: eligibility.eligible,
-      status: eligibility.status,
-      reviewDeadline: eligibility.reviewDeadline?.toISOString() ?? null,
-      reviewSubmitted: eligibility.reviewSubmitted,
-    },
-    guestReview: {
-      status: booking.reviews.length ? "RECEIVED" : "PENDING",
-      reviewId: booking.reviews[0]?.id ?? null,
-    },
     createdAt: booking.createdAt.toISOString(),
     guestName: booking.user.name || "Guest",
     guestId: booking.user.id,

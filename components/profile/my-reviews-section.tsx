@@ -92,7 +92,7 @@ export function MyReviewsSection({ reviews, className = "" }: MyReviewsSectionPr
                   </div>
 
                   <p className="mt-3 text-sm leading-relaxed text-[#727272] line-clamp-3">
-                    {rev.comment || <span className="italic">Rating provided without written comment.</span>}
+                    {rev.comment || <span className="italic">{t("reviews_no_written_comment", "Rating provided without written comment.")}</span>}
                   </p>
 
                   <div className="mt-3 min-w-0 text-sm text-[#1F1F1F]">

@@ -325,11 +325,14 @@ async function runTestSuite() {
   const listingsClientSrc = fs.readFileSync(path.join(process.cwd(), "app/listings/listings-results-client.tsx"), "utf-8");
   assert(listingsClientSrc.includes("saveRecentSearchContext"), "listings-results-client.tsx must call saveRecentSearchContext");
 
-  const appPageSrc = fs.readFileSync(path.join(process.cwd(), "app/page.tsx"), "utf-8");
-  assert(appPageSrc.includes("getUserRecentSearches"), "app/page.tsx must call getUserRecentSearches");
-  assert(appPageSrc.includes("parseServerRecentSearches"), "app/page.tsx must call parseServerRecentSearches");
-  assert(appPageSrc.includes("getRecentSearchSections"), "app/page.tsx must call getRecentSearchSections");
-  console.log("  ✓ Full integration wiring confirmed across home-view, listings-results-client, and app/page.tsx");
+  const appPagePath = fs.existsSync(path.join(process.cwd(), "app/(home)/page.tsx"))
+    ? path.join(process.cwd(), "app/(home)/page.tsx")
+    : path.join(process.cwd(), "app/page.tsx");
+  const appPageSrc = fs.readFileSync(appPagePath, "utf-8");
+  assert(appPageSrc.includes("getUserRecentSearches"), "homepage must call getUserRecentSearches");
+  assert(appPageSrc.includes("parseServerRecentSearches"), "homepage must call parseServerRecentSearches");
+  assert(appPageSrc.includes("getRecentSearchSections"), "homepage must call getRecentSearchSections");
+  console.log("  ✓ Full integration wiring confirmed across home-view, listings-results-client, and homepage");
 
   console.log("\n==================================================================");
   console.log("   ALL RECENT SEARCHES DISCOVERY SUITE TESTS PASSED!              ");

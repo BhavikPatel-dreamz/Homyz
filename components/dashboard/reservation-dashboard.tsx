@@ -57,7 +57,7 @@ export function ReservationDashboard({
     })
       .then(async (res) => {
         if (!res.ok) {
-          throw new Error("Unable to load reservations. Please try again.");
+          throw new Error(t("dashboard_error_unable_load", "Unable to load reservations. Please try again."));
         }
         return res.json();
       })
@@ -72,7 +72,7 @@ export function ReservationDashboard({
       })
       .catch((err) => {
         if (err.name !== "AbortError") {
-          setError(err.message || "Failed to load reservations");
+          setError(err.message || t("dashboard_error_failed_load", "Failed to load reservations"));
         }
       })
       .finally(() => {
@@ -224,7 +224,7 @@ export function ReservationDashboard({
           {upcomingGroups.pending.length > 0 && (
             <section aria-labelledby="pending-requests-heading">
               <h2 id="pending-requests-heading" className="mb-5 text-xl font-semibold leading-7 text-[#1F1F1F] sm:text-2xl">
-                Pending requests ({upcomingGroups.pending.length})
+                {t("dashboard_pending_requests", { count: upcomingGroups.pending.length }, `Pending requests (${upcomingGroups.pending.length})`)}
               </h2>
               <div className="grid grid-cols-1 items-start gap-5 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
                 {upcomingGroups.pending.map((item) => (
@@ -237,7 +237,7 @@ export function ReservationDashboard({
           {upcomingGroups.confirmed.length > 0 && (
             <section aria-labelledby="confirmed-trips-heading">
               <h2 id="confirmed-trips-heading" className="mb-5 text-xl font-semibold leading-7 text-[#1F1F1F] sm:text-2xl">
-                Confirmed trips ({upcomingGroups.confirmed.length})
+                {t("dashboard_confirmed_trips", { count: upcomingGroups.confirmed.length }, `Confirmed trips (${upcomingGroups.confirmed.length})`)}
               </h2>
               <div className="grid grid-cols-1 items-start gap-5 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
                 {upcomingGroups.confirmed.map((item) => (

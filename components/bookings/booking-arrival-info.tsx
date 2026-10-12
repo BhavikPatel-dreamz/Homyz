@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 interface BookingArrivalInfoProps {
   isArrivalInfoReleased: boolean;
@@ -82,6 +83,7 @@ export function BookingArrivalInfo({
   lockboxCode,
   isConfirmedOrCurrent,
 }: BookingArrivalInfoProps) {
+  const { t } = useLanguage();
   const fullAddress = [address, apartment, city, country]
     .filter((v): v is string => Boolean(v?.trim()))
     .join(", ");
@@ -92,20 +94,20 @@ export function BookingArrivalInfo({
 
   const methodLabel =
     checkInMethod === "SMART_LOCK"
-      ? "Smart lock self check-in"
+      ? t("host_method_smart_lock_label", "Smart lock self check-in")
       : checkInMethod === "KEYPAD"
         ? "Keypad digital lock"
         : checkInMethod === "LOCKBOX"
           ? "Lockbox key collection"
           : checkInMethod === "HOST_MEET"
             ? "Host greeting in person"
-            : checkInMethod || "Self check-in";
+            : checkInMethod || t("host_amenity_self_check_in", "Self check-in");
 
   return (
     <section className="border-b border-zinc-200 py-7" aria-labelledby="arrival-heading">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 id="arrival-heading" className="text-xl font-semibold text-[#1F1F1F]">
-          Arrival & check-in
+          {t("booking_details_arrival_heading", "Arrival & check-in")}
         </h2>
         <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-800 border border-blue-200">
           {methodLabel}
@@ -117,13 +119,13 @@ export function BookingArrivalInfo({
         <div className="sm:rounded-2xl rounded-lg border border-zinc-200 bg-white p-5 shadow-2xs">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold text-[#727272] uppercase tracking-wider">Address</p>
+              <p className="text-xs font-semibold text-[#727272] uppercase tracking-wider">{t("booking_details_address", "Address")}</p>
               <p className="mt-1 text-base font-semibold text-[#1F1F1F]">
-                {fullAddress || "Full address will be available after confirmation."}
+                {fullAddress || t("booking_details_address_fallback", "Full address will be available after confirmation.")}
               </p>
               {apartment && (
                 <p className="text-xs text-zinc-600 mt-0.5 font-medium">
-                  Building / Unit: {apartment}
+                  {t("booking_details_building_unit", { unit: apartment }, `Building / Unit: ${apartment}`)}
                 </p>
               )}
             </div>
@@ -149,14 +151,14 @@ export function BookingArrivalInfo({
         {/* Check-in Times */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="sm:rounded-2xl rounded-lg shadow-md bg-white p-4">
-            <p className="text-xs font-semibold text-[#727272] uppercase tracking-wider">Check-in Window</p>
+            <p className="text-xs font-semibold text-[#727272] uppercase tracking-wider">{t("booking_details_check_in_window", "Check-in Window")}</p>
             <p className="mt-1 text-sm font-semibold text-[#1F1F1F]">
               {checkInStart ? `${checkInStart}` : "3:00 PM"}
               {checkInEnd ? ` – ${checkInEnd}` : " onwards"}
             </p>
           </div>
           <div className="sm:rounded-2xl rounded-lg shadow-md bg-white p-4">
-            <p className="text-xs font-semibold text-[#727272] uppercase tracking-wider">Check-out Time</p>
+            <p className="text-xs font-semibold text-[#727272] uppercase tracking-wider">{t("booking_details_check_out_time", "Check-out Time")}</p>
             <p className="mt-1 text-sm font-semibold text-[#1F1F1F]">
               {checkOutTime || "11:00 AM"}
             </p>
@@ -174,12 +176,12 @@ export function BookingArrivalInfo({
               </div>
               <div>
                 <h3 className="text-sm font-semibold text-amber-950">
-                  Access codes & check-in instructions protected
+                  {t("booking_details_access_protected_title", "Access codes & check-in instructions protected")}
                 </h3>
                 <p className="mt-1 text-xs text-amber-800 leading-relaxed">
                   {isConfirmedOrCurrent
-                    ? `To ensure host security, access door codes, lockbox combinations, and Wi-Fi credentials will unlock automatically 48 hours before check-in (${formatDate(arrivalReleaseDateTime)}).`
-                    : "Check-in instructions and access codes will be provided once your booking is confirmed."}
+                    ? t("booking_details_access_protected_desc", { date: formatDate(arrivalReleaseDateTime) }, `To ensure host security, access door codes, lockbox combinations, and Wi-Fi credentials will unlock automatically 48 hours before check-in (${formatDate(arrivalReleaseDateTime)}).`)
+                    : t("booking_details_access_protected_pending", "Check-in instructions and access codes will be provided once your booking is confirmed.")}
                 </p>
               </div>
             </div>
@@ -197,19 +199,19 @@ export function BookingArrivalInfo({
                   </div>
                   <div className="flex-1">
                     <h3 className="text-sm font-semibold text-emerald-950">
-                      Key & Access Codes
+                      {t("booking_details_key_access_codes", "Key & Access Codes")}
                     </h3>
                     <div className="mt-2.5 flex flex-wrap gap-4">
                       {doorCode && (
                         <div className="flex items-center gap-2 rounded-xl bg-white border border-emerald-200 px-3.5 py-2">
-                          <span className="text-xs text-[#727272] font-medium">Door code:</span>
+                          <span className="text-xs text-[#727272] font-medium">{t("booking_details_door_code", "Door code:")}</span>
                           <span className="font-mono text-sm font-bold text-[#1F1F1F]">{doorCode}</span>
                           <CopyBadge text={doorCode} label="door code" />
                         </div>
                       )}
                       {lockboxCode && (
                         <div className="flex items-center gap-2 rounded-xl bg-white border border-emerald-200 px-3.5 py-2">
-                          <span className="text-xs text-[#727272] font-medium">Lockbox code:</span>
+                          <span className="text-xs text-[#727272] font-medium">{t("booking_details_lockbox_code", "Lockbox code:")}</span>
                           <span className="font-mono text-sm font-bold text-[#1F1F1F]">{lockboxCode}</span>
                           <CopyBadge text={lockboxCode} label="lockbox code" />
                         </div>
@@ -230,12 +232,12 @@ export function BookingArrivalInfo({
                     </svg>
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-sm font-semibold text-[#1F1F1F]">Wi-Fi Connection</h3>
+                    <h3 className="text-sm font-semibold text-[#1F1F1F]">{t("booking_details_wifi_connection", "Wi-Fi Connection")}</h3>
                     <div className="mt-2.5 grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {wifiNetwork && (
                         <div className="flex items-center justify-between rounded-xl bg-zinc-50 border border-zinc-200 px-3.5 py-2">
                           <div>
-                            <span className="block text-[11px] text-[#727272] uppercase tracking-wider font-semibold">Network</span>
+                            <span className="block text-[11px] text-[#727272] uppercase tracking-wider font-semibold">{t("booking_details_network", "Network")}</span>
                             <span className="font-medium text-sm text-[#1F1F1F]">{wifiNetwork}</span>
                           </div>
                           <CopyBadge text={wifiNetwork} label="network" />
@@ -244,7 +246,7 @@ export function BookingArrivalInfo({
                       {wifiPassword && (
                         <div className="flex items-center justify-between rounded-xl bg-zinc-50 border border-zinc-200 px-3.5 py-2">
                           <div>
-                            <span className="block text-[11px] text-[#727272] uppercase tracking-wider font-semibold">Password</span>
+                            <span className="block text-[11px] text-[#727272] uppercase tracking-wider font-semibold">{t("booking_details_password", "Password")}</span>
                             <span className="font-mono font-medium text-sm text-[#1F1F1F]">{wifiPassword}</span>
                           </div>
                           <CopyBadge text={wifiPassword} label="password" />
@@ -259,7 +261,7 @@ export function BookingArrivalInfo({
             {/* Check-in Instructions */}
             {checkInInstructions && (
               <div className="sm:rounded-2xl rounded-lg border border-zinc-200 bg-white p-5 shadow-2xs">
-                <h3 className="text-sm font-semibold text-[#1F1F1F]">Check-in Instructions</h3>
+                <h3 className="text-sm font-semibold text-[#1F1F1F]">{t("booking_details_check_in_instructions", "Check-in Instructions")}</h3>
                 <p className="mt-2 whitespace-pre-line text-xs sm:text-sm text-zinc-600 leading-relaxed">
                   {checkInInstructions}
                 </p>
@@ -271,7 +273,7 @@ export function BookingArrivalInfo({
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {directions && (
                   <div className="rounded-2xl border border-zinc-200 bg-white p-4">
-                    <h4 className="text-xs font-semibold text-zinc-700 uppercase tracking-wider">Directions</h4>
+                    <h4 className="text-xs font-semibold text-zinc-700 uppercase tracking-wider">{t("booking_details_directions", "Directions")}</h4>
                     <p className="mt-1.5 whitespace-pre-line text-xs text-zinc-600 leading-relaxed">
                       {directions}
                     </p>
@@ -279,7 +281,7 @@ export function BookingArrivalInfo({
                 )}
                 {parkingInstructions && (
                   <div className="rounded-2xl border border-zinc-200 bg-white p-4">
-                    <h4 className="text-xs font-semibold text-zinc-700 uppercase tracking-wider">Parking</h4>
+                    <h4 className="text-xs font-semibold text-zinc-700 uppercase tracking-wider">{t("booking_details_parking", "Parking")}</h4>
                     <p className="mt-1.5 whitespace-pre-line text-xs text-zinc-600 leading-relaxed">
                       {parkingInstructions}
                     </p>
@@ -291,7 +293,7 @@ export function BookingArrivalInfo({
             {/* House Manual */}
             {houseManual && (
               <div className="sm:rounded-2xl rounded-lg border border-zinc-200 bg-white p-5 shadow-2xs">
-                <h3 className="text-sm font-semibold text-[#1F1F1F]">House Manual</h3>
+                <h3 className="text-sm font-semibold text-[#1F1F1F]">{t("booking_details_house_manual", "House Manual")}</h3>
                 <p className="mt-2 whitespace-pre-line text-xs sm:text-sm text-zinc-600 leading-relaxed">
                   {houseManual}
                 </p>

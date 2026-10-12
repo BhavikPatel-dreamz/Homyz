@@ -6,6 +6,7 @@ import { CurrencyPrice } from "@/components/ui/currency-price";
 import type { AuthoritativePriceBreakdown } from "@/lib/booking/booking-price";
 import type { BookingStatusDetails, BookingAvailableActions } from "@/lib/booking/booking-status";
 import { useCurrency } from "@/lib/currency-context";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 interface BookingPriceCardProps {
   photo: string | null;
@@ -37,6 +38,7 @@ export function BookingPriceCard({
   onOpenContact,
 }: BookingPriceCardProps) {
   const { currency: displayCurrency } = useCurrency();
+  const { t } = useLanguage();
   const listingHref = `/listings/${listingSlug || listingId}`;
   const { status, isCompleted, isCancelled, isCurrent, isUpcoming, isPending } = statusDetails;
 
@@ -58,7 +60,7 @@ export function BookingPriceCard({
 
       <div className="flex items-center justify-between gap-3 border-b border-zinc-100 pb-4">
         <h2 id="price-summary-heading" className="text-lg font-semibold text-[#1F1F1F]">
-          Price details
+          {t("booking_details_price_details", "Price details")}
         </h2>
         <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${statusDetails.badgeClass}`}>
           {statusDetails.badgeLabel}
@@ -74,7 +76,7 @@ export function BookingPriceCard({
               sourceCurrency={pricing.currency}
               fractionDigits={2}
             />{" "}
-            × {pricing.nights} {pricing.nights === 1 ? "night" : "nights"}
+            × {pricing.nights} {pricing.nights === 1 ? t("booking_details_night_singular", "night") : t("booking_details_nights_plural", "nights")}
           </dt>
           <dd className="font-medium text-[#1F1F1F]">
             <CurrencyPrice
@@ -87,7 +89,7 @@ export function BookingPriceCard({
 
         {pricing.extraGuestFee > 0 && (
           <div className="flex justify-between gap-4">
-            <dt className="text-zinc-600">Extra guest fee</dt>
+            <dt className="text-zinc-600">{t("booking_details_extra_guest_fee", "Extra guest fee")}</dt>
             <dd className="font-medium text-[#1F1F1F]">
               <CurrencyPrice
                 amountMinorUnits={pricing.extraGuestFee}
@@ -100,7 +102,7 @@ export function BookingPriceCard({
 
         {pricing.petFee > 0 && (
           <div className="flex justify-between gap-4">
-            <dt className="text-zinc-600">Pet fee</dt>
+            <dt className="text-zinc-600">{t("booking_details_pet_fee", "Pet fee")}</dt>
             <dd className="font-medium text-[#1F1F1F]">
               <CurrencyPrice
                 amountMinorUnits={pricing.petFee}
@@ -113,7 +115,7 @@ export function BookingPriceCard({
 
         {pricing.cleaningFee > 0 && (
           <div className="flex justify-between gap-4">
-            <dt className="text-zinc-600">Cleaning fee</dt>
+            <dt className="text-zinc-600">{t("booking_details_cleaning_fee", "Cleaning fee")}</dt>
             <dd className="font-medium text-[#1F1F1F]">
               <CurrencyPrice
                 amountMinorUnits={pricing.cleaningFee}
@@ -126,7 +128,7 @@ export function BookingPriceCard({
 
         {pricing.discountAmount > 0 && (
           <div className="flex justify-between gap-4 text-emerald-700">
-            <dt>Discount</dt>
+            <dt>{t("booking_details_discount", "Discount")}</dt>
             <dd className="font-medium">
               -
               <CurrencyPrice
@@ -152,7 +154,7 @@ export function BookingPriceCard({
 
         {pricing.otherCharges !== 0 && (
           <div className="flex justify-between gap-4 text-zinc-600">
-            <dt>Other charges</dt>
+            <dt>{t("booking_details_other_charges", "Other charges")}</dt>
             <dd className="font-medium text-[#1F1F1F]">
               <CurrencyPrice
                 amountMinorUnits={pricing.otherCharges}
@@ -164,7 +166,7 @@ export function BookingPriceCard({
         )}
 
         <div className="flex justify-between gap-4 border-t border-zinc-200 pt-4 sm:text-base text-sm font-bold text-[#1F1F1F]">
-          <dt>Total paid ({pricing.currency})</dt>
+          <dt>{t("booking_details_total_paid", { currency: pricing.currency }, "Total paid ({currency})")}</dt>
           <dd className="sm:text-lg text-sm text-emerald-800">
             <CurrencyPrice
               amountMinorUnits={pricing.totalPrice}
@@ -175,9 +177,9 @@ export function BookingPriceCard({
         </div>
 
         <div className="flex items-center justify-between gap-4 border-t border-zinc-100 pt-3 text-xs text-zinc-600">
-          <dt className="font-medium">Payment</dt>
+          <dt className="font-medium">{t("booking_details_payment_status", "Payment")}</dt>
           <dd className="font-semibold text-amber-900 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full">
-            Pending / Deferred
+            {t("booking_details_pending_deferred", "Pending / Deferred")}
           </dd>
         </div>
       </dl>
@@ -192,18 +194,18 @@ export function BookingPriceCard({
                 href={`/bookings/${bookingId}/review`}
                 className="flex min-h-11 w-full items-center justify-center rounded-xl bg-[#1F1F1F] px-5 text-sm font-semibold text-white transition-colors hover:bg-zinc-800 shadow-xs"
               >
-                Write a review
+                {t("booking_details_write_review", "Write a review")}
               </Link>
             ) : actions.hasReviewed ? (
               <Link
                 href={`${listingHref}#reviews`}
                 className="flex min-h-11 w-full items-center justify-center rounded-xl bg-emerald-50 border border-emerald-200 px-5 text-sm font-semibold text-emerald-800 hover:bg-emerald-100 transition-colors"
               >
-                ✓ Review submitted · View reviews
+                {t("booking_details_review_submitted", "✓ Review submitted · View reviews")}
               </Link>
             ) : (
               <div className="rounded-xl bg-zinc-100 px-4 py-2.5 text-center text-xs text-[#727272] font-medium">
-                {actions.reviewDisabledReason || "Review period has ended"}
+                {actions.reviewDisabledReason || t("booking_details_review_ended", "Review period has ended")}
               </div>
             )}
 
@@ -211,7 +213,7 @@ export function BookingPriceCard({
               href={listingHref}
               className="flex min-h-10 w-full items-center justify-center rounded-xl border border-zinc-300 bg-white px-4 text-sm font-semibold text-zinc-800 hover:bg-zinc-50 hover:border-zinc-400 transition-colors"
             >
-              Book again
+              {t("booking_details_book_again", "Book again")}
             </Link>
 
             <button
@@ -219,7 +221,7 @@ export function BookingPriceCard({
               onClick={onOpenReceipt}
               className="flex min-h-10 w-full items-center justify-center rounded-xl border border-zinc-300 bg-white px-4 text-sm font-semibold text-zinc-800 hover:bg-zinc-50 hover:border-zinc-400 transition-colors cursor-pointer"
             >
-              View receipt
+              {t("booking_details_view_receipt", "View receipt")}
             </button>
           </>
         )}
@@ -232,7 +234,7 @@ export function BookingPriceCard({
               onClick={onOpenChange}
               className="flex min-h-11 w-full items-center justify-center rounded-xl bg-[#1F1F1F] border border-[#1F1F1F] hover:border-[#D9D9D9]  px-5 text-sm font-semibold text-white hover:text-[#1f1f1f] transition-colors duration-300 hover:bg-[#D9D9D9] shadow-xs cursor-pointer"
             >
-              Change reservation
+              {t("booking_details_change_reservation", "Change reservation")}
             </button>
 
             <button
@@ -240,7 +242,7 @@ export function BookingPriceCard({
               onClick={onOpenReceipt}
               className="flex min-h-11 w-full items-center justify-center rounded-xl border border-[#1F1F1F] hover:border-[#D9D9D9]  bg-white px-4 text-sm font-semibold text-[#1F1F1F] hover:bg-[#D9D9D9] hover:text-[#1f1f1f] transition-colors cursor-pointer"
             >
-              View receipt
+              {t("booking_details_view_receipt", "View receipt")}
             </button>
 
             {actions.canCancel ? (
@@ -249,11 +251,11 @@ export function BookingPriceCard({
                 onClick={onOpenCancel}
                 className="flex min-h-11 w-full items-center justify-center rounded-xl border border-red-600 bg-white px-4 text-sm font-medium text-red-600 hover:bg-red-50 hover:border-red-300 transition-colors cursor-pointer"
               >
-                Cancel reservation
+                {t("booking_details_cancel_reservation", "Cancel reservation")}
               </button>
             ) : (
               <p className="text-center text-xs text-[#727272] pt-1">
-                {actions.cancelDisabledReason || "Reservation cannot be cancelled."}
+                {actions.cancelDisabledReason || t("booking_details_cannot_cancel", "Reservation cannot be cancelled.")}
               </p>
             )}
           </>
@@ -267,7 +269,7 @@ export function BookingPriceCard({
               onClick={onOpenContact}
               className="flex min-h-11 w-full items-center justify-center rounded-xl bg-[#1F1F1F] px-5 text-sm font-semibold text-white transition-colors hover:bg-zinc-800 shadow-xs cursor-pointer"
             >
-              Contact host for assistance
+              {t("booking_details_contact_host_assist", "Contact host for assistance")}
             </button>
 
             <button
@@ -275,7 +277,7 @@ export function BookingPriceCard({
               onClick={onOpenReceipt}
               className="flex min-h-10 w-full items-center justify-center rounded-xl border border-zinc-300 bg-white px-4 text-sm font-semibold text-zinc-800 hover:bg-zinc-50 hover:border-zinc-400 transition-colors cursor-pointer"
             >
-              View receipt
+              {t("booking_details_view_receipt", "View receipt")}
             </button>
           </>
         )}
@@ -288,14 +290,14 @@ export function BookingPriceCard({
               onClick={onOpenReceipt}
               className="flex min-h-11 w-full items-center justify-center rounded-xl bg-[#1F1F1F] px-5 text-sm font-semibold text-white hover:bg-zinc-800 transition-colors cursor-pointer"
             >
-              View cancellation receipt
+              {t("booking_details_view_cancel_receipt", "View cancellation receipt")}
             </button>
 
             <Link
               href="/listings"
               className="flex min-h-10 w-full items-center justify-center rounded-xl border border-zinc-300 bg-white px-4 text-sm font-semibold text-zinc-800 hover:bg-zinc-50 transition-colors"
             >
-              Find another stay
+              {t("booking_details_find_another_stay", "Find another stay")}
             </Link>
           </>
         )}
@@ -308,7 +310,7 @@ export function BookingPriceCard({
               onClick={onOpenContact}
               className="flex min-h-11 w-full items-center justify-center rounded-xl bg-[#1F1F1F] px-5 text-sm font-semibold text-white hover:bg-zinc-800 transition-colors cursor-pointer"
             >
-              Message host
+              {t("booking_details_message_host_btn", "Message host")}
             </button>
 
             <button
@@ -316,7 +318,7 @@ export function BookingPriceCard({
               onClick={onOpenCancel}
               className="flex min-h-10 w-full items-center justify-center rounded-xl border border-red-200 bg-white px-4 text-sm font-medium text-red-600 hover:bg-red-50 hover:border-red-300 transition-colors cursor-pointer"
             >
-              Withdraw request
+              {t("booking_details_withdraw_request", "Withdraw request")}
             </button>
           </>
         )}

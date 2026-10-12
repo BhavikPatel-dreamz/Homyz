@@ -211,6 +211,27 @@ export function toListingDTO(l: Listing) {
 }
 export type ListingDTO = ReturnType<typeof toListingDTO>;
 
+// The host listings workspace only needs these card fields. Keeping this
+// projection separate prevents an index page from serializing editor-only and
+// sensitive listing data such as access instructions and door codes.
+export const hostListingCardSelect = {
+  id: true,
+  hostId: true,
+  title: true,
+  photos: true,
+  city: true,
+  country: true,
+  published: true,
+  status: true,
+  isPaused: true,
+  rejectionReason: true,
+  requestedChanges: true,
+} satisfies Prisma.ListingSelect;
+
+export type HostListingCardDTO = Prisma.ListingGetPayload<{
+  select: typeof hostListingCardSelect;
+}>;
+
 /**
  * Strips internal admin fields, hides apartment, and rounds coordinates
  * when exact location is not explicitly opted in by the host.
@@ -612,8 +633,18 @@ export type ReviewDTO = ReturnType<typeof toReviewDTO>;
  * Only includes published reviews with public reviewer data.
  * Never includes moderation fields, rejection reasons, or non-public statuses.
  */
+export type PublicReviewHostResponseDTO = {
+  comment: string;
+  createdAt: Date | string;
+  hostName?: string | null;
+  hostImage?: string | null;
+};
+
 export function toPublicReviewDTO(
-  r: Review & { author?: Pick<User, "id" | "name" | "image"> | null },
+  r: Review & {
+    author?: (Pick<User, "id" | "name" | "image"> & { createdAt?: Date }) | null;
+    hostResponse?: PublicReviewHostResponseDTO | null;
+  },
 ) {
   return {
     id: r.id,
@@ -625,8 +656,10 @@ export function toPublicReviewDTO(
       id: r.author.id,
       name: r.author.name,
       image: r.author.image,
+      createdAt: r.author.createdAt,
     } : null,
     createdAt: r.createdAt,
+    hostResponse: (r as any).hostResponse ?? null,
   };
 }
 export type PublicReviewDTO = ReturnType<typeof toPublicReviewDTO>;
@@ -645,5 +678,13 @@ export function revivePublicReviewDTO(r: PublicReviewDTO): PublicReviewDTO {
   return {
     ...r,
     createdAt: new Date(r.createdAt),
+    author: r.author ? {
+      ...r.author,
+      createdAt: r.author.createdAt ? new Date(r.author.createdAt) : undefined,
+    } : null,
+    hostResponse: r.hostResponse ? {
+      ...r.hostResponse,
+      createdAt: new Date(r.hostResponse.createdAt),
+    } : null,
   };
 }

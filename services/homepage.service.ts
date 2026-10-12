@@ -364,6 +364,7 @@ function getDefaultDisplayDate(listing: DiscoveryListing): string {
  * Flexible / Similar date search:
  * Checks if a listing is available for dates slightly shifted (±1 or ±2 days).
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function findSimilarDateRange(
   listing: DiscoveryListing,
   origIn: Date,
@@ -471,6 +472,30 @@ function createSectionBuilder(seenListingIds: Set<string>, sections: HomepageSec
   };
 }
 
+async function loadVolatileQualifications(
+  listingIds: string[],
+  version: number,
+): Promise<Map<string, ListingQualificationFlags>> {
+  if (!listingIds.length) return new Map();
+  const sortedIds = [...listingIds].sort();
+  const batchKey = `homyz:qualifications:batch:${version}:${sortedIds.length}:${sortedIds[0]}:${sortedIds[sortedIds.length - 1]}`;
+  const qualifications = await getOrSetCache<ListingQualificationFlags[]>(
+    batchKey,
+    async () => {
+      return (await prisma.listing.findMany({
+        where: { id: { in: listingIds } },
+        select: {
+          id: true,
+          isGuestFavorite: true,
+          host: { select: { isSuperhost: true } },
+        },
+      })) as ListingQualificationFlags[];
+    },
+    { ttl: CACHE_TTL.SHORT_LIVED },
+  );
+  return new Map(qualifications.map((q) => [q.id, q]));
+}
+
 /**
  * Cached candidate listing fetcher (L1 memory + Redis).
  * Reused by both assembleHomepageData and getRecentSearchSections,
@@ -561,22 +586,13 @@ export async function getDiscoveryCandidateListings(): Promise<DiscoveryListing[
   );
 
   // Qualification flags are intentionally persisted by their server-side
-  // evaluators. Refresh just these volatile flags on each homepage request so
-  // a badge change is visible even while the broader discovery payload is in
-  // its short-lived cache (for example, when an evaluation runs in another
-  // process). All other discovery fields retain the existing cache behavior.
+  // evaluators. Refresh volatile flags through a bounded cache tier so badge
+  // updates propagate promptly without hammering the database on every page view.
   if (!cachedCandidates.length) return cachedCandidates;
 
-  const currentQualifications = await prisma.listing.findMany({
-    where: { id: { in: cachedCandidates.map((listing) => listing.id) } },
-    select: {
-      id: true,
-      isGuestFavorite: true,
-      host: { select: { isSuperhost: true } },
-    },
-  }) as ListingQualificationFlags[];
-  const qualificationByListingId = new Map(
-    currentQualifications.map((listing) => [listing.id, listing]),
+  const qualificationByListingId = await loadVolatileQualifications(
+    cachedCandidates.map((listing) => listing.id),
+    version,
   );
 
   return cachedCandidates.map((listing) => {
@@ -1464,19 +1480,7 @@ async function getHomepageData(input: {
   const listingIds = [...new Set(publicData.sections.flatMap((section) =>
     section.properties.map((property) => property.id),
   ))];
-  const qualifications: ListingQualificationFlags[] = listingIds.length
-    ? (await prisma.listing.findMany({
-        where: { id: { in: listingIds } },
-        select: {
-          id: true,
-          isGuestFavorite: true,
-          host: { select: { isSuperhost: true } },
-        },
-      })) as ListingQualificationFlags[]
-    : [];
-  const qualificationByListingId = new Map(
-    qualifications.map((listing) => [listing.id, listing]),
-  );
+  const qualificationByListingId = await loadVolatileQualifications(listingIds, version);
   const withCurrentQualifications = (property: HomepageProperty): HomepageProperty => {
     const qualification = qualificationByListingId.get(property.id);
     if (!qualification) return property;
@@ -1528,8 +1532,24 @@ async function getHomepageData(input: {
   }
 }
 
+export interface RecentSearchCandidate {
+  city?: string | null;
+  displayName?: string | null;
+  query?: string | null;
+  country?: string | null;
+  placeType?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  district?: string | null;
+  neighborhood?: string | null;
+  state?: string | null;
+  checkIn?: string | null;
+  checkOut?: string | null;
+  guests?: number | null;
+}
+
 async function getRecentSearchSections(params: {
-  searches: Array<SearchContext | any>;
+  searches: Array<RecentSearchCandidate>;
   userId?: string;
   currentLocationQuery?: string | null;
   limit?: number;
@@ -1544,7 +1564,7 @@ async function getRecentSearchSections(params: {
   }
 
   // Filter valid, unique past searches
-  const uniqueSearches: Array<SearchContext | any> = [];
+  const uniqueSearches: RecentSearchCandidate[] = [];
   for (const s of searches) {
     const locName = (s.city || s.displayName || s.query || "").trim();
     if (!locName || locName === "Stays" || locName === "All") continue;
@@ -1638,7 +1658,8 @@ async function getRecentSearchSections(params: {
 
     const title = isLandmark ? `Stays near ${s.displayName || locName}` : `Stays in ${locName}`;
     const sp = new URLSearchParams();
-    if (s.displayName || s.query) sp.set("destination", s.displayName || s.query);
+    const destParam = s.displayName || s.query;
+    if (destParam) sp.set("destination", destParam);
     if (s.city) sp.set("city", s.city);
     if (s.placeType) sp.set("locationType", s.placeType);
     if (searchedLat != null) sp.set("lat", String(searchedLat));

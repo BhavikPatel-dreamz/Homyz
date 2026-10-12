@@ -12,7 +12,7 @@ import type {
   UpdateListingInput,
 } from "@/lib/validation/listing";
 import { BookingStatus, ListingCoHostStatus, ListingStatus, Role } from "@/generated/prisma/enums";
-import { Prisma } from "@/generated/prisma/client";
+import { Prisma, type Listing } from "@/generated/prisma/client";
 import { getExpiryThresholdDate, isBookingRequestExpired } from "@/lib/booking/booking-expiry";
 import { validateStayAvailability } from "@/lib/booking/availability";
 
@@ -20,11 +20,13 @@ import { auditService } from "./audit.service";
 import { qualificationService } from "./qualification.service";
 import {
   reviveListingDTO,
+  hostListingCardSelect,
   publicListingCardSelect,
   toPublicListingCardDTO,
   toListingDTO,
   toPublicListingDTO,
   type ListingDTO,
+  type HostListingCardDTO,
   type PublicListingCardRecord,
   type PublicListingCardDTO,
   type PublicListingDTO,
@@ -1172,18 +1174,50 @@ async function getEditorWorkspaceListing(id: string) {
   });
 }
 
+type HostListingOptions = {
+  skip?: number;
+  take?: number | null;
+  page?: number;
+  limit?: number;
+  tab?: string;
+  status?: string;
+  search?: string;
+  cardOnly?: false;
+};
+
+type HostListingCardOptions = Omit<HostListingOptions, "cardOnly"> & {
+  cardOnly: true;
+};
+
+type HostListingResult<T> = {
+  items: T[];
+  total: number;
+  totalCount: number;
+  page: number;
+  totalPages: number;
+  hasMore: boolean;
+  counts: Record<string, number>;
+};
+
 // Listings a host owns or has accepted a co-host role for.
+function listForHost(
+  actor: AuthUser,
+  opts: HostListingCardOptions,
+): Promise<HostListingResult<HostListingCardDTO>>;
+function listForHost(
+  actor: AuthUser,
+  opts?: HostListingOptions,
+): Promise<HostListingResult<ListingDTO>>;
 async function listForHost(
   actor: AuthUser,
-  opts?: { skip?: number; take?: number | null },
-): Promise<{ items: ListingDTO[]; total: number }> {
+  opts?: HostListingOptions | HostListingCardOptions,
+): Promise<HostListingResult<ListingDTO | HostListingCardDTO>> {
   authorize(actor, [Role.HOST, Role.USER, Role.ADMIN]);
   if (actor.role === Role.HOST) {
     await assertHostPermission(actor.id, "listing.view");
   }
-  const skip = opts?.skip ?? 0;
-  const take = opts?.take === undefined ? 50 : opts.take;
-  const where: Prisma.ListingWhereInput = actor.role === Role.ADMIN
+
+  const baseWhere: Prisma.ListingWhereInput = actor.role === Role.ADMIN
     ? { hostId: actor.id, deletedAt: null }
     : {
         deletedAt: null,
@@ -1199,16 +1233,141 @@ async function listForHost(
           },
         ],
       };
-  const [items, total] = await Promise.all([
-    prisma.listing.findMany({
-      where,
-      skip,
-      ...(take === null ? {} : { take }),
-      orderBy: { createdAt: "desc" },
-    }),
+
+  const tab = (opts?.tab || opts?.status || "ALL").toUpperCase();
+  const whereConditions: Prisma.ListingWhereInput[] = [baseWhere];
+
+  if (tab === "ACTIVE") {
+    whereConditions.push({
+      isPaused: false,
+      OR: [
+        { status: ListingStatus.ACTIVE },
+        { published: true },
+      ],
+    });
+  } else if (tab === "PENDING_REVIEW") {
+    whereConditions.push({ status: ListingStatus.PENDING_REVIEW });
+  } else if (tab === "CHANGES_REQUESTED") {
+    whereConditions.push({ status: ListingStatus.CHANGES_REQUESTED });
+  } else if (tab === "DRAFT") {
+    whereConditions.push({
+      status: { in: [ListingStatus.DRAFT, ListingStatus.IN_PROGRESS] },
+    });
+  } else if (tab === "PAUSED") {
+    whereConditions.push({ isPaused: true });
+  } else if (tab === "REJECTED") {
+    whereConditions.push({ status: ListingStatus.REJECTED });
+  }
+
+  const search = opts?.search?.trim();
+  if (search) {
+    whereConditions.push({
+      OR: [
+        { title: { contains: search, mode: "insensitive" } },
+        { city: { contains: search, mode: "insensitive" } },
+        { district: { contains: search, mode: "insensitive" } },
+        { country: { contains: search, mode: "insensitive" } },
+      ],
+    });
+  }
+
+  const where: Prisma.ListingWhereInput = {
+    AND: whereConditions,
+  };
+
+  const limit = opts?.limit ?? (opts?.take === null ? null : (opts?.take ?? 12));
+  const page = Math.max(1, opts?.page ?? (opts?.skip !== undefined && limit ? Math.floor(opts.skip / limit) + 1 : 1));
+  const skip = opts?.skip !== undefined ? opts.skip : (limit ? (page - 1) * limit : 0);
+  const take = limit === null ? undefined : limit;
+
+  const orderBy: Prisma.ListingOrderByWithRelationInput[] = [
+    { createdAt: "desc" },
+    { id: "desc" },
+  ];
+
+  const itemQuery = opts?.cardOnly
+    ? prisma.listing.findMany({
+        where,
+        skip,
+        ...(take !== undefined ? { take } : {}),
+        orderBy,
+        select: hostListingCardSelect,
+      })
+    : prisma.listing.findMany({
+        where,
+        skip,
+        ...(take !== undefined ? { take } : {}),
+        orderBy,
+      });
+
+  const [rawItems, total, statusGroups] = await Promise.all([
+    itemQuery,
     prisma.listing.count({ where }),
+    prisma.listing.groupBy({
+      by: ["status", "published", "isPaused"],
+      where: baseWhere,
+      _count: { id: true },
+    }),
   ]);
-  return { items: items.map(toListingDTO), total };
+
+  const tabCounts: Record<string, number> = {
+    ALL: 0,
+    ACTIVE: 0,
+    PENDING_REVIEW: 0,
+    CHANGES_REQUESTED: 0,
+    DRAFT: 0,
+    PAUSED: 0,
+    REJECTED: 0,
+  };
+
+  for (const group of statusGroups) {
+    const cnt = group._count.id;
+    tabCounts.ALL += cnt;
+    if (group.isPaused) {
+      tabCounts.PAUSED += cnt;
+    }
+    if (!group.isPaused && (group.status === ListingStatus.ACTIVE || group.published)) {
+      tabCounts.ACTIVE += cnt;
+    }
+    if (group.status === ListingStatus.PENDING_REVIEW) {
+      tabCounts.PENDING_REVIEW += cnt;
+    }
+    if (group.status === ListingStatus.CHANGES_REQUESTED) {
+      tabCounts.CHANGES_REQUESTED += cnt;
+    }
+    if (group.status === ListingStatus.DRAFT || group.status === ListingStatus.IN_PROGRESS) {
+      tabCounts.DRAFT += cnt;
+    }
+    if (group.status === ListingStatus.REJECTED) {
+      tabCounts.REJECTED += cnt;
+    }
+  }
+
+  const totalPages = limit ? Math.max(1, Math.ceil(total / limit)) : 1;
+  const hasMore = page < totalPages;
+
+  if (opts?.cardOnly) {
+    return {
+      items: rawItems as HostListingCardDTO[],
+      total,
+      totalCount: total,
+      page,
+      totalPages,
+      hasMore,
+      counts: tabCounts,
+    };
+  }
+
+  const items = rawItems as Listing[];
+  return {
+    items: items.map(toListingDTO),
+    total,
+    totalCount: total,
+    page,
+    totalPages,
+    hasMore,
+    counts: tabCounts,
+  };
 }
 
 async function create(

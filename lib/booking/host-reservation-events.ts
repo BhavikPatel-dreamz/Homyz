@@ -41,7 +41,6 @@ export function buildOperationalEvents(
   listingsById: ReadonlyMap<string, ListingDTO>,
   period: ReservationPeriod,
   today: string,
-  currentTimeMinutes = 0,
 ): OperationalEvent[] {
   const events: OperationalEvent[] = [];
 
@@ -58,15 +57,6 @@ export function buildOperationalEvents(
         checkInStart: "15:00",
         checkOutTime: "11:00",
       };
-
-    const isCompletedStay = booking.status === "CONFIRMED"
-      && (
-        booking.endDate < today
-        || (
-          booking.endDate === today
-          && currentTimeMinutes >= parseTimeMinutes(listing.checkOutTime, 11 * 60)
-        )
-      );
 
     if (period === "today") {
       if (booking.status !== "CONFIRMED" && booking.status !== "PENDING") continue;
@@ -124,7 +114,7 @@ export function buildOperationalEvents(
         });
       }
     } else if (period === "completed") {
-      if (isCompletedStay) {
+      if (booking.status === "CONFIRMED" && booking.endDate <= today) {
         events.push({
           booking,
           listing,
@@ -162,7 +152,7 @@ export function buildOperationalEvents(
     } else if (period === "all") {
       const isCancelled = booking.status === "CANCELLED";
       const isPending = booking.status === "PENDING";
-      const isCompleted = isCompletedStay;
+      const isCompleted = booking.status === "CONFIRMED" && booking.endDate <= today;
       const isStaying = booking.status === "CONFIRMED" && booking.startDate <= today && booking.endDate > today;
 
       const eventType = isCancelled
@@ -205,7 +195,7 @@ export function buildOperationalEvents(
 
   if (period === "completed" || period === "all" || period === "cancelled") {
     return events.sort((left, right) => {
-      const dateDifference = right.booking.endDate.localeCompare(left.booking.endDate);
+      const dateDifference = right.booking.startDate.localeCompare(left.booking.startDate);
       if (dateDifference !== 0) return dateDifference;
       return left.booking.id.localeCompare(right.booking.id);
     });

@@ -13,7 +13,8 @@ import {
 } from "@/actions/notification/notifications";
 import { NotificationsSkeleton } from "@/components/dashboard/section-skeletons";
 import { NotificationType } from "@/generated/prisma/enums";
-import { useLanguage } from "@/lib/i18n/language-context";
+import { useLanguage, type TranslationKey } from "@/lib/i18n/language-context";
+import { publishUnreadNotificationCount } from "@/lib/notifications/unread-count-store";
 
 type FilterTab = "ALL" | "UNREAD" | NotificationType;
 
@@ -25,7 +26,9 @@ interface NotificationsViewProps {
   };
 }
 
-function formatRelativeTime(dateStr: string, t?: (key: any, fallback?: string) => string): string {
+type Translator = (key: TranslationKey, fallback?: string) => string;
+
+function formatRelativeTime(dateStr: string, t?: Translator): string {
   try {
     const date = new Date(dateStr);
     const now = new Date();
@@ -54,7 +57,7 @@ function getTypeBadge(
   type: NotificationType,
   entityType?: string | null,
   metadata?: Record<string, unknown> | null,
-  t?: (key: any, fallback?: string) => string,
+  t?: Translator,
 ) {
   switch (type) {
     case NotificationType.BOOKING: {
@@ -135,10 +138,14 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
   );
   const [total, setTotal] = useState(initialData?.total ?? 0);
   const [filter, setFilter] = useState<FilterTab>("ALL");
-  const [loading, setLoading] = useState<boolean>(!initialData);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loadingMore, setLoadingMore] = useState(false);
   const [, startTransition] = useTransition();
+
+  useEffect(() => {
+    if (initialData) publishUnreadNotificationCount(initialData.unreadCount);
+  }, [initialData]);
 
   const loadNotifications = useCallback(async () => {
     setLoading(true);
@@ -153,6 +160,7 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
         setNotifications(res.data.items);
         setUnreadCount(res.data.unreadCount);
         setTotal(res.data.total);
+        publishUnreadNotificationCount(res.data.unreadCount);
       }
     } catch {
       setError(t("profile_notif_error_unexpected", "An unexpected error occurred while fetching notifications."));
@@ -160,12 +168,6 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
       setLoading(false);
     }
   }, [t]);
-
-  useEffect(() => {
-    if (!initialData) {
-      loadNotifications();
-    }
-  }, [initialData, loadNotifications]);
 
   const loadMore = async () => {
     if (loadingMore || notifications.length >= total) return;
@@ -187,6 +189,7 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
       });
       setUnreadCount(nextPage.unreadCount);
       setTotal(nextPage.total);
+      publishUnreadNotificationCount(nextPage.unreadCount);
     } catch {
       setError("An unexpected error occurred while fetching notifications.");
     } finally {
@@ -203,6 +206,7 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
       prev.map((n) => ({ ...n, isRead: true, readAt: new Date().toISOString() })),
     );
     setUnreadCount(0);
+    publishUnreadNotificationCount(0);
 
     startTransition(async () => {
       try {
@@ -210,11 +214,13 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
         if (!res.ok) {
           setNotifications(previousNotifications);
           setUnreadCount(previousUnreadCount);
+          publishUnreadNotificationCount(previousUnreadCount);
           setError(res.error || "Failed to mark notifications as read.");
         }
       } catch {
         setNotifications(previousNotifications);
         setUnreadCount(previousUnreadCount);
+        publishUnreadNotificationCount(previousUnreadCount);
         setError("Failed to mark notifications as read.");
       }
     });
@@ -238,7 +244,11 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
           : n,
       ),
     );
-    setUnreadCount((prev) => (newIsRead ? Math.max(0, prev - 1) : prev + 1));
+    const nextUnreadCount = newIsRead
+      ? Math.max(0, unreadCount - 1)
+      : unreadCount + 1;
+    setUnreadCount(nextUnreadCount);
+    publishUnreadNotificationCount(nextUnreadCount);
 
     startTransition(async () => {
       try {
@@ -252,6 +262,7 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
       } catch {
         setNotifications(previousNotifications);
         setUnreadCount(previousUnreadCount);
+        publishUnreadNotificationCount(previousUnreadCount);
         setError("Failed to update the notification. Please try again.");
       }
     });
@@ -263,7 +274,9 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
       setNotifications((prev) =>
         prev.map((n) => (n.id === item.id ? { ...n, isRead: true } : n)),
       );
-      setUnreadCount((prev) => Math.max(0, prev - 1));
+      const nextUnreadCount = Math.max(0, unreadCount - 1);
+      setUnreadCount(nextUnreadCount);
+      publishUnreadNotificationCount(nextUnreadCount);
 
       startTransition(async () => {
         try {
@@ -273,6 +286,7 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
               prev.map((n) => (n.id === item.id ? { ...n, isRead: false, readAt: null } : n)),
             );
             setUnreadCount((prev) => prev + 1);
+            publishUnreadNotificationCount(unreadCount);
             setError(res.error || "Failed to update the notification.");
           }
         } catch {
@@ -280,6 +294,7 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
             prev.map((n) => (n.id === item.id ? { ...n, isRead: false, readAt: null } : n)),
           );
           setUnreadCount((prev) => prev + 1);
+          publishUnreadNotificationCount(unreadCount);
           setError("Failed to update the notification.");
         }
       });

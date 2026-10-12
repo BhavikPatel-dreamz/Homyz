@@ -116,7 +116,7 @@ export function MobileDatePicker({
 
   return (
     <div className={desktop ? "mx-auto w-full max-w-[664px]" : ""}>
-      <div
+      {/* <div
         className={`mx-auto mb-5 flex w-full overflow-hidden rounded-full ${
           desktop ? "max-w-[346px] bg-white" : "bg-white"
         }`}
@@ -139,7 +139,7 @@ export function MobileDatePicker({
             {t(tabKeys[mode])}
           </button>
         ))}
-      </div>
+      </div> */}
       <div
         id={`${pickerId}-panel`}
         role="tabpanel"

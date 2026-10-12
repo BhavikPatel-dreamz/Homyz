@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import type { BookingDetailsData } from "@/services/booking.service";
+import { useLanguage } from "@/lib/i18n/language-context";
 import { BookingStayInfo } from "./booking-stay-info";
 import { BookingArrivalInfo } from "./booking-arrival-info";
 import { BookingGuestDetails } from "./booking-guest-details";
@@ -20,6 +21,7 @@ interface BookingDetailsClientProps {
 }
 
 export function BookingDetailsClient({ data }: BookingDetailsClientProps) {
+  const { t } = useLanguage();
   const [isCancelOpen, setIsCancelOpen] = useState(false);
   const [isChangeOpen, setIsChangeOpen] = useState(false);
   const [isReceiptOpen, setIsReceiptOpen] = useState(false);
@@ -28,7 +30,9 @@ export function BookingDetailsClient({ data }: BookingDetailsClientProps) {
   const { booking, listing, guest, statusDetails, actions, pricing } = data;
 
   const backLinkHref = statusDetails.isCompleted ? "/profile/tab/past" : "/profile/tab/upcoming";
-  const backLinkLabel = statusDetails.isCompleted ? "Back to past trips" : "Back to upcoming trips";
+  const backLinkLabel = statusDetails.isCompleted
+    ? t("booking_details_back_past", "Back to past trips")
+    : t("booking_details_back_upcoming", "Back to upcoming trips");
 
   const location = [listing.city, listing.country].filter(Boolean).join(", ");
   const bookingCode = booking.id.slice(-8).toUpperCase();
@@ -76,7 +80,7 @@ export function BookingDetailsClient({ data }: BookingDetailsClientProps) {
           <div className="flex flex-wrap items-start justify-between gap-4 border-b border-zinc-200 pb-7">
             <div>
               <p className="text-xs font-semibold uppercase tracking-wider text-[#727272]">
-                Reservation #{bookingCode}
+                {t("booking_details_reservation_code", { code: bookingCode }, `Reservation #${bookingCode}`)}
               </p>
               <h1 className="mt-1.5 text-2xl sm:text-3xl font-semibold tracking-tight text-[#1F1F1F]">
                 {listing.title}
@@ -127,14 +131,14 @@ export function BookingDetailsClient({ data }: BookingDetailsClientProps) {
             <div className="mt-6 rounded-2xl border border-zinc-200 bg-zinc-50 p-5 shadow-2xs">
               <div className="flex items-center justify-between gap-3 border-b border-zinc-200 pb-3">
                 <h3 className="text-sm font-semibold text-zinc-900">
-                  Your message to {listing.host.name || "the host"}
+                  {t("booking_details_message_to_host", { hostName: listing.host.name || "the host" }, `Your message to ${listing.host.name || "the host"}`)}
                 </h3>
                 {data.conversationId && (
                   <Link
                     href={`/messages?id=${data.conversationId}`}
                     className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-900 hover:text-zinc-600 underline underline-offset-4"
                   >
-                    Open conversation
+                    {t("booking_details_open_conversation", "Open conversation")}
                   </Link>
                 )}
               </div>
@@ -228,33 +232,33 @@ export function BookingDetailsClient({ data }: BookingDetailsClientProps) {
           {/* 6. Help & Concierge Support */}
           <section className="py-7 border-t border-zinc-200" aria-labelledby="help-heading">
             <h2 id="help-heading" className="text-xl font-semibold text-[#1F1F1F]">
-              Need help with this reservation?
+              {t("booking_details_need_help", "Need help with this reservation?")}
             </h2>
             <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="sm:rounded-2xl rounded-lg border border-zinc-200 bg-white p-5 shadow-2xs">
-                <h3 className="font-semibold text-base text-[#1F1F1F]">Message your host</h3>
+                <h3 className="font-semibold text-base text-[#1F1F1F]">{t("booking_details_message_host_card", "Message your host")}</h3>
                 <p className="mt-1 text-sm text-[#727272]">
-                  Have questions about arrival, luggage drop-off, key exchange, or check-in?
+                  {t("booking_details_message_host_card_desc", "Have questions about arrival, luggage drop-off, key exchange, or check-in?")}
                 </p>
                 <button
                   type="button"
                   onClick={() => setIsContactOpen(true)}
                   className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-[#1F1F1F] underline underline-offset-4 hover:text-zinc-600 cursor-pointer"
                 >
-                  Contact host
+                  {t("booking_details_contact_host", "Contact host")}
                 </button>
               </div>
 
               <div className="sm:rounded-2xl rounded-lg border border-zinc-200 bg-white p-5 shadow-2xs">
-                <h3 className="font-semibold text-base text-[#1F1F1F]">24/7 Concierge Support</h3>
+                <h3 className="font-semibold text-base text-[#1F1F1F]">{t("booking_details_concierge_title", "24/7 Concierge Support")}</h3>
                 <p className="mt-1 text-sm text-[#727272]">
-                  Our customer care team is available around the clock to support your stay.
+                  {t("booking_details_concierge_desc", "Our customer care team is available around the clock to support your stay.")}
                 </p>
                 <Link
                   href="/profile/tab/support"
                   className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-[#1F1F1F] underline underline-offset-4 hover:text-zinc-600"
                 >
-                  Contact support
+                  {t("booking_details_contact_support", "Contact support")}
                 </Link>
               </div>
             </div>

@@ -6,6 +6,7 @@ import { signOut, useSession } from "next-auth/react";
 import { acceptListingCoHostAction } from "@/actions/host/cohosts";
 import { AppHeader } from "@/components/dashboard/app-header";
 import { Footer } from "@/components/dashboard/footer";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 type ResultState =
   | { tone: "success"; message: string }
@@ -31,6 +32,7 @@ function CoHostIcon() {
 }
 
 export function CoHostInvitationAcceptance({ token }: { token: string }) {
+  const { t } = useLanguage();
   const { data: session, status } = useSession();
   const [result, setResult] = useState<ResultState>(null);
   const [pending, setPending] = useState(false);
@@ -48,7 +50,7 @@ export function CoHostInvitationAcceptance({ token }: { token: string }) {
     setPending(false);
     setResult(
       response.ok
-        ? { tone: "success", message: "You are now a co-host for this listing." }
+        ? { tone: "success", message: t("cohost_inv_accepted_success", "You are now a co-host for this listing.") }
         : { tone: "error", message: response.error },
     );
   }
@@ -71,19 +73,21 @@ export function CoHostInvitationAcceptance({ token }: { token: string }) {
               <div className="flex size-13 items-center justify-center rounded-2xl bg-white shadow-sm sm:size-15">
                 <CoHostIcon />
               </div>
-              <p className="mt-7 text-xs font-semibold uppercase tracking-[0.16em] text-[#63501C]">You&apos;re invited</p>
+              <p className="mt-7 text-xs font-semibold uppercase tracking-[0.16em] text-[#63501C]">
+                {t("cohost_inv_badge", "You're invited")}
+              </p>
               <h1 className="mt-3 max-w-sm text-[31px] font-semibold leading-[1.14] tracking-[-0.04em] sm:text-[39px]">
-                Help host a place guests love.
+                {t("cohost_inv_title", "Help host a place guests love.")}
               </h1>
               <p className="mt-5 max-w-sm text-sm leading-6 text-[#4D4328] sm:text-[15px]">
-                Co-hosting lets you work alongside the listing owner to help create a welcoming stay for every guest.
+                {t("cohost_inv_desc", "Co-hosting lets you work alongside the listing owner to help create a welcoming stay for every guest.")}
               </p>
 
               <div className="mt-9 space-y-4 border-t border-[#B69243]/35 pt-6 sm:mt-auto sm:pt-7">
                 {[
-                  "Work together on one listing",
-                  "Keep your account and information secure",
-                  "Accept only if this invitation is for you",
+                  t("cohost_inv_benefit_1", "Work together on one listing"),
+                  t("cohost_inv_benefit_2", "Keep your account and information secure"),
+                  t("cohost_inv_benefit_3", "Accept only if this invitation is for you"),
                 ].map((item) => (
                   <div key={item} className="flex items-center gap-3 text-sm font-medium">
                     <span className="grid size-6 shrink-0 place-items-center rounded-full bg-white/70">
@@ -98,27 +102,31 @@ export function CoHostInvitationAcceptance({ token }: { token: string }) {
 
           <section className="flex items-center px-7 py-9 sm:px-10 sm:py-12 lg:px-12 lg:py-14">
             <div className="w-full max-w-md">
-              <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#717171]">Homyz co-hosting</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#717171]">
+                {t("cohost_inv_brand", "Homyz co-hosting")}
+              </p>
               <h2 className="mt-3 text-[28px] font-semibold leading-tight tracking-[-0.035em] sm:text-[34px]">
-                Accept your invitation
+                {t("cohost_inv_accept_title", "Accept your invitation")}
               </h2>
               <p className="mt-3 text-sm leading-6 text-[#717171]">
-                Sign in with the email address or phone number that received this invitation, then confirm that you&apos;d like to join this listing.
+                {t("cohost_inv_accept_desc", "Sign in with the email address or phone number that received this invitation, then confirm that you'd like to join this listing.")}
               </p>
 
               {!token ? (
                 <div role="alert" className="mt-7 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm leading-6 text-rose-800">
-                  This invitation link is incomplete. Ask the listing owner to send a new invite.
+                  {t("cohost_inv_err_incomplete", "This invitation link is incomplete. Ask the listing owner to send a new invite.")}
                 </div>
               ) : result?.tone === "success" ? (
                 <div className="mt-7 rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
                   <span className="grid size-9 place-items-center rounded-full bg-emerald-600 text-white">
                     <CheckIcon className="size-5" />
                   </span>
-                  <h3 className="mt-4 text-base font-semibold">Invitation accepted</h3>
+                  <h3 className="mt-4 text-base font-semibold">
+                    {t("cohost_inv_accepted_title", "Invitation accepted")}
+                  </h3>
                   <p className="mt-1 text-sm leading-6 text-emerald-900">{result.message}</p>
                   <Link href="/dashboard" className="mt-5 inline-flex rounded-full bg-[#1F1F1F] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#3f3f3f] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900">
-                    Go to dashboard
+                    {t("cohost_inv_go_dashboard", "Go to dashboard")}
                   </Link>
                 </div>
               ) : (
@@ -127,15 +135,23 @@ export function CoHostInvitationAcceptance({ token }: { token: string }) {
                     <li className="flex gap-3 rounded-2xl border border-zinc-200 bg-[#FAFAFA] p-4">
                       <span className="grid size-6 shrink-0 place-items-center rounded-full bg-[#1F1F1F] text-xs font-semibold text-white">1</span>
                       <div>
-                        <p className="text-sm font-semibold">Sign in to your Homyz account</p>
-                        <p className="mt-0.5 text-xs leading-5 text-[#717171]">Use the same email address or phone number that received the invite.</p>
+                        <p className="text-sm font-semibold">
+                          {t("cohost_inv_step_1_title", "Sign in to your Homyz account")}
+                        </p>
+                        <p className="mt-0.5 text-xs leading-5 text-[#717171]">
+                          {t("cohost_inv_step_1_desc", "Use the same email address or phone number that received the invite.")}
+                        </p>
                       </div>
                     </li>
                     <li className="flex gap-3 rounded-2xl border border-zinc-200 bg-[#FAFAFA] p-4">
                       <span className="grid size-6 shrink-0 place-items-center rounded-full bg-[#1F1F1F] text-xs font-semibold text-white">2</span>
                       <div>
-                        <p className="text-sm font-semibold">Accept this co-host invitation</p>
-                        <p className="mt-0.5 text-xs leading-5 text-[#717171]">We&apos;ll securely add you to the listing once your contact details match.</p>
+                        <p className="text-sm font-semibold">
+                          {t("cohost_inv_step_2_title", "Accept this co-host invitation")}
+                        </p>
+                        <p className="mt-0.5 text-xs leading-5 text-[#717171]">
+                          {t("cohost_inv_step_2_desc", "We'll securely add you to the listing once your contact details match.")}
+                        </p>
                       </div>
                     </li>
                   </ol>
@@ -152,9 +168,9 @@ export function CoHostInvitationAcceptance({ token }: { token: string }) {
                             type="button"
                             onClick={switchAccount}
                             disabled={switchingAccount}
-                            className="mt-3 inline-flex rounded-full border border-rose-300 bg-white px-4 py-2 text-xs font-semibold text-[#1F1F1F] transition-colors hover:bg-rose-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-700 disabled:cursor-wait disabled:opacity-60"
+                            className="mt-3 inline-flex rounded-full border border-rose-300 bg-white px-4 py-2 text-xs font-semibold text-[#1F1F1F] transition-colors hover:bg-rose-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-700 disabled:cursor-wait disabled:opacity-60 cursor-pointer"
                           >
-                            {switchingAccount ? "Signing out…" : "Switch account"}
+                            {switchingAccount ? t("cohost_inv_signing_out", "Signing out…") : t("cohost_inv_btn_switch_acc", "Switch account")}
                           </button>
                         </>
                       )}
@@ -169,17 +185,17 @@ export function CoHostInvitationAcceptance({ token }: { token: string }) {
                         type="button"
                         onClick={accept}
                         disabled={pending}
-                        className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#FCDF9C] px-6 text-sm font-semibold text-[#1F1F1F] transition-colors hover:bg-[#F7D37D] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 disabled:cursor-wait disabled:opacity-60"
+                        className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#FCDF9C] px-6 text-sm font-semibold text-[#1F1F1F] transition-colors hover:bg-[#F7D37D] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 disabled:cursor-wait disabled:opacity-60 cursor-pointer"
                       >
-                        {pending ? "Accepting invitation…" : "Accept invitation"}
+                        {pending ? t("cohost_inv_btn_accepting", "Accepting invitation…") : t("cohost_inv_btn_accept", "Accept invitation")}
                       </button>
                     ) : (
                       <div className="flex flex-wrap items-center gap-3">
                         <Link href={signInHref} className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#FCDF9C] px-6 text-sm font-semibold text-[#1F1F1F] transition-colors hover:bg-[#F7D37D] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900">
-                          Sign in to accept
+                          {t("cohost_inv_btn_signin", "Sign in to accept")}
                         </Link>
                         <Link href={signUpHref} className="px-2 text-sm font-medium underline underline-offset-4 transition-colors hover:text-[#717171]">
-                          Create an account
+                          {t("cohost_inv_btn_create_acc", "Create an account")}
                         </Link>
                       </div>
                     )}
@@ -188,7 +204,11 @@ export function CoHostInvitationAcceptance({ token }: { token: string }) {
               )}
 
               <p className="mt-7 text-xs leading-5 text-[#717171]">
-                Not expecting this invitation? You can safely close this page. Need help? <Link href="/help" className="font-medium text-[#1F1F1F] underline underline-offset-3">Visit Help Center</Link>.
+                {t("cohost_inv_footer_text", "Not expecting this invitation? You can safely close this page. Need help?")}{" "}
+                <Link href="/help" className="font-medium text-[#1F1F1F] underline underline-offset-3">
+                  {t("cohost_inv_visit_help", "Visit Help Center")}
+                </Link>
+                .
               </p>
             </div>
           </section>

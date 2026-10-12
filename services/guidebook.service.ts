@@ -3,6 +3,7 @@ import type { AuthUser } from "@/lib/auth/types";
 import { assertOwnership } from "@/lib/permissions/authorize";
 import { prisma } from "@/lib/db/prisma";
 import { Role } from "@/generated/prisma/enums";
+import type { Prisma } from "@/generated/prisma/client";
 import type {
   CreateGuidebookInput,
   UpdateGuidebookInput,
@@ -13,11 +14,30 @@ import { GUIDEBOOK_CATEGORIES } from "@/lib/validation/guidebook";
 
 export class GuidebookService {
   /**
-   * Retrieves all guidebooks owned by the authenticated host.
+   * Retrieves all guidebooks owned by the authenticated host (or filtered by hostId/listingId for admin).
    */
-  async getGuidebooksForHost(actor: AuthUser) {
+  async getGuidebooksForHost(actor: AuthUser, hostId?: string, listingId?: string) {
+    let whereClause: Prisma.GuidebookWhereInput = { hostId: actor.id };
+
+    if (actor.role === Role.ADMIN) {
+      if (hostId && listingId) {
+        whereClause = {
+          OR: [
+            { hostId },
+            { listings: { some: { listingId } } },
+          ],
+        };
+      } else if (hostId) {
+        whereClause = { hostId };
+      } else if (listingId) {
+        whereClause = { listings: { some: { listingId } } };
+      } else {
+        whereClause = {};
+      }
+    }
+
     const guidebooks = await prisma.guidebook.findMany({
-      where: actor.role === Role.ADMIN ? {} : { hostId: actor.id },
+      where: whereClause,
       orderBy: { updatedAt: "desc" },
       include: {
         listings: {
@@ -269,23 +289,36 @@ export class GuidebookService {
   async create(actor: AuthUser, input: CreateGuidebookInput) {
     const { listingIds, ...data } = input;
 
+    let targetHostId = actor.id;
+
     // Verify host owns all listings to be associated
     if (listingIds && listingIds.length > 0) {
-      const ownedCount = await prisma.listing.count({
-        where: {
-          id: { in: listingIds },
-          hostId: actor.id,
-        },
-      });
-      if (ownedCount !== listingIds.length) {
-        throw AppError.forbidden("You can only associate guidebooks with listings you own.");
+      if (actor.role === Role.ADMIN) {
+        const listings = await prisma.listing.findMany({
+          where: { id: { in: listingIds } },
+          select: { id: true, hostId: true },
+        });
+        if (listings.length !== listingIds.length) {
+          throw AppError.notFound("One or more listings could not be found.");
+        }
+        targetHostId = listings[0].hostId;
+      } else {
+        const ownedCount = await prisma.listing.count({
+          where: {
+            id: { in: listingIds },
+            hostId: actor.id,
+          },
+        });
+        if (ownedCount !== listingIds.length) {
+          throw AppError.forbidden("You can only associate guidebooks with listings you own.");
+        }
       }
     }
 
     const guidebook = await prisma.guidebook.create({
       data: {
         ...data,
-        hostId: actor.id,
+        hostId: targetHostId,
         listings: listingIds && listingIds.length > 0
           ? {
               create: listingIds.map((listingId) => ({

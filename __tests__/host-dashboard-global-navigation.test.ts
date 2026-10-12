@@ -127,8 +127,12 @@ runTest("Header contains accessible Notification icon with unread badge indicato
     "Header must track unread notification count"
   );
   assert.ok(
-    appHeaderCode.includes('fetch("/api/v1/notifications?take=1&unreadOnly=true")'),
-    "Header must query notifications API for unread status"
+    appHeaderCode.includes("useUnreadNotificationCount"),
+    "Header must read the shared unread notification count cache"
+  );
+  assert.ok(
+    !appHeaderCode.includes('fetch("/api/v1/notifications?countOnly=true")'),
+    "Header must not fetch notification counts during page initialization"
   );
   assert.ok(
     appHeaderCode.includes("unread notifications"),
@@ -301,4 +305,3 @@ console.log("==================================================================\
 if (passed !== total) {
   process.exit(1);
 }
-
