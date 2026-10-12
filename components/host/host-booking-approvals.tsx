@@ -233,7 +233,7 @@ export function HostBookingApprovals({ bookings: initialBookings }: { bookings: 
       <div className="flex flex-wrap items-end justify-between gap-5 border-b border-zinc-200 pb-7">
         <div>
           <p className="text-sm font-medium text-zinc-500">{t("host_booking_approvals_tools", "Host tools")}</p>
-          <h1 className="mt-1 text-3xl font-semibold tracking-tight text-zinc-900">
+          <h1>
             {t("host_booking_approvals_title", "Pending booking requests")}
           </h1>
           <p className="mt-2 text-sm text-zinc-600">

@@ -64,7 +64,11 @@ export function ReservationCard({
             {event.subtitleDisplay}
           </span>
           {event.dateDisplay && (
-            <span className="mt-0.5 font-sans text-[12px] leading-[18px] text-[#727272]">
+            <span
+              className={`mt-0.5 font-sans text-[12px] leading-[18px] ${
+                isActive ? "text-[#1F1F1F]" : "text-[#727272]"
+              }`}
+            >
               {event.dateDisplay}
             </span>
           )}
@@ -142,7 +146,7 @@ export function ReservationCard({
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
               className={`origin-center transition-transform duration-300 ease-in-out ${
-                selected ? "rotate-45" : "rotate-0 group-hover:rotate-45"
+                isActive ? "rotate-45" : "rotate-0 group-hover:rotate-45"
               }`}
             >
               <path

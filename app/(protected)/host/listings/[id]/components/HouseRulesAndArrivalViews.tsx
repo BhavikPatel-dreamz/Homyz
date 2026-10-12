@@ -593,14 +593,14 @@ export function HouseRulesAndArrivalViews({
                   type="button"
                   disabled={isSaving}
                   onClick={() => handleSaveSection("house-rules")}
-                  className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-base px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
+                  className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
                 >
                   {isSaving ? (t("host_saving") || "Saving...") : (t("host_save") || "Save")}
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveSection("description")}
-                  className="rounded-full border border-[#1f1f1f] hover:border-[#1f1f1f] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] font-medium hover:text-white text-base px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
+                  className="rounded-full border border-[#1f1f1f] hover:border-[#1f1f1f] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] font-medium hover:text-white text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
                 >
                   {t("host_house_rules_cancel") || "Cancel"}
                 </button>
@@ -905,14 +905,14 @@ export function HouseRulesAndArrivalViews({
               type="button"
               disabled={isSaving}
               onClick={() => handleSaveSection("parking")}
-              className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-base px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
+              className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
             >
               {isSaving ? (t("host_saving") || "Saving...") : (t("host_save") || "Save")}
             </button>
             <button
               type="button"
               onClick={() => setActiveSection("arrival-guide")}
-              className="rounded-full border border-[#1f1f1f] hover:border-[#1f1f1f] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] font-medium hover:text-white text-base px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
+              className="rounded-full border border-[#1f1f1f] hover:border-[#1f1f1f] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] font-medium hover:text-white text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
             >
               {t("host_cancel") || "Cancel"}
             </button>
@@ -1426,9 +1426,10 @@ function CheckOutInstructionsView({
                     key={chip}
                     type="button"
                     onClick={() => handleAddSuggestion(chip)}
-                    className="rounded-lg border border-[#727272] dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-xs font-medium text-zinc-700 dark:text-zinc-300 px-2.5 py-1 transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-[#727272] dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-sm font-normal text-[#1f1f1f] dark:text-zinc-300 px-2.5 py-2 transition-colors cursor-pointer"
                   >
-                    + {chip}
+                    <Image src="/images/icons/Plus.svg" alt="" width={14} height={14} className="size-3.5 object-contain dark:invert shrink-0" />
+                    <span>{chip}</span>
                   </button>
                 ))}
               </div>
@@ -1444,7 +1445,7 @@ function CheckOutInstructionsView({
                 value={draftInstructions}
                 onChange={(e) => setDraftInstructions(e.target.value)}
                 placeholder={t("host_checkout_instructions_placeholder") || "e.g. Please take all bagged trash to the outdoor bins, place used towels in the hamper, turn off the AC, and lock the door behind you."}
-                className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2.5 text-xs font-medium text-[#1F1F1F] dark:text-zinc-100 outline-none focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs placeholder:text-[#727272] dark:placeholder:text-[#727272] leading-relaxed resize-none"
+                className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2.5 text-sm font-normal text-[#1F1F1F] dark:text-zinc-100 outline-none focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs placeholder:text-[#727272] dark:placeholder:text-[#727272] leading-relaxed resize-none"
               />
               <div className="flex items-center justify-between text-xs text-[#1f1f1f] dark:text-[#727272] pt-1">
                 <span className="flex items-center gap-1.5">
@@ -1771,7 +1772,7 @@ function LanguagesView({
           return (
             <div
               key={languageId}
-              className="inline-flex items-center gap-2 bg-zinc-100 dark:bg-zinc-800 border border-zinc-250 dark:border-zinc-700 text-[#1F1F1F] dark:text-zinc-100 text-xs font-semibold px-4 py-2 rounded-full shadow-2xs"
+              className="inline-flex items-center gap-2 bg-white dark:bg-zinc-800 border border-zinc-250 dark:border-[#1f1f1f] text-[#1F1F1F] dark:text-zinc-100 text-sm font-normal px-4 py-2 rounded-full shadow-2xs"
             >
               <span>{languageName}</span>
               <button
@@ -2282,14 +2283,14 @@ function DirectionsView({
           type="button"
           disabled={isSaving}
           onClick={() => handleSaveSection("directions")}
-          className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-base px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
+          className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
         >
           {isSaving ? (t("host_saving") || "Saving…") : (t("host_save") || "Save")}
         </button>
         <button
           type="button"
           onClick={() => setActiveSection("check-in-out")}
-          className="rounded-full border border-[#1f1f1f] hover:border-[#1f1f1f] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] font-medium hover:text-white text-base px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
+          className="rounded-full border border-[#1f1f1f] hover:border-[#1f1f1f] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] font-medium hover:text-white text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
         >
           {t("host_cancel") || "Cancel"}
         </button>

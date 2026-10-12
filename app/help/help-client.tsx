@@ -43,7 +43,7 @@ export function HelpClient() {
         <Container>
           <div className="mx-auto max-w-4xl space-y-10">
             <div className="text-center space-y-3">
-              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#1F1F1F]">
+              <h1>
                 {t("help_hero_title", "How can we help you?")}
               </h1>
               <p className="text-sm sm:text-base text-zinc-600 max-w-xl mx-auto">

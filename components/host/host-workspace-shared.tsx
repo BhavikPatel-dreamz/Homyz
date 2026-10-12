@@ -769,7 +769,7 @@ export function ReservationDetails({
                   )}
                   <div className="flex justify-between gap-4 border-t border-zinc-100 pt-2 text-sm font-semibold dark:border-zinc-800">
                     <dt>{t("host_cal_res_total_host_payout", "Total host payout")} ({sourceCurrency})</dt>
-                    <dd className="text-emerald-700 dark:text-emerald-400 font-bold">
+                    <dd className="text-emerald-700 dark:text-emerald-400 font-semibold">
                       {formatPrice(payoutTotal, sourceCurrency, 2)}
                     </dd>
                   </div>

@@ -2289,7 +2289,7 @@ export function HostListingEditorClient({
                 type="button"
                 disabled={isSaving}
                 onClick={() => setIsTurnOffInstantBookModalOpen(false)}
-                className="rounded-full border border-[#1f1f1f] hover:border-[#1f1f1f] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] font-medium hover:text-white text-base px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
+                className="rounded-full border border-[#1f1f1f] hover:border-[#1f1f1f] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] font-medium hover:text-white text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
                 {t("host_booking_modal_cancel_button") || "Cancel"}
               </button>
@@ -2350,7 +2350,7 @@ export function HostListingEditorClient({
                 onClick={() => {
                   setIsCustomMessageModalOpen(false);
                 }}
-                className="rounded-full border border-[#1f1f1f] hover:border-[#1f1f1f] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] font-medium hover:text-white text-base px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
+                className="rounded-full border border-[#1f1f1f] hover:border-[#1f1f1f] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] font-medium hover:text-white text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
                 {t("host_booking_custom_message_cancel") || "Cancel"}
               </button>
@@ -2408,7 +2408,7 @@ export function HostListingEditorClient({
               <button
                 type="button"
                 onClick={() => setIsEditingAdditionalRulesModalOpen(false)}
-                className="rounded-full border border-[#1f1f1f] hover:border-[#1f1f1f] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] font-medium hover:text-white text-base px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
+                className="rounded-full border border-[#1f1f1f] hover:border-[#1f1f1f] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] font-medium hover:text-white text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
                 {t("host_additional_house_rules_cancel")}
               </button>

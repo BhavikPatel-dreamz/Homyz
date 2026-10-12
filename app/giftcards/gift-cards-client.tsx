@@ -19,7 +19,7 @@ export function GiftCardsClient() {
           <div className="mx-auto max-w-3xl space-y-10">
             <div className="text-center space-y-3">
               <span className="text-4xl" aria-hidden="true">🎁</span>
-              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#1F1F1F]">
+              <h1>
                 {t("giftcards_hero_title", "Homyz Gift Cards")}
               </h1>
               <p className="text-sm sm:text-base text-zinc-600 max-w-lg mx-auto">

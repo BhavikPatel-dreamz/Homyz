@@ -594,7 +594,7 @@ export function ListingStatusView({
                 {t("host_listing_is_live")}
               </h2>
             </div>
-            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-200 dark:bg-emerald-900/60 text-[#1f1f1f] dark:text-emerald-200 uppercase">
+            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-200 dark:bg-emerald-900/60 text-[#1f1f1f] dark:text-emerald-200">
               {t("host_live_on_marketplace")}
             </span>
           </div>
