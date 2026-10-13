@@ -449,7 +449,7 @@ export function ListingCard({
     >
       {/* ── Navigation Loading Overlay ── */}
       {isNavigating && (
-        <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/25 backdrop-blur-[1px] transition-all">
+        <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/25 backdrop-blur-[1px] rounded-2xl transition-all">
           <div className="flex items-center gap-2 rounded-full bg-white px-3.5 py-1.5 shadow-lg text-xs font-semibold text-zinc-900 border border-zinc-200">
             <div className="size-3.5 rounded-full border-2 border-zinc-300 border-t-zinc-900 animate-spin" />
             <span>Loading...</span>
