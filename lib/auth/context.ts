@@ -4,6 +4,46 @@ import { getToken } from "next-auth/jwt";
 import type { AuthUser } from "./types";
 import { verifyAccessToken } from "./tokens";
 import { authService } from "@/services/auth.service";
+import type { Role } from "@/generated/prisma/enums";
+
+/**
+ * A JWT proves who signed in, but is not authoritative for the current role,
+ * account status, or permission set. Refresh those claims at the API boundary
+ * so a suspension, role change, or session revocation takes effect immediately.
+ */
+async function resolveLiveAuthUser(candidate: AuthUser): Promise<AuthUser | null> {
+  const liveUser = await authService.getLiveSessionUser(candidate.id).catch(() => null);
+  if (!liveUser) return null;
+
+  if (
+    candidate.tokenVersion !== undefined &&
+    candidate.tokenVersion < liveUser.tokenVersion
+  ) {
+    return null;
+  }
+
+  const permissions =
+    liveUser.role === "ADMIN" || liveUser.adminRole
+      ? await import("@/lib/permissions/admin-permission-service")
+          .then(({ getEffectivePermissionsForUser }) =>
+            getEffectivePermissionsForUser(
+              candidate.id,
+              liveUser.role,
+              liveUser.adminRole?.slug,
+            ),
+          )
+          .catch(() => [])
+      : [];
+
+  return {
+    ...candidate,
+    role: liveUser.role,
+    status: liveUser.status,
+    adminRoleSlug: liveUser.adminRole?.slug ?? null,
+    permissions,
+    tokenVersion: liveUser.tokenVersion,
+  };
+}
 
 // Resolves the caller identity for ROUTE HANDLERS (the unified web + mobile
 // entry point). Mobile sends `Authorization: Bearer <access token>` (our own
@@ -18,7 +58,7 @@ export async function getAuthContext(
     const rawBearer = authHeader.slice(7).trim();
     const claims = await verifyAccessToken(rawBearer);
     if (claims) {
-      return { id: claims.sub, role: claims.role, email: null };
+      return resolveLiveAuthUser({ id: claims.sub, role: claims.role, email: null });
     }
 
     // Also support passing NextAuth session tokens via Bearer header
@@ -31,14 +71,15 @@ export async function getAuthContext(
           secret: nextAuthSecret,
         });
         if (decoded?.id && decoded?.role) {
-          return {
+          return resolveLiveAuthUser({
             id: decoded.id as string,
-            role: decoded.role as any,
+            role: decoded.role as Role,
             email: typeof decoded.email === "string" ? decoded.email : null,
             status: decoded.status as string | undefined,
             adminRoleSlug: decoded.adminRoleSlug as string | null | undefined,
-            permissions: (decoded.permissions as string[]) || ["*"],
-          };
+            permissions: (decoded.permissions as string[]) || [],
+            tokenVersion: decoded.tokenVersion as number | undefined,
+          });
         }
       } catch {}
     }
@@ -58,34 +99,15 @@ export async function getAuthContext(
   }
 
   if (token?.id && token?.role) {
-    return {
+    return resolveLiveAuthUser({
       id: token.id,
       role: token.role,
       email: typeof token.email === "string" ? token.email : null,
       status: token.status,
       adminRoleSlug: token.adminRoleSlug,
-      permissions: token.permissions || ["*"],
-    };
-  }
-
-  // Development mode fallback: auto-resolve active Admin user if session token is missing/expired in dev
-  if (process.env.NODE_ENV !== "production") {
-    try {
-      const devAdmin = await authService.getDevelopmentAdmin();
-
-      if (devAdmin) {
-        return {
-          id: devAdmin.id,
-          role: devAdmin.role,
-          email: devAdmin.email,
-          status: devAdmin.status || "ACTIVE",
-          adminRoleSlug: devAdmin.adminRole?.slug || "super_admin",
-          permissions: ["*"],
-        };
-      }
-    } catch (err) {
-      console.error("[getAuthContext] Dev auth fallback error:", err);
-    }
+      permissions: token.permissions || [],
+      tokenVersion: token.tokenVersion as number | undefined,
+    });
   }
 
   return null;

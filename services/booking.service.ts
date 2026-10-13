@@ -1,16 +1,18 @@
 import { AppError, ErrorCode } from "@/lib/api/errors";
 import type { AuthUser } from "@/lib/auth/types";
-import { assertOwnership } from "@/lib/permissions/authorize";
+import { assertOwnership, assertRole } from "@/lib/permissions/authorize";
+import { sanitizeListingSecrets } from "@/lib/booking/booking-lifecycle";
 import { prisma } from "@/lib/db/prisma";
 import { getOrSetCache } from "@/lib/redis/cache";
-import { CACHE_KEYS } from "@/lib/redis/keys";
+import { CACHE_KEYS, hashFilters } from "@/lib/redis/keys";
 import { CACHE_TTL } from "@/lib/redis/ttl";
 import { invalidateBookingCache } from "@/lib/redis/invalidation";
 import type { CreateBookingInput } from "@/lib/validation/booking";
+import { ADDRESS_COUNTRIES } from "@/lib/location/address-countries";
 
 import { reviveBookingDTO, toBookingDTO, type BookingDTO } from "./mappers";
 
-import { BookingStatus, ListingStatus, NotificationType, Role, ConversationStatus, SpecialOfferStatus, MessageType, ListingCoHostStatus } from "@/generated/prisma/enums";
+import { BookingStatus, PaymentStatus, RefundStatus, ListingStatus, NotificationType, Role, ConversationStatus, SpecialOfferStatus, MessageType, ListingCoHostStatus } from "@/generated/prisma/enums";
 import { notificationService } from "./notification.service";
 import { messagingService } from "./messaging.service";
 import { auditService } from "./audit.service";
@@ -63,6 +65,7 @@ import {
   getExpiryThresholdDate,
   isBookingRequestExpired,
   formatExpiryCountdown,
+  getTimeRemaining,
 } from "@/lib/booking/booking-expiry";
 
 /**
@@ -1713,6 +1716,28 @@ async function cancelNonRefundableByGuest(actor: AuthUser, id: string): Promise<
     console.warn("[booking.service] Failed to record conversation cancellation status:", err);
   }
 
+  try {
+    await auditService.record({
+      actorId: actor.id,
+      actorEmail: actor.email,
+      action: "BOOKING_CANCELLED_BY_GUEST",
+      resourceType: "BOOKING",
+      resourceId: cancelled.id,
+      description: "Guest cancelled non-refundable reservation.",
+      status: "SUCCESS",
+      metadata: {
+        bookingId: cancelled.id,
+        listingId: cancelled.listingId,
+        isNonRefundable: true,
+        guestRefundAmount: 0,
+        previousStatus: BookingStatus.CONFIRMED,
+        newStatus: BookingStatus.CANCELLED,
+      },
+    });
+  } catch (err) {
+    console.warn("[booking.service] Failed to record audit log for non-refundable cancellation:", err);
+  }
+
   return toBookingDTO(cancelled);
 
 }
@@ -1822,6 +1847,28 @@ async function cancelBookingByGuest(actor: AuthUser, id: string): Promise<Bookin
     console.warn("[booking.service] Failed to record conversation cancellation status:", err);
   }
 
+  try {
+    await auditService.record({
+      actorId: actor.id,
+      actorEmail: actor.email,
+      action: "BOOKING_CANCELLED_BY_GUEST",
+      resourceType: "BOOKING",
+      resourceId: cancelled.id,
+      description: "Guest cancelled reservation.",
+      status: "SUCCESS",
+      metadata: {
+        bookingId: cancelled.id,
+        listingId: cancelled.listingId,
+        isNonRefundable: Boolean(cancelled.isNonRefundable),
+        guestRefundAmount: cancelled.isNonRefundable ? 0 : (extractStoredGuestTotal(cancelled) ?? 0),
+        previousStatus: BookingStatus.CONFIRMED,
+        newStatus: BookingStatus.CANCELLED,
+      },
+    });
+  } catch (err) {
+    console.warn("[booking.service] Failed to record audit log for guest cancellation:", err);
+  }
+
   return toBookingDTO(cancelled);
 
 }
@@ -1920,6 +1967,28 @@ async function cancelBookingByHost(
     console.warn("[booking.service] Failed to record conversation cancellation status:", err);
   }
 
+  try {
+    await auditService.record({
+      actorId: actor.id,
+      actorEmail: actor.email,
+      action: "BOOKING_CANCELLED_BY_HOST",
+      resourceType: "BOOKING",
+      resourceId: cancelled.id,
+      description: `Host cancelled reservation${reason ? `: "${reason.trim()}"` : ""}.`,
+      status: "SUCCESS",
+      metadata: {
+        bookingId: cancelled.id,
+        listingId: cancelled.listingId,
+        reason: reason?.trim() || null,
+        isExcluded: Boolean(isExcluded),
+        previousStatus: BookingStatus.CONFIRMED,
+        newStatus: BookingStatus.CANCELLED,
+      },
+    });
+  } catch (err) {
+    console.warn("[booking.service] Failed to record audit log for host cancellation:", err);
+  }
+
   return toBookingDTO(cancelled);
 }
 
@@ -1948,6 +2017,2297 @@ async function listForAdminDashboard() {
   ]);
 
   return { bookings, totalCount, stats };
+}
+
+export interface AdminBookingListOptions {
+  page?: number;
+  limit?: number;
+  skip?: number;
+  take?: number;
+  tab?: "all" | "pending" | "confirmed" | "upcoming" | "active" | "completed" | "cancelled" | "rejected" | "expired" | string;
+  status?: string;
+  bookingType?: string;
+  paymentStatus?: string;
+  startDate?: string;
+  endDate?: string;
+  checkInFrom?: string;
+  checkInTo?: string;
+  checkOutFrom?: string;
+  checkOutTo?: string;
+  createdFrom?: string;
+  createdTo?: string;
+  city?: string;
+  listingId?: string;
+  hostId?: string;
+  guestId?: string;
+  search?: string;
+  sortBy?: "createdAt" | "startDate" | "endDate" | "totalPrice";
+  sortOrder?: "asc" | "desc";
+}
+
+async function listForAdmin(actor: AuthUser, opts: AdminBookingListOptions = {}) {
+  assertRole(actor, [Role.ADMIN]);
+
+  const page = Math.max(1, opts.page ?? 1);
+  const limit = Math.min(100, Math.max(1, opts.limit ?? (opts.take ?? 20)));
+  const skip = opts.skip !== undefined ? opts.skip : (page - 1) * limit;
+  const take = limit;
+  const now = new Date();
+
+  const where: Prisma.BookingWhereInput = {};
+
+  const tabLower = (opts.tab || "").toLowerCase();
+  if (tabLower && tabLower !== "all") {
+    if (tabLower === "pending") {
+      where.status = BookingStatus.PENDING;
+    } else if (tabLower === "confirmed") {
+      where.status = BookingStatus.CONFIRMED;
+    } else if (tabLower === "upcoming") {
+      where.status = BookingStatus.CONFIRMED;
+      where.startDate = { gt: now };
+    } else if (tabLower === "active") {
+      where.status = BookingStatus.CONFIRMED;
+      where.startDate = { lte: now };
+      where.endDate = { gte: now };
+    } else if (tabLower === "completed") {
+      where.status = BookingStatus.CONFIRMED;
+      where.endDate = { lt: now };
+    } else if (tabLower === "cancelled") {
+      where.status = BookingStatus.CANCELLED;
+    } else if (tabLower === "rejected") {
+      where.status = BookingStatus.CANCELLED;
+      where.priceBreakdown = {
+        path: ["rejection", "rejectedBy"],
+        equals: "HOST",
+      };
+    } else if (tabLower === "expired") {
+      where.status = BookingStatus.CANCELLED;
+      where.priceBreakdown = {
+        path: ["rejection", "reason"],
+        equals: "EXPIRED",
+      };
+    }
+  } else if (opts.status && opts.status !== "ALL") {
+    const s = opts.status.toUpperCase();
+    if (s === "PENDING" || s === "CONFIRMED" || s === "CANCELLED") {
+      where.status = s as BookingStatus;
+    } else if (s === "COMPLETED") {
+      where.status = BookingStatus.CONFIRMED;
+      where.endDate = { lte: now };
+    }
+  }
+
+  if (opts.bookingType && opts.bookingType !== "ALL") {
+    if (opts.bookingType === "INSTANT_BOOK") {
+      where.priceBreakdown = {
+        path: ["bookingMode"],
+        equals: "INSTANT_BOOK",
+      };
+    } else if (opts.bookingType === "REQUEST_TO_BOOK") {
+      where.priceBreakdown = {
+        path: ["bookingMode"],
+        equals: "REQUEST_TO_BOOK",
+      };
+    }
+  }
+
+  if (opts.paymentStatus && opts.paymentStatus !== "ALL") {
+    where.payments = {
+      some: {
+        status: opts.paymentStatus as any,
+      },
+    };
+  }
+
+  if (opts.city && opts.city.trim()) {
+    where.listing = {
+      ...(where.listing as Prisma.ListingWhereInput || {}),
+      city: { contains: opts.city.trim(), mode: "insensitive" },
+    };
+  }
+
+  if (opts.listingId) {
+    where.listingId = opts.listingId;
+  }
+
+  if (opts.guestId) {
+    where.userId = opts.guestId;
+  }
+
+  if (opts.hostId) {
+    where.listing = {
+      ...(where.listing as Prisma.ListingWhereInput || {}),
+      hostId: opts.hostId,
+    };
+  }
+
+  const checkInStart = opts.checkInFrom || opts.startDate;
+  const checkInEnd = opts.checkInTo || opts.endDate;
+  if (checkInStart || checkInEnd) {
+    const dateFilter: Prisma.DateTimeFilter = {};
+    if (checkInStart) dateFilter.gte = parseBookingDate(checkInStart);
+    if (checkInEnd) dateFilter.lte = parseBookingDate(checkInEnd);
+    where.startDate = dateFilter;
+  }
+
+  if (opts.checkOutFrom || opts.checkOutTo) {
+    const dateFilter: Prisma.DateTimeFilter = {};
+    if (opts.checkOutFrom) dateFilter.gte = parseBookingDate(opts.checkOutFrom);
+    if (opts.checkOutTo) dateFilter.lte = parseBookingDate(opts.checkOutTo);
+    where.endDate = dateFilter;
+  }
+
+  if (opts.createdFrom || opts.createdTo) {
+    const dateFilter: Prisma.DateTimeFilter = {};
+    if (opts.createdFrom) dateFilter.gte = new Date(opts.createdFrom);
+    if (opts.createdTo) dateFilter.lte = new Date(opts.createdTo);
+    where.createdAt = dateFilter;
+  }
+
+  if (opts.search && opts.search.trim()) {
+    const q = opts.search.trim();
+    where.OR = [
+      { id: { contains: q, mode: "insensitive" } },
+      { submissionId: { contains: q, mode: "insensitive" } },
+      { user: { name: { contains: q, mode: "insensitive" } } },
+      { user: { email: { contains: q, mode: "insensitive" } } },
+      { listing: { title: { contains: q, mode: "insensitive" } } },
+      { listing: { host: { name: { contains: q, mode: "insensitive" } } } },
+      { listing: { host: { email: { contains: q, mode: "insensitive" } } } },
+    ];
+  }
+
+  const orderBy: Prisma.BookingOrderByWithRelationInput[] = [];
+  const sortOrder = opts.sortOrder === "asc" ? "asc" : "desc";
+  const sortBy = opts.sortBy ?? "createdAt";
+  if (sortBy === "startDate") orderBy.push({ startDate: sortOrder });
+  else if (sortBy === "endDate") orderBy.push({ endDate: sortOrder });
+  else if (sortBy === "totalPrice") orderBy.push({ totalPrice: sortOrder });
+  else orderBy.push({ createdAt: sortOrder });
+  orderBy.push({ id: "desc" });
+
+  let bookings: any[];
+  let total: number;
+  try {
+    [bookings, total] = await Promise.all([
+    prisma.booking.findMany({
+      where,
+      skip,
+      take,
+      orderBy,
+      select: {
+        id: true,
+        submissionId: true,
+        userId: true,
+        listingId: true,
+        status: true,
+        startDate: true,
+        endDate: true,
+        guests: true,
+        totalPrice: true,
+        nightlyPrice: true,
+        cleaningFee: true,
+        currency: true,
+        cancellationPolicy: true,
+        isNonRefundable: true,
+        priceBreakdown: true,
+        createdAt: true,
+        updatedAt: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            image: true,
+            phone: true,
+          },
+        },
+        listing: {
+          select: {
+            id: true,
+            title: true,
+            price: true,
+            city: true,
+            country: true,
+            photos: true,
+            hostId: true,
+            host: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                image: true,
+              },
+            },
+          },
+        },
+        payments: {
+          select: {
+            id: true,
+            status: true,
+            amount: true,
+            capturedAmount: true,
+            refundedAmount: true,
+            provider: true,
+            createdAt: true,
+          },
+        },
+        refunds: {
+          select: {
+            id: true,
+            status: true,
+            amount: true,
+            reason: true,
+            createdAt: true,
+          },
+        },
+      },
+    }),
+    prisma.booking.count({ where }),
+    ]);
+  } catch (error) {
+    if (!isMissingBookingPaymentTable(error)) throw error;
+    if (opts.paymentStatus && opts.paymentStatus !== "ALL") {
+      throw AppError.badRequest("Payment-status filtering is unavailable until the BookingPayment migration is applied.");
+    }
+
+    // Legacy database compatibility: the bookings list remains useful without
+    // optional payment/refund records while the foundation migration is pending.
+    [bookings, total] = await Promise.all([
+      prisma.booking.findMany({
+        where,
+        skip,
+        take,
+        orderBy,
+        select: {
+          id: true,
+          submissionId: true,
+          userId: true,
+          listingId: true,
+          status: true,
+          startDate: true,
+          endDate: true,
+          guests: true,
+          totalPrice: true,
+          nightlyPrice: true,
+          cleaningFee: true,
+          currency: true,
+          cancellationPolicy: true,
+          isNonRefundable: true,
+          priceBreakdown: true,
+          createdAt: true,
+          updatedAt: true,
+          user: { select: { id: true, name: true, email: true, image: true, phone: true } },
+          listing: {
+            select: {
+              id: true,
+              title: true,
+              price: true,
+              city: true,
+              country: true,
+              photos: true,
+              hostId: true,
+              host: { select: { id: true, name: true, email: true, image: true } },
+            },
+          },
+        },
+      }) as any[],
+      prisma.booking.count({ where }),
+    ]);
+  }
+
+  const items = bookings.map((b: any) => {
+    const breakdown = (b.priceBreakdown as Record<string, any>) || {};
+    const rejection = breakdown.rejection || {};
+    const cancellation = breakdown.cancellation || {};
+    const computedStatus = computeBookingStatus({
+      dbStatus: b.status,
+      startDate: b.startDate,
+      endDate: b.endDate,
+      createdAt: b.createdAt,
+      rejectionReason: rejection.reason || cancellation.reason || null,
+      rejectionBy: rejection.rejectedBy || cancellation.cancelledBy || null,
+      isExpired: Boolean(breakdown.expiredAt || rejection.reason === "EXPIRED"),
+    });
+
+    const bookingType = breakdown.bookingMode || (b.status === BookingStatus.CONFIRMED && !b.submissionId ? "INSTANT_BOOK" : "REQUEST_TO_BOOK");
+    const paymentStatus = breakdown.paymentStatus || (b.payments?.length > 0 ? b.payments[0].status : "UNAVAILABLE");
+
+    return {
+      id: b.id,
+      submissionId: b.submissionId,
+      status: b.status,
+      computedStatus: computedStatus.status,
+      statusDetails: computedStatus,
+      bookingType,
+      paymentStatus,
+      startDate: b.startDate.toISOString(),
+      endDate: b.endDate.toISOString(),
+      guests: b.guests,
+      totalPrice: b.totalPrice,
+      nightlyPrice: b.nightlyPrice,
+      cleaningFee: b.cleaningFee,
+      currency: b.currency,
+      cancellationPolicy: b.cancellationPolicy,
+      isNonRefundable: b.isNonRefundable,
+      user: b.user,
+      listing: b.listing,
+      payments: b.payments || [],
+      refunds: b.refunds || [],
+      createdAt: b.createdAt.toISOString(),
+      updatedAt: b.updatedAt.toISOString(),
+    };
+  });
+
+  return {
+    items,
+    total,
+    page,
+    limit,
+    totalPages: Math.max(1, Math.ceil(total / limit)),
+  };
+}
+
+async function getAdminBookingDetails(actor: AuthUser, id: string) {
+  assertRole(actor, [Role.ADMIN]);
+
+  const b = await prisma.booking.findUnique({
+    where: { id },
+    include: {
+      listing: {
+        include: {
+          host: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              image: true,
+              createdAt: true,
+            },
+          },
+        },
+      },
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          image: true,
+          phone: true,
+          createdAt: true,
+        },
+      },
+      taxes: true,
+      reviews: {
+        select: {
+          id: true,
+          rating: true,
+          authorId: true,
+        },
+      },
+      payments: true,
+      refunds: true,
+    },
+  });
+
+  if (!b) throw AppError.notFound("Booking not found");
+
+  const breakdown = (b.priceBreakdown as Record<string, any>) || {};
+  const rejection = breakdown.rejection || {};
+  const cancellation = breakdown.cancellation || {};
+
+  const statusDetails = computeBookingStatus({
+    dbStatus: b.status,
+    startDate: b.startDate,
+    endDate: b.endDate,
+    checkInStart: b.listing.checkInStart,
+    checkOutTime: b.listing.checkOutTime,
+    createdAt: b.createdAt,
+    rejectionReason: rejection.reason || cancellation.reason || null,
+    rejectionBy: rejection.rejectedBy || cancellation.cancelledBy || null,
+    isExpired: Boolean(breakdown.expiredAt || rejection.reason === "EXPIRED"),
+  });
+
+  const pricing = getAuthoritativePriceBreakdown(b);
+
+  const conversation = await prisma.conversation.findFirst({
+    where: { bookingId: b.id },
+    select: { id: true },
+  });
+
+  const timeline = getBookingStatusTimeline({
+    createdAt: b.createdAt,
+    updatedAt: b.updatedAt,
+    statusDetails,
+    priceBreakdown: b.priceBreakdown,
+  });
+
+  // Strictly sanitize private arrival guide secrets
+  const sanitizedListing = sanitizeListingSecrets(b.listing);
+
+  return {
+    booking: {
+      id: b.id,
+      submissionId: b.submissionId,
+      userId: b.userId,
+      listingId: b.listingId,
+      status: b.status,
+      computedStatus: statusDetails.status,
+      startDate: b.startDate,
+      endDate: b.endDate,
+      guests: b.guests,
+      totalPrice: b.totalPrice,
+      nightlyPrice: b.nightlyPrice,
+      cleaningFee: b.cleaningFee,
+      currency: b.currency,
+      priceBreakdown: b.priceBreakdown,
+      cancellationPolicy: b.cancellationPolicy,
+      isNonRefundable: b.isNonRefundable,
+      createdAt: b.createdAt,
+      updatedAt: b.updatedAt,
+    },
+    statusDetails,
+    pricing,
+    timeline,
+    conversationId: conversation?.id || null,
+    listing: sanitizedListing,
+    guest: b.user,
+    host: b.listing.host,
+    taxes: b.taxes,
+    reviews: b.reviews,
+    payments: b.payments,
+    refunds: b.refunds,
+  };
+}
+
+export interface AdminBookingSummaryOptions {
+  period?: "today" | "last7days" | "last30days" | "thismonth" | "all" | "custom" | string;
+  from?: Date | string;
+  to?: Date | string;
+}
+
+async function getAdminBookingSummary(actor: AuthUser, options: AdminBookingSummaryOptions = {}) {
+  assertRole(actor, [Role.ADMIN]);
+
+  const now = new Date();
+  let createdAtFilter: Prisma.DateTimeFilter | undefined;
+
+  if (options.period === "today") {
+    const startOfToday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0, 0));
+    createdAtFilter = { gte: startOfToday };
+  } else if (options.period === "last7days") {
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    createdAtFilter = { gte: sevenDaysAgo };
+  } else if (options.period === "last30days") {
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    createdAtFilter = { gte: thirtyDaysAgo };
+  } else if (options.period === "thismonth") {
+    const startOfMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1, 0, 0, 0, 0));
+    createdAtFilter = { gte: startOfMonth };
+  } else if (options.from || options.to) {
+    createdAtFilter = {};
+    if (options.from) createdAtFilter.gte = new Date(options.from);
+    if (options.to) createdAtFilter.lte = new Date(options.to);
+  }
+
+  const threshold24h = getExpiryThresholdDate(now);
+
+  const [
+    totalCount,
+    pendingRequestsCount,
+    confirmedCount,
+    upcomingCount,
+    activeStaysCount,
+    completedCount,
+    cancelledCount,
+    failedPaymentsCount,
+    gmvAggregate,
+  ] = await Promise.all([
+    // Card 1: Total Bookings (created in period)
+    prisma.booking.count({
+      where: createdAtFilter ? { createdAt: createdAtFilter } : {},
+    }),
+    // Card 2: Pending Requests (awaiting host approval, within 24h response window)
+    prisma.booking.count({
+      where: {
+        status: BookingStatus.PENDING,
+        createdAt: { gte: threshold24h },
+      },
+    }),
+    // Card 3: Confirmed Bookings
+    prisma.booking.count({
+      where: {
+        status: BookingStatus.CONFIRMED,
+      },
+    }),
+    // Card 4: Upcoming Bookings (confirmed, check-in in future)
+    prisma.booking.count({
+      where: {
+        status: BookingStatus.CONFIRMED,
+        startDate: { gt: now },
+      },
+    }),
+    // Card 5: Active Stays (confirmed, currently within stay dates)
+    prisma.booking.count({
+      where: {
+        status: BookingStatus.CONFIRMED,
+        startDate: { lte: now },
+        endDate: { gte: now },
+      },
+    }),
+    // Card 6: Completed Bookings (confirmed, checkout in past)
+    prisma.booking.count({
+      where: {
+        status: BookingStatus.CONFIRMED,
+        endDate: { lt: now },
+      },
+    }),
+    // Card 7: Canceled Bookings
+    prisma.booking.count({
+      where: {
+        status: BookingStatus.CANCELLED,
+        ...(createdAtFilter ? { createdAt: createdAtFilter } : {}),
+      },
+    }),
+    // Card 8: Payment Issues (failed payment or voided transaction records)
+    (async () => {
+      try {
+        return await prisma.bookingPayment.count({
+          where: { status: { in: [PaymentStatus.FAILED, PaymentStatus.VOIDED] } },
+        });
+      } catch (error) {
+        const candidate = error as {
+          code?: unknown;
+          message?: unknown;
+          meta?: { table?: unknown; cause?: unknown };
+        };
+        const detail = [candidate?.message, candidate?.meta?.table, candidate?.meta?.cause]
+          .filter(Boolean)
+          .join(" ");
+        if (candidate?.code === "P2021" || /BookingPayment/i.test(detail)) return 0;
+        throw error;
+      }
+    })(),
+    // Gross Booking Value
+    prisma.booking.aggregate({
+      where: {
+        status: BookingStatus.CONFIRMED,
+        ...(createdAtFilter ? { createdAt: createdAtFilter } : {}),
+      },
+      _sum: { totalPrice: true },
+    }),
+  ]);
+
+  return {
+    totalBookings: totalCount,
+    pendingRequests: pendingRequestsCount,
+    confirmedBookings: confirmedCount,
+    upcomingBookings: upcomingCount,
+    activeStays: activeStaysCount,
+    completedBookings: completedCount,
+    canceledBookings: cancelledCount,
+    paymentIssues: failedPaymentsCount,
+
+    // Backward-compatible keys
+    total: totalCount,
+    pending: pendingRequestsCount,
+    confirmed: confirmedCount,
+    completed: completedCount,
+    activeUpcoming: upcomingCount,
+    cancelled: cancelledCount,
+    grossBookingValue: gmvAggregate._sum.totalPrice || 0,
+    currency: "SAR",
+  };
+}
+
+async function getAdminPendingRequests(actor: AuthUser, limit = 5) {
+  assertRole(actor, [Role.ADMIN]);
+  const now = new Date();
+  const boundedLimit = Math.min(20, Math.max(1, limit));
+
+  const bookings = await prisma.booking.findMany({
+    where: {
+      status: BookingStatus.PENDING,
+      createdAt: { gte: getExpiryThresholdDate(now) },
+    },
+    take: boundedLimit,
+    orderBy: [
+      { createdAt: "asc" }, // Most urgent (oldest pending) first
+      { startDate: "asc" },
+    ],
+    select: {
+      id: true,
+      submissionId: true,
+      startDate: true,
+      endDate: true,
+      guests: true,
+      totalPrice: true,
+      currency: true,
+      status: true,
+      createdAt: true,
+      priceBreakdown: true,
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          image: true,
+        },
+      },
+      listing: {
+        select: {
+          id: true,
+          title: true,
+          city: true,
+          country: true,
+          photos: true,
+          host: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  return bookings.map((b: any) => {
+    const expiresAt = getAuthoritativeExpiryDate(b.createdAt);
+    const countdown = formatExpiryCountdown(b.createdAt, now);
+    const timeRemaining = getTimeRemaining(b.createdAt, now);
+    const breakdown = (b.priceBreakdown as Record<string, any>) || {};
+    const bookingType = breakdown.bookingMode || "REQUEST_TO_BOOK";
+
+    return {
+      id: b.id,
+      submissionId: b.submissionId,
+      status: b.status,
+      bookingType,
+      startDate: b.startDate.toISOString(),
+      endDate: b.endDate.toISOString(),
+      guests: b.guests,
+      totalPrice: b.totalPrice,
+      currency: b.currency,
+      createdAt: b.createdAt.toISOString(),
+      expiresAt: expiresAt.toISOString(),
+      countdownText: countdown.text,
+      isUrgent: timeRemaining.isUrgent,
+      isExpired: countdown.isExpired,
+      hoursRemaining: timeRemaining.hours,
+      minutesRemaining: timeRemaining.minutes,
+      user: b.user,
+      listing: sanitizeListingSecrets(b.listing) as any,
+    };
+  });
+}
+
+async function getAdminRecentBookings(actor: AuthUser, limit = 8) {
+  assertRole(actor, [Role.ADMIN]);
+  const boundedLimit = Math.min(20, Math.max(1, limit));
+
+  const recentBookingSelection = {
+    id: true,
+    submissionId: true,
+    startDate: true,
+    endDate: true,
+    guests: true,
+    totalPrice: true,
+    currency: true,
+    status: true,
+    createdAt: true,
+    priceBreakdown: true,
+    user: {
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        image: true,
+      },
+    },
+    listing: {
+      select: {
+        id: true,
+        title: true,
+        city: true,
+        country: true,
+        photos: true,
+        host: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+    },
+  } as const;
+
+  let bookings: any[];
+  try {
+    bookings = await prisma.booking.findMany({
+    take: boundedLimit,
+    orderBy: { createdAt: "desc" },
+    select: {
+      ...recentBookingSelection,
+      payments: {
+        select: {
+          id: true,
+          status: true,
+        },
+        take: 1,
+      },
+    },
+    }) as any[];
+  } catch (error) {
+    if (!isMissingBookingPaymentTable(error)) throw error;
+    bookings = await prisma.booking.findMany({
+      take: boundedLimit,
+      orderBy: { createdAt: "desc" },
+      select: recentBookingSelection,
+    }) as any[];
+  }
+
+  return bookings.map((b: any) => {
+    const breakdown = (b.priceBreakdown as Record<string, any>) || {};
+    const rejection = breakdown.rejection || {};
+    const cancellation = breakdown.cancellation || {};
+    const computedStatus = computeBookingStatus({
+      dbStatus: b.status,
+      startDate: b.startDate,
+      endDate: b.endDate,
+      createdAt: b.createdAt,
+      rejectionReason: rejection.reason || cancellation.reason || null,
+      rejectionBy: rejection.rejectedBy || cancellation.cancelledBy || null,
+      isExpired: Boolean(breakdown.expiredAt || rejection.reason === "EXPIRED"),
+    });
+
+    const bookingType = breakdown.bookingMode || (b.status === BookingStatus.CONFIRMED && !b.submissionId ? "INSTANT_BOOK" : "REQUEST_TO_BOOK");
+    const paymentStatus = breakdown.paymentStatus || (b.payments?.length > 0 ? b.payments[0].status : "UNAVAILABLE");
+
+    return {
+      id: b.id,
+      submissionId: b.submissionId,
+      status: b.status,
+      computedStatus: computedStatus.status,
+      bookingType,
+      paymentStatus,
+      startDate: b.startDate.toISOString(),
+      endDate: b.endDate.toISOString(),
+      guests: b.guests,
+      totalPrice: b.totalPrice,
+      currency: b.currency,
+      createdAt: b.createdAt.toISOString(),
+      user: b.user,
+      listing: sanitizeListingSecrets(b.listing) as any,
+    };
+  });
+}
+
+async function getAdminRecentActivity(actor: AuthUser, limit = 10) {
+  assertRole(actor, [Role.ADMIN]);
+  const boundedLimit = Math.min(50, Math.max(1, limit));
+
+  const items = await prisma.auditLog.findMany({
+    where: {
+      resourceType: "BOOKING",
+    },
+    take: boundedLimit,
+    orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      action: true,
+      description: true,
+      resourceId: true,
+      actorEmail: true,
+      actorId: true,
+      metadata: true,
+      createdAt: true,
+    },
+  });
+
+  return items.map((item: any) => ({
+    id: item.id,
+    action: item.action,
+    description: item.description,
+    bookingId: item.resourceId,
+    actorEmail: item.actorEmail,
+    actorId: item.actorId,
+    metadata: item.metadata,
+    createdAt: item.createdAt.toISOString(),
+  }));
+}
+
+async function getAdminBookingActivity(
+  actor: AuthUser,
+  id: string,
+  options?: { page?: number; limit?: number },
+) {
+  assertRole(actor, [Role.ADMIN]);
+
+  const booking = await prisma.booking.findUnique({
+    where: { id },
+    select: { id: true },
+  });
+  if (!booking) throw AppError.notFound("Booking not found");
+
+  return auditService.listForResource("BOOKING", id, options);
+}
+
+export interface AdminCancellationItem {
+  id: string;
+  submissionId: string | null;
+  status: string;
+  startDate: string;
+  endDate: string;
+  guests: number;
+  totalPrice: number | null;
+  nightlyPrice: number | null;
+  cleaningFee: number | null;
+  currency: string;
+  cancellationPolicy: string | null;
+  isNonRefundable: boolean;
+  createdAt: string;
+  updatedAt: string;
+  user: {
+    id: string;
+    name: string | null;
+    email: string | null;
+    image: string | null;
+    phone?: string | null;
+  };
+  listing: {
+    id: string;
+    title: string;
+    city: string | null;
+    country: string | null;
+    photos: string[];
+    price: number;
+    cancellationPolicy: string | null;
+    host: {
+      id: string;
+      name: string | null;
+      email: string | null;
+    };
+  };
+  cancellation: {
+    cancelledAt: string | null;
+    cancelledBy: "GUEST" | "HOST" | "ADMIN" | null;
+    reason: string | null;
+    notes?: string | null;
+    adminId?: string | null;
+    adminEmail?: string | null;
+    guestRefundAmount?: number | null;
+    hostPayoutRetained?: number | null;
+  };
+  payments: Array<{
+    id: string;
+    status: string;
+    amount: number;
+    capturedAmount: number | null;
+    refundedAmount: number | null;
+    provider: string | null;
+    createdAt: string;
+  }>;
+  refunds: Array<{
+    id: string;
+    status: string;
+    amount: number;
+    reason: string | null;
+    createdAt: string;
+  }>;
+  requiresAttention: boolean;
+}
+
+export interface AdminCancellationListOptions {
+  page?: number;
+  limit?: number;
+  tab?: "all" | "guest" | "host" | "admin" | "attention" | string;
+  initiator?: "GUEST" | "HOST" | "ADMIN" | "ALL";
+  search?: string;
+  policy?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  checkInFrom?: string;
+  checkInTo?: string;
+  listingId?: string;
+  hostId?: string;
+  guestId?: string;
+  sortBy?: "cancelledAt" | "startDate" | "totalPrice" | "createdAt";
+  sortOrder?: "asc" | "desc";
+}
+
+export interface AdminCancellationSummary {
+  totalCancellations: number;
+  guestCancellations: number;
+  hostCancellations: number;
+  adminCancellations: number;
+  requiresAttention: number;
+  currency: string;
+}
+
+export interface AdminCalendarData {
+  listing: {
+    id: string;
+    title: string;
+    city: string | null;
+    district: string | null;
+    country: string | null;
+    photos: string[];
+    price: number;
+    weekdayBasePrice: number | null;
+    weekendPrice: number | null;
+    weekendBasePrice?: number | null;
+    customPrices: Record<string, number> | null;
+    blockedDates: string[];
+    minNights: number | null;
+    maxNights: number | null;
+    cancellationPolicy: string | null;
+    status: string;
+    host: {
+      id: string;
+      name: string | null;
+      email: string | null;
+      image: string | null;
+    };
+  };
+  bookings: Array<{
+    id: string;
+    submissionId: string | null;
+    status: string;
+    startDate: string;
+    endDate: string;
+    nights: number;
+    guests: number;
+    totalPrice: number | null;
+    nightlyPrice: number | null;
+    cleaningFee: number | null;
+    currency: string;
+    bookingType: string;
+    cancellationPolicy: string | null;
+    isPendingHold: boolean;
+    expiresAt: string | null;
+    countdownText: string | null;
+    isUrgent: boolean;
+    user: {
+      id: string;
+      name: string | null;
+      email: string | null;
+      image: string | null;
+      phone?: string | null;
+    };
+    payments?: Array<{
+      id: string;
+      status: string;
+      amount: number;
+      currency: string;
+    }>;
+  }>;
+  blockedDates: string[];
+  customPrices: Record<string, number>;
+  monthKey: string;
+}
+
+export interface AdminAllPropertiesCalendarOptions {
+  startDate?: string;
+  endDate?: string;
+  page?: number;
+  limit?: number;
+  search?: string;
+  hostId?: string;
+  city?: string;
+  cityKey?: string;
+  country?: string;
+  status?: string;
+  propertyType?: string;
+  bookingStatus?: string;
+  filterListingId?: string;
+}
+
+export interface AdminAllPropertiesCalendarData {
+  properties: Array<{
+    id: string;
+    title: string;
+    city: string | null;
+    country: string | null;
+    propertyType: string | null;
+    photos: string[];
+    price: number;
+    status: string;
+    host: { id: string; name: string | null; email: string | null };
+    blockedDates: string[];
+    bookings: AdminCalendarData["bookings"];
+  }>;
+  range: { startDate: string; endDate: string };
+  pagination: { page: number; limit: number; total: number; totalPages: number };
+}
+
+async function cancelBookingByAdmin(
+  actor: AuthUser,
+  id: string,
+  reason: string,
+  notes?: string,
+): Promise<BookingDTO> {
+  assertRole(actor, [Role.ADMIN]);
+  if (!reason || !reason.trim()) {
+    throw AppError.badRequest("A cancellation reason is required for administrative cancellation.");
+  }
+
+  const cancelled = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    const booking = await tx.booking.findUnique({
+      where: { id },
+      include: { listing: true, user: true },
+    });
+    if (!booking) throw AppError.notFound("Booking not found");
+
+    if (booking.status === BookingStatus.CANCELLED) {
+      throw AppError.conflict("This reservation has already been cancelled.");
+    }
+
+    const now = new Date();
+    if (booking.endDate <= now && booking.status === BookingStatus.CONFIRMED) {
+      throw AppError.badRequest("Completed reservations cannot be cancelled after the check-out date.");
+    }
+
+    const originalSnapshot =
+      booking.priceBreakdown &&
+      typeof booking.priceBreakdown === "object" &&
+      !Array.isArray(booking.priceBreakdown)
+        ? (booking.priceBreakdown as Record<string, unknown>)
+        : {};
+
+    const priceBreakdown = {
+      ...originalSnapshot,
+      cancellation: {
+        cancelledAt: now.toISOString(),
+        cancelledBy: "ADMIN",
+        adminId: actor.id,
+        adminEmail: actor.email,
+        reason: reason.trim(),
+        notes: notes?.trim() || null,
+        guestRefundAmount: extractStoredGuestTotal(booking) ?? 0,
+        hostPayoutRetained: 0,
+      },
+    } as Prisma.InputJsonValue;
+
+    const updated = await tx.booking.update({
+      where: { id: booking.id },
+      data: { status: BookingStatus.CANCELLED, priceBreakdown },
+    });
+    return { ...updated, listing: booking.listing, user: booking.user };
+  });
+
+  await invalidateBookingCache(cancelled.id, cancelled.userId, cancelled.listing.hostId);
+  await triggerGuestFavoriteReevaluation(cancelled.listingId);
+
+  try {
+    await notificationService.create({
+      userId: cancelled.userId,
+      type: NotificationType.BOOKING,
+      title: `Reservation Cancelled by Admin: ${cancelled.listing.title}`,
+      message: `Your reservation for ${cancelled.listing.title} has been cancelled by an administrator: "${reason.trim()}".`,
+      entityId: cancelled.id,
+      entityType: "booking",
+      link: "/profile/tab/past",
+      metadata: {
+        bookingId: cancelled.id,
+        listingId: cancelled.listingId,
+        status: BookingStatus.CANCELLED,
+        cancelledBy: "ADMIN",
+        reason: reason.trim(),
+        role: "guest",
+      },
+    });
+  } catch (err) {
+    console.warn("[booking.service] Failed to create cancellation notification for guest:", err);
+  }
+
+  if (cancelled.listing?.hostId && cancelled.listing.hostId !== cancelled.userId) {
+    try {
+      await notificationService.create({
+        userId: cancelled.listing.hostId,
+        type: NotificationType.BOOKING,
+        title: `Reservation Cancelled by Admin: ${cancelled.listing.title}`,
+        message: `A reservation for ${cancelled.listing.title} was cancelled by an administrator: "${reason.trim()}".`,
+        entityId: cancelled.id,
+        entityType: "booking",
+        link: "/host/reservations",
+        metadata: {
+          bookingId: cancelled.id,
+          listingId: cancelled.listingId,
+          status: BookingStatus.CANCELLED,
+          cancelledBy: "ADMIN",
+          reason: reason.trim(),
+          role: "host",
+        },
+      });
+    } catch (err) {
+      console.warn("[booking.service] Failed to create cancellation notification for host:", err);
+    }
+  }
+
+  try {
+    await messagingService.recordBookingStatusMessage({
+      bookingId: cancelled.id,
+      statusText: `Administrator cancelled this reservation: "${reason.trim()}"`,
+      newBookingStatus: BookingStatus.CANCELLED,
+      conversationStatus: ConversationStatus.CANCELLED,
+    });
+  } catch (err) {
+    console.warn("[booking.service] Failed to record conversation cancellation status:", err);
+  }
+
+  try {
+    await auditService.record({
+      actorId: actor.id,
+      actorEmail: actor.email,
+      action: "BOOKING_CANCELLED_BY_ADMIN",
+      resourceType: "BOOKING",
+      resourceId: cancelled.id,
+      description: `Administrator cancelled reservation: "${reason.trim()}".`,
+      status: "SUCCESS",
+      metadata: {
+        bookingId: cancelled.id,
+        listingId: cancelled.listingId,
+        reason: reason.trim(),
+        notes: notes?.trim() || null,
+        previousStatus: cancelled.status,
+        newStatus: BookingStatus.CANCELLED,
+      },
+    });
+  } catch (err) {
+    console.warn("[booking.service] Failed to record audit log for admin cancellation:", err);
+  }
+
+  return toBookingDTO(cancelled);
+}
+
+function isMissingFinancialTable(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const candidate = error as {
+    code?: unknown;
+    message?: unknown;
+    meta?: { table?: unknown; cause?: unknown };
+  };
+  const detail = [candidate.message, candidate.meta?.table, candidate.meta?.cause]
+    .filter(Boolean)
+    .join(" ");
+  return candidate.code === "P2021" || /BookingPayment|BookingRefund/i.test(detail);
+}
+
+async function listCancellationsForAdmin(
+  actor: AuthUser,
+  opts: AdminCancellationListOptions = {},
+): Promise<{ cancellations: AdminCancellationItem[]; pagination: { total: number; page: number; limit: number; totalPages: number } }> {
+  assertRole(actor, [Role.ADMIN]);
+
+  const page = Math.max(1, opts.page ?? 1);
+  const limit = Math.min(100, Math.max(1, opts.limit ?? 20));
+  const skip = (page - 1) * limit;
+  const take = limit;
+
+  const where: Prisma.BookingWhereInput = {
+    status: BookingStatus.CANCELLED,
+  };
+
+  const tabLower = (opts.tab || "").toLowerCase();
+  const initiatorUpper = (opts.initiator || "").toUpperCase();
+
+  if (tabLower === "guest" || initiatorUpper === "GUEST") {
+    where.priceBreakdown = {
+      path: ["cancellation", "cancelledBy"],
+      equals: "GUEST",
+    };
+  } else if (tabLower === "host" || initiatorUpper === "HOST") {
+    where.OR = [
+      {
+        priceBreakdown: {
+          path: ["cancellation", "cancelledBy"],
+          equals: "HOST",
+        },
+      },
+      {
+        priceBreakdown: {
+          path: ["rejection", "rejectedBy"],
+          equals: "HOST",
+        },
+      },
+    ];
+  } else if (tabLower === "admin" || initiatorUpper === "ADMIN") {
+    where.priceBreakdown = {
+      path: ["cancellation", "cancelledBy"],
+      equals: "ADMIN",
+    };
+  } else if (tabLower === "attention") {
+    where.OR = [
+      { payments: { some: { status: { in: [PaymentStatus.FAILED, PaymentStatus.VOIDED] } } } },
+      { refunds: { some: { status: { in: [RefundStatus.PENDING, RefundStatus.PROCESSING] } } } },
+    ];
+  }
+
+  if (opts.policy && opts.policy !== "ALL") {
+    where.cancellationPolicy = opts.policy;
+  }
+
+  if (opts.listingId) {
+    where.listingId = opts.listingId;
+  }
+
+  if (opts.guestId) {
+    where.userId = opts.guestId;
+  }
+
+  if (opts.hostId) {
+    where.listing = {
+      ...(where.listing as Prisma.ListingWhereInput || {}),
+      hostId: opts.hostId,
+    };
+  }
+
+  if (opts.checkInFrom || opts.checkInTo) {
+    const dateFilter: Prisma.DateTimeFilter = {};
+    if (opts.checkInFrom) dateFilter.gte = parseBookingDate(opts.checkInFrom);
+    if (opts.checkInTo) dateFilter.lte = parseBookingDate(opts.checkInTo);
+    where.startDate = dateFilter;
+  }
+
+  if (opts.search && opts.search.trim()) {
+    const q = opts.search.trim();
+    const searchFilter: Prisma.BookingWhereInput[] = [
+      { id: { contains: q, mode: "insensitive" } },
+      { submissionId: { contains: q, mode: "insensitive" } },
+      { user: { name: { contains: q, mode: "insensitive" } } },
+      { user: { email: { contains: q, mode: "insensitive" } } },
+      { listing: { title: { contains: q, mode: "insensitive" } } },
+      { listing: { host: { name: { contains: q, mode: "insensitive" } } } },
+      { listing: { host: { email: { contains: q, mode: "insensitive" } } } },
+    ];
+    if (where.OR) {
+      where.AND = [
+        { OR: where.OR },
+        { OR: searchFilter },
+      ];
+      delete where.OR;
+    } else {
+      where.OR = searchFilter;
+    }
+  }
+
+  const orderBy: Prisma.BookingOrderByWithRelationInput[] = [];
+  const sortOrder = opts.sortOrder === "asc" ? "asc" : "desc";
+  const sortBy = opts.sortBy ?? "createdAt";
+
+  if (sortBy === "startDate") orderBy.push({ startDate: sortOrder });
+  else if (sortBy === "totalPrice") orderBy.push({ totalPrice: sortOrder });
+  else orderBy.push({ updatedAt: sortOrder });
+  orderBy.push({ id: "desc" });
+
+  let bookings: any[];
+  let total: number;
+  try {
+    [bookings, total] = await Promise.all([
+    prisma.booking.findMany({
+      where,
+      skip,
+      take,
+      orderBy,
+      select: {
+        id: true,
+        submissionId: true,
+        userId: true,
+        listingId: true,
+        status: true,
+        startDate: true,
+        endDate: true,
+        guests: true,
+        totalPrice: true,
+        nightlyPrice: true,
+        cleaningFee: true,
+        currency: true,
+        cancellationPolicy: true,
+        isNonRefundable: true,
+        priceBreakdown: true,
+        createdAt: true,
+        updatedAt: true,
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            image: true,
+            phone: true,
+          },
+        },
+        listing: {
+          select: {
+            id: true,
+            title: true,
+            price: true,
+            city: true,
+            country: true,
+            photos: true,
+            cancellationPolicy: true,
+            host: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
+        payments: {
+          select: {
+            id: true,
+            status: true,
+            amount: true,
+            capturedAmount: true,
+            refundedAmount: true,
+            provider: true,
+            createdAt: true,
+          },
+        },
+        refunds: {
+          select: {
+            id: true,
+            status: true,
+            amount: true,
+            reason: true,
+            createdAt: true,
+          },
+        },
+      },
+    }),
+    prisma.booking.count({ where }),
+    ]);
+  } catch (error) {
+    if (!isMissingFinancialTable(error)) throw error;
+    if (tabLower === "attention") {
+      throw AppError.badRequest("Attention filtering is unavailable until the payment/refund migration is applied.");
+    }
+    [bookings, total] = await Promise.all([
+      prisma.booking.findMany({
+        where,
+        skip,
+        take,
+        orderBy,
+        select: {
+          id: true, submissionId: true, userId: true, listingId: true, status: true,
+          startDate: true, endDate: true, guests: true, totalPrice: true,
+          nightlyPrice: true, cleaningFee: true, currency: true, cancellationPolicy: true,
+          isNonRefundable: true, priceBreakdown: true, createdAt: true, updatedAt: true,
+          user: { select: { id: true, name: true, email: true, image: true, phone: true } },
+          listing: {
+            select: {
+              id: true, title: true, price: true, city: true, country: true,
+              photos: true, cancellationPolicy: true,
+              host: { select: { id: true, name: true, email: true } },
+            },
+          },
+        },
+      }) as any[],
+      prisma.booking.count({ where }),
+    ]);
+  }
+
+  const cancellations: AdminCancellationItem[] = bookings.map((b: any) => {
+    const breakdown = (b.priceBreakdown as Record<string, any>) || {};
+    const rejection = breakdown.rejection || {};
+    const rawCancellation = breakdown.cancellation || {};
+
+    const cancelledBy =
+      rawCancellation.cancelledBy ||
+      rejection.rejectedBy ||
+      (breakdown.expiredAt || rejection.reason === "EXPIRED" ? "SYSTEM" : null);
+
+    const reason = rawCancellation.reason || rejection.reason || (breakdown.expiredAt ? "Request expired after 24 hours" : null);
+    const cancelledAt = rawCancellation.cancelledAt || rejection.rejectedAt || breakdown.expiredAt || b.updatedAt.toISOString();
+
+    const requiresAttention =
+      (b.payments || []).some((p: any) => p.status === PaymentStatus.FAILED || p.status === PaymentStatus.VOIDED) ||
+      (b.refunds || []).some((refund: any) => refund.status === RefundStatus.PENDING || refund.status === RefundStatus.PROCESSING) ||
+      Boolean(rawCancellation.requiresAttention);
+
+    return {
+      id: b.id,
+      submissionId: b.submissionId,
+      status: b.status,
+      startDate: b.startDate.toISOString(),
+      endDate: b.endDate.toISOString(),
+      guests: b.guests,
+      totalPrice: b.totalPrice,
+      nightlyPrice: b.nightlyPrice,
+      cleaningFee: b.cleaningFee,
+      currency: b.currency,
+      cancellationPolicy: b.cancellationPolicy,
+      isNonRefundable: b.isNonRefundable,
+      createdAt: b.createdAt.toISOString(),
+      updatedAt: b.updatedAt.toISOString(),
+      user: b.user,
+      listing: {
+        ...b.listing,
+        photos: sanitizeListingSecrets(b.listing).photos || [],
+      },
+      cancellation: {
+        cancelledAt,
+        cancelledBy: (cancelledBy === "GUEST" || cancelledBy === "HOST" || cancelledBy === "ADMIN") ? cancelledBy : null,
+        reason,
+        notes: rawCancellation.notes || null,
+        adminId: rawCancellation.adminId || null,
+        adminEmail: rawCancellation.adminEmail || null,
+        guestRefundAmount: rawCancellation.guestRefundAmount ?? null,
+        hostPayoutRetained: rawCancellation.hostPayoutRetained ?? null,
+      },
+      payments: (b.payments || []).map((p: any) => ({
+        id: p.id,
+        status: p.status,
+        amount: p.amount,
+        capturedAmount: p.capturedAmount,
+        refundedAmount: p.refundedAmount,
+        provider: p.provider,
+        createdAt: p.createdAt.toISOString(),
+      })),
+      refunds: (b.refunds || []).map((r: any) => ({
+        id: r.id,
+        status: r.status,
+        amount: r.amount,
+        reason: r.reason,
+        createdAt: r.createdAt.toISOString(),
+      })),
+      requiresAttention,
+    };
+  });
+
+  return {
+    cancellations,
+    pagination: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit) || 1,
+    },
+  };
+}
+
+async function getCancellationSummaryForAdmin(actor: AuthUser): Promise<AdminCancellationSummary> {
+  assertRole(actor, [Role.ADMIN]);
+
+  const [
+    totalCancellations,
+    guestCancellations,
+    hostCancellations,
+    adminCancellations,
+    requiresAttention,
+  ] = await Promise.all([
+    prisma.booking.count({
+      where: { status: BookingStatus.CANCELLED },
+    }),
+    prisma.booking.count({
+      where: {
+        status: BookingStatus.CANCELLED,
+        priceBreakdown: {
+          path: ["cancellation", "cancelledBy"],
+          equals: "GUEST",
+        },
+      },
+    }),
+    prisma.booking.count({
+      where: {
+        status: BookingStatus.CANCELLED,
+        OR: [
+          {
+            priceBreakdown: {
+              path: ["cancellation", "cancelledBy"],
+              equals: "HOST",
+            },
+          },
+          {
+            priceBreakdown: {
+              path: ["rejection", "rejectedBy"],
+              equals: "HOST",
+            },
+          },
+        ],
+      },
+    }),
+    prisma.booking.count({
+      where: {
+        status: BookingStatus.CANCELLED,
+        priceBreakdown: {
+          path: ["cancellation", "cancelledBy"],
+          equals: "ADMIN",
+        },
+      },
+    }),
+    (async () => {
+      try {
+        return await prisma.booking.count({
+          where: {
+            status: BookingStatus.CANCELLED,
+            OR: [
+              { payments: { some: { status: { in: [PaymentStatus.FAILED, PaymentStatus.VOIDED] } } } },
+              { refunds: { some: { status: { in: [RefundStatus.PENDING, RefundStatus.PROCESSING] } } } },
+            ],
+          },
+        });
+      } catch (error) {
+        if (isMissingFinancialTable(error)) return 0;
+        throw error;
+      }
+    })(),
+  ]);
+
+  return {
+    totalCancellations,
+    guestCancellations,
+    hostCancellations,
+    adminCancellations,
+    requiresAttention,
+    currency: "SAR",
+  };
+}
+
+async function getAdminCalendarData(
+  actor: AuthUser,
+  listingId: string,
+  monthKey?: string,
+): Promise<AdminCalendarData> {
+  assertRole(actor, [Role.ADMIN]);
+
+  const now = new Date();
+  const safeMonthKey =
+    monthKey && /^\d{4}-\d{2}$/.test(monthKey)
+      ? monthKey
+      : `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+
+  const [yearStr, monthStr] = safeMonthKey.split("-");
+  const year = Number(yearStr);
+  const month = Number(monthStr);
+
+  const windowStart = new Date(Date.UTC(year, month - 1, -7));
+  const windowEnd = new Date(Date.UTC(year, month, 8));
+
+  const listing = await prisma.listing.findUnique({
+    where: { id: listingId },
+    select: {
+      id: true,
+      title: true,
+      city: true,
+      district: true,
+      country: true,
+      photos: true,
+      price: true,
+      weekdayBasePrice: true,
+      weekendPrice: true,
+      customPrices: true,
+      blockedDates: true,
+      minNights: true,
+      maxNights: true,
+      cancellationPolicy: true,
+      status: true,
+      host: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          image: true,
+        },
+      },
+    },
+  });
+
+  if (!listing) {
+    throw AppError.notFound(`Listing ${listingId} not found`);
+  }
+
+  const expiryThreshold = getExpiryThresholdDate();
+
+  const bookings = await findAdminCalendarBookings({
+    listingId,
+    endDate: { gt: windowStart },
+    startDate: { lt: windowEnd },
+    OR: [
+      { status: BookingStatus.CONFIRMED },
+      { status: BookingStatus.PENDING, createdAt: { gt: expiryThreshold } },
+    ],
+  });
+
+  const customPricesObj: Record<string, number> =
+    listing.customPrices && typeof listing.customPrices === "object" && !Array.isArray(listing.customPrices)
+      ? (listing.customPrices as Record<string, number>)
+      : {};
+
+  const mappedBookings = bookings.map((b: any) => {
+    const isPendingHold = b.status === BookingStatus.PENDING;
+    const expiresAt = isPendingHold ? getAuthoritativeExpiryDate(b.createdAt).toISOString() : null;
+    const isUrgent = isPendingHold && getTimeRemaining(b.createdAt).totalMs < 6 * 3600 * 1000;
+    const countdownText = isPendingHold ? formatExpiryCountdown(b.createdAt).text : null;
+    const nights = differenceInBookingNights(b.startDate, b.endDate);
+    const breakdown = (b.priceBreakdown as Record<string, any>) || {};
+    const bookingType = breakdown.bookingMode || (b.status === BookingStatus.CONFIRMED && !b.submissionId ? "INSTANT_BOOK" : "REQUEST_TO_BOOK");
+
+    return {
+      id: b.id,
+      submissionId: b.submissionId,
+      status: b.status,
+      startDate: bookingDateKey(b.startDate),
+      endDate: bookingDateKey(b.endDate),
+      nights,
+      guests: b.guests,
+      totalPrice: b.totalPrice,
+      nightlyPrice: b.nightlyPrice,
+      cleaningFee: b.cleaningFee,
+      currency: b.currency,
+      bookingType,
+      cancellationPolicy: b.cancellationPolicy,
+      isPendingHold,
+      expiresAt,
+      countdownText,
+      isUrgent,
+      user: b.user,
+      payments: b.payments,
+    };
+  });
+
+  return {
+    listing: {
+      ...listing,
+      weekendBasePrice: listing.weekendPrice,
+      photos: sanitizeListingSecrets(listing).photos || [],
+    },
+    bookings: mappedBookings,
+    blockedDates: listing.blockedDates || [],
+    customPrices: customPricesObj,
+    monthKey: safeMonthKey,
+  };
+}
+
+function parseAdminCalendarDate(value: string | undefined, label: string): Date | null {
+  if (!value) return null;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    throw AppError.badRequest(`${label} must use YYYY-MM-DD.`);
+  }
+
+  const [year, month, day] = value.split("-").map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  if (
+    date.getUTCFullYear() !== year ||
+    date.getUTCMonth() !== month - 1 ||
+    date.getUTCDate() !== day
+  ) {
+    throw AppError.badRequest(`${label} is not a valid date.`);
+  }
+  return date;
+}
+
+type CalendarCountry = { code: string; name: string };
+
+const calendarCountriesByCode = new Map<string, CalendarCountry>(
+  ADDRESS_COUNTRIES.map((country) => [country.iso2, { code: country.iso2, name: country.name }]),
+);
+const calendarCountriesByName = new Map<string, CalendarCountry>(
+  ADDRESS_COUNTRIES.map((country) => [country.name.toLocaleLowerCase(), { code: country.iso2, name: country.name }]),
+);
+
+function normalizeCalendarWhitespace(value: string): string {
+  return value.trim().replace(/\s+/g, " ");
+}
+
+/**
+ * Calendar filters only accept countries that can be verified against the
+ * application's ISO reference data. In particular, a suffix code is trusted
+ * only when it agrees with the accompanying country name.
+ */
+function normalizeCalendarCountry(value: string | null | undefined): CalendarCountry | null {
+  if (!value) return null;
+  const normalized = normalizeCalendarWhitespace(value);
+  if (!normalized) return null;
+
+  if (/^[A-Za-z]{2}$/.test(normalized)) {
+    return calendarCountriesByCode.get(normalized.toUpperCase()) || null;
+  }
+
+  const formatted = normalized.match(/^(.*?)\s*-\s*([A-Za-z]{2})$/);
+  if (formatted) {
+    const country = calendarCountriesByCode.get(formatted[2].toUpperCase());
+    const suppliedName = normalizeCalendarWhitespace(formatted[1]).toLocaleLowerCase();
+    if (country && suppliedName === country.name.toLocaleLowerCase()) return country;
+    return null;
+  }
+
+  return calendarCountriesByName.get(normalized.toLocaleLowerCase()) || null;
+}
+
+function addCalendarListingCondition(
+  where: Prisma.ListingWhereInput,
+  condition: Prisma.ListingWhereInput,
+): void {
+  const current = where.AND;
+  where.AND = current
+    ? [...(Array.isArray(current) ? current : [current]), condition]
+    : [condition];
+}
+
+function normalizeCalendarCity(value: string | null | undefined): string | null {
+  if (!value) return null;
+  const normalized = normalizeCalendarWhitespace(value);
+  return normalized || null;
+}
+
+function calendarCityIdentity(value: string): string {
+  return normalizeCalendarWhitespace(value).toLocaleLowerCase();
+}
+
+function calendarCityKey(countryCode: string, city: string): string {
+  return `${countryCode}:${encodeURIComponent(normalizeCalendarWhitespace(city))}`;
+}
+
+function parseCalendarCityKey(value: string | null | undefined): { country: CalendarCountry; city: string } | null {
+  if (!value) return null;
+  const match = value.match(/^([A-Za-z]{2}):(.*)$/);
+  if (!match) return null;
+  const country = calendarCountriesByCode.get(match[1].toUpperCase());
+  if (!country) return null;
+  try {
+    const city = normalizeCalendarCity(decodeURIComponent(match[2]));
+    return city ? { country, city } : null;
+  } catch {
+    return null;
+  }
+}
+
+function preferredCalendarCityLabel(current: string, candidate: string): string {
+  const hasLeadingCapital = (value: string) => /\p{Lu}/u.test(value.charAt(0));
+  if (hasLeadingCapital(candidate) && !hasLeadingCapital(current)) return candidate;
+  return candidate.localeCompare(current, undefined, { sensitivity: "variant" }) < 0 ? candidate : current;
+}
+
+async function findCalendarCountryVariants(country: CalendarCountry): Promise<string[]> {
+  const rows: Array<{ country: string | null }> = await prisma.listing.findMany({
+    where: { deletedAt: null, country: { not: null } },
+    distinct: ["country"],
+    select: { country: true },
+  });
+  return rows
+    .map((row) => row.country)
+    .filter((value): value is string => normalizeCalendarCountry(value)?.code === country.code);
+}
+
+async function findCalendarCityVariants(
+  country: CalendarCountry,
+  city: string,
+): Promise<{ countryVariants: string[]; cityVariants: string[] }> {
+  const countryVariants = await findCalendarCountryVariants(country);
+  if (countryVariants.length === 0) return { countryVariants, cityVariants: [] };
+  const rows: Array<{ city: string | null; country: string | null }> = await prisma.listing.findMany({
+    where: {
+      deletedAt: null,
+      city: { not: null },
+      country: { in: countryVariants },
+    },
+    distinct: ["city", "country"],
+    select: { city: true, country: true },
+  });
+  const identity = calendarCityIdentity(city);
+  const cityVariants = rows
+    .filter((row) => normalizeCalendarCountry(row.country)?.code === country.code)
+    .map((row) => row.city)
+    .filter((value): value is string => Boolean(value && calendarCityIdentity(value) === identity));
+  return { countryVariants, cityVariants };
+}
+
+function isMissingBookingPaymentTable(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const candidate = error as {
+    code?: unknown;
+    message?: unknown;
+    meta?: { table?: unknown; cause?: unknown };
+  };
+  const detail = [candidate.message, candidate.meta?.table, candidate.meta?.cause]
+    .filter(Boolean)
+    .join(" ");
+
+  // Prisma adapters do not all attach the missing relation name to `meta.table`.
+  // This query's only optional relation is payments, so any P2021 here can use
+  // the payment-free query; matching the rendered message covers adapters that
+  // omit the code as well.
+  return candidate.code === "P2021" || /BookingPayment/i.test(detail);
+}
+
+/**
+ * Compatibility path for installations that have deployed the application but
+ * not yet applied the admin-booking foundation migration. Availability does
+ * not depend on payment rows, so calendar rendering remains safe; the preview
+ * simply reports payment status as unavailable until the migration is applied.
+ */
+async function findAdminCalendarBookings(where: Prisma.BookingWhereInput): Promise<any[]> {
+  const user = {
+    select: { id: true, name: true, email: true, image: true, phone: true },
+  };
+  const payment = {
+    select: { id: true, status: true, amount: true, currency: true },
+    take: 1,
+  };
+
+  try {
+    return await prisma.booking.findMany({
+      where,
+      include: { user, payments: payment },
+      orderBy: { startDate: "asc" },
+    }) as any[];
+  } catch (error) {
+    if (!isMissingBookingPaymentTable(error)) throw error;
+    return await prisma.booking.findMany({
+      where,
+      include: { user },
+      orderBy: { startDate: "asc" },
+    }) as any[];
+  }
+}
+
+function mapAdminCalendarBookings(bookings: any[]): AdminCalendarData["bookings"] {
+  return bookings.map((booking) => {
+    const isPendingHold = booking.status === BookingStatus.PENDING;
+    const expiryDate = isPendingHold ? getAuthoritativeExpiryDate(booking.createdAt) : null;
+    const breakdown = (booking.priceBreakdown as Record<string, any>) || {};
+
+    return {
+      id: booking.id,
+      submissionId: booking.submissionId,
+      status: booking.status,
+      startDate: bookingDateKey(booking.startDate),
+      endDate: bookingDateKey(booking.endDate),
+      nights: differenceInBookingNights(booking.startDate, booking.endDate),
+      guests: booking.guests,
+      totalPrice: booking.totalPrice,
+      nightlyPrice: booking.nightlyPrice,
+      cleaningFee: booking.cleaningFee,
+      currency: booking.currency,
+      bookingType:
+        breakdown.bookingMode ||
+        (booking.status === BookingStatus.CONFIRMED && !booking.submissionId
+          ? "INSTANT_BOOK"
+          : "REQUEST_TO_BOOK"),
+      cancellationPolicy: booking.cancellationPolicy,
+      isPendingHold,
+      expiresAt: expiryDate?.toISOString() ?? null,
+      countdownText: isPendingHold ? formatExpiryCountdown(booking.createdAt).text : null,
+      isUrgent: isPendingHold && getTimeRemaining(booking.createdAt).totalMs < 6 * 3600 * 1000,
+      user: booking.user,
+      payments: booking.payments,
+    };
+  });
+}
+
+/**
+ * Returns one bounded, paginated property page and all active booking intervals
+ * for that page in a single booking query. This deliberately shares the same
+ * confirmed/pending-hold rule as the single-property calendar.
+ */
+async function getAdminAllPropertiesCalendarData(
+  actor: AuthUser,
+  options: AdminAllPropertiesCalendarOptions = {},
+): Promise<AdminAllPropertiesCalendarData> {
+  assertRole(actor, [Role.ADMIN]);
+
+  const now = new Date();
+  const defaultStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  const windowStart = parseAdminCalendarDate(options.startDate, "startDate") || defaultStart;
+  const windowEnd = parseAdminCalendarDate(options.endDate, "endDate") || new Date(
+    Date.UTC(defaultStart.getUTCFullYear(), defaultStart.getUTCMonth(), defaultStart.getUTCDate() + 14),
+  );
+  const durationMs = windowEnd.getTime() - windowStart.getTime();
+  if (durationMs <= 0 || durationMs > 62 * 24 * 60 * 60 * 1000) {
+    throw AppError.badRequest("Calendar range must be greater than zero and no longer than 62 days.");
+  }
+
+  const page = Math.max(1, Math.trunc(options.page || 1));
+  const limit = Math.min(50, Math.max(1, Math.trunc(options.limit || 20)));
+  const listingWhere: Prisma.ListingWhereInput = { deletedAt: null };
+  const search = options.search?.trim();
+
+  if (search) {
+    listingWhere.OR = [
+      { id: { contains: search, mode: "insensitive" } },
+      { title: { contains: search, mode: "insensitive" } },
+      { city: { contains: search, mode: "insensitive" } },
+      { host: { name: { contains: search, mode: "insensitive" } } },
+      { host: { email: { contains: search, mode: "insensitive" } } },
+    ];
+  }
+  if (options.hostId?.trim()) listingWhere.hostId = options.hostId.trim();
+  if (options.filterListingId?.trim()) listingWhere.id = options.filterListingId.trim();
+  const selectedCountry = normalizeCalendarCountry(options.country);
+  if (options.country?.trim()) {
+    const countryVariants = selectedCountry ? await findCalendarCountryVariants(selectedCountry) : [];
+    if (countryVariants.length > 0) addCalendarListingCondition(listingWhere, { country: { in: countryVariants } });
+    else listingWhere.id = { in: [] };
+  }
+
+  const selectedCity = parseCalendarCityKey(options.cityKey);
+  if (options.cityKey?.trim()) {
+    if (!selectedCity) {
+      listingWhere.id = { in: [] };
+    } else {
+      const { countryVariants, cityVariants } = await findCalendarCityVariants(selectedCity.country, selectedCity.city);
+      if (cityVariants.length === 0) {
+        listingWhere.id = { in: [] };
+      } else {
+        addCalendarListingCondition(listingWhere, { country: { in: countryVariants } });
+        addCalendarListingCondition(listingWhere, { city: { in: cityVariants } });
+      }
+    }
+  } else if (options.city?.trim()) {
+    // Keep old bookmarked URLs functional while new selections use cityKey,
+    // which is unambiguous when multiple countries have the same city name.
+    listingWhere.city = { equals: options.city.trim(), mode: "insensitive" };
+  }
+  if (options.propertyType?.trim()) {
+    listingWhere.propertyType = { equals: options.propertyType.trim(), mode: "insensitive" };
+  }
+  if (options.status?.trim()) {
+    if (!Object.values(ListingStatus).includes(options.status as ListingStatus)) {
+      throw AppError.badRequest("Invalid listing status filter.");
+    }
+    listingWhere.status = options.status as ListingStatus;
+  }
+
+  const [total, listings] = await Promise.all([
+    prisma.listing.count({ where: listingWhere }),
+    prisma.listing.findMany({
+      where: listingWhere,
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * limit,
+      take: limit,
+      select: {
+        id: true,
+        title: true,
+        city: true,
+        country: true,
+        propertyType: true,
+        photos: true,
+        price: true,
+        status: true,
+        blockedDates: true,
+        host: { select: { id: true, name: true, email: true } },
+      },
+    }),
+  ]);
+
+  const listingIds = listings.map((listing: any) => listing.id);
+  const bookingStatus = options.bookingStatus?.trim();
+  if (bookingStatus && bookingStatus !== BookingStatus.CONFIRMED && bookingStatus !== BookingStatus.PENDING) {
+    throw AppError.badRequest("Booking status must be CONFIRMED or PENDING.");
+  }
+
+  const expiryThreshold = getExpiryThresholdDate();
+  const bookings = listingIds.length === 0
+    ? []
+    : await findAdminCalendarBookings({
+        listingId: { in: listingIds },
+        endDate: { gt: windowStart },
+        startDate: { lt: windowEnd },
+        OR: bookingStatus === BookingStatus.CONFIRMED
+          ? [{ status: BookingStatus.CONFIRMED }]
+          : bookingStatus === BookingStatus.PENDING
+            ? [{ status: BookingStatus.PENDING, createdAt: { gt: expiryThreshold } }]
+            : [
+                { status: BookingStatus.CONFIRMED },
+                { status: BookingStatus.PENDING, createdAt: { gt: expiryThreshold } },
+              ],
+      });
+
+  const bookingsByListing = new Map<string, AdminCalendarData["bookings"]>();
+  for (const booking of bookings as any[]) {
+    const current = bookingsByListing.get(booking.listingId) || [];
+    current.push(mapAdminCalendarBookings([booking])[0]);
+    bookingsByListing.set(booking.listingId, current);
+  }
+
+  const startDate = bookingDateKey(windowStart);
+  const endDate = bookingDateKey(windowEnd);
+  return {
+    properties: listings.map((listing: any) => ({
+      id: listing.id,
+      title: listing.title,
+      city: listing.city,
+      country: listing.country,
+      propertyType: listing.propertyType,
+      photos: sanitizeListingSecrets(listing).photos || [],
+      price: listing.price,
+      status: listing.status,
+      host: listing.host,
+      blockedDates: (listing.blockedDates || []).filter((date: string) => date >= startDate && date < endDate),
+      bookings: bookingsByListing.get(listing.id) || [],
+    })),
+    range: { startDate, endDate },
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.max(1, Math.ceil(total / limit)),
+    },
+  };
+}
+
+async function listPropertiesForAdminCalendar(
+  actor: AuthUser,
+  search?: string,
+  limit = 25,
+) {
+  assertRole(actor, [Role.ADMIN]);
+
+  const where: Prisma.ListingWhereInput = {
+    deletedAt: null,
+  };
+
+  if (search && search.trim()) {
+    const q = search.trim();
+    where.OR = [
+      { id: { contains: q, mode: "insensitive" } },
+      { title: { contains: q, mode: "insensitive" } },
+      { city: { contains: q, mode: "insensitive" } },
+      { host: { name: { contains: q, mode: "insensitive" } } },
+      { host: { email: { contains: q, mode: "insensitive" } } },
+    ];
+  }
+
+  const listings = await prisma.listing.findMany({
+    where,
+    take: Math.min(50, Math.max(1, limit)),
+    orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      title: true,
+      city: true,
+      country: true,
+      photos: true,
+      price: true,
+      status: true,
+      host: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+      _count: {
+        select: {
+          bookings: true,
+        },
+      },
+    },
+  });
+
+  return listings.map((l: any) => ({
+    id: l.id,
+    title: l.title,
+    city: l.city,
+    country: l.country,
+    photos: sanitizeListingSecrets(l).photos || [],
+    price: l.price,
+    status: l.status,
+    host: l.host,
+    bookingCount: l._count?.bookings ?? 0,
+  }));
+}
+
+export type AdminCalendarFilterOptionType = "properties" | "hosts" | "cities" | "countries" | "propertyTypes";
+
+export async function listAdminCalendarFilterOptions(
+  actor: AuthUser,
+  type: AdminCalendarFilterOptionType,
+  options: { search?: string; page?: number; limit?: number; selected?: string; country?: string } = {},
+) {
+  assertRole(actor, [Role.ADMIN]);
+  const search = options.search?.trim();
+  const page = Math.max(1, Math.trunc(options.page || 1));
+  const limit = Math.min(20, Math.max(1, Math.trunc(options.limit || 20)));
+  const skip = (page - 1) * limit;
+  const dedupe = <T extends { value: string }>(items: T[]) => Array.from(new Map(items.map((item) => [item.value, item])).values());
+
+  if (type === "properties") {
+    const where: Prisma.ListingWhereInput = { deletedAt: null };
+    if (search) {
+      where.OR = [
+        { id: { contains: search, mode: "insensitive" } },
+        { title: { contains: search, mode: "insensitive" } },
+        { city: { contains: search, mode: "insensitive" } },
+      ];
+    }
+    const [total, listings, selected] = await Promise.all([
+      prisma.listing.count({ where }),
+      prisma.listing.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: "desc" },
+        select: { id: true, title: true, city: true, country: true },
+      }),
+      options.selected ? prisma.listing.findFirst({
+        where: { id: options.selected, deletedAt: null },
+        select: { id: true, title: true, city: true, country: true },
+      }) : null,
+    ]);
+    const toOption = (listing: NonNullable<typeof selected>) => ({
+      value: listing.id,
+      label: listing.title.trim() || "Untitled property",
+      description: [listing.city, listing.country].filter(Boolean).join(", ") || "Location unavailable",
+    });
+    return { options: dedupe([...(selected ? [toOption(selected)] : []), ...listings.map(toOption)]), pagination: { page, limit, hasMore: page * limit < total } };
+  }
+
+  if (type === "hosts") {
+    const where: Prisma.UserWhereInput = { listings: { some: { deletedAt: null } } };
+    if (search) where.OR = [
+      { id: { contains: search, mode: "insensitive" } },
+      { name: { contains: search, mode: "insensitive" } },
+      { email: { contains: search, mode: "insensitive" } },
+    ];
+    const [total, hosts, selected] = await Promise.all([
+      prisma.user.count({ where }),
+      prisma.user.findMany({ where, skip, take: limit, orderBy: { name: "asc" }, select: { id: true, name: true, email: true } }),
+      options.selected ? prisma.user.findFirst({ where: { id: options.selected, listings: { some: { deletedAt: null } } }, select: { id: true, name: true, email: true } }) : null,
+    ]);
+    const toOption = (host: NonNullable<typeof selected>) => ({ value: host.id, label: host.name?.trim() || host.email || "Unnamed host", description: host.email || undefined });
+    return { options: dedupe([...(selected ? [toOption(selected)] : []), ...hosts.map(toOption)]), pagination: { page, limit, hasMore: page * limit < total } };
+  }
+
+  if (type === "countries" || type === "cities") {
+    const cacheKey = CACHE_KEYS.ADMIN_CALENDAR_FILTER_OPTIONS(hashFilters({
+      type,
+      search: search?.toLocaleLowerCase(),
+      page,
+      limit,
+      selected: options.selected,
+      country: options.country,
+    }));
+
+    return getOrSetCache(cacheKey, async () => {
+      if (type === "countries") {
+        // DISTINCT happens in the database. We normalize the small set of
+        // distinct values before applying pagination, so country variants can
+        // never consume separate pages or reappear as duplicate options.
+        const rows = await prisma.listing.findMany({
+          where: { deletedAt: null, country: { not: null } },
+          distinct: ["country"],
+          select: { country: true },
+        });
+        const countries = new Map<string, CalendarCountry>();
+        for (const row of rows) {
+          const country = normalizeCalendarCountry(row.country);
+          if (country) countries.set(country.code, country);
+        }
+        const matching = Array.from(countries.values())
+          .filter((country) => !search || `${country.name} ${country.code}`.toLocaleLowerCase().includes(search.toLocaleLowerCase()))
+          .sort((left, right) => left.name.localeCompare(right.name));
+        const selected = normalizeCalendarCountry(options.selected);
+        const selectedOption = selected && countries.has(selected.code)
+          ? { value: selected.code, label: selected.name }
+          : null;
+        const pageItems = matching.slice(skip, skip + limit + 1);
+        return {
+          options: dedupe([
+            ...(selectedOption ? [selectedOption] : []),
+            ...pageItems.slice(0, limit).map((country) => ({ value: country.code, label: country.name })),
+          ]),
+          pagination: { page, limit, hasMore: pageItems.length > limit },
+        };
+      }
+
+      const scopedCountry = options.country?.trim()
+        ? normalizeCalendarCountry(options.country)
+        : null;
+      if (options.country?.trim() && !scopedCountry) {
+        return { options: [], pagination: { page, limit, hasMore: false } };
+      }
+
+      // As with countries, this reads only distinct city/country pairs, never
+      // every listing. It must happen before pagination because whitespace and
+      // capitalization variants collapse into one canonical city option.
+      const where: Prisma.ListingWhereInput = {
+        deletedAt: null,
+        city: { not: null },
+        country: { not: null },
+      };
+      if (scopedCountry) {
+        const countryVariants = await findCalendarCountryVariants(scopedCountry);
+        if (countryVariants.length === 0) {
+          return { options: [], pagination: { page, limit, hasMore: false } };
+        }
+        where.country = { in: countryVariants };
+      }
+      const rows = await prisma.listing.findMany({
+        where,
+        distinct: ["city", "country"],
+        select: { city: true, country: true },
+      });
+
+      const cities = new Map<string, { country: CalendarCountry; city: string }>();
+      for (const row of rows) {
+        const country = normalizeCalendarCountry(row.country);
+        const city = normalizeCalendarCity(row.city);
+        if (!country || !city || (scopedCountry && country.code !== scopedCountry.code)) continue;
+        const key = `${country.code}:${calendarCityIdentity(city)}`;
+        const current = cities.get(key);
+        cities.set(key, current
+          ? { ...current, city: preferredCalendarCityLabel(current.city, city) }
+          : { country, city });
+      }
+
+      const matching = Array.from(cities.values())
+        .filter(({ country, city }) => {
+          if (!search) return true;
+          const query = search.toLocaleLowerCase();
+          return city.toLocaleLowerCase().includes(query) || country.name.toLocaleLowerCase().includes(query);
+        })
+        .sort((left, right) => left.city.localeCompare(right.city) || left.country.name.localeCompare(right.country.name));
+      const selected = parseCalendarCityKey(options.selected);
+      const selectedOption = selected && cities.has(`${selected.country.code}:${calendarCityIdentity(selected.city)}`)
+        ? {
+            value: calendarCityKey(selected.country.code, selected.city),
+            label: selected.city,
+            description: selected.country.name,
+          }
+        : null;
+      const pageItems = matching.slice(skip, skip + limit + 1);
+      return {
+        options: dedupe([
+          ...(selectedOption ? [selectedOption] : []),
+          ...pageItems.slice(0, limit).map(({ country, city }) => ({
+            value: calendarCityKey(country.code, city),
+            label: city,
+            description: country.name,
+          })),
+        ]),
+        pagination: { page, limit, hasMore: pageItems.length > limit },
+      };
+    }, { ttl: CACHE_TTL.SHORT_LIVED });
+  }
+
+  const field = "propertyType";
+  const listingWhere: Prisma.ListingWhereInput = {
+    deletedAt: null,
+    [field]: search ? { not: null, contains: search, mode: "insensitive" } : { not: null },
+  };
+  const values = await prisma.listing.findMany({
+    where: listingWhere,
+    distinct: [field],
+    orderBy: { [field]: "asc" },
+    skip,
+    take: limit + 1,
+    select: { city: true, country: true, propertyType: true },
+  });
+  const selectedValue = options.selected?.trim();
+  const pageValues = values
+    .slice(0, limit)
+    .map((listing: { city: string | null; country: string | null; propertyType: string | null }) => listing[field])
+    .filter((value: string | null): value is string => Boolean(value?.trim()));
+  return {
+    options: dedupe([...(selectedValue ? [{ value: selectedValue, label: selectedValue }] : []), ...pageValues.map((value: string) => ({ value, label: value }))]),
+    pagination: { page, limit, hasMore: values.length > limit },
+  };
 }
 
 export type BookingDetailsData = {
@@ -2495,5 +4855,19 @@ export const bookingService = {
   cancelNonRefundableByGuest,
   cancelBookingByGuest,
   cancelBookingByHost,
+  cancelBookingByAdmin,
   listForAdminDashboard,
+  listForAdmin,
+  listCancellationsForAdmin,
+  getCancellationSummaryForAdmin,
+  getAdminCalendarData,
+  listPropertiesForAdminCalendar,
+  listAdminCalendarFilterOptions,
+  getAdminBookingDetails,
+  getAdminBookingSummary,
+  getAdminBookingActivity,
+  getAdminPendingRequests,
+  getAdminRecentBookings,
+  getAdminRecentActivity,
+  getAdminAllPropertiesCalendarData,
 };

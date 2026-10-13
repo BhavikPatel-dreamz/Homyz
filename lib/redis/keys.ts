@@ -63,6 +63,9 @@ export const CACHE_KEYS = {
 
   /** Admin & Host Dashboards */
   ADMIN_STATS: () => `${NS}:admin:stats:global`,
+  /** Short-lived normalized country/city choices for the admin calendar. */
+  ADMIN_CALENDAR_FILTER_OPTIONS: (filterHash: string) =>
+    `${NS}:admin:calendar:filter-options:v1:${filterHash}`,
   ADMIN_UNIFIED_HOSTS: (filterHash: string) => `${NS}:admin:hosts:${filterHash}`,
   GUEST_ANALYTICS: () => `${NS}:admin:guest:analytics`,
   SEARCH_ANALYTICS: () => `${NS}:search:analytics:recent`,

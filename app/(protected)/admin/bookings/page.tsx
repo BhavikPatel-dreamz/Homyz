@@ -1,38 +1,26 @@
 import { requirePageRole } from "@/lib/permissions/page-guards";
 import { Role } from "@/generated/prisma/enums";
 import { bookingService } from "@/services/booking.service";
-import { AdminBookingsClient } from "./admin-bookings-client";
+import { AdminBookingDashboardClient } from "./admin-booking-dashboard-client";
 
-export default async function AdminBookingsPage() {
-  await requirePageRole([Role.ADMIN]);
+export const dynamic = "force-dynamic";
 
-  const { bookings, totalCount, stats } = await bookingService.listForAdminDashboard();
+export default async function AdminBookingsDashboardPage() {
+  const actor = await requirePageRole([Role.ADMIN]);
 
-  const serializedBookings = bookings.map((b: any) => ({
-    id: b.id,
-    status: b.status,
-    startDate: b.startDate.toISOString(),
-    endDate: b.endDate.toISOString(),
-    createdAt: b.createdAt.toISOString(),
-    totalPrice: b.totalPrice,
-    currency: b.currency,
-    user: b.user,
-    listing: b.listing,
-  }));
-
-  const pendingCount = stats.find((s: any) => s.status === "PENDING")?._count._all || 0;
-  const confirmedCount = stats.find((s: any) => s.status === "CONFIRMED")?._count._all || 0;
-  const cancelledCount = stats.find((s: any) => s.status === "CANCELLED")?._count._all || 0;
+  const [summary, pendingRequests, recentBookings, recentActivity] = await Promise.all([
+    bookingService.getAdminBookingSummary(actor, { period: "all" }),
+    bookingService.getAdminPendingRequests(actor, 5),
+    bookingService.getAdminRecentBookings(actor, 8),
+    bookingService.getAdminRecentActivity(actor, 8),
+  ]);
 
   return (
-    <AdminBookingsClient
-      initialBookings={serializedBookings}
-      summary={{
-        total: totalCount,
-        pending: pendingCount,
-        confirmed: confirmedCount,
-        cancelled: cancelledCount,
-      }}
+    <AdminBookingDashboardClient
+      initialSummary={summary}
+      initialPendingRequests={pendingRequests}
+      initialRecentBookings={recentBookings}
+      initialRecentActivity={recentActivity}
     />
   );
 }

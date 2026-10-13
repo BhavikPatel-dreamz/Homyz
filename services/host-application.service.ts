@@ -567,7 +567,9 @@ export class HostApplicationService {
     const updatedUser = await prisma.user.update({
       where: { id: user.id },
       data: {
-        role: Role.HOST,
+        // ADMIN membership is permanent; becoming a host adds host capability
+        // without demoting the account out of administrative access.
+        role: user.role === Role.ADMIN ? Role.ADMIN : Role.HOST,
         status: "ACTIVE",
       },
     });

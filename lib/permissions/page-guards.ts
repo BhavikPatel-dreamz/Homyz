@@ -35,7 +35,10 @@ export async function requirePageRole(
   callbackUrl?: string,
 ): Promise<AuthUser> {
   const user = await requirePageUser(callbackUrl);
-  if (user.status === "SUSPENDED" || !roles.includes(user.role)) {
+  const hasRequiredRole =
+    roles.includes(user.role) ||
+    (roles.includes(Role.ADMIN) && Boolean(user.adminRoleSlug));
+  if (user.status === "SUSPENDED" || !hasRequiredRole) {
     forbidden();
   }
   return user;

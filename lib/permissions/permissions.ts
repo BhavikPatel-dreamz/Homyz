@@ -97,6 +97,22 @@ export const PERMISSIONS = {
   PAYOUTS_VIEW: "payouts.view",
   PAYOUTS_MANAGE: "payouts.manage",
 
+  // Disputes & Complaints
+  DISPUTES_VIEW: "disputes.view",
+  DISPUTES_MANAGE: "disputes.manage",
+  DISPUTES_RESOLVE: "disputes.resolve",
+
+  // Communications & Notifications (Phase 13)
+  COMMUNICATIONS_VIEW: "communications.view",
+  COMMUNICATIONS_MANAGE: "communications.manage",
+  NOTIFICATIONS_VIEW: "notifications.view",
+  NOTIFICATIONS_MANAGE: "notifications.manage",
+  NOTIFICATIONS_RETRY: "notifications.retry",
+
+  // Analytics & Reports (Phase 14)
+  ANALYTICS_VIEW: "analytics.view",
+  ANALYTICS_EXPORT: "analytics.export",
+
   // Reviews
   REVIEWS_VIEW: "reviews.view",
   REVIEWS_MODERATE: "reviews.moderate",
@@ -204,6 +220,22 @@ export const ALL_PERMISSIONS: PermissionDefinition[] = [
   { slug: PERMISSIONS.PAYOUTS_VIEW, module: "Payments", action: "View Payouts", description: "View host payout schedules" },
   { slug: PERMISSIONS.PAYOUTS_MANAGE, module: "Payments", action: "Manage Payouts", description: "Release or hold host payouts" },
 
+  // Disputes & Complaints Module
+  { slug: PERMISSIONS.DISPUTES_VIEW, module: "Disputes", action: "View Disputes", description: "View booking disputes and complaints" },
+  { slug: PERMISSIONS.DISPUTES_MANAGE, module: "Disputes", action: "Manage Disputes", description: "Assign, investigate, and review dispute cases" },
+  { slug: PERMISSIONS.DISPUTES_RESOLVE, module: "Disputes", action: "Resolve Disputes", description: "Resolve and close dispute cases" },
+
+  // Communications & Notifications Module
+  { slug: PERMISSIONS.COMMUNICATIONS_VIEW, module: "Communications", action: "View Conversations", description: "Monitor booking conversations and messaging" },
+  { slug: PERMISSIONS.COMMUNICATIONS_MANAGE, module: "Communications", action: "Manage Conversations", description: "Manage communication reports and interventions" },
+  { slug: PERMISSIONS.NOTIFICATIONS_VIEW, module: "Notifications", action: "View Notifications", description: "View booking notification delivery records" },
+  { slug: PERMISSIONS.NOTIFICATIONS_MANAGE, module: "Notifications", action: "Manage Notifications", description: "Manage notification queue and delivery issues" },
+  { slug: PERMISSIONS.NOTIFICATIONS_RETRY, module: "Notifications", action: "Retry Notifications", description: "Manually re-dispatch eligible failed notifications" },
+
+  // Analytics Module
+  { slug: PERMISSIONS.ANALYTICS_VIEW, module: "Analytics", action: "View Analytics", description: "Access booking, financial, and operational analytics" },
+  { slug: PERMISSIONS.ANALYTICS_EXPORT, module: "Analytics", action: "Export Analytics", description: "Export booking and analytics datasets" },
+
   // Reviews Module
   { slug: PERMISSIONS.REVIEWS_VIEW, module: "Reviews", action: "View", description: "View property and host reviews" },
   { slug: PERMISSIONS.REVIEWS_MODERATE, module: "Reviews", action: "Moderate", description: "Moderate or approve user reviews" },
@@ -228,7 +260,6 @@ export const ALL_PERMISSIONS: PermissionDefinition[] = [
 /** Helper function to calculate whether user is Super Admin */
 export function isSuperAdmin(user: { role?: string; adminRoleSlug?: string | null } | null | undefined): boolean {
   if (!user) return false;
-  if (user.role !== "ADMIN") return false;
   if (user.adminRoleSlug === "super_admin" || user.adminRoleSlug === "super-admin") {
     return true;
   }

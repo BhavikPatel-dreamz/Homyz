@@ -102,27 +102,32 @@ export const getSessionUser = cache(async (): Promise<AuthUser | null> => {
       return null;
     }
 
+    const permissions =
+      liveUser.role === "ADMIN" || liveUser.adminRole
+        ? await import("@/lib/permissions/admin-permission-service")
+            .then(({ getEffectivePermissionsForUser }) =>
+              getEffectivePermissionsForUser(
+                session.user.id,
+                liveUser.role,
+                liveUser.adminRole?.slug,
+              ),
+            )
+        : [];
+
     return {
       id: session.user.id,
       role: liveUser.role,
       email: session.user.email ?? null,
       status: liveUser.status,
       adminRoleSlug: liveUser.adminRole?.slug ?? session.user.adminRoleSlug,
-      permissions: session.user.permissions,
+      permissions,
       tokenVersion: liveUser.tokenVersion,
       profileComplete: session.user.profileComplete,
       missingProfileFields: session.user.missingProfileFields,
     };
   } catch {
-    return {
-      id: session.user.id,
-      role: session.user.role,
-      email: session.user.email ?? null,
-      status: session.user.status,
-      adminRoleSlug: session.user.adminRoleSlug,
-      permissions: session.user.permissions,
-      profileComplete: session.user.profileComplete,
-      missingProfileFields: session.user.missingProfileFields,
-    };
+    // Protected server surfaces fail closed if the live session record cannot
+    // be checked. A cached JWT must not outlive an account suspension/revoke.
+    return null;
   }
 });
