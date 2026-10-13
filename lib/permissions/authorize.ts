@@ -12,7 +12,10 @@ export function authorize(
   roles: readonly Role[],
 ): asserts user is AuthUser {
   if (!user) throw AppError.unauthorized();
-  if (!roles.includes(user.role)) throw AppError.forbidden();
+  const hasAdministrativeMembership = Boolean(user.adminRoleSlug);
+  if (!roles.includes(user.role) && !(roles.includes(Role.ADMIN) && hasAdministrativeMembership)) {
+    throw AppError.forbidden();
+  }
 }
 
 /** Alias of `authorize` with a name that reads well at call sites. */
@@ -32,7 +35,7 @@ export function assertOwnership(
   ownerId: string,
 ): asserts user is AuthUser {
   if (!user) throw AppError.unauthorized();
-  if (user.role === Role.ADMIN) return;
+  if (user.role === Role.ADMIN || user.adminRoleSlug) return;
   if (user.id !== ownerId) {
     throw AppError.forbidden("You do not have access to this resource");
   }

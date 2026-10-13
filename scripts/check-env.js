@@ -113,7 +113,10 @@ function checkEnv() {
       errors.push(`Key ${def.key} is too short: expected >= ${def.minLength} chars, got ${val.length}`);
     }
 
-    const status = val ? (def.key.includes('SECRET') || def.key.includes('PASSWORD') || def.key.includes('TOKEN') || def.key.includes('KEY') ? '[CONFIGURED - SECRET]' : val) : '[NOT SET / OPTIONAL]';
+    // Environment diagnostics are often copied into CI logs and support
+    // tickets. Never emit connection strings, identifiers, credentials, or
+    // other configured values from this command.
+    const status = val ? '[CONFIGURED]' : '[NOT SET / OPTIONAL]';
     report.push({ key: def.key, status, description: def.description, required: def.required });
   }
 

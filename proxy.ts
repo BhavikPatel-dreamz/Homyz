@@ -67,7 +67,7 @@ export async function proxy(request: NextRequest) {
 
   const role = token.role;
 
-  if (pathname.startsWith("/admin") && role !== "ADMIN") {
+  if (pathname.startsWith("/admin") && role !== "ADMIN" && !token.adminRoleSlug) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
   if (
@@ -76,7 +76,8 @@ export async function proxy(request: NextRequest) {
     !pathname.startsWith("/host/application") &&
     !pathname.startsWith("/host/listings/new") &&
     role !== "HOST" &&
-    role !== "ADMIN"
+    role !== "ADMIN" &&
+    !token.adminRoleSlug
   ) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }

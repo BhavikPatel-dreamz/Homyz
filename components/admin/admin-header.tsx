@@ -122,13 +122,13 @@ export function AdminHeader({
           </button>
 
           {/* Secondary Traveling / Hosting Switcher */}
-          <button
+          {/* <button
             type="button"
             onClick={() => setMode(mode === "hosting" ? "traveling" : "hosting")}
             className="hidden xl:inline-flex whitespace-nowrap items-center rounded-full border border-amber-300/80 bg-[var(--card-highlight)] hover:opacity-90 px-3.5 py-1.5 text-xs font-semibold text-[var(--accent-foreground)] shadow-2xs transition-all"
           >
             {t("header_switch_to", { mode: mode === "hosting" ? (t("header_switch_traveling", "traveling")) : (t("header_switch_hosting", "hosting")) })}
-          </button>
+          </button> */}
 
           {/* Theme Selector */}
           <div className="hidden sm:block">

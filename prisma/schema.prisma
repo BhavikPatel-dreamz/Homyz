@@ -46,6 +46,30 @@ enum BookingStatus {
   CANCELLED
 }
 
+enum PaymentStatus {
+  PENDING
+  AUTHORIZED
+  CAPTURED
+  FAILED
+  VOIDED
+  PARTIALLY_REFUNDED
+  REFUNDED
+}
+
+enum PaymentProvider {
+  MOCK
+  MOYASAR
+  DEFERRED
+}
+
+enum RefundStatus {
+  PENDING
+  PROCESSING
+  SUCCEEDED
+  FAILED
+  REJECTED
+}
+
 enum ListingCoHostStatus {
   PENDING
   ACCEPTED
@@ -738,10 +762,77 @@ model Booking {
   referralReward ReferralReward?
   conversations  Conversation[]
   qualityIncidents ListingQualityIncident[]
+  payments       BookingPayment[]
+  refunds        BookingRefund[]
 
   @@index([userId, createdAt])
   @@index([listingId])
   @@index([listingId, startDate, endDate, status])
+  @@index([status])
+  @@index([status, createdAt])
+  @@index([createdAt])
+}
+
+model BookingPayment {
+  id                   String          @id @default(cuid())
+  bookingId            String
+  provider             PaymentProvider @default(DEFERRED)
+  providerPaymentId    String?         @unique
+  idempotencyKey       String?         @unique
+  status               PaymentStatus   @default(PENDING)
+  currency             String          @default("SAR")
+  amount               Int             // Minor units / cents
+  capturedAmount       Int             @default(0)
+  refundedAmount       Int             @default(0)
+  paymentMethod        String?
+  paymentMethodDetails Json?
+  authorizedAt         DateTime?
+  capturedAt           DateTime?
+  voidedAt             DateTime?
+  failedAt             DateTime?
+  failureReason        String?
+  metadata             Json?
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+
+  booking              Booking         @relation(fields: [bookingId], references: [id], onDelete: Restrict)
+  refunds              BookingRefund[]
+
+  @@index([bookingId])
+  @@index([status])
+  @@index([providerPaymentId])
+  @@index([createdAt])
+}
+
+model BookingRefund {
+  id               String          @id @default(cuid())
+  bookingId        String
+  paymentId        String?
+  refundReference  String?         @unique
+  providerRefundId String?         @unique
+  idempotencyKey   String?         @unique
+  status           RefundStatus    @default(PENDING)
+  currency         String          @default("SAR")
+  amount           Int             // Minor units / cents
+  reason           String?
+  adminNotes       String?
+  requestedById    String?
+  approvedById     String?
+  processedAt      DateTime?
+  succeededAt      DateTime?
+  failedAt         DateTime?
+  failureReason    String?
+  metadata         Json?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  booking          Booking         @relation(fields: [bookingId], references: [id], onDelete: Restrict)
+  payment          BookingPayment? @relation(fields: [paymentId], references: [id], onDelete: Restrict)
+
+  @@index([bookingId])
+  @@index([paymentId])
+  @@index([status])
+  @@index([createdAt])
 }
 
 // A reward is created once after the referred guest's first completed confirmed
@@ -873,6 +964,7 @@ model AuditLog {
   @@index([action])
   @@index([resourceType])
   @@index([createdAt])
+  @@index([resourceType, resourceId])
 }
 
 model HostPermissionOverride {

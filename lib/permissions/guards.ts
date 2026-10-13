@@ -14,6 +14,9 @@ import { isSuperAdmin, hasPermission } from "@/lib/permissions/permissions";
 export async function requireApiAuth(req: NextRequest): Promise<AuthUser> {
   const user = await getAuthContext(req);
   if (!user) throw AppError.unauthorized();
+  if (user.status === "SUSPENDED" || user.status === "REVOKED") {
+    throw AppError.forbidden("Account is not active");
+  }
   return user;
 }
 
