@@ -12,12 +12,19 @@ import { formatExpiryCountdown } from "@/lib/booking/booking-expiry";
 import { differenceInBookingNights, formatBookingDate } from "@/lib/booking/booking-date";
 import { useCurrency } from "@/lib/currency-context";
 import { useLanguage } from "@/lib/i18n/language-context";
+import { FileBookingDispute } from "@/components/bookings/file-booking-dispute";
 
 interface HostBookingDetailsClientProps {
   details: HostBookingRequestDetails;
+  relatedCases?: Array<{
+    id: string;
+    caseReference: string;
+    disputeWorkflowStatus: string;
+    responseRequired: boolean;
+  }>;
 }
 
-export function HostBookingDetailsClient({ details }: HostBookingDetailsClientProps) {
+export function HostBookingDetailsClient({ details, relatedCases = [] }: HostBookingDetailsClientProps) {
   const { t } = useLanguage();
   const { currency: displayCurrency, formatPrice } = useCurrency();
   const formatMoney = (amount: number | null | undefined, sourceCurrency = "SAR") =>
@@ -98,14 +105,6 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
 
   return (
     <div className="mx-auto w-full max-w-380 pb-28 pt-4 text-[#1F1F1F] sm:pb-20 sm:pt-6">
-      {/* Back button */}
-      <div className="inline-flex min-h-11 items-center gap-2">
-        <BackButton
-          onClick={() => router.push("/host/bookings")}
-          aria-label="Back to reservations"
-        />
-      <span>{t("host_booking_details_back", "Back to reservations")}</span>
-      </div>
 
       {/* Header */}
       <div className="mt-4 flex items-end justify-between gap-3 border-b border-zinc-200 pb-5 sm:gap-4 sm:pb-6">
@@ -241,6 +240,23 @@ export function HostBookingDetailsClient({ details }: HostBookingDetailsClientPr
                   {t("host_booking_details_message_guest", "Message guest")}
                 </Link>
               )}
+              {relatedCases.length === 1 && (
+                <Link
+                  href={`/host/resolution-center/${relatedCases[0].id}`}
+                  className="w-full rounded-full border border-zinc-300 bg-white px-4 py-2 text-center text-sm font-medium text-[#1f1f1f] transition-colors hover:border-[#1f1f1f] sm:w-auto"
+                >
+                  {relatedCases[0].responseRequired ? "Respond to dispute" : "View dispute"}
+                </Link>
+              )}
+              {relatedCases.length > 1 && (
+                <Link
+                  href={`/host/resolution-center?bookingId=${encodeURIComponent(details.id)}`}
+                  className="w-full rounded-full border border-zinc-300 bg-white px-4 py-2 text-center text-sm font-medium text-[#1f1f1f] transition-colors hover:border-[#1f1f1f] sm:w-auto"
+                >
+                  View {relatedCases.length} disputes
+                </Link>
+              )}
+              <FileBookingDispute bookingId={details.id} variant="host" />
             </div>
 
             {/* Guest Initial Message */}

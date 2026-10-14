@@ -956,7 +956,7 @@ export function BookingCheckoutClient({
                         aria-describedby={paymentTimingError ? "payment-timing-error" : undefined}
                         className="focus:outline-none"
                       >
-                        <legend className="sr-only">{t("book_step_1_title", "Choose how to pay")}</legend>
+                        <legend className="sr-only">Choose when to pay</legend>
                         {paymentTimingOptions.map((option) => (
                           <label
                             key={option.type}
@@ -1110,7 +1110,7 @@ export function BookingCheckoutClient({
                           {t("book_mock_payment_notice", "This is a mock payment step. No real money will be charged.")}
                         </div>
                         <p className="mt-1 text-xs text-amber-800 leading-relaxed">
-                          No real payment will be processed. Do not enter a real card. Use mock test card <span className="font-mono font-semibold">4242 4242 4242 4242</span>, expiry <span className="font-mono font-semibold">12/30</span>, CVC <span className="font-mono font-semibold">123</span>.
+                          No payment is processed in test mode. No real payment will be processed. Do not enter a real card. Use mock test card <span className="font-mono font-semibold">4242 4242 4242 4242</span>, expiry <span className="font-mono font-semibold">12/30</span>, CVC <span className="font-mono font-semibold">123</span>.
                         </p>
                       </div>
 

@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db/prisma";
-import { ConversationType, ConversationStatus, Role } from "@/generated/prisma/enums";
+import { ConversationType, ConversationStatus, Role, QualityIncidentStatus } from "@/generated/prisma/enums";
 import type { Prisma } from "@/generated/prisma/client";
 import { AppError } from "@/lib/api/errors";
 import { assertRole } from "@/lib/permissions/authorize";
@@ -67,8 +67,7 @@ export class CommunicationAdminService {
       prisma.conversation.count({ where: { status: ConversationStatus.CONFIRMED } }),
       prisma.listingQualityIncident.count({
         where: {
-          category: { in: ["NOISE_DISTURBANCE", "OTHER"] },
-          status: { in: ["PENDING", "CONFIRMED"] },
+          status: { in: [QualityIncidentStatus.PENDING, QualityIncidentStatus.CONFIRMED] },
         },
       }),
     ]);

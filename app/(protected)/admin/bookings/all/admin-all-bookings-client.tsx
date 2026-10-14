@@ -412,53 +412,6 @@ export function AdminAllBookingsClient({
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
-          {/* Calendar Navigation */}
-          <Link
-            href="/admin/bookings/calendar"
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all"
-          >
-            <span>Calendar</span>
-          </Link>
-
-          {/* Cancellations Navigation */}
-          <Link
-            href="/admin/bookings/cancellations"
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all"
-          >
-            <span>Cancellations</span>
-          </Link>
-
-          {/* Refunds Navigation */}
-          <Link
-            href="/admin/bookings/refunds"
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all"
-          >
-            <span>Refunds</span>
-          </Link>
-
-          {/* Payments Navigation */}
-          <Link
-            href="/admin/bookings/payments"
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all"
-          >
-            <span>Payments</span>
-          </Link>
-
-          {/* Host Payouts Navigation */}
-          <Link
-            href="/admin/bookings/payouts"
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all"
-          >
-            <span>Host Payouts</span>
-          </Link>
-
-          {/* Disputes Navigation */}
-          <Link
-            href="/admin/bookings/disputes"
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all"
-          >
-            <span>Disputes</span>
-          </Link>
 
           {/* Refresh Action */}
           <button

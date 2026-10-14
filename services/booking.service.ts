@@ -1,7 +1,7 @@
 import { AppError, ErrorCode } from "@/lib/api/errors";
 import type { AuthUser } from "@/lib/auth/types";
 import { assertOwnership, assertRole } from "@/lib/permissions/authorize";
-import { sanitizeListingSecrets } from "@/lib/booking/booking-lifecycle";
+import { sanitizeListingSecrets, resolveCancellationDetails, isAuthoritativeCancellation, type CancellationInitiator } from "@/lib/booking/booking-lifecycle";
 import { prisma } from "@/lib/db/prisma";
 import { getOrSetCache } from "@/lib/redis/cache";
 import { CACHE_KEYS, hashFilters } from "@/lib/redis/keys";
@@ -12,12 +12,14 @@ import { ADDRESS_COUNTRIES } from "@/lib/location/address-countries";
 
 import { reviveBookingDTO, toBookingDTO, type BookingDTO } from "./mappers";
 
-import { BookingStatus, PaymentStatus, RefundStatus, ListingStatus, NotificationType, Role, ConversationStatus, SpecialOfferStatus, MessageType, ListingCoHostStatus } from "@/generated/prisma/enums";
+import { BookingStatus, PaymentStatus, PaymentProvider, RefundStatus, ListingStatus, NotificationType, Role, ConversationStatus, SpecialOfferStatus, MessageType, ListingCoHostStatus } from "@/generated/prisma/enums";
+import { nanoid } from "nanoid";
 import { notificationService } from "./notification.service";
 import { messagingService } from "./messaging.service";
 import { auditService } from "./audit.service";
 
-import type { Prisma } from "@/generated/prisma/client";
+import { Prisma } from "@/generated/prisma/client";
+import { calculateRefundEligibility } from "@/lib/refund/policy-engine";
 import type { CalculatedTaxItem, HostPayoutBreakdown, ListingTaxDTO } from "@/lib/tax/types";
 import { getHostServiceFeePercentage } from "@/services/app-settings.service";
 import { getNonRefundableDiscountPercentage } from "@/services/app-settings.service";
@@ -730,6 +732,34 @@ async function create(
       });
     }
 
+    // Persist the canonical payment record atomically with the reservation
+    const paymentPolicy = getPaymentPolicy();
+    const isMockMode = paymentPolicy.paymentMode === "MOCK";
+    const paymentProvider = isMockMode ? PaymentProvider.MOCK : PaymentProvider.DEFERRED;
+    const isCapturedOnCreation = isMockMode && automaticallyApprove;
+    const initialPaymentStatus = isCapturedOnCreation ? PaymentStatus.CAPTURED : PaymentStatus.PENDING;
+
+    await tx.bookingPayment.create({
+      data: {
+        bookingId: createdBooking.id,
+        provider: paymentProvider,
+        status: initialPaymentStatus,
+        currency: quote.currency || "SAR",
+        amount: quote.guestTotal,
+        capturedAmount: isCapturedOnCreation ? quote.guestTotal : 0,
+        refundedAmount: 0,
+        idempotencyKey: input.requestSubmissionId ? `pay_idem_${input.requestSubmissionId}` : `pay_idem_${createdBooking.id}`,
+        providerPaymentId: isCapturedOnCreation ? `mock_ch_${nanoid(12)}` : null,
+        capturedAt: isCapturedOnCreation ? new Date() : null,
+        metadata: {
+          paymentPlan: input.paymentPlan ?? "FULL",
+          bookingMode,
+          expectedGuestTotal: input.expectedGuestTotal,
+          pricingSnapshotVersion: "v1",
+        },
+      },
+    });
+
     // Persist the request message and its booking relationship atomically. A
     // booking request must never succeed with a disconnected host message.
     await messagingService.getOrCreateBookingConversation({
@@ -1023,7 +1053,7 @@ async function getRequestDetailsForHost(actor: AuthUser, id: string): Promise<Ho
     throw AppError.notFound("Booking request not found");
   }
 
-  if (booking.listing.hostId !== actor.id) {
+  if (booking.listing.hostId !== actor.id && actor.role !== Role.ADMIN) {
     throw AppError.forbidden("You do not have permission to view this booking request");
   }
 
@@ -1121,6 +1151,20 @@ async function acceptBookingRequest(
     const isExpired = isBookingRequestExpired(booking.createdAt, new Date(), booking.endDate);
     if (isExpired) {
       const existingBreakdown = (booking.priceBreakdown as Record<string, any>) || {};
+      const payment = await tx.bookingPayment.findFirst({
+        where: { bookingId: booking.id },
+        orderBy: { createdAt: "desc" },
+      });
+      if (payment && (payment.status === PaymentStatus.PENDING || payment.status === PaymentStatus.AUTHORIZED)) {
+        await tx.bookingPayment.update({
+          where: { id: payment.id },
+          data: {
+            status: PaymentStatus.VOIDED,
+            voidedAt: new Date(),
+          },
+        });
+      }
+
       await tx.booking.update({
         where: { id: booking.id },
         data: {
@@ -1186,12 +1230,44 @@ async function acceptBookingRequest(
       );
     }
 
+    const existingPayment = await tx.bookingPayment.findFirst({
+      where: { bookingId: id },
+      orderBy: { createdAt: "desc" },
+    });
+    if (existingPayment) {
+      if (policy.paymentMode === "MOCK" && existingPayment.status === PaymentStatus.PENDING) {
+        await tx.bookingPayment.update({
+          where: { id: existingPayment.id },
+          data: {
+            status: PaymentStatus.CAPTURED,
+            capturedAmount: existingPayment.amount,
+            capturedAt: new Date(),
+            providerPaymentId: existingPayment.providerPaymentId || `mock_ch_${nanoid(12)}`,
+          },
+        });
+      }
+    } else {
+      await tx.bookingPayment.create({
+        data: {
+          bookingId: booking.id,
+          provider: policy.paymentMode === "MOCK" ? PaymentProvider.MOCK : PaymentProvider.DEFERRED,
+          status: policy.paymentMode === "MOCK" ? PaymentStatus.CAPTURED : PaymentStatus.PENDING,
+          currency: booking.currency || "SAR",
+          amount: booking.totalPrice ?? 0,
+          capturedAmount: policy.paymentMode === "MOCK" ? (booking.totalPrice ?? 0) : 0,
+          capturedAt: policy.paymentMode === "MOCK" ? new Date() : null,
+          providerPaymentId: policy.paymentMode === "MOCK" ? `mock_ch_${nanoid(12)}` : null,
+          idempotencyKey: `pay_idem_${booking.id}`,
+        },
+      });
+    }
+
     const existingBreakdown = (booking.priceBreakdown as Record<string, any>) || {};
     const priceBreakdown = {
       ...existingBreakdown,
-      paymentMode: "DEFERRED",
-      paymentStatus: "PAYMENT_PENDING",
-      paymentProvider: null,
+      paymentMode: policy.paymentMode === "MOCK" ? "MOCK" : "DEFERRED",
+      paymentStatus: policy.paymentMode === "MOCK" ? "CAPTURED" : "PAYMENT_PENDING",
+      paymentProvider: policy.paymentMode === "MOCK" ? "MOCK" : null,
       acceptance: {
         acceptedAt: new Date().toISOString(),
         acceptedBy: "HOST",
@@ -1313,6 +1389,20 @@ async function rejectBookingRequest(
       },
       ...(isExpired ? { expiredAt: new Date().toISOString() } : {}),
     } as Prisma.InputJsonValue;
+
+    const payment = await tx.bookingPayment.findFirst({
+      where: { bookingId: b.id },
+      orderBy: { createdAt: "desc" },
+    });
+    if (payment && (payment.status === PaymentStatus.PENDING || payment.status === PaymentStatus.AUTHORIZED)) {
+      await tx.bookingPayment.update({
+        where: { id: payment.id },
+        data: {
+          status: PaymentStatus.VOIDED,
+          voidedAt: new Date(),
+        },
+      });
+    }
 
     const updated = await tx.booking.update({
       where: { id },
@@ -1488,6 +1578,20 @@ async function expireBookingRequest(
       },
       expiredAt: new Date().toISOString(),
     } as Prisma.InputJsonValue;
+
+    const payment = await tx.bookingPayment.findFirst({
+      where: { bookingId: b.id },
+      orderBy: { createdAt: "desc" },
+    });
+    if (payment && (payment.status === PaymentStatus.PENDING || payment.status === PaymentStatus.AUTHORIZED)) {
+      await tx.bookingPayment.update({
+        where: { id: payment.id },
+        data: {
+          status: PaymentStatus.VOIDED,
+          voidedAt: new Date(),
+        },
+      });
+    }
 
     const updated = await tx.booking.update({
       where: { id },
@@ -1771,10 +1875,57 @@ async function cancelBookingByGuest(actor: AuthUser, id: string): Promise<Bookin
       typeof originalSnapshot.payoutBreakdown === "object"
         ? (originalSnapshot.payoutBreakdown as Record<string, unknown>)
         : {};
-    const hostPayoutRetained =
+    const originalNetHostPayout =
       typeof payoutBreakdown.netHostPayout === "number"
         ? payoutBreakdown.netHostPayout
         : 0;
+
+    const payment = await tx.bookingPayment.findFirst({
+      where: { bookingId: booking.id },
+      orderBy: { createdAt: "desc" },
+    });
+
+    const nights = typeof originalSnapshot.nights === "number"
+      ? originalSnapshot.nights
+      : Math.max(1, Math.ceil((booking.endDate.getTime() - booking.startDate.getTime()) / (86400 * 1000)));
+    const cleaningFee = booking.cleaningFee ?? (typeof originalSnapshot.cleaningFee === "number" ? originalSnapshot.cleaningFee : 0);
+    const serviceFee = typeof originalSnapshot.serviceFee === "number"
+      ? originalSnapshot.serviceFee
+      : (typeof originalSnapshot.guestServiceFee === "number" ? originalSnapshot.guestServiceFee : 0);
+    const taxes = typeof originalSnapshot.taxTotal === "number" ? originalSnapshot.taxTotal : 0;
+    const accommodationTotal = typeof originalSnapshot.nightlySubtotal === "number"
+      ? originalSnapshot.nightlySubtotal
+      : ((booking.totalPrice ?? 0) - cleaningFee - serviceFee - taxes);
+
+    // A confirmed booking is not evidence that funds were captured. Refund
+    // eligibility is constrained to the payment ledger only.
+    const capturedAmount = payment?.capturedAmount ?? 0;
+    const alreadyRefundedAmount = payment?.refundedAmount ?? 0;
+
+    const eligibility = calculateRefundEligibility({
+      bookingId: booking.id,
+      cancellationActor: "GUEST",
+      effectiveCancellationTime: now,
+      policyIdSnapshot: (originalSnapshot.cancellationPolicySnapshot as string) || booking.cancellationPolicy || booking.listing.cancellationPolicy,
+      policyVersion: "v1",
+      isNonRefundable: Boolean(booking.isNonRefundable),
+      nights,
+      checkInDate: booking.startDate,
+      checkInTimeStr: booking.listing.checkInStart,
+      totalPrice: booking.totalPrice ?? 0,
+      accommodationTotal,
+      cleaningFee,
+      serviceFee,
+      taxes,
+      currency: booking.currency || "SAR",
+      capturedAmount,
+      alreadyRefundedAmount,
+    });
+
+    const guestRefundAmount = eligibility.totalRefundableAmount;
+    const hostPayoutRetained = booking.isNonRefundable
+      ? originalNetHostPayout
+      : Math.max(0, originalNetHostPayout - guestRefundAmount);
 
     const priceBreakdown = {
       ...originalSnapshot,
@@ -1782,11 +1933,51 @@ async function cancelBookingByGuest(actor: AuthUser, id: string): Promise<Bookin
         cancelledAt: now.toISOString(),
         cancelledBy: "GUEST",
         isNonRefundable: Boolean(booking.isNonRefundable),
-        policy: booking.cancellationPolicy || "FLEXIBLE",
-        guestRefundAmount: booking.isNonRefundable ? 0 : (extractStoredGuestTotal(booking) ?? 0),
-        hostPayoutRetained: booking.isNonRefundable ? hostPayoutRetained : 0,
+        policy: eligibility.policyUsed,
+        policyVersion: eligibility.policyVersion,
+        milestoneApplied: eligibility.milestoneApplied,
+        guestRefundAmount,
+        hostPayoutRetained,
+        explanation: eligibility.explanation,
+        requiresAttention: eligibility.status === "NEEDS_REVIEW",
       },
     } as Prisma.InputJsonValue;
+
+    if (payment && (payment.status === PaymentStatus.PENDING || payment.status === PaymentStatus.AUTHORIZED)) {
+      await tx.bookingPayment.update({
+        where: { id: payment.id },
+        data: {
+          status: PaymentStatus.VOIDED,
+          voidedAt: now,
+        },
+      });
+    } else if (payment && (payment.status === PaymentStatus.CAPTURED || payment.status === PaymentStatus.PARTIALLY_REFUNDED) && guestRefundAmount > 0) {
+      const refundStatus = RefundStatus.PENDING;
+
+      await tx.bookingRefund.create({
+        data: {
+          bookingId: booking.id,
+          paymentId: payment.id,
+          refundReference: `REF-${nanoid(8).toUpperCase()}`,
+          idempotencyKey: `idem_cancel_${booking.id}_${now.getTime()}`,
+          status: refundStatus,
+          currency: payment.currency || "SAR",
+          amount: guestRefundAmount,
+          reason: `Guest cancellation: ${eligibility.explanation}`,
+          requestedById: actor.id,
+          approvedById: null,
+          processedAt: null,
+          succeededAt: null,
+          providerRefundId: null,
+          metadata: {
+            refundType: guestRefundAmount >= payment.capturedAmount ? "FULL" : "PARTIAL",
+            milestoneApplied: eligibility.milestoneApplied,
+            policyUsed: eligibility.policyUsed,
+          },
+        },
+      });
+
+    }
 
     const updated = await tx.booking.update({
       where: { id: booking.id },
@@ -1911,6 +2102,12 @@ async function cancelBookingByHost(
         ? (booking.priceBreakdown as Record<string, unknown>)
         : {};
 
+    const payment = await tx.bookingPayment.findFirst({
+      where: { bookingId: booking.id },
+      orderBy: { createdAt: "desc" },
+    });
+    const refundDue = payment ? Math.max(0, payment.capturedAmount - payment.refundedAmount) : 0;
+
     const priceBreakdown = {
       ...originalSnapshot,
       cancellation: {
@@ -1919,10 +2116,43 @@ async function cancelBookingByHost(
         hostId: actor.id,
         reason: reason?.trim() || null,
         isExcluded: Boolean(isExcluded),
-        guestRefundAmount: extractStoredGuestTotal(booking) ?? 0,
+        guestRefundAmount: refundDue,
         hostPayoutRetained: 0,
       },
     } as Prisma.InputJsonValue;
+
+    if (payment && (payment.status === PaymentStatus.PENDING || payment.status === PaymentStatus.AUTHORIZED)) {
+      await tx.bookingPayment.update({
+        where: { id: payment.id },
+        data: {
+          status: PaymentStatus.VOIDED,
+          voidedAt: now,
+        },
+      });
+    } else if (payment && (payment.status === PaymentStatus.CAPTURED || payment.status === PaymentStatus.PARTIALLY_REFUNDED) && refundDue > 0) {
+      await tx.bookingRefund.create({
+        data: {
+          bookingId: booking.id,
+          paymentId: payment.id,
+          refundReference: `REF-${nanoid(8).toUpperCase()}`,
+          idempotencyKey: `idem_host_cancel_${booking.id}_${now.getTime()}`,
+          status: RefundStatus.PENDING,
+          currency: payment.currency || "SAR",
+          amount: refundDue,
+          reason: `Host cancellation: ${reason?.trim() || "Host cancelled reservation"}`,
+          requestedById: actor.id,
+          approvedById: null,
+          processedAt: null,
+          succeededAt: null,
+          providerRefundId: null,
+          metadata: {
+            refundType: "FULL",
+            cancellationActor: "HOST",
+          },
+        },
+      });
+
+    }
 
     const updated = await tx.booking.update({
       where: { id: booking.id },
@@ -1939,7 +2169,7 @@ async function cancelBookingByHost(
       userId: cancelled.userId,
       type: NotificationType.BOOKING,
       title: `Reservation Cancelled by Host: ${cancelled.listing.title}`,
-      message: `The host had to cancel your reservation for ${cancelled.listing.title}. A full refund of SAR ${((cancelled.totalPrice ?? 0) / 100).toFixed(2)} has been issued.`,
+      message: `The host had to cancel your reservation for ${cancelled.listing.title}. Any eligible refund has been recorded and will be settled only after payment-provider confirmation.`,
       entityId: cancelled.id,
       entityType: "booking",
       link: "/profile/tab/past",
@@ -2073,7 +2303,14 @@ async function listForAdmin(actor: AuthUser, opts: AdminBookingListOptions = {})
       where.status = BookingStatus.CONFIRMED;
       where.endDate = { lt: now };
     } else if (tabLower === "cancelled") {
-      where.status = BookingStatus.CANCELLED;
+      // Genuine cancellations: status=CANCELLED, but NOT a host-rejected request
+      // (rejection key present) and NOT an expired request (expiredAt key present).
+      // Rejected and expired requests have their own dedicated tabs.
+      where.AND = [
+        { status: BookingStatus.CANCELLED },
+        { priceBreakdown: { path: ["rejection"], equals: Prisma.AnyNull } },
+        { priceBreakdown: { path: ["expiredAt"], equals: Prisma.AnyNull } },
+      ];
     } else if (tabLower === "rejected") {
       where.status = BookingStatus.CANCELLED;
       where.priceBreakdown = {
@@ -2562,11 +2799,15 @@ async function getAdminBookingSummary(actor: AuthUser, options: AdminBookingSumm
         endDate: { lt: now },
       },
     }),
-    // Card 7: Canceled Bookings
+    // Card 7: Canceled Bookings (genuine cancellations — excludes host rejections and expired requests)
     prisma.booking.count({
       where: {
-        status: BookingStatus.CANCELLED,
-        ...(createdAtFilter ? { createdAt: createdAtFilter } : {}),
+        AND: [
+          { status: BookingStatus.CANCELLED },
+          { priceBreakdown: { path: ["rejection"], equals: Prisma.AnyNull } },
+          { priceBreakdown: { path: ["expiredAt"], equals: Prisma.AnyNull } },
+          ...(createdAtFilter ? [{ createdAt: createdAtFilter }] : []),
+        ],
       },
     }),
     // Card 8: Payment Issues (failed payment or voided transaction records)
@@ -2870,6 +3111,8 @@ export interface AdminCancellationItem {
   isNonRefundable: boolean;
   createdAt: string;
   updatedAt: string;
+  paymentStatus: string;
+  refundStatus: string;
   user: {
     id: string;
     name: string | null;
@@ -2893,7 +3136,7 @@ export interface AdminCancellationItem {
   };
   cancellation: {
     cancelledAt: string | null;
-    cancelledBy: "GUEST" | "HOST" | "ADMIN" | null;
+    cancelledBy: CancellationInitiator | null;
     reason: string | null;
     notes?: string | null;
     adminId?: string | null;
@@ -2924,7 +3167,7 @@ export interface AdminCancellationListOptions {
   page?: number;
   limit?: number;
   tab?: "all" | "guest" | "host" | "admin" | "attention" | string;
-  initiator?: "GUEST" | "HOST" | "ADMIN" | "ALL";
+  initiator?: "GUEST" | "HOST" | "ADMIN" | "UNKNOWN" | "ALL";
   search?: string;
   policy?: string;
   dateFrom?: string;
@@ -2934,6 +3177,10 @@ export interface AdminCancellationListOptions {
   listingId?: string;
   hostId?: string;
   guestId?: string;
+  city?: string;
+  country?: string;
+  paymentStatus?: string;
+  refundStatus?: string;
   sortBy?: "cancelledAt" | "startDate" | "totalPrice" | "createdAt";
   sortOrder?: "asc" | "desc";
 }
@@ -2943,6 +3190,7 @@ export interface AdminCancellationSummary {
   guestCancellations: number;
   hostCancellations: number;
   adminCancellations: number;
+  unknownCancellations: number;
   requiresAttention: number;
   currency: string;
 }
@@ -3077,6 +3325,12 @@ async function cancelBookingByAdmin(
         ? (booking.priceBreakdown as Record<string, unknown>)
         : {};
 
+    const payment = await tx.bookingPayment.findFirst({
+      where: { bookingId: booking.id },
+      orderBy: { createdAt: "desc" },
+    });
+    const refundDue = payment ? Math.max(0, payment.capturedAmount - payment.refundedAmount) : 0;
+
     const priceBreakdown = {
       ...originalSnapshot,
       cancellation: {
@@ -3086,10 +3340,44 @@ async function cancelBookingByAdmin(
         adminEmail: actor.email,
         reason: reason.trim(),
         notes: notes?.trim() || null,
-        guestRefundAmount: extractStoredGuestTotal(booking) ?? 0,
+        guestRefundAmount: refundDue,
         hostPayoutRetained: 0,
       },
     } as Prisma.InputJsonValue;
+
+    if (payment && (payment.status === PaymentStatus.PENDING || payment.status === PaymentStatus.AUTHORIZED)) {
+      await tx.bookingPayment.update({
+        where: { id: payment.id },
+        data: {
+          status: PaymentStatus.VOIDED,
+          voidedAt: now,
+        },
+      });
+    } else if (payment && (payment.status === PaymentStatus.CAPTURED || payment.status === PaymentStatus.PARTIALLY_REFUNDED) && refundDue > 0) {
+      await tx.bookingRefund.create({
+        data: {
+          bookingId: booking.id,
+          paymentId: payment.id,
+          refundReference: `REF-${nanoid(8).toUpperCase()}`,
+          idempotencyKey: `idem_admin_cancel_${booking.id}_${now.getTime()}`,
+          status: RefundStatus.PENDING,
+          currency: payment.currency || "SAR",
+          amount: refundDue,
+          reason: `Admin cancellation: ${reason.trim()}`,
+          requestedById: actor.id,
+          approvedById: null,
+          processedAt: null,
+          succeededAt: null,
+          providerRefundId: null,
+          metadata: {
+            refundType: "FULL",
+            cancellationActor: "ADMIN",
+            adminNotes: notes?.trim() || null,
+          },
+        },
+      });
+
+    }
 
     const updated = await tx.booking.update({
       where: { id: booking.id },
@@ -3207,92 +3495,166 @@ async function listCancellationsForAdmin(
   const skip = (page - 1) * limit;
   const take = limit;
 
-  const where: Prisma.BookingWhereInput = {
-    status: BookingStatus.CANCELLED,
-  };
+  // Authoritative base conditions:
+  // Genuine cancellations must have status CANCELLED, and must NOT be a rejected or expired booking request.
+  const andConditions: Prisma.BookingWhereInput[] = [
+    { status: BookingStatus.CANCELLED },
+    { priceBreakdown: { path: ["rejection"], equals: Prisma.AnyNull } },
+    { priceBreakdown: { path: ["expiredAt"], equals: Prisma.AnyNull } },
+  ];
 
   const tabLower = (opts.tab || "").toLowerCase();
   const initiatorUpper = (opts.initiator || "").toUpperCase();
 
+  // Tab and initiator filtering
   if (tabLower === "guest" || initiatorUpper === "GUEST") {
-    where.priceBreakdown = {
-      path: ["cancellation", "cancelledBy"],
-      equals: "GUEST",
-    };
+    andConditions.push({
+      priceBreakdown: {
+        path: ["cancellation", "cancelledBy"],
+        equals: "GUEST",
+      },
+    });
   } else if (tabLower === "host" || initiatorUpper === "HOST") {
-    where.OR = [
-      {
-        priceBreakdown: {
-          path: ["cancellation", "cancelledBy"],
-          equals: "HOST",
-        },
+    andConditions.push({
+      priceBreakdown: {
+        path: ["cancellation", "cancelledBy"],
+        equals: "HOST",
       },
-      {
-        priceBreakdown: {
-          path: ["rejection", "rejectedBy"],
-          equals: "HOST",
-        },
-      },
-    ];
+    });
   } else if (tabLower === "admin" || initiatorUpper === "ADMIN") {
-    where.priceBreakdown = {
-      path: ["cancellation", "cancelledBy"],
-      equals: "ADMIN",
-    };
+    andConditions.push({
+      priceBreakdown: {
+        path: ["cancellation", "cancelledBy"],
+        equals: "ADMIN",
+      },
+    });
   } else if (tabLower === "attention") {
-    where.OR = [
-      { payments: { some: { status: { in: [PaymentStatus.FAILED, PaymentStatus.VOIDED] } } } },
-      { refunds: { some: { status: { in: [RefundStatus.PENDING, RefundStatus.PROCESSING] } } } },
-    ];
+    andConditions.push({
+      OR: [
+        { priceBreakdown: { path: ["cancellation", "requiresAttention"], equals: true } },
+        { payments: { some: { status: { in: [PaymentStatus.FAILED, PaymentStatus.VOIDED] } } } },
+        { refunds: { some: { status: { in: [RefundStatus.PENDING, RefundStatus.PROCESSING, RefundStatus.FAILED] } } } },
+      ],
+    });
+  } else if (initiatorUpper === "UNKNOWN") {
+    andConditions.push({
+      OR: [
+        { priceBreakdown: { path: ["cancellation", "cancelledBy"], equals: Prisma.AnyNull } },
+        { priceBreakdown: { path: ["cancellation"], equals: Prisma.AnyNull } },
+      ],
+    });
   }
 
+  // Policy filter
   if (opts.policy && opts.policy !== "ALL") {
-    where.cancellationPolicy = opts.policy;
+    andConditions.push({ cancellationPolicy: { equals: opts.policy, mode: "insensitive" } });
   }
 
+  // Listing filter
   if (opts.listingId) {
-    where.listingId = opts.listingId;
+    andConditions.push({ listingId: opts.listingId });
   }
 
+  // Guest filter
   if (opts.guestId) {
-    where.userId = opts.guestId;
+    andConditions.push({ userId: opts.guestId });
   }
 
+  // Host filter
   if (opts.hostId) {
-    where.listing = {
-      ...(where.listing as Prisma.ListingWhereInput || {}),
-      hostId: opts.hostId,
-    };
+    andConditions.push({ listing: { hostId: opts.hostId } });
   }
 
+  // City filter
+  if (opts.city && opts.city.trim()) {
+    andConditions.push({ listing: { city: { contains: opts.city.trim(), mode: "insensitive" } } });
+  }
+
+  // Country filter
+  if (opts.country && opts.country.trim()) {
+    andConditions.push({ listing: { country: { contains: opts.country.trim(), mode: "insensitive" } } });
+  }
+
+  // Stay check-in date range
   if (opts.checkInFrom || opts.checkInTo) {
     const dateFilter: Prisma.DateTimeFilter = {};
     if (opts.checkInFrom) dateFilter.gte = parseBookingDate(opts.checkInFrom);
     if (opts.checkInTo) dateFilter.lte = parseBookingDate(opts.checkInTo);
-    where.startDate = dateFilter;
+    andConditions.push({ startDate: dateFilter });
   }
 
+  // Cancellation date range (verified event timestamp)
+  if (opts.dateFrom || opts.dateTo) {
+    const dFromIso = opts.dateFrom ? new Date(opts.dateFrom).toISOString() : undefined;
+    const dToIso = opts.dateTo
+      ? new Date(`${opts.dateTo.slice(0, 10)}T23:59:59.999Z`).toISOString()
+      : undefined;
+
+    const dateFilter: Prisma.DateTimeFilter = {};
+    const cancelAtFilter: Record<string, any> = {
+      path: ["cancellation", "cancelledAt"],
+    };
+
+    if (dFromIso) {
+      cancelAtFilter.gte = dFromIso;
+      dateFilter.gte = new Date(dFromIso);
+    }
+    if (dToIso) {
+      cancelAtFilter.lte = dToIso;
+      dateFilter.lte = new Date(dToIso);
+    }
+
+    andConditions.push({
+      OR: [
+        { priceBreakdown: cancelAtFilter as any },
+        {
+          AND: [
+            { priceBreakdown: { path: ["cancellation", "cancelledAt"], equals: Prisma.AnyNull } },
+            { updatedAt: dateFilter },
+          ],
+        },
+      ],
+    });
+  }
+
+  // Search filter across booking reference, user, host, property, location
   if (opts.search && opts.search.trim()) {
     const q = opts.search.trim();
-    const searchFilter: Prisma.BookingWhereInput[] = [
-      { id: { contains: q, mode: "insensitive" } },
-      { submissionId: { contains: q, mode: "insensitive" } },
-      { user: { name: { contains: q, mode: "insensitive" } } },
-      { user: { email: { contains: q, mode: "insensitive" } } },
-      { listing: { title: { contains: q, mode: "insensitive" } } },
-      { listing: { host: { name: { contains: q, mode: "insensitive" } } } },
-      { listing: { host: { email: { contains: q, mode: "insensitive" } } } },
-    ];
-    if (where.OR) {
-      where.AND = [
-        { OR: where.OR },
-        { OR: searchFilter },
-      ];
-      delete where.OR;
-    } else {
-      where.OR = searchFilter;
-    }
+    andConditions.push({
+      OR: [
+        { id: { contains: q, mode: "insensitive" } },
+        { submissionId: { contains: q, mode: "insensitive" } },
+        { user: { name: { contains: q, mode: "insensitive" } } },
+        { user: { email: { contains: q, mode: "insensitive" } } },
+        { listing: { title: { contains: q, mode: "insensitive" } } },
+        { listing: { city: { contains: q, mode: "insensitive" } } },
+        { listing: { country: { contains: q, mode: "insensitive" } } },
+        { listing: { host: { name: { contains: q, mode: "insensitive" } } } },
+        { listing: { host: { email: { contains: q, mode: "insensitive" } } } },
+      ],
+    });
   }
+
+  // Payment status filter
+  if (opts.paymentStatus && opts.paymentStatus !== "ALL") {
+    andConditions.push({
+      OR: [
+        { payments: { some: { status: opts.paymentStatus as PaymentStatus } } },
+        { priceBreakdown: { path: ["paymentStatus"], equals: opts.paymentStatus } },
+      ],
+    });
+  }
+
+  // Refund status filter
+  if (opts.refundStatus && opts.refundStatus !== "ALL") {
+    andConditions.push({
+      refunds: { some: { status: opts.refundStatus as RefundStatus } },
+    });
+  }
+
+  const where: Prisma.BookingWhereInput = {
+    AND: andConditions,
+  };
 
   const orderBy: Prisma.BookingOrderByWithRelationInput[] = [];
   const sortOrder = opts.sortOrder === "asc" ? "asc" : "desc";
@@ -3307,127 +3669,177 @@ async function listCancellationsForAdmin(
   let total: number;
   try {
     [bookings, total] = await Promise.all([
-    prisma.booking.findMany({
-      where,
-      skip,
-      take,
-      orderBy,
-      select: {
-        id: true,
-        submissionId: true,
-        userId: true,
-        listingId: true,
-        status: true,
-        startDate: true,
-        endDate: true,
-        guests: true,
-        totalPrice: true,
-        nightlyPrice: true,
-        cleaningFee: true,
-        currency: true,
-        cancellationPolicy: true,
-        isNonRefundable: true,
-        priceBreakdown: true,
-        createdAt: true,
-        updatedAt: true,
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            image: true,
-            phone: true,
-          },
-        },
-        listing: {
-          select: {
-            id: true,
-            title: true,
-            price: true,
-            city: true,
-            country: true,
-            photos: true,
-            cancellationPolicy: true,
-            host: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-              },
-            },
-          },
-        },
-        payments: {
-          select: {
-            id: true,
-            status: true,
-            amount: true,
-            capturedAmount: true,
-            refundedAmount: true,
-            provider: true,
-            createdAt: true,
-          },
-        },
-        refunds: {
-          select: {
-            id: true,
-            status: true,
-            amount: true,
-            reason: true,
-            createdAt: true,
-          },
-        },
-      },
-    }),
-    prisma.booking.count({ where }),
-    ]);
-  } catch (error) {
-    if (!isMissingFinancialTable(error)) throw error;
-    if (tabLower === "attention") {
-      throw AppError.badRequest("Attention filtering is unavailable until the payment/refund migration is applied.");
-    }
-    [bookings, total] = await Promise.all([
       prisma.booking.findMany({
         where,
         skip,
         take,
         orderBy,
         select: {
-          id: true, submissionId: true, userId: true, listingId: true, status: true,
-          startDate: true, endDate: true, guests: true, totalPrice: true,
-          nightlyPrice: true, cleaningFee: true, currency: true, cancellationPolicy: true,
-          isNonRefundable: true, priceBreakdown: true, createdAt: true, updatedAt: true,
-          user: { select: { id: true, name: true, email: true, image: true, phone: true } },
+          id: true,
+          submissionId: true,
+          userId: true,
+          listingId: true,
+          status: true,
+          startDate: true,
+          endDate: true,
+          guests: true,
+          totalPrice: true,
+          nightlyPrice: true,
+          cleaningFee: true,
+          currency: true,
+          cancellationPolicy: true,
+          isNonRefundable: true,
+          priceBreakdown: true,
+          createdAt: true,
+          updatedAt: true,
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              image: true,
+              phone: true,
+            },
+          },
           listing: {
             select: {
-              id: true, title: true, price: true, city: true, country: true,
-              photos: true, cancellationPolicy: true,
+              id: true,
+              title: true,
+              price: true,
+              city: true,
+              country: true,
+              photos: true,
+              cancellationPolicy: true,
+              host: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                },
+              },
+            },
+          },
+          payments: {
+            select: {
+              id: true,
+              status: true,
+              amount: true,
+              capturedAmount: true,
+              refundedAmount: true,
+              provider: true,
+              createdAt: true,
+            },
+          },
+          refunds: {
+            select: {
+              id: true,
+              status: true,
+              amount: true,
+              reason: true,
+              createdAt: true,
+            },
+          },
+        },
+      }),
+      prisma.booking.count({ where }),
+    ]);
+  } catch (error) {
+    if (!isMissingFinancialTable(error)) throw error;
+    // Fallback if financial tables are missing
+    const fallbackWhere = { ...where };
+    [bookings, total] = await Promise.all([
+      prisma.booking.findMany({
+        where: fallbackWhere,
+        skip,
+        take,
+        orderBy,
+        select: {
+          id: true,
+          submissionId: true,
+          userId: true,
+          listingId: true,
+          status: true,
+          startDate: true,
+          endDate: true,
+          guests: true,
+          totalPrice: true,
+          nightlyPrice: true,
+          cleaningFee: true,
+          currency: true,
+          cancellationPolicy: true,
+          isNonRefundable: true,
+          priceBreakdown: true,
+          createdAt: true,
+          updatedAt: true,
+          user: {
+            select: { id: true, name: true, email: true, image: true, phone: true },
+          },
+          listing: {
+            select: {
+              id: true,
+              title: true,
+              price: true,
+              city: true,
+              country: true,
+              photos: true,
+              cancellationPolicy: true,
               host: { select: { id: true, name: true, email: true } },
             },
           },
         },
       }) as any[],
-      prisma.booking.count({ where }),
+      prisma.booking.count({ where: fallbackWhere }),
     ]);
   }
 
   const cancellations: AdminCancellationItem[] = bookings.map((b: any) => {
-    const breakdown = (b.priceBreakdown as Record<string, any>) || {};
-    const rejection = breakdown.rejection || {};
-    const rawCancellation = breakdown.cancellation || {};
+    const details = resolveCancellationDetails(b);
 
-    const cancelledBy =
-      rawCancellation.cancelledBy ||
-      rejection.rejectedBy ||
-      (breakdown.expiredAt || rejection.reason === "EXPIRED" ? "SYSTEM" : null);
+    const listingData = b.listing
+      ? {
+          id: b.listing.id,
+          title: b.listing.title || "Untitled Property",
+          city: b.listing.city || null,
+          country: b.listing.country || null,
+          photos: sanitizeListingSecrets(b.listing).photos || [],
+          price: b.listing.price || 0,
+          cancellationPolicy: b.listing.cancellationPolicy || b.cancellationPolicy || "FLEXIBLE",
+          host: {
+            id: b.listing.host?.id || "unknown",
+            name: b.listing.host?.name || "Host Profile Unavailable",
+            email: b.listing.host?.email || null,
+          },
+        }
+      : {
+          id: b.listingId,
+          title: "Archived Listing",
+          city: null,
+          country: null,
+          photos: [],
+          price: 0,
+          cancellationPolicy: b.cancellationPolicy || "FLEXIBLE",
+          host: {
+            id: "unknown",
+            name: "Host Profile Unavailable",
+            email: null,
+          },
+        };
 
-    const reason = rawCancellation.reason || rejection.reason || (breakdown.expiredAt ? "Request expired after 24 hours" : null);
-    const cancelledAt = rawCancellation.cancelledAt || rejection.rejectedAt || breakdown.expiredAt || b.updatedAt.toISOString();
-
-    const requiresAttention =
-      (b.payments || []).some((p: any) => p.status === PaymentStatus.FAILED || p.status === PaymentStatus.VOIDED) ||
-      (b.refunds || []).some((refund: any) => refund.status === RefundStatus.PENDING || refund.status === RefundStatus.PROCESSING) ||
-      Boolean(rawCancellation.requiresAttention);
+    const userData = b.user
+      ? {
+          id: b.user.id,
+          name: b.user.name || "Guest Profile Unavailable",
+          email: b.user.email || null,
+          image: b.user.image || null,
+          phone: b.user.phone || null,
+        }
+      : {
+          id: b.userId,
+          name: "Guest Profile Unavailable",
+          email: null,
+          image: null,
+          phone: null,
+        };
 
     return {
       id: b.id,
@@ -3440,24 +3852,23 @@ async function listCancellationsForAdmin(
       nightlyPrice: b.nightlyPrice,
       cleaningFee: b.cleaningFee,
       currency: b.currency,
-      cancellationPolicy: b.cancellationPolicy,
+      cancellationPolicy: b.cancellationPolicy || listingData.cancellationPolicy,
       isNonRefundable: b.isNonRefundable,
       createdAt: b.createdAt.toISOString(),
       updatedAt: b.updatedAt.toISOString(),
-      user: b.user,
-      listing: {
-        ...b.listing,
-        photos: sanitizeListingSecrets(b.listing).photos || [],
-      },
+      paymentStatus: details.paymentStatus,
+      refundStatus: details.refundStatus,
+      user: userData,
+      listing: listingData,
       cancellation: {
-        cancelledAt,
-        cancelledBy: (cancelledBy === "GUEST" || cancelledBy === "HOST" || cancelledBy === "ADMIN") ? cancelledBy : null,
-        reason,
-        notes: rawCancellation.notes || null,
-        adminId: rawCancellation.adminId || null,
-        adminEmail: rawCancellation.adminEmail || null,
-        guestRefundAmount: rawCancellation.guestRefundAmount ?? null,
-        hostPayoutRetained: rawCancellation.hostPayoutRetained ?? null,
+        cancelledAt: details.cancelledAt,
+        cancelledBy: details.cancelledBy,
+        reason: details.reason,
+        notes: details.notes,
+        adminId: details.adminId,
+        adminEmail: details.adminEmail,
+        guestRefundAmount: details.guestRefundAmount,
+        hostPayoutRetained: details.hostPayoutRetained,
       },
       payments: (b.payments || []).map((p: any) => ({
         id: p.id,
@@ -3475,7 +3886,7 @@ async function listCancellationsForAdmin(
         reason: r.reason,
         createdAt: r.createdAt.toISOString(),
       })),
-      requiresAttention,
+      requiresAttention: details.requiresAttention,
     };
   });
 
@@ -3493,6 +3904,14 @@ async function listCancellationsForAdmin(
 async function getCancellationSummaryForAdmin(actor: AuthUser): Promise<AdminCancellationSummary> {
   assertRole(actor, [Role.ADMIN]);
 
+  const genuineBase: Prisma.BookingWhereInput = {
+    status: BookingStatus.CANCELLED,
+    priceBreakdown: { path: ["rejection"], equals: Prisma.AnyNull },
+    AND: [
+      { priceBreakdown: { path: ["expiredAt"], equals: Prisma.AnyNull } },
+    ],
+  };
+
   const [
     totalCancellations,
     guestCancellations,
@@ -3501,11 +3920,11 @@ async function getCancellationSummaryForAdmin(actor: AuthUser): Promise<AdminCan
     requiresAttention,
   ] = await Promise.all([
     prisma.booking.count({
-      where: { status: BookingStatus.CANCELLED },
+      where: genuineBase,
     }),
     prisma.booking.count({
       where: {
-        status: BookingStatus.CANCELLED,
+        ...genuineBase,
         priceBreakdown: {
           path: ["cancellation", "cancelledBy"],
           equals: "GUEST",
@@ -3514,26 +3933,16 @@ async function getCancellationSummaryForAdmin(actor: AuthUser): Promise<AdminCan
     }),
     prisma.booking.count({
       where: {
-        status: BookingStatus.CANCELLED,
-        OR: [
-          {
-            priceBreakdown: {
-              path: ["cancellation", "cancelledBy"],
-              equals: "HOST",
-            },
-          },
-          {
-            priceBreakdown: {
-              path: ["rejection", "rejectedBy"],
-              equals: "HOST",
-            },
-          },
-        ],
+        ...genuineBase,
+        priceBreakdown: {
+          path: ["cancellation", "cancelledBy"],
+          equals: "HOST",
+        },
       },
     }),
     prisma.booking.count({
       where: {
-        status: BookingStatus.CANCELLED,
+        ...genuineBase,
         priceBreakdown: {
           path: ["cancellation", "cancelledBy"],
           equals: "ADMIN",
@@ -3544,25 +3953,39 @@ async function getCancellationSummaryForAdmin(actor: AuthUser): Promise<AdminCan
       try {
         return await prisma.booking.count({
           where: {
-            status: BookingStatus.CANCELLED,
+            ...genuineBase,
             OR: [
+              { priceBreakdown: { path: ["cancellation", "requiresAttention"], equals: true } },
               { payments: { some: { status: { in: [PaymentStatus.FAILED, PaymentStatus.VOIDED] } } } },
-              { refunds: { some: { status: { in: [RefundStatus.PENDING, RefundStatus.PROCESSING] } } } },
+              { refunds: { some: { status: { in: [RefundStatus.PENDING, RefundStatus.PROCESSING, RefundStatus.FAILED] } } } },
             ],
           },
         });
       } catch (error) {
-        if (isMissingFinancialTable(error)) return 0;
+        if (isMissingFinancialTable(error)) {
+          return await prisma.booking.count({
+            where: {
+              ...genuineBase,
+              priceBreakdown: { path: ["cancellation", "requiresAttention"], equals: true },
+            },
+          });
+        }
         throw error;
       }
     })(),
   ]);
+
+  const unknownCancellations = Math.max(
+    0,
+    totalCancellations - (guestCancellations + hostCancellations + adminCancellations),
+  );
 
   return {
     totalCancellations,
     guestCancellations,
     hostCancellations,
     adminCancellations,
+    unknownCancellations,
     requiresAttention,
     currency: "SAR",
   };
@@ -4408,6 +4831,54 @@ export type BookingDetailsData = {
   guestMessage: string | null;
   conversationId: string | null;
   timeline: BookingStatusTimelineEvent[];
+  disputes: Array<{
+    id: string;
+    caseReference: string;
+    category: string;
+    status: string;
+    workflowStatus: string;
+    createdAt: Date;
+    updatedAt: Date;
+    resolutionNotes: string | null;
+  }>;
+  payment?: {
+    id: string;
+    status: PaymentStatus;
+    provider: PaymentProvider;
+    providerPaymentId: string | null;
+    amount: number;
+    capturedAmount: number;
+    refundedAmount: number;
+    currency: string;
+    paymentMethod: string | null;
+    createdAt: Date;
+    capturedAt: Date | null;
+    voidedAt: Date | null;
+    failedAt: Date | null;
+    failureReason: string | null;
+  } | null;
+  paymentConfirmation?: {
+    status: string;
+    currency: string;
+  } | null;
+  refunds?: Array<{
+    id: string;
+    refundReference: string | null;
+    status: RefundStatus;
+    amount: number;
+    currency: string;
+    reason: string | null;
+    createdAt: string;
+    processedAt: string | null;
+    succeededAt: string | null;
+    failedAt: string | null;
+    failureReason: string | null;
+  }>;
+  refundConfirmation?: {
+    status: string;
+    totalRefunded: number;
+    currency: string;
+  } | null;
 };
 
 async function getBookingDetails(actor: AuthUser, id: string): Promise<BookingDetailsData> {
@@ -4474,6 +4945,16 @@ async function getBookingDetails(actor: AuthUser, id: string): Promise<BookingDe
           } as Prisma.InputJsonValue,
         },
       });
+      await prisma.bookingPayment.updateMany({
+        where: {
+          bookingId: b.id,
+          status: { in: [PaymentStatus.PENDING, PaymentStatus.AUTHORIZED] },
+        },
+        data: {
+          status: PaymentStatus.VOIDED,
+          voidedAt: new Date(),
+        },
+      });
       b.status = BookingStatus.CANCELLED;
       (b as any).priceBreakdown = {
         ...existingBreakdown,
@@ -4521,16 +5002,42 @@ async function getBookingDetails(actor: AuthUser, id: string): Promise<BookingDe
 
   const pricing = getAuthoritativePriceBreakdown(b);
 
-  const conversation = await prisma.conversation.findFirst({
-    where: { bookingId: b.id },
-    include: {
-      messages: {
-        where: { type: MessageType.BOOKING_REQUEST },
-        orderBy: { createdAt: "asc" },
-        take: 1,
+  const [conversation, guestDisputes, paymentRecord, bookingRefunds] = await Promise.all([
+    prisma.conversation.findFirst({
+      where: { bookingId: b.id },
+      include: {
+        messages: {
+          where: { type: MessageType.BOOKING_REQUEST },
+          orderBy: { createdAt: "asc" },
+          take: 1,
+        },
       },
-    },
-  });
+    }),
+    isGuest
+      ? prisma.listingQualityIncident.findMany({
+          where: { bookingId: b.id, reportedById: actor.id },
+          select: {
+            id: true,
+            category: true,
+            status: true,
+            resolutionNotes: true,
+            metadata: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+          orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
+          take: 20,
+        })
+      : Promise.resolve([]),
+    prisma.bookingPayment.findFirst({
+      where: { bookingId: b.id },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.bookingRefund.findMany({
+      where: { bookingId: b.id },
+      orderBy: { createdAt: "desc" },
+    }),
+  ]);
 
   const timeline = getBookingStatusTimeline({
     createdAt: b.createdAt,
@@ -4627,6 +5134,73 @@ async function getBookingDetails(actor: AuthUser, id: string): Promise<BookingDe
     guestMessage: conversation?.messages[0]?.content || null,
     conversationId: conversation?.id || null,
     timeline,
+    disputes: guestDisputes.map((dispute: {
+      id: string;
+      category: string;
+      status: string;
+      resolutionNotes: string | null;
+      metadata: unknown;
+      createdAt: Date;
+      updatedAt: Date;
+    }) => {
+      const metadata = (dispute.metadata as Record<string, unknown>) || {};
+      return {
+        id: dispute.id,
+        caseReference: typeof metadata.caseReference === "string" ? metadata.caseReference : `DSP-${dispute.id.slice(-6).toUpperCase()}`,
+        category: dispute.category,
+        status: dispute.status,
+        workflowStatus: typeof metadata.disputeStatus === "string"
+          ? metadata.disputeStatus
+          : dispute.status === "RESOLVED" ? "RESOLVED" : "OPEN",
+        createdAt: dispute.createdAt,
+        updatedAt: dispute.updatedAt,
+        resolutionNotes: dispute.resolutionNotes,
+      };
+    }),
+    payment: (isGuest || isAdmin) && paymentRecord ? {
+      id: paymentRecord.id,
+      status: paymentRecord.status,
+      provider: paymentRecord.provider,
+      providerPaymentId: paymentRecord.providerPaymentId,
+      amount: paymentRecord.amount,
+      capturedAmount: paymentRecord.capturedAmount,
+      refundedAmount: paymentRecord.refundedAmount,
+      currency: paymentRecord.currency,
+      paymentMethod: paymentRecord.paymentMethod,
+      createdAt: paymentRecord.createdAt,
+      capturedAt: paymentRecord.capturedAt,
+      voidedAt: paymentRecord.voidedAt,
+      failedAt: paymentRecord.failedAt,
+      failureReason: paymentRecord.failureReason,
+    } : null,
+    paymentConfirmation: {
+      status: b.status === BookingStatus.CONFIRMED ? "PAID" : "PENDING",
+      currency: b.currency,
+    },
+    refunds: (isGuest || isAdmin)
+      ? bookingRefunds.map((r: any) => ({
+          id: r.id,
+          refundReference: r.refundReference,
+          status: r.status,
+          amount: r.amount,
+          currency: r.currency,
+          reason: r.reason,
+          createdAt: r.createdAt.toISOString(),
+          processedAt: r.processedAt?.toISOString() || null,
+          succeededAt: r.succeededAt?.toISOString() || null,
+          failedAt: r.failedAt?.toISOString() || null,
+          failureReason: r.failureReason || null,
+        }))
+      : [],
+    refundConfirmation: isHost && bookingRefunds.some((r: any) => r.status === RefundStatus.SUCCEEDED)
+      ? {
+          status: "REFUNDED",
+          totalRefunded: bookingRefunds
+            .filter((r: any) => r.status === RefundStatus.SUCCEEDED)
+            .reduce((acc: number, r: any) => acc + r.amount, 0),
+          currency: b.currency,
+        }
+      : null,
   };
 }
 

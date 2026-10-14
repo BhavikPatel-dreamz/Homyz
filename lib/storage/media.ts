@@ -12,14 +12,14 @@ import path from "node:path";
  */
 
 export type PublicMediaKind = "listing-photos" | "guidebook-photos";
-export type PrivateMediaKind = "host-documents" | "message-attachments";
+export type PrivateMediaKind = "host-documents" | "message-attachments" | "dispute-evidence";
 export type MediaKind = PublicMediaKind | PrivateMediaKind;
 
 const PUBLIC_KINDS = new Set<string>([
   "listing-photos",
   "guidebook-photos",
 ]);
-const PRIVATE_KINDS = new Set<string>(["host-documents", "message-attachments"]);
+const PRIVATE_KINDS = new Set<string>(["host-documents", "message-attachments", "dispute-evidence"]);
 const ALL_KINDS = new Set<string>([...PUBLIC_KINDS, ...PRIVATE_KINDS]);
 
 const SAFE_FILE = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;

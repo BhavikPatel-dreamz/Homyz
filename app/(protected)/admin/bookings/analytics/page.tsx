@@ -17,22 +17,17 @@ export default async function AdminAnalyticsPage({
   const actor = await requirePageRole([Role.ADMIN]);
   const sp = await searchParams;
 
-  const [overview, propertiesData, hostsData] = await Promise.all([
-    analyticsAdminService.getBookingAnalyticsOverview(actor, {
-      period: sp.period || "30d",
-      currency: sp.currency,
-    }),
-    analyticsAdminService.getPropertyPerformanceAnalytics(actor, { limit: 20 }),
-    analyticsAdminService.getHostPerformanceAnalytics(actor, { limit: 20 }),
-  ]);
+  // The summary is the first useful analytics view. The potentially expensive
+  // performance tables load independently in the client with their own states.
+  const overview = await analyticsAdminService.getBookingAnalyticsOverview(actor, {
+    period: sp.period || "30d",
+    currency: sp.currency,
+  });
 
   return (
     <AdminAnalyticsClient
       initialOverview={overview}
-      initialProperties={propertiesData.properties}
-      initialHosts={hostsData.hosts}
       initialPeriod={sp.period || "30d"}
     />
   );
 }
-

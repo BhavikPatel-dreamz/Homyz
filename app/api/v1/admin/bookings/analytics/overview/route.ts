@@ -3,7 +3,7 @@ import { apiHandler } from "@/lib/api/handler";
 import { ok } from "@/lib/api/response";
 import { requireApiPermission } from "@/lib/permissions/guards";
 import { PERMISSIONS } from "@/lib/permissions/permissions";
-import { analyticsAdminService } from "@/services/analytics-admin.service";
+import { analyticsAdminService, type AnalyticsFilterQuery } from "@/services/analytics-admin.service";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +16,7 @@ export const GET = apiHandler(async (req: NextRequest) => {
 
   const { searchParams } = new URL(req.url);
   const result = await analyticsAdminService.getBookingAnalyticsOverview(actor, {
-    period: (searchParams.get("period") as any) || "30d",
+    period: (searchParams.get("period") as AnalyticsFilterQuery["period"]) || "30d",
     startDate: searchParams.get("startDate") || undefined,
     endDate: searchParams.get("endDate") || undefined,
     listingId: searchParams.get("listingId") || undefined,
@@ -28,4 +28,3 @@ export const GET = apiHandler(async (req: NextRequest) => {
 
   return ok(result);
 });
-

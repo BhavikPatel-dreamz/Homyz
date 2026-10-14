@@ -17,6 +17,9 @@ export default async function AdminDisputesPage({
     category?: string;
     status?: string;
     severity?: string;
+    assignedAdminEmail?: string;
+    startDate?: string;
+    endDate?: string;
   }>;
 }) {
   const actor = await requirePageRole([Role.ADMIN]);
@@ -32,6 +35,9 @@ export default async function AdminDisputesPage({
       category: sp.category,
       status: sp.status,
       severity: sp.severity,
+      assignedAdminEmail: sp.assignedAdminEmail,
+      startDate: sp.startDate,
+      endDate: sp.endDate,
     }),
   ]);
 
@@ -42,7 +48,11 @@ export default async function AdminDisputesPage({
       initialPagination={disputesData.pagination}
       initialTab={sp.tab || "all"}
       initialSearch={sp.search || ""}
+      initialCategory={sp.category || "ALL"}
+      initialSeverity={sp.severity || "ALL"}
+      initialAssignedAdminEmail={sp.assignedAdminEmail || ""}
+      initialStartDate={sp.startDate || ""}
+      initialEndDate={sp.endDate || ""}
     />
   );
 }
-

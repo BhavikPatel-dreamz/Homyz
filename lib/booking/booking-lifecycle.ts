@@ -237,3 +237,131 @@ export function sanitizeListingSecrets<T extends Record<string, any>>(listing: T
   return copy;
 }
 
+export type CancellationInitiator = "GUEST" | "HOST" | "ADMIN" | "UNKNOWN";
+
+export interface ResolvedCancellationDetails {
+  isCancellation: boolean;
+  cancelledBy: CancellationInitiator;
+  cancelledAt: string | null;
+  reason: string | null;
+  notes: string | null;
+  adminId: string | null;
+  adminEmail: string | null;
+  guestRefundAmount: number | null;
+  hostPayoutRetained: number | null;
+  requiresAttention: boolean;
+  paymentStatus: string;
+  refundStatus: string;
+}
+
+/**
+ * Authoritative check if a database booking record represents a genuine cancellation.
+ * Excludes rejected booking requests (rejection.rejectedBy === "HOST") and expired requests.
+ */
+export function isAuthoritativeCancellation(booking: {
+  status: string;
+  priceBreakdown?: unknown;
+}): boolean {
+  const normStatus = (booking.status || "").toUpperCase();
+  if (normStatus !== "CANCELLED") return false;
+
+  const pb = (booking.priceBreakdown && typeof booking.priceBreakdown === "object" && !Array.isArray(booking.priceBreakdown))
+    ? (booking.priceBreakdown as Record<string, any>)
+    : {};
+
+  // If explicit cancellation object exists, it is a genuine cancellation
+  if (pb.cancellation && typeof pb.cancellation === "object") {
+    return true;
+  }
+
+  // If rejection object or expiredAt exists without cancellation object, it is a rejected/expired request, NOT a cancellation
+  if (pb.rejection || pb.expiredAt) {
+    return false;
+  }
+
+  // Historical or direct cancellation
+  return true;
+}
+
+/**
+ * Resolves authoritative cancellation details and financial states from a booking record.
+ */
+export function resolveCancellationDetails(booking: {
+  id: string;
+  status: string;
+  priceBreakdown?: unknown;
+  updatedAt?: Date | string;
+  createdAt?: Date | string;
+  payments?: Array<{ id: string; status: string; amount: number; provider?: string | null }>;
+  refunds?: Array<{ id: string; status: string; amount: number; reason?: string | null }>;
+}): ResolvedCancellationDetails {
+  const isCancellation = isAuthoritativeCancellation(booking);
+  const pb = (booking.priceBreakdown && typeof booking.priceBreakdown === "object" && !Array.isArray(booking.priceBreakdown))
+    ? (booking.priceBreakdown as Record<string, any>)
+    : {};
+
+  const rawCancel = pb.cancellation && typeof pb.cancellation === "object" ? pb.cancellation : null;
+
+  let cancelledBy: CancellationInitiator = "UNKNOWN";
+  if (rawCancel?.cancelledBy) {
+    const rawUpper = String(rawCancel.cancelledBy).toUpperCase();
+    if (rawUpper === "GUEST") cancelledBy = "GUEST";
+    else if (rawUpper === "HOST") cancelledBy = "HOST";
+    else if (rawUpper === "ADMIN") cancelledBy = "ADMIN";
+  }
+
+  const cancelledAt = rawCancel?.cancelledAt
+    ? String(rawCancel.cancelledAt)
+    : booking.updatedAt
+    ? (typeof booking.updatedAt === "string" ? booking.updatedAt : booking.updatedAt.toISOString())
+    : null;
+
+  const reason = rawCancel?.reason ? String(rawCancel.reason).trim() : null;
+  const notes = rawCancel?.notes ? String(rawCancel.notes).trim() : null;
+  const adminId = rawCancel?.adminId ? String(rawCancel.adminId) : null;
+  const adminEmail = rawCancel?.adminEmail ? String(rawCancel.adminEmail) : null;
+  const guestRefundAmount = typeof rawCancel?.guestRefundAmount === "number" ? rawCancel.guestRefundAmount : null;
+  const hostPayoutRetained = typeof rawCancel?.hostPayoutRetained === "number" ? rawCancel.hostPayoutRetained : null;
+
+  // Resolve payment status
+  const primaryPayment = booking.payments && booking.payments.length > 0 ? booking.payments[0] : null;
+  const paymentStatus = primaryPayment?.status || pb.paymentStatus || (isCancellation ? "COMPLETED" : "PENDING");
+
+  // Resolve refund status
+  const primaryRefund = booking.refunds && booking.refunds.length > 0 ? booking.refunds[0] : null;
+  let refundStatus = "N/A";
+  if (primaryRefund?.status) {
+    refundStatus = primaryRefund.status;
+  } else if (guestRefundAmount === 0) {
+    refundStatus = "NO_REFUND_DUE";
+  } else if (typeof guestRefundAmount === "number" && guestRefundAmount > 0) {
+    refundStatus = "SUCCEEDED"; // Automatic policy refund completed upon cancellation
+  }
+
+  const hasFinancialIssues =
+    (booking.payments || []).some(
+      (p) => (p.status || "").toUpperCase() === "FAILED" || (p.status || "").toUpperCase() === "VOIDED",
+    ) ||
+    (booking.refunds || []).some(
+      (r) => (r.status || "").toUpperCase() === "PENDING" || (r.status || "").toUpperCase() === "PROCESSING" || (r.status || "").toUpperCase() === "FAILED",
+    );
+
+  const requiresAttention = Boolean(rawCancel?.requiresAttention) || hasFinancialIssues;
+
+  return {
+    isCancellation,
+    cancelledBy,
+    cancelledAt,
+    reason,
+    notes,
+    adminId,
+    adminEmail,
+    guestRefundAmount,
+    hostPayoutRetained,
+    requiresAttention,
+    paymentStatus,
+    refundStatus,
+  };
+}
+
+

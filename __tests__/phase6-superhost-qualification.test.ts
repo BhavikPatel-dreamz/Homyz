@@ -46,7 +46,7 @@ test("Phase 6: quarterly dates and prior twelve-month evaluation window are dete
   assert.equal(
     getSuperhostReviewWindowExpiryCutoff(octoberCheckpoint).toISOString().slice(0, 10),
     "2026-09-17",
-    "a guest review without a reciprocal host review waits 14 days",
+    "a published guest review joins Superhost calculations after the 14-day review window",
   );
 });
 
@@ -59,7 +59,7 @@ test("Phase 6: official badge, idempotency, and ownership are wired to persisted
   assert.match(engine, /where: \{ hostId, deletedAt: null \}/, "co-host assignments are excluded from owner scope");
   assert.match(engine, /calculateHostResponseMetrics\(hostId, \{/, "checkpoint evaluations pin the messaging window");
   assert.match(engine, /windowEndExclusive: reviewWindowEndExclusive/, "messages share the evaluator's date boundary");
-  assert.match(engine, /hostGuestReview: \{ isNot: null \}/, "reciprocal host reviews release guest ratings for Superhost");
+  assert.doesNotMatch(engine, /hostGuestReview/, "the current Prisma schema has no reciprocal host-review relation");
   assert.match(engine, /endDate: \{ lte: reviewWindowExpiryCutoff \}/, "guest ratings release after the existing 14-day review window");
   assert.match(engine, /hostId_evaluationDate/, "quarterly history upsert is idempotent");
   assert.match(engine, /isQuarterlyEvaluationCheckpoint/, "status changes are checkpoint guarded");

@@ -8,7 +8,7 @@ import styles from "./host-mobile-nav.module.css";
 import { useLanguage } from "@/lib/i18n/language-context";
 
 export interface HostSubNavProps {
-  activeTab?: "today" | "calendar" | "listing" | "messages";
+  activeTab?: "today" | "calendar" | "listing" | "messages" | "resolution";
   listingId?: string;
   onFilterClick?: () => void;
   filterActive?: boolean;
@@ -130,6 +130,8 @@ export function HostSubNav({
       activeTab = "calendar";
     } else if (pathname === "/host/messages" || pathname.startsWith("/host/messages/")) {
       activeTab = "messages";
+    } else if (pathname === "/host/resolution-center" || pathname.startsWith("/host/resolution-center/")) {
+      activeTab = "resolution";
     } else if (pathname === "/host/listings" || pathname.startsWith("/host/listings/")) {
       activeTab = "listing";
     }
@@ -174,11 +176,24 @@ export function HostSubNav({
       icon: <MessagesNavIcon />,
       minWidthClass: "w-[118px] shrink-0",
     },
+    {
+      id: "resolution",
+      label: "Resolution Center",
+      shortLabel: "Resolution",
+      href: "/host/resolution-center",
+      icon: (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M12 3 4.5 6v5c0 4.8 3.1 8.6 7.5 10 4.4-1.4 7.5-5.2 7.5-10V6L12 3Z" />
+          <path d="m8.5 12 2.2 2.2 4.8-4.8" />
+        </svg>
+      ),
+      minWidthClass: "w-[178px] shrink-0",
+    },
   ];
 
   const activeTabIndex = tabs.findIndex((tab) => tab.id === activeTab);
   const hasActiveTab = activeTabIndex !== -1;
-  const notchX = hasActiveTab ? 81.9 + activeTabIndex * 70.2 : -100;
+  const notchX = hasActiveTab ? 39 + activeTabIndex * 78 : -100;
 
   return (
     <>
@@ -209,7 +224,7 @@ export function HostSubNav({
               <span
                 className={styles.label}
               >
-                {tab.label}
+                {(tab as any).shortLabel || tab.label}
               </span>
             </Link>
           );
@@ -222,7 +237,7 @@ export function HostSubNav({
         <Container>
           <div className="mx-auto flex w-full items-center justify-between">
             {/* Left Nav Tabs */}
-            <nav aria-label="Host navigation" className="flex items-center gap-4">
+            <nav aria-label="Host navigation" className="flex items-center gap-3 xl:gap-4 overflow-x-auto scrollbar-none py-1">
               {tabs.map((tab) => {
                 const isActive = activeTab === tab.id;
                 return (
@@ -230,7 +245,7 @@ export function HostSubNav({
                     key={tab.id}
                     href={tab.href}
                     aria-current={isActive ? "page" : undefined}
-                    className={`group flex h-[76px] min-w-[108px] px-3.5 border flex-col items-center justify-center gap-1 rounded-[20px] transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 ${
+                    className={`group flex h-[76px] px-3.5 border flex-col items-center justify-center gap-1 rounded-[20px] transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 ${
                       tab.minWidthClass
                     } ${
                       isActive
@@ -240,7 +255,7 @@ export function HostSubNav({
                   >
                     <div className="shrink-0">{tab.icon}</div>
                     <span
-                      className={`font-['Poppins'] font-normal text-base leading-tight whitespace-nowrap ${
+                      className={`font-['Poppins'] font-normal text-[15px] leading-tight whitespace-nowrap ${
                         isActive
                           ? "text-[#1F1F1F] dark:text-zinc-950"
                           : "text-[#727272] group-hover:text-[#1F1F1F] dark:text-zinc-300 dark:group-hover:text-zinc-100"

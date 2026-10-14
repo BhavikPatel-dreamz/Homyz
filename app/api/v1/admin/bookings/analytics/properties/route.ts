@@ -3,7 +3,7 @@ import { apiHandler } from "@/lib/api/handler";
 import { ok } from "@/lib/api/response";
 import { requireApiPermission } from "@/lib/permissions/guards";
 import { PERMISSIONS } from "@/lib/permissions/permissions";
-import { analyticsAdminService } from "@/services/analytics-admin.service";
+import { analyticsAdminService, type AnalyticsFilterQuery } from "@/services/analytics-admin.service";
 
 export const dynamic = "force-dynamic";
 
@@ -16,13 +16,19 @@ export const GET = apiHandler(async (req: NextRequest) => {
 
   const { searchParams } = new URL(req.url);
   const result = await analyticsAdminService.getPropertyPerformanceAnalytics(actor, {
+    period: (searchParams.get("period") as AnalyticsFilterQuery["period"]) || "30d",
     page: Number(searchParams.get("page")) || 1,
     limit: Number(searchParams.get("limit")) || 20,
     search: searchParams.get("search") || undefined,
     startDate: searchParams.get("startDate") || undefined,
     endDate: searchParams.get("endDate") || undefined,
+    hostId: searchParams.get("hostId") || undefined,
+    city: searchParams.get("city") || undefined,
+    country: searchParams.get("country") || undefined,
+    currency: searchParams.get("currency") || undefined,
+    includeInactive: searchParams.get("includeInactive") === "true",
+    includeZeroActivity: searchParams.get("includeZeroActivity") === "true",
   });
 
   return ok(result);
 });
-

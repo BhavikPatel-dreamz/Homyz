@@ -1,11 +1,12 @@
 import { prisma } from "@/lib/db/prisma";
-import { NotificationType, BookingStatus } from "@/generated/prisma/enums";
+import { NotificationType, BookingStatus, Role } from "@/generated/prisma/enums";
 import type { Prisma } from "@/generated/prisma/client";
 import { AppError } from "@/lib/api/errors";
 import { getCounter, getOrSetCache, incrCounter } from "@/lib/redis/cache";
 import { CACHE_KEYS, hashFilters } from "@/lib/redis/keys";
 import { CACHE_TTL } from "@/lib/redis/ttl";
 import { bookingDateKey } from "@/lib/booking/booking-date";
+import { resolveDisputeNotificationDestination } from "@/lib/notifications/dispute-destination";
 
 export type NotificationDTO = {
   id: string;
@@ -64,6 +65,106 @@ function toDTO(n: {
 
 async function invalidateUserNotifications(userId: string): Promise<void> {
   await incrCounter(CACHE_KEYS.NOTIFICATIONS_VER(userId));
+}
+
+const historicalDisputeRepairAttempted = new Set<string>();
+
+type HistoricalDisputeNotification = {
+  id: string;
+  entityId: string | null;
+  metadata: Prisma.JsonValue | null;
+  link: string | null;
+};
+
+type HistoricalDisputeCase = {
+  id: string;
+  bookingId: string | null;
+  reportedById: string | null;
+  metadata: Prisma.JsonValue | null;
+};
+
+/**
+ * Old dispute notifications were created before role-specific case routes
+ * existed. Repair only rows whose case relationship can be proved for the
+ * notification recipient; unrelated or deleted references remain untouched.
+ */
+async function repairHistoricalDisputeLinks(userId: string): Promise<void> {
+  if (historicalDisputeRepairAttempted.has(userId)) return;
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
+  if (!user || ![Role.HOST, Role.USER, Role.ADMIN].includes(user.role)) {
+    historicalDisputeRepairAttempted.add(userId);
+    return;
+  }
+
+  const notifications = await prisma.notification.findMany({
+    where: {
+      userId,
+      entityType: { startsWith: "dispute-" },
+    },
+    select: { id: true, entityId: true, metadata: true, link: true },
+    take: 100,
+  });
+  const candidateIds = [...new Set(notifications.map((notification: HistoricalDisputeNotification) => {
+    const metadata = notification.metadata as Record<string, unknown> | null;
+    return typeof metadata?.disputeId === "string" ? metadata.disputeId : notification.entityId;
+  }).filter((id: unknown): id is string => Boolean(id)))];
+  if (!candidateIds.length) {
+    historicalDisputeRepairAttempted.add(userId);
+    return;
+  }
+
+  const candidateCases = await prisma.listingQualityIncident.findMany({
+    where: {
+      id: { in: candidateIds },
+      ...(user.role === Role.HOST
+        ? { listing: { hostId: userId } }
+        : user.role === Role.USER
+          ? { booking: { userId } }
+          : {}),
+    },
+    select: { id: true, bookingId: true, reportedById: true, metadata: true },
+  });
+  const visibleCases = user.role === Role.HOST
+    ? candidateCases.filter((incident: HistoricalDisputeCase) => {
+        const metadata = incident.metadata as Record<string, unknown> | null;
+        const participation = metadata?.hostParticipation as Record<string, unknown> | undefined;
+        const requests = Array.isArray(metadata?.infoRequests) ? metadata.infoRequests : [];
+        return incident.reportedById === userId
+          || participation?.hostId === userId
+          || requests.some((request) => (
+            typeof request === "object"
+            && request !== null
+            && (request as Record<string, unknown>).target === "HOST"
+          ));
+      })
+    : candidateCases;
+  const casesById = new Map<string, { id: string; bookingId: string | null }>(
+    visibleCases.map((incident: { id: string; bookingId: string | null }) => [incident.id, incident]),
+  );
+  const candidateHostCaseIds = new Set(candidateCases.map((incident: HistoricalDisputeCase) => incident.id));
+  const recipient = user.role === Role.HOST ? "HOST" : user.role === Role.ADMIN ? "ADMIN" : "GUEST";
+  const repairs = notifications.flatMap((notification: HistoricalDisputeNotification) => {
+    const metadata = notification.metadata as Record<string, unknown> | null;
+    const disputeId = typeof metadata?.disputeId === "string" ? metadata.disputeId : notification.entityId;
+    const incident = disputeId ? casesById.get(disputeId) : undefined;
+    const link = incident
+      ? resolveDisputeNotificationDestination({ disputeId: incident.id, bookingId: incident.bookingId, recipient })
+      : null;
+    if (link && notification.link !== link) {
+      return [prisma.notification.update({ where: { id: notification.id }, data: { link } })];
+    }
+    // Preserve premature notifications as audit history, but remove their deep
+    // link until an Admin has actually shared the case with this Host.
+    if (recipient === "HOST" && disputeId && candidateHostCaseIds.has(disputeId) && notification.link) {
+      return [prisma.notification.update({ where: { id: notification.id }, data: { link: null } })];
+    }
+    return [];
+  });
+  if (repairs.length) {
+    await Promise.all(repairs);
+    await invalidateUserNotifications(userId);
+  }
+  historicalDisputeRepairAttempted.add(userId);
 }
 
 // In-flight synchronization mutex to avoid concurrent duplicate creation
@@ -399,6 +500,8 @@ async function listForUser(
   if (!userId) {
     throw AppError.unauthorized("Authentication required to list notifications");
   }
+
+  await repairHistoricalDisputeLinks(userId);
 
   // STRICT query clause: only notifications where userId equals the authenticated user's ID
   const whereClause: Prisma.NotificationWhereInput = {

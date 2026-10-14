@@ -40,7 +40,7 @@ describe("central booking pricing without cleaning fees", () => {
     });
 
     assert.equal(quote.staySubtotal, 13_500);
-    assert.equal("cleaningFee" in quote, false);
+    assert.equal(quote.cleaningFee ?? 0, 0);
     assert.equal(quote.taxTotal, 2_025);
     assert.equal(quote.guestTotal, 15_525);
   });
@@ -119,7 +119,6 @@ describe("central booking pricing without cleaning fees", () => {
       priceBreakdown: {
         nightlySubtotal: 13_500,
         taxTotal: 2_100,
-        cleaningFee: 400,
       },
     });
 

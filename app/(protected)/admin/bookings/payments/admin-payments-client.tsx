@@ -124,6 +124,7 @@ export function AdminPaymentsClient({
 
   // UI state
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
 
   // Debounce search input
@@ -138,6 +139,7 @@ export function AdminPaymentsClient({
   const fetchPayments = useCallback(
     async (pageToLoad = 1) => {
       setLoading(true);
+      setError(null);
       try {
         const sp = new URLSearchParams();
         sp.set("page", String(pageToLoad));
@@ -153,11 +155,15 @@ export function AdminPaymentsClient({
 
         const res = await fetch(`/api/v1/admin/bookings/payments?${sp.toString()}`);
         const json = await res.json();
+        if (!res.ok) {
+          throw new Error(json.error?.message || json.message || "Payment records could not be loaded.");
+        }
         const data = json.data ?? json;
         setPayments(data.payments || []);
         if (data.pagination) setPagination(data.pagination);
       } catch (err) {
         console.error("[AdminPaymentsClient] Fetch error:", err);
+        setError(err instanceof Error ? err.message : "Payment records could not be loaded.");
       } finally {
         setLoading(false);
       }
@@ -281,7 +287,9 @@ export function AdminPaymentsClient({
           <p className="text-lg font-bold text-foreground mt-1">
             {formatPrice(summary.totalCapturedVolume / 100, summary.currency)}
           </p>
-          <p className="text-2xs text-[var(--muted-foreground)] mt-0.5">{summary.totalCapturedCount} txns</p>
+          <p className="text-2xs text-[var(--muted-foreground)] mt-0.5">
+            Net: {formatPrice((summary.netCapturedVolume ?? summary.totalCapturedVolume) / 100, summary.currency)}
+          </p>
         </div>
 
         <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-2xs">
@@ -331,9 +339,10 @@ export function AdminPaymentsClient({
             Full Refund
           </p>
           <p className="text-lg font-bold text-indigo-600 mt-1">{summary.fullyRefundedCount}</p>
-          <p className="text-2xs text-[var(--muted-foreground)] mt-0.5">Fully refunded</p>
+          <p className="text-2xs text-[var(--muted-foreground)] mt-0.5">
+            {formatPrice((summary.refundedVolume ?? 0) / 100, summary.currency)}
+          </p>
         </div>
-
         <div className="rounded-xl border border-rose-200 bg-rose-50/50 dark:bg-rose-950/20 p-3.5 shadow-2xs">
           <p className="text-2xs font-semibold text-rose-700 dark:text-rose-400 uppercase tracking-wider">
             Attention
@@ -342,6 +351,12 @@ export function AdminPaymentsClient({
           <p className="text-2xs text-rose-600/80 mt-0.5">Stale / Issues</p>
         </div>
       </div>
+
+      {error && (
+        <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-xs text-rose-700 dark:text-rose-300">
+          {error} Refresh after the financial database migration is available.
+        </div>
+      )}
 
       {/* 11.4 — Status Tabs */}
       <div className="flex items-center gap-2 border-b border-[var(--border)] pb-2 overflow-x-auto">
@@ -668,4 +683,3 @@ export function AdminPaymentsClient({
     </div>
   );
 }
-

@@ -8,6 +8,8 @@ import { assertRole } from "@/lib/permissions/authorize";
 import { auditService } from "@/services/audit.service";
 import { getPaymentPolicy } from "@/lib/booking/payment-policy";
 import { extractStoredHostPayout, isStoredBookingPayoutEligible } from "@/lib/booking/booking-financials";
+import { moyasarAdapter } from "@/lib/payment/moyasar-adapter";
+import { payoutService } from "@/services/payout.service";
 
 export interface PaymentListQuery {
   page?: number;
@@ -27,6 +29,9 @@ export interface PaymentSummaryData {
   totalCapturedCount: number;
   authorizedVolume: number;
   authorizedCount: number;
+  refundedVolume: number;
+  netCapturedVolume: number;
+  failedVolume: number;
   pendingCount: number;
   successfulCount: number;
   failedCount: number;
@@ -52,6 +57,8 @@ export interface PayoutListQuery {
 }
 
 export interface PayoutSummaryData {
+  totalPaidVolume: number;
+  totalPaidCount: number;
   totalVerifiedPayoutVolume: number; // in cents
   totalVerifiedPayoutCount: number;
   pendingStayVolume: number;
@@ -71,74 +78,120 @@ function sanitizeListing(listing: any) {
   return safeListing;
 }
 
+function isMissingBookingPaymentTable(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const candidate = error as {
+    code?: unknown;
+    message?: unknown;
+    meta?: { table?: unknown; cause?: unknown };
+  };
+  const detail = [candidate.message, candidate.meta?.table, candidate.meta?.cause]
+    .filter(Boolean)
+    .join(" ");
+  return candidate.code === "P2021" || /BookingPayment/i.test(detail);
+}
+
 /**
  * Returns KPI aggregate summary for payment transactions.
  */
 export async function getPaymentSummaryForAdmin(actor: AuthUser): Promise<PaymentSummaryData> {
   assertRole(actor, [Role.ADMIN]);
 
-  const [
-    capturedAgg,
-    authorizedAgg,
-    pendingCount,
-    successfulCount,
-    failedCount,
-    partiallyRefundedCount,
-    fullyRefundedCount,
-    attentionCount,
-  ] = await Promise.all([
-    // Total Captured Volume across CAPTURED, PARTIALLY_REFUNDED, REFUNDED
-    prisma.bookingPayment.aggregate({
-      where: {
-        status: { in: [PaymentStatus.CAPTURED, PaymentStatus.PARTIALLY_REFUNDED, PaymentStatus.REFUNDED] },
-        currency: "SAR",
-      },
-      _sum: { capturedAmount: true },
-      _count: { id: true },
-    }),
-    // Authorized Payments
-    prisma.bookingPayment.aggregate({
-      where: { status: PaymentStatus.AUTHORIZED, currency: "SAR" },
-      _sum: { amount: true },
-      _count: { id: true },
-    }),
-    // Pending
-    prisma.bookingPayment.count({ where: { status: PaymentStatus.PENDING } }),
-    // Successful (Captured without refunds)
-    prisma.bookingPayment.count({ where: { status: PaymentStatus.CAPTURED } }),
-    // Failed
-    prisma.bookingPayment.count({ where: { status: PaymentStatus.FAILED } }),
-    // Partially Refunded
-    prisma.bookingPayment.count({ where: { status: PaymentStatus.PARTIALLY_REFUNDED } }),
-    // Fully Refunded
-    prisma.bookingPayment.count({ where: { status: PaymentStatus.REFUNDED } }),
-    // Transactions Requiring Attention (Failed, or Voided with issues)
-    prisma.bookingPayment.count({
-      where: {
-        OR: [
-          { status: PaymentStatus.FAILED },
-          {
-            status: PaymentStatus.PENDING,
-            createdAt: { lt: new Date(Date.now() - 24 * 60 * 60 * 1000) },
-          },
-        ],
-      },
-    }),
-  ]);
+  try {
+    const [
+      capturedAgg,
+      authorizedAgg,
+      refundedAgg,
+      failedAgg,
+      pendingCount,
+      successfulCount,
+      failedCount,
+      partiallyRefundedCount,
+      fullyRefundedCount,
+      attentionCount,
+    ] = await Promise.all([
+      // Total Captured Volume across CAPTURED, PARTIALLY_REFUNDED, REFUNDED
+      prisma.bookingPayment.aggregate({
+        where: {
+          status: { in: [PaymentStatus.CAPTURED, PaymentStatus.PARTIALLY_REFUNDED, PaymentStatus.REFUNDED] },
+          currency: "SAR",
+        },
+        _sum: { capturedAmount: true },
+        _count: { id: true },
+      }),
+      // Authorized Payments
+      prisma.bookingPayment.aggregate({
+        where: { status: PaymentStatus.AUTHORIZED, currency: "SAR" },
+        _sum: { amount: true },
+        _count: { id: true },
+      }),
+      // Refunded volume across all refunded payments
+      prisma.bookingPayment.aggregate({
+        where: {
+          currency: "SAR",
+          refundedAmount: { gt: 0 },
+        },
+        _sum: { refundedAmount: true },
+      }),
+      // Failed payments volume
+      prisma.bookingPayment.aggregate({
+        where: {
+          status: PaymentStatus.FAILED,
+          currency: "SAR",
+        },
+        _sum: { amount: true },
+      }),
+      // Pending
+      prisma.bookingPayment.count({ where: { status: PaymentStatus.PENDING } }),
+      // Successful (Captured without refunds)
+      prisma.bookingPayment.count({ where: { status: PaymentStatus.CAPTURED } }),
+      // Failed
+      prisma.bookingPayment.count({ where: { status: PaymentStatus.FAILED } }),
+      // Partially Refunded
+      prisma.bookingPayment.count({ where: { status: PaymentStatus.PARTIALLY_REFUNDED } }),
+      // Fully Refunded
+      prisma.bookingPayment.count({ where: { status: PaymentStatus.REFUNDED } }),
+      // Transactions Requiring Attention (Failed, or Voided with issues)
+      prisma.bookingPayment.count({
+        where: {
+          OR: [
+            { status: PaymentStatus.FAILED },
+            {
+              status: PaymentStatus.PENDING,
+              createdAt: { lt: new Date(Date.now() - 24 * 60 * 60 * 1000) },
+            },
+          ],
+        },
+      }),
+    ]);
 
-  return {
-    totalCapturedVolume: capturedAgg._sum.capturedAmount ?? 0,
-    totalCapturedCount: capturedAgg._count.id ?? 0,
-    authorizedVolume: authorizedAgg._sum.amount ?? 0,
-    authorizedCount: authorizedAgg._count.id ?? 0,
-    pendingCount,
-    successfulCount,
-    failedCount,
-    partiallyRefundedCount,
-    fullyRefundedCount,
-    requiresAttentionCount: attentionCount,
-    currency: "SAR",
-  };
+    const totalCaptured = capturedAgg._sum.capturedAmount ?? 0;
+    const refundedVolume = refundedAgg._sum.refundedAmount ?? 0;
+    const netCapturedVolume = Math.max(0, totalCaptured - refundedVolume);
+    const failedVolume = failedAgg._sum.amount ?? 0;
+
+    return {
+      totalCapturedVolume: totalCaptured,
+      totalCapturedCount: capturedAgg._count.id ?? 0,
+      authorizedVolume: authorizedAgg._sum.amount ?? 0,
+      authorizedCount: authorizedAgg._count.id ?? 0,
+      refundedVolume,
+      netCapturedVolume,
+      failedVolume,
+      pendingCount,
+      successfulCount,
+      failedCount,
+      partiallyRefundedCount,
+      fullyRefundedCount,
+      requiresAttentionCount: attentionCount,
+      currency: "SAR",
+    };
+  } catch (error) {
+    if (!isMissingBookingPaymentTable(error)) throw error;
+    throw AppError.serviceUnavailable(
+      "Payment records are unavailable because the BookingPayment database migration has not been applied. Apply the financial migration before relying on these totals.",
+    );
+  }
 }
 
 /**
@@ -404,8 +457,34 @@ export async function reconcilePaymentForAdmin(
 
   if (targetStatus !== payment.status || succeededRefundsTotal !== payment.refundedAmount) {
     issues.push(
-      "Local payment state differs from local refund records. No financial state was changed because provider verification is unavailable.",
+      "Local payment state differs from local refund records. Review local refund transactions.",
     );
+  }
+
+  // 3. Reconcile against remote payment gateway if provider reference is present
+  if (payment.providerPaymentId && payment.provider === PaymentProvider.MOYASAR) {
+    try {
+      const verifyResult = await moyasarAdapter.verifyPayment(payment.providerPaymentId);
+      if (verifyResult.verified) {
+        if (verifyResult.amount !== payment.amount) {
+          issues.push(
+            `Gateway amount mismatch: local amount is ${payment.amount} ${payment.currency}, but Moyasar reported ${verifyResult.amount} ${verifyResult.currency}.`,
+          );
+        }
+        if (verifyResult.status !== payment.status) {
+          issues.push(
+            `Gateway status mismatch: local status is ${payment.status}, but Moyasar reported ${verifyResult.status}.`,
+          );
+        }
+        if (verifyResult.capturedAmount !== payment.capturedAmount) {
+          issues.push(
+            `Gateway captured balance mismatch: local captured is ${payment.capturedAmount}, but Moyasar reported ${verifyResult.capturedAmount}.`,
+          );
+        }
+      }
+    } catch (err: any) {
+      issues.push(`Failed to reach payment gateway for verification: ${err.message || String(err)}`);
+    }
   }
 
   // Record audit log
@@ -438,82 +517,21 @@ export async function reconcilePaymentForAdmin(
  * Returns KPI aggregate summary for Host Payout tracking.
  */
 export async function getPayoutSummaryForAdmin(actor: AuthUser): Promise<PayoutSummaryData> {
-  assertRole(actor, [Role.ADMIN]);
-
-  const now = new Date();
-
-  // Load confirmed and completed bookings to evaluate payout readiness
-  const bookings = await prisma.booking.findMany({
-    where: {
-      status: BookingStatus.CONFIRMED,
-    },
-    select: {
-      id: true,
-      startDate: true,
-      endDate: true,
-      status: true,
-      totalPrice: true,
-      cleaningFee: true,
-      currency: true,
-      priceBreakdown: true,
-      refunds: { select: { id: true, status: true, amount: true } },
-    },
-  });
-
-  let totalVerifiedPayoutVolume = 0;
-  let totalVerifiedPayoutCount = 0;
-  let pendingStayVolume = 0;
-  let pendingStayCount = 0;
-  let eligibleSettlementVolume = 0;
-  let eligibleSettlementCount = 0;
-  let onHoldVolume = 0;
-  let onHoldCount = 0;
-  let platformCommissionVolume = 0;
-  let payoutsRequiringReviewCount = 0;
-
-  for (const b of bookings) {
-    const payout = extractStoredHostPayout(b);
-    if (!payout) {
-      payoutsRequiringReviewCount++;
-      continue;
-    }
-
-    const net = payout.netHostPayout;
-    const commission = payout.hostServiceFee;
-    platformCommissionVolume += commission;
-
-    const hasActiveRefund = (b.refunds || []).some(
-      (r: any) => r.status === RefundStatus.PENDING || r.status === RefundStatus.PROCESSING,
-    );
-
-    if (hasActiveRefund) {
-      onHoldVolume += net;
-      onHoldCount++;
-    } else if (new Date(b.endDate) < now) {
-      // Stay completed -> Eligible for settlement
-      eligibleSettlementVolume += net;
-      eligibleSettlementCount++;
-      totalVerifiedPayoutVolume += net;
-      totalVerifiedPayoutCount++;
-    } else {
-      // Stay in the future or active -> Pending Stay
-      pendingStayVolume += net;
-      pendingStayCount++;
-    }
-  }
-
+  const summary = await payoutService.getPayoutSummaryForAdmin(actor);
   return {
-    totalVerifiedPayoutVolume,
-    totalVerifiedPayoutCount,
-    pendingStayVolume,
-    pendingStayCount,
-    eligibleSettlementVolume,
-    eligibleSettlementCount,
-    onHoldVolume,
-    onHoldCount,
-    platformCommissionVolume,
-    payoutsRequiringReviewCount,
-    currency: "SAR",
+    totalPaidVolume: summary.totalPaidVolume,
+    totalPaidCount: summary.totalPaidCount,
+    totalVerifiedPayoutVolume: summary.totalPaidVolume + summary.eligibleSettlementVolume,
+    totalVerifiedPayoutCount: summary.totalPaidCount + summary.eligibleSettlementCount,
+    pendingStayVolume: summary.scheduledPendingStayVolume,
+    pendingStayCount: summary.scheduledPendingStayCount,
+    eligibleSettlementVolume: summary.eligibleSettlementVolume,
+    eligibleSettlementCount: summary.eligibleSettlementCount,
+    onHoldVolume: summary.onHoldVolume,
+    onHoldCount: summary.onHoldCount,
+    platformCommissionVolume: summary.platformCommissionVolume,
+    payoutsRequiringReviewCount: summary.payoutsRequiringReviewCount,
+    currency: summary.currency,
   };
 }
 
@@ -527,107 +545,7 @@ export async function listHostPayoutsForAdmin(
   payouts: any[];
   pagination: { page: number; limit: number; total: number; totalPages: number };
 }> {
-  assertRole(actor, [Role.ADMIN]);
-
-  const page = Math.max(1, Number(query.page) || 1);
-  const limit = Math.min(100, Math.max(1, Number(query.limit) || 20));
-  const skip = (page - 1) * limit;
-
-  const now = new Date();
-
-  const where: any = {
-    status: BookingStatus.CONFIRMED,
-  };
-
-  // Search filter
-  if (query.search?.trim()) {
-    const term = query.search.trim();
-    where.OR = [
-      { id: { contains: term, mode: "insensitive" } },
-      { listing: { title: { contains: term, mode: "insensitive" } } },
-      { listing: { host: { name: { contains: term, mode: "insensitive" } } } },
-      { listing: { host: { email: { contains: term, mode: "insensitive" } } } },
-    ];
-  }
-
-  // Date range filter
-  const from = query.startDate || query.dateFrom;
-  const to = query.endDate || query.dateTo;
-  if (from || to) {
-    where.startDate = {};
-    if (from) where.startDate.gte = new Date(from);
-    if (to) where.startDate.lte = new Date(to);
-  }
-
-  const [bookings, total] = await Promise.all([
-    prisma.booking.findMany({
-      where,
-      skip,
-      take: limit,
-      orderBy: { startDate: "desc" },
-      include: {
-        user: { select: { id: true, name: true, email: true } },
-        listing: {
-          select: {
-            id: true,
-            title: true,
-            city: true,
-            photos: true,
-            host: { select: { id: true, name: true, email: true, image: true } },
-          },
-        },
-        refunds: { select: { id: true, status: true, amount: true } },
-        payments: { select: { id: true, status: true, capturedAmount: true } },
-      },
-    }),
-    prisma.booking.count({ where }),
-  ]);
-
-  const payouts = bookings.map((b: any) => {
-    const stored = extractStoredHostPayout(b);
-    const hasActiveRefund = (b.refunds || []).some(
-      (r: any) => r.status === RefundStatus.PENDING || r.status === RefundStatus.PROCESSING,
-    );
-
-    let status = "PENDING_STAY";
-    if (!stored) {
-      status = "REQUIRES_REVIEW";
-    } else if (hasActiveRefund) {
-      status = "ON_HOLD";
-    } else if (new Date(b.endDate) < now) {
-      status = "ELIGIBLE_SETTLEMENT";
-    }
-
-    return {
-      id: `po_${b.id}`,
-      bookingId: b.id,
-      startDate: b.startDate,
-      endDate: b.endDate,
-      host: b.listing.host,
-      listing: sanitizeListing(b.listing),
-      grossEarnings: stored
-        ? stored.accommodationSubtotal + stored.extraGuestFee + stored.petFee + stored.cleaningFee
-        : b.totalPrice ?? 0,
-      platformFee: stored ? stored.hostServiceFee : 0,
-      deductions: 0,
-      netPayout: stored ? stored.netHostPayout : b.totalPrice ?? 0,
-      currency: stored?.currency || b.currency || "SAR",
-      status,
-      settlementExecutionSupported: false, // Documented limitation: direct automated gateway wire is disabled
-      payoutAccountMasked: "IBAN SA••••••••••",
-      createdAt: b.createdAt,
-    };
-  });
-
-  return {
-    payouts,
-    pagination: {
-      page,
-      limit,
-      total,
-      totalPages: Math.ceil(total / limit),
-    },
-  };
+  return payoutService.listHostPayoutsForAdmin(actor, query);
 }
 
 /**
@@ -637,68 +555,7 @@ export async function getHostPayoutDetailsForAdmin(
   actor: AuthUser,
   bookingId: string,
 ): Promise<any> {
-  assertRole(actor, [Role.ADMIN]);
-
-  const booking = await prisma.booking.findUnique({
-    where: { id: bookingId },
-    include: {
-      user: { select: { id: true, name: true, email: true, phone: true } },
-      listing: {
-        select: {
-          id: true,
-          title: true,
-          city: true,
-          country: true,
-          photos: true,
-          host: { select: { id: true, name: true, email: true, image: true } },
-        },
-      },
-      payments: true,
-      refunds: true,
-    },
-  });
-
-  if (!booking) throw AppError.notFound(`Booking ${bookingId} not found`);
-
-  const stored = extractStoredHostPayout(booking);
-  const now = new Date();
-  const hasActiveRefund = (booking.refunds || []).some(
-    (r: any) => r.status === RefundStatus.PENDING || r.status === RefundStatus.PROCESSING,
-  );
-
-  let status = "PENDING_STAY";
-  if (!stored) {
-    status = "REQUIRES_REVIEW";
-  } else if (hasActiveRefund) {
-    status = "ON_HOLD";
-  } else if (new Date(booking.endDate) < now) {
-    status = "ELIGIBLE_SETTLEMENT";
-  }
-
-  return {
-    payoutId: `po_${booking.id}`,
-    bookingId: booking.id,
-    startDate: booking.startDate,
-    endDate: booking.endDate,
-    status,
-    host: booking.listing.host,
-    listing: sanitizeListing(booking.listing),
-    breakdown: stored
-      ? {
-          accommodationSubtotal: stored.accommodationSubtotal,
-          extraGuestFee: stored.extraGuestFee,
-          petFee: stored.petFee,
-          cleaningFee: stored.cleaningFee,
-          platformCommission: stored.hostServiceFee,
-          netHostPayout: stored.netHostPayout,
-          currency: stored.currency || "SAR",
-        }
-      : null,
-    payments: booking.payments,
-    refunds: booking.refunds,
-    settlementExecutionNotice:
-      "Automated provider bank payouts are currently disabled in the gateway configuration. Payout figures represent authoritative verified platform earnings readiness.",
-  };
+  return payoutService.getHostPayoutDetailsForAdmin(actor, bookingId);
 }
 
 export const paymentAdminService = {

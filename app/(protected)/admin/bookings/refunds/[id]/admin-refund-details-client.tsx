@@ -275,6 +275,29 @@ export function AdminRefundDetailsClient({
     }
   };
 
+  // Handle Reconcile
+  const handleReconcile = async () => {
+    setLoadingAction(true);
+    setActionError(null);
+    try {
+      const res = await fetch(`/api/v1/admin/bookings/refunds/${refund.id}/reconcile`, {
+        method: "POST",
+      });
+      const resData = await res.json();
+      if (!res.ok) throw new Error(resData.error || "Failed to reconcile refund");
+      if (resData.reconciled) {
+        setActionSuccess("Refund transaction is fully reconciled with payment state. No discrepancies found.");
+      } else {
+        setActionError(`Reconciliation issues detected: ${resData.issues?.join("; ") || "Unknown issue"}`);
+      }
+      router.refresh();
+    } catch (err: any) {
+      setActionError(err.message || "Failed to reconcile refund");
+    } finally {
+      setLoadingAction(false);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-6 font-sans text-muted-foreground pb-20">
       {/* Breadcrumb & Navigation */}
@@ -846,6 +869,18 @@ export function AdminRefundDetailsClient({
                   </button>
                 </>
               )}
+
+              <button
+                type="button"
+                onClick={handleReconcile}
+                disabled={loadingAction}
+                className="w-full py-2.5 px-4 rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)]/50 hover:bg-[var(--surface-secondary)] text-foreground text-xs font-semibold shadow-2xs transition-all flex items-center justify-center gap-2 mt-2"
+              >
+                <svg className="w-4 h-4 text-[var(--accent)]" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Reconcile Transaction
+              </button>
             </div>
           </div>
         </div>
