@@ -79,7 +79,7 @@ function FilterPill({ active, children, ...props }: ComponentPropsWithoutRef<"bu
       type="button"
       aria-pressed={active}
       {...props}
-      className={`inline-flex min-h-10 items-center gap-2 rounded-full border px-3.5 py-2 text-left text-xs font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 ${active ? "border-zinc-950 bg-zinc-950 text-white" : "border-zinc-300 bg-white text-zinc-800 hover:border-zinc-700"} ${props.className ?? ""}`}
+      className={`inline-flex min-h-10 items-center gap-2 rounded-full border px-3.5 py-2 text-left text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 ${active ? "border-[#1f1f1f] bg-[#1f1f1f] text-white [&_svg]:brightness-0 [&_svg]:invert" : "border-[#727272] bg-white text-[#1f1f1f] hover:border-[#1f1f1f]"} ${props.className ?? ""}`}
     >
       {children}
     </button>
@@ -89,10 +89,10 @@ function FilterPill({ active, children, ...props }: ComponentPropsWithoutRef<"bu
 function CounterRow({ label, value, onChange, anyLabel = "Any" }: { label: string; value: number; onChange: (value: number) => void; anyLabel?: string }) {
   return (
     <div className="flex min-h-10 items-center justify-between gap-4">
-      <span className="text-sm text-zinc-800">{label}</span>
+      <span className="text-sm text-[#1f1f1f] font-normal">{label}</span>
       <div className="flex items-center gap-4">
         <button type="button" onClick={() => onChange(Math.max(0, value - 1))} disabled={value === 0} aria-label={`Decrease ${label}`} className="flex size-7 items-center justify-center rounded-full bg-zinc-100 text-lg font-light text-zinc-700 transition hover:bg-zinc-200 disabled:text-zinc-300">−</button>
-        <span className="min-w-7 text-center text-sm text-zinc-800">{value === 0 ? anyLabel : value >= 8 ? "8+" : value}</span>
+        <span className="min-w-7 text-center text-sm text-[#1f1f1f] font-normal">{value === 0 ? anyLabel : value >= 8 ? "8+" : value}</span>
         <button type="button" onClick={() => onChange(Math.min(8, value + 1))} disabled={value >= 8} aria-label={`Increase ${label}`} className="flex size-7 items-center justify-center rounded-full bg-zinc-100 text-lg font-light text-zinc-700 transition hover:bg-zinc-200 disabled:text-zinc-300">+</button>
       </div>
     </div>
@@ -105,6 +105,23 @@ function PropertyTypeIcon({ type }: { type: (typeof PRIMARY_PROPERTY_TYPES)[numb
   if (type === "guestHouse") return <svg {...shared}><path d="M3 21h18M5 21V6h14v15M3 6h18M8 3v6m8-6v6M8 12h3m2 0h3m-8 4h3m2 0h3" /></svg>;
   if (type === "hotel") return <svg {...shared}><path d="M4 21V5h16v16M7 8h2m3 0h2m3 0h0M7 12h2m3 0h2m3 0h0M10 21v-4h4v4" /></svg>;
   return <svg {...shared}><path d="m3 11 9-8 9 8v10H3zM9 21v-6h6v6M8 10h.01M16 10h.01" /></svg>;
+}
+
+function ChevronIcon({ open, className = "" }: { open: boolean; className?: string }) {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={`size-5 text-[#1f1f1f] transition-transform duration-200 ${open ? "rotate-180" : ""} ${className}`}
+    >
+      <path d="m6 9 6 6 6-6" />
+    </svg>
+  );
 }
 
 export function ListingFilterModal({ open, onClose, onApply, initialFilters, availablePriceRange, currencySymbol, baseSearchParams, currentTotal, isApplying = false }: Props) {
@@ -244,8 +261,8 @@ export function ListingFilterModal({ open, onClose, onApply, initialFilters, ava
     const label = normalisedDraft.minPrice > availableMin && normalisedDraft.maxPrice < availableMax
       ? `${currencySymbol}${normalisedDraft.minPrice.toLocaleString()} – ${currencySymbol}${normalisedDraft.maxPrice.toLocaleString()}`
       : normalisedDraft.minPrice > availableMin
-      ? t("listings_from_price", { price: `${currencySymbol}${normalisedDraft.minPrice.toLocaleString()}` }, `From ${currencySymbol}${normalisedDraft.minPrice.toLocaleString()}`)
-      : t("listings_up_to_price", { price: `${currencySymbol}${normalisedDraft.maxPrice.toLocaleString()}` }, `Up to ${currencySymbol}${normalisedDraft.maxPrice.toLocaleString()}`);
+        ? t("listings_from_price", { price: `${currencySymbol}${normalisedDraft.minPrice.toLocaleString()}` }, `From ${currencySymbol}${normalisedDraft.minPrice.toLocaleString()}`)
+        : t("listings_up_to_price", { price: `${currencySymbol}${normalisedDraft.maxPrice.toLocaleString()}` }, `Up to ${currencySymbol}${normalisedDraft.maxPrice.toLocaleString()}`);
     selectedFilters.push({ id: "price", label, clear: () => setDraft((previous) => ({ ...previous, minPrice: availableMin, maxPrice: availableMax })) });
   }
   if (normalisedDraft.listingType) selectedFilters.push({ id: "listingType", label: normalisedDraft.listingType === "ROOM" ? t("listings_room", "Room") : t("listings_entire_home", "Entire home"), clear: () => setDraft((previous) => ({ ...previous, listingType: "" })) });
@@ -288,33 +305,32 @@ export function ListingFilterModal({ open, onClose, onApply, initialFilters, ava
     <ModalOverlay className="fixed inset-0 z-50 flex items-end justify-center bg-black/45 sm:items-center sm:px-4" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
       <section ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="listing-filter-title" className="flex max-h-[100dvh] w-full max-w-2xl flex-col overflow-hidden rounded-t-[28px] bg-white shadow-2xl sm:max-h-[88dvh] sm:rounded-[28px]">
         <header className="flex shrink-0 items-center justify-between border-b border-zinc-200 px-5 py-4 sm:px-6">
-          <span className="size-10" aria-hidden="true" />
-          <h2 id="listing-filter-title" className="text-base font-semibold text-zinc-950">{t("listings_filters", "Filters")}</h2>
-          <button ref={closeRef} type="button" onClick={onClose} aria-label="Close filters" className="flex size-10 items-center justify-center rounded-full text-zinc-800 transition hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950">✕</button>
+          <h2 id="listing-filter-title" className="md:text-2xl text-xl font-medium text-[#1f1f1f]">{t("listings_filters", "Filters")}</h2>
+          <button ref={closeRef} type="button" onClick={onClose} aria-label="Close filters" className="cursor-pointer p-1 text-lg font-semibold text-[#1f1f1f] hover:text-[#727272] focus-visible:outline-none focus-visible:outline-[#1f1f1f]">✕</button>
         </header>
         {selectedFilters.length > 0 && (
           <section aria-label="Selected filters" className="shrink-0 border-b border-zinc-200 px-5 py-4 sm:px-6">
             <div className="mb-3 flex items-center justify-between gap-4">
-              <h3 className="text-sm font-semibold text-[#1F1F1F]">{t("listings_selected", "Selected")}</h3>
-              <button type="button" onClick={clearAll} className="text-xs font-semibold underline underline-offset-2 hover:text-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950">{t("listings_clear_all", "Clear all")}</button>
+              <h3 className="text-base font-medium text-[#1F1F1F]">{t("listings_selected", "Selected")}</h3>
+              <button type="button" onClick={clearAll} className="text-sm font-semibold underline underline-offset-2 hover:text-[#727272] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-none">{t("listings_clear_all", "Clear all")}</button>
             </div>
             <div className="flex max-h-28 flex-wrap gap-2 overflow-y-auto pr-1">
-              {selectedFilters.map((filter) => <button key={filter.id} type="button" onClick={filter.clear} aria-label={`Remove ${filter.label} filter`} className="inline-flex min-h-9 items-center gap-2 rounded-full border border-zinc-950 px-3 text-xs font-semibold text-[#1F1F1F] transition hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950"><span>{filter.label}</span><span aria-hidden="true">×</span></button>)}
+              {selectedFilters.map((filter) => <button key={filter.id} type="button" onClick={filter.clear} aria-label={`Remove ${filter.label} filter`} className="inline-flex min-h-9 items-center gap-2 rounded-full border border-[#727272] px-3 text-sm font-medium text-[#1F1F1F] transition hover:bg-zinc-50 focus-visible:outline-none"><span>{filter.label}</span><span aria-hidden="true">×</span></button>)}
             </div>
           </section>
         )}
 
         <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-8 sm:px-6">
           <div className="border-b border-zinc-200 py-7">
-            <h3 className="mb-4 text-base font-semibold text-[#1F1F1F]">{t("listings_type_of_place", "Type of place")}</h3>
+            <h3 className="mb-4 text-lg font-medium text-[#1F1F1F]">{t("listings_type_of_place", "Type of place")}</h3>
             <div className="grid grid-cols-3 rounded-xl border border-zinc-300 p-1" role="radiogroup" aria-label="Type of place">
-              {([ ["", t("listings_any_type", "Any type")], ["ROOM", t("listings_room", "Room")], ["ENTIRE_PLACE", t("listings_entire_home", "Entire home")] ] as const).map(([value, label]) => <button key={value || "any"} type="button" role="radio" aria-checked={draft.listingType === value} onClick={() => setDraft((previous) => ({ ...previous, listingType: value }))} className={`min-h-10 rounded-lg px-2 text-xs font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 ${draft.listingType === value ? "border border-zinc-950 bg-white shadow-sm" : "border border-transparent hover:bg-zinc-50"}`}>{label}</button>)}
+              {([["", t("listings_any_type", "Any type")], ["ROOM", t("listings_room", "Room")], ["ENTIRE_PLACE", t("listings_entire_home", "Entire home")]] as const).map(([value, label]) => <button key={value || "any"} type="button" role="radio" aria-checked={draft.listingType === value} onClick={() => setDraft((previous) => ({ ...previous, listingType: value }))} className={`min-h-10 rounded-lg px-2 text-sm font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 ${draft.listingType === value ? "border border-zinc-950 bg-white shadow-sm" : "border border-transparent hover:bg-zinc-50"}`}>{label}</button>)}
             </div>
           </div>
 
           <div className="border-b border-zinc-200 py-7">
-            <h3 className="text-base font-semibold text-[#1F1F1F]">{t("listings_price_range", "Price range")}</h3>
-            <p className="mt-1 text-xs text-zinc-600">{t("listings_price_subtitle", "Nightly price, before taxes and fees")}</p>
+            <h3 className="text-lg font-medium text-[#1F1F1F]">{t("listings_price_range", "Price range")}</h3>
+            <p className="mt-1 text-sm text-[#727272]">{t("listings_price_subtitle", "Nightly price, before taxes and fees")}</p>
             {hasPriceRange ? <>
               <div className="mt-7 h-14 border-b border-zinc-300" aria-hidden="true"><div className="flex h-full items-end gap-1">{Array.from({ length: 32 }, (_, index) => <span key={index} className="flex-1 rounded-t bg-zinc-300" style={{ height: `${18 + Math.round(70 * Math.sin((index / 31) * Math.PI))}%` }} />)}</div></div>
               <div className="relative mt-1 h-9">
@@ -324,39 +340,39 @@ export function ListingFilterModal({ open, onClose, onApply, initialFilters, ava
                 <input type="range" min={availableMin} max={availableMax} step={Math.max(1, Math.round((availableMax - availableMin) / 200))} value={normalisedDraft.maxPrice} onChange={(event) => updatePrice("maxPrice", event.target.value)} aria-label="Maximum price" className="pointer-events-none absolute inset-0 z-20 h-9 w-full appearance-none bg-transparent [&::-webkit-slider-runnable-track]:h-1 [&::-webkit-slider-runnable-track]:bg-transparent [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:mt-[-6px] [&::-webkit-slider-thumb]:size-5 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border [&::-webkit-slider-thumb]:border-zinc-300 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-md [&::-moz-range-track]:h-1 [&::-moz-range-track]:bg-transparent [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:size-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border [&::-moz-range-thumb]:border-zinc-300 [&::-moz-range-thumb]:bg-white" />
               </div>
               <div className="mt-5 grid grid-cols-2 gap-3">
-                {([ ["minPrice", t("listings_minimum", "Minimum")], ["maxPrice", t("listings_maximum", "Maximum")] ] as const).map(([key, label]) => <label key={key} className="rounded-xl border border-zinc-300 px-3 py-2 focus-within:border-zinc-950 focus-within:ring-1 focus-within:ring-zinc-950"><span className="block text-[11px] font-medium text-[#727272]">{label}</span><span className="mt-0.5 flex items-center gap-1"><span className="text-sm text-[#727272]">{currencySymbol}</span><input inputMode="numeric" value={normalisedDraft[key]} onChange={(event) => updatePrice(key, event.target.value.replace(/[^0-9]/g, ""))} className="min-w-0 w-full bg-transparent text-sm font-semibold outline-none" /></span></label>)}
+                {([["minPrice", t("listings_minimum", "Minimum")], ["maxPrice", t("listings_maximum", "Maximum")]] as const).map(([key, label]) => <label key={key} className="rounded-xl border border-zinc-300 px-3 py-2 focus-within:border-zinc-950 focus-within:ring-1 focus-within:ring-zinc-950"><span className="block text-[11px] font-medium text-[#727272]">{label}</span><span className="mt-0.5 flex items-center gap-1"><span className="text-sm text-[#727272]">{currencySymbol}</span><input inputMode="numeric" value={normalisedDraft[key]} onChange={(event) => updatePrice(key, event.target.value.replace(/[^0-9]/g, ""))} className="min-w-0 w-full bg-transparent text-sm font-semibold outline-none" /></span></label>)}
               </div>
             </> : <p className="mt-5 rounded-xl bg-zinc-50 p-4 text-sm text-zinc-600">{t("listings_price_controls_unavailable", "Price controls become available when matching homes have prices.")}</p>}
           </div>
 
           <div className="space-y-4 border-b border-zinc-200 py-7">
-            <h2 className="mb-2 text-base font-semibold text-zinc-950">{t("listings_rooms_and_beds", "Rooms and beds")}</h2>
+            <h2 className="text-lg font-medium text-[#1f1f1f]">{t("listings_rooms_and_beds", "Rooms and beds")}</h2>
             <CounterRow label={t("listings_bedrooms", "Bedrooms")} value={draft.bedrooms} anyLabel={t("listings_any", "Any")} onChange={(bedrooms) => setDraft((previous) => ({ ...previous, bedrooms }))} />
             <CounterRow label={t("listings_beds", "Beds")} value={draft.beds} anyLabel={t("listings_any", "Any")} onChange={(beds) => setDraft((previous) => ({ ...previous, beds }))} />
             <CounterRow label={t("listings_bathrooms", "Bathrooms")} value={draft.bathrooms} anyLabel={t("listings_any", "Any")} onChange={(bathrooms) => setDraft((previous) => ({ ...previous, bathrooms }))} />
           </div>
 
           <div className="border-b border-zinc-200 py-7">
-            <h2 className="mb-4 text-base font-semibold text-zinc-950">{t("listings_property_type", "Property type")}</h2>
+            <h2 className="mb-4 text-lg font-medium text-[#1f1f1f]">{t("listings_property_type", "Property type")}</h2>
             <div className="flex flex-wrap gap-2">
               {PRIMARY_PROPERTY_TYPES.map((propertyType) => {
                 const label = propertyTypeLabels.get(propertyType.id) ?? propertyType.label;
                 return (
-                  <button key={propertyType.id} type="button" aria-pressed={draft.propertyTypes.includes(propertyType.id)} onClick={() => setDraft((previous) => ({ ...previous, propertyTypes: toggle(previous.propertyTypes, propertyType.id) }))} className={`inline-flex min-h-10 items-center gap-2 rounded-full border px-3 text-xs font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 ${draft.propertyTypes.includes(propertyType.id) ? "border-zinc-950 bg-zinc-950 text-white" : "border-zinc-300 bg-white text-zinc-800 hover:border-zinc-700"}`}><PropertyTypeIcon type={propertyType.icon} />{label}</button>
+                  <button key={propertyType.id} type="button" aria-pressed={draft.propertyTypes.includes(propertyType.id)} onClick={() => setDraft((previous) => ({ ...previous, propertyTypes: toggle(previous.propertyTypes, propertyType.id) }))} className={`inline-flex min-h-10 items-center gap-2 rounded-full border px-3 text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 ${draft.propertyTypes.includes(propertyType.id) ? "border-zinc-950 bg-zinc-950 text-white [&_svg]:brightness-0 [&_svg]:invert" : "border-zinc-300 bg-white text-zinc-800 hover:border-zinc-700"}`}><PropertyTypeIcon type={propertyType.icon} />{label}</button>
                 );
               })}
             </div>
           </div>
 
           <div className="border-b border-zinc-200 py-7">
-            <h2 className="mb-5 text-lg font-semibold text-zinc-950">{t("listings_amenities", "Amenities")}</h2>
-            <div className="space-y-5">{amenityGroups.map((group) => <div key={group.title}><h3 className="mb-2.5 text-sm font-semibold text-zinc-800">{group.title === "Popular" ? t("listings_popular", "Popular") : group.title === "Essentials" ? t("listings_essentials", "Essentials") : group.title === "Features" ? t("listings_features", "Features") : group.title}</h3><div className="flex flex-wrap gap-2">{group.ids.map((id) => amenityById.get(id)).filter(Boolean).map((amenity) => <FilterPill key={amenity!.id} active={draft.amenities.includes(amenity!.id)} onClick={() => setDraft((previous) => ({ ...previous, amenities: toggle(previous.amenities, amenity!.id) }))}><AmenityIcon id={amenity!.id} className="size-4" />{getAmenityLabel(amenity!.id, amenity!.label)}</FilterPill>)}</div></div>)}</div>
+            <h2 className="mb-5 text-lg font-medium text-[#1f1f1f]">{t("listings_amenities", "Amenities")}</h2>
+            <div className="space-y-5">{amenityGroups.map((group) => <div key={group.title}><h3 className="mb-2.5 text-base font-medium text-[#727272]">{group.title === "Popular" ? t("listings_popular", "Popular") : group.title === "Essentials" ? t("listings_essentials", "Essentials") : group.title === "Features" ? t("listings_features", "Features") : group.title}</h3><div className="flex flex-wrap gap-2">{group.ids.map((id) => amenityById.get(id)).filter(Boolean).map((amenity) => <FilterPill key={amenity!.id} active={draft.amenities.includes(amenity!.id)} onClick={() => setDraft((previous) => ({ ...previous, amenities: toggle(previous.amenities, amenity!.id) }))}><AmenityIcon id={amenity!.id} className="size-4" />{getAmenityLabel(amenity!.id, amenity!.label)}</FilterPill>)}</div></div>)}</div>
             {showAllAmenities && <div className="mt-5 flex flex-wrap gap-2">{extraAmenities.map((amenity) => <FilterPill key={amenity.id} active={draft.amenities.includes(amenity.id)} onClick={() => setDraft((previous) => ({ ...previous, amenities: toggle(previous.amenities, amenity.id) }))}><AmenityIcon id={amenity.id} className="size-4" />{getAmenityLabel(amenity.id, amenity.label)}</FilterPill>)}</div>}
             <button type="button" onClick={() => setShowAllAmenities((value) => !value)} className="mt-5 text-sm font-semibold underline underline-offset-2 hover:text-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950">{showAllAmenities ? t("listings_show_less", "Show less") : t("listings_show_more", "Show more")}</button>
           </div>
 
           <div className="border-b border-zinc-200 py-7">
-            <h2 className="mb-4 text-lg font-semibold text-zinc-950">{t("listings_booking_options", "Booking options")}</h2>
+            <h2 className="mb-4 text-lg font-medium text-[#1f1f1f]">{t("listings_booking_options", "Booking options")}</h2>
             <div className="flex flex-wrap gap-2">
               <FilterPill active={draft.instantBook} onClick={() => setDraft((previous) => ({ ...previous, instantBook: !previous.instantBook }))}><svg aria-hidden="true" viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="m13 2-9 12h7l-1 8 9-12h-7z" /></svg>{t("listings_instant_book", "Instant Book")}</FilterPill>
               <FilterPill active={draft.amenities.includes("self_check_in")} onClick={() => setDraft((previous) => ({ ...previous, amenities: toggle(previous.amenities, "self_check_in") }))}><AmenityIcon id="self_check_in" className="size-4" />{t("listings_self_check_in", "Self check-in")}</FilterPill>
@@ -366,19 +382,19 @@ export function ListingFilterModal({ open, onClose, onApply, initialFilters, ava
           </div>
 
           <div className="border-b border-zinc-200 py-7">
-            <button type="button" onClick={() => setShowAccessibility((value) => !value)} aria-expanded={showAccessibility} className="flex w-full items-center justify-between text-left text-lg font-semibold text-zinc-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950">{t("listings_accessibility_features", "Accessibility features")} <span aria-hidden="true">{showAccessibility ? "⌃" : "⌄"}</span></button>
-            {showAccessibility && <div className="mt-5 grid gap-3 sm:grid-cols-2">{accessibilityAmenities.map((amenity) => <label key={amenity.id} className="flex min-h-11 cursor-pointer items-center gap-3 text-sm text-zinc-800"><input type="checkbox" checked={draft.accessibility.includes(amenity.id)} onChange={() => setDraft((previous) => ({ ...previous, accessibility: toggle(previous.accessibility, amenity.id) }))} className="size-5 rounded border-zinc-400 text-zinc-950 focus:ring-zinc-950" />{getAccessibilityLabel(amenity.id, amenity.label)}</label>)}</div>}
+            <button type="button" onClick={() => setShowAccessibility((value) => !value)} aria-expanded={showAccessibility} className="flex w-full cursor-pointer items-center justify-between text-left text-lg font-medium text-zinc-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950">{t("listings_accessibility_features", "Accessibility features")} <ChevronIcon open={showAccessibility} /></button>
+            {showAccessibility && <div className="mt-3 grid gap-0 sm:grid-cols-2">{accessibilityAmenities.map((amenity) => <label key={amenity.id} className="flex min-h-11 cursor-pointer items-center gap-3 text-sm text-[#1f1f1f] font-normal"><input type="checkbox" checked={draft.accessibility.includes(amenity.id)} onChange={() => setDraft((previous) => ({ ...previous, accessibility: toggle(previous.accessibility, amenity.id) }))} className="size-5 rounded border-zinc-400 text-zinc-950 focus:ring-zinc-950 accent-[#1f1f1f]" />{getAccessibilityLabel(amenity.id, amenity.label)}</label>)}</div>}
           </div>
 
           <div className="border-b border-zinc-200 py-7">
-            <button type="button" onClick={() => setShowLanguages((value) => !value)} aria-expanded={showLanguages} className="flex w-full items-center justify-between text-left text-lg font-semibold text-zinc-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950">{t("listings_host_languages", "Host languages")} <span aria-hidden="true">{showLanguages ? "⌃" : "⌄"}</span></button>
-            {showLanguages && <div className="mt-5 grid max-h-72 gap-3 overflow-y-auto pr-1 sm:grid-cols-2">{FILTER_LANGUAGE_OPTIONS.map((language) => <label key={language.id} className="flex min-h-11 cursor-pointer items-center gap-3 text-sm text-zinc-800"><input type="checkbox" checked={draft.languages.includes(language.id)} onChange={() => setDraft((previous) => ({ ...previous, languages: toggle(previous.languages, language.id) }))} className="size-5 rounded border-zinc-400 text-zinc-950 focus:ring-zinc-950" />{language.nativeName && language.nativeName !== language.name ? `${language.name} (${language.nativeName})` : language.name}</label>)}</div>}
+            <button type="button" onClick={() => setShowLanguages((value) => !value)} aria-expanded={showLanguages} className="flex w-full cursor-pointer items-center justify-between text-left text-lg font-medium text-zinc-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950">{t("listings_host_languages", "Host languages")} <ChevronIcon open={showLanguages} /></button>
+            {showLanguages && <div className="mt-3 grid max-h-72 overflow-y-auto pr-1 sm:grid-cols-2">{FILTER_LANGUAGE_OPTIONS.map((language) => <label key={language.id} className="flex min-h-11 cursor-pointer items-center gap-3 text-sm text-[#1f1f1f] font-normal"><input type="checkbox" checked={draft.languages.includes(language.id)} onChange={() => setDraft((previous) => ({ ...previous, languages: toggle(previous.languages, language.id) }))} className="size-5 rounded border-zinc-400 text-zinc-950 focus:ring-zinc-950 accent-[#1f1f1f]" />{language.nativeName && language.nativeName !== language.name ? `${language.name} (${language.nativeName})` : language.name}</label>)}</div>}
           </div>
         </div>
 
         <footer className="flex shrink-0 items-center justify-between gap-4 border-t border-zinc-200 bg-white px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-6">
-          <button type="button" onClick={clearAll} className="text-sm font-semibold underline underline-offset-2 hover:text-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950">{t("listings_clear_all", "Clear all")}</button>
-          <button type="button" disabled={isApplying || (hasDraftChanges && isCounting)} onClick={() => onApply(normalisedDraft)} className="min-h-12 rounded-xl bg-zinc-950 px-5 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:cursor-wait disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950">{hasDraftChanges && isCounting ? t("listings_finding_places", "Finding places…") : shownCount === 1 ? t("listings_show_place", { count: shownCount }, "Show 1 place") : t("listings_show_places", { count: shownCount.toLocaleString() }, `Show ${shownCount.toLocaleString()} places`)}</button>
+          <button type="button" onClick={clearAll} className="text-sm font-medium underline underline-offset-2 hover:text-zinc-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950">{t("listings_clear_all", "Clear all")}</button>
+          <button type="button" disabled={isApplying || (hasDraftChanges && isCounting)} onClick={() => onApply(normalisedDraft)} className="min-h-12 rounded-full bg-[#FCDF9C] px-5 text-sm font-medium text-[#1f1f1f] hover:text-white transition hover:bg-[#1f1f1f] disabled:cursor-wait disabled:opacity-60 focus-visible:outline-none focus-visible:outline-offset-2 focus-visible:outline-zinc-950">{hasDraftChanges && isCounting ? t("listings_finding_places", "Finding places…") : shownCount === 1 ? t("listings_show_place", { count: shownCount }, "Show 1 place") : t("listings_show_places", { count: shownCount.toLocaleString() }, `Show ${shownCount.toLocaleString()} places`)}</button>
         </footer>
       </section>
     </ModalOverlay>

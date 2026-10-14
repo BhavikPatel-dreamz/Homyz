@@ -532,7 +532,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="flex flex-wrap items-center gap-3">
-              <span className="rounded-full bg-[#FBDE9B] px-3 py-1 text-xs font-semibold text-[#291E05] shadow-xs dark:bg-amber-500 dark:text-zinc-950">
+              <span className="rounded-full bg-[#FCDF9C] px-3 py-1 text-xs font-semibold text-[#291E05] shadow-xs dark:bg-amber-500 dark:text-zinc-950">
                 {t("host_app_title", "Host Onboarding Portal")}
               </span>
               {hostingTypeLabel && (
@@ -567,7 +567,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                   type="button"
                   onClick={handleConvertToHost}
                   disabled={isSaving || isConverting}
-                  className="inline-flex items-center rounded-full bg-[#FBDE9B] hover:bg-amber-400 px-5 py-2 text-xs font-semibold text-[#291E05] shadow-sm transition-all disabled:opacity-50"
+                  className="inline-flex items-center rounded-full bg-[#FCDF9C] hover:bg-amber-400 px-5 py-2 text-xs font-semibold text-[#291E05] shadow-sm transition-all disabled:opacity-50"
                 >
                   {isConverting ? t("host_app_btn_converting", "Converting Account...") : `⚡ ${t("host_app_convert_btn", "Become a Host Now")}`}
                 </button>
@@ -731,7 +731,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                   type="button"
                   onClick={handleResubmit}
                   disabled={isResubmitting}
-                  className="rounded-full bg-[#FBDE9B] px-4 py-2 text-xs font-semibold text-[#291E05] shadow-xs hover:bg-amber-400 dark:bg-amber-500 dark:text-zinc-950"
+                  className="rounded-full bg-[#FCDF9C] px-4 py-2 text-xs font-semibold text-[#291E05] shadow-xs hover:bg-amber-400 dark:bg-amber-500 dark:text-zinc-950"
                 >
                   {isResubmitting ? t("host_app_btn_resubmitting", "Resubmitting...") : t("host_app_btn_resubmit", "Resubmit Application")}
                 </button>
@@ -788,7 +788,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
           <div className="mt-6 flex justify-center gap-4">
             <Link
               href="/host/listings"
-              className="rounded-full bg-[#FBDE9B] px-6 py-2.5 text-xs font-semibold text-[#291E05] shadow-md transition-all hover:scale-102 dark:bg-amber-500 dark:text-zinc-950"
+              className="rounded-full bg-[#FCDF9C] px-6 py-2.5 text-xs font-semibold text-[#291E05] shadow-md transition-all hover:scale-102 dark:bg-amber-500 dark:text-zinc-950"
             >
               {t("host_app_btn_go_to_portal", "Go to Host Portal & Listings")}
             </Link>
@@ -833,7 +833,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                 onClick={() => setActiveStep(st.num)}
                 className={`rounded-full px-4 py-2 text-xs font-semibold transition-all ${
                   activeStep === st.num
-                    ? "bg-[#FBDE9B] text-[#291E05] shadow-xs dark:bg-amber-500 dark:text-zinc-950"
+                    ? "bg-[#FCDF9C] text-[#291E05] shadow-xs dark:bg-amber-500 dark:text-zinc-950"
                     : "text-[var(--muted-foreground)] hover:bg-[var(--muted)]"
                 }`}
               >
@@ -892,7 +892,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                 <button
                   type="button"
                   onClick={handleNextFromStep1}
-                  className="rounded-full bg-[#FBDE9B] px-6 py-2 text-xs font-semibold text-[#291E05] hover:bg-amber-400 dark:bg-amber-500 dark:text-zinc-950"
+                  className="rounded-full bg-[#FCDF9C] px-6 py-2 text-xs font-semibold text-[#291E05] hover:bg-amber-400 dark:bg-amber-500 dark:text-zinc-950"
                 >
                   {t("host_app_btn_next", "Next step")} →
                 </button>
@@ -944,7 +944,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                 <button
                   type="button"
                   onClick={() => setActiveStep(3)}
-                  className="rounded-full bg-[#FBDE9B] px-6 py-2 text-xs font-semibold text-[#291E05] hover:bg-amber-400 dark:bg-amber-500 dark:text-zinc-950"
+                  className="rounded-full bg-[#FCDF9C] px-6 py-2 text-xs font-semibold text-[#291E05] hover:bg-amber-400 dark:bg-amber-500 dark:text-zinc-950"
                 >
                   {t("host_app_btn_next", "Next step")} →
                 </button>
@@ -997,7 +997,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                 <button
                   type="button"
                   onClick={handleNextFromStep3}
-                  className="rounded-full bg-[#FBDE9B] px-6 py-2 text-xs font-semibold text-[#291E05] hover:bg-amber-400 dark:bg-amber-500 dark:text-zinc-950"
+                  className="rounded-full bg-[#FCDF9C] px-6 py-2 text-xs font-semibold text-[#291E05] hover:bg-amber-400 dark:bg-amber-500 dark:text-zinc-950"
                 >
                   {t("host_app_btn_next", "Next step")} →
                 </button>
@@ -1037,7 +1037,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                       type="file"
                       accept=".pdf,.png,.jpg,.jpeg,.webp"
                       onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-                      className="mt-1 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs text-muted-foreground file:mr-3 file:rounded-xl file:border-0 file:bg-[#FBDE9B] file:px-3 file:py-1 file:text-xs file:font-semibold file:text-[#291E05]"
+                      className="mt-1 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 text-xs text-muted-foreground file:mr-3 file:rounded-xl file:border-0 file:bg-[#FCDF9C] file:px-3 file:py-1 file:text-xs file:font-semibold file:text-[#291E05]"
                     />
                   </div>
                 </div>
@@ -1046,7 +1046,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                   <button
                     type="submit"
                     disabled={isUploading || !selectedFile}
-                    className="rounded-full bg-[#FBDE9B] px-5 py-2 text-xs font-semibold text-[#291E05] shadow-xs hover:bg-amber-400 disabled:opacity-50 dark:bg-amber-500 dark:text-zinc-950"
+                    className="rounded-full bg-[#FCDF9C] px-5 py-2 text-xs font-semibold text-[#291E05] shadow-xs hover:bg-amber-400 disabled:opacity-50 dark:bg-amber-500 dark:text-zinc-950"
                   >
                     {isUploading ? t("host_app_btn_uploading", "Uploading…") : t("host_app_btn_upload", "Upload document")}
                   </button>
@@ -1128,7 +1128,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                 <button
                   type="button"
                   onClick={handleNextFromStep4}
-                  className="rounded-full bg-[#FBDE9B] px-6 py-2 text-xs font-semibold text-[#291E05] hover:bg-amber-400 dark:bg-amber-500 dark:text-zinc-950"
+                  className="rounded-full bg-[#FCDF9C] px-6 py-2 text-xs font-semibold text-[#291E05] hover:bg-amber-400 dark:bg-amber-500 dark:text-zinc-950"
                 >
                   {t("host_app_btn_next", "Next step")} →
                 </button>
@@ -1164,7 +1164,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                 <button
                   type="button"
                   onClick={() => setActiveStep(6)}
-                  className="rounded-full bg-[#FBDE9B] px-6 py-2 text-xs font-semibold text-[#291E05] hover:bg-amber-400 dark:bg-amber-500 dark:text-zinc-950"
+                  className="rounded-full bg-[#FCDF9C] px-6 py-2 text-xs font-semibold text-[#291E05] hover:bg-amber-400 dark:bg-amber-500 dark:text-zinc-950"
                 >
                   {t("host_app_step_review", "Review & Submit")} →
                 </button>
@@ -1354,7 +1354,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                   type="button"
                   onClick={handleSubmitApplication}
                   disabled={isSubmitting}
-                  className="rounded-full bg-[#FBDE9B] px-8 py-3 text-xs font-semibold text-[#291E05] shadow-md transition-all hover:scale-102 disabled:opacity-50 dark:bg-amber-500 dark:text-zinc-950"
+                  className="rounded-full bg-[#FCDF9C] px-8 py-3 text-xs font-semibold text-[#291E05] shadow-md transition-all hover:scale-102 disabled:opacity-50 dark:bg-amber-500 dark:text-zinc-950"
                 >
                   {isSubmitting ? t("host_app_btn_submitting", "Submitting…") : t("host_app_btn_submit", "Submit application")}
                 </button>

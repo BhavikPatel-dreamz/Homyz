@@ -45,7 +45,7 @@ export function AcceptInvitationClient({
             </p>
             <Link
               href="/login"
-              className="inline-flex items-center justify-center w-full rounded-full bg-[#FBDE9B] hover:bg-[#F3D382] py-3 text-xs sm:text-sm font-semibold text-[#1F1F1F] transition-colors shadow-2xs"
+              className="inline-flex items-center justify-center w-full rounded-full bg-[#FCDF9C] hover:bg-[#F3D382] py-3 text-xs sm:text-sm font-semibold text-[#1F1F1F] transition-colors shadow-2xs"
             >
               {t("accept_inv_return_to_signin", "← Return to Sign In")}
             </Link>
@@ -79,7 +79,7 @@ export function AcceptInvitationClient({
             <div className="pt-2">
               <Link
                 href="/login"
-                className="inline-flex items-center justify-center w-full rounded-full bg-[#FBDE9B] hover:bg-[#F3D382] py-3 text-xs sm:text-sm font-semibold text-[#1F1F1F] transition-colors shadow-2xs"
+                className="inline-flex items-center justify-center w-full rounded-full bg-[#FCDF9C] hover:bg-[#F3D382] py-3 text-xs sm:text-sm font-semibold text-[#1F1F1F] transition-colors shadow-2xs"
               >
                 {t("accept_inv_go_to_signin", "Go to Sign In →")}
               </Link>

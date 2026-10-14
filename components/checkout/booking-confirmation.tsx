@@ -79,7 +79,7 @@ export function BookingConfirmation({
             )}
           </div>
           <div className="min-w-0 py-1">
-            <h3 id="confirmation-property-heading" className="text-base font-semibold text-zinc-950">{property.title}</h3>
+            <h3 id="confirmation-property-heading" className="md:text-2xl text-xl font-medium text-[#1f1f1f]">{property.title}</h3>
             <p className="mt-1 text-sm text-zinc-600">{property.location}</p>
             <p className="mt-2 text-xs text-zinc-500">{t("book_id_label", "Booking ID:")} <span className="font-mono text-zinc-700">{bookingId}</span></p>
           </div>
@@ -122,7 +122,7 @@ export function BookingConfirmation({
                 <dd className="font-medium text-zinc-900">{row.subtract ? "−" : ""}{formatMoney(row.amount, 2)}</dd>
               </div>
             ))}
-            <div className="flex justify-between gap-4 border-t border-zinc-300 pt-3 text-base font-semibold text-zinc-950">
+            <div className="flex justify-between gap-4 border-t border-zinc-300 pt-3 md:text-2xl text-xl font-medium text-[#1f1f1f]">
               <dt>{t("book_total", { currency: displayCurrency }, `Total (${displayCurrency})`)}</dt>
               <dd>{formatMoney(quote.guestTotal, 2)}</dd>
             </div>

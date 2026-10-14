@@ -53,7 +53,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
         </div>
         <Link
           href="/forgot-password"
-          className="w-full rounded-full bg-[#FBDE9B] hover:bg-[#F3D382] py-3.5 text-sm font-semibold text-[#1F1F1F] transition-colors shadow-2xs text-center inline-block cursor-pointer"
+          className="w-full rounded-full bg-[#FCDF9C] hover:bg-[#F3D382] py-3.5 text-sm font-semibold text-[#1F1F1F] transition-colors shadow-2xs text-center inline-block cursor-pointer"
         >
           {t("auth_request_new_reset_link")} →
         </Link>
@@ -85,7 +85,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
 
         <Link
           href="/login"
-          className="w-full rounded-full bg-[#FBDE9B] hover:bg-[#F3D382] py-3.5 text-sm font-semibold text-[#1F1F1F] transition-colors shadow-2xs text-center inline-block cursor-pointer mt-2"
+          className="w-full rounded-full bg-[#FCDF9C] hover:bg-[#F3D382] py-3.5 text-sm font-semibold text-[#1F1F1F] transition-colors shadow-2xs text-center inline-block cursor-pointer mt-2"
         >
           {t("auth_signin")} →
         </Link>
@@ -210,7 +210,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
       <button
         type="submit"
         disabled={pending || !minLength || !hasUpper || !hasNumber || !matches}
-        className="mt-2 w-full rounded-full bg-[#FBDE9B] hover:bg-[#F3D382] py-3.5 text-sm font-semibold text-[#1F1F1F] transition-colors shadow-2xs disabled:opacity-50 inline-flex items-center justify-center gap-2 cursor-pointer"
+        className="mt-2 w-full rounded-full bg-[#FCDF9C] hover:bg-[#F3D382] py-3.5 text-sm font-semibold text-[#1F1F1F] transition-colors shadow-2xs disabled:opacity-50 inline-flex items-center justify-center gap-2 cursor-pointer"
       >
         {pending && (
           <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-zinc-900 border-t-transparent" />

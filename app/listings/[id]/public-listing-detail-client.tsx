@@ -2598,7 +2598,7 @@ export function PublicListingDetailClient({
         >
           <div className="flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-[20px] bg-white shadow-2xl">
             <div className="flex items-center justify-between px-6 pb-4 pt-6 sm:px-8">
-              <h3 id="things-to-know-modal-title" className="text-2xl font-semibold text-[#1f1f1f]">
+              <h3 id="things-to-know-modal-title" className="md:text-2xl text-xl font-medium text-[#1f1f1f]">
                 {openThingsCard === "rules" ? t("listing_detail_house_rules", "House rules") : openThingsCard === "safety" ? t("listing_detail_safety_property", "Safety & property") : t("listing_detail_cancellation_policy", "Cancellation policy")}
               </h3>
               <button type="button" onClick={() => setOpenThingsCard(null)} aria-label={t("listing_detail_close_details", "Close details")} className="-mr-1 -mt-1 rounded-full w-7.5 h-7.5 flex justify-center items-center text-2xl leading-none text-[#1f1f1f] hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f] shrink-0">×</button>
@@ -2642,17 +2642,17 @@ export function PublicListingDetailClient({
 
       {isDescriptionModalOpen && (
         <ModalOverlay role="dialog" aria-modal="true" aria-labelledby="description-modal-title" className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
-          <div className="flex max-h-[85vh] w-full max-w-2xl flex-col rounded-[28px] border border-zinc-200 bg-white p-6 shadow-2xl">
+          <div className="flex max-h-[85vh] w-full max-w-2xl flex-col rounded-[20px] bg-white p-6">
             <div className="flex items-center justify-between border-b border-zinc-200 pb-4">
-              <h3 id="description-modal-title" className="text-2xl font-semibold text-[#1f1f1f]">{t("listing_detail_about_place", "About this place")}</h3>
+              <h3 id="description-modal-title" className="md:text-2xl text-xl font-medium text-[#1f1f1f]">{t("listing_detail_about_place", "About this place")}</h3>
               <button type="button" onClick={() => setIsDescriptionModalOpen(false)} aria-label={t("listing_detail_close_description", "Close description")} className="cursor-pointer p-1 text-lg font-semibold text-[#1f1f1f] hover:text-[#727272] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f]">✕</button>
             </div>
-            <div className="visible-scrollbar mt-5 space-y-6 overflow-y-auto pr-1 text-base leading-6 text-[#727272]">
+            <div className="visible-scrollbar mt-5 space-y-6 overflow-y-auto pr-1 sm:text-base text-sm leading-6 text-[#727272]">
               <p className="whitespace-pre-line">{normalizedDescription}</p>
               {aboutLocationDetails.map((detail) => (
                 <section key={detail.heading}>
                   <h4 className="text-lg font-medium text-[#1f1f1f]">{detail.heading}</h4>
-                  <p className="mt-1.5 whitespace-pre-line text-base leading-6 text-[#727272]">{detail.content}</p>
+                  <p className="mt-1.5 whitespace-pre-line sm:text-base text-sm leading-6 text-[#727272]">{detail.content}</p>
                 </section>
               ))}
             </div>
@@ -2663,7 +2663,7 @@ export function PublicListingDetailClient({
       {/* ALL AMENITIES MODAL */}
       {isAllAmenitiesOpen && (
         <ModalOverlay role="dialog" aria-modal="true" aria-labelledby="amenities-modal-title" className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
-          <div className="flex max-h-[85vh] w-full max-w-lg flex-col rounded-[20px] border border-zinc-200 bg-white p-6 shadow-2xl">
+          <div className="flex max-h-[85vh] w-full max-w-lg flex-col rounded-[20px] bg-white p-6">
             <div className="flex items-center justify-between pb-4 border-b border-zinc-200">
               <h3 id="amenities-modal-title" className="font-semibold text-xl text-[#1f1f1f]">{t("listing_detail_what_place_offers", "What this place offers")}</h3>
               <button
