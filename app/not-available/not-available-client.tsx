@@ -52,7 +52,7 @@ export function NotAvailableClient() {
             <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-[#FCDF9C]/40 border border-[#D8B86F]/50 text-[#1F1F1F] shadow-xs">
               <svg
                 aria-hidden="true"
-                className="h-10 w-10 text-[#1F1F1F]"
+                className="h-10 w-10 text-amber-500"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -71,7 +71,7 @@ export function NotAvailableClient() {
               {t("page_not_available_badge", "Under Development")}
             </div>
 
-            <h1 className="text-2xl sm:text-4xl font-bold tracking-tight text-[#1F1F1F]">
+            <h1 className="text-2xl sm:text-4xl font-medium tracking-tight text-[#1F1F1F]">
               {t("page_not_available_title", "Currently this page is not available")}
             </h1>
 
@@ -82,7 +82,7 @@ export function NotAvailableClient() {
               </p>
             )}
 
-            <p className="mt-4 text-sm sm:text-base text-zinc-600 max-w-lg mx-auto leading-relaxed">
+            <p className="mt-4 text-sm sm:text-base text-[#727272] max-w-lg mx-auto leading-relaxed">
               {t(
                 "page_not_available_desc",
                 "We are working on bringing this page to you soon. Please check back later."
@@ -93,19 +93,19 @@ export function NotAvailableClient() {
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <Link
                 href="/"
-                className="rounded-full bg-[#1F1F1F] px-6 py-3 text-sm font-semibold text-white hover:bg-zinc-800 transition-colors shadow-2xs"
+                className="rounded-full bg-[#1F1F1F] px-6 py-3 text-sm font-medium text-white hover:bg-[#1f1f1f] hover:text-white transition-colors shadow-2xs"
               >
                 {t("page_not_available_back_home", "Back to Home")}
               </Link>
               <Link
                 href="/listings"
-                className="rounded-full border border-zinc-300 bg-white px-6 py-3 text-sm font-semibold text-[#1F1F1F] hover:bg-zinc-50 transition-colors shadow-2xs"
+                className="rounded-full border border-zinc-300 bg-white px-6 py-3 text-sm font-medium text-[#1F1F1F] hover:bg-[#1f1f1f] hover:text-white transition-colors shadow-2xs"
               >
                 {t("page_not_available_explore_stays", "Explore Stays")}
               </Link>
               <Link
                 href="/help"
-                className="rounded-full border border-zinc-300 bg-white px-6 py-3 text-sm font-semibold text-[#1F1F1F] hover:bg-zinc-50 transition-colors shadow-2xs"
+                className="rounded-full border border-zinc-300 bg-white px-6 py-3 text-sm font-medium text-[#1F1F1F] hover:bg-[#1f1f1f] hover:text-white transition-colors shadow-2xs"
               >
                 {t("page_not_available_help_center", "Help Centre")}
               </Link>
@@ -115,39 +115,39 @@ export function NotAvailableClient() {
             <div className="mt-14 grid grid-cols-1 sm:grid-cols-3 gap-4 text-left">
               <Link
                 href="/listings"
-                className="group rounded-2xl border border-zinc-200 bg-zinc-50/50 p-5 hover:bg-zinc-100/70 hover:border-zinc-300 transition-all shadow-2xs"
+                className="group rounded-[12px] border border-white bg-[#F3F4F5] shadow-[0_2px_4px_0px_#00000040] p-5 transition-all hover:-translate-y-1"
               >
                 <span className="text-2xl" aria-hidden="true">🏠</span>
-                <h2 className="mt-3 text-sm font-semibold text-[#1F1F1F] group-hover:text-[#D8B86F] transition-colors">
+                <h2 className="mt-3 text-base font-medium text-[#1F1F1F] transition-colors">
                   {t("page_not_available_explore_stays", "Explore Stays")}
                 </h2>
-                <p className="mt-1 text-xs text-zinc-500 leading-relaxed">
+                <p className="mt-1 text-sm text-zinc-500 leading-normal">
                   {t("page_not_available_explore_stays_desc", "Browse verified homes, villas, and apartments.")}
                 </p>
               </Link>
 
               <Link
                 href="/help"
-                className="group rounded-2xl border border-zinc-200 bg-zinc-50/50 p-5 hover:bg-zinc-100/70 hover:border-zinc-300 transition-all shadow-2xs"
+                className="group rounded-[12px] border border-white bg-[#F3F4F5] shadow-[0_2px_4px_0px_#00000040] p-5 transition-all hover:-translate-y-1"
               >
                 <span className="text-2xl" aria-hidden="true">💬</span>
-                <h2 className="mt-3 text-sm font-semibold text-[#1F1F1F] group-hover:text-[#D8B86F] transition-colors">
+                <h2 className="mt-3 text-base font-medium text-[#1F1F1F] transition-colors">
                   {t("page_not_available_help_center", "Help Centre")}
                 </h2>
-                <p className="mt-1 text-xs text-zinc-500 leading-relaxed">
+                <p className="mt-1 text-sm text-zinc-500 leading-normal">
                   {t("page_not_available_help_center_desc", "Find answers to questions and get 24/7 support.")}
                 </p>
               </Link>
 
               <Link
                 href="/become-a-host"
-                className="group rounded-2xl border border-zinc-200 bg-zinc-50/50 p-5 hover:bg-zinc-100/70 hover:border-zinc-300 transition-all shadow-2xs"
+                className="group rounded-[12px] border border-white bg-[#F3F4F5] shadow-[0_2px_4px_0px_#00000040] p-5 transition-all hover:-translate-y-1"
               >
                 <span className="text-2xl" aria-hidden="true">✨</span>
-                <h2 className="mt-3 text-sm font-semibold text-[#1F1F1F] group-hover:text-[#D8B86F] transition-colors">
+                <h2 className="mt-3 text-base font-medium text-[#1F1F1F] transition-colors">
                   {t("page_not_available_become_host", "Become a Host")}
                 </h2>
-                <p className="mt-1 text-xs text-zinc-500 leading-relaxed">
+                <p className="mt-1 text-sm text-zinc-500 leading-normal">
                   {t("page_not_available_become_host_desc", "Start earning by sharing your space on Homyz.")}
                 </p>
               </Link>
