@@ -15,6 +15,7 @@ import { ChangeReservationModal } from "./change-reservation-modal";
 import { EnhancedCancelModal } from "./enhanced-cancel-modal";
 import { ReceiptModal, ContactHostModal } from "@/components/dashboard/trip-modals";
 import { toReservationCardData } from "@/lib/profile/reservation-data";
+import { FileBookingDispute } from "./file-booking-dispute";
 
 interface BookingDetailsClientProps {
   data: BookingDetailsData;
@@ -27,7 +28,7 @@ export function BookingDetailsClient({ data }: BookingDetailsClientProps) {
   const [isReceiptOpen, setIsReceiptOpen] = useState(false);
   const [isContactOpen, setIsContactOpen] = useState(false);
 
-  const { booking, listing, guest, statusDetails, actions, pricing } = data;
+  const { booking, listing, guest, statusDetails, actions, pricing, disputes } = data;
 
   const backLinkHref = statusDetails.isCompleted ? "/profile/tab/past" : "/profile/tab/upcoming";
   const backLinkLabel = statusDetails.isCompleted
@@ -102,6 +103,39 @@ export function BookingDetailsClient({ data }: BookingDetailsClientProps) {
               </span>
             </div>
           </div>
+
+          {disputes.length > 0 && (
+            <section className="mt-6 rounded-2xl border border-amber-200 bg-amber-50/50 p-5">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <h2 className="text-base font-semibold text-[#1F1F1F]">Your reservation reports</h2>
+                  <p className="mt-1 text-sm text-zinc-600">Reports you filed for this reservation and their current review status.</p>
+                </div>
+                <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-zinc-700 shadow-2xs">
+                  {disputes.length} {disputes.length === 1 ? "case" : "cases"}
+                </span>
+              </div>
+              <div className="mt-4 space-y-3">
+                {disputes.map((dispute) => (
+                  <div key={dispute.id} className="rounded-xl border border-amber-100 bg-white p-4 text-sm">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <p className="font-mono font-semibold text-[#1F1F1F]">{dispute.caseReference}</p>
+                      <span className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-900">
+                        {dispute.workflowStatus.replaceAll("_", " ")}
+                      </span>
+                    </div>
+                    <p className="mt-2 text-zinc-700">{dispute.category.replaceAll("_", " ")}</p>
+                    <p className="mt-1 text-xs text-zinc-500">
+                      Filed {new Date(dispute.createdAt).toLocaleDateString("en-US", { dateStyle: "medium" })}
+                    </p>
+                    {dispute.resolutionNotes && (
+                      <p className="mt-3 border-t border-zinc-100 pt-3 text-sm text-zinc-700">{dispute.resolutionNotes}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* Contextual Status Banner */}
           <div className={`mt-6 sm:rounded-2xl rounded-lg border p-5 ${
@@ -260,6 +294,7 @@ export function BookingDetailsClient({ data }: BookingDetailsClientProps) {
                 >
                   {t("booking_details_contact_support", "Contact support")}
                 </Link>
+                <FileBookingDispute bookingId={booking.id} />
               </div>
             </div>
           </section>

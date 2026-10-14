@@ -1,9 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
-import Image from "next/image";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import type { DisputeSummaryData } from "@/services/dispute.service";
 
@@ -45,6 +43,8 @@ interface DisputeItem {
   internalNotesCount: number;
   evidenceCount: number;
   createdAt: string;
+  updatedAt: string;
+  assignedAdmin: { id: string; email: string } | null;
 }
 
 interface AdminDisputesClientProps {
@@ -58,6 +58,11 @@ interface AdminDisputesClientProps {
   };
   initialTab?: string;
   initialSearch?: string;
+  initialCategory?: string;
+  initialSeverity?: string;
+  initialAssignedAdminEmail?: string;
+  initialStartDate?: string;
+  initialEndDate?: string;
 }
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
@@ -82,19 +87,27 @@ export function AdminDisputesClient({
   initialPagination,
   initialTab = "all",
   initialSearch = "",
+  initialCategory = "ALL",
+  initialSeverity = "ALL",
+  initialAssignedAdminEmail = "",
+  initialStartDate = "",
+  initialEndDate = "",
 }: AdminDisputesClientProps) {
-  const router = useRouter();
-
   const [summary, setSummary] = useState<DisputeSummaryData>(initialSummary);
   const [disputes, setDisputes] = useState<DisputeItem[]>(initialDisputes);
   const [pagination, setPagination] = useState(initialPagination);
+  const [pageSize, setPageSize] = useState(initialPagination.limit);
 
   // Filters state
   const [activeTab, setActiveTab] = useState<string>(initialTab);
   const [searchInput, setSearchInput] = useState<string>(initialSearch);
   const [debouncedSearch, setDebouncedSearch] = useState<string>(initialSearch);
-  const [filterCategory, setFilterCategory] = useState<string>("ALL");
-  const [filterSeverity, setFilterSeverity] = useState<string>("ALL");
+  const [filterCategory, setFilterCategory] = useState<string>(initialCategory);
+  const [filterSeverity, setFilterSeverity] = useState<string>(initialSeverity);
+  const [assignedAdminEmail, setAssignedAdminEmail] = useState(initialAssignedAdminEmail);
+  const [startDate, setStartDate] = useState(initialStartDate);
+  const [endDate, setEndDate] = useState(initialEndDate);
+  const hasLoadedInitialData = useRef(false);
 
   // UI state
   const [loading, setLoading] = useState(false);
@@ -105,6 +118,13 @@ export function AdminDisputesClient({
   const [createDescription, setCreateDescription] = useState("");
   const [createSubmitting, setCreateSubmitting] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
+
+  const fetchSummary = useCallback(async () => {
+    const res = await fetch("/api/v1/admin/bookings/disputes/summary");
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.error?.message || "Failed to refresh dispute summary");
+    setSummary(json.data ?? json);
+  }, []);
 
   // Debounce search input
   useEffect(() => {
@@ -120,27 +140,37 @@ export function AdminDisputesClient({
       try {
         const sp = new URLSearchParams();
         sp.set("page", String(pageToLoad));
-        sp.set("limit", String(pagination.limit));
+        sp.set("limit", String(pageSize));
         if (activeTab && activeTab !== "all") sp.set("tab", activeTab);
         if (debouncedSearch.trim()) sp.set("search", debouncedSearch.trim());
         if (filterCategory !== "ALL") sp.set("category", filterCategory);
         if (filterSeverity !== "ALL") sp.set("severity", filterSeverity);
+        if (assignedAdminEmail.trim()) sp.set("assignedAdminEmail", assignedAdminEmail.trim());
+        if (startDate) sp.set("startDate", startDate);
+        if (endDate) sp.set("endDate", endDate);
 
         const res = await fetch(`/api/v1/admin/bookings/disputes?${sp.toString()}`);
         const json = await res.json();
         const data = json.data ?? json;
+        if (!res.ok) throw new Error(data.error?.message || "Failed to load dispute cases");
         setDisputes(data.disputes || []);
         if (data.pagination) setPagination(data.pagination);
+        const nextUrl = `${window.location.pathname}${sp.toString() ? `?${sp.toString()}` : ""}`;
+        window.history.replaceState(window.history.state, "", nextUrl);
       } catch (err) {
         console.error("[AdminDisputesClient] Fetch error:", err);
       } finally {
         setLoading(false);
       }
     },
-    [activeTab, debouncedSearch, filterCategory, filterSeverity, pagination.limit],
+    [activeTab, debouncedSearch, filterCategory, filterSeverity, assignedAdminEmail, startDate, endDate, pageSize],
   );
 
   useEffect(() => {
+    if (!hasLoadedInitialData.current) {
+      hasLoadedInitialData.current = true;
+      return;
+    }
     fetchDisputes(1);
   }, [fetchDisputes]);
 
@@ -174,8 +204,7 @@ export function AdminDisputesClient({
       setCreateModalOpen(false);
       setCreateBookingId("");
       setCreateDescription("");
-      router.refresh();
-      fetchDisputes(1);
+      await Promise.all([fetchDisputes(1), fetchSummary()]);
     } catch (err: any) {
       setCreateError(err.message || "Failed to create dispute case");
     } finally {
@@ -190,6 +219,17 @@ export function AdminDisputesClient({
     { id: "resolved", label: "Resolved", count: summary.resolvedCases },
     { id: "attention", label: "Requires Attention", count: summary.attentionCases },
   ];
+
+  const clearFilters = () => {
+    setActiveTab("all");
+    setSearchInput("");
+    setDebouncedSearch("");
+    setFilterCategory("ALL");
+    setFilterSeverity("ALL");
+    setAssignedAdminEmail("");
+    setStartDate("");
+    setEndDate("");
+  };
 
   const exportCSV = () => {
     if (disputes.length === 0) return;
@@ -260,6 +300,13 @@ export function AdminDisputesClient({
             className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--accent)] text-[var(--accent-foreground)] px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all"
           >
             <span>+ File New Case</span>
+          </button>
+          <button
+            type="button"
+            onClick={clearFilters}
+            className="px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-xs font-semibold text-foreground hover:bg-[var(--surface-secondary)]"
+          >
+            Clear filters
           </button>
           <button
             type="button"
@@ -398,6 +445,30 @@ export function AdminDisputesClient({
             <option value="OTHER">Other</option>
           </select>
 
+          <input
+            type="email"
+            value={assignedAdminEmail}
+            onChange={(event) => setAssignedAdminEmail(event.target.value)}
+            aria-label="Filter by assigned administrator email"
+            placeholder="Assigned admin email"
+            className="min-w-40 px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-xs text-foreground placeholder:text-[var(--muted-foreground)]"
+          />
+
+          <input
+            type="date"
+            value={startDate}
+            onChange={(event) => setStartDate(event.target.value)}
+            aria-label="Cases created on or after"
+            className="px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-xs text-foreground"
+          />
+          <input
+            type="date"
+            value={endDate}
+            onChange={(event) => setEndDate(event.target.value)}
+            aria-label="Cases created on or before"
+            className="px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-xs text-foreground"
+          />
+
           <select
             value={filterSeverity}
             onChange={(e) => setFilterSeverity(e.target.value)}
@@ -432,22 +503,25 @@ export function AdminDisputesClient({
                 <th className="py-3 px-4">Category</th>
                 <th className="py-3 px-4">Property</th>
                 <th className="py-3 px-4">Reported By</th>
+                <th className="py-3 px-4">Host</th>
                 <th className="py-3 px-4">Priority</th>
                 <th className="py-3 px-4">Status</th>
+                <th className="py-3 px-4">Assigned Admin</th>
                 <th className="py-3 px-4">Filed</th>
+                <th className="py-3 px-4">Updated</th>
                 <th className="py-3 px-4 text-right">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--border)] text-muted-foreground">
               {loading && disputes.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="py-12 text-center text-[var(--muted-foreground)]">
+                  <td colSpan={12} className="py-12 text-center text-[var(--muted-foreground)]">
                     Loading dispute cases...
                   </td>
                 </tr>
               ) : disputes.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="py-12 text-center text-[var(--muted-foreground)]">
+                  <td colSpan={12} className="py-12 text-center text-[var(--muted-foreground)]">
                     No dispute or complaint cases found.
                   </td>
                 </tr>
@@ -484,6 +558,11 @@ export function AdminDisputesClient({
                         {d.reporterRole}
                       </span>
                     </td>
+                    <td className="py-3.5 px-4">
+                      <span className="font-semibold text-foreground block truncate max-w-32">
+                        {d.listing?.host?.name || "—"}
+                      </span>
+                    </td>
                     <td className="py-3.5 px-4 whitespace-nowrap">
                       <span
                         className={`inline-flex items-center px-2 py-0.5 rounded text-2xs font-bold uppercase ${
@@ -510,8 +589,14 @@ export function AdminDisputesClient({
                         {d.disputeWorkflowStatus}
                       </span>
                     </td>
+                    <td className="py-3.5 px-4 text-2xs text-[var(--muted-foreground)]">
+                      {d.assignedAdmin?.email || "Unassigned"}
+                    </td>
                     <td className="py-3.5 px-4 whitespace-nowrap text-2xs text-[var(--muted-foreground)]">
                       {formatDate(d.createdAt)}
+                    </td>
+                    <td className="py-3.5 px-4 whitespace-nowrap text-2xs text-[var(--muted-foreground)]">
+                      {formatDate(d.updatedAt)}
                     </td>
                     <td className="py-3.5 px-4 text-right whitespace-nowrap">
                       <Link
@@ -535,6 +620,20 @@ export function AdminDisputesClient({
             {pagination.totalPages || 1})
           </span>
           <div className="flex items-center gap-2">
+            <label className="flex items-center gap-1.5 text-[var(--muted-foreground)]">
+              Per page
+              <select
+                value={pageSize}
+                onChange={(event) => {
+                  setPageSize(Number(event.target.value));
+                }}
+                className="rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2 py-1.5 text-foreground"
+              >
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+            </label>
             <button
               onClick={() => fetchDisputes(pagination.page - 1)}
               disabled={pagination.page <= 1 || loading}
@@ -657,4 +756,3 @@ export function AdminDisputesClient({
     </div>
   );
 }
-

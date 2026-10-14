@@ -121,16 +121,6 @@ export function AdminCommunicationsClient({
       {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[var(--border)] pb-5">
         <div>
-          <div className="flex items-center gap-2">
-            <Link
-              href="/admin/bookings"
-              className="text-xs font-semibold text-[var(--accent)] hover:underline flex items-center gap-1"
-            >
-              ← Bookings Hub
-            </Link>
-            <span className="text-zinc-400">/</span>
-            <span className="text-xs text-[var(--muted-foreground)]">Communications</span>
-          </div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground mt-1">
             Booking Communications
           </h1>
@@ -140,18 +130,6 @@ export function AdminCommunicationsClient({
         </div>
 
         <div className="flex items-center gap-2">
-          <Link
-            href="/admin/bookings/notifications"
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all"
-          >
-            <span>Notifications Hub</span>
-          </Link>
-          <Link
-            href="/admin/bookings/analytics"
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all"
-          >
-            <span>Analytics</span>
-          </Link>
           <button
             type="button"
             onClick={() => fetchConversations(pagination.page)}

@@ -22,6 +22,7 @@ export const GET = apiHandler(async (req) => {
     requestedInitiator === "GUEST" ||
     requestedInitiator === "HOST" ||
     requestedInitiator === "ADMIN" ||
+    requestedInitiator === "UNKNOWN" ||
     requestedInitiator === "ALL"
       ? requestedInitiator
       : undefined;
@@ -34,6 +35,10 @@ export const GET = apiHandler(async (req) => {
   const listingId = searchParams.get("listingId") || undefined;
   const hostId = searchParams.get("hostId") || undefined;
   const guestId = searchParams.get("guestId") || undefined;
+  const city = searchParams.get("city") || undefined;
+  const country = searchParams.get("country") || undefined;
+  const paymentStatus = searchParams.get("paymentStatus") || undefined;
+  const refundStatus = searchParams.get("refundStatus") || undefined;
   const requestedSort = searchParams.get("sortBy");
   const sortBy =
     requestedSort === "cancelledAt" ||
@@ -58,6 +63,10 @@ export const GET = apiHandler(async (req) => {
     listingId,
     hostId,
     guestId,
+    city,
+    country,
+    paymentStatus,
+    refundStatus,
     sortBy,
     sortOrder,
   });

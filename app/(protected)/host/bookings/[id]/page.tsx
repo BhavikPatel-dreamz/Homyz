@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Role } from "@/generated/prisma/enums";
 import { requirePageRole } from "@/lib/permissions/page-guards";
 import { bookingService } from "@/services/booking.service";
+import { disputeService } from "@/services/dispute.service";
 import { HostHeader } from "@/components/host/host-header";
 import { HostSubNav } from "@/components/host/host-sub-nav";
 import { Footer } from "@/components/dashboard/footer";
@@ -37,15 +38,28 @@ export default async function HostBookingDetailPage({
     notFound();
   }
 
+  const relatedCases = actor.role === Role.HOST
+    ? await disputeService.listDisputesForHost(actor, { bookingId: details.id, limit: 20 })
+    : { disputes: [] };
+
   return (
     <div className="flex min-h-screen flex-col bg-white text-zinc-900">
       <HostHeader />
       <HostSubNav />
       <main className="flex-1 px-4 sm:px-6">
-        <HostBookingDetailsClient details={details} />
+        <HostBookingDetailsClient details={details} relatedCases={relatedCases.disputes.map((dispute: {
+          id: string;
+          caseReference: string;
+          disputeWorkflowStatus: string;
+          responseRequired: boolean;
+        }) => ({
+          id: dispute.id,
+          caseReference: dispute.caseReference,
+          disputeWorkflowStatus: dispute.disputeWorkflowStatus,
+          responseRequired: dispute.responseRequired,
+        }))} />
       </main>
       <Footer />
     </div>
   );
 }
-

@@ -526,6 +526,12 @@ export function ReservationDetails({
                   : "grid"
               }
             >
+              <Link
+                href={`/host/bookings/${booking.id}`}
+                className="flex min-h-11 w-full items-center justify-center rounded-full border border-[#1F1F1F] px-4 py-3 text-center text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-[#1F1F1F] hover:text-white dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-800"
+              >
+                View booking
+              </Link>
               {onMoney && status === "CONFIRMED" && (
                 <button
                   type="button"

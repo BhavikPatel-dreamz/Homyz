@@ -83,15 +83,23 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
   useEffect(() => {
     if (!hasUser) return;
 
+    void refreshUnreadNotificationCount();
+
     const handleNotificationsUpdated = () => {
       invalidateUnreadNotificationCount();
       void refreshUnreadNotificationCount({ force: true });
     };
 
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") void refreshUnreadNotificationCount();
+    };
+
     window.addEventListener("homyz:notifications-updated", handleNotificationsUpdated);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
       window.removeEventListener("homyz:notifications-updated", handleNotificationsUpdated);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [hasUser]);
 
@@ -487,6 +495,32 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                               <Image src="/images/icons/post-bookings.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
                             </span>
                             <span>{t("header_booking_requests") || "Booking requests"}</span>
+                          </Link>
+
+                          <Link
+                            href="/host/today?tab=all"
+                            onClick={() => setMenuOpen(false)}
+                            className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${
+                              pathname?.startsWith("/host/today") ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
+                            }`}
+                          >
+                            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
+                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M7 3v4M17 3v4M3 10h18" /></svg>
+                            </span>
+                            <span>Reservations</span>
+                          </Link>
+
+                          <Link
+                            href="/host/resolution-center"
+                            onClick={() => setMenuOpen(false)}
+                            className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${
+                              pathname?.startsWith("/host/resolution-center") ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
+                            }`}
+                          >
+                            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
+                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M12 3 4.5 6v5c0 4.8 3.1 8.6 7.5 10 4.4-1.4 7.5-5.2 7.5-10V6L12 3Z" /><path d="m8.5 12 2.2 2.2 4.8-4.8" /></svg>
+                            </span>
+                            <span>Resolution Center</span>
                           </Link>
 
                           {/* Messages */}

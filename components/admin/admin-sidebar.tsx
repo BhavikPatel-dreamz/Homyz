@@ -1,26 +1,99 @@
 "use client";
 
 import { ModalOverlay } from "@/components/ui/modal-overlay";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { PERMISSIONS } from "@/lib/permissions/permissions";
 import { HomyzLogo } from "@/components/ui/homyz-logo";
 
-export interface SidebarItem {
+// ---------------------------------------------------------------------------
+// Explicit route-to-navigation mapping.
+// Maps each pathname prefix to the active "nav key" so that:
+//   /admin/bookings/refunds  → key "refunds"   (Financial Management)
+//   /admin/bookings/payments → key "payments"  (Financial Management)
+//   /admin/bookings/calendar → key "calendar"  (Bookings child)
+// and NOT to the parent "bookings" key.
+// ---------------------------------------------------------------------------
+const ROUTE_NAV_KEY: Array<{ prefix: string; key: string; exact?: boolean }> = [
+  // Bookings children — must come before the parent catch-all
+  { prefix: "/admin/bookings/all",           key: "bookings-all" },
+  { prefix: "/admin/bookings/calendar",      key: "calendar" },
+  { prefix: "/admin/bookings/cancellations", key: "cancellations" },
+  // Financial Management — lives under /admin/bookings/* URLs but belongs to a different group
+  { prefix: "/admin/bookings/refunds",       key: "refunds" },
+  { prefix: "/admin/bookings/payments",      key: "payments" },
+  { prefix: "/admin/bookings/payouts",       key: "payouts" },
+  // Support & Operations
+  { prefix: "/admin/bookings/disputes",      key: "disputes" },
+  { prefix: "/admin/bookings/communications",key: "communications" },
+  { prefix: "/admin/bookings/notifications", key: "notifications" },
+  // Insights
+  { prefix: "/admin/bookings/analytics",     key: "analytics" },
+  { prefix: "/admin/bookings/reports",       key: "reports" },
+  // Bookings parent (catch-all for /admin/bookings — must be last bookings entry)
+  { prefix: "/admin/bookings",               key: "bookings-overview" },
+  // Workspace / Management / Administration / System
+  { prefix: "/admin/listings",               key: "listings" },
+  { prefix: "/admin/hosts",                  key: "hosts" },
+  { prefix: "/admin/guests",                 key: "guests" },
+  { prefix: "/admin/referrals",              key: "referrals" },
+  { prefix: "/admin/admins",                 key: "admins" },
+  { prefix: "/admin/activity-logs",          key: "audit-logs" },
+  { prefix: "/admin/settings",              key: "settings" },
+  { prefix: "/admin/security",              key: "security" },
+  { prefix: "/admin/roles",                 key: "roles" },
+  { prefix: "/admin/users",                 key: "users" },
+  { prefix: "/admin/sessions",              key: "sessions" },
+  { prefix: "/admin",                        key: "dashboard", exact: true },
+];
+
+/** Resolve the active nav key for the given pathname. */
+function resolveActiveKey(pathname: string): string {
+  for (const { prefix, key, exact } of ROUTE_NAV_KEY) {
+    if (exact ? pathname === prefix : pathname === prefix || pathname.startsWith(prefix + "/")) {
+      return key;
+    }
+  }
+  return "";
+}
+
+/** The set of nav keys that belong to the Bookings expandable group. */
+const BOOKINGS_CHILD_KEYS = new Set([
+  "bookings-overview",
+  "bookings-all",
+  "calendar",
+  "cancellations",
+]);
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+interface NavItem {
+  key: string;
   label: string;
   href: string;
   icon: React.ReactNode;
-  exact?: boolean;
   requiredPermission?: string | string[];
 }
 
-export interface SidebarGroup {
+interface NavGroup {
   name: string;
-  items: SidebarItem[];
+  items: (NavItem | BookingsParentItem)[];
 }
 
+interface BookingsParentItem extends NavItem {
+  children: NavItem[];
+}
+
+function isBookingsParent(item: NavItem | BookingsParentItem): item is BookingsParentItem {
+  return "children" in item;
+}
+
+// ---------------------------------------------------------------------------
+// Props
+// ---------------------------------------------------------------------------
 interface AdminSidebarProps {
   collapsed: boolean;
   setCollapsed: (val: boolean | ((prev: boolean) => boolean)) => void;
@@ -28,6 +101,9 @@ interface AdminSidebarProps {
   setMobileOpen: (val: boolean) => void;
 }
 
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
 export function AdminSidebar({
   collapsed,
   setCollapsed,
@@ -43,12 +119,27 @@ export function AdminSidebar({
     user?.role === "ADMIN" &&
     (user?.adminRoleSlug === "super_admin" || user?.adminRoleSlug === "super-admin");
 
+  const activeKey = resolveActiveKey(pathname);
+  const isBookingsActive = BOOKINGS_CHILD_KEYS.has(activeKey);
+
+  // Section groups open/closed state
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
     WORKSPACE: true,
+    "FINANCIAL MANAGEMENT": true,
     MANAGEMENT: true,
+    "SUPPORT & OPERATIONS": true,
+    INSIGHTS: true,
     ADMINISTRATION: true,
     SYSTEM: true,
   });
+
+  // Bookings submenu expanded state — auto-expands when on a booking child route
+  const [bookingsOpen, setBookingsOpen] = useState<boolean>(isBookingsActive);
+
+  // Keep bookings open when navigating to any booking child page
+  useEffect(() => {
+    if (isBookingsActive) setBookingsOpen(true);
+  }, [isBookingsActive]);
 
   const toggleGroup = (groupName: string) => {
     setOpenGroups((prev) => ({ ...prev, [groupName]: !prev[groupName] }));
@@ -58,20 +149,21 @@ export function AdminSidebar({
     if (isSuper) return true;
     if (!reqPerm) return true;
     if (permissions.includes("*")) return true;
-    if (Array.isArray(reqPerm)) {
-      return reqPerm.some((p) => permissions.includes(p));
-    }
+    if (Array.isArray(reqPerm)) return reqPerm.some((p) => permissions.includes(p));
     return permissions.includes(reqPerm);
   };
 
-  const navGroups: SidebarGroup[] = [
+  // ---------------------------------------------------------------------------
+  // Navigation configuration
+  // ---------------------------------------------------------------------------
+  const navGroups: NavGroup[] = [
     {
       name: "WORKSPACE",
       items: [
         {
+          key: "dashboard",
           label: "Dashboard",
           href: "/admin",
-          exact: true,
           requiredPermission: PERMISSIONS.DASHBOARD_VIEW,
           icon: (
             <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -79,118 +171,66 @@ export function AdminSidebar({
             </svg>
           ),
         },
+        // Bookings — expandable parent with children
         {
+          key: "bookings-overview",
           label: "Bookings",
           href: "/admin/bookings",
-          exact: true,
           requiredPermission: PERMISSIONS.BOOKINGS_VIEW,
           icon: (
             <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
           ),
-        },
+          children: [
+            {
+              key: "bookings-overview",
+              label: "Booking Overview",
+              href: "/admin/bookings",
+              requiredPermission: PERMISSIONS.BOOKINGS_VIEW,
+              icon: (
+                <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                </svg>
+              ),
+            },
+            {
+              key: "bookings-all",
+              label: "All Bookings",
+              href: "/admin/bookings/all",
+              requiredPermission: PERMISSIONS.BOOKINGS_VIEW,
+              icon: (
+                <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+              ),
+            },
+            {
+              key: "calendar",
+              label: "Reservation Calendar",
+              href: "/admin/bookings/calendar",
+              requiredPermission: PERMISSIONS.BOOKINGS_VIEW,
+              icon: (
+                <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+                </svg>
+              ),
+            },
+            {
+              key: "cancellations",
+              label: "Cancellations",
+              href: "/admin/bookings/cancellations",
+              requiredPermission: PERMISSIONS.BOOKINGS_VIEW,
+              icon: (
+                <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              ),
+            },
+          ],
+        } as BookingsParentItem,
         {
-          label: "Calendar",
-          href: "/admin/bookings/calendar",
-          requiredPermission: PERMISSIONS.BOOKINGS_VIEW,
-          icon: (
-            <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
-            </svg>
-          ),
-        },
-        {
-          label: "Cancellations",
-          href: "/admin/bookings/cancellations",
-          requiredPermission: PERMISSIONS.BOOKINGS_VIEW,
-          icon: (
-            <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          ),
-        },
-        {
-          label: "Refunds",
-          href: "/admin/bookings/refunds",
-          requiredPermission: [PERMISSIONS.BOOKINGS_VIEW, PERMISSIONS.PAYMENTS_VIEW, PERMISSIONS.PAYMENTS_REFUND],
-          icon: (
-            <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          ),
-        },
-        {
-          label: "Payments",
-          href: "/admin/bookings/payments",
-          requiredPermission: [PERMISSIONS.PAYMENTS_VIEW, PERMISSIONS.BOOKINGS_VIEW],
-          icon: (
-            <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-            </svg>
-          ),
-        },
-        {
-          label: "Host Payouts",
-          href: "/admin/bookings/payouts",
-          requiredPermission: [PERMISSIONS.PAYOUTS_VIEW, PERMISSIONS.BOOKINGS_VIEW],
-          icon: (
-            <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
-            </svg>
-          ),
-        },
-        {
-          label: "Disputes",
-          href: "/admin/bookings/disputes",
-          requiredPermission: [PERMISSIONS.DISPUTES_VIEW, PERMISSIONS.BOOKINGS_VIEW],
-          icon: (
-            <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-          ),
-        },
-        {
-          label: "Communications",
-          href: "/admin/bookings/communications",
-          requiredPermission: [PERMISSIONS.COMMUNICATIONS_VIEW, PERMISSIONS.BOOKINGS_VIEW],
-          icon: (
-            <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-            </svg>
-          ),
-        },
-        {
-          label: "Notifications",
-          href: "/admin/bookings/notifications",
-          requiredPermission: [PERMISSIONS.NOTIFICATIONS_VIEW, PERMISSIONS.BOOKINGS_VIEW],
-          icon: (
-            <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-            </svg>
-          ),
-        },
-        {
-          label: "Analytics",
-          href: "/admin/bookings/analytics",
-          requiredPermission: [PERMISSIONS.ANALYTICS_VIEW, PERMISSIONS.REPORTS_VIEW, PERMISSIONS.BOOKINGS_VIEW],
-          icon: (
-            <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-            </svg>
-          ),
-        },
-        {
-          label: "Reports",
-          href: "/admin/bookings/reports",
-          requiredPermission: [PERMISSIONS.REPORTS_VIEW, PERMISSIONS.ANALYTICS_VIEW, PERMISSIONS.BOOKINGS_VIEW],
-          icon: (
-            <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-          ),
-        },
-        {
+          key: "listings",
           label: "Listings",
           href: "/admin/listings",
           requiredPermission: PERMISSIONS.LISTINGS_VIEW,
@@ -203,9 +243,48 @@ export function AdminSidebar({
       ],
     },
     {
+      name: "FINANCIAL MANAGEMENT",
+      items: [
+        {
+          key: "payments",
+          label: "Payments",
+          href: "/admin/bookings/payments",
+          requiredPermission: [PERMISSIONS.PAYMENTS_VIEW, PERMISSIONS.BOOKINGS_VIEW],
+          icon: (
+            <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+            </svg>
+          ),
+        },
+        {
+          key: "refunds",
+          label: "Refunds",
+          href: "/admin/bookings/refunds",
+          requiredPermission: [PERMISSIONS.BOOKINGS_VIEW, PERMISSIONS.PAYMENTS_VIEW, PERMISSIONS.PAYMENTS_REFUND],
+          icon: (
+            <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          ),
+        },
+        {
+          key: "payouts",
+          label: "Host Payouts",
+          href: "/admin/bookings/payouts",
+          requiredPermission: [PERMISSIONS.PAYOUTS_VIEW, PERMISSIONS.BOOKINGS_VIEW],
+          icon: (
+            <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          ),
+        },
+      ],
+    },
+    {
       name: "MANAGEMENT",
       items: [
         {
+          key: "hosts",
           label: "Hosts",
           href: "/admin/hosts",
           requiredPermission: PERMISSIONS.HOSTS_VIEW,
@@ -216,6 +295,7 @@ export function AdminSidebar({
           ),
         },
         {
+          key: "guests",
           label: "Guests",
           href: "/admin/guests",
           requiredPermission: PERMISSIONS.GUESTS_VIEW,
@@ -226,6 +306,7 @@ export function AdminSidebar({
           ),
         },
         {
+          key: "referrals",
           label: "Referral Credits",
           href: "/admin/referrals",
           requiredPermission: PERMISSIONS.REFERRALS_VIEW,
@@ -238,9 +319,75 @@ export function AdminSidebar({
       ],
     },
     {
+      name: "SUPPORT & OPERATIONS",
+      items: [
+        {
+          key: "disputes",
+          label: "Disputes",
+          href: "/admin/bookings/disputes",
+          requiredPermission: [PERMISSIONS.DISPUTES_VIEW, PERMISSIONS.BOOKINGS_VIEW],
+          icon: (
+            <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          ),
+        },
+        {
+          key: "communications",
+          label: "Communications",
+          href: "/admin/bookings/communications",
+          requiredPermission: [PERMISSIONS.COMMUNICATIONS_VIEW, PERMISSIONS.BOOKINGS_VIEW],
+          icon: (
+            <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 12.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+          ),
+        },
+        {
+          key: "notifications",
+          label: "Notifications",
+          href: "/admin/bookings/notifications",
+          requiredPermission: [PERMISSIONS.NOTIFICATIONS_VIEW, PERMISSIONS.BOOKINGS_VIEW],
+          icon: (
+            <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+          ),
+        },
+      ],
+    },
+    {
+      name: "INSIGHTS",
+      items: [
+        {
+          key: "analytics",
+          label: "Analytics",
+          href: "/admin/bookings/analytics",
+          requiredPermission: [PERMISSIONS.ANALYTICS_VIEW, PERMISSIONS.REPORTS_VIEW, PERMISSIONS.BOOKINGS_VIEW],
+          icon: (
+            <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+          ),
+        },
+        {
+          key: "reports",
+          label: "Reports",
+          href: "/admin/bookings/reports",
+          requiredPermission: [PERMISSIONS.REPORTS_VIEW, PERMISSIONS.ANALYTICS_VIEW, PERMISSIONS.BOOKINGS_VIEW],
+          icon: (
+            <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          ),
+        },
+      ],
+    },
+    {
       name: "ADMINISTRATION",
       items: [
         {
+          key: "admins",
           label: "Admin Accounts",
           href: "/admin/admins",
           requiredPermission: PERMISSIONS.ADMINS_VIEW,
@@ -251,6 +398,7 @@ export function AdminSidebar({
           ),
         },
         {
+          key: "audit-logs",
           label: "Audit Logs",
           href: "/admin/activity-logs",
           requiredPermission: PERMISSIONS.ACTIVITY_LOGS_VIEW,
@@ -266,6 +414,7 @@ export function AdminSidebar({
       name: "SYSTEM",
       items: [
         {
+          key: "settings",
           label: "Settings",
           href: "/admin/settings",
           requiredPermission: PERMISSIONS.SETTINGS_VIEW,
@@ -277,6 +426,7 @@ export function AdminSidebar({
           ),
         },
         {
+          key: "security",
           label: "Security",
           href: "/admin/security",
           requiredPermission: [PERMISSIONS.SECURITY_LOGS_VIEW, PERMISSIONS.SETTINGS_VIEW],
@@ -290,21 +440,145 @@ export function AdminSidebar({
     },
   ];
 
-  // Filter groups to only include permitted items
+  // Filter groups based on permissions, including Bookings children
   const filteredNavGroups = navGroups
     .map((group) => ({
       ...group,
-      items: group.items.filter((item) => hasMenuPermission(item.requiredPermission)),
+      items: group.items
+        .filter((item) => hasMenuPermission(item.requiredPermission))
+        .map((item) => {
+          if (isBookingsParent(item)) {
+            return {
+              ...item,
+              children: item.children.filter((child) =>
+                hasMenuPermission(child.requiredPermission)
+              ),
+            };
+          }
+          return item;
+        }),
     }))
     .filter((group) => group.items.length > 0);
 
+  // ---------------------------------------------------------------------------
+  // Render helpers
+  // ---------------------------------------------------------------------------
+  const renderNavItem = (item: NavItem, isChild = false) => {
+    const isActive = activeKey === item.key;
+
+    return (
+      <div key={item.href} className="relative group/item">
+        <Link
+          href={item.href}
+          onClick={() => setMobileOpen(false)}
+          className={`flex items-center gap-2.5 rounded-xl text-xs transition-all ${
+            isChild ? "px-2.5 py-1.5 font-medium" : "px-3 py-2 font-semibold"
+          } ${
+            isActive
+              ? "bg-[var(--accent)] text-[var(--accent-foreground)] font-semibold shadow-2xs"
+              : isChild
+              ? "text-muted-foreground hover:bg-[var(--surface-secondary)] hover:text-foreground"
+              : "text-muted-foreground hover:bg-[var(--surface-secondary)] hover:text-foreground"
+          } ${collapsed ? "justify-center px-0 h-9" : ""}`}
+        >
+          {item.icon}
+          {!collapsed && <span className="truncate">{item.label}</span>}
+        </Link>
+
+        {/* Collapsed tooltip */}
+        {collapsed && (
+          <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 z-50 hidden rounded-md bg-[var(--primary)] text-primary-foreground px-3 py-1 text-[11px] font-semibold shadow-xl group-hover/item:block whitespace-nowrap">
+            {item.label}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderBookingsParent = (item: BookingsParentItem) => {
+    const isParentActive = isBookingsActive;
+
+    if (collapsed) {
+      // In collapsed mode show parent icon with tooltip only
+      return (
+        <div key={item.href} className="relative group/item">
+          <Link
+            href={item.href}
+            onClick={() => setMobileOpen(false)}
+            className={`flex items-center justify-center h-9 rounded-xl transition-all ${
+              isParentActive
+                ? "bg-[var(--accent)] text-[var(--accent-foreground)] shadow-2xs"
+                : "text-muted-foreground hover:bg-[var(--surface-secondary)] hover:text-foreground"
+            }`}
+          >
+            {item.icon}
+          </Link>
+          <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 z-50 hidden rounded-md bg-[var(--primary)] text-primary-foreground px-3 py-1 text-[11px] font-semibold shadow-xl group-hover/item:block whitespace-nowrap">
+            Bookings
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div key={item.href} className="flex flex-col gap-0.5">
+        {/* Parent row: label navigates, chevron toggles */}
+        <div
+          className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
+            isParentActive
+              ? "text-foreground bg-[var(--surface-secondary)]"
+              : "text-muted-foreground hover:bg-[var(--surface-secondary)] hover:text-foreground"
+          }`}
+        >
+          <Link
+            href={item.href}
+            onClick={() => setMobileOpen(false)}
+            className="flex items-center gap-3 flex-1 min-w-0"
+          >
+            {item.icon}
+            <span className="truncate">{item.label}</span>
+          </Link>
+          <button
+            type="button"
+            aria-expanded={bookingsOpen}
+            aria-label="Toggle Bookings submenu"
+            onClick={(e) => {
+              e.preventDefault();
+              setBookingsOpen((prev) => !prev);
+            }}
+            className="flex items-center justify-center h-5 w-5 shrink-0 rounded hover:bg-black/10 dark:hover:bg-white/10 transition-colors text-muted-foreground hover:text-foreground"
+          >
+            <svg
+              className={`w-3 h-3 transition-transform duration-200 ${bookingsOpen ? "rotate-180" : ""}`}
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Children */}
+        {bookingsOpen && (
+          <div className="flex flex-col gap-0.5 mt-0.5 border-l border-[var(--border)] ml-4 pl-2">
+            {item.children.map((child) => renderNavItem(child, true))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // ---------------------------------------------------------------------------
+  // Sidebar body
+  // ---------------------------------------------------------------------------
   const sidebarContent = (
     <div className="flex h-full flex-col justify-between py-4 select-none bg-[var(--surface)] text-muted-foreground border-r border-[var(--border)]">
       {/* Brand Header */}
       <div>
         <div className="mb-6 px-3">
           {collapsed ? (
-            /* Collapsed State: Centered Icon Only */
             <div className="flex items-center justify-center">
               <Link
                 href="/admin"
@@ -315,7 +589,6 @@ export function AdminSidebar({
               </Link>
             </div>
           ) : (
-            /* Expanded State: Brand + Collapse Toggle Button */
             <div className="flex items-center justify-between px-1">
               <Link href="/admin" className="flex items-center gap-3 group overflow-hidden">
                 <HomyzLogo className="text-muted-foreground group-hover:scale-105 transition-transform shrink-0" size={26} />
@@ -343,14 +616,14 @@ export function AdminSidebar({
           )}
         </div>
 
-        {/* Navigation Section Groups */}
+        {/* Navigation Groups */}
         <div className="flex flex-col gap-4 px-3 overflow-y-auto max-h-[calc(100vh-140px)] scrollbar-none">
           {filteredNavGroups.map((group) => {
             const isOpen = openGroups[group.name] ?? true;
 
             return (
               <div key={group.name} className="flex flex-col gap-1">
-                {/* Group Title Header */}
+                {/* Group Title */}
                 {!collapsed && (
                   <button
                     type="button"
@@ -373,37 +646,11 @@ export function AdminSidebar({
                 {/* Group Items */}
                 {(collapsed || isOpen) && (
                   <div className="flex flex-col gap-0.5">
-                    {group.items.map((item) => {
-                      const isActive = item.exact
-                        ? pathname === item.href
-                        : pathname.startsWith(item.href);
-
-                      return (
-                        <div key={item.href} className="relative group/item">
-                          <Link
-                            href={item.href}
-                            onClick={() => setMobileOpen(false)}
-                            className={`flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
-                              isActive
-                                ? "bg-[var(--accent)] text-[var(--accent-foreground)] font-semibold shadow-2xs"
-                                : "text-muted-foreground hover:bg-[var(--surface-secondary)]"
-                            } ${collapsed ? "justify-center px-0 h-9" : ""}`}
-                          >
-                            {item.icon}
-                            {!collapsed && (
-                              <span className="truncate">{item.label}</span>
-                            )}
-                          </Link>
-
-                          {/* Hover Tooltip when Collapsed */}
-                          {collapsed && (
-                            <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 z-50 hidden rounded-md bg-[var(--primary)] text-primary-foreground px-3 py-1 text-[11px] font-semibold shadow-xl group-hover/item:block whitespace-nowrap">
-                              {item.label}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
+                    {group.items.map((item) =>
+                      isBookingsParent(item)
+                        ? renderBookingsParent(item)
+                        : renderNavItem(item)
+                    )}
                   </div>
                 )}
               </div>
@@ -412,11 +659,11 @@ export function AdminSidebar({
         </div>
       </div>
 
-      {/* Sidebar Footer Info */}
+      {/* Sidebar Footer */}
       {!collapsed && (
         <div className="px-5 py-3 border-t border-[var(--border-subtle)] text-[11px] text-[var(--muted-foreground)] flex flex-col gap-0.5">
           <p className="font-semibold text-muted-foreground">Homyz Admin <span className="text-[10px] font-medium text-amber-600 dark:text-amber-400">v2.4</span></p>
-          <p className="text-[10px]">Enterprise RBAC & Audit System</p>
+          <p className="text-[10px]">Enterprise RBAC &amp; Audit System</p>
         </div>
       )}
     </div>
@@ -424,7 +671,7 @@ export function AdminSidebar({
 
   return (
     <>
-      {/* Desktop Sidebar (Fixed Left) */}
+      {/* Desktop Sidebar */}
       <aside
         className={`hidden md:block sticky top-0 h-screen transition-all duration-300 ease-in-out shrink-0 z-40 ${
           collapsed ? "w-[72px]" : "w-[250px]"
@@ -433,7 +680,7 @@ export function AdminSidebar({
         {sidebarContent}
       </aside>
 
-      {/* Mobile Drawer (Slide-out) */}
+      {/* Mobile Drawer */}
       {mobileOpen && (
         <ModalOverlay className="fixed inset-0 z-50 flex md:hidden">
           <div

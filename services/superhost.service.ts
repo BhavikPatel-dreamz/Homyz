@@ -134,16 +134,14 @@ async function calculateSuperhostProgress(
         listingId: { in: listingIds },
         status: "PUBLISHED",
         createdAt: { gte: window.windowStart, lt: reviewWindowEndExclusive },
-        // `Review` remains the guest-to-property rating source. Its booking
-        // must either have a reciprocal host review or have reached the
-        // established 14-day review deadline before it can affect Superhost.
+        // `Review` is the guest-to-property rating source. The current schema
+        // has no reciprocal host-review relation, so a published review joins
+        // the Superhost calculation once its established 14-day review window
+        // has expired.
         booking: {
           is: {
             status: BookingStatus.CONFIRMED,
-            OR: [
-              { hostGuestReview: { isNot: null } },
-              { endDate: { lte: reviewWindowExpiryCutoff } },
-            ],
+            endDate: { lte: reviewWindowExpiryCutoff },
           },
         },
       },

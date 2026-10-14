@@ -19,8 +19,8 @@ export const POST = apiHandler(async (req: NextRequest, { params }: { params: Pr
   const result = await disputeService.assignDispute(
     actor,
     id,
-    body.assignedToId || actor.id,
-    body.assignedToEmail || actor.email,
+    body.assignedToId,
+    body.assignedToEmail,
   );
 
   return ok(result);

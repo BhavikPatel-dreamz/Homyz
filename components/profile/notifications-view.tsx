@@ -61,6 +61,20 @@ function getTypeBadge(
 ) {
   switch (type) {
     case NotificationType.BOOKING: {
+      const isDispute = entityType?.startsWith("dispute-");
+      if (isDispute) {
+        return {
+          label: "Dispute",
+          icon: (
+            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 3 4.5 6v5c0 4.8 3.1 8.6 7.5 10 4.4-1.4 7.5-5.2 7.5-10V6L12 3Z" />
+              <path d="M12 8v4" />
+              <path d="M12 16h.01" />
+            </svg>
+          ),
+          bgClass: "bg-amber-100 text-amber-900 border-amber-200",
+        };
+      }
       const isHost =
         entityType === "host_booking" ||
         (metadata as { role?: string } | null)?.role === "host";
@@ -269,6 +283,8 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
   };
 
   const handleNotificationClick = (item: NotificationDTO) => {
+    if (!item.link) return;
+
     // If unread, mark as read immediately
     if (!item.isRead) {
       setNotifications((prev) =>
@@ -300,20 +316,7 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
       });
     }
 
-    // Context Navigation
-    if (item.link) {
-      router.push(item.link);
-      return;
-    }
-
-    if (item.type === NotificationType.BOOKING) {
-      router.push("/profile/tab/upcoming");
-    } else if (item.type === NotificationType.MESSAGE) {
-      router.push("/messages");
-    } else if (item.type === NotificationType.PROMOTION) {
-
-      router.push("/profile/tab/invite");
-    }
+    router.push(item.link);
   };
 
   // Filter items
@@ -429,13 +432,13 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
         <div className="visible-scrollbar max-h-[65dvh] divide-y divide-[#d7d7d7] overflow-y-auto overscroll-contain rounded-lg border border-[#d7d7d7] bg-white shadow-xs sm:max-h-[calc(100dvh-20rem)] sm:rounded-2xl">
           {filtered.map((item) => {
             const badge = getTypeBadge(item.type, item.entityType, item.metadata, t);
-            const isClickable = Boolean(item.link || item.entityId);
+            const isClickable = Boolean(item.link);
 
             return (
               <div
                 key={item.id}
                 onClick={() => handleNotificationClick(item)}
-                className={`group flex items-start gap-4 p-4 sm:p-5 transition-all cursor-pointer ${!item.isRead
+                className={`group flex items-start gap-4 p-4 sm:p-5 transition-all ${isClickable ? "cursor-pointer" : "cursor-default"} ${!item.isRead
                     ? "bg-[#FEF3D7] hover:bg-[#FFF8E8] border-l-4 border-l-[#EBA900]"
                     : "hover:bg-zinc-50/80 border-l-4 border-l-transparent"
                   }`}

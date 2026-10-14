@@ -22,6 +22,8 @@ export const GET = apiHandler(async (req: NextRequest) => {
     category: searchParams.get("category") || undefined,
     status: searchParams.get("status") || undefined,
     severity: searchParams.get("severity") || undefined,
+    assignedAdminId: searchParams.get("assignedAdminId") || undefined,
+    assignedAdminEmail: searchParams.get("assignedAdminEmail") || undefined,
     startDate: searchParams.get("startDate") || undefined,
     endDate: searchParams.get("endDate") || undefined,
     sortBy: (searchParams.get("sortBy") as any) || "createdAt",

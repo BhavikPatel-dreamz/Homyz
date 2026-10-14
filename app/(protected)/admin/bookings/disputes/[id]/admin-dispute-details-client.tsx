@@ -38,8 +38,9 @@ interface DisputeDetailsProps {
       }[];
       evidence: {
         id: string;
-        url: string;
-        uploadedBy: string;
+        url?: string;
+        uploadedBy?: string;
+        fileName?: string;
         createdAt: string;
       }[];
       infoRequests: {
@@ -47,6 +48,13 @@ interface DisputeDetailsProps {
         target: string;
         message: string;
         status: string;
+        createdAt: string;
+      }[];
+      partyResponses: {
+        id: string;
+        requestId: string;
+        content: string | null;
+        evidenceIds: string[];
         createdAt: string;
       }[];
       timeline: {
@@ -172,7 +180,7 @@ export function AdminDisputeDetailsClient({ initialData }: DisputeDetailsProps) 
       const res = await fetch(`/api/v1/admin/bookings/disputes/${dispute.id}/assign`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ assignedToEmail: assignEmail.trim(), assignedToId: "admin" }),
+        body: JSON.stringify({ assignedToEmail: assignEmail.trim() }),
       });
       if (!res.ok) throw new Error("Failed to assign dispute.");
       setActionSuccess(`Case successfully assigned to ${assignEmail.trim()}`);
@@ -311,18 +319,13 @@ export function AdminDisputeDetailsClient({ initialData }: DisputeDetailsProps) 
             <>
               <button
                 type="button"
-                onClick={() => setAssignModalOpen(true)}
+                onClick={() => {
+                  setInfoTarget("HOST");
+                  setInfoModalOpen(true);
+                }}
                 className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all"
               >
-                <span>Assign Case</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setInfoModalOpen(true)}
-                className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-foreground px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all"
-              >
-                <span>Request Info</span>
+                <span>Request Host Response</span>
               </button>
 
               <button
@@ -560,6 +563,27 @@ export function AdminDisputeDetailsClient({ initialData }: DisputeDetailsProps) 
 
           {/* Internal Investigation Notes */}
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs text-xs space-y-4">
+            <h2 className="text-sm font-bold uppercase tracking-wider text-[var(--muted-foreground)]">Participant responses</h2>
+            {dispute.partyResponses.length > 0 ? (
+              <div className="space-y-3">
+                {dispute.partyResponses.map((response) => (
+                  <div key={response.id} className="rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)]/50 p-3">
+                    <p className="whitespace-pre-wrap text-foreground">{response.content || "Evidence submitted without a written response."}</p>
+                    <p className="mt-2 text-3xs text-[var(--muted-foreground)]">Submitted {formatDateTime(response.createdAt)} · {response.evidenceIds.length} evidence file(s)</p>
+                  </div>
+                ))}
+              </div>
+            ) : <p className="text-[var(--muted-foreground)] italic">No participant responses have been submitted.</p>}
+            {dispute.evidence.length > 0 && (
+              <div className="border-t border-[var(--border)] pt-3">
+                <p className="mb-2 font-semibold text-foreground">Evidence</p>
+                <ul className="space-y-1.5">{dispute.evidence.map((evidence) => evidence.url ? <li key={evidence.id}><a href={evidence.url} target="_blank" rel="noreferrer" className="text-[var(--accent)] hover:underline">{evidence.fileName || evidence.url}</a></li> : null)}</ul>
+              </div>
+            )}
+          </div>
+
+          {/* Internal Investigation Notes */}
+          <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs text-xs space-y-4">
             <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
               <h2 className="text-sm font-bold uppercase tracking-wider text-[var(--muted-foreground)]">
                 Internal Admin Notes ({dispute.internalNotes.length})
@@ -689,12 +713,19 @@ export function AdminDisputeDetailsClient({ initialData }: DisputeDetailsProps) 
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] border border-[var(--border)] p-6 shadow-xl space-y-4">
             <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
-              <h3 className="text-base font-bold text-foreground">Request Information</h3>
+              <h3 className="text-base font-bold text-foreground">
+                {infoTarget === "HOST" ? "Request Host Response" : "Request Guest Information"}
+              </h3>
               <button onClick={() => setInfoModalOpen(false)} className="font-bold">✕</button>
             </div>
 
-            <div className="space-y-3 text-xs">
-              <div>
+              <div className="space-y-3 text-xs">
+                {infoTarget === "HOST" && (
+                  <p className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-amber-900">
+                    This shares the case with the booking&apos;s eligible Host, marks a response as required, and sends the Host a case notification.
+                  </p>
+                )}
+                <div>
                 <label className="block font-semibold text-foreground mb-1">Target Party</label>
                 <select
                   value={infoTarget}
@@ -733,7 +764,7 @@ export function AdminDisputeDetailsClient({ initialData }: DisputeDetailsProps) 
                 disabled={loadingAction || !infoMessage.trim()}
                 className="px-4 py-2 rounded-xl bg-[var(--primary)] text-primary-foreground text-xs font-semibold disabled:opacity-50"
               >
-                {loadingAction ? "Sending..." : "Send Request"}
+                {loadingAction ? "Sending..." : infoTarget === "HOST" ? "Confirm & Request Host Response" : "Send Request"}
               </button>
             </div>
           </div>
@@ -828,4 +859,3 @@ export function AdminDisputeDetailsClient({ initialData }: DisputeDetailsProps) 
     </div>
   );
 }
-
