@@ -705,7 +705,7 @@ export function HostKpiOverview({
                       >
                         <p className="text-base font-medium leading-5 text-[#1F1F1F]">
                           {review.guestName}{" "}
-                          <span className="font-medium text-[#727272]">
+                          <span className="font-medium text-[#1f1f1f]">
                             · ★ {review.rating}
                           </span>
                         </p>
