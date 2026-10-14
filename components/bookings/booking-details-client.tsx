@@ -138,7 +138,7 @@ export function BookingDetailsClient({ data }: BookingDetailsClientProps) {
           )}
 
           {/* Contextual Status Banner */}
-          <div className={`mt-6 sm:rounded-2xl rounded-lg border p-5 ${
+          <div className={`mt-6 rounded-xl border border-white bg-white shadow-[0_2px_4px_0px_#00000040] p-5 ${
             statusDetails.isCompleted
               ? "bg-zinc-50 border-zinc-200 text-zinc-800"
               : statusDetails.isCancelled
@@ -265,7 +265,7 @@ export function BookingDetailsClient({ data }: BookingDetailsClientProps) {
 
           {/* 6. Help & Concierge Support */}
           <section className="py-7 border-t border-zinc-200" aria-labelledby="help-heading">
-            <h2 id="help-heading" className="text-xl font-semibold text-[#1F1F1F]">
+            <h2 id="help-heading" className="text-xl font-medium text-[#1F1F1F]">
               {t("booking_details_need_help", "Need help with this reservation?")}
             </h2>
             <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">

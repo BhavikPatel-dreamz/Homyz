@@ -119,7 +119,7 @@ export function BookingHouseRules({
 
   return (
     <section className="py-7" aria-labelledby="things-to-know-heading">
-      <h2 id="things-to-know-heading" className="text-xl font-semibold text-[#1F1F1F]">
+      <h2 id="things-to-know-heading" className="text-xl font-medium text-[#1F1F1F]">
         {t("booking_details_things_to_know", "Things to know")}
       </h2>
 

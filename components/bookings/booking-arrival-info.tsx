@@ -106,7 +106,7 @@ export function BookingArrivalInfo({
   return (
     <section className="border-b border-zinc-200 py-7" aria-labelledby="arrival-heading">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 id="arrival-heading" className="text-xl font-semibold text-[#1F1F1F]">
+        <h2 id="arrival-heading" className="text-xl font-medium text-[#1F1F1F]">
           {t("booking_details_arrival_heading", "Arrival & check-in")}
         </h2>
         <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-800 border border-blue-200">
@@ -116,11 +116,11 @@ export function BookingArrivalInfo({
 
       <div className="mt-5 space-y-4">
         {/* Address & Navigation */}
-        <div className="sm:rounded-2xl rounded-lg border border-zinc-200 bg-white p-5 shadow-2xs">
+        <div className="rounded-xl border border-zinc-200 bg-white p-5 shadow-2xs">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold text-[#727272] uppercase tracking-wider">{t("booking_details_address", "Address")}</p>
-              <p className="mt-1 text-base font-semibold text-[#1F1F1F]">
+              <p className="min-w-0 text-sm font-medium text-[#727272] mb-1.5">{t("booking_details_address", "Address")}</p>
+              <p className="mt-1 text-base font-medium text-[#1F1F1F]">
                 {fullAddress || t("booking_details_address_fallback", "Full address will be available after confirmation.")}
               </p>
               {apartment && (
@@ -150,16 +150,16 @@ export function BookingArrivalInfo({
 
         {/* Check-in Times */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div className="sm:rounded-2xl rounded-lg shadow-md bg-white p-4">
-            <p className="text-xs font-semibold text-[#727272] uppercase tracking-wider">{t("booking_details_check_in_window", "Check-in Window")}</p>
-            <p className="mt-1 text-sm font-semibold text-[#1F1F1F]">
+          <div className="rounded-xl border border-white bg-white shadow-[0_2px_4px_0px_#00000040] p-4">
+            <p className="min-w-0 text-sm font-medium text-[#727272] mb-1.5">{t("booking_details_check_in_window", "Check-in Window")}</p>
+            <p className="mt-1 text-base font-medium text-[#1F1F1F]">
               {checkInStart ? `${checkInStart}` : "3:00 PM"}
               {checkInEnd ? ` – ${checkInEnd}` : " onwards"}
             </p>
           </div>
-          <div className="sm:rounded-2xl rounded-lg shadow-md bg-white p-4">
-            <p className="text-xs font-semibold text-[#727272] uppercase tracking-wider">{t("booking_details_check_out_time", "Check-out Time")}</p>
-            <p className="mt-1 text-sm font-semibold text-[#1F1F1F]">
+          <div className="rounded-xl border border-white bg-white shadow-[0_2px_4px_0px_#00000040] p-4">
+            <p className="min-w-0 text-sm font-medium text-[#727272] mb-1.5">{t("booking_details_check_out_time", "Check-out Time")}</p>
+            <p className="mt-1 text-base font-medium text-[#1F1F1F]">
               {checkOutTime || "11:00 AM"}
             </p>
           </div>
