@@ -79,14 +79,14 @@ export function BookingDetailsClient({ data }: BookingDetailsClientProps) {
           {/* Header */}
           <div className="flex flex-wrap items-start justify-between gap-4 border-b border-zinc-200 pb-7">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-[#727272]">
+              <p className="text-xs font-medium uppercase tracking-wider text-[#727272]">
                 {t("booking_details_reservation_code", { code: bookingCode }, `Reservation #${bookingCode}`)}
               </p>
-              <h1 className="mt-1.5 text-2xl sm:text-3xl font-semibold tracking-tight text-[#1F1F1F]">
+              <h1 className="mt-1.5">
                 {listing.title}
               </h1>
               {location && (
-                <p className="mt-1.5 text-sm font-medium text-[#727272] flex items-center gap-1.5">
+                <p className="mt-1.5 text-sm font-normal text-[#727272] flex items-center gap-1.5">
                   <svg className="h-4 w-4 text-[#727272] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
