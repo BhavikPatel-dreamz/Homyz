@@ -425,12 +425,12 @@ export function ReservationDetails({
                   className="size-20 shrink-0 rounded-xl border border-zinc-200 object-cover dark:border-zinc-700"
                 />
                 <div className="min-w-0 flex-1">
-                  <p className="text-[11px] font-semibold uppercase tracking-wider text-[#727272]">
+                  <p className="text-[11px] font-medium uppercase tracking-wider text-[#727272]">
                     {t("host_cal_res_property_label", "Property")}
                   </p>
                   <Link
                     href={`/host/listings/${listing.id}`}
-                    className="mt-0.5 block truncate text-base font-semibold text-[#1F1F1F] underline-offset-2 hover:underline dark:text-zinc-100"
+                    className="mt-0.5 block truncate text-base font-medium text-[#1F1F1F] underline-offset-2 hover:underline dark:text-zinc-100"
                   >
                     {listing.title}
                   </Link>
@@ -523,7 +523,7 @@ export function ReservationDetails({
               className={
                 onMoney && status === "CONFIRMED"
                   ? "grid gap-3 sm:grid-cols-2"
-                  : "grid"
+                  : "grid gap-3 sm:grid-cols-2"
               }
             >
               <Link
@@ -802,8 +802,8 @@ export function ReservationDetails({
               )}
 
               {/* Payment Details Summary */}
-              <div className="rounded-xl border border-zinc-200 bg-zinc-50/70 p-3.5 dark:border-zinc-700 dark:bg-zinc-800/50 text-xs">
-                <p className="font-semibold text-zinc-800 dark:text-zinc-200 mb-2">
+              <div className="rounded-lg border border-zinc-200 bg-zinc-50/70 p-3.5 dark:border-zinc-700 dark:bg-zinc-800/50 text-xs">
+                <p className="text-base font-semibold text-[#1f1f1f] dark:text-zinc-200 mb-2">
                   {t("host_cal_res_payment_record", "Payment record")}
                 </p>
                 <div className="space-y-1.5 text-[#1f1f1f] dark:text-zinc-400 text-sm">

@@ -436,8 +436,8 @@ export function HostTodayWorkspace({
                   aria-selected={tab === filterTab.id}
                   onClick={() => handleTabChange(filterTab.id as ReservationPeriod)}
                   className={`rounded-full px-4 py-2.5 text-sm sm:px-4.5 sm:py-2.5 font-medium transition-all duration-200 shrink-0 font-sans cursor-pointer ${tab === filterTab.id
-                      ? "bg-[#1F1F1F] text-white shadow-xs"
-                      : "bg-[#F3F4F5] text-[#1F1F1F] hover:bg-zinc-200"
+                    ? "bg-[#1F1F1F] text-white shadow-xs"
+                    : "bg-[#F3F4F5] text-[#1F1F1F] hover:bg-zinc-200"
                     }`}
                 >
                   {filterTab.label}
@@ -451,8 +451,8 @@ export function HostTodayWorkspace({
               aria-label="Filter listings"
               onClick={openFilters}
               className={`flex size-12 shrink-0 items-center justify-center rounded-full sm:hidden transition-colors duration-300 ease-in-out ${appliedPropertyId
-                  ? "bg-[#1F1F1F] text-white border-zinc-900"
-                  : "bg-[#F3F4F5] text-[#1F1F1F]"
+                ? "bg-[#1F1F1F] text-white border-zinc-900"
+                : "bg-[#F3F4F5] text-[#1F1F1F]"
                 }`}
             >
               <svg
@@ -564,7 +564,7 @@ export function HostTodayWorkspace({
               ))}
             </div>
           ) : (
-            <div className="flex min-h-72 flex-col items-center justify-center rounded-[24px] border border-zinc-200 bg-zinc-50/50 px-6 py-12 text-center">
+            <div className="flex min-h-72 flex-col items-center justify-center rounded-[24px] border border-zinc-200 bg-zinc-50/50 px-6 py-12 text-center max-w-4xl mr-auto">
               <span className="mb-4 flex size-14 items-center justify-center rounded-full bg-[#FDE29B] text-2xl shadow-xs">
                 ☼
               </span>
@@ -611,14 +611,14 @@ export function HostTodayWorkspace({
                     setPage(1);
                     void fetchReservations(tab, 1, null);
                   }}
-                  className="mt-6 rounded-full bg-[#1F1F1F] px-6 py-2.5 text-sm font-medium text-white hover:bg-black transition-colors cursor-pointer"
+                  className="mt-6 rounded-full bg-[#1F1F1F] px-6 py-2.5 text-sm font-medium text-white hover:bg-white border border-[#1f1f1f] hover:text-[#1f1f1f] transition-colors cursor-pointer"
                 >
                   {t("host_today_clear_filters", "Clear filters")}
                 </button>
               ) : (
                 <Link
                   href="/host/calendar"
-                  className="mt-6 rounded-full bg-[#1F1F1F] px-6 py-2.5 text-sm font-medium text-white hover:bg-black transition-colors"
+                  className="mt-6 rounded-full bg-[#1F1F1F] px-6 py-2.5 text-sm font-medium text-white hover:bg-white border border-[#1f1f1f] hover:text-[#1f1f1f] transition-colors cursor-pointer"
                 >
                   {t("host_today_view_calendar", "View calendar")}
                 </Link>

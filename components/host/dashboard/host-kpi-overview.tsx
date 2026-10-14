@@ -400,7 +400,7 @@ export function HostKpiOverview({
                 ].map(([label, amount]) => (
                   <div key={String(label)}>
                     <dt className="text-xs text-[#727272]">{label}</dt>
-                    <dd className="mt-0.5 font-semibold text-[#1F1F1F]">
+                    <dd className="mt-0.5 font-medium text-[#1F1F1F]">
                       {formatCurrency(Number(amount), earnings.currency)}
                     </dd>
                   </div>

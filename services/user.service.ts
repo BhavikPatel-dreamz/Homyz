@@ -333,8 +333,15 @@ export type PublicHostProfile = {
     rating: number;
     comment: string;
     createdAt: Date;
-    author: { name: string | null; image: string | null };
-    listing: { title: string };
+    author: { name: string | null; image: string | null; id?: string; createdAt?: Date };
+    listing: {
+      title: string;
+      id?: string;
+      customSlug?: string | null;
+      photos?: string[];
+      city?: string | null;
+      country?: string | null;
+    };
   }>;
   listings: Array<{
     id: string;
@@ -384,7 +391,23 @@ async function getPublicHostProfile(userId: string, options: { reviewLimit?: num
     }),
     prisma.review.findMany({
       where: { status: ReviewStatus.PUBLISHED, comment: { not: "" }, listing: publicListingWhere },
-      select: { id: true, rating: true, comment: true, createdAt: true, author: { select: { name: true, image: true } }, listing: { select: { title: true } } },
+      select: {
+        id: true,
+        rating: true,
+        comment: true,
+        createdAt: true,
+        author: { select: { id: true, name: true, image: true, createdAt: true } },
+        listing: {
+          select: {
+            id: true,
+            customSlug: true,
+            title: true,
+            photos: true,
+            city: true,
+            country: true,
+          },
+        },
+      },
       orderBy: { createdAt: "desc" },
       take: reviewLimit,
     }),

@@ -158,7 +158,7 @@ export function PublicHostProfileView({ host, stats, reviews, listings }: Public
             {stats.reviewCount > reviews.length && (
               <Link
                 href={`/users/profile/${host.id}/reviews`}
-                className="mt-8 inline-flex min-h-12 items-center rounded-full border border-[#1f1f1f] bg-white px-6 text-base font-normal text-[#1f1f1f] transition-colors hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900"
+                className="mt-8 inline-flex min-h-12 items-center rounded-full border border-[#1f1f1f] bg-white px-6 text-sm font-normal text-[#1f1f1f] hover:text-white transition-colors hover:bg-[#1f1f1f] focus-visible:outline-none"
               >
                 {t("public_host_show_all_reviews", "Show all {count} reviews").replace(
                   "{count}",

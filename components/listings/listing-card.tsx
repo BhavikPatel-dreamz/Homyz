@@ -673,7 +673,7 @@ export function ListingCard({
                 {reviewCount > 0 && <span className="font-normal text-[#727272]">({reviewCount})</span>}
               </div>
             ) : (
-              <span className="text-[11px] font-medium text-[#727272] shrink-0">★ {t("listings_new", "New")}</span>
+              <span className="text-[12px] font-medium text-[#1f1f1f] shrink-0">★ {t("listings_new", "New")}</span>
             )}
           </div>
 
@@ -719,7 +719,7 @@ export function ListingCard({
           {/* Row 5: Free cancellation badge */}
           {hasFreeCancellation && (
             <div className="pt-0.5 flex items-center">
-              <span className="inline-block text-[11px] font-normal text-[#727272] bg-zinc-100 px-2 py-0.5 rounded">
+              <span className="inline-block text-[12px] font-normal text-[#1f1f1f] bg-[#F3F4F5] px-2 py-0.5 rounded">
                 {t("listings_free_cancellation", "Free cancellation")}
               </span>
             </div>
