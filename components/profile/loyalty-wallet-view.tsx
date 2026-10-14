@@ -171,9 +171,9 @@ export function LoyaltyWalletView() {
 
         {/* Progress Bar */}
         <div className="mt-6">
-          <div className="h-2 w-full overflow-hidden rounded-full bg-[#EFEFEF]">
+          <div className="h-2 w-full overflow-hidden rounded-full bg-[#DDDDDE]">
             <div
-              className="h-full rounded-full bg-[#FCDF9C] transition-all duration-500"
+              className="h-full rounded-full bg-[#EBA900] transition-all duration-500"
               style={{ width: `${Math.min(100, (balance / 5000) * 100)}%` }}
             />
           </div>
