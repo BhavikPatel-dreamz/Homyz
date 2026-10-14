@@ -44,22 +44,22 @@ export function Footer() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
+                  <Link href="/not-available?page=safety-issue" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
                     {t("footer_link_safety_issue", "Get help with a safety issue")}
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
+                  <Link href="/not-available?page=disability-support" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
                     {t("footer_link_disability_support", "Disability support")}
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
+                  <Link href="/not-available?page=cancellation-options" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
                     {t("footer_link_cancellation_options", "Cancellation options")}
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
+                  <Link href="/not-available?page=report-neighborhood" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
                     {t("footer_link_report_neighborhood", "Report neighborhood concern")}
                   </Link>
                 </li>
@@ -78,12 +78,12 @@ export function Footer() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
+                  <Link href="/not-available?page=experience" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
                     {t("footer_link_homyz_experience", "Homyz your experience")}
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
+                  <Link href="/not-available?page=service" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
                     {t("footer_link_homyz_service", "Homyz your service")}
                   </Link>
                 </li>
@@ -93,17 +93,17 @@ export function Footer() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
+                  <Link href="/not-available?page=hosting-resources" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
                     {t("footer_link_hosting_resources", "Hosting resources")}
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
+                  <Link href="/not-available?page=community-forum" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
                     {t("footer_link_community_forum", "Community forum")}
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
+                  <Link href="/not-available?page=hosting-responsibly" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
                     {t("footer_link_hosting_responsibly", "Hosting responsibly")}
                   </Link>
                 </li>
@@ -122,22 +122,22 @@ export function Footer() {
               </h4>
               <ul className="flex flex-col space-y-3">
                 <li>
-                  <Link href="#" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
+                  <Link href="/not-available?page=summer-release" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
                     {t("footer_link_summer_release", "2025 Summer Release")}
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
+                  <Link href="/not-available?page=newsroom" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
                     {t("footer_link_newsroom", "Newsroom")}
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
+                  <Link href="/not-available?page=careers" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
                     {t("footer_link_careers", "Careers")}
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
+                  <Link href="/not-available?page=investors" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
                     {t("footer_link_investors", "Investors")}
                   </Link>
                 </li>
@@ -147,7 +147,7 @@ export function Footer() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
+                  <Link href="/not-available?page=emergency-stays" className="lg:text-base text-sm leading-6 text-[#000000] underline hover:text-[#727272] transition underline-offset-3">
                     {t("footer_link_emergency_stays", "Homyz.com emergency stays")}
                   </Link>
                 </li>
@@ -219,11 +219,11 @@ export function Footer() {
             <div className="flex flex-wrap items-center gap-4">
               <span>{t("footer_copyright", "© 2026 Homyz, Inc.")}</span>
               <span className="hidden sm:inline">·</span>
-              <Link href="#" className="hidden hover:underline sm:inline">{t("footer_link_privacy", "Privacy")}</Link>
+              <Link href="/not-available?page=privacy" className="hidden hover:underline sm:inline">{t("footer_link_privacy", "Privacy")}</Link>
               <span className="hidden sm:inline">·</span>
-              <Link href="#" className="hidden hover:underline sm:inline">{t("footer_link_terms", "Terms")}</Link>
+              <Link href="/not-available?page=terms" className="hidden hover:underline sm:inline">{t("footer_link_terms", "Terms")}</Link>
               <span className="hidden sm:inline">·</span>
-              <Link href="#" className="hidden hover:underline sm:inline">{t("footer_link_sitemap", "Sitemap")}</Link>
+              <Link href="/not-available?page=sitemap" className="hidden hover:underline sm:inline">{t("footer_link_sitemap", "Sitemap")}</Link>
             </div>
 
             
