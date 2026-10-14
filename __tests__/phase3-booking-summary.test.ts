@@ -30,7 +30,7 @@ const quote: CheckoutSummaryQuote = {
     { taxName: "VAT", taxAmount: 2_000 },
   ],
   taxTotal: 3_200,
-  guestTotal: 49_400,
+  guestTotal: 52_400,
   currency: "SAR",
   breakdown: [
     { date: "2026-10-01", price: 12_000 },

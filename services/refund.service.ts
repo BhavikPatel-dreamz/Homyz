@@ -4,17 +4,16 @@ import { prisma } from "@/lib/db/prisma";
 import { AppError } from "@/lib/api/errors";
 import type { AuthUser } from "@/lib/auth/types";
 import { assertRole } from "@/lib/permissions/authorize";
-import { Role, BookingStatus, PaymentStatus, RefundStatus, PaymentProvider, NotificationType } from "@/generated/prisma/enums";
+import { Role, BookingStatus, PaymentStatus, RefundStatus, PaymentProvider } from "@/generated/prisma/enums";
 import type { Prisma } from "@/generated/prisma/client";
 import { getPaymentPolicy } from "@/lib/booking/payment-policy";
 import {
   calculateRefundEligibility,
   type RefundCalculationResult,
 } from "@/lib/refund/policy-engine";
-import { notificationService } from "./notification.service";
 import { auditService } from "./audit.service";
-import { invalidateBookingCache } from "@/lib/redis/invalidation";
 import { sanitizeListingSecrets } from "@/lib/booking/booking-lifecycle";
+import { moyasarAdapter } from "@/lib/payment/moyasar-adapter";
 import { nanoid } from "nanoid";
 
 export interface CreateRefundRequestInput {
@@ -55,8 +54,8 @@ export interface AdminRefundSummary {
 
 /**
  * The refund-management pages can be deployed ahead of the BookingRefund
- * migration. Treat that schema state as an empty refund history so admins can
- * still reach the page while the database deployment catches up.
+ * migration. It must be surfaced as an actionable error: an absent table is
+ * not evidence that no refunds exist.
  */
 function isMissingBookingRefundTable(error: unknown): boolean {
   if (!error || typeof error !== "object") return false;
@@ -85,25 +84,24 @@ async function ensureBookingPayment(
   });
 
   const paymentPolicy = getPaymentPolicy();
-  // Never invent captured funds for a deferred or live-provider booking. A
-  // mock payment row is permitted only in the explicit sandbox/mock mode.
-  if (
-    !payment &&
-    paymentPolicy.paymentMode === "MOCK" &&
-    (booking.status === BookingStatus.CONFIRMED || booking.status === BookingStatus.CANCELLED)
-  ) {
+  if (!payment) {
     const total = booking.totalPrice ?? 0;
+    const isMockCaptured =
+      paymentPolicy.paymentMode === "MOCK" &&
+      (booking.status === BookingStatus.CONFIRMED || booking.status === BookingStatus.CANCELLED);
+
     payment = await tx.bookingPayment.create({
       data: {
         bookingId: booking.id,
-        provider: PaymentProvider.MOCK,
-        providerPaymentId: `pay_${nanoid(12)}`,
-        status: PaymentStatus.CAPTURED,
+        provider: isMockCaptured ? PaymentProvider.MOCK : PaymentProvider.DEFERRED,
+        providerPaymentId: isMockCaptured ? `pay_${nanoid(12)}` : null,
+        status: isMockCaptured ? PaymentStatus.CAPTURED : PaymentStatus.PENDING,
         currency: booking.currency || "SAR",
         amount: total,
-        capturedAmount: total,
+        capturedAmount: isMockCaptured ? total : 0,
         refundedAmount: 0,
-        capturedAt: booking.createdAt,
+        capturedAt: isMockCaptured ? booking.createdAt : null,
+        idempotencyKey: `pay_idem_${booking.id}`,
       },
     });
   }
@@ -122,8 +120,6 @@ async function getRefundQuote(
     discretionaryReason?: string;
   } = {},
 ): Promise<RefundCalculationResult> {
-  assertRole(actor, [Role.ADMIN]);
-
   const booking = await prisma.booking.findUnique({
     where: { id: bookingId },
     include: {
@@ -154,6 +150,12 @@ async function getRefundQuote(
     throw AppError.notFound(`Booking ${bookingId} not found`);
   }
 
+  const isAdmin = actor.role === Role.ADMIN;
+  const isGuest = actor.id === booking.userId;
+  if (!isAdmin && !isGuest) {
+    throw AppError.forbidden("You do not have permission to view refund quotes for this reservation.");
+  }
+
   const breakdown = (booking.priceBreakdown as Record<string, any>) || {};
   const cancellation = breakdown.cancellation || {};
 
@@ -175,9 +177,6 @@ async function getRefundQuote(
       capturedAmount += p.capturedAmount;
       alreadyRefundedAmount += p.refundedAmount;
     }
-  } else if (booking.status === BookingStatus.CONFIRMED || booking.status === BookingStatus.CANCELLED) {
-    // If no payment record exists yet, the booking total is the baseline captured amount
-    capturedAmount = totalPrice;
   }
 
   for (const r of booking.refunds) {
@@ -211,8 +210,8 @@ async function getRefundQuote(
     capturedAmount,
     alreadyRefundedAmount,
     pendingRefundReservedAmount,
-    discretionaryAdjustmentAmount: options.discretionaryAmount,
-    discretionaryReason: options.discretionaryReason,
+    discretionaryAdjustmentAmount: isAdmin ? options.discretionaryAmount : undefined,
+    discretionaryReason: isAdmin ? options.discretionaryReason : undefined,
   });
 }
 
@@ -223,8 +222,7 @@ async function createRefundRequest(
   actor: AuthUser,
   input: CreateRefundRequestInput,
 ): Promise<any> {
-  assertRole(actor, [Role.ADMIN]);
-
+  const isAdmin = actor.role === Role.ADMIN;
   const { bookingId, amount, reason, notes, idempotencyKey } = input;
 
   if (!reason || !reason.trim()) {
@@ -256,6 +254,21 @@ async function createRefundRequest(
     });
 
     if (!booking) throw AppError.notFound("Booking not found");
+
+    if (!isAdmin && actor.id !== booking.userId) {
+      throw AppError.forbidden("You do not have permission to request a refund for this reservation.");
+    }
+
+    // Duplicate check: prevent multiple pending requests for the same booking
+    const activeRefund = await tx.bookingRefund.findFirst({
+      where: {
+        bookingId: booking.id,
+        status: { in: [RefundStatus.PENDING, RefundStatus.PROCESSING] },
+      },
+    });
+    if (activeRefund) {
+      throw AppError.conflict("A refund request is already pending or processing for this reservation.");
+    }
 
     const payment = await ensureBookingPayment(tx, booking);
     if (!payment) {
@@ -460,10 +473,9 @@ async function listRefundsForAdmin(
     refundResult = await fetchRefunds();
   } catch (error) {
     if (!isMissingBookingRefundTable(error)) throw error;
-    return {
-      refunds: [],
-      pagination: { total: 0, page, limit, totalPages: 1 },
-    };
+    throw AppError.serviceUnavailable(
+      "Refund records are unavailable because the BookingRefund database migration has not been applied. Apply the financial migration before relying on this page.",
+    );
   }
   const [refunds, total] = refundResult;
 
@@ -563,17 +575,9 @@ async function getRefundSummaryForAdmin(actor: AuthUser): Promise<AdminRefundSum
     };
   } catch (error) {
     if (!isMissingBookingRefundTable(error)) throw error;
-    return {
-      totalRequests: 0,
-      pendingReview: 0,
-      approved: 0,
-      processing: 0,
-      succeeded: 0,
-      failed: 0,
-      rejected: 0,
-      totalRefundedAmount: 0,
-      currency: "SAR",
-    };
+    throw AppError.serviceUnavailable(
+      "Refund records are unavailable because the BookingRefund database migration has not been applied. Apply the financial migration before relying on these totals.",
+    );
   }
 }
 
@@ -621,7 +625,7 @@ async function getRefundDetailsForAdmin(actor: AuthUser, refundId: string): Prom
   });
 
   const payment = refund.payment;
-  const capturedAmount = payment?.capturedAmount ?? refund.booking.totalPrice ?? 0;
+  const capturedAmount = payment?.capturedAmount ?? 0;
   const alreadyRefunded = payment?.refundedAmount ?? 0;
   const remainingRefundableBalance = Math.max(0, capturedAmount - alreadyRefunded);
 
@@ -787,8 +791,6 @@ async function processRefund(
 ): Promise<any> {
   assertRole(actor, [Role.ADMIN]);
 
-  const policy = getPaymentPolicy();
-
   const refund = await prisma.bookingRefund.findUnique({
     where: { id: refundId },
     include: {
@@ -805,108 +807,157 @@ async function processRefund(
     return refund;
   }
 
-  // There is no live provider adapter in this codebase. Refuse to write a
-  // success state for deferred or live modes; MOCK is sandbox-only and remains
-  // explicitly labelled in the resulting payment/refund records.
-  if (policy.paymentMode !== "MOCK") {
-    throw AppError.serviceUnavailable(
-      "Refund execution is unavailable until a verified payment-provider adapter is configured. Local financial records were not changed.",
+  const now = new Date();
+
+  // Pre-gateway verification
+  const paymentRecord = refund.payment || (await prisma.bookingPayment.findUnique({ where: { id: refund.paymentId || "" } }));
+  if (!paymentRecord) throw AppError.notFound("Associated payment record not found.");
+
+  if (
+    paymentRecord.status !== PaymentStatus.CAPTURED &&
+    paymentRecord.status !== PaymentStatus.PARTIALLY_REFUNDED
+  ) {
+    throw AppError.badRequest("Refunds require a verified captured payment.");
+  }
+
+  const availableBalance = paymentRecord.capturedAmount - paymentRecord.refundedAmount;
+  if (refund.amount > availableBalance) {
+    throw AppError.badRequest(
+      `Refund amount (${refund.amount} cents) exceeds remaining captured balance (${availableBalance} cents).`,
     );
   }
 
-  const now = new Date();
+  // Gateway dispatch. A successful API response only proves the request was
+  // accepted; balances remain unchanged until a verified provider webhook.
+  if (
+    paymentRecord.provider !== PaymentProvider.MOYASAR ||
+    !process.env.MOYASAR_API_KEY ||
+    !paymentRecord.providerPaymentId
+  ) {
+    throw AppError.serviceUnavailable(
+      "Refund execution is unavailable because this payment has no configured provider refund path. The request remains approved and has not been settled.",
+    );
+  }
 
-  const processed = await prisma.$transaction(async (tx: any) => {
+  let providerRefundId: string | null = null;
+  let providerFailed = false;
+  let providerErrorMessage: string | null = null;
+
+  try {
+    const gwRes = await moyasarAdapter.createRefund({
+      bookingId: refund.bookingId,
+      providerPaymentId: paymentRecord.providerPaymentId,
+      amount: refund.amount,
+      currency: refund.currency,
+      reason: refund.reason || "Booking refund",
+    });
+    if (!gwRes.success) {
+      providerFailed = true;
+      providerErrorMessage = gwRes.errorMessage || "Provider rejected refund request.";
+    } else {
+      providerRefundId = gwRes.providerRefundId || null;
+    }
+  } catch (err: any) {
+    providerFailed = true;
+    providerErrorMessage = err.message || "Failed to communicate with payment gateway.";
+  }
+
+  if (providerFailed) {
+    // Mark refund as FAILED without altering captured balances
+    const failedRefund = await prisma.bookingRefund.update({
+      where: { id: refund.id },
+      data: {
+        status: RefundStatus.FAILED,
+        failedAt: now,
+        failureReason: providerErrorMessage,
+        metadata: {
+          ...((refund.metadata as Record<string, any>) || {}),
+          failedAt: now.toISOString(),
+          failureReason: providerErrorMessage,
+        },
+      },
+    });
+
+    await auditService.record({
+      actorId: actor.id,
+      actorEmail: actor.email,
+      action: "REFUND_FAILED",
+      resourceType: "BOOKING",
+      resourceId: refund.bookingId,
+      description: `Refund ${refund.refundReference || refund.id} failed at provider: ${providerErrorMessage}`,
+      status: "FAILURE",
+      metadata: {
+        refundId: refund.id,
+        amount: refund.amount,
+        failureReason: providerErrorMessage,
+      },
+    });
+
+    return failedRefund;
+  }
+
+  const submitted = await prisma.$transaction(async (tx: any) => {
     const lockedRefund = await tx.bookingRefund.findUnique({
       where: { id: refund.id },
     });
     if (!lockedRefund) throw AppError.notFound("Refund not found");
-    if (lockedRefund.status === RefundStatus.SUCCEEDED) {
-      return { updatedRefund: lockedRefund, payment: null, booking: refund.booking, alreadyProcessed: true };
+    if (lockedRefund.status === RefundStatus.SUCCEEDED || lockedRefund.status === RefundStatus.PROCESSING) {
+      return { updatedRefund: lockedRefund, alreadySubmitted: true };
     }
     if (lockedRefund.status !== RefundStatus.PENDING || !lockedRefund.approvedById) {
       throw AppError.conflict("Only an approved pending refund can be processed.");
     }
 
-    const payment = await tx.bookingPayment.findUnique({ where: { id: lockedRefund.paymentId || "" } });
-
-    if (!payment) {
-      throw AppError.notFound("Associated payment record not found.");
-    }
-
-    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${payment.id}))`;
-    const lockedPayment = await tx.bookingPayment.findUnique({ where: { id: payment.id } });
+    const lockedPayment = await tx.bookingPayment.findUnique({ where: { id: paymentRecord.id } });
     if (!lockedPayment) throw AppError.notFound("Associated payment record not found.");
-    if (
-      lockedPayment.provider !== PaymentProvider.MOCK ||
-      (lockedPayment.status !== PaymentStatus.CAPTURED && lockedPayment.status !== PaymentStatus.PARTIALLY_REFUNDED)
-    ) {
-      throw AppError.badRequest("Refunds require a verified captured sandbox payment.");
-    }
 
-    const available = lockedPayment.capturedAmount - lockedPayment.refundedAmount;
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${lockedPayment.id}))`;
+    const freshPayment = await tx.bookingPayment.findUnique({ where: { id: lockedPayment.id } });
+    if (!freshPayment) throw AppError.notFound("Associated payment record not found.");
+
+    const available = freshPayment.capturedAmount - freshPayment.refundedAmount;
     if (lockedRefund.amount > available) {
       throw AppError.badRequest(
         `Refund amount (${lockedRefund.amount} cents) exceeds remaining captured balance (${available} cents).`,
       );
     }
 
-    const nextRefundedAmount = lockedPayment.refundedAmount + lockedRefund.amount;
-    const nextPaymentStatus =
-      nextRefundedAmount >= lockedPayment.capturedAmount
-        ? PaymentStatus.REFUNDED
-        : PaymentStatus.PARTIALLY_REFUNDED;
-
-    const providerRefundId = `rfnd_${nanoid(14)}`;
-
-    // Update payment balances
-    await tx.bookingPayment.update({
-      where: { id: lockedPayment.id },
-      data: {
-        refundedAmount: nextRefundedAmount,
-        status: nextPaymentStatus,
-      },
-    });
-
-    // Update refund transaction to SUCCEEDED
+    // Keep the local payment balance untouched until the provider's signed
+    // completion event confirms settlement.
     const updatedRefund = await tx.bookingRefund.update({
       where: { id: lockedRefund.id },
       data: {
-        status: RefundStatus.SUCCEEDED,
+        status: RefundStatus.PROCESSING,
         providerRefundId,
         processedAt: now,
-        succeededAt: now,
         metadata: {
           ...((lockedRefund.metadata as Record<string, any>) || {}),
           processedByEmail: actor.email,
           providerRefundId,
           processingIdempotencyKey: idempotencyKey ?? null,
-          settlementStatus: "SETTLED",
+          settlementStatus: "SUBMITTED",
         },
       },
     });
-
-    return { updatedRefund, payment: lockedPayment, booking: refund.booking, alreadyProcessed: false };
+    return { updatedRefund, alreadySubmitted: false };
   });
 
-  if (processed.alreadyProcessed) return processed.updatedRefund;
-
-  await invalidateBookingCache(processed.booking.id, processed.booking.userId, "");
+  if (submitted.alreadySubmitted) return submitted.updatedRefund;
 
   // Audit Log
   try {
     await auditService.record({
       actorId: actor.id,
       actorEmail: actor.email,
-      action: "REFUND_PROCESSED",
+      action: "REFUND_SUBMITTED",
       resourceType: "BOOKING",
-      resourceId: processed.booking.id,
-      description: `Refund ${processed.updatedRefund.refundReference} for ${(refund.amount / 100).toFixed(2)} ${refund.currency} was successfully processed.`,
+      resourceId: refund.bookingId,
+      description: `Refund ${submitted.updatedRefund.refundReference} for ${(refund.amount / 100).toFixed(2)} ${refund.currency} was submitted to the provider and is awaiting verification.`,
       status: "SUCCESS",
       metadata: {
-        refundId: processed.updatedRefund.id,
-        refundReference: processed.updatedRefund.refundReference,
-        providerRefundId: processed.updatedRefund.providerRefundId,
+        refundId: submitted.updatedRefund.id,
+        refundReference: submitted.updatedRefund.refundReference,
+        providerRefundId: submitted.updatedRefund.providerRefundId,
         amount: refund.amount,
         currency: refund.currency,
       },
@@ -915,28 +966,59 @@ async function processRefund(
     console.warn("[refund.service] Failed to record audit log for processed refund:", err);
   }
 
-  // Send Notification to Guest
-  try {
-    await notificationService.create({
-      userId: processed.booking.userId,
-      type: NotificationType.BOOKING,
-      title: `Refund Processed: ${processed.booking.listing.title}`,
-      message: `A refund of ${(refund.amount / 100).toFixed(2)} ${refund.currency} has been processed for your reservation.`,
-      entityId: processed.booking.id,
-      entityType: "booking",
-      link: "/profile/tab/past",
-      metadata: {
-        bookingId: processed.booking.id,
-        refundId: processed.updatedRefund.id,
-        amount: refund.amount,
-        currency: refund.currency,
-      },
-    });
-  } catch (err) {
-    console.warn("[refund.service] Failed to create refund notification for guest:", err);
+  return submitted.updatedRefund;
+}
+
+/**
+ * Reconciles refund record against gateway and payment state without mutating financial records.
+ */
+async function reconcileRefundForAdmin(actor: AuthUser, refundId: string): Promise<any> {
+  assertRole(actor, [Role.ADMIN]);
+
+  const refund = await prisma.bookingRefund.findUnique({
+    where: { id: refundId },
+    include: { payment: true, booking: true },
+  });
+
+  if (!refund) throw AppError.notFound("Refund not found");
+
+  const issues: string[] = [];
+
+  if (!refund.payment) {
+    issues.push("Refund has no associated payment record.");
+  } else {
+    if (refund.amount > refund.payment.capturedAmount) {
+      issues.push(`Refund amount (${refund.amount}) exceeds total captured payment amount (${refund.payment.capturedAmount}).`);
+    }
+    if (refund.status === RefundStatus.SUCCEEDED && refund.payment.refundedAmount < refund.amount) {
+      issues.push(`Payment refunded balance (${refund.payment.refundedAmount}) is less than succeeded refund amount (${refund.amount}).`);
+    }
   }
 
-  return processed.updatedRefund;
+  // Audit
+  await auditService.record({
+    actorId: actor.id,
+    actorEmail: actor.email,
+    action: "REFUND_RECONCILED",
+    resourceType: "BOOKING",
+    resourceId: refund.bookingId,
+    description: `Reconciliation verified for refund ${refund.refundReference || refund.id}. Issues found: ${issues.length}.`,
+    status: issues.length === 0 ? "SUCCESS" : "FAILURE",
+    metadata: {
+      refundId: refund.id,
+      issues,
+    },
+  });
+
+  return {
+    refundId: refund.id,
+    refundReference: refund.refundReference,
+    status: refund.status,
+    amount: refund.amount,
+    currency: refund.currency,
+    reconciled: issues.length === 0,
+    issues,
+  };
 }
 
 export const refundService = {
@@ -948,4 +1030,5 @@ export const refundService = {
   approveRefund,
   rejectRefund,
   processRefund,
+  reconcileRefundForAdmin,
 };

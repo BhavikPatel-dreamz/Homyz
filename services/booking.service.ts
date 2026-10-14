@@ -12,12 +12,14 @@ import { ADDRESS_COUNTRIES } from "@/lib/location/address-countries";
 
 import { reviveBookingDTO, toBookingDTO, type BookingDTO } from "./mappers";
 
-import { BookingStatus, PaymentStatus, RefundStatus, ListingStatus, NotificationType, Role, ConversationStatus, SpecialOfferStatus, MessageType, ListingCoHostStatus } from "@/generated/prisma/enums";
+import { BookingStatus, PaymentStatus, PaymentProvider, RefundStatus, ListingStatus, NotificationType, Role, ConversationStatus, SpecialOfferStatus, MessageType, ListingCoHostStatus } from "@/generated/prisma/enums";
+import { nanoid } from "nanoid";
 import { notificationService } from "./notification.service";
 import { messagingService } from "./messaging.service";
 import { auditService } from "./audit.service";
 
 import { Prisma } from "@/generated/prisma/client";
+import { calculateRefundEligibility } from "@/lib/refund/policy-engine";
 import type { CalculatedTaxItem, HostPayoutBreakdown, ListingTaxDTO } from "@/lib/tax/types";
 import { getHostServiceFeePercentage } from "@/services/app-settings.service";
 import { getNonRefundableDiscountPercentage } from "@/services/app-settings.service";
@@ -730,6 +732,34 @@ async function create(
       });
     }
 
+    // Persist the canonical payment record atomically with the reservation
+    const paymentPolicy = getPaymentPolicy();
+    const isMockMode = paymentPolicy.paymentMode === "MOCK";
+    const paymentProvider = isMockMode ? PaymentProvider.MOCK : PaymentProvider.DEFERRED;
+    const isCapturedOnCreation = isMockMode && automaticallyApprove;
+    const initialPaymentStatus = isCapturedOnCreation ? PaymentStatus.CAPTURED : PaymentStatus.PENDING;
+
+    await tx.bookingPayment.create({
+      data: {
+        bookingId: createdBooking.id,
+        provider: paymentProvider,
+        status: initialPaymentStatus,
+        currency: quote.currency || "SAR",
+        amount: quote.guestTotal,
+        capturedAmount: isCapturedOnCreation ? quote.guestTotal : 0,
+        refundedAmount: 0,
+        idempotencyKey: input.requestSubmissionId ? `pay_idem_${input.requestSubmissionId}` : `pay_idem_${createdBooking.id}`,
+        providerPaymentId: isCapturedOnCreation ? `mock_ch_${nanoid(12)}` : null,
+        capturedAt: isCapturedOnCreation ? new Date() : null,
+        metadata: {
+          paymentPlan: input.paymentPlan ?? "FULL",
+          bookingMode,
+          expectedGuestTotal: input.expectedGuestTotal,
+          pricingSnapshotVersion: "v1",
+        },
+      },
+    });
+
     // Persist the request message and its booking relationship atomically. A
     // booking request must never succeed with a disconnected host message.
     await messagingService.getOrCreateBookingConversation({
@@ -1121,6 +1151,20 @@ async function acceptBookingRequest(
     const isExpired = isBookingRequestExpired(booking.createdAt, new Date(), booking.endDate);
     if (isExpired) {
       const existingBreakdown = (booking.priceBreakdown as Record<string, any>) || {};
+      const payment = await tx.bookingPayment.findFirst({
+        where: { bookingId: booking.id },
+        orderBy: { createdAt: "desc" },
+      });
+      if (payment && (payment.status === PaymentStatus.PENDING || payment.status === PaymentStatus.AUTHORIZED)) {
+        await tx.bookingPayment.update({
+          where: { id: payment.id },
+          data: {
+            status: PaymentStatus.VOIDED,
+            voidedAt: new Date(),
+          },
+        });
+      }
+
       await tx.booking.update({
         where: { id: booking.id },
         data: {
@@ -1186,12 +1230,44 @@ async function acceptBookingRequest(
       );
     }
 
+    const existingPayment = await tx.bookingPayment.findFirst({
+      where: { bookingId: id },
+      orderBy: { createdAt: "desc" },
+    });
+    if (existingPayment) {
+      if (policy.paymentMode === "MOCK" && existingPayment.status === PaymentStatus.PENDING) {
+        await tx.bookingPayment.update({
+          where: { id: existingPayment.id },
+          data: {
+            status: PaymentStatus.CAPTURED,
+            capturedAmount: existingPayment.amount,
+            capturedAt: new Date(),
+            providerPaymentId: existingPayment.providerPaymentId || `mock_ch_${nanoid(12)}`,
+          },
+        });
+      }
+    } else {
+      await tx.bookingPayment.create({
+        data: {
+          bookingId: booking.id,
+          provider: policy.paymentMode === "MOCK" ? PaymentProvider.MOCK : PaymentProvider.DEFERRED,
+          status: policy.paymentMode === "MOCK" ? PaymentStatus.CAPTURED : PaymentStatus.PENDING,
+          currency: booking.currency || "SAR",
+          amount: booking.totalPrice ?? 0,
+          capturedAmount: policy.paymentMode === "MOCK" ? (booking.totalPrice ?? 0) : 0,
+          capturedAt: policy.paymentMode === "MOCK" ? new Date() : null,
+          providerPaymentId: policy.paymentMode === "MOCK" ? `mock_ch_${nanoid(12)}` : null,
+          idempotencyKey: `pay_idem_${booking.id}`,
+        },
+      });
+    }
+
     const existingBreakdown = (booking.priceBreakdown as Record<string, any>) || {};
     const priceBreakdown = {
       ...existingBreakdown,
-      paymentMode: "DEFERRED",
-      paymentStatus: "PAYMENT_PENDING",
-      paymentProvider: null,
+      paymentMode: policy.paymentMode === "MOCK" ? "MOCK" : "DEFERRED",
+      paymentStatus: policy.paymentMode === "MOCK" ? "CAPTURED" : "PAYMENT_PENDING",
+      paymentProvider: policy.paymentMode === "MOCK" ? "MOCK" : null,
       acceptance: {
         acceptedAt: new Date().toISOString(),
         acceptedBy: "HOST",
@@ -1313,6 +1389,20 @@ async function rejectBookingRequest(
       },
       ...(isExpired ? { expiredAt: new Date().toISOString() } : {}),
     } as Prisma.InputJsonValue;
+
+    const payment = await tx.bookingPayment.findFirst({
+      where: { bookingId: b.id },
+      orderBy: { createdAt: "desc" },
+    });
+    if (payment && (payment.status === PaymentStatus.PENDING || payment.status === PaymentStatus.AUTHORIZED)) {
+      await tx.bookingPayment.update({
+        where: { id: payment.id },
+        data: {
+          status: PaymentStatus.VOIDED,
+          voidedAt: new Date(),
+        },
+      });
+    }
 
     const updated = await tx.booking.update({
       where: { id },
@@ -1488,6 +1578,20 @@ async function expireBookingRequest(
       },
       expiredAt: new Date().toISOString(),
     } as Prisma.InputJsonValue;
+
+    const payment = await tx.bookingPayment.findFirst({
+      where: { bookingId: b.id },
+      orderBy: { createdAt: "desc" },
+    });
+    if (payment && (payment.status === PaymentStatus.PENDING || payment.status === PaymentStatus.AUTHORIZED)) {
+      await tx.bookingPayment.update({
+        where: { id: payment.id },
+        data: {
+          status: PaymentStatus.VOIDED,
+          voidedAt: new Date(),
+        },
+      });
+    }
 
     const updated = await tx.booking.update({
       where: { id },
@@ -1771,10 +1875,57 @@ async function cancelBookingByGuest(actor: AuthUser, id: string): Promise<Bookin
       typeof originalSnapshot.payoutBreakdown === "object"
         ? (originalSnapshot.payoutBreakdown as Record<string, unknown>)
         : {};
-    const hostPayoutRetained =
+    const originalNetHostPayout =
       typeof payoutBreakdown.netHostPayout === "number"
         ? payoutBreakdown.netHostPayout
         : 0;
+
+    const payment = await tx.bookingPayment.findFirst({
+      where: { bookingId: booking.id },
+      orderBy: { createdAt: "desc" },
+    });
+
+    const nights = typeof originalSnapshot.nights === "number"
+      ? originalSnapshot.nights
+      : Math.max(1, Math.ceil((booking.endDate.getTime() - booking.startDate.getTime()) / (86400 * 1000)));
+    const cleaningFee = booking.cleaningFee ?? (typeof originalSnapshot.cleaningFee === "number" ? originalSnapshot.cleaningFee : 0);
+    const serviceFee = typeof originalSnapshot.serviceFee === "number"
+      ? originalSnapshot.serviceFee
+      : (typeof originalSnapshot.guestServiceFee === "number" ? originalSnapshot.guestServiceFee : 0);
+    const taxes = typeof originalSnapshot.taxTotal === "number" ? originalSnapshot.taxTotal : 0;
+    const accommodationTotal = typeof originalSnapshot.nightlySubtotal === "number"
+      ? originalSnapshot.nightlySubtotal
+      : ((booking.totalPrice ?? 0) - cleaningFee - serviceFee - taxes);
+
+    // A confirmed booking is not evidence that funds were captured. Refund
+    // eligibility is constrained to the payment ledger only.
+    const capturedAmount = payment?.capturedAmount ?? 0;
+    const alreadyRefundedAmount = payment?.refundedAmount ?? 0;
+
+    const eligibility = calculateRefundEligibility({
+      bookingId: booking.id,
+      cancellationActor: "GUEST",
+      effectiveCancellationTime: now,
+      policyIdSnapshot: (originalSnapshot.cancellationPolicySnapshot as string) || booking.cancellationPolicy || booking.listing.cancellationPolicy,
+      policyVersion: "v1",
+      isNonRefundable: Boolean(booking.isNonRefundable),
+      nights,
+      checkInDate: booking.startDate,
+      checkInTimeStr: booking.listing.checkInStart,
+      totalPrice: booking.totalPrice ?? 0,
+      accommodationTotal,
+      cleaningFee,
+      serviceFee,
+      taxes,
+      currency: booking.currency || "SAR",
+      capturedAmount,
+      alreadyRefundedAmount,
+    });
+
+    const guestRefundAmount = eligibility.totalRefundableAmount;
+    const hostPayoutRetained = booking.isNonRefundable
+      ? originalNetHostPayout
+      : Math.max(0, originalNetHostPayout - guestRefundAmount);
 
     const priceBreakdown = {
       ...originalSnapshot,
@@ -1782,11 +1933,51 @@ async function cancelBookingByGuest(actor: AuthUser, id: string): Promise<Bookin
         cancelledAt: now.toISOString(),
         cancelledBy: "GUEST",
         isNonRefundable: Boolean(booking.isNonRefundable),
-        policy: booking.cancellationPolicy || "FLEXIBLE",
-        guestRefundAmount: booking.isNonRefundable ? 0 : (extractStoredGuestTotal(booking) ?? 0),
-        hostPayoutRetained: booking.isNonRefundable ? hostPayoutRetained : 0,
+        policy: eligibility.policyUsed,
+        policyVersion: eligibility.policyVersion,
+        milestoneApplied: eligibility.milestoneApplied,
+        guestRefundAmount,
+        hostPayoutRetained,
+        explanation: eligibility.explanation,
+        requiresAttention: eligibility.status === "NEEDS_REVIEW",
       },
     } as Prisma.InputJsonValue;
+
+    if (payment && (payment.status === PaymentStatus.PENDING || payment.status === PaymentStatus.AUTHORIZED)) {
+      await tx.bookingPayment.update({
+        where: { id: payment.id },
+        data: {
+          status: PaymentStatus.VOIDED,
+          voidedAt: now,
+        },
+      });
+    } else if (payment && (payment.status === PaymentStatus.CAPTURED || payment.status === PaymentStatus.PARTIALLY_REFUNDED) && guestRefundAmount > 0) {
+      const refundStatus = RefundStatus.PENDING;
+
+      await tx.bookingRefund.create({
+        data: {
+          bookingId: booking.id,
+          paymentId: payment.id,
+          refundReference: `REF-${nanoid(8).toUpperCase()}`,
+          idempotencyKey: `idem_cancel_${booking.id}_${now.getTime()}`,
+          status: refundStatus,
+          currency: payment.currency || "SAR",
+          amount: guestRefundAmount,
+          reason: `Guest cancellation: ${eligibility.explanation}`,
+          requestedById: actor.id,
+          approvedById: null,
+          processedAt: null,
+          succeededAt: null,
+          providerRefundId: null,
+          metadata: {
+            refundType: guestRefundAmount >= payment.capturedAmount ? "FULL" : "PARTIAL",
+            milestoneApplied: eligibility.milestoneApplied,
+            policyUsed: eligibility.policyUsed,
+          },
+        },
+      });
+
+    }
 
     const updated = await tx.booking.update({
       where: { id: booking.id },
@@ -1911,6 +2102,12 @@ async function cancelBookingByHost(
         ? (booking.priceBreakdown as Record<string, unknown>)
         : {};
 
+    const payment = await tx.bookingPayment.findFirst({
+      where: { bookingId: booking.id },
+      orderBy: { createdAt: "desc" },
+    });
+    const refundDue = payment ? Math.max(0, payment.capturedAmount - payment.refundedAmount) : 0;
+
     const priceBreakdown = {
       ...originalSnapshot,
       cancellation: {
@@ -1919,10 +2116,43 @@ async function cancelBookingByHost(
         hostId: actor.id,
         reason: reason?.trim() || null,
         isExcluded: Boolean(isExcluded),
-        guestRefundAmount: extractStoredGuestTotal(booking) ?? 0,
+        guestRefundAmount: refundDue,
         hostPayoutRetained: 0,
       },
     } as Prisma.InputJsonValue;
+
+    if (payment && (payment.status === PaymentStatus.PENDING || payment.status === PaymentStatus.AUTHORIZED)) {
+      await tx.bookingPayment.update({
+        where: { id: payment.id },
+        data: {
+          status: PaymentStatus.VOIDED,
+          voidedAt: now,
+        },
+      });
+    } else if (payment && (payment.status === PaymentStatus.CAPTURED || payment.status === PaymentStatus.PARTIALLY_REFUNDED) && refundDue > 0) {
+      await tx.bookingRefund.create({
+        data: {
+          bookingId: booking.id,
+          paymentId: payment.id,
+          refundReference: `REF-${nanoid(8).toUpperCase()}`,
+          idempotencyKey: `idem_host_cancel_${booking.id}_${now.getTime()}`,
+          status: RefundStatus.PENDING,
+          currency: payment.currency || "SAR",
+          amount: refundDue,
+          reason: `Host cancellation: ${reason?.trim() || "Host cancelled reservation"}`,
+          requestedById: actor.id,
+          approvedById: null,
+          processedAt: null,
+          succeededAt: null,
+          providerRefundId: null,
+          metadata: {
+            refundType: "FULL",
+            cancellationActor: "HOST",
+          },
+        },
+      });
+
+    }
 
     const updated = await tx.booking.update({
       where: { id: booking.id },
@@ -1939,7 +2169,7 @@ async function cancelBookingByHost(
       userId: cancelled.userId,
       type: NotificationType.BOOKING,
       title: `Reservation Cancelled by Host: ${cancelled.listing.title}`,
-      message: `The host had to cancel your reservation for ${cancelled.listing.title}. A full refund of SAR ${((cancelled.totalPrice ?? 0) / 100).toFixed(2)} has been issued.`,
+      message: `The host had to cancel your reservation for ${cancelled.listing.title}. Any eligible refund has been recorded and will be settled only after payment-provider confirmation.`,
       entityId: cancelled.id,
       entityType: "booking",
       link: "/profile/tab/past",
@@ -3095,6 +3325,12 @@ async function cancelBookingByAdmin(
         ? (booking.priceBreakdown as Record<string, unknown>)
         : {};
 
+    const payment = await tx.bookingPayment.findFirst({
+      where: { bookingId: booking.id },
+      orderBy: { createdAt: "desc" },
+    });
+    const refundDue = payment ? Math.max(0, payment.capturedAmount - payment.refundedAmount) : 0;
+
     const priceBreakdown = {
       ...originalSnapshot,
       cancellation: {
@@ -3104,10 +3340,44 @@ async function cancelBookingByAdmin(
         adminEmail: actor.email,
         reason: reason.trim(),
         notes: notes?.trim() || null,
-        guestRefundAmount: extractStoredGuestTotal(booking) ?? 0,
+        guestRefundAmount: refundDue,
         hostPayoutRetained: 0,
       },
     } as Prisma.InputJsonValue;
+
+    if (payment && (payment.status === PaymentStatus.PENDING || payment.status === PaymentStatus.AUTHORIZED)) {
+      await tx.bookingPayment.update({
+        where: { id: payment.id },
+        data: {
+          status: PaymentStatus.VOIDED,
+          voidedAt: now,
+        },
+      });
+    } else if (payment && (payment.status === PaymentStatus.CAPTURED || payment.status === PaymentStatus.PARTIALLY_REFUNDED) && refundDue > 0) {
+      await tx.bookingRefund.create({
+        data: {
+          bookingId: booking.id,
+          paymentId: payment.id,
+          refundReference: `REF-${nanoid(8).toUpperCase()}`,
+          idempotencyKey: `idem_admin_cancel_${booking.id}_${now.getTime()}`,
+          status: RefundStatus.PENDING,
+          currency: payment.currency || "SAR",
+          amount: refundDue,
+          reason: `Admin cancellation: ${reason.trim()}`,
+          requestedById: actor.id,
+          approvedById: null,
+          processedAt: null,
+          succeededAt: null,
+          providerRefundId: null,
+          metadata: {
+            refundType: "FULL",
+            cancellationActor: "ADMIN",
+            adminNotes: notes?.trim() || null,
+          },
+        },
+      });
+
+    }
 
     const updated = await tx.booking.update({
       where: { id: booking.id },
@@ -4571,6 +4841,44 @@ export type BookingDetailsData = {
     updatedAt: Date;
     resolutionNotes: string | null;
   }>;
+  payment?: {
+    id: string;
+    status: PaymentStatus;
+    provider: PaymentProvider;
+    providerPaymentId: string | null;
+    amount: number;
+    capturedAmount: number;
+    refundedAmount: number;
+    currency: string;
+    paymentMethod: string | null;
+    createdAt: Date;
+    capturedAt: Date | null;
+    voidedAt: Date | null;
+    failedAt: Date | null;
+    failureReason: string | null;
+  } | null;
+  paymentConfirmation?: {
+    status: string;
+    currency: string;
+  } | null;
+  refunds?: Array<{
+    id: string;
+    refundReference: string | null;
+    status: RefundStatus;
+    amount: number;
+    currency: string;
+    reason: string | null;
+    createdAt: string;
+    processedAt: string | null;
+    succeededAt: string | null;
+    failedAt: string | null;
+    failureReason: string | null;
+  }>;
+  refundConfirmation?: {
+    status: string;
+    totalRefunded: number;
+    currency: string;
+  } | null;
 };
 
 async function getBookingDetails(actor: AuthUser, id: string): Promise<BookingDetailsData> {
@@ -4637,6 +4945,16 @@ async function getBookingDetails(actor: AuthUser, id: string): Promise<BookingDe
           } as Prisma.InputJsonValue,
         },
       });
+      await prisma.bookingPayment.updateMany({
+        where: {
+          bookingId: b.id,
+          status: { in: [PaymentStatus.PENDING, PaymentStatus.AUTHORIZED] },
+        },
+        data: {
+          status: PaymentStatus.VOIDED,
+          voidedAt: new Date(),
+        },
+      });
       b.status = BookingStatus.CANCELLED;
       (b as any).priceBreakdown = {
         ...existingBreakdown,
@@ -4684,7 +5002,7 @@ async function getBookingDetails(actor: AuthUser, id: string): Promise<BookingDe
 
   const pricing = getAuthoritativePriceBreakdown(b);
 
-  const [conversation, guestDisputes] = await Promise.all([
+  const [conversation, guestDisputes, paymentRecord, bookingRefunds] = await Promise.all([
     prisma.conversation.findFirst({
       where: { bookingId: b.id },
       include: {
@@ -4711,6 +5029,14 @@ async function getBookingDetails(actor: AuthUser, id: string): Promise<BookingDe
           take: 20,
         })
       : Promise.resolve([]),
+    prisma.bookingPayment.findFirst({
+      where: { bookingId: b.id },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.bookingRefund.findMany({
+      where: { bookingId: b.id },
+      orderBy: { createdAt: "desc" },
+    }),
   ]);
 
   const timeline = getBookingStatusTimeline({
@@ -4831,6 +5157,50 @@ async function getBookingDetails(actor: AuthUser, id: string): Promise<BookingDe
         resolutionNotes: dispute.resolutionNotes,
       };
     }),
+    payment: (isGuest || isAdmin) && paymentRecord ? {
+      id: paymentRecord.id,
+      status: paymentRecord.status,
+      provider: paymentRecord.provider,
+      providerPaymentId: paymentRecord.providerPaymentId,
+      amount: paymentRecord.amount,
+      capturedAmount: paymentRecord.capturedAmount,
+      refundedAmount: paymentRecord.refundedAmount,
+      currency: paymentRecord.currency,
+      paymentMethod: paymentRecord.paymentMethod,
+      createdAt: paymentRecord.createdAt,
+      capturedAt: paymentRecord.capturedAt,
+      voidedAt: paymentRecord.voidedAt,
+      failedAt: paymentRecord.failedAt,
+      failureReason: paymentRecord.failureReason,
+    } : null,
+    paymentConfirmation: {
+      status: b.status === BookingStatus.CONFIRMED ? "PAID" : "PENDING",
+      currency: b.currency,
+    },
+    refunds: (isGuest || isAdmin)
+      ? bookingRefunds.map((r: any) => ({
+          id: r.id,
+          refundReference: r.refundReference,
+          status: r.status,
+          amount: r.amount,
+          currency: r.currency,
+          reason: r.reason,
+          createdAt: r.createdAt.toISOString(),
+          processedAt: r.processedAt?.toISOString() || null,
+          succeededAt: r.succeededAt?.toISOString() || null,
+          failedAt: r.failedAt?.toISOString() || null,
+          failureReason: r.failureReason || null,
+        }))
+      : [],
+    refundConfirmation: isHost && bookingRefunds.some((r: any) => r.status === RefundStatus.SUCCEEDED)
+      ? {
+          status: "REFUNDED",
+          totalRefunded: bookingRefunds
+            .filter((r: any) => r.status === RefundStatus.SUCCEEDED)
+            .reduce((acc: number, r: any) => acc + r.amount, 0),
+          currency: b.currency,
+        }
+      : null,
   };
 }
 

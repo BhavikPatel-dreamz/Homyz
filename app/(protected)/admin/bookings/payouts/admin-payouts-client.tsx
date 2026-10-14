@@ -12,6 +12,7 @@ interface PayoutItem {
   bookingId: string;
   startDate: string;
   endDate: string;
+  scheduledPayoutDate?: string;
   host: {
     id: string;
     name: string | null;
@@ -32,6 +33,19 @@ interface PayoutItem {
   status: string;
   settlementExecutionSupported: boolean;
   payoutAccountMasked: string;
+  holdDetails?: {
+    isHeld: boolean;
+    holdType?: string;
+    reason?: string;
+    heldBy?: string;
+    heldAt?: string;
+  } | null;
+  executionDetails?: {
+    status: string;
+    settlementReference: string;
+    amount: number;
+    executedAt: string;
+  } | null;
   createdAt: string;
 }
 
@@ -84,6 +98,14 @@ export function AdminPayoutsClient({
   const [loading, setLoading] = useState(false);
   const [selectedPayout, setSelectedPayout] = useState<PayoutItem | null>(null);
 
+  // Action states
+  const [actionLoading, setActionLoading] = useState(false);
+  const [holdModalOpen, setHoldModalOpen] = useState(false);
+  const [holdReason, setHoldReason] = useState("");
+  const [holdType, setHoldType] = useState("MANUAL_ADMIN_HOLD");
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [actionSuccess, setActionSuccess] = useState<string | null>(null);
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchInput);
@@ -103,11 +125,20 @@ export function AdminPayoutsClient({
         if (startDate) sp.set("startDate", startDate);
         if (endDate) sp.set("endDate", endDate);
 
-        const res = await fetch(`/api/v1/admin/bookings/payouts?${sp.toString()}`);
+        const [res, sumRes] = await Promise.all([
+          fetch(`/api/v1/admin/bookings/payouts?${sp.toString()}`),
+          fetch(`/api/v1/admin/bookings/payouts/summary`),
+        ]);
+
         const json = await res.json();
         const data = json.data ?? json;
         setPayouts(data.payouts || []);
         if (data.pagination) setPagination(data.pagination);
+
+        if (sumRes.ok) {
+          const sumJson = await sumRes.json();
+          setSummary(sumJson.data ?? sumJson);
+        }
       } catch (err) {
         console.error("[AdminPayoutsClient] Fetch error:", err);
       } finally {
@@ -160,6 +191,52 @@ export function AdminPayoutsClient({
     document.body.removeChild(link);
   };
 
+  const handleHoldPayout = async () => {
+    if (!selectedPayout || !holdReason.trim()) return;
+    setActionLoading(true);
+    setActionError(null);
+    try {
+      const res = await fetch(`/api/v1/admin/bookings/payouts/${selectedPayout.bookingId}/hold`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ holdType, reason: holdReason }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error?.message || "Failed to hold payout");
+      setActionSuccess("Payout successfully placed on hold.");
+      setHoldModalOpen(false);
+      setHoldReason("");
+      fetchPayouts(pagination.page);
+      setSelectedPayout(null);
+    } catch (err: any) {
+      setActionError(err.message || String(err));
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleReleasePayout = async () => {
+    if (!selectedPayout) return;
+    setActionLoading(true);
+    setActionError(null);
+    try {
+      const res = await fetch(`/api/v1/admin/bookings/payouts/${selectedPayout.bookingId}/release`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason: "Admin verified conditions met. Hold released." }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error?.message || "Failed to release payout hold");
+      setActionSuccess("Payout hold released successfully.");
+      fetchPayouts(pagination.page);
+      setSelectedPayout(null);
+    } catch (err: any) {
+      setActionError(err.message || String(err));
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-6 font-sans text-muted-foreground pb-20">
       {/* Header */}
@@ -188,6 +265,13 @@ export function AdminPayoutsClient({
           >
             <span>Refunds</span>
           </Link>
+          <a
+            href="/api/v1/admin/bookings/payouts/export"
+            download
+            className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-500/20 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all"
+          >
+            <span>SARIE Batch Export</span>
+          </a>
           <button
             type="button"
             onClick={exportCSV}
@@ -199,9 +283,23 @@ export function AdminPayoutsClient({
         </div>
       </div>
 
+      {actionSuccess && (
+        <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-xs flex justify-between items-center">
+          <span>{actionSuccess}</span>
+          <button onClick={() => setActionSuccess(null)} className="font-bold">✕</button>
+        </div>
+      )}
+
+      {actionError && (
+        <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-700 dark:text-rose-300 text-xs flex justify-between items-center">
+          <span>{actionError}</span>
+          <button onClick={() => setActionError(null)} className="font-bold">✕</button>
+        </div>
+      )}
+
       {/* Gateway Limitation Notice Callout */}
-      <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-800 text-xs flex items-start gap-3">
-        <svg className="w-5 h-5 shrink-0 mt-0.5 text-amber-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+      <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 text-xs flex items-start gap-3">
+        <svg className="w-5 h-5 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
         <div>
@@ -209,71 +307,91 @@ export function AdminPayoutsClient({
           <p className="mt-0.5">
             Automated direct bank wire execution is currently unconfigured in the payment gateway.
             The figures below reflect authoritative, verified platform earnings readiness derived from completed
-            stays and immutable booking price snapshots.
+            stays, verified payment captures, and immutable booking price snapshots.
           </p>
         </div>
       </div>
 
-      {/* 6 KPI Cards Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      {/* 8 KPI Cards Grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+        {/* 1. Total Paid Volume */}
         <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-2xs">
           <p className="text-2xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">
-            Verified Payouts
+            Total Paid Vol
           </p>
-          <p className="text-lg font-bold text-foreground mt-1">
-            {formatPrice(summary.totalVerifiedPayoutVolume / 100, summary.currency)}
+          <p className="text-base sm:text-lg font-bold text-foreground mt-1">
+            {formatPrice((summary.totalPaidVolume || 0) / 100, summary.currency)}
           </p>
-          <p className="text-2xs text-[var(--muted-foreground)] mt-0.5">{summary.totalVerifiedPayoutCount} stays</p>
         </div>
 
+        {/* 2. Total Paid Count */}
         <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-2xs">
           <p className="text-2xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">
-            Eligible Settlement
+            Total Paid Count
           </p>
-          <p className="text-lg font-bold text-emerald-600 mt-1">
+          <p className="text-base sm:text-lg font-bold text-foreground mt-1">
+            {summary.totalPaidCount || 0}
+          </p>
+        </div>
+
+        {/* 3. Eligible Settlement Volume */}
+        <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3.5 shadow-2xs">
+          <p className="text-2xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
+            Eligible Vol
+          </p>
+          <p className="text-base sm:text-lg font-bold text-emerald-600 dark:text-emerald-400 mt-1">
             {formatPrice(summary.eligibleSettlementVolume / 100, summary.currency)}
           </p>
-          <p className="text-2xs text-[var(--muted-foreground)] mt-0.5">{summary.eligibleSettlementCount} ready</p>
         </div>
 
-        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-2xs">
-          <p className="text-2xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">
-            Pending Stay
+        {/* 4. Eligible Settlement Count */}
+        <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3.5 shadow-2xs">
+          <p className="text-2xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
+            Eligible Count
           </p>
-          <p className="text-lg font-bold text-sky-600 mt-1">
+          <p className="text-base sm:text-lg font-bold text-emerald-600 dark:text-emerald-400 mt-1">
+            {summary.eligibleSettlementCount}
+          </p>
+        </div>
+
+        {/* 5. Scheduled / Pending Stay Volume */}
+        <div className="rounded-xl border border-sky-500/20 bg-sky-500/5 p-3.5 shadow-2xs">
+          <p className="text-2xs font-semibold text-sky-600 dark:text-sky-400 uppercase tracking-wider">
+            Pending Stay Vol
+          </p>
+          <p className="text-base sm:text-lg font-bold text-sky-600 dark:text-sky-400 mt-1">
             {formatPrice(summary.pendingStayVolume / 100, summary.currency)}
           </p>
-          <p className="text-2xs text-[var(--muted-foreground)] mt-0.5">{summary.pendingStayCount} upcoming</p>
         </div>
 
-        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-2xs">
-          <p className="text-2xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">
-            On Hold
+        {/* 6. Scheduled / Pending Stay Count */}
+        <div className="rounded-xl border border-sky-500/20 bg-sky-500/5 p-3.5 shadow-2xs">
+          <p className="text-2xs font-semibold text-sky-600 dark:text-sky-400 uppercase tracking-wider">
+            Pending Count
           </p>
-          <p className="text-lg font-bold text-amber-600 mt-1">
+          <p className="text-base sm:text-lg font-bold text-sky-600 dark:text-sky-400 mt-1">
+            {summary.pendingStayCount}
+          </p>
+        </div>
+
+        {/* 7. On Hold Volume */}
+        <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-3.5 shadow-2xs">
+          <p className="text-2xs font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
+            On Hold Vol
+          </p>
+          <p className="text-base sm:text-lg font-bold text-amber-600 dark:text-amber-400 mt-1">
             {formatPrice(summary.onHoldVolume / 100, summary.currency)}
           </p>
-          <p className="text-2xs text-[var(--muted-foreground)] mt-0.5">{summary.onHoldCount} held</p>
         </div>
 
-        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-2xs">
-          <p className="text-2xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider">
-            Platform Fees
+        {/* 8. On Hold Count */}
+        <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-3.5 shadow-2xs">
+          <p className="text-2xs font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
+            On Hold Count
           </p>
-          <p className="text-lg font-bold text-foreground mt-1">
-            {formatPrice(summary.platformCommissionVolume / 100, summary.currency)}
+          <p className="text-base sm:text-lg font-bold text-amber-600 dark:text-amber-400 mt-1">
+            {summary.onHoldCount}
           </p>
-          <p className="text-2xs text-[var(--muted-foreground)] mt-0.5">Retained</p>
-        </div>
-
-        <div className="rounded-xl border border-rose-200 bg-rose-50/50 dark:bg-rose-950/20 p-3.5 shadow-2xs">
-          <p className="text-2xs font-semibold text-rose-700 dark:text-rose-400 uppercase tracking-wider">
-            Requires Review
-          </p>
-          <p className="text-lg font-bold text-rose-700 dark:text-rose-300 mt-1">
-            {summary.payoutsRequiringReviewCount}
-          </p>
-          <p className="text-2xs text-rose-600/80 mt-0.5">Missing breakdown</p>
         </div>
       </div>
 
@@ -300,7 +418,8 @@ export function AdminPayoutsClient({
           >
             <option value="ALL">All Statuses</option>
             <option value="ELIGIBLE_SETTLEMENT">Eligible for Settlement</option>
-            <option value="PENDING_STAY">Pending Stay</option>
+            <option value="SCHEDULED">Scheduled</option>
+            <option value="PAID">Paid / Settled</option>
             <option value="ON_HOLD">On Hold</option>
             <option value="REQUIRES_REVIEW">Requires Review</option>
           </select>
@@ -376,9 +495,11 @@ export function AdminPayoutsClient({
                     <td className="py-3.5 px-4 whitespace-nowrap">
                       <span
                         className={`inline-flex items-center px-2 py-0.5 rounded-full text-2xs font-semibold ${
-                          p.status === "ELIGIBLE_SETTLEMENT"
+                          p.status === "PAID"
                             ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20"
-                            : p.status === "PENDING_STAY"
+                            : p.status === "ELIGIBLE_SETTLEMENT"
+                            ? "bg-teal-500/10 text-teal-600 border border-teal-500/20"
+                            : p.status === "SCHEDULED"
                             ? "bg-sky-500/10 text-sky-600 border border-sky-500/20"
                             : p.status === "ON_HOLD"
                             ? "bg-amber-500/10 text-amber-600 border border-amber-500/20"
@@ -394,7 +515,7 @@ export function AdminPayoutsClient({
                         onClick={() => setSelectedPayout(p)}
                         className="px-2.5 py-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] text-xs font-semibold text-foreground transition-all"
                       >
-                        Breakdown
+                        Breakdown & Actions
                       </button>
                     </td>
                   </tr>
@@ -429,10 +550,10 @@ export function AdminPayoutsClient({
         </div>
       </div>
 
-      {/* Payout Breakdown Modal with ModalOverlay */}
+      {/* Payout Breakdown & Actions Modal with ModalOverlay */}
       {selectedPayout && (
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="w-full max-w-lg rounded-2xl bg-[var(--surface)] border border-[var(--border)] p-6 shadow-xl space-y-4">
+          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-[var(--surface)] border border-[var(--border)] p-6 shadow-xl space-y-4">
             <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
               <h3 className="text-base font-bold text-foreground">Host Payout Breakdown</h3>
               <button
@@ -444,13 +565,20 @@ export function AdminPayoutsClient({
             </div>
 
             <div className="p-4 rounded-xl bg-[var(--surface-secondary)]/50 border border-[var(--border)]">
-              <span className="text-xs text-[var(--muted-foreground)] font-medium">Net Eligible Payout</span>
+              <span className="text-xs text-[var(--muted-foreground)] font-medium">Net Host Payout</span>
               <p className="text-3xl font-black text-foreground mt-1">
                 {formatPrice(selectedPayout.netPayout / 100, selectedPayout.currency)}
               </p>
-              <span className="text-2xs text-emerald-600 font-semibold block mt-1">
-                Status: {selectedPayout.status}
-              </span>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="text-2xs font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+                  Status: {selectedPayout.status}
+                </span>
+                {selectedPayout.holdDetails?.isHeld && (
+                  <span className="text-2xs font-semibold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 border border-amber-500/20">
+                    Hold: {selectedPayout.holdDetails.holdType}
+                  </span>
+                )}
+              </div>
             </div>
 
             <div className="divide-y divide-[var(--border)] border border-[var(--border)] rounded-xl text-xs overflow-hidden">
@@ -479,13 +607,102 @@ export function AdminPayoutsClient({
               <p>Property: {selectedPayout.listing?.title}</p>
               <p>Stay: {formatDate(selectedPayout.startDate)} to {formatDate(selectedPayout.endDate)}</p>
               <p>Payout Destination: {selectedPayout.payoutAccountMasked}</p>
+              {selectedPayout.executionDetails && (
+                <p className="font-mono text-emerald-600">
+                  Settlement Ref: {selectedPayout.executionDetails.settlementReference} ({formatDate(selectedPayout.executionDetails.executedAt)})
+                </p>
+              )}
             </div>
 
-            <div className="flex justify-end pt-3 border-t border-[var(--border)]">
+            {/* Hold Reason if on hold */}
+            {selectedPayout.holdDetails?.isHeld && (
+              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-2xs text-amber-800 dark:text-amber-300">
+                <p className="font-bold">Hold Reason:</p>
+                <p>{selectedPayout.holdDetails.reason}</p>
+                <p className="mt-1 text-3xs opacity-80">Held by: {selectedPayout.holdDetails.heldBy}</p>
+              </div>
+            )}
+
+            {/* Hold Form Modal Sub-section */}
+            {holdModalOpen && (
+              <div className="p-4 rounded-xl border border-amber-500/30 bg-amber-500/5 space-y-3">
+                <h4 className="text-xs font-bold text-foreground">Place Administrative Hold</h4>
+                <div>
+                  <label className="text-3xs font-semibold text-[var(--muted-foreground)] uppercase">Hold Type</label>
+                  <select
+                    value={holdType}
+                    onChange={(e) => setHoldType(e.target.value)}
+                    className="w-full mt-1 p-2 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-xs text-foreground"
+                  >
+                    <option value="MANUAL_ADMIN_HOLD">Manual Admin Hold</option>
+                    <option value="DISPUTE_HOLD">Dispute Hold</option>
+                    <option value="FRAUD_REVIEW">Fraud Review</option>
+                    <option value="COMPLIANCE_HOLD">Compliance Hold</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-3xs font-semibold text-[var(--muted-foreground)] uppercase">Mandatory Reason</label>
+                  <textarea
+                    value={holdReason}
+                    onChange={(e) => setHoldReason(e.target.value)}
+                    placeholder="State reason for hold..."
+                    rows={2}
+                    className="w-full mt-1 p-2 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-xs text-foreground placeholder:text-[var(--muted-foreground)]"
+                  />
+                </div>
+                <div className="flex justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setHoldModalOpen(false)}
+                    className="px-3 py-1.5 rounded-lg border border-[var(--border)] text-xs font-semibold"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleHoldPayout}
+                    disabled={!holdReason.trim() || actionLoading}
+                    className="px-3 py-1.5 rounded-lg bg-amber-600 text-white text-xs font-semibold disabled:opacity-50"
+                  >
+                    {actionLoading ? "Holding..." : "Confirm Hold"}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-[var(--border)]">
+              <div className="flex items-center gap-2">
+                {selectedPayout.status === "ON_HOLD" ? (
+                  <button
+                    type="button"
+                    onClick={handleReleasePayout}
+                    disabled={actionLoading}
+                    className="px-3 py-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-xs font-semibold hover:bg-emerald-500/20 disabled:opacity-50"
+                  >
+                    {actionLoading ? "Releasing..." : "Release Hold"}
+                  </button>
+                ) : selectedPayout.status !== "PAID" && !holdModalOpen ? (
+                  <button
+                    type="button"
+                    onClick={() => setHoldModalOpen(true)}
+                    className="px-3 py-1.5 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-xs font-semibold hover:bg-amber-500/20"
+                  >
+                    Place Hold
+                  </button>
+                ) : null}
+
+                {selectedPayout.status === "ELIGIBLE_SETTLEMENT" && !selectedPayout.settlementExecutionSupported && (
+                  <span className="max-w-56 text-2xs text-amber-700 dark:text-amber-300">
+                    Eligible for bank-batch preparation. Settlement remains unverified until an approved bank-confirmation integration is configured.
+                  </span>
+                )}
+              </div>
+
               <button
                 type="button"
                 onClick={() => setSelectedPayout(null)}
-                className="px-4 py-2 rounded-xl bg-[var(--primary)] text-primary-foreground text-xs font-semibold"
+                className="px-4 py-2 rounded-xl bg-[var(--surface-secondary)] text-foreground text-xs font-semibold hover:bg-[var(--surface)] border border-[var(--border)]"
               >
                 Close
               </button>
@@ -496,4 +713,3 @@ export function AdminPayoutsClient({
     </div>
   );
 }
-
