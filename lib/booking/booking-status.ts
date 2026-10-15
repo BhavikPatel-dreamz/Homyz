@@ -84,8 +84,8 @@ export function calculateCalendarNights(startDate: Date | string, endDate: Date 
   return differenceInBookingNights(startDate, endDate);
 }
 
-/** 30-day review period after checkout for completed stays. */
-export const REVIEW_WINDOW_DAYS = 30;
+/** 14-day review period after checkout for completed stays per Airbnb review policy. */
+export const REVIEW_WINDOW_DAYS = 14;
 
 /** Arrival info & access codes released 48 hours prior to check-in for confirmed guests. */
 export const ARRIVAL_RELEASE_HOURS = 48;

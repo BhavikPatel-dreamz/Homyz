@@ -62,6 +62,7 @@ export function toReservationCardData(booking: BookingDTO, guestName: string = "
     isToday: isStayToday(booking.startDate, booking.endDate),
     cancellationPolicy: booking.cancellationPolicy,
     isNonRefundable: Boolean(booking.isNonRefundable),
+    reviewStatus: booking.reviewStatus,
     totalPrice: booking.totalPrice,
     currency: booking.currency,
     createdAt: booking.createdAt,

@@ -118,6 +118,18 @@ export const PERMISSIONS = {
   REVIEWS_MODERATE: "reviews.moderate",
   REVIEWS_DELETE: "reviews.delete",
 
+  // Central content moderation
+  MODERATION_REPORT_CREATE: "moderation.report.create",
+  MODERATION_CASE_READ: "moderation.case.read",
+  MODERATION_CASE_ASSIGN: "moderation.case.assign",
+  MODERATION_CASE_UPDATE: "moderation.case.update",
+  MODERATION_EVIDENCE_READ: "moderation.evidence.read",
+  MODERATION_EVIDENCE_ADD: "moderation.evidence.add",
+  MODERATION_DECISION_CREATE: "moderation.decision.create",
+  MODERATION_AUDIT_READ: "moderation.audit.read",
+  MODERATION_POLICY_MANAGE: "moderation.policy.manage",
+  MODERATION_ENFORCEMENT_EXECUTE: "moderation.enforcement.execute",
+
   // Audit & Security Logs
   ACTIVITY_LOGS_VIEW: "activity_logs.view",
   ACTIVITY_LOGS_EXPORT: "activity_logs.export",
@@ -241,6 +253,18 @@ export const ALL_PERMISSIONS: PermissionDefinition[] = [
   { slug: PERMISSIONS.REVIEWS_MODERATE, module: "Reviews", action: "Moderate", description: "Moderate or approve user reviews" },
   { slug: PERMISSIONS.REVIEWS_DELETE, module: "Reviews", action: "Delete", description: "Delete or hide inappropriate reviews" },
 
+  // Central content moderation
+  { slug: PERMISSIONS.MODERATION_REPORT_CREATE, module: "Moderation", action: "Create Reports", description: "Submit valid reports about supported content" },
+  { slug: PERMISSIONS.MODERATION_CASE_READ, module: "Moderation", action: "Read Cases", description: "Read content moderation cases and permitted reports" },
+  { slug: PERMISSIONS.MODERATION_CASE_ASSIGN, module: "Moderation", action: "Assign Cases", description: "Assign content moderation cases to moderators" },
+  { slug: PERMISSIONS.MODERATION_CASE_UPDATE, module: "Moderation", action: "Update Cases", description: "Update content moderation case status, severity, and priority" },
+  { slug: PERMISSIONS.MODERATION_EVIDENCE_READ, module: "Moderation", action: "Read Evidence", description: "Read private moderation evidence" },
+  { slug: PERMISSIONS.MODERATION_EVIDENCE_ADD, module: "Moderation", action: "Add Evidence", description: "Attach approved references to moderation cases" },
+  { slug: PERMISSIONS.MODERATION_DECISION_CREATE, module: "Moderation", action: "Record Decision", description: "Record moderation decisions without executing enforcement" },
+  { slug: PERMISSIONS.MODERATION_AUDIT_READ, module: "Moderation", action: "Read Activity", description: "Read moderation case activity history" },
+  { slug: PERMISSIONS.MODERATION_POLICY_MANAGE, module: "Moderation", action: "Manage Policy", description: "Manage approved moderation policy configuration" },
+  { slug: PERMISSIONS.MODERATION_ENFORCEMENT_EXECUTE, module: "Moderation", action: "Execute Enforcement", description: "Execute separately approved moderation enforcement" },
+
   // Audit Logs Module
   { slug: PERMISSIONS.ACTIVITY_LOGS_VIEW, module: "Audit Logs", action: "View", description: "View platform audit and activity logs" },
   { slug: PERMISSIONS.ACTIVITY_LOGS_EXPORT, module: "Audit Logs", action: "Export", description: "Export audit log records" },
@@ -318,6 +342,14 @@ export const PERMISSION_DEPENDENCIES: Record<string, string[]> = {
   // Reviews
   [PERMISSIONS.REVIEWS_MODERATE]: [PERMISSIONS.REVIEWS_VIEW],
   [PERMISSIONS.REVIEWS_DELETE]: [PERMISSIONS.REVIEWS_VIEW],
+
+  // Moderation
+  [PERMISSIONS.MODERATION_CASE_ASSIGN]: [PERMISSIONS.MODERATION_CASE_READ],
+  [PERMISSIONS.MODERATION_CASE_UPDATE]: [PERMISSIONS.MODERATION_CASE_READ],
+  [PERMISSIONS.MODERATION_EVIDENCE_READ]: [PERMISSIONS.MODERATION_CASE_READ],
+  [PERMISSIONS.MODERATION_EVIDENCE_ADD]: [PERMISSIONS.MODERATION_CASE_READ],
+  [PERMISSIONS.MODERATION_DECISION_CREATE]: [PERMISSIONS.MODERATION_CASE_UPDATE],
+  [PERMISSIONS.MODERATION_AUDIT_READ]: [PERMISSIONS.MODERATION_CASE_READ],
 
   // Admin Management
   [PERMISSIONS.ADMINS_CREATE]: [PERMISSIONS.ADMINS_VIEW],

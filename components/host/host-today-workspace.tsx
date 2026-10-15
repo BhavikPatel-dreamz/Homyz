@@ -545,9 +545,9 @@ export function HostTodayWorkspace({
               {Array.from({ length: 4 }).map((_, i) => (
                 <div
                   key={i}
-                  className="relative flex min-h-[330px] w-full min-w-0 flex-col items-center justify-center rounded-[12px] border border-zinc-100 px-4 py-8 sm:min-h-[362px] sm:rounded-[20px] bg-white shadow-[0_1px_5px_rgba(0,0,0,0.1)]"
+                  className="relative flex min-h-[386px] w-full min-w-0 flex-col items-center justify-center rounded-[12px] border border-zinc-100 px-4 py-7 sm:min-h-[416px] sm:rounded-[20px] bg-white shadow-[0_1px_5px_rgba(0,0,0,0.1)]"
                 >
-                  <div className="relative flex w-[170px] flex-col items-center gap-[28px] sm:gap-[32px]">
+                  <div className="relative flex w-[min(100%,190px)] flex-col items-center gap-5 sm:gap-6">
                     <div className="flex flex-col items-center gap-2">
                       <div className="h-5 w-24 rounded-md skeleton-shimmer" />
                       <div className="h-4 w-32 rounded-md skeleton-shimmer" />
@@ -560,7 +560,7 @@ export function HostTodayWorkspace({
                       <div className="h-3.5 w-3/4 rounded-md skeleton-shimmer" />
                       <div className="h-3 w-1/2 rounded-md skeleton-shimmer" />
                     </div>
-                    <div className="size-8 rounded-full skeleton-shimmer" />
+                    <div className="h-10 w-full rounded-xl skeleton-shimmer" />
                   </div>
                 </div>
               ))}

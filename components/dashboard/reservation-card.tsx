@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { formatBookingDateRange } from "@/lib/booking/booking-date";
+import { bookingDateEpoch, formatBookingDateRange } from "@/lib/booking/booking-date";
 import { useLanguage } from "@/lib/i18n/language-context";
 
 export interface ReservationCardData {
@@ -24,6 +24,7 @@ export interface ReservationCardData {
   isToday?: boolean;
   cancellationPolicy?: string | null;
   isNonRefundable?: boolean;
+  reviewStatus?: string | null;
   totalPrice?: number | null;
   currency?: string;
   createdAt?: Date | string;
@@ -95,6 +96,20 @@ export function ReservationCard({
   const title = data.propertyName || "Property stay";
   const isCompactVariant = variant === "past" || variant === "compact";
   const detailsHref = href || `/bookings/${data.id}`;
+  const isCompletedStay =
+    (data.status || "").toUpperCase() === "COMPLETED" ||
+    ((data.status || "").toUpperCase() === "CONFIRMED" &&
+      bookingDateEpoch(data.endDate) < bookingDateEpoch(new Date()));
+  const reviewStatus = data.reviewStatus?.toUpperCase();
+  const reviewSubmitted = Boolean(reviewStatus);
+  const reviewMessage =
+    reviewStatus === "PUBLISHED"
+      ? "Review submitted"
+      : reviewStatus === "PRIVATE"
+        ? "Review submitted · awaiting host"
+        : reviewStatus === "HIDDEN" || reviewStatus === "DELETED"
+          ? "Review unavailable"
+          : "Review submitted";
   return (
     <article
       className={isCompactVariant
@@ -164,14 +179,43 @@ export function ReservationCard({
             {t("booking_details_booking_ref_short", { code: data.id.slice(-8).toUpperCase() }, `Booking #${data.id.slice(-8).toUpperCase()}`)}
           </p>
 
-
-
-          {/* <Link
-            href={detailsHref}
-            className="mt-3 inline-flex min-h-11 items-center text-sm font-semibold text-[#1F1F1F] underline underline-offset-4"
-          >
-            View details
-          </Link> */}
+          <div className={`${isCompactVariant ? "mt-3" : "mt-4 border-t border-zinc-100 pt-3"}`}>
+            {reviewSubmitted ? (
+              <Link
+                href={detailsHref}
+                className="flex min-h-10 w-full items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 text-center text-[11px] font-semibold text-emerald-800 transition-colors hover:bg-emerald-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1F1F1F]"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="m5 12 4 4L19 6" />
+                </svg>
+                {reviewMessage}
+              </Link>
+            ) : isCompletedStay ? (
+              <Link
+                href={`/bookings/${data.id}/review`}
+                className={`flex min-h-10 w-full items-center justify-center gap-2 rounded-xl px-3 text-center text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1F1F1F] ${
+                  isCompactVariant
+                    ? "border border-[#1F1F1F] bg-white text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white"
+                    : "bg-[#1F1F1F] text-white hover:bg-zinc-700"
+                }`}
+                aria-label={`Review your stay at ${title}`}
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M12 20h9" />
+                  <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                </svg>
+                Review your stay
+              </Link>
+            ) : (
+              <div className="flex min-h-10 items-center justify-center gap-2 rounded-xl bg-zinc-50 px-3 text-center text-[11px] font-medium leading-4 text-[#727272]">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0">
+                  <path d="M12 8v4l2.5 2.5" />
+                  <circle cx="12" cy="12" r="9" />
+                </svg>
+                Review available after checkout
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </article>

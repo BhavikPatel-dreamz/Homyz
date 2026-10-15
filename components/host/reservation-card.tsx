@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { PropertyPhoto } from "./host-workspace-shared";
 import type { OperationalEvent } from "@/lib/booking/host-reservation-events";
 import type { ListingDTO } from "@/services/mappers";
@@ -22,6 +23,21 @@ export function ReservationCard({
     ? booking.guestName.charAt(0).toUpperCase()
     : "G";
   const guestCount = booking.guests || 1;
+  const reviewStatus = booking.hostReviewStatus?.toUpperCase();
+  const hasSubmittedReview = Boolean(reviewStatus);
+  const canReviewGuest = event.eventType === "completed" && !hasSubmittedReview;
+  const reviewAvailabilityMessage =
+    event.eventType === "cancelled"
+      ? "Reviews are unavailable for cancelled reservations"
+      : event.eventType === "pending"
+        ? "Review the guest after their stay is complete"
+        : "Guest review available after checkout";
+  const submittedReviewMessage =
+    reviewStatus === "PUBLISHED"
+      ? "Review submitted"
+      : reviewStatus === "PRIVATE"
+        ? "Review submitted · awaiting guest"
+        : "Review submitted";
 
   return (
     <div
@@ -36,7 +52,7 @@ export function ReservationCard({
         }
       }}
       aria-current={isActive ? "true" : undefined}
-      className={`group relative flex min-h-[330px] w-full min-w-0 cursor-pointer select-none flex-col items-center justify-center rounded-[12px] border border-zinc-100 px-4 py-8 font-sans transition-colors duration-300 ease-in-out focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#1F1F1F] sm:min-h-[362px] sm:rounded-[20px] ${
+      className={`group relative flex min-h-[386px] w-full min-w-0 cursor-pointer select-none flex-col items-center justify-center rounded-[12px] border border-zinc-100 px-4 py-7 font-sans transition-colors duration-300 ease-in-out focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#1F1F1F] sm:min-h-[416px] sm:rounded-[20px] ${
         isActive
           ? "bg-[#FCDF9C]"
           : selected
@@ -51,7 +67,7 @@ export function ReservationCard({
         </span>
       )}
 
-      <div className="relative flex w-[170px] flex-col items-center gap-[28px] sm:gap-[32px]">
+      <div className="relative flex w-[min(100%,190px)] flex-col items-center gap-5 sm:gap-6">
         <div className="flex flex-col items-center justify-center text-center">
           <span className="font-sans text-[16px] leading-[24px] font-medium text-[#1F1F1F]">
             {event.timeDisplay}
@@ -70,7 +86,7 @@ export function ReservationCard({
           )}
         </div>
 
-        <div className="flex w-[170px] flex-col items-center gap-[10px] sm:gap-[12px]">
+        <div className="flex w-full flex-col items-center gap-[10px] sm:gap-[12px]">
           <div className="relative flex flex-col items-center">
             <div className="h-[110px] w-[149.79px] overflow-hidden rounded-[23px] border border-[#1F1F1F] transition-all duration-300 ease-in-out">
               <PropertyPhoto
@@ -153,6 +169,38 @@ export function ReservationCard({
                 strokeLinejoin="round"
               />
             </svg>
+          </div>
+
+          <div className="mt-1 w-full border-t border-black/10 pt-3">
+            {hasSubmittedReview ? (
+              <div className="flex min-h-10 items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 text-center text-[11px] font-semibold leading-4 text-emerald-800">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0">
+                  <path d="m5 12 4 4L19 6" />
+                </svg>
+                {submittedReviewMessage}
+              </div>
+            ) : canReviewGuest ? (
+              <Link
+                href={`/host/reviews/${booking.id}`}
+                onClick={(clickEvent) => clickEvent.stopPropagation()}
+                className="flex min-h-10 w-full items-center justify-center gap-2 rounded-xl bg-[#1F1F1F] px-3 text-center text-xs font-semibold text-white transition-colors hover:bg-zinc-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1F1F1F]"
+                aria-label={`Review ${booking.guestName || "guest"}`}
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M12 20h9" />
+                  <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                </svg>
+                Review guest
+              </Link>
+            ) : (
+              <div className="flex min-h-10 items-center justify-center gap-2 rounded-xl bg-white/55 px-3 text-center text-[11px] font-medium leading-4 text-[#5E5E5E]">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0">
+                  <path d="M12 8v4l2.5 2.5" />
+                  <circle cx="12" cy="12" r="9" />
+                </svg>
+                {reviewAvailabilityMessage}
+              </div>
+            )}
           </div>
         </div>
       </div>

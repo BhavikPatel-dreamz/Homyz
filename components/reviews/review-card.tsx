@@ -3,11 +3,14 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useLanguage } from "@/lib/i18n/language-context";
+import { ReportContentModal } from "@/components/moderation/report-content-modal";
 
 export interface ReviewCardProps {
   id: string;
   rating: number;
   comment: string;
+  bookingId?: string | null;
+  canReport?: boolean;
   author: {
     id: string;
     name: string | null;
@@ -79,6 +82,8 @@ export function ReviewCard({
   id,
   rating,
   comment,
+  bookingId,
+  canReport = true,
   author,
   createdAt,
   hostResponse,
@@ -89,6 +94,7 @@ export function ReviewCard({
   const formatRelativeDate = useRelativeDate();
   const [isExpanded, setIsExpanded] = useState(false);
   const [imageFailed, setImageFailed] = useState(false);
+  const [isReportOpen, setIsReportOpen] = useState(false);
 
   const name = author?.name?.trim() || "Guest";
   const initial = name.charAt(0).toUpperCase();
@@ -100,26 +106,42 @@ export function ReviewCard({
   return (
     <article id={`review-${id}`} className="min-w-0 break-words">
       {/* Reviewer Header: Avatar + Name + Membership metadata */}
-      <div className="flex items-center gap-3">
-        <div className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-zinc-200 text-sm font-semibold text-zinc-800">
-          {author?.image && !imageFailed ? (
-            // eslint-disable-next-line @next/next/no-img-element -- reviewer avatars can be remote user media.
-            <img
-              src={author.image}
-              alt=""
-              className="h-full w-full object-cover"
-              onError={() => setImageFailed(true)}
-            />
-          ) : (
-            initial
-          )}
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-zinc-200 text-sm font-semibold text-zinc-800">
+            {author?.image && !imageFailed ? (
+              // eslint-disable-next-line @next/next/no-img-element -- reviewer avatars can be remote user media.
+              <img
+                src={author.image}
+                alt=""
+                className="h-full w-full object-cover"
+                onError={() => setImageFailed(true)}
+              />
+            ) : (
+              initial
+            )}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-base font-semibold text-[#1f1f1f]">{name}</p>
+            {membershipInfo && (
+              <p className="truncate text-xs text-[#727272]">{membershipInfo}</p>
+            )}
+          </div>
         </div>
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-base font-semibold text-[#1f1f1f]">{name}</p>
-          {membershipInfo && (
-            <p className="truncate text-xs text-[#727272]">{membershipInfo}</p>
-          )}
-        </div>
+
+        {canReport && (
+          <button
+            type="button"
+            onClick={() => setIsReportOpen(true)}
+            title="Report this review"
+            aria-label="Report this review"
+            className="rounded-full p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 transition-colors"
+          >
+            <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
+            </svg>
+          </button>
+        )}
       </div>
 
       {/* Star Rating & Review Date */}
@@ -215,6 +237,17 @@ export function ReviewCard({
             {hostResponse.comment}
           </p>
         </div>
+      )}
+
+      {isReportOpen && (
+        <ReportContentModal
+          isOpen={isReportOpen}
+          onClose={() => setIsReportOpen(false)}
+          targetType="REVIEW"
+          targetId={id}
+          targetTitle={comment.slice(0, 60)}
+          relatedBookingId={bookingId || undefined}
+        />
       )}
     </article>
   );

@@ -1,7 +1,7 @@
 "use client";
 
 import { ModalOverlay } from "@/components/ui/modal-overlay";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -29,6 +29,10 @@ const ROUTE_NAV_KEY: Array<{ prefix: string; key: string; exact?: boolean }> = [
   { prefix: "/admin/bookings/disputes",      key: "disputes" },
   { prefix: "/admin/bookings/communications",key: "communications" },
   { prefix: "/admin/bookings/notifications", key: "notifications" },
+  { prefix: "/admin/moderation/reviews",           key: "moderation-reviews" },
+  { prefix: "/admin/moderation/reported-listings", key: "moderation-listings" },
+  { prefix: "/admin/moderation/media",             key: "moderation-media" },
+  { prefix: "/admin/moderation",                   key: "moderation" },
   // Insights
   { prefix: "/admin/bookings/analytics",     key: "analytics" },
   { prefix: "/admin/bookings/reports",       key: "reports" },
@@ -135,11 +139,7 @@ export function AdminSidebar({
 
   // Bookings submenu expanded state — auto-expands when on a booking child route
   const [bookingsOpen, setBookingsOpen] = useState<boolean>(isBookingsActive);
-
-  // Keep bookings open when navigating to any booking child page
-  useEffect(() => {
-    if (isBookingsActive) setBookingsOpen(true);
-  }, [isBookingsActive]);
+  const resolvedBookingsOpen = bookingsOpen || isBookingsActive;
 
   const toggleGroup = (groupName: string) => {
     setOpenGroups((prev) => ({ ...prev, [groupName]: !prev[groupName] }));
@@ -329,6 +329,50 @@ export function AdminSidebar({
           icon: (
             <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          ),
+        },
+        {
+          key: "moderation",
+          label: "Moderation",
+          href: "/admin/moderation",
+          requiredPermission: PERMISSIONS.MODERATION_CASE_READ,
+          icon: (
+            <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 3l8 4v5c0 5-3.4 8.8-8 10-4.6-1.2-8-5-8-10V7l8-4zm-2.5 9 1.7 1.7 3.8-4" />
+            </svg>
+          ),
+        },
+        {
+          key: "moderation-reviews",
+          label: "Reviews",
+          href: "/admin/moderation/reviews",
+          requiredPermission: PERMISSIONS.REVIEWS_VIEW,
+          icon: (
+            <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+            </svg>
+          ),
+        },
+        {
+          key: "moderation-listings",
+          label: "Reported Listings",
+          href: "/admin/moderation/reported-listings",
+          requiredPermission: PERMISSIONS.MODERATION_CASE_READ,
+          icon: (
+            <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+          ),
+        },
+        {
+          key: "moderation-media",
+          label: "Media Moderation",
+          href: "/admin/moderation/media",
+          requiredPermission: PERMISSIONS.MODERATION_CASE_READ,
+          icon: (
+            <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
           ),
         },
@@ -540,7 +584,7 @@ export function AdminSidebar({
           </Link>
           <button
             type="button"
-            aria-expanded={bookingsOpen}
+            aria-expanded={resolvedBookingsOpen}
             aria-label="Toggle Bookings submenu"
             onClick={(e) => {
               e.preventDefault();
@@ -549,7 +593,7 @@ export function AdminSidebar({
             className="flex items-center justify-center h-5 w-5 shrink-0 rounded hover:bg-black/10 dark:hover:bg-white/10 transition-colors text-muted-foreground hover:text-foreground"
           >
             <svg
-              className={`w-3 h-3 transition-transform duration-200 ${bookingsOpen ? "rotate-180" : ""}`}
+              className={`w-3 h-3 transition-transform duration-200 ${resolvedBookingsOpen ? "rotate-180" : ""}`}
               fill="none"
               stroke="currentColor"
               strokeWidth="2.5"
@@ -561,7 +605,7 @@ export function AdminSidebar({
         </div>
 
         {/* Children */}
-        {bookingsOpen && (
+        {resolvedBookingsOpen && (
           <div className="flex flex-col gap-0.5 mt-0.5 border-l border-[var(--border)] ml-4 pl-2">
             {item.children.map((child) => renderNavItem(child, true))}
           </div>
@@ -617,7 +661,7 @@ export function AdminSidebar({
         </div>
 
         {/* Navigation Groups */}
-        <div className="flex flex-col gap-4 px-3 overflow-y-auto max-h-[calc(100vh-140px)] scrollbar-none">
+        <div className="flex flex-col gap-1.5 px-3 overflow-y-auto max-h-[calc(100vh-140px)] scrollbar-none">
           {filteredNavGroups.map((group) => {
             const isOpen = openGroups[group.name] ?? true;
 

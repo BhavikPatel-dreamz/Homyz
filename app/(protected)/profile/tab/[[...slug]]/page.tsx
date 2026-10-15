@@ -32,6 +32,11 @@ export default async function ProfileTabPage({
     redirect("/messages");
   }
 
+  // Canonicalize reports tab to /profile/reports
+  if (slug[0] === "reports") {
+    redirect("/profile/reports");
+  }
+
 
   const bookingView = typeof resolvedSearchParams?.bookingView === "string"
     ? resolvedSearchParams.bookingView
