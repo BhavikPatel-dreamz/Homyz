@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useRef, useState, useCallback } from "react"
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
+import { ReportContentModal } from "@/components/moderation/report-content-modal";
 import { trackListingEvent } from "@/lib/analytics/listing-analytics";
 import { useLanguage } from "@/lib/i18n/language-context";
 
@@ -27,6 +28,7 @@ export function ListingGallery({ photos, listingTitle, onShare, onSave, isSaved 
   );
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [reportingPhotoUrl, setReportingPhotoUrl] = useState<string | null>(null);
 
   const handleOpenLightbox = useCallback(() => {
     setLightboxOpen(true);
@@ -271,6 +273,17 @@ export function ListingGallery({ photos, listingTitle, onShare, onSave, isSaved 
             <div className="flex items-center justify-between text-white sticky top-0 bg-black/60 backdrop-blur-md py-3 px-2 z-10">
               <span className="font-semibold text-sm">{selectedIndex + 1} / {total}</span>
               <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setReportingPhotoUrl(galleryPhotos[selectedIndex])}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-xs font-medium text-white hover:bg-white/20 transition"
+                  aria-label="Report this photo"
+                >
+                  <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
+                  </svg>
+                  Report photo
+                </button>
                 <button type="button" aria-label="Previous photo" disabled={!canGoPrevious} onClick={goToPrevious} className="px-3 py-2 disabled:opacity-35">←</button>
                 <button type="button" aria-label="Next photo" disabled={!canGoNext} onClick={goToNext} className="px-3 py-2 disabled:opacity-35">→</button>
                 <button aria-label="Close gallery" onClick={() => setLightboxOpen(false)} className="px-3 py-2">✕</button>
@@ -310,6 +323,16 @@ export function ListingGallery({ photos, listingTitle, onShare, onSave, isSaved 
             </div>
           </div>
         </ModalOverlay>
+      )}
+
+      {reportingPhotoUrl && (
+        <ReportContentModal
+          isOpen={Boolean(reportingPhotoUrl)}
+          onClose={() => setReportingPhotoUrl(null)}
+          targetType="LISTING_PHOTO"
+          targetId={reportingPhotoUrl}
+          targetTitle={`${listingTitle ? `${listingTitle} — ` : ""}Photo ${selectedIndex + 1}`}
+        />
       )}
     </div>
   );

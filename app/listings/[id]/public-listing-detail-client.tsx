@@ -10,6 +10,7 @@ import { AppHeader } from "@/components/dashboard/app-header";
 import { Footer } from "@/components/dashboard/footer";
 import { Container } from "@/components/ui";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
+import { ReportContentModal } from "@/components/moderation/report-content-modal";
 import ListingGallery from "@/components/listings/listing-gallery";
 import { AmenityIcon } from "@/components/ui/amenity-icon";
 import { CANONICAL_AMENITIES, searchAmenitiesCatalog, getAmenityTranslationKey } from "@/lib/constants/amenities";
@@ -612,6 +613,49 @@ export function PublicListingDetailClient({
   const [inquiryMessage, setInquiryMessage] = useState("");
   const [inquirySending, setInquirySending] = useState(false);
   const [inquiryError, setInquiryError] = useState<string | null>(null);
+  const [isReportListingOpen, setIsReportListingOpen] = useState(false);
+  const [isReportLoginOpen, setIsReportLoginOpen] = useState(false);
+  const [openReportAfterAuthentication, setOpenReportAfterAuthentication] = useState(false);
+
+  const buildReportListingCallbackUrl = () => {
+    const params = new URLSearchParams(searchParams?.toString());
+    params.set("reportListing", "1");
+    const query = params.toString();
+    return `${window.location.pathname}${query ? `?${query}` : ""}`;
+  };
+
+  const handleReportListing = () => {
+    if (isAuthenticated) {
+      setIsReportListingOpen(true);
+      return;
+    }
+
+    setOpenReportAfterAuthentication(true);
+    setIsReportLoginOpen(true);
+  };
+
+  const handleContinueToLoginForReport = () => {
+    setIsReportLoginOpen(false);
+    router.push(`/login?callbackUrl=${encodeURIComponent(buildReportListingCallbackUrl())}`);
+  };
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    if (openReportAfterAuthentication) {
+      setIsReportLoginOpen(false);
+      setIsReportListingOpen(true);
+      setOpenReportAfterAuthentication(false);
+    }
+
+    if (searchParams?.get("reportListing") === "1") {
+      setIsReportListingOpen(true);
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("reportListing");
+      const query = params.toString();
+      router.replace(`${window.location.pathname}${query ? `?${query}` : ""}`);
+    }
+  }, [isAuthenticated, openReportAfterAuthentication, router, searchParams]);
 
   const maximumGuests = Math.max(1, listing.guests || 1);
 
@@ -1860,10 +1904,16 @@ export function PublicListingDetailClient({
                       <div className="px-5 py-4 text-center"><p className="text-2xl font-medium leading-none">{reviewRating.toFixed(2)}</p><p className="mt-2 text-sm tracking-[0.08em] text-[#e9a400]">★★★★★</p></div>
                       <div className="border-l border-[#a9a9a9] px-5 py-4 text-center"><p className="text-2xl font-medium leading-none">{reviewCount}</p><p className="mt-2 text-sm text-[#1f1f1f]">{reviewCount === 1 ? t("listing_detail_review_one", "Review") : t("listing_detail_review_many", "Reviews")}</p></div>
                     </div>
-                    <a href={`mailto:support@homyz.com?subject=${encodeURIComponent(`Report listing: ${listing.title}`)}`} className="flex items-center justify-center gap-3 py-2 text-sm text-[#1f1f1f] underline underline-offset-2">
-                      <span className="flex size-9 items-center justify-center rounded-full border border-[#1F1F1F]"><Image src="/images/icons/report-icon.svg" alt="" width={16} height={16} className="size-4" /></span>
+                    <button
+                      type="button"
+                      onClick={handleReportListing}
+                      className="flex items-center justify-center gap-3 py-2 text-sm text-[#1f1f1f] underline underline-offset-2 hover:text-[#727272] transition-colors"
+                    >
+                      <span className="flex size-9 items-center justify-center rounded-full border border-[#1F1F1F]">
+                        <Image src="/images/icons/report-icon.svg" alt="" width={16} height={16} className="size-4" />
+                      </span>
                       {t("listing_detail_report", "Report this listing")}
-                    </a>
+                    </button>
                   </section>
                 )}
 
@@ -2378,12 +2428,16 @@ export function PublicListingDetailClient({
                       </>
                     )}
                   </div>
-                  <a href={`mailto:support@homyz.com?subject=${encodeURIComponent(`Report listing: ${listing.title}`)}`} className="mx-auto flex items-center justify-center gap-4 text-base text-[#1f1f1f] underline underline-offset-2 hover:text-[#727272] group">
+                  <button
+                    type="button"
+                    onClick={handleReportListing}
+                    className="mx-auto flex items-center justify-center gap-4 text-base text-[#1f1f1f] underline underline-offset-2 hover:text-[#727272] group transition-colors"
+                  >
                     <span className="flex size-10 shrink-0 items-center justify-center rounded-full border border-[#1F1F1F] no-underline group-hover:border-[#727272]">
                       <Image src="/images/icons/report-icon.svg" alt="" width={18} height={18} className="size-4.5" />
                     </span>
                     {t("listing_detail_report", "Report this listing")}
-                  </a>
+                  </button>
                 </div>
               </div>
             </div>
@@ -2862,6 +2916,76 @@ export function PublicListingDetailClient({
           </div>
         </div>
       </div>
+
+      {isReportListingOpen && (
+        <ReportContentModal
+          isOpen={isReportListingOpen}
+          onClose={() => setIsReportListingOpen(false)}
+          targetType="LISTING"
+          targetId={listing.id}
+          targetTitle={listing.title}
+        />
+      )}
+
+      {isReportLoginOpen && (
+        <ModalOverlay
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="report-login-modal-title"
+          aria-describedby="report-login-modal-description"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setIsReportLoginOpen(false);
+              setOpenReportAfterAuthentication(false);
+            }
+          }}
+        >
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl sm:p-7">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2 id="report-login-modal-title" className="text-xl font-semibold text-[#1f1f1f]">
+                  Sign in to report this listing
+                </h2>
+                <p id="report-login-modal-description" className="mt-2 text-sm leading-6 text-[#727272]">
+                  Please sign in or create an account before submitting a report. We&apos;ll bring you back to this form afterward.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsReportLoginOpen(false);
+                  setOpenReportAfterAuthentication(false);
+                }}
+                aria-label="Close sign-in prompt"
+                className="flex size-8 shrink-0 items-center justify-center rounded-full text-lg text-[#727272] transition hover:bg-zinc-100 hover:text-[#1f1f1f]"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsReportLoginOpen(false);
+                  setOpenReportAfterAuthentication(false);
+                }}
+                className="rounded-xl border border-zinc-300 px-4 py-2.5 text-sm font-semibold text-[#1f1f1f] transition hover:bg-zinc-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleContinueToLoginForReport}
+                className="rounded-xl bg-[#1f1f1f] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-black"
+              >
+                Continue to sign in
+              </button>
+            </div>
+          </div>
+        </ModalOverlay>
+      )}
 
       <Footer />
     </div>

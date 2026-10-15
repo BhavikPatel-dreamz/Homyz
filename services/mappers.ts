@@ -506,6 +506,7 @@ type BookingDTOInput = Pick<
     | "checkOutTime"
   > | null;
   user?: Pick<User, "id" | "name" | "email"> | null;
+  reviews?: Array<Pick<Review, "status">>;
 };
 
 export function toBookingDTO(b: BookingDTOInput) {
@@ -524,6 +525,7 @@ export function toBookingDTO(b: BookingDTOInput) {
     priceBreakdown: b.priceBreakdown,
     cancellationPolicy: b.cancellationPolicy,
     isNonRefundable: b.isNonRefundable,
+    reviewStatus: b.reviews?.[0]?.status ?? null,
     createdAt: b.createdAt,
     listing: b.listing
       ? {
@@ -601,13 +603,19 @@ export function reviveBookingDTO(b: BookingDTO): BookingDTO {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export function toReviewDTO(
-  r: Review & { author?: User | null },
+  r: Review & {
+    author?: User | null;
+    targetUser?: User | null;
+    response?: (Pick<any, "id" | "comment" | "createdAt" | "authorId"> & { author?: Pick<User, "id" | "name" | "image"> | null }) | null;
+  },
 ) {
   return {
     id: r.id,
     listingId: r.listingId,
     bookingId: r.bookingId,
     authorId: r.authorId,
+    targetUserId: r.targetUserId,
+    direction: r.direction,
     rating: r.rating,
     cleanlinessRating: r.cleanlinessRating,
     accuracyRating: r.accuracyRating,
@@ -615,13 +623,36 @@ export function toReviewDTO(
     communicationRating: r.communicationRating,
     locationRating: r.locationRating,
     valueRating: r.valueRating,
+    houseRulesRating: r.houseRulesRating,
+    recommendGuest: r.recommendGuest,
     comment: r.comment,
     topics: r.topics,
     status: r.status,
+    submittedAt: r.submittedAt,
+    publishedAt: r.publishedAt,
+    reviewDeadline: r.reviewDeadline,
+    editDeadline: r.editDeadline,
     moderatedAt: r.moderatedAt,
     moderatedById: r.moderatedById,
     rejectionReason: r.rejectionReason,
+    moderationNotes: r.moderationNotes,
+    moderationCaseId: r.moderationCaseId,
     author: r.author ? toPublicUser(r.author) : null,
+    targetUser: r.targetUser ? toPublicUser(r.targetUser) : null,
+    response: r.response
+      ? {
+          id: r.response.id,
+          comment: r.response.comment,
+          createdAt: r.response.createdAt,
+          author: r.response.author
+            ? {
+                id: r.response.author.id,
+                name: r.response.author.name,
+                image: r.response.author.image,
+              }
+            : null,
+        }
+      : null,
     createdAt: r.createdAt,
     updatedAt: r.updatedAt,
   };
@@ -644,11 +675,29 @@ export function toPublicReviewDTO(
   r: Review & {
     author?: (Pick<User, "id" | "name" | "image"> & { createdAt?: Date }) | null;
     hostResponse?: PublicReviewHostResponseDTO | null;
+    response?: {
+      comment: string;
+      createdAt: Date | string;
+      author?: Pick<User, "name" | "image"> | null;
+    } | null;
   },
 ) {
+  const hostResponse =
+    (r as any).hostResponse ??
+    (r.response
+      ? {
+          comment: r.response.comment,
+          createdAt: r.response.createdAt,
+          hostName: r.response.author?.name ?? null,
+          hostImage: r.response.author?.image ?? null,
+        }
+      : null);
+
   return {
     id: r.id,
     listingId: r.listingId,
+    bookingId: r.bookingId,
+    direction: r.direction,
     rating: r.rating,
     comment: r.comment,
     topics: r.topics,
@@ -659,7 +708,8 @@ export function toPublicReviewDTO(
       createdAt: r.author.createdAt,
     } : null,
     createdAt: r.createdAt,
-    hostResponse: (r as any).hostResponse ?? null,
+    publishedAt: r.publishedAt ?? r.createdAt,
+    hostResponse,
   };
 }
 export type PublicReviewDTO = ReturnType<typeof toPublicReviewDTO>;

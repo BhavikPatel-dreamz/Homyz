@@ -10,6 +10,7 @@ import { resolvePropertyCurrency } from "@/lib/currency";
 import { useCurrency } from "@/lib/currency-context";
 import { useLanguage } from "@/lib/i18n/language-context";
 import {
+  bookingDateKey,
   differenceInBookingNights,
   formatBookingDate,
 } from "@/lib/booking/booking-date";
@@ -60,6 +61,21 @@ type HostPriceBreakdown = {
   };
 };
 
+export type ReservationReviewSummary = {
+  direction: "GUEST_TO_PROPERTY" | "HOST_TO_GUEST";
+  status: string;
+  rating: number;
+  cleanlinessRating: number | null;
+  accuracyRating: number | null;
+  checkInRating: number | null;
+  communicationRating: number | null;
+  locationRating: number | null;
+  valueRating: number | null;
+  houseRulesRating: number | null;
+  comment: string;
+  recommendGuest: boolean | null;
+};
+
 export type HostReservation = {
   id: string;
   listingId: string;
@@ -81,6 +97,9 @@ export type HostReservation = {
   priceBreakdown?: HostPriceBreakdown;
   cancellationPolicy?: string | null;
   isNonRefundable?: boolean;
+  hostReviewStatus?: string | null;
+  hostReview?: ReservationReviewSummary | null;
+  guestReview?: ReservationReviewSummary | null;
   listing?: {
     id: string;
     title: string;
@@ -298,6 +317,16 @@ export function ReservationDetails({
     pricing.taxes.reduce((sum, tax) => sum + tax.amountMinorUnits, 0) ===
     pricing.taxTotal;
   const status = booking.status.toUpperCase();
+  const reviewStatus = booking.hostReviewStatus?.toUpperCase();
+  const hasSubmittedReview = Boolean(reviewStatus);
+  const canReviewGuest =
+    status === "CONFIRMED" &&
+    booking.endDate <= bookingDateKey(new Date()) &&
+    !hasSubmittedReview;
+  const submittedReviewLabel =
+    reviewStatus === "PUBLISHED"
+      ? "Review submitted"
+      : "Review submitted · awaiting guest";
   const statusClasses =
     status === "CONFIRMED"
       ? {
@@ -519,37 +548,88 @@ export function ReservationDetails({
             </section>
 
             {/* 3. Primary & Secondary Actions */}
-            <div
-              className={
-                onMoney && status === "CONFIRMED"
-                  ? "grid gap-3 sm:grid-cols-2"
-                  : "grid gap-3 sm:grid-cols-2"
-              }
-            >
-              <Link
-                href={`/host/bookings/${booking.id}`}
-                className="flex min-h-11 w-full items-center justify-center rounded-full border border-[#1F1F1F] px-4 py-3 text-center text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-[#1F1F1F] hover:text-white dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-800"
-              >
-                View booking
-              </Link>
+            <section aria-label="Reservation actions" className="space-y-3">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Link
+                  href={`/host/bookings/${booking.id}`}
+                  className="flex min-h-11 min-w-0 items-center justify-center rounded-full border border-[#1F1F1F] px-3 py-3 text-center text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-[#1F1F1F] hover:text-white dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-800"
+                >
+                  View booking
+                </Link>
+                <Link
+                  href={messageHref}
+                  className="flex min-h-11 min-w-0 items-center justify-center rounded-full bg-[#FCDF9C] px-3 py-3 text-center text-sm font-semibold text-[#1f1f1f] transition-colors duration-300 hover:bg-black hover:text-white dark:bg-zinc-100 dark:text-[#1F1F1F] dark:hover:bg-white"
+                >
+                  {t("host_cal_res_btn_message", "Message guest")}
+                </Link>
+              </div>
+
+              {hasSubmittedReview ? (
+                <div className="flex min-h-11 items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 text-center text-xs font-semibold text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="m5 12 4 4L19 6" />
+                  </svg>
+                  {submittedReviewLabel}
+                </div>
+              ) : canReviewGuest ? (
+                <Link
+                  href={`/host/reviews/${booking.id}`}
+                  className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#1F1F1F] px-4 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-zinc-700 dark:bg-white dark:text-[#1F1F1F] dark:hover:bg-zinc-200"
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M12 20h9" />
+                    <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                  </svg>
+                  Review guest
+                </Link>
+              ) : null}
+
               {onMoney && status === "CONFIRMED" && (
                 <button
                   type="button"
                   onClick={onMoney}
-                  className="min-h-11 w-full rounded-full border border-[#1F1F1F] px-4 py-3 text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-[#1F1F1F] hover:text-white dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-800"
+                  className="min-h-11 w-full rounded-xl border border-[#1F1F1F] px-4 py-3 text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-[#1F1F1F] hover:text-white dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-800"
                 >
                   {t("host_cal_res_btn_money", "Send or request money")}
                 </button>
               )}
-              <Link
-                href={messageHref}
-                className="flex min-h-11 w-full items-center justify-center rounded-full bg-[#FCDF9C] px-4 py-3 text-center text-sm font-semibold text-[#1f1f1f] hover:text-white transition-colors duration-300 hover:bg-black dark:bg-zinc-100 dark:text-[#1F1F1F] dark:hover:bg-white"
-              >
-                {t("host_cal_res_btn_message", "Message guest")}
-              </Link>
-            </div>
+            </section>
 
-            {/* 4. Stay Details */}
+            {(booking.hostReview || booking.guestReview) && (
+              <section aria-labelledby="reservation-reviews-heading">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <div>
+                    <h3 id="reservation-reviews-heading" className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">
+                      Reviews
+                    </h3>
+                    <p className="mt-0.5 text-xs text-[#727272]">
+                      Ratings shared for this reservation
+                    </p>
+                  </div>
+                  <span className="rounded-full bg-zinc-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+                    {[booking.hostReview, booking.guestReview].filter(Boolean).length} of 2
+                  </span>
+                </div>
+                <div className="space-y-3">
+                  {booking.hostReview && (
+                    <ReviewRatingSummary
+                      review={booking.hostReview}
+                      title="Your review of this guest"
+                      detail={booking.hostReview.status === "PRIVATE" ? "Private until the guest also submits a review" : "Published review"}
+                    />
+                  )}
+                  {booking.guestReview && (
+                    <ReviewRatingSummary
+                      review={booking.guestReview}
+                      title="Guest’s review of your property"
+                      detail="Published review"
+                    />
+                  )}
+                </div>
+              </section>
+            )}
+
+            {/* 5. Stay Details */}
             <section aria-labelledby="stay-details-heading">
               <h3
                 id="stay-details-heading"
@@ -839,6 +919,66 @@ export function ReservationDetails({
         onClose={() => setShowInvoice(false)}
       />
     </>
+  );
+}
+
+function ReviewRatingSummary({
+  review,
+  title,
+  detail,
+}: {
+  review: ReservationReviewSummary;
+  title: string;
+  detail: string;
+}) {
+  const categoryRatings = [
+    ["Cleanliness", review.cleanlinessRating],
+    ["Accuracy", review.accuracyRating],
+    ["Check-in", review.checkInRating],
+    ["Communication", review.communicationRating],
+    ["Location", review.locationRating],
+    ["Value", review.valueRating],
+    ["House rules", review.houseRulesRating],
+  ].filter(([, value]) => typeof value === "number") as Array<[string, number]>;
+
+  return (
+    <article className="rounded-xl border border-zinc-200 bg-zinc-50/70 p-3.5 dark:border-zinc-700 dark:bg-zinc-800/50">
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div>
+          <h4 className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100">{title}</h4>
+          <p className="mt-0.5 text-[11px] text-[#727272]">{detail}</p>
+        </div>
+        <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-300" aria-label={`${review.rating} out of 5 stars`}>
+          <span aria-hidden="true">★</span>
+          {review.rating}/5
+        </span>
+      </div>
+
+      {categoryRatings.length > 0 && (
+        <dl className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
+          {categoryRatings.map(([label, value]) => (
+            <div key={label} className="rounded-lg border border-white bg-white px-2.5 py-2 dark:border-zinc-700 dark:bg-zinc-900/60">
+              <dt className="text-[10px] font-medium leading-3 text-[#727272]">{label}</dt>
+              <dd className="mt-1 text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+                {value}/5
+              </dd>
+            </div>
+          ))}
+        </dl>
+      )}
+
+      {review.recommendGuest !== null && (
+        <p className={`mt-3 text-xs font-medium ${review.recommendGuest ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400"}`}>
+          {review.recommendGuest ? "Recommends this guest" : "Does not recommend this guest"}
+        </p>
+      )}
+
+      {review.comment && (
+        <p className="mt-3 border-t border-zinc-200 pt-3 text-xs leading-5 text-zinc-700 dark:border-zinc-700 dark:text-zinc-300">
+          {review.comment}
+        </p>
+      )}
+    </article>
   );
 }
 

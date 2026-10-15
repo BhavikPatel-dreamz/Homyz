@@ -12,7 +12,7 @@ import { ADDRESS_COUNTRIES } from "@/lib/location/address-countries";
 
 import { reviveBookingDTO, toBookingDTO, type BookingDTO } from "./mappers";
 
-import { BookingStatus, PaymentStatus, PaymentProvider, RefundStatus, ListingStatus, NotificationType, Role, ConversationStatus, SpecialOfferStatus, MessageType, ListingCoHostStatus } from "@/generated/prisma/enums";
+import { BookingStatus, PaymentStatus, PaymentProvider, RefundStatus, ListingStatus, NotificationType, Role, ConversationStatus, SpecialOfferStatus, MessageType, ListingCoHostStatus, ReviewDirection } from "@/generated/prisma/enums";
 import { nanoid } from "nanoid";
 import { notificationService } from "./notification.service";
 import { messagingService } from "./messaging.service";
@@ -912,6 +912,14 @@ async function listForUser(
               },
             },
             user: { select: { id: true, name: true, email: true } },
+            reviews: {
+              where: {
+                authorId: actor.id,
+                direction: ReviewDirection.GUEST_TO_PROPERTY,
+              },
+              select: { status: true },
+              take: 1,
+            },
           },
           orderBy: { createdAt: "desc" },
         }),

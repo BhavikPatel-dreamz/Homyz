@@ -153,10 +153,17 @@ enum HostingType {
 }
 
 enum ReviewStatus {
+  PRIVATE
   PUBLISHED
   HIDDEN
   DELETED
   PENDING_MODERATION
+  EXPIRED
+}
+
+enum ReviewDirection {
+  GUEST_TO_PROPERTY
+  HOST_TO_GUEST
 }
 
 enum ReferralRewardStatus {
@@ -221,6 +228,42 @@ enum QualityIncidentSeverity {
   MEDIUM
   HIGH
   CRITICAL
+}
+
+// Central content-moderation foundation. These enums are intentionally
+// separate from booking dispute and listing approval lifecycles.
+enum ModerationTargetType {
+  REVIEW
+  LISTING
+  LISTING_PHOTO
+  PROFILE
+  USER
+  MESSAGE
+  OTHER_CONTENT
+}
+
+enum ModerationCaseStatus {
+  NEW
+  IN_REVIEW
+  NEEDS_INFORMATION
+  RESOLVED
+  DISMISSED
+  REOPENED
+}
+
+enum ModerationSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum ModerationEvidenceType {
+  EXISTING_MEDIA
+  MESSAGE_ATTACHMENT
+  DOCUMENT
+  EXTERNAL_REFERENCE
+  TEXT_NOTE
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -292,7 +335,9 @@ model User {
   taxAuditLogs                    TaxAuditLog[]
   listingRemovalFeedbacks         ListingRemovalFeedback[]
   authoredReviews                 Review[]                   @relation("AuthoredReviews")
+  receivedReviews                 Review[]                   @relation("ReceivedReviews")
   moderatedReviews                Review[]                   @relation("ModeratedReviews")
+  authoredReviewResponses         ReviewResponse[]           @relation("AuthoredReviewResponses")
   referredBy                      User?                      @relation("GuestReferrals", fields: [referredById], references: [id], onDelete: SetNull)
   referredGuests                  User[]                     @relation("GuestReferrals")
   referralRewards                 ReferralReward[]           @relation("ReferralRewardInviter")
@@ -306,6 +351,10 @@ model User {
   hostSpecialOffers               SpecialOffer[]             @relation("HostSpecialOffers")
   superhostEvaluations            SuperhostEvaluation[]
   reportedQualityIncidents        ListingQualityIncident[]   @relation("ReportedQualityIncidents")
+  submittedModerationReports      ModerationReport[]         @relation("SubmittedModerationReports")
+  assignedModerationCases         ModerationCase[]           @relation("AssignedModerationCases")
+  submittedModerationEvidence     ModerationEvidence[]       @relation("SubmittedModerationEvidence")
+  moderationActivities            ModerationActivity[]       @relation("ModerationActivityActors")
 
   @@index([role])
   @@index([adminRoleId])
@@ -764,6 +813,7 @@ model Booking {
   qualityIncidents ListingQualityIncident[]
   payments       BookingPayment[]
   refunds        BookingRefund[]
+  moderationReports ModerationReport[]
 
   @@index([userId, createdAt])
   @@index([listingId])
@@ -771,6 +821,100 @@ model Booking {
   @@index([status])
   @@index([status, createdAt])
   @@index([createdAt])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Central content moderation (Phase 1 foundation)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model ModerationReport {
+  id               String               @id @default(cuid())
+  reporterId       String
+  targetType       ModerationTargetType
+  targetId         String
+  category         String
+  reasonCode       String
+  description      String?              @db.Text
+  relatedBookingId String?
+  caseId           String?
+  source           String               @default("USER")
+  createdAt        DateTime             @default(now())
+
+  reporter       User            @relation("SubmittedModerationReports", fields: [reporterId], references: [id], onDelete: Restrict)
+  relatedBooking Booking?        @relation(fields: [relatedBookingId], references: [id], onDelete: SetNull)
+  case           ModerationCase? @relation(fields: [caseId], references: [id], onDelete: SetNull)
+
+  @@index([reporterId, createdAt])
+  @@index([targetType, targetId, category, createdAt])
+  @@index([caseId, createdAt])
+  @@index([relatedBookingId])
+}
+
+model ModerationCase {
+  id                  String               @id @default(cuid())
+  caseReference       String               @unique
+  targetType          ModerationTargetType
+  targetId            String
+  category            String
+  status              ModerationCaseStatus @default(NEW)
+  severity            ModerationSeverity   @default(MEDIUM)
+  priority            Int                  @default(0)
+  assignedModeratorId String?
+  resolutionCategory  String?
+  resolutionNotes     String?              @db.Text
+  policyVersion       String?              @default("moderation-policy-v1")
+  resolvedAt          DateTime?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  assignedModerator User?                @relation("AssignedModerationCases", fields: [assignedModeratorId], references: [id], onDelete: SetNull)
+  reports           ModerationReport[]
+  evidence          ModerationEvidence[]
+  activities        ModerationActivity[]
+  reviews           Review[]
+
+  @@index([targetType, targetId, category, status])
+  @@index([status, severity, priority, createdAt])
+  @@index([assignedModeratorId, status])
+  @@index([status, updatedAt])
+  @@index([category, createdAt])
+}
+
+model ModerationEvidence {
+  id               String                 @id @default(cuid())
+  caseId           String
+  submittedById    String?
+  evidenceType     ModerationEvidenceType
+  storageReference String
+  displayName      String?
+  accessScope      String                 @default("MODERATORS_ONLY")
+  retentionUntil   DateTime?
+  metadata         Json?
+  createdAt        DateTime               @default(now())
+
+  case        ModerationCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  submittedBy User?          @relation("SubmittedModerationEvidence", fields: [submittedById], references: [id], onDelete: SetNull)
+
+  @@index([caseId, createdAt])
+  @@index([submittedById])
+}
+
+model ModerationActivity {
+  id        String   @id @default(cuid())
+  caseId    String
+  actorId   String?
+  action    String
+  before    Json?
+  after     Json?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  case  ModerationCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  actor User?          @relation("ModerationActivityActors", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([caseId, createdAt])
+  @@index([actorId, createdAt])
+  @@index([action, createdAt])
 }
 
 model BookingPayment {
@@ -860,10 +1004,12 @@ model ReferralReward {
 }
 
 model Review {
-  id                  String       @id @default(cuid())
-  listingId           String
+  id                  String          @id @default(cuid())
+  listingId           String?
   bookingId           String?
   authorId            String
+  targetUserId        String?
+  direction           ReviewDirection @default(GUEST_TO_PROPERTY)
   rating              Int // 1-5
   cleanlinessRating   Int?
   accuracyRating      Int?
@@ -871,30 +1017,61 @@ model Review {
   communicationRating Int?
   locationRating      Int?
   valueRating         Int?
-  comment             String       @db.Text // Empty string allowed for rating-only reviews
-  privateNoteToHost   String       @db.Text @default("") // Private feedback only visible to host and guest
-  topics              String[]     @default([])
-  status              ReviewStatus @default(PUBLISHED)
+  houseRulesRating    Int?
+  comment             String          @db.Text // Empty string allowed for rating-only reviews
+  privateNoteToHost   String          @db.Text @default("") // Private feedback only visible to host and guest
+  privateNoteToGuest  String?         @db.Text
+  topics              String[]        @default([])
+  recommendGuest      Boolean?
+  status              ReviewStatus    @default(PUBLISHED)
+  submittedAt         DateTime        @default(now())
+  publishedAt         DateTime?
+  reviewDeadline      DateTime?
+  editDeadline        DateTime?
 
   // Moderation
-  moderatedAt     DateTime?
-  moderatedById   String?
-  rejectionReason String?
+  moderatedAt         DateTime?
+  moderatedById       String?
+  rejectionReason     String?
+  moderationNotes     String?
+  moderationCaseId    String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  listing   Listing  @relation("ListingReviews", fields: [listingId], references: [id], onDelete: Cascade)
-  booking   Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
-  author    User     @relation("AuthoredReviews", fields: [authorId], references: [id], onDelete: Cascade)
-  moderator User?    @relation("ModeratedReviews", fields: [moderatedById], references: [id], onDelete: SetNull)
+  listing        Listing?        @relation("ListingReviews", fields: [listingId], references: [id], onDelete: Cascade)
+  booking        Booking?        @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  author         User            @relation("AuthoredReviews", fields: [authorId], references: [id], onDelete: Cascade)
+  targetUser     User?           @relation("ReceivedReviews", fields: [targetUserId], references: [id], onDelete: SetNull)
+  moderator      User?           @relation("ModeratedReviews", fields: [moderatedById], references: [id], onDelete: SetNull)
+  moderationCase ModerationCase? @relation(fields: [moderationCaseId], references: [id], onDelete: SetNull)
+  response       ReviewResponse?
 
-  @@unique([bookingId])
+  @@unique([bookingId, direction])
   @@index([listingId])
   @@index([listingId, status])
   @@index([listingId, status, createdAt])
   @@index([authorId])
+  @@index([targetUserId])
   @@index([bookingId])
+  @@index([direction, status])
+  @@index([status, reviewDeadline])
+  @@index([moderationCaseId])
+}
+
+model ReviewResponse {
+  id        String       @id @default(cuid())
+  reviewId  String       @unique
+  authorId  String
+  comment   String       @db.Text
+  status    ReviewStatus @default(PUBLISHED)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  author User   @relation("AuthoredReviewResponses", fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([authorId])
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

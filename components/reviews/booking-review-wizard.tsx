@@ -336,39 +336,18 @@ function ReviewProgressBar({ currentStep, totalSteps }: { currentStep: number; t
 export function BookingReviewWizard(props: ReviewWizardProps) {
   const router = useRouter();
   const { t } = useLanguage();
-  const steps: Array<{
-    key: "intro" | "overall" | CategoryKey | "comment" | "privateNote";
-    title: (listingName: string) => string;
-    subtitle: string | ((listingName: string) => string);
-  }> = [
-      {
-        key: "intro",
-        title: (listingName) => t("review_intro_title", `Write a review for ${listingName}`).replace("{name}", listingName),
-        subtitle: t("review_intro_desc", "Your feedback helps hosts improve and helps future guests choose with confidence."),
-      },
-      { key: "overall", title: () => t("review_overall_title", "How was your stay?"), subtitle: t("review_overall_desc", "Let us know how your overall experience was with “Property Name” and their place.") },
-      { key: "checkIn", title: (listingName) => t("review_checkin_title", `How was check-in at ${listingName}?`).replace("{name}", listingName), subtitle: t("review_checkin_desc", "Consider how easy it was to arrive and get settled.") },
-      { key: "cleanliness", title: (listingName) => t("review_cleanliness_title", `How clean was ${listingName}?`).replace("{name}", listingName), subtitle: t("review_cleanliness_desc", "Your rating helps keep stays comfortable for everyone.") },
-      { key: "accuracy", title: (listingName) => t("review_accuracy_title", `How accurately did ${listingName} match its listing?`).replace("{name}", listingName), subtitle: t("review_accuracy_desc", "Think about the photos, description, and amenities.") },
-      { key: "communication", title: () => t("review_communication_title", "How was host communication?"), subtitle: t("review_communication_desc", "Consider clarity, helpfulness, and responsiveness.") },
-      { key: "location", title: () => t("review_location_title", "What did you think of the location?"), subtitle: t("review_location_desc", "Think about convenience, surroundings, and access.") },
-      { key: "value", title: () => t("review_value_title", "Was this stay worth what you paid?"), subtitle: t("review_value_desc", "Your feedback helps guests understand the value of a stay.") },
-      {
-        key: "comment",
-        title: () => t("review_comment_title", "Write a public review"),
-        subtitle: (listingName) =>
-          t(
-            "review_comment_desc",
-            `We’ll show this feedback to others guests - after the review period ends, we’ll publish it on ${listingName}’s listing page.`
-          ).replace("{name}", listingName),
-      },
-      {
-        key: "privateNote",
-        title: () => t("review_private_title", "Write a private note"),
-        subtitle: t("review_private_desc", "Share constructive feedback for the host (optional). This will only be seen by the host."),
-      },
-    ];
-
+  const steps: Array<{ key: "intro" | "overall" | CategoryKey | "comment" | "privateNote"; title: (listingName: string) => string; subtitle: string | ((name: string) => string) }> = [
+    { key: "intro", title: (listingName) => t("review_intro_title", `Write a review for ${listingName}`).replace("{name}", listingName), subtitle: t("review_intro_desc", "Your feedback helps hosts improve and helps future guests choose with confidence. Reviews remain private until both parties submit or the 14-day window closes.") },
+    { key: "overall", title: () => t("review_overall_title", "How was your stay?"), subtitle: t("review_overall_desc", "Your overall rating will appear with your public review.") },
+    { key: "checkIn", title: (listingName) => t("review_checkin_title", `How was check-in at ${listingName}?`).replace("{name}", listingName), subtitle: t("review_checkin_desc", "Consider how easy it was to arrive and get settled.") },
+    { key: "cleanliness", title: (listingName) => t("review_cleanliness_title", `How clean was ${listingName}?`).replace("{name}", listingName), subtitle: t("review_cleanliness_desc", "Your rating helps keep stays comfortable for everyone.") },
+    { key: "accuracy", title: (listingName) => t("review_accuracy_title", `How accurately did ${listingName} match its listing?`).replace("{name}", listingName), subtitle: t("review_accuracy_desc", "Think about the photos, description, and amenities.") },
+    { key: "communication", title: () => t("review_communication_title", "How was host communication?"), subtitle: t("review_communication_desc", "Consider clarity, helpfulness, and responsiveness.") },
+    { key: "location", title: () => t("review_location_title", "What did you think of the location?"), subtitle: t("review_location_desc", "Think about convenience, surroundings, and access.") },
+    { key: "value", title: () => t("review_value_title", "Was this stay worth what you paid?"), subtitle: t("review_value_desc", "Your feedback helps guests understand the value of a stay.") },
+    { key: "comment", title: () => t("review_comment_title", "Write a public review"), subtitle: t("review_comment_desc", "Share a few words about your stay. This will be visible on the property page.") },
+    { key: "privateNote", title: () => t("review_private_title", "Write a private note"), subtitle: t("review_private_desc", "Share any constructive feedback that only the host will see. This is optional and private.") },
+  ];
   const storageKey = `homyz:review-draft:${props.bookingId}`;
   const [draft, setDraft] = useState<ReviewDraft>({ step: 0, rating: 0, categoryRatings: {}, comment: "", privateNoteToHost: "" });
   const hasLoadedDraft = useRef(false);
@@ -490,18 +469,7 @@ export function BookingReviewWizard(props: ReviewWizardProps) {
     }
   };
 
-  if (submitted) {
-    return (
-      <section className="mx-auto flex min-h-[55vh] max-w-xl flex-col items-center justify-center text-center">
-        <span className="flex size-16 items-center justify-center rounded-full bg-emerald-100 text-3xl text-emerald-700">✓</span>
-        <h1 className="mt-6 text-3xl font-semibold tracking-tight text-[#1F1F1F]">{t("review_success_title", "Thanks for sharing your stay")}</h1>
-        <p className="mt-3 max-w-md text-sm leading-6 text-zinc-600">{t("review_success_desc", "Your review has been submitted and will help future guests.")}</p>
-        <Link href={`/bookings/${props.bookingId}`} className="mt-7 inline-flex min-h-11 items-center rounded-full bg-[#1F1F1F] px-8 text-sm font-semibold text-white hover:bg-black transition-colors">
-          {t("review_btn_back_res", "Back to reservation")}
-        </Link>
-      </section>
-    );
-  }
+  if (submitted) return <section className="mx-auto flex min-h-[55vh] max-w-xl flex-col items-center justify-center text-center"><span className="flex size-16 items-center justify-center rounded-full bg-emerald-100 text-3xl text-emerald-700">✓</span><h1 className="mt-6 text-3xl font-semibold tracking-tight text-[#1F1F1F]">{t("review_success_title", "Thanks for sharing your stay")}</h1><p className="mt-3 max-w-md text-sm leading-6 text-zinc-600">{t("review_success_desc", "Your review has been submitted. It will remain private until the host submits their review or the 14-day window closes, at which point both reviews will be published simultaneously.")}</p><Link href={`/bookings/${props.bookingId}`} className="mt-7 inline-flex min-h-11 items-center rounded-xl bg-[#1F1F1F] px-6 text-sm font-semibold text-white hover:bg-zinc-700">{t("review_btn_back_res", "Back to reservation")}</Link></section>;
 
   const displayName = props.hostName || props.listingName || "Name";
   const currencyDisplay = props.currencyCode || "SR";

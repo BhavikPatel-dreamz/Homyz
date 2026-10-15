@@ -2425,6 +2425,114 @@ async function updateAvailability(actor: AuthUser, id: string, blockedDates: str
   return result.listing;
 }
 
+async function applyModerationAction(params: {
+  listingId: string;
+  action: "WARN_HOST" | "REQUEST_CORRECTION" | "TEMPORARY_RESTRICTION" | "SUSPEND" | "RESTORE" | "HIDE_PHOTO" | "REMOVE_PHOTO" | "REQUEST_REPLACEMENT" | "RESTORE_PHOTO" | "DISMISS";
+  photoUrl?: string;
+  reason?: string;
+  notes?: string;
+}): Promise<Listing> {
+  const { listingId, action, photoUrl, reason, notes } = params;
+  const existing = await prisma.listing.findUnique({ where: { id: listingId } });
+  if (!existing) throw AppError.notFound("Listing not found");
+
+  let updated = existing;
+
+  if (action === "DISMISS") {
+    return existing;
+  }
+
+  if (action === "REMOVE_PHOTO" || action === "HIDE_PHOTO") {
+    if (photoUrl && existing.photos.includes(photoUrl)) {
+      const nextPhotos = existing.photos.filter((p: string) => p !== photoUrl);
+      const requiresMorePhotos = nextPhotos.length < 5;
+      updated = await prisma.listing.update({
+        where: { id: listingId },
+        data: {
+          photos: nextPhotos,
+          ...(requiresMorePhotos
+            ? {
+                requestedChanges: {
+                  reason: "A photo was removed by moderation. Your listing currently has fewer than the required 5 photos. Please upload replacement photos.",
+                  removedPhoto: photoUrl,
+                  action,
+                  requestedAt: new Date().toISOString(),
+                },
+              }
+            : {}),
+        },
+      });
+      await invalidateListingCache(listingId, existing.hostId);
+    }
+  } else if (action === "REQUEST_REPLACEMENT") {
+    updated = await prisma.listing.update({
+      where: { id: listingId },
+      data: {
+        requestedChanges: {
+          reason: notes || reason || "Photo requires replacement due to content policy guidelines.",
+          flaggedPhoto: photoUrl || null,
+          requestedAt: new Date().toISOString(),
+        },
+      },
+    });
+  } else if (action === "RESTORE_PHOTO") {
+    if (photoUrl && !existing.photos.includes(photoUrl)) {
+      const nextPhotos = [...existing.photos, photoUrl];
+      updated = await prisma.listing.update({
+        where: { id: listingId },
+        data: {
+          photos: nextPhotos,
+        },
+      });
+      await invalidateListingCache(listingId, existing.hostId);
+    }
+  } else if (action === "REQUEST_CORRECTION") {
+    updated = await prisma.listing.update({
+      where: { id: listingId },
+      data: {
+        requestedChanges: {
+          reason: notes || reason || "Corrections requested by moderation team",
+          requestedAt: new Date().toISOString(),
+        },
+      },
+    });
+  } else if (action === "TEMPORARY_RESTRICTION") {
+    updated = await prisma.listing.update({
+      where: { id: listingId },
+      data: {
+        isPaused: true,
+        published: false,
+      },
+    });
+    await invalidateListingCache(listingId, existing.hostId);
+  } else if (action === "SUSPEND") {
+    updated = await prisma.listing.update({
+      where: { id: listingId },
+      data: {
+        isPaused: true,
+        published: false,
+        status: ListingStatus.REJECTED,
+        rejectionReason: notes || "Suspended by moderation for policy violation",
+      },
+    });
+    await invalidateListingCache(listingId, existing.hostId);
+  } else if (action === "RESTORE") {
+    updated = await prisma.listing.update({
+      where: { id: listingId },
+      data: {
+        published: true,
+        isPaused: false,
+        status: ListingStatus.ACTIVE,
+        rejectionReason: null,
+        requestedChanges: Prisma.DbNull,
+      },
+    });
+    await invalidateListingCache(listingId, existing.hostId);
+  }
+
+  return updated;
+}
+
 export const listingService = {
   list,
   searchPublicListings,
@@ -2459,4 +2567,5 @@ export const listingService = {
   toPublic: toPublicListingDTO,
   getPublishedReviewSummaries,
   getPublicCardsByIds,
+  applyModerationAction,
 };

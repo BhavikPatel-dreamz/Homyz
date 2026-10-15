@@ -1,12 +1,12 @@
 import "server-only";
 import { prisma } from "@/lib/db/prisma";
-import { BookingStatus } from "@/generated/prisma/enums";
+import { BookingStatus, ReviewDirection, ReviewStatus } from "@/generated/prisma/enums";
 import type { Prisma } from "@/generated/prisma/client";
 import type { AuthUser } from "@/lib/auth/types";
 import { listingService } from "@/services/listing.service";
 import { bookingDateKey } from "@/lib/booking/booking-date";
 import { getExpiryThresholdDate } from "@/lib/booking/booking-expiry";
-import type { HostReservation } from "@/components/host/host-workspace-shared";
+import type { HostReservation, ReservationReviewSummary } from "@/components/host/host-workspace-shared";
 import type { ReservationPeriod } from "@/lib/booking/host-reservation-events";
 
 type WorkspaceBooking = {
@@ -32,6 +32,7 @@ type WorkspaceBooking = {
     createdAt?: Date;
   };
   conversations?: Array<{ id: string }>;
+  reviews?: ReservationReviewSummary[];
   listing: {
     id: string;
     title: string;
@@ -244,6 +245,34 @@ export async function getHostWorkspace(
       orderBy: { updatedAt: "desc" },
       take: 1,
     },
+    reviews: {
+      where: {
+        OR: [
+          {
+            authorId: actor.id,
+            direction: ReviewDirection.HOST_TO_GUEST,
+          },
+          {
+            direction: ReviewDirection.GUEST_TO_PROPERTY,
+            status: ReviewStatus.PUBLISHED,
+          },
+        ],
+      },
+      select: {
+        direction: true,
+        status: true,
+        rating: true,
+        cleanlinessRating: true,
+        accuracyRating: true,
+        checkInRating: true,
+        communicationRating: true,
+        locationRating: true,
+        valueRating: true,
+        houseRulesRating: true,
+        comment: true,
+        recommendGuest: true,
+      },
+    },
     listing: {
       select: {
         id: true,
@@ -273,9 +302,7 @@ export async function getHostWorkspace(
     prisma.booking.count({ where }),
   ]);
 
-  const bookings = (rows as unknown as WorkspaceBooking[]).map((booking) =>
-    mapBooking(booking, now),
-  );
+  const bookings = (rows as unknown as WorkspaceBooking[]).map(mapBooking);
   const totalPages = isPaginated ? Math.ceil(totalCount / safeLimit) : 1;
 
   return {
@@ -291,7 +318,14 @@ export async function getHostWorkspace(
   };
 }
 
-function mapBooking(booking: WorkspaceBooking, now: Date): HostReservation {
+function mapBooking(booking: WorkspaceBooking): HostReservation {
+  const hostReview = booking.reviews?.find(
+    (review) => review.direction === ReviewDirection.HOST_TO_GUEST,
+  ) ?? null;
+  const guestReview = booking.reviews?.find(
+    (review) => review.direction === ReviewDirection.GUEST_TO_PROPERTY,
+  ) ?? null;
+
   return {
     id: booking.id,
     listingId: booking.listingId,
@@ -306,6 +340,9 @@ function mapBooking(booking: WorkspaceBooking, now: Date): HostReservation {
     priceBreakdown: booking.priceBreakdown,
     cancellationPolicy: booking.cancellationPolicy,
     isNonRefundable: booking.isNonRefundable,
+    hostReviewStatus: hostReview?.status ?? null,
+    hostReview,
+    guestReview,
     createdAt: booking.createdAt.toISOString(),
     guestName: booking.user.name || "Guest",
     guestId: booking.user.id,

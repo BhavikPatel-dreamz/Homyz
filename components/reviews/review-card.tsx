@@ -3,11 +3,14 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useLanguage } from "@/lib/i18n/language-context";
+import { ReportContentModal } from "@/components/moderation/report-content-modal";
 
 export interface ReviewCardProps {
   id: string;
   rating: number;
   comment: string;
+  bookingId?: string | null;
+  canReport?: boolean;
   author: {
     id: string;
     name: string | null;
@@ -63,32 +66,54 @@ export function ReviewCard({
   id,
   rating,
   comment,
+  bookingId,
+  canReport = true,
   author,
   createdAt,
   hostResponse,
+  onShowMore,
+  isModalView = false,
 }: ReviewCardProps) {
   const { t } = useLanguage();
   const formatRelativeDate = useRelativeDate();
   const [isExpanded, setIsExpanded] = useState(false);
   const [imageFailed, setImageFailed] = useState(false);
+  const [isReportOpen, setIsReportOpen] = useState(false);
+
   const name = author?.name?.trim() || "Guest";
   const initial = name.charAt(0).toUpperCase();
-  const isLongReview = comment.length > 260;
-  const visibleComment = isExpanded ? comment : previewText(comment);
+  const isLongReview = !isModalView && comment.length > 260;
+  const visibleComment = isModalView || isExpanded ? comment : previewText(comment);
 
   return (
-    <article className="min-w-0">
-      <div className="flex size-12 items-center justify-center overflow-hidden rounded-full border-2 border-[#e9a400] bg-amber-100 text-sm font-semibold text-amber-950">
-        {author?.image && !imageFailed ? (
-          // eslint-disable-next-line @next/next/no-img-element -- reviewer avatars can be remote user media.
-          <img
-            src={author.image}
-            alt=""
-            className="h-full w-full object-cover"
-            onError={() => setImageFailed(true)}
-          />
-        ) : (
-          initial
+    <article id={`review-${id}`} className="min-w-0 break-words">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex size-12 items-center justify-center overflow-hidden rounded-full border-2 border-[#e9a400] bg-amber-100 text-sm font-semibold text-amber-950">
+          {author?.image && !imageFailed ? (
+            // eslint-disable-next-line @next/next/no-img-element -- reviewer avatars can be remote user media.
+            <img
+              src={author.image}
+              alt=""
+              className="h-full w-full object-cover"
+              onError={() => setImageFailed(true)}
+            />
+          ) : (
+            initial
+          )}
+        </div>
+
+        {canReport && (
+          <button
+            type="button"
+            onClick={() => setIsReportOpen(true)}
+            title="Report this review"
+            aria-label="Report this review"
+            className="rounded-full p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 transition-colors"
+          >
+            <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
+            </svg>
+          </button>
         )}
       </div>
 
@@ -126,7 +151,13 @@ export function ReviewCard({
               <button
                 type="button"
                 className="font-medium text-[#727272] underline underline-offset-2 transition-colors hover:text-[#1f1f1f] cursor-pointer"
-                onClick={() => setIsExpanded((expanded) => !expanded)}
+                onClick={() => {
+                  if (onShowMore) {
+                    onShowMore(id);
+                  } else {
+                    setIsExpanded((expanded) => !expanded);
+                  }
+                }}
                 aria-expanded={isExpanded}
                 aria-controls={`review-${id}`}
               >
@@ -171,6 +202,17 @@ export function ReviewCard({
             {hostResponse.comment}
           </p>
         </div>
+      )}
+
+      {isReportOpen && (
+        <ReportContentModal
+          isOpen={isReportOpen}
+          onClose={() => setIsReportOpen(false)}
+          targetType="REVIEW"
+          targetId={id}
+          targetTitle={comment.slice(0, 60)}
+          relatedBookingId={bookingId || undefined}
+        />
       )}
     </article>
   );
