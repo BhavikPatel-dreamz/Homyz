@@ -108,8 +108,16 @@
 
 /* The shared editor still contains a few Host-specific neutral tokens. Map
    those to the Admin palette only inside this presentation. */
-.admin-listing-editor :is([class*="text-[#1F1F1F]"], [class*="text-[#1f1f1f]"], [class*="text-[#1F1F1F]"], [class*="text-zinc-950"]) {
+.admin-listing-editor :is([class*="text-[#1F1F1F]"], [class*="text-[#1f1f1f]"], [class~="text-zinc-950"]):not([class~="text-white"], [class*="!text-white"], :disabled, .cover-photo-badge) {
   color: var(--admin-editor-ink) !important;
+}
+
+.admin-listing-editor .cover-photo-badge {
+  color: #ffffff !important;
+}
+
+:is(.dark, [data-theme="dark"]) .admin-listing-editor .cover-photo-badge {
+  color: #09090b !important;
 }
 
 .admin-listing-editor :is([class*="border-[#727272]"], [class*="border-[#DDDDDD]"], [class*="border-[#B0B0B0]"], [class*="border-[#b0b0b0]"], [class*="border-[#E5E5E5]"], [class*="border-[#dedede]"]) {

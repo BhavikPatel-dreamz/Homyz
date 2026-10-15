@@ -805,13 +805,15 @@ export function HostListingsWorkspace({
                   </svg>
                 </div>
                 <input
-                  type="search"
+                  type="text"
+                  role="searchbox"
+                  autoComplete="off"
                   autoFocus
                   value={searchQuery}
                   onChange={(event) => handleSearchChange(event.target.value)}
-                  placeholder=""
+                  placeholder={t("host_search_listings_aria") ? `${t("host_search_listings_aria")}...` : ""}
                   aria-label={t("host_search_listings_aria")}
-                  className="h-11 w-full rounded-full border border-[#727272] bg-[#f3f4f6] pl-11 pr-4 font-['Poppins'] text-base text-[#1F1F1F] outline-none transition-colors focus:border-[#1F1F1F]"
+                  className="h-11 w-full rounded-full border border-[#727272] bg-[#f3f4f6] pl-11 pr-4 font-['Poppins'] text-base text-[#1F1F1F] outline-none transition-colors focus:border-[#1F1F1F] [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
                 />
               </div>
               <button
@@ -896,19 +898,22 @@ export function HostListingsWorkspace({
                   </svg>
                 </div>
                 <input
-                  type="search"
+                  type="text"
+                  role="searchbox"
+                  autoComplete="off"
                   value={searchQuery}
                   onChange={(e) => handleSearchChange(e.target.value)}
-                  placeholder="Search listings..."
+                  placeholder={t("host_search_listings_aria") ? `${t("host_search_listings_aria")}...` : "Search listings..."}
                   aria-label={t("host_search_listings_aria")}
-                  className="h-11 w-full rounded-full border border-zinc-300 bg-[#f9fafb] pl-10 pr-9 font-['Poppins'] text-sm text-[#1F1F1F] outline-none transition-colors focus:border-[#1F1F1F] focus:bg-white"
+                  className="h-11 w-full rounded-full border border-zinc-300 bg-[#f9fafb] pl-10 pr-9 font-['Poppins'] text-sm text-[#1F1F1F] outline-none transition-colors focus:border-[#1F1F1F] focus:bg-white [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
                 />
                 {searchQuery && (
                   <button
                     type="button"
                     onClick={() => handleSearchChange("")}
-                    className="absolute inset-y-0 right-3 flex items-center text-zinc-400 hover:text-zinc-600"
+                    className="absolute inset-y-0 right-3 flex items-center text-zinc-400 hover:text-zinc-600 cursor-pointer"
                     title={t("host_listings_clear_search")}
+                    aria-label={t("host_listings_clear_search")}
                   >
                     ✕
                   </button>
