@@ -1691,7 +1691,7 @@ function TargetPreview({ targetType, data }: { targetType: string; data: any }) 
 
           {data.id && (
             <div className="flex-1 space-y-2 text-xs">
-              <h3 className="text-base font-semibold text-slate-900">{data.title}</h3>
+              <h3 className="text-base font-medium text-slate-900">{data.title}</h3>
               <p className="text-slate-600">
                 <span className="font-medium text-slate-700">Host:</span> {data.host?.name || "Host"} ({data.host?.email || "No email"})
               </p>
@@ -1785,7 +1785,7 @@ function TargetPreview({ targetType, data }: { targetType: string; data: any }) 
             </div>
           )}
           <div className="space-y-1 text-xs">
-            <p className="text-base font-semibold text-slate-900">{data.name || "Unnamed user"}</p>
+            <p className="text-base font-medium text-slate-900">{data.name || "Unnamed user"}</p>
             <p className="text-slate-600">{data.email}</p>
             <p className="text-slate-500">Role: <span className="font-medium text-slate-700">{data.role}</span> · Status: <span className="font-medium text-slate-700">{data.status}</span></p>
             <p className="text-slate-500">Joined: {formatDate(data.createdAt)}</p>

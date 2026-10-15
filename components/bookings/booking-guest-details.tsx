@@ -27,7 +27,7 @@ export function BookingGuestDetails({
   return (
     <section className="border-b border-zinc-200 py-7" aria-labelledby="guests-heading">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 id="guests-heading" className="text-xl font-semibold text-[#1F1F1F]">
+        <h2 id="guests-heading" className="text-xl font-medium text-[#1F1F1F]">
           {t("booking_details_guest_details", "Guest details")}
         </h2>
         {canModifyGuests && (
@@ -41,13 +41,13 @@ export function BookingGuestDetails({
         )}
       </div>
 
-      <div className="mt-5 sm:rounded-2xl rounded-lg border border-zinc-200 bg-white p-5 shadow-2xs">
+      <div className="mt-5 rounded-xl border border-white bg-white shadow-[0_2px_4px_0px_#00000040] p-4">
         <dl className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div>
             <dt className="text-xs font-semibold text-[#727272] uppercase tracking-wider">
               {t("booking_details_total_guests", "Total Guests")}
             </dt>
-            <dd className="mt-1 text-base font-semibold text-[#1F1F1F]">
+            <dd className="mt-1 text-base font-medium text-[#1F1F1F]">
               {totalGuests} {totalGuests === 1 ? t("booking_details_guest_singular", "guest") : t("booking_details_guests_plural", "guests")}
             </dd>
             <p className="text-sm text-[#727272] mt-0.5">

@@ -8,37 +8,72 @@ export default function BookingReviewLoading() {
     <div
       aria-busy="true"
       aria-label="Loading review form"
-      className="mx-auto grid w-full max-w-6xl animate-pulse gap-8 lg:grid-cols-[300px_minmax(0,1fr)] lg:gap-14"
+      className="mx-auto flex min-h-[calc(100vh-220px)] w-full max-w-6xl animate-pulse items-center justify-center py-4 sm:py-8 lg:py-12"
     >
-      {/* Mirrors BookingReviewWizard's property summary card. */}
-      <aside className="h-fit rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm lg:sticky lg:top-28">
-        <div className="aspect-[4/3] w-full rounded-2xl bg-zinc-200" />
-        <div className="mt-4 h-6 w-4/5 rounded bg-zinc-200" />
-        <div className="mt-2 h-4 w-full rounded bg-zinc-100" />
-        <div className="mt-2 h-4 w-3/4 rounded bg-zinc-100" />
-        <div className="mt-4 border-t border-zinc-200 pt-4">
-          <div className="h-5 w-24 rounded bg-zinc-200" />
-        </div>
-      </aside>
+      {/* Desktop Skeleton */}
+      <div className="hidden w-full items-center gap-12 lg:grid lg:grid-cols-[440px_1fr] lg:gap-16 xl:gap-20">
+        <aside className="w-full max-w-[450px] rounded-[30px] border border-zinc-200/90 bg-white p-7 shadow-[0_4px_24px_rgba(0,0,0,0.06)]">
+          <div className="h-7 w-3/4 rounded-lg bg-zinc-200" />
+          <div className="mt-3 flex items-center gap-2">
+            <div className="h-4 w-28 rounded bg-zinc-100" />
+            <div className="h-4 w-24 rounded bg-zinc-100" />
+          </div>
+          <div className="mt-5 aspect-[4/3] w-full rounded-2xl bg-zinc-200" />
+          <div className="mt-5 space-y-2">
+            <div className="h-5 w-16 rounded bg-zinc-200" />
+            <div className="h-4 w-36 rounded bg-zinc-100" />
+          </div>
+          <div className="my-5 border-t border-zinc-200" />
+          <div className="flex items-center justify-between">
+            <div className="h-5 w-20 rounded bg-zinc-200" />
+            <div className="h-5 w-24 rounded bg-zinc-200" />
+          </div>
+        </aside>
 
-      {/* Mirrors the initial intro step: it has no rating/input control. */}
-      <section className="flex min-h-[560px] flex-col rounded-3xl bg-white px-2 py-3 sm:px-8 sm:py-8">
-        <div className="mx-auto flex w-full max-w-xl flex-1 flex-col justify-center text-center">
-          <div className="mx-auto h-3 w-20 rounded bg-zinc-100" />
-          <div className="mx-auto mt-5 h-10 w-[min(32rem,92%)] rounded-lg bg-zinc-200 sm:h-12" />
-          <div className="mx-auto mt-3 h-10 w-[min(27rem,82%)] rounded-lg bg-zinc-200 sm:h-12" />
-          <div className="mx-auto mt-4 h-4 w-[min(25rem,80%)] rounded bg-zinc-100" />
-          <div className="mx-auto mt-2 h-4 w-[min(20rem,68%)] rounded bg-zinc-100" />
+        <div className="flex max-w-xl flex-col">
+          <div className="h-7 w-28 rounded-full bg-zinc-200" />
+          <div className="mt-6 h-11 w-4/5 rounded-lg bg-zinc-200" />
+          <div className="mt-4 space-y-2">
+            <div className="h-4 w-full rounded bg-zinc-100" />
+            <div className="h-4 w-5/6 rounded bg-zinc-100" />
+            <div className="h-4 w-3/4 rounded bg-zinc-100" />
+          </div>
+          <div className="mt-8 h-12 w-36 rounded-full bg-zinc-300" />
         </div>
+      </div>
 
-        <div className="mx-auto mt-8 w-full max-w-xl">
-          <div className="h-1 overflow-hidden rounded-full bg-zinc-200" />
-          <div className="mt-5 flex items-center justify-between gap-3">
-            <div className="h-11 w-20 rounded-xl bg-zinc-100" />
-            <div className="h-11 w-28 rounded-xl bg-zinc-200" />
+      {/* Mobile Skeleton */}
+      <div className="block w-full max-w-lg lg:hidden">
+        <div className="mb-4 h-7.5 w-7.5 rounded-full border border-zinc-200 bg-zinc-100" />
+        <div className="w-full rounded-2xl border border-zinc-200/90 bg-white p-4 sm:p-5 shadow-[0_4px_20px_rgba(0,0,0,0.06)]">
+          <div className="flex items-start gap-3.5 sm:gap-4">
+            <div className="size-24 sm:size-28 shrink-0 rounded-2xl bg-zinc-200" />
+            <div className="flex flex-1 flex-col pt-0.5 space-y-2">
+              <div className="h-6 w-3/4 rounded bg-zinc-200" />
+              <div className="h-4 w-24 rounded bg-zinc-100" />
+              <div className="h-4 w-28 rounded bg-zinc-100" />
+            </div>
+          </div>
+          <div className="mt-4 flex items-center justify-between pt-1">
+            <div className="h-4 w-12 rounded bg-zinc-200" />
+            <div className="h-4 w-28 rounded bg-zinc-100" />
+          </div>
+          <div className="my-3.5 border-t border-zinc-200" />
+          <div className="flex items-center justify-between">
+            <div className="h-5 w-16 rounded bg-zinc-200" />
+            <div className="h-5 w-20 rounded bg-zinc-200" />
           </div>
         </div>
-      </section>
+        <div className="mt-7 flex flex-col">
+          <div className="h-7 w-28 rounded-full bg-zinc-200" />
+          <div className="mt-5 h-9 w-4/5 rounded-lg bg-zinc-200" />
+          <div className="mt-4 space-y-2">
+            <div className="h-4 w-full rounded bg-zinc-100" />
+            <div className="h-4 w-5/6 rounded bg-zinc-100" />
+          </div>
+          <div className="mt-10 h-14 w-full rounded-full bg-zinc-300" />
+        </div>
+      </div>
     </div>
   );
 }

@@ -1268,7 +1268,7 @@ export function HostRegistrationWorkspace({
           <div className="w-full max-w-3xl rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4 max-h-[90vh] flex flex-col">
             <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-3">
               <div>
-                <h3 className="text-base font-semibold">{previewDoc.fileName}</h3>
+                <h3 className="text-base font-medium">{previewDoc.fileName}</h3>
                 <span className="text-xs text-[var(--muted-foreground)] font-mono">{previewDoc.documentType}</span>
               </div>
               <button

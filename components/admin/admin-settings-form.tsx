@@ -420,7 +420,7 @@ export function AdminSettingsForm({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Change Password Card */}
         <div className="lg:col-span-2 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs">
-        <h2 className="text-base font-semibold text-muted-foreground mb-1">
+        <h2 className="text-base font-medium text-muted-foreground mb-1">
           Change Administrator Password
         </h2>
         <p className="text-xs text-[var(--muted-foreground)] mb-6">

@@ -331,28 +331,28 @@ function GuidebookModal({
         role="dialog"
         aria-modal="true"
         aria-label={title || "Guidebook dialog"}
-        className={`flex max-h-[100dvh] w-full flex-col overflow-hidden rounded-t-[32px] bg-white shadow-2xl sm:max-h-[92dvh] sm:rounded-[32px] ${width}`}
+        className={`flex max-h-[100dvh] w-full flex-col overflow-hidden bg-white shadow-2xl sm:max-h-[92dvh] rounded-[20px] ${width}`}
       >
-        <header className="shrink-0 px-6 pb-2 pt-5 sm:px-8 sm:pt-6">
+        <header className={`flex shrink-0 items-center justify-between px-6 sm:px-8 ${title ? "pt-4 pb-2 sm:pt-5" : "pt-3.5 pb-0 sm:pt-4"}`}>
+          {title ? (
+            <h2 className="text-lg sm:text-xl font-semibold leading-tight text-[#1f1f1f] dark:text-zinc-100">
+              {title}
+            </h2>
+          ) : <div />}
           <button
             type="button"
             onClick={onClose}
             aria-label="Close dialog"
-            className="-ml-2 flex size-10 items-center justify-center rounded-full text-[#1f1f1f] hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="-mr-2 flex size-9 items-center justify-center rounded-full text-[#1f1f1f] hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 dark:text-zinc-300 dark:hover:bg-zinc-800 cursor-pointer transition-colors"
           >
             <CloseIcon />
           </button>
-          {title && (
-            <h2 className="mt-5 text-[24px] font-semibold leading-tight text-[#1f1f1f]">
-              {title}
-            </h2>
-          )}
         </header>
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 pb-7 pt-4 sm:px-8">
+        <div className={`min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 pb-7 sm:px-8 ${title ? "pt-3 sm:pt-4" : "pt-2 sm:pt-3"}`}>
           {children}
         </div>
         {footer && (
-          <footer className="flex shrink-0 items-center justify-between gap-4 border-t border-zinc-200 bg-white px-6 py-4 sm:px-8">
+          <footer className="flex shrink-0 items-center justify-between gap-4 border-t border-zinc-200 bg-white px-6 py-4 dark:border-zinc-700 dark:bg-zinc-900 sm:px-8">
             {footer}
           </footer>
         )}
@@ -380,7 +380,7 @@ function ModalFooter({
       <button
         type="button"
         onClick={cancel}
-        className="text-sm font-medium underline underline-offset-2"
+        className="rounded-full border border-[#1f1f1f] bg-white px-7 py-2.5 text-sm font-medium text-[#1f1f1f] transition-all duration-300 hover:bg-[#1f1f1f] hover:text-white cursor-pointer dark:bg-zinc-900 dark:text-zinc-100 dark:border-zinc-400 dark:hover:bg-zinc-100 dark:hover:text-zinc-950"
       >
         {t("host_cancel", "Cancel")}
       </button>
@@ -388,7 +388,7 @@ function ModalFooter({
         type="button"
         onClick={save}
         disabled={disabled || saving}
-        className="min-w-28 rounded-xl bg-[#222] px-7 py-3 text-sm font-semibold text-white transition hover:bg-black disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-400"
+        className="min-w-28 rounded-full bg-[#FCDF9C] border border-[#FCDF9C] disabled:border-zinc-200 hover:border-[#1f1f1f] px-7 py-2.5 text-sm font-medium text-[#1f1f1f] hover:text-white transition hover:bg-[#1f1f1f] disabled:cursor-not-allowed disabled:bg-zinc-200 disabled:text-zinc-400 cursor-pointer dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white dark:disabled:bg-zinc-800 dark:disabled:text-zinc-600"
       >
         {saving ? t("host_guidebook_saving", "Saving…") : (saveLabel || t("host_guidebooks_save", "Save"))}
       </button>
@@ -414,9 +414,9 @@ function CategoryCards({
           role="radio"
           aria-checked={selected === category.id}
           onClick={() => onSelect(category.id)}
-          className="flex min-h-18 w-full items-center justify-between rounded-2xl border border-zinc-200 px-6 py-4 text-left transition hover:border-zinc-500 focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="flex min-h-18 w-full items-center justify-between rounded-lg border border-zinc-200 px-6 py-4 text-left transition hover:border-zinc-500 focus-visible:outline-2 focus-visible:outline-offset-2"
         >
-          <span className="font-semibold text-[#1f1f1f]">{category.label}</span>
+          <span className="font-normal text-[#1f1f1f]">{category.label}</span>
           <span
             className={`size-6 rounded-full border ${selected === category.id ? "border-[7px] border-[#222]" : "border-zinc-400"}`}
           />
@@ -549,7 +549,7 @@ function GuidebookRecommendationForm({
     >
       <div className="space-y-7">
         <div className="flex items-start gap-4">
-          <div className="relative flex size-[104px] shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-zinc-100 border border-zinc-200/70 text-3xl">
+          <div className="relative flex size-[104px] shrink-0 items-center justify-center overflow-hidden rounded-[10px] bg-zinc-100 border border-zinc-200/70 text-3xl">
             {photos[0] ? (
               <Image
                 src={photos[0]}
@@ -590,7 +590,7 @@ function GuidebookRecommendationForm({
               placeholder={isPlace ? t("host_guidebook_place_name_ph", "Place name") : t("host_guidebook_neighbourhood_name_ph", "Neighbourhood name")}
             />
             <div className="mt-3">
-              <label className="inline-flex cursor-pointer items-center rounded-full border border-zinc-900 bg-white px-4 py-1.5 text-xs font-semibold text-zinc-900 transition hover:bg-zinc-50">
+              <label className="inline-flex cursor-pointer items-center rounded-full border border-[#1F1F1F] bg-white px-4 py-1.5 text-xs font-medium text-[#1F1F1F] hover:text-white transition hover:bg-[#1F1F1F]">
                 {uploading
                   ? t("host_guidebook_uploading", "Uploading…")
                   : photos.length > 0
@@ -622,7 +622,7 @@ function GuidebookRecommendationForm({
               maxLength={1200}
               value={recommendation}
               onChange={(event) => setRecommendation(event.target.value)}
-              className="w-full rounded-2xl border border-zinc-300 p-4 text-sm text-[#222] placeholder:text-[#717171] outline-none transition focus:border-black"
+              className="w-full rounded-lg border border-zinc-300 p-4 text-sm text-[#1f1f1f] placeholder:text-[#717171] outline-none transition focus:border-black"
               placeholder={
                 isPlace
                   ? t("host_guidebook_tip_placeholder", "Write a tip that will help travellers get the most out of their visit.")
@@ -652,9 +652,16 @@ function GuidebookRecommendationForm({
           <button
             type="button"
             onClick={onCreateCategory}
-            className="mt-4 text-sm font-semibold underline underline-offset-2 text-[#222] hover:text-black"
+            className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium underline underline-offset-2 text-[#222] hover:text-[#727272] cursor-pointer dark:text-zinc-200 dark:hover:text-white"
           >
-            ✎ {t("host_guidebook_create_category", "Create a category")}
+            <Image
+              src="/images/icons/Plus.svg"
+              alt=""
+              width={14}
+              height={14}
+              className="size-3.5 object-contain dark:invert shrink-0"
+            />
+            <span>{t("host_guidebook_create_category", "Create a category")}</span>
           </button>
         </div>
       </div>
@@ -1082,7 +1089,7 @@ export function GuidebooksManager({
   return (
     <div className="pb-16">
       {view === "list" && (
-        <div className="mx-auto max-w-5xl space-y-8">
+        <div className="mr-auto max-w-[calc(100%-50px)] space-y-8">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="flex items-start gap-5">
               <BackButton
@@ -1093,7 +1100,7 @@ export function GuidebooksManager({
                 }
               />
               <div>
-                <h1 className="text-3xl font-semibold">{t("host_guidebooks_title", "Guidebooks")}</h1>
+                <h1>{t("host_guidebooks_title", "Guidebooks")}</h1>
                 <p className="mt-2 text-[#727272]">
                   {t("host_guidebooks_subtext", "Share your favorite places and local tips with guests.")}
                 </p>
@@ -1166,7 +1173,7 @@ export function GuidebooksManager({
                       <button
                         type="button"
                         onClick={() => void openGuidebook(item.id)}
-                        className="rounded-xl bg-[#222] px-5 py-2.5 text-sm font-medium text-white transition hover:bg-black"
+                        className="rounded-xl bg-[#1f1f1f] px-5 py-2.5 text-sm font-medium text-white hover:text-[#1f1f1f] border border-[#1f1f1f] transition hover:bg-white"
                       >
                         Edit
                       </button>
@@ -1197,7 +1204,7 @@ export function GuidebooksManager({
           <div className="mb-7 flex items-start gap-5">
             <BackButton onClick={() => setView("list")} />
             <div>
-              <h1 className="text-3xl font-semibold">{t("host_guidebooks_create_title", "Create a guidebook")}</h1>
+              <h1>{t("host_guidebooks_create_title", "Create a guidebook")}</h1>
               <p className="mt-2 text-[#727272]">
                 {t("host_guidebook_create_intro", "Start with a title and location. You can add recommendations next.")}
               </p>
@@ -1272,7 +1279,7 @@ export function GuidebooksManager({
       )}
 
       {view === "editor" && guidebook && (
-        <div className="mx-auto max-w-6xl space-y-7">
+        <div className="mx-auto space-y-7 max-w-[calc(100%-40px)]">
           <div className="flex flex-wrap items-start justify-between gap-5">
             <div className="flex items-start gap-5">
               <BackButton
@@ -1285,7 +1292,7 @@ export function GuidebooksManager({
                 <p className="text-sm uppercase tracking-wide text-[#727272]">
                   {t("host_guidebook_badge", "Host guidebook")}
                 </p>
-                <h1 className="mt-1 text-3xl font-semibold">
+                <h1>
                   {guidebook.host?.name
                     ? t("host_guidebook_host_heading", "{name}’s guidebook").replace("{name}", guidebook.host.name)
                     : guidebook.title}
@@ -1604,13 +1611,13 @@ export function GuidebooksManager({
           }
         >
           <label className="block">
-            <span className="mb-2 block text-base font-semibold text-[#222]">{t("host_guidebook_cat_name_label", "Category name")}</span>
+            <span className="mb-2 block text-base font-normal text-[#222]">{t("host_guidebook_cat_name_label", "Category name")}</span>
             <input
               autoFocus
               maxLength={80}
               value={newCategory}
               onChange={(event) => setNewCategory(event.target.value)}
-              className="w-full rounded-2xl border border-zinc-300 px-4 py-3 text-sm text-[#222] placeholder:text-zinc-400 outline-none transition focus:border-black"
+              className="w-full rounded-lg border border-[#727272] px-4 py-3 text-sm text-[#1f1f1f] placeholder:text-zinc-400 outline-none transition focus:border-0"
               placeholder={t("host_guidebook_cat_name_ph", "e.g. Architecture")}
             />
           </label>

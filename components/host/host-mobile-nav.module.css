@@ -65,6 +65,7 @@
   font-weight: 400;
   line-height: 18px;
   white-space: nowrap;
+  color: #1F1F1F;
 }
 .active .label {
   position: absolute;

@@ -534,24 +534,24 @@ export function GuestMessagesWorkspace({
     if (activeOffer && status !== "CONFIRMED" && status !== "CANCELLED" && status !== "COMPLETED") {
       if (activeOffer.status === "ACCEPTED") {
         return (
-          <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-800 border border-emerald-200">
+          <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-800 border border-emerald-200">
             {t("messages_badge_offer_accepted")}
           </span>
         );
       }
       return (
-        <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-800 border border-amber-200">
+        <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-800 border border-amber-200">
           {t("messages_badge_special_offer")}
         </span>
       );
     }
     switch (status) {
       case "PRE_APPROVED":
-        return <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 border border-emerald-200">{t("messages_badge_pre_approved")}</span>;
+        return <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-700 border border-emerald-200">{t("messages_badge_pre_approved")}</span>;
       case "SPECIAL_OFFER_SENT":
-        return <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-800 border border-amber-200">{t("messages_badge_special_offer")}</span>;
+        return <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-800 border border-amber-200">{t("messages_badge_special_offer")}</span>;
       case "CONFIRMED":
-        return <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-900 border border-emerald-300">{t("messages_badge_confirmed_stay")}</span>;
+        return <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-medium text-emerald-900 border border-emerald-300">{t("messages_badge_confirmed_stay")}</span>;
       case "DECLINED":
         return <span className="inline-flex items-center rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-medium text-zinc-600 border border-zinc-200">{t("messages_badge_declined")}</span>;
       case "CANCELLED":
@@ -571,8 +571,8 @@ export function GuestMessagesWorkspace({
           {/* Header & Tabs */}
           <div className="p-4 border-b border-zinc-100 space-y-3">
             <div className="flex items-center justify-between">
-              <h1 className="text-xl font-bold text-[#1F1F1F]">{t("messages_column_title")}</h1>
-              <span className="text-xs font-semibold text-zinc-500 bg-zinc-100 px-2.5 py-1 rounded-full">
+              <h1 className="text-xl font-medium text-[#1F1F1F]">{t("messages_column_title")}</h1>
+              <span className="text-xs font-medium text-zinc-500 bg-zinc-100 px-2.5 py-1 rounded-full">
                 {conversations.length}
               </span>
             </div>
@@ -581,7 +581,7 @@ export function GuestMessagesWorkspace({
               <button
                 type="button"
                 onClick={() => setFilter("all")}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors ${
+                className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-colors ${
                   filter === "all"
                     ? "bg-[#1F1F1F] text-white"
                     : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
@@ -592,7 +592,7 @@ export function GuestMessagesWorkspace({
               <button
                 type="button"
                 onClick={() => setFilter("unread")}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-colors ${
+                className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-colors ${
                   filter === "unread"
                     ? "bg-[#1F1F1F] text-white"
                     : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
@@ -665,7 +665,7 @@ export function GuestMessagesWorkspace({
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-1 mb-0.5">
-                        <span className={`text-sm truncate ${hasUnread ? "font-bold text-[#1F1F1F]" : "font-semibold text-zinc-800"}`}>
+                        <span className={`text-sm truncate ${hasUnread ? "font-bold text-[#1F1F1F]" : "font-medium text-zinc-800"}`}>
                           {conv.host.name || t("messages_guest_default_host_name")}
                         </span>
                         <span className="text-xs text-[#727272] shrink-0">
@@ -738,7 +738,7 @@ export function GuestMessagesWorkspace({
                   <div className="bg-amber-50/90 border-b border-amber-200 px-4 py-2.5 flex items-center justify-between gap-3 text-xs shrink-0">
                     <div className="flex items-center gap-2 min-w-0">
                       <span className="size-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
-                      <span className="font-semibold text-amber-950 truncate">
+                      <span className="font-medium text-amber-950 truncate">
                         {t("messages_guest_so_banner_title", {
                           price: formatPrice(
                             selectedConversation.activeSpecialOffer.subtotalPrice,
@@ -765,7 +765,7 @@ export function GuestMessagesWorkspace({
                         const fallbackUrl = `/book/${selectedConversation.listing.id}?checkIn=${encodeURIComponent(start)}&checkOut=${encodeURIComponent(end)}&guests=${guests}&specialOfferId=${encodeURIComponent(selectedConversation.activeSpecialOffer!.id)}`;
                         handleAcceptSpecialOffer(selectedConversation.activeSpecialOffer!.id, fallbackUrl);
                       }}
-                      className="shrink-0 px-3.5 py-1 rounded-full bg-[#1F1F1F] text-white text-xs font-semibold hover:bg-black transition-colors shadow-2xs flex items-center gap-1 disabled:opacity-50"
+                      className="shrink-0 px-3.5 py-1 rounded-full bg-[#1F1F1F] text-white text-xs font-medium hover:bg-black transition-colors shadow-2xs flex items-center gap-1 disabled:opacity-50"
                     >
                       <span>
                         {selectedConversation.activeSpecialOffer.status === "ACCEPTED"
@@ -835,23 +835,23 @@ export function GuestMessagesWorkspace({
                                   {t("messages_guest_so_from_host")}
                                 </span>
                                 {hasBooking ? (
-                                  <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800 border border-emerald-300">
+                                  <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-medium text-emerald-800 border border-emerald-300">
                                     Booked
                                   </span>
                                 ) : isExpired ? (
-                                  <span className="inline-flex items-center rounded-full bg-zinc-200 px-2 py-0.5 text-[10px] font-semibold text-zinc-600 border border-zinc-300">
+                                  <span className="inline-flex items-center rounded-full bg-zinc-200 px-2 py-0.5 text-[10px] font-medium text-zinc-600 border border-zinc-300">
                                     Expired
                                   </span>
                                 ) : isDeclined ? (
-                                  <span className="inline-flex items-center rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-semibold text-rose-700 border border-rose-200">
+                                  <span className="inline-flex items-center rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-medium text-rose-700 border border-rose-200">
                                     Declined
                                   </span>
                                 ) : isAccepted ? (
-                                  <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800 border border-emerald-300">
+                                  <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-medium text-emerald-800 border border-emerald-300">
                                     Accepted
                                   </span>
                                 ) : (
-                                  <span className="inline-flex items-center rounded-full bg-amber-200/80 px-2 py-0.5 text-[10px] font-semibold text-amber-900 border border-amber-300">
+                                  <span className="inline-flex items-center rounded-full bg-amber-200/80 px-2 py-0.5 text-[10px] font-medium text-amber-900 border border-amber-300">
                                     Available
                                   </span>
                                 )}
@@ -865,7 +865,7 @@ export function GuestMessagesWorkspace({
                               <div className="grid grid-cols-2 gap-2 text-xs bg-white/90 p-3 rounded-xl border border-amber-200">
                                 <div>
                                   <span className="text-zinc-500 block">{t("messages_so_dates_label")}</span>
-                                  <span className="font-semibold text-zinc-800">
+                                  <span className="font-medium text-zinc-800">
                                     {startDate && endDate ? formatBookingDateRange(startDate, endDate) : t("messages_guest_dates_on_request")}
                                   </span>
                                 </div>
@@ -882,7 +882,7 @@ export function GuestMessagesWorkspace({
                             {hasBooking ? (
                               <Link
                                 href={`/bookings/${selectedConversation.bookingId}`}
-                                className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-full bg-emerald-700 text-white text-xs font-semibold hover:bg-emerald-800 transition-colors shadow-xs"
+                                className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-full bg-emerald-700 text-white text-xs font-medium hover:bg-emerald-800 transition-colors shadow-xs"
                               >
                                 <span>{t("messages_guest_so_view_confirmed_res")}</span>
                                 <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -890,11 +890,11 @@ export function GuestMessagesWorkspace({
                                 </svg>
                               </Link>
                             ) : isExpired ? (
-                              <div className="w-full py-2 rounded-full bg-zinc-100 border border-zinc-200 text-zinc-400 text-xs font-semibold text-center cursor-not-allowed">
+                              <div className="w-full py-2 rounded-full bg-zinc-100 border border-zinc-200 text-zinc-400 text-xs font-medium text-center cursor-not-allowed">
                                 {t("messages_guest_so_expired_btn")}
                               </div>
                             ) : isDeclined ? (
-                              <div className="w-full py-2 rounded-full bg-zinc-100 border border-zinc-200 text-zinc-400 text-xs font-semibold text-center cursor-not-allowed">
+                              <div className="w-full py-2 rounded-full bg-zinc-100 border border-zinc-200 text-zinc-400 text-xs font-medium text-center cursor-not-allowed">
                                 {t("messages_guest_so_declined_btn")}
                               </div>
                             ) : isAccepted ? (
@@ -903,7 +903,7 @@ export function GuestMessagesWorkspace({
                                   type="button"
                                   disabled={acceptingOffer}
                                   onClick={() => handleAcceptSpecialOffer(offerId, checkoutUrl)}
-                                  className="w-full py-2.5 rounded-full bg-[#1F1F1F] text-white text-xs font-semibold hover:bg-black transition-colors shadow-xs flex items-center justify-center gap-1.5 disabled:opacity-60"
+                                  className="w-full py-2.5 rounded-full bg-[#1F1F1F] text-white text-xs font-medium hover:bg-black transition-colors shadow-xs flex items-center justify-center gap-1.5 disabled:opacity-60"
                                 >
                                   <span>{acceptingOffer ? t("messages_guest_so_opening_checkout") : t("messages_guest_so_proceed_pay")}</span>
                                   <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -919,7 +919,7 @@ export function GuestMessagesWorkspace({
                                 type="button"
                                 disabled={acceptingOffer}
                                 onClick={() => handleAcceptSpecialOffer(offerId, checkoutUrl)}
-                                className="w-full py-2.5 rounded-full bg-[#1F1F1F] text-white text-xs font-semibold hover:bg-black transition-colors disabled:opacity-50 shadow-xs flex items-center justify-center gap-1.5"
+                                className="w-full py-2.5 rounded-full bg-[#1F1F1F] text-white text-xs font-medium hover:bg-black transition-colors disabled:opacity-50 shadow-xs flex items-center justify-center gap-1.5"
                               >
                                 {t("messages_guest_book_now_btn")}
                               </button>
@@ -940,7 +940,7 @@ export function GuestMessagesWorkspace({
                             <p className="text-xs sm:text-sm text-emerald-950">{m.content}</p>
                             <Link
                               href={`/book/${selectedConversation.listing.id}`}
-                              className="inline-block px-5 py-2 rounded-full bg-emerald-700 text-white text-xs font-semibold hover:bg-emerald-800 transition-colors"
+                              className="inline-block px-5 py-2 rounded-full bg-emerald-700 text-white text-xs font-medium hover:bg-emerald-800 transition-colors"
                             >
                               {t("messages_guest_book_now_btn")}
                             </Link>
@@ -990,7 +990,7 @@ export function GuestMessagesWorkspace({
                           }`}
                         >
                           {m.type === "BOOKING_REQUEST" && (
-                            <div className="pb-1.5 border-b border-white/20 text-[11px] font-semibold text-amber-200">
+                            <div className="pb-1.5 border-b border-white/20 text-[11px] font-medium text-amber-200">
                               {t("messages_guest_booking_req_note")}
                             </div>
                           )}
@@ -1044,7 +1044,7 @@ export function GuestMessagesWorkspace({
                                       </svg>
                                     </div>
                                     <div className="min-w-0">
-                                      <p className="text-xs font-semibold truncate max-w-[180px] sm:max-w-xs">{att.fileName}</p>
+                                      <p className="text-xs font-medium truncate max-w-[180px] sm:max-w-xs">{att.fileName}</p>
                                       <p className={`text-[10px] ${isGuest ? "text-zinc-300" : "text-zinc-500"}`}>{formatFileSize(att.fileSize)} • {t("messages_pdf_document")}</p>
                                     </div>
                                   </div>
@@ -1119,7 +1119,7 @@ export function GuestMessagesWorkspace({
                       setIsNearBottom(true);
                       scrollToBottom("smooth");
                     }}
-                    className="absolute bottom-3 right-5 z-10 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white text-zinc-800 text-xs font-semibold shadow-md border border-zinc-200 hover:bg-zinc-50 hover:shadow-lg transition-all"
+                    className="absolute bottom-3 right-5 z-10 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white text-zinc-800 text-xs font-medium shadow-md border border-zinc-200 hover:bg-zinc-50 hover:shadow-lg transition-all"
                   >
                     <svg className="size-3.5 text-zinc-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
@@ -1244,7 +1244,7 @@ export function GuestMessagesWorkspace({
                       sending ||
                       stagedAttachments.some((a) => a.status === "UPLOADING")
                     }
-                    className="h-11 px-5 rounded-2xl bg-[#1F1F1F] text-white text-xs sm:text-sm font-semibold hover:bg-black disabled:opacity-40 disabled:cursor-not-allowed transition-all shrink-0 flex items-center justify-center gap-2"
+                    className="h-11 px-5 rounded-2xl bg-[#1F1F1F] text-white text-xs sm:text-sm font-medium hover:bg-black disabled:opacity-40 disabled:cursor-not-allowed transition-all shrink-0 flex items-center justify-center gap-2"
                   >
                     {sending ? (
                       <span>{t("messages_sending_ellipsis")}</span>
@@ -1262,13 +1262,13 @@ export function GuestMessagesWorkspace({
             </>
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-zinc-400 space-y-3">
-              <div className="size-16 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-400">
+              <div className="size-16 rounded-full bg-zinc-100 flex items-center justify-center text-[#727272]">
                 <svg className="size-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
               </div>
-              <h2 className="text-base font-bold text-zinc-700">{t("messages_select_conversation_title")}</h2>
-              <p className="text-xs text-zinc-500 max-w-xs">
+              <h2 className="text-base font-medium text-[#1f1f1f]">{t("messages_select_conversation_title")}</h2>
+              <p className="text-sm text-[#727272] max-w-xs">
                 {t("messages_guest_select_conv_desc")}
               </p>
             </div>
@@ -1286,7 +1286,7 @@ export function GuestMessagesWorkspace({
                 <a
                   href={`${lightboxAttachment.fileUrl}?download=true`}
                   download={lightboxAttachment.fileName}
-                  className="px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white/20 hover:bg-white/30 text-white transition-colors flex items-center gap-1.5"
+                  className="px-3.5 py-1.5 rounded-full text-xs font-medium bg-white/20 hover:bg-white/30 text-white transition-colors flex items-center gap-1.5"
                 >
                   <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />

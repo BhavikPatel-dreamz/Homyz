@@ -55,10 +55,10 @@ export default async function AdminInvitationsPage(props: {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-muted-foreground">
+        <h1>
           Admin Invitations Management
         </h1>
-        <p className="mt-1 text-xs sm:text-sm text-[var(--muted-foreground)]">
+        <p className="mt-1 text-[#727272]">
           Invite new administrators via email, manage pending setup tokens, and audit account activations.
         </p>
       </div>

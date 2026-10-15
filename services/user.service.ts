@@ -333,8 +333,15 @@ export type PublicHostProfile = {
     rating: number;
     comment: string;
     createdAt: Date;
-    author: { name: string | null; image: string | null };
-    listing: { title: string };
+    author: { name: string | null; image: string | null; id?: string; createdAt?: Date };
+    listing: {
+      title: string;
+      id?: string;
+      customSlug?: string | null;
+      photos?: string[];
+      city?: string | null;
+      country?: string | null;
+    };
   }>;
   listings: Array<{
     id: string;

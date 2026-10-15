@@ -20,7 +20,7 @@ const secondaryKpiGridClass =
   "grid grid-cols-1 gap-3 min-[480px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-5";
 const cardClass =
   "flex flex-col justify-between rounded-[12px] border border-white bg-[#F3F4F5] shadow-[0_2px_4px_0px_#00000040]";
-const insetSurfaceClass = "rounded-[10px] bg-white/70";
+const insetSurfaceClass = "rounded-[10px] bg-white";
 const dashboardDataCache = new Map<string, HostDashboardData>();
 
 function dashboardScopeKey(listingId: string | null | undefined) {
@@ -180,14 +180,14 @@ export function HostKpiOverview({
   return (
     <section
       aria-label="Host performance and earnings summary"
-      className="mx-auto mb-10 w-full font-sans"
+      className="mx-auto mb-4 w-full font-sans sm:mb-10"
     >
       <header className="mb-7 flex flex-wrap items-end justify-between gap-4 border-b border-[#1F1F1F]/10 pb-5 sm:mb-8">
         <div>
           <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#727272]">
             Hosting dashboard
           </p>
-          <h1 className="text-3xl font-semibold tracking-[-0.035em] text-[#1F1F1F] sm:text-4xl">
+          <h1>
             {t("host_dash_header_title", "Performance overview")}
           </h1>
           <p className="mt-1.5 text-sm text-[#727272] sm:text-base">
@@ -350,7 +350,7 @@ export function HostKpiOverview({
       </div>
 
       <details className={`group mt-4 ${cardClass} px-4 py-3.5 sm:px-5`}>
-        <summary className="flex cursor-pointer list-none items-start justify-between gap-3 text-base font-medium text-[#1F1F1F] sm:items-center sm:gap-4 [&::-webkit-details-marker]:hidden">
+        <summary className="flex cursor-pointer list-none justify-between gap-3 text-base font-medium text-[#1F1F1F] items-center sm:gap-4 [&::-webkit-details-marker]:hidden">
           <span>Detailed earnings</span>
           <span className="ml-auto flex shrink-0 items-center gap-2 text-xs font-normal text-[#727272] sm:gap-3">
             {isRefreshing ? (
@@ -400,7 +400,7 @@ export function HostKpiOverview({
                 ].map(([label, amount]) => (
                   <div key={String(label)}>
                     <dt className="text-xs text-[#727272]">{label}</dt>
-                    <dd className="mt-0.5 font-semibold text-[#1F1F1F]">
+                    <dd className="mt-0.5 font-medium text-[#1F1F1F]">
                       {formatCurrency(Number(amount), earnings.currency)}
                     </dd>
                   </div>
@@ -482,7 +482,7 @@ export function HostKpiOverview({
           <div>
             <h2
               id="upcoming-reservation-heading"
-              className="text-base font-semibold text-[#1F1F1F]"
+              className="text-base font-medium text-[#1F1F1F]"
             >
               Upcoming reservation
             </h2>
@@ -526,7 +526,7 @@ export function HostKpiOverview({
           <div>
             <h2
               id="guest-information-heading"
-              className="text-lg font-semibold tracking-[-0.02em] text-[#1F1F1F]"
+              className="text-lg font-medium tracking-[-0.02em] text-[#1F1F1F]"
             >
               Guest insights
             </h2>
@@ -537,7 +537,7 @@ export function HostKpiOverview({
           {isRefreshing ? (
             <span className="h-3 w-24 animate-pulse rounded bg-zinc-100" />
           ) : (
-            <span className="rounded-full bg-white/70 px-2.5 py-1 text-xs font-medium text-[#727272]">
+            <span className="rounded-full bg-white px-2.5 py-1 text-xs font-medium text-[#727272]">
               {guestAnalytics.completedGuestStaysCount} completed stays
             </span>
           )}
@@ -625,7 +625,7 @@ export function HostKpiOverview({
           <div>
             <h2
               id="reviews-heading"
-              className="text-lg font-semibold tracking-[-0.02em] text-[#1F1F1F]"
+              className="text-lg font-medium tracking-[-0.02em] text-[#1F1F1F]"
             >
               Reviews and ratings
             </h2>
@@ -703,9 +703,9 @@ export function HostKpiOverview({
                         key={review.id}
                         className={`${insetSurfaceClass} min-h-29 border border-white/80 p-4 transition-shadow hover:shadow-[0_2px_8px_rgba(31,31,31,0.08)]`}
                       >
-                        <p className="text-base font-semibold leading-5 text-[#1F1F1F]">
+                        <p className="text-base font-medium leading-5 text-[#1F1F1F]">
                           {review.guestName}{" "}
-                          <span className="font-medium text-[#727272]">
+                          <span className="font-medium text-[#1f1f1f]">
                             · ★ {review.rating}
                           </span>
                         </p>
@@ -733,7 +733,7 @@ export function HostKpiOverview({
         <div>
           <h2
             id="host-status-heading"
-            className="text-lg font-semibold tracking-[-0.02em] text-[#1F1F1F]"
+            className="text-lg font-medium tracking-[-0.02em] text-[#1F1F1F]"
           >
             Host & listing status
           </h2>
@@ -847,7 +847,7 @@ function PrimaryKpi({
         {refreshing ? (
           <div className="mt-2 h-7 w-28 animate-pulse rounded bg-zinc-100" />
         ) : (
-          <p className="mt-3 text-3xl font-semibold tracking-[-0.04em] text-[#1F1F1F]">
+            <p className="mt-3 lg:text-2xl text-xl font-medium text-[#1F1F1F]">
             {value}
           </p>
         )}
@@ -868,9 +868,9 @@ function PrimaryKpi({
               {detail}
             </p>
             {progress !== undefined && (
-              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white">
+                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#DDDDDE]">
                 <div
-                  className="h-full rounded-full bg-[#FCDF9C]"
+                    className="h-full rounded-full bg-[#EBA900]"
                   style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
                 />
               </div>
@@ -903,7 +903,7 @@ function SecondaryKpi({
         {refreshing ? (
           <div className="mt-2 h-5 w-16 animate-pulse rounded bg-zinc-100" />
         ) : (
-          <p className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-[#1F1F1F]">
+          <p className="mt-2 text-2xl font-medium text-[#1F1F1F]">
             {value}
           </p>
         )}
@@ -931,7 +931,7 @@ function MetricCell({
       <p className="text-sm font-normal text-[#727272]">
         {label}
       </p>
-      <p className="mt-2 text-2xl font-semibold tracking-tight text-[#1F1F1F]">
+      <p className="mt-2 text-2xl font-medium tracking-tight text-[#1F1F1F]">
         {value}
       </p>
       {detail && (
@@ -1309,7 +1309,7 @@ function RatingBar({
       <span className="font-normal text-[#727272]">{label}</span>
       <div className="h-1.5 overflow-hidden rounded-full bg-[#DDDDDE]">
         <div
-          className="h-full rounded-full bg-[#1F1F1F]"
+          className="h-full rounded-full bg-[#EBA900]"
           style={{
             width: `${rating === null ? 0 : Math.min(100, Math.max(0, (rating / 5) * 100))}%`,
           }}
@@ -1335,7 +1335,7 @@ function StatusCard({
 }) {
   return (
     <article className={`${insetSurfaceClass} min-h-39 border border-white/80 p-4 transition-shadow duration-200 hover:shadow-[0_2px_8px_rgba(31,31,31,0.08)] sm:p-5`}>
-      <p className="text-base font-semibold tracking-[-0.02em] text-[#1F1F1F]">
+      <p className="text-base font-medium text-[#1F1F1F]">
         {title}
       </p>
       <p
@@ -1367,7 +1367,7 @@ export function HostDashboardOverviewSkeleton() {
     <section
       aria-label="Loading host performance dashboard"
       aria-busy="true"
-      className="mx-auto mb-10 w-full animate-pulse font-sans"
+      className="mx-auto mb-4 w-full animate-pulse font-sans sm:mb-10"
     >
       <div className="mb-7 flex items-end justify-between gap-4 border-b border-[#1F1F1F]/10 pb-5 sm:mb-8">
         <div>

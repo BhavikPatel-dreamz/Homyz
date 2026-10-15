@@ -401,7 +401,7 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
 
             {/* Title & Status Badges */}
             <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-xl sm:text-2xl font-black text-muted-foreground tracking-tight">{listing.title}</h1>
+              <h1>{listing.title}</h1>
 
               <div className="flex items-center gap-2 flex-wrap">
                 <span

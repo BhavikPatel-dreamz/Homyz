@@ -40,7 +40,7 @@ export default async function HostReviewPage({
           ) : (
             <section className="mx-auto max-w-xl rounded-3xl border border-zinc-200 bg-white p-6 text-center shadow-sm sm:p-8">
               <span className="mx-auto flex size-12 items-center justify-center rounded-full bg-amber-100 text-xl text-amber-800">!</span>
-              <h1 className="mt-4 text-2xl font-semibold tracking-tight text-[#1F1F1F]">
+              <h1 className="mt-4">
                 {context.eligibility.status === "REVIEW_SUBMITTED"
                   ? "Review submitted"
                   : context.eligibility.status === "REVIEW_WINDOW_EXPIRED"

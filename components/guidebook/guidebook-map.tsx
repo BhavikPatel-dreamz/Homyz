@@ -126,7 +126,7 @@ export function GuidebookMap({
         }">
           <div class="flex items-center justify-center w-8 h-8 rounded-full border-2 ${
             isSelected
-              ? "bg-[#FEE08B] border-amber-500 shadow-md ring-2 ring-amber-300"
+              ? "bg-[#FCDF9C] border-amber-500 shadow-md ring-2 ring-amber-300"
               : place.isFavorite
               ? "bg-amber-100 border-amber-400 shadow-xs"
               : "bg-white border-zinc-300 shadow-xs"

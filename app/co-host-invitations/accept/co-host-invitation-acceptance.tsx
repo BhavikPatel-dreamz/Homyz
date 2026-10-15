@@ -76,10 +76,10 @@ export function CoHostInvitationAcceptance({ token }: { token: string }) {
               <p className="mt-7 text-xs font-semibold uppercase tracking-[0.16em] text-[#63501C]">
                 {t("cohost_inv_badge", "You're invited")}
               </p>
-              <h1 className="mt-3 max-w-sm text-[31px] font-semibold leading-[1.14] tracking-[-0.04em] sm:text-[39px]">
+              <h1 className="mt-3 max-w-sm">
                 {t("cohost_inv_title", "Help host a place guests love.")}
               </h1>
-              <p className="mt-5 max-w-sm text-sm leading-6 text-[#4D4328] sm:text-[15px]">
+              <p className="mt-5 max-w-sm text-sm leading-6 text-[#727272] sm:text-[15px]">
                 {t("cohost_inv_desc", "Co-hosting lets you work alongside the listing owner to help create a welcoming stay for every guest.")}
               </p>
 
@@ -121,7 +121,7 @@ export function CoHostInvitationAcceptance({ token }: { token: string }) {
                   <span className="grid size-9 place-items-center rounded-full bg-emerald-600 text-white">
                     <CheckIcon className="size-5" />
                   </span>
-                  <h3 className="mt-4 text-base font-semibold">
+                  <h3 className="mt-4 text-base font-medium">
                     {t("cohost_inv_accepted_title", "Invitation accepted")}
                   </h3>
                   <p className="mt-1 text-sm leading-6 text-emerald-900">{result.message}</p>

@@ -246,8 +246,8 @@ export function AdminAllPropertiesCalendar({
     <div className="flex flex-col gap-5 pb-16 text-muted-foreground">
       <div className="flex flex-col gap-4 border-b border-[var(--border)] pb-5 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">Reservation Calendar</h1>
-          <p className="mt-1 text-xs text-[var(--muted-foreground)] sm:text-sm">
+          <h1>Reservation Calendar</h1>
+          <p className="mt-1 text-xs text-[#727272] sm:text-sm">
             Read-only availability across all properties. Confirmed stays, active 24-hour holds, and blocks share one timeline.
           </p>
         </div>

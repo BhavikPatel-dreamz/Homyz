@@ -68,7 +68,7 @@ export function ReservationCard({
       )}
 
       <div className="relative flex w-[min(100%,190px)] flex-col items-center gap-5 sm:gap-6">
-        <div className="flex flex-col items-center justify-center text-center">
+        <div className="flex flex-col items-center justify-center text-center gap-1.5">
           <span className="font-sans text-[16px] leading-[24px] font-medium text-[#1F1F1F]">
             {event.timeDisplay}
           </span>
@@ -80,7 +80,11 @@ export function ReservationCard({
             {event.subtitleDisplay}
           </span>
           {event.dateDisplay && (
-            <span className="mt-0.5 font-sans text-[12px] leading-[18px] text-[#727272]">
+            <span
+              className={`mt-0.5 font-sans text-[12px] leading-[18px] ${
+                isActive ? "text-[#1F1F1F]" : "text-[#727272]"
+              }`}
+            >
               {event.dateDisplay}
             </span>
           )}
@@ -158,7 +162,7 @@ export function ReservationCard({
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
               className={`origin-center transition-transform duration-300 ease-in-out ${
-                selected ? "rotate-45" : "rotate-0 group-hover:rotate-45"
+                isActive ? "rotate-45" : "rotate-0 group-hover:rotate-45"
               }`}
             >
               <path
@@ -173,7 +177,7 @@ export function ReservationCard({
 
           <div className="mt-1 w-full border-t border-black/10 pt-3">
             {hasSubmittedReview ? (
-              <div className="flex min-h-10 items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 text-center text-[11px] font-semibold leading-4 text-emerald-800">
+              <div className="flex min-h-10 items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 text-center text-sm font-medium leading-4 text-emerald-800">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0">
                   <path d="m5 12 4 4L19 6" />
                 </svg>
@@ -183,7 +187,7 @@ export function ReservationCard({
               <Link
                 href={`/host/reviews/${booking.id}`}
                 onClick={(clickEvent) => clickEvent.stopPropagation()}
-                className="flex min-h-10 w-full items-center justify-center gap-2 rounded-xl bg-[#1F1F1F] px-3 text-center text-xs font-semibold text-white transition-colors hover:bg-zinc-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1F1F1F]"
+                className="flex min-h-10 w-full items-center justify-center gap-2 rounded-xl bg-[#1F1F1F] px-3 text-center text-sm font-medium text-white transition-colors hover:bg-zinc-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1F1F1F]"
                 aria-label={`Review ${booking.guestName || "guest"}`}
               >
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -193,7 +197,7 @@ export function ReservationCard({
                 Review guest
               </Link>
             ) : (
-              <div className="flex min-h-10 items-center justify-center gap-2 rounded-xl bg-white/55 px-3 text-center text-[11px] font-medium leading-4 text-[#5E5E5E]">
+                  <div className="flex min-h-10 items-center justify-center gap-2 rounded-xl bg-white/55 px-3 text-center text-sm font-medium leading-4 text-[#5E5E5E]">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0">
                   <path d="M12 8v4l2.5 2.5" />
                   <circle cx="12" cy="12" r="9" />

@@ -43,10 +43,10 @@ export function HelpClient() {
         <Container>
           <div className="mx-auto max-w-4xl space-y-10">
             <div className="text-center space-y-3">
-              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#1F1F1F]">
+              <h1>
                 {t("help_hero_title", "How can we help you?")}
               </h1>
-              <p className="text-sm sm:text-base text-zinc-600 max-w-xl mx-auto">
+              <p className="text-sm sm:text-base text-[#727272] max-w-xl mx-auto">
                 {t("help_hero_desc", "Explore popular topics, browse guides, or get in touch with our 24/7 customer support team.")}
               </p>
             </div>
@@ -56,29 +56,29 @@ export function HelpClient() {
                 <Link
                   key={cat.link}
                   href={cat.link}
-                  className="rounded-2xl border border-zinc-200 bg-zinc-50/50 p-6 hover:bg-zinc-100/70 hover:border-zinc-300 transition-all flex items-start gap-4 shadow-2xs"
+                  className="rounded-xl border border-white bg-white shadow-[0_2px_4px_0px_#00000040] p-6 hover:bg-zinc-100/70 hover:border-zinc-300 transition-all flex items-start gap-4"
                 >
                   <span className="text-3xl shrink-0" aria-hidden="true">{cat.icon}</span>
                   <div>
-                    <h2 className="text-base font-semibold text-[#1F1F1F]">{cat.title}</h2>
-                    <p className="mt-1 text-xs text-[#727272] leading-relaxed">{cat.description}</p>
+                    <h2 className="text-base font-medium text-[#1F1F1F]">{cat.title}</h2>
+                    <p className="mt-1 text-sm text-[#727272] leading-relaxed">{cat.description}</p>
                   </div>
                 </Link>
               ))}
             </div>
 
-            <div className="rounded-3xl border border-amber-200 bg-amber-50/60 p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div className="rounded-xl border border-amber-200 bg-amber-50/60 p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6">
               <div className="space-y-1 text-center sm:text-left">
-                <h3 className="text-lg font-bold text-[#1F1F1F]">
+                <h3 className="text-lg font-medium text-[#1F1F1F]">
                   {t("help_support_banner_title", "Need personalized support?")}
                 </h3>
-                <p className="text-xs text-zinc-600">
+                <p className="text-sm text-[#727272]">
                   {t("help_support_banner_desc", "Our customer experience specialists are ready to assist you any time.")}
                 </p>
               </div>
               <Link
                 href="/profile/tab/support"
-                className="shrink-0 rounded-full bg-[#1F1F1F] text-white px-6 py-3 text-sm font-semibold hover:bg-zinc-800 transition-colors"
+                className="shrink-0 rounded-full bg-[#1F1F1F] text-white hover:text-[#1f1f1f] border border-[#1f1f1f] px-6 py-3 text-sm font-medium hover:bg-white transition-colors"
               >
                 {t("help_chat_btn", "Chat with Support")}
               </Link>

@@ -13,7 +13,7 @@ test("host dashboard omits workspace navigation without changing other host navi
 
   assert.doesNotMatch(dashboardPage, /HostSubNav/);
   assert.match(dashboardPage, /<HostHeader\s*\/>/);
-  assert.match(dashboardPage, /pt-8 sm:pb-24 sm:pt-10/);
+  assert.match(dashboardPage, /pb-5 pt-4 sm:flex-1 sm:pt-10 xl:pb-24/);
   assert.match(todayWorkspace, /<HostSubNav/);
   assert.match(calendarWorkspace, /<HostSubNav activeTab="calendar"/);
 });
@@ -25,8 +25,8 @@ test("dashboard loading shell mirrors the route and uses the shared dashboard ge
 
   assert.match(loadingPage, /HostDashboardOverviewSkeleton/);
   assert.doesNotMatch(loadingPage, /HostSubNav/);
-  assert.match(loadingPage, /pt-8 sm:pb-24 sm:pt-10/);
-  assert.match(dashboardPage, /pt-8 sm:pb-24 sm:pt-10/);
+  assert.match(loadingPage, /pb-5 pt-4 sm:flex-1 sm:pt-10 xl:pb-24/);
+  assert.match(dashboardPage, /pb-5 pt-4 sm:flex-1 sm:pt-10 xl:pb-24/);
   assert.match(overview, /primaryKpiGridClass/);
   assert.match(overview, /secondaryKpiGridClass/);
   assert.match(overview, /export function HostDashboardOverviewSkeleton/);

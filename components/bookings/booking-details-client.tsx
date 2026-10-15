@@ -80,14 +80,14 @@ export function BookingDetailsClient({ data }: BookingDetailsClientProps) {
           {/* Header */}
           <div className="flex flex-wrap items-start justify-between gap-4 border-b border-zinc-200 pb-7">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-[#727272]">
+              <p className="text-xs font-medium uppercase tracking-wider text-[#727272]">
                 {t("booking_details_reservation_code", { code: bookingCode }, `Reservation #${bookingCode}`)}
               </p>
-              <h1 className="mt-1.5 text-2xl sm:text-3xl font-semibold tracking-tight text-[#1F1F1F]">
+              <h1 className="mt-1.5">
                 {listing.title}
               </h1>
               {location && (
-                <p className="mt-1.5 text-sm font-medium text-[#727272] flex items-center gap-1.5">
+                <p className="mt-1.5 text-sm font-normal text-[#727272] flex items-center gap-1.5">
                   <svg className="h-4 w-4 text-[#727272] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -108,7 +108,7 @@ export function BookingDetailsClient({ data }: BookingDetailsClientProps) {
             <section className="mt-6 rounded-2xl border border-amber-200 bg-amber-50/50 p-5">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
-                  <h2 className="text-base font-semibold text-[#1F1F1F]">Your reservation reports</h2>
+                  <h2 className="text-base font-medium text-[#1F1F1F]">Your reservation reports</h2>
                   <p className="mt-1 text-sm text-zinc-600">Reports you filed for this reservation and their current review status.</p>
                 </div>
                 <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-zinc-700 shadow-2xs">
@@ -138,7 +138,7 @@ export function BookingDetailsClient({ data }: BookingDetailsClientProps) {
           )}
 
           {/* Contextual Status Banner */}
-          <div className={`mt-6 sm:rounded-2xl rounded-lg border p-5 ${
+          <div className={`mt-6 rounded-xl border border-white bg-white shadow-[0_2px_4px_0px_#00000040] p-5 ${
             statusDetails.isCompleted
               ? "bg-zinc-50 border-zinc-200 text-zinc-800"
               : statusDetails.isCancelled
@@ -149,7 +149,7 @@ export function BookingDetailsClient({ data }: BookingDetailsClientProps) {
                     ? "bg-amber-50/70 border-amber-200 text-amber-950"
                     : "bg-emerald-50/60 border-emerald-200 text-emerald-950"
           }`}>
-            <h2 className="text-base font-semibold">{statusDetails.headline}</h2>
+            <h2 className="text-base font-medium">{statusDetails.headline}</h2>
             <p className="mt-1 text-xs sm:text-sm leading-relaxed opacity-90">
               {statusDetails.description}
             </p>
@@ -265,7 +265,7 @@ export function BookingDetailsClient({ data }: BookingDetailsClientProps) {
 
           {/* 6. Help & Concierge Support */}
           <section className="py-7 border-t border-zinc-200" aria-labelledby="help-heading">
-            <h2 id="help-heading" className="text-xl font-semibold text-[#1F1F1F]">
+            <h2 id="help-heading" className="text-xl font-medium text-[#1F1F1F]">
               {t("booking_details_need_help", "Need help with this reservation?")}
             </h2>
             <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">

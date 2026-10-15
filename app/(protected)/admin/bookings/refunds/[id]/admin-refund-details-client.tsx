@@ -316,7 +316,7 @@ export function AdminRefundDetailsClient({
             </span>
           </div>
           <div className="flex flex-wrap items-center gap-3 mt-1.5">
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+            <h1>
               Refund Request: {refund.refundReference || refund.id}
             </h1>
             <span

@@ -147,10 +147,10 @@ export function AdminNotificationsClient({
       {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[var(--border)] pb-5">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground mt-1">
+          <h1 className="mt-1">
             Booking Notifications Hub
           </h1>
-          <p className="text-xs text-[var(--muted-foreground)] mt-0.5">
+          <p className="text-xs text-[#727272] mt-0.5">
             Track reservation notifications, delivery statuses, provider receipts, and dispatch issues.
           </p>
         </div>

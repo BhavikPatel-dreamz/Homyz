@@ -1097,7 +1097,7 @@ export function AdminInvitationsTable({
                 </svg>
               </div>
               <div>
-                <h2 className="text-base font-semibold text-muted-foreground">
+                <h2 className="text-base font-medium text-muted-foreground">
                   Revoke Administrator Invitation
                 </h2>
                 <p className="text-xs text-[var(--muted-foreground)]">

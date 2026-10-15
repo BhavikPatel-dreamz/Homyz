@@ -55,7 +55,7 @@ export function ReviewRequestStep({
   return (
     <div className="min-w-0 divide-y divide-zinc-200">
       <section className="py-5" aria-labelledby="review-property-heading">
-        <h3 id="review-property-heading" className="text-base font-semibold text-[#1f1f1f]">{t("book_review_property", "Property")}</h3>
+        <h3 id="review-property-heading" className="text-base font-medium text-[#1f1f1f]">{t("book_review_property", "Property")}</h3>
         <div className="mt-3 flex items-center gap-3">
           <div className="relative size-16 shrink-0 overflow-hidden rounded-xl bg-zinc-100">
             {property.imageUrl ? (
@@ -72,7 +72,7 @@ export function ReviewRequestStep({
       </section>
 
       <section className="py-5" aria-labelledby="review-payment-heading">
-        <h3 id="review-payment-heading" className="text-base font-semibold text-[#1f1f1f]">{t("book_review_payment", "Payment")}</h3>
+        <h3 id="review-payment-heading" className="text-base font-medium text-[#1f1f1f]">{t("book_review_payment", "Payment")}</h3>
         <div className="mt-4 space-y-4">
           <div className="flex min-w-0 items-start justify-between gap-4">
             <div className="min-w-0">
@@ -100,7 +100,7 @@ export function ReviewRequestStep({
       <section className="py-5" aria-labelledby="review-message-heading">
         <div className="flex min-w-0 items-start justify-between gap-4">
           <div className="min-w-0">
-            <h3 id="review-message-heading" className="text-base font-semibold text-[#1f1f1f]">{t("book_message_to_host", "Message to host")}</h3>
+            <h3 id="review-message-heading" className="text-base font-medium text-[#1f1f1f]">{t("book_message_to_host", "Message to host")}</h3>
             <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-zinc-600">{data.message || t("book_no_message_added", "No message added")}</p>
           </div>
           <ChangeButton label="message to host" onClick={onChangeMessage} />
@@ -108,7 +108,7 @@ export function ReviewRequestStep({
       </section>
 
       <section className="py-5" aria-labelledby="review-trip-heading">
-        <h3 id="review-trip-heading" className="text-base font-semibold text-[#1f1f1f]">{t("book_trip", "Trip")}</h3>
+        <h3 id="review-trip-heading" className="text-base font-medium text-[#1f1f1f]">{t("book_trip", "Trip")}</h3>
         <div className="mt-4 space-y-4">
           <div className="flex min-w-0 items-start justify-between gap-4">
             <dl className="min-w-0 space-y-2 text-sm">
@@ -128,7 +128,7 @@ export function ReviewRequestStep({
       </section>
 
       <section className="py-5" aria-labelledby="review-price-heading">
-        <h3 id="review-price-heading" className="text-base font-semibold text-[#1f1f1f]">{t("book_price_details", "Price details")}</h3>
+        <h3 id="review-price-heading" className="text-base font-medium text-[#1f1f1f]">{t("book_price_details", "Price details")}</h3>
         <dl className="mt-4 space-y-2.5">
           {data.pricing.rows.map((row) => (
             <div key={row.id} className="flex items-start justify-between gap-4 text-sm">
@@ -173,7 +173,7 @@ export function ReviewRequestStep({
           onClick={onSubmit}
           disabled={!data.canSubmitRequest || isSubmitting}
           aria-describedby={data.blocker ? "request-submit-blocker" : undefined}
-          className="mt-5 flex min-h-12 w-full items-center justify-center rounded-full border border-[#1f1f1f] bg-[#1f1f1f] px-5 text-base font-semibold text-white transition-colors hover:bg-[#fcdf9c] hover:text-[#1f1f1f] disabled:cursor-not-allowed disabled:opacity-50"
+          className="mt-5 flex min-h-12 w-full items-center justify-center rounded-full border border-[#1f1f1f] bg-[#1f1f1f] px-5 text-base font-medium text-white transition-colors hover:bg-[#fcdf9c] hover:text-[#1f1f1f] disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isSubmitting
             ? isInstantBook ? t("book_btn_confirming", "Confirming booking...") : t("book_btn_sending_request", "Sending request...")

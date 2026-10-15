@@ -59,7 +59,7 @@ export function BookingStayInfo({
   return (
     <section className="border-b border-zinc-200 py-7" aria-labelledby="stay-info-heading">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 id="stay-info-heading" className="text-xl font-semibold text-[#1F1F1F]">
+        <h2 id="stay-info-heading" className="text-xl font-medium text-[#1F1F1F]">
           {t("booking_details_stay_info", "Stay information")}
         </h2>
         <Link
@@ -74,58 +74,58 @@ export function BookingStayInfo({
       </div>
 
       <dl className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2">
-        <div className="sm:rounded-2xl rounded-lg border border-zinc-100 bg-[#F3F4F5] p-4">
-          <dt className="text-xs font-semibold text-[#727272] uppercase tracking-wider">{t("booking_details_property", "Property")}</dt>
+        <div className="rounded-xl border border-white bg-white shadow-[0_2px_4px_0px_#00000040] p-4">
+          <dt className="min-w-0 text-sm font-medium text-[#727272]">{t("booking_details_property", "Property")}</dt>
           <dd className="mt-1 font-medium text-[#1F1F1F]">{propertyName}</dd>
-          {propertyType && <p className="text-sm text-[#727272] mt-0.5">{propertyType}</p>}
+          {propertyType && <p className="text-sm text-[#727272] font-normal mt-0.5 ">{propertyType}</p>}
         </div>
 
-        <div className="rounded-2xl border border-zinc-100 bg-zinc-50/70 p-4">
-          <dt className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">{t("booking_details_reservation_code_label", "Reservation Code")}</dt>
-          <dd className="mt-1 font-mono font-semibold text-zinc-900">{bookingCode}</dd>
-          <p className="text-xs text-zinc-500 mt-0.5">{t("booking_details_booked_on", { date: formatCreatedDate(createdAt) }, `Booked on ${formatCreatedDate(createdAt)}`)}</p>
+        <div className="rounded-xl border border-white bg-white shadow-[0_2px_4px_0px_#00000040] p-4">
+          <dt className="min-w-0 text-sm font-medium text-[#727272]">{t("booking_details_reservation_code_label", "Reservation Code")}</dt>
+          <dd className="mt-1 font-medium text-[#1F1F1F]">{bookingCode}</dd>
+          <p className="text-sm text-[#727272] font-normal mt-0.5 ">{t("booking_details_booked_on", { date: formatCreatedDate(createdAt) }, `Booked on ${formatCreatedDate(createdAt)}`)}</p>
         </div>
 
-        <div className="rounded-2xl border border-zinc-100 bg-zinc-50/70 p-4">
-          <dt className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">{t("booking_details_check_in", "Check-in")}</dt>
-          <dd className="mt-1 font-semibold text-zinc-900">{formatBookingDate(startDate, { weekday: true })}</dd>
-          <p className="text-xs text-zinc-600 mt-0.5">
+        <div className="rounded-xl border border-white bg-white shadow-[0_2px_4px_0px_#00000040] p-4">
+          <dt className="min-w-0 text-sm font-medium text-[#727272]">{t("booking_details_check_in", "Check-in")}</dt>
+          <dd className="mt-1 font-medium text-[#1F1F1F]">{formatBookingDate(startDate, { weekday: true })}</dd>
+          <p className="text-sm text-[#727272] font-normal mt-0.5 ">
             {checkInStart
               ? t("booking_details_check_in_from", { time: checkInStart }, `From ${checkInStart}`)
               : t("booking_details_check_in_default", "Check-in from 3:00 PM")}
           </p>
         </div>
 
-        <div className="rounded-2xl border border-zinc-100 bg-zinc-50/70 p-4">
-          <dt className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">{t("booking_details_check_out", "Check-out")}</dt>
-          <dd className="mt-1 font-semibold text-zinc-900">{formatBookingDate(endDate, { weekday: true })}</dd>
-          <p className="text-xs text-zinc-600 mt-0.5">
+        <div className="rounded-xl border border-white bg-white shadow-[0_2px_4px_0px_#00000040] p-4">
+          <dt className="min-w-0 text-sm font-medium text-[#727272]">{t("booking_details_check_out", "Check-out")}</dt>
+          <dd className="mt-1 font-medium text-[#1F1F1F]">{formatBookingDate(endDate, { weekday: true })}</dd>
+          <p className="text-sm text-[#727272] font-normal mt-0.5 ">
             {checkOutTime
               ? t("booking_details_check_out_by", { time: checkOutTime }, `By ${checkOutTime}`)
               : t("booking_details_check_out_default", "Check-out by 11:00 AM")}
           </p>
         </div>
 
-        <div className="sm:rounded-2xl rounded-lg border border-zinc-100 bg-[#F3F4F5] p-4">
-          <dt className="text-xs font-semibold text-[#727272] uppercase tracking-wider">{t("booking_details_length_of_stay", "Length of Stay")}</dt>
+        <div className="rounded-xl border border-white bg-white shadow-[0_2px_4px_0px_#00000040] p-4">
+          <dt className="min-w-0 text-sm font-medium text-[#727272]">{t("booking_details_length_of_stay", "Length of Stay")}</dt>
           <dd className="mt-1 font-medium text-[#1F1F1F]">
             {nights === 1
               ? t("booking_details_night_count", { count: nights }, `${nights} night`)
               : t("booking_details_nights_count", { count: nights }, `${nights} nights`)}
           </dd>
-          <p className="text-sm text-[#727272] mt-0.5">
+          <p className="text-sm text-[#727272] font-normal mt-0.5 ">
             {guests === 1
               ? t("booking_details_guest_reserved", { count: guests }, `${guests} guest reserved`)
               : t("booking_details_guests_reserved", { count: guests }, `${guests} guests reserved`)}
           </p>
         </div>
 
-        <div className="sm:rounded-2xl rounded-lg border border-zinc-100 bg-[#F3F4F5] p-4">
-          <dt className="text-xs font-semibold text-[#727272] uppercase tracking-wider">{t("booking_details_cancellation_policy", "Cancellation Policy")}</dt>
+        <div className="rounded-xl border border-white bg-white shadow-[0_2px_4px_0px_#00000040] p-4">
+          <dt className="min-w-0 text-sm font-medium text-[#727272]">{t("booking_details_cancellation_policy", "Cancellation Policy")}</dt>
           <dd className="mt-1 font-medium text-[#1F1F1F]">
             {isNonRefundable ? t("booking_details_non_refundable", "Non-refundable") : cancellationPolicy || "Flexible"}
           </dd>
-          <p className="text-sm text-[#727272] mt-0.5">
+          <p className="text-sm text-[#727272] font-normal mt-0.5 ">
             {isNonRefundable
               ? t("booking_details_non_ref_desc", "Special non-refundable discounted booking")
               : t("booking_details_flex_desc", "Review terms for refund eligibility")}
@@ -134,8 +134,8 @@ export function BookingStayInfo({
       </dl>
 
       {description && (
-        <div className="mt-5 sm:rounded-2xl rounded-lg border border-zinc-200/70 bg-white p-4">
-          <p className="text-xs font-semibold text-[#727272] uppercase tracking-wider mb-1.5">
+        <div className="rounded-xl border border-white bg-white shadow-[0_2px_4px_0px_#00000040] p-4 mt-5">
+          <p className="min-w-0 text-sm font-medium text-[#727272] mb-1.5">
             {t("booking_details_listing_summary", "Listing Summary")}
           </p>
           <p className="text-sm sm:text-sm text-zinc-600 leading-relaxed line-clamp-3">

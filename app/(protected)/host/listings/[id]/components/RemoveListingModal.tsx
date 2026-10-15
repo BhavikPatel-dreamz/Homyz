@@ -230,7 +230,7 @@ export function RemoveListingModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="min-h-11 rounded-full border border-[#1f1f1f] bg-white px-7 py-2.5 text-sm font-medium text-[#1f1f1f] transition-colors hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 dark:border-zinc-300 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800 dark:focus-visible:ring-zinc-100 dark:focus-visible:ring-offset-zinc-900"
+                className="min-h-11 rounded-full border border-[#1f1f1f] bg-white px-7 py-2.5 text-sm font-medium text-[#1f1f1f] hover:text-white transition-colors hover:bg-[#1f1f1f] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 dark:border-zinc-300 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800 dark:focus-visible:ring-zinc-100 dark:focus-visible:ring-offset-zinc-900"
               >
                 {t("host_cancel") || "Cancel"}
               </button>

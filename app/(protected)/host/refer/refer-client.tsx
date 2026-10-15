@@ -19,7 +19,7 @@ export function ReferClient() {
               🤝
             </div>
             <div className="space-y-3">
-              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#1F1F1F]">
+              <h1>
                 {t("host_refer_hero_title", "Refer a Host, Earn Rewards")}
               </h1>
               <p className="text-sm sm:text-base text-zinc-600 max-w-md mx-auto">

@@ -8,6 +8,20 @@ import { convertCurrency, resolvePropertyCurrency } from "@/lib/currency";
 import { useCurrency } from "@/lib/currency-context";
 import { useLanguage } from "@/lib/i18n/language-context";
 
+type DiscountDetails = {
+  enabled?: boolean;
+  percentage?: number;
+  discountPercentage?: number;
+  daysInAdvance?: number;
+  daysBefore?: number;
+};
+
+function asDiscountDetails(value: unknown): DiscountDetails | undefined {
+  return typeof value === "object" && value !== null
+    ? (value as DiscountDetails)
+    : undefined;
+}
+
 function ExpandControl({
   title,
   subtitle,
@@ -86,55 +100,58 @@ export function CalendarSettingsPanel({
 
   const rawDiscounts =
     typeof listing.discounts === "object" && listing.discounts !== null
-      ? (listing.discounts as Record<string, any>)
+      ? (listing.discounts as Record<string, unknown>)
       : {};
+  const weeklyDetails = asDiscountDetails(rawDiscounts.weekly);
+  const monthlyDetails = asDiscountDetails(rawDiscounts.monthly);
+  const earlyBirdDetails = asDiscountDetails(rawDiscounts.early_bird);
+  const lastMinuteDetails = asDiscountDetails(rawDiscounts.last_minute);
+  const customPromoDetails = asDiscountDetails(rawDiscounts.custom_promotion);
 
   const weeklyDiscount =
-    typeof rawDiscounts.weekly === "object"
-      ? rawDiscounts.weekly?.percentage ?? 10
+    weeklyDetails
+      ? weeklyDetails.percentage ?? 10
       : Number(rawDiscounts.weekly || 0);
 
   const monthlyDiscount =
-    typeof rawDiscounts.monthly === "object"
-      ? rawDiscounts.monthly?.percentage ?? 25
+    monthlyDetails
+      ? monthlyDetails.percentage ?? 25
       : Number(rawDiscounts.monthly || 0);
 
   const earlyBirdDiscount =
-    typeof rawDiscounts.early_bird === "object"
-      ? rawDiscounts.early_bird?.percentage ?? 10
+    earlyBirdDetails
+      ? earlyBirdDetails.percentage ?? 10
       : Number(rawDiscounts.early_bird || 0);
   const earlyBirdDaysInAdvance =
-    typeof rawDiscounts.early_bird === "object"
-      ? Number(rawDiscounts.early_bird?.daysInAdvance ?? 30)
+    earlyBirdDetails
+      ? Number(earlyBirdDetails.daysInAdvance ?? 30)
       : 30;
 
   const lastMinuteDiscount =
-    typeof rawDiscounts.last_minute === "object"
-      ? rawDiscounts.last_minute?.percentage ?? 10
+    lastMinuteDetails
+      ? lastMinuteDetails.percentage ?? 10
       : Number(rawDiscounts.last_minute || 0);
   const lastMinuteDaysBefore =
-    typeof rawDiscounts.last_minute === "object"
-      ? Number(rawDiscounts.last_minute?.daysBefore ?? 2)
+    lastMinuteDetails
+      ? Number(lastMinuteDetails.daysBefore ?? 2)
       : 2;
 
   const customPromoDiscount =
-    typeof rawDiscounts.custom_promotion === "object"
-      ? rawDiscounts.custom_promotion?.percentage ?? 15
+    customPromoDetails
+      ? customPromoDetails.percentage ?? 15
       : Number(rawDiscounts.custom_promotion || 0);
 
   const newListingEntry = rawDiscounts.new_listing ?? rawDiscounts.newListing;
+  const newListingDetails = asDiscountDetails(newListingEntry);
   const newListingDiscount =
-    typeof newListingEntry === "object" && newListingEntry !== null
-      ? Number(newListingEntry.percentage ?? newListingEntry.discountPercentage ?? 20)
+    newListingDetails
+      ? Number(newListingDetails.percentage ?? newListingDetails.discountPercentage ?? 20)
       : newListingEntry === true
         ? 20
         : Number(newListingEntry || 0);
 
   const discountEnabled = (entry: unknown, percentage: number) => {
-    if (typeof entry === "object" && entry !== null) {
-      return (entry as Record<string, unknown>).enabled !== false && percentage > 0;
-    }
-    return percentage > 0;
+    return asDiscountDetails(entry)?.enabled !== false && percentage > 0;
   };
 
   const [weeklyEnabled, setWeeklyEnabled] = useState(() =>
@@ -313,6 +330,41 @@ export function CalendarSettingsPanel({
     </div>
   );
 
+  const renderAvailabilityNumberRow = ({
+    name,
+    label,
+    defaultValue,
+    min,
+    max,
+  }: {
+    name: string;
+    label: string;
+    defaultValue: number;
+    min: number;
+    max: number;
+  }) => (
+    <label
+      htmlFor={`input-${name}`}
+      className="flex min-h-[60px] cursor-text items-center gap-3 rounded-[12px] border border-white bg-[#F3F4F5] px-5 py-3 shadow-[0px_2px_4px_0px_#00000040] transition-shadow focus-within:ring-2 focus-within:ring-[#1f1f1f]/15 dark:border-white/20 dark:bg-zinc-800"
+    >
+      <span className="min-w-0 flex-1 text-sm text-[#727272] dark:text-zinc-400">
+        {label}
+      </span>
+      <input
+        id={`input-${name}`}
+        aria-label={label}
+        name={name}
+        type="number"
+        defaultValue={defaultValue}
+        min={min}
+        max={max}
+        step="1"
+        inputMode="numeric"
+        className="w-16 bg-transparent text-right text-base font-medium text-[#1f1f1f] outline-none [appearance:textfield] dark:text-zinc-100 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+      />
+    </label>
+  );
+
   if (panel === "overview") {
     return (
       <div className="text-sm text-[#222222] dark:text-zinc-100">
@@ -327,7 +379,7 @@ export function CalendarSettingsPanel({
                 Price settings
               </p>
               <div className="mt-3 flex flex-col gap-1.5 text-sm leading-5 text-[#727272] dark:text-[#727272]">
-                <div>{formatMajor(((listing as any).weekdayBasePrice ?? listing.price) / 100, listingCurrency)} per night</div>
+                <div>{formatMajor(listing.weekdayBasePrice / 100, listingCurrency)} per night</div>
                 <div>{weeklyDiscount}% weekly discount</div>
                 <div>{monthlyDiscount}% monthly discount</div>
               </div>
@@ -357,7 +409,7 @@ export function CalendarSettingsPanel({
               </p>
               <div className="mt-3 flex flex-col gap-1.5 text-sm font-normal leading-5 text-[#727272] dark:text-zinc-400">
                 <div>{listing.minNights ?? 1}–{listing.maxNights ?? 365} night stays</div>
-                <div>{(listing as any).advanceNotice || "Same day"} advance notice</div>
+                <div>{listing.advanceNotice || "Same day"} advance notice</div>
               </div>
             </div>
             <svg
@@ -433,44 +485,42 @@ export function CalendarSettingsPanel({
             });
             setDirty(false);
           }}
-          className="space-y-5 pb-6"
+          className="space-y-7 pb-6"
         >
           <div>
-            <h2 className="text-base font-medium text-[#1f1f1f] dark:text-zinc-100">
-              Availability settings
+            <h2 className="text-[20px] font-medium tracking-[-0.02em] text-[#1f1f1f] dark:text-zinc-100">
+              Available settings
             </h2>
-            <p className="mt-1 text-sm text-[#727272] dark:text-zinc-400">
-              Set global trip length rules and booking notice requirements.
+            <p className="mt-1 text-[15px] leading-6 text-[#727272] dark:text-zinc-400">
+              These apply to all nights, unless you customize them by date.
             </p>
           </div>
 
-          <div className="space-y-4">
-            {renderInputField({
-              name: "minNights",
-              label: t("host_calendar_min_stay_label", "Minimum stay"),
-              defaultValue: listing.minNights ?? 1,
-              suffix: "nights",
-              min: 1,
-              max: 365,
-              inputMode: "numeric",
-              helperText: t("host_calendar_min_stay_helper", "Shortest reservation length guests can book."),
-            })}
+          <section className="border-y border-[#E7E7E7] py-5 dark:border-zinc-800">
+            <h3 className="text-base font-medium text-[#1f1f1f] dark:text-zinc-100">
+              Trip length
+            </h3>
+            <div className="mt-5 space-y-3">
+              {renderAvailabilityNumberRow({
+                name: "minNights",
+                label: t("host_calendar_min_stay_label", "Minimum stay"),
+                defaultValue: listing.minNights ?? 1,
+                min: 1,
+                max: 365,
+              })}
 
-            {renderInputField({
-              name: "maxNights",
-              label: t("host_calendar_max_stay_label", "Maximum stay"),
-              defaultValue: listing.maxNights ?? 365,
-              suffix: "nights",
-              min: 1,
-              max: 365,
-              inputMode: "numeric",
-              helperText: t("host_calendar_max_stay_helper", "Longest reservation length guests can book."),
-            })}
+              {renderAvailabilityNumberRow({
+                name: "maxNights",
+                label: t("host_calendar_max_stay_label", "Maximum stay"),
+                defaultValue: listing.maxNights ?? 365,
+                min: 1,
+                max: 365,
+              })}
 
             {renderInputField({
               name: "guests",
               label: t("host_calendar_max_guest_label", "Maximum guest capacity"),
-              defaultValue: (listing as any).guests ?? 1,
+              defaultValue: listing.guests ?? 1,
               suffix: "guests",
               min: 1,
               max: 50,
@@ -489,7 +539,7 @@ export function CalendarSettingsPanel({
                 <select
                   id="advanceNoticeSelect"
                   name="advanceNotice"
-                  defaultValue={(listing as any).advanceNotice || "Same day"}
+                  defaultValue={listing.advanceNotice || "Same day"}
                   className="w-full appearance-none bg-transparent px-3.5 py-2.5 text-sm font-medium text-zinc-900 dark:text-zinc-100 outline-none cursor-pointer pr-9 border border-[#727272] sm:min-h-[56px] min-h-[45px] focus-within:outline-0 focus-within:shadow-none focus-visible:outline-0 focus-visible:shadow-none rounded-lg"
                 >
                   <option value="Same day">Same day</option>
@@ -518,7 +568,7 @@ export function CalendarSettingsPanel({
                 <select
                   id="sameDayCutoffSelect"
                   name="sameDayCutoff"
-                  defaultValue={(listing as any).sameDayCutoff || "12:00 AM"}
+                  defaultValue={listing.sameDayCutoff || "12:00 AM"}
                   className="w-full appearance-none bg-transparent px-3.5 py-2.5 text-sm font-medium text-zinc-900 dark:text-zinc-100 outline-none cursor-pointer pr-9"
                 >
                   <option value="12:00 AM">12:00 AM (Midnight)</option>
@@ -549,11 +599,12 @@ export function CalendarSettingsPanel({
               <input
                 type="checkbox"
                 name="allowSameDayRequests"
-                defaultChecked={(listing as any).allowSameDayRequests !== false}
+                defaultChecked={listing.allowSameDayRequests !== false}
                 className="size-5 rounded border-zinc-300 text-amber-500 focus:ring-amber-400 cursor-pointer accent-[#1f1f1f]"
               />
             </label>
           </div>
+          </section>
 
           {(validation || notice) && (
             <div
@@ -676,9 +727,7 @@ export function CalendarSettingsPanel({
                 { enabled: newListingIsEnabled, percentage: newListing },
               custom_promotion:
               {
-                ...(typeof rawDiscounts.custom_promotion === "object"
-                  ? rawDiscounts.custom_promotion
-                  : {}),
+                ...customPromoDetails,
                 enabled: customPromoIsEnabled,
                 percentage: customPromo,
               },
@@ -713,7 +762,7 @@ export function CalendarSettingsPanel({
               name: "price",
               label: t("host_calendar_weekday_base_rate", "Weekday base rate"),
               defaultValue:
-                toDisplayMajor(((listing as any).weekdayBasePrice ?? listing.price) / 100),
+                toDisplayMajor(listing.weekdayBasePrice / 100),
               prefix: displayCurrency,
               min: 1,
               max: 100000,
@@ -727,7 +776,7 @@ export function CalendarSettingsPanel({
               subtitle={
                 customWeekendPriceVal
                   ? `${displayCurrency} ${Number(customWeekendPriceVal).toLocaleString("en", { maximumFractionDigits: 2 })} / night`
-                  : `${t("host_calendar_weekend_not_configured", "Not configured")} (defaults to ${formatMajor(((listing as any).weekdayBasePrice ?? listing.price) / 100, listingCurrency)})`
+                  : `${t("host_calendar_weekend_not_configured", "Not configured")} (defaults to ${formatMajor(listing.weekdayBasePrice / 100, listingCurrency)})`
               }
               defaultOpen={Boolean(listing.weekendPrice)}
             >
@@ -950,7 +999,7 @@ export function CalendarSettingsPanel({
             {renderInputField({
               name: "cleaningFee",
               label: t("host_calendar_cleaning_fee_label", "Cleaning fee"),
-              defaultValue: toDisplayMajor(((listing as any).cleaningFee || 0) / 100),
+              defaultValue: toDisplayMajor((listing.cleaningFee || 0) / 100),
               prefix: displayCurrency,
               suffix: "/ stay",
               min: 0,
@@ -963,7 +1012,7 @@ export function CalendarSettingsPanel({
             {renderInputField({
               name: "extraGuestFee",
               label: "Extra guest fee",
-              defaultValue: toDisplayMajor(((listing as any).extraGuestFee || 0) / 100),
+              defaultValue: toDisplayMajor((listing.extraGuestFee || 0) / 100),
               prefix: displayCurrency,
               suffix: "/ guest / night",
               min: 0,

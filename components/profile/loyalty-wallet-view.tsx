@@ -147,7 +147,7 @@ export function LoyaltyWalletView() {
               <span className="text-4xl font-semibold tracking-tight text-[#1F1F1F] sm:text-5xl">
                 {balance.toLocaleString()}
               </span>
-              <span className="text-base font-semibold text-[#727272] sm:text-lg">
+              <span className="text-base font-medium text-[#727272] sm:text-lg">
                 {t("profile_loyalty_points_unit", "Points")}
               </span>
             </div>
@@ -171,9 +171,9 @@ export function LoyaltyWalletView() {
 
         {/* Progress Bar */}
         <div className="mt-6">
-          <div className="h-2 w-full overflow-hidden rounded-full bg-[#EFEFEF]">
+          <div className="h-2 w-full overflow-hidden rounded-full bg-[#DDDDDE]">
             <div
-              className="h-full rounded-full bg-[#FCDF9C] transition-all duration-500"
+              className="h-full rounded-full bg-[#EBA900] transition-all duration-500"
               style={{ width: `${Math.min(100, (balance / 5000) * 100)}%` }}
             />
           </div>
@@ -223,7 +223,7 @@ export function LoyaltyWalletView() {
                   </span>
                 )}
                 <div>
-                  <h4 className="text-base font-semibold text-[#1F1F1F]">
+                  <h4 className="text-base font-medium text-[#1F1F1F]">
                     {reward.title}
                   </h4>
                   <p className="mt-1 text-xs text-[#727272] leading-relaxed">

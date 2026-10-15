@@ -175,7 +175,7 @@ export function GuestGuidebookClient({
               <span className="text-xs font-bold uppercase tracking-wider text-amber-300">
                 {t("guidebook_local_host", "Local Host Guidebook")}
               </span>
-              <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight leading-tight">
+              <h1>
                 {guidebook.title}
               </h1>
               <p className="text-xs sm:text-sm text-zinc-200 font-medium">

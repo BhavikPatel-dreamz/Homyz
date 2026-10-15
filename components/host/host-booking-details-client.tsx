@@ -111,10 +111,10 @@ export function HostBookingDetailsClient({ details, relatedCases = [] }: HostBoo
       {/* Header */}
       <div className="mt-4 flex items-end justify-between gap-3 border-b border-zinc-200 pb-5 sm:gap-4 sm:pb-6">
         <div className="min-w-0 flex-1">
-          <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+          <p className="text-xs font-medium text-[#727272]">
             {t("host_booking_details_res_num", "Reservation #{id}").replace("{id}", details.id.slice(-8).toUpperCase())}
           </p>
-          <h1 className="break-words text-2xl font-semibold leading-tight sm:text-3xl">
+          <h1 className="wrap-break-word mt-1">
             {details.listing.title}
           </h1>
           <p className="mt-1 text-sm text-zinc-600">
@@ -153,7 +153,7 @@ export function HostBookingDetailsClient({ details, relatedCases = [] }: HostBoo
         <div className="mt-6 rounded-lg border border-amber-200 bg-amber-50/80 p-4 text-amber-950 shadow-2xs sm:rounded-2xl sm:p-5">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
             <div>
-              <h2 className="text-base font-semibold">
+              <h2 className="text-base font-medium">
                 {t("host_booking_details_deadline_banner_title", "Response deadline: {time}").replace("{time}", countdown?.text || "")}
               </h2>
               <p className="mt-1 text-xs sm:text-sm text-amber-900 leading-relaxed">
@@ -182,7 +182,7 @@ export function HostBookingDetailsClient({ details, relatedCases = [] }: HostBoo
 
       {isExpired && (
         <div className="mt-6 rounded-2xl border border-slate-300 bg-slate-50 p-5 text-slate-800 shadow-2xs">
-          <h2 className="text-base font-semibold">{t("host_booking_details_expired_banner_title", "Response deadline expired")}</h2>
+          <h2 className="text-base font-medium">{t("host_booking_details_expired_banner_title", "Response deadline expired")}</h2>
           <p className="mt-1 text-xs sm:text-sm text-slate-600 leading-relaxed">
             {t("host_booking_details_expired_banner_desc", "This booking request was not confirmed within the 24-hour response window. It has expired and dates have been released back to your calendar.")}
           </p>
@@ -191,7 +191,7 @@ export function HostBookingDetailsClient({ details, relatedCases = [] }: HostBoo
 
       {details.status === "CONFIRMED" && (
         <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50/80 p-5 text-emerald-950 shadow-2xs">
-          <h2 className="text-base font-semibold">{t("host_booking_details_confirmed_banner_title", "Reservation confirmed")}</h2>
+          <h2 className="text-base font-medium">{t("host_booking_details_confirmed_banner_title", "Reservation confirmed")}</h2>
           <p className="mt-1 text-xs sm:text-sm text-emerald-900 leading-relaxed">
             {t("host_booking_details_confirmed_banner_desc", "You confirmed this booking request. Calendar dates are booked. Payment is pending/deferred.")}
           </p>
@@ -204,7 +204,7 @@ export function HostBookingDetailsClient({ details, relatedCases = [] }: HostBoo
         <div className="space-y-6">
           {/* Guest Profile Card */}
           <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-2xs">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-500 mb-4">
+            <h3 className="text-base sm:text-lg font-medium text-[#1F1F1F] mb-4">
               {t("host_booking_details_guest_details", "Guest details")}
             </h3>
             <div className="flex items-center gap-4">
@@ -223,13 +223,13 @@ export function HostBookingDetailsClient({ details, relatedCases = [] }: HostBoo
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <h4 className="text-base font-bold text-zinc-900 truncate">
+                <h4 className="text-base font-medium text-zinc-900 truncate">
                   {details.guest.name || "Guest"}
                 </h4>
                 {details.guest.email && (
-                  <p className="text-xs text-zinc-500 truncate">{details.guest.email}</p>
+                  <p className="text-sm text-[#727272] truncate">{details.guest.email}</p>
                 )}
-                <p className="text-xs text-zinc-500 mt-0.5">
+                <p className="text-sm text-[#727272] mt-0.5">
                   {t("host_booking_details_member_since", "Member since {year}").replace("{year}", String(new Date(details.guest.createdAt).getFullYear()))}
                 </p>
               </div>
@@ -286,25 +286,25 @@ export function HostBookingDetailsClient({ details, relatedCases = [] }: HostBoo
 
           {/* Trip Dates & Guests Info */}
           <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-2xs">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-500 mb-4">
+            <h3 className="text-base sm:text-lg font-medium text-[#1F1F1F] mb-4">
               {t("host_booking_details_stay_details", "Stay details")}
             </h3>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <div className="rounded-xl border border-zinc-100 bg-zinc-50 p-3.5">
-                <span className="text-xs text-zinc-500 font-medium">{t("host_booking_details_checkin", "Check-in")}</span>
-                <p className="mt-1 text-sm font-bold text-zinc-900">
+                <span className="text-sm text-[#727272] font-medium">{t("host_booking_details_checkin", "Check-in")}</span>
+                <p className="mt-1 text-sm font-medium text-[#1f1f1f]">
                   {formatBookingDate(details.startDate, { weekday: true })}
                 </p>
               </div>
               <div className="rounded-xl border border-zinc-100 bg-zinc-50 p-3.5">
-                <span className="text-xs text-zinc-500 font-medium">{t("host_booking_details_checkout", "Check-out")}</span>
-                <p className="mt-1 text-sm font-bold text-zinc-900">
+                <span className="text-sm text-[#727272] font-medium">{t("host_booking_details_checkout", "Check-out")}</span>
+                <p className="mt-1 text-sm font-medium text-[#1f1f1f]">
                   {formatBookingDate(details.endDate, { weekday: true })}
                 </p>
               </div>
               <div className="rounded-xl border border-zinc-100 bg-zinc-50 p-3.5">
-                <span className="text-xs text-zinc-500 font-medium">{t("host_booking_details_guests", "Guests")}</span>
-                <p className="mt-1 text-sm font-bold text-zinc-900">
+                <span className="text-sm text-[#727272] font-medium">{t("host_booking_details_guests", "Guests")}</span>
+                <p className="mt-1 text-sm font-medium text-[#1f1f1f]">
                   {details.guests} {details.guests === 1 ? t("booking_details_guest_singular", "guest") : t("booking_details_guests_plural", "guests")} · {nights} {nights === 1 ? t("host_booking_details_unit_night", "night") : t("host_booking_details_unit_nights", "nights")}
                 </p>
               </div>
@@ -315,7 +315,7 @@ export function HostBookingDetailsClient({ details, relatedCases = [] }: HostBoo
         {/* Right Column: Pricing & CTAs */}
         <div>
           <aside className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm lg:sticky lg:top-28">
-            <h3 className="text-base font-bold text-zinc-900 border-b border-zinc-100 pb-3">
+            <h3 className="text-base font-medium text-[#1f1f1f] border-b border-zinc-100 pb-3">
               {t("host_booking_details_payout_pricing", "Payout & pricing breakdown")}
             </h3>
 
@@ -362,15 +362,15 @@ export function HostBookingDetailsClient({ details, relatedCases = [] }: HostBoo
                 <div className="flex justify-between gap-4"><dt className="min-w-0 text-zinc-600">Taxes</dt><dd className="shrink-0 whitespace-nowrap text-right font-medium text-zinc-900">{formatMoney(taxTotal, details.currency)}</dd></div>
               )}
 
-              <div className="flex justify-between gap-4 border-t border-zinc-200 pt-4 text-base font-semibold text-[#1f1f1f]">
+              <div className="flex justify-between gap-4 border-t border-zinc-200 pt-4 text-base font-medium text-[#1f1f1f]">
                 <dt>Total ({displayCurrency})</dt>
                 <dd className="text-lg text-emerald-800 font-semibold">
                   {formatMoney(totalPrice, details.currency)}
                 </dd>
               </div>
 
-              <div className="flex items-center justify-between gap-4 border-t border-zinc-100 pt-3 text-xs text-zinc-600">
-                <dt className="font-medium">{t("host_booking_details_payment_status", "Payment status")}</dt>
+              <div className="flex items-center justify-between gap-4 border-t border-zinc-100 pt-3 text-xs text-[#1f1f1f]">
+                <dt className="text-sm font-medium">{t("host_booking_details_payment_status", "Payment status")}</dt>
                 <dd className="font-semibold text-amber-900 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full">
                   {t("host_booking_details_deferred", "Pending / Deferred")}
                 </dd>

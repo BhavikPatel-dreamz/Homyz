@@ -1075,7 +1075,7 @@ export function ProfileManagementClient({
         </div>
 
         <div className="flex-1 max-w-md xl:ml-15">
-          <h1 className="mb-4 text-[26px] font-semibold leading-tight text-[#1F1F1F] sm:hidden">
+          <h1 className="mb-4 sm:hidden">
             {t("profile_mgmt_my_profile", "My profile")}
           </h1>
           <p className="text-base text-[#727272] leading-relaxed font-normal">
@@ -1095,7 +1095,7 @@ export function ProfileManagementClient({
             e.preventDefault();
             handleSubTabClick("info");
           }}
-          className={`px-4 py-2 rounded-full text-base font-semibold transition-all cursor-pointer whitespace-nowrap ${
+          className={`px-4 py-2 rounded-full text-base font-medium transition-all cursor-pointer whitespace-nowrap ${
             activeMgmtTab === "info"
               ? "bg-zinc-900 text-white shadow-2xs"
               : "text-zinc-600 hover:bg-zinc-100"
@@ -1110,7 +1110,7 @@ export function ProfileManagementClient({
             e.preventDefault();
             handleSubTabClick("photos");
           }}
-          className={`px-4 py-2 rounded-full text-base font-semibold transition-all cursor-pointer whitespace-nowrap ${
+          className={`px-4 py-2 rounded-full text-base font-medium transition-all cursor-pointer whitespace-nowrap ${
             activeMgmtTab === "photos"
               ? "bg-zinc-900 text-white shadow-2xs"
               : "text-zinc-600 hover:bg-zinc-100"
@@ -1125,7 +1125,7 @@ export function ProfileManagementClient({
             e.preventDefault();
             handleSubTabClick("privacy");
           }}
-          className={`px-4 py-2 rounded-full text-base font-semibold transition-all cursor-pointer whitespace-nowrap ${
+          className={`px-4 py-2 rounded-full text-base font-medium transition-all cursor-pointer whitespace-nowrap ${
             activeMgmtTab === "privacy"
               ? "bg-zinc-900 text-white shadow-2xs"
               : "text-zinc-600 hover:bg-zinc-100"
@@ -1575,7 +1575,7 @@ export function ProfileManagementClient({
               <div className="w-14 h-14 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center mb-3">
                 <IconCamera />
               </div>
-              <p className="text-base font-semibold text-[#1F1F1F]">
+              <p className="text-base font-medium text-[#1F1F1F]">
                 {t("trip_photos_empty_title", "You can upload best images of your trip")}
               </p>
               <p className="text-xs text-zinc-500 max-w-md mt-1 mb-6 leading-relaxed">
@@ -2258,7 +2258,7 @@ function EditTripPhotoModal({
               <button
                 type="submit"
                 disabled={saving}
-                className="inline-flex min-w-32 items-center justify-center gap-2 rounded-full bg-[#FEE08B] px-8 py-2.5 text-xs font-semibold text-zinc-950 shadow-2xs transition-all hover:bg-[#FDE047] disabled:cursor-wait disabled:opacity-70"
+                className="inline-flex min-w-32 items-center justify-center gap-2 rounded-full bg-[#FCDF9C] px-8 py-2.5 text-xs font-semibold text-zinc-950 shadow-2xs transition-all hover:bg-[#FDE047] disabled:cursor-wait disabled:opacity-70"
               >
                 {saving ? t("trip_photos_saving_details", "Saving...") : t("trip_photos_save_details", "Save Details")}
               </button>

@@ -458,7 +458,7 @@ export function PhotoTourManager({
           <div className="rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4 shadow-sm">
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
-                <h2 className="text-base font-semibold text-[#1F1F1F] dark:text-zinc-100">{t("host_add_room_or_space_title", "Add a room or space")}</h2>
+                <h2 className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">{t("host_add_room_or_space_title", "Add a room or space")}</h2>
                 <p className="text-sm text-zinc-600 dark:text-[#727272]">{t("host_add_room_or_space_subtitle", "Search and assign your selected photos to the right area.")}</p>
               </div>
               <button type="button" onClick={() => setIsRoomPickerOpen(false)} className="rounded-full bg-white hover:bg-[#1f1f1f] border border-[#1f1f1f] hover:border-[#1f1f1f] dark:border-zinc-700 px-2.5 py-1 text-base font-medium text-[#1f1f1f] hover:text-white dark:text-zinc-300 dark:hover:border-zinc-600 transition duration-300">{t("host_close", "Close")}</button>
@@ -504,7 +504,7 @@ export function PhotoTourManager({
               {photos.length > 0 && <button type="button" onClick={() => setSelectedIndices(new Set(photos.map((_, index) => index)))} disabled={controlsDisabled} className="text-sm font-semibold text-[#1F1F1F] underline underline-offset-4 transition hover:text-zinc-600 disabled:opacity-50 dark:text-zinc-100 dark:hover:text-amber-400">{t("host_select_all", "Select all")}</button>}
             </div>
 
-            <button type="button" onClick={() => addInput.current?.click()} disabled={controlsDisabled} className="flex min-h-36 w-full flex-col items-center justify-center rounded-lg border border-dashed border-[#727272] bg-white text-base font-semibold text-zinc-700 transition hover:border-zinc-900 hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:border-zinc-500 dark:hover:bg-zinc-700/50">
+            <button type="button" onClick={() => addInput.current?.click()} disabled={controlsDisabled} className="flex min-h-36 w-full flex-col items-center justify-center rounded-lg border border-dashed border-[#727272] bg-white text-base font-medium text-zinc-700 transition hover:border-zinc-900 hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:border-zinc-500 dark:hover:bg-zinc-700/50">
               <span className="mb-2 flex size-9 items-center justify-center rounded-full border border-[#1f1f1f] bg-zinc-100 dark:bg-zinc-700">
                 <Image src="/images/icons/add-icon.svg" alt="" width={18} height={18} />
               </span>

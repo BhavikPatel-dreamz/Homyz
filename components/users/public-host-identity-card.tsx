@@ -30,31 +30,31 @@ export function PublicHostIdentityCard({ name, image, isSuperhost, reviewCount, 
               loading="lazy"
               decoding="async"
               onError={() => setImageFailed(true)}
-              className="size-[104px] shrink-0 rounded-full border border-zinc-200 object-cover"
+              className="size-[80px] sm:size-[104px] shrink-0 rounded-full border border-zinc-200 object-cover"
             />
           ) : (
             <div aria-hidden="true" className="flex size-[104px] shrink-0 items-center justify-center rounded-full border border-amber-200 bg-amber-100 text-2xl font-bold text-amber-900">{initial}</div>
           )}
           <div className="pt-4 text-center">
-            <p className="break-words text-lg font-semibold capitalize text-[#1f1f1f] sm:text-[20px]">{name}</p>
-            <p className="mt-1 text-base font-light text-[#1f1f1f] sm:mt-2">
+            <p className="break-words font-medium leading-tight capitalize text-[#1f1f1f] text-base">{name}</p>
+            <p className="mt-1 text-sm font-light text-[#1f1f1f] sm:mt-2">
               {isSuperhost ? t("public_host_card_superhost", "Superhost") : t("public_host_card_host", "Host")}
             </p>
           </div>
         </div>
         <div className="min-w-0 divide-y divide-[#dedede]">
           <div className="pb-4">
-            <p className="text-lg font-normal leading-5 text-[#1f1f1f] sm:text-[20px]">{reviewCount || "—"}</p>
+            <p className="text-base font-normal leading-5 text-[#1f1f1f]">{reviewCount || "—"}</p>
             <p className="mt-1 text-xs font-normal text-[#727272]">{t("public_host_card_reviews_label", "Reviews")}</p>
           </div>
           <div className="py-4">
-            <p className="flex items-center gap-1 text-lg font-normal leading-5 text-[#1f1f1f] sm:text-[20px]">
+            <p className="flex items-center gap-1 text-base font-normal leading-5 text-[#1f1f1f]">
               {averageRating?.toFixed(2) ?? "—"}<span className="text-[#e9a400]">★</span>
             </p>
             <p className="mt-2 text-xs font-normal text-[#727272]">{t("public_host_card_rating_label", "Rating")}</p>
           </div>
           <div className="pt-4">
-            <p className="text-base font-normal leading-5 text-[#1f1f1f] sm:text-[20px]">{tenure}</p>
+            <p className="font-normal leading-5 text-[#1f1f1f] text-base">{tenure}</p>
             <p className="mt-2 text-xs font-normal text-[#727272]">{t("public_host_card_tenure_label", "time hosting")}</p>
           </div>
         </div>

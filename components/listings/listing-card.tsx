@@ -449,7 +449,7 @@ export function ListingCard({
     >
       {/* ── Navigation Loading Overlay ── */}
       {isNavigating && (
-        <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/25 backdrop-blur-[1px] transition-all">
+        <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/25 backdrop-blur-[1px] rounded-2xl transition-all">
           <div className="flex items-center gap-2 rounded-full bg-white px-3.5 py-1.5 shadow-lg text-xs font-semibold text-zinc-900 border border-zinc-200">
             <div className="size-3.5 rounded-full border-2 border-zinc-300 border-t-zinc-900 animate-spin" />
             <span>Loading...</span>
@@ -673,7 +673,7 @@ export function ListingCard({
                 {reviewCount > 0 && <span className="font-normal text-[#727272]">({reviewCount})</span>}
               </div>
             ) : (
-              <span className="text-[11px] font-medium text-[#727272] shrink-0">★ {t("listings_new", "New")}</span>
+              <span className="text-[12px] font-medium text-[#1f1f1f] shrink-0">★ {t("listings_new", "New")}</span>
             )}
           </div>
 
@@ -719,7 +719,7 @@ export function ListingCard({
           {/* Row 5: Free cancellation badge */}
           {hasFreeCancellation && (
             <div className="pt-0.5 flex items-center">
-              <span className="inline-block text-[11px] font-normal text-[#727272] bg-zinc-100 px-2 py-0.5 rounded">
+              <span className="inline-block text-[12px] font-normal text-[#1f1f1f] bg-[#F3F4F5] px-2 py-0.5 rounded">
                 {t("listings_free_cancellation", "Free cancellation")}
               </span>
             </div>

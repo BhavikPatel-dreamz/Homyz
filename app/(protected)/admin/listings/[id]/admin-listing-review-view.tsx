@@ -161,7 +161,7 @@ export function AdminListingReviewView({
   }
 
   return <section className="space-y-5 animate-in fade-in">
-    <div><p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--muted-foreground)]">Admin review</p><h1 className="mt-1">Review & listing controls</h1><p className="mt-1">Review completeness and manage this property’s approval, visibility, and placement.</p></div>
+    <div><p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--muted-foreground)]">Admin review</p><h1 className="mt-1">Review & listing controls</h1><p className="mt-1 text-[#727272] sm:text-sm text-xs">Review completeness and manage this property’s approval, visibility, and placement.</p></div>
     {error && <p className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">{error}</p>}
     <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xs">
       <div className="flex flex-wrap items-center justify-between gap-3"><div><h2>Review summary</h2><p className="mt-1">{missingRequirements.length ? `${missingRequirements.length} required item${missingRequirements.length === 1 ? "" : "s"} need attention.` : "All shared listing requirements are complete."}</p></div><span className={`rounded-full px-3 py-1 text-[11px] font-bold ${missingRequirements.length ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-700"}`}>{missingRequirements.length ? "ACTION NEEDED" : "READY TO REVIEW"}</span></div>

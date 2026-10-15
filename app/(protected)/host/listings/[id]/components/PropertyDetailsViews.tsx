@@ -823,17 +823,17 @@ export function PropertyDetailsViews({
                         <button
                           type="button"
                           onClick={() => setBuildingFloors?.(Math.max(1, (buildingFloors || 1) - 1))}
-                          className="w-8 h-8 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-xl font-normal text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer transition-all duration-300"
+                          className="group w-8 h-8 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-xl font-normal text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer transition-all duration-300"
                         >
-                          <Image src="/images/icons/minus-icon.svg" alt="Decrease" width={14} height={14} className="size-3.5 object-contain dark:invert" />
+                          <Image src="/images/icons/minus-icon.svg" alt="Decrease floors" width={14} height={14} className="size-3.5 object-contain dark:invert group-hover:invert" />
                         </button>
                         <span className="w-5 text-center text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100">{buildingFloors || 1}</span>
                         <button
                           type="button"
                           onClick={() => setBuildingFloors?.((buildingFloors || 1) + 1)}
-                          className="w-8 h-8 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-xl font-normal text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer transition-all duration-300"
+                          className="group w-8 h-8 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-xl font-normal text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer transition-all duration-300"
                         >
-                          +
+                          <Image src="/images/icons/Plus.svg" alt="Increase floors" width={14} height={14} className="size-3.5 object-contain dark:invert group-hover:invert" />
                         </button>
                       </div>
                     </div>
@@ -845,17 +845,17 @@ export function PropertyDetailsViews({
                         <button
                           type="button"
                           onClick={() => setListingFloor?.(Math.max(0, (listingFloor || 1) - 1))}
-                          className="w-8 h-8 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-xl font-normal text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer transition-all duration-300"
+                          className="group w-8 h-8 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-xl font-normal text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer transition-all duration-300"
                         >
-                          <Image src="/images/icons/minus-icon.svg" alt="Decrease" width={14} height={14} className="size-3.5 object-contain dark:invert" />
+                          <Image src="/images/icons/minus-icon.svg" alt="Decrease floor" width={14} height={14} className="size-3.5 object-contain dark:invert group-hover:invert" />
                         </button>
                         <span className="w-5 text-center text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100">{listingFloor ?? 1}</span>
                         <button
                           type="button"
                           onClick={() => setListingFloor?.((listingFloor || 0) + 1)}
-                          className="w-8 h-8 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-xl font-normal text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer transition-all duration-300"
+                          className="group w-8 h-8 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-xl font-normal text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer transition-all duration-300"
                         >
-                          +
+                          <Image src="/images/icons/Plus.svg" alt="Increase floor" width={14} height={14} className="size-3.5 object-contain dark:invert group-hover:invert" />
                         </button>
                       </div>
                     </div>
@@ -871,7 +871,7 @@ export function PropertyDetailsViews({
                           type="button"
                           onClick={() => setElevatorAvailable?.(false)}
                           className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold cursor-pointer transition-all ${elevatorAvailable === false
-                            ? "bg-[#FEE08B] dark:bg-amber-400 border-amber-300 dark:border-amber-400 text-zinc-950 shadow-2xs"
+                            ? "bg-[#FCDF9C] dark:bg-amber-400 border-amber-300 dark:border-amber-400 text-zinc-950 shadow-2xs"
                             : "bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
                             }`}
                         >
@@ -881,7 +881,7 @@ export function PropertyDetailsViews({
                           type="button"
                           onClick={() => setElevatorAvailable?.(true)}
                           className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold cursor-pointer transition-all ${elevatorAvailable === true
-                            ? "bg-[#FEE08B] dark:bg-amber-400 border-amber-300 dark:border-amber-400 text-zinc-950 shadow-2xs"
+                            ? "bg-[#FCDF9C] dark:bg-amber-400 border-amber-300 dark:border-amber-400 text-zinc-950 shadow-2xs"
                             : "bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
                             }`}
                         >
@@ -901,17 +901,17 @@ export function PropertyDetailsViews({
                         <button
                           type="button"
                           onClick={() => setBuildingFloors?.(Math.max(1, (buildingFloors || 1) - 1))}
-                          className="w-8 h-8 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-xl font-normal text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer transition-all duration-300"
+                          className="group w-8 h-8 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-xl font-normal text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer transition-all duration-300"
                         >
-                          <Image src="/images/icons/minus-icon.svg" alt="Decrease" width={14} height={14} className="size-3.5 object-contain dark:invert" />
+                          <Image src="/images/icons/minus-icon.svg" alt="Decrease floors" width={14} height={14} className="size-3.5 object-contain dark:invert group-hover:invert" />
                         </button>
                         <span className="w-5 text-center text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100">{buildingFloors || 1}</span>
                         <button
                           type="button"
                           onClick={() => setBuildingFloors?.((buildingFloors || 1) + 1)}
-                          className="w-8 h-8 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-xl font-normal text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer transition-all duration-300"
+                          className="group w-8 h-8 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-xl font-normal text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer transition-all duration-300"
                         >
-                          +
+                          <Image src="/images/icons/Plus.svg" alt="Increase floors" width={14} height={14} className="size-3.5 object-contain dark:invert group-hover:invert" />
                         </button>
                       </div>
                     </div>
@@ -925,7 +925,7 @@ export function PropertyDetailsViews({
                           type="button"
                           onClick={() => setPrivateEntrance?.(false)}
                           className={`w-8 h-8 rounded-full border flex items-center justify-center text-lg font-normal cursor-pointer transition-all ${privateEntrance === false
-                            ? "bg-[#FEE08B] dark:bg-amber-400 border-[#FEE08B] dark:border-amber-400 text-[#1F1F1F] dark:text-zinc-950"
+                            ? "bg-[#FCDF9C] dark:bg-amber-400 border-[#FCDF9C] dark:border-amber-400 text-[#1F1F1F] dark:text-zinc-950"
                             : "bg-white dark:bg-zinc-800 border-[#1F1F1F] dark:border-zinc-700 text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] dark:hover:bg-zinc-700 hover:text-white"
                             }`}
                         >
@@ -935,7 +935,7 @@ export function PropertyDetailsViews({
                           type="button"
                           onClick={() => setPrivateEntrance?.(true)}
                           className={`w-8 h-8 rounded-full border flex items-center justify-center text-lg font-normal cursor-pointer transition-all ${privateEntrance === true
-                            ? "bg-[#FEE08B] dark:bg-amber-400 border-[#FEE08B] dark:border-amber-400 text-[#1F1F1F] dark:text-zinc-950"
+                            ? "bg-[#FCDF9C] dark:bg-amber-400 border-[#FCDF9C] dark:border-amber-400 text-[#1F1F1F] dark:text-zinc-950"
                             : "bg-white dark:bg-zinc-800 border-[#1F1F1F] dark:border-zinc-700 text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] dark:hover:bg-zinc-700 hover:text-white"
                             }`}
                         >
@@ -1083,40 +1083,19 @@ export function PropertyDetailsViews({
                       <button
                         type="button"
                         onClick={() => setEditGuests(Math.max(1, editGuests - 1))}
-                        className={`${activeSection === "guests" ? "size-14 sm:size-16" : "size-8"} rounded-full border border-[#1f1f1f] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-[#1f1f1f] dark:text-zinc-100 hover:text-white hover:bg-[#1f1f1f] dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer transition-all shrink-0`}
+                        className={`group ${activeSection === "guests" ? "size-14 sm:size-16" : "size-8"} rounded-full border border-[#1f1f1f] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-[#1f1f1f] dark:text-zinc-100 hover:text-white hover:bg-[#1f1f1f] dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer transition-all shrink-0`}
                         aria-label="Decrease guests"
                       >
-                        <svg
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          className={activeSection === "guests" ? "size-7 sm:size-8" : "size-4"}
-                        >
-                          <line x1="5" y1="12" x2="19" y2="12" />
-                        </svg>
+                        <Image src="/images/icons/minus-icon.svg" alt="Decrease guests" width={14} height={14} className="size-3.5 object-contain dark:invert group-hover:invert" />
                       </button>
                       <span className={`${activeSection === "guests" ? "flex w-[97px] min-h-[110px] items-center justify-center rounded-full bg-[#FCDF9C] dark:bg-amber-400 text-[#1F1F1F] dark:text-zinc-950 text-[42px]" : "w-5 text-center text-base text-[#1F1F1F] dark:text-zinc-100"} font-normal`}>{editGuests}</span>
                       <button
                         type="button"
                         onClick={() => setEditGuests(Math.min(MAX_GUEST_CAPACITY, editGuests + 1))}
-                        className={`${activeSection === "guests" ? "size-14 sm:size-16" : "size-8"} rounded-full border border-[#1f1f1f] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-[#1f1f1f] dark:text-zinc-100 hover:text-white hover:bg-[#1f1f1f] dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer transition-all shrink-0`}
+                        className={`group ${activeSection === "guests" ? "size-14 sm:size-16" : "size-8"} rounded-full border border-[#1f1f1f] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-[#1f1f1f] dark:text-zinc-100 hover:text-white hover:bg-[#1f1f1f] dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer transition-all shrink-0`}
                         aria-label="Increase guests"
                       >
-                        <svg
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          className={activeSection === "guests" ? "size-7 sm:size-8" : "size-4"}
-                        >
-                          <line x1="12" y1="5" x2="12" y2="19" />
-                          <line x1="5" y1="12" x2="19" y2="12" />
-                        </svg>
+                        <Image src="/images/icons/Plus.svg" alt="Increase guests" width={14} height={14} className="size-3.5 object-contain dark:invert group-hover:invert" />
                       </button>
                     </div>
                   </div>
@@ -1132,17 +1111,17 @@ export function PropertyDetailsViews({
                         <button
                           type="button"
                           onClick={() => setEditBedrooms(Math.max(0, editBedrooms - 1))}
-                          className="size-8 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-base font-normal text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer"
+                          className="group size-8 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-base font-normal text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer"
                         >
-                          <Image src="/images/icons/minus-icon.svg" alt="Decrease bedrooms" width={14} height={14} className="size-3.5 object-contain dark:invert" />
+                          <Image src="/images/icons/minus-icon.svg" alt="Decrease bedrooms" width={14} height={14} className="size-3.5 object-contain dark:invert group-hover:invert" />
                         </button>
                         <span className="w-5 text-center text-base font-normal text-[#1F1F1F] dark:text-zinc-100">{editBedrooms}</span>
                         <button
                           type="button"
                           onClick={() => setEditBedrooms(Math.min(30, editBedrooms + 1))}
-                          className="size-8 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-base font-normal text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer"
+                          className="group size-8 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-base font-normal text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer"
                         >
-                          +
+                          <Image src="/images/icons/Plus.svg" alt="Increase bedrooms" width={14} height={14} className="size-3.5 object-contain dark:invert group-hover:invert" />
                         </button>
                       </div>
                     </div>
@@ -1156,17 +1135,17 @@ export function PropertyDetailsViews({
                         <button
                           type="button"
                           onClick={() => setEditBeds(Math.max(1, editBeds - 1))}
-                          className="size-8 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-base font-normal text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer"
+                          className="group size-8 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-base font-normal text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer"
                         >
-                          <Image src="/images/icons/minus-icon.svg" alt="Decrease beds" width={14} height={14} className="size-3.5 object-contain dark:invert" />
+                          <Image src="/images/icons/minus-icon.svg" alt="Decrease beds" width={14} height={14} className="size-3.5 object-contain dark:invert group-hover:invert" />
                         </button>
                         <span className="w-5 text-center text-base font-normal text-[#1F1F1F] dark:text-zinc-100">{editBeds}</span>
                         <button
                           type="button"
                           onClick={() => setEditBeds(Math.min(50, editBeds + 1))}
-                          className="size-8 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-base font-normal text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer"
+                          className="group size-8 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-base font-normal text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer"
                         >
-                          +
+                          <Image src="/images/icons/Plus.svg" alt="Increase beds" width={14} height={14} className="size-3.5 object-contain dark:invert group-hover:invert" />
                         </button>
                       </div>
                     </div>
@@ -1281,9 +1260,9 @@ export function PropertyDetailsViews({
                                     const totalBeds = updated.reduce((sum, r) => sum + r.beds.reduce((bSum, b) => bSum + b.count, 0), 0);
                                     setEditBeds(Math.max(1, totalBeds));
                                   }}
-                                  className="size-7 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-base text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer"
+                                  className="group size-7 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-base text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer"
                                 >
-                                  <Image src="/images/icons/minus-icon.svg" alt="Decrease bed count" width={12} height={12} className="size-3 object-contain dark:invert" />
+                                  <Image src="/images/icons/minus-icon.svg" alt="Decrease bed count" width={14} height={14} className="size-3.5 object-contain dark:invert group-hover:invert" />
                                 </button>
                                 <span className="w-5 text-center font-normal text-[#1F1F1F] dark:text-zinc-100">{bed.count}</span>
                                 <button
@@ -1295,9 +1274,9 @@ export function PropertyDetailsViews({
                                     const totalBeds = updated.reduce((sum, r) => sum + r.beds.reduce((bSum, b) => bSum + b.count, 0), 0);
                                     setEditBeds(Math.max(1, totalBeds));
                                   }}
-                                  className="size-7 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-base text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer"
+                                  className="group size-7 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-base text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer"
                                 >
-                                  +
+                                  <Image src="/images/icons/Plus.svg" alt="Increase bed count" width={14} height={14} className="size-3.5 object-contain dark:invert group-hover:invert" />
                                 </button>
                               </div>
                             </div>
@@ -1364,9 +1343,9 @@ export function PropertyDetailsViews({
                           setFullBathrooms?.(val);
                           setEditBathrooms(val + (halfBathrooms || 0));
                         }}
-                        className="size-7 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-base text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer"
+                        className="group size-7 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-base text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer"
                       >
-                        <Image src="/images/icons/minus-icon.svg" alt="Decrease full bathrooms" width={14} height={14} className="size-3.5 object-contain dark:invert" />
+                        <Image src="/images/icons/minus-icon.svg" alt="Decrease full bathrooms" width={14} height={14} className="size-3.5 object-contain dark:invert group-hover:invert" />
                       </button>
                       <span className="w-4 text-center text-base font-medium text-[#1f1f1f] dark:text-zinc-100">{fullBathrooms ?? 1}</span>
                       <button
@@ -1376,9 +1355,9 @@ export function PropertyDetailsViews({
                           setFullBathrooms?.(val);
                           setEditBathrooms(val + (halfBathrooms || 0));
                         }}
-                        className="size-7 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-base text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer"
+                        className="group size-7 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-base text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer"
                       >
-                        +
+                        <Image src="/images/icons/Plus.svg" alt="Increase full bathrooms" width={14} height={14} className="size-3.5 object-contain dark:invert group-hover:invert" />
                       </button>
                     </div>
                   </div>
@@ -1396,9 +1375,9 @@ export function PropertyDetailsViews({
                           setHalfBathrooms?.(val);
                           setEditBathrooms((fullBathrooms || 1) + val);
                         }}
-                        className="size-7 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-base text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer"
+                        className="group size-7 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-base text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer"
                       >
-                        <Image src="/images/icons/minus-icon.svg" alt="Decrease half bathrooms" width={14} height={14} className="size-3.5 object-contain dark:invert" />
+                        <Image src="/images/icons/minus-icon.svg" alt="Decrease half bathrooms" width={14} height={14} className="size-3.5 object-contain dark:invert group-hover:invert" />
                       </button>
                       <span className="w-4 text-center text-base font-medium text-[#1f1f1f] dark:text-zinc-100">{halfBathrooms ?? 0}</span>
                       <button
@@ -1408,9 +1387,9 @@ export function PropertyDetailsViews({
                           setHalfBathrooms?.(val);
                           setEditBathrooms((fullBathrooms || 1) + val);
                         }}
-                        className="size-7 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-base text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer"
+                        className="group size-7 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-base text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer"
                       >
-                        +
+                        <Image src="/images/icons/Plus.svg" alt="Increase half bathrooms" width={14} height={14} className="size-3.5 object-contain dark:invert group-hover:invert" />
                       </button>
                     </div>
                   </div>
@@ -1732,7 +1711,7 @@ export function PropertyDetailsViews({
                     <button
                       type="button"
                       onClick={() => setActiveSection("add-amenities")}
-                      className="rounded-full bg-[#FEE08B] dark:bg-amber-400 hover:bg-[#FDE047] dark:hover:bg-amber-300 text-zinc-950 font-semibold text-xs px-6 py-2 shadow-2xs transition-all cursor-pointer"
+                      className="rounded-full bg-[#FCDF9C] dark:bg-amber-400 hover:bg-[#FDE047] dark:hover:bg-amber-300 text-zinc-950 font-semibold text-xs px-6 py-2 shadow-2xs transition-all cursor-pointer"
                     >
                       {t("host_add_amenities_btn")}
                     </button>
@@ -1754,10 +1733,10 @@ export function PropertyDetailsViews({
                                 <button
                                   type="button"
                                   onClick={() => toggleAmenity(am)}
-                                  className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-full border border-[#B9B9BA] dark:border-zinc-700 bg-white dark:bg-zinc-800 text-base font-normal text-[#727272] dark:text-zinc-300 hover:border-[#1F1F1F] dark:hover:border-zinc-500 hover:bg-[#F3F4F5] dark:hover:bg-zinc-700 cursor-pointer transition-colors"
+                                  className="group mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-full border border-[#B9B9BA] dark:border-zinc-700 bg-white dark:bg-zinc-800 text-base font-normal text-[#727272] dark:text-zinc-300 hover:border-[#1F1F1F] dark:hover:border-zinc-500 hover:bg-[#1F1F1F] dark:hover:bg-zinc-700 cursor-pointer transition-colors"
                                   aria-label={t("host_remove_amenity", { name: localizedLabel })}
                                 >
-                                  <Image src="/images/icons/minus-icon.svg" alt={t("host_remove_amenity", { name: localizedLabel })} width={14} height={14} className="size-3.5 object-contain dark:invert" />
+                                  <Image src="/images/icons/minus-icon.svg" alt={t("host_remove_amenity", { name: localizedLabel })} width={14} height={14} className="size-3.5 object-contain dark:invert group-hover:invert" />
                                 </button>
                               ) : (
                                 <div className="size-10 rounded-full border border-[#B9B9BA] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-sm shrink-0">
@@ -1922,9 +1901,9 @@ export function PropertyDetailsViews({
                                 event.stopPropagation();
                                 collapseAccessibilityFeature(feature.id);
                               }}
-                              className="w-8 h-8 rounded-full border border-[#1f1f1f] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-xs font-semibold shrink-0 shadow-2xs transition-all cursor-pointer"
+                              className="group w-8 h-8 rounded-full border border-[#1f1f1f] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-zinc-700 dark:text-zinc-300 hover:bg-[#1F1F1F] dark:hover:bg-zinc-700 text-xs font-semibold shrink-0 shadow-2xs transition-all cursor-pointer"
                             >
-                              <Image src="/images/icons/minus-icon.svg" alt={t("host_acc_collapse_alt")} width={12} height={12} className="size-3 object-contain dark:invert" />
+                              <Image src="/images/icons/minus-icon.svg" alt={t("host_acc_collapse_alt")} width={14} height={14} className="size-3.5 object-contain dark:invert group-hover:invert" />
                             </button>
                           </div>
 

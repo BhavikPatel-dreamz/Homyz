@@ -51,7 +51,7 @@ export function BookingDetailsActions({ booking }: BookingDetailsActionsProps) {
               </svg>
             </div>
             <div>
-              <h3 className="text-base font-semibold text-[#1F1F1F]">
+              <h3 className="text-base font-medium text-[#1F1F1F]">
                 {t("booking_details_getting_help", "Getting help with your stay")}
               </h3>
               <p className="mt-1 text-sm text-zinc-600 leading-relaxed max-w-xl">
@@ -79,7 +79,7 @@ export function BookingDetailsActions({ booking }: BookingDetailsActionsProps) {
               </svg>
             </div>
             <div>
-              <h3 className="text-base font-semibold text-[#1F1F1F]">
+              <h3 className="text-base font-medium text-[#1F1F1F]">
                 {t("booking_details_payment_info_title", "Payment info & official receipt")}
               </h3>
               <p className="mt-1 text-sm text-zinc-600 leading-relaxed max-w-xl">
@@ -108,7 +108,7 @@ export function BookingDetailsActions({ booking }: BookingDetailsActionsProps) {
                 </svg>
               </div>
               <div>
-                <h3 className="text-base font-semibold text-[#1F1F1F]">
+                <h3 className="text-base font-medium text-[#1F1F1F]">
                   {t("booking_details_cancellation_policy", "Cancellation policy")}
                 </h3>
                 <p className="mt-1 text-sm text-zinc-600 leading-relaxed max-w-xl">
@@ -157,7 +157,7 @@ export function BookingDetailsActions({ booking }: BookingDetailsActionsProps) {
               </svg>
             </div>
             <div>
-              <h3 className="text-base font-semibold text-zinc-700">
+              <h3 className="text-base font-medium text-zinc-700">
                 {t("booking_details_reservation_cancelled_title", "Reservation cancelled")}
               </h3>
               <p className="mt-1 text-sm text-[#727272] leading-relaxed">

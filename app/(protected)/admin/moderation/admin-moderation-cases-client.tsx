@@ -44,7 +44,7 @@ export function AdminModerationCasesClient({ initialCases, initialPagination, in
   const clearFilters = () => { setSearchInput(""); setFilters({ limit: filters.limit || "20" }); };
 
   return <main className="space-y-5 px-4 py-6 sm:px-6 lg:px-8">
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-sm text-slate-500">Support &amp; Operations / Moderation</p><h1 className="mt-1 text-2xl font-semibold text-slate-900">Moderation cases</h1></div><Link href="/admin/moderation" className="text-sm font-medium text-indigo-700 hover:underline">View overview</Link></div>
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-sm text-slate-500">Support &amp; Operations / Moderation</p><h1 className="mt-1">Moderation cases</h1></div><Link href="/admin/moderation" className="text-sm font-medium text-indigo-700 hover:underline">View overview</Link></div>
     <nav aria-label="Case status" className="flex gap-1 overflow-x-auto rounded-lg border border-slate-200 bg-white p-1">{tabs.map((tab) => <button key={tab} onClick={() => updateFilters({ status: tab === "ALL" ? undefined : tab })} className={`whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium ${activeStatus === tab ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100"}`}>{tab.replaceAll("_", " ")}</button>)}</nav>
     <section className="rounded-xl border border-slate-200 bg-white p-4">
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">

@@ -157,8 +157,8 @@ export function ReservationCard({
           <Link
             href={detailsHref}
             className={isCompactVariant
-              ? "order-1 block truncate text-base font-semibold leading-6 text-[#1F1F1F] transition-colors group-hover:text-zinc-700"
-              : "mt-1 block min-h-12 text-base font-semibold leading-6 text-[#1F1F1F] transition-colors group-hover:text-zinc-700 line-clamp-2"}
+              ? "order-1 block truncate text-base font-medium leading-6 text-[#1F1F1F] transition-colors group-hover:text-zinc-700"
+              : "mt-1 block min-h-12 text-base font-medium leading-6 text-[#1F1F1F] transition-colors group-hover:text-zinc-700 line-clamp-2"}
             title={title}
           >
             {title}

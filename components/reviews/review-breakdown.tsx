@@ -195,7 +195,7 @@ export function ReviewBreakdown({
                   >
                     {t(labelKey, defaultLabel)}
                   </p>
-                  <p className="mt-1 text-base font-semibold tracking-tight text-[#1f1f1f]">
+                  <p className="mt-1 text-base font-medium tracking-tight text-[#1f1f1f]">
                     {formattedScore}
                   </p>
                 </div>

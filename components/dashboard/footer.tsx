@@ -196,7 +196,7 @@ export function Footer() {
                 onClick={scrollToTop}
                 title={t("footer_scroll_to_top", "Scroll to top")}
                 aria-label={t("footer_scroll_to_top", "Scroll to top")}
-                className="absolute top-0 right-0 hidden h-8 w-8 items-center justify-center rounded-full bg-[#FBDE9B] hover:bg-[#F3F4F5] border border-transparent hover:border-[#1F1F1F] text-[#291E05] transition-transform sm:flex dark:bg-[#f59e0b] dark:text-[#1F1F1F] transition-colors"
+                className="absolute top-0 right-0 hidden h-8 w-8 items-center justify-center rounded-full bg-[#FCDF9C] hover:bg-[#F3F4F5] border border-transparent hover:border-[#1F1F1F] text-[#291E05] transition-transform sm:flex dark:bg-[#f59e0b] dark:text-[#1F1F1F] transition-colors"
               >
                 <svg
                   aria-hidden="true"

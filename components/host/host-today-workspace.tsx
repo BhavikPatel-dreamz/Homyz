@@ -49,11 +49,11 @@ export function HostTodayWorkspace({
   const parsedInitialTab: ReservationPeriod =
     initialTab ||
     (requestedTab === "upcoming" ||
-    requestedTab === "staying" ||
-    requestedTab === "completed" ||
-    requestedTab === "pending" ||
-    requestedTab === "cancelled" ||
-    requestedTab === "all"
+      requestedTab === "staying" ||
+      requestedTab === "completed" ||
+      requestedTab === "pending" ||
+      requestedTab === "cancelled" ||
+      requestedTab === "all"
       ? requestedTab
       : "today");
 
@@ -196,8 +196,8 @@ export function HostTodayWorkspace({
             typeof payload.data.totalCount === "number"
               ? payload.data.totalCount
               : typeof payload.data.total === "number"
-              ? payload.data.total
-              : fetchedBookings.length;
+                ? payload.data.total
+                : fetchedBookings.length;
           const pages =
             typeof payload.data.totalPages === "number"
               ? payload.data.totalPages
@@ -414,7 +414,7 @@ export function HostTodayWorkspace({
       <main className="w-full min-w-0 pb-12 pt-10 sm:pb-24 sm:pt-10">
         <Container>
           {/* Toggle & Mobile Filter Bar */}
-          <div className="mb-6 flex w-full items-center justify-between gap-3 border-b border-[#727272] pb-5 sm:mb-10 sm:w-fit sm:pb-7">
+          <div className="mb-6 flex w-full items-center justify-between gap-3 border-b border-[#727272] pb-5 sm:mb-10 sm:pb-7">
             {/* Reservation Period Pill Switcher */}
             <div
               className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1"
@@ -435,11 +435,10 @@ export function HostTodayWorkspace({
                   role="tab"
                   aria-selected={tab === filterTab.id}
                   onClick={() => handleTabChange(filterTab.id as ReservationPeriod)}
-                  className={`rounded-full px-4 py-2.5 text-sm sm:px-4.5 sm:py-2.5 font-medium transition-all duration-200 shrink-0 font-sans cursor-pointer ${
-                    tab === filterTab.id
-                      ? "bg-[#1F1F1F] text-white shadow-xs"
-                      : "bg-[#F3F4F5] text-[#1F1F1F] hover:bg-zinc-200"
-                  }`}
+                  className={`rounded-full px-4 py-2.5 text-sm sm:px-4.5 sm:py-2.5 font-medium transition-all duration-200 shrink-0 font-sans cursor-pointer ${tab === filterTab.id
+                    ? "bg-[#1F1F1F] text-white shadow-xs"
+                    : "bg-[#F3F4F5] text-[#1F1F1F] hover:bg-zinc-200"
+                    }`}
                 >
                   {filterTab.label}
                 </button>
@@ -451,11 +450,10 @@ export function HostTodayWorkspace({
               type="button"
               aria-label="Filter listings"
               onClick={openFilters}
-              className={`flex size-12 shrink-0 items-center justify-center rounded-full sm:hidden transition-colors duration-300 ease-in-out ${
-                appliedPropertyId
-                  ? "bg-[#1F1F1F] text-white border-zinc-900"
-                  : "bg-[#F3F4F5] text-[#1F1F1F]"
-              }`}
+              className={`flex size-12 shrink-0 items-center justify-center rounded-full sm:hidden transition-colors duration-300 ease-in-out ${appliedPropertyId
+                ? "bg-[#1F1F1F] text-white border-zinc-900"
+                : "bg-[#F3F4F5] text-[#1F1F1F]"
+                }`}
             >
               <svg
                 width="18"
@@ -480,19 +478,19 @@ export function HostTodayWorkspace({
           </div>
 
           {/* Section Headline */}
-          <h1 className="mb-6 break-words font-sans text-[24px] leading-8 font-medium text-[#1F1F1F] tracking-normal sm:mb-8 sm:text-[32px] sm:leading-10 xl:text-[36px] xl:leading-[44px]">
+          <h1 className="mb-6 wrap-break-word">
             You have {totalCount}{" "}
             {tab === "upcoming"
               ? "upcoming "
               : tab === "staying"
-              ? "current "
-              : tab === "completed"
-              ? "completed "
-              : tab === "pending"
-              ? "pending "
-              : tab === "cancelled"
-              ? "cancelled "
-              : ""}
+                ? "current "
+                : tab === "completed"
+                  ? "completed "
+                  : tab === "pending"
+                    ? "pending "
+                    : tab === "cancelled"
+                      ? "cancelled "
+                      : ""}
             {totalCount === 1 ? "reservation" : "reservations"}
           </h1>
 
@@ -527,14 +525,14 @@ export function HostTodayWorkspace({
                     event.eventType === "staying"
                       ? t("host_today_priority_now", "Now")
                       : event.eventType === "cancelled"
-                      ? t("host_today_priority_cancelled", "Cancelled")
-                      : event.eventType === "pending"
-                      ? t("host_today_priority_pending", "Pending")
-                      : event.eventType === "completed"
-                      ? t("host_today_priority_past", "Past")
-                      : tab === "today"
-                        ? t("host_today_priority_next_up", "Next up")
-                        : t("host_today_priority_upcoming", "Upcoming")
+                        ? t("host_today_priority_cancelled", "Cancelled")
+                        : event.eventType === "pending"
+                          ? t("host_today_priority_pending", "Pending")
+                          : event.eventType === "completed"
+                            ? t("host_today_priority_past", "Past")
+                            : tab === "today"
+                              ? t("host_today_priority_next_up", "Next up")
+                              : t("host_today_priority_upcoming", "Upcoming")
                   }
                   onSelect={() => setSelected(event.booking)}
                 />
@@ -566,7 +564,7 @@ export function HostTodayWorkspace({
               ))}
             </div>
           ) : (
-            <div className="flex min-h-72 flex-col items-center justify-center rounded-[24px] border border-zinc-200 bg-zinc-50/50 px-6 py-12 text-center">
+            <div className="flex min-h-72 flex-col items-center justify-center rounded-[24px] border border-zinc-200 bg-zinc-50/50 px-6 py-12 text-center max-w-2xl mx-auto">
               <span className="mb-4 flex size-14 items-center justify-center rounded-full bg-[#FDE29B] text-2xl shadow-xs">
                 ☼
               </span>
@@ -576,16 +574,16 @@ export function HostTodayWorkspace({
                   : tab === "today"
                     ? t("host_today_empty_today", "No reservations today")
                     : tab === "upcoming"
-                    ? t("host_today_empty_upcoming", "No upcoming reservations")
-                    : tab === "staying"
-                    ? t("host_today_empty_staying", "No current stays")
-                    : tab === "completed"
-                    ? t("host_today_empty_completed", "No completed stays yet")
-                    : tab === "pending"
-                    ? t("host_today_empty_pending", "No pending requests")
-                    : tab === "cancelled"
-                    ? t("host_today_empty_cancelled", "No cancelled reservations")
-                    : t("host_today_empty_default", "No reservations found")}
+                      ? t("host_today_empty_upcoming", "No upcoming reservations")
+                      : tab === "staying"
+                        ? t("host_today_empty_staying", "No current stays")
+                        : tab === "completed"
+                          ? t("host_today_empty_completed", "No completed stays yet")
+                          : tab === "pending"
+                            ? t("host_today_empty_pending", "No pending requests")
+                            : tab === "cancelled"
+                              ? t("host_today_empty_cancelled", "No cancelled reservations")
+                              : t("host_today_empty_default", "No reservations found")}
               </p>
               <p className="mt-2 text-sm text-[#727272]">
                 {appliedPropertyId
@@ -593,16 +591,16 @@ export function HostTodayWorkspace({
                   : tab === "today"
                     ? t("host_today_empty_today_desc", "You don't have any check-ins, check-outs, or active stays scheduled for today.")
                     : tab === "upcoming"
-                    ? t("host_today_empty_upcoming_desc", "Your next reservations will appear here once guests book your space.")
-                    : tab === "staying"
-                    ? t("host_today_empty_staying_desc", "Guests who are currently checking in or staying will appear here.")
-                    : tab === "completed"
-                    ? t("host_today_empty_completed_desc", "Past completed stays will be listed here after checkout.")
-                    : tab === "pending"
-                    ? t("host_today_empty_pending_desc", "Reservation requests awaiting your review will appear here.")
-                    : tab === "cancelled"
-                    ? t("host_today_empty_cancelled_desc", "Cancelled reservations and refund records will appear here.")
-                    : t("host_today_empty_default_desc", "Your reservations will appear here once guests book your space.")}
+                      ? t("host_today_empty_upcoming_desc", "Your next reservations will appear here once guests book your space.")
+                      : tab === "staying"
+                        ? t("host_today_empty_staying_desc", "Guests who are currently checking in or staying will appear here.")
+                        : tab === "completed"
+                          ? t("host_today_empty_completed_desc", "Past completed stays will be listed here after checkout.")
+                          : tab === "pending"
+                            ? t("host_today_empty_pending_desc", "Reservation requests awaiting your review will appear here.")
+                            : tab === "cancelled"
+                              ? t("host_today_empty_cancelled_desc", "Cancelled reservations and refund records will appear here.")
+                              : t("host_today_empty_default_desc", "Your reservations will appear here once guests book your space.")}
               </p>
               {appliedPropertyId ? (
                 <button
@@ -613,14 +611,14 @@ export function HostTodayWorkspace({
                     setPage(1);
                     void fetchReservations(tab, 1, null);
                   }}
-                  className="mt-6 rounded-full bg-[#1F1F1F] px-6 py-2.5 text-xs font-semibold text-white hover:bg-black transition-colors cursor-pointer"
+                  className="mt-6 rounded-full bg-[#1F1F1F] px-6 py-2.5 text-sm font-medium text-white hover:bg-white border border-[#1f1f1f] hover:text-[#1f1f1f] transition-colors cursor-pointer"
                 >
                   {t("host_today_clear_filters", "Clear filters")}
                 </button>
               ) : (
                 <Link
                   href="/host/calendar"
-                  className="mt-6 rounded-full bg-[#1F1F1F] px-6 py-2.5 text-xs font-semibold text-white hover:bg-black transition-colors"
+                  className="mt-6 rounded-full bg-[#1F1F1F] px-6 py-2.5 text-sm font-medium text-white hover:bg-white border border-[#1f1f1f] hover:text-[#1f1f1f] transition-colors cursor-pointer"
                 >
                   {t("host_today_view_calendar", "View calendar")}
                 </Link>

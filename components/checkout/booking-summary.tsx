@@ -155,7 +155,7 @@ export const BookingSummary = memo(function BookingSummary({ state, actions, isB
           );
           return (
             <section className="mt-5 border-b border-[#727272] pb-5" aria-labelledby="booking-summary-cancellation">
-              <h3 id="booking-summary-cancellation" className="text-base font-semibold text-[#1f1f1f]">
+              <h3 id="booking-summary-cancellation" className="text-base font-medium text-[#1f1f1f]">
                 {isNonRefundable ? t("book_non_refundable_rate", "Non-refundable rate") : t("book_free_cancellation", "Free cancellation")}
               </h3>
               <p className="mt-1 text-sm text-[#727272]">
@@ -177,7 +177,7 @@ export const BookingSummary = memo(function BookingSummary({ state, actions, isB
 
         <section className="flex items-center justify-between gap-4 border-b border-[#727272] py-4 sm:py-6" aria-labelledby="booking-summary-dates">
           <div>
-            <h3 id="booking-summary-dates" className="text-base font-semibold text-[#1f1f1f]">{t("book_dates", "Dates")}</h3>
+            <h3 id="booking-summary-dates" className="text-base font-medium text-[#1f1f1f]">{t("book_dates", "Dates")}</h3>
             <p className="mt-0.5 text-sm text-[#727272]">{formatCheckoutDateRange(stay.checkIn, stay.checkOut)}</p>
           </div>
           <button type="button" onClick={actions.onChangeDates} aria-label={`Change dates, currently ${formatCheckoutDateRange(stay.checkIn, stay.checkOut)}`} className="min-h-11 shrink-0 rounded-full border border-[#1F1F1F] bg-[#F3F4F5] px-4 text-base font-medium text-[#1f1f1f] transition-colors hover:bg-[#1f1f1f] hover:text-white sm:min-w-[121px] sm:text-lg">{t("book_change", "Change")}</button>
@@ -185,14 +185,14 @@ export const BookingSummary = memo(function BookingSummary({ state, actions, isB
 
         <section className="flex items-center justify-between gap-4 border-b border-[#727272] py-4 sm:py-6" aria-labelledby="booking-summary-guests">
           <div>
-            <h3 id="booking-summary-guests" className="text-base font-semibold text-[#1f1f1f]">{t("book_guests", "Guests")}</h3>
+            <h3 id="booking-summary-guests" className="text-base font-medium text-[#1f1f1f]">{t("book_guests", "Guests")}</h3>
             <p className="mt-0.5 text-sm text-[#727272]">{formatCheckoutGuests(stay)}</p>
           </div>
           <button type="button" onClick={actions.onChangeGuests} aria-label={`Change guests, currently ${formatCheckoutGuests(stay)}`} className="min-h-11 shrink-0 rounded-full border border-[#1F1F1F] bg-[#F3F4F5] px-4 text-base font-medium text-[#1f1f1f] transition-colors hover:bg-[#1f1f1f] hover:text-white sm:min-w-[121px] sm:text-lg">{t("book_change", "Change")}</button>
         </section>
 
         <section className="border-b border-[#727272] py-5" aria-labelledby="booking-summary-price">
-          <h3 id="booking-summary-price" className="mb-3 text-base font-semibold text-[#1f1f1f]">{t("book_price_details", "Price details")}</h3>
+          <h3 id="booking-summary-price" className="mb-3 text-base font-medium text-[#1f1f1f]">{t("book_price_details", "Price details")}</h3>
           {pricing.status === "error" || (!pricing.quote && pricing.status !== "loading") ? (
             <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs font-medium text-rose-700">
               <p>{pricing.error || t("book_price_error", "We couldn't update your price.")}</p>
@@ -222,7 +222,7 @@ export const BookingSummary = memo(function BookingSummary({ state, actions, isB
           disabled={!pricing.quote || pricing.status !== "success"}
           aria-expanded={isBreakdownOpen}
           aria-controls="checkout-price-breakdown"
-          className="mt-5 min-h-11 text-left text-base font-semibold text-[#1f1f1f] underline transition-colors hover:text-[#727272] disabled:cursor-not-allowed disabled:opacity-40"
+          className="mt-5 min-h-11 text-left text-base font-medium text-[#1f1f1f] underline transition-colors hover:text-[#727272] disabled:cursor-not-allowed disabled:opacity-40"
         >
           {t("book_price_breakdown", "Price breakdown")}
         </button>
@@ -236,7 +236,7 @@ export const BookingSummary = memo(function BookingSummary({ state, actions, isB
               <button ref={breakdownCloseRef} type="button" onClick={closeBreakdown} aria-label={t("book_close_price_breakdown", "Close price breakdown")} className="flex size-10 items-center justify-center rounded-full text-[#1f1f1f] hover:bg-zinc-100">✕</button>
             </div>
             <div className="py-5"><PriceRows rows={breakdownRows} formatMoney={actions.formatMoney} /></div>
-            <div className="flex items-center justify-between border-t border-[#727272] pt-4 text-base font-semibold text-[#1f1f1f]">
+            <div className="flex items-center justify-between border-t border-[#727272] pt-4 text-base font-medium text-[#1f1f1f]">
               <span>{t("book_total", { currency: displayCurrency }, `Total (${displayCurrency})`)}</span>
               <span>{actions.formatMoney(pricing.quote.guestTotal, 2)}</span>
             </div>

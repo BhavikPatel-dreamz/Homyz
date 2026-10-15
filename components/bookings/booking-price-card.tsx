@@ -59,7 +59,7 @@ export function BookingPriceCard({
       )}
 
       <div className="flex items-center justify-between gap-3 border-b border-zinc-100 pb-4">
-        <h2 id="price-summary-heading" className="text-lg font-semibold text-[#1F1F1F]">
+        <h2 id="price-summary-heading" className="text-lg font-medium text-[#1F1F1F]">
           {t("booking_details_price_details", "Price details")}
         </h2>
         <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${statusDetails.badgeClass}`}>
@@ -165,7 +165,7 @@ export function BookingPriceCard({
           </div>
         )}
 
-        <div className="flex justify-between gap-4 border-t border-zinc-200 pt-4 sm:text-base text-sm font-bold text-[#1F1F1F]">
+        <div className="flex justify-between gap-4 border-t border-zinc-200 pt-4 sm:text-base text-sm font-semibold text-[#1F1F1F]">
           <dt>{t("booking_details_total_paid", { currency: pricing.currency }, "Total paid ({currency})")}</dt>
           <dd className="sm:text-lg text-sm text-emerald-800">
             <CurrencyPrice
@@ -176,8 +176,8 @@ export function BookingPriceCard({
           </dd>
         </div>
 
-        <div className="flex items-center justify-between gap-4 border-t border-zinc-100 pt-3 text-xs text-zinc-600">
-          <dt className="font-medium">{t("booking_details_payment_status", "Payment")}</dt>
+        <div className="flex items-center justify-between gap-4 border-t border-zinc-100 pt-3 text-xs text-[#1f1f1f]">
+          <dt className="text-sm font-medium">{t("booking_details_payment_status", "Payment")}</dt>
           <dd className="font-semibold text-amber-900 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full">
             {t("booking_details_pending_deferred", "Pending / Deferred")}
           </dd>
@@ -192,14 +192,14 @@ export function BookingPriceCard({
             {actions.canReview ? (
               <Link
                 href={`/bookings/${bookingId}/review`}
-                className="flex min-h-11 w-full items-center justify-center rounded-xl bg-[#1F1F1F] px-5 text-sm font-semibold text-white transition-colors hover:bg-zinc-800 shadow-xs"
+                className="flex min-h-11 w-full items-center justify-center rounded-lg bg-[#1F1F1F] px-5 text-base font-medium text-white transition-colors hover:bg-zinc-800 shadow-xs"
               >
                 {t("booking_details_write_review", "Write a review")}
               </Link>
             ) : actions.hasReviewed ? (
               <Link
                 href={`${listingHref}#reviews`}
-                className="flex min-h-11 w-full items-center justify-center rounded-xl bg-emerald-50 border border-emerald-200 px-5 text-sm font-semibold text-emerald-800 hover:bg-emerald-100 transition-colors"
+                  className="flex min-h-11 w-full items-center justify-center rounded-lg bg-emerald-50 border border-emerald-200 px-5 text-base font-medium text-emerald-800 hover:bg-emerald-100 transition-colors"
               >
                 {t("booking_details_review_submitted", "✓ Review submitted · View reviews")}
               </Link>
@@ -211,7 +211,7 @@ export function BookingPriceCard({
 
             <Link
               href={listingHref}
-              className="flex min-h-10 w-full items-center justify-center rounded-xl border border-zinc-300 bg-white px-4 text-sm font-semibold text-zinc-800 hover:bg-zinc-50 hover:border-zinc-400 transition-colors"
+              className="flex min-h-11 w-full items-center justify-center rounded-lg border border-zinc-300 bg-white px-4 text-base font-medium text-zinc-800 hover:bg-zinc-50 hover:border-zinc-400 transition-colors"
             >
               {t("booking_details_book_again", "Book again")}
             </Link>
@@ -219,7 +219,7 @@ export function BookingPriceCard({
             <button
               type="button"
               onClick={onOpenReceipt}
-              className="flex min-h-10 w-full items-center justify-center rounded-xl border border-zinc-300 bg-white px-4 text-sm font-semibold text-zinc-800 hover:bg-zinc-50 hover:border-zinc-400 transition-colors cursor-pointer"
+              className="flex min-h-11 w-full items-center justify-center rounded-lg border border-zinc-300 bg-white px-4 text-base font-medium text-zinc-800 hover:bg-zinc-50 hover:border-zinc-400 transition-colors cursor-pointer"
             >
               {t("booking_details_view_receipt", "View receipt")}
             </button>
@@ -232,7 +232,7 @@ export function BookingPriceCard({
             <button
               type="button"
               onClick={onOpenChange}
-              className="flex min-h-11 w-full items-center justify-center rounded-xl bg-[#1F1F1F] border border-[#1F1F1F] hover:border-[#D9D9D9]  px-5 text-sm font-semibold text-white hover:text-[#1f1f1f] transition-colors duration-300 hover:bg-[#D9D9D9] shadow-xs cursor-pointer"
+              className="flex min-h-11 w-full items-center justify-center rounded-lg bg-[#1F1F1F] border border-[#1F1F1F] hover:border-[#D9D9D9]  px-5 text-base font-medium text-white hover:text-[#1f1f1f] transition-colors duration-300 hover:bg-[#D9D9D9] shadow-xs cursor-pointer"
             >
               {t("booking_details_change_reservation", "Change reservation")}
             </button>
@@ -240,7 +240,7 @@ export function BookingPriceCard({
             <button
               type="button"
               onClick={onOpenReceipt}
-              className="flex min-h-11 w-full items-center justify-center rounded-xl border border-[#1F1F1F] hover:border-[#D9D9D9]  bg-white px-4 text-sm font-semibold text-[#1F1F1F] hover:bg-[#D9D9D9] hover:text-[#1f1f1f] transition-colors cursor-pointer"
+              className="flex min-h-11 w-full items-center justify-center rounded-lg border border-[#1F1F1F] hover:border-[#D9D9D9]  bg-white px-4 text-base font-medium text-[#1F1F1F] hover:bg-[#D9D9D9] hover:text-[#1f1f1f] transition-colors cursor-pointer"
             >
               {t("booking_details_view_receipt", "View receipt")}
             </button>
@@ -249,7 +249,7 @@ export function BookingPriceCard({
               <button
                 type="button"
                 onClick={onOpenCancel}
-                className="flex min-h-11 w-full items-center justify-center rounded-xl border border-red-600 bg-white px-4 text-sm font-medium text-red-600 hover:bg-red-50 hover:border-red-300 transition-colors cursor-pointer"
+                className="flex min-h-11 w-full items-center justify-center rounded-lg border border-red-600 bg-white px-4 text-base font-medium text-red-600 hover:bg-red-50 hover:border-red-300 transition-colors cursor-pointer"
               >
                 {t("booking_details_cancel_reservation", "Cancel reservation")}
               </button>
@@ -267,7 +267,7 @@ export function BookingPriceCard({
             <button
               type="button"
               onClick={onOpenContact}
-              className="flex min-h-11 w-full items-center justify-center rounded-xl bg-[#1F1F1F] px-5 text-sm font-semibold text-white transition-colors hover:bg-zinc-800 shadow-xs cursor-pointer"
+              className="flex min-h-11 w-full items-center justify-center rounded-lg bg-[#1F1F1F] px-5 text-base font-medium text-white transition-colors hover:bg-zinc-800 shadow-xs cursor-pointer"
             >
               {t("booking_details_contact_host_assist", "Contact host for assistance")}
             </button>
@@ -275,7 +275,7 @@ export function BookingPriceCard({
             <button
               type="button"
               onClick={onOpenReceipt}
-              className="flex min-h-10 w-full items-center justify-center rounded-xl border border-zinc-300 bg-white px-4 text-sm font-semibold text-zinc-800 hover:bg-zinc-50 hover:border-zinc-400 transition-colors cursor-pointer"
+              className="flex min-h-11 w-full items-center justify-center rounded-lg border border-zinc-300 bg-white px-4 text-base font-medium text-zinc-800 hover:bg-zinc-50 hover:border-zinc-400 transition-colors cursor-pointer"
             >
               {t("booking_details_view_receipt", "View receipt")}
             </button>
@@ -288,14 +288,14 @@ export function BookingPriceCard({
             <button
               type="button"
               onClick={onOpenReceipt}
-              className="flex min-h-11 w-full items-center justify-center rounded-xl bg-[#1F1F1F] px-5 text-sm font-semibold text-white hover:bg-zinc-800 transition-colors cursor-pointer"
+              className="flex min-h-11 w-full items-center justify-center rounded-lg bg-[#1F1F1F] px-5 text-sm font-semibold text-white hover:bg-zinc-800 transition-colors cursor-pointer"
             >
               {t("booking_details_view_cancel_receipt", "View cancellation receipt")}
             </button>
 
             <Link
               href="/listings"
-              className="flex min-h-10 w-full items-center justify-center rounded-xl border border-zinc-300 bg-white px-4 text-sm font-semibold text-zinc-800 hover:bg-zinc-50 transition-colors"
+              className="flex min-h-10 w-full items-center justify-center rounded-lg border border-zinc-300 bg-white px-4 text-sm font-semibold text-zinc-800 hover:bg-zinc-50 transition-colors"
             >
               {t("booking_details_find_another_stay", "Find another stay")}
             </Link>
@@ -308,7 +308,7 @@ export function BookingPriceCard({
             <button
               type="button"
               onClick={onOpenContact}
-              className="flex min-h-11 w-full items-center justify-center rounded-xl bg-[#1F1F1F] px-5 text-sm font-semibold text-white hover:bg-zinc-800 transition-colors cursor-pointer"
+              className="flex min-h-11 w-full items-center justify-center rounded-lg bg-[#1F1F1F] px-5 text-sm font-semibold text-white hover:bg-zinc-800 transition-colors cursor-pointer"
             >
               {t("booking_details_message_host_btn", "Message host")}
             </button>
@@ -316,7 +316,7 @@ export function BookingPriceCard({
             <button
               type="button"
               onClick={onOpenCancel}
-              className="flex min-h-10 w-full items-center justify-center rounded-xl border border-red-200 bg-white px-4 text-sm font-medium text-red-600 hover:bg-red-50 hover:border-red-300 transition-colors cursor-pointer"
+              className="flex min-h-10 w-full items-center justify-center rounded-lg border border-red-200 bg-white px-4 text-sm font-medium text-red-600 hover:bg-red-50 hover:border-red-300 transition-colors cursor-pointer"
             >
               {t("booking_details_withdraw_request", "Withdraw request")}
             </button>

@@ -37,7 +37,7 @@ export function AcceptInvitationClient({
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
               </svg>
             </div>
-            <h1 className="mb-2 text-xl font-semibold text-[#1F1F1F]">
+            <h1 className="mb-2">
               {t("accept_inv_invalid_title", "Invalid Invitation Link")}
             </h1>
             <p className="text-xs sm:text-sm text-[#727272] mb-6 leading-relaxed">
@@ -45,7 +45,7 @@ export function AcceptInvitationClient({
             </p>
             <Link
               href="/login"
-              className="inline-flex items-center justify-center w-full rounded-full bg-[#FBDE9B] hover:bg-[#F3D382] py-3 text-xs sm:text-sm font-semibold text-[#1F1F1F] transition-colors shadow-2xs"
+              className="inline-flex items-center justify-center w-full rounded-full bg-[#FCDF9C] hover:bg-[#F3D382] py-3 text-xs sm:text-sm font-semibold text-[#1F1F1F] transition-colors shadow-2xs"
             >
               {t("accept_inv_return_to_signin", "← Return to Sign In")}
             </Link>
@@ -67,7 +67,7 @@ export function AcceptInvitationClient({
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
               </svg>
             </div>
-            <h1 className="text-xl font-semibold text-[#1F1F1F]">
+            <h1>
               {t("accept_inv_unable_title", "Unable to Accept Invitation")}
             </h1>
             <div className="rounded-2xl bg-rose-50 border border-rose-200 p-3.5 text-xs text-rose-800 font-medium">
@@ -79,7 +79,7 @@ export function AcceptInvitationClient({
             <div className="pt-2">
               <Link
                 href="/login"
-                className="inline-flex items-center justify-center w-full rounded-full bg-[#FBDE9B] hover:bg-[#F3D382] py-3 text-xs sm:text-sm font-semibold text-[#1F1F1F] transition-colors shadow-2xs"
+                className="inline-flex items-center justify-center w-full rounded-full bg-[#FCDF9C] hover:bg-[#F3D382] py-3 text-xs sm:text-sm font-semibold text-[#1F1F1F] transition-colors shadow-2xs"
               >
                 {t("accept_inv_go_to_signin", "Go to Sign In →")}
               </Link>

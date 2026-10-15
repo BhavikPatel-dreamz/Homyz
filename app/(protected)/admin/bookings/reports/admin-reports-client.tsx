@@ -118,12 +118,12 @@ export function AdminReportsClient({
               ← Bookings Hub
             </Link>
             <span className="text-zinc-400">/</span>
-            <span className="text-xs text-[var(--muted-foreground)]">Reports</span>
+            <span className="text-xs text-[#727272]">Reports</span>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground mt-1">
+          <h1 className="mt-1">
             Financial & Operational Reports
           </h1>
-          <p className="text-xs text-[var(--muted-foreground)] mt-0.5">
+          <p className="text-xs text-[#727272] mt-0.5">
             Generate, filter, and securely export booking, financial, and incident audit datasets.
           </p>
         </div>

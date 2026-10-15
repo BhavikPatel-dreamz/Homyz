@@ -226,11 +226,11 @@ export function GuestDetailsView({
         </div>
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xs">
           <p className="text-xs font-semibold text-[var(--muted-foreground)]">Joined Date</p>
-          <p className="mt-2 text-base font-semibold tracking-tight text-muted-foreground font-mono" suppressHydrationWarning>{new Date(guest.createdAt).toLocaleDateString("en-US")}</p>
+          <p className="mt-2 text-base font-medium tracking-tight text-muted-foreground font-mono" suppressHydrationWarning>{new Date(guest.createdAt).toLocaleDateString("en-US")}</p>
         </div>
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xs">
           <p className="text-xs font-semibold text-[var(--muted-foreground)]">Last Active</p>
-          <p className="mt-2 text-base font-semibold tracking-tight text-muted-foreground font-mono" suppressHydrationWarning>{new Date(guest.lastActive).toLocaleDateString("en-US")}</p>
+          <p className="mt-2 text-base font-medium tracking-tight text-muted-foreground font-mono" suppressHydrationWarning>{new Date(guest.lastActive).toLocaleDateString("en-US")}</p>
         </div>
       </div>
 
@@ -267,7 +267,7 @@ export function GuestDetailsView({
           </div>
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs space-y-4">
             <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-3">
-              <h2 className="text-base font-semibold text-muted-foreground">Personal & Contact Info</h2>
+              <h2 className="text-base font-medium text-muted-foreground">Personal & Contact Info</h2>
               <button
                 type="button"
                 onClick={() => setShowEditModal(true)}
@@ -305,7 +305,7 @@ export function GuestDetailsView({
           </div>
 
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs space-y-4">
-            <h2 className="text-base font-semibold text-muted-foreground border-b border-[var(--border-subtle)] pb-3">Account System Timestamps</h2>
+            <h2 className="text-base font-medium text-muted-foreground border-b border-[var(--border-subtle)] pb-3">Account System Timestamps</h2>
             <div className="grid grid-cols-2 gap-4 text-xs">
               <div>
                 <span className="text-[var(--muted-foreground)] block font-medium">Joined Date</span>
@@ -387,7 +387,7 @@ export function GuestDetailsView({
       {/* Tab 3: ACTIVITY */}
       {activeTab === "activity" && (
         <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs space-y-4">
-          <h2 className="text-base font-semibold text-muted-foreground border-b border-[var(--border-subtle)] pb-3">Guest Activity History Logs</h2>
+          <h2 className="text-base font-medium text-muted-foreground border-b border-[var(--border-subtle)] pb-3">Guest Activity History Logs</h2>
           {data.activity.length === 0 ? (
             <p className="text-xs text-[var(--muted-foreground)] py-4 text-center">No recorded activity history for this guest.</p>
           ) : (
