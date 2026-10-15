@@ -1382,7 +1382,7 @@ export function ListingsResultsClient({
                 ⚠️
               </div>
               <div className="space-y-1.5">
-                <h2 className="text-base sm:text-lg font-bold text-[#1F1F1F]">
+                <h2 className="text-base sm:text-lg font-medium text-[#1F1F1F]">
                   {t("listings_error_title", "We couldn't load these properties")}
                 </h2>
                 <p className="text-xs sm:text-sm text-[#727272] font-normal leading-relaxed">

@@ -712,7 +712,7 @@ export function GuestMessagesWorkspace({
                     </div>
                   )}
                   <div className="min-w-0">
-                    <h2 className="text-sm sm:text-base font-bold text-[#1F1F1F] truncate">
+                    <h2 className="text-sm sm:text-base font-medium text-[#1F1F1F] truncate">
                       {t("messages_guest_hosted_by", { name: selectedConversation.host.name || t("messages_guest_default_host_name") })}
                     </h2>
                     <Link

@@ -1175,7 +1175,7 @@ export function HostMessagesWorkspace({
                     )}
                   </div>
                   <div className="min-w-0">
-                    <h3 className="text-sm sm:text-base font-medium text-[#1F1F1F] truncate">
+                    <h3 className="text-sm sm:text-base font-medium text-[#727272] truncate">
                       {selectedConversation.guest.name || "Guest"}
                     </h3>
                     <p className="text-xs text-zinc-500 truncate">

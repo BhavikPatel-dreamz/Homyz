@@ -6,7 +6,6 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import type { HostBookingRequestDetails } from "@/services/booking.service";
 import { BookingStatusTimeline } from "@/components/bookings/booking-status-timeline";
-import { BackButton } from "@/components/ui/back-button";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { formatExpiryCountdown } from "@/lib/booking/booking-expiry";
 import { differenceInBookingNights, formatBookingDate } from "@/lib/booking/booking-date";
@@ -201,69 +200,77 @@ export function HostBookingDetailsClient({ details, relatedCases = [] }: HostBoo
         {/* Left Column */}
         <div className="space-y-6">
           {/* Guest Profile Card */}
-          <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-2xs">
+          <section className="rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6 shadow-2xs">
             <h3 className="text-base sm:text-lg font-medium text-[#1F1F1F] mb-4">
               {t("host_booking_details_guest_details", "Guest details")}
             </h3>
-            <div className="flex items-center gap-4">
-              <div className="relative size-16 shrink-0 rounded-full overflow-hidden bg-zinc-200 border border-zinc-200">
-                {details.guest.image ? (
-                  <Image
-                    src={details.guest.image}
-                    alt={details.guest.name || "Guest"}
-                    fill
-                    className="object-cover"
-                  />
-                ) : (
-                  <div className="size-full flex items-center justify-center text-xl font-bold bg-amber-100 text-amber-900">
-                    {(details.guest.name || "G").charAt(0).toUpperCase()}
-                  </div>
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <h4 className="text-base font-medium text-zinc-900 truncate">
-                  {details.guest.name || "Guest"}
-                </h4>
-                {details.guest.email && (
-                  <p className="text-sm text-[#727272] truncate">{details.guest.email}</p>
-                )}
-                <p className="text-sm text-[#727272] mt-0.5">
-                  {t("host_booking_details_member_since", "Member since {year}").replace("{year}", String(new Date(details.guest.createdAt).getFullYear()))}
-                </p>
+            <div className="flex xl:flex-row flex-col items-start justify-end gap-4 sm:gap-5">
+              {/* Guest Profile Info */}
+              <div className="flex items-center gap-3.5 sm:gap-4 shrink-0 xl:w-[60%]">
+                <div className="relative size-14 sm:size-16 shrink-0 rounded-full overflow-hidden bg-zinc-200 border border-zinc-200">
+                  {details.guest.image ? (
+                    <Image
+                      src={details.guest.image}
+                      alt={details.guest.name || "Guest"}
+                      fill
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="size-full flex items-center justify-center text-xl font-bold bg-amber-100 text-amber-900">
+                      {(details.guest.name || "G").charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <h4 className="text-base font-medium text-zinc-900">
+                    {details.guest.name || "Guest"}
+                  </h4>
+                  {details.guest.email && (
+                    <p className="text-sm text-[#727272]">{details.guest.email}</p>
+                  )}
+                  <p className="text-xs sm:text-sm text-[#727272] mt-0.5 whitespace-nowrap">
+                    {t("host_booking_details_member_since", "Member since {year}").replace("{year}", String(new Date(details.guest.createdAt).getFullYear()))}
+                  </p>
+                </div>
               </div>
 
-              {details.conversationId && (
-                <Link
-                  href={`/host/messages?id=${details.conversationId}`}
-                  className="w-full rounded-full border border-transparent bg-[#FCDF9C] px-4 py-2 text-center text-sm font-medium whitespace-nowrap text-[#1f1f1f] transition-colors duration-300 hover:bg-[#1f1f1f] hover:text-white sm:w-auto sm:shrink-0"
-                >
-                  {t("host_booking_details_message_guest", "Message guest")}
-                </Link>
-              )}
-              {relatedCases.length === 1 && (
-                <Link
-                  href={`/host/resolution-center/${relatedCases[0].id}`}
-                  className="w-full rounded-full border border-zinc-300 bg-white px-4 py-2 text-center text-sm font-medium text-[#1f1f1f] transition-colors hover:border-[#1f1f1f] sm:w-auto"
-                >
-                  {relatedCases[0].responseRequired ? "Respond to dispute" : "View dispute"}
-                </Link>
-              )}
-              {relatedCases.length > 1 && (
-                <Link
-                  href={`/host/resolution-center?bookingId=${encodeURIComponent(details.id)}`}
-                  className="w-full rounded-full border border-zinc-300 bg-white px-4 py-2 text-center text-sm font-medium text-[#1f1f1f] transition-colors hover:border-[#1f1f1f] sm:w-auto"
-                >
-                  View {relatedCases.length} disputes
-                </Link>
-              )}
-              <FileBookingDispute bookingId={details.id} variant="host" />
+              {/* Guest Actions */}
+              <div className="flex flex-wrap items-start lg:justify-end justify-start gap-2.5 sm:gap-3 xl:w-[40%]">
+                <div className="order-last xl:order-first flex justify-center xl:justify-start">
+                  <FileBookingDispute bookingId={details.id} variant="host" />
+                </div>
+                {details.conversationId && (
+                  <Link
+                    href={`/host/messages?id=${details.conversationId}`}
+                    className="order-1 sm:order-2 inline-flex min-h-10 w-full sm:w-auto items-center justify-center rounded-full border border-transparent bg-[#FCDF9C] px-5 py-2 text-center text-sm font-medium whitespace-nowrap text-[#1f1f1f] transition-colors duration-300 hover:bg-[#1f1f1f] hover:text-white"
+                  >
+                    {t("host_booking_details_message_guest", "Message guest")}
+                  </Link>
+                )}
+                {relatedCases.length === 1 && (
+                  <Link
+                    href={`/host/resolution-center/${relatedCases[0].id}`}
+                    className="order-2 sm:order-3 inline-flex min-h-10 w-full sm:w-auto items-center justify-center rounded-full border border-zinc-300 bg-white px-5 py-2 text-center text-sm font-medium text-[#1f1f1f] transition-colors hover:border-[#1f1f1f] whitespace-nowrap"
+                  >
+                    {relatedCases[0].responseRequired ? "Respond to dispute" : "View dispute"}
+                  </Link>
+                )}
+                {relatedCases.length > 1 && (
+                  <Link
+                    href={`/host/resolution-center?bookingId=${encodeURIComponent(details.id)}`}
+                    className="order-2 sm:order-3 inline-flex min-h-10 w-full sm:w-auto items-center justify-center rounded-full border border-zinc-300 bg-white px-5 py-2 text-center text-sm font-medium text-[#1f1f1f] transition-colors hover:border-[#1f1f1f] whitespace-nowrap"
+                  >
+                    View {relatedCases.length} disputes
+                  </Link>
+                )}
+              </div>
             </div>
 
             {/* Guest Initial Message */}
             {details.guestMessage && (
               <div className="mt-5 rounded-xl border border-zinc-200 bg-zinc-50 p-4">
                 <p className="text-xs font-semibold text-zinc-600 mb-1">{t("host_booking_details_guest_msg_heading", "Message from guest:")}</p>
-                <p className="text-sm text-zinc-800 italic leading-relaxed">
+                <p className="text-sm text-zinc-800 italic leading-relaxed break-words">
                   &ldquo;{details.guestMessage}&rdquo;
                 </p>
               </div>
@@ -404,7 +411,7 @@ export function HostBookingDetailsClient({ details, relatedCases = [] }: HostBoo
               {details.conversationId && (
                 <Link
                   href={`/host/messages?id=${details.conversationId}`}
-                  className="flex min-h-11 w-full items-center justify-center rounded-lg border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-800 font-medium text-sm transition-colors"
+                  className="flex min-h-11 w-full items-center justify-center rounded-full border border-[#727272] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] hover:text-white font-medium text-sm transition-colors duration-300"
                 >
                   {t("host_booking_details_open_conversation", "Open conversation with guest")}
                 </Link>
