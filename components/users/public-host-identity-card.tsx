@@ -30,7 +30,7 @@ export function PublicHostIdentityCard({ name, image, isSuperhost, reviewCount, 
               loading="lazy"
               decoding="async"
               onError={() => setImageFailed(true)}
-              className="size-[104px] shrink-0 rounded-full border border-zinc-200 object-cover"
+              className="size-[80px] sm:size-[104px] shrink-0 rounded-full border border-zinc-200 object-cover"
             />
           ) : (
             <div aria-hidden="true" className="flex size-[104px] shrink-0 items-center justify-center rounded-full border border-amber-200 bg-amber-100 text-2xl font-bold text-amber-900">{initial}</div>

@@ -286,7 +286,7 @@ function AmenityRow({ amenity }: { amenity: { id: string; category?: string; lab
         <AmenityIcon id={amenity.id} className="size-5" />
       </span>
       <div className="min-w-0">
-        <h5 className="text-sm font-semibold text-[#1f1f1f]">{translatedLabel}</h5>
+        <h5 className="text-sm font-medium text-[#1f1f1f]">{translatedLabel}</h5>
         {translatedDesc && <p className="mt-0.5 text-sm font-normal text-[#727272]">{translatedDesc}</p>}
       </div>
     </div>
@@ -343,7 +343,7 @@ function HostIdentityCard({
             </div>
           )}
           <div className="pt-4 text-center">
-            <p className="break-words sm:text-[20px] text-lg font-semibold text-[#1f1f1f] capitalize">{host.name || "Homyz host"}</p>
+            <p className="break-words sm:text-[20px] text-lg font-medium text-[#1f1f1f] capitalize">{host.name || "Homyz host"}</p>
             <p className="sm:mt-2 mt-1 text-base font-light text-[#1f1f1f]">{host.isSuperhost ? "Superhost" : "Host"}</p>
           </div>
         </div>
@@ -505,7 +505,7 @@ function ListingAvailabilityCalendar({
                   aria-label={`${date.toLocaleDateString("en", { dateStyle: "full" })}, ${state}`}
                   aria-selected={isStart || isEnd}
                   className={`relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f] sm:h-8 sm:w-8 ${isStart || isEnd
-                    ? "bg-[#FCDF9C] font-semibold text-[#1f1f1f] shadow-sm"
+                    ? "bg-[#FCDF9C] font-medium text-[#1f1f1f] shadow-sm"
                     : isInRange
                       ? "bg-[#FCDF9C] text-[#1f1f1f] hover:bg-[#F6CF7B]"
                       : past || unavailable
@@ -538,7 +538,7 @@ function ListingAvailabilityCalendar({
       {error ? (
         <div role="alert" className="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
           <span>{error}</span>
-          <button type="button" onClick={() => onMonthChange(new Date(month.getFullYear(), month.getMonth(), 1))} className="font-semibold underline underline-offset-2 cursor-pointer">Try again</button>
+          <button type="button" onClick={() => onMonthChange(new Date(month.getFullYear(), month.getMonth(), 1))} className="font-medium underline underline-offset-2 cursor-pointer">Try again</button>
         </div>
       ) : (
         <div className="max-w-[608px] rounded-2xl bg-[#F3F4F5] p-3 sm:p-4">
@@ -2056,7 +2056,7 @@ export function PublicListingDetailClient({
                         <div className="pt-2">
                           <Link
                             href="/profile/tab/upcoming"
-                            className="rounded-full bg-[#1f1f1f] text-white font-semibold text-xs px-6 py-2.5 inline-block"
+                            className="rounded-full bg-[#1f1f1f] text-white font-medium text-xs px-6 py-2.5 inline-block"
                           >
                             {t("listing_detail_view_your_bookings", "View your bookings")}
                           </Link>
@@ -2083,7 +2083,7 @@ export function PublicListingDetailClient({
                               </div>
                             )}
                           </div>
-                          <span className="text-xs text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full font-semibold">
+                          <span className="text-xs text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full font-medium">
                             {isInstantBook ? t("listing_detail_instant_book", "Instant Book") : t("listing_detail_host_approval_required", "Host approval required")}
                           </span>
                         </div>
@@ -2150,12 +2150,12 @@ export function PublicListingDetailClient({
                                 {/* Adults */}
                                 <div className="flex items-center justify-between gap-3">
                                    <div>
-                                    <p className="font-semibold text-[#1f1f1f]">{t("home_adults", "Adults")}</p>
+                                    <p className="font-medium text-[#1f1f1f]">{t("home_adults", "Adults")}</p>
                                     <p className="text-xs text-[#727272]">{t("listing_detail_age_adults", "Age 13+")}</p>
                                   </div>
                                   <div className="flex items-center gap-2">
                                     <button type="button" onClick={() => updateAdults(-1)} disabled={adultsCount <= 1} aria-label="Remove one adult" className="flex size-7 items-center justify-center rounded-full border border-[#1f1f1f] text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">−</button>
-                                    <span className="min-w-4 text-center font-semibold text-[#1f1f1f]" aria-live="polite">{adultsCount}</span>
+                                    <span className="min-w-4 text-center font-medium text-[#1f1f1f]" aria-live="polite">{adultsCount}</span>
                                     <button type="button" onClick={() => updateAdults(1)} disabled={!canAddCapacityGuest} aria-label="Add one adult" className="flex size-7 items-center justify-center rounded-full border border-[#1f1f1f] text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">+</button>
                                   </div>
                                 </div>
@@ -2168,7 +2168,7 @@ export function PublicListingDetailClient({
                                   </div>
                                   <div className="flex items-center gap-2">
                                     <button type="button" onClick={() => updateChildren(-1)} disabled={childrenCount <= 0} aria-label="Remove one child" className="flex size-7 items-center justify-center rounded-full border border-[#1f1f1f] text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">−</button>
-                                    <span className="min-w-4 text-center font-semibold text-[#1f1f1f]" aria-live="polite">{childrenCount}</span>
+                                    <span className="min-w-4 text-center font-medium text-[#1f1f1f]" aria-live="polite">{childrenCount}</span>
                                     <button type="button" onClick={() => updateChildren(1)} disabled={!canAddCapacityGuest} aria-label="Add one child" className="flex size-7 items-center justify-center rounded-full border border-[#1f1f1f] text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">+</button>
                                   </div>
                                 </div>
@@ -2209,11 +2209,11 @@ export function PublicListingDetailClient({
 
                         {/* {(quote?.nonRefundableAvailable || isNonRefundable) && (
                           <fieldset className="space-y-2 rounded-xl border border-zinc-200 bg-zinc-50/70 p-3 text-xs">
-                            <legend className="px-1 font-semibold text-[#1f1f1f]">Rate options</legend>
+                            <legend className="px-1 font-medium text-[#1f1f1f]">Rate options</legend>
                             <label className={`flex cursor-pointer items-start gap-2.5 rounded-lg border p-2.5 transition-colors ${!isNonRefundable ? "border-[#1f1f1f] bg-white shadow-2xs" : "border-transparent hover:bg-zinc-100/60"}`}>
                               <input type="radio" name="reservation-type" checked={!isNonRefundable} onChange={() => setIsNonRefundable(false)} className="mt-0.5 cursor-pointer" />
                               <div className="flex-1">
-                                <span className="block font-semibold text-[#1f1f1f]">Standard rate</span>
+                                <span className="block font-medium text-[#1f1f1f]">Standard rate</span>
                                 <span className="text-[#727272]">
                                   {listing.cancellationPolicy ? `Cancellation: ${listing.cancellationPolicy}` : "Uses this listing's normal cancellation policy."}
                                 </span>
@@ -2223,9 +2223,9 @@ export function PublicListingDetailClient({
                               <input type="radio" name="reservation-type" checked={isNonRefundable} onChange={() => setIsNonRefundable(true)} className="mt-0.5 cursor-pointer" />
                               <div className="flex-1">
                                 <div className="flex items-center justify-between">
-                                  <span className="font-semibold text-[#1f1f1f]">Non-refundable rate</span>
+                                  <span className="font-medium text-[#1f1f1f]">Non-refundable rate</span>
                                   {quote?.nonRefundableDiscount?.amount ? (
-                                    <span className="font-semibold text-emerald-700">Save {formatPrice(quote.nonRefundableDiscount.amount, currencyCode)}</span>
+                                    <span className="font-medium text-emerald-700">Save {formatPrice(quote.nonRefundableDiscount.amount, currencyCode)}</span>
                                   ) : null}
                                 </div>
                                 <span className="text-[#727272]">No refund if cancelled. Lower price in exchange for an immutable reservation.</span>
@@ -2305,7 +2305,7 @@ export function PublicListingDetailClient({
                                     <span className="flex items-center gap-1.5 font-medium">
                                       {t("listing_detail_taxes_and_fees", "Taxes & fees")}
                                       {quote.taxes.some((tax) => tax.exemptionApplied) && (
-                                        <span className="text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-1.5 py-0.5 rounded-full font-semibold">
+                                        <span className="text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-1.5 py-0.5 rounded-full font-medium">
                                           Exemption applied
                                         </span>
                                       )}
@@ -2326,13 +2326,13 @@ export function PublicListingDetailClient({
                                   </div>
                                 </div>
 
-                                <div className="pt-2 border-t border-zinc-200 flex items-center justify-between text-lg font-bold text-[#1f1f1f]">
+                                <div className="pt-2 border-t border-zinc-200 flex items-center justify-between text-lg font-medium text-[#1f1f1f]">
                                   <span>{t("listing_detail_total", "Total")}</span>
                                   <span>{formatPrice((quote.guestTotal ?? quote.totalPrice) || 0, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                                 </div>
                               </>
                             ) : (
-                                  <div className="pt-2 border-t border-zinc-200 flex items-center justify-between text-lg font-bold text-[#1f1f1f]">
+                                  <div className="pt-2 border-t border-zinc-200 flex items-center justify-between text-lg font-medium text-[#1f1f1f]">
                                 <span>{t("listing_detail_total", "Total")}</span>
                                 <span>{formatPrice((quote.guestTotal ?? quote.totalPrice) || 0, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                               </div>
@@ -2393,7 +2393,7 @@ export function PublicListingDetailClient({
               {listing.host && (
                 <section className="sm:pt-12 pt-7.5 sm:pb-12 pb-7.5 order-5 border-y border-zinc-200/80 lg:relative lg:z-10 lg:w-[calc(100vw-3rem)] lg:max-w-[1262px] mx-auto  lg:bg-white" aria-labelledby="meet-host-heading">
                   <h3 id="meet-host-heading" className="mb-6 text-[20px] font-normal text-[#1f1f1f]">{t("listing_detail_meet_host", "Meet your host")}</h3>
-                  <div className="grid gap-8 md:grid-cols-[376px_minmax(0,1fr)] md:gap-16">
+                  <div className="grid gap-8 md:grid-cols-[376px_minmax(0,1fr)] md:gap-[100px]">
                     <div>
                       {hostProfileHref ? (
                         <Link
@@ -2442,7 +2442,7 @@ export function PublicListingDetailClient({
                                 metadata: { hostId: listing.host?.id },
                               });
                             }}
-                            className="inline-flex min-h-12 items-center gap-2 rounded-full border border-[#1f1f1f] bg-[#F3F4F5] px-5 text-sm font-normal text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f] group transition-colors"
+                            className="inline-flex min-h-12 items-center gap-2 rounded-full border border-[#1f1f1f] bg-[#F3F4F5] px-5 text-base font-normal text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f] group transition-colors"
                           >
                             {t("listing_detail_view_host_profile", "View host profile")}
                           </Link>
@@ -2451,15 +2451,15 @@ export function PublicListingDetailClient({
                           <button
                             type="button"
                             onClick={() => setContactHostModalOpen(true)}
-                            className="inline-flex min-h-12 items-center gap-2 rounded-full border border-zinc-300 bg-white px-5 text-sm font-semibold text-[#1f1f1f] hover:border-black hover:bg-zinc-50 transition-colors shadow-2xs"
+                            className="inline-flex min-h-12 items-center gap-2 rounded-full border border-[#1F1F1F] bg-[#F3F4F5] px-5 text-base font-normal text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] transition-colors duration-300 shadow-2xs group"
                           >
-                            <Image src="/images/icons/messages.svg" alt="" width={18} height={18} className="size-4" />
+                            <Image src="/images/icons/messages.svg" alt="" width={18} height={18} className="size-4 group-hover:brightness-0 group-hover:invert transition-colors duration-300" />
                             {t("listing_detail_message_host", "Message host")}
                           </button>
                         )}
                       </div>
 
-                      <p className="mt-7 max-w-3xl text-sm leading-5 text-[#727272]">{t("listing_detail_protect_payment_help", "To help protect your payment, always use Homyz to send money and communicate with hosts.")}</p>
+                      <p className="mt-7 max-w-3xl text-sm leading-5 text-[#6A6A6A]">{t("listing_detail_protect_payment_help", "*To help protect your payment, always use Homyz to send money and communicate with hosts.")}</p>
                     </div>
                   </div>
                 </section>
@@ -2571,7 +2571,7 @@ export function PublicListingDetailClient({
                           </div>
                           <Link
                             href={`/guidebooks/${gb.id}`}
-                            className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-4 py-2 shadow-2xs shrink-0 transition-all"
+                            className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-medium text-xs px-4 py-2 shadow-2xs shrink-0 transition-all"
                           >
                             {t("listing_detail_guidebook_heading", "View guidebook")}
                           </Link>
@@ -2645,7 +2645,7 @@ export function PublicListingDetailClient({
           <div className="flex max-h-[85vh] w-full max-w-2xl flex-col rounded-[20px] bg-white p-6">
             <div className="flex items-center justify-between border-b border-zinc-200 pb-4">
               <h3 id="description-modal-title" className="md:text-2xl text-xl font-medium text-[#1f1f1f]">{t("listing_detail_about_place", "About this place")}</h3>
-              <button type="button" onClick={() => setIsDescriptionModalOpen(false)} aria-label={t("listing_detail_close_description", "Close description")} className="cursor-pointer p-1 text-lg font-semibold text-[#1f1f1f] hover:text-[#727272] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f]">✕</button>
+              <button type="button" onClick={() => setIsDescriptionModalOpen(false)} aria-label={t("listing_detail_close_description", "Close description")} className="cursor-pointer p-1 text-lg font-medium text-[#1f1f1f] hover:text-[#727272] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f]">✕</button>
             </div>
             <div className="visible-scrollbar mt-5 space-y-6 overflow-y-auto pr-1 sm:text-base text-sm leading-6 text-[#727272]">
               <p className="whitespace-pre-line">{normalizedDescription}</p>
@@ -2665,13 +2665,13 @@ export function PublicListingDetailClient({
         <ModalOverlay role="dialog" aria-modal="true" aria-labelledby="amenities-modal-title" className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
           <div className="flex max-h-[85vh] w-full max-w-lg flex-col rounded-[20px] bg-white p-6">
             <div className="flex items-center justify-between pb-4 border-b border-zinc-200">
-              <h3 id="amenities-modal-title" className="font-semibold text-xl text-[#1f1f1f]">{t("listing_detail_what_place_offers", "What this place offers")}</h3>
+              <h3 id="amenities-modal-title" className="font-medium text-xl text-[#1f1f1f]">{t("listing_detail_what_place_offers", "What this place offers")}</h3>
               <button
                 ref={amenityCloseRef}
                 type="button"
                 onClick={() => setIsAllAmenitiesOpen(false)}
                 aria-label="Close amenities"
-                className="cursor-pointer p-1 text-lg font-semibold text-[#1f1f1f] hover:text-[#727272] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f]"
+                className="cursor-pointer p-1 text-lg font-medium text-[#1f1f1f] hover:text-[#727272] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f]"
               >
                 ✕
               </button>
@@ -2706,7 +2706,7 @@ export function PublicListingDetailClient({
                 const translatedCategory = t(catKey, fallbackCat);
                 return (
                   <section key={category} aria-label={`${translatedCategory} amenities`}>
-                    <h4 className="mb-4 pb-3 text-base font-semibold capitalize text-[#1f1f1f] border-b border-zinc-200">
+                    <h4 className="mb-4 pb-3 text-base font-medium capitalize text-[#1f1f1f] border-b border-zinc-200">
                       {translatedCategory}
                     </h4>
                     <div className="space-y-3">{amenities.map((am) => <AmenityRow key={am.id} amenity={am} />)}</div>
@@ -2750,17 +2750,17 @@ export function PublicListingDetailClient({
                 <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3 text-xs flex justify-between items-center">
                   <div>
                     <span className="text-zinc-500 block">{t("listing_detail_dates_selected", "Dates selected")}</span>
-                    <span className="font-semibold text-zinc-800">{checkIn} – {checkOut}</span>
+                    <span className="font-medium text-zinc-800">{checkIn} – {checkOut}</span>
                   </div>
                   <div>
                     <span className="text-zinc-500 block">{t("host_basics_guests", "Guests")}</span>
-                    <span className="font-semibold text-zinc-800">{adultsCount + childrenCount}</span>
+                    <span className="font-medium text-zinc-800">{adultsCount + childrenCount}</span>
                   </div>
                 </div>
               )}
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-700 mb-1">
+                <label className="block text-xs font-medium text-zinc-700 mb-1">
                   {t("listing_detail_your_message_label", "Your message to the host")}
                 </label>
                 <textarea
@@ -2785,14 +2785,14 @@ export function PublicListingDetailClient({
                 <button
                   type="button"
                   onClick={() => setContactHostModalOpen(false)}
-                  className="px-5 py-2.5 rounded-full text-xs font-semibold text-zinc-600 hover:bg-zinc-100"
+                  className="px-5 py-2.5 rounded-full text-xs font-medium text-zinc-600 hover:bg-zinc-100"
                 >
                   {t("host_cancel", "Cancel")}
                 </button>
                 <button
                   type="submit"
                   disabled={inquirySending || !inquiryMessage.trim()}
-                  className="px-6 py-2.5 rounded-full bg-[#1f1f1f] text-white text-xs font-semibold hover:bg-black disabled:opacity-50"
+                  className="px-6 py-2.5 rounded-full bg-[#1f1f1f] text-white text-xs font-medium hover:bg-black disabled:opacity-50"
                 >
                   {inquirySending ? t("listing_detail_sending", "Sending...") : t("listing_detail_send_message", "Send Message")}
                 </button>

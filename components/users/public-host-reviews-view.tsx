@@ -17,21 +17,22 @@ type SortOption = "recent" | "oldest" | "highest" | "lowest";
 
 function ReviewStarRating({ rating }: { rating: number }) {
   return (
-    <div className="flex items-center gap-1" aria-label={`${rating} out of 5 stars`}>
-      {Array.from({ length: 5 }, (_, i) => {
-        const isFilled = i < rating;
-        return (
-          <Image
-            key={i}
-            src="/images/icons/star-fill.svg"
-            alt=""
-            width={16}
-            height={16}
-            className={`size-4 ${isFilled ? "opacity-100" : "opacity-20 grayscale"}`}
-          />
-        );
-      })}
-    </div>
+    <span
+      className="flex items-center gap-0.5 text-[#1F1F1F]"
+      aria-label={`Rated ${rating} out of 5`}
+    >
+      {Array.from({ length: 5 }, (_, index) => (
+        <Image
+          key={index}
+          src="/images/icons/review-star.svg"
+          alt=""
+          width={15}
+          height={15}
+          className={`size-[15px] ${index < rating ? "opacity-100" : "opacity-20"}`}
+        />
+      ))}
+      <span className="sr-only">Rated {rating} out of 5</span>
+    </span>
   );
 }
 
@@ -81,7 +82,7 @@ function ReviewCardItem({
               </span>
             )}
             <div className="min-w-0">
-              <p className="truncate text-base font-semibold text-[#1F1F1F]">{authorName}</p>
+              <p className="truncate text-base font-medium text-[#1F1F1F]">{authorName}</p>
               <p className="text-xs text-[#727272]">{formatRelativeDate(review.createdAt)}</p>
             </div>
           </div>
@@ -349,7 +350,7 @@ export function PublicHostReviewsView({ host, reviews, stats }: PublicHostReview
         <section className="min-w-0" aria-labelledby="reviews-section-heading">
           {/* Section Header */}
           <div className="border-b border-zinc-200/80 pb-5">
-            <h1 id="reviews-section-heading" className="text-2xl sm:text-3xl font-medium tracking-tight text-[#1F1F1F]">
+            <h1 id="reviews-section-heading">
               {headingText}
             </h1>
             <p className="mt-1.5 text-sm text-[#727272]">

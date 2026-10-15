@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useLanguage } from "@/lib/i18n/language-context";
 import { ListingCard } from "@/components/listings/listing-card";
 import { PublicHostIdentityCard } from "@/components/users/public-host-identity-card";
@@ -142,12 +143,24 @@ export function PublicHostProfileView({ host, stats, reviews, listings }: Public
                         <p className="text-xs text-[#727272]">{formatRelativeDate(review.createdAt)}</p>
                       </div>
                     </div>
-                    <p className="mt-3 text-sm text-[#1f1f1f]">
-                      <span aria-label={ratingAria}>
-                        {"★".repeat(review.rating)}
-                        <span className="text-zinc-300">{"★".repeat(5 - review.rating)}</span>
+                    <div className="mt-3 flex items-center text-xs text-zinc-600">
+                      <span
+                        className="flex items-center gap-0.5 text-[#1F1F1F]"
+                        aria-label={ratingAria}
+                      >
+                        {Array.from({ length: 5 }, (_, index) => (
+                          <Image
+                            key={index}
+                            src="/images/icons/review-star.svg"
+                            alt=""
+                            width={15}
+                            height={15}
+                            className={`size-[15px] ${index < review.rating ? "opacity-100" : "opacity-20"}`}
+                          />
+                        ))}
+                        <span className="sr-only">{ratingAria}</span>
                       </span>
-                    </p>
+                    </div>
                     <p className="mt-3 line-clamp-3 text-sm leading-6 text-[#727272] sm:text-base">
                       {review.comment}
                     </p>
@@ -158,7 +171,7 @@ export function PublicHostProfileView({ host, stats, reviews, listings }: Public
             {stats.reviewCount > reviews.length && (
               <Link
                 href={`/users/profile/${host.id}/reviews`}
-                className="mt-8 inline-flex min-h-12 items-center rounded-full border border-[#1f1f1f] bg-white px-6 text-sm font-normal text-[#1f1f1f] hover:text-white transition-colors hover:bg-[#1f1f1f] focus-visible:outline-none"
+                className="mt-8 inline-flex min-h-12 items-center rounded-full border border-[#1f1f1f] bg-white px-6 text-base font-normal text-[#1f1f1f] hover:text-white transition-colors hover:bg-[#1f1f1f] focus-visible:outline-none"
               >
                 {t("public_host_show_all_reviews", "Show all {count} reviews").replace(
                   "{count}",
