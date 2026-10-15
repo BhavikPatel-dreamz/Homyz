@@ -356,11 +356,13 @@ export class NotificationAdminService {
       data: {
         actorId: actor.id,
         actorEmail: actor.email || "admin@homyz.test",
-        actorRole: actor.role,
         action: "NOTIFICATION_RETRIED",
-        entityType: "Notification",
-        entityId: notif.id,
-        details: {
+        resourceType: "NOTIFICATION",
+        resourceId: notif.id,
+        description: `Admin ${actor.email || actor.id} retried notification ${notif.id} (Attempt #${attemptCount + 1})`,
+        status: "SUCCESS",
+        metadata: {
+          actorRole: actor.role,
           recipientId: notif.userId,
           recipientEmail: notif.user?.email,
           attemptNumber: attemptCount + 1,

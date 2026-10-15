@@ -234,7 +234,6 @@ export function ReviewList({ listingId, isGuestFavorite = false, onStatsChange }
               key={review.id}
               {...review}
               canReport={isAuthenticated}
-              onShowMore={(id) => handleOpenFullModal(null, id)}
             />
           ))}
         </div>
