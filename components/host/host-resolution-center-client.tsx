@@ -340,7 +340,7 @@ export function HostResolutionCenterClient({ data, listings }: Props) {
 
                         {/* Status Badge */}
                         <span
-                          className={`rounded-full px-3 py-0.5 text-xs font-medium ${
+                          className={`rounded-full px-3 py-0.5 text-xs font-normal ${
                             isResolved
                               ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
                               : isClosed

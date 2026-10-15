@@ -518,7 +518,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                       !
                     </span>
                     <div className="flex-1 space-y-1">
-                      <h3 className="text-base font-bold text-amber-950">Action Required: Support Inquiry</h3>
+                      <h3 className="text-base font-medium text-amber-950">Action Required: Support Inquiry</h3>
                       <p className="text-sm text-amber-900 leading-relaxed">
                         Homyz Support has requested information from you regarding this case. Please review the inquiry in the Conversation tab and submit your response.
                       </p>
@@ -526,7 +526,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                         <button
                           type="button"
                           onClick={() => setActiveTab("conversation")}
-                          className="rounded-full bg-amber-900 px-5 py-2 text-xs sm:text-sm font-semibold text-white hover:bg-black transition-colors cursor-pointer"
+                          className="rounded-full bg-amber-900 px-5 py-3 text-xs sm:text-sm font-semibold text-white hover:bg-black transition-colors cursor-pointer"
                         >
                           Go to Response Inquiry →
                         </button>
@@ -648,12 +648,12 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                         className="rounded-2xl border border-amber-200 bg-amber-50/70 p-5 sm:p-6 space-y-3"
                       >
                         <div className="flex items-center justify-between">
-                          <span className="text-sm sm:text-base font-bold text-amber-950 flex items-center gap-2">
+                          <span className="text-sm sm:text-base font-medium text-amber-950 flex items-center gap-2">
                             <span className="h-2.5 w-2.5 rounded-full bg-amber-500" />
                             Homyz Support Request
                           </span>
                           <span
-                            className={`rounded-full px-3 py-0.5 text-xs font-medium ${
+                            className={`rounded-full px-3 py-0.5 text-xs font-normal ${
                               request.status === "PENDING_RESPONSE"
                                 ? "bg-amber-200 text-amber-900"
                                 : "bg-emerald-100 text-emerald-800"
@@ -719,24 +719,24 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                       rows={5}
                       maxLength={4000}
                       placeholder="Type your official message or response details..."
-                      className="w-full rounded-2xl border border-zinc-300 p-4 text-sm sm:text-base outline-none focus:border-[#1F1F1F] min-h-[140px]"
+                      className="w-full rounded-lg border border-[#727272] p-4 text-sm sm:text-base outline-none focus:border-[#1F1F1F] min-h-[140px]"
                     />
 
                     {/* Evidence Attachment */}
                     <div>
                       <label className="block rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-4 text-sm text-[#555] hover:border-zinc-400 cursor-pointer">
-                        <span className="font-semibold block text-[#1F1F1F]">Attach Evidence (Optional)</span>
-                        <span className="text-xs text-[#727272]">Up to 5 files (JPG, PNG, WEBP, or PDF, max 15MB each)</span>
+                        <span className="text-base font-medium block text-[#1F1F1F]">Attach Evidence (Optional)</span>
+                        <span className="text-sm text-[#727272] mt-2 block">Up to 5 files (JPG, PNG, WEBP, or PDF, max 15MB each)</span>
                         <input
                           type="file"
                           multiple
                           accept="image/jpeg,image/png,image/webp,application/pdf"
                           onChange={(e) => setReplyFiles(Array.from(e.target.files || []).slice(0, 5))}
-                          className="mt-2 block w-full text-xs"
+                          className="mt-2 block w-full text-sm"
                         />
                       </label>
                       {replyFiles.length > 0 && (
-                        <p className="mt-2 text-xs text-zinc-700 font-medium">
+                        <p className="mt-2 text-sm text-[#727272] font-normal">
                           Selected files: {replyFiles.map((f) => f.name).join(", ")}
                         </p>
                       )}
@@ -746,7 +746,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                       <button
                         type="submit"
                         disabled={isSubmittingReply || (!replyContent.trim() && replyFiles.length === 0)}
-                        className="min-h-11 rounded-full bg-[#1F1F1F] px-6 py-2.5 text-sm font-semibold text-white hover:bg-black transition-all disabled:opacity-50 cursor-pointer"
+                        className="min-h-11 rounded-full bg-[#1F1F1F] border border-[#1f1f1f] px-6 py-2.5 text-sm font-medium text-white hover:text-[#1f1f1f] hover:bg-white transition-all duration-300 disabled:opacity-50 cursor-pointer"
                       >
                         {isSubmittingReply
                           ? "Sending..."
@@ -770,7 +770,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                     <h2 className="text-base sm:text-lg font-medium text-[#1F1F1F]">
                       My Private Case Notes ({dispute.privateNotes.length})
                     </h2>
-                    <span className="text-xs font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full inline-block mt-1.5">
+                    <span className="text-xs font-normal text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full inline-block mt-1.5">
                       🔒 Private Note — Not shared with Guest or Admin
                     </span>
                   </div>
@@ -781,7 +781,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                       setNoteContent("");
                       setNoteModalOpen(true);
                     }}
-                    className="self-start sm:self-auto inline-flex items-center gap-1.5 rounded-full bg-[#1F1F1F] px-5 py-2.5 text-sm font-semibold text-white hover:bg-black transition-all cursor-pointer"
+                    className="self-start sm:self-auto inline-flex items-center gap-1.5 rounded-full bg-[#1F1F1F] px-5 py-2.5 text-sm font-medium text-white hover:text-[#1f1f1f] hover:bg-white border border-[#1f1f1f] transition-all cursor-pointer"
                   >
                     <svg
                       className="size-4 shrink-0"
@@ -801,8 +801,8 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
 
                 {dispute.privateNotes.length === 0 ? (
                   <div className="py-14 text-center text-sm text-[#727272] space-y-1">
-                    <p className="italic">You haven't saved any private notes for this case.</p>
-                    <p className="text-xs text-zinc-400">Keep personal reminders, inspection findings, or timeline notes for your records.</p>
+                    <p className="text-base">You haven't saved any private notes for this case.</p>
+                    <p className="text-sm">Keep personal reminders, inspection findings, or timeline notes for your records.</p>
                   </div>
                 ) : (
                   <div className="mt-6 space-y-4">
@@ -1033,9 +1033,9 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
             <dl className="mt-4 divide-y divide-zinc-100 text-sm">
               <div className="flex items-center justify-between py-2.5">
                 <dt className="text-[#727272]">Case Status</dt>
-                <dd className="font-semibold text-[#1F1F1F]">
+                <dd className="font-medium text-[#1F1F1F]">
                   <span
-                    className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                    className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
                       dispute.status === "RESOLVED"
                         ? "bg-emerald-100 text-emerald-800"
                         : "bg-blue-100 text-blue-800"
@@ -1047,11 +1047,11 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
               </div>
               <div className="flex items-center justify-between py-2.5">
                 <dt className="text-[#727272]">Priority</dt>
-                <dd className="font-semibold uppercase text-[#1F1F1F]">{dispute.severity}</dd>
+                <dd className="font-medium uppercase text-[#1F1F1F]">{dispute.severity}</dd>
               </div>
               <div className="flex items-center justify-between py-2.5">
                 <dt className="text-[#727272]">Issue Category</dt>
-                <dd className="font-semibold text-[#1F1F1F]">
+                <dd className="font-medium text-[#1F1F1F]">
                   {dispute.category.replaceAll("_", " ")}
                 </dd>
               </div>
@@ -1124,7 +1124,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                 </div>
 
                 {typeof booking.totalPrice === "number" && (
-                  <div className="flex items-center justify-between pt-2 border-t border-zinc-100">
+                  <div className="flex items-center justify-between pt-2 border-t border-zinc-400">
                     <span className="text-[#727272]">Total Booking:</span>
                     <span className="font-medium text-base text-[#1F1F1F]">
                       {formatPrice(booking.totalPrice / 100, booking.currency || "SAR")}
@@ -1188,7 +1188,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
       {noteModalOpen && (
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <div className="w-full max-w-lg rounded-[20px] bg-white border border-zinc-200 p-6 sm:p-7 shadow-2xl space-y-5">
-            <div className="flex items-center justify-between border-b border-zinc-100 pb-3.5">
+            <div className="flex items-center justify-between border-b border-zinc-300 pb-3.5">
               <div>
                 <h3 className="text-base sm:text-lg font-medium text-[#1F1F1F]">
                   {editingNoteId ? "Edit Private Note" : "Add Private Note"}
@@ -1213,21 +1213,21 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                 rows={5}
                 maxLength={4000}
                 placeholder="Write your private note or reminder here..."
-                className="w-full rounded-2xl border border-zinc-300 p-4 text-sm sm:text-base outline-none focus:border-[#1F1F1F]"
+                className="w-full rounded-lg border border-[#727272] p-4 text-sm sm:text-base outline-none focus:border-[#1F1F1F]"
               />
 
               <div className="flex justify-end gap-3 pt-2">
                 <button
                   type="button"
                   onClick={() => setNoteModalOpen(false)}
-                  className="min-h-11 rounded-full border border-zinc-300 px-5 py-2.5 text-sm font-semibold text-[#1F1F1F] hover:bg-zinc-50 cursor-pointer"
+                  className="min-h-11 rounded-full border border-[#1f1f1f] px-5 py-2.5 text-sm font-medium text-[#1F1F1F] bg-[#1f1f1f] hover:bg-white cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSavingNote || !noteContent.trim()}
-                  className="min-h-11 rounded-full bg-[#1F1F1F] px-6 py-2.5 text-sm font-semibold text-white hover:bg-black disabled:opacity-50 cursor-pointer"
+                  className="min-h-11 rounded-full border border-[#1f1f1f] px-5 py-2.5 bg-[#1F1F1F] hover:bg-black text-sm font-medium text-white disabled:opacity-50 cursor-pointer"
                 >
                   {isSavingNote ? "Saving..." : editingNoteId ? "Update Note" : "Save Note"}
                 </button>
@@ -1243,10 +1243,10 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
       {proposeModalOpen && (
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <div className="w-full max-w-xl rounded-[20px] bg-white border border-zinc-200 p-6 sm:p-7 shadow-2xl space-y-5">
-            <div className="flex items-center justify-between border-b border-zinc-100 pb-3.5">
+            <div className="flex items-center justify-between border-b border-zinc-300 pb-3.5">
               <div>
-                <h3 className="text-base sm:text-lg font-medium text-[#1F1F1F]">Propose Resolution Outcome</h3>
-                <p className="text-xs text-[#727272]">Submit a formal settlement proposal for Support review.</p>
+                <h3 className="text-lg sm:text-xl font-medium text-[#1F1F1F]">Propose Resolution Outcome</h3>
+                <p className="text-sm text-[#727272]">Submit a formal settlement proposal for Support review.</p>
               </div>
               <button
                 type="button"
@@ -1259,25 +1259,44 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
 
             <form onSubmit={handleProposeResolution} className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-[#1F1F1F] mb-1.5">
+                <label className="block text-sm font-normal text-[#1F1F1F] mb-1.5">
                   Proposal Type
                 </label>
-                <select
-                  value={proposalType}
-                  onChange={(e) => setProposalType(e.target.value)}
-                  className="w-full rounded-xl border border-zinc-300 p-3 text-sm bg-white outline-none focus:border-[#1F1F1F]"
-                >
-                  <option value="ISSUE_FIXED">Issue Fixed On-Site / Remedied</option>
-                  <option value="REPLACEMENT_OFFERED">Alternative Accommodation / Item Offered</option>
-                  <option value="EXPLANATION_PROVIDED">Explanation &amp; Apology Provided</option>
-                  <option value="REFUND_REQUESTED">Refund Requested for Guest Review</option>
-                  <option value="MUTUAL_SETTLEMENT">Mutual Settlement / Agreement</option>
-                  <option value="OTHER">Other Resolution</option>
-                </select>
+                <div className="relative">
+                  <select
+                    value={proposalType}
+                    onChange={(e) => setProposalType(e.target.value)}
+                    className="w-full appearance-none rounded-lg border border-zinc-300 bg-white p-3 pr-10 text-sm text-[#1F1F1F] outline-none transition-colors focus:border-[#1F1F1F] cursor-pointer"
+                  >
+                    <option value="ISSUE_FIXED">Issue Fixed On-Site / Remedied</option>
+                    <option value="REPLACEMENT_OFFERED">Alternative Accommodation / Item Offered</option>
+                    <option value="EXPLANATION_PROVIDED">Explanation &amp; Apology Provided</option>
+                    <option value="REFUND_REQUESTED">Refund Requested for Guest Review</option>
+                    <option value="MUTUAL_SETTLEMENT">Mutual Settlement / Agreement</option>
+                    <option value="OTHER">Other Resolution</option>
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3.5 text-[#1f1f1f]">
+                    <svg
+                      className="size-4"
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="m6 9 6 6 6-6" />
+                    </svg>
+                  </div>
+                </div>
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-[#1F1F1F] mb-1.5">
+                <label className="block text-sm font-normal text-[#1F1F1F] mb-1.5">
                   Explanation &amp; Terms
                 </label>
                 <textarea
@@ -1286,24 +1305,24 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                   rows={4}
                   maxLength={4000}
                   placeholder="Explain what was offered, completed, or agreed upon..."
-                  className="w-full rounded-2xl border border-zinc-300 p-4 text-sm sm:text-base outline-none focus:border-[#1F1F1F]"
+                  className="w-full rounded-lg border border-zinc-300 p-4 text-sm outline-none focus:border-[#1F1F1F]"
                 />
               </div>
 
               <div>
-                <label className="block rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-4 text-sm text-[#555] hover:border-zinc-400 cursor-pointer">
-                  <span className="font-semibold block text-[#1F1F1F]">Attach Supporting Evidence (Optional)</span>
-                  <span className="text-xs text-[#727272]">Photos, maintenance receipts, messages (up to 5 files)</span>
+                <label className="block rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-4 text-sm text-[#555] hover:border-zinc-400 cursor-pointer">
+                  <span className="text-base font-medium block text-[#1F1F1F]">Attach Supporting Evidence (Optional)</span>
+                  <span className="text-sm text-[#727272] mt-2 block">Photos, maintenance receipts, messages (up to 5 files)</span>
                   <input
                     type="file"
                     multiple
                     accept="image/jpeg,image/png,image/webp,application/pdf"
                     onChange={(e) => setProposalFiles(Array.from(e.target.files || []).slice(0, 5))}
-                    className="mt-2 block w-full text-xs"
+                    className="mt-2 block w-full text-sm"
                   />
                 </label>
                 {proposalFiles.length > 0 && (
-                  <p className="mt-2 text-xs text-zinc-700 font-medium">
+                  <p className="mt-2 text-sm text-[#727272] font-normal">
                     Selected files: {proposalFiles.map((f) => f.name).join(", ")}
                   </p>
                 )}
@@ -1313,14 +1332,14 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                 <button
                   type="button"
                   onClick={() => setProposeModalOpen(false)}
-                  className="min-h-11 rounded-full border border-zinc-300 px-5 py-2.5 text-sm font-semibold text-[#1F1F1F] hover:bg-zinc-50 cursor-pointer"
+                  className="min-h-11 rounded-full border border-[#1f1f1f] px-5 py-2.5 text-sm font-medium text-[#1F1F1F] bg-white hover:bg-[#1f1f1f] hover:text-white transition-all duration-300 cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmittingProposal || !proposalExplanation.trim()}
-                  className="min-h-11 rounded-full bg-[#1F1F1F] px-6 py-2.5 text-sm font-semibold text-white hover:bg-black disabled:opacity-50 cursor-pointer"
+                  className="min-h-11 rounded-full border border-[#1f1f1f] bg-[#1F1F1F] px-5 py-2.5 text-sm font-medium text-white hover:bg-black disabled:opacity-50 cursor-pointer"
                 >
                   {isSubmittingProposal ? "Submitting..." : "Submit Proposal"}
                 </button>
@@ -1336,7 +1355,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
       {resolveOwnModalOpen && (
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <div className="w-full max-w-lg rounded-[20px] bg-white border border-zinc-200 p-6 sm:p-7 shadow-2xl space-y-5">
-            <div className="flex items-center justify-between border-b border-zinc-100 pb-3.5">
+            <div className="flex items-center justify-between border-b border-zinc-300 pb-3.5">
               <div>
                 <h3 className="text-base sm:text-lg font-medium text-[#1F1F1F]">Resolve Your Dispute Complaint</h3>
                 <p className="text-xs text-[#727272]">As the reporting host, you can resolve or withdraw your case.</p>
