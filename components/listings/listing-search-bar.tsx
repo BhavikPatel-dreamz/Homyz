@@ -739,9 +739,9 @@ export function ListingSearchBar() {
           </div>
           <div className="min-w-0">
             <span className="block text-[14px] font-semibold text-[#1f1f1f] leading-tight">
-              {isLocating ? "Detecting location..." : "Use current location"}
+              {isLocating ? t("home_detecting_location", "Detecting location...") : t("home_use_current_location", "Use current location")}
             </span>
-            <span className="block text-[11px] text-[#727272] font-medium">Discover verified stays near you</span>
+            <span className="block text-[11px] text-[#727272] font-medium">{t("home_search_discover_near_you", "Discover verified stays near you")}</span>
           </div>
         </div>
         <span className="shrink-0 rounded-full bg-blue-100/80 px-2 py-0.5 text-[10px] font-semibold text-blue-800">
@@ -1195,7 +1195,7 @@ export function ListingSearchBar() {
             >
               {desktopPanel === "where" ? (
                 <>
-                  <p className="mb-2 px-1 text-[12px] font-normal text-[#727272]">Suggested destinations</p>
+                  <p className="mb-2 px-1 text-[12px] font-normal text-[#727272]">{t("home_search_suggested_destinations", "Suggested destinations")}</p>
                   {destinationSuggestions}
                 </>
               ) : desktopPanel === "who" ? (

@@ -141,9 +141,9 @@ export function StepDiscounts({
                 <div className="mt-3 p-4 bg-zinc-50 border border-zinc-200 rounded-2xl text-xs text-zinc-600 leading-relaxed animate-in fade-in duration-150">
                   <p className="font-semibold text-zinc-800 mb-1">{t("host_discounts_how_it_works")}</p>
                   <ul className="list-disc pl-4 space-y-1">
-                    <li>If multiple discounts apply to the same dates, the highest qualifying single discount will be granted to the guest.</li>
-                    <li>Length-of-stay discounts (weekly or monthly) take priority over the new listing promotion once your first 3 bookings are completed.</li>
-                    <li>You can adjust or turn off any discount at any time from your host listing editor.</li>
+                    <li>{t("host_discounts_rule_multiple")}</li>
+                    <li>{t("host_discounts_rule_length")}</li>
+                    <li>{t("host_discounts_rule_adjust")}</li>
                   </ul>
                 </div>
               )}

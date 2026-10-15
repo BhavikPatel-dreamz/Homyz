@@ -269,7 +269,7 @@ export function CalendarSettingsPanel({
             onClick={onClear}
             className="text-xs font-medium text-[#DF4557] hover:text-rose-600 dark:text-zinc-400 dark:hover:text-rose-400 transition-colors cursor-pointer text-left"
           >
-            {clearLabel || "Remove"}
+            {clearLabel || t("host_calendar_clear", "Clear")}
           </button>
         )}
       </div>
@@ -324,12 +324,18 @@ export function CalendarSettingsPanel({
           >
             <div className="min-w-0">
               <p className="text-base font-medium text-[#222222] dark:text-zinc-100">
-                Price settings
+                {t("host_calendar_price_settings", "Price settings")}
               </p>
               <div className="mt-3 flex flex-col gap-1.5 text-sm leading-5 text-[#727272] dark:text-[#727272]">
-                <div>{formatMajor(((listing as any).weekdayBasePrice ?? listing.price) / 100, listingCurrency)} per night</div>
-                <div>{weeklyDiscount}% weekly discount</div>
-                <div>{monthlyDiscount}% monthly discount</div>
+                <div>
+                  {formatMajor(((listing as any).weekdayBasePrice ?? listing.price) / 100, listingCurrency)} {t("host_calendar_per_night", "/ night")}
+                </div>
+                <div>
+                  {weeklyDiscount}% {t("host_calendar_weekly_discount_label", "Weekly discount")}
+                </div>
+                <div>
+                  {monthlyDiscount}% {t("host_calendar_monthly_discount_label", "Monthly discount")}
+                </div>
               </div>
             </div>
             <svg
@@ -353,11 +359,15 @@ export function CalendarSettingsPanel({
           >
             <div className="min-w-0">
               <p className="text-base font-medium text-[#222222] dark:text-zinc-100">
-                Availability settings
+                {t("host_calendar_avail_settings", "Availability settings")}
               </p>
               <div className="mt-3 flex flex-col gap-1.5 text-sm font-normal leading-5 text-[#727272] dark:text-zinc-400">
-                <div>{listing.minNights ?? 1}–{listing.maxNights ?? 365} night stays</div>
-                <div>{(listing as any).advanceNotice || "Same day"} advance notice</div>
+                <div>
+                  {listing.minNights ?? 1}–{listing.maxNights ?? 365} {t("host_dash_nights", "nights")}
+                </div>
+                <div>
+                  {(listing as any).advanceNotice || t("host_notice_same_day", "Same day")} {t("host_calendar_advance_notice", "advance notice")}
+                </div>
               </div>
             </div>
             <svg
@@ -384,7 +394,7 @@ export function CalendarSettingsPanel({
         aria-label={t("host_calendar_back_to_settings", "Back to calendar settings")}
         onClick={() => {
           if (dirty && typeof window !== "undefined") {
-            if (!window.confirm("You have unsaved changes. Discard them?")) {
+            if (!window.confirm(t("host_calendar_unsaved_confirm", "You have unsaved changes in this selection. Discard them?"))) {
               return;
             }
           }
@@ -410,15 +420,15 @@ export function CalendarSettingsPanel({
             const allowSameDay = data.get("allowSameDayRequests") === "on";
 
             if (!Number.isFinite(minN) || minN < 1) {
-              setValidation("Minimum stay must be at least 1 night.");
+              setValidation(t("host_calendar_min_stay_err_at_least_1", "Minimum stay must be at least 1 night."));
               return;
             }
             if (!Number.isFinite(maxN) || maxN < minN) {
-              setValidation("Maximum stay must be greater than or equal to minimum stay.");
+              setValidation(t("host_calendar_max_stay_err_gte_min", "Maximum stay must be greater than or equal to minimum stay."));
               return;
             }
             if (!Number.isFinite(guestsCount) || guestsCount < 1) {
-              setValidation("Maximum guests must be at least 1.");
+              setValidation(t("host_calendar_max_guests_err_at_least_1", "Maximum guests must be at least 1."));
               return;
             }
 
@@ -437,10 +447,10 @@ export function CalendarSettingsPanel({
         >
           <div>
             <h2 className="text-base font-medium text-[#1f1f1f] dark:text-zinc-100">
-              Availability settings
+              {t("host_calendar_avail_settings", "Availability settings")}
             </h2>
             <p className="mt-1 text-sm text-[#727272] dark:text-zinc-400">
-              Set global trip length rules and booking notice requirements.
+              {t("host_calendar_avail_form_desc", "Set global trip length rules and booking notice requirements.")}
             </p>
           </div>
 
@@ -492,18 +502,18 @@ export function CalendarSettingsPanel({
                   defaultValue={(listing as any).advanceNotice || "Same day"}
                   className="w-full appearance-none bg-transparent px-3.5 py-2.5 text-sm font-medium text-zinc-900 dark:text-zinc-100 outline-none cursor-pointer pr-9 border border-[#727272] sm:min-h-[56px] min-h-[45px] focus-within:outline-0 focus-within:shadow-none focus-visible:outline-0 focus-visible:shadow-none rounded-lg"
                 >
-                  <option value="Same day">Same day</option>
-                  <option value="At least 1 day">At least 1 day</option>
-                  <option value="At least 2 days">At least 2 days</option>
-                  <option value="At least 3 days">At least 3 days</option>
-                  <option value="At least 7 days">At least 7 days</option>
+                  <option value="Same day">{t("host_notice_same_day", "Same day")}</option>
+                  <option value="At least 1 day">{t("host_notice_at_least_1_day", "At least 1 day")}</option>
+                  <option value="At least 2 days">{t("host_notice_at_least_2_days", "At least 2 days")}</option>
+                  <option value="At least 3 days">{t("host_notice_at_least_3_days", "At least 3 days")}</option>
+                  <option value="At least 7 days">{t("host_notice_at_least_7_days", "At least 7 days")}</option>
                 </select>
                 <span className="pointer-events-none absolute right-3.5 text-xs text-zinc-400">
                   ▾
                 </span>
               </div>
               <p className="text-xs text-[#727272] dark:text-zinc-400">
-                Required lead time before a guest can check in.
+                {t("host_notice_required_before", "Required lead time before a guest can check in.")}
               </p>
             </div>
 
@@ -521,9 +531,9 @@ export function CalendarSettingsPanel({
                   defaultValue={(listing as any).sameDayCutoff || "12:00 AM"}
                   className="w-full appearance-none bg-transparent px-3.5 py-2.5 text-sm font-medium text-zinc-900 dark:text-zinc-100 outline-none cursor-pointer pr-9"
                 >
-                  <option value="12:00 AM">12:00 AM (Midnight)</option>
+                  <option value="12:00 AM">{t("host_calendar_cutoff_midnight", "12:00 AM (Midnight)")}</option>
                   <option value="6:00 AM">6:00 AM</option>
-                  <option value="12:00 PM">12:00 PM (Noon)</option>
+                  <option value="12:00 PM">{t("host_calendar_cutoff_noon", "12:00 PM (Noon)")}</option>
                   <option value="3:00 PM">3:00 PM</option>
                   <option value="6:00 PM">6:00 PM</option>
                   <option value="9:00 PM">9:00 PM</option>
@@ -533,17 +543,17 @@ export function CalendarSettingsPanel({
                 </span>
               </div>
               <p className="text-xs text-[#727272] dark:text-zinc-400">
-                Time after which guests cannot book a same-day reservation.
+                {t("host_calendar_same_day_cutoff_helper", "Time after which guests cannot book a same-day reservation.")}
               </p>
             </div>
 
             <label className="flex items-center justify-between gap-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50/70 dark:bg-zinc-800/40 p-3.5 hover:bg-zinc-100/70 dark:hover:bg-zinc-800/80 transition-colors cursor-pointer">
               <div className="min-w-0 flex-1">
                 <span className="block text-sm font-medium text-[#1f1f1f] dark:text-zinc-200">
-                  Allow same-day booking requests
+                  {t("host_calendar_allow_same_day_title", "Allow same-day booking requests")}
                 </span>
                 <span className="block text-xs text-[#727272] dark:text-zinc-400 mt-0.5">
-                  Let guests book on the day of arrival before the cutoff time.
+                  {t("host_calendar_allow_same_day_subtitle", "Let guests book on the day of arrival before the cutoff time.")}
                 </span>
               </div>
               <input
@@ -650,7 +660,10 @@ export function CalendarSettingsPanel({
               (customPromoIsEnabled && customPromo <= 0)
             ) {
               setValidation(
-                "Please enter a valid base price and discount percentages between 0 and 100%."
+                t(
+                  "host_calendar_err_price_discount_range",
+                  "Please enter a valid base price and discount percentages between 0 and 100%.",
+                ),
               );
               return;
             }
@@ -702,10 +715,10 @@ export function CalendarSettingsPanel({
           <section className="space-y-3">
             <div>
               <h2 className="text-base font-medium text-[#1f1f1f] dark:text-zinc-100">
-                Price settings
+                {t("host_calendar_price_settings", "Price settings")}
               </h2>
               <p className="mt-0.5 text-sm text-[#727272] dark:text-[#727272]">
-                These apply to all nights, unless you customize them by date.
+                {t("host_calendar_base_rates_desc", "Default rates applied unless customized for specific calendar dates.")}
               </p>
             </div>
 
@@ -744,7 +757,7 @@ export function CalendarSettingsPanel({
                 max: 100000,
                 step: "0.01",
                 inputMode: "decimal",
-                placeholder: "Leave empty to use base rate",
+                placeholder: t("host_calendar_weekend_placeholder", "Leave empty to use base rate"),
                 helperText:
                   t("host_calendar_weekend_helper", "Applies to Thursday & Friday nights. Leave empty to use the weekday base rate."),
                 onClear: customWeekendPriceVal
@@ -753,7 +766,7 @@ export function CalendarSettingsPanel({
                     setDirty(true);
                   }
                   : undefined,
-                clearLabel: "Clear",
+                clearLabel: t("host_calendar_clear", "Clear"),
               })}
             </ExpandControl>
           </section>
@@ -762,20 +775,20 @@ export function CalendarSettingsPanel({
           <section className="space-y-3 border-t border-zinc-200 dark:border-zinc-800 pt-5">
             <div>
               <h3 className="text-base font-medium text-zinc-900 dark:text-zinc-100">
-                Discounts
+                {t("host_calendar_stay_discounts_heading", "Stay Length Discounts")}
               </h3>
               <p className="mt-0.5 text-sm text-[#727272] dark:text-[#727272]">
-                Encourage longer reservations with stay duration discounts.
+                {t("host_calendar_stay_discounts_desc", "Encourage longer reservations with stay duration discounts.")}
               </p>
             </div>
 
             <ExpandControl
-              title="Weekly ( 7 nights + )"
-              subtitle="Applied automatically to bookings of 7 nights or more."
+              title={t("host_calendar_weekly_discount_label", "Weekly (7+ nights)")}
+              subtitle={t("host_calendar_weekly_discount_sub", "Applied automatically to bookings of 7 nights or more.")}
               defaultOpen={weeklyEnabled}
               control={discountToggle(
                 "weeklyEnabled",
-                "Toggle weekly discount",
+                t("host_calendar_toggle_weekly", "Toggle weekly discount"),
                 weeklyEnabled,
                 setWeeklyEnabled
               )}
@@ -794,12 +807,12 @@ export function CalendarSettingsPanel({
             </ExpandControl>
 
             <ExpandControl
-              title="Monthly (28+ nights)"
-              subtitle="Applied automatically to bookings of 28 nights or more."
+              title={t("host_calendar_monthly_discount_label", "Monthly (28+ nights)")}
+              subtitle={t("host_calendar_monthly_discount_sub", "Applied automatically to bookings of 28 nights or more.")}
               defaultOpen={monthlyEnabled}
               control={discountToggle(
                 "monthlyEnabled",
-                "Toggle monthly discount",
+                t("host_calendar_toggle_monthly", "Toggle monthly discount"),
                 monthlyEnabled,
                 setMonthlyEnabled
               )}
@@ -818,12 +831,12 @@ export function CalendarSettingsPanel({
             </ExpandControl>
 
             <ExpandControl
-              title="Early-bird (30+ days advance)"
-              subtitle="For bookings made at least 30 days before arrival."
+              title={t("host_calendar_early_bird_discount", "Early-bird discount (30+ days advance)")}
+              subtitle={t("host_calendar_early_bird_sub", "For bookings made at least 30 days before arrival.")}
               defaultOpen={earlyBirdEnabled}
               control={discountToggle(
                 "earlyBirdEnabled",
-                "Toggle early-bird discount",
+                t("host_calendar_toggle_early_bird", "Toggle early-bird discount"),
                 earlyBirdEnabled,
                 setEarlyBirdEnabled
               )}
@@ -842,12 +855,12 @@ export function CalendarSettingsPanel({
             </ExpandControl>
 
             <ExpandControl
-              title="Last-minute (within 2 days)"
-              subtitle="For bookings made within 2 days before arrival."
+              title={t("host_calendar_last_minute_discount", "Last-minute discount (within 2 days)")}
+              subtitle={t("host_calendar_last_minute_sub", "For bookings made within 2 days before arrival.")}
               defaultOpen={lastMinuteEnabled}
               control={discountToggle(
                 "lastMinuteEnabled",
-                "Toggle last-minute discount",
+                t("host_calendar_toggle_last_minute", "Toggle last-minute discount"),
                 lastMinuteEnabled,
                 setLastMinuteEnabled
               )}
@@ -870,10 +883,10 @@ export function CalendarSettingsPanel({
           <section className="space-y-3 border-t border-zinc-200 dark:border-zinc-800 pt-5">
             <div>
               <h3 className="text-base font-medium text-zinc-900 dark:text-zinc-100">
-                Promotions
+                {t("host_calendar_promotions_heading", "Promotions")}
               </h3>
               <p className="mt-0.5 text-sm text-[#727272] dark:text-zinc-400">
-                Special promotional offers across your listing.
+                {t("host_calendar_promotions_desc", "Special promotional offers across your listing.")}
               </p>
             </div>
 
@@ -887,7 +900,7 @@ export function CalendarSettingsPanel({
               defaultOpen={newListingEnabled}
               control={discountToggle(
                 "newListingEnabled",
-                "Toggle new listing promotion",
+                t("host_calendar_toggle_new_listing", "Toggle new listing promotion"),
                 newListingEnabled,
                 setNewListingEnabled
               )}
@@ -902,7 +915,7 @@ export function CalendarSettingsPanel({
                 step: "1",
                 inputMode: "numeric",
                 readOnly: !newListingEnabled,
-                helperText: "Applied automatically to eligible new listings until the first 3 bookings are completed.",
+                helperText: t("host_calendar_new_listing_helper", "Applied automatically to eligible new listings until the first 3 bookings are completed."),
               })}
             </ExpandControl>
 
@@ -910,13 +923,13 @@ export function CalendarSettingsPanel({
               title={t("host_calendar_custom_promo", "Custom promotion")}
               subtitle={
                 customPromoEnabled && customPromoDiscount > 0
-                  ? `${customPromoDiscount}% promotional discount configured`
+                  ? t("host_calendar_custom_promo_configured", { pct: customPromoDiscount }, `${customPromoDiscount}% promotional discount configured`)
                   : t("host_calendar_custom_promo", "Property-wide promotional discount")
               }
               defaultOpen={customPromoEnabled}
               control={discountToggle(
                 "customPromoEnabled",
-                "Toggle custom promotion",
+                t("host_calendar_toggle_custom_promo", "Toggle custom promotion"),
                 customPromoEnabled,
                 setCustomPromoEnabled
               )}
@@ -931,7 +944,7 @@ export function CalendarSettingsPanel({
                 step: "1",
                 inputMode: "numeric",
                 readOnly: !customPromoEnabled,
-                helperText: "Global promotional discount applied to eligible stays.",
+                helperText: t("host_calendar_custom_promo_helper", "Global promotional discount applied to eligible stays."),
               })}
             </ExpandControl>
           </section>
@@ -940,10 +953,10 @@ export function CalendarSettingsPanel({
           <section className="space-y-3 border-t border-zinc-200 dark:border-zinc-800 pt-5">
             <div>
               <h3 className="text-base font-medium text-zinc-900 dark:text-zinc-100">
-                Additional Charges
+                {t("host_calendar_additional_charges_heading", "Additional Charges")}
               </h3>
               <p className="mt-0.5 text-sm text-[#727272] dark:text-zinc-400">
-                Host-defined fees for guests and cleaning.
+                {t("host_calendar_additional_charges_desc", "Host-defined fees for guests and cleaning.")}
               </p>
             </div>
 
@@ -962,31 +975,31 @@ export function CalendarSettingsPanel({
 
             {renderInputField({
               name: "extraGuestFee",
-              label: "Extra guest fee",
+              label: t("host_calendar_extra_guest_fee_label", "Extra guest fee"),
               defaultValue: toDisplayMajor(((listing as any).extraGuestFee || 0) / 100),
               prefix: displayCurrency,
-              suffix: "/ guest / night",
+              suffix: t("host_calendar_per_guest_per_night", "/ guest / night"),
               min: 0,
               max: 10000,
               step: "0.01",
               inputMode: "decimal",
-              helperText: "Fee charged per extra guest per night beyond included guest capacity.",
+              helperText: t("host_calendar_extra_guest_fee_helper", "Fee charged per extra guest per night beyond included guest capacity."),
             })}
 
             {renderInputField({
               name: "includedGuests",
-              label: "Included guests",
+              label: t("host_calendar_included_guests_label", "Included guests"),
               defaultValue: String(
                 rawDiscounts.includedGuests ??
                 rawDiscounts.baseGuests ??
                 1
               ),
-              suffix: "guests",
+              suffix: t("host_dash_guest_plural", "guests"),
               min: 1,
               max: listing.guests || 20,
               step: "1",
               inputMode: "numeric",
-              helperText: `Base capacity included before extra guest fee applies (max capacity: ${listing.guests || 1}).`,
+              helperText: t("host_calendar_included_guests_helper", { max: listing.guests || 1 }, `Base capacity included before extra guest fee applies (max capacity: ${listing.guests || 1}).`),
             })}
           </section>
 

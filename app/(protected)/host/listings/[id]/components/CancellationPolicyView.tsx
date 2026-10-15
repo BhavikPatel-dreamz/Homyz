@@ -253,7 +253,7 @@ export function CancellationPolicyView({
 
             <div className="flex items-end justify-between gap-4 py-4">
               <div>
-                <p className="text-base text-[#727272] dark:text-zinc-300">Your policy</p>
+                <p className="text-base text-[#727272] dark:text-zinc-300">{t("host_your_policy", "Your policy")}</p>
                   <p className="mt-1 sm:text-lg text-base sm:font-semibold font-normal text-[#1F1F1F] dark:text-zinc-100">
                   {cancellationPolicyLabel(cancellationPolicy, t)}
                 </p>
@@ -310,8 +310,8 @@ export function CancellationPolicyView({
               {nonRefundable && (
                 <div className="mt-4 flex items-center justify-between gap-4 border-t border-zinc-200 pt-4 dark:border-zinc-800">
                   <div>
-                    <label htmlFor="non-refundable-pct-input" className="block text-base font-medium text-[#1F1F1F] dark:text-zinc-100">Discount percentage</label>
-                      <span className="block mt-1 sm:text-base text-sm sm:leading-6 leading-5.25 text-[#727272] dark:text-zinc-300">Lower price offered to guests choosing non-refundable</span>
+                    <label htmlFor="non-refundable-pct-input" className="block text-base font-medium text-[#1F1F1F] dark:text-zinc-100">{t("host_calendar_discount_pct_label", "Discount percentage")}</label>
+                      <span className="block mt-1 sm:text-base text-sm sm:leading-6 leading-5.25 text-[#727272] dark:text-zinc-300">{t("host_discount_percentage_sub", "Lower price offered to guests choosing non-refundable")}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <input
@@ -355,7 +355,7 @@ export function CancellationPolicyView({
             </div>
             <div className="flex items-end justify-between gap-4 pt-4">
               <div>
-                <p className="text-base text-[#727272] dark:text-zinc-300">Your policy</p>
+                <p className="text-base text-[#727272] dark:text-zinc-300">{t("host_your_policy", "Your policy")}</p>
                 <p className="mt-1 sm:text-lg text-base sm:font-semibold font-normal text-[#1F1F1F] dark:text-zinc-100">
                   {longTermCancellationPolicy === "STRICT" ? t("host_strict_long_term") : t("host_firm_long_term")}
                 </p>

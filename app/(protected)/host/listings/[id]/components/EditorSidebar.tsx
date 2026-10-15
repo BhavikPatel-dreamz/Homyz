@@ -186,6 +186,7 @@ function AdminEditorSidebar({
   listing,
   routeBase = "/admin/listings",
 }: Pick<EditorSidebarProps, "activeSection" | "setActiveSection" | "listing" | "routeBase">) {
+  const { t } = useLanguage();
   const statusLabel = listing.published
     ? "Published"
     : listing.status === "PENDING_APPROVAL"
@@ -214,7 +215,7 @@ function AdminEditorSidebar({
             <svg className="h-3.5 w-3.5 text-[var(--muted-foreground)] dark:text-[#727272]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M15 19l-7-7 7-7" />
             </svg>
-            <span>Back</span>
+            <span>{t("host_back", "Back")}</span>
           </Link>
 
           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold border shrink-0 ${statusBg}`}>
@@ -230,7 +231,7 @@ function AdminEditorSidebar({
               </svg>
             </span>
             <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[var(--muted-foreground)]">
-              Listing navigation
+              {t("editor_listing_nav", "Listing navigation")}
             </p>
           </div>
           <p className="truncate text-sm font-bold text-[var(--foreground)]" title={listing.title || "Untitled listing"}>
@@ -833,10 +834,10 @@ export function EditorSidebar({
                         if (type === "DISCOUNT") {
                           const pct = Number(org.discountPercentage) || Number(org.discount) || 0;
                           return (
-                            <p className="text-base text-[#727272] dark:text-[#727272] font-normal">{pct}% off for homyz.org guests</p>
+                            <p className="text-base text-[#727272] dark:text-[#727272] font-normal">{t("host_sidebar_org_stays_discount", { percentage: pct }, `${pct}% off for homyz.org guests`)}</p>
                           );
                         }
-                        return <p className="text-base text-[#727272] dark:text-[#727272] font-normal">Available for homyz.org guests</p>;
+                        return <p className="text-base text-[#727272] dark:text-[#727272] font-normal">{t("host_sidebar_org_stays_available", "Available for homyz.org guests")}</p>;
                       }
                       return <p className="text-base text-[#727272] dark:text-[#727272] font-normal">{t("host_sidebar_homyz_org_stays_desc") || "Learn how you can help"}</p>;
                     })()}

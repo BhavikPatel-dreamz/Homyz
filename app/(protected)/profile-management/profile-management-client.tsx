@@ -396,7 +396,7 @@ function LanguageMultiSelect({
           {/* Quick popular tags when not searching */}
           {!query && popularLanguages.length > 0 && (
             <div className="px-3.5 py-2.5 border-b border-zinc-100 bg-zinc-50/30">
-              <p className="text-xs font-medium text-[#727272] mb-1.5">Commonly Spoken:</p>
+              <p className="text-xs font-medium text-[#727272] mb-1.5">{t("profile_commonly_spoken", "Commonly Spoken:")}</p>
               <div className="flex flex-wrap gap-1.5">
                 {popularLanguages.slice(0, 8).map((pLang) => (
                   <button
@@ -666,7 +666,7 @@ function InlineLocationSearch({
                 <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" className="opacity-25" />
                 <path fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" className="opacity-75" />
               </svg>
-              <span>Searching locations…</span>
+              <span>{t("profile_searching_locations", "Searching locations…")}</span>
             </div>
           ) : suggestions.length === 0 ? (
             <div className="px-4 py-6 text-center">
@@ -1568,7 +1568,7 @@ export function ProfileManagementClient({
                   className="aspect-4/3 animate-pulse rounded-2xl border border-zinc-200 bg-zinc-100"
                 />
               ))}
-              <p className="sr-only">Loading trip photos</p>
+              <p className="sr-only">{t("trip_photos_loading", "Loading trip photos")}</p>
             </div>
           ) : tripPhotos.length === 0 ? (
             <div className="border-2 border-dashed border-zinc-200 rounded-3xl p-12 text-center flex flex-col items-center justify-center bg-zinc-50/50">
@@ -1601,7 +1601,7 @@ export function ProfileManagementClient({
                   {failedTripPhotoIds.has(photo.id) ? (
                     <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-zinc-100 px-4 text-center text-[#727272]">
                       <IconCamera />
-                      <p className="text-xs font-medium">Image unavailable</p>
+                      <p className="text-xs font-medium">{t("trip_photos_unavailable", "Image unavailable")}</p>
                     </div>
                   ) : (
                     <Image

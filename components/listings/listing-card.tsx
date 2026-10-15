@@ -452,7 +452,7 @@ export function ListingCard({
         <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/25 backdrop-blur-[1px] transition-all">
           <div className="flex items-center gap-2 rounded-full bg-white px-3.5 py-1.5 shadow-lg text-xs font-semibold text-zinc-900 border border-zinc-200">
             <div className="size-3.5 rounded-full border-2 border-zinc-300 border-t-zinc-900 animate-spin" />
-            <span>Loading...</span>
+            <span>{t("common_loading", "Loading...")}</span>
           </div>
         </div>
       )}
@@ -700,7 +700,7 @@ export function ListingCard({
                   {formatPrice(totalPrice, currency)}
                 </span>
                 <span className="text-[#727272]">
-                  for {nights} {nights === 1 ? "night" : "nights"}
+                  {t(nights === 1 ? "listings_for_night" : "listings_for_nights", { count: nights }, `for ${nights} ${nights === 1 ? "night" : "nights"}`)}
                 </span>
               </>
             ) : (
@@ -709,7 +709,7 @@ export function ListingCard({
                   {formatPrice(totalPrice, currency)}
                 </span>
                 <span className="text-[#727272]">
-                  for {nights} {nights === 1 ? "night" : "nights"}
+                  {t(nights === 1 ? "listings_for_night" : "listings_for_nights", { count: nights }, `for ${nights} ${nights === 1 ? "night" : "nights"}`)}
                 </span>
               </>
             )}

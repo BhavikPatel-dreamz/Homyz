@@ -114,6 +114,7 @@ export function PropertyPhoto({
   listing: ListingDTO;
   className?: string;
 }) {
+  const { t } = useLanguage();
   // Uploaded property images may come from any configured storage provider.
   return listing.photos[0] ? (
     // eslint-disable-next-line @next/next/no-img-element
@@ -125,7 +126,7 @@ export function PropertyPhoto({
   ) : (
     <span
       className={`flex items-center justify-center bg-zinc-100 text-[#727272] ${className}`}
-      aria-label="No property photo"
+      aria-label={t("listing_gallery_no_photos", "No property photo")}
     >
       <svg
         width="28"
@@ -588,7 +589,8 @@ export function ReservationDetails({
                       type="button"
                       onClick={handleCopyCode}
                       className="inline-flex items-center gap-1 rounded-md border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-xs font-medium text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 transition-colors dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 cursor-pointer"
-                      title="Copy confirmation code"
+                      title={t("host_cal_res_copy_code", "Copy confirmation code")}
+                      aria-label={t("host_cal_res_copy_code", "Copy confirmation code")}
                     >
                       {codeCopied ? (
                         <span className="text-emerald-600 dark:text-emerald-400 font-semibold">
@@ -614,8 +616,9 @@ export function ReservationDetails({
                 href="/host/calendar"
                 className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-[#1F1F1F] hover:text-[#727272] dark:text-zinc-100"
               >
-                <span className="underline underline-offset-2">View in calendar </span>
-                <span>→</span>
+                <span className="underline underline-offset-2">
+                  {t("host_cal_res_view_in_cal", "View in calendar →")}
+                </span>
               </Link>
             </section>
 
@@ -756,8 +759,8 @@ export function ReservationDetails({
                     <PriceRow
                       label={
                         typeof pb?.hostServiceFeePercentage === "number"
-                          ? `Platform service fee (${pb.hostServiceFeePercentage}%)`
-                          : "Platform service fee"
+                          ? `${t("host_cal_res_platform_fee", "Platform service fee")} (${pb.hostServiceFeePercentage}%)`
+                          : t("host_cal_res_platform_fee", "Platform service fee")
                       }
                       value={`− ${formatPrice(payoutServiceFee, sourceCurrency, 2)}`}
                       tone="fee"
@@ -794,7 +797,9 @@ export function ReservationDetails({
                   onClick={() => setShowInvoice(true)}
                   className="flex min-h-11 w-full items-center justify-between rounded-lg border border-[#d7d7d7] p-3 text-zinc-700 hover:bg-zinc-50 hover:text-zinc-950 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-white transition-colors"
                 >
-                  <span className="text-base font-medium">View VAT invoice</span>
+                  <span className="text-base font-medium">
+                    {t("host_cal_res_view_vat_invoice", "View VAT invoice")}
+                  </span>
                   <svg aria-hidden="true" className="size-4 shrink-0 text-[#1f1f1f]" viewBox="0 0 24 24" fill="none">
                     <path d="m9 18 6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>

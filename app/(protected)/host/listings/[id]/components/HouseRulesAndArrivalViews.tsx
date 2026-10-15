@@ -1496,6 +1496,7 @@ function GuidebooksView({
   isSaving: boolean;
   handleSaveSection: (key: any) => void;
 }) {
+  const { t } = useLanguage();
   const [isAdding, setIsAdding] = React.useState(false);
   const [newTitle, setNewTitle] = React.useState("");
   const [guidebooksList, setGuidebooksList] = React.useState([
@@ -1509,7 +1510,7 @@ function GuidebooksView({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-6">
           <BackButton onClick={() => setActiveSection("arrival-guide")} />
-          <h1>Create a guidebooks</h1>
+          <h1>{t("host_guidebooks_create_title", "Create a guidebook")}</h1>
         </div>
 
         {/* Plus (+) Button on the right of header */}
@@ -1525,25 +1526,25 @@ function GuidebooksView({
       {/* Subtext & Content Policy Link */}
       <div className="space-y-1">
         <p className="text-xs text-[#727272] font-normal leading-relaxed">
-          Create a guidebook to easily share local tips with guests.
+          {t("host_guidebooks_create_desc", "Create a guidebook to easily share local tips with guests.")}
         </p>
         <a
           href="#"
           onClick={(e) => e.preventDefault()}
           className="text-xs font-semibold text-[#1F1F1F] underline hover:text-zinc-700 block"
         >
-          Read our content policy
+          {t("host_guidebooks_content_policy", "Read our content policy")}
         </a>
       </div>
 
       {isAdding && (
         <div className="p-4 rounded-2xl border border-zinc-200 bg-white space-y-3 shadow-2xs animate-in fade-in">
-          <h3 className="text-xs font-semibold text-[#1F1F1F]">Add New Guidebook</h3>
+          <h3 className="text-xs font-semibold text-[#1F1F1F]">{t("host_guidebooks_add_new", "Add New Guidebook")}</h3>
           <input
             type="text"
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
-            placeholder="e.g. Favorite Neighborhood Restaurants"
+            placeholder={t("host_guidebooks_title_placeholder", "e.g. Favorite Neighborhood Restaurants")}
             className="w-full rounded-xl border border-zinc-200 p-3 text-xs font-medium text-[#1F1F1F] outline-none focus:border-zinc-400 shadow-2xs"
           />
           <div className="flex justify-end gap-2">
@@ -1552,7 +1553,7 @@ function GuidebooksView({
               onClick={() => setIsAdding(false)}
               className="px-4 py-1.5 rounded-full border border-zinc-200 text-xs font-semibold text-zinc-600 hover:bg-zinc-50"
             >
-              Cancel
+              {t("host_cancel", "Cancel")}
             </button>
             <button
               type="button"
@@ -1566,7 +1567,7 @@ function GuidebooksView({
               }}
               className="px-4 py-1.5 rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-xs font-semibold text-zinc-950 shadow-2xs"
             >
-              Save
+              {t("host_guidebooks_save", "Save")}
             </button>
           </div>
         </div>
@@ -1585,7 +1586,7 @@ function GuidebooksView({
             </div>
             <div>
               <h4 className="text-xs font-semibold text-[#1F1F1F] line-clamp-2">{gb.title}</h4>
-              <p className="text-[10px] text-[#727272] font-medium">{gb.itemsCount} recommendations</p>
+              <p className="text-[10px] text-[#727272] font-medium">{t("host_guidebooks_recs_count", { count: gb.itemsCount })}</p>
             </div>
           </div>
         ))}

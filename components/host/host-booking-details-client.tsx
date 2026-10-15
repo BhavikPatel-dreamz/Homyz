@@ -338,7 +338,7 @@ export function HostBookingDetailsClient({ details, relatedCases = [] }: HostBoo
                 </div>
               )}
 
-              {petFee > 0 && <div className="flex justify-between gap-4"><dt className="min-w-0 text-zinc-600">Pet fee</dt><dd className="shrink-0 whitespace-nowrap text-right font-medium text-zinc-900">{formatMoney(petFee, details.currency)}</dd></div>}
+              {petFee > 0 && <div className="flex justify-between gap-4"><dt className="min-w-0 text-zinc-600">{t("booking_details_pet_fee", "Pet fee")}</dt><dd className="shrink-0 whitespace-nowrap text-right font-medium text-zinc-900">{formatMoney(petFee, details.currency)}</dd></div>}
 
               {taxItems.map((tax: { taxName?: string; taxAmount?: number; exemptionApplied?: boolean; exemptionReason?: string }, index: number) => (
                 <div key={`${tax.taxName || "Tax"}-${index}`} className="flex justify-between gap-4">
@@ -350,11 +350,11 @@ export function HostBookingDetailsClient({ details, relatedCases = [] }: HostBoo
                 </div>
               ))}
               {taxItems.length === 0 && taxTotal > 0 && (
-                <div className="flex justify-between gap-4"><dt className="min-w-0 text-zinc-600">Taxes</dt><dd className="shrink-0 whitespace-nowrap text-right font-medium text-zinc-900">{formatMoney(taxTotal, details.currency)}</dd></div>
+                <div className="flex justify-between gap-4"><dt className="min-w-0 text-zinc-600">{t("host_taxes_title", "Taxes")}</dt><dd className="shrink-0 whitespace-nowrap text-right font-medium text-zinc-900">{formatMoney(taxTotal, details.currency)}</dd></div>
               )}
 
               <div className="flex justify-between gap-4 border-t border-zinc-200 pt-4 text-base font-semibold text-[#1f1f1f]">
-                <dt>Total ({displayCurrency})</dt>
+                <dt>{t("host_booking_details_total", { currency: displayCurrency })}</dt>
                 <dd className="text-lg text-emerald-800 font-semibold">
                   {formatMoney(totalPrice, details.currency)}
                 </dd>
@@ -389,7 +389,7 @@ export function HostBookingDetailsClient({ details, relatedCases = [] }: HostBoo
                 </>
               ) : isExpired ? (
                 <div className="rounded-lg bg-slate-50 border border-slate-200 p-3 text-center text-xs font-medium text-slate-600">
-                  This request has expired and can no longer be accepted.
+                  {t("host_booking_approvals_request_expired_msg", "This request has expired and can no longer be accepted.")}
                 </div>
               ) : details.status === "CONFIRMED" ? (
                 <div className="flex items-center justify-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-center text-sm font-medium text-emerald-800">
@@ -397,7 +397,7 @@ export function HostBookingDetailsClient({ details, relatedCases = [] }: HostBoo
                     <circle cx="12" cy="12" r="9" />
                     <path strokeLinecap="round" strokeLinejoin="round" d="m8 12 2.5 2.5L16 9" />
                   </svg>
-                  <span>Booking confirmed</span>
+                  <span>{t("book_confirmed_title", "Booking confirmed")}</span>
                 </div>
               ) : null}
 
@@ -418,7 +418,7 @@ export function HostBookingDetailsClient({ details, relatedCases = [] }: HostBoo
       {isAcceptModalOpen && (
         <ModalOverlay className="fixed inset-0 z-[60] flex items-center justify-center overflow-y-auto bg-black/40 p-4">
           <div className="max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-3xl bg-white p-5 text-[#1F1F1F] shadow-2xl sm:p-8">
-            <h3 className="text-xl font-bold text-zinc-900">Accept booking request?</h3>
+            <h3 className="text-xl font-bold text-zinc-900">{t("host_booking_details_accept_modal_title", "Accept booking request?")}</h3>
             <p className="mt-2 text-sm text-zinc-600 leading-relaxed">
               {t("host_booking_details_accept_modal_desc", "Confirming this request will permanently book your property for {name} from {start} to {end}.")
                 .replace("{name}", details.guest.name || "the guest")

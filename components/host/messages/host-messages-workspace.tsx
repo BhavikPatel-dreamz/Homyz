@@ -1699,22 +1699,22 @@ export function HostMessagesWorkspace({
               <>
                 {/* 1. Header Section */}
                 <section className="border-b border-[#D7D7D7] pb-6">
-                  <p className="text-xs text-zinc-500">Inquiry</p>
-                  <h2 id={panelIsModal ? "mobile-message-details-title" : undefined} className="guest-name mt-1 text-xl font-medium text-[#727272]"><span className="text-[#1f1f1f]">{selectedConversation.guest.name || "Guest"}</span> asked about your trip</h2>
+                  <p className="text-xs text-zinc-500">{t("messages_panel_inquiry_tag", "Inquiry")}</p>
+                  <h2 id={panelIsModal ? "mobile-message-details-title" : undefined} className="guest-name mt-1 text-xl font-medium text-[#727272]"><span className="text-[#1f1f1f]">{selectedConversation.guest.name || "Guest"}</span> {t("messages_panel_guest_asked_trip", { name: "" }, "asked about your trip").replace("{name}", "").trim()}</h2>
                   <p className="property-location mt-3 text-sm text-[#1f1f1f] font-normal">{selectedConversation.listing.title}</p>
                   <p className="countryname text-sm text-[#727272]">{[selectedConversation.listing.city, selectedConversation.listing.country].filter(Boolean).join(", ")}</p>
                   {selectedConversation.status !== "CONFIRMED" && selectedConversation.status !== "DECLINED" && (
                     <div className={isTabletViewport ? "mt-5 grid grid-cols-2 gap-2" : "mt-6 space-y-3"}>
-                      <button type="button" onClick={() => setPreApproveModalOpen(true)} className="flex min-h-[46px] w-full items-center justify-center rounded-lg border border-emerald-200 bg-emerald-50 px-3 text-base font-normal text-emerald-900 transition-colors hover:bg-emerald-100">Pre-approve</button>
-                      <button type="button" onClick={openSpecialOfferModal} className="flex min-h-[46px] min-h-[46px] w-full items-center justify-center rounded-lg border border-amber-200 bg-[#FCDF9C] px-3 text-base font-normal text-[#1F1F1F] transition-colors hover:bg-[#F7D37D]">Special offer</button>
-                      <button type="button" onClick={() => setDeclineModalOpen(true)} className={`${isTabletViewport ? "col-span-2" : ""} flex min-h-[46px] w-full items-center justify-center rounded-lg border border-zinc-300 hover:border-[#1f1f1f] px-3 text-base font-normal text-[#1F1F1F] hover:text-white transition-colors hover:bg-[#1f1f1f]`}>Decline</button>
+                      <button type="button" onClick={() => setPreApproveModalOpen(true)} className="flex min-h-[46px] w-full items-center justify-center rounded-lg border border-emerald-200 bg-emerald-50 px-3 text-base font-normal text-emerald-900 transition-colors hover:bg-emerald-100">{t("messages_action_pre_approve", "Pre-approve")}</button>
+                      <button type="button" onClick={openSpecialOfferModal} className="flex min-h-[46px] min-h-[46px] w-full items-center justify-center rounded-lg border border-amber-200 bg-[#FCDF9C] px-3 text-base font-normal text-[#1F1F1F] transition-colors hover:bg-[#F7D37D]">{t("messages_action_special_offer", "Special offer")}</button>
+                      <button type="button" onClick={() => setDeclineModalOpen(true)} className={`${isTabletViewport ? "col-span-2" : ""} flex min-h-[46px] w-full items-center justify-center rounded-lg border border-zinc-300 hover:border-[#1f1f1f] px-3 text-base font-normal text-[#1F1F1F] hover:text-white transition-colors hover:bg-[#1f1f1f]`}>{t("messages_action_decline", "Decline")}</button>
                     </div>
                   )}
                 </section>
 
                 {/* 2. Listing Card */}
                 <div className="rounded-[10px] border border-[#E5E5E5] bg-white p-3.5 shadow-[0_2px_5px_rgba(0,0,0,0.12)] space-y-2.5">
-                  <h4 className="text-base font-medium text-[#1F1F1F]">Listing</h4>
+                  <h4 className="text-base font-medium text-[#1F1F1F]">{t("messages_panel_listing_header", "Listing")}</h4>
                   <div className="flex gap-3 items-center">
                     {selectedConversation.listing.photos[0] ? (
                       <Image
@@ -1819,13 +1819,13 @@ export function HostMessagesWorkspace({
                   return (
                     <section className="border-t border-[#E5E5E5] pt-5 space-y-3">
                       <div className="flex items-center justify-between">
-                        <h4 className="text-xl font-medium text-[#1F1F1F]">Booking details</h4>
+                        <h4 className="text-xl font-medium text-[#1F1F1F]">{t("messages_booking_details_header", "Booking details")}</h4>
                         {getBookingStatusBadge(b.status)}
                       </div>
 
                       <div className="space-y-3">
                         <div className={cardClass}>
-                          <p className="text-base font-medium text-[#1F1F1F]">Guests</p>
+                          <p className="text-base font-medium text-[#1F1F1F]">{t("messages_guests_label", "Guests")}</p>
                           <p className="text-base text-zinc-500">
                             {b.guests} {b.guests === 1 ? "guest" : "guests"}
                           </p>
@@ -1851,7 +1851,7 @@ export function HostMessagesWorkspace({
 
                         {b.totalPrice != null && (
                           <div className={cardClass}>
-                            <p className="text-base font-medium text-[#1F1F1F]">Total price</p>
+                            <p className="text-base font-medium text-[#1F1F1F]">{t("messages_total_price_label", "Total price")}</p>
                             <p className="text-base font-semibold text-zinc-900">
                               {formatPrice(b.totalPrice, b.currency || "SAR", 2)}
                             </p>
@@ -1860,7 +1860,7 @@ export function HostMessagesWorkspace({
 
                         {(b.cancellationPolicy || selectedConversation.listing.cancellationPolicy) && (
                           <div className={cardClass}>
-                            <p className="text-base font-medium text-[#1F1F1F]">Cancellation policy</p>
+                            <p className="text-base font-medium text-[#1F1F1F]">{t("messages_cancellation_policy_label", "Cancellation policy")}</p>
                             <p className="text-base text-zinc-500 capitalize">
                               {(b.cancellationPolicy || selectedConversation.listing.cancellationPolicy || "Flexible")
                                 .replaceAll("_", " ")
@@ -1873,7 +1873,7 @@ export function HostMessagesWorkspace({
                           href={`/host/calendar?listingId=${selectedConversation.listing.id}`}
                           className="inline-flex items-center gap-1 text-base font-medium text-[#1F1F1F] hover:text-[#727272]"
                         >
-                          <span className="underline underline-offset-2">View in calendar</span>
+                          <span className="underline underline-offset-2">{t("messages_view_in_calendar", "View in calendar →").replace("→", "").trim()}</span>
                           <span aria-hidden="true">→</span>
                         </Link>
 
@@ -1892,19 +1892,19 @@ export function HostMessagesWorkspace({
                 })() : (
                   <section className="border-t border-[#E5E5E5] pt-5 space-y-3">
                     <div className="flex items-center justify-between">
-                      <h4 className="sm:text-xl text-lg font-medium text-[#1F1F1F]">Booking details</h4>
+                      <h4 className="sm:text-xl text-lg font-medium text-[#1F1F1F]">{t("messages_booking_details_header", "Booking details")}</h4>
                       {getStatusBadge(selectedConversation.status, selectedConversation.activeSpecialOffer)}
                     </div>
 
                     <div className="space-y-3 text-sm text-zinc-600">
-                      <p>This is a pre-booking inquiry. The guest has not yet confirmed a reservation.</p>
+                      <p>{t("messages_prebooking_inquiry_note")}</p>
                     </div>
 
                     {inquiryDetails?.hasDetails ? (
                       <div className="space-y-3">
                         {inquiryDetails.guests != null && (
                           <div className="rounded-[10px] bg-white px-4 py-3 shadow-[0_2px_5px_rgba(0,0,0,0.12)] border border-[#E5E5E5]">
-                            <p className="text-base font-medium text-[#1F1F1F]">Guests</p>
+                            <p className="text-base font-medium text-[#1F1F1F]">{t("messages_guests_label", "Guests")}</p>
                             <p className="text-base text-zinc-500">
                               {inquiryDetails.guests} {inquiryDetails.guests === 1 ? "guest" : "guests"}
                             </p>
@@ -1913,7 +1913,7 @@ export function HostMessagesWorkspace({
 
                         {inquiryDetails.startDate && (
                           <div className="rounded-[10px] bg-white px-4 py-3 shadow-[0_2px_5px_rgba(0,0,0,0.12)] border border-[#E5E5E5]">
-                            <p className="text-base font-medium text-[#1F1F1F]">Requested check-in</p>
+                            <p className="text-base font-medium text-[#1F1F1F]">{t("messages_requested_checkin_label", "Requested check-in")}</p>
                             <p className="text-base text-zinc-500">
                               {formatBookingDate(inquiryDetails.startDate, { weekday: true })}
                             </p>
@@ -1922,7 +1922,7 @@ export function HostMessagesWorkspace({
 
                         {inquiryDetails.endDate && (
                           <div className="rounded-[10px] bg-white px-4 py-3 shadow-[0_2px_5px_rgba(0,0,0,0.12)] border border-[#E5E5E5]">
-                            <p className="text-base font-medium text-[#1F1F1F]">Requested check-out</p>
+                            <p className="text-base font-medium text-[#1F1F1F]">{t("messages_requested_checkout_label", "Requested check-out")}</p>
                             <p className="text-base text-zinc-500">
                               {formatBookingDate(inquiryDetails.endDate, { weekday: true })}
                             </p>
@@ -1931,7 +1931,7 @@ export function HostMessagesWorkspace({
 
                         {inquiryDetails.createdAt && (
                           <div className="rounded-[10px] bg-white px-4 py-3 shadow-[0_2px_5px_rgba(0,0,0,0.12)] border border-[#E5E5E5]">
-                            <p className="text-base font-medium text-[#1F1F1F]">Inquiry sent</p>
+                            <p className="text-base font-medium text-[#1F1F1F]">{t("messages_inquiry_sent_label", "Inquiry sent")}</p>
                             <p className="text-base text-zinc-500">
                               {formatBookingDate(inquiryDetails.createdAt, { weekday: true })}
                             </p>
@@ -1940,7 +1940,7 @@ export function HostMessagesWorkspace({
                       </div>
                     ) : (
                       <div className="rounded-[10px] bg-zinc-50 p-4 text-sm text-[#727272] border border-zinc-200">
-                        This is a pre-booking inquiry. The guest has not yet confirmed a reservation.
+                        {t("messages_prebooking_inquiry_note")}
                       </div>
                     )}
 
@@ -1951,14 +1951,14 @@ export function HostMessagesWorkspace({
                           onClick={() => setPreApproveModalOpen(true)}
                           className="w-full py-2.5 rounded-lg border border-zinc-400 hover:border-[#1f1f1f] text-[#1F1F1F] hover:text-white text-base font-medium hover:bg-[#1f1f1f] transition-colors duration-300 cursor-pointer"
                         >
-                          Pre-approve
+                          {t("messages_action_pre_approve")}
                         </button>
                         <button
                           type="button"
                           onClick={() => setSpecialOfferModalOpen(true)}
                             className="w-full py-2.5 rounded-lg border border-zinc-400 hover:border-[#1f1f1f] text-[#1F1F1F] hover:text-white text-base font-medium hover:bg-[#1f1f1f] transition-colors duration-300 cursor-pointer"
                         >
-                          Special offer
+                          {t("messages_action_special_offer")}
                         </button>
                       </div>
                     )}
@@ -1971,13 +1971,13 @@ export function HostMessagesWorkspace({
                     selectedConversation.booking.status !== "CONFIRMED") && (
                     <section className="border-t border-[#E5E5E5] pt-5 space-y-3">
                       <div className="flex items-center justify-between">
-                        <h4 className="text-base font-medium text-[#1F1F1F]">Active special offer</h4>
+                        <h4 className="text-base font-medium text-[#1F1F1F]">{t("messages_active_special_offer_header")}</h4>
                         <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-800 border border-amber-200 capitalize">
                           {selectedConversation.activeSpecialOffer.status.toLowerCase()}
                         </span>
                       </div>
                       <div className="rounded-[10px] bg-white px-4 py-3 shadow-[0_2px_5px_rgba(0,0,0,0.12)] border border-[#E5E5E5]">
-                        <p className="text-xs text-zinc-500">Dates</p>
+                        <p className="text-xs text-zinc-500">{t("messages_quick_field_dates")}</p>
                         <p className="text-sm font-medium text-zinc-800 mt-0.5">
                           {formatBookingDateRange(
                             selectedConversation.activeSpecialOffer.startDate,
@@ -1991,7 +1991,7 @@ export function HostMessagesWorkspace({
                             : "guests"}
                         </p>
                         <div className="mt-2.5 pt-2 border-t border-zinc-100 flex justify-between items-center text-sm">
-                          <span className="text-zinc-600 font-medium">Offer total</span>
+                          <span className="text-zinc-600 font-medium">{t("messages_offer_total_label")}</span>
                           <span className="font-semibold text-zinc-900">
                             {formatPrice(
                               selectedConversation.activeSpecialOffer.subtotalPrice || 0,
@@ -2007,7 +2007,7 @@ export function HostMessagesWorkspace({
             ) : (
               <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-6 text-center text-sm text-[#727272]">
                 <p className="font-medium text-[#1F1F1F] mb-1">
-                  Select a conversation to view details
+                  {t("messages_select_convo_details")}
                 </p>
                 <p className="text-xs text-zinc-500">
                   Choose a guest from the left panel to review inquiries, send special offers, or respond to booking messages.

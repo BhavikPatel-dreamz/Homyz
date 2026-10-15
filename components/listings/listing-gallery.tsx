@@ -213,14 +213,14 @@ export function ListingGallery({ photos, listingTitle, onShare, onSave, isSaved 
       </div>
 
       <div className="absolute left-0 top-0 z-10 flex w-full items-start justify-between px-3 pt-3 md:hidden">
-        <button type="button" onClick={() => router.back()} aria-label="Go back" className="flex size-9 items-center justify-center rounded-full border border-[#1f1f1f]/30 bg-white/95 text-[#1f1f1f] shadow-sm">
+        <button type="button" onClick={() => router.back()} aria-label={t("listing_gallery_go_back", "Go back")} className="flex size-9 items-center justify-center rounded-full border border-[#1f1f1f]/30 bg-white/95 text-[#1f1f1f] shadow-sm">
           <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="size-5"><path d="m14 6-6 6 6 6" /></svg>
         </button>
         <div className="flex gap-2">
-          <button type="button" onClick={onShare} aria-label="Share this listing" className="flex size-9 items-center justify-center rounded-full border border-[#1f1f1f]/20 bg-white/95 text-[#1f1f1f] shadow-sm">
+          <button type="button" onClick={onShare} aria-label={t("listing_gallery_share_aria", "Share this listing")} className="flex size-9 items-center justify-center rounded-full border border-[#1f1f1f]/20 bg-white/95 text-[#1f1f1f] shadow-sm">
             <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.55" className="size-5"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="m8.6 10.6 6.8-4.1M8.6 13.4l6.8 4.1" /></svg>
           </button>
-          <button type="button" onClick={onSave} disabled={saveDisabled} aria-pressed={isSaved} aria-label={isSaved ? "Remove from wishlist" : "Save listing"} className={`flex size-9 items-center justify-center rounded-full border bg-white/95 shadow-sm disabled:opacity-50 ${isSaved ? "border-amber-300 text-amber-800" : "border-[#1f1f1f]/20 text-[#1f1f1f]"}`}>
+          <button type="button" onClick={onSave} disabled={saveDisabled} aria-pressed={isSaved} aria-label={isSaved ? t("listing_detail_saved", "Saved") : t("listing_detail_save", "Save")} className={`flex size-9 items-center justify-center rounded-full border bg-white/95 shadow-sm disabled:opacity-50 ${isSaved ? "border-amber-300 text-amber-800" : "border-[#1f1f1f]/20 text-[#1f1f1f]"}`}>
             <svg aria-hidden="true" viewBox="0 0 24 24" fill={isSaved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.55" className="size-5"><path d="M12 20.5 3.8 12a5.2 5.2 0 0 1 7.4-7.3L12 5.5l.8-.8a5.2 5.2 0 0 1 7.4 7.3L12 20.5Z" /></svg>
           </button>
         </div>
@@ -271,9 +271,9 @@ export function ListingGallery({ photos, listingTitle, onShare, onSave, isSaved 
             <div className="flex items-center justify-between text-white sticky top-0 bg-black/60 backdrop-blur-md py-3 px-2 z-10">
               <span className="font-semibold text-sm">{selectedIndex + 1} / {total}</span>
               <div className="flex items-center gap-2">
-                <button type="button" aria-label="Previous photo" disabled={!canGoPrevious} onClick={goToPrevious} className="px-3 py-2 disabled:opacity-35">←</button>
-                <button type="button" aria-label="Next photo" disabled={!canGoNext} onClick={goToNext} className="px-3 py-2 disabled:opacity-35">→</button>
-                <button aria-label="Close gallery" onClick={() => setLightboxOpen(false)} className="px-3 py-2">✕</button>
+                <button type="button" aria-label={t("listing_gallery_prev_photo", "Previous photo")} disabled={!canGoPrevious} onClick={goToPrevious} className="px-3 py-2 disabled:opacity-35">←</button>
+                <button type="button" aria-label={t("listing_gallery_next_photo", "Next photo")} disabled={!canGoNext} onClick={goToNext} className="px-3 py-2 disabled:opacity-35">→</button>
+                <button aria-label={t("listing_gallery_close", "Close gallery")} onClick={() => setLightboxOpen(false)} className="px-3 py-2">✕</button>
               </div>
             </div>
 

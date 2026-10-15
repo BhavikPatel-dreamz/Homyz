@@ -108,11 +108,11 @@ export function BookingDetailsClient({ data }: BookingDetailsClientProps) {
             <section className="mt-6 rounded-2xl border border-amber-200 bg-amber-50/50 p-5">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
-                  <h2 className="text-base font-semibold text-[#1F1F1F]">Your reservation reports</h2>
-                  <p className="mt-1 text-sm text-zinc-600">Reports you filed for this reservation and their current review status.</p>
+                  <h2 className="text-base font-semibold text-[#1F1F1F]">{t("booking_details_reports_title", "Your reservation reports")}</h2>
+                  <p className="mt-1 text-sm text-zinc-600">{t("booking_details_reports_subtitle", "Reports you filed for this reservation and their current review status.")}</p>
                 </div>
                 <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-zinc-700 shadow-2xs">
-                  {disputes.length} {disputes.length === 1 ? "case" : "cases"}
+                  {disputes.length} {disputes.length === 1 ? t("dispute_case_single", "case") : t("dispute_case_plural", "cases")}
                 </span>
               </div>
               <div className="mt-4 space-y-3">

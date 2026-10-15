@@ -156,10 +156,11 @@ function MobileCalendarIndex({
   onSelect: (id: string) => void;
   onOpenCalendar: () => void;
 }) {
+  const { t } = useLanguage();
   return (
     <section className="sm:hidden">
       <h1 className="mb-6 text-[26px] font-semibold tracking-[-0.03em] text-[#222222]">
-        Calendars
+        {t("host_calendar_title", "Calendar")}
       </h1>
       <div className="mb-6 divide-y divide-[#dddddd] border-b border-[#dddddd]">
         {listings.map((listing, index) => {
@@ -179,18 +180,18 @@ function MobileCalendarIndex({
               <PropertyPhoto
                 listing={listing}
                 className={`size-[106px] shrink-0 rounded-[10px] object-cover ${selected ? "ring-[3px] ring-[#a5a0ff] ring-offset-1" : "border border-[#727272]"
-                  }`}
+                }`}
               />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium text-[#303030]">
-                  {listing.title || "Property name"}
+                  {listing.title || t("host_calendar_property_name", "Property name")}
                 </p>
                 <p className="mt-0.5 truncate text-xs text-[#777777]">
-                  {[listing.district, listing.city].filter(Boolean).join(", ") || listing.country || "Location"}
+                  {[listing.district, listing.city].filter(Boolean).join(", ") || listing.country || t("host_dash_cat_location", "Location")}
                 </p>
                 <p className="mt-4 flex items-center gap-1.5 text-xs text-[#424242]">
                   <span className="size-2 rounded-full bg-[#20c20e]" />
-                  listed
+                  {t("host_badge_listed", "listed")}
                 </p>
               </div>
               <div className="grid w-[106px] shrink-0 grid-cols-7 gap-1 pr-1" aria-hidden="true">
@@ -237,24 +238,25 @@ function MobileYearCalendar({
   onOpenSettings: () => void;
   onOpenMonth: (month: Date) => void;
 }) {
+  const { t, language } = useLanguage();
   const months = Array.from(
     { length: 12 },
     (_, index) => new Date(startMonth.getFullYear(), startMonth.getMonth() + index, 1),
   );
   const today = dateKey(new Date());
-  const propertyLabel = listing?.title || "Property name";
+  const propertyLabel = listing?.title || t("host_calendar_property_name", "Property name");
   const location = [listing?.district, listing?.city].filter(Boolean).join(", ") || listing?.country;
 
   return (
     <section className="sm:hidden">
       <div className="mb-8 flex items-center justify-between">
         <h1 className="text-[24px] font-medium tracking-0 text-[#1F1F1F] dark:text-zinc-100">
-          Calendars
+          {t("host_calendar_title", "Calendar")}
         </h1>
         <button
           type="button"
           onClick={onOpenSettings}
-          aria-label="Calendar settings"
+          aria-label={t("host_calendar_settings_title", "Calendar Settings")}
           className="flex size-10 items-center justify-center rounded-full bg-[#F3F4F5] text-[#1F1F1F] transition-colors hover:bg-[#ebebeb] dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700"
         >
           <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" aria-hidden="true">
@@ -268,7 +270,7 @@ function MobileYearCalendar({
         <button
           type="button"
           onClick={onBack}
-          aria-label="Back to calendars"
+          aria-label={t("host_calendar_back_to_calendars", "Back to calendars")}
           className="flex size-10 shrink-0 items-center justify-center rounded-full border border-[#bdbdbd] text-[#555555] transition-colors hover:bg-[#f7f7f7] dark:border-zinc-600 dark:text-zinc-300 dark:hover:bg-zinc-800"
         >
           <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -298,11 +300,11 @@ function MobileYearCalendar({
               <button
                 type="button"
                 onClick={() => onOpenMonth(calendarMonth)}
-                aria-label={`Open ${monthName(calendarMonth)} ${year}`}
+                aria-label={`Open ${monthName(calendarMonth, language)} ${year}`}
                 className={`group inline-flex w-1/3 flex-col pr-3 text-left align-top ${index > 2 ? "mt-8" : ""} ${index === 2 ? "pr-0" : ""}`}
               >
                 <span className="mb-5 text-[19px] font-medium text-[#272727] transition-colors group-hover:text-[#8b6400] dark:text-zinc-100 dark:group-hover:text-amber-300">
-                  {monthName(calendarMonth).slice(0, 3)}
+                  {monthName(calendarMonth, language).slice(0, 3)}
                 </span>
                 <span className="grid grid-cols-7 gap-x-1 gap-y-2" aria-hidden="true">
                   {Array.from({ length: 42 }, (_, cell) => {
@@ -792,10 +794,10 @@ function LazyMonthCard({
       <button
         type="button"
         onClick={() => onSelectMonth(month)}
-        aria-label={`Open ${monthName(month)} ${month.getFullYear()} month view`}
+        aria-label={`Open ${monthName(month, language)} ${month.getFullYear()} month view`}
         className="mb-5 flex w-full items-center text-left text-base font-medium text-[#1F1F1F] transition-colors hover:text-amber-400 dark:text-zinc-100 dark:hover:text-amber-400"
       >
-        {monthName(month)}
+        {monthName(month, language)}
       </button>
 
       {isVisible ? (
@@ -845,6 +847,18 @@ interface SelectedDatesStats {
   commonMinStay: number | null;
   minStayValues: number[];
   promoStats: SelectionPromotionStats;
+}
+
+function getLocalizedReason(reason: string, t: (k: any, ...args: any[]) => string): string {
+  if (reason.includes("High calendar compression")) return t("host_calendar_tip_high_occupancy", reason);
+  if (reason.includes("Healthy booking pace")) return t("host_calendar_tip_strong_occupancy", reason);
+  if (reason.includes("Unbooked date approaching")) return t("host_calendar_tip_last_minute", reason);
+  if (reason.includes("Low near-term occupancy")) return t("host_calendar_tip_low_occupancy", reason);
+  if (reason.includes("Far advance unbooked date")) return t("host_calendar_tip_early_bird", reason);
+  if (reason.includes("Strong advance booking momentum")) return t("host_calendar_tip_strong_advance", reason);
+  if (reason.includes("already well-aligned with demand signals")) return t("host_calendar_tip_optimal_rate", reason);
+  if (reason.includes("Standard nightly rate")) return t("host_calendar_tip_standard_baseline", reason);
+  return reason;
 }
 
 function ContextualManagementPanel({
@@ -909,7 +923,7 @@ function ContextualManagementPanel({
 
   const handleClearWithConfirm = () => {
     if (isDirty && typeof window !== "undefined") {
-      if (!window.confirm("You have unsaved changes in this selection. Discard them?")) {
+      if (!window.confirm(t("host_calendar_unsaved_confirm", "You have unsaved changes in this selection. Discard them?"))) {
         return;
       }
     }
@@ -963,7 +977,7 @@ function ContextualManagementPanel({
   const saveSpecialDaysDiscount = async () => {
     const percentage = Number(specialDaysDiscountInput);
     if (!Number.isFinite(percentage) || percentage <= 0 || percentage > 100) {
-      setPromoValidationError("Enter a discount between 1% and 100%.");
+      setPromoValidationError(t("host_calendar_err_promo_range", "Enter a discount between 1% and 100%."));
       return;
     }
 
@@ -1006,7 +1020,9 @@ function ContextualManagementPanel({
               {formattedDateRange}
             </h2>
             <p className="mt-1 truncate text-[12px] text-[#727272] dark:text-zinc-400">
-              {stats.totalNights} {stats.totalNights === 1 ? "night" : "nights"} · {listing.title}
+              {stats.totalNights === 1
+                ? t("host_calendar_night_count", { count: 1 })
+                : t("host_calendar_nights_count", { count: stats.totalNights })} · {listing.title}
             </p>
           </div>
           <button
@@ -1039,7 +1055,7 @@ function ContextualManagementPanel({
           )}
           {stats.pastCount > 0 && (
             <span className="rounded-full bg-zinc-200 dark:bg-zinc-800 px-2.5 py-0.5 font-medium text-[#727272]">
-              {stats.pastCount} past (read-only)
+              {t("host_calendar_past_readonly", { count: stats.pastCount })}
             </span>
           )}
         </div>
@@ -1048,10 +1064,9 @@ function ContextualManagementPanel({
       {/* Protected Reservations Notice */}
       {stats.bookedCount > 0 && stats.editableKeys.length > 0 && (
         <div className="rounded-xl bg-amber-50 dark:bg-amber-950/40 p-3 border border-amber-200/60 dark:border-amber-900/60 text-xs text-amber-900 dark:text-amber-300">
-          <p className="font-semibold mb-0.5">Protected Reservations</p>
+          <p className="font-semibold mb-0.5">{t("host_calendar_protected_reservations_title", "Protected Reservations")}</p>
           <p className="text-xs leading-relaxed">
-            {stats.bookedCount} {stats.bookedCount === 1 ? "night has" : "nights have"} confirmed reservations.
-            Updates will safely apply only to the {stats.editableKeys.length} editable dates.
+            {t("host_calendar_protected_reservations_desc", { count: stats.bookedCount, editable: stats.editableKeys.length })}
           </p>
         </div>
       )}
@@ -1071,7 +1086,7 @@ function ContextualManagementPanel({
       {stats.editableKeys.length > 0 && (
         <div
           role="tablist"
-          aria-label="Contextual panel mode"
+          aria-label={t("host_calendar_contextual_panel_mode", "Contextual panel mode")}
           className="grid grid-cols-2 rounded-[10px] bg-[#F3F4F5] dark:bg-zinc-800 p-1 shadow-[0px_2px_4px_0px_#00000040] border border-white"
         >
           <button
@@ -1118,7 +1133,7 @@ function ContextualManagementPanel({
                {t("host_calendar_base_nightly_price", "Base Nightly Price")}
               </span>
               <p className="mt-2 text-[17px] font-medium leading-none text-[#1F1F1F] dark:text-zinc-100">
-                {formatMoney(weekdayBasePrice, sourceCurrency, 2)} <span className="text-[13px] font-normal text-[#727272] dark:text-zinc-400">/ Night</span>
+                {formatMoney(weekdayBasePrice, sourceCurrency, 2)} <span className="text-[13px] font-normal text-[#727272] dark:text-zinc-400">{t("host_calendar_per_night", "/ night")}</span>
               </p>
             </div>
             {weekendPrice && weekendPrice > 0 ? (
@@ -1127,7 +1142,7 @@ function ContextualManagementPanel({
                  {t("host_calendar_weekend_rate", "Weekend Rate")}
                 </span>
                 <p className="mt-2 text-[17px] font-medium leading-none text-[#1F1F1F] dark:text-zinc-100">
-                  {formatMoney(weekendPrice, sourceCurrency, 2)} <span className="text-[13px] font-normal text-[#727272] dark:text-zinc-400">/ Night</span>
+                  {formatMoney(weekendPrice, sourceCurrency, 2)} <span className="text-[13px] font-normal text-[#727272] dark:text-zinc-400">{t("host_calendar_per_night", "/ night")}</span>
                 </p>
               </div>
             ) : null}
@@ -1217,11 +1232,11 @@ function ContextualManagementPanel({
               {/* Multi-date breakdown summary if applicable */}
               {priceTipsResult.applicableCount > 1 && (
                 <div className="flex items-center justify-between rounded-xl border border-[#F5D98C]/70 bg-white/70 p-2.5 text-[12px] text-[#5F5F5F] dark:border-amber-900/40 dark:bg-zinc-900/60 dark:text-zinc-300">
-                  <span>{priceTipsResult.applicableCount} nights selected</span>
+                  <span>{t("host_calendar_nights_selected", { count: priceTipsResult.applicableCount })}</span>
                   <span className="font-semibold text-zinc-700 dark:text-zinc-200">
-                    {priceTipsResult.increaseCount > 0 ? `${priceTipsResult.increaseCount} increase ` : ""}
-                    {priceTipsResult.decreaseCount > 0 ? `${priceTipsResult.decreaseCount} decrease ` : ""}
-                    {priceTipsResult.noChangeCount > 0 ? `${priceTipsResult.noChangeCount} optimal` : ""}
+                    {priceTipsResult.increaseCount > 0 ? `${priceTipsResult.increaseCount} ${t("host_calendar_price_tips_increase", "increase")} ` : ""}
+                    {priceTipsResult.decreaseCount > 0 ? `${priceTipsResult.decreaseCount} ${t("host_calendar_price_tips_decrease", "decrease")} ` : ""}
+                    {priceTipsResult.noChangeCount > 0 ? `${priceTipsResult.noChangeCount} ${t("host_calendar_price_tips_optimal_count", "optimal")}` : ""}
                   </span>
                 </div>
               )}
@@ -1230,7 +1245,7 @@ function ContextualManagementPanel({
               <div className="space-y-1.5 text-xs leading-normal text-[#5F5F5F] dark:text-zinc-300">
                 {priceTipsResult.reasons.map((r, idx) => (
                   <p key={idx} className="flex items-start gap-1.5 leading-5">
-                    <span className="text-[#727272] font-bold shrink-0">•</span> <span>{r}</span>
+                    <span className="text-[#727272] font-bold shrink-0">•</span> <span>{getLocalizedReason(r, t)}</span>
                   </p>
                 ))}
               </div>
@@ -1241,8 +1256,8 @@ function ContextualManagementPanel({
                   {priceTipsResult.averageDifference !== 0
                     ? `${priceTipsResult.averageDifference > 0 ? "+" : ""}${formatMoney(priceTipsResult.averageDifference, sourceCurrency, 2)} (${priceTipsResult.averagePercentChange > 0 ? "+" : ""}${priceTipsResult.averagePercentChange}%)`
                     : priceTipsResult.overallAction === "INSUFFICIENT_DATA"
-                      ? "No adjustment recommended"
-                      : "Matches current rate"}
+                      ? t("host_calendar_no_adj_rec", "No adjustment recommended")
+                      : t("host_calendar_matches_curr_rate", "Matches current rate")}
                 </span>
 
                 {priceTipsResult.overallAction === "INCREASE" || priceTipsResult.overallAction === "DECREASE" ? (
@@ -1279,7 +1294,7 @@ function ContextualManagementPanel({
               </div>
 
               <p className="text-xs leading-normal text-[#727272] dark:text-[#727272]">
-                {priceTipsResult.marketDataNote}
+                {t("host_calendar_price_tips_disclaimer", priceTipsResult.marketDataNote)}
               </p>
             </div>
           )}
@@ -1290,7 +1305,7 @@ function ContextualManagementPanel({
               e.preventDefault();
               const val = Number(customPriceInput);
               if (!Number.isFinite(val) || val <= 0) {
-                setValidationError("Please enter a valid price greater than 0.");
+                setValidationError(t("host_calendar_err_valid_price", "Please enter a valid price greater than 0."));
                 return;
               }
               setValidationError("");
@@ -1466,14 +1481,20 @@ function ContextualManagementPanel({
                     </p>
                   )}
                   <p className="text-[11px] text-zinc-500">
-                    Guests pay regular rate: {stats.isMixedPrice ? `${formatMoney(stats.minPrice ?? 0, sourceCurrency, 2)} – ${formatMoney(stats.maxPrice ?? 0, sourceCurrency, 2)}` : formatMoney(stats.commonPrice ?? 0, sourceCurrency, 2)} {t("host_calendar_per_night", "/ night")}
+                    {t("host_calendar_guests_pay_regular", "Guests pay regular rate:")}{" "}
+                    {stats.isMixedPrice
+                      ? `${formatMoney(stats.minPrice ?? 0, sourceCurrency, 2)} – ${formatMoney(stats.maxPrice ?? 0, sourceCurrency, 2)}`
+                      : formatMoney(stats.commonPrice ?? 0, sourceCurrency, 2)}{" "}
+                    {t("host_calendar_per_night", "/ night")}
                   </p>
                 </div>
               )
             ) : (
               <div className="space-y-2.5">
                 <p className="text-xs leading-normal text-[#5F5F5F] dark:text-zinc-400">
-                  Add a discount only to the selected {stats.totalNights === 1 ? "date" : "dates"}.
+                  {stats.totalNights === 1
+                    ? t("host_calendar_add_discount_selected_single", "Add a discount only to the selected date.")
+                    : t("host_calendar_add_discount_selected_plural", "Add a discount only to the selected dates.")}
                 </p>
                 <div className="flex items-end gap-2">
                   <label className="min-w-0 flex-1">
@@ -1492,7 +1513,7 @@ function ContextualManagementPanel({
                           setSpecialDaysDiscountInput(event.target.value);
                           if (promoValidationError) setPromoValidationError("");
                         }}
-                        aria-label="Special days discount percentage"
+                        aria-label={t("host_calendar_aria_promo_discount", "Special days discount percentage")}
                           className="min-w-0 flex-1 bg-transparent text-sm font-medium text-[#1f1f1f] outline-none dark:text-zinc-100"
                       />
                       <span className="text-sm font-semibold text-[#727272]">%</span>
@@ -1518,7 +1539,8 @@ function ContextualManagementPanel({
             {/* Selected-range source */}
             <div className="flex items-center justify-between border-t border-emerald-200/60 pt-2.5 text-sm dark:border-emerald-900/40">
               <span className="text-[#727272] dark:text-zinc-400 font-normal">
-                Applies only to: <strong className="text-[#1f1f1f] font-semibold dark:text-zinc-200">{formattedDateRange}</strong>
+                {t("host_calendar_applies_only_to", "Applies only to:")}{" "}
+                <strong className="text-[#1f1f1f] font-semibold dark:text-zinc-200">{formattedDateRange}</strong>
               </span>
             </div>
 
@@ -1701,8 +1723,12 @@ function ContextualManagementPanel({
             {lastUndo && (
               <div className="mt-2 flex items-center justify-between rounded-xl bg-zinc-900 text-white dark:bg-[#F3F4F5] dark:text-zinc-900 p-2.5 text-xs font-medium animate-in fade-in duration-200">
                 <span className="truncate mr-2">
-                  {lastUndo.affectedCount} dates {lastUndo.action === "BLOCK" ? "blocked" : "made available"}
-                  {lastUndo.protectedCount > 0 ? ` (${lastUndo.protectedCount} reserved unchanged)` : ""}.
+                  {lastUndo.action === "BLOCK"
+                    ? t("host_calendar_undo_blocked", { count: lastUndo.affectedCount }, "{count} dates blocked")
+                    : t("host_calendar_undo_available", { count: lastUndo.affectedCount }, "{count} dates made available")}
+                  {lastUndo.protectedCount > 0
+                    ? ` ${t("host_calendar_reserved_unchanged", { count: lastUndo.protectedCount }, "({count} reserved unchanged)")}`
+                    : ""}.
                 </span>
                 <button
                   type="button"
@@ -1739,7 +1765,7 @@ function ContextualManagementPanel({
             </div>
 
             <p className="text-xs text-[#727272] dark:text-zinc-400">
-              Set a required minimum stay for guests booking during these selected dates.
+              {t("host_calendar_min_stay_selected_helper", "Set a required minimum stay for guests booking during these selected dates.")}
             </p>
 
             <form
@@ -1747,7 +1773,7 @@ function ContextualManagementPanel({
                 e.preventDefault();
                 const minStay = Number(customMinStayInput);
                 if (!Number.isFinite(minStay) || minStay < 1 || minStay > 365) {
-                  setMinStayValidationError("Please enter a valid minimum stay between 1 and 365 nights.");
+                  setMinStayValidationError(t("host_calendar_err_min_stay_range", "Please enter a valid minimum stay between 1 and 365 nights."));
                   return;
                 }
                 setMinStayValidationError("");
@@ -1782,7 +1808,7 @@ function ContextualManagementPanel({
                     className="w-full bg-transparent px-3 py-2 text-xs font-medium text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                   />
                   <span className="pr-3 text-xs font-medium text-[#727272] dark:text-zinc-400 select-none shrink-0">
-                    Nights
+                    {t("host_nights", "Nights")}
                   </span>
                 </div>
                 <button
@@ -2452,12 +2478,12 @@ export function HostCalendarWorkspace({
           ...current,
           [targetListingId]: result.data,
         }));
-        setNotice("Changes saved.");
+        setNotice(t("host_calendar_notice_saved", "Changes saved."));
       } else {
-        setNotice(result.error || "Could not save.");
+        setNotice(result.error || t("host_calendar_notice_could_not_save", "Could not save."));
       }
     } catch {
-      setNotice("Could not save your changes. Please try again.");
+      setNotice(t("host_calendar_notice_save_err", "Could not save your changes. Please try again."));
     } finally {
       setSaving(false);
     }
@@ -2478,7 +2504,7 @@ export function HostCalendarWorkspace({
         dates,
       });
       if (!result.ok) {
-        setNotice(result.error || "Could not update availability.");
+        setNotice(result.error || t("host_calendar_notice_avail_err", "Could not update availability."));
         return null;
       }
       setSavedListings((current) => ({
@@ -2486,24 +2512,27 @@ export function HostCalendarWorkspace({
         [targetListingId]: result.data.listing,
       }));
       if (action === "RESTORE") {
-        setNotice("Restored previous availability.");
+        setNotice(t("host_calendar_notice_restored", "Restored previous availability."));
       } else {
-        const actionWord = action === "BLOCK" ? "blocked" : "made available";
+        const actionWord =
+          action === "BLOCK"
+            ? t("host_calendar_undo_blocked", { count: result.data.affectedCount }, "{count} dates blocked")
+            : t("host_calendar_undo_available", { count: result.data.affectedCount }, "{count} dates made available");
         const protectedPart =
           result.data.protectedCount > 0
-            ? ` (${result.data.protectedCount} reserved unchanged)`
+            ? ` ${t("host_calendar_reserved_unchanged", { count: result.data.protectedCount }, "({count} reserved unchanged)")}`
             : "";
         const newlyBookedPart =
           result.data.newlyBookedCount > 0
-            ? ` Note: ${result.data.newlyBookedCount} newly confirmed reservation was protected.`
+            ? ` ${t("host_calendar_newly_booked_protected", { count: result.data.newlyBookedCount }, "Note: {count} newly confirmed reservation was protected.")}`
             : "";
         setNotice(
-          `${result.data.affectedCount} dates ${actionWord}${protectedPart}.${newlyBookedPart}`,
+          `${actionWord}${protectedPart}.${newlyBookedPart}`,
         );
       }
       return result.data;
     } catch {
-      setNotice("Could not update availability. Please try again.");
+      setNotice(t("host_calendar_notice_avail_try_again", "Could not update availability. Please try again."));
       return null;
     } finally {
       setSaving(false);
@@ -2696,14 +2725,14 @@ export function HostCalendarWorkspace({
         {mobileCalendarOpen && selectedListing ? (
           <section className="sm:hidden">
             <h1 className="mb-7 text-[24px] font-medium text-[#1f1f1f] dark:text-zinc-100">
-              Calendars
+              {t("host_calendar_title", "Calendar")}
             </h1>
 
             <div className="mb-8 flex items-center gap-3">
               <button
                 type="button"
                 onClick={() => setMobileCalendarOpen(false)}
-                aria-label="Back to calendars"
+                aria-label={t("host_calendar_back_to_calendars", "Back to calendars")}
                 className="flex size-10 shrink-0 items-center justify-center rounded-full border border-[#bdbdbd] text-[#555555] transition-colors hover:bg-[#f7f7f7] dark:border-zinc-600 dark:text-zinc-300 dark:hover:bg-zinc-800"
               >
                 <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -2711,19 +2740,19 @@ export function HostCalendarWorkspace({
                 </svg>
               </button>
               <p className="truncate text-base font-medium text-[#303030] dark:text-zinc-100">
-                {selectedListing.title || "Property name"}{[selectedListing.district, selectedListing.city].filter(Boolean).join(", ") || selectedListing.country ? `, ${[selectedListing.district, selectedListing.city].filter(Boolean).join(", ") || selectedListing.country}` : ""}
+                {selectedListing.title || t("host_calendar_property_name", "Property name")}{[selectedListing.district, selectedListing.city].filter(Boolean).join(", ") || selectedListing.country ? `, ${[selectedListing.district, selectedListing.city].filter(Boolean).join(", ") || selectedListing.country}` : ""}
               </p>
             </div>
 
             <div className="mb-5 flex items-center justify-between border-b border-[#d5d5d5] pb-3 dark:border-zinc-700">
               <h2 className="text-base font-medium text-[#272727] dark:text-zinc-100">
-                {monthName(month)}
+                {monthName(month, language)}
               </h2>
               <div className="flex items-center sm:gap-3 gap-2">
-                <button type="button" onClick={handlePrev} aria-label="Previous month" className="flex sm:size-9 size-7 items-center justify-center rounded-full border border-[#bdbdbd] bg-[#F3F4F5] text-[#1f1f1f] transition-colors hover:bg-[#f5f5f5] dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800">
+                <button type="button" onClick={handlePrev} aria-label={t("host_calendar_prev_month", "Previous month")} className="flex sm:size-9 size-7 items-center justify-center rounded-full border border-[#bdbdbd] bg-[#F3F4F5] text-[#1f1f1f] transition-colors hover:bg-[#f5f5f5] dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800">
                   <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
                 </button>
-                <button type="button" onClick={handleNext} aria-label="Next month" className="flex sm:size-9 size-7 items-center justify-center rounded-full border border-[#bdbdbd] bg-[#F3F4F5] text-[#1f1f1f] transition-colors hover:bg-[#f5f5f5] dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800">
+                <button type="button" onClick={handleNext} aria-label={t("host_calendar_next_month", "Next month")} className="flex sm:size-9 size-7 items-center justify-center rounded-full border border-[#bdbdbd] bg-[#F3F4F5] text-[#1f1f1f] transition-colors hover:bg-[#f5f5f5] dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800">
                   <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
                 </button>
               </div>
@@ -2947,7 +2976,7 @@ export function HostCalendarWorkspace({
             <button
               type="button"
               onClick={handleToday}
-              aria-label="Jump to current month"
+              aria-label={t("host_calendar_jump_current_month", "Jump to current month")}
               className="hidden md:flex items-center gap-1.5 rounded-full bg-[#F3F4F5] dark:bg-zinc-800 px-4 py-2 lg:text-base text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 border border-transparent hover:border-[#1F1F1F] dark:hover:border-zinc-600 transition-colors shadow-2xs cursor-pointer"
             >
               {t("host_calendar_today", "Today")}
@@ -2965,7 +2994,7 @@ export function HostCalendarWorkspace({
               <span className="text-amber-500">
                 <Image
                   src={"/images/icons/price-tips.svg"}
-                  alt={"Price tips"}
+                  alt={t("host_calendar_price_tips", "Price tips")}
                   width={20}
                   height={20}
                   className="dark:invert"
@@ -2984,10 +3013,10 @@ export function HostCalendarWorkspace({
                 }}
                 aria-expanded={showViewDropdown}
                 aria-haspopup="menu"
-                aria-label="Calendar view"
+                aria-label={t("host_calendar_view_aria", "Calendar view")}
                 className="hidden md:flex items-center gap-1.5 rounded-full bg-[#F3F4F5] dark:bg-zinc-800 px-4 py-2 lg:text-base text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 border border-transparent hover:border-[#1F1F1F] dark:hover:border-zinc-600 transition-colors shadow-2xs cursor-pointer"
               >
-                {view === "month" ? "Month" : "Year"}
+                {view === "month" ? t("host_calendar_view_month", "Month") : t("host_calendar_view_year", "Year")}
                 <svg
                   className={`size-5 text-[#1F1F1F] transition-transform dark:text-zinc-400 ${showViewDropdown ? "rotate-180" : ""}`}
                   viewBox="0 0 24 24"
@@ -3005,7 +3034,7 @@ export function HostCalendarWorkspace({
               {showViewDropdown && (
                 <div
                   role="menu"
-                  aria-label="Calendar view switcher"
+                  aria-label={t("host_calendar_view_switcher_aria", "Calendar view switcher")}
                   className="absolute right-0 top-full z-50 mt-2 w-32 overflow-hidden rounded-xl border border-[#d7d7d7] bg-white p-1.5 shadow-xl dark:border-zinc-700 dark:bg-zinc-900"
                 >
                   {(["month", "year"] as const).map((option) => {
@@ -3048,7 +3077,7 @@ export function HostCalendarWorkspace({
         <div className="hidden items-start gap-6 sm:flex lg:h-[970px]">
           {/* 1. Left Rail: Property Switcher (Desktop & Tablet) */}
           <aside
-            aria-label="Property selection"
+            aria-label={t("host_calendar_property_selection_aria", "Property selection")}
             className="hidden w-[105px] shrink-0 flex-col items-center gap-3 sm:flex lg:max-h-full lg:overflow-y-auto [scrollbar-width:none]"
           >
             {/* All Listings Option (when host has 2+ listings) */}
@@ -3056,7 +3085,7 @@ export function HostCalendarWorkspace({
               <button
                 type="button"
                 onClick={() => handleSelectProperty("all")}
-                title="All listings overview"
+                title={t("host_calendar_all_listings_overview", "All listings overview")}
                 aria-label={t("host_calendar_all_listings", "All listings")}
                 aria-pressed={isAllListings}
                 className={`group relative flex h-[94px] w-[105px] shrink-0 flex-col items-center justify-center rounded-2xl transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a5a0ff] cursor-pointer ${isAllListings
@@ -3176,7 +3205,7 @@ export function HostCalendarWorkspace({
 
           {/* 3. Right Settings / Contextual Management Panel (Desktop Sidebar) */}
           <aside
-            aria-label="Calendar settings"
+            aria-label={t("host_calendar_settings_title", "Calendar Settings")}
             className="hidden h-full w-[300px] shrink-0 overflow-y-auto border-l border-l-[#eeeeee] px-5 py-5 font-['Poppins'] lg:block xl:w-[338px] calendar-panel-scrollbar dark:border-zinc-800 dark:border-l-zinc-800"
           >
             {isAllListings ? (
@@ -3224,10 +3253,10 @@ export function HostCalendarWorkspace({
           <WorkspaceDialog
             title={
               isAllListings
-                ? "Portfolio Settings"
+                ? t("host_calendar_portfolio_settings", "Portfolio Settings")
                 : normalizedSelectedRange
-                  ? "Manage Selected Dates"
-                  : "Price & Availability"
+                  ? t("host_calendar_manage_selected_dates", "Manage Selected Dates")
+                  : t("host_calendar_price_and_availability", "Price & Availability")
             }
             onClose={() => setMobileSettingsOpen(false)}
             maxWidth="max-w-md"
@@ -3272,7 +3301,7 @@ export function HostCalendarWorkspace({
         {/* Phase 19: Mobile Sticky Selection Floating Bar */}
         {normalizedSelectedRange && selectedDatesStats && !mobileSettingsOpen && (
           <aside
-            aria-label="Selection summary bar"
+            aria-label={t("host_calendar_selection_summary_aria", "Selection summary bar")}
             className="fixed inset-x-0 bottom-0 z-40 border-t border-[#d7d7d7] dark:border-zinc-800 bg-white dark:bg-zinc-900 p-3 lg:hidden shadow-xl flex items-center justify-between gap-3 animate-in slide-in-from-bottom duration-200"
           >
             <div className="min-w-0 flex-1">
@@ -3282,7 +3311,7 @@ export function HostCalendarWorkspace({
                   : t("host_calendar_nights_selected", { count: selectedDatesStats.totalNights })}
               </p>
               <p className="text-xs text-[#727272] truncate mt-0.5">
-                {selectedDatesStats.editableKeys.length} editable · {selectedDatesStats.bookedCount} reserved
+                {t("host_calendar_editable_count", { count: selectedDatesStats.editableKeys.length })} · {t("host_calendar_reserved_count", { count: selectedDatesStats.bookedCount })}
               </p>
             </div>
             <div className="flex items-center gap-2 shrink-0">
@@ -3441,7 +3470,7 @@ export function HostCalendarWorkspace({
                       >
                         <div className="min-w-0 flex-1">
                           <p className="truncate font-semibold text-xs text-[#1F1F1F] dark:text-zinc-100">
-                            {b.listing?.title || "Property"}
+                            {b.listing?.title || t("host_cal_res_property_label", "Property")}
                           </p>
                           <p className="text-xs text-[#727272]">
                             {t("host_calendar_guest_label", "Guest:")}{" "}
@@ -3627,7 +3656,7 @@ export function HostCalendarWorkspace({
                           <div className="border-t border-amber-200/50 dark:border-amber-900/50 pt-2 space-y-1">
                             {rangeTips.reasons.map((r, i) => (
                               <p key={i} className="text-xs text-amber-900/80 dark:text-amber-300/80 flex items-center gap-1.5">
-                                <span className="text-amber-500 font-bold">•</span> {r}
+                                <span className="text-amber-500 font-bold">•</span> {getLocalizedReason(r, t)}
                               </p>
                             ))}
                           </div>
@@ -3687,10 +3716,10 @@ export function HostCalendarWorkspace({
                       </span>
                       <div>
                         <h4 className="text-base font-semibold text-[#1F1F1F] dark:text-zinc-100">
-                          Property Pricing Insights
+                          {t("host_calendar_price_tips_insights_title", "Property Pricing Insights")}
                         </h4>
                         <p className="mt-1 text-sm leading-5 text-[#76500b] dark:text-amber-200">
-                          Optimize earnings with weekend premiums, Smart Pricing limits, and longer-stay promotions.
+                          {t("host_calendar_price_tips_insights_desc", "Optimize earnings by setting weekend premiums, configuring Smart Pricing limits, and applying promotional discounts for longer stays.")}
                         </p>
                       </div>
                     </div>
@@ -3699,25 +3728,37 @@ export function HostCalendarWorkspace({
                   <div className="space-y-3">
                     <div className="flex items-start gap-3">
                       <span className="mt-1 flex size-4 shrink-0 items-center justify-center rounded-full bg-[#DDDDDE] text-[9px] font-semibold text-[#6f4c00]">1</span>
-                      <p className="text-sm leading-6 text-[#595959] dark:text-zinc-300"><strong className="font-semibold text-[#1F1F1F] dark:text-zinc-100">Weekend Pricing</strong><span className="text-[#727272] dark:text-zinc-400"> · Configure weekend rates to capture higher demand on Thursday and Friday nights.</span></p>
+                      <p className="text-sm leading-6 text-[#595959] dark:text-zinc-300">
+                        <strong className="font-semibold text-[#1F1F1F] dark:text-zinc-100">{t("host_calendar_price_tips_weekend_title", "Weekend Pricing:")}</strong>
+                        <span className="text-[#727272] dark:text-zinc-400"> {t("host_calendar_price_tips_weekend_desc", "Configure weekend rates to capture higher weekend demand (Thursday & Friday nights).")}</span>
+                      </p>
                     </div>
                     <div className="flex items-start gap-3">
                       <span className="mt-1 flex size-4 shrink-0 items-center justify-center rounded-full bg-[#DDDDDE] text-[9px] font-semibold text-[#6f4c00]">2</span>
-                      <p className="text-sm leading-6 text-[#595959] dark:text-zinc-300"><strong className="font-semibold text-[#1F1F1F] dark:text-zinc-100">Select Dates</strong><span className="text-[#727272] dark:text-zinc-400"> · Click or drag on the calendar to view tailored recommendations for specific dates.</span></p>
+                      <p className="text-sm leading-6 text-[#595959] dark:text-zinc-300">
+                        <strong className="font-semibold text-[#1F1F1F] dark:text-zinc-100">{t("host_calendar_price_tips_select_title", "Select Dates:")}</strong>
+                        <span className="text-[#727272] dark:text-zinc-400"> {t("host_calendar_price_tips_select_desc", "Click or drag on the calendar to view tailored price recommendations for specific dates.")}</span>
+                      </p>
                     </div>
                     <div className="flex items-start gap-3">
                       <span className="mt-1 flex size-4 shrink-0 items-center justify-center rounded-full bg-[#DDDDDE] text-[9px] font-semibold text-[#6f4c00]">3</span>
-                      <p className="text-sm leading-6 text-[#595959] dark:text-zinc-300"><strong className="font-semibold text-[#1F1F1F] dark:text-zinc-100">Smart Pricing Limits</strong><span className="text-[#727272] dark:text-zinc-400"> · Set minimum and maximum prices to safeguard profitability.</span></p>
+                      <p className="text-sm leading-6 text-[#595959] dark:text-zinc-300">
+                        <strong className="font-semibold text-[#1F1F1F] dark:text-zinc-100">{t("host_calendar_price_tips_smart_title", "Smart Pricing Limits:")}</strong>
+                        <span className="text-[#727272] dark:text-zinc-400"> {t("host_calendar_price_tips_smart_desc", "Set minimum and maximum price boundaries in your listing settings to safeguard profitability.")}</span>
+                      </p>
                     </div>
                     <div className="flex items-start gap-3">
                       <span className="mt-1 flex size-4 shrink-0 items-center justify-center rounded-full bg-[#DDDDDE] text-[9px] font-semibold text-[#6f4c00]">4</span>
-                      <p className="text-sm leading-6 text-[#595959] dark:text-zinc-300"><strong className="font-semibold text-[#1F1F1F] dark:text-zinc-100">Stay Length Discounts</strong><span className="text-[#727272] dark:text-zinc-400"> · Offer discounts to attract longer stays and increase occupancy.</span></p>
+                      <p className="text-sm leading-6 text-[#595959] dark:text-zinc-300">
+                        <strong className="font-semibold text-[#1F1F1F] dark:text-zinc-100">{t("host_calendar_price_tips_discounts_title", "Weekly & Monthly Discounts:")}</strong>
+                        <span className="text-[#727272] dark:text-zinc-400"> {t("host_calendar_price_tips_discounts_desc", "Offer discounts to attract longer-stay guests and increase occupancy.")}</span>
+                      </p>
                     </div>
                   </div>
 
                   <div className="flex items-start gap-2.5 rounded-xl border border-[#e7e7e7] bg-[#f7f7f7] p-3 text-sm leading-6 text-[#727272] dark:border-zinc-700 dark:bg-zinc-800/80 dark:text-zinc-400">
                     <svg className="mt-0.5 size-4 shrink-0 text-[#727272]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 10v6M12 7h.01" strokeLinecap="round" /></svg>
-                    <p>External market competitor data is currently unavailable. Suggestions use your property&apos;s rules and calendar lead time.</p>
+                    <p>{t("host_calendar_price_tips_disclaimer_bottom", "External market competitor data is currently unavailable. Suggestions are generated from your property's rules and calendar lead time.")}</p>
                   </div>
 
                   <div className="flex justify-end border-t border-[#e7e7e7] pt-4 dark:border-zinc-800">

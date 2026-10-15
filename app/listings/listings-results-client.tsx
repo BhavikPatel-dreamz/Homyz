@@ -1702,7 +1702,7 @@ export function ListingsResultsClient({
                   <path d="M18 6L6 18M6 6l12 12" />
                 </svg>
               </button>
-              <h2 className="text-base font-bold text-[#1F1F1F]">Filters</h2>
+              <h2 className="text-base font-bold text-[#1F1F1F]">{t("listings_filters", "Filters")}</h2>
               <div className="w-9" aria-hidden="true" />
             </div>
 
@@ -1730,8 +1730,8 @@ export function ListingsResultsClient({
 
               {/* 3. Price range */}
               <div className="pt-6">
-                <h3 className="text-base font-bold text-[#1F1F1F] mb-1">Price range</h3>
-                <p className="text-xs sm:text-sm text-[#727272] mb-4">Trip price, includes all fees.</p>
+                <h3 className="text-base font-bold text-[#1F1F1F] mb-1">{t("listings_price_range", "Price range")}</h3>
+                <p className="text-xs sm:text-sm text-[#727272] mb-4">{t("listings_price_subtitle", "Trip price, includes all fees.")}</p>
 
                 {/* Dynamic Price Histogram and Dual Slider */}
                 <div className="relative pt-2 pb-6 px-1">
@@ -1797,7 +1797,7 @@ export function ListingsResultsClient({
                 {/* Min / Max Editable Inputs */}
                 <div className="flex items-center gap-3">
                   <div className="flex-1 rounded-2xl border border-zinc-300 px-3.5 py-2.5 focus-within:border-zinc-900 focus-within:ring-1 focus-within:ring-zinc-900 transition-all">
-                    <label className="text-[11px] font-medium text-[#727272] block">Minimum</label>
+                    <label className="text-[11px] font-medium text-[#727272] block">{t("listings_minimum", "Minimum")}</label>
                     <div className="flex items-center gap-1.5 mt-0.5">
                       <span className="text-sm font-semibold text-[#727272]">{currencySymbol}</span>
                       <input
@@ -1812,7 +1812,7 @@ export function ListingsResultsClient({
                   </div>
                   <span className="text-[#727272] font-bold">—</span>
                   <div className="flex-1 rounded-2xl border border-zinc-300 px-3.5 py-2.5 focus-within:border-zinc-900 focus-within:ring-1 focus-within:ring-zinc-900 transition-all">
-                    <label className="text-[11px] font-medium text-[#727272] block">Maximum</label>
+                    <label className="text-[11px] font-medium text-[#727272] block">{t("listings_maximum", "Maximum")}</label>
                     <div className="flex items-center gap-1.5 mt-0.5">
                       <span className="text-sm font-semibold text-[#727272]">{currencySymbol}</span>
                       <input
@@ -1831,31 +1831,31 @@ export function ListingsResultsClient({
 
               {/* 4. Rooms and beds */}
               <div className="pt-6 space-y-4">
-                <h3 className="text-base font-bold text-[#1F1F1F]">Rooms and beds</h3>
+                <h3 className="text-base font-bold text-[#1F1F1F]">{t("listings_rooms_and_beds", "Rooms and beds")}</h3>
                 
                 <div className="flex items-center justify-between">
-                  <span className="text-sm sm:text-base font-medium text-zinc-800">Bedrooms</span>
+                  <span className="text-sm sm:text-base font-medium text-zinc-800">{t("listings_bedrooms", "Bedrooms")}</span>
                   <Stepper value={draftBedrooms} onChange={setDraftBedrooms} label="bedrooms" />
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span className="text-sm sm:text-base font-medium text-zinc-800">Beds</span>
+                  <span className="text-sm sm:text-base font-medium text-zinc-800">{t("listings_beds", "Beds")}</span>
                   <Stepper value={draftBeds} onChange={setDraftBeds} label="beds" />
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span className="text-sm sm:text-base font-medium text-zinc-800">Bathrooms</span>
+                  <span className="text-sm sm:text-base font-medium text-zinc-800">{t("listings_bathrooms", "Bathrooms")}</span>
                   <Stepper value={draftBathrooms} onChange={setDraftBathrooms} label="bathrooms" />
                 </div>
               </div>
 
               {/* 5. Amenities */}
               <div className="pt-6 space-y-5">
-                <h3 className="text-base font-bold text-[#1F1F1F]">Amenities</h3>
+                <h3 className="text-base font-bold text-[#1F1F1F]">{t("listings_amenities", "Amenities")}</h3>
 
                 {/* Popular */}
                 <div>
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-[#727272] mb-2.5">Popular</h4>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-[#727272] mb-2.5">{t("listings_popular", "Popular")}</h4>
                   <div className="flex flex-wrap gap-2">
                     {[
                       { id: "wifi", label: "Wifi", icon: "📶" },
@@ -1893,7 +1893,7 @@ export function ListingsResultsClient({
 
                 {/* Essentials */}
                 <div>
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-[#727272] mb-2.5">Essentials</h4>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-[#727272] mb-2.5">{t("listings_essentials", "Essentials")}</h4>
                   <div className="flex flex-wrap gap-2">
                     {[
                       { id: "dryer", label: "Tumble dryer", icon: "💨" },
@@ -1930,7 +1930,7 @@ export function ListingsResultsClient({
 
                 {/* Features */}
                 <div>
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-[#727272] mb-2.5">Features</h4>
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-[#727272] mb-2.5">{t("listings_features", "Features")}</h4>
                   <div className="flex flex-wrap gap-2">
                     {[
                       { id: "hot_tub", label: "Hot tub", icon: "🛁" },
@@ -1978,7 +1978,7 @@ export function ListingsResultsClient({
                   <>
                     {/* Location */}
                     <div>
-                      <h4 className="text-xs font-bold uppercase tracking-wider text-[#727272] mb-2.5">Location</h4>
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-[#727272] mb-2.5">{t("listings_location", "Location")}</h4>
                       <div className="flex flex-wrap gap-2">
                         {[
                           { id: "beachfront", label: "Beachfront", icon: "🏖️" },
@@ -2012,7 +2012,7 @@ export function ListingsResultsClient({
 
                     {/* Safety */}
                     <div>
-                      <h4 className="text-xs font-bold uppercase tracking-wider text-[#727272] mb-2.5">Safety</h4>
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-[#727272] mb-2.5">{t("listings_safety", "Safety")}</h4>
                       <div className="flex flex-wrap gap-2">
                         {[
                           { id: "smoke_alarm", label: "Smoke alarm", icon: "🚨" },
@@ -2051,13 +2051,13 @@ export function ListingsResultsClient({
                   onClick={() => setShowAllAmenities((v) => !v)}
                   className="text-xs sm:text-sm font-semibold text-[#1F1F1F] underline hover:text-zinc-600 transition-colors cursor-pointer"
                 >
-                  {showAllAmenities ? "Show less" : "Show more"}
+                  {showAllAmenities ? t("listings_show_less", "Show less") : t("listings_show_more", "Show more")}
                 </button>
               </div>
 
               {/* 6. Booking options */}
               <div className="pt-6">
-                <h3 className="text-base font-bold text-[#1F1F1F] mb-3">Booking options</h3>
+                <h3 className="text-base font-bold text-[#1F1F1F] mb-3">{t("listings_booking_options", "Booking options")}</h3>
                 <div className="flex flex-wrap gap-2.5">
                   {/* Instant Book */}
                   <button
@@ -2070,7 +2070,7 @@ export function ListingsResultsClient({
                     }`}
                   >
                     <span>⚡</span>
-                    <span>Instant Book</span>
+                    <span>{t("listings_instant_book", "Instant Book")}</span>
                   </button>
 
                   {/* Self check-in */}
@@ -2087,7 +2087,7 @@ export function ListingsResultsClient({
                     }`}
                   >
                     <span>🔑</span>
-                    <span>Self check-in</span>
+                    <span>{t("listings_self_check_in", "Self check-in")}</span>
                   </button>
 
                   {/* Allows pets */}
@@ -2101,7 +2101,7 @@ export function ListingsResultsClient({
                     }`}
                   >
                     <span>🐾</span>
-                    <span>Allows pets</span>
+                    <span>{t("listings_allows_pets", "Allows pets")}</span>
                   </button>
                 </div>
               </div>
@@ -2117,7 +2117,7 @@ export function ListingsResultsClient({
 
               {/* 8. Property type */}
               <div className="pt-6">
-                <h3 className="text-base font-bold text-[#1F1F1F] mb-3">Property type</h3>
+                <h3 className="text-base font-bold text-[#1F1F1F] mb-3">{t("listings_property_type", "Property type")}</h3>
                 <div className="flex flex-wrap gap-2.5">
                   {[
                     { id: "Villa", label: "House / Villa", icon: "🏠" },
@@ -2161,7 +2161,7 @@ export function ListingsResultsClient({
                   onClick={() => setIsHostLanguageOpen((v) => !v)}
                   className="w-full flex items-center justify-between text-left cursor-pointer group"
                 >
-                  <h3 className="text-base font-bold text-[#1F1F1F]">Host language</h3>
+                  <h3 className="text-base font-bold text-[#1F1F1F]">{t("listings_host_language", "Host language")}</h3>
                   <svg
                     viewBox="0 0 24 24"
                     fill="none"
@@ -2206,14 +2206,14 @@ export function ListingsResultsClient({
                 onClick={handleClearFilters}
                 className="text-sm font-semibold text-zinc-800 underline hover:text-zinc-950 transition-colors cursor-pointer"
               >
-                Clear all
+                {t("listings_clear_all", "Clear all")}
               </button>
               <button
                 type="button"
                 onClick={handleApplyFilters}
                 className="rounded-xl bg-zinc-900 text-white px-7 py-3 text-sm font-semibold hover:bg-zinc-800 transition-all shadow-xs cursor-pointer"
               >
-                Show {total > 0 ? `${total.toLocaleString()} ` : ""}places
+                {t("listings_show_places", { count: total > 0 ? total.toLocaleString() : "0" })}
               </button>
             </div>
           </div>

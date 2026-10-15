@@ -37,7 +37,7 @@ export function MyReviewsSection({ reviews, className = "" }: MyReviewsSectionPr
     <section className={`w-full flex flex-col ${className}`} aria-labelledby="my-reviews-heading">
       <div className="mb-5">
         <h2 id="my-reviews-heading" className="text-xl font-medium tracking-tight text-[#1F1F1F]">
-          My reviews
+          {t("profile_reviews_title", "My reviews")}
         </h2>
       </div>
 
@@ -82,7 +82,7 @@ export function MyReviewsSection({ reviews, className = "" }: MyReviewsSectionPr
                       />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center text-xs text-[#727272]">
-                        Stay
+                        {t("home_search_where", undefined, "Stay")}
                       </div>
                     )}
                   </div>
@@ -149,7 +149,7 @@ export function MyReviewsSection({ reviews, className = "" }: MyReviewsSectionPr
             <button
               type="button"
               onClick={() => setSelectedReview(null)}
-              aria-label="Close dialog"
+              aria-label={t("profile_reviews_close", "Close dialog")}
               className="absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-full text-[#727272] hover:bg-zinc-100 hover:text-zinc-800"
             >
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

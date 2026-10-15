@@ -116,14 +116,14 @@ export function MainHeader() {
           {/* User profile badge */}
           <button
             type="button"
-            aria-label="User Menu"
+            aria-label={t("header_open_menu") || "User Menu"}
             onClick={() => setMenuOpen(!menuOpen)}
             disabled={sessionLoading}
             className="flex items-center gap-2 p-1.5 pl-2 border border-gray-200 rounded-full hover:shadow-sm cursor-pointer transition bg-white"
           >
             <div className="w-7 h-7 rounded-full overflow-hidden bg-gray-200 relative shrink-0">
               {user?.image ? (
-                <img alt="Avatar" className="h-full w-full object-cover" src={user.image} />
+                <img alt={user?.name || (t("header_profile") || "Avatar")} className="h-full w-full object-cover" src={user.image} />
               ) : (
                 <i className="fa-solid fa-user absolute inset-0 flex items-center justify-center text-[11px] text-gray-500" aria-hidden="true" />
               )}
@@ -144,43 +144,43 @@ export function MainHeader() {
                       {t("header_dashboard") || "Dashboard"}
                     </Link>
                     <Link href="/profile" onClick={() => setMenuOpen(false)} className="block rounded-xl px-3 py-2 text-xs font-semibold text-gray-700 transition hover:bg-gray-50">
-                      Profile
+                      {t("header_profile") || "Profile"}
                     </Link>
                   </div>
                 ) : (
                   <div className="space-y-1 text-[#1F1F1F]">
                     <div className="space-y-0.5 border-b border-zinc-200 pb-2">
-                      <GuestMenuLink href="/profile/tab/saved" icon="fa-heart" label="Wishlists" onClick={() => setMenuOpen(false)} />
-                      <GuestMenuLink href="/profile/tab/upcoming" icon="fa-route" label="Trips" onClick={() => setMenuOpen(false)} />
-                      <GuestMenuLink href="/messages" icon="fa-comment" label="Messages" onClick={() => setMenuOpen(false)} />
-                      <GuestMenuLink href="/profile" icon="fa-circle-user" label="Profile" onClick={() => setMenuOpen(false)} />
+                      <GuestMenuLink href="/profile/tab/saved" icon="fa-heart" label={t("header_wishlist", "Wishlists")} onClick={() => setMenuOpen(false)} />
+                      <GuestMenuLink href="/profile/tab/upcoming" icon="fa-route" label={t("header_trips", "Trips")} onClick={() => setMenuOpen(false)} />
+                      <GuestMenuLink href="/messages" icon="fa-comment" label={t("header_messages", "Messages")} onClick={() => setMenuOpen(false)} />
+                      <GuestMenuLink href="/profile" icon="fa-circle-user" label={t("header_profile", "Profile")} onClick={() => setMenuOpen(false)} />
 
                     </div>
 
                     <div className="space-y-0.5 border-b border-zinc-200 py-2">
-                      <GuestMenuLink href="/profile/tab/notifications" icon="fa-bell" label="Notifications" onClick={() => setMenuOpen(false)} />
-                      <GuestMenuLink href="/profile/tab/account_settings" icon="fa-gear" label="Account settings" onClick={() => setMenuOpen(false)} />
+                      <GuestMenuLink href="/profile/tab/notifications" icon="fa-bell" label={t("header_notifications", "Notifications")} onClick={() => setMenuOpen(false)} />
+                      <GuestMenuLink href="/profile/tab/account_settings" icon="fa-gear" label={t("header_account_settings", "Account settings")} onClick={() => setMenuOpen(false)} />
                       <button type="button" onClick={() => { setMenuOpen(false); setLangModalOpen(true); }} className="flex w-full items-center gap-2 px-1 py-1.5 text-left text-xs transition-colors hover:text-zinc-500">
                         <i className="fa-solid fa-globe w-3.5 text-center text-[13px]" aria-hidden="true" />
-                        Languages &amp; currency
+                        {t("header_languages_currency", "Languages & currency")}
                       </button>
-                      <GuestMenuLink href="/help" icon="fa-circle-question" label="Help Centre" onClick={() => setMenuOpen(false)} />
+                      <GuestMenuLink href="/help" icon="fa-circle-question" label={t("header_help_centre", "Help Centre")} onClick={() => setMenuOpen(false)} />
                     </div>
 
                     <div className="border-b border-zinc-200 py-2">
                       <Link href="/host/onboarding" onClick={() => setMenuOpen(false)} className="block px-1 py-1.5 transition-colors hover:text-zinc-500">
-                        <p className="text-xs font-medium">Become a host</p>
-                        <p className="mt-0.5 max-w-[155px] text-[10px] leading-3 text-zinc-500">It&apos;s easy to start hosting and earn extra income.</p>
+                        <p className="text-xs font-medium">{t("header_become_a_host", "Become a host")}</p>
+                        <p className="mt-0.5 max-w-[155px] text-[10px] leading-3 text-zinc-500">{t("header_become_a_host_subtitle", "It's easy to start hosting and earn extra income.")}</p>
                       </Link>
                     </div>
 
                     <div className="space-y-0.5 border-b border-zinc-200 py-2">
-                      <GuestMenuLink href="/host/refer" label="Refer a host" onClick={() => setMenuOpen(false)} />
-                      <GuestMenuLink href="/host/co-host" label="Find a co-host" onClick={() => setMenuOpen(false)} />
+                      <GuestMenuLink href="/host/refer" label={t("header_refer_a_host", "Refer a host")} onClick={() => setMenuOpen(false)} />
+                      <GuestMenuLink href="/host/co-host" label={t("header_find_cohost", "Find a co-host")} onClick={() => setMenuOpen(false)} />
                     </div>
 
                     <button type="button" onClick={() => { setMenuOpen(false); void signOut({ callbackUrl: "/" }); }} className="w-full px-1 py-1.5 text-left text-xs transition-colors hover:text-zinc-500">
-                      Log out
+                      {t("profile_mobile_log_out", "Log out")}
                     </button>
                   </div>
                 )

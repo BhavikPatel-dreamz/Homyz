@@ -779,7 +779,7 @@ export function HostListingsWorkspace({
                 onClick={() => fetchListings(activeTab, page, searchQuery.trim(), { bypassCache: true })}
                 className="ml-4 rounded-full bg-rose-600 px-3 py-1 text-xs font-semibold text-white hover:bg-rose-700 cursor-pointer"
               >
-                Retry
+                {t("host_listings_btn_retry")}
               </button>
             </div>
           )}
@@ -908,7 +908,7 @@ export function HostListingsWorkspace({
                     type="button"
                     onClick={() => handleSearchChange("")}
                     className="absolute inset-y-0 right-3 flex items-center text-zinc-400 hover:text-zinc-600"
-                    title="Clear search"
+                    title={t("host_listings_clear_search")}
                   >
                     ✕
                   </button>
@@ -975,7 +975,7 @@ export function HostListingsWorkspace({
                         onClick={() => handleSearchChange("")}
                         className="mt-3 text-sm text-[#1F1F1F] underline cursor-pointer"
                       >
-                        Clear search
+                        {t("host_listings_clear_search")}
                       </button>
                     </div>
                   ) : listings.length === 0 ? (
@@ -1039,7 +1039,7 @@ export function HostListingsWorkspace({
                       onClick={() => handleSearchChange("")}
                       className="mt-3 text-sm text-[#1F1F1F] underline cursor-pointer"
                     >
-                      Clear search
+                      {t("host_listings_clear_search")}
                     </button>
                   </div>
                 ) : listings.length === 0 ? (
@@ -1194,10 +1194,10 @@ export function HostListingsWorkspace({
             <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-4">
               <div>
                 <h2 className="text-lg font-semibold text-muted-foreground">
-                  {editingListing ? `Edit Property: ${editingListing.title}` : "Create Property Listing"}
+                  {editingListing ? t("host_listings_modal_edit_title", { title: editingListing.title }) : t("host_listings_modal_create_title", "Create Property Listing")}
                 </h2>
                 <p className="text-xs text-[var(--muted-foreground)] mt-0.5">
-                  Configure property details, photos, amenities, pricing, house rules, check-in, and policies.
+                  {t("host_listings_modal_header_desc", "Configure property details, photos, amenities, pricing, house rules, check-in, and policies.")}
                 </p>
               </div>
               <button
@@ -1701,7 +1701,7 @@ export function HostListingsWorkspace({
                   onClick={() => setEditorStep((prev) => Math.max(1, prev - 1))}
                   className="rounded-full px-4 py-2 border border-[var(--border)] text-xs font-semibold text-muted-foreground hover:bg-[var(--surface-secondary)] hover:text-[var(--foreground)] transition-all cursor-pointer disabled:opacity-30 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
                 >
-                  ← Back
+                  ← {t("host_back", "Back")}
                 </button>
 
                 <div className="flex items-center gap-2">
@@ -1711,7 +1711,7 @@ export function HostListingsWorkspace({
                       onClick={() => setEditorStep((prev) => Math.min(5, prev + 1))}
                       className="rounded-full bg-[var(--foreground)] text-[var(--background)] px-5 py-2 text-xs font-semibold hover:opacity-90 transition-all"
                     >
-                      Next Step →
+                      {t("host_next", "Next")} →
                     </button>
                   ) : (
                     <button
@@ -1719,7 +1719,7 @@ export function HostListingsWorkspace({
                       disabled={pending}
                       className="rounded-full bg-emerald-600 text-white px-6 py-2 text-xs font-semibold hover:bg-emerald-700 transition-all shadow-md disabled:opacity-50"
                     >
-                      {editingListing ? "Save Changes" : "Create Listing Draft"}
+                      {editingListing ? t("host_save_changes", "Save Changes") : t("host_listings_create_draft_btn", "Create Listing Draft")}
                     </button>
                   )}
                 </div>
@@ -1757,7 +1757,7 @@ export function HostListingsWorkspace({
                   }}
                   className="rounded-xl bg-zinc-900 text-white dark:bg-zinc-100 dark:text-[#1F1F1F] font-semibold px-4 py-2"
                 >
-                  Block Date
+                  {t("host_listings_block_date")}
                 </button>
               </div>
 
@@ -1775,7 +1775,7 @@ export function HostListingsWorkspace({
                           onClick={() => setTempBlockedDates(tempBlockedDates.filter((d) => d !== dateStr))}
                           className="text-rose-600 font-semibold text-xs"
                         >
-                          Unblock
+                          {t("host_listings_unblock")}
                         </button>
                       </div>
                     ))
@@ -1789,14 +1789,14 @@ export function HostListingsWorkspace({
                   onClick={() => setShowAvailabilityModal(false)}
                   className="rounded-full px-4 py-2 text-xs font-semibold border border-[var(--border)] text-muted-foreground"
                 >
-                  Cancel
+                  {t("host_cancel", "Cancel")}
                 </button>
                 <button
                   type="submit"
                   disabled={pending}
                   className="rounded-full bg-emerald-600 text-white px-5 py-2 text-xs font-semibold hover:bg-emerald-700 disabled:opacity-50"
                 >
-                  Save Availability
+                  {t("host_save_availability", "Save Availability")}
                 </button>
               </div>
             </form>
@@ -1810,7 +1810,7 @@ export function HostListingsWorkspace({
           <div className="w-full max-w-sm max-h-[90dvh] overflow-y-auto rounded-2xl bg-[var(--surface)] p-6 shadow-xl space-y-4 border border-[var(--border)] font-sans">
             <h3 className="text-base font-semibold text-rose-600">{t("host_listings_modal_delete_confirm", "Delete Property Listing?")}</h3>
             <p className="text-xs text-[var(--muted-foreground)]">
-              Are you sure you want to permanently delete <strong>{listingToDelete.title}</strong>? This action cannot be undone.
+              {t("host_listings_delete_confirm_desc", { title: listingToDelete.title })}
             </p>
             <div className="flex flex-wrap items-center justify-end gap-2 pt-2">
               <button
@@ -1818,7 +1818,7 @@ export function HostListingsWorkspace({
                 onClick={() => setShowDeleteModal(false)}
                 className="rounded-full px-4 py-1.5 text-xs font-semibold border border-[var(--border)]"
               >
-                Cancel
+                {t("host_cancel", "Cancel")}
               </button>
               <button
                 type="button"
@@ -1826,7 +1826,7 @@ export function HostListingsWorkspace({
                 disabled={pending}
                 className="rounded-full bg-rose-600 text-white px-4 py-1.5 text-xs font-semibold hover:bg-rose-700 disabled:opacity-50"
               >
-                Permanently Delete
+                {t("host_listings_delete_permanent_btn", "Permanently Delete")}
               </button>
             </div>
           </div>

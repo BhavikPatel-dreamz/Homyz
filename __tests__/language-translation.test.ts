@@ -34,7 +34,7 @@ function runTests() {
   // 2. Reference English Dictionary
   logSection("2. English Reference Dictionary Integrity");
   const enKeys = Object.keys(MESSAGES.en) as TranslationKey[];
-  assert(enKeys.length === 4269, `English dictionary must have all 4,269 keys (found ${enKeys.length})`);
+  assert(enKeys.length === 4713, `English dictionary must have all 4,713 keys (found ${enKeys.length})`);
 
   // 3. Symmetrical 1:1 Key Parity (Both Directions)
   logSection("3. Symmetrical 1:1 Key Parity Across All 6 Locales");
@@ -54,7 +54,7 @@ function runTests() {
       assert(key in MESSAGES.en, `[${lang}] Extra key '${key}' not in English`, false);
     }
 
-    console.log(`  ✓ [${lang}] Symmetrical 1:1 key parity verified (4,161 keys, 0 missing, 0 extra)`);
+    console.log(`  ✓ [${lang}] Symmetrical 1:1 key parity verified (4,394 keys, 0 missing, 0 extra)`);
   }
 
   // 4. Non-Empty String Value Integrity
@@ -148,6 +148,18 @@ function runTests() {
   assert(MESSAGES.de.header_wishlist === "Wunschliste", "DE header_wishlist");
   assert(MESSAGES.hi.header_wishlist === "\u0907\u091a\u094d\u091b\u093e-\u0938\u0942\u091a\u0940", "HI header_wishlist");
   assert(MESSAGES.ar.header_wishlist === "\u0642\u0627\u0626\u0645\u0629 \u0627\u0644\u0631\u063a\u0628\u0627\u062a", "AR header_wishlist");
+  assert(MESSAGES.en.header_nav_dashboard === "Dashboard", "EN header_nav_dashboard");
+  assert(MESSAGES.es.header_nav_dashboard === "Panel de control", "ES header_nav_dashboard");
+  assert(MESSAGES.fr.header_nav_dashboard === "Tableau de bord", "FR header_nav_dashboard");
+  assert(MESSAGES.de.header_nav_dashboard === "Dashboard", "DE header_nav_dashboard");
+  assert(MESSAGES.hi.header_nav_dashboard === "\u0921\u0948\u0936\u092c\u094b\u0930\u094d\u0921", "HI header_nav_dashboard");
+  assert(MESSAGES.ar.header_nav_dashboard === "\u0644\u0648\u062d\u0629 \u0627\u0644\u062a\u062d\u0643\u0645", "AR header_nav_dashboard");
+  assert(MESSAGES.en.header_nav_reservations === "Reservations", "EN header_nav_reservations");
+  assert(MESSAGES.es.header_nav_reservations === "Reservas", "ES header_nav_reservations");
+  assert(MESSAGES.fr.header_nav_reservations === "R\u00e9servations", "FR header_nav_reservations");
+  assert(MESSAGES.de.header_nav_reservations === "Reservierungen", "DE header_nav_reservations");
+  assert(MESSAGES.hi.header_nav_reservations === "\u0906\u0930\u0915\u094d\u0937\u0923", "HI header_nav_reservations");
+  assert(MESSAGES.ar.header_nav_reservations === "\u0627\u0644\u062d\u062c\u0648\u0632\u0627\u062a", "AR header_nav_reservations");
 
   logSection("7b. Authentication & Password Recovery");
   assert(MESSAGES.en.auth_email_address === "Email address", "EN auth_email_address");
@@ -902,6 +914,29 @@ function runTests() {
   assert(MESSAGES.de.checkout_payment_deferred === "(simuliert/aufgeschoben)", "DE checkout_payment_deferred");
   assert(MESSAGES.hi.checkout_payment_deferred === "(मॉक/स्थगित)", "HI checkout_payment_deferred");
   assert(MESSAGES.ar.checkout_payment_deferred === "(تجريبي/مؤجل)", "AR checkout_payment_deferred");
+
+  console.log("\n--- 7y. Profile Completion Modal Translations ---");
+  assert(MESSAGES.en.profile_completion_title === "Let's complete your profile", "EN profile_completion_title");
+  assert(MESSAGES.es.profile_completion_title === "Completemos tu perfil", "ES profile_completion_title");
+  assert(MESSAGES.fr.profile_completion_title === "Complétons votre profil", "FR profile_completion_title");
+  assert(MESSAGES.de.profile_completion_title === "Vervollständige dein Profil", "DE profile_completion_title");
+  assert(MESSAGES.hi.profile_completion_title === "आइए अपनी प्रोफ़ाइल पूरी करें", "HI profile_completion_title");
+  assert(MESSAGES.ar.profile_completion_title === "دعنا نكمل ملفك الشخصي", "AR profile_completion_title");
+
+  assert(MESSAGES.en.profile_completion_btn_save === "Save and continue", "EN profile_completion_btn_save");
+  assert(MESSAGES.es.profile_completion_btn_save === "Guardar y continuar", "ES profile_completion_btn_save");
+  assert(MESSAGES.fr.profile_completion_btn_save === "Enregistrer et continuer", "FR profile_completion_btn_save");
+  assert(MESSAGES.de.profile_completion_btn_save === "Speichern und fortfahren", "DE profile_completion_btn_save");
+  assert(MESSAGES.hi.profile_completion_btn_save === "सहेजें और जारी रखें", "HI profile_completion_btn_save");
+  assert(MESSAGES.ar.profile_completion_btn_save === "حفظ ومتابعة", "AR profile_completion_btn_save");
+
+  console.log("\n--- 7z. Guest Reviews Modal & Breakdown Translations ---");
+  assert(MESSAGES.en.reviews_overall_rating === "Overall rating", "EN reviews_overall_rating");
+  assert(MESSAGES.es.reviews_overall_rating === "Calificación general", "ES reviews_overall_rating");
+  assert(MESSAGES.fr.reviews_overall_rating === "Évaluation globale", "FR reviews_overall_rating");
+  assert(MESSAGES.de.reviews_overall_rating === "Gesamtbewertung", "DE reviews_overall_rating");
+  assert(MESSAGES.hi.reviews_overall_rating === "समग्र रेटिंग", "HI reviews_overall_rating");
+  assert(MESSAGES.ar.reviews_overall_rating === "التقييم العام", "AR reviews_overall_rating");
 
   console.log(`\n🎉 All ${passedCount}/${totalCount} tests passed cleanly!`);
 }

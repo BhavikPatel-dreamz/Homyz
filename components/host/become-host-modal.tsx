@@ -319,7 +319,7 @@ export function BecomeHostModal({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <span>
-                <strong>{selectedType === "EXPERIENCE" ? t("host_experience") : t("host_service")} hosting</strong> is coming soon to Homyz. Please select <strong>{t("host_home")}</strong> to create a place listing today.
+                {t("host_type_coming_soon_notice", { type: selectedType === "EXPERIENCE" ? t("host_experience") : t("host_service") }, `${selectedType === "EXPERIENCE" ? t("host_experience") : t("host_service")} hosting is coming soon to Homyz. Please select ${t("host_home")} to create a place listing today.`)}
               </span>
             </div>
           )}

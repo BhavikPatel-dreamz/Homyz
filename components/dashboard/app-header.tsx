@@ -243,17 +243,17 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
             {sessionLoading ? (
               <div className="hidden h-9 w-9 shrink-0 animate-pulse rounded-full bg-zinc-100 min-[992px]:block" aria-hidden="true" />
             ) : user?.image ? (
-              <Link href="/profile" className="relative hidden h-9 w-9 shrink-0 overflow-hidden rounded-full transition-opacity hover:opacity-80 min-[992px]:block" title="Profile">
-                <Image src={user.image} alt={user.name || "User avatar"} fill className="object-cover" sizes="36px" priority />
+              <Link href="/profile" className="relative hidden h-9 w-9 shrink-0 overflow-hidden rounded-full transition-opacity hover:opacity-80 min-[992px]:block" title={t("header_profile") || "Profile"}>
+                <Image src={user.image} alt={user.name || (t("header_profile") || "User avatar")} fill className="object-cover" sizes="36px" priority />
               </Link>
             ) : user ? (
-              <Link href="/profile" className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5] text-[#727272] transition-colors hover:bg-zinc-200 min-[992px]:flex" title="Profile">
+              <Link href="/profile" className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5] text-[#727272] transition-colors hover:bg-zinc-200 min-[992px]:flex" title={t("header_profile") || "Profile"}>
                 <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
                 </svg>
               </Link>
             ) : (
-              <button type="button" onClick={() => setMenuOpen(!menuOpen)} className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5] text-[#727272] transition-colors hover:bg-zinc-200 min-[992px]:flex" title="Account">
+              <button type="button" onClick={() => setMenuOpen(!menuOpen)} className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5] text-[#727272] transition-colors hover:bg-zinc-200 min-[992px]:flex" title={t("header_account_settings") || "Account"}>
                 <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
                 </svg>
@@ -286,11 +286,11 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
               </Link>
             )}
 
-            <button type="button" onClick={() => setLangModalOpen(!langModalOpen)} className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5] transition-colors hover:bg-zinc-200 min-[992px]:flex" title="Language" aria-label="Choose language and currency">
+            <button type="button" onClick={() => setLangModalOpen(!langModalOpen)} className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5] transition-colors hover:bg-zinc-200 min-[992px]:flex" title={t("header_language") || "Language"} aria-label={t("header_languages_currency") || "Choose language and currency"}>
               <Image src="/images/icons/translate-icon.svg" alt="" width={24} height={24} className="h-6 w-6" />
             </button>
 
-            <button type="button" onClick={() => setMenuOpen(!menuOpen)} disabled={sessionLoading} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5] transition-colors hover:bg-zinc-200 disabled:cursor-wait md:h-9 md:w-9" aria-label={sessionLoading ? "Loading account" : "Open menu"} aria-expanded={menuOpen}>
+            <button type="button" onClick={() => setMenuOpen(!menuOpen)} disabled={sessionLoading} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5] transition-colors hover:bg-zinc-200 disabled:cursor-wait md:h-9 md:w-9" aria-label={sessionLoading ? (t("common_loading") || "Loading account") : (t("header_open_menu") || "Open menu")} aria-expanded={menuOpen}>
               <Image src="/images/icons/menu-icon.svg" alt="" width={18} height={16} className="h-4 w-[18px] md:h-[14px] md:w-4" />
             </button>
 
@@ -438,7 +438,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                                 <path d="M4 19V9m6 10V5m6 14v-7m4 7H2" strokeLinecap="round" strokeLinejoin="round" />
                               </svg>
                             </span>
-                            <span>Dashboard</span>
+                            <span>{t("header_nav_dashboard") || "Dashboard"}</span>
                           </Link>
 
                           {/* Today */}
@@ -507,7 +507,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                             <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
                               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M7 3v4M17 3v4M3 10h18" /></svg>
                             </span>
-                            <span>Reservations</span>
+                            <span>{t("header_nav_reservations") || "Reservations"}</span>
                           </Link>
 
                           <Link
@@ -520,7 +520,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                             <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
                               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M12 3 4.5 6v5c0 4.8 3.1 8.6 7.5 10 4.4-1.4 7.5-5.2 7.5-10V6L12 3Z" /><path d="m8.5 12 2.2 2.2 4.8-4.8" /></svg>
                             </span>
-                            <span>Resolution Center</span>
+                            <span>{t("host_nav_resolution") || "Resolution Center"}</span>
                           </Link>
 
                           {/* Messages */}

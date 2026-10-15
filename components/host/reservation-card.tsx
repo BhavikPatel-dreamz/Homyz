@@ -3,6 +3,7 @@
 import { PropertyPhoto } from "./host-workspace-shared";
 import type { OperationalEvent } from "@/lib/booking/host-reservation-events";
 import type { ListingDTO } from "@/services/mappers";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 export function ReservationCard({
   event,
@@ -17,18 +18,46 @@ export function ReservationCard({
   priorityLabel?: string;
   onSelect: () => void;
 }) {
+  const { t } = useLanguage();
   const { booking, listing } = event;
+  const guestName = booking.guestName || t("host_cal_res_guest_default", "Guest");
   const badgeLetter = booking.guestName && booking.guestName !== "(Name)"
     ? booking.guestName.charAt(0).toUpperCase()
     : "G";
   const guestCount = booking.guests || 1;
+
+  const localizedTimeDisplay =
+    event.timeDisplay === "Completed"
+      ? t("host_today_priority_past", "Past")
+      : event.timeDisplay === "Pending approval"
+      ? t("host_booking_approvals_pending", "Pending approval")
+      : event.timeDisplay === "Pending"
+      ? t("host_today_priority_pending", "Pending")
+      : event.timeDisplay === "Cancelled"
+      ? t("host_today_priority_cancelled", "Cancelled")
+      : event.timeDisplay;
+
+  const localizedSubtitle =
+    event.eventType === "checkout"
+      ? t("host_today_checks_out", { guest: guestName }, `${guestName} checks out`)
+      : event.eventType === "checkin" || event.eventType === "upcoming"
+      ? t("host_today_checks_in", { guest: guestName }, `${guestName} checks in`)
+      : event.eventType === "staying"
+      ? t("host_today_currently_hosting", { guest: guestName }, `Currently hosting ${guestName}`)
+      : event.eventType === "completed"
+      ? t("host_today_completed_stay", { guest: guestName }, `${guestName} completed stay`)
+      : event.eventType === "pending"
+      ? t("host_today_requested_stay", { guest: guestName }, `${guestName} requested stay`)
+      : event.eventType === "cancelled"
+      ? t("host_today_cancelled_stay", { guest: guestName }, `${guestName}'s reservation cancelled`)
+      : event.subtitleDisplay;
 
   return (
     <div
       onClick={onSelect}
       role="button"
       tabIndex={0}
-      aria-label={`Open reservation for ${booking.guestName || "Guest"} at ${listing.title}`}
+      aria-label={t("host_today_open_res_aria", { guest: guestName, property: listing.title }, `Open reservation for ${guestName} at ${listing.title}`)}
       onKeyDown={(keyboardEvent) => {
         if (keyboardEvent.key === "Enter" || keyboardEvent.key === " ") {
           keyboardEvent.preventDefault();
@@ -54,14 +83,14 @@ export function ReservationCard({
       <div className="relative flex w-[170px] flex-col items-center gap-[28px] sm:gap-[32px]">
         <div className="flex flex-col items-center justify-center text-center">
           <span className="font-sans text-[16px] leading-[24px] font-medium text-[#1F1F1F]">
-            {event.timeDisplay}
+            {localizedTimeDisplay}
           </span>
           <span
             className={`font-sans text-[14px] leading-[21px] font-normal transition-colors duration-300 ease-in-out ${
               isActive || selected ? "text-[#1F1F1F]" : "text-[#727272] group-hover:text-[#1F1F1F]"
             }`}
           >
-            {event.subtitleDisplay}
+            {localizedSubtitle}
           </span>
           {event.dateDisplay && (
             <span className="mt-0.5 font-sans text-[12px] leading-[18px] text-[#727272]">
@@ -84,7 +113,7 @@ export function ReservationCard({
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={booking.guestImage}
-                  alt={booking.guestName || "Guest"}
+                  alt={guestName}
                   className="h-full w-full object-cover"
                 />
               ) : (
@@ -102,7 +131,7 @@ export function ReservationCard({
           >
             <span className="line-clamp-1 max-w-full break-words font-medium">{listing.title},</span>
             <span className="line-clamp-1 max-w-full break-words">
-              {[listing.district, listing.city].filter(Boolean).join(", ") || "Location"}
+              {[listing.district, listing.city].filter(Boolean).join(", ") || t("host_location_label", "Location")}
             </span>
           </div>
 
@@ -126,7 +155,7 @@ export function ReservationCard({
               <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
               <circle cx="12" cy="7" r="4" />
             </svg>
-            <span>{guestCount} {guestCount === 1 ? "guest" : "guests"}</span>
+            <span>{guestCount} {guestCount === 1 ? t("host_dash_guest_singular", "guest") : t("host_dash_guest_plural", "guests")}</span>
           </div>
 
           <div

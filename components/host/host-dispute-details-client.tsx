@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { useCurrency } from "@/lib/currency-context";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 interface HostDisputeDetailsProps {
   initialData: {
@@ -117,6 +118,7 @@ function formatDate(val: string | null | undefined, includeTime = false) {
 export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProps) {
   const router = useRouter();
   const { formatPrice } = useCurrency();
+  const { t } = useLanguage();
   const { dispute, booking, listing } = initialData;
 
   const [activeTab, setActiveTab] = useState<TabType>("overview");
@@ -323,15 +325,15 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
   return (
     <div className="w-full space-y-8 font-sans text-[#1F1F1F]">
       {/* Breadcrumb Navigation */}
-      <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs sm:text-sm text-[#727272]">
+      <nav aria-label={t("host_dispute_breadcrumb_ops", "Breadcrumb")} className="flex items-center gap-2 text-xs sm:text-sm text-[#727272]">
         <Link
           href="/host/resolution-center"
           className="font-medium text-[#1F1F1F] underline underline-offset-4 hover:text-[#555] transition-colors"
         >
-          ← Resolution Center
+          {t("host_dispute_back_center", "← Resolution Center")}
         </Link>
         <span className="text-zinc-300">/</span>
-        <span>Case Details</span>
+        <span>{t("host_dispute_case_ref", { ref: dispute.caseReference }, `Case #${dispute.caseReference}`)}</span>
         <span className="text-zinc-300">/</span>
         <span className="font-mono text-zinc-700 font-semibold">#{dispute.caseReference}</span>
       </nav>
@@ -342,11 +344,11 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
           {/* Status & Category Badges */}
           <div className="flex flex-wrap items-center gap-2.5">
             <span className="font-mono text-sm sm:text-base font-bold text-[#1F1F1F]">
-              Case #{dispute.caseReference}
+              {t("host_dispute_case_ref", { ref: dispute.caseReference }, `Case #${dispute.caseReference}`)}
             </span>
             {dispute.responseRequired && (
               <span className="rounded-full bg-amber-100 border border-amber-300 px-3.5 py-1 text-xs font-semibold text-amber-900 shadow-2xs">
-                Response Required
+                {t("host_res_center_badge_response_req", "Response Required")}
               </span>
             )}
             <span
@@ -356,13 +358,17 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                   : "bg-blue-100 text-blue-800 border border-blue-200"
               }`}
             >
-              {dispute.disputeWorkflowStatus.replaceAll("_", " ")}
+              {dispute.status === "RESOLVED"
+                ? t("host_res_center_status_resolved", "Resolved")
+                : dispute.disputeWorkflowStatus === "UNDER_REVIEW"
+                ? t("host_res_center_status_under_review", "Under Review")
+                : dispute.disputeWorkflowStatus.replaceAll("_", " ")}
             </span>
             <span className="rounded-full bg-zinc-100 border border-zinc-200 px-3 py-1 text-xs font-semibold uppercase text-zinc-700">
               {dispute.severity} Priority
             </span>
             <span className="rounded-full bg-zinc-100 border border-zinc-200 px-3 py-1 text-xs font-semibold text-zinc-700">
-              Reported by {dispute.reporterRole}
+              {t("host_res_center_reported_by", { role: dispute.reporterRole.toLowerCase() }, `Reported by ${dispute.reporterRole.toLowerCase()}`)}
             </span>
           </div>
 
@@ -374,8 +380,8 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
           {/* Subtitle / Metadata */}
           <p className="text-xs sm:text-sm text-[#727272] leading-relaxed">
             {listing?.title ? <span className="font-medium text-[#1F1F1F]">{listing.title}</span> : null}
-            {booking?.id ? ` · Booking #${booking.id.slice(0, 12)}` : ""}
-            {` · Opened on ${formatDate(dispute.createdAt)}`}
+            {booking?.id ? ` · ${t("host_res_center_booking_label", { id: booking.id.slice(0, 12) }, `Booking #${booking.id.slice(0, 12)}`)}` : ""}
+            {` · ${t("host_res_center_filed_label", { date: formatDate(dispute.createdAt) }, `Filed: ${formatDate(dispute.createdAt)}`)}`}
           </p>
         </div>
 
@@ -392,7 +398,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                 }}
                 className="inline-flex min-h-11 items-center gap-2 rounded-full bg-[#1F1F1F] px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-black shadow-xs cursor-pointer"
               >
-                <span>{dispute.responseRequired ? "Submit Response" : "Reply to Support"}</span>
+                <span>{dispute.responseRequired ? t("host_res_center_badge_response_req", "Submit Response") : t("host_dispute_send_reply", "Send Reply")}</span>
               </button>
 
               <button
@@ -400,7 +406,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                 onClick={() => setProposeModalOpen(true)}
                 className="inline-flex min-h-11 items-center gap-2 rounded-full border border-zinc-300 bg-white px-5 py-2.5 text-sm font-semibold text-[#1F1F1F] transition-all hover:border-[#1F1F1F] shadow-xs cursor-pointer"
               >
-                <span>Propose Resolution</span>
+                <span>{t("host_dispute_propose_title", "Propose Resolution")}</span>
               </button>
 
               {dispute.isReporter && (
@@ -409,7 +415,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                   onClick={() => setResolveOwnModalOpen(true)}
                   className="inline-flex min-h-11 items-center gap-2 rounded-full border border-emerald-300 bg-emerald-50 px-5 py-2.5 text-sm font-semibold text-emerald-800 transition-all hover:bg-emerald-100 shadow-xs cursor-pointer"
                 >
-                  <span>Resolve Complaint</span>
+                  <span>{t("host_dispute_resolve_own_title", "Resolve Complaint")}</span>
                 </button>
               )}
             </>
@@ -424,7 +430,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
             }}
             className="inline-flex min-h-11 items-center gap-2 rounded-full border border-zinc-300 bg-white px-5 py-2.5 text-sm font-semibold text-[#1F1F1F] transition-all hover:border-[#1F1F1F] shadow-xs cursor-pointer"
           >
-            <span>+ Add Note</span>
+            <span>{t("host_dispute_add_internal_note", "Add Internal Note")}</span>
           </button>
         </div>
       </header>
@@ -689,7 +695,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                       onChange={(e) => setReplyContent(e.target.value)}
                       rows={5}
                       maxLength={4000}
-                      placeholder="Type your official message or response details..."
+                      placeholder={t("host_dispute_reply_placeholder", "Type your official message or response details...")}
                       className="w-full rounded-2xl border border-zinc-300 p-4 text-sm sm:text-base outline-none focus:border-[#1F1F1F] min-h-[140px]"
                     />
 
@@ -1171,7 +1177,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                 onChange={(e) => setNoteContent(e.target.value)}
                 rows={5}
                 maxLength={4000}
-                placeholder="Write your private note or reminder here..."
+                placeholder={t("host_dispute_note_placeholder", "Write your private note or reminder here...")}
                 className="w-full rounded-2xl border border-zinc-300 p-4 text-sm sm:text-base outline-none focus:border-[#1F1F1F]"
               />
 
@@ -1181,14 +1187,14 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                   onClick={() => setNoteModalOpen(false)}
                   className="min-h-11 rounded-full border border-zinc-300 px-5 py-2.5 text-sm font-semibold text-[#1F1F1F] hover:bg-zinc-50 cursor-pointer"
                 >
-                  Cancel
+                  {t("host_dispute_btn_cancel", "Cancel")}
                 </button>
                 <button
                   type="submit"
                   disabled={isSavingNote || !noteContent.trim()}
                   className="min-h-11 rounded-full bg-[#1F1F1F] px-6 py-2.5 text-sm font-semibold text-white hover:bg-black disabled:opacity-50 cursor-pointer"
                 >
-                  {isSavingNote ? "Saving..." : editingNoteId ? "Update Note" : "Save Note"}
+                  {isSavingNote ? t("host_dispute_btn_submitting", "Saving...") : editingNoteId ? t("host_dispute_add_internal_note", "Update Note") : t("host_dispute_add_internal_note", "Save Note")}
                 </button>
               </div>
             </form>
@@ -1204,13 +1210,14 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
           <div className="w-full max-w-xl rounded-[20px] bg-white border border-zinc-200 p-6 sm:p-7 shadow-2xl space-y-5">
             <div className="flex items-center justify-between border-b border-zinc-100 pb-3.5">
               <div>
-                <h3 className="text-base sm:text-lg font-bold text-[#1F1F1F]">Propose Resolution Outcome</h3>
-                <p className="text-xs text-[#727272]">Submit a formal settlement proposal for Support review.</p>
+                <h3 className="text-base sm:text-lg font-bold text-[#1F1F1F]">{t("host_dispute_propose_title", "Propose Resolution Outcome")}</h3>
+                <p className="text-xs text-[#727272]">{t("host_dispute_propose_subtitle", "Submit a formal settlement proposal for Support review.")}</p>
               </div>
               <button
                 type="button"
                 onClick={() => setProposeModalOpen(false)}
                 className="font-bold text-zinc-500 hover:text-black p-1"
+                aria-label={t("host_dispute_btn_cancel", "Close")}
               >
                 ✕
               </button>
@@ -1219,40 +1226,40 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
             <form onSubmit={handleProposeResolution} className="space-y-4">
               <div>
                 <label className="block text-sm font-semibold text-[#1F1F1F] mb-1.5">
-                  Proposal Type
+                  {t("host_dispute_proposal_type", "Proposal Type")}
                 </label>
                 <select
                   value={proposalType}
                   onChange={(e) => setProposalType(e.target.value)}
                   className="w-full rounded-xl border border-zinc-300 p-3 text-sm bg-white outline-none focus:border-[#1F1F1F]"
                 >
-                  <option value="ISSUE_FIXED">Issue Fixed On-Site / Remedied</option>
-                  <option value="REPLACEMENT_OFFERED">Alternative Accommodation / Item Offered</option>
-                  <option value="EXPLANATION_PROVIDED">Explanation &amp; Apology Provided</option>
-                  <option value="REFUND_REQUESTED">Refund Requested for Guest Review</option>
-                  <option value="MUTUAL_SETTLEMENT">Mutual Settlement / Agreement</option>
-                  <option value="OTHER">Other Resolution</option>
+                  <option value="ISSUE_FIXED">{t("host_dispute_prop_type_fixed", "Issue Fixed On-Site / Remedied")}</option>
+                  <option value="REPLACEMENT_OFFERED">{t("host_dispute_prop_type_replacement", "Alternative Accommodation / Item Offered")}</option>
+                  <option value="EXPLANATION_PROVIDED">{t("host_dispute_prop_type_explanation", "Explanation & Apology Provided")}</option>
+                  <option value="REFUND_REQUESTED">{t("host_dispute_prop_type_refund", "Refund Requested for Guest Review")}</option>
+                  <option value="MUTUAL_SETTLEMENT">{t("host_dispute_prop_type_settlement", "Mutual Settlement / Agreement")}</option>
+                  <option value="OTHER">{t("host_dispute_prop_type_other", "Other Resolution")}</option>
                 </select>
               </div>
 
               <div>
                 <label className="block text-sm font-semibold text-[#1F1F1F] mb-1.5">
-                  Explanation &amp; Terms
+                  {t("host_dispute_prop_terms", "Explanation & Terms")}
                 </label>
                 <textarea
                   value={proposalExplanation}
                   onChange={(e) => setProposalExplanation(e.target.value)}
                   rows={4}
                   maxLength={4000}
-                  placeholder="Explain what was offered, completed, or agreed upon..."
+                  placeholder={t("host_dispute_prop_placeholder", "Explain what was offered, completed, or agreed upon...")}
                   className="w-full rounded-2xl border border-zinc-300 p-4 text-sm sm:text-base outline-none focus:border-[#1F1F1F]"
                 />
               </div>
 
               <div>
                 <label className="block rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-4 text-sm text-[#555] hover:border-zinc-400 cursor-pointer">
-                  <span className="font-semibold block text-[#1F1F1F]">Attach Supporting Evidence (Optional)</span>
-                  <span className="text-xs text-[#727272]">Photos, maintenance receipts, messages (up to 5 files)</span>
+                  <span className="font-semibold block text-[#1F1F1F]">{t("host_dispute_prop_evidence", "Attach Supporting Evidence (Optional)")}</span>
+                  <span className="text-xs text-[#727272]">{t("host_dispute_prop_evidence_hint", "Photos, maintenance receipts, messages (up to 5 files)")}</span>
                   <input
                     type="file"
                     multiple
@@ -1274,14 +1281,14 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                   onClick={() => setProposeModalOpen(false)}
                   className="min-h-11 rounded-full border border-zinc-300 px-5 py-2.5 text-sm font-semibold text-[#1F1F1F] hover:bg-zinc-50 cursor-pointer"
                 >
-                  Cancel
+                  {t("host_dispute_btn_cancel", "Cancel")}
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmittingProposal || !proposalExplanation.trim()}
                   className="min-h-11 rounded-full bg-[#1F1F1F] px-6 py-2.5 text-sm font-semibold text-white hover:bg-black disabled:opacity-50 cursor-pointer"
                 >
-                  {isSubmittingProposal ? "Submitting..." : "Submit Proposal"}
+                  {isSubmittingProposal ? t("host_dispute_btn_submitting", "Submitting...") : t("host_dispute_btn_submit_proposal", "Submit Proposal")}
                 </button>
               </div>
             </form>
@@ -1297,13 +1304,14 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
           <div className="w-full max-w-lg rounded-[20px] bg-white border border-zinc-200 p-6 sm:p-7 shadow-2xl space-y-5">
             <div className="flex items-center justify-between border-b border-zinc-100 pb-3.5">
               <div>
-                <h3 className="text-base sm:text-lg font-bold text-[#1F1F1F]">Resolve Your Dispute Complaint</h3>
-                <p className="text-xs text-[#727272]">As the reporting host, you can resolve or withdraw your case.</p>
+                <h3 className="text-base sm:text-lg font-bold text-[#1F1F1F]">{t("host_dispute_resolve_own_title", "Resolve Your Dispute Complaint")}</h3>
+                <p className="text-xs text-[#727272]">{t("host_dispute_resolve_own_subtitle", "As the reporting host, you can resolve or withdraw your case.")}</p>
               </div>
               <button
                 type="button"
                 onClick={() => setResolveOwnModalOpen(false)}
                 className="font-bold text-zinc-500 hover:text-black p-1"
+                aria-label={t("host_dispute_btn_cancel", "Close")}
               >
                 ✕
               </button>
@@ -1312,7 +1320,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
             <form onSubmit={handleResolveOwnComplaint} className="space-y-4">
               <div>
                 <label className="block text-sm font-semibold text-[#1F1F1F] mb-2">
-                  Action
+                  {t("host_dispute_action_label", "Action")}
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   <button
@@ -1324,7 +1332,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                         : "border-zinc-200 text-zinc-700 hover:bg-zinc-50"
                     }`}
                   >
-                    Mark Resolved
+                    {t("host_dispute_btn_mark_resolved", "Mark Resolved")}
                   </button>
                   <button
                     type="button"
@@ -1335,21 +1343,21 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                         : "border-zinc-200 text-zinc-700 hover:bg-zinc-50"
                     }`}
                   >
-                    Withdraw Case
+                    {t("host_dispute_btn_withdraw", "Withdraw Case")}
                   </button>
                 </div>
               </div>
 
               <div>
                 <label className="block text-sm font-semibold text-[#1F1F1F] mb-1.5">
-                  Resolution Notes (Optional)
+                  {t("host_dispute_notes_label", "Resolution Notes (Optional)")}
                 </label>
                 <textarea
                   value={resolveOwnNotes}
                   onChange={(e) => setResolveOwnNotes(e.target.value)}
                   rows={3}
                   maxLength={1000}
-                  placeholder="Reason for resolving or withdrawing..."
+                  placeholder={t("host_dispute_resolve_placeholder", "Reason for resolving or withdrawing...")}
                   className="w-full rounded-2xl border border-zinc-300 p-4 text-sm outline-none focus:border-[#1F1F1F]"
                 />
               </div>
@@ -1360,14 +1368,14 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                   onClick={() => setResolveOwnModalOpen(false)}
                   className="min-h-11 rounded-full border border-zinc-300 px-5 py-2.5 text-sm font-semibold text-[#1F1F1F] hover:bg-zinc-50 cursor-pointer"
                 >
-                  Cancel
+                  {t("host_dispute_btn_cancel", "Cancel")}
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmittingResolveOwn}
                   className="min-h-11 rounded-full bg-emerald-700 px-6 py-2.5 text-sm font-semibold text-white hover:bg-emerald-800 disabled:opacity-50 cursor-pointer"
                 >
-                  {isSubmittingResolveOwn ? "Updating..." : "Confirm"}
+                  {isSubmittingResolveOwn ? t("host_dispute_btn_updating", "Updating...") : t("host_dispute_btn_confirm", "Confirm")}
                 </button>
               </div>
             </form>

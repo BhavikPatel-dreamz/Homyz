@@ -96,7 +96,8 @@ export function HostKpiOverview({
         if (!res.ok) {
           const body = await res.json().catch(() => null);
           throw new Error(
-            body?.error?.message || "Failed to load dashboard metrics",
+            body?.error?.message ||
+              t("host_dash_could_not_load", "Could not load performance metrics"),
           );
         }
         return res.json();
@@ -114,7 +115,10 @@ export function HostKpiOverview({
       })
       .catch((err) => {
         if (requestId === requestIdRef.current && err.name !== "AbortError") {
-          setError(err.message || "Unable to refresh dashboard metrics");
+          setError(
+            err.message ||
+              t("host_dash_could_not_load", "Could not load performance metrics"),
+          );
         }
       })
       .finally(() => {
@@ -148,7 +152,7 @@ export function HostKpiOverview({
   if (!kpis && error) {
     return (
       <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-sm text-red-900">
-        <p className="font-medium">Could not load performance metrics</p>
+        <p className="font-medium">{t("host_dash_could_not_load", "Could not load performance metrics")}</p>
         <p className="mt-1 text-xs text-red-700">{error}</p>
       </div>
     );
@@ -179,13 +183,13 @@ export function HostKpiOverview({
 
   return (
     <section
-      aria-label="Host performance and earnings summary"
+      aria-label={t("host_dash_aria_summary", "Host performance and earnings summary")}
       className="mx-auto mb-10 w-full font-sans"
     >
       <header className="mb-7 flex flex-wrap items-end justify-between gap-4 border-b border-[#1F1F1F]/10 pb-5 sm:mb-8">
         <div>
           <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#727272]">
-            Hosting dashboard
+            {t("host_dash_subhead", "Hosting dashboard")}
           </p>
           <h1 className="text-3xl font-semibold tracking-[-0.035em] text-[#1F1F1F] sm:text-4xl">
             {t("host_dash_header_title", "Performance overview")}
@@ -197,9 +201,9 @@ export function HostKpiOverview({
         <div className="flex items-center gap-3">
           {propertyOptions.length > 1 && (
             <label className="text-xs font-medium text-[#727272]">
-              <span className="sr-only">Property</span>
+              <span className="sr-only">{t("host_dash_sr_property", "Property")}</span>
               <select
-                aria-label="Filter dashboard by property"
+                aria-label={t("host_dash_filter_property_aria", "Filter dashboard by property")}
                 value={selectedPropertyId ?? ""}
                 onChange={(event) => {
                   const nextPropertyId = event.target.value || null;
@@ -218,7 +222,7 @@ export function HostKpiOverview({
                 }}
                 className="h-10 min-w-40 rounded-full border border-[#1F1F1F] bg-white px-4 text-sm font-medium text-[#1F1F1F] outline-none transition-colors hover:bg-[#FCDF9C] focus:border-[#1F1F1F] focus:ring-2 focus:ring-[#FCDF9C]"
               >
-                <option value="">All properties</option>
+                <option value="">{t("host_dash_all_properties", "All properties")}</option>
                 {propertyOptions.map((listing) => (
                   <option key={listing.id} value={listing.id}>
                     {listing.title}
@@ -230,7 +234,7 @@ export function HostKpiOverview({
           {loading && (
             <span
               role="status"
-              aria-label="Updating property analytics"
+              aria-label={t("host_dash_updating_aria", "Updating property analytics")}
               className="size-3.5 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-700"
             />
           )}
@@ -242,13 +246,13 @@ export function HostKpiOverview({
           role="alert"
           className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-900"
         >
-          <span>Couldn’t refresh analytics for this property.</span>
+          <span>{t("host_dash_error_refresh", "Couldn’t refresh analytics for this property.")}</span>
           <button
             type="button"
             onClick={retryPropertyAnalytics}
             className="font-medium underline underline-offset-2"
           >
-            Retry
+            {t("host_dash_retry", "Retry")}
           </button>
         </div>
       )}
@@ -256,7 +260,7 @@ export function HostKpiOverview({
       <div className={primaryKpiGridClass}>
         <PrimaryKpi
           refreshing={isRefreshing}
-          label="Monthly earnings"
+          label={t("host_dash_kpi_monthly_earnings", "Monthly earnings")}
           period={kpis.monthlyEarnings.periodLabel}
           value={formatCurrency(
             kpis.monthlyEarnings.amountCents,
@@ -264,8 +268,8 @@ export function HostKpiOverview({
           )}
           detail={
             kpis.monthlyEarnings.changePercentage === null
-              ? "Completed stays this month"
-              : `${kpis.monthlyEarnings.changePercentage >= 0 ? "↑" : "↓"} ${Math.abs(kpis.monthlyEarnings.changePercentage)}% vs last month`
+              ? t("host_dash_kpi_completed_stays_month", "Completed stays this month")
+              : `${kpis.monthlyEarnings.changePercentage >= 0 ? "↑" : "↓"} ${Math.abs(kpis.monthlyEarnings.changePercentage)}% ${t("host_dash_kpi_vs_last_month", "vs last month")}`
           }
           detailTone={
             kpis.monthlyEarnings.changePercentage === null
@@ -277,34 +281,34 @@ export function HostKpiOverview({
         />
         <PrimaryKpi
           refreshing={isRefreshing}
-          label="Year-to-date earnings"
+          label={t("host_dash_kpi_ytd_earnings", "Year-to-date earnings")}
           period={kpis.ytdEarnings.periodLabel}
           value={formatCurrency(
             kpis.ytdEarnings.amountCents,
             kpis.ytdEarnings.currency,
           )}
-          detail="Completed stay payouts"
+          detail={t("host_dash_kpi_completed_stay_payouts", "Completed stay payouts")}
         />
         <PrimaryKpi
           refreshing={isRefreshing}
-          label="Upcoming payouts"
-          period={`${kpis.upcomingPayout.count} ${kpis.upcomingPayout.count === 1 ? "reservation" : "reservations"}`}
+          label={t("host_dash_kpi_upcoming_payouts", "Upcoming payouts")}
+          period={`${kpis.upcomingPayout.count} ${kpis.upcomingPayout.count === 1 ? t("host_dash_reservation_singular", "reservation") : t("host_dash_reservation_plural", "reservations")}`}
           value={formatCurrency(
             kpis.upcomingPayout.totalUpcomingAmountCents,
             kpis.upcomingPayout.currency,
           )}
           detail={
             kpis.upcomingPayout.nextPayoutAmountCents === null
-              ? "No eligible upcoming payout"
-              : `Next: ${formatCurrency(kpis.upcomingPayout.nextPayoutAmountCents, kpis.upcomingPayout.currency)}`
+              ? t("host_dash_no_upcoming_payout", "No eligible upcoming payout")
+              : `${t("host_dash_next_label", "Next:")} ${formatCurrency(kpis.upcomingPayout.nextPayoutAmountCents, kpis.upcomingPayout.currency)}`
           }
         />
         <PrimaryKpi
           refreshing={isRefreshing}
-          label="Occupancy"
+          label={t("host_dash_kpi_occupancy", "Occupancy")}
           period={kpis.occupancy.periodLabel}
           value={`${kpis.occupancy.ratePercentage}%`}
-          detail={`${kpis.occupancy.bookedNights} booked of ${kpis.occupancy.totalBookableNights} nights`}
+          detail={`${kpis.occupancy.bookedNights} ${t("host_dash_booked_of", "booked of")} ${kpis.occupancy.totalBookableNights} ${t("host_dash_nights", "nights")}`}
           progress={kpis.occupancy.ratePercentage}
         />
       </div>
@@ -312,52 +316,52 @@ export function HostKpiOverview({
       <div className={`mt-3 ${secondaryKpiGridClass}`}>
         <SecondaryKpi
           refreshing={isRefreshing}
-          label="Booked vs available"
+          label={t("host_dash_kpi_booked_vs_available", "Booked vs available")}
           value={`${kpis.occupancy.bookedNights} / ${kpis.occupancy.availableNights}`}
-          detail="Last 30 days"
+          detail={t("host_dash_kpi_last_30_days", "Last 30 days")}
         />
         <SecondaryKpi
           refreshing={isRefreshing}
-          label="Avg booking value"
+          label={t("host_dash_kpi_avg_booking_val", "Avg booking value")}
           value={formatCurrency(
             kpis.averageBookingValue.hostPayoutCents ?? 0,
             kpis.averageBookingValue.currency,
           )}
-          detail="Net payout per stay"
+          detail={t("host_dash_kpi_net_payout_stay", "Net payout per stay")}
         />
         <SecondaryKpi
           refreshing={isRefreshing}
-          label="Avg stay"
-          value={`${kpis.averageStayLength.nights} ${kpis.averageStayLength.nights === 1 ? "night" : "nights"}`}
-          detail="Completed stays"
+          label={t("host_dash_kpi_avg_stay", "Avg stay")}
+          value={`${kpis.averageStayLength.nights} ${kpis.averageStayLength.nights === 1 ? t("host_dash_night_singular", "night") : t("host_dash_night_plural", "nights")}`}
+          detail={t("host_dash_kpi_completed_stays", "Completed stays")}
         />
         <SecondaryKpi
           refreshing={isRefreshing}
-          label="Cancellation rate"
+          label={t("host_dash_kpi_cancel_rate", "Cancellation rate")}
           value={`${kpis.cancellationRate.overallPercentage}%`}
-          detail={`Host: ${kpis.cancellationRate.hostPercentage}%`}
+          detail={`${t("host_dash_kpi_host_prefix", "Host:")} ${kpis.cancellationRate.hostPercentage}%`}
         />
         <SecondaryKpi
           refreshing={isRefreshing}
-          label="Guest rating"
+          label={t("host_dash_kpi_guest_rating", "Guest rating")}
           value={
             kpis.averageRating.overallRating === null
               ? "—"
               : `★ ${kpis.averageRating.overallRating.toFixed(2)}`
           }
-          detail={`${kpis.averageRating.totalReviewsCount} ${kpis.averageRating.totalReviewsCount === 1 ? "review" : "reviews"}`}
+          detail={`${kpis.averageRating.totalReviewsCount} ${kpis.averageRating.totalReviewsCount === 1 ? t("host_dash_review_singular", "review") : t("host_dash_review_plural", "reviews")}`}
         />
       </div>
 
       <details className={`group mt-4 ${cardClass} px-4 py-3.5 sm:px-5`}>
         <summary className="flex cursor-pointer list-none items-start justify-between gap-3 text-base font-medium text-[#1F1F1F] sm:items-center sm:gap-4 [&::-webkit-details-marker]:hidden">
-          <span>Detailed earnings</span>
+          <span>{t("host_dash_detailed_earnings", "Detailed earnings")}</span>
           <span className="ml-auto flex shrink-0 items-center gap-2 text-xs font-normal text-[#727272] sm:gap-3">
             {isRefreshing ? (
               <span className="h-3 w-28 animate-pulse rounded bg-zinc-100" />
             ) : (
               <span className="hidden min-[400px]:inline">
-                Net payout{" "}
+                {t("host_dash_net_payout", "Net payout")}{" "}
                 {formatCurrency(
                   earnings.itemizedBreakdown.netHostPayoutCents,
                   earnings.currency,
@@ -377,24 +381,27 @@ export function HostKpiOverview({
               <dl className="grid grid-cols-2 gap-x-5 gap-y-3 text-sm sm:grid-cols-3 lg:grid-cols-6">
                 {[
                   [
-                    "Accommodation",
+                    t("host_dash_fee_accommodation", "Accommodation"),
                     earnings.itemizedBreakdown.accommodationSubtotalCents,
                   ],
                   [
-                    "Cleaning fees",
+                    t("host_dash_fee_cleaning", "Cleaning fees"),
                     earnings.itemizedBreakdown.cleaningFeeCents,
                   ],
                   [
-                    "Extra guest fees",
+                    t("host_dash_fee_extra_guest", "Extra guest fees"),
                     earnings.itemizedBreakdown.extraGuestFeeCents,
                   ],
-                  ["Pet fees", earnings.itemizedBreakdown.petFeeCents],
                   [
-                    "Host service fee",
+                    t("host_dash_fee_pet", "Pet fees"),
+                    earnings.itemizedBreakdown.petFeeCents,
+                  ],
+                  [
+                    t("host_dash_fee_service", "Host service fee"),
                     -earnings.itemizedBreakdown.hostServiceFeeCents,
                   ],
                   [
-                    "Host-collected taxes",
+                    t("host_dash_fee_taxes", "Host-collected taxes"),
                     earnings.itemizedBreakdown.taxesCollectedForHostCents,
                   ],
                 ].map(([label, amount]) => (
@@ -407,16 +414,16 @@ export function HostKpiOverview({
                 ))}
               </dl>
               <p className="mt-4 text-xs text-[#727272]">
-                Recorded refunds:{" "}
+                {t("host_dash_recorded_refunds", "Recorded refunds:")}{" "}
                 {formatCurrency(
                   earnings.refunds.amountCents,
                   earnings.currency,
                 )}{" "}
-                ({earnings.refunds.count}) · Payment-pending bookings excluded:{" "}
-                {earnings.bookingsExcludedForPaymentStatusCount} · Adjustments:{" "}
+                ({earnings.refunds.count}) · {t("host_dash_payment_pending_excluded", "Payment-pending bookings excluded:")}{" "}
+                {earnings.bookingsExcludedForPaymentStatusCount} · {t("host_dash_adjustments", "Adjustments:")}{" "}
                 {earnings.adjustments.status === "DATA_UNAVAILABLE"
-                  ? "unavailable"
-                  : "recorded"}
+                  ? t("host_dash_adj_unavailable", "unavailable")
+                  : t("host_dash_adj_recorded", "recorded")}
               </p>
             </>
           )}
@@ -433,10 +440,10 @@ export function HostKpiOverview({
               id="host-recommendations-heading"
               className="text-base font-medium text-[#1F1F1F]"
             >
-              Actionable insights
+              {t("host_dash_insights_title", "Actionable insights")}
             </h2>
             <p className="mt-1 text-sm text-[#727272]">
-              Based on recorded dashboard metrics. No projected revenue or market data is inferred.
+              {t("host_dash_insights_subtitle", "Based on recorded dashboard metrics. No projected revenue or market data is inferred.")}
             </p>
           </div>
           <div className="mt-4 grid gap-3 border-t border-zinc-100 pt-4 lg:grid-cols-2">
@@ -484,17 +491,17 @@ export function HostKpiOverview({
               id="upcoming-reservation-heading"
               className="text-base font-semibold text-[#1F1F1F]"
             >
-              Upcoming reservation
+              {t("host_dash_upcoming_res_title", "Upcoming reservation")}
             </h2>
             <p className="mt-1 text-sm text-[#727272]">
-              The next confirmed reservation in this scope.
+              {t("host_dash_upcoming_res_subtitle", "The next confirmed reservation in this scope.")}
             </p>
           </div>
           <Link
             href="/host/today"
             className="shrink-0 rounded-full bg-[#FCDF9C] px-3.5 py-2 text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-[#1F1F1F] hover:text-white"
           >
-            View reservations
+            {t("host_dash_view_reservations", "View reservations")}
           </Link>
         </div>
         {isRefreshing ? (
@@ -506,12 +513,12 @@ export function HostKpiOverview({
           />
         ) : (
           <p className="mt-4 border-t border-zinc-100 pt-4 text-sm text-[#727272]">
-            No upcoming reservations scheduled. Manage availability in the{" "}
+            {t("host_dash_no_upcoming_reservations", "No upcoming reservations scheduled. Manage availability in the")}{" "}
             <Link
               href="/host/calendar"
               className="font-medium underline underline-offset-2 text-[#1F1F1F]"
             >
-              Host Calendar
+              {t("host_dash_host_calendar_link", "Host Calendar")}
             </Link>
             .
           </p>
@@ -528,17 +535,17 @@ export function HostKpiOverview({
               id="guest-information-heading"
               className="text-lg font-semibold tracking-[-0.02em] text-[#1F1F1F]"
             >
-              Guest insights
+              {t("host_dash_guest_insights_title", "Guest insights")}
             </h2>
             <p className="mt-1 text-sm leading-5 text-[#727272]">
-              Completed stays over the last 6 months.
+              {t("host_dash_guest_insights_subtitle", "Completed stays over the last 6 months.")}
             </p>
           </div>
           {isRefreshing ? (
             <span className="h-3 w-24 animate-pulse rounded bg-zinc-100" />
           ) : (
             <span className="rounded-full bg-white/70 px-2.5 py-1 text-xs font-medium text-[#727272]">
-              {guestAnalytics.completedGuestStaysCount} completed stays
+              {guestAnalytics.completedGuestStaysCount} {t("host_dash_completed_stays_suffix", "completed stays")}
             </span>
           )}
         </div>
@@ -548,28 +555,28 @@ export function HostKpiOverview({
           <>
             <div className="mt-4 grid gap-3 border-t border-zinc-100 pt-4 sm:grid-cols-3">
               <MetricCell
-                label="Unique guests"
+                label={t("host_dash_unique_guests", "Unique guests")}
                 value={String(guestAnalytics.uniqueGuestsCount)}
               />
               <MetricCell
-                label="Returning guests"
+                label={t("host_dash_returning_guests", "Returning guests")}
                 value={String(guestAnalytics.returningGuestsCount)}
-                detail={`${guestAnalytics.returningGuestsPercentage}% of guests`}
+                detail={`${guestAnalytics.returningGuestsPercentage}% ${t("host_dash_of_guests", "of guests")}`}
               />
               <MetricCell
-                label="Average rating"
+                label={t("host_dash_avg_rating", "Average rating")}
                 value={
                   reviews.overallRating === null
                     ? "—"
                     : `★ ${reviews.overallRating.toFixed(2)}`
                 }
-                detail={`${reviews.totalReviewsCount} published reviews`}
+                detail={`${reviews.totalReviewsCount} ${t("host_dash_published_reviews", "published reviews")}`}
               />
             </div>
             {guestAnalytics.guestOrigins.length > 0 ? (
               <div className="mt-4 border-t border-zinc-100 pt-4">
                 <p className="text-base font-medium text-[#1f1f1f]">
-                  Top guest origins
+                  {t("host_dash_top_origins", "Top guest origins")}
                 </p>
                 <div className="mt-3 space-y-2.5">
                   {guestAnalytics.guestOrigins.slice(0, 5).map((origin) => (
@@ -584,7 +591,7 @@ export function HostKpiOverview({
                               ? `${origin.city}, ${origin.country}`
                               : origin.country}
                           </span>
-                          <span>{origin.stayCount} stays</span>
+                          <span>{origin.stayCount} {t("host_dash_stays_count", "stays")}</span>
                         </div>
                         <div className="h-1.5 overflow-hidden rounded-full bg-zinc-100">
                           <div
@@ -603,14 +610,13 @@ export function HostKpiOverview({
                 </div>
                 {guestAnalytics.staysWithoutRecordedOriginCount > 0 && (
                   <p className="mt-3 text-xs text-[#727272]">
-                    {guestAnalytics.staysWithoutRecordedOriginCount} stays
-                    without a recorded origin are omitted.
+                    {guestAnalytics.staysWithoutRecordedOriginCount} {t("host_dash_stays_omitted", "stays without a recorded origin are omitted.")}
                   </p>
                 )}
               </div>
             ) : (
               <p className="mt-4 border-t border-[#1F1F1F]/10 pt-4 text-sm leading-5 text-[#727272]">
-                No completed-stay origin data is available yet.
+                {t("host_dash_no_origin_data", "No completed-stay origin data is available yet.")}
               </p>
             )}
           </>
@@ -627,10 +633,10 @@ export function HostKpiOverview({
               id="reviews-heading"
               className="text-lg font-semibold tracking-[-0.02em] text-[#1F1F1F]"
             >
-              Reviews and ratings
+              {t("host_dash_reviews_title", "Reviews and ratings")}
             </h2>
             <p className="mt-1 text-sm leading-5 text-[#727272]">
-              Published reviews across the selected properties.
+              {t("host_dash_reviews_subtitle", "Published reviews across the selected properties.")}
             </p>
           </div>
           {isRefreshing ? (
@@ -647,7 +653,7 @@ export function HostKpiOverview({
               </p>
               <p className="mt-0.5 text-xs font-medium text-[#727272]">
                 {reviews.totalReviewsCount}{" "}
-                {reviews.totalReviewsCount === 1 ? "review" : "reviews"}
+                {reviews.totalReviewsCount === 1 ? t("host_dash_review_singular", "review") : t("host_dash_review_plural", "reviews")}
               </p>
             </div>
           )}
@@ -659,23 +665,23 @@ export function HostKpiOverview({
             <div className="mt-5 grid gap-4 border-t border-[#1F1F1F]/10 pt-5 lg:grid-cols-[minmax(0,1.2fr)_minmax(18rem,0.8fr)]">
               <div className="rounded-[10px] bg-white/45 p-4 sm:p-5">
                   <p className="text-base font-medium text-[#1f1f1f]">
-                  Review trend
+                  {t("host_dash_review_trend", "Review trend")}
                 </p>
                 <ReviewTrendChart trend={reviews.trend} />
               </div>
               {reviews.totalReviewsCount > 0 ? (
                 <div className="rounded-[10px] bg-white/45 p-4 sm:p-5">
                     <p className="text-base font-medium text-[#1f1f1f]">
-                    Rating details
+                    {t("host_dash_rating_details", "Rating details")}
                   </p>
                   <div className="mt-4 space-y-3">
                     {[
-                      ["Cleanliness", reviews.categoryRatings.cleanliness],
-                      ["Accuracy", reviews.categoryRatings.accuracy],
-                      ["Check-in", reviews.categoryRatings.checkIn],
-                      ["Communication", reviews.categoryRatings.communication],
-                      ["Location", reviews.categoryRatings.location],
-                      ["Value", reviews.categoryRatings.value],
+                      [t("host_dash_cat_cleanliness", "Cleanliness"), reviews.categoryRatings.cleanliness],
+                      [t("host_dash_cat_accuracy", "Accuracy"), reviews.categoryRatings.accuracy],
+                      [t("host_dash_cat_check_in", "Check-in"), reviews.categoryRatings.checkIn],
+                      [t("host_dash_cat_communication", "Communication"), reviews.categoryRatings.communication],
+                      [t("host_dash_cat_location", "Location"), reviews.categoryRatings.location],
+                      [t("host_dash_cat_value", "Value"), reviews.categoryRatings.value],
                     ].map(([label, rating]) => (
                       <RatingBar
                         key={String(label)}
@@ -687,7 +693,7 @@ export function HostKpiOverview({
                 </div>
               ) : (
                 <div className="flex min-h-[250px] items-center rounded-[10px] bg-white/45 px-5 text-sm text-[#727272]">
-                  No published reviews yet.
+                  {t("host_dash_no_published_reviews", "No published reviews yet.")}
                 </div>
               )}
             </div>
@@ -695,7 +701,7 @@ export function HostKpiOverview({
               reviews.recentReviews.length > 0 && (
                 <div className="mt-5 border-t border-[#1F1F1F]/10 pt-4">
                   <p className="text-base font-medium text-[#1f1f1f]">
-                    Recent reviews
+                    {t("host_dash_recent_reviews", "Recent reviews")}
                   </p>
                   <div className="mt-3 grid gap-3 lg:grid-cols-3">
                     {reviews.recentReviews.slice(0, 3).map((review) => (
@@ -735,10 +741,10 @@ export function HostKpiOverview({
             id="host-status-heading"
             className="text-lg font-semibold tracking-[-0.02em] text-[#1F1F1F]"
           >
-            Host & listing status
+            {t("host_dash_status_title", "Host & listing status")}
           </h2>
           <p className="mt-1 text-sm leading-5 text-[#727272]">
-            Official badges and listing readiness from stored evaluations.
+            {t("host_dash_status_subtitle", "Official badges and listing readiness from stored evaluations.")}
           </p>
         </div>
         {isRefreshing ? (
@@ -746,49 +752,49 @@ export function HostKpiOverview({
         ) : (
           <div className="mt-5 grid gap-3 border-t border-[#1F1F1F]/10 pt-5 lg:grid-cols-3">
             <StatusCard
-              title="Superhost"
+              title={t("host_dash_superhost_title", "Superhost")}
               status={
                 superhostEvaluation.officialStatus
-                  ? "Official Superhost"
+                  ? t("host_dash_official_superhost", "Official Superhost")
                   : superhostEvaluation.currentProgress.eligibleNow
-                    ? "Eligible at next evaluation"
-                    : "Not yet eligible"
+                    ? t("host_dash_eligible_next_eval", "Eligible at next evaluation")
+                    : t("host_dash_not_yet_eligible", "Not yet eligible")
               }
               tone={superhostEvaluation.officialStatus ? "positive" : "neutral"}
               details={[
-                `${superhostEvaluation.currentProgress.completedReservationsCount} completed reservations`,
+                `${superhostEvaluation.currentProgress.completedReservationsCount} ${t("host_dash_completed_res_suffix", "completed reservations")}`,
                 superhostEvaluation.currentProgress.overallRating === null
-                  ? "No published rating"
-                  : `★ ${superhostEvaluation.currentProgress.overallRating.toFixed(2)} rating`,
-                `Next evaluation: ${new Date(superhostEvaluation.nextEvaluationAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}`,
+                  ? t("host_dash_no_published_rating", "No published rating")
+                  : `★ ${superhostEvaluation.currentProgress.overallRating.toFixed(2)} ${t("host_dash_rating_suffix", "rating")}`,
+                `${t("host_dash_next_eval_label", "Next evaluation:")} ${new Date(superhostEvaluation.nextEvaluationAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}`,
               ]}
             />
             <StatusCard
-              title="Guest Favorite"
+              title={t("host_dash_guest_favorite_title", "Guest Favorite")}
               status={
                 selectedFavorite?.officialStatus
-                  ? "Guest Favorite"
+                  ? t("host_dash_guest_favorite_title", "Guest Favorite")
                   : selectedFavorite?.eligibleNow
-                    ? "Eligible at next daily evaluation"
-                    : "Not yet eligible"
+                    ? t("host_dash_eligible_next_daily_eval", "Eligible at next daily evaluation")
+                    : t("host_dash_not_yet_eligible", "Not yet eligible")
               }
               tone={selectedFavorite?.officialStatus ? "positive" : "neutral"}
               details={[
-                `${officialGuestFavorites} of ${guestFavoriteSummary.length} listings officially awarded`,
+                `${officialGuestFavorites} of ${guestFavoriteSummary.length} ${t("host_dash_listings_awarded", "of listings officially awarded")}`,
                 selectedFavorite
-                  ? `${selectedFavorite.title} · ${selectedFavorite.reviewsCount} reviews`
-                  : "No listing evaluation available",
+                  ? `${selectedFavorite.title} · ${selectedFavorite.reviewsCount} ${selectedFavorite.reviewsCount === 1 ? t("host_dash_review_singular", "review") : t("host_dash_review_plural", "reviews")}`
+                  : t("host_dash_no_listing_eval", "No listing evaluation available"),
                 selectedFavorite?.overallRating === null || !selectedFavorite
-                  ? "No published rating"
-                  : `★ ${selectedFavorite.overallRating.toFixed(2)} rating`,
+                  ? t("host_dash_no_published_rating", "No published rating")
+                  : `★ ${selectedFavorite.overallRating.toFixed(2)} ${t("host_dash_rating_suffix", "rating")}`,
               ]}
             />
             <StatusCard
-              title="Listing health"
+              title={t("host_dash_listing_health_title", "Listing health")}
               status={
                 selectedHealthListing
-                  ? `${selectedHealthListing.completedChecks}/${selectedHealthListing.totalChecks} details complete`
-                  : "No listings"
+                  ? `${selectedHealthListing.completedChecks}/${selectedHealthListing.totalChecks} ${t("host_dash_details_complete", "details complete")}`
+                  : t("host_dash_no_listings", "No listings")
               }
               tone={
                 selectedHealthListing &&
@@ -798,12 +804,12 @@ export function HostKpiOverview({
               }
               details={[
                 selectedHealthListing
-                  ? `${selectedHealthListing.title} · ${selectedHealthListing.photoCount} photos · ${selectedHealthListing.amenityCount} amenities`
+                  ? `${selectedHealthListing.title} · ${selectedHealthListing.photoCount} ${t("host_dash_photos_suffix", "photos")} · ${selectedHealthListing.amenityCount} ${t("host_dash_amenities_suffix", "amenities")}`
                   : "",
                 selectedHealthListing?.missingFields.length
-                  ? `Needs: ${selectedHealthListing.missingFields.join(", ")}`
-                  : "All stored checklist details are present.",
-                `Response time: ${formatResponseTime(listingHealth.averageResponseTimeMinutes, t)}`,
+                  ? `${t("host_dash_needs_prefix", "Needs:")} ${selectedHealthListing.missingFields.join(", ")}`
+                  : t("host_dash_checklist_complete", "All stored checklist details are present."),
+                `${t("host_dash_response_time_label", "Response time:")} ${formatResponseTime(listingHealth.averageResponseTimeMinutes, t)}`,
               ]}
             />
           </div>
@@ -1084,6 +1090,7 @@ function UpcomingReservation({
   >;
   onSelectBookingId?: (bookingId: string) => void;
 }) {
+  const { t } = useLanguage();
   return (
     <div className="mt-4 grid gap-4 border-t border-zinc-100 pt-4 md:grid-cols-[minmax(0,1fr)_auto]">
       <div className="flex min-w-0 items-start gap-3">
@@ -1109,10 +1116,16 @@ function UpcomingReservation({
             </span>
           </p>
           <p className="mt-1 text-xs text-[#727272]">
-            {reservation.startDate} at {reservation.checkInTime} ·{" "}
-            {reservation.endDate} · {reservation.nights}{" "}
-            {reservation.nights === 1 ? "night" : "nights"} ·{" "}
-            {reservation.guests} {reservation.guests === 1 ? "guest" : "guests"}
+            {reservation.startDate} {t("host_dash_at_time", "at")}{" "}
+            {reservation.checkInTime} · {reservation.endDate} ·{" "}
+            {reservation.nights}{" "}
+            {reservation.nights === 1
+              ? t("host_dash_night_singular", "night")
+              : t("host_dash_night_plural", "nights")}{" "}
+            · {reservation.guests}{" "}
+            {reservation.guests === 1
+              ? t("host_dash_guest_singular", "guest")
+              : t("host_dash_guest_plural", "guests")}
           </p>
         </div>
       </div>
@@ -1120,8 +1133,8 @@ function UpcomingReservation({
         <div>
           <p className="text-sm font-medium text-[#727272]">
             {reservation.isPayoutEligible
-              ? "Eligible payout"
-              : "Payment status"}
+              ? t("host_dash_eligible_payout", "Eligible payout")
+              : t("host_dash_payment_status", "Payment status")}
           </p>
           <p className="mt-1 text-sm font-medium text-[#1F1F1F]">
             {reservation.isPayoutEligible
@@ -1129,7 +1142,7 @@ function UpcomingReservation({
                   reservation.hostPayoutCents,
                   reservation.currency,
                 )
-              : "Pending payment"}
+              : t("host_dash_pending_payment", "Pending payment")}
           </p>
         </div>
         {onSelectBookingId && (
@@ -1138,7 +1151,7 @@ function UpcomingReservation({
             onClick={() => onSelectBookingId(reservation.id)}
             className="rounded-lg border border-zinc-300 px-3 py-2 text-xs font-medium text-[#1F1F1F] transition hover:border-zinc-500"
           >
-            Details
+            {t("host_dash_btn_details", "Details")}
           </button>
         )}
       </div>
@@ -1161,6 +1174,7 @@ function ReviewTrendChart({
 }: {
   trend: HostDashboardData["reviews"]["trend"];
 }) {
+  const { t } = useLanguage();
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const hasReviews = trend.some((point) => point.reviewCount > 0);
   const chartWidth = 560;
@@ -1172,7 +1186,7 @@ function ReviewTrendChart({
   if (!hasReviews) {
     return (
       <div className="mt-3 flex h-[250px] items-center justify-center rounded-xl bg-zinc-50 px-5 text-center text-sm text-[#727272]">
-        No reviews in this period
+        {t("host_dash_no_reviews_in_period", "No reviews in this period")}
       </div>
     );
   }
@@ -1198,13 +1212,16 @@ function ReviewTrendChart({
   return (
     <div
       className="relative mt-3 h-[250px]"
-      aria-label="Monthly published review count for the last 12 months"
+      aria-label={t(
+        "host_dash_aria_review_chart",
+        "Monthly published review count for the last 12 months",
+      )}
     >
       <svg
         viewBox={`0 0 ${chartWidth} ${chartHeight}`}
         className="size-full overflow-visible"
         role="img"
-        aria-label="Review count trend"
+        aria-label={t("host_dash_aria_review_trend", "Review count trend")}
       >
         {yTicks.map((tick) => (
           <g key={tick}>
@@ -1253,7 +1270,11 @@ function ReviewTrendChart({
               className="cursor-pointer"
               role="button"
               tabIndex={0}
-              aria-label={`${formatTrendMonth(point.month, true)}: ${point.reviewCount} ${point.reviewCount === 1 ? "review" : "reviews"}`}
+              aria-label={`${formatTrendMonth(point.month, true)}: ${point.reviewCount} ${
+                point.reviewCount === 1
+                  ? t("host_dash_review_singular", "review")
+                  : t("host_dash_review_plural", "reviews")
+              }`}
               onMouseEnter={() => setHoveredIndex(index)}
               onMouseLeave={() => setHoveredIndex(null)}
               onFocus={() => setHoveredIndex(index)}
@@ -1289,7 +1310,9 @@ function ReviewTrendChart({
           </p>
           <p className="mt-0.5 text-zinc-300">
             {hoveredPoint.reviewCount}{" "}
-            {hoveredPoint.reviewCount === 1 ? "review" : "reviews"}
+            {hoveredPoint.reviewCount === 1
+              ? t("host_dash_review_singular", "review")
+              : t("host_dash_review_plural", "reviews")}
           </p>
         </div>
       )}
@@ -1363,9 +1386,13 @@ function StatusCard({
 
 /** Route and in-component loading fallback, matched to the dashboard's visual hierarchy. */
 export function HostDashboardOverviewSkeleton() {
+  const { t } = useLanguage();
   return (
     <section
-      aria-label="Loading host performance dashboard"
+      aria-label={t(
+        "host_dash_aria_loading",
+        "Loading host performance dashboard",
+      )}
       aria-busy="true"
       className="mx-auto mb-10 w-full animate-pulse font-sans"
     >

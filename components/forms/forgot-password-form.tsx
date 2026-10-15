@@ -21,14 +21,14 @@ export function ForgotPasswordForm() {
     const email = emailVal.trim().toLowerCase();
 
     if (!email) {
-      setError("Please enter your email address.");
+      setError(t("auth_error_enter_email", "Please enter your email address."));
       return;
     }
 
     startTransition(async () => {
       const res = await forgotPasswordAction({ email });
       if (!res.ok) {
-        setError(res.error || "Failed to send reset link. Please check your email.");
+        setError(res.error || t("auth_error_send_reset_failed", "Failed to send reset link. Please check your email."));
         return;
       }
       setDone(true);
@@ -95,7 +95,7 @@ export function ForgotPasswordForm() {
         disabled={pending || !emailVal.trim()}
         fullWidth
         isLoading={pending}
-        loadingText="Sending Reset Link…"
+        loadingText={t("auth_sending_reset_link", "Sending Reset Link…")}
         className="auth-action-button mt-2 h-12 min-h-12 py-0 sm:h-[57px] sm:min-h-[57px]"
       >
         {t("auth_send_reset_link")}

@@ -1423,7 +1423,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                 <div key={desktopPanel} className="animate-in fade-in slide-in-from-top-1 duration-200">
                   {desktopPanel === "where" ? (
                     <>
-                      <p className="mb-2 px-1 text-[12px] font-normal text-[#727272]">Sugested destinations</p>
+                      <p className="mb-2 px-1 text-[12px] font-normal text-[#727272]">{t("home_search_suggested_destinations", "Suggested destinations")}</p>
                       {destinationSuggestions}
                     </>
                   ) : desktopPanel === "who" ? (
