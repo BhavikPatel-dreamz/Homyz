@@ -572,20 +572,36 @@ export function ListingHeaderSearch() {
                 <label className="block text-[11px] font-bold uppercase tracking-wider text-zinc-700 cursor-pointer">
                   {t("header_search_where")}
                 </label>
-                <input
-                  ref={searchInputRef}
-                  type="text"
-                  placeholder={t("header_search_dest_placeholder")}
-                  value={destination}
-                  onChange={(e) => setDestination(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      executeSearch();
-                    }
-                  }}
-                  className="w-full truncate bg-transparent text-sm font-semibold text-[#1F1F1F] placeholder:text-[#727272] outline-none"
-                />
+                <div className="flex items-center gap-1.5 w-full">
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    placeholder={t("header_search_dest_placeholder")}
+                    value={destination}
+                    onChange={(e) => setDestination(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        executeSearch();
+                      }
+                    }}
+                    className="w-full truncate bg-transparent text-sm font-semibold text-[#1F1F1F] placeholder:text-[#727272] outline-none"
+                  />
+                  {destination && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDestination("");
+                        setSelectedLocation(null);
+                      }}
+                      className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-200/80 hover:bg-zinc-300 text-zinc-600 hover:text-[#1F1F1F] text-xs transition-colors cursor-pointer"
+                      aria-label={t("home_clear_search", "Clear search")}
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div className="h-8 w-px bg-zinc-200" />

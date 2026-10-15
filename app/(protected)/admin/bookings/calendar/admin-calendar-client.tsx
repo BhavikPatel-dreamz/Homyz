@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { useCurrency } from "@/lib/currency-context";
+import { useLanguage } from "@/lib/i18n/language-context";
 import {
   AdminAllPropertiesCalendar,
   type AdminAllPropertiesCalendarData,
@@ -121,6 +122,7 @@ export function AdminCalendarClient({
   const router = useRouter();
   const searchParams = useSearchParams();
   const { formatPrice } = useCurrency();
+  const { t, language } = useLanguage();
 
   const now = useMemo(() => new Date(), []);
   const defaultMonthKey = useMemo(() => {
@@ -536,9 +538,10 @@ export function AdminCalendarClient({
               type="button"
               onClick={() => navigateMonth("prev")}
               className="p-1.5 rounded-lg hover:bg-[var(--surface-secondary)] text-[var(--muted-foreground)] hover:text-foreground transition-colors"
-              title="Previous Month"
+              title={t("host_calendar_prev_month", "Previous month")}
+              aria-label={t("host_calendar_prev_month", "Previous month")}
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
               </svg>
             </button>
@@ -548,23 +551,24 @@ export function AdminCalendarClient({
               onClick={() => navigateMonth("today")}
               className="px-3 py-1 text-xs font-semibold hover:bg-[var(--surface-secondary)] rounded-lg transition-colors text-foreground"
             >
-              Today
+              {t("host_calendar_today", "Today")}
             </button>
 
             <button
               type="button"
               onClick={() => navigateMonth("next")}
               className="p-1.5 rounded-lg hover:bg-[var(--surface-secondary)] text-[var(--muted-foreground)] hover:text-foreground transition-colors"
-              title="Next Month"
+              title={t("host_calendar_next_month", "Next month")}
+              aria-label={t("host_calendar_next_month", "Next month")}
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 rtl:rotate-180" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
               </svg>
             </button>
           </div>
 
           <h3 className="text-base sm:text-lg font-bold tracking-tight text-foreground font-mono">
-            {MONTH_NAMES[month - 1]} {year}
+            {new Date(year, month - 1, 1).toLocaleDateString(language || "en", { month: "long" })} {year}
           </h3>
         </div>
 
@@ -630,7 +634,7 @@ export function AdminCalendarClient({
                   : "text-[var(--muted-foreground)] hover:text-foreground"
               }`}
             >
-              Month
+              {t("host_calendar_view_month", "Month")}
             </button>
             <button
               type="button"
@@ -641,7 +645,7 @@ export function AdminCalendarClient({
                   : "text-[var(--muted-foreground)] hover:text-foreground"
               }`}
             >
-              Year
+              {t("host_calendar_view_year", "Year")}
             </button>
           </div>
         </div>
@@ -755,8 +759,9 @@ export function AdminCalendarClient({
       ) : (
         /* Year Overview: 12 Mini Calendars */
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {MONTH_NAMES.map((name, idx) => {
+          {Array.from({ length: 12 }, (_, idx) => {
             const m = idx + 1;
+            const name = new Date(year, idx, 1).toLocaleDateString(language || "en", { month: "long" });
             const daysCount = new Date(year, m, 0).getDate();
             const firstDay = new Date(year, m - 1, 1).getDay();
 
@@ -1093,8 +1098,18 @@ export function AdminCalendarClient({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search by title, city, host name, or ID..."
-                className="w-full pl-9 pr-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-xs text-foreground focus:outline-hidden focus:ring-2 focus:ring-[var(--accent)]"
+                className="w-full pl-9 pr-8 py-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] text-xs text-foreground focus:outline-hidden focus:ring-2 focus:ring-[var(--accent)]"
               />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-foreground text-xs"
+                  aria-label="Clear search"
+                >
+                  ✕
+                </button>
+              )}
             </div>
 
             {/* Listings List */}

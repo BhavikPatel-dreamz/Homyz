@@ -459,17 +459,29 @@ export function AdminAboutHostView({
             {canEdit && (
               <div className="relative">
                 <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={languageSearch}
-                    onChange={(e) => {
-                      setLanguageSearch(e.target.value);
-                      setIsLanguageDropdownOpen(true);
-                    }}
-                    onFocus={() => setIsLanguageDropdownOpen(true)}
-                    placeholder="Search and add languages (e.g. English, Arabic, Spanish)..."
-                    className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2 text-xs text-[#1F1F1F] dark:text-zinc-100 placeholder:text-[#727272] dark:placeholder:text-[#727272] focus:border-zinc-900 dark:focus:border-zinc-100 focus:outline-hidden focus:ring-1 focus:ring-zinc-900 dark:focus:ring-zinc-100"
-                  />
+                  <div className="relative w-full">
+                    <input
+                      type="text"
+                      value={languageSearch}
+                      onChange={(e) => {
+                        setLanguageSearch(e.target.value);
+                        setIsLanguageDropdownOpen(true);
+                      }}
+                      onFocus={() => setIsLanguageDropdownOpen(true)}
+                      placeholder="Search and add languages (e.g. English, Arabic, Spanish)..."
+                      className="w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 pl-3.5 pr-8 py-2 text-xs text-[#1F1F1F] dark:text-zinc-100 placeholder:text-[#727272] dark:placeholder:text-[#727272] focus:border-zinc-900 dark:focus:border-zinc-100 focus:outline-hidden focus:ring-1 focus:ring-zinc-900 dark:focus:ring-zinc-100"
+                    />
+                    {languageSearch && (
+                      <button
+                        type="button"
+                        onClick={() => setLanguageSearch("")}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center justify-center text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer text-xs"
+                        aria-label="Clear search"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
                   {isLanguageDropdownOpen && (
                     <button
                       type="button"

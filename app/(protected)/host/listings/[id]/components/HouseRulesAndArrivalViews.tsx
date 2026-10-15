@@ -1808,13 +1808,25 @@ function LanguagesView({
             </button>
           </div>
 
-          <input
-            type="text"
-            value={searchLang}
-            onChange={(e) => setSearchLang(e.target.value)}
-            placeholder={t("host_search_language_placeholder") || "Search language..."}
-            className="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-3 text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 placeholder:text-[#727272] dark:placeholder:text-[#727272] outline-none focus:border-zinc-400 dark:focus:border-zinc-500 shadow-2xs"
-          />
+          <div className="relative">
+            <input
+              type="text"
+              value={searchLang}
+              onChange={(e) => setSearchLang(e.target.value)}
+              placeholder={t("host_search_language_placeholder") || "Search language..."}
+              className="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-3 pr-9 text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 placeholder:text-[#727272] dark:placeholder:text-[#727272] outline-none focus:border-zinc-400 dark:focus:border-zinc-500 shadow-2xs"
+            />
+            {searchLang && (
+              <button
+                type="button"
+                onClick={() => setSearchLang("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer text-xs"
+                aria-label="Clear search"
+              >
+                ✕
+              </button>
+            )}
+          </div>
 
           <div className="modal-content-scrollbar max-h-80 overflow-y-auto space-y-1 pr-1" role="listbox" aria-multiselectable="true">
             {filteredLanguages.map((lang) => {

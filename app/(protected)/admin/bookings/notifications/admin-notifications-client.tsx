@@ -269,7 +269,7 @@ export function AdminNotificationsClient({
             placeholder="Search by ID, booking, user..."
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            className="w-full h-9 pl-9 pr-3 text-xs bg-[var(--surface)] border border-[var(--border)] rounded-xl text-foreground placeholder-[var(--muted-foreground)] focus:outline-hidden focus:ring-2 focus:ring-[var(--accent)]"
+            className="w-full h-9 pl-9 pr-8 text-xs bg-[var(--surface)] border border-[var(--border)] rounded-xl text-foreground placeholder-[var(--muted-foreground)] focus:outline-hidden focus:ring-2 focus:ring-[var(--accent)]"
           />
           <svg
             className="w-4 h-4 absolute left-3 top-2.5 text-[var(--muted-foreground)]"
@@ -280,6 +280,16 @@ export function AdminNotificationsClient({
           >
             <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
+          {searchInput && (
+            <button
+              type="button"
+              onClick={() => setSearchInput("")}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-foreground text-xs"
+              aria-label="Clear search"
+            >
+              ✕
+            </button>
+          )}
         </div>
       </div>
 

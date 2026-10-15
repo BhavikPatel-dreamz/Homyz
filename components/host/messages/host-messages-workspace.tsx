@@ -996,8 +996,18 @@ export function HostMessagesWorkspace({
                       value={search}
                       onChange={(e) => setSearch(e.target.value)}
                       placeholder={t("messages_search_placeholder", "Search all messages")}
-                      className="h-10 w-full rounded-full border border-[#717171] bg-white pl-10 pr-3 text-sm text-[#1F1F1F] placeholder:text-[#717171] transition-shadow duration-150 focus:outline-none focus:ring-2 focus:ring-[#222]/15"
+                      className="h-10 w-full rounded-full border border-[#717171] bg-white pl-10 pr-9 text-sm text-[#1F1F1F] placeholder:text-[#717171] transition-shadow duration-150 focus:outline-none focus:ring-2 focus:ring-[#222]/15"
                     />
+                    {search && (
+                      <button
+                        type="button"
+                        onClick={() => setSearch("")}
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center justify-center text-zinc-400 hover:text-zinc-600 cursor-pointer text-xs"
+                        aria-label={t("home_clear_search", "Clear search")}
+                      >
+                        ✕
+                      </button>
+                    )}
                   </div>
                   <button
                     type="button"

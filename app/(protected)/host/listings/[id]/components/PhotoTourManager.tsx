@@ -467,12 +467,24 @@ export function PhotoTourManager({
               </div>
               <button type="button" onClick={() => setIsRoomPickerOpen(false)} className="rounded-full bg-white hover:bg-[#1f1f1f] border border-[#1f1f1f] hover:border-[#1f1f1f] dark:border-zinc-700 px-2.5 py-1 text-base font-medium text-[#1f1f1f] hover:text-white dark:text-zinc-300 dark:hover:border-zinc-600 transition duration-300">{t("host_close", "Close")}</button>
             </div>
-            <input
-              value={roomSearch}
-              onChange={(event) => setRoomSearch(event.target.value)}
-              placeholder={t("host_search_rooms_placeholder", "Search rooms and spaces")}
-              className="mb-4 w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 px-3 py-2.5 text-sm text-[#1F1F1F] dark:text-zinc-100 placeholder:text-[#727272] dark:placeholder:text-[#727272] outline-none transition focus:border-zinc-900 dark:focus:border-zinc-500 focus:bg-white dark:focus:bg-zinc-800 min-h-[56px] min-h-[45px]"
-            />
+            <div className="relative mb-4">
+              <input
+                value={roomSearch}
+                onChange={(event) => setRoomSearch(event.target.value)}
+                placeholder={t("host_search_rooms_placeholder", "Search rooms and spaces")}
+                className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 pl-3 pr-9 py-2.5 text-sm text-[#1F1F1F] dark:text-zinc-100 placeholder:text-[#727272] dark:placeholder:text-[#727272] outline-none transition focus:border-zinc-900 dark:focus:border-zinc-500 focus:bg-white dark:focus:bg-zinc-800 min-h-[56px] min-h-[45px]"
+              />
+              {roomSearch && (
+                <button
+                  type="button"
+                  onClick={() => setRoomSearch("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center text-xs font-bold text-[#727272] hover:text-zinc-600 dark:hover:text-zinc-300 cursor-pointer"
+                  aria-label={t("home_clear_search", "Clear search")}
+                >
+                  ✕
+                </button>
+              )}
+            </div>
             <div className="max-h-80 space-y-4 overflow-y-auto pr-1">
               {filteredRoomOptions.length === 0 ? (
                 <p className="rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 p-4 text-sm text-[#727272] dark:text-[#727272]">{t("host_no_matching_rooms", "No matching room types found.")}</p>

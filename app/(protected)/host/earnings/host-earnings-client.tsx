@@ -359,13 +359,25 @@ export function HostEarningsClient({ initialData }: HostEarningsClientProps) {
             </button>
           </div>
 
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={t("host_earnings_search_placeholder", "Search property or guest...")}
-            className="w-full sm:w-64 px-3 py-1.5 rounded-xl border border-gray-300 text-xs text-gray-900 placeholder:text-gray-400 focus:outline-hidden focus:ring-1 focus:ring-gray-900"
-          />
+          <div className="relative w-full sm:w-64">
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={t("host_earnings_search_placeholder", "Search property or guest...")}
+              className="w-full pl-3 pr-8 py-1.5 rounded-xl border border-gray-300 text-xs text-gray-900 placeholder:text-gray-400 focus:outline-hidden focus:ring-1 focus:ring-gray-900"
+            />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch("")}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center justify-center text-zinc-400 hover:text-zinc-600 cursor-pointer text-xs"
+                aria-label={t("home_clear_search", "Clear search")}
+              >
+                ✕
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="overflow-x-auto">

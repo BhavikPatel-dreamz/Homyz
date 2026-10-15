@@ -186,15 +186,28 @@ export function HostResolutionCenterClient({ data, listings }: Props) {
 
       {/* Filter Controls Panel */}
       <div className="grid gap-3.5 rounded-[20px] border border-zinc-200 bg-zinc-50/80 p-5 md:grid-cols-6 text-sm">
-        <label className="md:col-span-2">
-          <span className="sr-only">{t("host_res_center_search_placeholder", "Search case #, booking #, or property title...")}</span>
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={t("host_res_center_search_placeholder", "Search case #, booking #, or property title...")}
-            className="min-h-11 w-full rounded-xl border border-zinc-300 bg-white px-4 text-sm outline-none focus:border-zinc-900"
-          />
-        </label>
+        <div className="relative md:col-span-2">
+          <label className="block w-full">
+            <span className="sr-only">{t("host_res_center_search_placeholder", "Search case #, booking #, or property title...")}</span>
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={t("host_res_center_search_placeholder", "Search case #, booking #, or property title...")}
+              className="min-h-11 w-full rounded-xl border border-zinc-300 bg-white pl-4 pr-9 text-sm outline-none focus:border-zinc-900"
+            />
+          </label>
+          {search && (
+            <button
+              type="button"
+              onClick={() => setSearch("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center text-zinc-400 hover:text-zinc-600 cursor-pointer text-xs"
+              aria-label={t("home_clear_search", "Clear search")}
+            >
+              ✕
+            </button>
+          )}
+        </div>
 
         <select
           value={searchParams.get("propertyId") || ""}

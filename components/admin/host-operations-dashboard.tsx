@@ -347,13 +347,25 @@ export function HostOperationsDashboard() {
 
         {/* Search and Filters */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <input
-            type="text"
-            placeholder="Search host, app ID, description..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-xl border border-zinc-200 bg-zinc-50/50 px-3.5 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-amber-500/20"
-          />
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search host, app ID, description..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full rounded-xl border border-zinc-200 bg-zinc-50/50 pl-3.5 pr-8 py-2 text-sm focus:outline-hidden focus:ring-2 focus:ring-amber-500/20"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center justify-center text-zinc-400 hover:text-zinc-600 cursor-pointer text-xs"
+                aria-label="Clear search"
+              >
+                ✕
+              </button>
+            )}
+          </div>
 
           <select
             value={selectedPriority}

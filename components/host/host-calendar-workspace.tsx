@@ -3051,7 +3051,9 @@ export function HostCalendarWorkspace({
                           : "text-[#525252] hover:bg-[#F3F4F5] dark:text-zinc-300 dark:hover:bg-zinc-800"
                           }`}
                       >
-                        {option}
+                        {option === "month"
+                          ? t("host_calendar_view_month", "Month")
+                          : t("host_calendar_view_year", "Year")}
                         {isSelected && <span aria-hidden="true">✓</span>}
                       </button>
                     );
@@ -3361,13 +3363,25 @@ export function HostCalendarWorkspace({
               {/* Search input if host has multiple listings */}
               {listings.length > 4 && (
                 <div className="pt-3">
-                  <input
-                    type="text"
-                    placeholder={t("host_calendar_search_properties_placeholder", "Search properties...")}
-                    value={propertySearchQuery}
-                    onChange={(e) => setPropertySearchQuery(e.target.value)}
-                    className="w-full rounded-xl border border-[#d7d7d7] dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 px-3.5 py-2 text-sm text-[#1F1F1F] dark:text-zinc-100 placeholder:text-[#727272] outline-none focus:ring-2 focus:ring-amber-400"
-                  />
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder={t("host_calendar_search_properties_placeholder", "Search properties...")}
+                      value={propertySearchQuery}
+                      onChange={(e) => setPropertySearchQuery(e.target.value)}
+                      className="w-full rounded-xl border border-[#d7d7d7] dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 pl-3.5 pr-9 py-2 text-sm text-[#1F1F1F] dark:text-zinc-100 placeholder:text-[#727272] outline-none focus:ring-2 focus:ring-amber-400"
+                    />
+                    {propertySearchQuery && (
+                      <button
+                        type="button"
+                        onClick={() => setPropertySearchQuery("")}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer text-xs"
+                        aria-label={t("home_clear_search", "Clear search")}
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
                 </div>
               )}
 

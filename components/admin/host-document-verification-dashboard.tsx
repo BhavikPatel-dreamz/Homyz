@@ -265,13 +265,25 @@ export function HostDocumentVerificationDashboard() {
       {/* Filter & Search Bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-2xs">
         <div className="flex flex-wrap items-center gap-2 flex-1">
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search host name, email or file name..."
-            className="rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] py-1.5 px-4 text-xs outline-none focus:border-[var(--accent)] min-w-[200px]"
-          />
+          <div className="relative min-w-[200px]">
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search host name, email or file name..."
+              className="w-full rounded-full border border-[var(--border)] bg-[var(--surface-secondary)] py-1.5 pl-4 pr-8 text-xs outline-none focus:border-[var(--accent)]"
+            />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch("")}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center justify-center text-zinc-400 hover:text-foreground cursor-pointer text-xs"
+                aria-label="Clear search"
+              >
+                ✕
+              </button>
+            )}
+          </div>
 
           <select
             value={statusFilter}

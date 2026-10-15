@@ -294,9 +294,19 @@ export function GuestGuidebookClient({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t("guidebook_search_placeholder", "Search this guidebook...")}
-              className="w-full rounded-full border border-zinc-200 bg-zinc-50 py-1.5 pl-8 pr-3 text-xs font-medium text-[#1F1F1F] outline-none focus:bg-white focus:border-zinc-400 shadow-2xs"
+              className="w-full rounded-full border border-zinc-200 bg-zinc-50 py-1.5 pl-8 pr-8 text-xs font-medium text-[#1F1F1F] outline-none focus:bg-white focus:border-zinc-400 shadow-2xs"
             />
             <span className="absolute left-2.5 top-2 text-xs text-[#727272]">🔍</span>
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center justify-center text-zinc-400 hover:text-zinc-600 cursor-pointer text-xs"
+                aria-label={t("home_clear_search", "Clear search")}
+              >
+                ✕
+              </button>
+            )}
           </div>
         </div>
 

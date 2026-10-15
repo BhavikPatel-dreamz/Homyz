@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { useCurrency } from "@/lib/currency-context";
+import { useLanguage } from "@/lib/i18n/language-context";
 import {
   SearchableFilterCombobox,
   type SearchableFilterPage,
@@ -100,6 +101,7 @@ export function AdminAllPropertiesCalendar({
   const router = useRouter();
   const searchParams = useSearchParams();
   const { formatPrice } = useCurrency();
+  const { t, language } = useLanguage();
   const firstRange = initialData?.range;
   const [data, setData] = useState(initialData);
   const [loading, setLoading] = useState(false);
@@ -238,7 +240,7 @@ export function AdminAllPropertiesCalendar({
     changeRange(rangeMode, anchor);
   };
 
-  const timelineLabel = new Intl.DateTimeFormat("en", { month: "long", year: "numeric" }).format(parseDateKey(range.startDate));
+  const timelineLabel = new Intl.DateTimeFormat(language || "en", { month: "long", year: "numeric" }).format(parseDateKey(range.startDate));
   const page = data?.pagination?.page || Number(searchParams.get("page") || 1);
   const limit = data?.pagination?.limit || Number(searchParams.get("limit") || 20);
 
@@ -280,12 +282,12 @@ export function AdminAllPropertiesCalendar({
       <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
         <div className="flex items-center gap-2">
           <button type="button" onClick={() => moveRange(-1)} className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-xs font-bold text-foreground">←</button>
-          <button type="button" onClick={() => changeRange(rangeMode, dateKey(new Date()))} className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-xs font-semibold text-foreground">Today</button>
+          <button type="button" onClick={() => changeRange(rangeMode, dateKey(new Date()))} className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-xs font-semibold text-foreground">{t("host_calendar_today", "Today")}</button>
           <button type="button" onClick={() => moveRange(1)} className="rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-xs font-bold text-foreground">→</button>
           <h2 className="ml-1 text-base font-bold text-foreground">{timelineLabel}</h2>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {(["7", "14", "month"] as const).map((mode) => <button key={mode} type="button" onClick={() => changeRange(mode)} className={`rounded-xl px-3 py-2 text-xs font-semibold ${rangeMode === mode ? "bg-[var(--accent)] text-[var(--accent-foreground)]" : "border border-[var(--border)] bg-[var(--surface)] text-foreground"}`}>{mode === "month" ? "Month" : `${mode} days`}</button>)}
+          {(["7", "14", "month"] as const).map((mode) => <button key={mode} type="button" onClick={() => changeRange(mode)} className={`rounded-xl px-3 py-2 text-xs font-semibold ${rangeMode === mode ? "bg-[var(--accent)] text-[var(--accent-foreground)]" : "border border-[var(--border)] bg-[var(--surface)] text-foreground"}`}>{mode === "month" ? t("host_calendar_view_month", "Month") : `${mode} days`}</button>)}
           <span className="ml-1 text-[11px] font-medium"><span className="text-emerald-600">■</span> Confirmed <span className="ml-2 text-amber-600">■</span> Hold <span className="ml-2 text-zinc-500">▨</span> Blocked</span>
         </div>
       </div>
