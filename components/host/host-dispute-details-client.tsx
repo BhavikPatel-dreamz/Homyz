@@ -624,7 +624,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                             Homyz Support Request
                           </span>
                           <span
-                            className={`rounded-full px-3 py-0.5 text-xs font-semibold ${
+                            className={`rounded-full px-3 py-0.5 text-xs font-medium ${
                               request.status === "PENDING_RESPONSE"
                                 ? "bg-amber-200 text-amber-900"
                                 : "bg-emerald-100 text-emerald-800"

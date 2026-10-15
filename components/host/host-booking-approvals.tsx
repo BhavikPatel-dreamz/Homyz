@@ -232,11 +232,11 @@ export function HostBookingApprovals({ bookings: initialBookings }: { bookings: 
       {/* Page Header */}
       <div className="flex flex-wrap items-end justify-between gap-5 border-b border-zinc-200 pb-7">
         <div>
-          <p className="text-sm font-medium text-zinc-500">{t("host_booking_approvals_tools", "Host tools")}</p>
-          <h1>
+          <p className="text-sm font-medium text-[#727272]">{t("host_booking_approvals_tools", "Host tools")}</p>
+          <h1 className="mt-2">
             {t("host_booking_approvals_title", "Pending booking requests")}
           </h1>
-          <p className="mt-2 text-sm text-zinc-600">
+          <p className="mt-2 text-sm text-[#727272]">
             {t("host_booking_approvals_desc", "Review active requests for your listings, communicate with guests, and respond within 24 hours.")}
           </p>
         </div>
@@ -273,8 +273,8 @@ export function HostBookingApprovals({ bookings: initialBookings }: { bookings: 
       {/* Requests List */}
       {bookings.length === 0 ? (
         <div className="mt-8 rounded-3xl border border-dashed border-zinc-300 bg-zinc-50 px-6 py-14 text-center">
-          <h2 className="text-lg font-semibold text-zinc-900">{t("host_booking_approvals_no_requests", "No pending booking requests")}</h2>
-          <p className="mt-2 text-sm text-zinc-600">
+          <h2 className="text-lg font-medium text-[#1f1f1f]">{t("host_booking_approvals_no_requests", "No pending booking requests")}</h2>
+          <p className="mt-2 text-sm text-[#727272]">
             {t("host_booking_approvals_no_requests_desc", "New requests will appear here when guests request a stay at one of your listings.")}
           </p>
         </div>

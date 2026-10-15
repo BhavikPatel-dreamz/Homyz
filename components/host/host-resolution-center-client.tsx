@@ -110,55 +110,55 @@ export function HostResolutionCenterClient({ data, listings }: Props) {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200 pb-6">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-amber-800 uppercase tracking-wider">
+            <span className="text-sm font-medium text-[#727272]">
               Host Operations
             </span>
             <span className="text-zinc-300">/</span>
-            <span className="text-xs sm:text-sm text-[#727272]">Resolution Center</span>
+            <span className="text-sm sm:text-sm text-[#727272]">Resolution Center</span>
           </div>
           <h1 className="mt-1.5">
             Resolution Center
           </h1>
-          <p className="mt-1.5 text-sm sm:text-base text-[#727272] max-w-2xl leading-relaxed">
+          <p className="mt-1.5 text-sm text-[#727272] max-w-2xl leading-relaxed">
             Manage booking complaints, respond to support inquiries, submit evidence, and propose resolutions for your properties.
           </p>
         </div>
       </div>
 
       {/* 4 KPI Summary Cards */}
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-[20px] border border-zinc-200 bg-white p-5 sm:p-6 shadow-xs">
-          <span className="text-xs uppercase font-bold tracking-wider text-[#727272]">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="sm:rounded-[20px] rounded-lg  border border-zinc-200 bg-white p-5 sm:p-6 shadow-xs">
+          <span className="text-sm font-medium text-[#727272]">
             Total Disputes
           </span>
-          <p className="mt-2 text-3xl sm:text-4xl font-bold text-[#1F1F1F]">
+          <p className="mt-2 text-3xl sm:text-4xl font-medium text-[#1F1F1F]">
             {data.summary.totalCases.toLocaleString()}
           </p>
         </div>
 
-        <div className="rounded-[20px] border border-amber-300 bg-amber-50/70 p-5 sm:p-6 shadow-xs">
-          <span className="text-xs uppercase font-bold tracking-wider text-amber-900">
+        <div className="sm:rounded-[20px] rounded-lg border border-amber-300 bg-amber-50/70 p-5 sm:p-6 shadow-xs">
+          <span className="text-sm font-medium text-amber-900">
             Response Required
           </span>
-          <p className="mt-2 text-3xl sm:text-4xl font-bold text-amber-900">
+          <p className="mt-2 text-3xl sm:text-4xl font-medium text-amber-900">
             {data.summary.responseRequired.toLocaleString()}
           </p>
         </div>
 
-        <div className="rounded-[20px] border border-blue-200 bg-blue-50/70 p-5 sm:p-6 shadow-xs">
-          <span className="text-xs uppercase font-bold tracking-wider text-blue-900">
+        <div className="sm:rounded-[20px] rounded-lg border border-blue-200 bg-blue-50/70 p-5 sm:p-6 shadow-xs">
+          <span className="text-sm font-medium text-blue-900">
             Under Review
           </span>
-          <p className="mt-2 text-3xl sm:text-4xl font-bold text-blue-900">
+          <p className="mt-2 text-3xl sm:text-4xl font-medium text-blue-900">
             {data.summary.underReview.toLocaleString()}
           </p>
         </div>
 
-        <div className="rounded-[20px] border border-emerald-200 bg-emerald-50/70 p-5 sm:p-6 shadow-xs">
-          <span className="text-xs uppercase font-bold tracking-wider text-emerald-900">
+        <div className="sm:rounded-[20px] rounded-lg border border-emerald-200 bg-emerald-50/70 p-5 sm:p-6 shadow-xs">
+          <span className="text-sm font-medium text-emerald-900">
             Resolved
           </span>
-          <p className="mt-2 text-3xl sm:text-4xl font-bold text-emerald-900">
+          <p className="mt-2 text-3xl sm:text-4xl font-medium text-emerald-900">
             {data.summary.resolved.toLocaleString()}
           </p>
         </div>
@@ -171,7 +171,7 @@ export function HostResolutionCenterClient({ data, listings }: Props) {
             key={id}
             type="button"
             onClick={() => navigate({ tab: id === "all" ? undefined : id })}
-            className={`min-h-11 shrink-0 rounded-full px-5 py-2.5 text-xs sm:text-sm font-semibold whitespace-nowrap transition-all cursor-pointer ${
+            className={`min-h-11 shrink-0 rounded-full px-5 py-2.5 text-xs sm:text-sm font-medium whitespace-nowrap transition-all cursor-pointer ${
               activeTab === id
                 ? "bg-[#1F1F1F] text-white shadow-xs"
                 : "border border-zinc-200 bg-white text-[#555] hover:border-zinc-400 hover:text-[#1F1F1F]"
@@ -183,40 +183,80 @@ export function HostResolutionCenterClient({ data, listings }: Props) {
       </div>
 
       {/* Filter Controls Panel */}
-      <div className="grid gap-3.5 rounded-[20px] border border-zinc-200 bg-zinc-50/80 p-5 md:grid-cols-6 text-sm">
+      <div className="grid gap-3.5 sm:rounded-[20px] rounded-[10px] border border-zinc-200 bg-zinc-50/80 p-5 md:grid-cols-6 text-sm">
         <label className="md:col-span-2">
           <span className="sr-only">Search disputes</span>
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search case #, booking #, or property title..."
-            className="min-h-11 w-full rounded-xl border border-zinc-300 bg-white px-4 text-sm outline-none focus:border-zinc-900"
+            className="min-h-11 w-full sm:rounded-xl rounded-lg border border-zinc-300 bg-white px-4 text-sm outline-none focus:border-zinc-900"
           />
         </label>
 
-        <select
-          value={searchParams.get("propertyId") || ""}
-          onChange={(e) => navigate({ propertyId: e.target.value || undefined })}
-          className="min-h-11 rounded-xl border border-zinc-300 bg-white px-3.5 text-sm outline-none focus:border-zinc-900 cursor-pointer"
-        >
-          <option value="">All Properties</option>
-          {listings.map((listing) => (
-            <option key={listing.id} value={listing.id}>
-              {listing.title}
-            </option>
-          ))}
-        </select>
+        <div className="relative">
+          <label htmlFor="filter-property-select" className="sr-only">
+            Filter by property
+          </label>
+          <select
+            id="filter-property-select"
+            value={searchParams.get("propertyId") || ""}
+            onChange={(e) => navigate({ propertyId: e.target.value || undefined })}
+            className="min-h-11 w-full appearance-none sm:rounded-xl rounded-lg border border-zinc-300 bg-white pl-3.5 pr-10 text-sm text-[#1F1F1F] outline-none transition focus:border-zinc-900 cursor-pointer"
+          >
+            <option value="">All Properties</option>
+            {listings.map((listing) => (
+              <option key={listing.id} value={listing.id}>
+                {listing.title}
+              </option>
+            ))}
+          </select>
+          <div className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-[#1F1F1F]">
+            <svg
+              className="size-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </div>
+        </div>
 
-        <select
-          value={searchParams.get("status") || ""}
-          onChange={(e) => navigate({ status: e.target.value || undefined })}
-          className="min-h-11 rounded-xl border border-zinc-300 bg-white px-3.5 text-sm outline-none focus:border-zinc-900 cursor-pointer"
-        >
-          <option value="">All Statuses</option>
-          <option value="PENDING">Open</option>
-          <option value="CONFIRMED">Under Review</option>
-          <option value="RESOLVED">Resolved</option>
-        </select>
+        <div className="relative">
+          <label htmlFor="filter-status-select" className="sr-only">
+            Filter by status
+          </label>
+          <select
+            id="filter-status-select"
+            value={searchParams.get("status") || ""}
+            onChange={(e) => navigate({ status: e.target.value || undefined })}
+            className="min-h-11 w-full appearance-none sm:rounded-xl rounded-lg border border-zinc-300 bg-white pl-3.5 pr-10 text-sm text-[#1F1F1F] outline-none transition focus:border-zinc-900 cursor-pointer"
+          >
+            <option value="">All Statuses</option>
+            <option value="PENDING">Open</option>
+            <option value="CONFIRMED">Under Review</option>
+            <option value="RESOLVED">Resolved</option>
+          </select>
+          <div className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-[#1F1F1F]">
+            <svg
+              className="size-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </div>
+        </div>
 
         <label>
           <span className="sr-only">Filed from</span>
@@ -224,7 +264,7 @@ export function HostResolutionCenterClient({ data, listings }: Props) {
             type="date"
             value={searchParams.get("startDate") || ""}
             onChange={(e) => navigate({ startDate: e.target.value || undefined })}
-            className="min-h-11 w-full rounded-xl border border-zinc-300 bg-white px-3.5 text-sm outline-none focus:border-zinc-900"
+            className="min-h-11 w-full sm:rounded-xl rounded-lg border border-zinc-300 bg-white px-3.5 text-sm outline-none focus:border-zinc-900"
             aria-label="Filed from"
           />
         </label>
@@ -235,7 +275,7 @@ export function HostResolutionCenterClient({ data, listings }: Props) {
             type="date"
             value={searchParams.get("endDate") || ""}
             onChange={(e) => navigate({ endDate: e.target.value || undefined })}
-            className="min-h-11 w-full rounded-xl border border-zinc-300 bg-white px-3.5 text-sm outline-none focus:border-zinc-900"
+            className="min-h-11 w-full sm:rounded-xl rounded-lg border border-zinc-300 bg-white px-3.5 text-sm outline-none focus:border-zinc-900"
             aria-label="Filed through"
           />
         </label>
@@ -259,7 +299,7 @@ export function HostResolutionCenterClient({ data, listings }: Props) {
           )}
         </div>
       ) : (
-        <div className="overflow-hidden rounded-[20px] border border-zinc-200 bg-white shadow-xs">
+        <div className="overflow-hidden sm:rounded-[20px] rounded-lg border border-zinc-200 bg-white shadow-xs">
           <div className="divide-y divide-zinc-100">
             {data.disputes.map((dispute) => {
               const isResolved = dispute.status === "RESOLVED" || dispute.disputeWorkflowStatus === "RESOLVED";
@@ -294,13 +334,13 @@ export function HostResolutionCenterClient({ data, listings }: Props) {
                     <div className="min-w-0 space-y-2">
                       {/* Badges Line */}
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-mono text-xs sm:text-sm font-bold text-[#1F1F1F]">
+                        <span className="text-xs sm:text-sm font-medium text-[#727272]">
                           #{dispute.caseReference}
                         </span>
 
                         {/* Status Badge */}
                         <span
-                          className={`rounded-full px-3 py-0.5 text-xs font-semibold ${
+                          className={`rounded-full px-3 py-0.5 text-xs font-medium ${
                             isResolved
                               ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
                               : isClosed
@@ -319,7 +359,7 @@ export function HostResolutionCenterClient({ data, listings }: Props) {
 
                         {/* Response Required Badge - only when genuinely open */}
                         {isOpen && dispute.responseRequired && (
-                          <span className="rounded-full bg-amber-100 border border-amber-300 px-3 py-0.5 text-xs font-bold text-amber-900 shadow-2xs">
+                          <span className="rounded-full bg-amber-100 border border-amber-300 px-3 py-0.5 text-xs font-medium text-amber-900 shadow-2xs">
                             Response Required
                           </span>
                         )}
@@ -333,7 +373,7 @@ export function HostResolutionCenterClient({ data, listings }: Props) {
 
                       {/* Property Title */}
                       <div className="flex flex-wrap items-baseline gap-2">
-                        <p className="truncate text-base sm:text-lg font-bold text-[#1F1F1F]">
+                        <p className="truncate text-base font-medium text-[#1F1F1F]">
                           {dispute.listing.title}
                         </p>
                         {dispute.listing.city && (
@@ -344,8 +384,8 @@ export function HostResolutionCenterClient({ data, listings }: Props) {
                       </div>
 
                       {/* Metadata Row */}
-                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs sm:text-sm text-[#727272]">
-                        <span className="rounded-md bg-zinc-100 px-2 py-0.5 font-medium text-zinc-700">
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs font-normal text-[#727272]">
+                        <span className="text-xs rounded-md bg-[#DDDDDE] px-2 py-1 text-[#1f1f1f]">
                           {formatCategory(dispute.category)}
                         </span>
 
@@ -355,7 +395,7 @@ export function HostResolutionCenterClient({ data, listings }: Props) {
                             className="hover:text-black hover:underline"
                           >
                             Booking:{" "}
-                            <span className="font-mono text-zinc-800 font-medium">
+                            <span className="text-zinc-800 font-medium">
                               #{dispute.booking.id.slice(0, 10)}
                             </span>
                           </Link>
@@ -367,9 +407,9 @@ export function HostResolutionCenterClient({ data, listings }: Props) {
                           </span>
                         )}
 
-                        <span className="text-zinc-400 hidden sm:inline">·</span>
+                        <span className="text-[#727272] text-lg font-bold hidden sm:inline">·</span>
                         <span>Filed: {formatDate(dispute.createdAt)}</span>
-                        <span className="text-zinc-400 hidden sm:inline">·</span>
+                        <span className="text-[#727272] text-lg font-bold hidden sm:inline">·</span>
                         <span>Updated: {formatDate(dispute.updatedAt)}</span>
                       </div>
                     </div>
@@ -380,7 +420,7 @@ export function HostResolutionCenterClient({ data, listings }: Props) {
                     {dispute.booking?.id && (
                       <Link
                         href={`/host/bookings/${dispute.booking.id}`}
-                        className="inline-flex min-h-10 items-center justify-center rounded-full border border-zinc-300 bg-white px-4 py-2 text-sm font-semibold text-[#1F1F1F] hover:bg-zinc-100 transition-colors"
+                        className="inline-flex min-h-10 items-center justify-center rounded-full border border-[#1F1F1F] hover:border-[#1f1f1f] bg-white px-4 py-2 text-sm font-medium text-[#1F1F1F] hover:bg-[#1f1f1f] hover:text-white transition-colors"
                       >
                         Booking
                       </Link>
@@ -388,7 +428,7 @@ export function HostResolutionCenterClient({ data, listings }: Props) {
 
                     <Link
                       href={`/host/resolution-center/${dispute.id}`}
-                      className="inline-flex min-h-10 items-center justify-center rounded-full bg-[#1F1F1F] px-5 py-2 text-sm font-semibold text-white hover:bg-black transition-colors shadow-2xs"
+                      className="inline-flex min-h-10 items-center justify-center rounded-full bg-[#1F1F1F] border border-[#1F1F1F] px-5 py-2 text-sm font-medium text-white hover:text-[#1f1f1f] hover:bg-white transition-colors shadow-2xs"
                     >
                       {isResolved || isClosed ? "View Decision" : "View Case"}
                     </Link>
