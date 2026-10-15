@@ -134,6 +134,8 @@ export const envSchema = z.object({
   AWS_SECRET_ACCESS_KEY: z.string().optional(),
   NEXT_SERVER_ACTIONS_ENCRYPTION_KEY: z.string().optional(),
   SERVER_ACTION_ALLOWED_ORIGINS: z.string().optional(),
+  // Required in production when the moderation scheduler endpoint is enabled.
+  CRON_SECRET: z.string().min(32).optional(),
   PORT: z.string().optional(),
   HOSTNAME: z.string().optional(),
 
@@ -163,6 +165,10 @@ export function validateEnv() {
   }
 
   const data = result.data;
+  if (data.NODE_ENV === "production" && !data.CRON_SECRET) {
+    console.error("❌ Environment validation failed: CRON_SECRET is required in production for scheduled moderation jobs.");
+    process.exit(1);
+  }
   console.log("✅ All Environment Keys Validated Successfully!\n");
   console.log("📊 Environment Summary:");
   console.log("-------------------------------------------------");
@@ -189,6 +195,7 @@ export function validateEnv() {
   console.log(`• Media server:                    ${data.MEDIA_SERVER_URL ? data.MEDIA_SERVER_URL : "DISABLED"}`);
   console.log(`• Media public URL:                ${data.MEDIA_PUBLIC_BASE_URL || "same-origin /uploads"}`);
   console.log(`• S3 Media:                        ${data.S3_BUCKET ? "ENABLED" : "DISABLED"}`);
+  console.log(`• Moderation scheduler secret:    ${data.CRON_SECRET ? "CONFIGURED" : "NOT SET"}`);
   console.log("-------------------------------------------------\n");
 
   return data;

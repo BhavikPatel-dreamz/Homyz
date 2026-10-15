@@ -172,6 +172,7 @@ function getEvaluationInclude(asOf: Date) {
       // minimum-review and subrating inputs.
       where: {
         status: "PUBLISHED" as const,
+        direction: "GUEST_TO_PROPERTY" as const,
         booking: {
           is: {
             status: BookingStatus.CONFIRMED,

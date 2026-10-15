@@ -1,7 +1,7 @@
 import "server-only";
 
 import { prisma } from "@/lib/db/prisma";
-import { BookingStatus, Role, UserStatus } from "@/generated/prisma/enums";
+import { BookingStatus, ReviewDirection, Role, UserStatus } from "@/generated/prisma/enums";
 import type { AuthUser } from "@/lib/auth/types";
 import { authorize } from "@/lib/permissions/authorize";
 import { assertHostPermission } from "@/lib/permissions/host-permissions-server";
@@ -691,6 +691,7 @@ export async function getHostDashboardData(
   const reviewScope = {
     listingId: { in: scopedListingIds },
     status: "PUBLISHED" as const,
+    direction: ReviewDirection.GUEST_TO_PROPERTY,
   };
   const [reviews, recentReviews] = await Promise.all([
     prisma.review.findMany({

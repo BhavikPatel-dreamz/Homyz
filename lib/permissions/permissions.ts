@@ -129,6 +129,12 @@ export const PERMISSIONS = {
   MODERATION_AUDIT_READ: "moderation.audit.read",
   MODERATION_POLICY_MANAGE: "moderation.policy.manage",
   MODERATION_ENFORCEMENT_EXECUTE: "moderation.enforcement.execute",
+  MODERATION_RETENTION_MANAGE: "moderation.retention.manage",
+  MODERATION_EVIDENCE_PURGE: "moderation.evidence.purge",
+
+  // Background Jobs & Automation (Phase 7)
+  BACKGROUND_JOBS_VIEW: "background_jobs.view",
+  BACKGROUND_JOBS_MANAGE: "background_jobs.manage",
 
   // Audit & Security Logs
   ACTIVITY_LOGS_VIEW: "activity_logs.view",
@@ -264,6 +270,12 @@ export const ALL_PERMISSIONS: PermissionDefinition[] = [
   { slug: PERMISSIONS.MODERATION_AUDIT_READ, module: "Moderation", action: "Read Activity", description: "Read moderation case activity history" },
   { slug: PERMISSIONS.MODERATION_POLICY_MANAGE, module: "Moderation", action: "Manage Policy", description: "Manage approved moderation policy configuration" },
   { slug: PERMISSIONS.MODERATION_ENFORCEMENT_EXECUTE, module: "Moderation", action: "Execute Enforcement", description: "Execute separately approved moderation enforcement" },
+  { slug: PERMISSIONS.MODERATION_RETENTION_MANAGE, module: "Moderation", action: "Manage Retention", description: "Manage evidence retention policies, holds, and dry-run reviews" },
+  { slug: PERMISSIONS.MODERATION_EVIDENCE_PURGE, module: "Moderation", action: "Purge Evidence", description: "Permanently delete eligible moderation evidence under approved policy" },
+
+  // Background Operations Module
+  { slug: PERMISSIONS.BACKGROUND_JOBS_VIEW, module: "Operations", action: "View Jobs", description: "View background job queue, worker health and backlog" },
+  { slug: PERMISSIONS.BACKGROUND_JOBS_MANAGE, module: "Operations", action: "Manage Jobs", description: "Trigger, cancel or manually retry queued and failed jobs" },
 
   // Audit Logs Module
   { slug: PERMISSIONS.ACTIVITY_LOGS_VIEW, module: "Audit Logs", action: "View", description: "View platform audit and activity logs" },
@@ -350,6 +362,8 @@ export const PERMISSION_DEPENDENCIES: Record<string, string[]> = {
   [PERMISSIONS.MODERATION_EVIDENCE_ADD]: [PERMISSIONS.MODERATION_CASE_READ],
   [PERMISSIONS.MODERATION_DECISION_CREATE]: [PERMISSIONS.MODERATION_CASE_UPDATE],
   [PERMISSIONS.MODERATION_AUDIT_READ]: [PERMISSIONS.MODERATION_CASE_READ],
+  [PERMISSIONS.MODERATION_RETENTION_MANAGE]: [PERMISSIONS.MODERATION_CASE_READ],
+  [PERMISSIONS.MODERATION_EVIDENCE_PURGE]: [PERMISSIONS.MODERATION_RETENTION_MANAGE],
 
   // Admin Management
   [PERMISSIONS.ADMINS_CREATE]: [PERMISSIONS.ADMINS_VIEW],

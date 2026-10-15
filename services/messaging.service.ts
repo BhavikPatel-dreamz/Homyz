@@ -17,6 +17,7 @@ import { notificationService } from "./notification.service";
 import { savePrivateMedia, readPrivateMedia, deletePrivateMedia } from "@/lib/storage/media";
 import { HOST_MESSAGE_MAX_LENGTH } from "@/lib/booking/host-message";
 import { bookingDateKey, parseBookingDate } from "@/lib/booking/booking-date";
+import { moderationService } from "./moderation.service";
 
 export type MessageAttachmentDTO = {
   id: string;
@@ -130,14 +131,24 @@ export type ConversationDTO = {
 };
 
 function toMessageDTO(m: any, currentUserId: string): MessageDTO {
+  const metadata = (m.metadata as Record<string, unknown>) || null;
+  let content = m.content;
+  if (metadata?.isModerated) {
+    if (metadata.moderatedAction === "REMOVE") {
+      content = "[This message was removed by Trust & Safety for violating community guidelines]";
+    } else if (metadata.moderatedAction === "HIDE") {
+      content = "[This message has been hidden pending moderation investigation]";
+    }
+  }
+
   return {
     id: m.id,
     conversationId: m.conversationId,
     senderId: m.senderId,
     type: m.type,
-    content: m.content,
+    content,
     readAt: m.readAt ? m.readAt.toISOString() : null,
-    metadata: (m.metadata as Record<string, unknown>) || null,
+    metadata,
     createdAt: m.createdAt.toISOString(),
     sender: m.sender
       ? {
@@ -822,6 +833,8 @@ async function sendMessage(
   ) {
     throw AppError.badRequest("Message must contain either text or an attachment");
   }
+
+  await moderationService.assertUserNotRestricted(actor.id, "RESTRICT_MESSAGING");
 
   const conversation = await prisma.conversation.findUnique({
     where: { id: conversationId },

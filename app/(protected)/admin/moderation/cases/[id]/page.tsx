@@ -17,9 +17,25 @@ export default async function AdminModerationCasePage({ params }: { params: Prom
   try {
     details = await moderationService.getModerationCaseDetails(actor, id);
   } catch (error) {
-    if (error instanceof AppError && error.status === 503) unavailableMessage = error.message;
-    else notFound();
+    if (error instanceof AppError && error.status === 503) {
+      unavailableMessage = error.message;
+    } else if (error instanceof AppError && (error.status === 403 || error.status === 404)) {
+      // Do not reveal whether a protected case exists to an actor without access.
+      notFound();
+    } else {
+      // Unexpected data or infrastructure failures must reach the route error
+      // boundary; treating them as a missing case masks actionable defects.
+      throw error;
+    }
   }
   if (unavailableMessage || !details) return <ModerationSetupPending message={unavailableMessage || undefined} />;
-  return <AdminModerationCaseDetailsClient initialDetails={details} canUpdate={hasPermission(actor, PERMISSIONS.MODERATION_CASE_UPDATE)} canAssign={hasPermission(actor, PERMISSIONS.MODERATION_CASE_ASSIGN)} canDecide={hasPermission(actor, PERMISSIONS.MODERATION_DECISION_CREATE)} />;
+  return (
+    <AdminModerationCaseDetailsClient
+      initialDetails={details}
+      canUpdate={hasPermission(actor, PERMISSIONS.MODERATION_CASE_UPDATE)}
+      canAssign={hasPermission(actor, PERMISSIONS.MODERATION_CASE_ASSIGN)}
+      canDecide={hasPermission(actor, PERMISSIONS.MODERATION_DECISION_CREATE)}
+      canEnforce={hasPermission(actor, PERMISSIONS.MODERATION_ENFORCEMENT_EXECUTE)}
+    />
+  );
 }

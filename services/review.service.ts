@@ -405,6 +405,9 @@ export const reviewService = {
    * - If second party (reciprocal exists): both reviews are published immediately.
    */
   async createReview(input: CreateReviewInput): Promise<PublicReviewDTO> {
+    const { moderationService } = await import("./moderation.service");
+    await moderationService.assertUserNotRestricted(input.authorId, "RESTRICT_REVIEWS");
+
     const direction = input.direction ?? ReviewDirection.GUEST_TO_PROPERTY;
 
     if (!Number.isInteger(input.rating) || input.rating < 1 || input.rating > 5) {
@@ -987,15 +990,16 @@ export const reviewService = {
     };
   },
 
-  /** Admin moderation actions: HIDE, RESTORE, DELETE */
+  /** Central-case review enforcement: HIDE, RESTORE, DELETE. */
   async adminModerateReview(input: {
     reviewId: string;
     moderatorId: string;
     action: "HIDE" | "RESTORE" | "DELETE";
     reason?: string;
     notes?: string;
-    caseId?: string;
+    caseId: string;
   }) {
+    if (!input.caseId) throw AppError.badRequest("Review enforcement requires a moderation case.");
     const review = await prisma.review.findUnique({
       where: { id: input.reviewId },
       select: { id: true, status: true, listingId: true, direction: true },
@@ -1019,32 +1023,42 @@ export const reviewService = {
     }
 
     const now = new Date();
-    const updated = await prisma.review.update({
-      where: { id: input.reviewId },
-      data: {
-        status: newStatus,
-        moderatedAt: now,
-        moderatedById: input.moderatorId,
-        rejectionReason: input.reason,
-        moderationNotes: input.notes,
-        ...(input.caseId ? { moderationCaseId: input.caseId } : {}),
-      },
-      include: {
-        author: true,
-        targetUser: true,
-        listing: true,
-        response: { include: { author: true } },
-      },
-    });
+    const updated = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      const moderatedReview = await tx.review.update({
+        where: { id: input.reviewId },
+        data: {
+          status: newStatus,
+          moderatedAt: now,
+          moderatedById: input.moderatorId,
+          rejectionReason: input.reason,
+          moderationNotes: input.notes,
+          moderationCaseId: input.caseId,
+        },
+        include: {
+          author: true,
+          targetUser: true,
+          listing: true,
+          response: { include: { author: true } },
+        },
+      });
 
-    await prisma.auditLog.create({
-      data: {
-        actorId: input.moderatorId,
-        action: `REVIEW_${input.action}`,
-        resourceType: "REVIEW",
-        resourceId: input.reviewId,
-        description: `Review status changed from ${review.status} to ${newStatus}. Reason: ${input.reason || "N/A"}`,
-      },
+      await tx.auditLog.create({
+        data: {
+          actorId: input.moderatorId,
+          action: `REVIEW_${input.action}`,
+          resourceType: "REVIEW",
+          resourceId: input.reviewId,
+          description: `Review status changed from ${review.status} to ${newStatus}. Reason: ${input.reason || "N/A"}`,
+          metadata: {
+            moderationCaseId: input.caseId,
+            previousStatus: review.status,
+            nextStatus: newStatus,
+            enforcementResult: "SUCCESS",
+          },
+        },
+      });
+
+      return moderatedReview;
     });
 
     if (review.listingId && review.direction === ReviewDirection.GUEST_TO_PROPERTY) {

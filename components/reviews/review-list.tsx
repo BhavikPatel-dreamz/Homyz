@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import Image from "next/image";
+import { useSession } from "next-auth/react";
 import type { PublicReviewDTO } from "@/services/mappers";
 import type { ReviewCategoryRatings, ReviewMention } from "@/services/review.service";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
@@ -92,6 +93,8 @@ export function ReviewList({
   onStatsChange,
 }: ReviewListProps) {
   const { t } = useLanguage();
+  const { status: sessionStatus } = useSession();
+  const isAuthenticated = sessionStatus === "authenticated";
   const callbackRef = useRef(onStatsChange);
   const [reviews, setReviews] = useState<PublicReviewDTO[]>([]);
   const [stats, setStats] = useState<StatsResponse["data"] | null>(null);
@@ -341,6 +344,7 @@ export function ReviewList({
             <ReviewCard
               key={review.id}
               {...review}
+              canReport={isAuthenticated}
               onShowMore={(id) => handleOpenFullModal(null, id)}
             />
           ))}

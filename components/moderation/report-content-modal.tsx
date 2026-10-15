@@ -2,6 +2,8 @@
 
 import Image from "next/image";
 import { useEffect, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import type { ModerationPolicy } from "@/lib/moderation/policies";
 
@@ -36,6 +38,8 @@ export function ReportContentModal({
   relatedBookingId,
   onReportSubmitted,
 }: ReportContentModalProps) {
+  const router = useRouter();
+  const { status: sessionStatus } = useSession();
   const [policies, setPolicies] = useState<ModerationPolicy[]>(DEFAULT_REVIEW_REASONS);
   const [reasonCode, setReasonCode] = useState("");
   const [description, setDescription] = useState("");
@@ -137,7 +141,42 @@ export function ReportContentModal({
       }}
     >
       <div className="max-h-[calc(100vh-2rem)] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl transition-all">
-        {successReference ? (
+        {sessionStatus === "unauthenticated" ? (
+          <div className="text-center py-6 space-y-4">
+            <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-amber-100 text-amber-700">
+              <svg className="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <div>
+              <h2 id="report-modal-title" className="text-xl font-bold text-slate-900">
+                Sign in to submit a report
+              </h2>
+              <p className="mt-1.5 text-sm text-slate-500">
+                Please sign in or create an account to report this {targetType === "LISTING_PHOTO" ? "photo" : targetType === "LISTING" ? "listing" : targetType === "MESSAGE" ? "message" : targetType === "PROFILE" || targetType === "USER" ? "user" : "content"}.
+              </p>
+            </div>
+            <div className="pt-3 flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  const currentPath = typeof window !== "undefined" ? window.location.pathname + window.location.search : "/";
+                  router.push(`/login?callbackUrl=${encodeURIComponent(currentPath)}`);
+                }}
+                className="w-full rounded-xl bg-slate-900 py-3 text-sm font-semibold text-white hover:bg-slate-800 transition-colors cursor-pointer"
+              >
+                Sign in to continue
+              </button>
+              <button
+                type="button"
+                onClick={handleClose}
+                className="w-full rounded-xl border border-slate-200 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        ) : successReference ? (
           <div className="text-center py-4 space-y-4">
             <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
               <svg className="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -177,8 +216,10 @@ export function ReportContentModal({
                     : targetType === "LISTING"
                       ? "Report Listing"
                       : targetType === "PROFILE" || targetType === "USER"
-                        ? "Report Profile"
-                        : "Report Review"}
+                        ? "Report User"
+                        : targetType === "MESSAGE"
+                          ? "Report Message"
+                          : "Report Review"}
                 </h2>
                 <button
                   type="button"
@@ -223,7 +264,7 @@ export function ReportContentModal({
 
             <div>
               <label htmlFor="report-reason" className="block text-xs font-semibold text-slate-700">
-                Why are you reporting this {targetType === "LISTING_PHOTO" ? "photo" : targetType === "LISTING" ? "listing" : targetType === "PROFILE" ? "profile" : "content"}? <span className="text-red-500">*</span>
+                Why are you reporting this {targetType === "LISTING_PHOTO" ? "photo" : targetType === "LISTING" ? "listing" : targetType === "PROFILE" || targetType === "USER" ? "user" : targetType === "MESSAGE" ? "message" : "content"}? <span className="text-red-500">*</span>
               </label>
               <select
                 id="report-reason"

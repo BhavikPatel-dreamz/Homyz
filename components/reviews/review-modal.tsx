@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import { useSession } from "next-auth/react";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import type { PublicReviewDTO } from "@/services/mappers";
 import type { ReviewCategoryRatings, ReviewMention, ReviewSortOption } from "@/services/review.service";
@@ -45,6 +46,8 @@ export function ReviewModal({
   targetReviewId = null,
 }: ReviewModalProps) {
   const { t } = useLanguage();
+  const { status: sessionStatus } = useSession();
+  const isAuthenticated = sessionStatus === "authenticated";
   const [reviews, setReviews] = useState<PublicReviewDTO[]>(() => initialReviews ?? []);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -537,6 +540,7 @@ export function ReviewModal({
                       <ReviewCard
                         {...review}
                         isModalView={true}
+                        canReport={isAuthenticated}
                       />
                     </div>
                   ))}

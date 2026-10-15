@@ -266,6 +266,22 @@ enum ModerationEvidenceType {
   TEXT_NOTE
 }
 
+enum BackgroundJobStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  RETRY_SCHEDULED
+  FAILED
+}
+
+enum BackgroundJobType {
+  REVIEW_EXPIRY_PUBLISH
+  ACCOUNT_RESTRICTION_EXPIRY
+  MODERATION_NOTIFICATION_DELIVERY
+  AUDIT_LOG_ARCHIVE
+  SYSTEM_MAINTENANCE
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Auth / identity (NextAuth adapter models: User, Account, Session,
 // VerificationToken — shapes required by @next-auth/prisma-adapter)
@@ -915,6 +931,32 @@ model ModerationActivity {
   @@index([caseId, createdAt])
   @@index([actorId, createdAt])
   @@index([action, createdAt])
+}
+
+model BackgroundJob {
+  id             String              @id @default(cuid())
+  type           BackgroundJobType
+  status         BackgroundJobStatus @default(PENDING)
+  payload        Json?
+  idempotencyKey String?             @unique
+  priority       Int                 @default(0)
+  attempts       Int                 @default(0)
+  maxAttempts    Int                 @default(3)
+  backoffSeconds Int                 @default(30)
+  lockedAt       DateTime?
+  lockedBy       String?
+  lastError      String?             @db.Text
+  errorStack     String?             @db.Text
+  runAt          DateTime            @default(now())
+  startedAt      DateTime?
+  completedAt    DateTime?
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  @@index([status, runAt, priority])
+  @@index([type, status])
+  @@index([lockedAt])
+  @@index([createdAt])
 }
 
 model BookingPayment {

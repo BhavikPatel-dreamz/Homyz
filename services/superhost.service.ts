@@ -1,6 +1,6 @@
 import "server-only";
 
-import { BookingStatus, UserStatus } from "@/generated/prisma/enums";
+import { BookingStatus, ReviewDirection, UserStatus } from "@/generated/prisma/enums";
 import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import { differenceInBookingNights } from "@/lib/booking/booking-date";
@@ -133,11 +133,10 @@ async function calculateSuperhostProgress(
       where: {
         listingId: { in: listingIds },
         status: "PUBLISHED",
+        direction: ReviewDirection.GUEST_TO_PROPERTY,
         createdAt: { gte: window.windowStart, lt: reviewWindowEndExclusive },
-        // `Review` is the guest-to-property rating source. The current schema
-        // has no reciprocal host-review relation, so a published review joins
-        // the Superhost calculation once its established 14-day review window
-        // has expired.
+        // Only guest-to-property reviews are valid inputs to host quality
+        // calculations; reciprocal host-to-guest reviews are never included.
         booking: {
           is: {
             status: BookingStatus.CONFIRMED,

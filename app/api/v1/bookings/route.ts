@@ -4,6 +4,7 @@ import { created, paginated } from "@/lib/api/response";
 import { requireApiAuth } from "@/lib/permissions/guards";
 import { createBookingSchema } from "@/lib/validation/booking";
 import { bookingService } from "@/services/booking.service";
+import { moderationService } from "@/services/moderation.service";
 import { AppError } from "@/lib/api/errors";
 import { getAvailablePaymentMethods, PAYMENT_PROVIDER_UNAVAILABLE_MESSAGE } from "@/lib/booking/payment-method";
 import { getPaymentPolicy } from "@/lib/booking/payment-policy";
@@ -24,6 +25,7 @@ export const GET = apiHandler(async (req) => {
 // POST /api/v1/bookings — create a booking for the caller.
 export const POST = apiHandler(async (req) => {
   const actor = await requireApiAuth(req);
+  await moderationService.assertUserNotRestricted(actor.id, "RESTRICT_BOOKING");
   const policy = getPaymentPolicy();
   if (policy.onlinePaymentRequired && getAvailablePaymentMethods().length === 0) {
     throw AppError.serviceUnavailable(PAYMENT_PROVIDER_UNAVAILABLE_MESSAGE);

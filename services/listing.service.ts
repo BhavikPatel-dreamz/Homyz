@@ -11,7 +11,7 @@ import type {
   CreateListingInput,
   UpdateListingInput,
 } from "@/lib/validation/listing";
-import { BookingStatus, ListingCoHostStatus, ListingStatus, Role } from "@/generated/prisma/enums";
+import { BookingStatus, ListingCoHostStatus, ListingStatus, ReviewDirection, Role } from "@/generated/prisma/enums";
 import { Prisma, type Listing } from "@/generated/prisma/client";
 import { getExpiryThresholdDate, isBookingRequestExpired } from "@/lib/booking/booking-expiry";
 import { validateStayAvailability } from "@/lib/booking/availability";
@@ -151,7 +151,11 @@ export async function getPublishedReviewSummaries(listingIds: string[]): Promise
   if (!listingIds.length) return new Map();
   const summaries = await prisma.review.groupBy({
     by: ["listingId"],
-    where: { listingId: { in: listingIds }, status: "PUBLISHED" },
+    where: {
+      listingId: { in: listingIds },
+      status: "PUBLISHED",
+      direction: ReviewDirection.GUEST_TO_PROPERTY,
+    },
     _avg: { rating: true },
     _count: { _all: true },
   }) as Array<{ listingId: string; _avg: { rating: number | null }; _count: { _all: number } }>;
@@ -957,7 +961,11 @@ async function getPublicListingDetail(
   // run them together rather than making the public page wait for each one.
   const [reviewSummary, hostReviewSummary] = await Promise.all([
     prisma.review.aggregate({
-      where: { listingId: listing.id, status: "PUBLISHED" },
+      where: {
+        listingId: listing.id,
+        status: "PUBLISHED",
+        direction: ReviewDirection.GUEST_TO_PROPERTY,
+      },
       _avg: { rating: true },
       _count: { _all: true },
     }),
@@ -966,6 +974,7 @@ async function getPublicListingDetail(
           where: {
             listing: { hostId: listing.hostId },
             status: "PUBLISHED",
+            direction: ReviewDirection.GUEST_TO_PROPERTY,
           },
           _avg: { rating: true },
           _count: { _all: true },
