@@ -4711,5 +4711,19 @@
   "header_search_use_cur_loc": "वर्तमान स्थान का उपयोग करें",
   "header_search_where_to": "कहाँ जाना है?",
   "header_search_whos_coming": "कौन आ रहा है?",
-  "messages_quick_field_dates": "तारीखें"
+  "messages_quick_field_dates": "तारीखें",
+  "host_listings_tab_all": "सभी",
+  "host_listings_tab_listed": "सूचीबद्ध",
+  "host_listings_tab_pending_review": "समीक्षा लंबित",
+  "host_listings_tab_changes_requested": "परिवर्तन अनुरोधित",
+  "host_listings_tab_draft": "ड्राफ्ट",
+  "host_listings_tab_paused": "रोका गया",
+  "host_listings_tab_rejected": "अस्वीकृत",
+  "host_listings_tablist_aria": "लिस्टिंग स्थिति",
+  "host_listings_pagination_aria": "लिस्टिंग पेजिनेशन",
+  "host_listings_btn_prev": "← पिछला",
+  "host_listings_btn_next": "अगला →",
+  "host_listings_page_info": "पृष्ठ {page} / {totalPages}",
+  "host_listings_count_single": "लिस्टिंग",
+  "host_listings_count_multiple": "लिस्टिंग"
 }

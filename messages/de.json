@@ -4711,5 +4711,19 @@
   "header_search_use_cur_loc": "Aktuellen Standort verwenden",
   "header_search_where_to": "Wohin soll es gehen?",
   "header_search_whos_coming": "Wer kommt mit?",
-  "messages_quick_field_dates": "Daten"
+  "messages_quick_field_dates": "Daten",
+  "host_listings_tab_all": "Alle",
+  "host_listings_tab_listed": "Gelistet",
+  "host_listings_tab_pending_review": "Überprüfung ausstehend",
+  "host_listings_tab_changes_requested": "Änderungen angefordert",
+  "host_listings_tab_draft": "Entwurf",
+  "host_listings_tab_paused": "Pausiert",
+  "host_listings_tab_rejected": "Abgelehnt",
+  "host_listings_tablist_aria": "Inseratsstatus",
+  "host_listings_pagination_aria": "Inserate-Seitennummerierung",
+  "host_listings_btn_prev": "← Zurück",
+  "host_listings_btn_next": "Weiter →",
+  "host_listings_page_info": "Seite {page} von {totalPages}",
+  "host_listings_count_single": "Inserat",
+  "host_listings_count_multiple": "Inserate"
 }

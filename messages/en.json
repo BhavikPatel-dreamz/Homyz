@@ -4711,5 +4711,19 @@
   "header_search_use_cur_loc": "Use current location",
   "header_search_where_to": "Where to?",
   "header_search_whos_coming": "Who's coming?",
-  "messages_quick_field_dates": "Dates"
+  "messages_quick_field_dates": "Dates",
+  "host_listings_tab_all": "All",
+  "host_listings_tab_listed": "Listed",
+  "host_listings_tab_pending_review": "Pending review",
+  "host_listings_tab_changes_requested": "Changes requested",
+  "host_listings_tab_draft": "Draft",
+  "host_listings_tab_paused": "Paused",
+  "host_listings_tab_rejected": "Rejected",
+  "host_listings_tablist_aria": "Listing status",
+  "host_listings_pagination_aria": "Listings pagination",
+  "host_listings_btn_prev": "← Previous",
+  "host_listings_btn_next": "Next →",
+  "host_listings_page_info": "Page {page} of {totalPages}",
+  "host_listings_count_single": "listing",
+  "host_listings_count_multiple": "listings"
 }

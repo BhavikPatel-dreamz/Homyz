@@ -27,13 +27,13 @@ import { useLanguage } from "@/lib/i18n/language-context";
 import { getCurrencyForCountry } from "@/lib/currency";
 
 export const LISTING_TABS = [
-  { id: "ALL", label: "All" },
-  { id: "ACTIVE", label: "Listed" },
-  { id: "PENDING_REVIEW", label: "Pending review" },
-  { id: "CHANGES_REQUESTED", label: "Changes requested" },
-  { id: "DRAFT", label: "Draft" },
-  { id: "PAUSED", label: "Paused" },
-  { id: "REJECTED", label: "Rejected" },
+  { id: "ALL", label: "All", key: "host_listings_tab_all" },
+  { id: "ACTIVE", label: "Listed", key: "host_listings_tab_listed" },
+  { id: "PENDING_REVIEW", label: "Pending review", key: "host_listings_tab_pending_review" },
+  { id: "CHANGES_REQUESTED", label: "Changes requested", key: "host_listings_tab_changes_requested" },
+  { id: "DRAFT", label: "Draft", key: "host_listings_tab_draft" },
+  { id: "PAUSED", label: "Paused", key: "host_listings_tab_paused" },
+  { id: "REJECTED", label: "Rejected", key: "host_listings_tab_rejected" },
 ] as const;
 
 function isOptimizableImage(src: string): boolean {
@@ -935,7 +935,7 @@ export function HostListingsWorkspace({
             <div
               className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1"
               role="tablist"
-              aria-label="Listing status"
+              aria-label={t("host_listings_tablist_aria", "Listing status")}
             >
               {LISTING_TABS.map((tabItem) => {
                 const isSelected = activeTab === tabItem.id;
@@ -952,7 +952,7 @@ export function HostListingsWorkspace({
                         : "bg-[#F3F4F6] text-[#717171] hover:bg-zinc-200 hover:text-[#1F1F1F]"
                     }`}
                   >
-                    <span>{tabItem.label}</span>
+                    <span>{t(tabItem.key, tabItem.label)}</span>
                     {count !== undefined && (
                       <span className={`ml-1.5 text-xs ${isSelected ? "text-zinc-300" : "text-zinc-500"}`}>
                         ({count})
@@ -1147,7 +1147,7 @@ export function HostListingsWorkspace({
               {/* Pagination Controls */}
               {totalPages > 1 && (
                 <nav
-                  aria-label="Listings pagination"
+                  aria-label={t("host_listings_pagination_aria", "Listings pagination")}
                   className="mt-10 flex items-center justify-between border-t border-zinc-200 pt-6"
                 >
                   <button
@@ -1156,13 +1156,13 @@ export function HostListingsWorkspace({
                     disabled={page <= 1 || loading}
                     className="inline-flex min-h-10 items-center justify-center rounded-full border border-zinc-300 bg-white px-5 text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-zinc-50 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
                   >
-                    ← Previous
+                    {t("host_listings_btn_prev", "← Previous")}
                   </button>
                   <span className="text-sm font-medium text-zinc-600">
-                    Page {page} of {Math.max(1, totalPages)}
+                    {t("host_listings_page_info", { page, totalPages: Math.max(1, totalPages) }, `Page ${page} of ${Math.max(1, totalPages)}`)}
                     {totalCount > 0 && (
                       <span className="ml-1.5 text-xs text-zinc-400">
-                        ({totalCount} {totalCount === 1 ? "listing" : "listings"})
+                        ({totalCount} {totalCount === 1 ? t("host_listings_count_single", "listing") : t("host_listings_count_multiple", "listings")})
                       </span>
                     )}
                   </span>
@@ -1172,7 +1172,7 @@ export function HostListingsWorkspace({
                     disabled={page >= totalPages || loading}
                     className="inline-flex min-h-10 items-center justify-center rounded-full border border-zinc-300 bg-white px-5 text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-zinc-50 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
                   >
-                    Next →
+                    {t("host_listings_btn_next", "Next →")}
                   </button>
                 </nav>
               )}

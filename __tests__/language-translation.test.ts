@@ -34,7 +34,7 @@ function runTests() {
   // 2. Reference English Dictionary
   logSection("2. English Reference Dictionary Integrity");
   const enKeys = Object.keys(MESSAGES.en) as TranslationKey[];
-  assert(enKeys.length === 4713, `English dictionary must have all 4,713 keys (found ${enKeys.length})`);
+  assert(enKeys.length === 4727, `English dictionary must have all 4,727 keys (found ${enKeys.length})`);
 
   // 3. Symmetrical 1:1 Key Parity (Both Directions)
   logSection("3. Symmetrical 1:1 Key Parity Across All 6 Locales");

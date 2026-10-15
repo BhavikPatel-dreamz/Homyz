@@ -4711,5 +4711,19 @@
   "header_search_use_cur_loc": "Utiliser la position actuelle",
   "header_search_where_to": "Où allez-vous ?",
   "header_search_whos_coming": "Qui vient ?",
-  "messages_quick_field_dates": "Dates"
+  "messages_quick_field_dates": "Dates",
+  "host_listings_tab_all": "Tous",
+  "host_listings_tab_listed": "En ligne",
+  "host_listings_tab_pending_review": "En attente de révision",
+  "host_listings_tab_changes_requested": "Modifications demandées",
+  "host_listings_tab_draft": "Brouillon",
+  "host_listings_tab_paused": "En pause",
+  "host_listings_tab_rejected": "Rejeté",
+  "host_listings_tablist_aria": "Statut de l'annonce",
+  "host_listings_pagination_aria": "Pagination des annonces",
+  "host_listings_btn_prev": "← Précédent",
+  "host_listings_btn_next": "Suivant →",
+  "host_listings_page_info": "Page {page} sur {totalPages}",
+  "host_listings_count_single": "annonce",
+  "host_listings_count_multiple": "annonces"
 }

@@ -4711,5 +4711,19 @@
   "header_search_use_cur_loc": "استخدام الموقع الحالي",
   "header_search_where_to": "إلى أين؟",
   "header_search_whos_coming": "من القادم؟",
-  "messages_quick_field_dates": "التواريخ"
+  "messages_quick_field_dates": "التواريخ",
+  "host_listings_tab_all": "الكل",
+  "host_listings_tab_listed": "مدرج",
+  "host_listings_tab_pending_review": "قيد المراجعة",
+  "host_listings_tab_changes_requested": "التغييرات المطلوبة",
+  "host_listings_tab_draft": "مسودة",
+  "host_listings_tab_paused": "متوقف مؤقتاً",
+  "host_listings_tab_rejected": "مرفوض",
+  "host_listings_tablist_aria": "حالة القائمة",
+  "host_listings_pagination_aria": "ترقيم صفحات القوائم",
+  "host_listings_btn_prev": "← السابق",
+  "host_listings_btn_next": "التالي →",
+  "host_listings_page_info": "صفحة {page} من {totalPages}",
+  "host_listings_count_single": "قائمة",
+  "host_listings_count_multiple": "قوائم"
 }
