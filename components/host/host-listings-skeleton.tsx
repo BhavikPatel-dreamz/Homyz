@@ -31,7 +31,7 @@ export function HostListingCardsSkeleton({
 
 export function HostListingsSkeleton({ cardCount = 12 }: { cardCount?: number }) {
   return (
-    <div className="min-h-screen bg-white text-[#1F1F1F] font-sans flex flex-col selection:bg-[#FEE08B]">
+    <div className="min-h-screen bg-white text-[#1F1F1F] font-sans flex flex-col selection:bg-[#FCDF9C]">
       {/* 1. TOP HEADER & SUBNAV */}
       <HostHeader />
       <HostSubNav activeTab="listing" />

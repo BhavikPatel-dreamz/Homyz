@@ -1175,7 +1175,7 @@ export function HostMessagesWorkspace({
                     )}
                   </div>
                   <div className="min-w-0">
-                    <h3 className="text-sm sm:text-base font-semibold text-[#1F1F1F] truncate">
+                    <h3 className="text-sm sm:text-base font-medium text-[#1F1F1F] truncate">
                       {selectedConversation.guest.name || "Guest"}
                     </h3>
                     <p className="text-xs text-zinc-500 truncate">
@@ -1852,7 +1852,7 @@ export function HostMessagesWorkspace({
                         {b.totalPrice != null && (
                           <div className={cardClass}>
                             <p className="text-base font-medium text-[#1F1F1F]">Total price</p>
-                            <p className="text-base font-semibold text-zinc-900">
+                            <p className="text-base font-medium text-zinc-900">
                               {formatPrice(b.totalPrice, b.currency || "SAR", 2)}
                             </p>
                           </div>

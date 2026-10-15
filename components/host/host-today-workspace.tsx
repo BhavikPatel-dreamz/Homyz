@@ -414,7 +414,7 @@ export function HostTodayWorkspace({
       <main className="w-full min-w-0 pb-12 pt-10 sm:pb-24 sm:pt-10">
         <Container>
           {/* Toggle & Mobile Filter Bar */}
-          <div className="mb-6 flex w-full items-center justify-between gap-3 border-b border-[#727272] pb-5 sm:mb-10 sm:w-fit sm:pb-7">
+          <div className="mb-6 flex w-full items-center justify-between gap-3 border-b border-[#727272] pb-5 sm:mb-10 sm:pb-7">
             {/* Reservation Period Pill Switcher */}
             <div
               className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1"
@@ -478,7 +478,7 @@ export function HostTodayWorkspace({
           </div>
 
           {/* Section Headline */}
-          <h1 className="mb-6 break-words font-sans text-[24px] leading-8 font-medium text-[#1F1F1F] tracking-normal sm:mb-8 sm:text-[32px] sm:leading-10 xl:text-[36px] xl:leading-[44px]">
+          <h1 className="mb-6 wrap-break-word">
             You have {totalCount}{" "}
             {tab === "upcoming"
               ? "upcoming "
@@ -564,7 +564,7 @@ export function HostTodayWorkspace({
               ))}
             </div>
           ) : (
-            <div className="flex min-h-72 flex-col items-center justify-center rounded-[24px] border border-zinc-200 bg-zinc-50/50 px-6 py-12 text-center max-w-4xl mr-auto">
+            <div className="flex min-h-72 flex-col items-center justify-center rounded-[24px] border border-zinc-200 bg-zinc-50/50 px-6 py-12 text-center max-w-2xl mx-auto">
               <span className="mb-4 flex size-14 items-center justify-center rounded-full bg-[#FDE29B] text-2xl shadow-xs">
                 ☼
               </span>

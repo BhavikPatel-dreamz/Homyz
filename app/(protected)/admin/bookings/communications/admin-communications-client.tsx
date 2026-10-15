@@ -121,10 +121,10 @@ export function AdminCommunicationsClient({
       {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[var(--border)] pb-5">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground mt-1">
+          <h1>
             Booking Communications
           </h1>
-          <p className="text-xs text-[var(--muted-foreground)] mt-0.5">
+          <p className="text-xs text-[#727272] mt-0.5">
             Monitor booking-related conversations, notification activity, and guest-host communication logs.
           </p>
         </div>

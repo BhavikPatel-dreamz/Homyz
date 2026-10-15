@@ -499,7 +499,7 @@ export function ReceiptModal({
                     <td className="px-4 py-3" colSpan={2}>
                       {t("booking_details_grand_total", "Grand Total Paid")}
                     </td>
-                    <td className="whitespace-nowrap px-3 py-3 text-right text-base font-semibold text-emerald-700 sm:px-4">
+                    <td className="whitespace-nowrap px-3 py-3 text-right text-base font-medium text-emerald-700 sm:px-4">
                       {formatPrice(
                         invoice.grandTotal ?? 0,
                         invoice.currency || "SAR",

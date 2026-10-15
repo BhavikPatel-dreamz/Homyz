@@ -342,7 +342,7 @@ function MobileYearCalendar({
   return (
     <section className="sm:hidden">
       <div className="mb-8 flex items-center justify-between">
-        <h1 className="text-[24px] font-medium tracking-0 text-[#1F1F1F] dark:text-zinc-100">
+        <h1>
           Calendars
         </h1>
         <div className="flex items-center gap-2">
@@ -2040,7 +2040,7 @@ function AllListingsOverviewPanel({
   return (
     <div className="space-y-6 text-[#1F1F1F] dark:text-zinc-100">
       <div>
-        <h2 className="text-base font-semibold text-[#1F1F1F] dark:text-zinc-100">
+        <h2 className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">
           {t("host_calendar_portfolio_overview", "Portfolio Overview")}
         </h2>
         <p className="mt-1 text-xs text-[#727272]">
@@ -2773,10 +2773,10 @@ export function HostCalendarWorkspace({
               <line x1="3" y1="10" x2="21" y2="10" />
             </svg>
           </div>
-          <h1 className="mt-6 text-2xl font-bold tracking-tight text-[#1F1F1F] dark:text-zinc-100 sm:text-3xl">
+          <h1 className="mt-6">
             {t("host_calendar_empty_title", "You don't have any listings yet")}
           </h1>
-          <p className="mt-3 max-w-md text-sm text-zinc-600 dark:text-zinc-400">
+          <p className="mt-3 max-w-md text-sm text-[#727272]">
             {t("host_calendar_empty_desc", "Once you create and publish your first listing, you can manage availability, nightly rates, and guest reservations here.")}
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
@@ -2802,7 +2802,7 @@ export function HostCalendarWorkspace({
       <main className="mx-auto w-full max-w-[1600px] flex-1 px-4 pb-28 pt-6 sm:px-8 sm:pt-8">
         {mobileCalendarOpen && selectedListing ? (
           <section className="sm:hidden">
-            <h1 className="mb-7 text-[24px] font-medium text-[#1f1f1f] dark:text-zinc-100">
+            <h1 className="mb-7">
               Calendars
             </h1>
 
@@ -2883,7 +2883,7 @@ export function HostCalendarWorkspace({
         {/* Mobile Title & Responsive Property Selector Trigger */}
         <div className="mb-4 hidden flex-col gap-3 sm:hidden">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-semibold tracking-tight text-[#1F1F1F] dark:text-zinc-100">
+            <h1>
               {t("host_calendar_title", "Calendar")}
             </h1>
             <button
@@ -2997,7 +2997,7 @@ export function HostCalendarWorkspace({
                         <path d="m15 18-6-6 6-6" />
                       </svg>
                     </button>
-                    <span className="text-base font-semibold text-[#1F1F1F] dark:text-zinc-100">
+                    <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">
                       {pickerYear}
                     </span>
                     <button
@@ -3678,7 +3678,7 @@ export function HostCalendarWorkspace({
                       return (
                         <div className="space-y-3">
                           <div className="flex items-center justify-between">
-                            <span className="text-xs text-zinc-500 font-medium">
+                            <span className="text-sm text-[#727272] font-medium">
                               {t("host_calendar_price_tips_status", "Recommendation Status")}
                             </span>
                             {rangeTips.overallAction === "INCREASE" ? (
@@ -3797,7 +3797,7 @@ export function HostCalendarWorkspace({
                         </svg>
                       </span>
                       <div>
-                        <h4 className="text-base font-semibold text-[#1F1F1F] dark:text-zinc-100">
+                        <h4 className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">
                           Property Pricing Insights
                         </h4>
                         <p className="mt-1 text-sm leading-5 text-[#76500b] dark:text-amber-200">

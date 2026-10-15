@@ -220,7 +220,7 @@ export function MainHeader() {
         <ModalOverlay className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-xs p-4 animate-in fade-in">
           <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl border border-gray-100 text-gray-900 relative">
             <div className="flex items-center justify-between border-b border-gray-100 pb-4 mb-4">
-              <h3 className="text-base font-semibold text-gray-900">{t("header_languages_currency") || "Language & Region"}</h3>
+              <h3 className="text-base font-medium text-gray-900">{t("header_languages_currency") || "Language & Region"}</h3>
               <button
                 type="button"
                 onClick={() => setLangModalOpen(false)}

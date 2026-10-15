@@ -246,7 +246,7 @@ export function BecomeHostModal({
               <div className="w-16 h-16 flex items-center justify-center mb-3">
                 <Image src="/images/icons/home-icon.svg" alt="" width={37} height={47} />
               </div>
-              <span className="text-base font-semibold text-[#1F1F1F]">{t("host_home")}</span>
+              <span className="text-base font-medium text-[#1F1F1F]">{t("host_home")}</span>
             </button>
 
             {/* Option 2: Experience */}
@@ -276,7 +276,7 @@ export function BecomeHostModal({
                   <path d="M 8 40 C 18 35, 38 35, 48 40 C 48 42, 8 42, 8 40 Z" fill="#7BAA9C" />
                 </svg>
               </div>
-              <span className="text-base font-semibold text-[#1F1F1F]">{t("host_experience")}</span>
+              <span className="text-base font-medium text-[#1F1F1F]">{t("host_experience")}</span>
             </button>
 
             {/* Option 3: Service */}
@@ -308,7 +308,7 @@ export function BecomeHostModal({
                   <path d="M 33.5 18 L 35 19.5 L 38.5 16" stroke="#FFFFFF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </div>
-              <span className="text-base font-semibold text-[#1F1F1F]">{t("host_service")}</span>
+              <span className="text-base font-medium text-[#1F1F1F]">{t("host_service")}</span>
             </button>
           </div>
 

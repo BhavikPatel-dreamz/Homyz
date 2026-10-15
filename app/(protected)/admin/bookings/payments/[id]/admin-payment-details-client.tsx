@@ -161,7 +161,7 @@ export function AdminPaymentDetailsClient({ initialData }: PaymentDetailsProps) 
           </div>
 
           <div className="flex flex-wrap items-center gap-3 mt-1.5">
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground font-mono">
+            <h1>
               {payment.id}
             </h1>
             <span

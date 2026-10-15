@@ -1854,7 +1854,7 @@ export function PublicListingDetailClient({
               <ListingGallery key={listing.id} photos={photos} listingTitle={listing.title} onShare={handleShare} onSave={() => void handleSave()} isSaved={wishlist.has(listing.id)} saveDisabled={wishlist.adding.has(listing.id) || wishlist.removeInFlight.has(listing.id)} />
             </div>
 
-            <h1 className="mb-4 text-[24px] font-medium leading-8 text-[#1f1f1f] lg:hidden">{listing.title}</h1>
+            <h1 className="mb-4 lg:hidden">{listing.title}</h1>
 
             {/* Main Content Layout: Left Details (7 cols) + Right Booking Widget (5 cols) */}
             <div className="grid grid-cols-1 gap-9 lg:grid-cols-12 lg:gap-10">
@@ -2625,7 +2625,7 @@ export function PublicListingDetailClient({
                           </div>
                           <Link
                             href={`/guidebooks/${gb.id}`}
-                            className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-medium text-xs px-4 py-2 shadow-2xs shrink-0 transition-all"
+                            className="rounded-full bg-[#FCDF9C] hover:bg-[#FDE047] text-zinc-950 font-medium text-xs px-4 py-2 shadow-2xs shrink-0 transition-all"
                           >
                             {t("listing_detail_guidebook_heading", "View guidebook")}
                           </Link>

@@ -255,7 +255,7 @@ export function RoleMatrixManager({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[var(--border-subtle)]">
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-base font-semibold text-muted-foreground">
+              <h2 className="text-base font-medium text-muted-foreground">
                 Role Matrix for: <span className="text-[var(--accent)]">{activeRole.name}</span>
               </h2>
               {isSuperRole ? (
@@ -379,7 +379,7 @@ export function RoleMatrixManager({
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
             <div className="flex items-center justify-between mb-2">
-              <h2 className="text-base font-semibold text-muted-foreground">
+              <h2 className="text-base font-medium text-muted-foreground">
                 Create Administrative Role
               </h2>
               <button

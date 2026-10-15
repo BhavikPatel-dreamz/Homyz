@@ -486,7 +486,7 @@ export function HostBookingApprovals({ bookings: initialBookings }: { bookings: 
                     )}
                     <div className="min-w-0 flex-1">
                       <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">{t("host_booking_approvals_property", "Property")}</p>
-                      <h3 className="text-base font-semibold text-zinc-900 truncate">{details.listing.title}</h3>
+                      <h3 className="text-base font-medium text-zinc-900 truncate">{details.listing.title}</h3>
                       <p className="text-xs text-zinc-600 truncate mt-0.5">
                         {[details.listing.address, details.listing.city, details.listing.country].filter(Boolean).join(", ")}
                       </p>

@@ -336,11 +336,11 @@ export function AdminRefundsClient({
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[var(--border)] pb-5">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+            <h1>
               Refund Management
             </h1>
           </div>
-          <p className="mt-1 text-xs sm:text-sm text-[var(--muted-foreground)]">
+          <p className="mt-1 text-xs sm:text-sm text-[#727272]">
             Review refund requests, monitor payment refunds, and track refund outcomes.
           </p>
         </div>

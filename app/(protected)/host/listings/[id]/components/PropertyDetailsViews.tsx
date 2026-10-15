@@ -871,7 +871,7 @@ export function PropertyDetailsViews({
                           type="button"
                           onClick={() => setElevatorAvailable?.(false)}
                           className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold cursor-pointer transition-all ${elevatorAvailable === false
-                            ? "bg-[#FEE08B] dark:bg-amber-400 border-amber-300 dark:border-amber-400 text-zinc-950 shadow-2xs"
+                            ? "bg-[#FCDF9C] dark:bg-amber-400 border-amber-300 dark:border-amber-400 text-zinc-950 shadow-2xs"
                             : "bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
                             }`}
                         >
@@ -881,7 +881,7 @@ export function PropertyDetailsViews({
                           type="button"
                           onClick={() => setElevatorAvailable?.(true)}
                           className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold cursor-pointer transition-all ${elevatorAvailable === true
-                            ? "bg-[#FEE08B] dark:bg-amber-400 border-amber-300 dark:border-amber-400 text-zinc-950 shadow-2xs"
+                            ? "bg-[#FCDF9C] dark:bg-amber-400 border-amber-300 dark:border-amber-400 text-zinc-950 shadow-2xs"
                             : "bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
                             }`}
                         >
@@ -925,7 +925,7 @@ export function PropertyDetailsViews({
                           type="button"
                           onClick={() => setPrivateEntrance?.(false)}
                           className={`w-8 h-8 rounded-full border flex items-center justify-center text-lg font-normal cursor-pointer transition-all ${privateEntrance === false
-                            ? "bg-[#FEE08B] dark:bg-amber-400 border-[#FEE08B] dark:border-amber-400 text-[#1F1F1F] dark:text-zinc-950"
+                            ? "bg-[#FCDF9C] dark:bg-amber-400 border-[#FCDF9C] dark:border-amber-400 text-[#1F1F1F] dark:text-zinc-950"
                             : "bg-white dark:bg-zinc-800 border-[#1F1F1F] dark:border-zinc-700 text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] dark:hover:bg-zinc-700 hover:text-white"
                             }`}
                         >
@@ -935,7 +935,7 @@ export function PropertyDetailsViews({
                           type="button"
                           onClick={() => setPrivateEntrance?.(true)}
                           className={`w-8 h-8 rounded-full border flex items-center justify-center text-lg font-normal cursor-pointer transition-all ${privateEntrance === true
-                            ? "bg-[#FEE08B] dark:bg-amber-400 border-[#FEE08B] dark:border-amber-400 text-[#1F1F1F] dark:text-zinc-950"
+                            ? "bg-[#FCDF9C] dark:bg-amber-400 border-[#FCDF9C] dark:border-amber-400 text-[#1F1F1F] dark:text-zinc-950"
                             : "bg-white dark:bg-zinc-800 border-[#1F1F1F] dark:border-zinc-700 text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] dark:hover:bg-zinc-700 hover:text-white"
                             }`}
                         >
@@ -1711,7 +1711,7 @@ export function PropertyDetailsViews({
                     <button
                       type="button"
                       onClick={() => setActiveSection("add-amenities")}
-                      className="rounded-full bg-[#FEE08B] dark:bg-amber-400 hover:bg-[#FDE047] dark:hover:bg-amber-300 text-zinc-950 font-semibold text-xs px-6 py-2 shadow-2xs transition-all cursor-pointer"
+                      className="rounded-full bg-[#FCDF9C] dark:bg-amber-400 hover:bg-[#FDE047] dark:hover:bg-amber-300 text-zinc-950 font-semibold text-xs px-6 py-2 shadow-2xs transition-all cursor-pointer"
                     >
                       {t("host_add_amenities_btn")}
                     </button>

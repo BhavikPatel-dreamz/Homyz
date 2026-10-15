@@ -104,7 +104,7 @@ function ToastCard({ item }: { item: ToastItem }) {
       </div>
     ),
     info: (
-      <div className="size-6 rounded-full bg-amber-100/90 dark:bg-amber-950/80 text-[#1F1F1F] dark:text-[#FEE08B] flex items-center justify-center font-black text-xs shrink-0 shadow-2xs border border-amber-300/80 dark:border-amber-700/80">
+      <div className="size-6 rounded-full bg-amber-100/90 dark:bg-amber-950/80 text-[#1F1F1F] dark:text-[#FCDF9C] flex items-center justify-center font-black text-xs shrink-0 shadow-2xs border border-amber-300/80 dark:border-amber-700/80">
         ⓘ
       </div>
     ),
@@ -118,14 +118,14 @@ function ToastCard({ item }: { item: ToastItem }) {
     warning:
       "border-l-4 border-l-amber-500 border-zinc-200/90 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 text-[#1F1F1F] dark:text-zinc-100 shadow-xl shadow-amber-900/5 dark:shadow-black/50",
     info:
-      "border-l-4 border-l-[#FEE08B] dark:border-l-amber-400 border-zinc-200/90 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 text-[#1F1F1F] dark:text-zinc-100 shadow-xl shadow-zinc-900/5 dark:shadow-black/50",
+      "border-l-4 border-l-[#FCDF9C] dark:border-l-amber-400 border-zinc-200/90 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 text-[#1F1F1F] dark:text-zinc-100 shadow-xl shadow-zinc-900/5 dark:shadow-black/50",
   };
 
   const progressTone = {
     success: "bg-emerald-500",
     error: "bg-rose-500",
     warning: "bg-amber-500",
-    info: "bg-[#FEE08B] dark:bg-amber-400",
+    info: "bg-[#FCDF9C] dark:bg-amber-400",
   };
 
   return (

@@ -42,7 +42,7 @@ export default async function HostTodayPage({
   const initialCurrentTimeMinutes = renderedAt.getHours() * 60 + renderedAt.getMinutes();
 
   return (
-    <div className="flex min-h-screen flex-col bg-white pb-0 font-sans text-[#1F1F1F] selection:bg-[#FEE08B] sm:pb-0">
+    <div className="flex min-h-screen flex-col bg-white pb-0 font-sans text-[#1F1F1F] selection:bg-[#FCDF9C] sm:pb-0">
       <HostHeader />
       <HostTodayWorkspace
         {...data}

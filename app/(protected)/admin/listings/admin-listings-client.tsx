@@ -1777,7 +1777,7 @@ export function AdminListingsClient({
               <div className="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-950/50 flex items-center justify-center font-semibold text-lg">
                 ⚠️
               </div>
-              <h3 className="text-base font-semibold text-muted-foreground">Permanently Delete Listing?</h3>
+              <h3 className="text-base font-medium text-muted-foreground">Permanently Delete Listing?</h3>
             </div>
             <p className="text-xs text-[var(--muted-foreground)] leading-relaxed">
               Are you sure you want to delete <strong className="text-muted-foreground">{listingToDelete.title}</strong> (ID: <span className="font-mono">{listingToDelete.id}</span>)? This action will completely and permanently remove the listing, booking history, and all associated database records. This cannot be undone.
@@ -1821,7 +1821,7 @@ export function AdminListingsClient({
                 ⚠️
               </div>
               <div>
-                <h3 className="text-base font-semibold text-[var(--foreground)]">
+                <h3 className="text-base font-medium text-[var(--foreground)]">
                   Permanently Delete {selectedListingIds.length} Selected Properties?
                 </h3>
                 <p className="text-[11px] text-[var(--muted-foreground)]">

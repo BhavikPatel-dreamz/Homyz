@@ -437,7 +437,7 @@ export function HostDocumentVerificationDashboard() {
           <div className="w-full max-w-3xl rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in">
             <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-3">
               <div>
-                <h3 className="text-base font-semibold text-muted-foreground">
+                <h3 className="text-base font-medium text-muted-foreground">
                   Preview: {previewDoc.fileName}
                 </h3>
                 <p className="text-xs text-[var(--muted-foreground)]">
@@ -482,7 +482,7 @@ export function HostDocumentVerificationDashboard() {
       {rejectModalOpen && targetDoc && (
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4">
-            <h3 className="text-base font-semibold">Reject Document: {targetDoc.fileName}</h3>
+            <h3 className="text-base font-medium">Reject Document: {targetDoc.fileName}</h3>
             <p className="text-xs text-[var(--muted-foreground)]">
               Specify the reason why this document is being rejected.
             </p>
@@ -538,7 +538,7 @@ export function HostDocumentVerificationDashboard() {
       {resubmitModalOpen && targetDoc && (
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4">
-            <h3 className="text-base font-semibold">Request Resubmission: {targetDoc.fileName}</h3>
+            <h3 className="text-base font-medium">Request Resubmission: {targetDoc.fileName}</h3>
             <p className="text-xs text-[var(--muted-foreground)]">
               Send detailed instructions to the applicant for uploading an updated version of this document.
             </p>

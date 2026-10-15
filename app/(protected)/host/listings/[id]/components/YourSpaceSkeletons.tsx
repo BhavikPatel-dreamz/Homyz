@@ -1131,7 +1131,7 @@ export function YourSpaceSectionSkeleton({ section }: { section: string }) {
 
 export function YourSpaceEditorSkeleton({ section = "propertyType" }: { section?: string }) {
   return (
-    <div className="flex min-h-screen min-w-0 flex-col overflow-x-clip bg-white pb-12 font-sans text-[#1F1F1F] selection:bg-[#FEE08B] selection:text-[#1F1F1F] lg:pb-0">
+    <div className="flex min-h-screen min-w-0 flex-col overflow-x-clip bg-white pb-12 font-sans text-[#1F1F1F] selection:bg-[#FCDF9C] selection:text-[#1F1F1F] lg:pb-0">
       {/* 1. TOP HEADER */}
       <div className="hidden lg:block">
         <HostHeader />

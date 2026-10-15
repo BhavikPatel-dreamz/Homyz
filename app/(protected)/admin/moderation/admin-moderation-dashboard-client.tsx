@@ -40,8 +40,8 @@ export function AdminModerationDashboardClient({ initialSummary, initialFilters 
     <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
       <div>
         <p className="text-sm text-slate-500">Support &amp; Operations / Moderation</p>
-        <h1 className="mt-1 text-2xl font-semibold text-slate-900">Moderation overview</h1>
-        <p className="mt-1 text-sm text-slate-600">Track content reports and investigation workload. Decisions here do not enforce content changes.</p>
+        <h1 className="mt-1">Moderation overview</h1>
+        <p className="mt-1 text-sm text-[#727272]">Track content reports and investigation workload. Decisions here do not enforce content changes.</p>
       </div>
       <div className="flex flex-wrap items-center gap-2">
         <Link href="/admin/moderation/cases" className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50 shadow-sm">

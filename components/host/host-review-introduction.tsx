@@ -324,10 +324,10 @@ export function HostReviewIntroduction({
         <span className="mx-auto flex size-14 items-center justify-center rounded-full bg-emerald-100 text-2xl font-bold text-emerald-800">
           ✓
         </span>
-        <h1 className="mt-4 text-2xl font-semibold tracking-tight text-[#1F1F1F] sm:text-3xl">
+        <h1 className="mt-4">
           Review submitted
         </h1>
-        <p className="mt-3 text-sm leading-6 text-zinc-600">
+        <p className="mt-3 text-sm leading-6 text-[#727272]">
           Thank you for sharing your feedback about {context.guest.name}. Your review has been saved and submitted successfully.
         </p>
         <div className="mt-8 flex justify-center">
@@ -443,7 +443,7 @@ export function HostReviewIntroduction({
                   tabIndex={draft.recommendGuest === true || draft.recommendGuest === null ? 0 : -1}
                   aria-checked={draft.recommendGuest === true}
                   onClick={() => setDraft((current) => ({ ...current, recommendGuest: true }))}
-                  className={`flex min-h-14 flex-1 items-center justify-center rounded-2xl border text-base font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 ${
+                  className={`flex min-h-14 flex-1 items-center justify-center rounded-2xl border text-base font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 ${
                     draft.recommendGuest === true
                       ? "border-[#1F1F1F] bg-[#1F1F1F] text-white shadow-sm"
                       : "border-zinc-300 bg-white text-zinc-700 hover:border-zinc-400 hover:bg-zinc-50"
@@ -457,7 +457,7 @@ export function HostReviewIntroduction({
                   tabIndex={draft.recommendGuest === false ? 0 : -1}
                   aria-checked={draft.recommendGuest === false}
                   onClick={() => setDraft((current) => ({ ...current, recommendGuest: false }))}
-                  className={`flex min-h-14 flex-1 items-center justify-center rounded-2xl border text-base font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 ${
+                  className={`flex min-h-14 flex-1 items-center justify-center rounded-2xl border text-base font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 ${
                     draft.recommendGuest === false
                       ? "border-[#1F1F1F] bg-[#1F1F1F] text-white shadow-sm"
                       : "border-zinc-300 bg-white text-zinc-700 hover:border-zinc-400 hover:bg-zinc-50"

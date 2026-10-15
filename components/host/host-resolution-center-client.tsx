@@ -116,7 +116,7 @@ export function HostResolutionCenterClient({ data, listings }: Props) {
             <span className="text-zinc-300">/</span>
             <span className="text-xs sm:text-sm text-[#727272]">Resolution Center</span>
           </div>
-          <h1 className="mt-1.5 text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-[#1F1F1F]">
+          <h1 className="mt-1.5">
             Resolution Center
           </h1>
           <p className="mt-1.5 text-sm sm:text-base text-[#727272] max-w-2xl leading-relaxed">

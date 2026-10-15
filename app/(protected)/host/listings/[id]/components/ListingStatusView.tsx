@@ -387,7 +387,7 @@ export function ListingStatusView({
       {/* Header & Back Navigation */}
       <div className="flex items-center gap-6">
         <BackButton onClick={() => setActiveSection("propertyType")} />
-        <h1 className="tracking-[-0.02em] text-2xl font-semibold text-[#1F1F1F] dark:text-zinc-100">{t("host_status_view_title")}</h1>
+        <h1>{t("host_status_view_title")}</h1>
       </div>
 
       {/* Visual Approval Progress Timeline */}
@@ -712,7 +712,7 @@ export function ListingStatusView({
           className={`rounded-full font-medium text-sm px-5 py-2 shadow-2xs transition-all duration-300 ${
             !isApproved
               ? "bg-zinc-100 dark:bg-zinc-800 text-[#727272] dark:text-[#727272] cursor-not-allowed border border-zinc-200 dark:border-zinc-700"
-              : "bg-[#FEE08B] hover:bg-[#1f1f1f] text-[#1f1f1f] hover:text-white cursor-pointer"
+              : "bg-[#FCDF9C] hover:bg-[#1f1f1f] text-[#1f1f1f] hover:text-white cursor-pointer"
           }`}
         >
           {isSaving

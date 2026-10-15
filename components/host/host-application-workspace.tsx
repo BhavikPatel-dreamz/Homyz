@@ -540,14 +540,14 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                   {t("host_app_badge_hosting_type", "Hosting Type:")} {hostingTypeLabel}
                 </span>
               )}
-              <span className="text-xs font-medium text-[var(--muted-foreground)]">
+              <span className="text-xs font-medium text-[#727272]">
                 {t("host_app_badge_app_id", "Application ID:")} {application.applicationId}
               </span>
             </div>
-            <h1 className="mt-2 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+            <h1 className="mt-2">
               {t("host_app_header_title", "Become a Homyz Host")}
             </h1>
-            <p className="mt-1 text-sm text-[var(--muted-foreground)]">
+            <p className="mt-1 text-sm text-[#727272]">
               {t("host_app_header_desc", "Register your properties, complete verification, and join our global hosting community.")}
             </p>
           </div>
@@ -598,7 +598,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
       {/* Onboarding Stage Tracker (Visible on all states) */}
       <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-xs">
         <div className="flex items-center justify-between">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-[#727272]">
             {t("host_app_workflow_title", "Onboarding Workflow Progress")}
           </h2>
           <span className="rounded-full bg-amber-500/10 px-3 py-0.5 text-[11px] font-semibold text-amber-600 dark:text-amber-400">
@@ -639,7 +639,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                       ? "bg-rose-500 text-white border-rose-600"
                       : status === "in_progress"
                       ? "bg-amber-500 text-white border-amber-600"
-                      : "bg-[var(--surface)] text-[var(--muted-foreground)] border-[var(--border)]"
+                      : "bg-[var(--surface)] text-[#727272] border-[var(--border)]"
                   }`}
                 >
                   {status === "completed" ? "✓" : status === "action_required" ? "!" : status === "in_progress" ? "●" : idx + 1}
@@ -659,7 +659,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                       ? "bg-amber-500/20 text-amber-800 dark:text-amber-300"
                       : status === "failed"
                       ? "bg-rose-500/20 text-rose-800 dark:text-rose-300"
-                      : "bg-[var(--muted)] text-[var(--muted-foreground)]"
+                      : "bg-[var(--muted)] text-[#727272]"
                   }`}
                 >
                   {status === "completed"
@@ -699,11 +699,11 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                   <p className="font-semibold text-muted-foreground">
                     {t("host_app_action_doc_label", "Document:")} <span className="text-rose-600 dark:text-rose-400">{getDocTypeLabel(doc.documentType)}</span>
                   </p>
-                  <p className="mt-0.5 text-[var(--muted-foreground)]">
+                  <p className="mt-0.5 text-[#727272]">
                     {t("host_app_action_reason_label", "Reason:")} <span className="font-semibold text-rose-600 dark:text-rose-400">{doc.rejectionReason || t("host_app_action_default_resub", "Re-submission requested")}</span>
                   </p>
                   {doc.resubmissionInstructions && (
-                    <p className="mt-0.5 text-[var(--muted-foreground)]">
+                    <p className="mt-0.5 text-[#727272]">
                       {t("host_app_action_inst_label", "Instructions:")} <span className="italic">{doc.resubmissionInstructions}</span>
                     </p>
                   )}
@@ -714,7 +714,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
               {application.infoRequests.filter((i) => i.status === "PENDING").map((info) => (
                 <div key={info.id} className="mt-3 rounded-2xl border border-amber-500/30 bg-[var(--surface)] p-3 text-xs">
                   <p className="font-semibold text-amber-600 dark:text-amber-400">{t("host_app_action_info_req_label", "Information Required:")} {info.informationRequired}</p>
-                  <p className="mt-0.5 text-[var(--muted-foreground)]">{t("host_app_action_reason_label", "Reason:")} {info.reason}</p>
+                  <p className="mt-0.5 text-[#727272]">{t("host_app_action_reason_label", "Reason:")} {info.reason}</p>
                 </div>
               ))}
 
@@ -748,28 +748,28 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
             ✓
           </div>
           <h2 className="mt-4 text-2xl font-semibold text-muted-foreground">{t("host_app_submitted_title", "Application Submitted Successfully!")}</h2>
-          <p className="mx-auto mt-2 max-w-md text-sm text-[var(--muted-foreground)]">
+          <p className="mx-auto mt-2 max-w-md text-sm text-[#727272]">
             {t("host_app_submitted_desc", "Your host registration application has been received.")} (<strong className="text-muted-foreground">{application.applicationId}</strong>)
           </p>
 
           <div className="mx-auto mt-6 max-w-sm rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 text-left shadow-2xs">
             <div className="flex justify-between border-b border-[var(--border)] pb-2 text-xs">
-              <span className="text-[var(--muted-foreground)]">{t("host_app_info_app_id", "Application ID:")}</span>
+              <span className="text-[#727272]">{t("host_app_info_app_id", "Application ID:")}</span>
               <span className="font-semibold text-muted-foreground">{application.applicationId}</span>
             </div>
             <div className="flex justify-between border-b border-[var(--border)] py-2 text-xs">
-              <span className="text-[var(--muted-foreground)]">{t("host_app_info_status", "Status:")}</span>
+              <span className="text-[#727272]">{t("host_app_info_status", "Status:")}</span>
               <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-[10px] font-semibold text-amber-700 dark:text-amber-400">
                 {application.status || t("host_app_info_status_in_review", "Submitted / In Review")}
               </span>
             </div>
             <div className="flex justify-between pt-2 text-xs">
-              <span className="text-[var(--muted-foreground)]">{t("host_app_info_next_step", "Next Step:")}</span>
+              <span className="text-[#727272]">{t("host_app_info_next_step", "Next Step:")}</span>
               <span className="font-semibold text-muted-foreground">{t("host_app_info_next_step_val", "Admin Review & Compliance")}</span>
             </div>
           </div>
 
-          <p className="mt-6 text-xs text-[var(--muted-foreground)]">
+          <p className="mt-6 text-xs text-[#727272]">
             {t("host_app_submitted_footer", "Our verification team will inspect your submitted documents. You will receive an email update as soon as review is completed.")}
           </p>
         </div>
@@ -782,7 +782,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
             🎉
           </div>
           <h2 className="mt-4 text-2xl font-semibold text-emerald-700 dark:text-emerald-400">{t("host_app_approved_title", "Host Application Approved!")}</h2>
-          <p className="mx-auto mt-2 max-w-md text-sm text-[var(--muted-foreground)]">
+          <p className="mx-auto mt-2 max-w-md text-sm text-[#727272]">
             {t("host_app_approved_desc", "Your host account is fully activated. You can now start creating and publishing listings on Homyz.")}
           </p>
           <div className="mt-6 flex justify-center gap-4">
@@ -803,7 +803,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
             ✕
           </div>
           <h2 className="mt-4 text-2xl font-semibold text-rose-700 dark:text-rose-400">{t("host_app_rejected_title", "Application Not Approved")}</h2>
-          <p className="mx-auto mt-2 max-w-md text-sm text-[var(--muted-foreground)]">
+          <p className="mx-auto mt-2 max-w-md text-sm text-[#727272]">
             {t("host_app_rejected_desc", "We are unable to approve your application at this time.")}
           </p>
           {application.rejectionReason && (
@@ -834,7 +834,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                 className={`rounded-full px-4 py-2 text-xs font-semibold transition-all ${
                   activeStep === st.num
                     ? "bg-[#FCDF9C] text-[#291E05] shadow-xs dark:bg-amber-500 dark:text-zinc-950"
-                    : "text-[var(--muted-foreground)] hover:bg-[var(--muted)]"
+                    : "text-[#727272] hover:bg-[var(--muted)]"
                 }`}
               >
                 {st.title}
@@ -1009,7 +1009,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
           {activeStep === 4 && (
             <div className="space-y-6 animate-in fade-in">
               <h3 className="text-lg font-semibold text-muted-foreground">{t("host_app_step_4_title", "Step 4: Upload Verification Documents")}</h3>
-              <p className="text-xs text-[var(--muted-foreground)]">
+              <p className="text-xs text-[#727272]">
                 {t("host_app_step_4_desc", "Upload clear digital copies of your identity and property ownership documents (Accepted: PDF, PNG, JPG, WEBP. Max: 10MB per file).")}
               </p>
 
@@ -1058,12 +1058,12 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
 
               {/* Uploaded Documents List */}
               <div className="space-y-3 pt-2">
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)]">
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-[#727272]">
                   {t("host_app_heading_uploaded_docs", "Uploaded Documents")} ({application.documents?.length || 0})
                 </h4>
 
                 {(!application.documents || application.documents.length === 0) ? (
-                  <p className="text-xs text-[var(--muted-foreground)] italic">{t("host_app_no_docs_yet", "No documents uploaded yet.")}</p>
+                  <p className="text-xs text-[#727272] italic">{t("host_app_no_docs_yet", "No documents uploaded yet.")}</p>
                 ) : (
                   application.documents.map((doc) => (
                     <div
@@ -1085,7 +1085,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                             {doc.status}
                           </span>
                         </div>
-                        <p className="mt-0.5 text-[11px] text-[var(--muted-foreground)]">
+                        <p className="mt-0.5 text-[11px] text-[#727272]">
                           {t("host_app_doc_file_info", "File:")} {doc.fileName} • {new Date(doc.uploadedAt).toLocaleDateString()}
                         </p>
                         {doc.rejectionReason && (
@@ -1177,7 +1177,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
             <div className="space-y-6 animate-in fade-in">
               <div>
                 <h3 className="text-lg font-semibold text-muted-foreground">{t("host_app_step_6_title", "Step 6: Review Application Summary")}</h3>
-                <p className="text-xs text-[var(--muted-foreground)]">
+                <p className="text-xs text-[#727272]">
                   {t("host_app_step_6_desc", "Review all information before submitting your application to the administrative team.")}
                 </p>
               </div>
@@ -1253,7 +1253,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                       {t("host_app_btn_edit", "Edit")}
                     </button>
                   </div>
-                  <div className="mt-2 text-xs space-y-1.5 text-[var(--muted-foreground)]">
+                  <div className="mt-2 text-xs space-y-1.5 text-[#727272]">
                     <p className="flex items-center justify-between">
                       <strong className="text-muted-foreground">{t("host_app_sum_name", "Name:")}</strong>
                       {formData.applicantName.trim() ? (
@@ -1295,7 +1295,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                       {t("host_app_btn_edit", "Edit")}
                     </button>
                   </div>
-                  <div className="mt-2 text-xs space-y-1.5 text-[var(--muted-foreground)]">
+                  <div className="mt-2 text-xs space-y-1.5 text-[#727272]">
                     <p className="flex items-center justify-between"><strong className="text-muted-foreground">{t("host_app_sum_host_type", "Host Type:")}</strong> <span>{formData.registrationType}</span></p>
                     <p className="flex items-center justify-between"><strong className="text-muted-foreground">{t("host_app_sum_business", "Business:")}</strong> <span>{formData.businessName || t("host_app_sum_individual_fallback", "Individual")}</span></p>
                     <p className="flex items-center justify-between"><strong className="text-muted-foreground">{t("host_app_sum_prop_count", "Property Count:")}</strong> <span>{formData.propertyCount}</span></p>

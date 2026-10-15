@@ -1100,7 +1100,7 @@ export function GuidebooksManager({
                 }
               />
               <div>
-                <h1 className="text-3xl font-semibold">{t("host_guidebooks_title", "Guidebooks")}</h1>
+                <h1>{t("host_guidebooks_title", "Guidebooks")}</h1>
                 <p className="mt-2 text-[#727272]">
                   {t("host_guidebooks_subtext", "Share your favorite places and local tips with guests.")}
                 </p>
@@ -1204,7 +1204,7 @@ export function GuidebooksManager({
           <div className="mb-7 flex items-start gap-5">
             <BackButton onClick={() => setView("list")} />
             <div>
-              <h1 className="text-3xl font-semibold">{t("host_guidebooks_create_title", "Create a guidebook")}</h1>
+              <h1>{t("host_guidebooks_create_title", "Create a guidebook")}</h1>
               <p className="mt-2 text-[#727272]">
                 {t("host_guidebook_create_intro", "Start with a title and location. You can add recommendations next.")}
               </p>

@@ -7,7 +7,7 @@ import { Footer } from "@/components/dashboard/footer";
 
 export function HostTodaySkeleton({ cardCount = 4 }: { cardCount?: number }) {
   return (
-    <div className="min-h-screen bg-white text-[#1F1F1F] font-sans flex flex-col selection:bg-[#FEE08B]">
+    <div className="min-h-screen bg-white text-[#1F1F1F] font-sans flex flex-col selection:bg-[#FCDF9C]">
       {/* 1. TOP HEADER & SUBNAV */}
       <HostHeader />
       <HostSubNav activeTab="today" />
@@ -16,7 +16,7 @@ export function HostTodaySkeleton({ cardCount = 4 }: { cardCount?: number }) {
       <main className="w-full min-w-0 flex-1 pb-12 pt-10 sm:pb-24 sm:pt-10">
         <Container>
           {/* Toggle & Filter Bar Skeleton */}
-          <div className="mb-6 flex w-full items-center justify-between gap-3 border-b border-[#727272] pb-5 sm:mb-10 sm:w-fit sm:pb-7">
+          <div className="mb-6 flex w-full items-center justify-between gap-3 border-b border-[#727272] pb-5 sm:mb-10 sm:pb-7">
             <div className="flex items-center gap-2">
               <div className="h-11 w-20 rounded-full skeleton-shimmer" />
               <div className="h-11 w-24 rounded-full skeleton-shimmer" />

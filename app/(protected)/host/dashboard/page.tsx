@@ -16,7 +16,7 @@ export default async function HostDashboardPage() {
   const dashboardData = await getHostDashboardData(actor);
 
   return (
-    <div className="flex min-h-screen flex-col bg-white pb-0 font-sans text-[#1F1F1F] selection:bg-[#FEE08B]">
+    <div className="flex min-h-screen flex-col bg-white pb-0 font-sans text-[#1F1F1F] selection:bg-[#FCDF9C]">
       <HostHeader />
       <main className="w-full min-w-0 pb-5 pt-4 sm:flex-1 sm:pt-10 xl:pb-24">
         <Container className="px-4 sm:px-6">

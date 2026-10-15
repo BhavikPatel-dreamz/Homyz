@@ -1129,7 +1129,7 @@ export function BookingCheckoutClient({
                               }}
                               className="mt-0.5 size-6 shrink-0 cursor-pointer appearance-none rounded-full border border-[#1F1F1F] bg-white checked:border-[7px] checked:border-[#1F1F1F] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1F1F1F]"
                             />
-                            <span className="text-base font-semibold text-[#1f1f1f]">{t("book_credit_or_debit_card", "Credit or debit card")}</span>
+                            <span className="text-base font-medium text-[#1f1f1f]">{t("book_credit_or_debit_card", "Credit or debit card")}</span>
                           </label>
 
                           {selectedMethodType === "card" && (
@@ -1217,7 +1217,7 @@ export function BookingCheckoutClient({
                             />
                             <div className="flex flex-row-reverse items-center gap-3 sm:flex-row">
                               <Image src="/images/icons/ApplePay.svg" alt="" width={19} height={24} className="h-6 w-[19px]" />
-                              <span className="text-base font-semibold text-[#1f1f1f]">Apple Pay</span>
+                              <span className="text-base font-medium text-[#1f1f1f]">Apple Pay</span>
                             </div>
                           </label>
 
@@ -1235,7 +1235,7 @@ export function BookingCheckoutClient({
                             />
                             <div className="flex flex-row-reverse items-center gap-3 sm:flex-row">
                               <Image src="/images/icons/G.svg" alt="" width={20} height={20} className="size-5" />
-                              <span className="text-base font-semibold text-[#1f1f1f]">Google Pay</span>
+                              <span className="text-base font-medium text-[#1f1f1f]">Google Pay</span>
                             </div>
                           </label>
 
@@ -1252,7 +1252,7 @@ export function BookingCheckoutClient({
                               className="mt-0.5 size-6 shrink-0 cursor-pointer appearance-none rounded-full border border-[#1F1F1F] bg-white checked:border-[7px] checked:border-[#1F1F1F] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1F1F1F]"
                             />
                             <div className="flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:gap-3">
-                              <span className="text-base font-semibold text-[#1f1f1f]">mada</span>
+                              <span className="text-base font-medium text-[#1f1f1f]">mada</span>
                               <span className="text-xs text-zinc-500">{t("checkout_payment_deferred", "(mock/deferred)")}</span>
                             </div>
                           </label>
@@ -1280,7 +1280,7 @@ export function BookingCheckoutClient({
                         <p className="mt-1 text-base font-normal text-[#1f1f1f]">
                           {checkoutDraft.paymentMethod ? checkoutDraft.paymentMethod.displayLabel : t("book_credit_or_debit_card", "Credit or debit card")}
                         </p>
-                        <p className="text-xs text-zinc-500 font-medium mt-0.5">{t("book_payment_status_pending", "Payment status: Pending / Deferred")}</p>
+                        <p className="text-sm text-[#727272] font-medium mt-0.5">{t("book_payment_status_pending", "Payment status: Pending / Deferred")}</p>
                       </div>
                       <button
                         type="button"

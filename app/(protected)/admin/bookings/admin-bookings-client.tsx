@@ -412,7 +412,7 @@ export function AdminBookingsClient({
           <div className="w-full max-w-lg rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] flex flex-col gap-4 animate-in fade-in zoom-in-95">
             <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-3">
               <div>
-                <h3 className="text-base font-semibold text-muted-foreground">
+                <h3 className="text-base font-medium text-muted-foreground">
                   Booking Details #{selectedBooking.id.slice(-8)}
                 </h3>
                 <p className="text-xs text-[var(--muted-foreground)]">Created {formatBookingDateTime(selectedBooking.createdAt)}</p>
@@ -455,7 +455,7 @@ export function AdminBookingsClient({
                 </div>
                 <div className="text-right">
                   <span className="text-[10px] text-[var(--muted-foreground)] block">Total Amount</span>
-                  <span className="text-base font-semibold text-amber-600 dark:text-amber-400">
+                  <span className="text-base font-medium text-amber-600 dark:text-amber-400">
                     {formatPrice(selectedBooking.totalPrice ?? selectedBooking.listing.price * getDurationNights(selectedBooking.startDate, selectedBooking.endDate), selectedBooking.currency)}
                   </span>
                 </div>

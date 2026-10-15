@@ -291,7 +291,7 @@ export function AdminDisputeDetailsClient({ initialData }: DisputeDetailsProps) 
           </div>
 
           <div className="flex flex-wrap items-center gap-3 mt-1.5">
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground font-mono">
+            <h1>
               Case {dispute.caseReference}
             </h1>
             <span

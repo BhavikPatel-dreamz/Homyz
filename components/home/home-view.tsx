@@ -644,7 +644,7 @@ export function HomeView({
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-black/5" />
                         <div className="absolute inset-x-0 bottom-0 p-3 text-white">
-                          <div className="text-base font-semibold leading-tight">{location.name}</div>
+                          <div className="text-base font-medium leading-tight">{location.name}</div>
                           <div className="mt-1 text-[11px] text-white/80">{location.subtitle}</div>
                         </div>
                       </div>

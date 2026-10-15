@@ -132,13 +132,13 @@ function DesktopPropertyCard({
       </div>
 
       <div className="mt-5">
-        <p className="text-base font-semibold text-[#1F1F1F]">Dates</p>
+        <p className="text-base font-medium text-[#1F1F1F]">Dates</p>
         <p className="mt-1 text-sm text-[#727272]">{stayDates}</p>
       </div>
 
       <div className="my-5 border-t border-zinc-200" />
 
-      <div className="flex items-center justify-between text-base font-semibold text-[#1F1F1F]">
+      <div className="flex items-center justify-between text-base font-medium text-[#1F1F1F]">
         <span>Total <span className="underline underline-offset-4">{currencyDisplay}</span></span>
         <span>{totalPaid}</span>
       </div>
@@ -174,7 +174,7 @@ function MobilePropertyCard({
           )}
         </div>
         <div className="flex min-w-0 flex-1 flex-col pt-0.5">
-          <h2 className="text-lg sm:text-xl sm:font-semibold font-medium text-[#1F1F1F] leading-snug line-clamp-1">{listingName}</h2>
+          <h2 className="text-lg sm:text-xl sm:font-medium font-medium text-[#1F1F1F] leading-snug line-clamp-1">{listingName}</h2>
           <div className="mt-1.5 flex items-center gap-1.5 text-xs sm:text-sm sm:font-medium font-normal text-[#727272]">
             <svg className="size-3.5 shrink-0 fill-[#FFB800] text-[#FFB800]" viewBox="0 0 24 24" aria-hidden="true">
               <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
@@ -469,7 +469,7 @@ export function BookingReviewWizard(props: ReviewWizardProps) {
     }
   };
 
-  if (submitted) return <section className="mx-auto flex min-h-[55vh] max-w-xl flex-col items-center justify-center text-center"><span className="flex size-16 items-center justify-center rounded-full bg-emerald-100 text-3xl text-emerald-700">✓</span><h1 className="mt-6 text-3xl font-semibold tracking-tight text-[#1F1F1F]">{t("review_success_title", "Thanks for sharing your stay")}</h1><p className="mt-3 max-w-md text-sm leading-6 text-zinc-600">{t("review_success_desc", "Your review has been submitted. It will remain private until the host submits their review or the 14-day window closes, at which point both reviews will be published simultaneously.")}</p><Link href={`/bookings/${props.bookingId}`} className="mt-7 inline-flex min-h-11 items-center rounded-xl bg-[#1F1F1F] px-6 text-sm font-semibold text-white hover:bg-zinc-700">{t("review_btn_back_res", "Back to reservation")}</Link></section>;
+  if (submitted) return <section className="mx-auto flex min-h-[55vh] max-w-xl flex-col items-center justify-center text-center"><span className="flex size-16 items-center justify-center rounded-full bg-emerald-100 text-3xl text-emerald-700">✓</span><h1 className="mt-6 font-medium">{t("review_success_title", "Thanks for sharing your stay")}</h1><p className="mt-3 max-w-md text-sm leading-6 text-[#727272]">{t("review_success_desc", "Your review has been submitted. It will remain private until the host submits their review or the 14-day window closes, at which point both reviews will be published simultaneously.")}</p><Link href={`/bookings/${props.bookingId}`} className="mt-7 inline-flex min-h-11 items-center rounded-xl bg-[#1F1F1F] px-6 text-sm font-medium text-white hover:bg-zinc-700">{t("review_btn_back_res", "Back to reservation")}</Link></section>;
 
   const displayName = props.hostName || props.listingName || "Name";
   const currencyDisplay = props.currencyCode || "SR";
@@ -545,7 +545,7 @@ export function BookingReviewWizard(props: ReviewWizardProps) {
                   type="button"
                   onClick={submit}
                   disabled={submitting}
-                  className="text-sm font-semibold text-red-600 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
+                  className="text-sm font-medium text-red-600 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
                 >
                   {t("review_btn_try_again", "Try again")}
                 </button>
@@ -664,7 +664,7 @@ export function BookingReviewWizard(props: ReviewWizardProps) {
                   type="button"
                   onClick={submit}
                   disabled={submitting}
-                  className="text-sm font-semibold text-red-600 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
+                  className="text-sm font-medium text-red-600 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
                 >
                   {t("review_btn_try_again", "Try again")}
                 </button>
@@ -685,7 +685,7 @@ export function BookingReviewWizard(props: ReviewWizardProps) {
                     type="button"
                     disabled={!canContinue}
                     onClick={() => setDraft((current) => ({ ...current, step: current.step + 1 }))}
-                      className="min-h-12 rounded-full bg-[#1F1F1F] px-8 text-sm font-semibold text-white transition-colors hover:bg-black disabled:cursor-not-allowed disabled:bg-zinc-300 cursor-pointer sm:flex-none flex-1"
+                      className="min-h-12 rounded-full bg-[#1F1F1F] px-8 text-sm font-medium text-white transition-colors hover:bg-black disabled:cursor-not-allowed disabled:bg-zinc-300 cursor-pointer sm:flex-none flex-1"
                   >
                     {t("review_btn_continue", "Next")}
                   </button>
@@ -694,7 +694,7 @@ export function BookingReviewWizard(props: ReviewWizardProps) {
                     type="button"
                     disabled={!draft.rating || submitting}
                     onClick={submit}
-                        className="min-h-12 rounded-full bg-[#1F1F1F] px-8 text-sm font-semibold text-white transition-colors hover:bg-black disabled:cursor-not-allowed disabled:bg-zinc-300 cursor-pointer sm:flex-none flex-1"
+                        className="min-h-12 rounded-full bg-[#1F1F1F] px-8 text-sm font-medium text-white transition-colors hover:bg-black disabled:cursor-not-allowed disabled:bg-zinc-300 cursor-pointer sm:flex-none flex-1"
                   >
                     {submitting ? t("review_btn_submitting", "Submitting…") : t("review_btn_submit", "Submit review")}
                   </button>

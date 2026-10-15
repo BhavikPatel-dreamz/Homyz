@@ -367,7 +367,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
           </div>
 
           {/* Title */}
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-[#1F1F1F] pt-1">
+          <h1 className="pt-1">
             {dispute.category.replaceAll("_", " ")}
           </h1>
 
@@ -1120,7 +1120,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                   )}
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm sm:text-base font-semibold text-[#1F1F1F] truncate">
+                  <p className="text-sm sm:text-base font-medium text-[#1F1F1F] truncate">
                     {booking.user.name || "Guest"}
                   </p>
                   <p className="text-xs text-[#727272]">Booking Guest</p>

@@ -71,7 +71,7 @@ export function FileBookingDispute({ bookingId, variant = "guest" }: FileBooking
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="mt-4 inline-flex min-h-11 items-center text-sm font-medium text-[#1F1F1F] underline underline-offset-4 transition-colors hover:text-zinc-600 ml-4"
+        className="mt-4 inline-flex min-h-11 items-center text-sm font-medium text-[#727272] underline underline-offset-4 transition-colors hover:text-[#1f1f1f] ml-4"
       >
         Report an issue with this reservation
       </button>

@@ -289,7 +289,7 @@ export function AdminAboutHostView({
           <span className="text-[#727272] dark:text-zinc-600">/</span>
           <span className="text-xs font-semibold text-[#727272] dark:text-[#727272]">Your Space</span>
         </div>
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-950 dark:text-zinc-100 mt-2">
+        <h1 className="mt-2">
           About Host
         </h1>
         <p className="text-xs sm:text-sm text-[#727272] dark:text-[#727272] mt-1">

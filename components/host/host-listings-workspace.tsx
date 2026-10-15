@@ -134,15 +134,15 @@ function EmptyListingsState({
           <path strokeLinecap="round" strokeLinejoin="round" d="M3 21h18M5 21V9l7-5 7 5v12M9 21v-6h6v6M9 10h.01M15 10h.01" />
         </svg>
       </span>
-      <h2 className="mt-5 text-xl font-semibold tracking-[-0.025em] text-[#1F1F1F]">{t("host_empty_listings_title")}</h2>
-      <p className="mt-2 max-w-sm text-sm leading-6 text-[#717171]">
+      <h2 className="mt-5 text-xl font-medium text-[#1F1F1F]">{t("host_empty_listings_title")}</h2>
+      <p className="mt-2 max-w-sm text-sm leading-normal text-[#727272]">
         {t("host_empty_listings_desc")}
       </p>
       <button
         type="button"
         onClick={onCreate}
         disabled={pending}
-        className="mt-6 inline-flex min-h-11 items-center rounded-full bg-[#FEE08B] px-5 text-sm font-semibold text-[#1F1F1F] transition-colors hover:bg-[#F7D37D] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 disabled:cursor-wait disabled:opacity-60"
+        className="mt-6 inline-flex min-h-11 items-center gap-2 whitespace-nowrap rounded-full border border-transparent hover:border-[#1F1F1F] bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1F1F1F] hover:text-white font-medium text-base px-5 py-2.5 transition-all shadow-2xs cursor-pointer"
       >
         {t("host_create_first_listing")}
       </button>
@@ -754,7 +754,7 @@ export function HostListingsWorkspace({
   }
 
   return (
-    <div className="min-h-screen bg-white text-[#1F1F1F] font-sans flex flex-col selection:bg-[#FEE08B]">
+    <div className="min-h-screen bg-white text-[#1F1F1F] font-sans flex flex-col selection:bg-[#FCDF9C]">
       {/* ── 1. TOP HEADER (Matches Figma Screenshot Header) ── */}
       <HostHeader />
       <HostSubNav activeTab="listing" />
@@ -825,7 +825,7 @@ export function HostListingsWorkspace({
           ) : (
             /* Mobile Title & Action Icons (When search is closed on mobile) */
             <div className="listing-title mb-8 flex items-center justify-between gap-3 sm:hidden">
-              <h1 className="min-w-0 text-[22px] leading-[1.15] font-medium tracking-[-0.025em]">
+              <h1 className="min-w-0">
                 {t("host_listing_title_mobile")}
               </h1>
 
@@ -918,7 +918,7 @@ export function HostListingsWorkspace({
                 type="button"
                 onClick={handleOpenCreate}
                 disabled={pending}
-                className="inline-flex min-h-11 items-center gap-2 whitespace-nowrap rounded-full border border-transparent hover:border-[#1F1F1F] bg-[#FEE08B] hover:bg-[#1F1F1F] text-[#1F1F1F] hover:text-white font-medium text-base px-5 py-2.5 transition-all shadow-2xs cursor-pointer"
+                className="inline-flex min-h-11 items-center gap-2 whitespace-nowrap rounded-full border border-transparent hover:border-[#1F1F1F] bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1F1F1F] hover:text-white font-medium text-base px-5 py-2.5 transition-all shadow-2xs cursor-pointer"
               >
                 {t("host_create_new_listing")}
               </button>
@@ -926,7 +926,7 @@ export function HostListingsWorkspace({
           </div>
 
           {/* Status Tabs Pill Switcher matching /host/today style */}
-          <div className="mb-6 flex w-full items-center justify-between gap-3 border-b border-[#727272] pb-5 sm:mb-8 sm:w-fit sm:pb-6">
+          <div className="mb-6 flex w-full items-center justify-between gap-3 border-b border-[#727272] pb-5 sm:mb-8 sm:pb-6">
             <div
               className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1"
               role="tablist"
@@ -1110,7 +1110,7 @@ export function HostListingsWorkspace({
 
                           {/* Below Card Information */}
                           <div className="px-0 pt-3 sm:px-3 lg:pt-6">
-                            <h3 className="truncate text-base font-semibold leading-6 text-[#252525]">
+                            <h3 className="truncate text-base font-medium leading-6 text-[#252525]">
                               <Link
                                 href={`/host/listings/${item.id}`}
                                 className="after:absolute after:inset-0 after:rounded-[22px] focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:outline-offset-4"
@@ -1733,7 +1733,7 @@ export function HostListingsWorkspace({
       {showAvailabilityModal && selectedListingForCal && (
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
           <div className="w-full max-w-md max-h-[90dvh] overflow-y-auto rounded-3xl bg-[var(--surface)] p-6 shadow-2xl space-y-4 border border-[var(--border)] font-sans">
-            <h3 className="text-base font-semibold text-muted-foreground">
+            <h3 className="text-base font-medium text-muted-foreground">
               Calendar Availability: {selectedListingForCal.title}
             </h3>
             <p className="text-xs text-[var(--muted-foreground)]">
@@ -1808,7 +1808,7 @@ export function HostListingsWorkspace({
       {showDeleteModal && listingToDelete && (
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
           <div className="w-full max-w-sm max-h-[90dvh] overflow-y-auto rounded-2xl bg-[var(--surface)] p-6 shadow-xl space-y-4 border border-[var(--border)] font-sans">
-            <h3 className="text-base font-semibold text-rose-600">{t("host_listings_modal_delete_confirm", "Delete Property Listing?")}</h3>
+            <h3 className="text-base font-medium text-rose-600">{t("host_listings_modal_delete_confirm", "Delete Property Listing?")}</h3>
             <p className="text-xs text-[var(--muted-foreground)]">
               Are you sure you want to permanently delete <strong>{listingToDelete.title}</strong>? This action cannot be undone.
             </p>

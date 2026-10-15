@@ -176,8 +176,8 @@ export function BookingPriceCard({
           </dd>
         </div>
 
-        <div className="flex items-center justify-between gap-4 border-t border-zinc-100 pt-3 text-xs text-zinc-600">
-          <dt className="font-medium">{t("booking_details_payment_status", "Payment")}</dt>
+        <div className="flex items-center justify-between gap-4 border-t border-zinc-100 pt-3 text-xs text-[#1f1f1f]">
+          <dt className="text-sm font-medium">{t("booking_details_payment_status", "Payment")}</dt>
           <dd className="font-semibold text-amber-900 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full">
             {t("booking_details_pending_deferred", "Pending / Deferred")}
           </dd>

@@ -141,10 +141,10 @@ export function HostEarningsClient({ initialData }: HostEarningsClientProps) {
       {/* Title & Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 pb-5">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900">
+          <h1>
             Earnings & Payouts
           </h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 text-sm text-[#727272]">
             Manage your payout methods, view upcoming disbursements, and track completed earnings.
           </p>
         </div>

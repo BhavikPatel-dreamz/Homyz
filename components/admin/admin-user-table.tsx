@@ -1024,7 +1024,7 @@ export function AdminUserTable({
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
             <div className="flex items-center justify-between mb-1">
-              <h2 className="text-base font-semibold text-muted-foreground">
+              <h2 className="text-base font-medium text-muted-foreground">
                 Add New Administrator
               </h2>
               <button
@@ -1110,7 +1110,7 @@ export function AdminUserTable({
       {editUser && (
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
-            <h2 className="text-base font-semibold text-muted-foreground mb-1">
+            <h2 className="text-base font-medium text-muted-foreground mb-1">
               Change Role for {editUser.name || editUser.email}
             </h2>
             <p className="text-xs text-[var(--muted-foreground)] mb-4">
@@ -1171,7 +1171,7 @@ export function AdminUserTable({
                 </svg>
               </div>
               <div>
-                <h2 className="text-base font-semibold text-muted-foreground">
+                <h2 className="text-base font-medium text-muted-foreground">
                   Delete Administrator
                 </h2>
                 <p className="text-xs text-[var(--muted-foreground)]">
@@ -1228,7 +1228,7 @@ export function AdminUserTable({
                 )}
               </div>
               <div>
-                <h2 className="text-base font-semibold text-muted-foreground">
+                <h2 className="text-base font-medium text-muted-foreground">
                   {statusConfirmUser.targetStatus === "SUSPENDED" ? "Suspend Administrator" : "Activate Administrator"}
                 </h2>
                 <p className="text-xs text-[var(--muted-foreground)]">
@@ -1303,7 +1303,7 @@ export function AdminUserTable({
                 </svg>
               </div>
               <div>
-                <h2 className="text-base font-semibold text-muted-foreground">
+                <h2 className="text-base font-medium text-muted-foreground">
                   Revoke Active Sessions
                 </h2>
                 <p className="text-xs text-[var(--muted-foreground)]">

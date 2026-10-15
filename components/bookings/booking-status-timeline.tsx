@@ -42,7 +42,7 @@ export function BookingStatusTimeline({ events, className = "" }: BookingStatusT
         <h3 id="booking-timeline-heading" className="text-base sm:text-lg font-medium text-[#1F1F1F]">
           {t("booking_details_timeline_title", "Reservation timeline")}
         </h3>
-        <span className="text-xs text-zinc-500 font-medium">
+        <span className="text-sm text-[#727272] font-medium">
           {t("booking_details_timeline_subtitle", "Status updates & milestones")}
         </span>
       </div>
@@ -112,16 +112,16 @@ export function BookingStatusTimeline({ events, className = "" }: BookingStatusT
               {/* Text content */}
               <div className="flex-1 min-w-0 pt-0.5">
                 <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-2">
-                  <h4 className="text-sm font-semibold text-zinc-900 leading-tight">
+                  <h4 className="text-sm font-medium text-[#1f1f1f] leading-tight">
                     {evt.title}
                   </h4>
                   {formattedTime && (
-                    <time dateTime={evt.timestamp || undefined} className="text-xs font-normal text-zinc-500 sm:whitespace-nowrap">
+                    <time dateTime={evt.timestamp || undefined} className="text-sm font-normal text-[#727272] sm:whitespace-nowrap">
                       {formattedTime}
                     </time>
                   )}
                 </div>
-                <p className="mt-1 text-xs sm:text-sm text-zinc-600 leading-relaxed">
+                <p className="mt-1 text-xs sm:text-sm text-[#727272] leading-relaxed">
                   {evt.description}
                 </p>
               </div>

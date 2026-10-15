@@ -90,7 +90,7 @@ export function AdminReviewsClient({
             </Link>{" "}
             &gt; Reviews
           </nav>
-          <h1 className="mt-1 text-2xl font-bold text-slate-900">Review Management &amp; Moderation</h1>
+          <h1 className="mt-1">Review Management &amp; Moderation</h1>
           <p className="mt-1 text-sm text-slate-600">
             Manage two-directional guest and host reviews, monitor reciprocal blind states, and execute moderation policies.
           </p>

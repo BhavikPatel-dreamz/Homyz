@@ -1493,7 +1493,7 @@ export function HostListingEditorClient({
   return (
     <div
       suppressHydrationWarning
-      className={`flex min-h-screen min-w-0 flex-col overflow-x-clip bg-white pb-12 font-sans text-[#1F1F1F] selection:bg-[#FEE08B] selection:text-[#1F1F1F] lg:pb-0 ${presentation === "admin" ? "admin-listing-editor" : ""}`}
+      className={`flex min-h-screen min-w-0 flex-col overflow-x-clip bg-white pb-12 font-sans text-[#1F1F1F] selection:bg-[#FCDF9C] selection:text-[#1F1F1F] lg:pb-0 ${presentation === "admin" ? "admin-listing-editor" : ""}`}
     >
       {/* 1. TOP HEADER (Matches Figma Header Bar) */}
       {presentation === "host" && (
@@ -2035,7 +2035,7 @@ export function HostListingEditorClient({
                     🏠
                   </div>
                   <div>
-                    <h2 className="text-base font-semibold text-[#1F1F1F]">{t("host_remove_listing_card_title") || "Remove listing"}</h2>
+                    <h2 className="text-base font-medium text-[#1F1F1F]">{t("host_remove_listing_card_title") || "Remove listing"}</h2>
                     <p className="text-xs text-[#727272]">{t("host_remove_listing_card_sub") || "Permanently remove your listing from Homyz."}</p>
                   </div>
                 </div>
@@ -2302,7 +2302,7 @@ export function HostListingEditorClient({
                     setIsTurnOffInstantBookModalOpen(false);
                   }
                 }}
-                className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
+                className="rounded-full bg-[#FCDF9C] border border-[#FCDF9C] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
                 {t("host_booking_turn_instant_off_confirm") || "Turn Instant Book off"}
               </button>
@@ -2366,7 +2366,7 @@ export function HostListingEditorClient({
                     setIsCustomMessageModalOpen(false);
                   }
                 }}
-                className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
+                className="rounded-full bg-[#FCDF9C] border border-[#FCDF9C] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
                 {isSaving ? (t("host_booking_custom_message_saving") || "Saving...") : (t("host_booking_custom_message_save") || "Save Message")}
               </button>
@@ -2419,7 +2419,7 @@ export function HostListingEditorClient({
                   await handleSaveSection("house-rules");
                   setIsEditingAdditionalRulesModalOpen(false);
                 }}
-                className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
+                className="rounded-full bg-[#FCDF9C] border border-[#FCDF9C] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
                 {isSaving ? t("host_saving") : t("host_additional_house_rules_save")}
               </button>

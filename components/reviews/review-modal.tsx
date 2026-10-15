@@ -263,7 +263,7 @@ export function ReviewModal({
           >
             <ReviewIcon name="close" className="size-5" />
           </button>
-          <h2 id="modal-review-title" className="text-base font-semibold text-[#1f1f1f] sm:hidden truncate px-2">
+          <h2 id="modal-review-title" className="text-base font-medium text-[#1f1f1f] sm:hidden truncate px-2">
             {t("reviews_guest_reviews", "Guest reviews")}
           </h2>
           <div className="w-9 sm:hidden" />
@@ -500,7 +500,7 @@ export function ReviewModal({
               ) : reviews.length === 0 ? (
                 // Empty State
                 <div className="py-12 text-center space-y-3">
-                  <p className="text-base font-semibold text-[#1f1f1f]">
+                  <p className="text-base font-medium text-[#1f1f1f]">
                     {debouncedSearch
                       ? t("reviews_no_match_search", "No reviews matching '{query}'").replace(
                           "{query}",

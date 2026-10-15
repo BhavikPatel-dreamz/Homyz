@@ -225,10 +225,10 @@ export function AdminBookingDashboardClient({
       {/* 3.2 — Dashboard Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[var(--border)] pb-5">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+          <h1>
             Booking Management
           </h1>
-          <p className="mt-1 text-xs sm:text-sm text-[var(--muted-foreground)]">
+          <p className="mt-1 text-xs sm:text-sm text-[#727272]">
             Monitor and manage reservations across Homyz.
           </p>
         </div>

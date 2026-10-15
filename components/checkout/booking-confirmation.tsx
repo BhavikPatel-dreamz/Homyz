@@ -60,7 +60,7 @@ export function BookingConfirmation({
           <svg className="size-5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.25"><path d="m3.25 8.25 2.8 2.8 6.7-6.7" /></svg>
         </span>
         <div className="min-w-0 pt-0.5">
-          <h3 className="text-base font-semibold text-emerald-950">
+          <h3 className="text-base font-medium text-emerald-950">
             {isInstantBook ? t("book_confirmed_title", "Booking confirmed") : t("book_request_sent_title", "Booking request sent")}
           </h3>
           <p className="mt-1 text-sm leading-5 text-emerald-800">

@@ -116,7 +116,7 @@
   border-color: var(--admin-editor-border) !important;
 }
 
-.admin-listing-editor :is([class*="bg-[#FEE08B]"], [class*="bg-[#FCDF9C]"], [class*="bg-[#F5D98C]"], [class*="bg-[#E9C979]"]) {
+.admin-listing-editor :is([class*="bg-[#FCDF9C]"], [class*="bg-[#FCDF9C]"], [class*="bg-[#F5D98C]"], [class*="bg-[#E9C979]"]) {
   background-color: var(--accent) !important;
 }
 
@@ -213,7 +213,7 @@
 }
 
 .admin-listing-editor main button[class*="bg-[#FCDF9C]"],
-.admin-listing-editor main button[class*="bg-[#FEE08B]"],
+.admin-listing-editor main button[class*="bg-[#FCDF9C]"],
 .admin-listing-editor main button[class*="bg-[#F5D98C]"],
 .admin-listing-editor main button[class*="bg-amber"] {
   background-color: #f59e0b !important;

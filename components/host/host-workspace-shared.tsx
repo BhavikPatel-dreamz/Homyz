@@ -411,7 +411,7 @@ export function ReservationDetails({
                     aria-hidden="true"
                   />
                   <span
-                    className={`text-xs font-semibold uppercase tracking-wider ${statusClasses.text}`}
+                    className={`text-xs font-medium uppercase tracking-wider ${statusClasses.text}`}
                   >
                     {status.replaceAll("_", " ")}
                   </span>
@@ -424,11 +424,11 @@ export function ReservationDetails({
               {/* Cancellation Notice Banner */}
               {(booking.status === "CANCELLED" || pb?.cancellation) && (
                 <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50/80 p-3.5 text-xs text-rose-950 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-200">
-                  <p className="font-semibold text-rose-900 dark:text-rose-100 flex items-center gap-1.5">
+                  <p className="font-medium text-rose-900 dark:text-rose-100 flex items-center gap-1.5">
                     <span className="size-2 rounded-full bg-rose-600 inline-block" />
                     {t("host_cal_res_cancelled_banner", "Reservation Cancelled")}
                   </p>
-                  <div className="mt-2 space-y-1 text-[11px] text-rose-900/90 dark:text-rose-200/90">
+                  <div className="mt-2 space-y-1 text-xs text-rose-900/90 dark:text-rose-200/90">
                     <p>
                       {t("host_cal_res_cancelled_by", "Cancelled by:")}{" "}
                       <span className="font-medium capitalize">
@@ -454,7 +454,7 @@ export function ReservationDetails({
                   className="size-20 shrink-0 rounded-xl border border-zinc-200 object-cover dark:border-zinc-700"
                 />
                 <div className="min-w-0 flex-1">
-                  <p className="text-[11px] font-medium uppercase tracking-wider text-[#727272]">
+                  <p className="text-xs font-medium uppercase tracking-wider text-[#727272]">
                     {t("host_cal_res_property_label", "Property")}
                   </p>
                   <Link
@@ -463,7 +463,7 @@ export function ReservationDetails({
                   >
                     {listing.title}
                   </Link>
-                  <p className="mt-0.5 truncate text-xs text-[#727272]">
+                  <p className="mt-0.5 truncate text-sm text-[#727272]">
                     {[listing.district, listing.city, listing.country]
                       .filter(Boolean)
                       .join(", ")}
@@ -474,21 +474,21 @@ export function ReservationDetails({
               {/* Explicit Guest & Dates Context */}
               <div className="mt-4 grid grid-cols-2 gap-3 border-t border-zinc-200/80 pt-3 text-xs dark:border-zinc-700/80">
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-wider text-[#727272]">
+                  <p className="text-xs font-medium uppercase tracking-wider text-[#727272]">
                     {t("host_cal_res_guest_label", "Guest")}
                   </p>
-                  <p className="mt-0.5 text-sm font-semibold text-zinc-900 dark:text-zinc-100 truncate">
+                  <p className="mt-0.5 text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate">
                     {booking.guestName}
                   </p>
                 </div>
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-wider text-[#727272]">
+                  <p className="text-xs font-medium uppercase tracking-wider text-[#727272]">
                     {t("host_cal_res_dates_label", "Dates")}
                   </p>
                   <p className="mt-0.5 text-sm font-medium text-[#1f1f1f] dark:text-zinc-200">
                     {shortDate(booking.startDate)} – {shortDate(booking.endDate)}
                   </p>
-                  <p className="text-[11px] text-[#727272]">
+                  <p className="text-xs text-[#727272]">
                     {nights} {nights === 1 ? t("host_dash_night_singular", "night") : t("host_dash_night_plural", "nights")} · {guestCount}{" "}
                     {guestCount === 1 ? t("host_dash_guest_singular", "guest") : t("host_dash_guest_plural", "guests")}
                   </p>
@@ -510,27 +510,27 @@ export function ReservationDetails({
                   <img
                     src={booking.guestImage}
                     alt={booking.guestName}
-                    className="size-12 shrink-0 rounded-full border border-zinc-200 object-cover dark:border-zinc-700"
+                    className="size-12 shrink-0 rounded-full border border-zinc-200 object-cover dark:border-zinc-700 text-xs"
                   />
                 ) : (
                   <span
                     aria-hidden="true"
-                    className="flex size-12 shrink-0 items-center justify-center rounded-full border border-amber-200 bg-amber-100 font-semibold text-amber-900 dark:border-amber-800 dark:bg-amber-950/60 dark:text-amber-300"
+                    className="flex size-12 shrink-0 items-center justify-center rounded-full border border-amber-200 bg-amber-100 font-medium text-amber-900 dark:border-amber-800 dark:bg-amber-950/60 dark:text-amber-300"
                   >
                     {booking.guestName[0]?.toUpperCase() || "G"}
                   </span>
                 )}
                 <div className="min-w-0 flex-1">
-                  <p className="font-semibold text-zinc-900 dark:text-zinc-100">
+                  <p className="font-medium text-zinc-900 dark:text-zinc-100">
                     {booking.guestName}
                   </p>
                   {booking.guestEmail && (
-                    <p className="truncate text-xs text-[#727272] font-normal">
+                    <p className="truncate text-sm text-[#727272] font-normal">
                       {booking.guestEmail}
                     </p>
                   )}
                   {booking.guestCreatedAt && (
-                    <p className="mt-1 text-xs text-[#727272]">
+                    <p className="mt-1 text-sm text-[#727272]">
                       {t("host_cal_res_member_since", "Member since")}{" "}
                       {new Date(booking.guestCreatedAt).getUTCFullYear()}
                     </p>
@@ -558,14 +558,14 @@ export function ReservationDetails({
                 </Link>
                 <Link
                   href={messageHref}
-                  className="flex min-h-11 min-w-0 items-center justify-center rounded-full bg-[#FCDF9C] px-3 py-3 text-center text-sm font-semibold text-[#1f1f1f] transition-colors duration-300 hover:bg-black hover:text-white dark:bg-zinc-100 dark:text-[#1F1F1F] dark:hover:bg-white"
+                  className="flex min-h-11 min-w-0 items-center justify-center rounded-full bg-[#FCDF9C] px-3 py-3 text-center text-sm font-medium text-[#1f1f1f] transition-colors duration-300 hover:bg-black hover:text-white dark:bg-zinc-100 dark:text-[#1F1F1F] dark:hover:bg-white"
                 >
                   {t("host_cal_res_btn_message", "Message guest")}
                 </Link>
               </div>
 
               {hasSubmittedReview ? (
-                <div className="flex min-h-11 items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 text-center text-xs font-semibold text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300">
+                <div className="flex min-h-11 items-center justify-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 text-center text-sm font-medium text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                     <path d="m5 12 4 4L19 6" />
                   </svg>
@@ -574,7 +574,7 @@ export function ReservationDetails({
               ) : canReviewGuest ? (
                 <Link
                   href={`/host/reviews/${booking.id}`}
-                  className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#1F1F1F] px-4 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-zinc-700 dark:bg-white dark:text-[#1F1F1F] dark:hover:bg-zinc-200"
+                  className="flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-[#1F1F1F] px-4 py-3 text-center text-sm font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-white dark:text-[#1F1F1F] dark:hover:bg-zinc-200"
                 >
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                     <path d="M12 20h9" />
@@ -602,11 +602,11 @@ export function ReservationDetails({
                     <h3 id="reservation-reviews-heading" className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">
                       Reviews
                     </h3>
-                    <p className="mt-0.5 text-xs text-[#727272]">
+                    <p className="mt-0.5 text-sm text-[#727272]">
                       Ratings shared for this reservation
                     </p>
                   </div>
-                  <span className="rounded-full bg-zinc-100 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+                  <span className="rounded-full bg-zinc-100 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wide text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
                     {[booking.hostReview, booking.guestReview].filter(Boolean).length} of 2
                   </span>
                 </div>
@@ -671,7 +671,7 @@ export function ReservationDetails({
                       title="Copy confirmation code"
                     >
                       {codeCopied ? (
-                        <span className="text-emerald-600 dark:text-emerald-400 font-semibold">
+                        <span className="text-emerald-600 dark:text-emerald-400 font-medium">
                           {t("host_cal_res_copied", "Copied!")}
                         </span>
                       ) : (
@@ -780,7 +780,7 @@ export function ReservationDetails({
                     }
                   />
                 )}
-                <div className="flex justify-between gap-4 border-t border-zinc-100 pt-2 text-sm font-semibold dark:border-zinc-800">
+                <div className="flex justify-between gap-4 border-t border-zinc-100 pt-2 text-sm font-medium dark:border-zinc-800">
                   <dt>{t("host_cal_res_total_paid_guest", "Total paid by guest")} ({sourceCurrency})</dt>
                   <dd>{formatPrice(pricing.totalPrice, sourceCurrency, 2)}</dd>
                 </div>
@@ -853,9 +853,9 @@ export function ReservationDetails({
                       }
                     />
                   )}
-                  <div className="flex justify-between gap-4 border-t border-zinc-100 pt-2 text-sm font-semibold dark:border-zinc-800">
+                  <div className="flex justify-between gap-4 border-t border-zinc-100 pt-2 text-sm font-medium dark:border-zinc-800">
                     <dt>{t("host_cal_res_total_host_payout", "Total host payout")} ({sourceCurrency})</dt>
-                    <dd className="text-emerald-700 dark:text-emerald-400 font-semibold">
+                    <dd className="text-emerald-700 dark:text-emerald-400 font-medium">
                       {formatPrice(payoutTotal, sourceCurrency, 2)}
                     </dd>
                   </div>
@@ -883,7 +883,7 @@ export function ReservationDetails({
 
               {/* Payment Details Summary */}
               <div className="rounded-lg border border-zinc-200 bg-zinc-50/70 p-3.5 dark:border-zinc-700 dark:bg-zinc-800/50 text-xs">
-                <p className="text-base font-semibold text-[#1f1f1f] dark:text-zinc-200 mb-2">
+                <p className="text-base font-medium text-[#1f1f1f] dark:text-zinc-200 mb-2">
                   {t("host_cal_res_payment_record", "Payment record")}
                 </p>
                 <div className="space-y-1.5 text-[#1f1f1f] dark:text-zinc-400 text-sm">
@@ -945,8 +945,8 @@ function ReviewRatingSummary({
     <article className="rounded-xl border border-zinc-200 bg-zinc-50/70 p-3.5 dark:border-zinc-700 dark:bg-zinc-800/50">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
-          <h4 className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100">{title}</h4>
-          <p className="mt-0.5 text-[11px] text-[#727272]">{detail}</p>
+          <h4 className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100">{title}</h4>
+          <p className="mt-0.5 text-sm text-[#727272]">{detail}</p>
         </div>
         <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-300" aria-label={`${review.rating} out of 5 stars`}>
           <span aria-hidden="true">★</span>
@@ -958,8 +958,8 @@ function ReviewRatingSummary({
         <dl className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
           {categoryRatings.map(([label, value]) => (
             <div key={label} className="rounded-lg border border-white bg-white px-2.5 py-2 dark:border-zinc-700 dark:bg-zinc-900/60">
-              <dt className="text-[10px] font-medium leading-3 text-[#727272]">{label}</dt>
-              <dd className="mt-1 text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+              <dt className="text-sm font-medium leading-3 text-[#727272]">{label}</dt>
+              <dd className="mt-1 text-sm font-medium text-zinc-900 dark:text-zinc-100">
                 {value}/5
               </dd>
             </div>
@@ -968,7 +968,7 @@ function ReviewRatingSummary({
       )}
 
       {review.recommendGuest !== null && (
-        <p className={`mt-3 text-xs font-medium ${review.recommendGuest ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400"}`}>
+        <p className={`mt-3 text-sm font-medium ${review.recommendGuest ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400"}`}>
           {review.recommendGuest ? "Recommends this guest" : "Does not recommend this guest"}
         </p>
       )}
@@ -1051,7 +1051,7 @@ export function MoneyDialog({
     >
       <div className="space-y-5 text-sm">
         <div className="rounded-xl bg-zinc-50 dark:bg-zinc-800/80 p-4 border border-zinc-100 dark:border-zinc-700">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-[#727272]">
+          <p className="text-xs font-medium uppercase tracking-wider text-[#727272]">
             {t("host_cal_money_from", "From")}
           </p>
           <p className="my-1 font-bold text-base text-[#1F1F1F] dark:text-zinc-100">
@@ -1066,7 +1066,7 @@ export function MoneyDialog({
         </div>
 
         <fieldset className="space-y-3">
-          <legend className="mb-2 font-semibold text-[#1F1F1F] dark:text-zinc-100 text-sm">
+          <legend className="mb-2 font-medium text-[#1F1F1F] dark:text-zinc-100 text-sm">
             {t("host_cal_money_question", "What would you like to do?")}
           </legend>
           <label className="flex items-center gap-3 p-3 rounded-xl border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 cursor-pointer transition-colors">
@@ -1106,7 +1106,7 @@ export function MoneyDialog({
           </button>
           <a
             href="/host/messages"
-            className="rounded-full bg-[#1F1F1F] dark:bg-zinc-100 px-6 py-2.5 text-xs font-semibold text-white dark:text-[#1F1F1F] hover:bg-black dark:hover:bg-white transition-colors"
+            className="rounded-full bg-[#1F1F1F] dark:bg-zinc-100 px-6 py-2.5 text-xs font-medium text-white dark:text-[#1F1F1F] hover:bg-black dark:hover:bg-white transition-colors"
           >
             {t("host_cal_money_next", "Next")}
           </a>

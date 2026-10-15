@@ -108,7 +108,7 @@ export function BookingDetailsClient({ data }: BookingDetailsClientProps) {
             <section className="mt-6 rounded-2xl border border-amber-200 bg-amber-50/50 p-5">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
-                  <h2 className="text-base font-semibold text-[#1F1F1F]">Your reservation reports</h2>
+                  <h2 className="text-base font-medium text-[#1F1F1F]">Your reservation reports</h2>
                   <p className="mt-1 text-sm text-zinc-600">Reports you filed for this reservation and their current review status.</p>
                 </div>
                 <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-zinc-700 shadow-2xs">
@@ -149,7 +149,7 @@ export function BookingDetailsClient({ data }: BookingDetailsClientProps) {
                     ? "bg-amber-50/70 border-amber-200 text-amber-950"
                     : "bg-emerald-50/60 border-emerald-200 text-emerald-950"
           }`}>
-            <h2 className="text-base font-semibold">{statusDetails.headline}</h2>
+            <h2 className="text-base font-medium">{statusDetails.headline}</h2>
             <p className="mt-1 text-xs sm:text-sm leading-relaxed opacity-90">
               {statusDetails.description}
             </p>

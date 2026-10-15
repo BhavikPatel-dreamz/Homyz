@@ -131,7 +131,7 @@ export function AirbnbOrgStaysView({
       <div className="mb-6 flex items-start gap-4">
         <BackButton onClick={handleBack} className="mt-1 shrink-0" />
         <div>
-          <h1 className="text-2xl sm:text-[32px] font-semibold tracking-tight text-[#222222] dark:text-zinc-100 leading-tight">
+          <h1>
             {t("host_org_stays_title") || "Homyz.com Stays"}
           </h1>
           <p className="text-sm text-[#727272] dark:text-[#727272] font-normal mt-1">

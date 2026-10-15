@@ -24,7 +24,7 @@ export function AdminModerationCaseDetailsClient({ initialDetails, canUpdate, ca
   const target = details.target?.data; const closed = ["RESOLVED", "DISMISSED"].includes(caseRecord.status);
 
   return <main className="space-y-5 px-4 py-6 sm:px-6 lg:px-8">
-    <div className="flex flex-wrap items-center justify-between gap-3"><div><Link href="/admin/moderation/cases" className="text-sm font-medium text-indigo-700 hover:underline">← Moderation cases</Link><h1 className="mt-2 text-2xl font-semibold text-slate-900">{caseRecord.caseReference}</h1><p className="mt-1 text-sm text-slate-600">Content moderation investigation · no enforcement action is applied from this screen.</p></div><span className={`rounded-full px-3 py-1 text-sm font-semibold ${badge(caseRecord.status)}`}>{title(caseRecord.status)}</span></div>
+    <div className="flex flex-wrap items-center justify-between gap-3"><div><Link href="/admin/moderation/cases" className="text-sm font-medium text-indigo-700 hover:underline">← Moderation cases</Link><h1 className="mt-2">{caseRecord.caseReference}</h1><p className="mt-1 text-sm text-slate-600">Content moderation investigation · no enforcement action is applied from this screen.</p></div><span className={`rounded-full px-3 py-1 text-sm font-semibold ${badge(caseRecord.status)}`}>{title(caseRecord.status)}</span></div>
     {error && <div role="alert" className="rounded-md bg-red-50 p-3 text-sm text-red-800">{error}</div>}
     <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
       <div className="space-y-5">
@@ -507,7 +507,7 @@ function TargetPreview({ targetType, data }: { targetType: string; data: any }) 
 
           {data.id && (
             <div className="flex-1 space-y-2 text-xs">
-              <h3 className="text-base font-semibold text-slate-900">{data.title}</h3>
+              <h3 className="text-base font-medium text-slate-900">{data.title}</h3>
               <p className="text-slate-600">
                 <span className="font-medium text-slate-700">Host:</span> {data.host?.name || "Host"} ({data.host?.email || "No email"})
               </p>
@@ -601,7 +601,7 @@ function TargetPreview({ targetType, data }: { targetType: string; data: any }) 
             </div>
           )}
           <div className="space-y-1 text-xs">
-            <p className="text-base font-semibold text-slate-900">{data.name || "Unnamed user"}</p>
+            <p className="text-base font-medium text-slate-900">{data.name || "Unnamed user"}</p>
             <p className="text-slate-600">{data.email}</p>
             <p className="text-slate-500">Role: <span className="font-medium text-slate-700">{data.role}</span> · Status: <span className="font-medium text-slate-700">{data.status}</span></p>
             <p className="text-slate-500">Joined: {formatDate(data.createdAt)}</p>

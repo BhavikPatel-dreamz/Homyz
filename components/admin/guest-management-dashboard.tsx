@@ -257,8 +257,8 @@ export function GuestManagementDashboard({
       {/* Page Title & Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-muted-foreground">Guest Management</h1>
-          <p className="mt-1 text-xs sm:text-sm text-[var(--muted-foreground)]">
+          <h1>Guest Management</h1>
+          <p className="mt-1 text-xs sm:text-sm text-[#727272]">
             Overview of platform guest accounts, reservations, and spending activity.
           </p>
         </div>

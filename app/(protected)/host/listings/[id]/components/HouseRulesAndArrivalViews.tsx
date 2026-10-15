@@ -593,7 +593,7 @@ export function HouseRulesAndArrivalViews({
                   type="button"
                   disabled={isSaving}
                   onClick={() => handleSaveSection("house-rules")}
-                  className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
+                  className="rounded-full bg-[#FCDF9C] border border-[#FCDF9C] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
                 >
                   {isSaving ? (t("host_saving") || "Saving...") : (t("host_save") || "Save")}
                 </button>
@@ -633,7 +633,7 @@ export function HouseRulesAndArrivalViews({
                 <div className="space-y-4">
                   {/* Check-in window */}
                   <div className="rounded-lg border border-[#727272] dark:border-zinc-700 bg-zinc-50/60 dark:bg-zinc-800/60 p-4 space-y-3">
-                    <label className="text-base font-semibold text-[#1f1f1f] dark:text-zinc-100 block">{t("host_check_in_window_label") || "Check-in window"}</label>
+                    <label className="text-base font-medium text-[#1f1f1f] dark:text-zinc-100 block">{t("host_check_in_window_label") || "Check-in window"}</label>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <span className="text-sm font-normal text-[#1f1f1f] dark:text-[#727272] block mb-1">{t("host_check_in_start_time") || "Start time"}</span>
@@ -675,7 +675,7 @@ export function HouseRulesAndArrivalViews({
 
                   {/* Checkout time */}
                   <div className="rounded-lg border border-[#727272] dark:border-zinc-700 bg-zinc-50/60 dark:bg-zinc-800/60 p-4 space-y-2">
-                    <label className="text-base font-semibold text-[#1f1f1f] dark:text-zinc-100 block">{t("host_checkout_time_label") || "Checkout time"}</label>
+                    <label className="text-base font-medium text-[#1f1f1f] dark:text-zinc-100 block">{t("host_checkout_time_label") || "Checkout time"}</label>
                     <div>
                       <span className="text-sm font-normal text-[#1f1f1f] dark:text-[#727272] block mb-1">{t("host_guests_must_leave_before") || "Guests must leave before"}</span>
                       <div className="relative">
@@ -712,7 +712,7 @@ export function HouseRulesAndArrivalViews({
                       await handleSaveSection("house-rules");
                       setIsCheckInOutModalOpen(false);
                     }}
-                    className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
+                    className="rounded-full bg-[#FCDF9C] border border-[#FCDF9C] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
                   >
                     {isSaving ? (t("host_saving") || "Saving...") : (t("host_save_times") || "Save Times")}
                   </button>
@@ -752,7 +752,7 @@ export function HouseRulesAndArrivalViews({
                   aria-pressed={parkingAvailable === false}
                   onClick={() => setParkingAvailable?.(false)}
                   className={`flex size-8 cursor-pointer items-center justify-center rounded-full border text-xs font-semibold transition-all ${parkingAvailable === false
-                    ? "bg-[#FEE08B] dark:bg-amber-400 border-amber-300 dark:border-amber-400 text-zinc-950 shadow-2xs"
+                    ? "bg-[#FCDF9C] dark:bg-amber-400 border-amber-300 dark:border-amber-400 text-zinc-950 shadow-2xs"
                     : "bg-white dark:bg-zinc-800 border-[#727272] dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
                     }`}
                 >
@@ -771,7 +771,7 @@ export function HouseRulesAndArrivalViews({
                   aria-pressed={parkingAvailable === true}
                   onClick={() => setParkingAvailable?.(true)}
                   className={`flex size-8 cursor-pointer items-center justify-center rounded-full border text-xs font-semibold transition-all ${parkingAvailable === true
-                    ? "bg-[#FEE08B] dark:bg-amber-400 border-amber-300 dark:border-amber-400 text-zinc-950 shadow-2xs"
+                    ? "bg-[#FCDF9C] dark:bg-amber-400 border-amber-300 dark:border-amber-400 text-zinc-950 shadow-2xs"
                     : "bg-white dark:bg-zinc-800 border-[#727272] dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
                     }`}
                 >
@@ -798,7 +798,7 @@ export function HouseRulesAndArrivalViews({
                       type="button"
                       onClick={() => setParkingType?.("FREE")}
                       className={`px-3 py-1 rounded-full text-sm font-medium transition-all cursor-pointer ${parkingType === "FREE"
-                        ? "bg-[#FEE08B] dark:bg-amber-400 border border-amber-300 dark:border-amber-400 text-[#1f1f1f] "
+                        ? "bg-[#FCDF9C] dark:bg-amber-400 border border-amber-300 dark:border-amber-400 text-[#1f1f1f] "
                         : "bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
                         }`}
                     >
@@ -808,7 +808,7 @@ export function HouseRulesAndArrivalViews({
                       type="button"
                       onClick={() => setParkingType?.("PAID")}
                       className={`px-3 py-1 rounded-full text-sm font-medium transition-all cursor-pointer ${parkingType === "PAID"
-                        ? "bg-[#FEE08B] dark:bg-amber-400 border border-amber-300 dark:border-amber-400 text-[#1f1f1f] "
+                        ? "bg-[#FCDF9C] dark:bg-amber-400 border border-amber-300 dark:border-amber-400 text-[#1f1f1f] "
                         : "bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
                         }`}
                     >
@@ -849,7 +849,7 @@ export function HouseRulesAndArrivalViews({
                       aria-pressed={parkingReservation === false}
                       onClick={() => setParkingReservation?.(false)}
                       className={`flex size-8 cursor-pointer items-center justify-center rounded-full border text-xs font-semibold transition-all ${parkingReservation === false
-                        ? "bg-[#FEE08B] dark:bg-amber-400 border-amber-300 dark:border-amber-400 text-zinc-950 shadow-2xs"
+                        ? "bg-[#FCDF9C] dark:bg-amber-400 border-amber-300 dark:border-amber-400 text-zinc-950 shadow-2xs"
                         : "bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
                         }`}
                     >
@@ -868,7 +868,7 @@ export function HouseRulesAndArrivalViews({
                       aria-pressed={parkingReservation === true}
                       onClick={() => setParkingReservation?.(true)}
                       className={`flex size-8 cursor-pointer items-center justify-center rounded-full border text-xs font-semibold transition-all ${parkingReservation === true
-                        ? "bg-[#FEE08B] dark:bg-amber-400 border-amber-300 dark:border-amber-400 text-zinc-950 shadow-2xs"
+                        ? "bg-[#FCDF9C] dark:bg-amber-400 border-amber-300 dark:border-amber-400 text-zinc-950 shadow-2xs"
                         : "bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
                         }`}
                     >
@@ -905,7 +905,7 @@ export function HouseRulesAndArrivalViews({
               type="button"
               disabled={isSaving}
               onClick={() => handleSaveSection("parking")}
-              className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
+              className="rounded-full bg-[#FCDF9C] border border-[#FCDF9C] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
             >
               {isSaving ? (t("host_saving") || "Saving...") : (t("host_save") || "Save")}
             </button>
@@ -1437,7 +1437,7 @@ function CheckOutInstructionsView({
 
             {/* Textarea */}
             <div className="rounded-2xl border border-zinc-200/90 dark:border-zinc-700 bg-zinc-50/60 dark:bg-zinc-800/60 p-4 space-y-2 mb-6">
-              <label className="block text-base font-semibold text-[#1F1F1F] dark:text-zinc-100">
+              <label className="block text-base font-medium text-[#1F1F1F] dark:text-zinc-100">
                 {t("host_instructions_for_guests") || "Instructions for guests"}
               </label>
               <textarea
@@ -1473,7 +1473,7 @@ function CheckOutInstructionsView({
                 type="button"
                 disabled={isSaving}
                 onClick={handleSave}
-                className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
+                className="rounded-full bg-[#FCDF9C] border border-[#FCDF9C] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
                 {isSaving ? (t("host_saving") || "Saving...") : (t("host_save") || "Save")}
               </button>
@@ -1565,7 +1565,7 @@ function GuidebooksView({
                   handleSaveSection("arrival-guide");
                 }
               }}
-              className="px-4 py-1.5 rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-xs font-semibold text-zinc-950 shadow-2xs"
+              className="px-4 py-1.5 rounded-full bg-[#FCDF9C] hover:bg-[#FDE047] text-xs font-semibold text-zinc-950 shadow-2xs"
             >
               Save
             </button>
@@ -2283,7 +2283,7 @@ function DirectionsView({
           type="button"
           disabled={isSaving}
           onClick={() => handleSaveSection("directions")}
-          className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
+          className="rounded-full bg-[#FCDF9C] border border-[#FCDF9C] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
         >
           {isSaving ? (t("host_saving") || "Saving…") : (t("host_save") || "Save")}
         </button>
@@ -2581,7 +2581,7 @@ function CheckInMethodView({
 
       {/* Section: Check-in instructions */}
       <div className="space-y-3">
-        <h2 className="text-base font-semibold text-[#1F1F1F] dark:text-zinc-100">{t("host_checkin_instructions_heading") || "Check-in instructions"}</h2>
+        <h2 className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">{t("host_checkin_instructions_heading") || "Check-in instructions"}</h2>
         <p className="text-sm text-[#727272] dark:text-[#727272] font-normal leading-relaxed">
           {t("host_checkin_instructions_subtext") || "Help guests have a smooth arrival. Share tips for how to get inside – you can also add photos."}
         </p>
@@ -2718,7 +2718,7 @@ function CheckInMethodView({
                 type="button"
                 disabled={isSaving}
                 onClick={handleSaveDetail}
-                className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
+                className="rounded-full bg-[#FCDF9C] border border-[#FCDF9C] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
                 {isSaving ? (t("host_saving") || "Saving...") : (t("host_save") || "Save")}
               </button>
@@ -2782,7 +2782,7 @@ function CheckInMethodView({
                   await handleSaveSection("check-in-method");
                   setIsInstructionModalOpen(false);
                 }}
-                className="rounded-full bg-[#FEE08B] border border-[#FEE08B] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
+                className="rounded-full bg-[#FCDF9C] border border-[#FCDF9C] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
               >
                 {isSaving ? (t("host_saving") || "Saving...") : (t("host_save") || "Save")}
               </button>
@@ -3068,7 +3068,7 @@ function TaxesView({
             setIsSaved(true);
             setTimeout(() => setIsSaved(false), 2000);
           }}
-          className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
+          className="rounded-full bg-[#FCDF9C] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
         >
           {isSaving ? "Saving..." : isSaved ? "Saved!" : "Save"}
         </button>
@@ -3126,7 +3126,7 @@ function HomyzStaysView({
             setIsSaved(true);
             setTimeout(() => setIsSaved(false), 2000);
           }}
-          className="rounded-full bg-[#FEE08B] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
+          className="rounded-full bg-[#FCDF9C] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
         >
           {isSaving ? "Saving..." : isSaved ? "Saved!" : "Save"}
         </button>

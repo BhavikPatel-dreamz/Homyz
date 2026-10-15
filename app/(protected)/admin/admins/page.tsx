@@ -30,10 +30,10 @@ export default async function AdminUsersPage(props: {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-muted-foreground">
+        <h1>
           Administrator Accounts
         </h1>
-        <p className="mt-1 text-xs sm:text-sm text-[var(--muted-foreground)]">
+        <p className="mt-1 text-xs sm:text-sm text-[#727272]">
           Manage administrative personnel, assign RBAC permissions, and oversee account security.
         </p>
       </div>

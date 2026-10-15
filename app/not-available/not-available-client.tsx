@@ -71,7 +71,7 @@ export function NotAvailableClient() {
               {t("page_not_available_badge", "Under Development")}
             </div>
 
-            <h1 className="text-2xl sm:text-4xl font-medium tracking-tight text-[#1F1F1F]">
+            <h1>
               {t("page_not_available_title", "Currently this page is not available")}
             </h1>
 
