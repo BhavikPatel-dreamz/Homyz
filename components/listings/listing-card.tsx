@@ -457,11 +457,10 @@ export function ListingCard({
           propertyId: listing.id,
         });
       }}
-      className={`group relative overflow-hidden text-left ${
-        isSearchGridCard
+      className={`group relative overflow-hidden text-left ${isSearchGridCard
           ? "flex flex-col h-full rounded-[20px] border border-[#1F1F1F] bg-white focus-within:ring-0 focus-visible:shadow-none"
           : "block"
-      } ${isNavigating ? "opacity-90 cursor-wait" : ""} ${className}`}
+        } ${isNavigating ? "opacity-90 cursor-wait" : ""} ${className}`}
     >
       {/* ── Navigation Loading Overlay ── */}
       {isNavigating && (
@@ -546,9 +545,9 @@ export function ListingCard({
               aria-label="Remove from wishlist"
               onClick={handleRemoveOnly}
               disabled={isFavoriting}
-              className={`absolute right-3 top-3 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-white/80 backdrop-blur-xs text-[#1f1f1f] transition-transform hover:scale-110 active:scale-95 cursor-pointer shadow-2xs disabled:opacity-60`}
+              className={`absolute right-3 top-3 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-white/80 backdrop-blur-xs text-[#1f1f1f] transition-transform group-hover:bg-red-500 cursor-pointer shadow-2xs disabled:opacity-60`}
             >
-              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="#1f1f1f" strokeWidth="1.6" className="h-5 w-5">
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="#1f1f1f" strokeWidth="1.6" className="h-5 w-5 group-hover:brightness-0 group-hover:invert">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 6l12 12M6 18L18 6" />
               </svg>
             </button>
@@ -566,7 +565,7 @@ export function ListingCard({
             type="button"
             aria-label="Previous photo"
             onClick={handlePrev}
-            className="absolute left-2.5 top-1/2 -translate-y-1/2 z-20 flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-white/90 hover:bg-white text-zinc-800 shadow-md transition-all hover:scale-105 active:scale-95 cursor-pointer opacity-0 group-hover:opacity-100 focus:opacity-100 backdrop-blur-xs"
+            className="absolute left-2.5 top-1/2 -translate-y-1/2 z-20 flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-white/90 text-[#1f1f1f] shadow-md transition-all hover:bg-[#FCDF9C] cursor-pointer opacity-0 group-hover:opacity-100 focus:opacity-100 backdrop-blur-xs"
           >
             <svg
               aria-hidden="true"
@@ -586,7 +585,7 @@ export function ListingCard({
             type="button"
             aria-label="Next photo"
             onClick={handleNext}
-            className="absolute right-2.5 top-1/2 -translate-y-1/2 z-20 flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-white/90 hover:bg-white text-zinc-800 shadow-md transition-all hover:scale-105 active:scale-95 cursor-pointer opacity-0 group-hover:opacity-100 focus:opacity-100 backdrop-blur-xs"
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 z-20 flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-white/90 text-[#1f1f1f] shadow-md transition-all hover:bg-[#FCDF9C] cursor-pointer opacity-0 group-hover:opacity-100 focus:opacity-100 backdrop-blur-xs"
           >
             <svg
               aria-hidden="true"
@@ -622,8 +621,8 @@ export function ListingCard({
                     setCurrentPhotoIndex(idx);
                   }}
                   className={`rounded-full transition-all duration-200 cursor-pointer ${idx === currentPhotoIndex
-                      ? "h-1.5 w-1.5 bg-white scale-125 shadow-xs"
-                      : "h-1.5 w-1.5 bg-white/60 hover:bg-white/80 shadow-xs"
+                    ? "h-1.5 w-1.5 bg-white scale-125 shadow-xs"
+                    : "h-1.5 w-1.5 bg-white/60 hover:bg-white/80 shadow-xs"
                     }`}
                 />
               ))
@@ -656,10 +655,10 @@ export function ListingCard({
                         setCurrentPhotoIndex(idx);
                       }}
                       className={`rounded-full transition-all duration-200 cursor-pointer ${isActive
-                          ? "h-1.5 w-1.5 bg-white scale-125 shadow-xs"
-                          : isEdge
-                            ? "h-1 w-1 bg-white/40 shadow-xs"
-                            : "h-1.5 w-1.5 bg-white/65 hover:bg-white/85 shadow-xs"
+                        ? "h-1.5 w-1.5 bg-white scale-125 shadow-xs"
+                        : isEdge
+                          ? "h-1 w-1 bg-white/40 shadow-xs"
+                          : "h-1.5 w-1.5 bg-white/65 hover:bg-white/85 shadow-xs"
                         }`}
                     />
                   );
@@ -707,7 +706,7 @@ export function ListingCard({
                   {formatPrice(totalPrice, currency)}
                 </span>
                 <span className="text-[#1f1f1f]">
-                 for {nights} {nights === 1 ? "night" : "nights"}
+                  for {nights} {nights === 1 ? "night" : "nights"}
                 </span>
               </span>
 
@@ -744,7 +743,7 @@ export function ListingCard({
           )}
         </div>
       ) : (
-        <div className="pt-3 pb-1 space-y-0.5 text-left">
+        <div className="pt-6 pb-1 space-y-0.5 text-left">
           {/* Row 1: Title + Rating */}
           <div className="flex items-start justify-between gap-2">
             <h3 className="text-sm sm:text-[15px] font-semibold text-[#1F1F1F] truncate leading-snug group-hover:text-amber-950 transition-colors flex-1 min-w-0">
@@ -771,26 +770,26 @@ export function ListingCard({
                 </span>
               </span>
             ) : (
-              <span className="text-[10px] font-medium text-[#727272] bg-[#F3F4F5] px-1.5 py-0.5 rounded-lg shrink-0 leading-3.5">
+                  <span className="text-xs font-normal text-[#1f1f1f] bg-[#FCDF9C] px-2.5 py-1 rounded-full shrink-0 leading-3.5">
                 {t("listings_new", "New")}
               </span>
             )}
           </div>
 
           {/* Row 2: Subtitle / Description / Distance */}
-          <p className="text-xs sm:text-[13px] text-[#727272] font-normal truncate">
+          <p className="text-sm text-[#727272] font-normal truncate">
             {secondarySubtitle}
             {distanceText}
           </p>
 
           {/* Row 3: Room breakdown / Specs */}
-          <p className="text-xs sm:text-[13px] text-[#727272] font-normal truncate">
+          <p className="text-sm text-[#727272] font-normal truncate">
             {specsText}
           </p>
 
           {/* Row 4: Dates if available */}
           {dateRangeString && (
-            <p className="text-xs sm:text-[13px] text-[#727272] font-normal truncate">
+            <p className="text-sm text-[#727272] font-normal truncate">
               {dateRangeString}
             </p>
           )}
@@ -802,15 +801,15 @@ export function ListingCard({
                 <span className="line-through text-[#727272] text-xs font-normal">
                   {formattedBasePrice}
                 </span>
-                <span className="font-semibold text-zinc-950 text-sm">
+                <span className="font-medium text-[#1f1f1f] text-sm">
                   {formattedDiscountedPrice}
-                  <span className="text-[#727272] font-normal text-xs ml-0.5">{t("listings_per_night", "/ night")}</span>
+                    <span className="text-[#727272] font-normal text-sm ml-0.5">{t("listings_per_night", "/ night")}</span>
                 </span>
               </>
             ) : (
               <div className="flex items-baseline gap-1">
-                <span className="font-semibold text-zinc-950 text-sm">{formattedBasePrice}</span>
-                <span className="text-[#727272] font-normal text-xs">{t("listings_per_night", "/ night")}</span>
+                <span className="font-medium text-[#1f1f1f] text-sm">{formattedBasePrice}</span>
+                    <span className="text-[#727272] font-normal text-sm">{t("listings_per_night", "/ night")}</span>
               </div>
             )}
           </div>

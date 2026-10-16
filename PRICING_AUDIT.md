@@ -658,7 +658,7 @@ model ReservationTax {
 - **File:** [components/listings/listing-card.tsx](components/listings/listing-card.tsx)
 - **Display:**
   ```tsx
-  <span className="font-semibold text-zinc-950 text-sm">
+  <span className="font-medium text-[#1f1f1f] text-sm">
     SAR {formattedPrice}
   </span>
   <span className="text-[#727272] font-normal">/ night</span>
