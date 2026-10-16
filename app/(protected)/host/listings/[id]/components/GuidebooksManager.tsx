@@ -586,7 +586,7 @@ function GuidebookRecommendationForm({
               value={title}
               maxLength={150}
               onChange={(event) => setTitle(event.target.value)}
-              className="mt-0.5 w-full border-0 border-b border-transparent py-0.5 text-xl sm:text-2xl font-semibold text-[#222] outline-none placeholder:text-zinc-400 focus:border-zinc-400"
+              className="pl-2 mt-0.5 w-full border-0 border-b border-transparent py-0.5 text-xl sm:text-2xl font-semibold text-[#222] outline-none placeholder:text-zinc-400 focus:border-zinc-400"
               placeholder={isPlace ? t("host_guidebook_place_name_ph", "Place name") : t("host_guidebook_neighbourhood_name_ph", "Neighbourhood name")}
             />
             <div className="mt-3">

@@ -400,9 +400,22 @@ body {
 .skeleton-shimmer {
   background: linear-gradient(
     90deg,
-    var(--muted) 25%,
-    var(--border-subtle) 37%,
-    var(--muted) 63%
+    #e4e4e7 25%,
+    #f4f4f6 37%,
+    #e4e4e7 63%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite ease-in-out;
+}
+
+.dark .skeleton-shimmer,
+:where(.dark, .dark *) .skeleton-shimmer,
+[data-theme="dark"] .skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    #27272a 20%,
+    #44444c 37%,
+    #27272a 60%
   );
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite ease-in-out;
@@ -411,7 +424,13 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .skeleton-shimmer {
     animation: none !important;
-    background: var(--muted) !important;
+    background: #e4e4e7 !important;
+  }
+  .dark .skeleton-shimmer,
+  :where(.dark, .dark *) .skeleton-shimmer,
+  [data-theme="dark"] .skeleton-shimmer {
+    animation: none !important;
+    background: #27272a !important;
   }
 }
 

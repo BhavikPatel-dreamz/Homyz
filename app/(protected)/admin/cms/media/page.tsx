@@ -446,24 +446,24 @@ export default function CmsMediaLibraryPage() {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200 pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200 dark:border-zinc-800 pb-5">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
               CMS Media Library
             </h1>
-            <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-zinc-100 text-zinc-700 border border-zinc-200">
+            <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700">
               {total} assets
             </span>
           </div>
-          <p className="mt-1 text-xs sm:text-sm text-zinc-500">
+          <p className="mt-1 text-xs sm:text-sm text-zinc-500 dark:text-zinc-400">
             Manage photography, marketing graphics, and responsive banners across the Homyz platform.
           </p>
         </div>
 
         {canUpload && (
           <div>
-            <label className="inline-flex items-center gap-2 px-4 py-2.5 bg-zinc-900 text-white rounded-xl text-xs sm:text-sm font-semibold hover:bg-zinc-800 transition cursor-pointer shadow-xs">
+            <label className="inline-flex items-center gap-2 px-4 py-2.5 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-xl text-xs sm:text-sm font-semibold hover:bg-zinc-800 dark:hover:bg-zinc-200 transition cursor-pointer shadow-xs">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
               </svg>
@@ -482,32 +482,32 @@ export default function CmsMediaLibraryPage() {
 
       {/* Notifications */}
       {error && (
-        <div className="p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl text-xs sm:text-sm font-medium flex items-center justify-between shadow-2xs">
+        <div className="p-4 bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800/40 text-rose-800 dark:text-rose-300 rounded-2xl text-xs sm:text-sm font-medium flex items-center justify-between shadow-2xs">
           <span>{error}</span>
-          <button type="button" onClick={() => setError(null)} className="text-rose-500 hover:text-rose-700 font-bold ml-2">
+          <button type="button" onClick={() => setError(null)} className="text-rose-500 hover:text-rose-700 dark:hover:text-rose-300 font-bold ml-2">
             ✕
           </button>
         </div>
       )}
 
       {success && (
-        <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl text-xs sm:text-sm font-medium flex items-center justify-between shadow-2xs">
+        <div className="p-4 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800/40 text-emerald-800 dark:text-emerald-300 rounded-2xl text-xs sm:text-sm font-medium flex items-center justify-between shadow-2xs">
           <span>{success}</span>
-          <button type="button" onClick={() => setSuccess(null)} className="text-emerald-500 hover:text-emerald-700 font-bold ml-2">
+          <button type="button" onClick={() => setSuccess(null)} className="text-emerald-500 hover:text-emerald-700 dark:hover:text-emerald-300 font-bold ml-2">
             ✕
           </button>
         </div>
       )}
 
       {uploadProgress && (
-        <div className="p-3 bg-zinc-100 border border-zinc-200 rounded-xl text-xs font-medium text-zinc-700 flex items-center gap-2">
-          <div className="w-4 h-4 border-2 border-zinc-900 border-t-transparent rounded-full animate-spin" />
+        <div className="p-3 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-xs font-medium text-zinc-700 dark:text-zinc-300 flex items-center gap-2">
+          <div className="w-4 h-4 border-2 border-zinc-900 dark:border-zinc-100 border-t-transparent rounded-full animate-spin" />
           <span>{uploadProgress}</span>
         </div>
       )}
 
       {/* Top Controls & Filters */}
-      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-white p-3 sm:p-4 rounded-2xl border border-zinc-200 shadow-xs">
+      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-white dark:bg-zinc-900 p-3 sm:p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
         {/* Search */}
         <div className="relative flex-1 max-w-md">
           <svg className="w-4 h-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -521,7 +521,7 @@ export default function CmsMediaLibraryPage() {
               setSearch(e.target.value);
               setPage(1);
             }}
-            className="pl-9 pr-3.5 py-2 text-xs sm:text-sm border border-zinc-200 rounded-xl w-full focus:outline-none focus:ring-2 focus:ring-zinc-900 bg-zinc-50 focus:bg-white transition"
+            className="pl-9 pr-3.5 py-2 text-xs sm:text-sm border border-zinc-200 dark:border-zinc-700 rounded-xl w-full focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-400 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:bg-white dark:focus:bg-zinc-800 transition"
           />
         </div>
 
@@ -543,8 +543,8 @@ export default function CmsMediaLibraryPage() {
               }}
               className={`px-3 py-1.5 rounded-lg font-semibold whitespace-nowrap transition ${
                 formatFilter === fmt.id
-                  ? "bg-zinc-900 text-white shadow-2xs"
-                  : "bg-zinc-100 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-200"
+                  ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-2xs"
+                  : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-700"
               }`}
             >
               {fmt.label}
@@ -588,15 +588,15 @@ export default function CmsMediaLibraryPage() {
       )}
 
       {/* Media Grid Canvas */}
-      <div className="bg-white p-4 sm:p-6 rounded-2xl border border-zinc-200 shadow-xs space-y-4">
+      <div className="bg-white dark:bg-zinc-900 p-4 sm:p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-4">
         {/* Selection / Count bar */}
-        <div className="flex items-center justify-between text-xs text-zinc-500 border-b border-zinc-100 pb-3">
-          <label className="flex items-center gap-2 cursor-pointer font-medium hover:text-zinc-800">
+        <div className="flex items-center justify-between text-xs text-zinc-500 border-b border-zinc-100 dark:border-zinc-800 pb-3">
+          <label className="flex items-center gap-2 cursor-pointer font-medium hover:text-zinc-800 dark:hover:text-zinc-200">
             <input
               type="checkbox"
               checked={assets.length > 0 && selectedIds.size === assets.length}
               onChange={handleSelectAll}
-              className="w-4 h-4 rounded text-zinc-900 border-zinc-300 focus:ring-zinc-900"
+              className="w-4 h-4 rounded text-zinc-900 border-zinc-300 dark:border-zinc-700 focus:ring-zinc-900"
             />
             <span>Select All on Page ({assets.length})</span>
           </label>
@@ -608,12 +608,22 @@ export default function CmsMediaLibraryPage() {
 
         {/* Content State */}
         {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 py-4">
-            {Array.from({ length: 12 }).map((_, i) => (
-              <div key={i} className="animate-pulse space-y-2 border border-zinc-100 rounded-2xl p-2">
-                <div className="aspect-square bg-zinc-200 rounded-xl" />
-                <div className="h-3 bg-zinc-200 rounded w-3/4" />
-                <div className="h-2 bg-zinc-200 rounded w-1/2" />
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {Array.from({ length: 18 }).map((_, i) => (
+              <div
+                key={i}
+                className="border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden flex flex-col bg-white dark:bg-zinc-900 shadow-2xs"
+              >
+                <div className="relative aspect-square w-full bg-zinc-200 dark:bg-zinc-800 skeleton-shimmer">
+                  <div className="absolute top-2 left-2 size-5 rounded-md bg-white/50 dark:bg-zinc-700/50" />
+                  <div className="absolute top-2 right-2 h-4 w-12 rounded-md bg-white/50 dark:bg-zinc-700/50" />
+                </div>
+                <div className="p-3 text-xs flex flex-col justify-between flex-1 gap-2 border-t border-zinc-100 dark:border-zinc-800">
+                  <div className="space-y-1.5">
+                    <div className="h-3.5 w-3/4 rounded bg-zinc-200 dark:bg-zinc-800 skeleton-shimmer" />
+                    <div className="h-2.5 w-1/2 rounded bg-zinc-200 dark:bg-zinc-800 skeleton-shimmer" />
+                  </div>
+                </div>
               </div>
             ))}
           </div>
@@ -642,16 +652,16 @@ export default function CmsMediaLibraryPage() {
               return (
                 <div
                   key={asset.id}
-                  className={`group relative border rounded-2xl overflow-hidden transition flex flex-col bg-white ${
+                  className={`group relative border rounded-2xl overflow-hidden transition flex flex-col bg-white dark:bg-zinc-900 ${
                     isSelected
-                      ? "border-zinc-900 ring-2 ring-zinc-900/10 shadow-xs"
-                      : "border-zinc-200 hover:border-zinc-300 hover:shadow-xs"
+                      ? "border-zinc-900 dark:border-zinc-100 ring-2 ring-zinc-900/10 dark:ring-zinc-100/10 shadow-xs"
+                      : "border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-xs"
                   }`}
                 >
                   {/* Thumbnail Container */}
                   <div
                     onClick={() => setViewAsset(asset)}
-                    className="relative aspect-square w-full bg-zinc-100 overflow-hidden cursor-pointer flex items-center justify-center"
+                    className="relative aspect-square w-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden cursor-pointer flex items-center justify-center"
                   >
                     {!isBroken ? (
                       <img
@@ -664,24 +674,24 @@ export default function CmsMediaLibraryPage() {
                         className="object-cover w-full h-full group-hover:scale-105 transition duration-300"
                       />
                     ) : (
-                      <div className="flex flex-col items-center justify-center text-zinc-400 p-2 text-center space-y-1">
+                      <div className="flex flex-col items-center justify-center text-zinc-400 dark:text-zinc-500 p-2 text-center space-y-1">
                         <svg className="w-8 h-8 opacity-60" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                         </svg>
-                        <span className="text-[10px] font-semibold text-zinc-500">Image Missing</span>
+                        <span className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400">Image Missing</span>
                       </div>
                     )}
 
                     {/* Checkbox (top-left) */}
                     <div
                       onClick={(e) => toggleSelect(asset.id, e)}
-                      className="absolute top-2 left-2 z-10 bg-white/90 backdrop-blur-xs p-1 rounded-md shadow-2xs hover:bg-white transition"
+                      className="absolute top-2 left-2 z-10 bg-white/90 dark:bg-zinc-800/90 backdrop-blur-xs p-1 rounded-md shadow-2xs hover:bg-white dark:hover:bg-zinc-700 transition"
                     >
                       <input
                         type="checkbox"
                         checked={isSelected}
                         onChange={() => {}}
-                        className="w-3.5 h-3.5 rounded text-zinc-900 border-zinc-300 focus:ring-zinc-900 cursor-pointer"
+                        className="w-3.5 h-3.5 rounded text-zinc-900 border-zinc-300 dark:border-zinc-700 focus:ring-zinc-900 cursor-pointer"
                       />
                     </div>
 
@@ -707,13 +717,13 @@ export default function CmsMediaLibraryPage() {
                   </div>
 
                   {/* Card Info & Three-Dot Menu */}
-                  <div className="p-3 text-xs flex flex-col justify-between flex-1 gap-1.5 border-t border-zinc-100">
+                  <div className="p-3 text-xs flex flex-col justify-between flex-1 gap-1.5 border-t border-zinc-100 dark:border-zinc-800">
                     <div className="flex items-start justify-between gap-1">
                       <div className="truncate flex-1">
-                        <p className="font-semibold text-zinc-900 truncate" title={asset.title || asset.originalFilename}>
+                        <p className="font-semibold text-zinc-900 dark:text-zinc-100 truncate" title={asset.title || asset.originalFilename}>
                           {asset.title || asset.originalFilename}
                         </p>
-                        <p className="text-[11px] text-zinc-400 font-mono">
+                        <p className="text-[11px] text-zinc-400 dark:text-zinc-500 font-mono">
                           {formatTag} • {formatBytes(asset.size)}
                         </p>
                       </div>
@@ -726,7 +736,7 @@ export default function CmsMediaLibraryPage() {
                             e.stopPropagation();
                             setActiveMenuId(activeMenuId === asset.id ? null : asset.id);
                           }}
-                          className="p-1 rounded-md text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition"
+                          className="p-1 rounded-md text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
                           aria-label="Media actions"
                         >
                           <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -735,7 +745,7 @@ export default function CmsMediaLibraryPage() {
                         </button>
 
                         {activeMenuId === asset.id && (
-                          <div className="absolute right-0 bottom-full mb-1 z-30 w-44 bg-white rounded-xl shadow-xl border border-zinc-200 py-1 text-xs divide-y divide-zinc-100">
+                          <div className="absolute right-0 bottom-full mb-1 z-30 w-44 bg-white dark:bg-zinc-900 rounded-xl shadow-xl border border-zinc-200 dark:border-zinc-800 py-1 text-xs divide-y divide-zinc-100 dark:divide-zinc-800">
                             <div className="py-0.5">
                               <button
                                 type="button"
@@ -743,7 +753,7 @@ export default function CmsMediaLibraryPage() {
                                   setViewAsset(asset);
                                   setActiveMenuId(null);
                                 }}
-                                className="w-full px-3 py-1.5 text-left text-zinc-700 hover:bg-zinc-50 flex items-center gap-2"
+                                className="w-full px-3 py-1.5 text-left text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 flex items-center gap-2"
                               >
                                 <span>👁️</span> View Image
                               </button>
@@ -752,7 +762,7 @@ export default function CmsMediaLibraryPage() {
                                 <button
                                   type="button"
                                   onClick={() => openEditModal(asset)}
-                                  className="w-full px-3 py-1.5 text-left text-zinc-700 hover:bg-zinc-50 flex items-center gap-2"
+                                  className="w-full px-3 py-1.5 text-left text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 flex items-center gap-2"
                                 >
                                   <span>✏️</span> Edit Details
                                 </button>
@@ -761,7 +771,7 @@ export default function CmsMediaLibraryPage() {
                               <button
                                 type="button"
                                 onClick={() => handleCopyUrl(asset.url, asset.id)}
-                                className="w-full px-3 py-1.5 text-left text-zinc-700 hover:bg-zinc-50 flex items-center gap-2"
+                                className="w-full px-3 py-1.5 text-left text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 flex items-center gap-2"
                               >
                                 <span>📋</span> {copiedId === asset.id ? "Copied!" : "Copy Image URL"}
                               </button>
@@ -769,7 +779,7 @@ export default function CmsMediaLibraryPage() {
                               <button
                                 type="button"
                                 onClick={() => openUsageModal(asset)}
-                                className="w-full px-3 py-1.5 text-left text-zinc-700 hover:bg-zinc-50 flex items-center gap-2"
+                                className="w-full px-3 py-1.5 text-left text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 flex items-center gap-2"
                               >
                                 <span>🔗</span> View Usage ({asset._count?.references ?? 0})
                               </button>
@@ -780,7 +790,7 @@ export default function CmsMediaLibraryPage() {
                                 <button
                                   type="button"
                                   onClick={() => openReplaceModal(asset)}
-                                  className="w-full px-3 py-1.5 text-left text-zinc-700 hover:bg-zinc-50 flex items-center gap-2"
+                                  className="w-full px-3 py-1.5 text-left text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 flex items-center gap-2"
                                 >
                                   <span>🔄</span> Replace Image
                                 </button>
@@ -790,7 +800,7 @@ export default function CmsMediaLibraryPage() {
                                 <button
                                   type="button"
                                   onClick={() => openDeleteModal(asset)}
-                                  className="w-full px-3 py-1.5 text-left text-rose-600 hover:bg-rose-50 font-medium flex items-center gap-2"
+                                  className="w-full px-3 py-1.5 text-left text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 font-medium flex items-center gap-2"
                                 >
                                   <span>🗑️</span> Delete Image
                                 </button>
@@ -809,12 +819,12 @@ export default function CmsMediaLibraryPage() {
 
         {/* Pagination Bar */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between border-t border-zinc-100 pt-4 text-xs font-semibold text-zinc-600">
+          <div className="flex items-center justify-between border-t border-zinc-100 dark:border-zinc-800 pt-4 text-xs font-semibold text-zinc-600 dark:text-zinc-400">
             <button
               type="button"
               disabled={page <= 1}
               onClick={() => setPage((p) => Math.max(1, p - 1))}
-              className="px-3 py-1.5 border border-zinc-200 rounded-xl hover:bg-zinc-50 disabled:opacity-40 transition"
+              className="px-3 py-1.5 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700 disabled:opacity-40 transition"
             >
               Previous Page
             </button>
@@ -827,7 +837,7 @@ export default function CmsMediaLibraryPage() {
               type="button"
               disabled={page >= totalPages}
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              className="px-3 py-1.5 border border-zinc-200 rounded-xl hover:bg-zinc-50 disabled:opacity-40 transition"
+              className="px-3 py-1.5 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700 disabled:opacity-40 transition"
             >
               Next Page
             </button>
@@ -838,12 +848,14 @@ export default function CmsMediaLibraryPage() {
       {/* ───────────────────────────────────────────────────────────────────────────── */}
       {/* MODAL 1: VIEW FULL IMAGE LIGHTBOX */}
       {/* ───────────────────────────────────────────────────────────────────────────── */}
+      {/* MODAL 1: VIEW FULL-SIZE IMAGE PREVIEW & METRICS */}
+      {/* ───────────────────────────────────────────────────────────────────────────── */}
       {viewAsset && (
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col shadow-2xl border border-zinc-200">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100">
+          <div className="bg-white dark:bg-zinc-900 rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col shadow-2xl border border-zinc-200 dark:border-zinc-800">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100 dark:border-zinc-800">
               <div className="truncate mr-4">
-                <h3 className="text-base font-bold text-zinc-900 truncate">
+                <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100 truncate">
                   {viewAsset.title || viewAsset.originalFilename}
                 </h3>
                 <p className="text-xs text-zinc-400 font-mono">
@@ -853,13 +865,13 @@ export default function CmsMediaLibraryPage() {
               <button
                 type="button"
                 onClick={() => setViewAsset(null)}
-                className="text-zinc-400 hover:text-zinc-600 text-lg p-1"
+                className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 text-lg p-1"
               >
                 ✕
               </button>
             </div>
 
-            <div className="p-6 bg-zinc-900 flex items-center justify-center overflow-auto max-h-[60vh]">
+            <div className="p-6 bg-zinc-900 dark:bg-zinc-950 flex items-center justify-center overflow-auto max-h-[60vh]">
               <img
                 src={viewAsset.url}
                 alt={viewAsset.altText || viewAsset.title || "Full Media"}
@@ -867,8 +879,8 @@ export default function CmsMediaLibraryPage() {
               />
             </div>
 
-            <div className="p-4 bg-zinc-50 border-t border-zinc-100 flex flex-wrap items-center justify-between gap-3 text-xs">
-              <div className="text-zinc-500 font-mono truncate max-w-md">
+            <div className="p-4 bg-zinc-50 dark:bg-zinc-800/60 border-t border-zinc-100 dark:border-zinc-800 flex flex-wrap items-center justify-between gap-3 text-xs">
+              <div className="text-zinc-500 dark:text-zinc-400 font-mono truncate max-w-md">
                 Path: {viewAsset.url}
               </div>
 
@@ -876,7 +888,7 @@ export default function CmsMediaLibraryPage() {
                 <button
                   type="button"
                   onClick={() => handleCopyUrl(viewAsset.url, viewAsset.id)}
-                  className="px-3 py-1.5 bg-white border border-zinc-200 rounded-xl font-semibold hover:bg-zinc-100 transition shadow-2xs"
+                  className="px-3 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 rounded-xl font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-700 transition shadow-2xs"
                 >
                   {copiedId === viewAsset.id ? "Copied!" : "Copy URL"}
                 </button>
@@ -884,7 +896,7 @@ export default function CmsMediaLibraryPage() {
                   href={viewAsset.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-3 py-1.5 bg-zinc-900 text-white rounded-xl font-semibold hover:bg-zinc-800 transition shadow-xs"
+                  className="px-3 py-1.5 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-xl font-semibold hover:bg-zinc-800 dark:hover:bg-zinc-200 transition shadow-xs"
                 >
                   Open in New Tab
                 </a>
@@ -899,16 +911,16 @@ export default function CmsMediaLibraryPage() {
       {/* ───────────────────────────────────────────────────────────────────────────── */}
       {editAsset && (
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-zinc-200 space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-zinc-200 dark:border-zinc-800 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-3">
               <div>
-                <h3 className="text-base font-bold text-zinc-900">Edit Media Details</h3>
-                <p className="text-xs text-zinc-500">Update image title and accessibility alt texts</p>
+                <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100">Edit Media Details</h3>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">Update image title and accessibility alt texts</p>
               </div>
               <button
                 type="button"
                 onClick={() => setEditAsset(null)}
-                className="text-zinc-400 hover:text-zinc-600 text-lg p-1"
+                className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 text-lg p-1"
               >
                 ✕
               </button>
@@ -916,18 +928,18 @@ export default function CmsMediaLibraryPage() {
 
             <form onSubmit={handleSaveEdit} className="space-y-4 text-xs">
               <div>
-                <label className="block font-semibold text-zinc-700 mb-1">Title</label>
+                <label className="block font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Title</label>
                 <input
                   type="text"
                   required
                   value={editTitle}
                   onChange={(e) => setEditTitle(e.target.value)}
-                  className="w-full px-3 py-2 border border-zinc-200 rounded-xl text-sm focus:ring-2 focus:ring-zinc-900 outline-none"
+                  className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 rounded-xl text-sm focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-400 outline-none"
                 />
               </div>
 
               <div>
-                <label className="block font-semibold text-zinc-700 mb-1">
+                <label className="block font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
                   Primary Alt Text (English)
                 </label>
                 <textarea
@@ -935,19 +947,19 @@ export default function CmsMediaLibraryPage() {
                   value={editAltText}
                   onChange={(e) => setEditAltText(e.target.value)}
                   placeholder="Describe image for screen readers and SEO..."
-                  className="w-full px-3 py-2 border border-zinc-200 rounded-xl text-sm focus:ring-2 focus:ring-zinc-900 outline-none"
+                  className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 rounded-xl text-sm focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-400 outline-none"
                 />
               </div>
 
               {/* Multilingual Alt Texts */}
-              <div className="space-y-2 pt-2 border-t border-zinc-100">
-                <span className="font-semibold text-zinc-700 block">
+              <div className="space-y-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+                <span className="font-semibold text-zinc-700 dark:text-zinc-300 block">
                   Multilingual Alt Texts (Optional)
                 </span>
 
                 <div className="space-y-2">
                   <div>
-                    <label className="block text-[11px] text-zinc-500 mb-0.5">
+                    <label className="block text-[11px] text-zinc-500 dark:text-zinc-400 mb-0.5">
                       العربية (Arabic - RTL)
                     </label>
                     <input
@@ -956,35 +968,35 @@ export default function CmsMediaLibraryPage() {
                       value={editAltTexts.ar || ""}
                       onChange={(e) => setEditAltTexts({ ...editAltTexts, ar: e.target.value })}
                       placeholder="وصف الصورة بالعربية..."
-                      className="w-full px-3 py-1.5 border border-zinc-200 rounded-xl text-xs outline-none focus:ring-2 focus:ring-zinc-900"
+                      className="w-full px-3 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 rounded-xl text-xs outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-400"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[11px] text-zinc-500 mb-0.5">Español (Spanish)</label>
+                    <label className="block text-[11px] text-zinc-500 dark:text-zinc-400 mb-0.5">Español (Spanish)</label>
                     <input
                       type="text"
                       value={editAltTexts.es || ""}
                       onChange={(e) => setEditAltTexts({ ...editAltTexts, es: e.target.value })}
                       placeholder="Descripción de la imagen en español..."
-                      className="w-full px-3 py-1.5 border border-zinc-200 rounded-xl text-xs outline-none focus:ring-2 focus:ring-zinc-900"
+                      className="w-full px-3 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 rounded-xl text-xs outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-400"
                     />
                   </div>
                 </div>
               </div>
 
-              <div className="flex justify-end gap-2 pt-3 border-t border-zinc-100">
+              <div className="flex justify-end gap-2 pt-3 border-t border-zinc-100 dark:border-zinc-800">
                 <button
                   type="button"
                   onClick={() => setEditAsset(null)}
-                  className="px-3.5 py-2 border border-zinc-200 text-zinc-600 rounded-xl font-semibold hover:bg-zinc-50 transition"
+                  className="px-3.5 py-2 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 rounded-xl font-semibold hover:bg-zinc-50 dark:hover:bg-zinc-800 transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={savingEdit}
-                  className="px-4 py-2 bg-zinc-900 text-white rounded-xl font-semibold hover:bg-zinc-800 disabled:opacity-50 transition shadow-xs"
+                  className="px-4 py-2 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-xl font-semibold hover:bg-zinc-800 dark:hover:bg-zinc-200 disabled:opacity-50 transition shadow-xs"
                 >
                   {savingEdit ? "Saving..." : "Save Details"}
                 </button>
@@ -999,18 +1011,18 @@ export default function CmsMediaLibraryPage() {
       {/* ───────────────────────────────────────────────────────────────────────────── */}
       {usageAsset && (
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-zinc-200 space-y-4 max-h-[85vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-zinc-200 dark:border-zinc-800 space-y-4 max-h-[85vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-3">
               <div>
-                <h3 className="text-base font-bold text-zinc-900">Media Usage Analysis</h3>
-                <p className="text-xs text-zinc-500">
+                <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100">Media Usage Analysis</h3>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">
                   Referencing CMS items for "{usageAsset.originalFilename}"
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setUsageAsset(null)}
-                className="text-zinc-400 hover:text-zinc-600 text-lg p-1"
+                className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 text-lg p-1"
               >
                 ✕
               </button>
@@ -1021,7 +1033,7 @@ export default function CmsMediaLibraryPage() {
                 Scanning CMS revisions and publications...
               </div>
             ) : !usageData || usageData.totalReferences === 0 ? (
-              <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-xs space-y-1">
+              <div className="p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40 rounded-xl text-emerald-800 dark:text-emerald-300 text-xs space-y-1">
                 <div className="font-bold flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-emerald-500" />
                   No Active References Found
@@ -1031,32 +1043,32 @@ export default function CmsMediaLibraryPage() {
             ) : (
               <div className="space-y-3">
                 <div className="grid grid-cols-3 gap-2 text-center text-xs">
-                  <div className="p-2.5 rounded-xl bg-zinc-50 border border-zinc-200">
-                    <span className="block text-lg font-bold text-zinc-900">{usageData.livePublishedCount}</span>
-                    <span className="text-[10px] text-zinc-500 uppercase font-semibold">Live Published</span>
+                  <div className="p-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700">
+                    <span className="block text-lg font-bold text-zinc-900 dark:text-zinc-100">{usageData.livePublishedCount}</span>
+                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400 uppercase font-semibold">Live Published</span>
                   </div>
-                  <div className="p-2.5 rounded-xl bg-zinc-50 border border-zinc-200">
-                    <span className="block text-lg font-bold text-zinc-900">{usageData.currentDraftCount}</span>
-                    <span className="text-[10px] text-zinc-500 uppercase font-semibold">Current Drafts</span>
+                  <div className="p-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700">
+                    <span className="block text-lg font-bold text-zinc-900 dark:text-zinc-100">{usageData.currentDraftCount}</span>
+                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400 uppercase font-semibold">Current Drafts</span>
                   </div>
-                  <div className="p-2.5 rounded-xl bg-zinc-50 border border-zinc-200">
-                    <span className="block text-lg font-bold text-zinc-900">{usageData.historicalCount}</span>
-                    <span className="text-[10px] text-zinc-500 uppercase font-semibold">Historical</span>
+                  <div className="p-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700">
+                    <span className="block text-lg font-bold text-zinc-900 dark:text-zinc-100">{usageData.historicalCount}</span>
+                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400 uppercase font-semibold">Historical</span>
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <span className="text-xs font-semibold text-zinc-700 block">Referencing Items</span>
+                  <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block">Referencing Items</span>
                   <div className="space-y-1.5 max-h-56 overflow-y-auto">
                     {usageData.references.map((item, idx) => (
                       <div
                         key={idx}
-                        className="flex items-center justify-between p-2.5 rounded-xl border border-zinc-200 bg-zinc-50 hover:bg-white text-xs transition"
+                        className="flex items-center justify-between p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700/60 bg-zinc-50 dark:bg-zinc-800/40 hover:bg-white dark:hover:bg-zinc-800 text-xs transition"
                       >
                         <div className="truncate mr-2">
                           <Link
                             href={`/admin/cms/${item.contentId}`}
-                            className="font-bold text-zinc-900 hover:underline truncate block"
+                            className="font-bold text-zinc-900 dark:text-zinc-100 hover:underline truncate block"
                           >
                             {item.contentTitle}
                           </Link>
@@ -1067,17 +1079,17 @@ export default function CmsMediaLibraryPage() {
 
                         <div className="shrink-0">
                           {item.isLivePublished && (
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-transparent dark:border-emerald-800/50">
                               LIVE STOREFRONT
                             </span>
                           )}
                           {item.isCurrentDraft && !item.isLivePublished && (
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-transparent dark:border-amber-800/50">
                               ACTIVE DRAFT
                             </span>
                           )}
                           {item.isHistorical && (
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-zinc-200 text-zinc-700">
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300">
                               HISTORICAL REV
                             </span>
                           )}
@@ -1089,11 +1101,11 @@ export default function CmsMediaLibraryPage() {
               </div>
             )}
 
-            <div className="flex justify-end pt-3 border-t border-zinc-100">
+            <div className="flex justify-end pt-3 border-t border-zinc-100 dark:border-zinc-800">
               <button
                 type="button"
                 onClick={() => setUsageAsset(null)}
-                className="px-4 py-2 border border-zinc-200 text-zinc-600 rounded-xl text-xs font-semibold hover:bg-zinc-50 transition"
+                className="px-4 py-2 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 rounded-xl text-xs font-semibold hover:bg-zinc-50 dark:hover:bg-zinc-800 transition"
               >
                 Close
               </button>
@@ -1107,25 +1119,25 @@ export default function CmsMediaLibraryPage() {
       {/* ───────────────────────────────────────────────────────────────────────────── */}
       {replaceAsset && (
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-zinc-200 space-y-4">
-            <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-zinc-200 dark:border-zinc-800 space-y-4">
+            <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-3">
               <div>
-                <h3 className="text-base font-bold text-zinc-900">Replace Media Asset</h3>
-                <p className="text-xs text-zinc-500">
+                <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100">Replace Media Asset</h3>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">
                   Swaps the image file while preserving all existing CMS references
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setReplaceAsset(null)}
-                className="text-zinc-400 hover:text-zinc-600 text-lg p-1"
+                className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 text-lg p-1"
               >
                 ✕
               </button>
             </div>
 
             <form onSubmit={handleReplaceSubmit} className="space-y-4 text-xs">
-              <div className="p-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-xl space-y-1">
+              <div className="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/40 text-amber-800 dark:text-amber-300 rounded-xl space-y-1">
                 <span className="font-bold block">Important Notice</span>
                 <p>
                   Replacing this asset will safely update its imagery without breaking references across live banners or revisions.
@@ -1133,7 +1145,7 @@ export default function CmsMediaLibraryPage() {
               </div>
 
               <div className="flex items-center gap-4">
-                <div className="w-20 h-20 bg-zinc-100 rounded-xl overflow-hidden shrink-0 border border-zinc-200">
+                <div className="w-20 h-20 bg-zinc-100 dark:bg-zinc-800 rounded-xl overflow-hidden shrink-0 border border-zinc-200 dark:border-zinc-700">
                   <img
                     src={replacePreviewUrl || replaceAsset.url}
                     alt="Preview"
@@ -1142,7 +1154,7 @@ export default function CmsMediaLibraryPage() {
                 </div>
 
                 <div className="flex-1">
-                  <label className="block font-semibold text-zinc-700 mb-1">
+                  <label className="block font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
                     Select Replacement Image
                   </label>
                   <input
@@ -1156,28 +1168,28 @@ export default function CmsMediaLibraryPage() {
                         setReplacePreviewUrl(URL.createObjectURL(f));
                       }
                     }}
-                    className="text-xs file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-zinc-900 file:text-white hover:file:bg-zinc-800 cursor-pointer"
+                    className="text-xs text-zinc-600 dark:text-zinc-300 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-zinc-900 dark:file:bg-zinc-100 file:text-white dark:file:text-zinc-900 hover:file:bg-zinc-800 dark:hover:file:bg-zinc-200 cursor-pointer"
                   />
                   {replaceFile && (
-                    <p className="text-[11px] text-zinc-500 mt-1">
+                    <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1">
                       New: {replaceFile.name} ({formatBytes(replaceFile.size)})
                     </p>
                   )}
                 </div>
               </div>
 
-              <div className="flex justify-end gap-2 pt-3 border-t border-zinc-100">
+              <div className="flex justify-end gap-2 pt-3 border-t border-zinc-100 dark:border-zinc-800">
                 <button
                   type="button"
                   onClick={() => setReplaceAsset(null)}
-                  className="px-3.5 py-2 border border-zinc-200 text-zinc-600 rounded-xl font-semibold hover:bg-zinc-50 transition"
+                  className="px-3.5 py-2 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 rounded-xl font-semibold hover:bg-zinc-50 dark:hover:bg-zinc-800 transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={!replaceFile || replacing}
-                  className="px-4 py-2 bg-zinc-900 text-white rounded-xl font-semibold hover:bg-zinc-800 disabled:opacity-50 transition shadow-xs"
+                  className="px-4 py-2 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-xl font-semibold hover:bg-zinc-800 dark:hover:bg-zinc-200 disabled:opacity-50 transition shadow-xs"
                 >
                   {replacing ? "Replacing..." : "Confirm Replacement"}
                 </button>
@@ -1192,16 +1204,16 @@ export default function CmsMediaLibraryPage() {
       {/* ───────────────────────────────────────────────────────────────────────────── */}
       {deleteAsset && (
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-zinc-200 space-y-4">
-            <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl max-w-md w-full p-6 shadow-2xl border border-zinc-200 dark:border-zinc-800 space-y-4">
+            <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-3">
               <div>
-                <h3 className="text-base font-bold text-zinc-900">Delete Media Asset</h3>
-                <p className="text-xs text-zinc-500">{deleteAsset.originalFilename}</p>
+                <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100">Delete Media Asset</h3>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">{deleteAsset.originalFilename}</p>
               </div>
               <button
                 type="button"
                 onClick={() => setDeleteAsset(null)}
-                className="text-zinc-400 hover:text-zinc-600 text-lg p-1"
+                className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 text-lg p-1"
               >
                 ✕
               </button>
@@ -1212,7 +1224,7 @@ export default function CmsMediaLibraryPage() {
                 Verifying CMS references and safety guardrails...
               </div>
             ) : deleteUsage && (deleteUsage.livePublishedCount > 0 || deleteUsage.currentDraftCount > 0 || deleteUsage.scheduledCount > 0) ? (
-              <div className="p-4 bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl text-xs space-y-2">
+              <div className="p-4 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/40 text-rose-800 dark:text-rose-300 rounded-2xl text-xs space-y-2">
                 <div className="font-bold flex items-center gap-1.5 text-sm">
                   <span className="w-2.5 h-2.5 rounded-full bg-rose-600" />
                   Deletion Blocked: Asset in Active Use
@@ -1224,7 +1236,7 @@ export default function CmsMediaLibraryPage() {
                   </strong>{" "}
                   active CMS item(s).
                 </p>
-                <div className="space-y-1 bg-white/60 p-2.5 rounded-xl border border-rose-200 max-h-32 overflow-y-auto">
+                <div className="space-y-1 bg-white/60 dark:bg-zinc-900/60 p-2.5 rounded-xl border border-rose-200 dark:border-rose-800/40 max-h-32 overflow-y-auto text-zinc-800 dark:text-zinc-200">
                   {deleteUsage.references
                     .filter((r) => r.isLivePublished || r.isCurrentDraft || r.isScheduled)
                     .map((r, i) => (
@@ -1233,12 +1245,12 @@ export default function CmsMediaLibraryPage() {
                       </div>
                     ))}
                 </div>
-                <p className="text-[11px] text-rose-600 italic">
+                <p className="text-[11px] text-rose-600 dark:text-rose-400 italic">
                   Replace or remove these references in the CMS editor before deleting this file.
                 </p>
               </div>
             ) : deleteUsage && deleteUsage.historicalCount > 0 ? (
-              <div className="p-4 bg-amber-50 border border-amber-200 text-amber-800 rounded-2xl text-xs space-y-2">
+              <div className="p-4 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/40 text-amber-800 dark:text-amber-300 rounded-2xl text-xs space-y-2">
                 <div className="font-bold flex items-center gap-1.5 text-sm">
                   <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
                   Protected: Referenced by Historical Revisions
@@ -1248,12 +1260,12 @@ export default function CmsMediaLibraryPage() {
                   <strong>{deleteUsage.historicalCount}</strong> older historical revision(s).
                   Permanently deleting the physical file would break snapshot previews and rollback history.
                 </p>
-                <p className="text-[11px] text-amber-700">
+                <p className="text-[11px] text-amber-700 dark:text-amber-400">
                   You can archive this image to remove it from the active library while preserving historical previews.
                 </p>
               </div>
             ) : (
-              <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl text-xs space-y-2">
+              <div className="p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40 text-emerald-800 dark:text-emerald-300 rounded-2xl text-xs space-y-2">
                 <div className="font-bold flex items-center gap-1.5 text-sm">
                   <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
                   Safe to Delete
@@ -1264,11 +1276,11 @@ export default function CmsMediaLibraryPage() {
               </div>
             )}
 
-            <div className="flex justify-end gap-2 pt-3 border-t border-zinc-100 text-xs">
+            <div className="flex justify-end gap-2 pt-3 border-t border-zinc-100 dark:border-zinc-800 text-xs">
               <button
                 type="button"
                 onClick={() => setDeleteAsset(null)}
-                className="px-3.5 py-2 border border-zinc-200 text-zinc-600 rounded-xl font-semibold hover:bg-zinc-50 transition"
+                className="px-3.5 py-2 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 rounded-xl font-semibold hover:bg-zinc-50 dark:hover:bg-zinc-800 transition"
               >
                 Cancel
               </button>
@@ -1304,25 +1316,25 @@ export default function CmsMediaLibraryPage() {
       {/* ───────────────────────────────────────────────────────────────────────────── */}
       {showBulkDeleteModal && (
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-zinc-200 space-y-4 max-h-[85vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-zinc-200 dark:border-zinc-800 space-y-4 max-h-[85vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-3">
               <div>
-                <h3 className="text-base font-bold text-zinc-900">Bulk Delete Management</h3>
-                <p className="text-xs text-zinc-500">
+                <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100">Bulk Delete Management</h3>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">
                   {selectedIds.size} assets queued for deletion
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setShowBulkDeleteModal(false)}
-                className="text-zinc-400 hover:text-zinc-600 text-lg p-1"
+                className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 text-lg p-1"
               >
                 ✕
               </button>
             </div>
 
-            <div className="p-3.5 bg-zinc-50 border border-zinc-200 rounded-xl text-xs space-y-1 text-zinc-700">
-              <span className="font-bold block text-zinc-900">Safety Guardrail Notice</span>
+            <div className="p-3.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl text-xs space-y-1 text-zinc-700 dark:text-zinc-300">
+              <span className="font-bold block text-zinc-900 dark:text-zinc-100">Safety Guardrail Notice</span>
               <p>
                 Each selected asset will be analyzed. Any asset actively in use by live published or draft CMS content will be automatically protected and skipped. Only completely unreferenced files will be permanently deleted.
               </p>
@@ -1330,22 +1342,22 @@ export default function CmsMediaLibraryPage() {
 
             {bulkResult && (
               <div className="space-y-2 text-xs">
-                <span className="font-bold text-zinc-900 block">Operation Results</span>
-                <div className="p-3 bg-zinc-100 rounded-xl space-y-1">
+                <span className="font-bold text-zinc-900 dark:text-zinc-100 block">Operation Results</span>
+                <div className="p-3 bg-zinc-100 dark:bg-zinc-800/80 rounded-xl space-y-1 text-zinc-800 dark:text-zinc-200">
                   <div>✅ Deleted: {bulkResult.deleted?.length ?? 0} unreferenced asset(s)</div>
                   <div>🛡️ Protected from deletion: {bulkResult.blocked?.length ?? 0} in-use asset(s)</div>
                   {bulkResult.failed?.length > 0 && (
-                    <div className="text-rose-600">❌ Failed: {bulkResult.failed.length} asset(s)</div>
+                    <div className="text-rose-600 dark:text-rose-400">❌ Failed: {bulkResult.failed.length} asset(s)</div>
                   )}
                 </div>
               </div>
             )}
 
-            <div className="flex justify-end gap-2 pt-3 border-t border-zinc-100 text-xs">
+            <div className="flex justify-end gap-2 pt-3 border-t border-zinc-100 dark:border-zinc-800 text-xs">
               <button
                 type="button"
                 onClick={() => setShowBulkDeleteModal(false)}
-                className="px-3.5 py-2 border border-zinc-200 text-zinc-600 rounded-xl font-semibold hover:bg-zinc-50 transition"
+                className="px-3.5 py-2 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 rounded-xl font-semibold hover:bg-zinc-50 dark:hover:bg-zinc-800 transition"
               >
                 {bulkResult ? "Done" : "Cancel"}
               </button>

@@ -121,21 +121,21 @@ export function AdminReviewDetailModal({
       aria-labelledby="review-detail-title"
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 sm:p-6"
     >
-      <div className="relative flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+      <div className="relative flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+        <div className="flex items-center justify-between border-b border-slate-200 dark:border-zinc-800 px-6 py-4">
           <div>
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
               {review.direction === "GUEST_TO_PROPERTY" ? "Guest to Property" : "Host to Guest"}
             </span>
-            <h2 id="review-detail-title" className="text-lg font-bold text-slate-900">
+            <h2 id="review-detail-title" className="text-lg font-bold text-slate-900 dark:text-zinc-100">
               Review Details &middot; ID: {review.id.slice(0, 8)}...
             </h2>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-800 hover:text-slate-700 dark:hover:text-zinc-200 transition"
             aria-label="Close modal"
           >
             ✕
@@ -145,7 +145,7 @@ export function AdminReviewDetailModal({
         {/* Content body */}
         <div className="flex-1 space-y-5 overflow-y-auto px-6 py-5">
           {error && (
-            <div className="rounded-lg bg-red-50 p-3 text-sm font-medium text-red-700 border border-red-200">
+            <div className="rounded-lg bg-red-50 dark:bg-red-950/40 p-3 text-sm font-medium text-red-700 dark:text-red-300 border border-red-200 dark:border-red-900/50">
               {error}
             </div>
           )}
@@ -155,29 +155,29 @@ export function AdminReviewDetailModal({
             <span
               className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
                 review.status === "PUBLISHED"
-                  ? "bg-emerald-100 text-emerald-800"
+                  ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-transparent dark:border-emerald-800/40"
                   : review.status === "PRIVATE"
-                  ? "bg-amber-100 text-amber-800"
+                  ? "bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-transparent dark:border-amber-800/40"
                   : review.status === "HIDDEN"
-                  ? "bg-rose-100 text-rose-800"
-                  : "bg-slate-100 text-slate-800"
+                  ? "bg-rose-100 dark:bg-rose-950/60 text-rose-800 dark:text-rose-300 border border-transparent dark:border-rose-800/40"
+                  : "bg-slate-100 dark:bg-zinc-800 text-slate-800 dark:text-zinc-200"
               }`}
             >
               {review.status}
             </span>
             <span className="flex items-center text-sm font-bold text-amber-500">
               {"★".repeat(review.rating)}
-              <span className="ml-1 text-slate-700">({review.rating}/5)</span>
+              <span className="ml-1 text-slate-700 dark:text-zinc-300">({review.rating}/5)</span>
             </span>
             {review.recommendGuest !== null && review.recommendGuest !== undefined && (
-              <span className="rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700">
+              <span className="rounded-full bg-blue-50 dark:bg-blue-950/60 px-2 py-0.5 text-xs font-medium text-blue-700 dark:text-blue-300 border border-transparent dark:border-blue-900/40">
                 {review.recommendGuest ? "✓ Recommends Guest" : "✗ Does Not Recommend Guest"}
               </span>
             )}
             {review.moderationCase && (
               <Link
                 href={`/admin/moderation/cases/${review.moderationCase.id}`}
-                className="rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-semibold text-purple-800 hover:underline"
+                className="rounded-full bg-purple-100 dark:bg-purple-950/60 px-2.5 py-0.5 text-xs font-semibold text-purple-800 dark:text-purple-300 hover:underline"
               >
                 Case: {review.moderationCase.caseReference} ({review.moderationCase.status})
               </Link>
@@ -185,43 +185,43 @@ export function AdminReviewDetailModal({
           </div>
 
           {/* Parties */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 rounded-xl bg-slate-50 p-4 border border-slate-100">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 rounded-xl bg-slate-50 dark:bg-zinc-800/50 p-4 border border-slate-100 dark:border-zinc-800">
             <div>
-              <p className="text-xs font-semibold text-slate-500">Reviewer (Author)</p>
-              <p className="text-sm font-medium text-slate-900">{review.author.name || "Anonymous"}</p>
-              <p className="text-xs text-slate-500">{review.author.email || review.author.id}</p>
-              <span className="inline-block mt-1 rounded bg-slate-200 px-1.5 py-0.5 text-[10px] font-bold text-slate-700">
+              <p className="text-xs font-semibold text-slate-500 dark:text-zinc-400">Reviewer (Author)</p>
+              <p className="text-sm font-medium text-slate-900 dark:text-zinc-100">{review.author.name || "Anonymous"}</p>
+              <p className="text-xs text-slate-500 dark:text-zinc-400">{review.author.email || review.author.id}</p>
+              <span className="inline-block mt-1 rounded bg-slate-200 dark:bg-zinc-700 px-1.5 py-0.5 text-[10px] font-bold text-slate-700 dark:text-zinc-300">
                 {review.author.role}
               </span>
             </div>
             <div>
-              <p className="text-xs font-semibold text-slate-500">Reviewed Subject (Target)</p>
+              <p className="text-xs font-semibold text-slate-500 dark:text-zinc-400">Reviewed Subject (Target)</p>
               {review.targetUser ? (
                 <>
-                  <p className="text-sm font-medium text-slate-900">{review.targetUser.name || "User"}</p>
-                  <p className="text-xs text-slate-500">{review.targetUser.email || review.targetUser.id}</p>
-                  <span className="inline-block mt-1 rounded bg-slate-200 px-1.5 py-0.5 text-[10px] font-bold text-slate-700">
+                  <p className="text-sm font-medium text-slate-900 dark:text-zinc-100">{review.targetUser.name || "User"}</p>
+                  <p className="text-xs text-slate-500 dark:text-zinc-400">{review.targetUser.email || review.targetUser.id}</p>
+                  <span className="inline-block mt-1 rounded bg-slate-200 dark:bg-zinc-700 px-1.5 py-0.5 text-[10px] font-bold text-slate-700 dark:text-zinc-300">
                     {review.targetUser.role}
                   </span>
                 </>
               ) : review.listing ? (
-                <p className="text-sm font-medium text-slate-900">
+                <p className="text-sm font-medium text-slate-900 dark:text-zinc-100">
                   {review.listing.title} ({review.listing.city}, {review.listing.country})
                 </p>
               ) : (
-                <p className="text-xs text-slate-400">N/A</p>
+                <p className="text-xs text-slate-400 dark:text-zinc-500">N/A</p>
               )}
             </div>
           </div>
 
           {/* Public Comment */}
           <div>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">Public Review Comment</h3>
-            <div className="mt-1.5 rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-800">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">Public Review Comment</h3>
+            <div className="mt-1.5 rounded-xl border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-3 text-sm text-slate-800 dark:text-zinc-200">
               {review.comment ? (
                 <p className="whitespace-pre-wrap">{review.comment}</p>
               ) : (
-                <p className="italic text-slate-400">Rating-only review (no written comment)</p>
+                <p className="italic text-slate-400 dark:text-zinc-500">Rating-only review (no written comment)</p>
               )}
             </div>
           </div>
@@ -229,45 +229,45 @@ export function AdminReviewDetailModal({
           {/* Category Ratings */}
           <div className="grid grid-cols-2 gap-2 text-xs sm:grid-cols-3">
             {review.cleanlinessRating && (
-              <div className="rounded-lg bg-slate-50 p-2">
-                <span className="text-slate-500">Cleanliness:</span>{" "}
-                <span className="font-semibold text-slate-800">{review.cleanlinessRating}/5</span>
+              <div className="rounded-lg bg-slate-50 dark:bg-zinc-800/60 p-2">
+                <span className="text-slate-500 dark:text-zinc-400">Cleanliness:</span>{" "}
+                <span className="font-semibold text-slate-800 dark:text-zinc-200">{review.cleanlinessRating}/5</span>
               </div>
             )}
             {review.accuracyRating && (
-              <div className="rounded-lg bg-slate-50 p-2">
-                <span className="text-slate-500">Accuracy:</span>{" "}
-                <span className="font-semibold text-slate-800">{review.accuracyRating}/5</span>
+              <div className="rounded-lg bg-slate-50 dark:bg-zinc-800/60 p-2">
+                <span className="text-slate-500 dark:text-zinc-400">Accuracy:</span>{" "}
+                <span className="font-semibold text-slate-800 dark:text-zinc-200">{review.accuracyRating}/5</span>
               </div>
             )}
             {review.communicationRating && (
-              <div className="rounded-lg bg-slate-50 p-2">
-                <span className="text-slate-500">Communication:</span>{" "}
-                <span className="font-semibold text-slate-800">{review.communicationRating}/5</span>
+              <div className="rounded-lg bg-slate-50 dark:bg-zinc-800/60 p-2">
+                <span className="text-slate-500 dark:text-zinc-400">Communication:</span>{" "}
+                <span className="font-semibold text-slate-800 dark:text-zinc-200">{review.communicationRating}/5</span>
               </div>
             )}
             {review.checkInRating && (
-              <div className="rounded-lg bg-slate-50 p-2">
-                <span className="text-slate-500">Check-in:</span>{" "}
-                <span className="font-semibold text-slate-800">{review.checkInRating}/5</span>
+              <div className="rounded-lg bg-slate-50 dark:bg-zinc-800/60 p-2">
+                <span className="text-slate-500 dark:text-zinc-400">Check-in:</span>{" "}
+                <span className="font-semibold text-slate-800 dark:text-zinc-200">{review.checkInRating}/5</span>
               </div>
             )}
             {review.locationRating && (
-              <div className="rounded-lg bg-slate-50 p-2">
-                <span className="text-slate-500">Location:</span>{" "}
-                <span className="font-semibold text-slate-800">{review.locationRating}/5</span>
+              <div className="rounded-lg bg-slate-50 dark:bg-zinc-800/60 p-2">
+                <span className="text-slate-500 dark:text-zinc-400">Location:</span>{" "}
+                <span className="font-semibold text-slate-800 dark:text-zinc-200">{review.locationRating}/5</span>
               </div>
             )}
             {review.valueRating && (
-              <div className="rounded-lg bg-slate-50 p-2">
-                <span className="text-slate-500">Value:</span>{" "}
-                <span className="font-semibold text-slate-800">{review.valueRating}/5</span>
+              <div className="rounded-lg bg-slate-50 dark:bg-zinc-800/60 p-2">
+                <span className="text-slate-500 dark:text-zinc-400">Value:</span>{" "}
+                <span className="font-semibold text-slate-800 dark:text-zinc-200">{review.valueRating}/5</span>
               </div>
             )}
             {review.houseRulesRating && (
-              <div className="rounded-lg bg-slate-50 p-2">
-                <span className="text-slate-500">House rules:</span>{" "}
-                <span className="font-semibold text-slate-800">{review.houseRulesRating}/5</span>
+              <div className="rounded-lg bg-slate-50 dark:bg-zinc-800/60 p-2">
+                <span className="text-slate-500 dark:text-zinc-400">House rules:</span>{" "}
+                <span className="font-semibold text-slate-800 dark:text-zinc-200">{review.houseRulesRating}/5</span>
               </div>
             )}
           </div>
@@ -275,8 +275,8 @@ export function AdminReviewDetailModal({
           {/* Private Notes */}
           {(review.privateNoteToHost || review.privateNoteToGuest) && (
             <div>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">Private Feedback</h3>
-              <div className="mt-1 rounded-xl border border-amber-200 bg-amber-50/50 p-3 text-xs text-amber-900">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">Private Feedback</h3>
+              <div className="mt-1 rounded-xl border border-amber-200 dark:border-amber-900/50 bg-amber-50/50 dark:bg-amber-950/30 p-3 text-xs text-amber-900 dark:text-amber-200">
                 {review.privateNoteToHost && (
                   <p>
                     <span className="font-semibold">Note to Host:</span> {review.privateNoteToHost}
@@ -294,11 +294,11 @@ export function AdminReviewDetailModal({
           {/* Public Response */}
           {review.response && (
             <div>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">Public Response</h3>
-              <div className="mt-1 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-800">
-                <p className="font-semibold text-slate-900">{review.response.author.name || "Respondent"}:</p>
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">Public Response</h3>
+              <div className="mt-1 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-800/50 p-3 text-xs text-slate-800 dark:text-zinc-200">
+                <p className="font-semibold text-slate-900 dark:text-zinc-100">{review.response.author.name || "Respondent"}:</p>
                 <p className="mt-1 whitespace-pre-wrap">{review.response.comment}</p>
-                <p className="mt-2 text-[10px] text-slate-400">
+                <p className="mt-2 text-[10px] text-slate-400 dark:text-zinc-500">
                   Responded on {new Date(review.response.createdAt).toLocaleDateString()}
                 </p>
               </div>
@@ -306,39 +306,39 @@ export function AdminReviewDetailModal({
           )}
 
           {/* Timestamps */}
-          <div className="rounded-lg bg-slate-50 p-3 text-[11px] text-slate-500 space-y-1">
+          <div className="rounded-lg bg-slate-50 dark:bg-zinc-800/50 p-3 text-[11px] text-slate-500 dark:text-zinc-400 space-y-1">
             <p>Submitted: {new Date(review.submittedAt).toLocaleString()}</p>
             {review.publishedAt && <p>Published: {new Date(review.publishedAt).toLocaleString()}</p>}
             {review.reviewDeadline && <p>Review Deadline: {new Date(review.reviewDeadline).toLocaleString()}</p>}
             {review.rejectionReason && (
-              <p className="text-rose-600 font-medium">Rejection Reason: {review.rejectionReason}</p>
+              <p className="text-rose-600 dark:text-rose-400 font-medium">Rejection Reason: {review.rejectionReason}</p>
             )}
           </div>
 
           {/* Moderation Form (if an action is selected) */}
           {actionType && (
-            <div className="rounded-xl border-2 border-slate-900 p-4 space-y-3 bg-slate-50">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900">
+            <div className="rounded-xl border-2 border-slate-900 dark:border-zinc-700 p-4 space-y-3 bg-slate-50 dark:bg-zinc-800/60">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-zinc-100">
                 Confirm Moderation: {actionType}
               </h4>
               <div>
-                <label className="text-xs font-medium text-slate-700">Reason</label>
+                <label className="text-xs font-medium text-slate-700 dark:text-zinc-300">Reason</label>
                 <input
                   type="text"
                   placeholder="e.g., Policy violation, abusive language, inappropriate content"
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
-                  className="mt-1 w-full rounded-lg border border-slate-300 p-2 text-sm"
+                  className="mt-1 w-full rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100 p-2 text-sm"
                 />
               </div>
               <div>
-                <label className="text-xs font-medium text-slate-700">Internal Notes</label>
+                <label className="text-xs font-medium text-slate-700 dark:text-zinc-300">Internal Notes</label>
                 <textarea
                   rows={2}
                   placeholder="Additional context for audit log"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  className="mt-1 w-full rounded-lg border border-slate-300 p-2 text-sm"
+                  className="mt-1 w-full rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-slate-900 dark:text-zinc-100 p-2 text-sm"
                 />
               </div>
               <div className="flex gap-2">
@@ -346,7 +346,7 @@ export function AdminReviewDetailModal({
                   type="button"
                   disabled={busy}
                   onClick={() => handleModerate(actionType)}
-                  className="rounded-lg bg-slate-900 px-4 py-1.5 text-xs font-semibold text-white hover:bg-slate-800 disabled:opacity-50"
+                  className="rounded-lg bg-slate-900 dark:bg-zinc-100 px-4 py-1.5 text-xs font-semibold text-white dark:text-zinc-900 hover:bg-slate-800 dark:hover:bg-zinc-200 disabled:opacity-50 transition"
                 >
                   {busy ? "Processing..." : `Confirm ${actionType}`}
                 </button>
@@ -354,7 +354,7 @@ export function AdminReviewDetailModal({
                   type="button"
                   disabled={busy}
                   onClick={() => setActionType(null)}
-                  className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100"
+                  className="rounded-lg border border-slate-300 dark:border-zinc-700 px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-700 transition"
                 >
                   Cancel
                 </button>
@@ -364,7 +364,7 @@ export function AdminReviewDetailModal({
         </div>
 
         {/* Footer actions */}
-        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 bg-slate-50 px-6 py-4">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-800/50 px-6 py-4">
           <div className="flex gap-2">
             {!actionType && (
               <>
@@ -372,7 +372,7 @@ export function AdminReviewDetailModal({
                   <button
                     type="button"
                     onClick={() => setActionType("HIDE")}
-                    className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-800 hover:bg-amber-100"
+                    className="rounded-lg border border-amber-300 dark:border-amber-800/60 bg-amber-50 dark:bg-amber-950/40 px-3 py-1.5 text-xs font-semibold text-amber-800 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-950/60 transition"
                   >
                     Hide Review
                   </button>
@@ -380,7 +380,7 @@ export function AdminReviewDetailModal({
                   <button
                     type="button"
                     onClick={() => setActionType("RESTORE")}
-                    className="rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-800 hover:bg-emerald-100"
+                    className="rounded-lg border border-emerald-300 dark:border-emerald-800/60 bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1.5 text-xs font-semibold text-emerald-800 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-950/60 transition"
                   >
                     Restore Review
                   </button>
@@ -389,7 +389,7 @@ export function AdminReviewDetailModal({
                   <button
                     type="button"
                     onClick={() => setActionType("DELETE")}
-                    className="rounded-lg border border-rose-300 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-800 hover:bg-rose-100"
+                    className="rounded-lg border border-rose-300 dark:border-rose-800/60 bg-rose-50 dark:bg-rose-950/40 px-3 py-1.5 text-xs font-semibold text-rose-800 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-950/60 transition"
                   >
                     Delete Review
                   </button>
@@ -400,7 +400,7 @@ export function AdminReviewDetailModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg bg-slate-200 px-4 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-300"
+            className="rounded-lg bg-slate-200 dark:bg-zinc-700 px-4 py-1.5 text-xs font-semibold text-slate-700 dark:text-zinc-200 hover:bg-slate-300 dark:hover:bg-zinc-600 transition"
           >
             Close
           </button>

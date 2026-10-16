@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { PERMISSIONS, hasPermission } from "@/lib/permissions/permissions";
+import { ModalOverlay } from "@/components/ui/modal-overlay";
 
 interface CmsContentItem {
   id: string;
@@ -212,15 +213,15 @@ export default function CmsManagementPage() {
   const statusBadge = (status: string) => {
     switch (status) {
       case "PUBLISHED":
-        return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">Published</span>;
+        return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border dark:border-emerald-800/40">Published</span>;
       case "DRAFT":
-        return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800">Draft</span>;
+        return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 dark:border dark:border-amber-800/40">Draft</span>;
       case "UNPUBLISHED":
-        return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-zinc-200 text-zinc-700">Unpublished</span>;
+        return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-zinc-200 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">Unpublished</span>;
       case "ARCHIVED":
-        return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-rose-100 text-rose-800">Archived</span>;
+        return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 dark:border dark:border-rose-800/40">Archived</span>;
       default:
-        return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-zinc-100 text-zinc-800">{status}</span>;
+        return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200">{status}</span>;
     }
   };
 
@@ -235,7 +236,7 @@ export default function CmsManagementPage() {
         </p>
       </div>
         {/* Top Control Bar */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-zinc-200 shadow-xs">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-white dark:bg-zinc-900 p-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
           <div className="flex flex-1 flex-wrap items-center gap-3">
             <input
               type="text"
@@ -245,7 +246,7 @@ export default function CmsManagementPage() {
                 setSearch(e.target.value);
                 setPage(1);
               }}
-              className="px-3.5 py-2 text-sm border border-zinc-200 rounded-xl w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-zinc-900"
+              className="px-3.5 py-2 text-sm border border-zinc-200 dark:border-zinc-700 rounded-xl w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-400 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
             />
             <select
               value={selectedType}
@@ -253,7 +254,7 @@ export default function CmsManagementPage() {
                 setSelectedType(e.target.value);
                 setPage(1);
               }}
-              className="px-3 py-2 text-sm border border-zinc-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900"
+              className="px-3 py-2 text-sm border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-400"
             >
               {CONTENT_TYPES.map((t) => (
                 <option key={t.value} value={t.value}>{t.label}</option>
@@ -265,7 +266,7 @@ export default function CmsManagementPage() {
                 setSelectedStatus(e.target.value);
                 setPage(1);
               }}
-              className="px-3 py-2 text-sm border border-zinc-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900"
+              className="px-3 py-2 text-sm border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-400"
             >
               {STATUS_FILTERS.map((s) => (
                 <option key={s.value} value={s.value}>{s.label}</option>
@@ -278,7 +279,7 @@ export default function CmsManagementPage() {
               <button
                 type="button"
                 onClick={() => setShowCreateModal(true)}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-zinc-900 text-white rounded-xl text-sm font-semibold hover:bg-zinc-800 transition"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-xl text-sm font-semibold hover:bg-zinc-800 dark:hover:bg-zinc-200 transition"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -296,10 +297,10 @@ export default function CmsManagementPage() {
         )}
 
         {/* Content Table */}
-        <div className="bg-white border border-zinc-200 rounded-2xl shadow-xs overflow-hidden">
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-xs overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="bg-zinc-50 border-b border-zinc-200 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+              <thead className="bg-zinc-50 dark:bg-zinc-800/50 border-b border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                 <tr>
                   <th className="px-5 py-3.5">Content Item</th>
                   <th className="px-5 py-3.5">Type</th>
@@ -309,48 +310,69 @@ export default function CmsManagementPage() {
                   <th className="px-5 py-3.5 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-100">
+              <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
                 {loading ? (
-                  <tr>
-                    <td colSpan={6} className="px-5 py-12 text-center text-zinc-400">
-                      Loading CMS content...
-                    </td>
-                  </tr>
+                  Array.from({ length: 6 }).map((_, i) => (
+                    <tr key={i}>
+                      <td className="px-5 py-4">
+                        <div className="h-4 w-44 rounded bg-zinc-200 dark:bg-zinc-800 skeleton-shimmer" />
+                        <div className="mt-1.5 h-3 w-28 rounded bg-zinc-200 dark:bg-zinc-800 skeleton-shimmer" />
+                      </td>
+                      <td className="px-5 py-4">
+                        <div className="h-4 w-28 rounded bg-zinc-200 dark:bg-zinc-800 skeleton-shimmer" />
+                      </td>
+                      <td className="px-5 py-4">
+                        <div className="h-5 w-20 rounded-full bg-zinc-200 dark:bg-zinc-800 skeleton-shimmer" />
+                      </td>
+                      <td className="px-5 py-4">
+                        <div className="h-4 w-20 rounded bg-zinc-200 dark:bg-zinc-800 skeleton-shimmer" />
+                      </td>
+                      <td className="px-5 py-4">
+                        <div className="h-4 w-24 rounded bg-zinc-200 dark:bg-zinc-800 skeleton-shimmer" />
+                      </td>
+                      <td className="px-5 py-4 text-right">
+                        <div className="inline-flex items-center gap-2">
+                          <div className="h-7 w-12 rounded-lg bg-zinc-200 dark:bg-zinc-800 skeleton-shimmer" />
+                          <div className="h-7 w-16 rounded-lg bg-zinc-200 dark:bg-zinc-800 skeleton-shimmer" />
+                        </div>
+                      </td>
+                    </tr>
+                  ))
                 ) : items.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="px-5 py-12 text-center text-zinc-400">
+                    <td colSpan={6} className="px-5 py-12 text-center text-zinc-400 dark:text-zinc-500">
                       No content items found matching current filters.
                     </td>
                   </tr>
                 ) : (
                   items.map((item) => (
-                    <tr key={item.id} className="hover:bg-zinc-50/60 transition">
+                    <tr key={item.id} className="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/50 transition">
                       <td className="px-5 py-4">
-                        <Link href={`/admin/cms/${item.id}`} className="font-semibold text-zinc-900 hover:underline">
+                        <Link href={`/admin/cms/${item.id}`} className="font-semibold text-zinc-900 dark:text-zinc-100 hover:underline">
                           {item.title}
                         </Link>
                         {item.slug && (
-                          <div className="text-xs text-zinc-400 font-mono mt-0.5">
+                          <div className="text-xs text-zinc-400 dark:text-zinc-500 font-mono mt-0.5">
                             /{item.slug} ({item.locale})
                           </div>
                         )}
                       </td>
-                      <td className="px-5 py-4 text-xs font-medium text-zinc-600">
+                      <td className="px-5 py-4 text-xs font-medium text-zinc-600 dark:text-zinc-400">
                         {item.type.replace(/_/g, " ")}
                       </td>
                       <td className="px-5 py-4">
                         {statusBadge(item.status)}
                       </td>
-                      <td className="px-5 py-4 text-xs text-zinc-500">
+                      <td className="px-5 py-4 text-xs text-zinc-500 dark:text-zinc-400">
                         {item._count?.versions || 1} revision(s)
                       </td>
-                      <td className="px-5 py-4 text-xs text-zinc-500">
+                      <td className="px-5 py-4 text-xs text-zinc-500 dark:text-zinc-400">
                         {new Date(item.updatedAt).toLocaleDateString()}
                       </td>
                       <td className="px-5 py-4 text-right space-x-2">
                         <Link
                           href={`/admin/cms/${item.id}`}
-                          className="inline-flex items-center px-2.5 py-1.5 border border-zinc-200 rounded-lg text-xs font-semibold text-zinc-700 hover:bg-zinc-100 transition"
+                          className="inline-flex items-center px-2.5 py-1.5 border border-zinc-200 dark:border-zinc-700 rounded-lg text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
                         >
                           Edit
                         </Link>
@@ -367,7 +389,7 @@ export default function CmsManagementPage() {
                           <button
                             type="button"
                             onClick={(e) => handleUnpublish(item.id, e)}
-                            className="inline-flex items-center px-2.5 py-1.5 border border-zinc-200 text-zinc-600 rounded-lg text-xs font-semibold hover:bg-zinc-100 transition"
+                            className="inline-flex items-center px-2.5 py-1.5 border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 rounded-lg text-xs font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
                           >
                             Unpublish
                           </button>
@@ -381,16 +403,16 @@ export default function CmsManagementPage() {
           </div>
 
           {/* Pagination Bar */}
-          <div className="flex items-center justify-between px-5 py-3.5 border-t border-zinc-200 bg-zinc-50 text-xs text-zinc-500">
+          <div className="flex items-center justify-between px-5 py-3.5 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-xs text-zinc-500 dark:text-zinc-400">
             <div>
-              Total: <span className="font-semibold text-zinc-700">{total}</span> content items
+              Total: <span className="font-semibold text-zinc-700 dark:text-zinc-300">{total}</span> content items
             </div>
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 disabled={page <= 1}
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
-                className="px-3 py-1.5 border border-zinc-200 rounded-lg bg-white disabled:opacity-40 disabled:cursor-not-allowed hover:bg-zinc-50 font-medium"
+                className="px-3 py-1.5 border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-zinc-50 dark:hover:bg-zinc-700 font-medium transition"
               >
                 Previous
               </button>
@@ -399,7 +421,7 @@ export default function CmsManagementPage() {
                 type="button"
                 disabled={page >= totalPages}
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                className="px-3 py-1.5 border border-zinc-200 rounded-lg bg-white disabled:opacity-40 disabled:cursor-not-allowed hover:bg-zinc-50 font-medium"
+                className="px-3 py-1.5 border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-zinc-50 dark:hover:bg-zinc-700 font-medium transition"
               >
                 Next
               </button>
@@ -409,14 +431,14 @@ export default function CmsManagementPage() {
 
       {/* Create Content Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl border border-zinc-200">
+        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl border border-zinc-200 dark:border-zinc-800">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-bold text-zinc-900">Create New Content</h3>
+              <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">Create New Content</h3>
               <button
                 type="button"
                 onClick={() => setShowCreateModal(false)}
-                className="text-zinc-400 hover:text-zinc-600 text-lg"
+                className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 text-lg"
               >
                 ✕
               </button>
@@ -424,11 +446,11 @@ export default function CmsManagementPage() {
 
             <form onSubmit={handleCreate} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-zinc-700 mb-1">Content Type</label>
+                <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Content Type</label>
                 <select
                   value={createType}
                   onChange={(e) => setCreateType(e.target.value)}
-                  className="w-full px-3 py-2 border border-zinc-200 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-zinc-900"
+                  className="w-full px-3 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-400"
                 >
                   {CONTENT_TYPES.filter((t) => t.value !== "").map((t) => (
                     <option key={t.value} value={t.value}>{t.label}</option>
@@ -437,19 +459,19 @@ export default function CmsManagementPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-700 mb-1">Internal Title / Name</label>
+                <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Internal Title / Name</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Summer 2027 Main Hero"
                   value={createTitle}
                   onChange={(e) => setCreateTitle(e.target.value)}
-                  className="w-full px-3 py-2 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900"
+                  className="w-full px-3 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-400"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-700 mb-1">
+                <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
                   URL Slug (Optional for pages/collections)
                 </label>
                 <input
@@ -457,29 +479,29 @@ export default function CmsManagementPage() {
                   placeholder="e.g. luxury-villas"
                   value={createSlug}
                   onChange={(e) => setCreateSlug(e.target.value)}
-                  className="w-full px-3 py-2 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900"
+                  className="w-full px-3 py-2 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-400"
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-3 border-t border-zinc-100">
+              <div className="flex justify-end gap-2 pt-3 border-t border-zinc-100 dark:border-zinc-800">
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="px-4 py-2 border border-zinc-200 text-zinc-700 rounded-xl text-sm font-semibold hover:bg-zinc-50"
+                  className="px-4 py-2 border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-xl text-sm font-semibold hover:bg-zinc-50 dark:hover:bg-zinc-800 transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={creating}
-                  className="px-4 py-2 bg-zinc-900 text-white rounded-xl text-sm font-semibold hover:bg-zinc-800 disabled:opacity-50"
+                  className="px-4 py-2 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-xl text-sm font-semibold hover:bg-zinc-800 dark:hover:bg-zinc-200 disabled:opacity-50 transition"
                 >
                   {creating ? "Creating..." : "Create & Edit"}
                 </button>
               </div>
             </form>
           </div>
-        </div>
+        </ModalOverlay>
       )}
     </div>
   );
