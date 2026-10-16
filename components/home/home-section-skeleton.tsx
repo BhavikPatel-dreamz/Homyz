@@ -2,12 +2,24 @@
 
 import React from "react";
 
-export function HomeSectionSkeleton({ count = 6 }: { count?: number }) {
+export function HomeSectionSkeleton({
+  count = 6,
+  title,
+}: {
+  count?: number;
+  title?: string;
+}) {
   return (
     <div className="animate-pulse space-y-4 sm:space-y-6" aria-hidden="true">
       {/* Title skeleton */}
       <div className="flex items-center justify-between">
-        <div className="h-7 sm:h-8 w-48 sm:w-64 rounded-lg bg-zinc-200" />
+        {title ? (
+          <h2 className="text-[20px] sm:text-[22px] font-medium leading-7 sm:leading-8 tracking-[-.35px] text-[#1f1f1f]/80">
+            {title}
+          </h2>
+        ) : (
+          <div className="h-7 sm:h-8 w-48 sm:w-64 rounded-lg bg-zinc-200" />
+        )}
         <div className="hidden sm:flex gap-2">
           <div className="h-10 w-10 rounded-full bg-zinc-200" />
           <div className="h-10 w-10 rounded-full bg-zinc-200" />

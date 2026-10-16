@@ -232,6 +232,7 @@ export function ListingSearchBar() {
   const urlRadius = searchParams.get("radius") ? parseFloat(searchParams.get("radius")!) : undefined;
   const urlPlaceId = searchParams.get("placeId") || undefined;
   const urlLocationType = searchParams.get("locationType") || undefined;
+  const urlCountry = searchParams.get("country") || "";
 
   // Search State
   const [destination, setDestination] = useState(urlDest);
@@ -241,7 +242,7 @@ export function ListingSearchBar() {
           name: urlDest,
           fullAddress: urlDest,
           city: searchParams.get("city") || urlDest,
-          country: "",
+          country: urlCountry,
           latitude: urlLat,
           longitude: urlLng,
           locationType: urlLocationType || "city",
@@ -297,7 +298,7 @@ export function ListingSearchBar() {
         name: urlDest,
         fullAddress: urlDest,
         city: searchParams.get("city") || urlDest,
-        country: "",
+        country: urlCountry,
         latitude: urlLat,
         longitude: urlLng,
         locationType: urlLocationType || "city",
@@ -306,7 +307,7 @@ export function ListingSearchBar() {
     } else if (!urlDest) {
       setSelectedLocation(null);
     }
-  }, [urlDest, urlCheckIn, urlCheckOut, urlAdults, urlChildren, urlInfants, urlPets, urlGuests, urlLat, urlLng, urlRadius, urlPlaceId, urlLocationType, searchParams]);
+  }, [urlDest, urlCheckIn, urlCheckOut, urlAdults, urlChildren, urlInfants, urlPets, urlGuests, urlLat, urlLng, urlRadius, urlPlaceId, urlLocationType, urlCountry, searchParams]);
 
   // Load recent searches on mount
   useEffect(() => {
@@ -595,6 +596,9 @@ export function ListingSearchBar() {
 
     if (effectiveLoc?.fullAddress) sp.set("fullAddress", effectiveLoc.fullAddress);
     else sp.delete("fullAddress");
+
+    if (effectiveLoc?.country) sp.set("country", effectiveLoc.country);
+    else sp.delete("country");
 
     if (typeof effectiveLoc?.latitude === "number" && !isNaN(effectiveLoc.latitude)) {
       sp.set("lat", String(effectiveLoc.latitude));

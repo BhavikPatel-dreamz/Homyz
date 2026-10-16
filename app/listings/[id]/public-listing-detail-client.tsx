@@ -62,10 +62,12 @@ const RealMap = dynamic(
 function DeferredReviewList({
   listingId,
   isGuestFavorite,
+  initialSummary,
   onStatsChange,
 }: {
   listingId: string;
   isGuestFavorite?: boolean;
+  initialSummary: { averageRating: number | null; totalCount: number };
   onStatsChange: (stats: { rating: number | null; count: number }) => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -93,7 +95,7 @@ function DeferredReviewList({
   return (
     <div ref={containerRef}>
       {shouldLoad ? (
-        <ReviewList listingId={listingId} isGuestFavorite={isGuestFavorite} onStatsChange={onStatsChange} />
+        <ReviewList listingId={listingId} isGuestFavorite={isGuestFavorite} initialSummary={initialSummary} onStatsChange={onStatsChange} />
       ) : (
         <section className="border-b border-zinc-200/80 py-8" aria-labelledby="guest-reviews-heading">
           <h2 id="guest-reviews-heading" className="text-[20px] font-normal text-[#1f1f1f]">Guest reviews</h2>
@@ -200,6 +202,9 @@ interface PublicListingDetailClientProps {
   searchInfants?: number;
   searchPets?: number;
   initialSpecialOfferId?: string;
+  initialQuote?: BookingQuote | null;
+  /** Validation feedback for an explicit URL selection that could not be applied. */
+  initialSelectionError?: string;
 }
 
 type BookedDateRange = { start: string; end: string };
@@ -589,6 +594,8 @@ export function PublicListingDetailClient({
   searchInfants,
   searchPets,
   initialSpecialOfferId,
+  initialQuote,
+  initialSelectionError,
 }: PublicListingDetailClientProps) {
   const { formatPrice } = useCurrency();
   const { t } = useLanguage();
@@ -683,8 +690,9 @@ export function PublicListingDetailClient({
 
   const maximumGuests = Math.max(1, listing.guests || 1);
 
-  const maxPetsAllowed = Math.max(1, listing.maxPets || 2);
-  const allowsPets = listing.petsAllowed !== false;
+  const configuredMaxPets = typeof listing.maxPets === "number" ? Math.max(0, listing.maxPets) : 20;
+  const allowsPets = listing.petsAllowed !== false && configuredMaxPets > 0;
+  const maxPetsAllowed = allowsPets ? configuredMaxPets : 0;
 
   // Booking Widget State — pre-filled from search URL params or active search context
   const [checkIn, setCheckIn] = useState(searchCheckIn && isDateKey(searchCheckIn) ? searchCheckIn : "");
@@ -695,13 +703,17 @@ export function PublicListingDetailClient({
   const [infantsCount, setInfantsCount] = useState(() => searchInfants ?? 0);
   const [petsCount, setPetsCount] = useState(() => searchPets ?? 0);
   const [isNonRefundable, setIsNonRefundable] = useState(false);
-  // Keep the initial render deterministic for SSR. Cached quotes live in
-  // sessionStorage and are restored by the route-sync effect after hydration.
-  const [quote, setQuote] = useState<BookingQuote | null>(null);
-  const lastQuoteQueryRef = useRef<string>("");
+  // Initialize with server-computed authoritative quote if available to prevent layout shift and quote flash
+  const [quote, setQuote] = useState<BookingQuote | null>(initialQuote ?? null);
+  const initialCapacityGuests = (searchAdults ?? Math.max(1, searchGuests ?? 1)) + (searchChildren ?? 0);
+  const initialQueryKey = useMemo(() => {
+    if (!initialQuote || !checkIn || !checkOut) return "";
+    return `${listing.id}:${checkIn}:${checkOut}:${initialCapacityGuests}:${searchPets ?? 0}:false:${initialSpecialOfferId || ""}`;
+  }, []);
+  const lastQuoteQueryRef = useRef<string>(initialQueryKey);
   const isInstantBook = (quote?.bookingMode ?? listing.bookingMode) === "INSTANT_BOOK";
   const [isQuoteLoading, setIsQuoteLoading] = useState(false);
-  const [quoteError, setQuoteError] = useState<string | null>(null);
+  const [quoteError, setQuoteError] = useState<string | null>(initialSelectionError ?? null);
   const [isBookingSubmitting, setIsBookingSubmitting] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [bookedDateRanges, setBookedDateRanges] = useState<BookedDateRange[]>(() =>
@@ -826,9 +838,21 @@ export function PublicListingDetailClient({
     return () => observer.disconnect();
   }, [listing.id, listing.city, listing.country]);
 
-  // A client component may be preserved while the route segment changes. Reset
-  // all booking-specific state so a quote from property A never appears on B.
+  const isInitialMountRef = useRef(true);
+  const prevListingIdRef = useRef(listing.id);
+
+  // A client component may be preserved while navigating between listings. Reset
+  // booking-specific state when switching to a different property.
   useEffect(() => {
+    if (isInitialMountRef.current) {
+      isInitialMountRef.current = false;
+      return;
+    }
+    if (prevListingIdRef.current === listing.id) {
+      return;
+    }
+    prevListingIdRef.current = listing.id;
+
     const nextCheckIn = isDateKey(searchCheckIn) ? searchCheckIn : "";
     const nextCheckOut = isDateKey(searchCheckOut) && (!nextCheckIn || searchCheckOut > nextCheckIn)
       ? searchCheckOut
@@ -838,44 +862,41 @@ export function PublicListingDetailClient({
     const nextInfants = searchInfants ?? 0;
     const nextPets = searchPets ?? 0;
 
-    const timer = window.setTimeout(() => {
-      setCheckIn(nextCheckIn);
-      setCheckOut(nextCheckOut);
-      setAdultsCount(nextGuests);
-      setChildrenCount(nextChildren);
-      setInfantsCount(nextInfants);
-      setPetsCount(nextPets);
-      setIsNonRefundable(false);
-      setQuote(
-        nextCheckIn && nextCheckOut
-          ? readBookingQuote<BookingQuote>({
-              listingId: listing.id,
-              checkIn: nextCheckIn,
-              checkOut: nextCheckOut,
-              guests: nextGuests,
-              pets: nextPets,
-              nonRefundable: false,
-              specialOfferId: initialSpecialOfferId,
-            })
-          : null,
-      );
-      setQuoteError(null);
-      setBookingSuccess(false);
-      setHostImageFailed(false);
-      setIsDescriptionModalOpen(false);
-      setIsAllAmenitiesOpen(false);
-      setIsGuestSelectorOpen(false);
-      setAmenitySearchQuery("");
-      setBookedDateRanges(
-        (listing.blockedDates ?? []).map((date: string) => ({ start: date, end: addCalendarDays(date, 1) })),
-      );
-      setAvailabilityError(null);
-      setAvailabilityRequested(true);
-      setIsAvailabilityLoading(false);
-      setAvailabilityMonth(nextCheckIn ? new Date(`${nextCheckIn}T00:00:00`) : new Date(new Date().getFullYear(), new Date().getMonth(), 1));
-      setAvailabilityRefreshVersion((version) => version + 1);
-    }, 0);
-    return () => window.clearTimeout(timer);
+    setCheckIn(nextCheckIn);
+    setCheckOut(nextCheckOut);
+    setAdultsCount(nextGuests);
+    setChildrenCount(nextChildren);
+    setInfantsCount(nextInfants);
+    setPetsCount(nextPets);
+    setIsNonRefundable(false);
+    setQuote(
+      nextCheckIn && nextCheckOut
+        ? readBookingQuote<BookingQuote>({
+            listingId: listing.id,
+            checkIn: nextCheckIn,
+            checkOut: nextCheckOut,
+            guests: nextGuests,
+            pets: nextPets,
+            nonRefundable: false,
+            specialOfferId: initialSpecialOfferId,
+          })
+        : null,
+    );
+    setQuoteError(null);
+    setBookingSuccess(false);
+    setHostImageFailed(false);
+    setIsDescriptionModalOpen(false);
+    setIsAllAmenitiesOpen(false);
+    setIsGuestSelectorOpen(false);
+    setAmenitySearchQuery("");
+    setBookedDateRanges(
+      (listing.blockedDates ?? []).map((date: string) => ({ start: date, end: addCalendarDays(date, 1) })),
+    );
+    setAvailabilityError(null);
+    setAvailabilityRequested(true);
+    setIsAvailabilityLoading(false);
+    setAvailabilityMonth(nextCheckIn ? new Date(`${nextCheckIn}T00:00:00`) : new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+    setAvailabilityRefreshVersion((version) => version + 1);
   }, [listing.id, searchCheckIn, searchCheckOut, searchGuests, searchAdults, searchChildren, searchInfants, searchPets, initialSpecialOfferId]);
 
   useEffect(() => {
@@ -1308,17 +1329,31 @@ export function PublicListingDetailClient({
       lastQuoteQueryRef.current = "";
       const timer = window.setTimeout(() => {
         setQuote(null);
-        setQuoteError(null);
+        setQuoteError((current) => current === initialSelectionError ? current : null);
         setIsQuoteLoading(false);
       }, 0);
       return () => window.clearTimeout(timer);
     }
 
-    if (totalCapacityGuests < 1 || totalCapacityGuests > maximumGuests) {
+    if (
+      adultsCount < 1 ||
+      totalCapacityGuests < 1 ||
+      totalCapacityGuests > maximumGuests ||
+      (petsCount > 0 && !allowsPets) ||
+      petsCount > maxPetsAllowed
+    ) {
       lastQuoteQueryRef.current = "";
       const timer = window.setTimeout(() => {
         setQuote(null);
-        setQuoteError(`This property accommodates up to ${maximumGuests} ${maximumGuests === 1 ? "guest" : "guests"}.`);
+        setQuoteError(
+          adultsCount < 1
+            ? "At least one adult is required for a reservation."
+            : petsCount > 0 && !allowsPets
+              ? "Pets are not allowed at this property."
+              : petsCount > maxPetsAllowed
+                ? `This property allows up to ${maxPetsAllowed} ${maxPetsAllowed === 1 ? "pet" : "pets"}.`
+                : `This property accommodates up to ${maximumGuests} ${maximumGuests === 1 ? "guest" : "guests"}.`,
+        );
         setIsQuoteLoading(false);
       }, 0);
       return () => window.clearTimeout(timer);
@@ -1408,12 +1443,12 @@ export function PublicListingDetailClient({
       controller.abort();
       clearTimeout(timer);
     };
-  }, [checkIn, checkOut, totalCapacityGuests, petsCount, isNonRefundable, listing.id, listing.city, listing.country, maximumGuests, initialSpecialOfferId, searchParams, bookedDateRanges]);
+  }, [checkIn, checkOut, totalCapacityGuests, adultsCount, petsCount, isNonRefundable, listing.id, listing.city, listing.country, maximumGuests, allowsPets, maxPetsAllowed, initialSpecialOfferId, initialSelectionError, searchParams, bookedDateRanges]);
 
   const isDateRangeValid = Boolean(
     isDateKey(checkIn) && isDateKey(checkOut) && checkOut > checkIn && !overlapsBookedRange(checkIn, checkOut, bookedDateRanges),
   );
-  const isGuestSelectionValid = Number.isInteger(totalCapacityGuests) && totalCapacityGuests >= 1 && totalCapacityGuests <= maximumGuests;
+  const isGuestSelectionValid = Number.isInteger(adultsCount) && adultsCount >= 1 && Number.isInteger(totalCapacityGuests) && totalCapacityGuests >= 1 && totalCapacityGuests <= maximumGuests && Number.isInteger(petsCount) && petsCount >= 0 && petsCount <= maxPetsAllowed;
   const hasValidQuote = Boolean(
     isDateRangeValid && isGuestSelectionValid && quote && !quoteError && !isQuoteLoading && !isAvailabilityLoading && !availabilityError,
   );
@@ -1547,6 +1582,10 @@ export function PublicListingDetailClient({
   };
 
   const updatePets = (delta: number) => {
+    if (!allowsPets) {
+      setQuoteError("Pets are not allowed at this property.");
+      return;
+    }
     const next = petsCount + delta;
     if (next < 0 || next > maxPetsAllowed) return;
     setQuoteError(null);
@@ -1710,7 +1749,15 @@ export function PublicListingDetailClient({
     }
 
     if (!isGuestSelectionValid || totalCapacityGuests > maximumGuests) {
-      setQuoteError(`This property allows a maximum of ${maximumGuests} ${maximumGuests === 1 ? "guest" : "guests"}.`);
+      setQuoteError(
+        adultsCount < 1
+          ? "At least one adult is required for a reservation."
+          : petsCount > 0 && !allowsPets
+            ? "Pets are not allowed at this property."
+            : petsCount > maxPetsAllowed
+              ? `This property allows up to ${maxPetsAllowed} ${maxPetsAllowed === 1 ? "pet" : "pets"}.`
+              : `This property allows a maximum of ${maximumGuests} ${maximumGuests === 1 ? "guest" : "guests"}.`,
+      );
       trackListingEvent({
         eventType: "reserve_validation_failed",
         propertyId: listing.id,
@@ -2249,6 +2296,33 @@ export function PublicListingDetailClient({
 
 
 
+                                {/* Infants do not count toward the listing guest capacity. */}
+                                <div className="flex items-center justify-between gap-3 border-t border-zinc-200/80 pt-3">
+                                  <div>
+                                    <p className="font-medium text-[#1f1f1f]">{t("home_infants", "Infants")}</p>
+                                    <p className="text-xs text-[#727272]">Under 2</p>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <button type="button" onClick={() => updateInfants(-1)} disabled={infantsCount <= 0} aria-label="Remove one infant" className="flex size-7 items-center justify-center rounded-full border border-[#1f1f1f] text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">−</button>
+                                    <span className="min-w-4 text-center font-medium text-[#1f1f1f]" aria-live="polite">{infantsCount}</span>
+                                    <button type="button" onClick={() => updateInfants(1)} disabled={infantsCount >= 5} aria-label="Add one infant" className="flex size-7 items-center justify-center rounded-full border border-[#1f1f1f] text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">+</button>
+                                  </div>
+                                </div>
+
+                                {allowsPets && (
+                                  <div className="flex items-center justify-between gap-3 border-t border-zinc-200/80 pt-3">
+                                    <div>
+                                      <p className="font-medium text-[#1f1f1f]">{t("home_pets", "Pets")}</p>
+                                      <p className="text-xs text-[#727272]">{maxPetsAllowed === 1 ? "Up to 1 pet" : `Up to ${maxPetsAllowed} pets`}</p>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <button type="button" onClick={() => updatePets(-1)} disabled={petsCount <= 0} aria-label="Remove one pet" className="flex size-7 items-center justify-center rounded-full border border-[#1f1f1f] text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">−</button>
+                                      <span className="min-w-4 text-center font-medium text-[#1f1f1f]" aria-live="polite">{petsCount}</span>
+                                      <button type="button" onClick={() => updatePets(1)} disabled={petsCount >= maxPetsAllowed} aria-label="Add one pet" className="flex size-7 items-center justify-center rounded-full border border-[#1f1f1f] text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">+</button>
+                                    </div>
+                                  </div>
+                                )}
+
                                 <div className="border-t border-zinc-200/80 pt-2 text-sm text-[#727272]">
                                   {totalCapacityGuests >= maximumGuests ? (
                                     <p className="font-sm font-medium text-amber-700">Maximum property capacity of {maximumGuests} {maximumGuests === 1 ? "guest" : "guests"} reached.</p>
@@ -2557,9 +2631,10 @@ export function PublicListingDetailClient({
 
               {/* Guest Reviews Section */}
               <div ref={reviewSectionRef} className="order-3 lg:relative lg:bg-white border-t border-[#DDDDDE]">
-                <ReviewList
+                <DeferredReviewList
                   listingId={listing.id}
                   isGuestFavorite={listing.isGuestFavorite}
+                  initialSummary={{ averageRating: listing.rating, totalCount: listing.reviewsCount }}
                   onStatsChange={({ rating, count }) => {
                     setReviewRating(rating);
                     setReviewCount(count);
@@ -2617,17 +2692,13 @@ export function PublicListingDetailClient({
                 </p>
                 {publicCoordinates ? (
                   <div className="h-[163px] w-full overflow-hidden sm:rounded-[30px] rounded-[10px] border border-zinc-200 shadow-sm sm:h-[604px] bg-[#F1F1F199]">
-                    <RealMap
+                    <DeferredListingMap
                       address={listing.shortAddress || listing.address || ""}
                       city={listing.city || undefined}
                       country={listing.country || undefined}
-                      lat={publicCoordinates.latitude}
-                      lng={publicCoordinates.longitude}
+                      latitude={publicCoordinates.latitude}
+                      longitude={publicCoordinates.longitude}
                       showExactLocation={listing.showExactLocation ?? false}
-                      preferInitialCoordinates
-                      allowLocationEditing={false}
-                      lazyLoad
-                      className="relative h-full w-full overflow-hidden"
                       ariaLabel={`${listing.showExactLocation ? "Property" : "Approximate property"} location map for ${locationString || listing.title}`}
                     />
                   </div>

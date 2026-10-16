@@ -11,6 +11,7 @@ import { favoriteService } from "@/services/favorite.service";
 import { parsePublicListingSort } from "@/lib/listings/public-sort";
 import { cookies } from "next/headers";
 import { LAST_SEARCH_COOKIE, parseServerLastSearch } from "@/lib/storage/client-history";
+import { publicListingSearchFiltersSchema } from "@/lib/validation/public-listing-search";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +25,7 @@ interface SearchPageProps {
   searchParams: Promise<{
     location?: string;
     city?: string;
+    country?: string;
     destination?: string;
     placeName?: string;
     fullAddress?: string;
@@ -76,52 +78,65 @@ export default async function ListingsSearchPage({ searchParams }: SearchPagePro
   const cookieStore = await cookies();
   const serverLastSearch = parseServerLastSearch(cookieStore.get(LAST_SEARCH_COOKIE)?.value);
 
-  // Parse URL params
-  const destination = sp.location || sp.destination || sp.city || undefined;
-  const city = sp.city || sp.location || sp.destination || undefined;
-  const placeName = sp.placeName || sp.location || sp.destination || sp.city || undefined;
-  const lat = sp.lat ? parseFloat(sp.lat) : undefined;
-  const lng = sp.lng ? parseFloat(sp.lng) : undefined;
-  const radiusKm = sp.radius ? parseFloat(sp.radius) : undefined;
+  const firstPresent = (...values: Array<string | undefined>) => values.find((value) => value !== undefined);
+  const numberParam = (value: string | undefined): number | undefined => {
+    if (value === undefined) return undefined;
+    const trimmed = value.trim();
+    return trimmed ? Number(trimmed) : Number.NaN;
+  };
+
+  // An explicitly supplied URL value always wins over persisted state, including
+  // invalid values. That lets validation display a correction instead of silently
+  // falling back to an older, unrelated search.
+  const destination = firstPresent(sp.location, sp.destination, sp.city);
+  const city = firstPresent(sp.city, sp.location, sp.destination);
+  const country = sp.country !== undefined ? sp.country : serverLastSearch?.country || undefined;
+  const placeName = firstPresent(sp.placeName, sp.location, sp.destination, sp.city);
+  const lat = numberParam(sp.lat);
+  const lng = numberParam(sp.lng);
+  const radiusKm = numberParam(sp.radius);
   const placeId = sp.placeId || undefined;
   const locationType = sp.locationType || undefined;
-  const checkIn = sp.checkIn || sp.checkin || sp.startDate || serverLastSearch?.checkIn || undefined;
-  const checkOut = sp.checkOut || sp.checkout || sp.endDate || serverLastSearch?.checkOut || undefined;
-  const guests = sp.guests ? parseInt(sp.guests, 10) : serverLastSearch?.guests || undefined;
-  const adults = sp.adults ? parseInt(sp.adults, 10) : serverLastSearch?.adults || undefined;
-  const children = sp.children ? parseInt(sp.children, 10) : serverLastSearch?.children || undefined;
-  const infants = sp.infants ? parseInt(sp.infants, 10) : serverLastSearch?.infants || undefined;
-  const pets = sp.pets ? parseInt(sp.pets, 10) : serverLastSearch?.pets || undefined;
+  const explicitCheckIn = firstPresent(sp.checkIn, sp.checkin, sp.startDate);
+  const explicitCheckOut = firstPresent(sp.checkOut, sp.checkout, sp.endDate);
+  const checkIn = explicitCheckIn !== undefined ? explicitCheckIn : serverLastSearch?.checkIn || undefined;
+  const checkOut = explicitCheckOut !== undefined ? explicitCheckOut : serverLastSearch?.checkOut || undefined;
+  const guests = sp.guests !== undefined ? numberParam(sp.guests) : serverLastSearch?.guests || undefined;
+  const adults = sp.adults !== undefined ? numberParam(sp.adults) : serverLastSearch?.adults || undefined;
+  const children = sp.children !== undefined ? numberParam(sp.children) : serverLastSearch?.children || undefined;
+  const infants = sp.infants !== undefined ? numberParam(sp.infants) : serverLastSearch?.infants || undefined;
+  const pets = sp.pets !== undefined ? numberParam(sp.pets) : serverLastSearch?.pets || undefined;
   const propertyType = sp.propertyType || undefined;
   const propertyTypes = sp.propertyTypes ? sp.propertyTypes.split(",").filter(Boolean) : undefined;
   const listingType = sp.listingType || undefined;
-  const minPrice = sp.minPrice ? parseInt(sp.minPrice, 10) : undefined;
-  const maxPrice = sp.maxPrice ? parseInt(sp.maxPrice, 10) : undefined;
+  const minPrice = numberParam(sp.minPrice);
+  const maxPrice = numberParam(sp.maxPrice);
   const amenities = sp.amenities ? sp.amenities.split(",").filter(Boolean) : undefined;
   const accessibility = sp.accessibility ? sp.accessibility.split(",").filter(Boolean) : undefined;
   const languages = sp.languages ? sp.languages.split(",").filter(Boolean) : undefined;
-  const bedrooms = sp.bedrooms ? parseInt(sp.bedrooms, 10) : undefined;
-  const bathrooms = sp.bathrooms ? parseInt(sp.bathrooms, 10) : undefined;
-  const beds = sp.beds ? parseInt(sp.beds, 10) : undefined;
+  const bedrooms = numberParam(sp.bedrooms);
+  const bathrooms = numberParam(sp.bathrooms);
+  const beds = numberParam(sp.beds);
   const instantBook = sp.instantBook === "true" ? true : undefined;
   const featured = sp.featured === "true" ? true : undefined;
   const sortBy: SortBy | undefined = parsePublicListingSort(sp.sortBy);
-  const page = sp.page ? parseInt(sp.page, 10) : 1;
+  const page = sp.page !== undefined ? numberParam(sp.page) : 1;
 
   // Map bounds (for map-based search, supports both neLat/neLng/swLat/swLng and north/east/south/west)
-  const rawNorth = sp.neLat || sp.north;
-  const rawEast = sp.neLng || sp.east;
-  const rawSouth = sp.swLat || sp.south;
-  const rawWest = sp.swLng || sp.west;
-  const mapBounds =
-    rawNorth && rawEast && rawSouth && rawWest
-      ? {
-          neLat: parseFloat(rawNorth),
-          neLng: parseFloat(rawEast),
-          swLat: parseFloat(rawSouth),
-          swLng: parseFloat(rawWest),
-        }
-      : undefined;
+  const rawNorth = firstPresent(sp.neLat, sp.north);
+  const rawEast = firstPresent(sp.neLng, sp.east);
+  const rawSouth = firstPresent(sp.swLat, sp.south);
+  const rawWest = firstPresent(sp.swLng, sp.west);
+  const hasSomeMapBounds = [rawNorth, rawEast, rawSouth, rawWest].some((value) => value !== undefined);
+  const hasAllMapBounds = [rawNorth, rawEast, rawSouth, rawWest].every((value) => value !== undefined);
+  const mapBounds = hasAllMapBounds
+    ? {
+        neLat: numberParam(rawNorth),
+        neLng: numberParam(rawEast),
+        swLat: numberParam(rawSouth),
+        swLng: numberParam(rawWest),
+      }
+    : undefined;
 
   const LIMIT = 20;
 
@@ -133,14 +148,16 @@ export default async function ListingsSearchPage({ searchParams }: SearchPagePro
     priceRange: undefined,
   };
 
-  let hasError = false;
+  let hasError = hasSomeMapBounds && !hasAllMapBounds;
+  let errorMessage = hasError ? "All four map bounds must be provided together." : undefined;
   let user: Awaited<ReturnType<typeof getSessionUser>> = null;
   const userPromise = getSessionUser().catch(() => null);
-  const searchPromise = listingService.searchPublicListings({
+  const searchFilters = {
     destination,
-    lat: typeof lat === "number" && !isNaN(lat) ? lat : undefined,
-    lng: typeof lng === "number" && !isNaN(lng) ? lng : undefined,
-    radiusKm: typeof radiusKm === "number" && !isNaN(radiusKm) ? radiusKm : undefined,
+    country,
+    lat,
+    lng,
+    radiusKm,
     placeId,
     locationType,
     city,
@@ -169,7 +186,15 @@ export default async function ListingsSearchPage({ searchParams }: SearchPagePro
     mapBounds,
     page,
     limit: LIMIT,
-  });
+  };
+  const searchValidation = publicListingSearchFiltersSchema.safeParse(searchFilters);
+  const searchPromise = !hasError && searchValidation.success
+    ? listingService.searchPublicListings(searchValidation.data)
+    : Promise.reject(
+        hasError
+          ? new Error(errorMessage)
+          : searchValidation.error,
+      );
 
   try {
     const [resolvedUser, res] = await Promise.all([userPromise, searchPromise]);
@@ -178,6 +203,9 @@ export default async function ListingsSearchPage({ searchParams }: SearchPagePro
   } catch (err) {
     console.error("Search query failed:", err);
     hasError = true;
+    if (searchValidation.success === false) {
+      errorMessage = searchValidation.error.issues[0]?.message || "Please correct your search and try again.";
+    }
   }
 
   // Load favorites for logged-in users (only for the items on this page)
@@ -195,6 +223,7 @@ export default async function ListingsSearchPage({ searchParams }: SearchPagePro
 
   const currentFilters = {
     city,
+    country,
     placeName,
     lat,
     lng,
@@ -224,7 +253,7 @@ export default async function ListingsSearchPage({ searchParams }: SearchPagePro
     sortBy,
   };
 
-  const displayLocation = result.locationContextName || placeName || city;
+  const displayLocation = result.locationContextName || placeName || city || country;
 
   return (
     <div className="flex min-h-screen flex-col bg-white font-sans text-[#1f1f1f] antialiased">
@@ -264,7 +293,7 @@ export default async function ListingsSearchPage({ searchParams }: SearchPagePro
             <ListingsResultsClient
               listings={result.items}
               total={result.total}
-              page={result.page ?? page}
+              page={result.page ?? page ?? 1}
               totalPages={result.totalPages ?? 1}
               priceRange={result.priceRange}
               currentFilters={currentFilters}
@@ -274,6 +303,7 @@ export default async function ListingsSearchPage({ searchParams }: SearchPagePro
               appliedRadiusKm={result.appliedRadiusKm}
               isRadiusExpanded={result.isRadiusExpanded}
               hasError={hasError}
+              errorMessage={errorMessage}
               source={sp.source}
             />
           </Suspense>

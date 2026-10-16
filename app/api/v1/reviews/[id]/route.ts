@@ -19,7 +19,10 @@ const editReviewSchema = z.object({
 
 // GET /api/v1/reviews/[id]
 export const GET = apiHandler(
-  async (_req, ctx: { params: Promise<{ id: string }> }) => {
+  async (req, ctx: { params: Promise<{ id: string }> }) => {
+    // This DTO includes review-window and moderation data; public listing
+    // cards use the dedicated, privacy-safe listing review endpoint instead.
+    await requireApiAuth(req);
     const { id } = await ctx.params;
     const review = await reviewService.getReviewById(id);
     if (!review) throw AppError.notFound("Review not found");
@@ -38,4 +41,3 @@ export const PATCH = apiHandler(
     return ok(updated);
   },
 );
-

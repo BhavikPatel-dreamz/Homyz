@@ -1093,6 +1093,7 @@ model Review {
   @@index([listingId])
   @@index([listingId, status])
   @@index([listingId, status, createdAt])
+  @@index([listingId, status, direction, createdAt])
   @@index([authorId])
   @@index([targetUserId])
   @@index([bookingId])

@@ -59,6 +59,10 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
+        hostname: "via.placeholder.com",
+      },
+      {
+        protocol: "https",
         hostname: "*.amazonaws.com",
       },
       {
@@ -70,8 +74,20 @@ const nextConfig: NextConfig = {
         hostname: "media.homyz.co",
       },
       {
+        protocol: "http",
+        hostname: "media.homyz.co",
+      },
+      {
         protocol: "https",
         hostname: "homyz.co",
+      },
+      {
+        protocol: "http",
+        hostname: "homyz.co",
+      },
+      {
+        protocol: "https",
+        hostname: "*.homyz.co",
       },
       {
         protocol: "http",
@@ -81,7 +97,52 @@ const nextConfig: NextConfig = {
       {
         protocol: "http",
         hostname: "127.0.0.1",
+      },
+      {
+        protocol: "http",
+        hostname: "127.0.0.1",
         port: "4001",
+      },
+      {
+        protocol: "http",
+        hostname: "127.0.0.1",
+        port: "3000",
+      },
+      {
+        protocol: "http",
+        hostname: "localhost",
+      },
+      {
+        protocol: "http",
+        hostname: "localhost",
+        port: "3000",
+      },
+      {
+        protocol: "http",
+        hostname: "localhost",
+        port: "4001",
+      },
+      {
+        protocol: "http",
+        hostname: "8.213.86.216",
+      },
+      {
+        protocol: "http",
+        hostname: "8.213.86.216",
+        port: "3000",
+      },
+      {
+        protocol: "http",
+        hostname: "8.213.86.216",
+        port: "4001",
+      },
+      {
+        protocol: "https",
+        hostname: "*.dynamicdreamz.net",
+      },
+      {
+        protocol: "http",
+        hostname: "*.dynamicdreamz.net",
       },
     ],
   },

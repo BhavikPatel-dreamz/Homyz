@@ -2,6 +2,8 @@ import { Prisma } from "@/generated/prisma/client";
 import { ReviewDirection, ReviewStatus } from "@/generated/prisma/enums";
 import { AppError } from "@/lib/api/errors";
 import { prisma } from "@/lib/db/prisma";
+import { getCounter, getOrSetCache } from "@/lib/redis/cache";
+import { CACHE_KEYS, hashFilters } from "@/lib/redis/keys";
 import { getEffectiveDateTime } from "@/lib/booking/booking-status";
 import {
   computeReviewDeadline,
@@ -9,9 +11,11 @@ import {
   evaluateHostReviewEligibility,
 } from "@/lib/booking/review-eligibility";
 import { invalidateListingCache } from "@/lib/redis/invalidation";
-import { toPublicReviewDTO, toReviewDTO, type PublicReviewDTO, type ReviewDTO } from "./mappers";
+import { revivePublicReviewDTO, toPublicReviewDTO, toReviewDTO, type PublicReviewDTO, type ReviewDTO } from "./mappers";
 
 const REVIEWS_PAGE_SIZE = 6;
+const PUBLIC_REVIEW_PAGE_CACHE_TTL_SECONDS = 120;
+const PUBLIC_REVIEW_STATS_CACHE_TTL_SECONDS = 300;
 
 export const REVIEW_CATEGORY_KEYS = [
   "cleanliness",
@@ -95,6 +99,72 @@ export interface GetListingReviewsOptions {
   search?: string;
   sort?: ReviewSortOption;
   rating?: number;
+}
+
+type PublicListingReviewRow = {
+  id: string;
+  listingId: string | null;
+  bookingId: string | null;
+  direction: ReviewDirection;
+  rating: number;
+  comment: string;
+  topics: string[];
+  createdAt: Date;
+  publishedAt: Date | null;
+  authorId: string | null;
+  authorName: string | null;
+  authorImage: string | null;
+  authorCreatedAt: Date | null;
+  responseComment: string | null;
+  responseCreatedAt: Date | null;
+  responseAuthorName: string | null;
+  responseAuthorImage: string | null;
+  total: bigint | number;
+};
+
+type PublicListingReviewPage = {
+  reviews: PublicReviewDTO[];
+  total: number;
+  page: number;
+  totalPages: number;
+  hasMore: boolean;
+};
+
+function revivePublicListingReviewPage(page: PublicListingReviewPage): PublicListingReviewPage {
+  return {
+    ...page,
+    reviews: page.reviews.map(revivePublicReviewDTO),
+  };
+}
+
+function toPublicListingReviewRowDTO(review: PublicListingReviewRow): PublicReviewDTO {
+  return {
+    id: review.id,
+    listingId: review.listingId,
+    bookingId: review.bookingId,
+    direction: review.direction,
+    rating: review.rating,
+    comment: review.comment,
+    topics: review.topics,
+    author: review.authorId
+      ? {
+          id: review.authorId,
+          name: review.authorName,
+          image: review.authorImage,
+          createdAt: review.authorCreatedAt ?? undefined,
+        }
+      : null,
+    createdAt: review.createdAt,
+    publishedAt: review.publishedAt ?? review.createdAt,
+    hostResponse: review.responseComment !== null && review.responseCreatedAt !== null
+      ? {
+          comment: review.responseComment,
+          createdAt: review.responseCreatedAt,
+          hostName: review.responseAuthorName,
+          hostImage: review.responseAuthorImage,
+        }
+      : null,
+  };
 }
 
 const TOPIC_KEYWORDS: Record<string, readonly string[]> = {
@@ -213,93 +283,105 @@ export const reviewService = {
     const safePage = Math.max(1, Math.trunc(page));
     safePageSize = Math.min(Math.max(1, Math.trunc(safePageSize)), 24);
 
-    const where: Prisma.ReviewWhereInput = {
-      listingId,
-      status: ReviewStatus.PUBLISHED,
-      direction: ReviewDirection.GUEST_TO_PROPERTY,
-    };
+    const conditions: Prisma.Sql[] = [
+      Prisma.sql`r."listingId" = ${listingId}`,
+      Prisma.sql`r."status" = 'PUBLISHED'`,
+      Prisma.sql`r."direction" = 'GUEST_TO_PROPERTY'`,
+    ];
 
     if (filterTopic) {
       const keywords = TOPIC_KEYWORDS[filterTopic] || [filterTopic.toLowerCase()];
-      where.OR = [
-        { topics: { has: filterTopic } },
-        ...keywords.map((kw) => ({
-          comment: { contains: kw, mode: "insensitive" as const },
-        })),
+      const topicConditions = [
+        Prisma.sql`r."topics" @> ARRAY[${filterTopic}]::text[]`,
+        ...keywords.map((keyword) => Prisma.sql`r."comment" ILIKE ${`%${keyword}%`}`),
       ];
+      conditions.push(Prisma.sql`(${Prisma.join(topicConditions, " OR ")})`);
     }
 
     if (search && search.trim()) {
       const trimmed = search.trim();
-      const searchCondition: Prisma.ReviewWhereInput = {
-        OR: [
-          { comment: { contains: search.trim(), mode: "insensitive" as const } },
-          { author: { name: { contains: trimmed, mode: "insensitive" as const } } },
-        ],
-      };
-      if (where.OR) {
-        where.AND = [
-          { OR: where.OR },
-          searchCondition,
-        ];
-        delete where.OR;
-      } else {
-        where.AND = [searchCondition];
-      }
+      conditions.push(
+        Prisma.sql`(r."comment" ILIKE ${`%${trimmed}%`} OR reviewer."name" ILIKE ${`%${trimmed}%`})`,
+      );
     }
 
     if (rating !== undefined && Number.isInteger(rating) && rating >= 1 && rating <= 5) {
-      if (where.AND && Array.isArray(where.AND)) {
-        where.AND.push({ rating });
-      } else {
-        where.rating = rating;
-      }
+      conditions.push(Prisma.sql`r."rating" = ${rating}`);
     }
 
-    let orderBy: Prisma.ReviewOrderByWithRelationInput[];
+    let orderBy: Prisma.Sql;
     switch (sort) {
       case "highest":
-        orderBy = [{ rating: "desc" }, { createdAt: "desc" }, { id: "desc" }];
+        orderBy = Prisma.sql`r."rating" DESC, r."createdAt" DESC, r."id" DESC`;
         break;
       case "lowest":
-        orderBy = [{ rating: "asc" }, { createdAt: "desc" }, { id: "desc" }];
+        orderBy = Prisma.sql`r."rating" ASC, r."createdAt" DESC, r."id" DESC`;
         break;
       case "oldest":
-        orderBy = [{ createdAt: "asc" }, { id: "asc" }];
+        orderBy = Prisma.sql`r."createdAt" ASC, r."id" ASC`;
         break;
       case "recent":
       case "relevant":
       default:
-        orderBy = [{ createdAt: "desc" }, { id: "desc" }];
+        orderBy = Prisma.sql`r."createdAt" DESC, r."id" DESC`;
         break;
     }
 
-    const [total, reviews] = await prisma.$transaction([
-      prisma.review.count({ where }),
-      prisma.review.findMany({
-        where,
-        include: {
-          author: { select: { id: true, name: true, image: true, createdAt: true } },
-          response: {
-            include: {
-              author: { select: { id: true, name: true, image: true } },
-            },
-          },
-        },
-        orderBy,
-        skip: (safePage - 1) * safePageSize,
-        take: safePageSize,
-      }),
-    ]);
+    const version = await getCounter(CACHE_KEYS.LISTING_REVIEWS_VER(listingId));
+    const cacheKey = CACHE_KEYS.LISTING_REVIEW_PAGE(
+      listingId,
+      version,
+      hashFilters({ page: safePage, pageSize: safePageSize, filterTopic, search, sort, rating }),
+    );
 
-    const totalPages = Math.ceil(total / safePageSize);
-    return {
-      reviews: reviews.map(toPublicReviewDTO),
-      total,
-      page: safePage,
-      totalPages,
-      hasMore: safePage < totalPages,
-    };
+    return getOrSetCache<PublicListingReviewPage>(
+      cacheKey,
+      async () => {
+        // A single joined query replaces the old count + Review + author +
+        // response waterfall. `COUNT(*) OVER()` retains exact pagination
+        // metadata without a second query for normal non-empty pages.
+        const reviews = await prisma.$queryRaw(Prisma.sql`
+          SELECT
+            r."id", r."listingId", r."bookingId", r."direction", r."rating",
+            r."comment", r."topics", r."createdAt", r."publishedAt",
+            reviewer."id" AS "authorId", reviewer."name" AS "authorName",
+            reviewer."image" AS "authorImage", reviewer."createdAt" AS "authorCreatedAt",
+            response."comment" AS "responseComment", response."createdAt" AS "responseCreatedAt",
+            responseAuthor."name" AS "responseAuthorName", responseAuthor."image" AS "responseAuthorImage",
+            COUNT(*) OVER() AS "total"
+          FROM "Review" r
+          INNER JOIN "User" reviewer ON reviewer."id" = r."authorId"
+          LEFT JOIN "ReviewResponse" response
+            ON response."reviewId" = r."id" AND response."status" = 'PUBLISHED'
+          LEFT JOIN "User" responseAuthor ON responseAuthor."id" = response."authorId"
+          WHERE ${Prisma.join(conditions, " AND ")}
+          ORDER BY ${orderBy}
+          OFFSET ${(safePage - 1) * safePageSize}
+          LIMIT ${safePageSize}
+        `) as PublicListingReviewRow[];
+
+        const total = reviews.length > 0
+          ? Number(reviews[0].total)
+          : safePage === 1
+            ? 0
+            : Number(((await prisma.$queryRaw(Prisma.sql`
+                SELECT COUNT(*) AS "total"
+                FROM "Review" r
+                INNER JOIN "User" reviewer ON reviewer."id" = r."authorId"
+                WHERE ${Prisma.join(conditions, " AND ")}
+              `) as Array<{ total: bigint | number }>)[0]?.total ?? 0));
+
+        const totalPages = Math.ceil(total / safePageSize);
+        return {
+          reviews: reviews.map(toPublicListingReviewRowDTO),
+          total,
+          page: safePage,
+          totalPages,
+          hasMore: safePage < totalPages,
+        };
+      },
+      { ttl: PUBLIC_REVIEW_PAGE_CACHE_TTL_SECONDS, revive: revivePublicListingReviewPage },
+    );
   },
 
   /** Rating stats aggregated exclusively from GUEST_TO_PROPERTY published reviews. */
@@ -310,93 +392,110 @@ export const reviewService = {
     categoryRatings: ReviewCategoryRatings;
     mentions: ReviewMention[];
   }> {
-    const where = {
-      listingId,
-      status: ReviewStatus.PUBLISHED,
-      direction: ReviewDirection.GUEST_TO_PROPERTY,
-    };
-    const [aggregates, ratingGroups, topicGroups] = await Promise.all([
-      prisma.review.aggregate({
-        where,
-        _count: { _all: true },
-        _avg: {
-          rating: true,
-          cleanlinessRating: true,
-          accuracyRating: true,
-          checkInRating: true,
-          communicationRating: true,
-          locationRating: true,
-          valueRating: true,
-        },
-      }),
-      prisma.review.groupBy({ by: ["rating"], where, _count: { _all: true } }),
-      prisma.$queryRaw(Prisma.sql`
-        SELECT topic, COUNT(*)::int AS count
-        FROM "Review", unnest("topics") AS topic
-        WHERE "listingId" = ${listingId}
-          AND "status" = 'PUBLISHED'
-          AND "direction" = 'GUEST_TO_PROPERTY'
-        GROUP BY topic
-        HAVING COUNT(*) > 0
-        ORDER BY count DESC, topic ASC
-        LIMIT 12
-      `) as Promise<ReviewMention[]>,
-    ]);
+    const version = await getCounter(CACHE_KEYS.LISTING_REVIEWS_VER(listingId));
+    return getOrSetCache(
+      CACHE_KEYS.LISTING_REVIEW_STATS(listingId, version),
+      async () => {
+        // One filtered scan yields the summary, distribution, category scores,
+        // and persisted mention tags. The old flow issued three queries and a
+        // fourth 100-comment scan whenever legacy reviews lacked topic tags.
+        const [row] = await prisma.$queryRaw(Prisma.sql`
+          WITH filtered AS (
+            SELECT "rating", "cleanlinessRating", "accuracyRating", "checkInRating",
+              "communicationRating", "locationRating", "valueRating", "topics"
+            FROM "Review"
+            WHERE "listingId" = ${listingId}
+              AND "status" = 'PUBLISHED'
+              AND "direction" = 'GUEST_TO_PROPERTY'
+          ),
+          summary AS (
+            SELECT
+              COUNT(*)::int AS "totalCount",
+              AVG("rating") AS "averageRating",
+              AVG("cleanlinessRating") AS "cleanlinessRating",
+              AVG("accuracyRating") AS "accuracyRating",
+              AVG("checkInRating") AS "checkInRating",
+              AVG("communicationRating") AS "communicationRating",
+              AVG("locationRating") AS "locationRating",
+              AVG("valueRating") AS "valueRating",
+              COUNT(*) FILTER (WHERE "rating" = 1)::int AS "rating1",
+              COUNT(*) FILTER (WHERE "rating" = 2)::int AS "rating2",
+              COUNT(*) FILTER (WHERE "rating" = 3)::int AS "rating3",
+              COUNT(*) FILTER (WHERE "rating" = 4)::int AS "rating4",
+              COUNT(*) FILTER (WHERE "rating" = 5)::int AS "rating5"
+            FROM filtered
+          ),
+          topicCounts AS (
+            SELECT topic, COUNT(*)::int AS count
+            FROM filtered, unnest("topics") AS topic
+            GROUP BY topic
+            ORDER BY count DESC, topic ASC
+            LIMIT 12
+          )
+          SELECT summary.*, COALESCE((SELECT json_agg(topicCounts) FROM topicCounts), '[]'::json) AS "mentions"
+          FROM summary
+        `) as Array<{
+          totalCount: number;
+          averageRating: number | null;
+          cleanlinessRating: number | null;
+          accuracyRating: number | null;
+          checkInRating: number | null;
+          communicationRating: number | null;
+          locationRating: number | null;
+          valueRating: number | null;
+          rating1: number;
+          rating2: number;
+          rating3: number;
+          rating4: number;
+          rating5: number;
+          mentions: unknown;
+        }>;
 
-    const ratingDistribution: Record<1 | 2 | 3 | 4 | 5, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-    for (const group of ratingGroups) {
-      ratingDistribution[group.rating as 1 | 2 | 3 | 4 | 5] = group._count._all;
-    }
-
-    const categoryRatings: ReviewCategoryRatings = {};
-    const averages = aggregates._avg;
-    const categoryAverageMap: Record<ReviewCategoryKey, number | null> = {
-      cleanliness: averages.cleanlinessRating,
-      accuracy: averages.accuracyRating,
-      checkIn: averages.checkInRating,
-      communication: averages.communicationRating,
-      location: averages.locationRating,
-      value: averages.valueRating,
-    };
-    for (const key of REVIEW_CATEGORY_KEYS) {
-      const average = roundedAverage(categoryAverageMap[key]);
-      if (average !== undefined) categoryRatings[key] = average;
-    }
-
-    let mentions: ReviewMention[] = Array.isArray(topicGroups)
-      ? topicGroups.map((topic) => ({ topic: topic.topic, count: Number(topic.count) }))
-      : [];
-
-    if (mentions.length === 0 && aggregates._count._all > 0) {
-      try {
-        const publishedReviews = await prisma.review.findMany({
-          where,
-          select: { comment: true },
-          take: 100,
-        });
-        const topicCounts: Record<string, number> = {};
-        for (const r of publishedReviews) {
-          const extracted = extractTopics(r.comment);
-          for (const t of extracted) {
-            topicCounts[t] = (topicCounts[t] || 0) + 1;
-          }
+        const ratingDistribution: Record<1 | 2 | 3 | 4 | 5, number> = {
+          1: Number(row?.rating1 ?? 0),
+          2: Number(row?.rating2 ?? 0),
+          3: Number(row?.rating3 ?? 0),
+          4: Number(row?.rating4 ?? 0),
+          5: Number(row?.rating5 ?? 0),
+        };
+        const categoryRatings: ReviewCategoryRatings = {};
+        const categoryAverageMap: Record<ReviewCategoryKey, number | null> = {
+          cleanliness: row?.cleanlinessRating ?? null,
+          accuracy: row?.accuracyRating ?? null,
+          checkIn: row?.checkInRating ?? null,
+          communication: row?.communicationRating ?? null,
+          location: row?.locationRating ?? null,
+          value: row?.valueRating ?? null,
+        };
+        for (const key of REVIEW_CATEGORY_KEYS) {
+          const average = roundedAverage(categoryAverageMap[key]);
+          if (average !== undefined) categoryRatings[key] = average;
         }
-        mentions = Object.entries(topicCounts)
-          .map(([topic, count]) => ({ topic, count }))
-          .sort((a, b) => b.count - a.count || a.topic.localeCompare(b.topic))
-          .slice(0, 12);
-      } catch {
-        // Fallback silently if extraction query encounters an issue
-      }
-    }
+        const rawMentions = Array.isArray(row?.mentions)
+          ? row.mentions
+          : typeof row?.mentions === "string"
+            ? JSON.parse(row.mentions) as unknown
+            : [];
+        const mentions: ReviewMention[] = Array.isArray(rawMentions)
+          ? rawMentions.flatMap((mention) => {
+              if (!mention || typeof mention !== "object") return [];
+              const value = mention as { topic?: unknown; count?: unknown };
+              return typeof value.topic === "string" && Number.isFinite(Number(value.count))
+                ? [{ topic: value.topic, count: Number(value.count) }]
+                : [];
+            })
+          : [];
 
-    return {
-      averageRating: aggregates._count._all ? roundedAverage(aggregates._avg.rating) ?? null : null,
-      totalCount: aggregates._count._all,
-      ratingDistribution,
-      categoryRatings,
-      mentions,
-    };
+        return {
+          averageRating: row?.totalCount ? roundedAverage(row.averageRating) ?? null : null,
+          totalCount: Number(row?.totalCount ?? 0),
+          ratingDistribution,
+          categoryRatings,
+          mentions,
+        };
+      },
+      { ttl: PUBLIC_REVIEW_STATS_CACHE_TTL_SECONDS },
+    );
   },
 
   /**
@@ -566,7 +665,9 @@ export const reviewService = {
       return created;
     });
 
-    if (shouldPublishImmediately && effectiveListingId && direction === ReviewDirection.GUEST_TO_PROPERTY) {
+    // A host submission can publish an already-written guest review too, so
+    // invalidate public review data for either reciprocal completion order.
+    if (shouldPublishImmediately && effectiveListingId) {
       await invalidateListingCache(effectiveListingId);
       await triggerGuestFavoriteReevaluation(effectiveListingId);
     }
@@ -679,7 +780,7 @@ export const reviewService = {
       if (!isGuest) throw AppError.forbidden("Only the reviewed guest can respond to a host review");
     }
 
-    return prisma.reviewResponse.create({
+    const response = await prisma.reviewResponse.create({
       data: {
         reviewId: input.reviewId,
         authorId: input.authorId,
@@ -689,6 +790,14 @@ export const reviewService = {
         author: { select: { id: true, name: true, image: true } },
       },
     });
+
+    // Responses are part of the public review card payload. Do not leave a
+    // cached page serving an outdated response after the host posts one.
+    if (review.listingId && review.direction === ReviewDirection.GUEST_TO_PROPERTY) {
+      await invalidateListingCache(review.listingId);
+    }
+
+    return response;
   },
 
   /** Automatically publish private reviews whose 14-day window has expired. */

@@ -31,6 +31,13 @@ export const CACHE_KEYS = {
   LISTING_DETAILS: (listingId: string) => `${NS}:listing:${listingId}:details`,
   HOST_LISTINGS: (hostId: string) => `${NS}:host:${hostId}:listings`,
 
+  /** Versioned public review summary and paginated response cache. */
+  LISTING_REVIEWS_VER: (listingId: string) => `${NS}:listing:${listingId}:reviews:ver`,
+  LISTING_REVIEW_STATS: (listingId: string, version: number) =>
+    `${NS}:listing:${listingId}:reviews:stats:v${version}`,
+  LISTING_REVIEW_PAGE: (listingId: string, version: number, filterHash: string) =>
+    `${NS}:listing:${listingId}:reviews:page:v${version}:${filterHash}`,
+
   /** Version-tagged public listings search */
   LISTINGS_PUBLIC_VER: () => `${NS}:listings:published:ver`,
   LISTINGS_SEARCH: (ver: number, filterHash: string, skip: number, take: number) =>

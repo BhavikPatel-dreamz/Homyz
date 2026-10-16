@@ -15,6 +15,7 @@ import { BookingStatus, ListingCoHostStatus, ListingStatus, ReviewDirection, Rol
 import { Prisma, type Listing } from "@/generated/prisma/client";
 import { getExpiryThresholdDate, isBookingRequestExpired } from "@/lib/booking/booking-expiry";
 import { validateStayAvailability } from "@/lib/booking/availability";
+import { validatePublicListingSearchFilters } from "@/lib/validation/public-listing-search";
 
 import { auditService } from "./audit.service";
 import { qualificationService } from "./qualification.service";
@@ -402,6 +403,10 @@ function getGeoBoundsClause(lat: number, lng: number, radiusKm: number): Prisma.
 async function searchPublicListings(
   filters: PublicSearchFilters,
 ): Promise<PublicSearchResult> {
+  // This service is used by both route handlers and server-rendered pages.
+  // Validate here as a defensive boundary so malformed dates never silently
+  // degrade into date-free browsing through a non-API caller.
+  filters = validatePublicListingSearchFilters(filters) as PublicSearchFilters;
   let requestedStay: { checkIn: string; checkOut: string } | null = null;
   let effectiveLat = typeof filters.lat === "number" && !isNaN(filters.lat) ? filters.lat : undefined;
   let effectiveLng = typeof filters.lng === "number" && !isNaN(filters.lng) ? filters.lng : undefined;

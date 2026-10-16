@@ -89,6 +89,8 @@ export type HomepageSection = {
   seeAllHref: string;
   previewImages: string[];
   totalCount: number;
+  hasMore?: boolean;
+  page?: number;
 };
 
 export type TrendingLocation = {
@@ -468,6 +470,8 @@ function createSectionBuilder(seenListingIds: Set<string>, sections: HomepageSec
       seeAllHref,
       previewImages,
       totalCount: chosen.length,
+      hasMore: chosen.length > properties.length,
+      page: 1,
     });
   };
 }
@@ -1456,6 +1460,8 @@ async function getHomepageData(input: {
   userId?: string;
   searchContext?: SearchContext | null;
   requestContext?: HomepageRequestContext;
+  deferOffscreenProperties?: boolean;
+  initialLoadedSectionsCount?: number;
 } = {}): Promise<HomepageData> {
   const version = await getCounter(CACHE_KEYS.LISTINGS_PUBLIC_VER());
   const cacheKeyCity = input.searchContext?.city?.toLowerCase() || input.city?.trim().toLowerCase() || "all";
@@ -1506,30 +1512,124 @@ async function getHomepageData(input: {
     }),
   };
 
-  if (!input.userId) return currentPublicData;
+  let resolvedData = currentPublicData;
 
-  try {
-    const favoriteIds = await favoriteService.getFavoriteListingIds(input.userId, listingIds);
+  if (input.userId) {
+    try {
+      const favoriteIds = await favoriteService.getFavoriteListingIds(input.userId, listingIds);
+
+      resolvedData = {
+        ...currentPublicData,
+        sections: currentPublicData.sections.map((section) => ({
+          ...section,
+          properties: section.properties.map((property) => ({
+            ...property,
+            favoriteStatus: favoriteIds.has(property.id),
+            isFavorite: favoriteIds.has(property.id),
+          })),
+          items: section.properties.map((property) => ({
+            ...property,
+            favoriteStatus: favoriteIds.has(property.id),
+            isFavorite: favoriteIds.has(property.id),
+          })),
+        })),
+      };
+    } catch {
+      resolvedData = currentPublicData;
+    }
+  }
+
+  if (input.deferOffscreenProperties) {
+    const initialCount = input.initialLoadedSectionsCount ?? 2;
+    const deferredSections = resolvedData.sections.map((section, idx) => {
+      if (idx < initialCount) {
+        return {
+          ...section,
+          hasMore: section.totalCount > section.properties.length,
+          page: 1,
+        };
+      }
+      return {
+        ...section,
+        properties: [],
+        items: [],
+        hasMore: section.totalCount > 0,
+        page: 1,
+      };
+    });
 
     return {
-      ...currentPublicData,
-      sections: currentPublicData.sections.map((section) => ({
-        ...section,
-        properties: section.properties.map((property) => ({
-          ...property,
-          favoriteStatus: favoriteIds.has(property.id),
-          isFavorite: favoriteIds.has(property.id),
-        })),
-        items: section.properties.map((property) => ({
-          ...property,
-          favoriteStatus: favoriteIds.has(property.id),
-          isFavorite: favoriteIds.has(property.id),
-        })),
-      })),
+      ...resolvedData,
+      sections: deferredSections,
     };
-  } catch {
-    return currentPublicData;
   }
+
+  return resolvedData;
+}
+
+export interface GetSectionPropertiesOptions {
+  sectionId: string;
+  page?: number;
+  limit?: number;
+  city?: string;
+  destination?: string;
+  searchContext?: SearchContext | null;
+  requestContext?: HomepageRequestContext;
+  userId?: string;
+}
+
+export interface SectionPropertiesResult {
+  sectionId: string;
+  title: string;
+  properties: HomepageProperty[];
+  page: number;
+  limit: number;
+  totalCount: number;
+  hasMore: boolean;
+}
+
+async function getSectionProperties(
+  input: GetSectionPropertiesOptions,
+): Promise<SectionPropertiesResult> {
+  const page = Math.max(1, input.page || 1);
+  const limit = Math.max(1, Math.min(24, input.limit || 8));
+  const skip = (page - 1) * limit;
+
+  // Retrieve complete cached homepage dataset
+  const fullData = await getHomepageData({
+    city: input.city || input.destination,
+    userId: input.userId,
+    searchContext: input.searchContext,
+    requestContext: input.requestContext,
+    deferOffscreenProperties: false,
+  });
+
+  const section = fullData.sections.find((s) => s.id === input.sectionId);
+  if (section) {
+    const allItems = section.properties || [];
+    const pagedItems = allItems.slice(skip, skip + limit);
+    const hasMore = skip + limit < section.totalCount;
+
+    return {
+      sectionId: section.id,
+      title: section.title,
+      properties: pagedItems,
+      page,
+      limit,
+      totalCount: section.totalCount,
+      hasMore,
+    };
+  }
+
+  return {
+    sectionId: input.sectionId,
+    title: input.sectionId,
+    properties: [],
+    page,
+    limit,
+    totalCount: 0,
+    hasMore: false,
+  };
 }
 
 export interface RecentSearchCandidate {
@@ -1701,4 +1801,5 @@ export const homepageService = {
   getHomepageData,
   getRecentSearchSections,
   resolvePopularHomesCity,
+  getSectionProperties,
 };

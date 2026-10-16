@@ -460,6 +460,13 @@ export function clearRecentSearchContexts(): void {
 
 export interface CanonicalTravelParams {
   location?: string | null;
+  city?: string | null;
+  country?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  radiusKm?: number | null;
+  placeId?: string | null;
+  locationType?: string | null;
   checkIn?: string | null;
   checkOut?: string | null;
   guests: number;
@@ -500,6 +507,13 @@ export function parseSearchQueryParams(
   const rawInfants = get("infants");
   const rawPets = get("pets");
   const rawSpecialOfferId = get("specialOfferId");
+  const rawCity = get("city");
+  const rawCountry = get("country");
+  const rawLatitude = get("lat");
+  const rawLongitude = get("lng");
+  const rawRadius = get("radius");
+  const rawPlaceId = get("placeId");
+  const rawLocationType = get("locationType");
 
   const checkIn = isDateKey(rawCheckIn) ? rawCheckIn.trim() : null;
   const checkOut = isDateKey(rawCheckOut) ? rawCheckOut.trim() : null;
@@ -509,12 +523,22 @@ export function parseSearchQueryParams(
   const parsedChildren = rawChildren ? parseInt(rawChildren, 10) : 0;
   const parsedInfants = rawInfants ? parseInt(rawInfants, 10) : 0;
   const parsedPets = rawPets ? parseInt(rawPets, 10) : 0;
+  const parsedLatitude = rawLatitude ? Number(rawLatitude) : Number.NaN;
+  const parsedLongitude = rawLongitude ? Number(rawLongitude) : Number.NaN;
+  const parsedRadius = rawRadius ? Number(rawRadius) : Number.NaN;
 
   const guests = !isNaN(parsedGuests) && parsedGuests >= 1 ? parsedGuests : 1;
   const adults = !isNaN(parsedAdults) && parsedAdults >= 0 ? parsedAdults : undefined;
 
   return {
     location: rawLocation?.trim() || null,
+    city: rawCity?.trim() || null,
+    country: rawCountry?.trim() || null,
+    latitude: Number.isFinite(parsedLatitude) && parsedLatitude >= -90 && parsedLatitude <= 90 ? parsedLatitude : null,
+    longitude: Number.isFinite(parsedLongitude) && parsedLongitude >= -180 && parsedLongitude <= 180 ? parsedLongitude : null,
+    radiusKm: Number.isFinite(parsedRadius) && parsedRadius > 0 ? parsedRadius : null,
+    placeId: rawPlaceId?.trim() || null,
+    locationType: rawLocationType?.trim() || null,
     checkIn,
     checkOut,
     guests,
@@ -574,6 +598,15 @@ export function buildTravelQueryParams(
   if (loc && typeof loc === "string" && loc.trim() && loc !== "Stays") {
     sp.set("location", loc.trim());
   }
+
+  if (c.city && typeof c.city === "string" && c.city.trim()) sp.set("city", c.city.trim());
+  if (c.country && typeof c.country === "string" && c.country.trim()) sp.set("country", c.country.trim());
+  if (typeof c.latitude === "number" && Number.isFinite(c.latitude)) sp.set("lat", String(c.latitude));
+  if (typeof c.longitude === "number" && Number.isFinite(c.longitude)) sp.set("lng", String(c.longitude));
+  if (typeof c.radiusKm === "number" && Number.isFinite(c.radiusKm) && c.radiusKm > 0) sp.set("radius", String(c.radiusKm));
+  if (c.placeId && typeof c.placeId === "string" && c.placeId.trim()) sp.set("placeId", c.placeId.trim());
+  const locationType = c.placeType || c.locationType;
+  if (locationType && typeof locationType === "string" && locationType.trim()) sp.set("locationType", locationType.trim());
 
   if (c.specialOfferId && typeof c.specialOfferId === "string" && c.specialOfferId.trim()) {
     sp.set("specialOfferId", c.specialOfferId.trim());

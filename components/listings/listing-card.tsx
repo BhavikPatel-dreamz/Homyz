@@ -113,8 +113,12 @@ export interface ListingCardProps {
   adults?: number;
   /** Optional children count */
   children?: number;
+  /** Optional infants count */
+  infants?: number;
   /** Optional pets count */
   pets?: number;
+  /** Optional country from the active search context. */
+  country?: string;
   /** Choose which favorite control to render: heart (toggle) or remove (cross) */
   favoriteVariant?: "heart" | "remove";
   /** Compact bordered card treatment used by the search-results grid. */
@@ -134,7 +138,9 @@ export function ListingCard({
   guests,
   adults,
   children,
+  infants,
   pets,
+  country,
   favoriteVariant = "heart",
   variant = "default",
 }: ListingCardProps) {
@@ -350,7 +356,9 @@ export function ListingCard({
     guests: guests || undefined,
     adults: adults || undefined,
     children: children || undefined,
+    infants: infants || undefined,
     pets: pets || undefined,
+    country: country || undefined,
   }));
 
   useEffect(() => {
@@ -361,7 +369,9 @@ export function ListingCard({
         guests: guests || undefined,
         adults: adults || undefined,
         children: children || undefined,
+        infants: infants || undefined,
         pets: pets || undefined,
+        country: country || undefined,
       });
     } else {
       const last = getLastSearch();
@@ -372,11 +382,13 @@ export function ListingCard({
           guests: last.guests || undefined,
           adults: last.adults || undefined,
           children: last.children || undefined,
+          infants: last.infants || undefined,
           pets: last.pets || undefined,
+          country: last.country || undefined,
         });
       }
     }
-  }, [checkIn, checkOut, guests, adults, children, pets]);
+  }, [checkIn, checkOut, guests, adults, children, infants, pets, country]);
 
   const targetHref = buildListingDetailUrl(targetIdOrSlug, activeContext);
   const isSearchGridCard = variant === "search-grid";

@@ -151,7 +151,10 @@ async function runTestSuite() {
 
   // --- [4] Server page.tsx Default Mode Behavior ---
   console.log("\n--- [4] Server page.tsx Mode Guard Audit ---");
-  const pageSrc = fs.readFileSync(path.resolve(__dirname, "../app/page.tsx"), "utf-8");
+  const pagePath = fs.existsSync(path.resolve(__dirname, "../app/(home)/page.tsx"))
+    ? path.resolve(__dirname, "../app/(home)/page.tsx")
+    : path.resolve(__dirname, "../app/page.tsx");
+  const pageSrc = fs.readFileSync(pagePath, "utf-8");
   assert(
     pageSrc.includes("const hasSearch = Boolean(hasExplicitUrlSearch);"),
     "app/page.tsx must only trigger SEARCH mode for explicit URL searches, keeping DEFAULT mode for homepage visits",
@@ -266,11 +269,8 @@ async function runTestSuite() {
   assert.ok(latestDiscoveryIndex !== -1, "DEFAULT mode must feature latest discovery rows comment/marker");
   assert.ok(defaultModeIndex < latestDiscoveryIndex, "Client activity rows must appear BEFORE latest discovery rows");
 
-  // Verify app/page.tsx declares parsedLat correctly
-  const pageSource = fs.readFileSync(
-    path.resolve(process.cwd(), "app/page.tsx"),
-    "utf-8"
-  );
+  // Verify app/(home)/page.tsx declares parsedLat correctly
+  const pageSource = fs.readFileSync(pagePath, "utf-8");
   assert.ok(pageSource.includes("const parsedLat = params.lat"), "app/page.tsx must properly define parsedLat");
 
   console.log("  ✓ Client activity rows (previous search suggestions) guaranteed on top above latest discovery rows");
