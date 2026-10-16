@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -52,6 +52,7 @@ export function GuestDashboardSidebar({
 }) {
   const currentActive = normalizeTabId(activeId);
   const { t } = useLanguage();
+  const [failedAvatarUrl, setFailedAvatarUrl] = useState<string | null>(null);
 
   return (
     <aside className="order-2 w-full shrink-0 lg:order-1 lg:w-[300px] xl:w-[452px]">
@@ -101,13 +102,14 @@ export function GuestDashboardSidebar({
               >
                 {item.id === "about_me" ? (
                   <span className={`relative flex items-center justify-center overflow-hidden rounded-full border border-[#1F1F1F] ${isActive ? "h-full w-full" : "h-10 w-10"}`}>
-                    {avatarUrl ? (
+                    {avatarUrl && avatarUrl !== failedAvatarUrl ? (
                       <Image
                         src={avatarUrl}
                         alt="About me"
                         fill
                         sizes={isActive ? "(min-width: 1280px) 64px, (min-width: 1024px) 48px, 40px" : "40px"}
                         className="object-cover"
+                        onError={() => setFailedAvatarUrl(avatarUrl)}
                       />
                     ) : (
                       <svg className="h-1/2 w-1/2 text-zinc-400" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">

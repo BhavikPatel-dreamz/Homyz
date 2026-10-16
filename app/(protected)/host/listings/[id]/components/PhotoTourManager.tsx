@@ -12,9 +12,19 @@ import {
 } from "@/lib/listing/photo-room-assignments";
 import { PhotosSkeleton } from "./YourSpaceSkeletons";
 import { useScrollbarDrag } from "@/components/ui/use-scrollbar-drag";
+import { ModalOverlay } from "@/components/ui/modal-overlay";
 
+// Documented room categories: "Living Room", "Bedroom", "Bathroom", "Kitchen", "Dining Area", "Workspace", "Exterior", "Patio or Balcony", "Pool or Hot Tub", "Unassigned Photos"
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const ACCEPTED_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/avif"]);
+const MAX_CONCURRENT_UPLOADS = 3;
+
+type UploadQueueItem = {
+  id: number;
+  name: string;
+  status: "queued" | "uploading" | "complete" | "failed";
+  error?: string;
+};
 
 interface PhotoTourManagerProps {
   photos: string[];
@@ -89,6 +99,10 @@ export function PhotoTourManager({
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [selectedIndices, setSelectedIndices] = useState<Set<number>>(() => new Set());
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{ total: number; completed: number } | null>(null);
+  const [uploadQueue, setUploadQueue] = useState<UploadQueueItem[]>([]);
+  const [previewPhoto, setPreviewPhoto] = useState<{ url: string; index: number } | null>(null);
+  const [brokenUrls, setBrokenUrls] = useState<Set<string>>(() => new Set());
   const [error, setError] = useState<string | null>(null);
   const [isRoomPickerOpen, setIsRoomPickerOpen] = useState(false);
   const [roomSearch, setRoomSearch] = useState("");
@@ -98,6 +112,12 @@ export function PhotoTourManager({
     photoTourScrollTrackRef,
     photoTourScrollThumb.height,
   );
+
+  const movePhoto = (from: number, direction: "up" | "down") => {
+    const to = direction === "up" ? from - 1 : from + 1;
+    if (to < 0 || to >= photos.length) return;
+    reorder(from, to);
+  };
 
   const roomSections = useMemo(() => [
     ...PHOTO_TOUR_CATEGORIES.map((category) => ({
@@ -180,12 +200,57 @@ export function PhotoTourManager({
     if (!files.length) return;
     setUploading(true);
     setError(null);
+    setUploadProgress({ total: files.length, completed: 0 });
+    setUploadQueue(files.map((file, id) => ({ id, name: file.name, status: "queued" })));
+
+    const uploadedUrls = new Array<string | null>(files.length).fill(null);
+    const errors = new Array<string | null>(files.length).fill(null);
+    let nextIndex = 0;
+    let completed = 0;
+
+    const updateItem = (id: number, update: Partial<UploadQueueItem>) => {
+      setUploadQueue((items) => items.map((item) => item.id === id ? { ...item, ...update } : item));
+    };
+
+    const uploadWorker = async () => {
+      while (nextIndex < files.length) {
+        const index = nextIndex++;
+        const file = files[index];
+        updateItem(index, { status: "uploading" });
+
+        try {
+          uploadedUrls[index] = await upload(file);
+          updateItem(index, { status: "complete" });
+        } catch (cause) {
+          const message = cause instanceof Error ? cause.message : "Upload failed";
+          errors[index] = `${file.name}: ${message}`;
+          updateItem(index, { status: "failed", error: message });
+        } finally {
+          completed += 1;
+          setUploadProgress({ total: files.length, completed });
+        }
+      }
+    };
+
     try {
-      onChange([...photos, ...(await Promise.all(files.map(upload)))]);
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : t("host_photo_upload_failed", "Photo upload failed. Please retry."));
+      await Promise.all(
+        Array.from({ length: Math.min(MAX_CONCURRENT_UPLOADS, files.length) }, uploadWorker),
+      );
+
+      const successfulUrls = uploadedUrls.filter((url): url is string => Boolean(url));
+      if (successfulUrls.length > 0) {
+        // Keep the order in which the user selected the files, even though the
+        // network uploads finish in parallel.
+        onChange([...photos, ...successfulUrls]);
+      }
+
+      const failedUploads = errors.filter((message): message is string => Boolean(message));
+      if (failedUploads.length > 0) {
+        setError(failedUploads.join(" · "));
+      }
     } finally {
       setUploading(false);
+      setUploadProgress(null);
     }
   };
 
@@ -328,7 +393,25 @@ export function PhotoTourManager({
         className={`group overflow-hidden rounded-xl border bg-white dark:bg-zinc-800 transition duration-200 ${selected ? "border-zinc-900 dark:border-amber-400 ring-2 ring-zinc-900/15 dark:ring-amber-400/20" : "border-zinc-200 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-600"}`}
       >
         <div className="relative aspect-[16/11] overflow-hidden bg-zinc-200 dark:bg-zinc-900">
-          <img src={photo} alt={index === 0 ? t("host_cover_photo", "Cover photo") : t("host_listing_photo_alt", { number: index + 1 }, `Listing photo ${index + 1}`)} className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]" />
+          {!brokenUrls.has(photo) ? (
+            <button
+              type="button"
+              onClick={() => setPreviewPhoto({ url: photo, index })}
+              aria-label={`Preview photo ${index + 1}`}
+              className="h-full w-full p-0 m-0 block cursor-pointer"
+            >
+              <img
+                src={photo}
+                alt={index === 0 ? t("host_cover_photo", "Cover photo") : t("host_listing_photo_alt", { number: index + 1 }, `Listing photo ${index + 1}`)}
+                className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]"
+                onError={() => setBrokenUrls((prev) => new Set(prev).add(photo))}
+              />
+            </button>
+          ) : (
+            <div className="flex h-full w-full flex-col items-center justify-center bg-zinc-100 dark:bg-zinc-800 p-3 text-center text-[#727272]">
+              <span className="text-xs font-medium">Image unavailable</span>
+            </div>
+          )}
           <label className="absolute left-3 top-3 flex size-7 cursor-pointer items-center justify-center rounded-full bg-white/95 dark:bg-zinc-800/95 shadow-sm">
             <input
               type="checkbox"
@@ -339,8 +422,28 @@ export function PhotoTourManager({
               className="size-3.5 accent-zinc-900 dark:accent-amber-400 cursor-pointer"
             />
           </label>
+          <div className="absolute top-3 right-3 flex items-center gap-1">
+            <button
+              type="button"
+              disabled={controlsDisabled || index === 0}
+              onClick={(e) => { e.stopPropagation(); movePhoto(index, "up"); }}
+              aria-label={`Move photo ${index + 1} earlier`}
+              className="flex size-7 items-center justify-center rounded-full bg-white/95 dark:bg-zinc-800/95 text-zinc-700 dark:text-zinc-200 shadow-sm hover:bg-zinc-100 disabled:opacity-40 disabled:cursor-not-allowed text-xs font-bold"
+            >
+              ←
+            </button>
+            <button
+              type="button"
+              disabled={controlsDisabled || index === photos.length - 1}
+              onClick={(e) => { e.stopPropagation(); movePhoto(index, "down"); }}
+              aria-label={`Move photo ${index + 1} later`}
+              className="flex size-7 items-center justify-center rounded-full bg-white/95 dark:bg-zinc-800/95 text-zinc-700 dark:text-zinc-200 shadow-sm hover:bg-zinc-100 disabled:opacity-40 disabled:cursor-not-allowed text-xs font-bold"
+            >
+              →
+            </button>
+            <span className="rounded-full bg-white/95 dark:bg-zinc-800/95 px-2 py-1 text-[10px] font-semibold text-zinc-700 dark:text-zinc-200 shadow-sm">#{index + 1}</span>
+          </div>
           {index === 0 && <span className="absolute bottom-3 left-3 rounded-full bg-zinc-900 dark:bg-amber-400 px-2.5 py-1 text-[10px] font-semibold text-white dark:text-zinc-950 shadow-sm">{t("host_cover_photo")}</span>}
-          <span className="absolute right-3 top-3 rounded-full bg-white/95 dark:bg-zinc-800/95 px-2 py-1 text-[10px] font-semibold text-zinc-700 dark:text-zinc-200 shadow-sm">#{index + 1}</span>
         </div>
 
         <div className="space-y-3 p-3.5">
@@ -430,7 +533,47 @@ export function PhotoTourManager({
           <p className="rounded-lg border border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-950/30 px-4 py-3 text-sm text-amber-950 dark:text-amber-200">{t("host_add_more_photos_min", { count: photoMinimumRemaining })}</p>
         )}
         {error && <p role="alert" className="rounded-2xl border border-rose-200 dark:border-rose-900/50 bg-rose-50 dark:bg-rose-950/30 px-4 py-3 text-sm text-rose-800 dark:text-rose-200">{error} {t("host_choose_photo_retry", "Choose the photo again to retry.")}</p>}
-        {uploading && <p className="rounded-2xl border border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-950/30 px-4 py-3 text-sm text-amber-900 dark:text-amber-200">{t("host_uploading_securely", "Uploading securely. Your photo tour will stay open while the upload finishes.")}</p>}
+        {uploading && uploadProgress && (
+          <section
+            aria-live="polite"
+            aria-label="Photo upload progress"
+            className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-950 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+              <p className="font-semibold">
+                Uploading {uploadProgress.completed} of {uploadProgress.total} photo{uploadProgress.total === 1 ? "" : "s"}
+              </p>
+              <span className="text-xs font-medium">
+                {MAX_CONCURRENT_UPLOADS > 1 ? `Up to ${MAX_CONCURRENT_UPLOADS} files upload at once` : "Uploading one file at a time"}
+              </span>
+            </div>
+            <div
+              role="progressbar"
+              aria-valuemin={0}
+              aria-valuemax={uploadProgress.total}
+              aria-valuenow={uploadProgress.completed}
+              className="mt-3 h-2 overflow-hidden rounded-full bg-amber-200/80 dark:bg-amber-900/60"
+            >
+              <div
+                className="h-full rounded-full bg-amber-500 transition-[width] duration-300"
+                style={{ width: `${(uploadProgress.completed / uploadProgress.total) * 100}%` }}
+              />
+            </div>
+            <ul className="mt-3 max-h-48 space-y-1.5 overflow-y-auto pr-1 text-xs">
+              {uploadQueue.map((item) => (
+                <li key={item.id} className="flex items-center justify-between gap-3 rounded-md bg-white/50 px-2.5 py-2 dark:bg-black/10">
+                  <span className="min-w-0 truncate font-medium" title={item.name}>{item.name}</span>
+                  <span className={item.status === "failed" ? "shrink-0 text-rose-700 dark:text-rose-300" : item.status === "complete" ? "shrink-0 text-emerald-700 dark:text-emerald-300" : "shrink-0 text-amber-800 dark:text-amber-200"}>
+                    {item.status === "queued" && "Waiting"}
+                    {item.status === "uploading" && "Uploading…"}
+                    {item.status === "complete" && "Uploaded"}
+                    {item.status === "failed" && (item.error || "Failed")}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         {selectedIndices.size > 0 && (
           <div className="relative z-20 grid grid-cols-1 gap-3 rounded-xl border border-zinc-900 bg-zinc-900 p-4 text-white shadow-lg dark:border-zinc-700 dark:bg-zinc-800 xl:sticky xl:top-0 xl:grid-cols-[minmax(150px,1fr)_auto] xl:items-center">
@@ -557,6 +700,38 @@ export function PhotoTourManager({
             <svg aria-hidden="true" className="size-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m6 9 6 6 6-6" /></svg>
           </button>
         </div>
+      )}
+      {previewPhoto && (
+        <ModalOverlay
+          role="dialog"
+          aria-modal="true"
+          aria-label="Photo Preview"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4"
+        >
+          <div className="relative max-w-4xl w-full max-h-[90vh] flex flex-col items-center">
+            <div className="w-full flex justify-between items-center text-white mb-2 px-1">
+              <span className="text-sm font-semibold">
+                Photo #{previewPhoto.index + 1} of {photos.length}
+                {previewPhoto.index === 0 && " (Cover Photo)"}
+              </span>
+              <button
+                type="button"
+                onClick={() => setPreviewPhoto(null)}
+                aria-label="Close preview"
+                className="rounded-full bg-white/20 hover:bg-white/30 text-white p-1.5 transition text-sm font-bold size-8 flex items-center justify-center"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="relative max-h-[80vh] w-full flex items-center justify-center overflow-hidden rounded-xl bg-zinc-950">
+              <img
+                src={previewPhoto.url}
+                alt={`Photo ${previewPhoto.index + 1}`}
+                className="max-h-[80vh] w-auto max-w-full object-contain rounded-xl"
+              />
+            </div>
+          </div>
+        </ModalOverlay>
       )}
     </div>
   );

@@ -1675,6 +1675,21 @@ async function update(
     dataToUpdate.reviewStartedAt = null;
   }
 
+  // Enforce publication photo threshold consistency:
+  // If an active, published listing is being updated with photos and photos count drops below 5,
+  // non-admin hosts cannot silently violate publication rules by removing required photos.
+  if (
+    Array.isArray(dataToUpdate.photos) &&
+    existing.published &&
+    existing.status === ListingStatus.ACTIVE &&
+    dataToUpdate.photos.length < 5 &&
+    actor.role !== Role.ADMIN
+  ) {
+    throw AppError.badRequest(
+      `Cannot save photos. Active published listings require a minimum of 5 photos (${dataToUpdate.photos.length} provided). Upload replacement photos first, or unpublish your listing before removing required photos.`,
+    );
+  }
+
   let listing;
   try {
     listing = await prisma.listing.update({ where: { id }, data: dataToUpdate });
@@ -1719,10 +1734,26 @@ async function deleteRemovedListingPhotos(
 
   await Promise.all(
     removed.map(async (url) => {
-      const stillUsed = await prisma.listing.count({
-        where: { id: { not: listingId }, photos: { has: url } },
-      });
-      if (stillUsed === 0) await deleteManagedMediaUrl(url);
+      const [otherListings, guidebooks, cmsRefs] = await Promise.all([
+        prisma.listing.count({
+          where: { id: { not: listingId }, photos: { has: url } },
+        }),
+        prisma.guidebook.count({
+          where: {
+            OR: [
+              { coverImage: url },
+              { items: { some: { photo: url } } },
+              { items: { some: { photos: { has: url } } } },
+            ],
+          },
+        }),
+        prisma.cmsMediaReference.count({
+          where: { mediaAsset: { url } },
+        }),
+      ]);
+      if (otherListings === 0 && guidebooks === 0 && cmsRefs === 0) {
+        await deleteManagedMediaUrl(url);
+      }
     }),
   );
 }

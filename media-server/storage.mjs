@@ -13,13 +13,20 @@ export const MEDIA_KINDS = Object.freeze([
   "guidebook-photos",
   "host-documents",
   "message-attachments",
+  "cms-media",
+  "avatars",
+  "reviews",
+  "dispute-evidence",
+  "moderation-evidence",
 ]);
-
 
 export const PUBLIC_MEDIA_KINDS = Object.freeze([
   "listing-photos",
   "stamp-icons",
   "guidebook-photos",
+  "cms-media",
+  "avatars",
+  "reviews",
 ]);
 
 const KIND_SET = new Set(MEDIA_KINDS);

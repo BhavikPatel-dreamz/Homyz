@@ -5,6 +5,10 @@ import { readPublicMediaFile, type PublicMediaKind } from "@/lib/storage/media";
 const PUBLIC_KINDS = new Set<PublicMediaKind>([
   "listing-photos",
   "guidebook-photos",
+  "cms-media",
+  "stamp-icons",
+  "avatars",
+  "reviews",
 ]);
 
 export async function GET(

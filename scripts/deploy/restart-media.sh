@@ -25,7 +25,13 @@ mkdir -p \
   "${MEDIA_DATA_DIR}/listing-photos" \
   "${MEDIA_DATA_DIR}/stamp-icons" \
   "${MEDIA_DATA_DIR}/guidebook-photos" \
-  "${MEDIA_DATA_DIR}/host-documents"
+  "${MEDIA_DATA_DIR}/host-documents" \
+  "${MEDIA_DATA_DIR}/message-attachments" \
+  "${MEDIA_DATA_DIR}/cms-media" \
+  "${MEDIA_DATA_DIR}/avatars" \
+  "${MEDIA_DATA_DIR}/reviews" \
+  "${MEDIA_DATA_DIR}/dispute-evidence" \
+  "${MEDIA_DATA_DIR}/moderation-evidence"
 
 if [[ -z "${MEDIA_SERVER_SECRET:-}" ]]; then
   echo "MEDIA_SERVER_SECRET is not set — media server not started" >&2

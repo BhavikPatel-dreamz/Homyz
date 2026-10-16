@@ -164,6 +164,22 @@ export const PERMISSIONS = {
   SESSIONS_REVOKE: "sessions.revoke",
   SETTINGS_VIEW: "settings.view",
   SETTINGS_EDIT: "settings.edit",
+
+  // CMS Foundation & Content Management (Phase 3 + Phase 4)
+  CMS_VIEW: "cms.view",
+  CMS_CREATE: "cms.create",
+  CMS_EDIT: "cms.edit",
+  CMS_PREVIEW: "cms.preview",
+  CMS_PUBLISH: "cms.publish",
+  CMS_UNPUBLISH: "cms.unpublish",
+  CMS_SCHEDULE: "cms.schedule",
+  CMS_MEDIA_VIEW: "cms.media.view",
+  CMS_MEDIA_UPLOAD: "cms.media.upload",
+  CMS_MEDIA_DELETE: "cms.media.delete",
+  CMS_HISTORY: "cms.history",
+  CMS_ROLLBACK: "cms.rollback",
+  CMS_AUDIT_VIEW: "cms.audit.view",
+  CMS_MANAGE: "cms.manage",
 } as const;
 
 export type PermissionSlug = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
@@ -291,6 +307,22 @@ export const ALL_PERMISSIONS: PermissionDefinition[] = [
   { slug: PERMISSIONS.ADMINS_EDIT, module: "Admin Management", action: "Edit Admins", description: "Edit administrator details and assign roles" },
   { slug: PERMISSIONS.ADMINS_ACTIVATE, module: "Admin Management", action: "Activate/Deactivate", description: "Activate or suspend administrator accounts" },
   { slug: PERMISSIONS.ADMINS_MANAGE_PERMISSIONS, module: "Admin Management", action: "Manage Admin Permissions", description: "Manage individual admin permission overrides" },
+
+  // CMS Module (Phase 3 + Phase 4)
+  { slug: PERMISSIONS.CMS_VIEW, module: "CMS", action: "View Content", description: "View CMS content and dashboard" },
+  { slug: PERMISSIONS.CMS_CREATE, module: "CMS", action: "Create Content", description: "Create new CMS content records" },
+  { slug: PERMISSIONS.CMS_EDIT, module: "CMS", action: "Edit Content", description: "Edit drafts and content payloads" },
+  { slug: PERMISSIONS.CMS_PREVIEW, module: "CMS", action: "Preview Content", description: "Access unpublished preview snapshots" },
+  { slug: PERMISSIONS.CMS_PUBLISH, module: "CMS", action: "Publish Content", description: "Publish approved content revisions" },
+  { slug: PERMISSIONS.CMS_UNPUBLISH, module: "CMS", action: "Unpublish Content", description: "Remove published content from public display" },
+  { slug: PERMISSIONS.CMS_SCHEDULE, module: "CMS", action: "Schedule Actions", description: "Schedule publication or unpublication actions" },
+  { slug: PERMISSIONS.CMS_MEDIA_VIEW, module: "CMS", action: "View Media", description: "View CMS media library assets" },
+  { slug: PERMISSIONS.CMS_MEDIA_UPLOAD, module: "CMS", action: "Upload Media", description: "Upload new media assets to library" },
+  { slug: PERMISSIONS.CMS_MEDIA_DELETE, module: "CMS", action: "Delete Media", description: "Delete unreferenced media assets" },
+  { slug: PERMISSIONS.CMS_HISTORY, module: "CMS", action: "View History", description: "Inspect immutable revision history and compare versions" },
+  { slug: PERMISSIONS.CMS_ROLLBACK, module: "CMS", action: "Rollback Version", description: "Restore historical revisions as new draft/published versions" },
+  { slug: PERMISSIONS.CMS_AUDIT_VIEW, module: "CMS", action: "View Audit Log", description: "View CMS administrative activity log" },
+  { slug: PERMISSIONS.CMS_MANAGE, module: "CMS", action: "Manage CMS", description: "Configure CMS settings and section registries" },
 ];
 
 /** Helper function to calculate whether user is Super Admin */
@@ -375,6 +407,20 @@ export const PERMISSION_DEPENDENCIES: Record<string, string[]> = {
   [PERMISSIONS.ROLES_CREATE]: [PERMISSIONS.ROLES_VIEW],
   [PERMISSIONS.ROLES_EDIT]: [PERMISSIONS.ROLES_VIEW],
   [PERMISSIONS.ROLES_DELETE]: [PERMISSIONS.ROLES_VIEW],
+
+  // CMS Dependencies (Phase 3 + Phase 4)
+  [PERMISSIONS.CMS_CREATE]: [PERMISSIONS.CMS_VIEW],
+  [PERMISSIONS.CMS_EDIT]: [PERMISSIONS.CMS_VIEW],
+  [PERMISSIONS.CMS_PREVIEW]: [PERMISSIONS.CMS_VIEW],
+  [PERMISSIONS.CMS_PUBLISH]: [PERMISSIONS.CMS_VIEW, PERMISSIONS.CMS_EDIT],
+  [PERMISSIONS.CMS_UNPUBLISH]: [PERMISSIONS.CMS_VIEW, PERMISSIONS.CMS_PUBLISH],
+  [PERMISSIONS.CMS_SCHEDULE]: [PERMISSIONS.CMS_VIEW],
+  [PERMISSIONS.CMS_MEDIA_UPLOAD]: [PERMISSIONS.CMS_MEDIA_VIEW],
+  [PERMISSIONS.CMS_MEDIA_DELETE]: [PERMISSIONS.CMS_MEDIA_VIEW],
+  [PERMISSIONS.CMS_HISTORY]: [PERMISSIONS.CMS_VIEW],
+  [PERMISSIONS.CMS_ROLLBACK]: [PERMISSIONS.CMS_VIEW, PERMISSIONS.CMS_HISTORY],
+  [PERMISSIONS.CMS_AUDIT_VIEW]: [PERMISSIONS.CMS_VIEW],
+  [PERMISSIONS.CMS_MANAGE]: [PERMISSIONS.CMS_VIEW],
 };
 
 /** Get any parent permissions required by the specified permission slug */

@@ -11,16 +11,37 @@ import path from "node:path";
  * Private documents stay behind their authenticated document APIs.
  */
 
-export type PublicMediaKind = "listing-photos" | "guidebook-photos";
-export type PrivateMediaKind = "host-documents" | "message-attachments" | "dispute-evidence" | "moderation-evidence";
+export type PublicMediaKind =
+  | "listing-photos"
+  | "guidebook-photos"
+  | "cms-media"
+  | "stamp-icons"
+  | "avatars"
+  | "reviews";
+
+export type PrivateMediaKind =
+  | "host-documents"
+  | "message-attachments"
+  | "dispute-evidence"
+  | "moderation-evidence";
+
 export type MediaKind = PublicMediaKind | PrivateMediaKind;
 
-const PUBLIC_KINDS = new Set<string>([
+export const PUBLIC_KINDS = new Set<string>([
   "listing-photos",
   "guidebook-photos",
+  "cms-media",
+  "stamp-icons",
+  "avatars",
+  "reviews",
 ]);
-const PRIVATE_KINDS = new Set<string>(["host-documents", "message-attachments", "dispute-evidence", "moderation-evidence"]);
-const ALL_KINDS = new Set<string>([...PUBLIC_KINDS, ...PRIVATE_KINDS]);
+export const PRIVATE_KINDS = new Set<string>([
+  "host-documents",
+  "message-attachments",
+  "dispute-evidence",
+  "moderation-evidence",
+]);
+export const ALL_KINDS = new Set<string>([...PUBLIC_KINDS, ...PRIVATE_KINDS]);
 
 const SAFE_FILE = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
 
@@ -354,20 +375,19 @@ async function writeObject(options: {
   }
 
   if (isMediaServerEnabled()) {
-    try {
-      const saved = await putMediaServer({
-        key,
-        body: options.body,
-        contentType: options.contentType,
-      });
-      return {
-        url: publicMediaUrl(key, saved.publicUrl),
-        fileName,
-        key,
-      };
-    } catch (err) {
-      // Fallback to local disk if media server is unreachable or doesn't support the kind yet
-    }
+    // Once a media server is configured, it is the source of truth. Falling back
+    // to the app container makes an upload appear successful even though the
+    // browser URL is served by the media server and the file is not there.
+    const saved = await putMediaServer({
+      key,
+      body: options.body,
+      contentType: options.contentType,
+    });
+    return {
+      url: publicMediaUrl(key, saved.publicUrl),
+      fileName,
+      key,
+    };
   }
 
   warnLocalDisk();

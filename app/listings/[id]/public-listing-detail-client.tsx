@@ -1922,7 +1922,16 @@ export function PublicListingDetailClient({
 
             {/* Photo Gallery (ListingGallery component with Show all photos modal) */}
             <div className="listing-galelry">
-              <ListingGallery key={listing.id} photos={photos} listingTitle={listing.title} onShare={handleShare} onSave={() => void handleSave()} isSaved={wishlist.has(listing.id)} saveDisabled={wishlist.adding.has(listing.id) || wishlist.removeInFlight.has(listing.id)} />
+              <ListingGallery
+                key={listing.id}
+                photos={photos}
+                photoRoomAssignments={(listing as any).photoRoomAssignments || []}
+                listingTitle={listing.title}
+                onShare={handleShare}
+                onSave={() => void handleSave()}
+                isSaved={wishlist.has(listing.id)}
+                saveDisabled={wishlist.adding.has(listing.id) || wishlist.removeInFlight.has(listing.id)}
+              />
             </div>
 
             <h1 className="mb-4 lg:hidden">{listing.title}</h1>

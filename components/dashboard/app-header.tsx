@@ -44,6 +44,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
   const sessionLoading = sessionStatus === "loading" && !initialUser;
   const role = user?.role;
   const [isConvertingRole, setIsConvertingRole] = useState(false);
+  const [failedAvatarUrl, setFailedAvatarUrl] = useState<string | null>(null);
 
   const { selectedLangLabel, setLanguage, t } = useLanguage();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -242,9 +243,9 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
 
             {sessionLoading ? (
               <div className="hidden h-9 w-9 shrink-0 animate-pulse rounded-full bg-zinc-100 min-[992px]:block" aria-hidden="true" />
-            ) : user?.image ? (
+            ) : user?.image && user.image !== failedAvatarUrl ? (
               <Link href="/profile" className="relative hidden h-9 w-9 shrink-0 overflow-hidden rounded-full transition-opacity hover:opacity-80 min-[992px]:block" title="Profile">
-                <Image src={user.image} alt={user.name || "User avatar"} fill className="object-cover" sizes="36px" priority />
+                <Image src={user.image} alt={user.name || "User avatar"} fill className="object-cover" sizes="36px" priority onError={() => setFailedAvatarUrl(user.image ?? null)} />
               </Link>
             ) : user ? (
               <Link href="/profile" className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5] text-[#727272] transition-colors hover:bg-zinc-200 min-[992px]:flex" title="Profile">

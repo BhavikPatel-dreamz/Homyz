@@ -78,6 +78,8 @@ export type UserStatsData = {
 };
 
 export const MAX_BIO_LENGTH = 500;
+const MAX_AVATAR_FILE_SIZE = 10 * 1024 * 1024;
+const ACCEPTED_AVATAR_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/avif"]);
 
 type ProfileManagementClientProps = {
   initial: ProfileData;
@@ -797,8 +799,11 @@ export function ProfileManagementClient({
 
   const [imageUrl, setImageUrl] = useState(initial.image || "");
   const [name, setName] = useState(profileData.name || initial.name || "");
-  const [uploading, setUploading] = useState(false);
+  const [avatarUploadStage, setAvatarUploadStage] = useState<"idle" | "uploading" | "saving">("idle");
+  const [avatarUploadError, setAvatarUploadError] = useState<string | null>(null);
+  const [failedAvatarPreviewUrl, setFailedAvatarPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const uploading = avatarUploadStage !== "idle";
 
   // Modals & States
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
@@ -948,19 +953,29 @@ export function ProfileManagementClient({
     if (!isOwner) return;
     const file = e.target.files?.[0];
     if (!file) return;
-    setUploading(true);
+    e.target.value = "";
+
+    if (!ACCEPTED_AVATAR_TYPES.has(file.type) || file.size <= 0 || file.size > MAX_AVATAR_FILE_SIZE) {
+      const message = "Use a JPEG, PNG, WebP, or AVIF image up to 10 MB.";
+      setAvatarUploadError(message);
+      toast.error(message);
+      return;
+    }
+
+    setAvatarUploadError(null);
+    setAvatarUploadStage("uploading");
 
     try {
       const fd = new FormData();
       fd.append("file", file);
-      const res = await fetch("/api/v1/upload/listing-photo", {
+      const res = await fetch("/api/v1/upload/avatar", {
         method: "POST",
         credentials: "include",
         body: fd,
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Upload failed");
-      setImageUrl(data.url);
+      const data = await res.json().catch(() => null) as { error?: string; url?: string } | null;
+      if (!res.ok || !data?.url) throw new Error(data?.error || "Upload failed");
+      setAvatarUploadStage("saving");
 
       const saveRes = await updateProfileAction({
         image: data.url,
@@ -973,6 +988,9 @@ export function ProfileManagementClient({
         throw new Error(saveRes.error || "Failed to save updated avatar.");
       }
 
+      // Do not replace the visible image until both storage and profile save
+      // have succeeded. This avoids showing an image that is not persisted.
+      setImageUrl(data.url);
       if (saveRes.data) {
         const updated = saveRes.data as ProfileData;
         setProfileData(updated);
@@ -989,9 +1007,11 @@ export function ProfileManagementClient({
       toast.success("Profile image updated and saved.");
       router.refresh();
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Upload error");
+      const message = err instanceof Error ? err.message : "Upload error";
+      setAvatarUploadError(message);
+      toast.error(message);
     } finally {
-      setUploading(false);
+      setAvatarUploadStage("idle");
     }
   };
 
@@ -1025,7 +1045,7 @@ export function ProfileManagementClient({
           className={`profile-avtar-card relative md:mt-5 mt-0 aspect-square w-[220px] max-w-full shrink-0 self-center sm:mt-0 sm:h-66 sm:w-90.5 sm:max-w-[calc(100%-48px)] sm:self-auto ${isOwner ? "mb-10 sm:mb-0" : ""}`}
         >
           <div className="relative h-full w-full overflow-hidden rounded-full border border-[#1F1F1F] bg-zinc-100 sm:rounded-3xl sm:shadow-2xs">
-            {imageUrl ? (
+            {imageUrl && imageUrl !== failedAvatarPreviewUrl ? (
               <Image
                 src={imageUrl}
                 alt="Profile photo"
@@ -1033,6 +1053,7 @@ export function ProfileManagementClient({
                 className="object-cover"
                 sizes="(max-width: 639px) 220px, 362px"
                 priority
+                onError={() => setFailedAvatarPreviewUrl(imageUrl)}
               />
             ) : (
               <div className="flex h-full w-full items-center justify-center bg-zinc-100 text-[#727272]">
@@ -1045,6 +1066,12 @@ export function ProfileManagementClient({
                 </svg>
               </div>
             )}
+            {uploading && (
+              <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 bg-black/55 px-4 text-center text-sm font-medium text-white" aria-live="polite">
+                <span className="size-7 animate-spin rounded-full border-2 border-white/35 border-t-white" aria-hidden="true" />
+                <span>{avatarUploadStage === "saving" ? "Saving your profile image…" : "Uploading your profile image…"}</span>
+              </div>
+            )}
           </div>
           {isOwner && (
             <>
@@ -1052,20 +1079,27 @@ export function ProfileManagementClient({
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
-                className="absolute -bottom-8 left-1/2 z-10 flex h-[52px] w-[110px] -translate-x-1/2 cursor-pointer items-center justify-center gap-2 rounded-full bg-[#FCDF9C] text-base font-normal text-[#1F1F1F] transition-transform hover:bg-[#F7D37D] disabled:cursor-wait sm:bottom-auto sm:left-auto sm:-right-12 sm:top-1/2 sm:h-24 sm:w-24 sm:translate-x-0 sm:-translate-y-1/2"
+                aria-label={uploading ? "Profile image upload in progress" : t("profile_mgmt_edit", "Edit")}
+                className={`absolute -bottom-8 left-1/2 z-10 flex h-[52px] -translate-x-1/2 cursor-pointer items-center justify-center rounded-full bg-[#FCDF9C] text-base font-normal text-[#1F1F1F] transition-transform hover:bg-[#F7D37D] disabled:cursor-wait sm:bottom-auto sm:left-auto sm:-right-12 sm:top-1/2 sm:h-24 sm:translate-x-0 sm:-translate-y-1/2 ${uploading ? "w-[52px] sm:w-24" : "w-[110px] sm:w-24"}`}
               >
-                <Image
-                  src="/images/icons/camera.svg"
-                  alt=""
-                  width={24}
-                  height={24}
-                  aria-hidden="true"
-                />
-                <span>{uploading ? "..." : t("profile_mgmt_edit", "Edit")}</span>
+                {uploading ? (
+                  <span className="size-5 animate-spin rounded-full border-2 border-[#1F1F1F]/30 border-t-[#1F1F1F]" aria-hidden="true" />
+                ) : (
+                  <>
+                    <Image
+                      src="/images/icons/camera.svg"
+                      alt=""
+                      width={24}
+                      height={24}
+                      aria-hidden="true"
+                    />
+                    <span>{t("profile_mgmt_edit", "Edit")}</span>
+                  </>
+                )}
               </button>
               <input
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/webp,image/avif"
                 className="hidden"
                 ref={fileInputRef}
                 onChange={handleImageUpload}
@@ -1086,6 +1120,12 @@ export function ProfileManagementClient({
           </p>
         </div>
       </div>
+
+      {avatarUploadError && (
+        <p role="alert" className="-mt-4 mb-6 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-800 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-200">
+          {avatarUploadError}
+        </p>
+      )}
 
       {/* 2. DEDICATED PROFILE MANAGEMENT TABS */}
       <div className="flex items-center gap-2 border-b border-zinc-200 pb-3 mb-8 overflow-x-auto">
