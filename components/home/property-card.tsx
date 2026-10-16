@@ -119,7 +119,7 @@ function PropertyCardComponent({
   return (
     <Link
       href={targetHref}
-      className="group block cursor-pointer overflow-hidden rounded-[20px] border border-zinc-200 bg-white transition-all duration-200"
+      className="group block cursor-pointer overflow-hidden md:rounded-[20px] rounded-[10px] border border-[#727272] bg-white transition-all duration-200"
     >
       <div className="relative aspect-[233/246] w-full overflow-hidden bg-zinc-100">
         {displayImage ? (
@@ -157,7 +157,7 @@ function PropertyCardComponent({
             )}
 
             {showFeatured && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-white/60 backdrop-blur-md px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10.5px] sm:text-xs font-medium text-[#1F1F1F] shadow-xs border border-white/60 h-[26px]">
+              <span className="inline-flex items-center gap-1 rounded-full bg-white/60 backdrop-blur-md px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10px] sm:text-xs font-medium text-[#1F1F1F] shadow-xs border border-white/60 h-[26px]">
                 {t("home_featured")}
               </span>
             )}
@@ -171,39 +171,39 @@ function PropertyCardComponent({
 
       <div className="px-3 py-2.5 sm:px-3.5 sm:py-3 text-[#1f1f1f]">
         {/* Clickable Property Name */}
-        <h3 className="truncate text-[13.5px] sm:text-base font-medium text-[#1f1f1f] leading-snug group-hover:text-amber-950 transition-colors">
+        <h3 className="truncate text-sm sm:text-base font-medium text-[#1f1f1f] leading-snug group-hover:text-amber-950 transition-colors">
           {name || "Untitled stay"}
         </h3>
         {alternativeDates ? (
-          <p className="truncate text-[11px] sm:text-xs font-medium text-amber-800 bg-amber-50/90 border border-amber-200/60 px-1.5 py-0.5 rounded-sm mt-0.5 sm:mt-1 inline-block">
+          <p className="truncate text-[10px] sm:text-xs font-normal text-amber-800 bg-amber-50/90 border border-amber-200/60 px-1.5 py-0.5 rounded-sm mt-0.5 sm:mt-1 inline-block">
             🗓️ {alternativeDates}
           </p>
         ) : (
-          <p className="truncate text-[11px] sm:text-xs font-normal text-[#727272] leading-normal mt-0.5 sm:mt-1">
+          <p className="truncate text-[10px] sm:text-xs font-normal text-[#1f1f1f] leading-normal mt-0.5 sm:mt-1">
             {displaySubtitle}
           </p>
         )}
-        <div className="flex items-center justify-between text-[11px] sm:text-xs font-normal text-[#1f1f1f] leading-normal mt-0.5 whitespace-nowrap truncate">
+        <div className="flex items-center flex-wrap justify-between col-gap-2 row-gap-1 text-[10px] sm:text-xs font-normal text-[#1f1f1f] leading-normal mt-1.5 whitespace-nowrap truncate">
           {/* Price per night */}
           {cardPricing.hasDiscount && cardPricing.discountedDisplayPrice != null ? (
-            <span className="font-semibold text-[#1F1F1F] flex items-baseline gap-1">
-              <span className="line-through text-[#727272] font-normal text-[10px] sm:text-[11px]">
+            <span className="font-normal text-[#1F1F1F] flex items-baseline gap-1">
+              <span className="line-through text-[#1f1f1f] font-normal text-[10px] sm:text-xs leading-4">
                 {formatPrice(cardPricing.baseDisplayPrice, currency)}
               </span>
               <span>{formatPrice(cardPricing.discountedDisplayPrice, currency)}</span>
-              <span className="font-normal text-[#727272] text-[11px] sm:text-xs"> / night</span>
+              <span className="font-normal text-[#1f1f1f] text-[10px] sm:text-xs leading-4"> / night</span>
             </span>
           ) : (
-            <span className="font-semibold text-[#1F1F1F]">
+              <span className="font-normal text-[#1F1F1F]">
               {formattedPrice}
-              <span className="font-normal text-[#727272] text-[11px] sm:text-xs"> / night</span>
+                <span className="font-normal text-[#1f1f1f] text-[10px] sm:text-xs leading-4"> / night</span>
             </span>
           )}
 
 
           {/* Rating: Star icon + average rating + review count (zero fake ratings) */}
           {numericRating !== null ? (
-            <span className="inline-flex items-center gap-1 text-xs font-semibold text-zinc-800 shrink-0">
+            <span className="inline-flex items-center sm:gap-1 text-[10px] sm:text-xs font-normal text-[#1f1f1f] shrink-0">
               <svg
                 aria-hidden="true"
                 viewBox="0 0 24 24"
@@ -215,12 +215,12 @@ function PropertyCardComponent({
               <span>
                 {numericRating.toFixed(1)}
                 {resolvedReviews != null && resolvedReviews > 0 ? (
-                  <span className="text-[#727272] font-normal"> ({resolvedReviews})</span>
+                  <span className="text-[#1f1f1f] font-normal"> ({resolvedReviews})</span>
                 ) : null}
               </span>
             </span>
           ) : (
-            <span className="text-[10px] text-[#727272] font-normal">
+              <span className="text-[10px] sm:text-xs text-[#1f1f1f] font-normal">
               {guests ? t("home_up_to_guests", { count: guests }) : propertyType || "Stay"}
             </span>
           )}

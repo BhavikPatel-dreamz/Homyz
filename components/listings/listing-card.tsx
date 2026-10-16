@@ -521,17 +521,17 @@ export function ListingCard({
         {(primaryBadge || isFeat) && (
           <div className="absolute left-3 top-3 z-20 flex flex-wrap items-center gap-1.5 max-w-[calc(100%-4.5rem)] pointer-events-none">
             {primaryBadge === "guest_favorite" && (
-              <span className="inline-flex items-center rounded-full bg-white px-2.5 py-1 text-[11px] sm:text-xs font-semibold text-[#1F1F1F] shadow-md border border-black/5">
+              <span className="inline-flex items-center rounded-full bg-white px-2.5 py-1 text-[10px] sm:text-xs font-normal text-[#1F1F1F] shadow-md border border-black/5">
                 {t("listings_guest_favourite", "Guest favourite")}
               </span>
             )}
             {primaryBadge === "superhost" && (
-              <span className="inline-flex items-center rounded-full bg-black/70 backdrop-blur-md px-2.5 py-1 text-[11px] sm:text-xs font-medium text-white shadow-md">
+              <span className="inline-flex items-center rounded-full bg-black/70 backdrop-blur-md px-2.5 py-1 text-[10px] sm:text-xs font-normal text-white shadow-md">
                 {t("listings_superhost", "Superhost")}
               </span>
             )}
             {isFeat && (
-              <span className="inline-flex items-center rounded-full bg-white/90 backdrop-blur-md px-2.5 py-1 text-[11px] sm:text-xs font-semibold text-[#1F1F1F] shadow-xs border border-white/60">
+              <span className="inline-flex items-center rounded-full bg-white/90 backdrop-blur-md px-2.5 py-1 text-[10px] sm:text-xs font-normal text-[#1F1F1F] shadow-xs border border-white/60">
                 {t("listings_featured_badge", "Featured")}
               </span>
             )}
@@ -675,7 +675,7 @@ export function ListingCard({
         <div className="flex-1 flex flex-col justify-between px-3.5 py-3 text-left sm:px-3.5 sm:py-3.5">
           <div className="space-y-1.5 min-w-0">
             {/* Row 1: Title */}
-            <h3 className="truncate text-[15px] font-medium leading-5 text-[#1F1F1F] transition-colors group-hover:text-amber-950">
+            <h3 className="truncate text-sm sm:text-base font-medium leading-5 text-[#1F1F1F] transition-colors group-hover:text-amber-950">
               {primaryHeading}
             </h3>
 

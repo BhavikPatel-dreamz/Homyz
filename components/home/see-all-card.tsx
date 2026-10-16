@@ -33,7 +33,7 @@ export function SeeAllCard({
   return (
     <Link
       href={href}
-      className="group relative flex h-full min-h-[229px] w-full cursor-pointer flex-col items-center justify-center overflow-hidden rounded-[20px] border border-zinc-200 bg-white sm:p-5 p-3 text-center transition-all duration-300 hover:border-zinc-300 hover:shadow-lg sm:min-h-[320px] sm:rounded-[22px] select-none"
+      className="group relative flex h-full min-h-[229px] w-full cursor-pointer flex-col items-center justify-center overflow-hidden rounded-[20px] border border-[#1f1f1f] bg-white sm:p-5 p-3 text-center transition-all duration-300 hover:border-zinc-300 hover:shadow-lg sm:min-h-[320px] sm:rounded-[22px] select-none"
       aria-label={`See all ${title || "properties"}`}
     >
       {/* Stacked Floating Photo Fan */}

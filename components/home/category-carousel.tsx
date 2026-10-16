@@ -355,7 +355,7 @@ function HomePropertySectionComponent({
       <div
         ref={containerRef}
         onScroll={handleScroll}
-        className="no-scrollbar grid snap-x snap-mandatory grid-flow-col gap-3 overflow-x-auto overscroll-x-contain auto-cols-[calc((100%-0.75rem)/2.16)] sm:gap-4 sm:auto-cols-[calc((100%-2rem)/3)] md:gap-4 md:auto-cols-[calc((100%-2rem)/3)] lg:gap-4 lg:auto-cols-[calc((100%-3rem)/4)] xl:gap-5 xl:auto-cols-[calc((100%-5rem)/5)] 2xl:gap-6 2xl:auto-cols-[calc((100%-7.5rem)/6)]"
+        className="no-scrollbar grid snap-x snap-mandatory grid-flow-col gap-2 overflow-x-auto overscroll-x-contain auto-cols-[calc((100%-0.75rem)/2.16)] sm:gap-4 sm:auto-cols-[calc((100%-2rem)/3)] md:gap-4 md:auto-cols-[calc((100%-2rem)/3)] lg:gap-4 lg:auto-cols-[calc((100%-3rem)/4)] xl:gap-5 xl:auto-cols-[calc((100%-5rem)/5)] 2xl:gap-6 2xl:auto-cols-[calc((100%-7.5rem)/6)]"
       >
         {displayCards.map((card) => (
           <div key={card.id} className="min-w-0 snap-start">
@@ -393,11 +393,10 @@ function HomePropertySectionComponent({
               aria-label={`Go to page ${idx + 1}`}
               aria-current={idx === activeIndex ? "true" : undefined}
               onClick={() => goToPage(idx)}
-              className={`cursor-pointer transition-all duration-300 ${
-                idx === activeIndex
-                  ? "h-7 w-2 rounded-full bg-[#FCDF9C]"
-                  : "h-5 w-2 rounded-full bg-[#ddddde] hover:bg-gray-400"
-              }`}
+              className={`cursor-pointer transition-all duration-300 ${idx === activeIndex
+                  ? "h-7 w-2 rounded-full bg-[#EBA900]"
+                : "h-5 w-2 rounded-full bg-[#ddddde] hover:bg-[#EBA900]"
+                }`}
             />
           ))}
         </div>

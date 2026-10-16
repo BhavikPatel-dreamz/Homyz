@@ -1207,7 +1207,7 @@ export function ListingsResultsClient({
 
       {/* ── Mobile Map on Top (Phase 5: Section 2 & 3) ── */}
       {!isDesktop && mobileViewMode === "combined" && (
-        <div className="block lg:hidden w-full h-[442px] sm:h-[320px] rounded-2xl overflow-hidden border border-zinc-200 shadow-xs relative mb-4">
+        <div className="block lg:hidden w-full h-[442px] sm:h-[320px] rounded-2xl overflow-hidden border border-zinc-200 shadow-xs relative mb-4 z-1">
           <SearchMap
             listings={allListings}
             highlightedId={effectiveHighlightedId}
@@ -1255,7 +1255,7 @@ export function ListingsResultsClient({
       )}
 
       {/* ── Top Control Bar ─────────────── */}
-      <div className="flex items-center justify-between gap-3 pb-5">
+      <div className="flex items-center flex-wrap justify-between gap-3 pb-5">
         {/* Left: Scrollable filter pills matching reference design */}
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 flex-1 min-w-0">
           {/* Filters button */}

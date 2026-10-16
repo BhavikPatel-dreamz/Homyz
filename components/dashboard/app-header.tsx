@@ -142,7 +142,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
   const isHosting = isHost && isHostRoute;
 
   return (
-    <header className="header sticky top-0 z-40 w-full bg-white text-[#1F1F1F]" suppressHydrationWarning>
+    <header className="header sticky top-0 lg:z-9999 z-40 w-full bg-white text-[#1F1F1F]" suppressHydrationWarning>
       <Container>
         <div
           className={`header-wrapper relative flex min-h-[96px] w-full items-center justify-between border-b-0 py-0 md:min-h-0 md:py-4 lg:py-5 ${hasHeaderDivider ? "md:border-b md:border-[#1F1F1F]" : ""

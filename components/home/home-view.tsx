@@ -633,7 +633,7 @@ export function HomeView({
                     <Link
                       key={location.id}
                       href={location.href}
-                      className="group relative block overflow-hidden rounded-[22px] border border-zinc-200 bg-white transition-transform hover:-translate-y-0.5"
+                      className="group relative block overflow-hidden rounded-[20px] border border-zinc-200 bg-white transition-transform"
                     >
                       <div className="relative aspect-[3/4] w-full overflow-hidden">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -647,7 +647,7 @@ export function HomeView({
                         <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-black/5" />
                         <div className="absolute inset-x-0 bottom-0 p-3 text-white">
                           <div className="text-base font-medium leading-tight">{location.name}</div>
-                          <div className="mt-1 text-[11px] text-white/80">{location.subtitle}</div>
+                          <div className="mt-1 text-sm text-white/80">{location.subtitle}</div>
                         </div>
                       </div>
                     </Link>

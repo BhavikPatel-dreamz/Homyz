@@ -1,6 +1,7 @@
 "use client";
 
 import { ModalOverlay } from "@/components/ui/modal-overlay";
+import { CustomScrollContainer } from "@/components/ui/custom-scroll-container";
 import React, { useEffect, useLayoutEffect, useRef, useState, useCallback, useMemo } from "react";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
@@ -222,7 +223,7 @@ function highlightMatch(text: string | null | undefined, query: string): React.R
   return (
     <>
       {text.slice(0, idx)}
-      <span className="font-extrabold text-zinc-950 underline decoration-amber-400 decoration-2 underline-offset-2">
+      <span className="font-semibold text-[#1f1f1f] underline decoration-zinc-400 underline-offset-2">
         {text.slice(idx, idx + q.length)}
       </span>
       {text.slice(idx + q.length)}
@@ -723,178 +724,97 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
   };
 
   const destinationSuggestions = (
-    <>
-      {/* Autocomplete suggestions panel */}
-      <div
-        ref={destinationListRef}
-        className="visible-scrollbar max-h-[360px] w-full space-y-3 overflow-y-auto pr-1"
+    <CustomScrollContainer
+      scrollRef={destinationListRef}
+      className="max-h-[360px] w-full space-y-3 pr-3.5"
+    >
+      {/* Use Current Location Action Button */}
+      <button
+        type="button"
+        onClick={handleUseCurrentLocation}
+        disabled={isLocating}
+        className="flex w-full items-center justify-between gap-3 text-left rounded-2xl p-2.5 transition-all cursor-pointer hover:bg-zinc-100/90 group border border-zinc-200/90 bg-zinc-50/50 mb-4"
       >
-        {/* Use Current Location Action Button */}
-        <button
-          type="button"
-          onClick={handleUseCurrentLocation}
-          disabled={isLocating}
-          className="flex w-full items-center justify-between gap-3 text-left rounded-lg p-2.5 transition-all cursor-pointer hover:bg-zinc-100/90 group border border-zinc-200/90 bg-zinc-50/50 mb-4"
-        >
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-100/90 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors shadow-2xs">
-              {isLocating ? (
-                <div className="h-5 w-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin group-hover:border-white group-hover:border-t-transparent" />
-              ) : (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
-                  <circle cx="12" cy="12" r="7" />
-                  <line x1="12" y1="2" x2="12" y2="5" />
-                  <line x1="12" y1="19" x2="12" y2="22" />
-                  <line x1="2" y1="12" x2="5" y2="12" />
-                  <line x1="19" y1="12" x2="22" y2="12" />
-                </svg>
-              )}
-            </div>
-            <div className="min-w-0">
-              <div className="text-sm font-normal text-[#1f1f1f] truncate">
-                {isLocating ? t("home_detecting_location") : t("home_use_current_location")}
-              </div>
-              <div className="text-sm text-[#727272] truncate">{t("home_find_stays_near_you")}</div>
-            </div>
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-100/90 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors shadow-2xs">
+            {isLocating ? (
+              <div className="h-5 w-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin group-hover:border-white group-hover:border-t-transparent" />
+            ) : (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+                <circle cx="12" cy="12" r="7" />
+                <line x1="12" y1="2" x2="12" y2="5" />
+                <line x1="12" y1="19" x2="12" y2="22" />
+                <line x1="2" y1="12" x2="5" y2="12" />
+                <line x1="19" y1="12" x2="22" y2="12" />
+              </svg>
+            )}
           </div>
-          <span className="shrink-0 rounded-full bg-blue-100/80 px-2 py-0.5 text-xs font-medium text-blue-800">
-            GPS
-          </span>
-        </button>
-        {locationError && (
-          <div className="px-3 py-2 mb-2 text-[12px] text-rose-600 bg-rose-50 rounded-xl border border-rose-100">
-            {locationError}
+          <div className="min-w-0">
+            <div className="text-sm font-medium text-[#1f1f1f] truncate">
+              {isLocating ? t("home_detecting_location") : t("home_use_current_location")}
+            </div>
+            <div className="text-sm text-[#727272] truncate">{t("home_find_stays_near_you")}</div>
           </div>
-        )}
-        {/* Live World & DB results */}
-        {(primaryCity || places.length > 0 || districts.length > 0 || cities.length > 0 || properties.length > 0) ? (
-          <>
-            {/* 1. Primary City Match */}
-            {primaryCity && (
-              <div className="space-y-1">
-                <button
-                  type="button"
-                  onClick={() => {
-                    selectSuggestion(primaryCity);
-                    setActiveStep("when");
-                    if (!isMobileSearchOpen) setDesktopPanel("checkIn");
-                  }}
-                  className={`flex w-full items-center justify-between gap-3 text-left rounded-2xl p-2.5 transition-all cursor-pointer ${suggestIndex === getIndexForLabel(primaryCity.name || primaryCity.city)
-                    ? "bg-[#fcdf9c]/40 ring-1 ring-[#fcdf9c]"
-                    : "hover:bg-zinc-100/90"
-                    }`}
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <LocationIcon type="city" />
-                    <div className="min-w-0">
-                      <div className="text-[14px] font-bold text-[#1F1F1F] truncate">
-                        {highlightMatch(primaryCity.fullLabel || primaryCity.name, destination)}
-                      </div>
-                      <div className="text-[12px] text-[#727272] truncate">{primaryCity.subtitle || `All stays in ${primaryCity.name}`}</div>
+        </div>
+        <span className="shrink-0 rounded-full bg-blue-100/80 px-2 py-0.5 text-xs font-normal text-blue-800">
+          GPS
+        </span>
+      </button>
+      {locationError && (
+        <div className="px-3 py-2 mb-2 text-[12px] text-rose-600 bg-rose-50 rounded-xl border border-rose-100">
+          {locationError}
+        </div>
+      )}
+      {/* Live World & DB results */}
+      {(primaryCity || places.length > 0 || districts.length > 0 || cities.length > 0 || properties.length > 0) ? (
+        <>
+          {/* 1. Primary City Match */}
+          {primaryCity && (
+            <div className="space-y-1">
+              <button
+                type="button"
+                onClick={() => {
+                  selectSuggestion(primaryCity);
+                  setActiveStep("when");
+                  if (!isMobileSearchOpen) setDesktopPanel("checkIn");
+                }}
+                className={`flex w-full items-center justify-between gap-3 text-left rounded-2xl p-2.5 transition-all cursor-pointer ${suggestIndex === getIndexForLabel(primaryCity.name || primaryCity.city)
+                  ? "bg-[#fcdf9c]/40 ring-1 ring-[#fcdf9c]"
+                  : "hover:bg-zinc-100/90"
+                  }`}
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <LocationIcon type="city" />
+                  <div className="min-w-0">
+                    <div className="text-sm font-medium text-[#1F1F1F] truncate">
+                      {highlightMatch(primaryCity.fullLabel || primaryCity.name, destination)}
                     </div>
+                    <div className="text-sm text-[#727272] truncate">{primaryCity.subtitle || `All stays in ${primaryCity.name}`}</div>
                   </div>
-                  <span className="shrink-0 rounded-full bg-zinc-100 px-2.5 py-0.5 text-[10px] font-bold tracking-wider uppercase text-zinc-700">
-                    City
-                  </span>
-                </button>
-              </div>
-            )}
-
-            {/* 2. Places & Neighborhoods in this city */}
-            {places.length > 0 && (
-              <div>
-                <p className="px-2 pt-1 pb-1.5 text-[11px] font-bold uppercase tracking-wider text-[#727272]">
-                  {t("home_places_in", { name: primaryCity?.name || t("home_search_where") })}
-                </p>
-                <div className="space-y-1">
-                  {places.map((p) => {
-                    const label = p.name || p.city;
-                    const idx = getIndexForLabel(label);
-                    return (
-                      <button
-                        key={`place-${p.id || p.providerPlaceId || p.city}`}
-                        type="button"
-                        onClick={() => {
-                          selectSuggestion(p);
-                          setActiveStep("when");
-                          if (!isMobileSearchOpen) setDesktopPanel("checkIn");
-                        }}
-                        className={`flex w-full items-center justify-between gap-3 text-left rounded-2xl p-2.5 transition-all cursor-pointer ${suggestIndex === idx ? "bg-[#fcdf9c]/40 ring-1 ring-[#fcdf9c]" : "hover:bg-zinc-100/80"
-                          }`}
-                      >
-                        <div className="flex items-center gap-3 min-w-0">
-                          <LocationIcon type={p.locationType || p.type} />
-                          <div className="min-w-0">
-                            <div className="text-sm font-normal text-[#1F1F1F] truncate">
-                              {highlightMatch(p.name || p.city, destination)}
-                            </div>
-                            <div className="text-sm text-[#727272] truncate">{p.subtitle || p.fullLabel}</div>
-                          </div>
-                        </div>
-                        <span className="shrink-0 rounded-full bg-amber-100/70 px-2 py-0.5 text-[10px] font-semibold text-amber-900">
-                          {p.badge || (p.locationType ? p.locationType.charAt(0).toUpperCase() + p.locationType.slice(1) : "Neighborhood")}
-                        </span>
-                      </button>
-                    );
-                  })}
                 </div>
-              </div>
-            )}
+                <span className="shrink-0 rounded-full bg-amber-100/70 px-2 py-1.25 text-xs leading-tight font-normal text-amber-900">
+                  City
+                </span>
+              </button>
+            </div>
+          )}
 
-            {/* 3. Nearby Districts & Suburbs */}
-            {districts.length > 0 && (
-              <div>
-                <p className="px-2 pt-1 pb-1.5 text-sm font-medium text-[#727272]">
-                  {t("home_nearby_areas_districts")}
-                </p>
-                <div className="space-y-1">
-                  {districts.map((d) => {
-                    const label = d.name || d.city;
-                    const idx = getIndexForLabel(label);
-                    return (
-                      <button
-                        key={`dist-${d.id || d.providerPlaceId || d.city}`}
-                        type="button"
-                        onClick={() => {
-                          selectSuggestion(d);
-                          setActiveStep("when");
-                          if (!isMobileSearchOpen) setDesktopPanel("checkIn");
-                        }}
-                        className={`flex w-full items-center justify-between gap-3 text-left rounded-2xl p-2.5 transition-all cursor-pointer ${suggestIndex === idx ? "bg-[#fcdf9c]/40 ring-1 ring-[#fcdf9c]" : "hover:bg-zinc-100/80"
-                          }`}
-                      >
-                        <div className="flex items-center gap-3 min-w-0">
-                          <LocationIcon type="district" />
-                          <div className="min-w-0">
-                            <div className="text-sm font-normal text-[#1F1F1F] truncate">
-                              {highlightMatch(d.name || d.city, destination)}
-                            </div>
-                            <div className="text-sm text-[#727272] truncate">{d.subtitle || d.fullLabel}</div>
-                          </div>
-                        </div>
-                        <span className="shrink-0 rounded-full bg-blue-100/70 px-2 py-0.5 text-[10px] font-semibold text-blue-900">
-                          {d.badge || "District"}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* 4. Other Cities (when no primaryCity was set) */}
-            {!primaryCity && places.length === 0 && cities.length > 0 && (
+          {/* 2. Places & Neighborhoods in this city */}
+          {places.length > 0 && (
+            <div>
+              <p className="px-2 pt-1 pb-1.5 text-sm font-normal text-[#1f1f1f]">
+                {t("home_places_in", { name: primaryCity?.name || t("home_search_where") })}
+              </p>
               <div className="space-y-1">
-                {cities.map((c) => {
-                  const label = c.name || c.city;
+                {places.map((p) => {
+                  const label = p.name || p.city;
                   const idx = getIndexForLabel(label);
-                  const isStayBadge = c.subtitle === "Stays in Homyz" || c.badge === "Available Stays";
                   return (
                     <button
-                      key={`city-${c.id || c.providerPlaceId || c.city}`}
+                      key={`place-${p.id || p.providerPlaceId || p.city}`}
                       type="button"
                       onClick={() => {
-                        selectSuggestion(c);
+                        selectSuggestion(p);
                         setActiveStep("when");
                         if (!isMobileSearchOpen) setDesktopPanel("checkIn");
                       }}
@@ -902,178 +822,256 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                         }`}
                     >
                       <div className="flex items-center gap-3 min-w-0">
-                        <LocationIcon type={c.locationType || c.type || "city"} />
+                        <LocationIcon type={p.locationType || p.type} />
                         <div className="min-w-0">
-                          <div className="text-sm font-normal text-[#1f1f1f] truncate">
-                            {highlightMatch(c.fullLabel || c.name || c.city, destination)}
+                          <div className="text-sm font-medium text-[#1F1F1F] truncate">
+                            {highlightMatch(p.name || p.city, destination)}
                           </div>
-                          {c.subtitle && <div className="text-[14px] text-[#727272] truncate">{c.subtitle}</div>}
+                          <div className="text-sm text-[#727272] truncate">{p.subtitle || p.fullLabel}</div>
                         </div>
                       </div>
-                      {isStayBadge ? (
-                        <span className="shrink-0 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-medium text-emerald-900">
-                          Available Stays
-                        </span>
-                      ) : (
-                        <span className="shrink-0 rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-bold text-zinc-700">
-                          {c.badge || (c.locationType ? c.locationType.charAt(0).toUpperCase() + c.locationType.slice(1) : "Destination")}
-                        </span>
-                      )}
+                      <span className="shrink-0 rounded-full px-3 py-1.25 text-xs leading-tight font-normal bg-amber-100/70 text-amber-900">
+                        {p.badge || (p.locationType ? p.locationType.charAt(0).toUpperCase() + p.locationType.slice(1) : "Neighborhood")}
+                      </span>
                     </button>
                   );
                 })}
               </div>
-            )}
-
-            {/* 5. Properties / Stays */}
-            {properties.length > 0 && (
-              <div>
-                <p className="px-2 pt-1 pb-1.5 text-[11px] font-bold uppercase tracking-wider text-[#727272]">
-                  Available Stays
-                </p>
-                <div className="space-y-1">
-                  {properties.map((p) => {
-                    const idx = getIndexForLabel(p.title);
-                    return (
-                      <button
-                        key={`prop-${p.id}`}
-                        type="button"
-                        onClick={() => {
-                          selectSuggestion(p.title);
-                          setActiveStep("when");
-                          if (!isMobileSearchOpen) setDesktopPanel("checkIn");
-                        }}
-                        className={`flex w-full items-center justify-between gap-3 text-left rounded-2xl p-2.5 transition-all cursor-pointer ${suggestIndex === idx ? "bg-[#fcdf9c]/40 ring-1 ring-[#fcdf9c]" : "hover:bg-zinc-100/80"
-                          }`}
-                      >
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-800 shadow-2xs">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
-                              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                            </svg>
-                          </div>
-                          <div className="min-w-0">
-                            <div className="text-[14px] font-semibold text-[#1F1F1F] truncate">
-                              {highlightMatch(p.title, destination)}
-                            </div>
-                            {p.city && <div className="text-[12px] text-[#727272] truncate">{p.city}</div>}
-                          </div>
-                        </div>
-                        <span className="shrink-0 rounded-full bg-emerald-100/80 px-2 py-0.5 text-[10px] font-bold text-emerald-900">
-                          Stay
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </>
-        ) : isLoadingSuggestions ? (
-          <div className="py-6 px-2 text-center text-[13px] text-[#727272] flex items-center justify-center gap-2">
-            <div className="h-4 w-4 border-2 border-zinc-300 border-t-zinc-800 rounded-full animate-spin" />
-            {t("home_searching_destinations")}
-          </div>
-        ) : destination.trim().length >= 2 ? (
-          <div className="py-8 px-4 text-center">
-            <div className="mx-auto mb-2.5 flex h-10 w-10 items-center justify-center rounded-2xl bg-zinc-100 text-[#727272]">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
-                <circle cx="12" cy="12" r="10" />
-                <line x1="12" y1="8" x2="12" y2="12" />
-                <line x1="12" y1="16" x2="12.01" y2="16" />
-              </svg>
             </div>
-            <p className="text-[14px] font-semibold text-[#1F1F1F]">{t("home_no_matching_location")}</p>
-            <p className="text-[12px] text-[#727272] mt-1">{t("home_no_matching_location_hint")}</p>
-          </div>
-        ) : (
-          /* Fallback: recent searches & popular destinations */
-          <>
-            {recentSearches.length > 0 && (
-              <div className="mb-4">
-                <div className="flex items-center justify-between mb-1.5 px-2">
-                  <p className="text-sm font-normal text-[#1f1f1f] mb-3">{t("home_recent_searches")}</p>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      localStorage.removeItem("homyz_recent_searches");
-                      setRecentSearches([]);
-                    }}
-                    className="text-xs font-normal text-[#727272] underline underline-offset-2 hover:text-[#1F1F1F] cursor-pointer"
-                  >
-                    {t("home_clear")}
-                  </button>
-                </div>
-                {recentSearches.map((term) => (
-                  <button
-                    key={term}
-                    type="button"
-                    onClick={() => {
-                      selectSuggestion(term);
-                      setActiveStep("when");
-                      if (!isMobileSearchOpen) setDesktopPanel("checkIn");
-                    }}
-                    className="flex w-full items-center gap-3 text-left rounded-2xl p-2.5 transition-colors hover:bg-zinc-100/80 cursor-pointer"
-                  >
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#e2e2e2] text-[#1f1f1f]">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4.5 w-4.5">
-                        <path d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" />
-                      </svg>
-                    </div>
-                    <div className="text-sm font-normal text-[#1F1F1F] truncate">{term}</div>
-                  </button>
-                ))}
-              </div>
-            )}
+          )}
 
-            {/* Popular Global Destinations */}
-            {cities.length > 0 ? (
-              <div>
-                <p className="px-2 pt-1 pb-1.5 text-[11px] font-bold uppercase tracking-wider text-[#727272]">
-                  {t("home_popular_destinations_worldwide")}
-                </p>
-                <div className="space-y-1">
-                  {cities.map((d) => (
+          {/* 3. Nearby Districts & Suburbs */}
+          {districts.length > 0 && (
+            <div>
+              <p className="px-2 pt-1 pb-1.5 text-sm font-medium text-[#727272]">
+                {t("home_nearby_areas_districts")}
+              </p>
+              <div className="space-y-1">
+                {districts.map((d) => {
+                  const label = d.name || d.city;
+                  const idx = getIndexForLabel(label);
+                  return (
                     <button
-                      key={d.id || d.city}
+                      key={`dist-${d.id || d.providerPlaceId || d.city}`}
                       type="button"
                       onClick={() => {
                         selectSuggestion(d);
                         setActiveStep("when");
                         if (!isMobileSearchOpen) setDesktopPanel("checkIn");
                       }}
-                      className="flex w-full items-center justify-between gap-3 text-left rounded-2xl p-2.5 transition-colors hover:bg-zinc-100/80 cursor-pointer"
+                      className={`flex w-full items-center justify-between gap-3 text-left rounded-2xl p-2.5 transition-all cursor-pointer ${suggestIndex === idx ? "bg-[#fcdf9c]/40 ring-1 ring-[#fcdf9c]" : "hover:bg-zinc-100/80"
+                        }`}
                     >
                       <div className="flex items-center gap-3 min-w-0">
-                        <LocationIcon type={d.locationType || "city"} />
+                        <LocationIcon type="district" />
                         <div className="min-w-0">
-                          <div className="text-sm font-normal text-[#1F1F1F] truncate">{d.name || d.city}</div>
-                          <div className="text-sm text-[#727272] truncate">{d.subtitle || d.country}</div>
+                          <div className="text-sm font-medium text-[#1F1F1F] truncate">
+                            {highlightMatch(d.name || d.city, destination)}
+                          </div>
+                          <div className="text-sm text-[#727272] truncate">{d.subtitle || d.fullLabel}</div>
                         </div>
                       </div>
-                      <span className="shrink-0 rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-medium text-zinc-600">
-                        {t("home_explore")}
+                      <span className="shrink-0 rounded-full px-3 py-1.25 text-xs leading-tight font-normal bg-blue-100/70 text-blue-900">
+                        {d.badge || "District"}
                       </span>
                     </button>
-                  ))}
-                </div>
+                  );
+                })}
               </div>
-            ) : (
-              <div className="py-6 px-4 text-center">
-                <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-[#e2e2e2] text-[#727272]">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
-                    <path d="M12 2a6 6 0 0 0-6 6c0 4.5 6 11 6 11s6-6.5 6-11a6 6 0 0 0-6-6z" />
-                    <circle cx="12" cy="8" r="2" />
-                  </svg>
-                </div>
-                <p className="text-sm font-medium text-[#1f1f1f]">{t("home_search_any_city_worldwide")}</p>
-                <p className="text-sm text-[#727272] mt-0.5">{t("home_search_city_hint")}</p>
+            </div>
+          )}
+
+          {/* 4. Other Cities (when no primaryCity was set) */}
+          {!primaryCity && places.length === 0 && cities.length > 0 && (
+            <div className="space-y-1">
+              {cities.map((c) => {
+                const label = c.name || c.city;
+                const idx = getIndexForLabel(label);
+                const isStayBadge = c.subtitle === "Stays in Homyz" || c.badge === "Available Stays";
+                return (
+                  <button
+                    key={`city-${c.id || c.providerPlaceId || c.city}`}
+                    type="button"
+                    onClick={() => {
+                      selectSuggestion(c);
+                      setActiveStep("when");
+                      if (!isMobileSearchOpen) setDesktopPanel("checkIn");
+                    }}
+                    className={`flex w-full items-center justify-between gap-3 text-left rounded-2xl p-2.5 transition-all cursor-pointer ${suggestIndex === idx ? "bg-[#fcdf9c]/40 ring-1 ring-[#fcdf9c]" : "hover:bg-zinc-100/80"
+                      }`}
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <LocationIcon type={c.locationType || c.type || "city"} />
+                      <div className="min-w-0">
+                        <div className="text-sm font-medium text-[#1f1f1f] truncate">
+                          {highlightMatch(c.fullLabel || c.name || c.city, destination)}
+                        </div>
+                        {c.subtitle && <div className="text-[14px] text-[#727272] truncate">{c.subtitle}</div>}
+                      </div>
+                    </div>
+                    {isStayBadge ? (
+                      <span className="shrink-0 rounded-full px-3 py-1.25 text-xs leading-tight font-normal bg-emerald-100 text-emerald-900">
+                        Available Stays
+                      </span>
+                    ) : (
+                        <span className="shrink-0 rounded-full px-3 py-1.25 text-xs leading-tight font-normal bg-zinc-100 text-zinc-700">
+                        {c.badge || (c.locationType ? c.locationType.charAt(0).toUpperCase() + c.locationType.slice(1) : "Destination")}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {/* 5. Properties / Stays */}
+          {properties.length > 0 && (
+            <div>
+              <p className="px-2 pt-1 pb-1.5 text-sm font-normal text-[#1f1f1f]">
+                Available Stays
+              </p>
+              <div className="space-y-1">
+                {properties.map((p) => {
+                  const idx = getIndexForLabel(p.title);
+                  return (
+                    <button
+                      key={`prop-${p.id}`}
+                      type="button"
+                      onClick={() => {
+                        selectSuggestion(p.title);
+                        setActiveStep("when");
+                        if (!isMobileSearchOpen) setDesktopPanel("checkIn");
+                      }}
+                      className={`flex w-full items-center justify-between gap-3 text-left rounded-2xl p-2.5 transition-all cursor-pointer ${suggestIndex === idx ? "bg-[#fcdf9c]/40 ring-1 ring-[#fcdf9c]" : "hover:bg-zinc-100/80"
+                        }`}
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-800 shadow-2xs">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                          </svg>
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-sm font-medium text-[#1F1F1F] truncate">
+                            {highlightMatch(p.title, destination)}
+                          </div>
+                          {p.city && <div className="text-sm text-[#727272] truncate">{p.city}</div>}
+                        </div>
+                      </div>
+                      <span className="shrink-0 rounded-full px-3 py-1.25 text-xs leading-tight font-normal bg-emerald-100/80 text-emerald-900">
+                        Stay
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
-            )}
-          </>
-        )}
-      </div>
-    </>
+            </div>
+          )}
+        </>
+      ) : isLoadingSuggestions ? (
+        <div className="py-6 px-2 text-center text-[13px] text-[#727272] flex items-center justify-center gap-2">
+          <div className="h-4 w-4 border-2 border-zinc-300 border-t-zinc-800 rounded-full animate-spin" />
+          {t("home_searching_destinations")}
+        </div>
+      ) : destination.trim().length >= 2 ? (
+        <div className="py-8 px-4 text-center">
+          <div className="mx-auto mb-2.5 flex h-10 w-10 items-center justify-center rounded-2xl bg-zinc-100 text-[#727272]">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+          </div>
+          <p className="text-[14px] font-semibold text-[#1F1F1F]">{t("home_no_matching_location")}</p>
+          <p className="text-[12px] text-[#727272] mt-1">{t("home_no_matching_location_hint")}</p>
+        </div>
+      ) : (
+        /* Fallback: recent searches & popular destinations */
+        <>
+          {recentSearches.length > 0 && (
+            <div className="mb-0">
+              <div className="flex items-center justify-between px-2 mb-3">
+                <p className="text-sm font-normal text-[#1f1f1f]">{t("home_recent_searches")}</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    localStorage.removeItem("homyz_recent_searches");
+                    setRecentSearches([]);
+                  }}
+                  className="text-xs font-normal text-[#727272] underline underline-offset-2 hover:text-[#1F1F1F] cursor-pointer"
+                >
+                  {t("home_clear")}
+                </button>
+              </div>
+              {recentSearches.map((term) => (
+                <button
+                  key={term}
+                  type="button"
+                  onClick={() => {
+                    selectSuggestion(term);
+                    setActiveStep("when");
+                    if (!isMobileSearchOpen) setDesktopPanel("checkIn");
+                  }}
+                  className="flex w-full items-center gap-3 text-left rounded-2xl p-2.5 transition-colors hover:bg-zinc-100/80 cursor-pointer"
+                >
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#e2e2e2] text-[#1f1f1f]">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4.5 w-4.5">
+                      <path d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" />
+                    </svg>
+                  </div>
+                  <div className="text-sm font-normal text-[#1F1F1F] truncate">{term}</div>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Popular Global Destinations */}
+          {cities.length > 0 ? (
+            <div>
+              <p className="px-2 pt-1 pb-1.5 text-sm font-normal text-[#1f1f1f]">
+                {t("home_popular_destinations_worldwide")}
+              </p>
+              <div className="space-y-1">
+                {cities.map((d) => (
+                  <button
+                    key={d.id || d.city}
+                    type="button"
+                    onClick={() => {
+                      selectSuggestion(d);
+                      setActiveStep("when");
+                      if (!isMobileSearchOpen) setDesktopPanel("checkIn");
+                    }}
+                    className="flex w-full items-center justify-between gap-3 text-left rounded-2xl p-2.5 transition-colors hover:bg-zinc-100/80 cursor-pointer"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <LocationIcon type={d.locationType || "city"} />
+                      <div className="min-w-0">
+                        <div className="text-sm font-normal text-[#1F1F1F] truncate">{d.name || d.city}</div>
+                        <div className="text-sm text-[#727272] truncate">{d.subtitle || d.country}</div>
+                      </div>
+                    </div>
+                    <span className="shrink-0 rounded-full bg-zinc-100 px-3 py-1.25 text-xs font-normal text-[#727272]">
+                      {t("home_explore")}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="py-6 px-4 text-center">
+              <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-[#e2e2e2] text-[#727272]">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
+                  <path d="M12 2a6 6 0 0 0-6 6c0 4.5 6 11 6 11s6-6.5 6-11a6 6 0 0 0-6-6z" />
+                  <circle cx="12" cy="8" r="2" />
+                </svg>
+              </div>
+              <p className="text-sm font-medium text-[#1f1f1f]">{t("home_search_any_city_worldwide")}</p>
+              <p className="text-sm text-[#727272] mt-0.5">{t("home_search_city_hint")}</p>
+            </div>
+          )}
+        </>
+      )}
+    </CustomScrollContainer>
   );
 
   const guestOptions = (
@@ -1248,7 +1246,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                   data-form-type="other"
                   data-lpignore="true"
                   data-1p-ignore="true"
-                  placeholder="Search destinations"
+                  placeholder="Start your search"
                   value={destination}
                   onFocus={() => setDesktopPanel("where")}
                   onClick={(e) => {
@@ -1436,19 +1434,19 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
           onClick={() => setIsMobileSearchOpen(false)}
         >
           <div
-            className="relative w-full max-w-[440px] rounded-xl bg-white p-5 pt-4 pb-6 shadow-[0_24px_64px_rgba(0,0,0,0.2)] border border-zinc-100 animate-in zoom-in-95 duration-150"
+            className="relative w-full max-w-[440px] rounded-[20px] bg-[#D9D9D9] p-5 pt-4 pb-6 shadow-[0_24px_64px_rgba(0,0,0,0.2)] animate-in duration-150"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Close Button at top right */}
             <div className="flex justify-between items-center mb-3">
-              <h2 className="text-base font-bold text-[#1F1F1F]">{t("home_find_your_stay")}</h2>
+              <h2 className="text-base font-bold text-[#1F1F1F]"></h2>
               <button
                 type="button"
                 onClick={() => setIsMobileSearchOpen(false)}
-                className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-600 hover:bg-zinc-100 transition-colors cursor-pointer"
+                className="flex h-8 w-8 items-center justify-center rounded-full text-[#1f1f1f] hover:bg-[#727272] transition-colors cursor-pointer"
                 aria-label="Close search"
               >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="h-4 w-4">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="h-6 w-6">
                   <line x1="18" y1="6" x2="6" y2="18" />
                   <line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
@@ -1461,17 +1459,16 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                 type="button"
                 onClick={() => setActiveStep("where")}
                 aria-expanded={false}
-                className="flex w-full items-center justify-between gap-3 rounded-[22px] border border-zinc-200 bg-zinc-50 hover:bg-zinc-100/80 px-5 py-3.5 text-left transition-colors cursor-pointer"
+                className="flex w-full items-center justify-between gap-3 rounded-[20px] border border-zinc-200 bg-zinc-50 hover:bg-zinc-100/80 px-5 py-3.5 text-left transition-colors cursor-pointer"
               >
-                <span className="text-[13px] font-semibold text-[#727272] uppercase tracking-wider">{t("home_search_where")}</span>
-                <span className="truncate text-[15px] font-semibold text-[#1F1F1F]">{destination || t("home_search_where_placeholder")}</span>
+                <span className="text-sm font-normal text-[#1f1f1f]">{t("home_search_where")}</span>
+                <span className="truncate text-base font-medium text-[#1F1F1F]">{destination || t("home_search_where_placeholder")}</span>
               </button>
             ) : (
-              <div className="rounded-[24px] bg-white border border-zinc-200/90 p-4 shadow-xs">
-                <h3 className="text-[18px] font-bold text-[#1F1F1F] mb-3">{t("home_where_to")}</h3>
-
+              <div className="rounded-[20px] bg-[#F3F4F5] px-4 py-3">
+                <h3 className="text-lg font-medium text[#1F1F1F] mb-2">{t("home_search_where")}?</h3>
                 {/* Search input pill */}
-                <div className="flex items-center justify-between rounded-full border border-zinc-300 bg-zinc-50/70 focus-within:bg-white focus-within:border-zinc-900 focus-within:ring-1 focus-within:ring-zinc-900 pl-4 pr-1.5 py-1.5 shadow-2xs mb-3 transition-all">
+                <div className="flex items-center justify-between rounded-full border border-zinc-300 bg-zinc-50/70 focus-within:bg-white focus-within:border-none focus-within:ring-1 focus-within:ring-[#727272] pl-4 pr-1.5 py-1.5 shadow-none mb-3 transition-all">
                   <input
                     id="mobile-destination"
                     name="destination-mobile"
@@ -1503,7 +1500,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                         }
                       }
                     }}
-                    className="w-full bg-transparent text-[14px] font-medium text-[#1F1F1F] placeholder:text-[#727272] focus:outline-none"
+                    className="w-full bg-transparent text-[14px] font-normal text-[#1F1F1F] placeholder:text-[#727272] focus:outline-none"
                     autoFocus
                   />
                   {destination && (
@@ -1537,7 +1534,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                   </button>
                 </div>
 
-                <p className="text-[11px] font-bold uppercase tracking-wider text-[#727272] mb-2">{t("home_search_where")}</p>
+
                 <div id="mobile-destination-suggestions-container">
                   {destinationSuggestions}
                 </div>
@@ -1545,7 +1542,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
             )}
 
             {/* When Section */}
-            <div className="mt-3 rounded-[22px] border border-zinc-200 bg-zinc-50 p-3.5 transition-colors">
+            <div className="mt-3 rounded-[20px] border border-white bg-[#F3F4F5] py-1.75 px-3.5 transition-colors">
               <button
                 type="button"
                 aria-expanded={activeStep === "when"}
@@ -1553,11 +1550,11 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                   }`}
                 onClick={() => setActiveStep(activeStep === "when" ? "where" : "when")}
               >
-                <span className={activeStep === "when" ? "text-[18px] font-bold text-[#1F1F1F]" : "text-[13px] font-semibold text-[#727272] uppercase tracking-wider"}>
+                <span className={activeStep === "when" ? "text-lg font-medium text-[#1F1F1F]" : "text-sm font-normal text-[#1f1f1f]"}>
                   {activeStep === "when" ? t("home_when_trip") : t("home_search_when")}
                 </span>
                 {activeStep !== "when" && (
-                  <span className="text-right text-[15px] font-semibold text-[#1F1F1F]">
+                  <span className="text-right text-base font-medium text-[#1F1F1F]">
                     {datePreferences.mode !== "dates"
                       ? `${datePreferences.mode === "flexible" ? t(`home_when_stay_${datePreferences.stay.toLowerCase()}` as Parameters<typeof t>[0]) + " · " : ""}${datePreferences.months.length
                         ? datePreferences.months
@@ -1609,11 +1606,11 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                 className="flex w-full items-center justify-between gap-3 text-left cursor-pointer"
                 onClick={() => setActiveStep(activeStep === "who" ? "where" : "who")}
               >
-                <span className={activeStep === "who" ? "text-[18px] font-bold text-[#1F1F1F]" : "text-[13px] font-semibold text-[#727272] uppercase tracking-wider"}>
+                <span className={activeStep === "who" ? "text-lg font-normal text-[#1F1F1F]" : "text-sm font-normal text-[#727272"}>
                   {activeStep === "who" ? t("home_whos_coming") : t("home_search_who")}
                 </span>
                 {activeStep !== "who" && (
-                  <span className="text-right text-[15px] font-semibold text-[#1F1F1F]">
+                  <span className="text-right text-base font-medium text-[#1F1F1F]">
                     {mobileGuestSummary || t("home_search_add_guests")}
                   </span>
                 )}
@@ -1633,7 +1630,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                   setDatePreferences(initialDatePreferences);
                   setActiveStep("where");
                 }}
-                className="text-[14px] font-semibold underline text-zinc-700 cursor-pointer hover:text-zinc-950"
+                className="text-base font-medium underline underline-offset-2 text-[#1F1F1F] cursor-pointer hover:text-[#727272]"
               >
                 {t("home_clear_all")}
               </button>
@@ -1641,7 +1638,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                 type="button"
                 disabled={isSearching}
                 onClick={handleMobileNext}
-                className="flex items-center justify-center gap-2 rounded-full bg-[#fcdf9c] px-6 py-2.5 text-[14px] font-bold text-[#1F1F1F] shadow-sm transition-all hover:bg-[#f5d580] active:scale-95 cursor-pointer disabled:opacity-90 disabled:cursor-not-allowed"
+                className="flex items-center justify-center gap-2 rounded-full bg-[#1F1F1F] px-6 py-2.5 text-base font-normal text-white transition-all hover:bg-[#FCDF9C]  cursor-pointer disabled:opacity-90 disabled:cursor-not-allowed"
               >
                 {isSearching && activeStep === "who" ? (
                   <>
