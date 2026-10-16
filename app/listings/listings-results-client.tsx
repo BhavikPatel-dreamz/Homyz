@@ -34,9 +34,11 @@ interface ListingsResultsClientProps {
   page: number;
   totalPages: number;
   hasError?: boolean;
+  errorMessage?: string;
   priceRange?: { min: number; max: number };
   currentFilters: {
     city?: string;
+    country?: string;
     placeName?: string;
     lat?: number;
     lng?: number;
@@ -165,7 +167,9 @@ function SelectedPreviewCard({
   guests,
   adults,
   children,
+  infants,
   pets,
+  country,
 }: {
   listing: PublicListingCardDTO;
   onClose: () => void;
@@ -174,7 +178,9 @@ function SelectedPreviewCard({
   guests?: number;
   adults?: number;
   children?: number;
+  infants?: number;
   pets?: number;
+  country?: string;
 }) {
   const { formatPrice } = useCurrency();
   const { t } = useLanguage();
@@ -204,7 +210,9 @@ function SelectedPreviewCard({
           guests,
           adults,
           children,
+          infants,
           pets,
+          country,
         })}
         className="flex items-center gap-3 flex-1 min-w-0 group"
       >
@@ -333,7 +341,7 @@ const CLIENT_CACHE_TTL_MS = 0;
 export function buildNormalizedSearchKey(params: URLSearchParams | string): string {
   const sp = typeof params === "string" ? new URLSearchParams(params) : params;
   const keysToInclude = [
-    "destination", "location", "city", "placeName", "lat", "lng", "radius",
+    "destination", "location", "city", "country", "placeName", "lat", "lng", "radius",
     "checkIn", "checkin", "startDate", "checkOut", "checkout", "endDate",
     "guests", "adults", "children", "infants", "pets",
     "propertyType", "propertyTypes", "listingType",
@@ -367,6 +375,7 @@ export function ListingsResultsClient({
   appliedRadiusKm,
   isRadiusExpanded,
   hasError = false,
+  errorMessage,
   source,
 }: ListingsResultsClientProps) {
   const { currency: selectedCurrency } = useCurrency();
@@ -384,7 +393,15 @@ export function ListingsResultsClient({
   const [activeStatus, setActiveStatus] = useState<"idle" | "loading" | "refining" | "error">(
     hasError ? "error" : "idle"
   );
+  const [initialErrorActive, setInitialErrorActive] = useState(hasError);
+  const [activeErrorMessage, setActiveErrorMessage] = useState(errorMessage);
   const activeAbortControllerRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    setInitialErrorActive(hasError);
+    setActiveErrorMessage(errorMessage);
+    if (hasError) setActiveStatus("error");
+  }, [hasError, errorMessage]);
 
   // Synchronize active search URL/filter state into lastSearch context
   useEffect(() => {
@@ -411,6 +428,7 @@ export function ListingsResultsClient({
         latitude: lat,
         longitude: lng,
         city: city,
+        country: currentFilters.country || searchParams.get("country") || null,
         checkIn,
         checkOut,
         guests,
@@ -781,6 +799,8 @@ export function ListingsResultsClient({
       params.delete("page");
       const queryString = params.toString();
       const targetUrl = `${pathname}${queryString ? `?${queryString}` : ""}`;
+      setInitialErrorActive(false);
+      setActiveErrorMessage(undefined);
 
       if (pushToHistory && typeof window !== "undefined") {
         window.history.pushState(null, "", targetUrl);
@@ -857,10 +877,17 @@ export function ListingsResultsClient({
           setHasMore(1 < resTotalPages);
           setActiveStatus("idle");
         } else {
+          const payload = await res.json().catch(() => null);
+          setActiveErrorMessage(
+            payload?.error?.details?.[0]?.message ||
+              payload?.error?.message ||
+              "Something went wrong while searching. Please try again or clear your filters.",
+          );
           setActiveStatus("error");
         }
       } catch (err: any) {
         if (err?.name === "AbortError") return;
+        setActiveErrorMessage("Something went wrong while searching. Please try again or clear your filters.");
         setActiveStatus("error");
       }
     },
@@ -1217,7 +1244,9 @@ export function ListingsResultsClient({
                 guests={currentFilters.guests}
                 adults={currentFilters.adults}
                 children={currentFilters.children}
+                infants={currentFilters.infants}
                 pets={currentFilters.pets}
+                country={currentFilters.country}
               />
             </div>
           )}
@@ -1375,7 +1404,7 @@ export function ListingsResultsClient({
                 <SkeletonCard key={i} />
               ))}
             </div>
-          ) : hasError || activeStatus === "error" ? (
+          ) : initialErrorActive || activeStatus === "error" ? (
             /* ── Error state ── */
             <div className="py-16 text-center space-y-4 max-w-md mx-auto">
               <div className="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center mx-auto text-2xl text-red-500">
@@ -1386,7 +1415,7 @@ export function ListingsResultsClient({
                   {t("listings_error_title", "We couldn't load these properties")}
                 </h2>
                 <p className="text-xs sm:text-sm text-[#727272] font-normal leading-relaxed">
-                  {t("listings_error_desc", "Something went wrong while searching. Please try again or clear your filters.")}
+                  {activeErrorMessage || t("listings_error_desc", "Something went wrong while searching. Please try again or clear your filters.")}
                 </p>
               </div>
               <div className="pt-2 flex items-center justify-center gap-2.5">
@@ -1497,7 +1526,9 @@ export function ListingsResultsClient({
                       guests={currentFilters.guests}
                       adults={currentFilters.adults}
                       children={currentFilters.children}
+                      infants={currentFilters.infants}
                       pets={currentFilters.pets}
+                      country={currentFilters.country}
                       variant="search-grid"
                     />
                   </div>
@@ -1546,7 +1577,9 @@ export function ListingsResultsClient({
                   guests={currentFilters.guests}
                   adults={currentFilters.adults}
                   children={currentFilters.children}
+                  infants={currentFilters.infants}
                   pets={currentFilters.pets}
+                  country={currentFilters.country}
                 />
               </div>
             )}
@@ -1623,7 +1656,9 @@ export function ListingsResultsClient({
                   guests={currentFilters.guests}
                   adults={currentFilters.adults}
                   children={currentFilters.children}
+                  infants={currentFilters.infants}
                   pets={currentFilters.pets}
+                  country={currentFilters.country}
                 />
               </div>
             )}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
 import type { PublicReviewDTO } from "@/services/mappers";
@@ -10,9 +11,15 @@ import { ReviewCard } from "./review-card";
 import { trackListingEvent } from "@/lib/analytics/listing-analytics";
 import { useLanguage } from "@/lib/i18n/language-context";
 
+const ReviewModal = dynamic(
+  () => import("./review-modal").then((module) => module.ReviewModal),
+  { ssr: false },
+);
+
 interface ReviewListProps {
   listingId: string;
   isGuestFavorite?: boolean;
+  initialSummary: { averageRating: number | null; totalCount: number };
   onStatsChange?: (stats: { rating: number | null; count: number }) => void;
 }
 
@@ -33,67 +40,27 @@ interface StatsResponse {
   };
 }
 
-function ReviewSkeleton() {
-  const { t } = useLanguage();
-  return (
-    <section className="border-b border-zinc-200/80 py-8 sm:py-14" aria-label={t("reviews_loading_aria", "Loading guest reviews")}>
-      <div className="mx-auto max-w-[350px] text-center space-y-3 animate-pulse">
-        <div className="mx-auto h-16 w-36 rounded-xl bg-zinc-200" />
-        <div className="mx-auto h-5 w-44 rounded bg-zinc-200" />
-        <div className="mx-auto h-4 w-64 rounded bg-zinc-100" />
-      </div>
-      <div className="mt-10 grid gap-x-8 gap-y-8 sm:grid-cols-2 xl:grid-cols-4 animate-pulse">
-        {Array.from({ length: 4 }, (_, index) => (
-          <div key={index} className="space-y-3">
-            <div className="size-12 rounded-full bg-zinc-200" />
-            <div className="h-4 w-24 rounded bg-zinc-200" />
-            <div className="h-16 rounded bg-zinc-100" />
-            <div className="h-4 w-20 rounded bg-zinc-200" />
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-export function ReviewList({ listingId, isGuestFavorite = false, onStatsChange }: ReviewListProps) {
+export function ReviewList({ listingId, isGuestFavorite = false, initialSummary, onStatsChange }: ReviewListProps) {
   const { t } = useLanguage();
   const { status: sessionStatus } = useSession();
   const isAuthenticated = sessionStatus === "authenticated";
   const callbackRef = useRef(onStatsChange);
   const [reviews, setReviews] = useState<PublicReviewDTO[]>([]);
-  const [stats, setStats] = useState<StatsResponse["data"] | null>(null);
+  const [summary, setSummary] = useState(initialSummary);
+  const [fullStats, setFullStats] = useState<StatsResponse["data"] | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
+  const [loading, setLoading] = useState(initialSummary.totalCount > 0);
+  const [isStatsLoading, setIsStatsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [retryVersion, setRetryVersion] = useState(0);
+  const [isReviewsModalOpen, setIsReviewsModalOpen] = useState(false);
   const [isReviewInfoOpen, setIsReviewInfoOpen] = useState(false);
   const reviewInfoCloseRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     callbackRef.current = onStatsChange;
   }, [onStatsChange]);
-
-  useEffect(() => {
-    let ignore = false;
-    async function fetchStats() {
-      try {
-        const response = await fetch(`/api/v1/listings/${listingId}/reviews/stats`);
-        if (!response.ok) throw new Error("Unable to load review summary");
-        const payload = (await response.json()) as StatsResponse;
-        if (ignore) return;
-        setStats(payload.data);
-        callbackRef.current?.({ rating: payload.data.averageRating, count: payload.data.totalCount });
-      } catch {
-        if (!ignore) setError("Unable to load reviews right now.");
-      }
-    }
-    fetchStats();
-    return () => {
-      ignore = true;
-    };
-  }, [listingId]);
 
   useEffect(() => {
     if (!isReviewInfoOpen) return;
@@ -107,70 +74,72 @@ export function ReviewList({ listingId, isGuestFavorite = false, onStatsChange }
   }, [isReviewInfoOpen]);
 
   useEffect(() => {
-    let ignore = false;
+    const controller = new AbortController();
     async function fetchReviews() {
+      setSummary(initialSummary);
+      callbackRef.current?.({ rating: initialSummary.averageRating, count: initialSummary.totalCount });
+      setFullStats(null);
+      setReviews([]);
+      setCurrentPage(1);
+      setTotalPages(0);
+      setIsReviewsModalOpen(false);
+      if (initialSummary.totalCount === 0) {
+        setLoading(false);
+        setError(null);
+        return;
+      }
       setLoading(true);
       setError(null);
       try {
         const params = new URLSearchParams({ page: "1", limit: "4" });
-        const response = await fetch(`/api/v1/listings/${listingId}/reviews?${params}`);
+        const response = await fetch(`/api/v1/listings/${listingId}/reviews?${params}`, { signal: controller.signal });
         if (!response.ok) throw new Error("Unable to load reviews");
         const payload = (await response.json()) as ReviewsResponse;
-        if (ignore) return;
         setReviews(payload.data);
         setCurrentPage(payload.pagination.page);
         setTotalPages(payload.pagination.totalPages);
-      } catch {
-        if (!ignore) setError("Unable to load reviews right now.");
+        setSummary((current) => ({ ...current, totalCount: payload.pagination.total }));
+      } catch (fetchError: unknown) {
+        if (fetchError instanceof Error && fetchError.name === "AbortError") return;
+        setError("Unable to load reviews right now.");
       } finally {
-        if (!ignore) setLoading(false);
+        if (!controller.signal.aborted) setLoading(false);
       }
     }
     fetchReviews();
     return () => {
-      ignore = true;
+      controller.abort();
     };
-  }, [listingId]);
+  }, [listingId, initialSummary.averageRating, initialSummary.totalCount, retryVersion]);
 
-  async function showMore() {
-    const nextPage = currentPage + 1;
-    setLoadingMore(true);
+  async function openAllReviews() {
     trackListingEvent({
       eventType: "reviews_opened",
       propertyId: listingId,
-      metadata: { action: "show_more_reviews", nextPage, totalReviews: stats?.totalCount },
+      metadata: { action: "show_all_reviews", totalReviews: summary.totalCount },
     });
+    if (fullStats) {
+      setIsReviewsModalOpen(true);
+      return;
+    }
+    setIsStatsLoading(true);
+    setError(null);
     try {
-      const params = new URLSearchParams({ page: String(nextPage), limit: "4" });
-      const response = await fetch(`/api/v1/listings/${listingId}/reviews?${params}`);
-      if (!response.ok) throw new Error("Unable to load more reviews");
-      const payload = (await response.json()) as ReviewsResponse;
-      setReviews((current) => [...current, ...payload.data]);
-      setCurrentPage(payload.pagination.page);
-      setTotalPages(payload.pagination.totalPages);
+      const response = await fetch(`/api/v1/listings/${listingId}/reviews/stats`);
+      if (!response.ok) throw new Error("Unable to load review summary");
+      const payload = (await response.json()) as StatsResponse;
+      setFullStats(payload.data);
+      setSummary({ averageRating: payload.data.averageRating, totalCount: payload.data.totalCount });
+      callbackRef.current?.({ rating: payload.data.averageRating, count: payload.data.totalCount });
+      setIsReviewsModalOpen(true);
     } catch {
-      setError("Unable to load more reviews right now.");
+      setError("Unable to load review details right now. Please try again.");
     } finally {
-      setLoadingMore(false);
+      setIsStatsLoading(false);
     }
   }
 
-  if (loading && !stats) return <ReviewSkeleton />;
-
-  if (!stats) {
-    return (
-      <section className="border-b border-zinc-200/80 py-8" aria-labelledby="guest-reviews-heading">
-        <h2 id="guest-reviews-heading" className="text-[20px] font-normal text-[#1f1f1f]">
-          {t("reviews_guest_reviews", "Guest reviews")}
-        </h2>
-        <p className="mt-1 text-sm text-[#727272] font-normal">
-          {error ?? "Unable to load reviews right now."}
-        </p>
-      </section>
-    );
-  }
-
-  if (stats.totalCount === 0) {
+  if (summary.totalCount === 0) {
     return (
       <section className="border-b border-zinc-200/80 py-8" aria-labelledby="guest-reviews-heading">
         <h2 id="guest-reviews-heading" className="text-[20px] font-normal text-[#1f1f1f]">
@@ -195,7 +164,7 @@ export function ReviewList({ listingId, isGuestFavorite = false, onStatsChange }
             className="h-[90px] w-[57px] sm:h-[127px] sm:w-[70px]"
           />
           <span className="text-5xl font-medium tracking-tight text-[#1f1f1f] sm:text-6xl">
-            {stats.averageRating?.toFixed(2)}
+            {summary.averageRating?.toFixed(2)}
           </span>
           <Image
             src="/images/icons/filled-leaves-right.svg"
@@ -213,22 +182,29 @@ export function ReviewList({ listingId, isGuestFavorite = false, onStatsChange }
         <p className="mt-1 text-base text-[#727272]">
           {isGuestFavorite
             ? t("listing_detail_guest_favourite_desc", "Highly rated by guests who have stayed here.")
-            : stats.totalCount === 1
+          : summary.totalCount === 1
             ? t("reviews_one_guest_shared", "{count} guest has shared their stay.").replace("{count}", "1")
             : t("reviews_many_guests_shared", "{count} guests have shared their stay.").replace(
                 "{count}",
-                String(stats.totalCount),
+                String(summary.totalCount),
               )}
         </p>
       </div>
 
       <div className="mt-10">
-        {error && reviews.length === 0 ? (
+        {loading ? (
+          <div className="grid gap-x-8 gap-y-8 sm:grid-cols-2 xl:grid-cols-4 animate-pulse" aria-label={t("reviews_loading_aria", "Loading guest reviews")}>
+            {Array.from({ length: 4 }, (_, index) => <div key={index} className="h-44 rounded-xl bg-zinc-100" />)}
+          </div>
+        ) : error && reviews.length === 0 ? (
           <p className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950">
             {error}
+            <button type="button" onClick={() => setRetryVersion((version) => version + 1)} className="ml-2 font-medium underline underline-offset-2">
+              {t("reviews_try_again", "Try again")}
+            </button>
           </p>
         ) : null}
-        <div className="grid gap-x-8 gap-y-8 sm:grid-cols-2 xl:grid-cols-4">
+        {!loading && <div className="grid gap-x-8 gap-y-8 sm:grid-cols-2 xl:grid-cols-4">
           {reviews.map((review) => (
             <ReviewCard
               key={review.id}
@@ -236,20 +212,20 @@ export function ReviewList({ listingId, isGuestFavorite = false, onStatsChange }
               canReport={isAuthenticated}
             />
           ))}
-        </div>
+        </div>}
         <div className="mt-8 flex flex-wrap items-center gap-5">
-          {currentPage < totalPages ? (
+          {summary.totalCount > 0 ? (
             <button
               type="button"
-              disabled={loadingMore}
-              onClick={showMore}
+              disabled={isStatsLoading}
+              onClick={openAllReviews}
               className="rounded-full border border-[#1f1f1f] bg-white px-6 py-3 text-base font-normal text-[#1f1f1f] transition-colors duration-300 hover:bg-[#1f1f1f] hover:text-white disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
             >
-              {loadingMore
+              {isStatsLoading
                 ? t("host_loading", "Loading...")
                 : t("reviews_show_all", "Show all {count} reviews").replace(
                     "{count}",
-                    String(stats.totalCount),
+                    String(summary.totalCount),
                   )}
             </button>
           ) : null}
@@ -260,7 +236,7 @@ export function ReviewList({ listingId, isGuestFavorite = false, onStatsChange }
               trackListingEvent({
                 eventType: "reviews_opened",
                 propertyId: listingId,
-                metadata: { action: "how_reviews_work", totalReviews: stats.totalCount },
+                metadata: { action: "how_reviews_work", totalReviews: summary.totalCount },
               });
             }}
             className="text-base text-[#1F1F1F] underline underline-offset-4 transition-colors hover:text-[#727272] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-zinc-900 cursor-pointer"
@@ -272,6 +248,18 @@ export function ReviewList({ listingId, isGuestFavorite = false, onStatsChange }
           <p className="mt-4 text-sm text-amber-800">{error}</p>
         ) : null}
       </div>
+
+      {isReviewsModalOpen && fullStats ? (
+        <ReviewModal
+          isOpen={isReviewsModalOpen}
+          onClose={() => setIsReviewsModalOpen(false)}
+          listingId={listingId}
+          isGuestFavorite={isGuestFavorite}
+          stats={fullStats}
+          initialReviews={reviews}
+          initialPagination={{ page: currentPage, totalPages, total: summary.totalCount, limit: 4 }}
+        />
+      ) : null}
 
       {isReviewInfoOpen && (
         <ModalOverlay

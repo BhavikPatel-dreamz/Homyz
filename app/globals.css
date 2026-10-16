@@ -408,6 +408,13 @@ body {
   animation: shimmer 1.5s infinite ease-in-out;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-shimmer {
+    animation: none !important;
+    background: var(--muted) !important;
+  }
+}
+
 /* Custom handwriting tagline */
 .tagline-cursive {
   font-family: var(--font-caveat), 'Caveat', 'Reenie Beanie', 'Segoe Script', cursive;

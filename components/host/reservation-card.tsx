@@ -175,7 +175,7 @@ export function ReservationCard({
             </svg>
           </div>
 
-          <div className="mt-1 w-full border-t border-black/10 pt-3">
+          {/* <div className="mt-1 w-full border-t border-black/10 pt-3">
             {hasSubmittedReview ? (
               <div className="flex min-h-10 items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 text-center text-sm font-medium leading-4 text-emerald-800">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0">
@@ -205,7 +205,7 @@ export function ReservationCard({
                 {reviewAvailabilityMessage}
               </div>
             )}
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

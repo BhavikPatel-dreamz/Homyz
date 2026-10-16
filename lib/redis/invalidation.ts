@@ -20,6 +20,7 @@ export async function invalidateListingCache(listingId: string, hostId?: string)
   const deletes: Promise<void>[] = [
     deleteCache(CACHE_KEYS.LISTING(listingId)),
     deleteCache(CACHE_KEYS.LISTING_DETAILS(listingId)),
+    incrCounter(CACHE_KEYS.LISTING_REVIEWS_VER(listingId)),
     incrCounter(CACHE_KEYS.LISTINGS_PUBLIC_VER()),
   ];
 

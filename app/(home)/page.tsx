@@ -157,6 +157,8 @@ export default async function HomePage({
         ip: requestIp || params.ip || null,
         country: hasSearch ? (params.country || resolvedContext?.country || null) : null,
       },
+      deferOffscreenProperties: true,
+      initialLoadedSectionsCount: 2,
     });
 
     const [homepage, resolvedRecentSearchSections] = await Promise.all([

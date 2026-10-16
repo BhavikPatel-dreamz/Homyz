@@ -8,6 +8,7 @@ import { HeroSection } from "./hero-section";
 import { HomePropertySection } from "./category-carousel";
 import { Footer } from "@/components/dashboard/footer";
 import { LazySection } from "./lazy-section";
+import { HomepageLoadingState } from "./home-section-skeleton";
 import type { HomepageSection, TrendingLocation } from "@/services/homepage.service";
 import type { SearchContext } from "@/lib/location/search-context";
 import {
@@ -202,6 +203,7 @@ export function HomeView({
     }
     if (params.placeName) sp.set("placeName", params.placeName);
     if (params.fullAddress) sp.set("fullAddress", params.fullAddress);
+    if (params.country) sp.set("country", params.country.trim());
     if (typeof params.lat === "number" && !isNaN(params.lat)) sp.set("lat", String(params.lat));
     if (typeof params.lng === "number" && !isNaN(params.lng)) sp.set("lng", String(params.lng));
     if (typeof params.radiusKm === "number" && !isNaN(params.radiusKm)) sp.set("radius", String(params.radiusKm));
@@ -312,9 +314,9 @@ export function HomeView({
   }, [sections, trendingLocations]);
 
   const propertySections = useMemo(() => {
-    return sections.map((section) => ({
+    return sections.map((section, sectionIdx) => ({
       ...section,
-      cards: section.properties.map((property) => ({
+      cards: section.properties.map((property, cardIdx) => ({
         id: property.id,
         slug: property.slug,
         href: buildListingDetailUrl(property.id, activeContext),
@@ -340,6 +342,7 @@ export function HomeView({
         isFavorite: property.isFavorite ?? property.favoriteStatus,
         initialFavorite: property.favoriteStatus,
         canFavorite,
+        priority: sectionIdx === 0 && cardIdx === 0,
       })),
     }));
   }, [sections, canFavorite, activeContext]);
@@ -499,7 +502,10 @@ export function HomeView({
           )}
 
           {/* Listing Sections Container */}
-          <div className="mt-8 sm:mt-[92px] space-y-10 sm:space-y-[78px]">
+          {isNavigatingSearch ? (
+            <HomepageLoadingState />
+          ) : (
+            <div className="mt-8 sm:mt-[92px] space-y-10 sm:space-y-[78px]">
             {propertySections.length === 0 ? (
               <div className="py-16 text-center space-y-4 max-w-lg mx-auto bg-zinc-50/80 rounded-3xl border border-zinc-200 p-8">
                 <div className="w-14 h-14 bg-amber-100/70 rounded-full flex items-center justify-center mx-auto text-2xl">
@@ -546,76 +552,72 @@ export function HomeView({
               <>
                 {/* 1. Latest searched location: 2-3 sections of that destination ONLY */}
                 {searchLocationSections.map((section, idx) => (
-                  <LazySection key={section.id} priority={idx < 2}>
-                    <HomePropertySection
-                      title={section.title}
-                      cards={section.cards}
-                      seeAllHref={section.seeAllHref}
-                      previewImages={section.previewImages}
-                      totalCount={section.totalCount}
-                    />
-                  </LazySection>
+                  <LazySection
+                    key={section.id}
+                    priority={idx < 2}
+                    section={section}
+                    initialCards={section.cards}
+                    activeContext={activeContext}
+                    canFavorite={canFavorite}
+                  />
                 ))}
 
                 {/* 2. Last-to-last search rows (1 row each for previous searches) */}
                 {uniquePastSections.map((section) => (
-                  <LazySection key={section.id} priority={false}>
-                    <HomePropertySection
-                      title={section.title}
-                      cards={section.cards}
-                      seeAllHref={section.seeAllHref}
-                      previewImages={section.previewImages}
-                      totalCount={section.totalCount}
-                    />
-                  </LazySection>
+                  <LazySection
+                    key={section.id}
+                    priority={false}
+                    section={section}
+                    initialCards={section.cards}
+                    activeContext={activeContext}
+                    canFavorite={canFavorite}
+                  />
                 ))}
 
                 {/* 3. Others (Trending stays, etc.) */}
                 {otherSections.map((section) => (
-                  <LazySection key={section.id} priority={false}>
-                    <HomePropertySection
-                      title={section.title}
-                      cards={section.cards}
-                      seeAllHref={section.seeAllHref}
-                      previewImages={section.previewImages}
-                      totalCount={section.totalCount}
-                    />
-                  </LazySection>
+                  <LazySection
+                    key={section.id}
+                    priority={false}
+                    section={section}
+                    initialCards={section.cards}
+                    activeContext={activeContext}
+                    canFavorite={canFavorite}
+                  />
                 ))}
               </>
             ) : (
               <>
                 {/* 1. Client activity rows (previous searches / suggestions based on user activity) always on top */}
                 {uniquePastSections.map((section, idx) => (
-                  <LazySection key={section.id} priority={idx === 0}>
-                    <HomePropertySection
-                      title={section.title}
-                      cards={section.cards}
-                      seeAllHref={section.seeAllHref}
-                      previewImages={section.previewImages}
-                      totalCount={section.totalCount}
-                    />
-                  </LazySection>
+                  <LazySection
+                    key={section.id}
+                    priority={idx === 0}
+                    section={section}
+                    initialCards={section.cards}
+                    activeContext={activeContext}
+                    canFavorite={canFavorite}
+                  />
                 ))}
 
                 {/* 2. Latest discovery rows (Popular homes, Villas, Top-rated, etc.) at the bottom of previous suggestion rows */}
                 {propertySections.map((section, idx) => {
                   const isPriority = uniquePastSections.length === 0 ? idx < 2 : idx === 0 && uniquePastSections.length === 1;
                   return (
-                    <LazySection key={section.id} priority={isPriority}>
-                      <HomePropertySection
-                        title={section.title}
-                        cards={section.cards}
-                        seeAllHref={section.seeAllHref}
-                        previewImages={section.previewImages}
-                        totalCount={section.totalCount}
-                      />
-                    </LazySection>
+                    <LazySection
+                      key={section.id}
+                      priority={isPriority}
+                      section={section}
+                      initialCards={section.cards}
+                      activeContext={activeContext}
+                      canFavorite={canFavorite}
+                    />
                   );
                 })}
               </>
             )}
           </div>
+        )}
 
           {/* Trending Locations Destination Cards */}
           {trendingLocations.length > 0 && (

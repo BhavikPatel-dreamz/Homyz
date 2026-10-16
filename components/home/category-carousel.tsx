@@ -14,6 +14,9 @@ interface HomePropertySectionProps {
   totalCount?: number;
   showMoreCard?: boolean;
   showSeeAllCard?: boolean;
+  onLoadMore?: () => void | Promise<void>;
+  hasMore?: boolean;
+  isLoadingMore?: boolean;
 }
 
 export function getTranslatedSectionTitle(
@@ -120,6 +123,9 @@ function HomePropertySectionComponent({
   totalCount,
   showMoreCard,
   showSeeAllCard,
+  onLoadMore,
+  hasMore = false,
+  isLoadingMore = false,
 }: HomePropertySectionProps) {
   const { t } = useLanguage();
   const displayTitle = getTranslatedSectionTitle(title, t);
@@ -194,6 +200,11 @@ function HomePropertySectionComponent({
         Math.max(0, Math.round(track.scrollLeft / slideStep)),
       );
 
+      // Check if user is scrolling near the end to prefetch next batch
+      if (track.scrollLeft >= maxScroll - slideStep * 1.5 && hasMore && !isLoadingMore && onLoadMore) {
+        void onLoadMore();
+      }
+
       const visibleDots = Math.min(count, 6);
       setPageCount((prev) => (prev !== visibleDots ? visibleDots : prev));
       setActiveIndex((prev) => {
@@ -201,7 +212,7 @@ function HomePropertySectionComponent({
         return prev !== bounded ? bounded : prev;
       });
     });
-  }, []);
+  }, [hasMore, isLoadingMore, onLoadMore]);
 
   useEffect(() => {
     const track = containerRef.current;
@@ -253,10 +264,23 @@ function HomePropertySectionComponent({
     if (!track || !slideStep) return;
 
     const maxScroll = Math.max(0, track.scrollWidth - track.clientWidth);
-    if (maxScroll <= 0) return;
+    if (maxScroll <= 0) {
+      if (hasMore && !isLoadingMore && onLoadMore) {
+        void onLoadMore();
+      }
+      return;
+    }
+
+    if (track.scrollLeft >= maxScroll - slideStep * 1.5 && hasMore && !isLoadingMore && onLoadMore) {
+      void onLoadMore();
+    }
 
     if (track.scrollLeft >= maxScroll - 15) {
-      track.scrollTo({ left: 0, behavior: "smooth" });
+      if (hasMore && !isLoadingMore && onLoadMore) {
+        void onLoadMore();
+      } else {
+        track.scrollTo({ left: 0, behavior: "smooth" });
+      }
     } else {
       track.scrollBy({ left: slideStep, behavior: "smooth" });
     }
@@ -338,6 +362,15 @@ function HomePropertySectionComponent({
             <PropertyCard {...card} />
           </div>
         ))}
+        {isLoadingMore && (
+          <div className="min-w-0 snap-start overflow-hidden rounded-[20px] sm:rounded-[22px] border border-zinc-200 bg-white animate-pulse" aria-hidden="true">
+            <div className="aspect-[233/246] w-full bg-zinc-200" />
+            <div className="p-3 sm:p-3.5 space-y-2">
+              <div className="h-4 w-3/4 rounded bg-zinc-200" />
+              <div className="h-3 w-1/2 rounded bg-zinc-200" />
+            </div>
+          </div>
+        )}
         {isSeeAllCardVisible && seeAllHref && (
           <div className="min-w-0 snap-start">
             <ShowMoreCard

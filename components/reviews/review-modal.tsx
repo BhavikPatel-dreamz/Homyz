@@ -25,8 +25,29 @@ interface ReviewModalProps {
     mentions: ReviewMention[];
   };
   initialReviews?: PublicReviewDTO[];
+  initialPagination?: { page: number; totalPages: number; total: number; limit: number };
   initialMention?: string | null;
   targetReviewId?: string | null;
+}
+
+const REVIEW_PAGE_CACHE_TTL_MS = 2 * 60 * 1000;
+const reviewPageCache = new Map<string, { expiresAt: number; payload: ReviewsApiResponse }>();
+
+function getCachedReviewPage(key: string): ReviewsApiResponse | null {
+  const cached = reviewPageCache.get(key);
+  if (!cached || cached.expiresAt <= Date.now()) {
+    reviewPageCache.delete(key);
+    return null;
+  }
+  return cached.payload;
+}
+
+function cacheReviewPage(key: string, payload: ReviewsApiResponse): void {
+  if (reviewPageCache.size >= 50) {
+    const oldestKey = reviewPageCache.keys().next().value;
+    if (oldestKey) reviewPageCache.delete(oldestKey);
+  }
+  reviewPageCache.set(key, { expiresAt: Date.now() + REVIEW_PAGE_CACHE_TTL_MS, payload });
 }
 
 interface ReviewsApiResponse {
@@ -42,6 +63,7 @@ export function ReviewModal({
   isGuestFavorite = false,
   stats,
   initialReviews = [],
+  initialPagination,
   initialMention = null,
   targetReviewId = null,
 }: ReviewModalProps) {
@@ -49,9 +71,9 @@ export function ReviewModal({
   const { status: sessionStatus } = useSession();
   const isAuthenticated = sessionStatus === "authenticated";
   const [reviews, setReviews] = useState<PublicReviewDTO[]>(() => initialReviews ?? []);
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalFilteredCount, setTotalFilteredCount] = useState<number>(stats.totalCount);
+  const [page, setPage] = useState(initialPagination?.page ?? 1);
+  const [totalPages, setTotalPages] = useState(initialPagination?.totalPages ?? 1);
+  const [totalFilteredCount, setTotalFilteredCount] = useState<number>(initialPagination?.total ?? stats.totalCount);
   const [sort, setSort] = useState<ReviewSortOption>("recent");
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -67,6 +89,7 @@ export function ReviewModal({
   const reviewsContainerRef = useRef<HTMLDivElement>(null);
   const isFetchingRef = useRef(false);
   const targetScrolledRef = useRef(false);
+  const usedInitialPageRef = useRef(false);
 
   // Focus management & Escape key handling
   useEffect(() => {
@@ -155,6 +178,32 @@ export function ReviewModal({
           params.set("rating", String(selectedRating));
         }
 
+        const requestKey = `${listingId}?${params.toString()}`;
+        const isDefaultInitialQuery = !debouncedSearch && !selectedMention && selectedRating === null && sort === "recent";
+        if (!usedInitialPageRef.current && isDefaultInitialQuery && initialPagination && initialReviews.length > 0) {
+          const payload: ReviewsApiResponse = {
+            success: true,
+            data: initialReviews,
+            pagination: initialPagination,
+          };
+          usedInitialPageRef.current = true;
+          cacheReviewPage(requestKey, payload);
+          setReviews(payload.data);
+          setPage(payload.pagination.page);
+          setTotalPages(payload.pagination.totalPages);
+          setTotalFilteredCount(payload.pagination.total);
+          return;
+        }
+
+        const cached = getCachedReviewPage(requestKey);
+        if (cached) {
+          setReviews(cached.data);
+          setPage(cached.pagination.page);
+          setTotalPages(cached.pagination.totalPages);
+          setTotalFilteredCount(cached.pagination.total);
+          return;
+        }
+
         const res = await fetch(`/api/v1/listings/${listingId}/reviews?${params}`, {
           signal: controller.signal,
         });
@@ -163,6 +212,7 @@ export function ReviewModal({
         const json = (await res.json()) as ReviewsApiResponse;
 
         if (ignore) return;
+        cacheReviewPage(requestKey, json);
         setReviews(json.data);
         setPage(json.pagination.page);
         setTotalPages(json.pagination.totalPages);

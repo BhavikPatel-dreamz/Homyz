@@ -41,6 +41,7 @@ export interface PropertyCardData {
   createdAt?: string | Date | null;
   pricing?: PropertyCardPricingViewModel;
   href?: string;
+  priority?: boolean;
 }
 
 function PropertyCardComponent({
@@ -70,6 +71,7 @@ function PropertyCardComponent({
   createdAt,
   pricing: propPricing,
   href,
+  priority,
 }: PropertyCardData) {
   const { t } = useLanguage();
   const { formatPrice } = useCurrency();
@@ -127,8 +129,10 @@ function PropertyCardComponent({
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
             src={displayImage}
             onError={() => setImageError(true)}
-            loading="lazy"
+            loading={priority ? "eager" : "lazy"}
             decoding="async"
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            {...(priority ? ({ fetchPriority: "high" } as any) : {})}
           />
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center text-[#727272] bg-zinc-50">
