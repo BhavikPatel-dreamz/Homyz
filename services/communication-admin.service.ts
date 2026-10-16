@@ -361,11 +361,13 @@ export class CommunicationAdminService {
       data: {
         actorId: actor.id,
         actorEmail: actor.email || "admin@homyz.test",
-        actorRole: actor.role,
         action: "CONVERSATION_INSPECTED",
-        entityType: "Conversation",
-        entityId: conversation.id,
-        details: {
+        resourceType: "CONVERSATION",
+        resourceId: conversation.id,
+        description: `Admin ${actor.email || actor.id} inspected conversation ${conversation.id} for booking ${conversation.bookingId || "N/A"}`,
+        status: "SUCCESS",
+        metadata: {
+          actorRole: actor.role,
           bookingId: conversation.bookingId,
           guestId: conversation.guestId,
           hostId: conversation.hostId,

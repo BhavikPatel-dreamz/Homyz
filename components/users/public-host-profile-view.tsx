@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useLanguage } from "@/lib/i18n/language-context";
 import { ListingCard } from "@/components/listings/listing-card";
 import { PublicHostIdentityCard } from "@/components/users/public-host-identity-card";
+import { ReportContentModal } from "@/components/moderation/report-content-modal";
 import type { PublicHostProfile } from "@/services/user.service";
 
 interface PublicHostProfileViewProps {
@@ -17,8 +19,12 @@ interface PublicHostProfileViewProps {
 
 export function PublicHostProfileView({ host, stats, reviews, listings }: PublicHostProfileViewProps) {
   const { t } = useLanguage();
+  const { data: session, status: sessionStatus } = useSession();
   const [mountedTime] = useState(() => Date.now());
+  const [isReportHostOpen, setIsReportHostOpen] = useState(false);
 
+  const isAuthenticated = sessionStatus === "authenticated";
+  const canReportHost = isAuthenticated && session?.user?.id !== host.id;
   const hostName = host.name || t("public_host_default_name", "Homyz host");
   const profileData = host.publicProfile || {};
   const hostBio = typeof profileData.bio === "string" ? profileData.bio.trim() : "";
@@ -104,6 +110,21 @@ export function PublicHostProfileView({ host, stats, reviews, listings }: Public
           )}
         </div>
       </section>
+
+      {canReportHost && (
+        <div className="flex justify-end pb-2 pt-1">
+          <button
+            type="button"
+            onClick={() => setIsReportHostOpen(true)}
+            className="inline-flex items-center gap-1.5 text-xs text-[#727272] underline underline-offset-4 transition-colors hover:text-red-600"
+          >
+            <svg className="size-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 3l1.664 9.526A2 2 0 006.644 14H17m0 0l1 5H6M17 14l1-7H7.5" />
+            </svg>
+            Report this host
+          </button>
+        </div>
+      )}
 
       {/* Host reviews */}
       <section className="border-b border-zinc-200/80 py-8 sm:py-12" aria-labelledby="host-reviews-heading">
@@ -205,6 +226,16 @@ export function PublicHostProfileView({ host, stats, reviews, listings }: Public
             ))}
           </div>
         </section>
+      )}
+
+      {isReportHostOpen && (
+        <ReportContentModal
+          isOpen={isReportHostOpen}
+          onClose={() => setIsReportHostOpen(false)}
+          targetType="USER"
+          targetId={host.id}
+          targetTitle={hostName}
+        />
       )}
     </div>
   );

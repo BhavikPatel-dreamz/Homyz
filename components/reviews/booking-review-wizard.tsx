@@ -226,9 +226,9 @@ function IntroSection({
 
   return (
     <div className={`flex flex-col ${isMobile ? "sm:mt-7 mt-10 flex-1" : "max-w-154.75"}`}>
-      <div className="self-start inline-flex items-center rounded-full bg-[#E5E7EB] px-4 py-3 text-sm sm:text-base font-normal text-[#1F1F1F]">
+      {/* <div className="self-start inline-flex items-center rounded-full bg-[#E5E7EB] px-4 py-3 text-sm sm:text-base font-normal text-[#1F1F1F]">
         Property Logo
-      </div>
+      </div> */}
 
       <h1 className={`${isMobile ? "mt-5" : "mt-12"} font-medium tracking-tight text-[#727272] leading-tight`}>
         Write a review for <span className="font-medium text-[#1f1f1f]">{displayName}</span>
@@ -504,9 +504,9 @@ export function BookingReviewWizard(props: ReviewWizardProps) {
           />
         ) : (
           <section className="flex flex-col justify-center max-w-xl" aria-labelledby="review-step-title">
-            <div className="self-start inline-flex items-center rounded-full bg-[#E5E7EB] px-4 py-1.5 text-xs sm:text-sm font-medium text-[#1F1F1F]">
+            {/* <div className="self-start inline-flex items-center rounded-full bg-[#E5E7EB] px-4 py-1.5 text-xs sm:text-sm font-medium text-[#1F1F1F]">
               Property Logo
-            </div>
+            </div> */}
             <h1 id="review-step-title" className="mt-4 text-[#1F1F1F]">
               {active.title(props.listingName)}
             </h1>
@@ -623,9 +623,9 @@ export function BookingReviewWizard(props: ReviewWizardProps) {
           />
         ) : (
           <section className="mt-7 flex flex-col" aria-labelledby="review-step-title-mobile">
-            <div className="self-start inline-flex items-center rounded-full bg-[#E5E7EB] px-4 py-2.5 text-sm font-normal text-[#1F1F1F]">
+            {/* <div className="self-start inline-flex items-center rounded-full bg-[#E5E7EB] px-4 py-2.5 text-sm font-normal text-[#1F1F1F]">
               Property Logo
-            </div>
+            </div> */}
             <h1 id="review-step-title-mobile" className="mt-3 text-2xl font-medium leading-tight tracking-tight text-[#1F1F1F]">
               {active.title(props.listingName)}
             </h1>

@@ -4,13 +4,13 @@ import { ok } from "@/lib/api/response";
 import { AppError } from "@/lib/api/errors";
 import { requireApiPermission } from "@/lib/permissions/guards";
 import { PERMISSIONS } from "@/lib/permissions/permissions";
+import { moderationService } from "@/services/moderation.service";
 import { reviewService } from "@/services/review.service";
 
 const moderateReviewSchema = z.object({
   action: z.enum(["HIDE", "RESTORE", "DELETE"]),
   reason: z.string().trim().max(1000).optional(),
   notes: z.string().trim().max(5000).optional(),
-  caseId: z.string().trim().min(1).optional(),
 });
 
 // GET /api/v1/admin/reviews/[id] — get review detail with relations
@@ -24,7 +24,7 @@ export const GET = apiHandler(
   },
 );
 
-// PATCH /api/v1/admin/reviews/[id] — execute authorized moderation action
+// PATCH /api/v1/admin/reviews/[id] — enforce through the canonical moderation case workflow.
 export const PATCH = apiHandler(
   async (req, ctx: { params: Promise<{ id: string }> }) => {
     const { id } = await ctx.params;
@@ -36,17 +36,15 @@ export const PATCH = apiHandler(
         : PERMISSIONS.REVIEWS_MODERATE;
 
     const actor = await requireApiPermission(req, requiredPermission);
+    await requireApiPermission(req, PERMISSIONS.MODERATION_ENFORCEMENT_EXECUTE);
 
-    const updated = await reviewService.adminModerateReview({
+    const result = await moderationService.moderateReviewFromAdmin(actor, {
       reviewId: id,
-      moderatorId: actor.id,
       action: input.action,
       reason: input.reason,
       notes: input.notes,
-      caseId: input.caseId,
     });
 
-    return ok(updated);
+    return ok(result);
   },
 );
-

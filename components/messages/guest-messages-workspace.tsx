@@ -9,6 +9,7 @@ import { bookingDateKey, formatBookingDateRange } from "@/lib/booking/booking-da
 import { formatConversationListDate, formatMessageTime } from "@/lib/messages/message-date";
 import { useCurrency } from "@/lib/currency-context";
 import { useLanguage } from "@/lib/i18n/language-context";
+import { ReportContentModal } from "@/components/moderation/report-content-modal";
 import type {
   ConversationDTO,
   MessageDTO,
@@ -82,6 +83,7 @@ export function GuestMessagesWorkspace({
   const [inputText, setInputText] = useState("");
   const [sending, setSending] = useState(false);
   const [acceptingOffer, setAcceptingOffer] = useState(false);
+  const [reportingMessageId, setReportingMessageId] = useState<string | null>(null);
 
   // Attachments state
   const [stagedAttachments, setStagedAttachments] = useState<StagedAttachment[]>([]);
@@ -1083,10 +1085,23 @@ export function GuestMessagesWorkspace({
                             <p className="whitespace-pre-wrap break-words px-1.5">{m.content}</p>
                           )}
                         </div>
-                        <div className="flex items-center gap-1 mt-1 text-[10px] text-zinc-400 px-1">
+                        <div className="flex items-center gap-1.5 mt-1 text-[10px] text-zinc-400 px-1">
                           <span>{formatMessageTime(m.createdAt)}</span>
                           {isGuest && (
                             <span>{m.readAt ? `• ${t("messages_guest_status_read")}` : `• ${t("messages_guest_status_sent")}`}</span>
+                          )}
+                          {!isGuest && (
+                            <button
+                              type="button"
+                              onClick={() => setReportingMessageId(m.id)}
+                              className="text-zinc-400 hover:text-red-600 transition-colors ml-1 p-0.5 rounded cursor-pointer"
+                              title="Report message"
+                              aria-label="Report message"
+                            >
+                              <svg className="size-3 inline-block" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M3 3l1.664 9.526A2 2 0 006.644 14H17m0 0l1 5H6M17 14l1-7H7.5" />
+                              </svg>
+                            </button>
                           )}
                         </div>
                       </div>
@@ -1296,6 +1311,17 @@ export function GuestMessagesWorkspace({
             </div>
           </div>
         </ModalOverlay>
+      )}
+
+      {reportingMessageId && (
+        <ReportContentModal
+          isOpen={true}
+          onClose={() => setReportingMessageId(null)}
+          targetType="MESSAGE"
+          targetId={reportingMessageId}
+          targetTitle={selectedConversation?.host?.name ? `Message from ${selectedConversation.host.name}` : "Message"}
+          relatedBookingId={selectedConversation?.bookingId || selectedConversation?.booking?.id || undefined}
+        />
       )}
     </div>
   );

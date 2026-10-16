@@ -28,8 +28,8 @@ const updateCaseSchema = z
     }
   });
 
-// PATCH /api/v1/admin/moderation/cases/:id — records workflow only; it does
-// not execute enforcement against listings, accounts, payments, or payouts.
+// PATCH /api/v1/admin/moderation/cases/:id — the service records workflow and
+// executes approved content actions only after its decision/enforcement checks.
 export const PATCH = apiHandler(
   async (req, ctx: { params: Promise<{ id: string }> }) => {
     const actor = await requireApiPermission(req, PERMISSIONS.MODERATION_CASE_UPDATE);

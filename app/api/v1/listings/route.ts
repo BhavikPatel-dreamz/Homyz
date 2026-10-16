@@ -5,6 +5,7 @@ import { created, paginated } from "@/lib/api/response";
 import { requireApiRole } from "@/lib/permissions/guards";
 import { createListingSchema } from "@/lib/validation/listing";
 import { listingService } from "@/services/listing.service";
+import { moderationService } from "@/services/moderation.service";
 import { Role } from "@/generated/prisma/enums";
 import { parsePublicListingSort } from "@/lib/listings/public-sort";
 
@@ -136,6 +137,7 @@ export const GET = apiHandler(async (req) => {
 // POST /api/v1/listings — create a listing draft (USER, HOST or ADMIN).
 export const POST = apiHandler(async (req) => {
   const actor = await requireApiRole(req, [Role.USER, Role.HOST, Role.ADMIN]);
+  await moderationService.assertUserNotRestricted(actor.id, "RESTRICT_LISTING_CREATION");
   const body = createListingSchema.parse(await req.json());
   const listing = await listingService.create(actor, body);
   return created(listing);

@@ -614,12 +614,14 @@ export function PublicListingDetailClient({
   const [inquirySending, setInquirySending] = useState(false);
   const [inquiryError, setInquiryError] = useState<string | null>(null);
   const [isReportListingOpen, setIsReportListingOpen] = useState(false);
+  const [isReportHostOpen, setIsReportHostOpen] = useState(false);
   const [isReportLoginOpen, setIsReportLoginOpen] = useState(false);
+  const [reportLoginTarget, setReportLoginTarget] = useState<"listing" | "host">("listing");
   const [openReportAfterAuthentication, setOpenReportAfterAuthentication] = useState(false);
 
-  const buildReportListingCallbackUrl = () => {
+  const buildReportCallbackUrl = (target: "listing" | "host") => {
     const params = new URLSearchParams(searchParams?.toString());
-    params.set("reportListing", "1");
+    params.set(target === "host" ? "reportHost" : "reportListing", "1");
     const query = params.toString();
     return `${window.location.pathname}${query ? `?${query}` : ""}`;
   };
@@ -630,13 +632,25 @@ export function PublicListingDetailClient({
       return;
     }
 
+    setReportLoginTarget("listing");
+    setOpenReportAfterAuthentication(true);
+    setIsReportLoginOpen(true);
+  };
+
+  const handleReportHost = () => {
+    if (isAuthenticated) {
+      setIsReportHostOpen(true);
+      return;
+    }
+
+    setReportLoginTarget("host");
     setOpenReportAfterAuthentication(true);
     setIsReportLoginOpen(true);
   };
 
   const handleContinueToLoginForReport = () => {
     setIsReportLoginOpen(false);
-    router.push(`/login?callbackUrl=${encodeURIComponent(buildReportListingCallbackUrl())}`);
+    router.push(`/login?callbackUrl=${encodeURIComponent(buildReportCallbackUrl(reportLoginTarget))}`);
   };
 
   useEffect(() => {
@@ -644,7 +658,11 @@ export function PublicListingDetailClient({
 
     if (openReportAfterAuthentication) {
       setIsReportLoginOpen(false);
-      setIsReportListingOpen(true);
+      if (reportLoginTarget === "host") {
+        setIsReportHostOpen(true);
+      } else {
+        setIsReportListingOpen(true);
+      }
       setOpenReportAfterAuthentication(false);
     }
 
@@ -654,8 +672,14 @@ export function PublicListingDetailClient({
       params.delete("reportListing");
       const query = params.toString();
       router.replace(`${window.location.pathname}${query ? `?${query}` : ""}`);
+    } else if (searchParams?.get("reportHost") === "1") {
+      setIsReportHostOpen(true);
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("reportHost");
+      const query = params.toString();
+      router.replace(`${window.location.pathname}${query ? `?${query}` : ""}`);
     }
-  }, [isAuthenticated, openReportAfterAuthentication, router, searchParams]);
+  }, [isAuthenticated, openReportAfterAuthentication, reportLoginTarget, router, searchParams]);
 
   const maximumGuests = Math.max(1, listing.guests || 1);
 
@@ -2511,6 +2535,18 @@ export function PublicListingDetailClient({
                             {t("listing_detail_message_host", "Message host")}
                           </button>
                         )}
+                        {!isHostUser && listing.host && (
+                          <button
+                            type="button"
+                            onClick={handleReportHost}
+                            className="inline-flex min-h-12 items-center gap-2 rounded-full border border-zinc-300 bg-white px-5 text-sm font-normal text-[#727272] hover:text-red-600 hover:border-red-200 hover:bg-red-50/50 transition-colors shadow-2xs"
+                          >
+                            <svg className="size-4 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M3 3l1.664 9.526A2 2 0 006.644 14H17m0 0l1 5H6M17 14l1-7H7.5" />
+                            </svg>
+                            Report this host
+                          </button>
+                        )}
                       </div>
 
                       <p className="mt-7 max-w-3xl text-sm leading-5 text-[#6A6A6A]">{t("listing_detail_protect_payment_help", "*To help protect your payment, always use Homyz to send money and communicate with hosts.")}</p>
@@ -2927,6 +2963,16 @@ export function PublicListingDetailClient({
         />
       )}
 
+      {isReportHostOpen && listing.host && (
+        <ReportContentModal
+          isOpen={isReportHostOpen}
+          onClose={() => setIsReportHostOpen(false)}
+          targetType="USER"
+          targetId={listing.host.id}
+          targetTitle={listing.host.name || "Host"}
+        />
+      )}
+
       {isReportLoginOpen && (
         <ModalOverlay
           role="dialog"
@@ -2945,7 +2991,7 @@ export function PublicListingDetailClient({
             <div className="flex items-start justify-between gap-4">
               <div>
                 <h2 id="report-login-modal-title" className="text-xl font-semibold text-[#1f1f1f]">
-                  Sign in to report this listing
+                  {reportLoginTarget === "host" ? "Sign in to report this host" : "Sign in to report this listing"}
                 </h2>
                 <p id="report-login-modal-description" className="mt-2 text-sm leading-6 text-[#727272]">
                   Please sign in or create an account before submitting a report. We&apos;ll bring you back to this form afterward.

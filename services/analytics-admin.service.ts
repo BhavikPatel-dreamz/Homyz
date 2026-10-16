@@ -1059,11 +1059,13 @@ export class AnalyticsAdminService {
       data: {
         actorId: actor.id,
         actorEmail: actor.email || "admin@homyz.test",
-        actorRole: actor.role,
         action: "REPORT_EXPORTED",
-        entityType: "Report",
-        entityId: reportType,
-        details: {
+        resourceType: "REPORT",
+        resourceId: reportType,
+        description: `Admin ${actor.email || actor.id} exported report ${reportType} (${report.rows.length} rows)`,
+        status: "SUCCESS",
+        metadata: {
+          actorRole: actor.role,
           reportType,
           rowCount: report.rows.length,
           query,

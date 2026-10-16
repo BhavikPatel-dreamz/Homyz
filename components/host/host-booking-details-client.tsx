@@ -12,6 +12,7 @@ import { differenceInBookingNights, formatBookingDate } from "@/lib/booking/book
 import { useCurrency } from "@/lib/currency-context";
 import { useLanguage } from "@/lib/i18n/language-context";
 import { FileBookingDispute } from "@/components/bookings/file-booking-dispute";
+import { ReportContentModal } from "@/components/moderation/report-content-modal";
 
 interface HostBookingDetailsClientProps {
   details: HostBookingRequestDetails;
@@ -31,6 +32,7 @@ export function HostBookingDetailsClient({ details, relatedCases = [] }: HostBoo
   const router = useRouter();
   const [isAcceptModalOpen, setIsAcceptModalOpen] = useState(false);
   const [isDeclineModalOpen, setIsDeclineModalOpen] = useState(false);
+  const [isReportGuestOpen, setIsReportGuestOpen] = useState(false);
   const [declineReason, setDeclineReason] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -264,6 +266,13 @@ export function HostBookingDetailsClient({ details, relatedCases = [] }: HostBoo
                   </Link>
                 )}
               </div>
+              <button
+                type="button"
+                onClick={() => setIsReportGuestOpen(true)}
+                className="w-full rounded-full border border-zinc-200 bg-white px-4 py-2 text-center text-sm font-medium text-[#727272] transition-colors hover:border-red-300 hover:text-red-600 sm:w-auto"
+              >
+                Report guest
+              </button>
             </div>
 
             {/* Guest Initial Message */}
@@ -510,6 +519,17 @@ export function HostBookingDetailsClient({ details, relatedCases = [] }: HostBoo
             </div>
           </div>
         </ModalOverlay>
+      )}
+
+      {isReportGuestOpen && (
+        <ReportContentModal
+          isOpen={isReportGuestOpen}
+          onClose={() => setIsReportGuestOpen(false)}
+          targetType="USER"
+          targetId={details.guest.id}
+          targetTitle={details.guest.name || "Guest"}
+          relatedBookingId={details.id}
+        />
       )}
     </div>
   );

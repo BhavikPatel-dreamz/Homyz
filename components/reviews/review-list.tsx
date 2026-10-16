@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import { useSession } from "next-auth/react";
 import type { PublicReviewDTO } from "@/services/mappers";
 import type { ReviewCategoryRatings, ReviewMention } from "@/services/review.service";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
@@ -57,6 +58,8 @@ function ReviewSkeleton() {
 
 export function ReviewList({ listingId, isGuestFavorite = false, onStatsChange }: ReviewListProps) {
   const { t } = useLanguage();
+  const { status: sessionStatus } = useSession();
+  const isAuthenticated = sessionStatus === "authenticated";
   const callbackRef = useRef(onStatsChange);
   const [reviews, setReviews] = useState<PublicReviewDTO[]>([]);
   const [stats, setStats] = useState<StatsResponse["data"] | null>(null);
@@ -227,7 +230,11 @@ export function ReviewList({ listingId, isGuestFavorite = false, onStatsChange }
         ) : null}
         <div className="grid gap-x-8 gap-y-8 sm:grid-cols-2 xl:grid-cols-4">
           {reviews.map((review) => (
-            <ReviewCard key={review.id} {...review} />
+            <ReviewCard
+              key={review.id}
+              {...review}
+              canReport={isAuthenticated}
+            />
           ))}
         </div>
         <div className="mt-8 flex flex-wrap items-center gap-5">

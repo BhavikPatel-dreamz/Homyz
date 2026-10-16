@@ -18,6 +18,7 @@ import {
   ReservationDetails,
   type HostReservation,
 } from "@/components/host/host-workspace-shared";
+import { ReportContentModal } from "@/components/moderation/report-content-modal";
 import type { ListingDTO } from "@/services/mappers";
 import type {
   ConversationDTO,
@@ -121,6 +122,7 @@ export function HostMessagesWorkspace({
   const [specialOfferModalOpen, setSpecialOfferModalOpen] = useState(false);
   const [preApproveModalOpen, setPreApproveModalOpen] = useState(false);
   const [declineModalOpen, setDeclineModalOpen] = useState(false);
+  const [reportingMessageId, setReportingMessageId] = useState<string | null>(null);
 
   // Form states for modals
   const [offerStartDate, setOfferStartDate] = useState("");
@@ -1394,6 +1396,19 @@ export function HostMessagesWorkspace({
                             <div className="order-1 mb-1 flex items-center gap-2 px-1 text-[10px] text-zinc-400">
                               <span>{isHost ? "You" : selectedConversation.guest.name || "Guest"}</span>
                               <span>{formatMessageTime(m.createdAt)}</span>
+                              {!isHost && (
+                                <button
+                                  type="button"
+                                  onClick={() => setReportingMessageId(m.id)}
+                                  className="text-zinc-400 hover:text-red-600 transition-colors ml-0.5 p-0.5 rounded cursor-pointer"
+                                  title="Report message"
+                                  aria-label="Report message"
+                                >
+                                  <svg className="size-3 inline-block" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 3l1.664 9.526A2 2 0 006.644 14H17m0 0l1 5H6M17 14l1-7H7.5" />
+                                  </svg>
+                                </button>
+                              )}
                             </div>
                             <div
                               className={`order-2 max-w-[85%] sm:max-w-[72%] rounded-lg px-3 py-2 text-xs sm:text-sm leading-relaxed shadow-none space-y-2 ${isHost
@@ -2321,6 +2336,17 @@ export function HostMessagesWorkspace({
             </div>
           </div>
         </ModalOverlay>
+      )}
+
+      {reportingMessageId && (
+        <ReportContentModal
+          isOpen={true}
+          onClose={() => setReportingMessageId(null)}
+          targetType="MESSAGE"
+          targetId={reportingMessageId}
+          targetTitle={selectedConversation?.guest?.name ? `Message from ${selectedConversation.guest.name}` : "Message"}
+          relatedBookingId={selectedConversation?.bookingId || selectedConversation?.booking?.id || undefined}
+        />
       )}
     </div>
   );

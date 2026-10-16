@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { useSession } from "next-auth/react";
 import { useLanguage } from "@/lib/i18n/language-context";
 import { ReportContentModal } from "@/components/moderation/report-content-modal";
 
@@ -76,9 +77,13 @@ export function ReviewCard({
 }: ReviewCardProps) {
   const { t } = useLanguage();
   const formatRelativeDate = useRelativeDate();
+  const { data: session, status: sessionStatus } = useSession();
   const [isExpanded, setIsExpanded] = useState(false);
   const [imageFailed, setImageFailed] = useState(false);
   const [isReportOpen, setIsReportOpen] = useState(false);
+
+  const isAuthor = Boolean(session?.user?.id && author?.id && session.user.id === author.id);
+  const showReportButton = canReport && sessionStatus === "authenticated" && !isAuthor;
 
   const name = author?.name?.trim() || "Guest";
   const initial = name.charAt(0).toUpperCase();
@@ -102,7 +107,7 @@ export function ReviewCard({
           )}
         </div>
 
-        {canReport && (
+        {showReportButton && (
           <button
             type="button"
             onClick={() => setIsReportOpen(true)}

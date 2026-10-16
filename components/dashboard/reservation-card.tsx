@@ -179,7 +179,7 @@ export function ReservationCard({
             {t("booking_details_booking_ref_short", { code: data.id.slice(-8).toUpperCase() }, `Booking #${data.id.slice(-8).toUpperCase()}`)}
           </p>
 
-          <div className={`${isCompactVariant ? "mt-3" : "mt-4 border-t border-zinc-100 pt-3"}`}>
+          {/* <div className={`${isCompactVariant ? "mt-3" : "mt-4 border-t border-zinc-100 pt-3"}`}>
             {reviewSubmitted ? (
               <Link
                 href={detailsHref}
@@ -215,7 +215,7 @@ export function ReservationCard({
                 Review available after checkout
               </div>
             )}
-          </div>
+          </div> */}
         </div>
       </div>
     </article>

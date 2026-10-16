@@ -14,7 +14,7 @@ import type { UpdateHostPublicProfileInput } from "@/lib/validation/host-profile
 
 import { deleteManagedMediaUrl } from "@/lib/storage/media";
 import type { Prisma } from "@/generated/prisma/client";
-import { ListingStatus, ReviewStatus } from "@/generated/prisma/enums";
+import { ListingStatus, ReviewDirection, ReviewStatus } from "@/generated/prisma/enums";
 import { qualificationService } from "@/services/qualification.service";
 import { getMissingProfileFields, hasUsableProfileEmail } from "@/lib/auth/profile-completion";
 import { normalizeEmail, normalizePhone } from "@/lib/auth/normalization";
@@ -385,29 +385,22 @@ async function getPublicHostProfile(userId: string, options: { reviewLimit?: num
       take: 12,
     }),
     prisma.review.aggregate({
-      where: { status: ReviewStatus.PUBLISHED, listing: publicListingWhere },
+      where: {
+        status: ReviewStatus.PUBLISHED,
+        direction: ReviewDirection.GUEST_TO_PROPERTY,
+        listing: publicListingWhere,
+      },
       _avg: { rating: true },
       _count: { _all: true },
     }),
     prisma.review.findMany({
-      where: { status: ReviewStatus.PUBLISHED, comment: { not: "" }, listing: publicListingWhere },
-      select: {
-        id: true,
-        rating: true,
-        comment: true,
-        createdAt: true,
-        author: { select: { id: true, name: true, image: true, createdAt: true } },
-        listing: {
-          select: {
-            id: true,
-            customSlug: true,
-            title: true,
-            photos: true,
-            city: true,
-            country: true,
-          },
-        },
+      where: {
+        status: ReviewStatus.PUBLISHED,
+        direction: ReviewDirection.GUEST_TO_PROPERTY,
+        comment: { not: "" },
+        listing: publicListingWhere,
       },
+      select: { id: true, rating: true, comment: true, createdAt: true, author: { select: { name: true, image: true } }, listing: { select: { title: true } } },
       orderBy: { createdAt: "desc" },
       take: reviewLimit,
     }),
