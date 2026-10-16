@@ -241,11 +241,11 @@ export function ListingCard({
 
   const serverPricing = "pricing" in listing ? listing.pricing : undefined;
   const cardPricing = serverPricing ?? toPropertyCardPricingViewModel(listing, {
-      checkIn,
-      checkOut,
-      guests,
-      currency,
-    });
+    checkIn,
+    checkOut,
+    guests,
+    currency,
+  });
   const basePrice = cardPricing.baseDisplayPrice || storedBasePrice;
 
   const discountedPrice = cardPricing.hasDiscount ? cardPricing.discountedDisplayPrice : null;
@@ -311,10 +311,10 @@ export function ListingCard({
   if (roomSpecs.length === 0) {
     const guestVal = listing.guests ?? 1;
     roomSpecs.push(
-      `${formattedPropertyType || "Home"} · ${guestVal} ${guestVal === 1 ? t("home_guest_one", { count: guestVal }, "1 guest") : t("home_guest_many", { count: guestVal }, `${guestVal} guests`)}`
+      `${formattedPropertyType || "Home"} | ${guestVal} ${guestVal === 1 ? t("home_guest_one", { count: guestVal }, "1 guest") : t("home_guest_many", { count: guestVal }, `${guestVal} guests`)}`
     );
   }
-  const specsText = roomSpecs.join(" · ");
+  const specsText = roomSpecs.join(" | ");
 
   // Dates if available
   const dateRangeString =
@@ -457,7 +457,11 @@ export function ListingCard({
           propertyId: listing.id,
         });
       }}
-      className={`group relative block overflow-hidden text-left ${isNavigating ? "opacity-90 cursor-wait" : ""} ${isSearchGridCard ? "rounded-[20px] border border-[#1F1F1F] bg-white focus-within:ring-0 focus-visible:shadow-none" : ""} ${className}`}
+      className={`group relative overflow-hidden text-left ${
+        isSearchGridCard
+          ? "flex flex-col h-full rounded-[20px] border border-[#1F1F1F] bg-white focus-within:ring-0 focus-visible:shadow-none"
+          : "block"
+      } ${isNavigating ? "opacity-90 cursor-wait" : ""} ${className}`}
     >
       {/* ── Navigation Loading Overlay ── */}
       {isNavigating && (
@@ -470,7 +474,7 @@ export function ListingCard({
       )}
       {/* ── Image Carousel ── */}
       <div
-        className={`relative aspect-[4/4] w-full overflow-hidden bg-zinc-100 select-none ${isSearchGridCard ? "rounded-none shadow-none" : "rounded-2xl shadow-xs"}`}
+        className={`relative aspect-[4/4] w-full shrink-0 overflow-hidden bg-zinc-100 select-none ${isSearchGridCard ? "rounded-none shadow-none" : "rounded-2xl shadow-xs"}`}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -617,11 +621,10 @@ export function ListingCard({
                     e.stopPropagation();
                     setCurrentPhotoIndex(idx);
                   }}
-                  className={`rounded-full transition-all duration-200 cursor-pointer ${
-                    idx === currentPhotoIndex
+                  className={`rounded-full transition-all duration-200 cursor-pointer ${idx === currentPhotoIndex
                       ? "h-1.5 w-1.5 bg-white scale-125 shadow-xs"
                       : "h-1.5 w-1.5 bg-white/60 hover:bg-white/80 shadow-xs"
-                  }`}
+                    }`}
                 />
               ))
             ) : (
@@ -652,13 +655,12 @@ export function ListingCard({
                         e.stopPropagation();
                         setCurrentPhotoIndex(idx);
                       }}
-                      className={`rounded-full transition-all duration-200 cursor-pointer ${
-                        isActive
+                      className={`rounded-full transition-all duration-200 cursor-pointer ${isActive
                           ? "h-1.5 w-1.5 bg-white scale-125 shadow-xs"
                           : isEdge
-                          ? "h-1 w-1 bg-white/40 shadow-xs"
-                          : "h-1.5 w-1.5 bg-white/65 hover:bg-white/85 shadow-xs"
-                      }`}
+                            ? "h-1 w-1 bg-white/40 shadow-xs"
+                            : "h-1.5 w-1.5 bg-white/65 hover:bg-white/85 shadow-xs"
+                        }`}
                     />
                   );
                 });
@@ -670,145 +672,149 @@ export function ListingCard({
 
       {/* ── Search-results card body ── */}
       {isSearchGridCard ? (
-        <div className="space-y-1.5 px-3.5 py-3 text-left sm:px-4 sm:py-3.5">
-          {/* Row 1: Title & Rating */}
-          <div className="flex items-start justify-between gap-2">
-            <h3 className="truncate text-[15px] font-medium leading-5 text-[#1F1F1F] transition-colors group-hover:text-amber-950 flex-1 min-w-0">
+        <div className="flex-1 flex flex-col justify-between px-3.5 py-3 text-left sm:px-3.5 sm:py-3.5">
+          <div className="space-y-1.5 min-w-0">
+            {/* Row 1: Title */}
+            <h3 className="truncate text-[15px] font-medium leading-5 text-[#1F1F1F] transition-colors group-hover:text-amber-950">
               {primaryHeading}
             </h3>
-            {numericRating !== null ? (
-              <div className="flex items-center gap-1 text-xs font-medium text-[#1F1F1F] shrink-0 ml-1">
-                <svg aria-hidden="true" className="size-3 fill-current" viewBox="0 0 24 24">
-                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                </svg>
-                <span>{formattedRating}</span>
-                {reviewCount > 0 && <span className="font-normal text-[#727272]">({reviewCount})</span>}
-              </div>
-            ) : (
-              <span className="text-[12px] font-medium text-[#1f1f1f] shrink-0">★ {t("listings_new", "New")}</span>
-            )}
-          </div>
 
-          {/* Row 2: Subtitle / descriptive title */}
-          {secondarySubtitle && (
-            <p className="truncate text-xs leading-4 text-[#727272]">
-              {secondarySubtitle}
+            {/* Row 2: Subtitle / descriptive title */}
+            {secondarySubtitle ? (
+              <p className="truncate text-xs leading-4 text-[#1f1f1f]">
+                {secondarySubtitle}
+              </p>
+            ) : (
+              <p className="truncate text-xs leading-4 opacity-0 select-none pointer-events-none" aria-hidden="true">
+                &nbsp;
+              </p>
+            )}
+
+            {/* Row 3: Room breakdown / specs */}
+            <p className="truncate text-xs leading-4 text-[#1f1f1f]">
+              {specsText || "\u00A0"}
             </p>
-          )}
 
-          {/* Row 3: Room breakdown / specs */}
-          <p className="truncate text-xs leading-4 text-[#727272]">
-            {specsText}
-          </p>
-
-          {/* Row 4: Price & Nights */}
-          <div className="flex items-center gap-1.5 text-xs leading-4 text-[#1F1F1F] pt-0.5 flex-wrap">
-            {discountedPrice != null ? (
-              <>
-                <span className="line-through text-[#727272] text-[11px] font-normal">
-                  {formatPrice(baseTotalPrice, currency)}
-                </span>
+            {/* Row 4: Price & Nights & Rating */}
+            <div className="flex items-center gap-1 text-xs leading-4 text-[#1F1F1F] pt-0.5 flex-nowrap min-w-0">
+              <span className="inline-flex items-center gap-1 shrink-0">
+                {discountedPrice != null && (
+                  <span className="line-through text-[#727272] text-[11px] font-normal">
+                    {formatPrice(baseTotalPrice, currency)}
+                  </span>
+                )}
                 <span className="font-semibold underline">
                   {formatPrice(totalPrice, currency)}
                 </span>
-                <span className="text-[#727272]">
-                  for {nights} {nights === 1 ? "night" : "nights"}
+                <span className="text-[#1f1f1f]">
+                 for {nights} {nights === 1 ? "night" : "nights"}
                 </span>
-              </>
-            ) : (
-              <>
-                <span className="font-semibold underline">
-                  {formatPrice(totalPrice, currency)}
-                </span>
-                <span className="text-[#727272]">
-                  for {nights} {nights === 1 ? "night" : "nights"}
-                </span>
-              </>
-            )}
+              </span>
+
+              <span className="inline-flex items-center gap-1 shrink-0">
+                <span aria-hidden="true">|</span>
+                {numericRating !== null ? (
+                  <span className="inline-flex items-center gap-1 font-medium text-[#1F1F1F]">
+                    <svg aria-hidden="true" className="size-3 fill-current" viewBox="0 0 24 24">
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                    </svg>
+                    <span>{formattedRating}</span>
+                    {reviewCount > 0 && <span className="font-normal text-[#727272]">({reviewCount})</span>}
+                  </span>
+                ) : (
+                  <span className="text-[12px] font-normal text-[#1f1f1f]">★ {t("listings_new", "New")}</span>
+                )}
+              </span>
+            </div>
           </div>
-
 
           {/* Row 5: Free cancellation badge */}
-          {hasFreeCancellation && (
-            <div className="pt-0.5 flex items-center">
+          {hasFreeCancellation ? (
+            <div className="pt-2 flex items-center">
               <span className="inline-block text-[12px] font-normal text-[#1f1f1f] bg-[#F3F4F5] px-2 py-0.5 rounded">
                 {t("listings_free_cancellation", "Free cancellation")}
+              </span>
+            </div>
+          ) : (
+            <div className="pt-2 flex items-center min-h-[26px]" aria-hidden="true">
+              <span className="inline-block text-[12px] py-0.5 opacity-0 select-none pointer-events-none">
+                &nbsp;
               </span>
             </div>
           )}
         </div>
       ) : (
-      <div className="pt-3 pb-1 space-y-0.5 text-left">
-        {/* Row 1: Title + Rating */}
-        <div className="flex items-start justify-between gap-2">
-          <h3 className="text-sm sm:text-[15px] font-semibold text-[#1F1F1F] truncate leading-snug group-hover:text-amber-950 transition-colors flex-1 min-w-0">
-            {primaryHeading}
-          </h3>
+        <div className="pt-3 pb-1 space-y-0.5 text-left">
+          {/* Row 1: Title + Rating */}
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="text-sm sm:text-[15px] font-semibold text-[#1F1F1F] truncate leading-snug group-hover:text-amber-950 transition-colors flex-1 min-w-0">
+              {primaryHeading}
+            </h3>
 
-          {/* Rating */}
-          {numericRating !== null ? (
-            <span className="inline-flex items-center gap-1 text-sm font-semibold text-[#1F1F1F] shrink-0 ml-1">
-              <svg
-                aria-hidden="true"
-                className="w-3.5 h-3.5 text-[#1F1F1F] fill-current"
-                viewBox="0 0 24 24"
-              >
-                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-              </svg>
-              <span>
-                {numericRating.toFixed(2).replace(/\.?0+$/, "") || numericRating.toFixed(1)}
-                {reviewCount > 0 && (
-                  <span className="text-[#727272] font-normal ml-0.5">
-                    ({reviewCount.toLocaleString()})
-                  </span>
-                )}
+            {/* Rating */}
+            {numericRating !== null ? (
+              <span className="inline-flex items-center gap-1 text-sm font-semibold text-[#1F1F1F] shrink-0 ml-1">
+                <svg
+                  aria-hidden="true"
+                  className="w-3.5 h-3.5 text-[#1F1F1F] fill-current"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                </svg>
+                <span>
+                  {numericRating.toFixed(2).replace(/\.?0+$/, "") || numericRating.toFixed(1)}
+                  {reviewCount > 0 && (
+                    <span className="text-[#727272] font-normal ml-0.5">
+                      ({reviewCount.toLocaleString()})
+                    </span>
+                  )}
+                </span>
               </span>
-            </span>
-          ) : (
-                  <span className="text-[10px] font-medium text-[#727272] bg-[#F3F4F5] px-1.5 py-0.5 rounded-lg shrink-0 leading-3.5">
-              {t("listings_new", "New")}
-            </span>
-          )}
-        </div>
+            ) : (
+              <span className="text-[10px] font-medium text-[#727272] bg-[#F3F4F5] px-1.5 py-0.5 rounded-lg shrink-0 leading-3.5">
+                {t("listings_new", "New")}
+              </span>
+            )}
+          </div>
 
-        {/* Row 2: Subtitle / Description / Distance */}
-        <p className="text-xs sm:text-[13px] text-[#727272] font-normal truncate">
-          {secondarySubtitle}
-          {distanceText}
-        </p>
-
-        {/* Row 3: Room breakdown / Specs */}
-        <p className="text-xs sm:text-[13px] text-[#727272] font-normal truncate">
-          {specsText}
-        </p>
-
-        {/* Row 4: Dates if available */}
-        {dateRangeString && (
+          {/* Row 2: Subtitle / Description / Distance */}
           <p className="text-xs sm:text-[13px] text-[#727272] font-normal truncate">
-            {dateRangeString}
+            {secondarySubtitle}
+            {distanceText}
           </p>
-        )}
 
-        {/* Row 5: Price */}
-        <div className="pt-0.5 flex items-baseline gap-1.5 flex-wrap text-xs sm:text-[13px]">
-          {formattedDiscountedPrice != null ? (
-            <>
-              <span className="line-through text-[#727272] text-xs font-normal">
-                {formattedBasePrice}
-              </span>
-              <span className="font-semibold text-zinc-950 text-sm">
-                {formattedDiscountedPrice}
-                <span className="text-[#727272] font-normal text-xs ml-0.5">{t("listings_per_night", "/ night")}</span>
-              </span>
-            </>
-          ) : (
-            <div className="flex items-baseline gap-1">
-              <span className="font-semibold text-zinc-950 text-sm">{formattedBasePrice}</span>
-              <span className="text-[#727272] font-normal text-xs">{t("listings_per_night", "/ night")}</span>
-            </div>
+          {/* Row 3: Room breakdown / Specs */}
+          <p className="text-xs sm:text-[13px] text-[#727272] font-normal truncate">
+            {specsText}
+          </p>
+
+          {/* Row 4: Dates if available */}
+          {dateRangeString && (
+            <p className="text-xs sm:text-[13px] text-[#727272] font-normal truncate">
+              {dateRangeString}
+            </p>
           )}
+
+          {/* Row 5: Price */}
+          <div className="pt-0.5 flex items-baseline gap-1.5 flex-wrap text-xs sm:text-[13px]">
+            {formattedDiscountedPrice != null ? (
+              <>
+                <span className="line-through text-[#727272] text-xs font-normal">
+                  {formattedBasePrice}
+                </span>
+                <span className="font-semibold text-zinc-950 text-sm">
+                  {formattedDiscountedPrice}
+                  <span className="text-[#727272] font-normal text-xs ml-0.5">{t("listings_per_night", "/ night")}</span>
+                </span>
+              </>
+            ) : (
+              <div className="flex items-baseline gap-1">
+                <span className="font-semibold text-zinc-950 text-sm">{formattedBasePrice}</span>
+                <span className="text-[#727272] font-normal text-xs">{t("listings_per_night", "/ night")}</span>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
       )}
     </Link>
   );

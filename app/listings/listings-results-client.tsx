@@ -18,6 +18,7 @@ import { useLanguage } from "@/lib/i18n/language-context";
 import { trackListingEvent } from "@/lib/analytics/listing-analytics";
 import { getGoogleMapsUrl, trackGoogleMapsOpen } from "@/lib/location/google-maps";
 import { ListingFilterModal, type ListingFilterValues } from "@/components/listings/listing-filter-modal";
+import Image from "next/image";
 
 // Lazy-load the map (Leaflet is heavy & client-only)
 const SearchMap = dynamic(
@@ -255,7 +256,7 @@ function SelectedPreviewCard({
               </span>
             )}
           </div>
-          <p className="text-[11px] text-[#727272] truncate">
+          <p className="text-sm text-[#727272] truncate">
             {listing.city || listing.country || "Saudi Arabia"}
             {typeof listing.distanceKm === "number" ? t("listings_km_away", { distance: listing.distanceKm }, ` · ${listing.distanceKm} km away`) : ""}
           </p>
@@ -464,15 +465,15 @@ export function ListingsResultsClient({
     targetCoords
       ? [targetCoords.lat, targetCoords.lng]
       : typeof currentFilters.lat === "number" && typeof currentFilters.lng === "number"
-      ? [currentFilters.lat, currentFilters.lng]
-      : undefined;
+        ? [currentFilters.lat, currentFilters.lng]
+        : undefined;
 
   const mapZoom =
     appliedRadiusKm && appliedRadiusKm <= 6
       ? 14
       : appliedRadiusKm && appliedRadiusKm <= 15
-      ? 13
-      : 12;
+        ? 13
+        : 12;
 
   // All listings accumulated (for infinite scroll)
   const [allListings, setAllListings] = useState<PublicListingCardDTO[]>(() =>
@@ -617,8 +618,8 @@ export function ListingsResultsClient({
     currentFilters.maxPrice
       ? Math.round(currentFilters.maxPrice / 100)
       : priceRange
-      ? Math.round(priceRange.max / 100)
-      : 5000,
+        ? Math.round(priceRange.max / 100)
+        : 5000,
   );
   const [draftPropertyType, setDraftPropertyType] = useState<string>(
     currentFilters.propertyType ?? "",
@@ -656,8 +657,8 @@ export function ListingsResultsClient({
         currentFilters.maxPrice
           ? Math.round(currentFilters.maxPrice / 100)
           : priceRange
-          ? Math.round(priceRange.max / 100)
-          : 5000,
+            ? Math.round(priceRange.max / 100)
+            : 5000,
       );
       setDraftPropertyType(currentFilters.propertyType ?? "");
       setDraftListingType(currentFilters.listingType ?? "");
@@ -880,8 +881,8 @@ export function ListingsResultsClient({
           const payload = await res.json().catch(() => null);
           setActiveErrorMessage(
             payload?.error?.details?.[0]?.message ||
-              payload?.error?.message ||
-              "Something went wrong while searching. Please try again or clear your filters.",
+            payload?.error?.message ||
+            "Something went wrong while searching. Please try again or clear your filters.",
           );
           setActiveStatus("error");
         }
@@ -1073,7 +1074,7 @@ export function ListingsResultsClient({
 
     observer.observe(sentinel);
     return () => observer.disconnect();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasMore, isLoadingMore, currentPage, activeStatus]);
 
   const loadNextPage = async () => {
@@ -1261,30 +1262,22 @@ export function ListingsResultsClient({
           <button
             type="button"
             onClick={() => setIsFilterOpen(true)}
-            className={`relative flex items-center gap-2 rounded-full border px-4 py-2 text-xs sm:text-[13px] font-medium transition-all shrink-0 cursor-pointer ${
-              activeFilterCount > 0
-                ? "border-zinc-900 bg-zinc-900 text-white font-semibold shadow-xs"
-                : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-900"
-            }`}
+            className={`relative flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-normal transition-all shrink-0 cursor-pointer ${activeFilterCount > 0
+                ? "border-[#1F1F1F] bg-[#1F1F1F] text-white"
+                : "border-[#1F1F1F] bg-white text-[#1F1F1F] hover:border-[#1F1F1F]"
+              }`}
           >
-            <svg
-              viewBox="0 0 16 16"
-              fill="currentColor"
-              className="w-3.5 h-3.5 shrink-0"
-              aria-hidden="true"
-            >
-              <path d="M1 3.5a.5.5 0 0 1 .5-.5h2.086a2 2 0 0 1 3.828 0H14.5a.5.5 0 0 1 0 1H7.414a2 2 0 0 1-3.828 0H1.5a.5.5 0 0 1-.5-.5zm0 4.5a.5.5 0 0 1 .5-.5h6.086a2 2 0 0 1 3.828 0H14.5a.5.5 0 0 1 0 1h-3.086a2 2 0 0 1-3.828 0H1.5a.5.5 0 0 1-.5-.5zm0 4.5a.5.5 0 0 1 .5-.5h1.086a2 2 0 0 1 3.828 0H14.5a.5.5 0 0 1 0 1H6.414a2 2 0 0 1-3.828 0H1.5a.5.5 0 0 1-.5-.5z" />
-            </svg>
+            <Image src="/images/icons/filter-icon.svg" alt="filter-icon.svg" className="brightness-0 invert" width={15} height={15} />
             <span>{t("listings_filters", "Filters")}</span>
             {activeFilterCount > 0 && (
-              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-white text-[10px] font-bold text-[#1F1F1F] ml-0.5">
+              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-white text-xs font-normal text-[#1F1F1F] ml-0.5">
                 {activeFilterCount}
               </span>
             )}
           </button>
 
           {/* Vertical divider line */}
-          <div className="h-6 w-px bg-zinc-200 shrink-0 mx-1" aria-hidden="true" />
+          <div className="h-6 w-px bg-[#727272] shrink-0 mx-1" aria-hidden="true" />
 
           {/* Active Featured Chip */}
           {(activeFilters.featured || currentFilters.featured) && (
@@ -1293,18 +1286,18 @@ export function ListingsResultsClient({
               onClick={() => {
                 executeFilterQuery({ featured: null });
               }}
-              className="flex items-center gap-1.5 rounded-full bg-zinc-900 text-white text-xs sm:text-[13px] font-semibold px-3.5 py-2 shadow-2xs hover:bg-zinc-800 transition-all shrink-0 cursor-pointer"
+              className="flex items-center gap-1.5 rounded-full bg-[#1f1f1f] text-white text-sm font-normal px-3.5 py-2 hover:bg-[#727272] transition-all shrink-0 cursor-pointer"
               aria-label="Clear featured filter"
             >
               <span>✨ {t("listings_guest_favourite", "Featured")}</span>
-              <span className="text-[#727272] hover:text-white font-bold text-xs ml-0.5">✕</span>
+              <span className="text-[#1f1f1f] hover:text-[#727272] font-normal text-sm ml-0.5">✕</span>
             </button>
           )}
 
           {/* Quick Filter Option Pills */}
           {TOP_FILTER_OPTIONS.map((opt) => {
             let isSelected = false;
-            let handleClick = () => {};
+            let handleClick = () => { };
 
             if (opt.type === "amenity") {
               const amenities = activeFilters.amenities ?? currentFilters.amenities ?? [];
@@ -1330,15 +1323,15 @@ export function ListingsResultsClient({
               opt.type === "amenity"
                 ? opt.id === "self_check_in" ? t("listings_self_check_in", "Self check-in")
                   : opt.id === "free_parking" ? t("listings_free_parking", "Free parking")
-                  : opt.id === "air_conditioning" ? t("listings_air_conditioning", "Air conditioning")
-                  : opt.id === "wifi" ? t("listings_wifi", "Wifi")
-                  : opt.id === "washer" ? t("listings_washing_machine", "Washing machine")
-                  : opt.id === "pool" ? t("listings_pool", "Pool")
-                  : opt.id === "tv" ? t("listings_tv", "TV")
-                  : opt.label
+                    : opt.id === "air_conditioning" ? t("listings_air_conditioning", "Air conditioning")
+                      : opt.id === "wifi" ? t("listings_wifi", "Wifi")
+                        : opt.id === "washer" ? t("listings_washing_machine", "Washing machine")
+                          : opt.id === "pool" ? t("listings_pool", "Pool")
+                            : opt.id === "tv" ? t("listings_tv", "TV")
+                              : opt.label
                 : opt.type === "bathrooms"
-                ? t("listings_one_plus_bathrooms", "1+ bathrooms")
-                : t("listings_instant_book", "Instant Book");
+                  ? t("listings_one_plus_bathrooms", "1+ bathrooms")
+                  : t("listings_instant_book", "Instant Book");
 
             return (
               <button
@@ -1346,11 +1339,10 @@ export function ListingsResultsClient({
                 type="button"
                 aria-pressed={isSelected}
                 onClick={handleClick}
-                className={`rounded-full text-xs sm:text-[13px] px-4 py-2 transition-all whitespace-nowrap shrink-0 border cursor-pointer ${
-                  isSelected
-                    ? "bg-zinc-900 text-white border-zinc-900 font-semibold shadow-xs"
-                    : "bg-white text-zinc-800 border-zinc-200 hover:border-zinc-900 font-medium"
-                }`}
+                className={`rounded-full font-normal text-sm px-4 py-2 transition-all duration-300 whitespace-nowrap shrink-0 border cursor-pointer ${isSelected
+                  ? "bg-[#1f1f1f] text-white border-[#1f1f1f]"
+                    : "bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] hover:text-white border-[#727272] hover:border-[#1f1f1f]"
+                  }`}
               >
                 {translatedLabel}
               </button>
@@ -1364,7 +1356,7 @@ export function ListingsResultsClient({
             <select
               value={activeFilters.sortBy ?? currentFilters.sortBy ?? "recommended"}
               onChange={(e) => handleSortChange(e.target.value as SortBy)}
-              className="appearance-none rounded-full border border-zinc-200 bg-white py-2 pl-3.5 pr-9 text-xs sm:text-[13px] font-medium text-zinc-800 outline-none hover:border-zinc-900 focus:border-zinc-900 cursor-pointer"
+              className="appearance-none rounded-lg border border-[#1f1f1f] bg-white py-2 pl-3.5 pr-9 text-sm font-medium text-[#1f1f1f] outline-none hover:border-[#1f1f1f] focus:border-[#1f1f1f] cursor-pointer"
               aria-label={t("listings_sort_by", "Sort by")}
             >
               <option value="recommended">{t("listings_sort_recommended", "Recommended")}</option>
@@ -1491,13 +1483,11 @@ export function ListingsResultsClient({
           ) : (
             <>
               <div
-                className={`grid gap-5 transition-opacity duration-150 ${
-                  activeStatus === "refining" ? "opacity-75 pointer-events-none" : "opacity-100"
-                } ${
-                  showMap
+                className={`grid gap-5 transition-opacity duration-150 ${activeStatus === "refining" ? "opacity-75 pointer-events-none" : "opacity-100"
+                  } ${showMap
                     ? "grid-cols-1 sm:grid-cols-2 xl:grid-cols-3"
                     : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4"
-                }`}
+                  }`}
               >
                 {allListings.map((item, index) => (
                   <div
@@ -1510,11 +1500,10 @@ export function ListingsResultsClient({
                     onMouseEnter={() => setHoveredPropertyId(item.id)}
                     onMouseLeave={() => setHoveredPropertyId(null)}
                     onClick={() => setSelectedPropertyId(item.id)}
-                    className={`transition-all duration-200 rounded-[20px] ${
-                      selectedPropertyId === item.id
+                    className={`h-full flex flex-col transition-all duration-200 rounded-[20px] ${selectedPropertyId === item.id
                         ? "ring-2 ring-zinc-950 shadow-lg"
                         : ""
-                    }`}
+                      }`}
                   >
                     <ListingCard
                       listing={item}
@@ -1530,6 +1519,7 @@ export function ListingsResultsClient({
                       pets={currentFilters.pets}
                       country={currentFilters.country}
                       variant="search-grid"
+                      className="h-full flex flex-col"
                     />
                   </div>
                 ))}
@@ -1775,9 +1765,8 @@ export function ListingsResultsClient({
                     {histogramBars.map((bar, i) => (
                       <div
                         key={i}
-                        className={`flex-1 rounded-t-xs transition-colors duration-150 ${
-                          bar.isSelected ? "bg-rose-500" : "bg-zinc-200"
-                        }`}
+                        className={`flex-1 rounded-t-xs transition-colors duration-150 ${bar.isSelected ? "bg-rose-500" : "bg-zinc-200"
+                          }`}
                         style={{ height: `${bar.heightPercent}%` }}
                       />
                     ))}
@@ -1867,7 +1856,7 @@ export function ListingsResultsClient({
               {/* 4. Rooms and beds */}
               <div className="pt-6 space-y-4">
                 <h3 className="text-base font-bold text-[#1F1F1F]">Rooms and beds</h3>
-                
+
                 <div className="flex items-center justify-between">
                   <span className="text-sm sm:text-base font-medium text-zinc-800">Bedrooms</span>
                   <Stepper value={draftBedrooms} onChange={setDraftBedrooms} label="bedrooms" />
@@ -1912,11 +1901,10 @@ export function ListingsResultsClient({
                                 : [...draftAmenities, am.id],
                             )
                           }
-                          className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs sm:text-[13px] font-medium transition-all cursor-pointer ${
-                            active
+                          className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs sm:text-[13px] font-medium transition-all cursor-pointer ${active
                               ? "border-zinc-900 bg-zinc-900 text-white font-semibold shadow-xs"
                               : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-900"
-                          }`}
+                            }`}
                         >
                           <span>{am.icon}</span>
                           <span>{am.label}</span>
@@ -1949,11 +1937,10 @@ export function ListingsResultsClient({
                                 : [...draftAmenities, am.id],
                             )
                           }
-                          className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs sm:text-[13px] font-medium transition-all cursor-pointer ${
-                            active
+                          className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs sm:text-[13px] font-medium transition-all cursor-pointer ${active
                               ? "border-zinc-900 bg-zinc-900 text-white font-semibold shadow-xs"
                               : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-900"
-                          }`}
+                            }`}
                         >
                           <span>{am.icon}</span>
                           <span>{am.label}</span>
@@ -1976,11 +1963,11 @@ export function ListingsResultsClient({
                       { id: "indoor_fireplace", label: "Indoor fireplace", icon: "🪵" },
                       ...(showAllAmenities
                         ? [
-                            { id: "king_bed", label: "King bed", icon: "🛏️" },
-                            { id: "cot", label: "Cot", icon: "👶" },
-                            { id: "breakfast", label: "Breakfast", icon: "☕" },
-                            { id: "smoking_allowed", label: "Smoking allowed", icon: "🚬" },
-                          ]
+                          { id: "king_bed", label: "King bed", icon: "🛏️" },
+                          { id: "cot", label: "Cot", icon: "👶" },
+                          { id: "breakfast", label: "Breakfast", icon: "☕" },
+                          { id: "smoking_allowed", label: "Smoking allowed", icon: "🚬" },
+                        ]
                         : []),
                     ].map((am) => {
                       const active = draftAmenities.includes(am.id);
@@ -1995,11 +1982,10 @@ export function ListingsResultsClient({
                                 : [...draftAmenities, am.id],
                             )
                           }
-                          className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs sm:text-[13px] font-medium transition-all cursor-pointer ${
-                            active
+                          className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs sm:text-[13px] font-medium transition-all cursor-pointer ${active
                               ? "border-zinc-900 bg-zinc-900 text-white font-semibold shadow-xs"
                               : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-900"
-                          }`}
+                            }`}
                         >
                           <span>{am.icon}</span>
                           <span>{am.label}</span>
@@ -2031,11 +2017,10 @@ export function ListingsResultsClient({
                                     : [...draftAmenities, am.id],
                                 )
                               }
-                              className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs sm:text-[13px] font-medium transition-all cursor-pointer ${
-                                active
+                              className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs sm:text-[13px] font-medium transition-all cursor-pointer ${active
                                   ? "border-zinc-900 bg-zinc-900 text-white font-semibold shadow-xs"
                                   : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-900"
-                              }`}
+                                }`}
                             >
                               <span>{am.icon}</span>
                               <span>{am.label}</span>
@@ -2065,11 +2050,10 @@ export function ListingsResultsClient({
                                     : [...draftAmenities, am.id],
                                 )
                               }
-                              className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs sm:text-[13px] font-medium transition-all cursor-pointer ${
-                                active
+                              className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs sm:text-[13px] font-medium transition-all cursor-pointer ${active
                                   ? "border-zinc-900 bg-zinc-900 text-white font-semibold shadow-xs"
                                   : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-900"
-                              }`}
+                                }`}
                             >
                               <span>{am.icon}</span>
                               <span>{am.label}</span>
@@ -2098,11 +2082,10 @@ export function ListingsResultsClient({
                   <button
                     type="button"
                     onClick={() => setDraftInstantBook((v) => !v)}
-                    className={`inline-flex items-center gap-2 rounded-full border px-4 py-2.5 text-xs sm:text-[13px] font-medium transition-all cursor-pointer ${
-                      draftInstantBook
+                    className={`inline-flex items-center gap-2 rounded-full border px-4 py-2.5 text-xs sm:text-[13px] font-medium transition-all cursor-pointer ${draftInstantBook
                         ? "border-zinc-900 bg-zinc-900 text-white font-semibold shadow-xs"
                         : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-900"
-                    }`}
+                      }`}
                   >
                     <span>⚡</span>
                     <span>Instant Book</span>
@@ -2115,11 +2098,10 @@ export function ListingsResultsClient({
                       const hasIt = draftAmenities.includes("self_check_in");
                       setDraftAmenities(hasIt ? draftAmenities.filter((a) => a !== "self_check_in") : [...draftAmenities, "self_check_in"]);
                     }}
-                    className={`inline-flex items-center gap-2 rounded-full border px-4 py-2.5 text-xs sm:text-[13px] font-medium transition-all cursor-pointer ${
-                      draftAmenities.includes("self_check_in")
+                    className={`inline-flex items-center gap-2 rounded-full border px-4 py-2.5 text-xs sm:text-[13px] font-medium transition-all cursor-pointer ${draftAmenities.includes("self_check_in")
                         ? "border-zinc-900 bg-zinc-900 text-white font-semibold shadow-xs"
                         : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-900"
-                    }`}
+                      }`}
                   >
                     <span>🔑</span>
                     <span>Self check-in</span>
@@ -2129,11 +2111,10 @@ export function ListingsResultsClient({
                   <button
                     type="button"
                     onClick={() => setDraftPets((v) => !v)}
-                    className={`inline-flex items-center gap-2 rounded-full border px-4 py-2.5 text-xs sm:text-[13px] font-medium transition-all cursor-pointer ${
-                      draftPets
+                    className={`inline-flex items-center gap-2 rounded-full border px-4 py-2.5 text-xs sm:text-[13px] font-medium transition-all cursor-pointer ${draftPets
                         ? "border-zinc-900 bg-zinc-900 text-white font-semibold shadow-xs"
                         : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-900"
-                    }`}
+                      }`}
                   >
                     <span>🐾</span>
                     <span>Allows pets</span>
@@ -2169,11 +2150,10 @@ export function ListingsResultsClient({
                         key={pt.id}
                         type="button"
                         onClick={() => setDraftPropertyType(active ? "" : pt.id)}
-                        className={`inline-flex items-center gap-2 rounded-full border px-4 py-2.5 text-xs sm:text-[13px] font-medium transition-all cursor-pointer ${
-                          active
+                        className={`inline-flex items-center gap-2 rounded-full border px-4 py-2.5 text-xs sm:text-[13px] font-medium transition-all cursor-pointer ${active
                             ? "border-zinc-900 bg-zinc-900 text-white font-semibold shadow-xs"
                             : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-900"
-                        }`}
+                          }`}
                       >
                         <span>{pt.icon}</span>
                         <span>{pt.label}</span>

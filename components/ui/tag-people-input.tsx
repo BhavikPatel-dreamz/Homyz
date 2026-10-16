@@ -216,14 +216,14 @@ export function TagPeopleInput({
                         <Image src={user.image} alt={user.name || "User"} fill className="object-cover" sizes="28px" />
                       </div>
                     ) : (
-                      <div className="w-7 h-7 rounded-full bg-amber-100 text-amber-800 font-semibold text-xs flex items-center justify-center shrink-0">
+                        <div className="w-7 h-7 rounded-full bg-amber-100 text-amber-800 font-medium text-xs flex items-center justify-center shrink-0">
                         {(user.name || user.email || "U")[0].toUpperCase()}
                       </div>
                     )}
                     <div className="min-w-0">
-                      <p className="font-semibold text-[#1F1F1F] truncate">{user.name || "Guest Member"}</p>
+                      <p className="font-medium text-[#1F1F1F] truncate">{user.name || "Guest Member"}</p>
                       {user.email && (
-                        <p className="text-[11px] text-[#727272] truncate">
+                        <p className="text-sm text-[#727272] truncate">
                           @{user.email.split("@")[0]}
                         </p>
                       )}
@@ -231,7 +231,7 @@ export function TagPeopleInput({
                   </div>
 
                   {isSelected && (
-                    <span className="text-[11px] font-semibold text-[#727272] bg-zinc-100 px-2 py-0.5 rounded-full">
+                    <span className="text-sm font-medium text-[#727272] bg-zinc-100 px-2 py-0.5 rounded-full">
                       Tagged
                     </span>
                   )}

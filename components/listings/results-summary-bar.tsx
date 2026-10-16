@@ -86,8 +86,17 @@ export function ResultsSummaryBar({
         {headline}
       </h1>
       {subtitleParts.length > 0 && (
-        <p className="text-xs sm:text-sm text-[#727272] font-normal mt-1.5 flex items-center gap-1.5 flex-wrap">
-          {subtitleParts.join(" · ")}
+        <p className="text-xs sm:text-sm text-[#727272] font-normal mt-1.5 flex items-center flex-wrap">
+          {subtitleParts.map((part, index) => (
+            <React.Fragment key={index}>
+              {index > 0 && (
+                <span className="mx-[5px]" aria-hidden="true">
+                  ,
+                </span>
+              )}
+              <span>{part}</span>
+            </React.Fragment>
+          ))}
         </p>
       )}
     </div>

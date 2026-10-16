@@ -340,16 +340,9 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
           aria-label="Breadcrumb"
           className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-[#727272] min-w-0 py-0.5"
         >
-          <Link
-            href="/host/resolution-center"
-            className="font-medium text-[#1F1F1F] underline underline-offset-4 hover:text-[#555] transition-colors shrink-0"
-          >
-            Resolution Center
-          </Link>
-          <span className="text-zinc-300 shrink-0" aria-hidden="true">/</span>
-          <span className="shrink-0">Case Details</span>
-          <span className="text-zinc-300 shrink-0" aria-hidden="true">/</span>
-          <span className="font-semibold text-zinc-700 shrink-0">#{dispute.caseReference}</span>
+          <span className="shrink-0 font-normal">Case Details</span>
+          <span className="text-[#727272] shrink-0 font-normal" aria-hidden="true">/</span>
+          <span className="text-[#727272] shrink-0 font-normal">#{dispute.caseReference}</span>
         </nav>
       </div>
 
@@ -375,10 +368,10 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
             >
               {dispute.disputeWorkflowStatus.replaceAll("_", " ")}
             </span>
-            <span className="rounded-full bg-zinc-100 border border-zinc-200 px-3 py-1 text-xs font-medium text-[#1f1f1f]">
+            <span className="rounded-full bg-zinc-100 border border-zinc-200 px-3 py-1 text-xs font-medium text-[#727272]">
               {dispute.severity} Priority
             </span>
-            <span className="rounded-full bg-zinc-100 border border-zinc-200 px-3 py-1 text-xs font-medium text-[#1f1f1f]">
+            <span className="rounded-full bg-zinc-100 border border-zinc-200 px-3 py-1 text-xs font-medium text-[#727272]">
               Reported by {dispute.reporterRole}
             </span>
           </div>
@@ -1220,7 +1213,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                 <button
                   type="button"
                   onClick={() => setNoteModalOpen(false)}
-                  className="min-h-11 rounded-full border border-[#1f1f1f] px-5 py-2.5 text-sm font-medium text-[#1F1F1F] bg-[#1f1f1f] hover:bg-white cursor-pointer"
+                  className="min-h-11 rounded-full border border-[#1f1f1f] px-5 py-2.5 text-sm font-medium text-white bg-[#1f1f1f] hover:bg-white hover:text-[#1f1f1f] cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -1357,7 +1350,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
           <div className="w-full max-w-lg rounded-[20px] bg-white border border-zinc-200 p-6 sm:p-7 shadow-2xl space-y-5">
             <div className="flex items-center justify-between border-b border-zinc-300 pb-3.5">
               <div>
-                <h3 className="text-base sm:text-lg font-medium text-[#1F1F1F]">Resolve Your Dispute Complaint</h3>
+                <h3 className="text-lg sm:text-xl font-medium text-[#1F1F1F]">Resolve Your Dispute Complaint</h3>
                 <p className="text-xs text-[#727272]">As the reporting host, you can resolve or withdraw your case.</p>
               </div>
               <button

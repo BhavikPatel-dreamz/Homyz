@@ -719,13 +719,13 @@ export function ListingSearchBar() {
 
   // Autocomplete suggestions list JSX
   const destinationSuggestions = (
-    <div className="no-scrollbar max-h-[360px] w-full space-y-3 overflow-y-auto pr-1">
+    <div className="visible-scrollbar max-h-[360px] w-full space-y-3 overflow-y-auto pr-1">
       {/* Current Location Action Button */}
       <button
         type="button"
         onClick={handleUseCurrentLocation}
         disabled={isLocating}
-        className="flex w-full items-center justify-between gap-3 text-left rounded-2xl p-2.5 transition-all cursor-pointer hover:bg-zinc-100/90 group border border-zinc-100/90 bg-zinc-50/50 mb-2"
+        className="flex w-full items-center justify-between gap-3 text-left rounded-lg p-2.5 transition-all cursor-pointer hover:bg-zinc-100/90 group border border-zinc-200/90 bg-zinc-50/50 mb-4"
       >
         <div className="flex items-center gap-3 min-w-0">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors shadow-2xs">
@@ -742,21 +742,21 @@ export function ListingSearchBar() {
             )}
           </div>
           <div className="min-w-0">
-            <span className="block text-[14px] font-semibold text-[#1f1f1f] leading-tight">
+            <span className="block text-sm font-normal text-[#1f1f1f] truncate">
               {isLocating ? "Detecting location..." : "Use current location"}
             </span>
-            <span className="block text-[11px] text-[#727272] font-medium">Discover verified stays near you</span>
+            <span className="block text-sm text-[#727272] truncate">Discover verified stays near you</span>
           </div>
         </div>
-        <span className="shrink-0 rounded-full bg-blue-100/80 px-2 py-0.5 text-[10px] font-semibold text-blue-800">
+        <span className="shrink-0 rounded-full bg-blue-100/80 px-2 py-0.5 text-xs font-medium text-blue-800">
           GPS
         </span>
       </button>
 
       {/* Recent Searches */}
       {!destination.trim() && recentSearches.length > 0 && (
-        <div className="mb-3">
-          <p className="px-2 pb-1.5 text-[11px] font-bold uppercase tracking-wider text-[#727272]">
+        <div className="mb-4">
+          <p className="text-sm font-normal text-[#1f1f1f] mb-3">
             Recent Searches
           </p>
           <div className="space-y-1">
@@ -769,15 +769,15 @@ export function ListingSearchBar() {
                   setActiveStep("when");
                   if (!isMobileSearchOpen) setDesktopPanel("checkIn");
                 }}
-                className="flex w-full items-center gap-3 rounded-2xl p-2 text-left hover:bg-zinc-100/80 transition-colors cursor-pointer"
+                className="flex w-full items-center gap-3 text-left rounded-2xl p-2.5 transition-colors hover:bg-zinc-100/80 cursor-pointer"
               >
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-zinc-100 text-zinc-600">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#e2e2e2] text-[#1f1f1f]">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4.5 w-4.5">
                     <circle cx="12" cy="12" r="10" />
                     <polyline points="12 6 12 12 16 14" />
                   </svg>
                 </div>
-                <span className="text-[13px] font-semibold text-zinc-800 truncate">{term}</span>
+                <span className="text-sm font-normal text-[#1F1F1F] truncate">{term}</span>
               </button>
             ))}
           </div>
@@ -804,10 +804,10 @@ export function ListingSearchBar() {
                 🏙️
               </div>
               <div className="min-w-0">
-                <div className="text-[14px] font-bold text-[#1F1F1F] truncate">
+                <div className="text-sm font-medium text-[#1F1F1F] truncate">
                   {highlightMatch(primaryCity.name || primaryCity.city, destination)}
                 </div>
-                <div className="text-[11px] text-[#727272] truncate">{primaryCity.fullLabel}</div>
+                <div className="text-sm text-[#727272] truncate">{primaryCity.fullLabel}</div>
               </div>
             </div>
             <span className="shrink-0 rounded-full bg-amber-200/80 px-2 py-0.5 text-[10px] font-bold text-amber-900">
@@ -820,7 +820,7 @@ export function ListingSearchBar() {
       {/* Places & Landmarks */}
       {places.length > 0 && (
         <div>
-          <p className="px-2 pt-1 pb-1.5 text-[11px] font-bold uppercase tracking-wider text-[#727272]">
+          <p className="px-2 pt-1 pb-1.5 text-sm font-medium text-[#727272]">
             {primaryCity?.name ? `Places in ${primaryCity.name}` : "Places & Areas"}
           </p>
           <div className="space-y-1">
@@ -840,10 +840,10 @@ export function ListingSearchBar() {
                 <div className="flex items-center gap-3 min-w-0">
                   <LocationIcon type={p.locationType || p.type} />
                   <div className="min-w-0">
-                    <div className="text-[13px] font-semibold text-[#1F1F1F] truncate">
+                    <div className="text-sm font-normal text-[#1F1F1F] truncate">
                       {highlightMatch(p.name || p.city, destination)}
                     </div>
-                    <div className="text-[11px] text-[#727272] truncate">{p.subtitle || p.fullLabel}</div>
+                    <div className="text-sm text-[#727272] truncate">{p.subtitle || p.fullLabel}</div>
                   </div>
                 </div>
                 <span className="shrink-0 rounded-full bg-amber-100/70 px-2 py-0.5 text-[10px] font-semibold text-amber-900">
@@ -876,10 +876,10 @@ export function ListingSearchBar() {
                 <div className="flex items-center gap-3 min-w-0">
                   <LocationIcon type="district" />
                   <div className="min-w-0">
-                    <div className="text-[13px] font-semibold text-[#1F1F1F] truncate">
+                    <div className="text-sm font-normal text-[#1F1F1F] truncate">
                       {highlightMatch(d.name || d.city, destination)}
                     </div>
-                    <div className="text-[11px] text-[#727272] truncate">{d.subtitle || d.fullLabel}</div>
+                    <div className="text-sm text-[#727272] truncate">{d.subtitle || d.fullLabel}</div>
                   </div>
                 </div>
                 <span className="shrink-0 rounded-full bg-blue-100/70 px-2 py-0.5 text-[10px] font-semibold text-blue-900">
@@ -908,10 +908,10 @@ export function ListingSearchBar() {
               <div className="flex items-center gap-3 min-w-0">
                 <LocationIcon type="city" />
                 <div className="min-w-0">
-                  <div className="text-[13px] font-semibold text-[#1F1F1F] truncate">
+                  <div className="text-sm font-normal text-[#1F1F1F] truncate">
                     {highlightMatch(c.name || c.city, destination)}
                   </div>
-                  <div className="text-[11px] text-[#727272] truncate">{c.fullLabel || c.country || ""}</div>
+                  <div className="text-sm text-[#727272] truncate">{c.fullLabel || c.country || ""}</div>
                 </div>
               </div>
             </button>
@@ -930,8 +930,8 @@ export function ListingSearchBar() {
         return (
           <div key={key} className="flex items-center justify-between gap-3 py-4 first:pt-1 last:pb-1">
             <div className="min-w-0">
-              <p className="text-[14px] font-semibold text-[#1F1F1F]">{label}</p>
-              <p className="text-[12px] text-[#727272]">{description}</p>
+              <p className="text-sm font-medium text-[#1F1F1F]">{label}</p>
+              <p className="text-xs font-normal text-[#727272]">{description}</p>
             </div>
             <div className="flex shrink-0 items-center gap-2.5">
               <button

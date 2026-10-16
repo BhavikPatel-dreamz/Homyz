@@ -413,7 +413,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
             setDestination(parsed.name);
           }
         }
-      } catch {}
+      } catch { }
     }, 0);
     return () => clearTimeout(timer);
   }, []);
@@ -444,7 +444,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
               country = payload.country || "";
             }
           }
-        } catch {}
+        } catch { }
 
         const loc: SelectedLocationData = {
           name: placeName,
@@ -461,7 +461,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
         setDestination(placeName);
         try {
           localStorage.setItem("homyz_selected_location", JSON.stringify(loc));
-        } catch {}
+        } catch { }
 
         setIsLocating(false);
         setActiveStep("when");
@@ -487,7 +487,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
     setSuggestIndex(-1);
     try {
       localStorage.removeItem("homyz_selected_location");
-    } catch {}
+    } catch { }
     fetchSuggestions("");
   }, [fetchSuggestions]);
 
@@ -604,7 +604,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
         setSelectedLocation(loc);
         try {
           localStorage.setItem("homyz_selected_location", JSON.stringify(loc));
-        } catch {}
+        } catch { }
       }
     } else {
       const displayLabel = item.name || item.city;
@@ -624,7 +624,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
       setSelectedLocation(loc);
       try {
         localStorage.setItem("homyz_selected_location", JSON.stringify(loc));
-      } catch {}
+      } catch { }
     }
     setSuggestions({ primaryCity: null, places: [], districts: [], cities: [], properties: [] });
     setSuggestIndex(-1);
@@ -727,17 +727,17 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
       {/* Autocomplete suggestions panel */}
       <div
         ref={destinationListRef}
-        className="no-scrollbar max-h-[360px] w-full space-y-3 overflow-y-auto pr-1"
+        className="visible-scrollbar max-h-[360px] w-full space-y-3 overflow-y-auto pr-1"
       >
         {/* Use Current Location Action Button */}
         <button
           type="button"
           onClick={handleUseCurrentLocation}
           disabled={isLocating}
-          className="flex w-full items-center justify-between gap-3 text-left rounded-2xl p-2.5 transition-all cursor-pointer hover:bg-zinc-100/90 group border border-zinc-100/90 bg-zinc-50/50 mb-2"
+          className="flex w-full items-center justify-between gap-3 text-left rounded-lg p-2.5 transition-all cursor-pointer hover:bg-zinc-100/90 group border border-zinc-200/90 bg-zinc-50/50 mb-4"
         >
           <div className="flex items-center gap-3 min-w-0">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors shadow-2xs">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-100/90 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors shadow-2xs">
               {isLocating ? (
                 <div className="h-5 w-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin group-hover:border-white group-hover:border-t-transparent" />
               ) : (
@@ -751,13 +751,13 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
               )}
             </div>
             <div className="min-w-0">
-              <div className="text-[14px] font-normal text-[#1f1f1f] truncate">
+              <div className="text-sm font-normal text-[#1f1f1f] truncate">
                 {isLocating ? t("home_detecting_location") : t("home_use_current_location")}
               </div>
-              <div className="text-[12px] text-[#727272] truncate">{t("home_find_stays_near_you")}</div>
+              <div className="text-sm text-[#727272] truncate">{t("home_find_stays_near_you")}</div>
             </div>
           </div>
-          <span className="shrink-0 rounded-full bg-blue-100/70 px-2.5 py-0.5 text-[10px] font-semibold tracking-wider uppercase text-blue-800">
+          <span className="shrink-0 rounded-full bg-blue-100/80 px-2 py-0.5 text-xs font-medium text-blue-800">
             GPS
           </span>
         </button>
@@ -779,11 +779,10 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                     setActiveStep("when");
                     if (!isMobileSearchOpen) setDesktopPanel("checkIn");
                   }}
-                  className={`flex w-full items-center justify-between gap-3 text-left rounded-2xl p-2.5 transition-all cursor-pointer ${
-                    suggestIndex === getIndexForLabel(primaryCity.name || primaryCity.city)
-                      ? "bg-[#fcdf9c]/40 ring-1 ring-[#fcdf9c]"
-                      : "hover:bg-zinc-100/90"
-                  }`}
+                  className={`flex w-full items-center justify-between gap-3 text-left rounded-2xl p-2.5 transition-all cursor-pointer ${suggestIndex === getIndexForLabel(primaryCity.name || primaryCity.city)
+                    ? "bg-[#fcdf9c]/40 ring-1 ring-[#fcdf9c]"
+                    : "hover:bg-zinc-100/90"
+                    }`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <LocationIcon type="city" />
@@ -820,17 +819,16 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                           setActiveStep("when");
                           if (!isMobileSearchOpen) setDesktopPanel("checkIn");
                         }}
-                        className={`flex w-full items-center justify-between gap-3 text-left rounded-2xl p-2.5 transition-all cursor-pointer ${
-                          suggestIndex === idx ? "bg-[#fcdf9c]/40 ring-1 ring-[#fcdf9c]" : "hover:bg-zinc-100/80"
-                        }`}
+                        className={`flex w-full items-center justify-between gap-3 text-left rounded-2xl p-2.5 transition-all cursor-pointer ${suggestIndex === idx ? "bg-[#fcdf9c]/40 ring-1 ring-[#fcdf9c]" : "hover:bg-zinc-100/80"
+                          }`}
                       >
                         <div className="flex items-center gap-3 min-w-0">
                           <LocationIcon type={p.locationType || p.type} />
                           <div className="min-w-0">
-                            <div className="text-[13px] font-semibold text-[#1F1F1F] truncate">
+                            <div className="text-sm font-normal text-[#1F1F1F] truncate">
                               {highlightMatch(p.name || p.city, destination)}
                             </div>
-                            <div className="text-[11px] text-[#727272] truncate">{p.subtitle || p.fullLabel}</div>
+                            <div className="text-sm text-[#727272] truncate">{p.subtitle || p.fullLabel}</div>
                           </div>
                         </div>
                         <span className="shrink-0 rounded-full bg-amber-100/70 px-2 py-0.5 text-[10px] font-semibold text-amber-900">
@@ -846,7 +844,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
             {/* 3. Nearby Districts & Suburbs */}
             {districts.length > 0 && (
               <div>
-                <p className="px-2 pt-1 pb-1.5 text-[11px] font-bold uppercase tracking-wider text-[#727272]">
+                <p className="px-2 pt-1 pb-1.5 text-sm font-medium text-[#727272]">
                   {t("home_nearby_areas_districts")}
                 </p>
                 <div className="space-y-1">
@@ -862,17 +860,16 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                           setActiveStep("when");
                           if (!isMobileSearchOpen) setDesktopPanel("checkIn");
                         }}
-                        className={`flex w-full items-center justify-between gap-3 text-left rounded-2xl p-2.5 transition-all cursor-pointer ${
-                          suggestIndex === idx ? "bg-[#fcdf9c]/40 ring-1 ring-[#fcdf9c]" : "hover:bg-zinc-100/80"
-                        }`}
+                        className={`flex w-full items-center justify-between gap-3 text-left rounded-2xl p-2.5 transition-all cursor-pointer ${suggestIndex === idx ? "bg-[#fcdf9c]/40 ring-1 ring-[#fcdf9c]" : "hover:bg-zinc-100/80"
+                          }`}
                       >
                         <div className="flex items-center gap-3 min-w-0">
                           <LocationIcon type="district" />
                           <div className="min-w-0">
-                            <div className="text-[13px] font-semibold text-[#1F1F1F] truncate">
+                            <div className="text-sm font-normal text-[#1F1F1F] truncate">
                               {highlightMatch(d.name || d.city, destination)}
                             </div>
-                            <div className="text-[11px] text-[#727272] truncate">{d.subtitle || d.fullLabel}</div>
+                            <div className="text-sm text-[#727272] truncate">{d.subtitle || d.fullLabel}</div>
                           </div>
                         </div>
                         <span className="shrink-0 rounded-full bg-blue-100/70 px-2 py-0.5 text-[10px] font-semibold text-blue-900">
@@ -901,14 +898,13 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                         setActiveStep("when");
                         if (!isMobileSearchOpen) setDesktopPanel("checkIn");
                       }}
-                      className={`flex w-full items-center justify-between gap-3 text-left rounded-2xl p-2.5 transition-all cursor-pointer ${
-                        suggestIndex === idx ? "bg-[#fcdf9c]/40 ring-1 ring-[#fcdf9c]" : "hover:bg-zinc-100/80"
-                      }`}
+                      className={`flex w-full items-center justify-between gap-3 text-left rounded-2xl p-2.5 transition-all cursor-pointer ${suggestIndex === idx ? "bg-[#fcdf9c]/40 ring-1 ring-[#fcdf9c]" : "hover:bg-zinc-100/80"
+                        }`}
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <LocationIcon type={c.locationType || c.type || "city"} />
                         <div className="min-w-0">
-                          <div className="text-[14px] font-medium text-[#1f1f1f] truncate">
+                          <div className="text-sm font-normal text-[#1f1f1f] truncate">
                             {highlightMatch(c.fullLabel || c.name || c.city, destination)}
                           </div>
                           {c.subtitle && <div className="text-[14px] text-[#727272] truncate">{c.subtitle}</div>}
@@ -947,9 +943,8 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                           setActiveStep("when");
                           if (!isMobileSearchOpen) setDesktopPanel("checkIn");
                         }}
-                        className={`flex w-full items-center justify-between gap-3 text-left rounded-2xl p-2.5 transition-all cursor-pointer ${
-                          suggestIndex === idx ? "bg-[#fcdf9c]/40 ring-1 ring-[#fcdf9c]" : "hover:bg-zinc-100/80"
-                        }`}
+                        className={`flex w-full items-center justify-between gap-3 text-left rounded-2xl p-2.5 transition-all cursor-pointer ${suggestIndex === idx ? "bg-[#fcdf9c]/40 ring-1 ring-[#fcdf9c]" : "hover:bg-zinc-100/80"
+                          }`}
                       >
                         <div className="flex items-center gap-3 min-w-0">
                           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-800 shadow-2xs">
@@ -995,16 +990,16 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
           /* Fallback: recent searches & popular destinations */
           <>
             {recentSearches.length > 0 && (
-              <div className="mb-2">
+              <div className="mb-4">
                 <div className="flex items-center justify-between mb-1.5 px-2">
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-[#727272]">{t("home_recent_searches")}</p>
+                  <p className="text-sm font-normal text-[#1f1f1f] mb-3">{t("home_recent_searches")}</p>
                   <button
                     type="button"
                     onClick={() => {
                       localStorage.removeItem("homyz_recent_searches");
                       setRecentSearches([]);
                     }}
-                    className="text-[11px] text-[#727272] underline hover:text-[#1F1F1F] cursor-pointer"
+                    className="text-xs font-normal text-[#727272] underline underline-offset-2 hover:text-[#1F1F1F] cursor-pointer"
                   >
                     {t("home_clear")}
                   </button>
@@ -1020,12 +1015,12 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                     }}
                     className="flex w-full items-center gap-3 text-left rounded-2xl p-2.5 transition-colors hover:bg-zinc-100/80 cursor-pointer"
                   >
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-zinc-100 text-zinc-700">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#e2e2e2] text-[#1f1f1f]">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4.5 w-4.5">
                         <path d="M12 8v4l3 3m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" />
                       </svg>
                     </div>
-                    <div className="text-[14px] font-medium text-[#1F1F1F] truncate">{term}</div>
+                    <div className="text-sm font-normal text-[#1F1F1F] truncate">{term}</div>
                   </button>
                 ))}
               </div>
@@ -1052,8 +1047,8 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                       <div className="flex items-center gap-3 min-w-0">
                         <LocationIcon type={d.locationType || "city"} />
                         <div className="min-w-0">
-                          <div className="text-[13px] font-semibold text-[#1F1F1F] truncate">{d.name || d.city}</div>
-                          <div className="text-[11px] text-[#727272] truncate">{d.subtitle || d.country}</div>
+                          <div className="text-sm font-normal text-[#1F1F1F] truncate">{d.name || d.city}</div>
+                          <div className="text-sm text-[#727272] truncate">{d.subtitle || d.country}</div>
                         </div>
                       </div>
                       <span className="shrink-0 rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-medium text-zinc-600">
@@ -1065,14 +1060,14 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
               </div>
             ) : (
               <div className="py-6 px-4 text-center">
-                <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-2xl bg-zinc-100 text-zinc-600">
+                <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-[#e2e2e2] text-[#727272]">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-5 w-5">
                     <path d="M12 2a6 6 0 0 0-6 6c0 4.5 6 11 6 11s6-6.5 6-11a6 6 0 0 0-6-6z" />
                     <circle cx="12" cy="8" r="2" />
                   </svg>
                 </div>
-                <p className="text-[13px] font-medium text-zinc-800">{t("home_search_any_city_worldwide")}</p>
-                <p className="text-[11px] text-[#727272] mt-0.5">{t("home_search_city_hint")}</p>
+                <p className="text-sm font-medium text-[#1f1f1f]">{t("home_search_any_city_worldwide")}</p>
+                <p className="text-sm text-[#727272] mt-0.5">{t("home_search_city_hint")}</p>
               </div>
             )}
           </>
@@ -1089,11 +1084,10 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
         return (
           <div key={key} className="flex items-center justify-between gap-3 py-5 last:pb-0">
             <div className="min-w-0">
-              <p className="text-[15px] text-[#1f1f1f]">{label}</p>
+              <p className="text-base text-[#1f1f1f]">{label}</p>
               <p
-                className={`mt-1 text-[14px] leading-[1.5] text-[#777] ${
-                  key === "pets" ? "max-w-[145px] underline underline-offset-4" : ""
-                }`}
+                className={`mt-1 text-[14px] leading-[1.5] text-[#777] ${key === "pets" ? "max-w-[145px] underline underline-offset-4" : ""
+                  }`}
               >
                 {description}
               </p>
@@ -1148,8 +1142,9 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
 
         {/* Heading */}
         <div className="mt-6">
-          <h1>
-            {t("home_hero_title")}
+          <h1 className="text-[32px] leading-[1.12] text-[#1f1f1f]">
+            <span className="block font-light">{t("home_hero_title_line_one", "Book cozy stays")}</span>
+            <span className="block font-medium">{t("home_hero_title_line_two", "that feel like home")}</span>
           </h1>
         </div>
 
@@ -1163,7 +1158,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
               setDesktopPanel(null);
               setIsMobileSearchOpen(true);
             }}
-            className="flex h-[56px] w-full items-center justify-between rounded-full bg-[#f3f4f6] pl-6 pr-2 shadow-xs transition-transform active:scale-[0.99] cursor-pointer disabled:opacity-90 disabled:cursor-not-allowed"
+            className="flex h-[56px] w-full items-center justify-between rounded-full bg-[#f3f4f6] pl-6 pr-2 shadow-xs transition-transform cursor-pointer disabled:opacity-90 disabled:cursor-not-allowed text-lg font-medium"
             aria-label={isSearching ? "Searching..." : "Start your search"}
           >
             <span className="text-base font-medium text-[#1f1f1f]">
@@ -1176,19 +1171,13 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                   <path className="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                 </svg>
               ) : (
-                <svg
-                  aria-hidden="true"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="h-4.5 w-4.5"
-                >
-                  <circle cx="11" cy="11" r="7" />
-                  <path d="m21 21-4.35-4.35" />
-                </svg>
+                <Image
+                  src="/images/icons/search-icon.svg"
+                  alt=""
+                  width={20}
+                  height={20}
+                  className="h-5 w-5"
+                />
               )}
             </div>
           </button>
@@ -1197,9 +1186,8 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
 
       {/* Desktop / Tablet Hero Section (screens >= md) */}
       <section
-        className={`relative isolate hidden min-h-[410px] w-full items-center rounded-[32px] bg-[#ddd] md:flex sm:min-h-[460px] lg:min-h-[512px] lg:rounded-[60px] ${
-          desktopPanel ? "z-[60]" : "z-20"
-        }`}
+        className={`relative isolate hidden min-h-[410px] w-full items-center rounded-[32px] bg-[#ddd] md:flex sm:min-h-[460px] lg:min-h-[512px] lg:rounded-[60px] ${desktopPanel ? "z-[60]" : "z-20"
+          }`}
       >
         {/* Background Travel Imagery */}
         <div className="absolute inset-0 z-0 overflow-hidden rounded-[32px] lg:rounded-[60px]">
@@ -1215,9 +1203,9 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
 
         {/* Hero Content & Search Bar */}
         <div className="relative z-10 w-full px-7 sm:px-12 lg:px-8 xl:px-8">
-          <h1 className="mb-11 max-w-[470px]">
-            <span className="block">{t("home_hero_title_line_one")}</span>
-            <span className="block font-medium">{t("home_hero_title_line_two")}</span>
+          <h1 className="mb-11 max-w-[470px] text-[32px] leading-[1.12] text-[#1f1f1f] md:text-[34px] lg:text-[42px] lg:leading-[1.08] xl:text-[48px]">
+            <span className="block font-light">{t("home_hero_title_line_one", "Book cozy stays")}</span>
+            <span className="block font-medium">{t("home_hero_title_line_two", "that feel like home")}</span>
           </h1>
 
           {/* Floating Search Container */}
@@ -1225,9 +1213,8 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
             ref={desktopSearchRef}
             onSubmit={handleSearchSubmit}
             autoComplete="off"
-            className={`relative flex h-[66px] w-full max-w-[820px] items-center rounded-full border border-zinc-200/90 shadow-[0_4px_24px_rgba(0,0,0,0.09)] transition-[background-color,box-shadow] duration-200 hover:shadow-[0_6px_30px_rgba(0,0,0,0.13)] bg-white ${
-              desktopPanel ? "bg-[#ebebeb]" : "bg-white"
-            }`}
+            className={`relative flex h-[66px] w-full max-w-[820px] items-center rounded-full border border-zinc-200/90 shadow-[0_4px_24px_rgba(0,0,0,0.09)] transition-[background-color,box-shadow] duration-200 hover:shadow-[0_6px_30px_rgba(0,0,0,0.13)] bg-white ${desktopPanel ? "bg-[#ebebeb]" : "bg-white"
+              }`}
           >
             <div
               ref={desktopActivePillRef}
@@ -1237,9 +1224,8 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
             {/* Where */}
             <div
               ref={(element) => { desktopFieldRefs.current.where = element; }}
-              className={`relative z-10 flex h-full min-w-0 flex-[1.3] flex-col justify-center rounded-full px-8 transition-colors duration-200 cursor-pointer ${
-                desktopPanel === "where" ? "bg-[#F3F4F5]" : "hover:bg-[#fcdf9c]"
-              }`}
+              className={`relative z-10 flex h-full min-w-0 flex-[1.3] flex-col justify-center rounded-full px-8 transition-colors duration-200 cursor-pointer ${desktopPanel === "where" ? "bg-[#F3F4F5]" : "hover:bg-[#fcdf9c]"
+                }`}
               onClick={() => setDesktopPanel("where")}
             >
               <label htmlFor="desktop-destination" className="text-base font-normal text-[#1f1f1f] cursor-pointer">
@@ -1312,9 +1298,8 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
             </div>
 
             <div
-              className={`relative z-10 h-7 w-px shrink-0 bg-zinc-200/90 transition-opacity duration-300 ${
-                desktopPanel === "where" || desktopPanel === "checkIn" ? "opacity-0" : "opacity-100"
-              }`}
+              className={`relative z-10 h-7 w-px shrink-0 bg-zinc-200/90 transition-opacity duration-300 ${desktopPanel === "where" || desktopPanel === "checkIn" ? "opacity-0" : "opacity-100"
+                }`}
             />
 
             {/* Check In */}
@@ -1324,9 +1309,8 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
               aria-controls="desktop-search-panel"
               onClick={() => setDesktopPanel(desktopPanel === "checkIn" ? null : "checkIn")}
               ref={(element) => { desktopFieldRefs.current.checkIn = element; }}
-              className={`relative z-10 flex h-full min-w-0 flex-1 flex-col justify-center rounded-full px-5 text-left transition-colors duration-200 cursor-pointer ${
-                desktopPanel === "checkIn" ? "" : "hover:bg-[#fcdf9c]"
-              }`}
+              className={`relative z-10 flex h-full min-w-0 flex-1 flex-col justify-center rounded-full px-5 text-left transition-colors duration-200 cursor-pointer ${desktopPanel === "checkIn" ? "" : "hover:bg-[#fcdf9c]"
+                }`}
             >
               <span className="block text-base font-normal text-[#1f1f1f] cursor-pointer">{t("home_check_in", "Check in")}</span>
               <span className="block truncate text-sm font-normal text-[#727272]">
@@ -1335,9 +1319,8 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
             </button>
 
             <div
-              className={`relative z-10 h-7 w-px shrink-0 bg-zinc-200/90 transition-opacity duration-300 ${
-                desktopPanel === "checkIn" || desktopPanel === "checkOut" ? "opacity-0" : "opacity-100"
-              }`}
+              className={`relative z-10 h-7 w-px shrink-0 bg-zinc-200/90 transition-opacity duration-300 ${desktopPanel === "checkIn" || desktopPanel === "checkOut" ? "opacity-0" : "opacity-100"
+                }`}
             />
 
             {/* Check Out */}
@@ -1347,9 +1330,8 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
               aria-controls="desktop-search-panel"
               onClick={() => setDesktopPanel(desktopPanel === "checkOut" ? null : "checkOut")}
               ref={(element) => { desktopFieldRefs.current.checkOut = element; }}
-              className={`relative z-10 flex h-full min-w-0 flex-1 flex-col justify-center rounded-full px-5 text-left transition-colors duration-200 cursor-pointer ${
-                desktopPanel === "checkOut" ? "" : "hover:bg-[#fcdf9c]"
-              }`}
+              className={`relative z-10 flex h-full min-w-0 flex-1 flex-col justify-center rounded-full px-5 text-left transition-colors duration-200 cursor-pointer ${desktopPanel === "checkOut" ? "" : "hover:bg-[#fcdf9c]"
+                }`}
             >
               <span className="block text-base font-normal text-[#1f1f1f] cursor-pointer">{t("home_check_out", "Check out")}</span>
               <span className="block truncate text-sm font-normal text-[#727272]">
@@ -1358,9 +1340,8 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
             </button>
 
             <div
-              className={`relative z-10 h-7 w-px shrink-0 bg-zinc-200/90 transition-opacity duration-300 ${
-                desktopPanel === "checkOut" || desktopPanel === "who" ? "opacity-0" : "opacity-100"
-              }`}
+              className={`relative z-10 h-7 w-px shrink-0 bg-zinc-200/90 transition-opacity duration-300 ${desktopPanel === "checkOut" || desktopPanel === "who" ? "opacity-0" : "opacity-100"
+                }`}
             />
 
             {/* Who & Search Button */}
@@ -1371,9 +1352,8 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                 aria-controls="desktop-search-panel"
                 onClick={() => setDesktopPanel(desktopPanel === "who" ? null : "who")}
                 ref={(element) => { desktopFieldRefs.current.who = element; }}
-                className={`relative flex h-full min-w-0 flex-1 flex-col justify-center rounded-full px-5 text-left transition-colors duration-200 cursor-pointer ${
-                  desktopPanel === "who" ? "" : "hover:bg-[#fcdf9c]"
-                }`}
+                className={`relative flex h-full min-w-0 flex-1 flex-col justify-center rounded-full px-5 text-left transition-colors duration-200 cursor-pointer ${desktopPanel === "who" ? "" : "hover:bg-[#fcdf9c]"
+                  }`}
               >
                 <span className="block text-base font-normal text-[#1f1f1f] cursor-pointer">{t("home_search_who")}</span>
                 <span className="block truncate text-sm font-normal text-[#727272]">
@@ -1409,16 +1389,15 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                   desktopPanel === "where"
                     ? "Suggested destinations"
                     : desktopPanel === "who"
-                    ? "Guests"
-                    : "Choose dates"
+                      ? "Guests"
+                      : "Choose dates"
                 }
-                className={`absolute top-full z-[70] mt-3 max-h-[min(600px,75dvh)] max-w-full origin-top overflow-y-auto rounded-[16px] bg-[#F3F4F5] p-5 shadow-[0_20px_50px_rgba(0,0,0,0.18)] animate-in fade-in slide-in-from-top-2 zoom-in-95 transition-[width,left,right] duration-200 ease-out ${
-                  desktopPanel === "where"
-                    ? "left-0 w-[400px] sm:w-[480px]"
-                    : desktopPanel === "who"
+                className={`absolute top-full z-[70] mt-3 max-h-[min(600px,75dvh)] max-w-full origin-top overflow-y-auto rounded-[16px] bg-[#F3F4F5] p-5 shadow-[0_20px_50px_rgba(0,0,0,0.18)] animate-in fade-in slide-in-from-top-2 zoom-in-95 transition-[width,left,right] duration-200 ease-out ${desktopPanel === "where"
+                  ? "left-0 w-[400px] sm:w-[480px]"
+                  : desktopPanel === "who"
                     ? "right-0 w-[380px]"
                     : "left-0 sm:left-auto sm:right-0 lg:left-0 w-full max-w-[756px]"
-                }`}
+                  }`}
               >
                 <div key={desktopPanel} className="animate-in fade-in slide-in-from-top-1 duration-200">
                   {desktopPanel === "where" ? (
@@ -1457,7 +1436,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
           onClick={() => setIsMobileSearchOpen(false)}
         >
           <div
-            className="relative w-full max-w-[440px] rounded-[32px] bg-white p-5 pt-4 pb-6 shadow-[0_24px_64px_rgba(0,0,0,0.2)] border border-zinc-100 animate-in zoom-in-95 duration-150"
+            className="relative w-full max-w-[440px] rounded-xl bg-white p-5 pt-4 pb-6 shadow-[0_24px_64px_rgba(0,0,0,0.2)] border border-zinc-100 animate-in zoom-in-95 duration-150"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Close Button at top right */}
@@ -1570,9 +1549,8 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
               <button
                 type="button"
                 aria-expanded={activeStep === "when"}
-                className={`flex w-full items-center justify-between gap-2 text-left cursor-pointer ${
-                  activeStep === "when" ? "mb-4 px-1 pt-1" : "px-2 py-1"
-                }`}
+                className={`flex w-full items-center justify-between gap-2 text-left cursor-pointer ${activeStep === "when" ? "mb-4 px-1 pt-1" : "px-2 py-1"
+                  }`}
                 onClick={() => setActiveStep(activeStep === "when" ? "where" : "when")}
               >
                 <span className={activeStep === "when" ? "text-[18px] font-bold text-[#1F1F1F]" : "text-[13px] font-semibold text-[#727272] uppercase tracking-wider"}>
@@ -1581,32 +1559,30 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                 {activeStep !== "when" && (
                   <span className="text-right text-[15px] font-semibold text-[#1F1F1F]">
                     {datePreferences.mode !== "dates"
-                      ? `${datePreferences.mode === "flexible" ? t(`home_when_stay_${datePreferences.stay.toLowerCase()}` as Parameters<typeof t>[0]) + " · " : ""}${
-                          datePreferences.months.length
-                            ? datePreferences.months
-                                .map((m) =>
-                                  new Date(m + "-01T00:00:00").toLocaleDateString(
-                                    language === "ar" ? "ar-EG" : language === "hi" ? "hi-IN" : language,
-                                    { month: "short" }
-                                  )
-                                )
-                                .join(", ")
-                            : t("home_when_anytime")
-                        }`
+                      ? `${datePreferences.mode === "flexible" ? t(`home_when_stay_${datePreferences.stay.toLowerCase()}` as Parameters<typeof t>[0]) + " · " : ""}${datePreferences.months.length
+                        ? datePreferences.months
+                          .map((m) =>
+                            new Date(m + "-01T00:00:00").toLocaleDateString(
+                              language === "ar" ? "ar-EG" : language === "hi" ? "hi-IN" : language,
+                              { month: "short" }
+                            )
+                          )
+                          .join(", ")
+                        : t("home_when_anytime")
+                      }`
                       : checkIn
-                      ? `${new Date(checkIn + "T00:00:00").toLocaleDateString(
+                        ? `${new Date(checkIn + "T00:00:00").toLocaleDateString(
                           language === "ar" ? "ar-EG" : language === "hi" ? "hi-IN" : language,
                           { month: "short", day: "numeric" }
-                        )}${
-                          checkOut
-                            ? " – " +
-                              new Date(checkOut + "T00:00:00").toLocaleDateString(
-                                language === "ar" ? "ar-EG" : language === "hi" ? "hi-IN" : language,
-                                { month: "short", day: "numeric" }
-                              )
-                            : " – " + t("home_when_add_checkout")
+                        )}${checkOut
+                          ? " – " +
+                          new Date(checkOut + "T00:00:00").toLocaleDateString(
+                            language === "ar" ? "ar-EG" : language === "hi" ? "hi-IN" : language,
+                            { month: "short", day: "numeric" }
+                          )
+                          : " – " + t("home_when_add_checkout")
                         }`
-                      : t("home_search_add_dates")}
+                        : t("home_search_add_dates")}
                   </span>
                 )}
               </button>
