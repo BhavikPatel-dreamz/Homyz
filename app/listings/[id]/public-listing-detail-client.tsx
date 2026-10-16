@@ -872,14 +872,14 @@ export function PublicListingDetailClient({
     setQuote(
       nextCheckIn && nextCheckOut
         ? readBookingQuote<BookingQuote>({
-            listingId: listing.id,
-            checkIn: nextCheckIn,
-            checkOut: nextCheckOut,
-            guests: nextGuests,
-            pets: nextPets,
-            nonRefundable: false,
-            specialOfferId: initialSpecialOfferId,
-          })
+          listingId: listing.id,
+          checkIn: nextCheckIn,
+          checkOut: nextCheckOut,
+          guests: nextGuests,
+          pets: nextPets,
+          nonRefundable: false,
+          specialOfferId: initialSpecialOfferId,
+        })
         : null,
     );
     setQuoteError(null);
@@ -1128,10 +1128,10 @@ export function PublicListingDetailClient({
   const hostWork = typeof publicProfile?.myWork === "string" ? publicProfile.myWork.trim() : "";
   const hostLanguages = Array.isArray(publicProfile?.languages)
     ? getLanguageDisplayNames(
-        publicProfile.languages
-          .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
-          .slice(0, 4),
-      )
+      publicProfile.languages
+        .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
+        .slice(0, 4),
+    )
     : [];
   const hostSince = listing.host?.createdAt && !Number.isNaN(new Date(listing.host.createdAt).getTime())
     ? new Intl.DateTimeFormat("en", { month: "long", year: "numeric" }).format(new Date(listing.host.createdAt))
@@ -1212,19 +1212,19 @@ export function PublicListingDetailClient({
   const houseRuleItems = [
     ...(formatTime(listing.checkInStart)
       ? [{
-          id: "check-in",
-          icon: <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-full border border-[#1f1f1f]"><Image src="/images/icons/check-in-icon.svg" alt="" width={15} height={15} className="size-6" /></span>,
-          text: formatTime(listing.checkInEnd)
-            ? t("listing_detail_check_in_after_before", { start: formatTime(listing.checkInStart) || "", end: formatTime(listing.checkInEnd) || "" }, `Check-in after ${formatTime(listing.checkInStart)}, before ${formatTime(listing.checkInEnd)}`)
-            : t("listing_detail_check_in_after", { start: formatTime(listing.checkInStart) || "" }, `Check-in after ${formatTime(listing.checkInStart)}`),
-        }]
+        id: "check-in",
+        icon: <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-full border border-[#1f1f1f]"><Image src="/images/icons/check-in-icon.svg" alt="" width={15} height={15} className="size-6" /></span>,
+        text: formatTime(listing.checkInEnd)
+          ? t("listing_detail_check_in_after_before", { start: formatTime(listing.checkInStart) || "", end: formatTime(listing.checkInEnd) || "" }, `Check-in after ${formatTime(listing.checkInStart)}, before ${formatTime(listing.checkInEnd)}`)
+          : t("listing_detail_check_in_after", { start: formatTime(listing.checkInStart) || "" }, `Check-in after ${formatTime(listing.checkInStart)}`),
+      }]
       : []),
     ...(formatTime(listing.checkOutTime)
       ? [{
-          id: "check-out",
-          icon: <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-full border border-[#1f1f1f]"><Image src="/images/icons/check-in-icon.svg" alt="" width={15} height={15} className="size-6" /></span>,
-          text: t("listing_detail_check_out_before", { time: formatTime(listing.checkOutTime) || "" }, `Check-out before ${formatTime(listing.checkOutTime)}`),
-        }]
+        id: "check-out",
+        icon: <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-full border border-[#1f1f1f]"><Image src="/images/icons/check-in-icon.svg" alt="" width={15} height={15} className="size-6" /></span>,
+        text: t("listing_detail_check_out_before", { time: formatTime(listing.checkOutTime) || "" }, `Check-out before ${formatTime(listing.checkOutTime)}`),
+      }]
       : []),
     {
       id: "maximum-guests",
@@ -1233,46 +1233,46 @@ export function PublicListingDetailClient({
     },
     ...(listing.petsAllowed !== null
       ? [{
-          id: "pets",
-          icon: <RuleIcon name="pets" />,
-          text: listing.petsAllowed
-            ? (listing.maxPets
-                ? t("listing_detail_pets_allowed_max", { max: listing.maxPets }, `Pets allowed · up to ${listing.maxPets}`)
-                : t("listing_detail_pets_allowed", "Pets allowed"))
-            : t("listing_detail_no_pets", "No pets"),
-        }]
+        id: "pets",
+        icon: <RuleIcon name="pets" />,
+        text: listing.petsAllowed
+          ? (listing.maxPets
+            ? t("listing_detail_pets_allowed_max", { max: listing.maxPets }, `Pets allowed · up to ${listing.maxPets}`)
+            : t("listing_detail_pets_allowed", "Pets allowed"))
+          : t("listing_detail_no_pets", "No pets"),
+      }]
       : []),
     ...(listing.smokingAllowed !== null
       ? [{
-          id: "smoking",
-          icon: <RuleIcon name="smoking" />,
-          text: listing.smokingAllowed
-            ? (listing.smokingLocation
-                ? t("listing_detail_smoking_location", { location: humanize(listing.smokingLocation) }, `Smoking: ${humanize(listing.smokingLocation)}`)
-                : t("listing_detail_smoking_allowed", "Smoking allowed"))
-            : t("listing_detail_no_smoking", "No smoking"),
-        }]
+        id: "smoking",
+        icon: <RuleIcon name="smoking" />,
+        text: listing.smokingAllowed
+          ? (listing.smokingLocation
+            ? t("listing_detail_smoking_location", { location: humanize(listing.smokingLocation) }, `Smoking: ${humanize(listing.smokingLocation)}`)
+            : t("listing_detail_smoking_allowed", "Smoking allowed"))
+          : t("listing_detail_no_smoking", "No smoking"),
+      }]
       : []),
     ...(listing.eventsAllowed !== null
       ? [{
-          id: "events",
-          icon: <RuleIcon name="events" />,
-          text: listing.eventsAllowed ? t("listing_detail_events_allowed", "Events allowed") : t("listing_detail_no_events", "No parties or events"),
-        }]
+        id: "events",
+        icon: <RuleIcon name="events" />,
+        text: listing.eventsAllowed ? t("listing_detail_events_allowed", "Events allowed") : t("listing_detail_no_events", "No parties or events"),
+      }]
       : []),
     ...(listing.photographyAllowed !== null
       ? [{
-          id: "photography",
-          icon: <RuleIcon name="photo" />,
-          text: listing.photographyAllowed ? t("listing_detail_photography_allowed", "Commercial photography allowed") : t("listing_detail_no_photography", "No commercial photography"),
-        }]
+        id: "photography",
+        icon: <RuleIcon name="photo" />,
+        text: listing.photographyAllowed ? t("listing_detail_photography_allowed", "Commercial photography allowed") : t("listing_detail_no_photography", "No commercial photography"),
+      }]
       : []),
     ...(listing.quietHours && formatTime(listing.quietHoursStart) && formatTime(listing.quietHoursEnd)
       ? [{
-          id: "quiet-hours",
-          icon: <RuleIcon name="quiet" />,
-          text: t("listing_detail_quiet_hours", { start: formatTime(listing.quietHoursStart) || "", end: formatTime(listing.quietHoursEnd) || "" }, `Quiet hours: ${formatTime(listing.quietHoursStart)}–${formatTime(listing.quietHoursEnd)}`),
-        }]
+        id: "quiet-hours",
+        icon: <RuleIcon name="quiet" />,
+        text: t("listing_detail_quiet_hours", { start: formatTime(listing.quietHoursStart) || "", end: formatTime(listing.quietHoursEnd) || "" }, `Quiet hours: ${formatTime(listing.quietHoursStart)}–${formatTime(listing.quietHoursEnd)}`),
+      }]
       : []),
     ...configuredHouseRules.map((text, index) => ({ id: `configured-${index}`, icon: <RuleCheckIcon />, text })),
     ...(listing.additionalRules ? [{ id: "additional", icon: <RuleIcon name="rule" />, text: listing.additionalRules }] : []),
@@ -2030,7 +2030,7 @@ export function PublicListingDetailClient({
                           src={listing.host.image}
                           alt={listing.host.name || "Host"}
                           onError={() => setHostImageFailed(true)}
-                      className="order-first size-[76px] shrink-0 rounded-full border border-zinc-200 object-cover lg:size-[104px]"
+                          className="order-first size-[76px] shrink-0 rounded-full border border-zinc-200 object-cover lg:size-[104px]"
                         />
                       ) : (
                         <div className="order-first flex size-[76px] shrink-0 items-center justify-center rounded-full border border-amber-200 bg-amber-100 text-lg font-normal text-amber-900 lg:size-14">
@@ -2119,7 +2119,7 @@ export function PublicListingDetailClient({
                             metadata: { totalAmenities: categorizedAmenities.length },
                           });
                         }}
-                          className="mt-3 rounded-full border border-[#1F1F1F] bg-[#F3F4F5] hover:bg-[#1f1f1f] px-7 sm:py-3.25 py-2 sm:text-lg text-base font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f]"
+                        className="mt-3 rounded-full border border-[#1F1F1F] bg-[#F3F4F5] hover:bg-[#1f1f1f] px-7 sm:py-3.25 py-2 sm:text-lg text-base font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f]"
                       >
                         {t("listing_detail_show_all_amenities", "Show all amenities")}
                       </button>
@@ -2210,7 +2210,7 @@ export function PublicListingDetailClient({
                         </div>
 
                         {/* Date Pickers */}
-                          <div className={`rounded-[10px] border overflow-hidden divide-y divide-[#727272] bg-[#F3F4F5] text-sm transition-colors ${quoteError && (!checkIn || !checkOut) ? "border-rose-400 ring-2 ring-rose-100" : "border-[#727272]"
+                        <div className={`rounded-[10px] border overflow-hidden divide-y divide-[#727272] bg-[#F3F4F5] text-sm transition-colors ${quoteError && (!checkIn || !checkOut) ? "border-rose-400 ring-2 ring-rose-100" : "border-[#727272]"
                           }`}>
                           <div className="grid grid-cols-2 divide-x divide-[#727272]">
                             <div className="p-3 space-y-1">
@@ -2270,7 +2270,7 @@ export function PublicListingDetailClient({
                               <div id="guest-selector" className="mt-3 space-y-3.5 rounded-xl border border-zinc-200 bg-zinc-50 p-3.5 text-sm" aria-label="Guest selection">
                                 {/* Adults */}
                                 <div className="flex items-center justify-between gap-3">
-                                   <div>
+                                  <div>
                                     <p className="font-medium text-[#1f1f1f]">{t("home_adults", "Adults")}</p>
                                     <p className="text-xs text-[#727272]">{t("listing_detail_age_adults", "Age 13+")}</p>
                                   </div>
@@ -2460,7 +2460,7 @@ export function PublicListingDetailClient({
                                     </span>
                                     <span className="font-medium">{formatPrice(quote.taxTotal, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                                   </div>
-                                    <div className="pl-2.5 space-y-1 border-l-2 border-[#FCDF9C] text-sm font-light text-[#727272]">
+                                  <div className="pl-2.5 space-y-1 border-l-2 border-[#FCDF9C] text-sm font-light text-[#727272]">
                                     {quote.taxes.map((tax, idx) => (
                                       <div key={idx} className="flex items-center justify-between">
                                         <span>
@@ -2480,7 +2480,7 @@ export function PublicListingDetailClient({
                                 </div>
                               </>
                             ) : (
-                                  <div className="pt-2 border-t border-zinc-200 flex items-center justify-between text-lg font-medium text-[#1f1f1f]">
+                              <div className="pt-2 border-t border-zinc-200 flex items-center justify-between text-lg font-medium text-[#1f1f1f]">
                                 <span>{t("listing_detail_total", "Total")}</span>
                                 <span>{formatPrice((quote.guestTotal ?? quote.totalPrice) || 0, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                               </div>
@@ -2594,7 +2594,7 @@ export function PublicListingDetailClient({
                                 metadata: { hostId: listing.host?.id },
                               });
                             }}
-                            className="inline-flex min-h-12 items-center gap-2 rounded-full border border-[#1f1f1f] bg-[#F3F4F5] px-5 text-base font-normal text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f] group transition-colors"
+                            className="inline-flex min-h-12 items-center gap-2 rounded-full border border-[#1f1f1f] bg-[#F3F4F5] px-5 text-base font-normal text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] transition-colors duration-300 group"
                           >
                             {t("listing_detail_view_host_profile", "View host profile")}
                           </Link>
@@ -2603,7 +2603,7 @@ export function PublicListingDetailClient({
                           <button
                             type="button"
                             onClick={() => setContactHostModalOpen(true)}
-                            className="inline-flex min-h-12 items-center gap-2 rounded-full border border-[#1F1F1F] bg-[#F3F4F5] px-5 text-base font-normal text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] transition-colors duration-300 shadow-2xs group"
+                            className="inline-flex min-h-12 items-center gap-2 rounded-full border border-[#1F1F1F] bg-[#F3F4F5] px-5 text-base font-normal text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] transition-colors duration-300 group"
                           >
                             <Image src="/images/icons/messages.svg" alt="" width={18} height={18} className="size-4 group-hover:brightness-0 group-hover:invert transition-colors duration-300" />
                             {t("listing_detail_message_host", "Message host")}
@@ -2613,11 +2613,9 @@ export function PublicListingDetailClient({
                           <button
                             type="button"
                             onClick={handleReportHost}
-                            className="inline-flex min-h-12 items-center gap-2 rounded-full border border-zinc-300 bg-white px-5 text-sm font-normal text-[#727272] hover:text-red-600 hover:border-red-200 hover:bg-red-50/50 transition-colors shadow-2xs"
+                            className="inline-flex min-h-12 items-center gap-2 rounded-full border border-[#1F1F1F] bg-[#F3F4F5] px-5 text-base font-normal text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] transition-colors duration-300 group"
                           >
-                            <svg className="size-4 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M3 3l1.664 9.526A2 2 0 006.644 14H17m0 0l1 5H6M17 14l1-7H7.5" />
-                            </svg>
+                            <Image src="/images/icons/report-icon.svg" alt="" width={18} height={18} className="size-4 group-hover:brightness-0 group-hover:invert transition-colors duration-300" />
                             Report this host
                           </button>
                         )}
