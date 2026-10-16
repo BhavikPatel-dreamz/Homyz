@@ -1,0 +1,190 @@
+import type { NextConfig } from "next";
+
+function extraOrigins(): string[] {
+  const hosts = new Set<string>([
+    "localhost:3000",
+    "8.213.86.216:3000",
+    "8.213.86.216",
+    "dd-33.dynamicdreamz.net",
+    "*.dynamicdreamz.net",
+    "homyz.co",
+    "www.homyz.co",
+    "media.homyz.co",
+  ]);
+
+  const raw = [
+    process.env.APP_URL,
+    process.env.NEXTAUTH_URL,
+    process.env.SERVER_ACTION_ALLOWED_ORIGINS,
+    process.env.MEDIA_PUBLIC_BASE_URL,
+  ]
+    .filter(Boolean)
+    .join(",");
+
+  for (const part of raw.split(",")) {
+    const trimmed = part.trim();
+    if (!trimmed) continue;
+    try {
+      if (trimmed.includes("://")) {
+        hosts.add(new URL(trimmed).host);
+      } else {
+        hosts.add(trimmed);
+      }
+    } catch {
+      // Ignore malformed build-time origin values.
+    }
+  }
+
+  return [...hosts];
+}
+
+const actionOrigins = extraOrigins();
+
+const nextConfig: NextConfig = {
+  output: "standalone",
+  allowedDevOrigins: actionOrigins,
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "*.googleusercontent.com",
+      },
+      {
+        protocol: "https",
+        hostname: "platform-lookaside.fbsbx.com",
+      },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
+      {
+        protocol: "https",
+        hostname: "via.placeholder.com",
+      },
+      {
+        protocol: "https",
+        hostname: "*.amazonaws.com",
+      },
+      {
+        protocol: "https",
+        hostname: "*.cloudfront.net",
+      },
+      {
+        protocol: "https",
+        hostname: "media.homyz.co",
+      },
+      {
+        protocol: "http",
+        hostname: "media.homyz.co",
+      },
+      {
+        protocol: "https",
+        hostname: "homyz.co",
+      },
+      {
+        protocol: "http",
+        hostname: "homyz.co",
+      },
+      {
+        protocol: "https",
+        hostname: "*.homyz.co",
+      },
+      {
+        protocol: "http",
+        hostname: "homyz.co",
+        port: "4001",
+      },
+      {
+        protocol: "http",
+        hostname: "127.0.0.1",
+      },
+      {
+        protocol: "http",
+        hostname: "127.0.0.1",
+        port: "4001",
+      },
+      {
+        protocol: "http",
+        hostname: "127.0.0.1",
+        port: "3000",
+      },
+      {
+        protocol: "http",
+        hostname: "localhost",
+      },
+      {
+        protocol: "http",
+        hostname: "localhost",
+        port: "3000",
+      },
+      {
+        protocol: "http",
+        hostname: "localhost",
+        port: "4001",
+      },
+      {
+        protocol: "http",
+        hostname: "8.213.86.216",
+      },
+      {
+        protocol: "http",
+        hostname: "8.213.86.216",
+        port: "3000",
+      },
+      {
+        protocol: "http",
+        hostname: "8.213.86.216",
+        port: "4001",
+      },
+      {
+        protocol: "https",
+        hostname: "*.dynamicdreamz.net",
+      },
+      {
+        protocol: "http",
+        hostname: "*.dynamicdreamz.net",
+      },
+    ],
+  },
+  // Native / Node-only packages stay out of the RSC bundle.
+  serverExternalPackages: ["ioredis", "@aws-sdk/client-s3", "@prisma/adapter-pg"],
+  outputFileTracingIncludes: {
+    "/*": ["./generated/prisma/**/*"],
+  },
+  experimental: {
+    // Enables forbidden()/unauthorized() + forbidden.tsx/unauthorized.tsx for
+    // role-based 403/401 UI on SSR pages (auth boundary is still enforced in code).
+    authInterrupts: true,
+    // Server Actions are POST-only; restrict which Origins may invoke them.
+    // Pass production ALB/CloudFront host via APP_URL or SERVER_ACTION_ALLOWED_ORIGINS at image build.
+    serverActions: {
+      allowedOrigins: actionOrigins,
+    },
+  },
+  async rewrites() {
+    return [
+      {
+        source: "/search",
+        destination: "/listings",
+      },
+      {
+        source: "/property/:id*",
+        destination: "/listings/:id*",
+      },
+      {
+        source: "/properties/:id*",
+        destination: "/listings/:id*",
+      },
+      {
+        source: "/page-not-available",
+        destination: "/not-available",
+      },
+      {
+        source: "/unavailable",
+        destination: "/not-available",
+      },
+    ];
+  },
+};
+
+export default nextConfig;

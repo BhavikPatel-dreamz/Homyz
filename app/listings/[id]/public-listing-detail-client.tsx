@@ -1,0 +1,3110 @@
+"use client";
+
+import React, { useState, useEffect, useMemo, useRef } from "react";
+import dynamic from "next/dynamic";
+import Link from "next/link";
+import Image from "next/image";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { AppHeader } from "@/components/dashboard/app-header";
+import { Footer } from "@/components/dashboard/footer";
+import { Container } from "@/components/ui";
+import { ModalOverlay } from "@/components/ui/modal-overlay";
+import { ReportContentModal } from "@/components/moderation/report-content-modal";
+import ListingGallery from "@/components/listings/listing-gallery";
+import { AmenityIcon } from "@/components/ui/amenity-icon";
+import { CANONICAL_AMENITIES, searchAmenitiesCatalog, getAmenityTranslationKey } from "@/lib/constants/amenities";
+import type { BookingQuote } from "@/services/booking.service";
+import type { PublicListingDTO } from "@/services/mappers";
+import { saveRecentlyViewedProperty, clearLastSearch, saveLastSearch, getLastSearch, buildBookingCheckoutUrl } from "@/lib/storage/client-history";
+import { getCurrencyForCountry } from "@/lib/currency";
+import { useCurrency } from "@/lib/currency-context";
+import {
+  cancellationPolicyLabel,
+  listingTypeLabel,
+  propertyTypeLabel,
+} from "@/lib/constants/listing-enums";
+import { useLanguage } from "@/lib/i18n/language-context";
+import { saveBookingQuote, readBookingQuote, fetchAuthoritativeQuote } from "@/lib/booking/quote-cache";
+import { getLanguageDisplayNames } from "@/lib/utils/language-options";
+import useWishlist from "@/hooks/useWishlist";
+import { trackListingEvent } from "@/lib/analytics/listing-analytics";
+import { resolveCalendarDatePricing } from "@/lib/pricing/calendar-pricing";
+import {
+  getEarliestCheckInKey,
+  getMinimumStayForCheckIn,
+  isCheckInDateAllowed,
+} from "@/lib/booking/availability";
+
+// Reviews and the map sit below the booking decision. Split them out of the
+// initial route bundle, and keep a stable placeholder until each chunk loads.
+// The map is server-rendered: RealMap only attaches Leaflet in the browser.
+const ReviewList = dynamic(
+  () => import("@/components/reviews").then((module) => module.ReviewList),
+  {
+    ssr: false,
+    loading: () => (
+      <section className="border-b border-zinc-200/80 py-8" aria-label="Loading guest reviews">
+        <h2 className="text-[20px] font-normal text-[#1f1f1f]">Guest reviews</h2>
+        <div className="mt-5 h-28 animate-pulse rounded-2xl bg-zinc-100" />
+      </section>
+    ),
+  },
+);
+
+const RealMap = dynamic(
+  () => import("@/components/ui/real-map").then((module) => module.RealMap),
+  {
+    loading: () => <div className="h-full w-full animate-pulse bg-zinc-100" aria-label="Loading map" />,
+  },
+);
+
+function DeferredReviewList({
+  listingId,
+  isGuestFavorite,
+  initialSummary,
+  onStatsChange,
+}: {
+  listingId: string;
+  isGuestFavorite?: boolean;
+  initialSummary: { averageRating: number | null; totalCount: number };
+  onStatsChange: (stats: { rating: number | null; count: number }) => void;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [shouldLoad, setShouldLoad] = useState(false);
+
+  useEffect(() => {
+    const target = containerRef.current;
+    if (!target || typeof IntersectionObserver === "undefined") {
+      setShouldLoad(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setShouldLoad(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "250px 0px" },
+    );
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div ref={containerRef}>
+      {shouldLoad ? (
+        <ReviewList listingId={listingId} isGuestFavorite={isGuestFavorite} initialSummary={initialSummary} onStatsChange={onStatsChange} />
+      ) : (
+        <section className="border-b border-zinc-200/80 py-8" aria-labelledby="guest-reviews-heading">
+          <h2 id="guest-reviews-heading" className="text-[20px] font-normal text-[#1f1f1f]">Guest reviews</h2>
+          <div className="mt-5 h-28 rounded-2xl bg-zinc-100" />
+        </section>
+      )}
+    </div>
+  );
+}
+
+function DeferredListingMap({
+  address,
+  city,
+  country,
+  latitude,
+  longitude,
+  showExactLocation,
+  ariaLabel,
+}: {
+  address: string;
+  city?: string;
+  country?: string;
+  latitude: number;
+  longitude: number;
+  showExactLocation: boolean;
+  ariaLabel: string;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [shouldLoad, setShouldLoad] = useState(false);
+
+  useEffect(() => {
+    const target = containerRef.current;
+    if (!target || typeof IntersectionObserver === "undefined") {
+      setShouldLoad(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setShouldLoad(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "250px 0px" },
+    );
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div ref={containerRef} className="h-full w-full">
+      {shouldLoad ? (
+        <RealMap
+          address={address}
+          city={city}
+          country={country}
+          lat={latitude}
+          lng={longitude}
+          showExactLocation={showExactLocation}
+          preferInitialCoordinates
+          allowLocationEditing={false}
+          lazyLoad
+          className="relative h-full w-full overflow-hidden"
+          ariaLabel={ariaLabel}
+        />
+      ) : (
+        <div className="h-full w-full bg-zinc-100" aria-label="Map loads when this section is visible" />
+      )}
+    </div>
+  );
+}
+
+interface PublicListingDetailClientProps {
+  listing: PublicListingDTO & {
+    host?: {
+      id: string;
+      name?: string | null;
+      image?: string | null;
+      createdAt?: Date | string;
+      publicProfile?: Record<string, unknown> | null;
+      isSuperhost?: boolean;
+      rating?: number | null;
+      reviewsCount?: number | null;
+    } | null;
+    isGuestFavorite?: boolean;
+    // Listings currently derive display currency from their country. Keep this
+    // optional for records that gain an explicit listing currency later.
+    currency?: string | null;
+  };
+  guidebooks?: Array<{
+    id: string;
+    title: string;
+    coverImage?: string | null;
+    city?: string | null;
+    itemsCount: number;
+    host?: { id: string; name: string | null; image: string | null };
+  }>;
+  /** Pre-fill the booking widget with dates from the search page URL */
+  searchCheckIn?: string;
+  searchCheckOut?: string;
+  searchGuests?: number;
+  searchAdults?: number;
+  searchChildren?: number;
+  searchInfants?: number;
+  searchPets?: number;
+  initialSpecialOfferId?: string;
+  initialQuote?: BookingQuote | null;
+  /** Validation feedback for an explicit URL selection that could not be applied. */
+  initialSelectionError?: string;
+}
+
+type BookedDateRange = { start: string; end: string };
+type TrustHighlightIconName = "award" | "sparkle" | "calendar" | "pricing";
+
+function TrustHighlightIcon({ name }: { name: TrustHighlightIconName }) {
+  const common = {
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 1.45,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+  };
+
+  if (name === "award") {
+    return <svg viewBox="0 0 24 24" aria-hidden="true" {...common}><path d="M8.5 3.5h7l1.2 4.2 3.3 2.8-2 3.9.2 4.7-4.3 1.6L12 23l-1.9-2.6-4.3-1.6.2-4.7-2-3.9 3.3-2.8 1.2-4.2Z" /><path d="M9.5 12h5M12 9.5V14.5" /></svg>;
+  }
+  if (name === "calendar") {
+    return <svg viewBox="0 0 24 24" aria-hidden="true" {...common}><rect x="3.5" y="5.5" width="17" height="15" rx="2" /><path d="M7.5 3.5v4M16.5 3.5v4M3.5 10h17M8 14h3M8 17h5" /></svg>;
+  }
+  if (name === "pricing") {
+    return <svg viewBox="0 0 24 24" aria-hidden="true" {...common}><path d="M12 3.5v17M16 7.5c-.8-1-2.2-1.6-4-1.6-2.3 0-3.8 1.1-3.8 2.8 0 1.9 1.7 2.5 3.8 3 2.1.5 3.8 1.1 3.8 3 0 1.8-1.5 3-4 3-1.9 0-3.5-.7-4.4-1.9" /></svg>;
+  }
+  return <svg viewBox="0 0 24 24" aria-hidden="true" {...common}><path d="m12 3 1.3 4.2L17.5 8.5l-4.2 1.3L12 14l-1.3-4.2-4.2-1.3 4.2-1.3L12 3Z" /><path d="m18.5 14 .7 2.3 2.3.7-2.3.7-.7 2.3-.7-2.3-2.3-.7 2.3-.7.7-2.3Z" /></svg>;
+}
+
+type RuleIconName = "pets" | "smoking" | "events" | "photo" | "quiet" | "rule";
+
+function RuleIcon({ name }: { name: RuleIconName }) {
+  const sources: Record<RuleIconName, string> = {
+    pets: "/images/icons/house-rule-pets.svg",
+    smoking: "/images/icons/house-rule-smoking.svg",
+    events: "/images/icons/house-rule-events.svg",
+    photo: "/images/icons/house-rule-photo.svg",
+    quiet: "/images/icons/house-rule-quiet.svg",
+    rule: "/images/icons/house-rule-default.svg",
+  };
+
+  return <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-full border border-[#1f1f1f]"><Image src={sources[name]} alt="" width={24} height={24} className="size-6" /></span>;
+}
+
+function RuleCheckIcon() {
+  return <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-full border border-[#1f1f1f]"><Image src="/images/icons/right-mark.svg" alt="" width={18} height={18} className="size-[18px]" /></span>;
+}
+
+function overlapsBookedRange(checkIn: string, checkOut: string, ranges: BookedDateRange[]): boolean {
+  return ranges.some((range) => checkIn < range.end && checkOut > range.start);
+}
+
+function dateKey(date: Date): string {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+function isDateKey(value: string | undefined): value is string {
+  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const date = new Date(`${value}T00:00:00`);
+  return !Number.isNaN(date.getTime()) && dateKey(date) === value;
+}
+
+function addCalendarDays(value: string, days: number): string {
+  const date = new Date(`${value}T00:00:00`);
+  date.setDate(date.getDate() + days);
+  return dateKey(date);
+}
+
+function calendarNights(checkIn: string, checkOut: string): number {
+  return Math.round((new Date(`${checkOut}T00:00:00`).getTime() - new Date(`${checkIn}T00:00:00`).getTime()) / 86_400_000);
+}
+
+function isUnavailableDate(date: Date, ranges: BookedDateRange[]): boolean {
+  const key = dateKey(date);
+  return ranges.some((range) => key >= range.start && key < range.end);
+}
+
+function AmenityRow({ amenity }: { amenity: { id: string; category?: string; label: string; description?: string } }) {
+  const { t } = useLanguage();
+  const labelKey = getAmenityTranslationKey(amenity.id) as any;
+  const descKey = `host_amenity_desc_${amenity.id}` as any;
+  const translatedLabel = t(labelKey, amenity.label);
+  const translatedDesc = t(descKey, amenity.description || "");
+
+  return (
+    <div className="flex items-start gap-3 text-xs">
+      <span aria-hidden="true" className="flex size-6 shrink-0 items-center justify-center">
+        <AmenityIcon id={amenity.id} className="size-5" />
+      </span>
+      <div className="min-w-0">
+        <h5 className="text-sm font-medium text-[#1f1f1f]">{translatedLabel}</h5>
+        {translatedDesc && <p className="mt-0.5 text-sm font-normal text-[#727272]">{translatedDesc}</p>}
+      </div>
+    </div>
+  );
+}
+
+function HostIdentityCard({
+  host,
+  imageFailed,
+  onImageError,
+  hostTenure,
+  reviewRating,
+  reviewCount,
+}: {
+  host: {
+    name?: string | null;
+    image?: string | null;
+    isSuperhost?: boolean;
+    rating?: number | null;
+    reviewsCount?: number | null;
+  };
+  imageFailed: boolean;
+  onImageError: () => void;
+  hostTenure: string | null;
+  reviewRating: number | null;
+  reviewCount: number;
+}) {
+  const effectiveReviewCount =
+    typeof host.reviewsCount === "number" && host.reviewsCount > 0
+      ? host.reviewsCount
+      : reviewCount;
+
+  const effectiveRating =
+    typeof host.rating === "number" && host.rating > 0
+      ? host.rating
+      : reviewRating;
+
+  const formattedRating =
+    effectiveRating !== null && effectiveRating > 0
+      ? Number.isInteger(effectiveRating)
+        ? `${effectiveRating}.0`
+        : effectiveRating.toFixed(2).replace(/0$/, "")
+      : null;
+
+  return (
+    <div className="min-h-[260px] sm:rounded-[30px] rounded-[10px] border border-[#dedede] bg-white px-7 py-7 shadow-[0_2px_5px_rgba(0,0,0,0.14)] transition-shadow hover:shadow-[0_5px_14px_rgba(0,0,0,0.14)]">
+      <div className="grid grid-cols-2 gap-x-7 gap-y-4">
+        <div className="host-left flex flex-col items-center justify-center text-center">
+          {host.image && !imageFailed ? (
+            <img src={host.image} alt={`${host.name || "Host"}'s profile photo`} loading="lazy" decoding="async" onError={onImageError} className="size-[104px] shrink-0 rounded-full border border-zinc-200 object-cover" />
+          ) : (
+            <div aria-hidden="true" className="flex size-[104px] shrink-0 items-center justify-center rounded-full border border-amber-200 bg-amber-100 text-2xl font-bold text-amber-900">
+              {(host.name || "H")[0]?.toUpperCase()}
+            </div>
+          )}
+          <div className="pt-4 text-center">
+            <p className="break-words sm:text-[20px] text-lg font-medium text-[#1f1f1f] capitalize">{host.name || "Homyz host"}</p>
+            <p className="sm:mt-2 mt-1 text-base font-light text-[#1f1f1f]">{host.isSuperhost ? "Superhost" : "Host"}</p>
+          </div>
+        </div>
+
+        <div className="min-w-0 divide-y divide-[#dedede]">
+          <div className="pb-4">
+            <p className="sm:text-[20px] text-lg font-normal leading-5 text-[#1f1f1f]">
+              {effectiveReviewCount > 0 ? effectiveReviewCount : "—"}
+            </p>
+            <p className="mt-1 text-xs font-normal text-[#727272]">Reviews</p>
+          </div>
+          <div className="py-4">
+            <p className="flex items-center gap-1 sm:text-[20px] text-lg font-normal leading-5 text-[#1f1f1f]">
+              {formattedRating ? (
+                <>
+                  <span>{formattedRating}</span>
+                  <span className="text-[#e9a400]">★</span>
+                </>
+              ) : (
+                <span className="text-base font-normal text-[#727272]">★ New</span>
+              )}
+            </p>
+            <p className="mt-2 text-xs font-normal text-[#727272]">Rating</p>
+          </div>
+          <div className="pt-4">
+            <p className="sm:text-[20px] text-base font-normal leading-5 text-[#1f1f1f]">{hostTenure || "—"}</p>
+            <p className="mt-2 text-xs font-normal text-[#727272]">time hosting</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
+function ListingAvailabilityCalendar({
+  month,
+  onMonthChange,
+  ranges,
+  isLoading,
+  error,
+  checkIn,
+  checkOut,
+  onDateRangeChange,
+  onClearDates,
+  onErrorMessage,
+  locationName,
+  minimumNights,
+  maximumNights,
+  earliestCheckIn,
+}: {
+  month: Date;
+  onMonthChange: (month: Date) => void;
+  ranges: BookedDateRange[];
+  isLoading: boolean;
+  error: string | null;
+  checkIn: string;
+  checkOut: string;
+  onDateRangeChange: (checkIn: string, checkOut: string) => void;
+  onClearDates: () => void;
+  onErrorMessage?: (message: string | null) => void;
+  locationName: string;
+  minimumNights: number;
+  maximumNights?: number;
+  earliestCheckIn: string;
+}) {
+  const { t } = useLanguage();
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const firstDay = new Date(month.getFullYear(), month.getMonth(), 1);
+  const canGoBack = firstDay.getTime() > new Date(today.getFullYear(), today.getMonth(), 1).getTime();
+  const displayedMonths = [firstDay, new Date(month.getFullYear(), month.getMonth() + 1, 1)];
+  const formattedStayDates = checkIn && checkOut
+    ? `${new Intl.DateTimeFormat("en", { month: "short", day: "numeric", year: "numeric" }).format(new Date(`${checkIn}T00:00:00`))} – ${new Intl.DateTimeFormat("en", { month: "short", day: "numeric", year: "numeric" }).format(new Date(`${checkOut}T00:00:00`))}`
+    : checkIn
+      ? `Check-in: ${new Intl.DateTimeFormat("en", { month: "short", day: "numeric", year: "numeric" }).format(new Date(`${checkIn}T00:00:00`))} – Select checkout`
+      : "Select check-in date";
+  const nights = checkIn && checkOut
+    ? Math.max(0, calendarNights(checkIn, checkOut))
+    : 0;
+
+  const [hoverDate, setHoverDate] = useState<string | null>(null);
+
+  const chooseDate = (key: string) => {
+    const selectedDate = new Date(`${key}T00:00:00`);
+    if (key < earliestCheckIn) return;
+
+    if (!checkIn || checkOut || key <= checkIn) {
+      if (isUnavailableDate(selectedDate, ranges)) {
+        onErrorMessage?.("That check-in date is unavailable. Please choose another date.");
+        return;
+      }
+      onErrorMessage?.(null);
+      onDateRangeChange(key, "");
+      return;
+    }
+
+    // Check-in exists and user is picking check-out date
+    const calculatedNights = calendarNights(checkIn, key);
+    if (calculatedNights < minimumNights) {
+      onErrorMessage?.(`This property requires a minimum stay of ${minimumNights} ${minimumNights === 1 ? "night" : "nights"}.`);
+      return;
+    }
+    if (maximumNights && calculatedNights > maximumNights) {
+      onErrorMessage?.(`This property allows a maximum stay of ${maximumNights} ${maximumNights === 1 ? "night" : "nights"}.`);
+      return;
+    }
+    if (overlapsBookedRange(checkIn, key, ranges)) {
+      onErrorMessage?.("Those dates include an unavailable night. Please choose different dates.");
+      return;
+    }
+
+    onErrorMessage?.(null);
+    onDateRangeChange(checkIn, key);
+  };
+
+  const renderMonth = (calendarMonth: Date) => {
+    const monthFirstDay = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), 1);
+    const daysInMonth = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 1, 0).getDate();
+    const title = monthFirstDay.toLocaleDateString("en", { month: "long", year: "numeric" });
+
+    return (
+      <div key={`${calendarMonth.getFullYear()}-${calendarMonth.getMonth()}`} className="min-w-0">
+        <h4 className="mb-4 text-center text-base font-medium text-[#1C1C1C]">{title}</h4>
+        <div className="grid grid-cols-7 gap-y-2 text-center text-[10px] font-medium text-[#727272]">
+          {weekdays.map((day) => <span key={day} aria-hidden="true">{day.slice(0, 1)}</span>)}
+        </div>
+        <div className="mt-2 grid grid-cols-7 gap-y-1" role="grid" aria-label={`${title} availability calendar`}>
+          {Array.from({ length: monthFirstDay.getDay() }, (_, index) => <span key={`empty-${index}`} aria-hidden="true" className="aspect-square" />)}
+          {Array.from({ length: daysInMonth }, (_, index) => {
+            const date = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), index + 1);
+            const key = dateKey(date);
+            const past = key < earliestCheckIn;
+            const unavailable = isUnavailableDate(date, ranges);
+            const isStart = key === checkIn;
+            const isEnd = key === checkOut;
+            const isInConfirmedRange = Boolean(checkIn && checkOut && key > checkIn && key < checkOut);
+            const isInHoverRange = Boolean(checkIn && !checkOut && hoverDate && key > checkIn && key <= hoverDate && !overlapsBookedRange(checkIn, hoverDate, ranges));
+            const isInRange = isInConfirmedRange || isInHoverRange;
+            const disabled = past || (unavailable && !isStart && !isEnd);
+            const state = past ? "past" : isStart ? "check-in selected" : isEnd ? "check-out selected" : unavailable ? "unavailable" : isInRange ? "selected stay" : "available";
+
+            return (
+              <div key={key} className="relative flex aspect-square items-center justify-center">
+                <button
+                  type="button"
+                  disabled={disabled || isLoading}
+                  onClick={() => chooseDate(key)}
+                  onMouseEnter={() => {
+                    if (checkIn && !checkOut && key > checkIn) {
+                      setHoverDate(key);
+                    }
+                  }}
+                  onMouseLeave={() => {
+                    if (hoverDate) setHoverDate(null);
+                  }}
+                  role="gridcell"
+                  aria-label={`${date.toLocaleDateString("en", { dateStyle: "full" })}, ${state}`}
+                  aria-selected={isStart || isEnd}
+                  className={`relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f] sm:h-8 sm:w-8 ${isStart || isEnd
+                    ? "bg-[#FCDF9C] font-medium text-[#1f1f1f] shadow-sm"
+                    : isInRange
+                      ? "bg-[#FCDF9C] text-[#1f1f1f] hover:bg-[#F6CF7B]"
+                      : past || unavailable
+                        ? "cursor-not-allowed text-zinc-300 line-through"
+                        : "cursor-pointer text-[#1f1f1f] hover:bg-[#F3F4F5]"
+                    } disabled:opacity-70`}
+                >
+                  {index + 1}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <section className="pb-7" aria-labelledby="availability-heading">
+      <div className="mb-6">
+        <h3 id="availability-heading" className="text-[20px] font-normal text-[#1f1f1f]">
+          {nights > 0
+            ? nights === 1
+              ? t("listing_detail_night_in" as any, { location: locationName }, `1 night in ${locationName}`)
+              : t("listing_detail_nights_in" as any, { nights, location: locationName }, `${nights} nights in ${locationName}`)
+            : t("listing_detail_select_dates_in" as any, { location: locationName }, `Select your dates in ${locationName}`)}
+        </h3>
+        <p className="mt-1 text-sm font-normal text-[#727272]" aria-live="polite">{formattedStayDates}</p>
+      </div>
+      {error ? (
+        <div role="alert" className="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+          <span>{error}</span>
+          <button type="button" onClick={() => onMonthChange(new Date(month.getFullYear(), month.getMonth(), 1))} className="font-medium underline underline-offset-2 cursor-pointer">Try again</button>
+        </div>
+      ) : (
+        <div className="max-w-[608px] rounded-2xl bg-[#F3F4F5] p-3 sm:p-4">
+          <div className="rounded-2xl bg-white px-3 py-5 sm:px-5 sm:py-6">
+            <div className="grid grid-cols-[2rem_minmax(0,1fr)_2rem] items-start gap-1 sm:gap-3">
+              <button type="button" aria-label="Previous two months" disabled={!canGoBack || isLoading} onClick={() => onMonthChange(new Date(month.getFullYear(), month.getMonth() - 1, 1))} className="mt-0.5 flex size-8 items-center justify-center rounded-full text-lg text-[#727272] hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-30 cursor-pointer"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="size-6"><path d="m15 18-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" /></svg></button>
+              <div className="grid min-w-0 grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-6">
+                {displayedMonths.map(renderMonth)}
+              </div>
+              <button type="button" aria-label="Next two months" disabled={isLoading} onClick={() => onMonthChange(new Date(month.getFullYear(), month.getMonth() + 1, 1))} className="mt-0.5 flex size-8 items-center justify-center rounded-full text-lg text-[#727272] hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-30 cursor-pointer"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="size-6"><path d="m9 18 6-6-6-6" strokeLinecap="round" strokeLinejoin="round" /></svg></button>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center justify-between gap-2 px-1 pt-3 text-sm text-[#727272]">
+            <span aria-live="polite">
+              {isLoading
+                ? "Updating availability…"
+                : !checkIn
+                  ? "Select check-in date"
+                  : !checkOut
+                    ? `Minimum stay: ${minimumNights} ${minimumNights === 1 ? "night" : "nights"}. Select checkout date.`
+                    : `${nights} ${nights === 1 ? "night" : "nights"} selected`}
+            </span>
+            {(checkIn || checkOut) && (
+              <button
+                type="button"
+                onClick={onClearDates}
+                className="font-medium underline decoration-zinc-400 underline-offset-2 hover:text-[#1f1f1f] cursor-pointer"
+              >
+                Clear dates
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
+export function PublicListingDetailClient({
+  listing,
+  guidebooks = [],
+  searchCheckIn,
+  searchCheckOut,
+  searchGuests,
+  searchAdults,
+  searchChildren,
+  searchInfants,
+  searchPets,
+  initialSpecialOfferId,
+  initialQuote,
+  initialSelectionError,
+}: PublicListingDetailClientProps) {
+  const { formatPrice } = useCurrency();
+  const { t } = useLanguage();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const wishlist = useWishlist();
+  const { data: session, status: sessionStatus } = useSession();
+  const isAuthenticated = sessionStatus === "authenticated" && Boolean(session?.user);
+  const isHostUser = Boolean(
+    session?.user?.id &&
+    (session.user.id === listing.host?.id || session.user.id === (listing as any).hostId)
+  );
+  const canMessageHost = isAuthenticated && !isHostUser;
+
+  // Modal and Expand States
+  const [isAllAmenitiesOpen, setIsAllAmenitiesOpen] = useState(false);
+  const [isDescriptionModalOpen, setIsDescriptionModalOpen] = useState(false);
+  const [openThingsCard, setOpenThingsCard] = useState<"rules" | "safety" | "cancellation" | null>(null);
+  const [isGuestSelectorOpen, setIsGuestSelectorOpen] = useState(false);
+  const [amenitySearchQuery, setAmenitySearchQuery] = useState("");
+  const [contactHostModalOpen, setContactHostModalOpen] = useState(false);
+  const [inquiryMessage, setInquiryMessage] = useState("");
+  const [inquirySending, setInquirySending] = useState(false);
+  const [inquiryError, setInquiryError] = useState<string | null>(null);
+  const [isReportListingOpen, setIsReportListingOpen] = useState(false);
+  const [isReportHostOpen, setIsReportHostOpen] = useState(false);
+  const [isReportLoginOpen, setIsReportLoginOpen] = useState(false);
+  const [reportLoginTarget, setReportLoginTarget] = useState<"listing" | "host">("listing");
+  const [openReportAfterAuthentication, setOpenReportAfterAuthentication] = useState(false);
+
+  const buildReportCallbackUrl = (target: "listing" | "host") => {
+    const params = new URLSearchParams(searchParams?.toString());
+    params.set(target === "host" ? "reportHost" : "reportListing", "1");
+    const query = params.toString();
+    return `${window.location.pathname}${query ? `?${query}` : ""}`;
+  };
+
+  const handleReportListing = () => {
+    if (isAuthenticated) {
+      setIsReportListingOpen(true);
+      return;
+    }
+
+    setReportLoginTarget("listing");
+    setOpenReportAfterAuthentication(true);
+    setIsReportLoginOpen(true);
+  };
+
+  const handleReportHost = () => {
+    if (isAuthenticated) {
+      setIsReportHostOpen(true);
+      return;
+    }
+
+    setReportLoginTarget("host");
+    setOpenReportAfterAuthentication(true);
+    setIsReportLoginOpen(true);
+  };
+
+  const handleContinueToLoginForReport = () => {
+    setIsReportLoginOpen(false);
+    router.push(`/login?callbackUrl=${encodeURIComponent(buildReportCallbackUrl(reportLoginTarget))}`);
+  };
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    if (openReportAfterAuthentication) {
+      setIsReportLoginOpen(false);
+      if (reportLoginTarget === "host") {
+        setIsReportHostOpen(true);
+      } else {
+        setIsReportListingOpen(true);
+      }
+      setOpenReportAfterAuthentication(false);
+    }
+
+    if (searchParams?.get("reportListing") === "1") {
+      setIsReportListingOpen(true);
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("reportListing");
+      const query = params.toString();
+      router.replace(`${window.location.pathname}${query ? `?${query}` : ""}`);
+    } else if (searchParams?.get("reportHost") === "1") {
+      setIsReportHostOpen(true);
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("reportHost");
+      const query = params.toString();
+      router.replace(`${window.location.pathname}${query ? `?${query}` : ""}`);
+    }
+  }, [isAuthenticated, openReportAfterAuthentication, reportLoginTarget, router, searchParams]);
+
+  const maximumGuests = Math.max(1, listing.guests || 1);
+
+  const configuredMaxPets = typeof listing.maxPets === "number" ? Math.max(0, listing.maxPets) : 20;
+  const allowsPets = listing.petsAllowed !== false && configuredMaxPets > 0;
+  const maxPetsAllowed = allowsPets ? configuredMaxPets : 0;
+
+  // Booking Widget State — pre-filled from search URL params or active search context
+  const [checkIn, setCheckIn] = useState(searchCheckIn && isDateKey(searchCheckIn) ? searchCheckIn : "");
+  const [checkOut, setCheckOut] = useState(searchCheckOut && isDateKey(searchCheckOut) ? searchCheckOut : "");
+  // DO NOT clamp to maximumGuests! Preserve user search guest count (Requirement 9 & Test 11)
+  const [adultsCount, setAdultsCount] = useState(() => searchAdults ?? Math.max(1, searchGuests ?? 1));
+  const [childrenCount, setChildrenCount] = useState(() => searchChildren ?? 0);
+  const [infantsCount, setInfantsCount] = useState(() => searchInfants ?? 0);
+  const [petsCount, setPetsCount] = useState(() => searchPets ?? 0);
+  const [isNonRefundable, setIsNonRefundable] = useState(false);
+  // Initialize with server-computed authoritative quote if available to prevent layout shift and quote flash
+  const [quote, setQuote] = useState<BookingQuote | null>(initialQuote ?? null);
+  const initialCapacityGuests = (searchAdults ?? Math.max(1, searchGuests ?? 1)) + (searchChildren ?? 0);
+  const initialQueryKey = useMemo(() => {
+    if (!initialQuote || !checkIn || !checkOut) return "";
+    return `${listing.id}:${checkIn}:${checkOut}:${initialCapacityGuests}:${searchPets ?? 0}:false:${initialSpecialOfferId || ""}`;
+  }, []);
+  const lastQuoteQueryRef = useRef<string>(initialQueryKey);
+  const isInstantBook = (quote?.bookingMode ?? listing.bookingMode) === "INSTANT_BOOK";
+  const [isQuoteLoading, setIsQuoteLoading] = useState(false);
+  const [quoteError, setQuoteError] = useState<string | null>(initialSelectionError ?? null);
+  const [isBookingSubmitting, setIsBookingSubmitting] = useState(false);
+  const [bookingSuccess, setBookingSuccess] = useState(false);
+  const [bookedDateRanges, setBookedDateRanges] = useState<BookedDateRange[]>(() =>
+    (listing.blockedDates ?? []).map((date: string) => ({ start: date, end: addCalendarDays(date, 1) })),
+  );
+  const [availabilityMonth, setAvailabilityMonth] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+  const [isAvailabilityLoading, setIsAvailabilityLoading] = useState(false);
+  const [availabilityError, setAvailabilityError] = useState<string | null>(null);
+  // Availability is booking-critical, so load it with the detail page instead
+  // of waiting for a date-field focus event.
+  const [availabilityRequested, setAvailabilityRequested] = useState(true);
+  const [availabilityRefreshVersion, setAvailabilityRefreshVersion] = useState(0);
+  const [hostImageFailed, setHostImageFailed] = useState(false);
+  const [isBookingPanelSticky, setIsBookingPanelSticky] = useState(true);
+
+  // Review Stats State
+  const [reviewRating, setReviewRating] = useState<number | null>(listing.rating);
+  const [reviewCount, setReviewCount] = useState(listing.reviewsCount);
+
+  const amenityCloseRef = useRef<HTMLButtonElement>(null);
+  const calendarSectionRef = useRef<HTMLDivElement>(null);
+  const reviewSectionRef = useRef<HTMLDivElement>(null);
+  const bookingPanelRef = useRef<HTMLDivElement>(null);
+  const normalizedDescription = listing.description?.trim() ?? "";
+
+  const totalCapacityGuests = adultsCount + childrenCount;
+  const canAddCapacityGuest = totalCapacityGuests < maximumGuests;
+
+  const guestSummaryLabel = useMemo(() => {
+    if (childrenCount > 0) {
+      const adultPart = `${adultsCount} ${adultsCount === 1 ? "adult" : "adults"}`;
+      const childPart = `${childrenCount} ${childrenCount === 1 ? "child" : "children"}`;
+      return `${adultPart}, ${childPart}`;
+    }
+    return `${adultsCount} ${adultsCount === 1 ? "guest" : "guests"}`;
+  }, [adultsCount, childrenCount]);
+
+  // Telemetry: track listing_page_view once on mount
+  const hasTrackedViewRef = useRef(false);
+  const hasTrackedAvailabilityViewRef = useRef(false);
+  const hasTrackedHouseRulesViewRef = useRef(false);
+
+  // Keep the booking panel visible while guests choose dates, then return it
+  // to normal document flow before the full-width sections begin.
+  useEffect(() => {
+    const updateBookingPanelPosition = () => {
+      const calendar = calendarSectionRef.current;
+      const reviews = reviewSectionRef.current;
+      const isDesktop = window.matchMedia("(min-width: 1024px)").matches;
+      const bookingHeight = bookingPanelRef.current?.getBoundingClientRect().height ?? 0;
+      const reviewIsClearOfPanel = !reviews || reviews.getBoundingClientRect().top > 112 + bookingHeight + 24;
+      const shouldStick = Boolean(
+        isDesktop && calendar && calendar.getBoundingClientRect().bottom > 112 && reviewIsClearOfPanel,
+      );
+      setIsBookingPanelSticky((current) => current === shouldStick ? current : shouldStick);
+    };
+
+    updateBookingPanelPosition();
+    window.addEventListener("scroll", updateBookingPanelPosition, { passive: true });
+    window.addEventListener("resize", updateBookingPanelPosition);
+    return () => {
+      window.removeEventListener("scroll", updateBookingPanelPosition);
+      window.removeEventListener("resize", updateBookingPanelPosition);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (hasTrackedViewRef.current || !listing?.id) return;
+    hasTrackedViewRef.current = true;
+    trackListingEvent({
+      eventType: "listing_page_view",
+      propertyId: listing.id,
+      city: listing.city,
+      country: listing.country,
+      guestCount: totalCapacityGuests,
+      checkIn: checkIn || null,
+      checkOut: checkOut || null,
+      metadata: {
+        propertyType: listing.propertyType,
+        listingType: listing.listingType,
+        instantBook: isInstantBook,
+        isGuestFavorite: listing.isGuestFavorite,
+      },
+    });
+  }, [listing, totalCapacityGuests, checkIn, checkOut, isInstantBook]);
+
+  useEffect(() => {
+    if (typeof IntersectionObserver === "undefined" || !listing?.id) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            if (entry.target.id === "availability-heading" && !hasTrackedAvailabilityViewRef.current) {
+              hasTrackedAvailabilityViewRef.current = true;
+              trackListingEvent({
+                eventType: "availability_section_viewed",
+                propertyId: listing.id,
+                city: listing.city,
+                country: listing.country,
+              });
+            } else if (entry.target.id === "things-to-know-heading" && !hasTrackedHouseRulesViewRef.current) {
+              hasTrackedHouseRulesViewRef.current = true;
+              trackListingEvent({
+                eventType: "house_rules_viewed",
+                propertyId: listing.id,
+                city: listing.city,
+                country: listing.country,
+              });
+            }
+          }
+        });
+      },
+      { threshold: 0.15 },
+    );
+
+    const availEl = document.getElementById("availability-heading");
+    const rulesEl = document.getElementById("things-to-know-heading");
+    if (availEl) observer.observe(availEl);
+    if (rulesEl) observer.observe(rulesEl);
+
+    return () => observer.disconnect();
+  }, [listing.id, listing.city, listing.country]);
+
+  const isInitialMountRef = useRef(true);
+  const prevListingIdRef = useRef(listing.id);
+
+  // A client component may be preserved while navigating between listings. Reset
+  // booking-specific state when switching to a different property.
+  useEffect(() => {
+    if (isInitialMountRef.current) {
+      isInitialMountRef.current = false;
+      return;
+    }
+    if (prevListingIdRef.current === listing.id) {
+      return;
+    }
+    prevListingIdRef.current = listing.id;
+
+    const nextCheckIn = isDateKey(searchCheckIn) ? searchCheckIn : "";
+    const nextCheckOut = isDateKey(searchCheckOut) && (!nextCheckIn || searchCheckOut > nextCheckIn)
+      ? searchCheckOut
+      : "";
+    const nextGuests = searchAdults ?? (searchGuests ? Math.max(1, searchGuests) : 1);
+    const nextChildren = searchChildren ?? 0;
+    const nextInfants = searchInfants ?? 0;
+    const nextPets = searchPets ?? 0;
+
+    setCheckIn(nextCheckIn);
+    setCheckOut(nextCheckOut);
+    setAdultsCount(nextGuests);
+    setChildrenCount(nextChildren);
+    setInfantsCount(nextInfants);
+    setPetsCount(nextPets);
+    setIsNonRefundable(false);
+    setQuote(
+      nextCheckIn && nextCheckOut
+        ? readBookingQuote<BookingQuote>({
+            listingId: listing.id,
+            checkIn: nextCheckIn,
+            checkOut: nextCheckOut,
+            guests: nextGuests,
+            pets: nextPets,
+            nonRefundable: false,
+            specialOfferId: initialSpecialOfferId,
+          })
+        : null,
+    );
+    setQuoteError(null);
+    setBookingSuccess(false);
+    setHostImageFailed(false);
+    setIsDescriptionModalOpen(false);
+    setIsAllAmenitiesOpen(false);
+    setIsGuestSelectorOpen(false);
+    setAmenitySearchQuery("");
+    setBookedDateRanges(
+      (listing.blockedDates ?? []).map((date: string) => ({ start: date, end: addCalendarDays(date, 1) })),
+    );
+    setAvailabilityError(null);
+    setAvailabilityRequested(true);
+    setIsAvailabilityLoading(false);
+    setAvailabilityMonth(nextCheckIn ? new Date(`${nextCheckIn}T00:00:00`) : new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+    setAvailabilityRefreshVersion((version) => version + 1);
+  }, [listing.id, searchCheckIn, searchCheckOut, searchGuests, searchAdults, searchChildren, searchInfants, searchPets, initialSpecialOfferId]);
+
+  useEffect(() => {
+    if (!isAllAmenitiesOpen) return;
+    amenityCloseRef.current?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setIsAllAmenitiesOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isAllAmenitiesOpen]);
+
+  useEffect(() => {
+    if (!isDescriptionModalOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setIsDescriptionModalOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isDescriptionModalOpen]);
+
+  useEffect(() => {
+    if (!isGuestSelectorOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setIsGuestSelectorOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isGuestSelectorOpen]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const url = new URL(window.location.href);
+    if (checkIn) {
+      url.searchParams.set("checkIn", checkIn);
+      url.searchParams.delete("checkin");
+    } else {
+      url.searchParams.delete("checkin");
+      url.searchParams.delete("checkIn");
+    }
+    if (checkOut) {
+      url.searchParams.set("checkOut", checkOut);
+      url.searchParams.delete("checkout");
+    } else {
+      url.searchParams.delete("checkout");
+      url.searchParams.delete("checkOut");
+    }
+    url.searchParams.delete("startDate");
+    url.searchParams.delete("endDate");
+    url.searchParams.set("guests", String(totalCapacityGuests));
+    if (adultsCount > 0) url.searchParams.set("adults", String(adultsCount));
+    else url.searchParams.delete("adults");
+    if (childrenCount > 0) url.searchParams.set("children", String(childrenCount));
+    else url.searchParams.delete("children");
+    if (infantsCount > 0) url.searchParams.set("infants", String(infantsCount));
+    else url.searchParams.delete("infants");
+    if (petsCount > 0) url.searchParams.set("pets", String(petsCount));
+    else url.searchParams.delete("pets");
+    window.history.replaceState(window.history.state, "", url.toString());
+
+    // Also sync to canonical search persistence if dates or guests are selected
+    if (checkIn || checkOut) {
+      const existing = getLastSearch();
+      saveLastSearch({
+        query: existing?.query || listing.city || "Stays",
+        displayName: existing?.displayName || listing.city || "Stays",
+        placeId: existing?.placeId || null,
+        placeType: existing?.placeType || "general",
+        latitude: existing?.latitude ?? listing.latitude ?? null,
+        longitude: existing?.longitude ?? listing.longitude ?? null,
+        city: existing?.city || listing.city || null,
+        country: existing?.country || listing.country || null,
+        checkIn: checkIn || null,
+        checkOut: checkOut || null,
+        guests: totalCapacityGuests,
+        adults: adultsCount,
+        children: childrenCount,
+        infants: infantsCount,
+        pets: petsCount,
+        searchedAt: new Date().toISOString(),
+      });
+    }
+  }, [checkIn, checkOut, totalCapacityGuests, adultsCount, childrenCount, infantsCount, petsCount, listing.city, listing.country, listing.latitude, listing.longitude]);
+
+  // This compact range is shared by the booking card and read-only calendar.
+  // The quote endpoint remains authoritative at reserve time.
+  useEffect(() => {
+    if (!availabilityRequested && !checkIn && !checkOut) {
+      return;
+    }
+    const controller = new AbortController();
+    const calendarRangeStart = dateKey(new Date(availabilityMonth.getFullYear(), availabilityMonth.getMonth(), 1));
+    const calendarRangeEnd = dateKey(new Date(availabilityMonth.getFullYear(), availabilityMonth.getMonth() + 2, 1));
+    // The selected stay and availability calendar intentionally share the
+    // same response cache. This also revalidates dates supplied by search.
+    const rangeStart = isDateKey(checkIn) && checkIn < calendarRangeStart ? checkIn : calendarRangeStart;
+    const selectedRangeEnd = isDateKey(checkOut) ? checkOut : isDateKey(checkIn) ? addCalendarDays(checkIn, 1) : "";
+    const rangeEnd = selectedRangeEnd && selectedRangeEnd > calendarRangeEnd ? selectedRangeEnd : calendarRangeEnd;
+    const startRequest = window.setTimeout(() => {
+      setIsAvailabilityLoading(true);
+      setAvailabilityError(null);
+      fetch(`/api/v1/listings/${listing.id}/booked-dates?start=${rangeStart}&end=${rangeEnd}`, { signal: controller.signal, cache: "no-store" })
+        .then(async (res) => ({ ok: res.ok, payload: await res.json() }))
+        .then(({ ok, payload }) => {
+          if (!ok || !Array.isArray(payload?.data?.ranges)) {
+            setAvailabilityError("Availability could not be loaded.");
+            return;
+          }
+          const fetchedRanges = payload.data.ranges.filter((range: unknown): range is BookedDateRange => {
+            if (!range || typeof range !== "object") return false;
+            const candidate = range as BookedDateRange;
+            return typeof candidate.start === "string" && typeof candidate.end === "string";
+          });
+          setBookedDateRanges((currentRanges) => {
+            // Replace data in the requested window, while retaining previously
+            // loaded months. This prevents a month change from forgetting a
+            // blocked date in an already-selected stay.
+            const retained = currentRanges.filter((range) => range.end <= rangeStart || range.start >= rangeEnd);
+            const unique = new Map<string, BookedDateRange>();
+            for (const range of [...retained, ...fetchedRanges]) unique.set(`${range.start}:${range.end}`, range);
+            return [...unique.values()].sort((a, b) => a.start.localeCompare(b.start));
+          });
+          // Keep persisted dates selected if unavailable per Requirement 8 & 9.
+          // Do NOT silently erase them; display a clear error message instead.
+          if (isDateKey(checkIn) && isUnavailableDate(new Date(`${checkIn}T00:00:00`), fetchedRanges)) {
+            setQuote(null);
+            setQuoteError("These dates are not available for this property. Please choose different dates.");
+          } else if (isDateKey(checkIn) && isDateKey(checkOut) && overlapsBookedRange(checkIn, checkOut, fetchedRanges)) {
+            setQuote(null);
+            setQuoteError("These dates are not available for this property. Please choose different dates.");
+          }
+        })
+        .catch((error: unknown) => {
+          if (error instanceof DOMException && error.name === "AbortError") return;
+          setAvailabilityError("Availability could not be loaded.");
+        })
+        .finally(() => {
+          if (!controller.signal.aborted) setIsAvailabilityLoading(false);
+        });
+    }, 0);
+    return () => {
+      window.clearTimeout(startRequest);
+      controller.abort();
+    };
+  }, [listing.id, availabilityMonth, checkIn, checkOut, availabilityRefreshVersion, availabilityRequested]);
+
+  useEffect(() => {
+    if (listing?.id) {
+      saveRecentlyViewedProperty({
+        id: listing.id,
+        slug: listing.customSlug,
+        title: listing.title,
+        city: listing.city,
+        area: listing.district,
+        country: listing.country,
+        price: listing.price,
+        mainImage: Array.isArray(listing.photos) && listing.photos.length > 0 ? listing.photos[0] : "",
+        rating: null,
+        maxGuests: listing.guests,
+        propertyType: listing.propertyType,
+        isGuestFavorite: listing.isGuestFavorite === true,
+        isSuperhost: listing.host?.isSuperhost === true,
+      });
+    }
+  }, [listing]);
+
+  const photos = Array.isArray(listing.photos) ? listing.photos : [];
+  const amenitiesSet = new Set(Array.isArray(listing.amenities) ? listing.amenities : []);
+  const categorizedAmenities = CANONICAL_AMENITIES.filter((amenity) => amenitiesSet.has(amenity.id));
+  const filteredModalAmenities = searchAmenitiesCatalog(amenitySearchQuery).filter((amenity) => amenitiesSet.has(amenity.id));
+  const amenityGroups = useMemo(() => {
+    const groups = new Map<string, typeof categorizedAmenities>();
+    for (const amenity of categorizedAmenities) {
+      const group = amenity.category || "Other";
+      groups.set(group, [...(groups.get(group) ?? []), amenity]);
+    }
+    return [...groups.entries()];
+  }, [categorizedAmenities]);
+
+  // Format price
+  const currencyCode = listing.currency ?? getCurrencyForCountry(listing.country);
+  const earliestCheckIn = getEarliestCheckInKey(listing);
+  let defaultDisplayDate = earliestCheckIn;
+  for (let offset = 0; offset < 366; offset += 1) {
+    const candidate = addCalendarDays(earliestCheckIn, offset);
+    const candidateMinimum = getMinimumStayForCheckIn(listing, candidate);
+    const candidateCheckout = addCalendarDays(candidate, candidateMinimum);
+    if (
+      isCheckInDateAllowed(listing, candidate) &&
+      !overlapsBookedRange(candidate, candidateCheckout, bookedDateRanges)
+    ) {
+      defaultDisplayDate = candidate;
+      break;
+    }
+  }
+  // Keep the no-quote detail price identical to homepage and search cards.
+  // Those cards resolve the first available calendar date and intentionally
+  // exclude the new-listing promotion from browse pricing.
+  const defaultCalendarPricing = resolveCalendarDatePricing({
+    dateKey: defaultDisplayDate,
+    listing: {
+      price: listing.price,
+      weekdayBasePrice: listing.weekdayBasePrice,
+      weekendPrice: listing.weekendPrice,
+      weekendPremium: listing.weekendPremium,
+      customPrices: listing.customPrices,
+      discounts: listing.discounts as Record<string, unknown> | null,
+    },
+  });
+  const effectiveDefaultPrice =
+    defaultCalendarPricing.promotion?.promotionalPrice ?? defaultCalendarPricing.originalPrice;
+  const displayPrice = effectiveDefaultPrice > 0 ? formatPrice(effectiveDefaultPrice, currencyCode) : null;
+  const minimumNights = getMinimumStayForCheckIn(listing, checkIn || earliestCheckIn);
+  const maximumNights = Math.max(minimumNights, listing.maxNights || 365);
+  const today = dateKey(new Date());
+  const minimumCheckOut = checkIn
+    ? addCalendarDays(checkIn, minimumNights)
+    : today;
+  const locationString = [listing.city, listing.country]
+    .filter((value): value is string => Boolean(value?.trim()))
+    .join(", ");
+  const publicCoordinates =
+    typeof listing.latitude === "number" && Number.isFinite(listing.latitude) &&
+      typeof listing.longitude === "number" && Number.isFinite(listing.longitude)
+      ? { latitude: listing.latitude, longitude: listing.longitude }
+      : null;
+  const publicProfile = (listing.host?.publicProfile as Record<string, unknown> | null) ?? {};
+  const hostBio = typeof publicProfile?.bio === "string" ? publicProfile.bio : "";
+  const hostWork = typeof publicProfile?.myWork === "string" ? publicProfile.myWork.trim() : "";
+  const hostLanguages = Array.isArray(publicProfile?.languages)
+    ? getLanguageDisplayNames(
+        publicProfile.languages
+          .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
+          .slice(0, 4),
+      )
+    : [];
+  const hostSince = listing.host?.createdAt && !Number.isNaN(new Date(listing.host.createdAt).getTime())
+    ? new Intl.DateTimeFormat("en", { month: "long", year: "numeric" }).format(new Date(listing.host.createdAt))
+    : null;
+  const hostYears = listing.host?.createdAt && !Number.isNaN(new Date(listing.host.createdAt).getTime())
+    ? Math.max(0, new Date().getFullYear() - new Date(listing.host.createdAt).getFullYear() - (new Date().getMonth() < new Date(listing.host.createdAt).getMonth() ? 1 : 0))
+    : null;
+  const hostTenure = hostYears === null ? null : hostYears > 0 ? `${hostYears} ${hostYears === 1 ? "year" : "years"}` : "Less than a year";
+  const hostProfileHref = listing.host?.id ? `/users/profile/${listing.host.id}` : null;
+  const formatTime = (time: string | null | undefined) => {
+    if (!time || !/^\d{2}:\d{2}$/.test(time)) return null;
+    const [hour, minute] = time.split(":").map(Number);
+    const suffix = hour >= 12 ? "PM" : "AM";
+    return `${hour % 12 || 12}:${minute.toString().padStart(2, "0")} ${suffix}`;
+  };
+  const humanize = (value: string) => value.toLowerCase().replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+  const aboutLocationDetails = [
+    ...(listing.neighborhoodDescription ? [{ heading: t("listing_detail_neighborhood", "Neighborhood"), content: listing.neighborhoodDescription }] : []),
+    ...(listing.gettingAround ? [{ heading: t("listing_detail_getting_around", "Getting around"), content: listing.gettingAround }] : []),
+    ...(Array.isArray(listing.locationFeatures) && listing.locationFeatures.length > 0
+      ? [{ heading: t("listing_detail_location_features", "Location features"), content: listing.locationFeatures.map(humanize).join(" · ") }]
+      : []),
+    ...(Array.isArray(listing.views) && listing.views.length > 0
+      ? [{ heading: t("listing_detail_views", "Views"), content: listing.views.map(humanize).join(" · ") }]
+      : []),
+  ];
+  const formatSafetyDisclosure = (entry: string): string | null => {
+    const [key, status, ...detailParts] = entry.split(":");
+    if (status === "NO") return null;
+    const labels: Record<string, string> = {
+      MUST_CLIMB_STAIRS: t("host_safety_must_climb_stairs", "Guests must climb stairs"),
+      POTENTIAL_FOR_NOISE: t("host_safety_potential_noise_short", "Construction or other potential noise during stays"),
+      NEARBY_WATER: t("host_safety_nearby_water_title", "Nearby water, like a lake or river"),
+      DANGEROUS_ANIMALS: t("host_safety_dangerous_animals_title", "Potentially dangerous animal(s) on the property"),
+      SPECIAL_CONSIDERATIONS: t("host_safety_special_considerations_title", "Other safety or regulatory notes"),
+    };
+    const label = labels[key] ?? humanize(key);
+    const details = detailParts.join(":").trim();
+    return status === "YES" ? `${label}${details ? `: ${details}` : ""}` : humanize(entry);
+  };
+  const translateSafetyEquipment = (item: string) => {
+    const normalized = item.toUpperCase().replace(/\s+/g, "_");
+    switch (normalized) {
+      case "SMOKE_ALARM":
+        return t("host_safety_smoke_alarm_title", "Smoke alarm");
+      case "CARBON_MONOXIDE_ALARM":
+      case "CO_ALARM":
+        return t("host_safety_carbon_monoxide_title", "Carbon monoxide alarm");
+      case "FIRST_AID_KIT":
+        return t("host_first_aid_kit", "First aid kit");
+      case "FIRE_EXTINGUISHER":
+        return t("host_fire_extinguisher", "Fire extinguisher");
+      case "SECURITY_CAMERA":
+        return t("host_safety_security_camera_title", "Exterior security camera present");
+      case "NOISE_MONITOR":
+        return t("host_safety_noise_monitor_title", "Noise decibel monitor present");
+      default:
+        return humanize(item);
+    }
+  };
+  const publicSafetyEquipment = Array.isArray(listing.safetyEquipment) ? listing.safetyEquipment : [];
+  const publicSafetyHazards = Array.isArray(listing.safetyHazards)
+    ? listing.safetyHazards.map(formatSafetyDisclosure).filter((item): item is string => Boolean(item))
+    : [];
+  const publicSafetyDisclosures = Array.isArray(listing.safetyDisclosures)
+    ? listing.safetyDisclosures.map(formatSafetyDisclosure).filter((item): item is string => Boolean(item))
+    : [];
+  const cancellationLabel = listing.cancellationPolicy ? cancellationPolicyLabel(listing.cancellationPolicy, t) : null;
+  const longTermCancellationLabel = listing.longTermCancellationPolicy ? cancellationPolicyLabel(listing.longTermCancellationPolicy, t) : null;
+  const configuredHouseRules = Array.isArray(listing.houseRules)
+    ? listing.houseRules.filter((rule): rule is string => typeof rule === "string" && rule.trim().length > 0)
+    : [];
+  const safetyItems = [
+    ...publicSafetyEquipment.map(translateSafetyEquipment),
+    ...publicSafetyHazards,
+    ...publicSafetyDisclosures,
+  ];
+  const houseRuleItems = [
+    ...(formatTime(listing.checkInStart)
+      ? [{
+          id: "check-in",
+          icon: <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-full border border-[#1f1f1f]"><Image src="/images/icons/check-in-icon.svg" alt="" width={15} height={15} className="size-6" /></span>,
+          text: formatTime(listing.checkInEnd)
+            ? t("listing_detail_check_in_after_before", { start: formatTime(listing.checkInStart) || "", end: formatTime(listing.checkInEnd) || "" }, `Check-in after ${formatTime(listing.checkInStart)}, before ${formatTime(listing.checkInEnd)}`)
+            : t("listing_detail_check_in_after", { start: formatTime(listing.checkInStart) || "" }, `Check-in after ${formatTime(listing.checkInStart)}`),
+        }]
+      : []),
+    ...(formatTime(listing.checkOutTime)
+      ? [{
+          id: "check-out",
+          icon: <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-full border border-[#1f1f1f]"><Image src="/images/icons/check-in-icon.svg" alt="" width={15} height={15} className="size-6" /></span>,
+          text: t("listing_detail_check_out_before", { time: formatTime(listing.checkOutTime) || "" }, `Check-out before ${formatTime(listing.checkOutTime)}`),
+        }]
+      : []),
+    {
+      id: "maximum-guests",
+      icon: <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-full border border-[#1f1f1f]"><Image src="/images/icons/max-guest-icon.svg" alt="" width={15} height={15} className="size-6" /></span>,
+      text: t("listing_detail_guests_max", { count: listing.guests || 1 }, `${listing.guests || 1} guest maximum`),
+    },
+    ...(listing.petsAllowed !== null
+      ? [{
+          id: "pets",
+          icon: <RuleIcon name="pets" />,
+          text: listing.petsAllowed
+            ? (listing.maxPets
+                ? t("listing_detail_pets_allowed_max", { max: listing.maxPets }, `Pets allowed · up to ${listing.maxPets}`)
+                : t("listing_detail_pets_allowed", "Pets allowed"))
+            : t("listing_detail_no_pets", "No pets"),
+        }]
+      : []),
+    ...(listing.smokingAllowed !== null
+      ? [{
+          id: "smoking",
+          icon: <RuleIcon name="smoking" />,
+          text: listing.smokingAllowed
+            ? (listing.smokingLocation
+                ? t("listing_detail_smoking_location", { location: humanize(listing.smokingLocation) }, `Smoking: ${humanize(listing.smokingLocation)}`)
+                : t("listing_detail_smoking_allowed", "Smoking allowed"))
+            : t("listing_detail_no_smoking", "No smoking"),
+        }]
+      : []),
+    ...(listing.eventsAllowed !== null
+      ? [{
+          id: "events",
+          icon: <RuleIcon name="events" />,
+          text: listing.eventsAllowed ? t("listing_detail_events_allowed", "Events allowed") : t("listing_detail_no_events", "No parties or events"),
+        }]
+      : []),
+    ...(listing.photographyAllowed !== null
+      ? [{
+          id: "photography",
+          icon: <RuleIcon name="photo" />,
+          text: listing.photographyAllowed ? t("listing_detail_photography_allowed", "Commercial photography allowed") : t("listing_detail_no_photography", "No commercial photography"),
+        }]
+      : []),
+    ...(listing.quietHours && formatTime(listing.quietHoursStart) && formatTime(listing.quietHoursEnd)
+      ? [{
+          id: "quiet-hours",
+          icon: <RuleIcon name="quiet" />,
+          text: t("listing_detail_quiet_hours", { start: formatTime(listing.quietHoursStart) || "", end: formatTime(listing.quietHoursEnd) || "" }, `Quiet hours: ${formatTime(listing.quietHoursStart)}–${formatTime(listing.quietHoursEnd)}`),
+        }]
+      : []),
+    ...configuredHouseRules.map((text, index) => ({ id: `configured-${index}`, icon: <RuleCheckIcon />, text })),
+    ...(listing.additionalRules ? [{ id: "additional", icon: <RuleIcon name="rule" />, text: listing.additionalRules }] : []),
+  ];
+  const cancellationItems = [
+    ...(cancellationLabel ? [t("listing_detail_cancellation_short_term", { policy: cancellationLabel }, `${cancellationLabel}. Applies to stays under 28 nights.`)] : []),
+    ...(longTermCancellationLabel ? [t("listing_detail_cancellation_long_term", { policy: longTermCancellationLabel }, `${longTermCancellationLabel}. Applies to stays of 28 nights or more.`)] : []),
+  ];
+  const translateHighlightTitle = (rawTitle: string): string => {
+    const lower = rawTitle.toLowerCase().trim();
+    if (lower === "dedicated workspace" || lower === "workspace") {
+      return t("listings_dedicated_workspace", "Dedicated workspace");
+    }
+    if (lower === "central location" || lower === "central") {
+      return t("listing_detail_highlight_central_location", "Central location");
+    }
+    if (lower === "peaceful") {
+      return t("host_highlights_peaceful", "Peaceful");
+    }
+    if (lower === "unique") {
+      return t("host_highlights_unique", "Unique");
+    }
+    if (lower === "family-friendly" || lower === "family friendly") {
+      return t("host_highlights_family", "Family-friendly");
+    }
+    if (lower === "stylish") {
+      return t("host_highlights_stylish", "Stylish");
+    }
+    if (lower === "spacious") {
+      return t("host_highlights_spacious", "Spacious");
+    }
+    return rawTitle;
+  };
+  const trustHighlights: Array<{ icon: TrustHighlightIconName; title: string; description: string }> = [
+    ...(listing.isGuestFavorite
+      ? [{ icon: "award" as const, title: t("listing_detail_guest_favourite", "Guest favourite"), description: t("listing_detail_guest_favourite_desc", "Highly rated by guests who have stayed here.") }]
+      : []),
+    ...((Array.isArray(listing.highlights) ? listing.highlights : []).slice(0, 2).map((title) => ({
+      icon: "sparkle" as const,
+      title: translateHighlightTitle(title),
+      description: t("listing_detail_host_highlight_desc", "A highlight shared by this host."),
+    }))),
+    ...(cancellationLabel
+      ? [{ icon: "calendar" as const, title: t("listing_detail_cancellation_policy", "Cancellation policy"), description: cancellationLabel }]
+      : []),
+    ...(displayPrice
+      ? [{ icon: "pricing" as const, title: t("listing_detail_clear_pricing", "Clear pricing"), description: t("listing_detail_clear_pricing_desc", "Your full price is shown before you reserve.") }]
+      : []),
+  ].slice(0, 4);
+
+  // Fetch quote when valid dates are selected
+  useEffect(() => {
+    if (!checkIn || !checkOut) {
+      lastQuoteQueryRef.current = "";
+      const timer = window.setTimeout(() => {
+        setQuote(null);
+        setQuoteError((current) => current === initialSelectionError ? current : null);
+        setIsQuoteLoading(false);
+      }, 0);
+      return () => window.clearTimeout(timer);
+    }
+
+    if (
+      adultsCount < 1 ||
+      totalCapacityGuests < 1 ||
+      totalCapacityGuests > maximumGuests ||
+      (petsCount > 0 && !allowsPets) ||
+      petsCount > maxPetsAllowed
+    ) {
+      lastQuoteQueryRef.current = "";
+      const timer = window.setTimeout(() => {
+        setQuote(null);
+        setQuoteError(
+          adultsCount < 1
+            ? "At least one adult is required for a reservation."
+            : petsCount > 0 && !allowsPets
+              ? "Pets are not allowed at this property."
+              : petsCount > maxPetsAllowed
+                ? `This property allows up to ${maxPetsAllowed} ${maxPetsAllowed === 1 ? "pet" : "pets"}.`
+                : `This property accommodates up to ${maximumGuests} ${maximumGuests === 1 ? "guest" : "guests"}.`,
+        );
+        setIsQuoteLoading(false);
+      }, 0);
+      return () => window.clearTimeout(timer);
+    }
+
+    const cIn = new Date(`${checkIn}T00:00:00`);
+    const cOut = new Date(`${checkOut}T00:00:00`);
+    if (isNaN(cIn.getTime()) || isNaN(cOut.getTime()) || cOut <= cIn) {
+      lastQuoteQueryRef.current = "";
+      const timer = window.setTimeout(() => {
+        setQuote(null);
+        setQuoteError("Checkout must be after check-in");
+        setIsQuoteLoading(false);
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+
+    if (overlapsBookedRange(checkIn, checkOut, bookedDateRanges)) {
+      lastQuoteQueryRef.current = "";
+      const timer = window.setTimeout(() => {
+        setQuote(null);
+        setQuoteError("These dates are not available for this property. Please choose different dates.");
+        setIsQuoteLoading(false);
+      }, 0);
+      return () => window.clearTimeout(timer);
+    }
+
+    const effectiveSpecialOffer = initialSpecialOfferId || searchParams.get("specialOfferId") || undefined;
+    const currentQueryKey = `${listing.id}:${checkIn}:${checkOut}:${totalCapacityGuests}:${petsCount}:${isNonRefundable}:${effectiveSpecialOffer || ""}`;
+
+    if (lastQuoteQueryRef.current === currentQueryKey && quote) {
+      return;
+    }
+
+    let isMounted = true;
+    const controller = new AbortController();
+    const timer = setTimeout(() => {
+      lastQuoteQueryRef.current = currentQueryKey;
+      setIsQuoteLoading(true);
+      setQuoteError(null);
+
+      fetchAuthoritativeQuote<BookingQuote>(
+        {
+          listingId: listing.id,
+          checkIn,
+          checkOut,
+          guests: totalCapacityGuests,
+          pets: petsCount,
+          nonRefundable: isNonRefundable,
+          specialOfferId: effectiveSpecialOffer,
+        },
+        { signal: controller.signal },
+      )
+        .then((data) => {
+          if (!isMounted) return;
+          setQuote(data);
+          setQuoteError(null);
+          trackListingEvent({
+            eventType: "quote_calculated",
+            propertyId: listing.id,
+            city: listing.city,
+            country: listing.country,
+            checkIn,
+            checkOut,
+            guestCount: totalCapacityGuests,
+            metadata: {
+              nights: data.nights,
+              totalPrice: data.guestTotal ?? data.totalPrice,
+              extraGuestFee: data.extraGuestFee,
+              appliedDiscount: data.appliedDiscount?.name,
+              nonRefundable: isNonRefundable,
+            },
+          });
+        })
+        .catch((error: unknown) => {
+          if (!isMounted || (error instanceof DOMException && error.name === "AbortError")) return;
+          setQuote(null);
+          setQuoteError(error instanceof Error ? error.message : "Unable to calculate price quotation.");
+        })
+        .finally(() => {
+          if (isMounted) setIsQuoteLoading(false);
+        });
+    }, 0);
+
+    return () => {
+      isMounted = false;
+      controller.abort();
+      clearTimeout(timer);
+    };
+  }, [checkIn, checkOut, totalCapacityGuests, adultsCount, petsCount, isNonRefundable, listing.id, listing.city, listing.country, maximumGuests, allowsPets, maxPetsAllowed, initialSpecialOfferId, initialSelectionError, searchParams, bookedDateRanges]);
+
+  const isDateRangeValid = Boolean(
+    isDateKey(checkIn) && isDateKey(checkOut) && checkOut > checkIn && !overlapsBookedRange(checkIn, checkOut, bookedDateRanges),
+  );
+  const isGuestSelectionValid = Number.isInteger(adultsCount) && adultsCount >= 1 && Number.isInteger(totalCapacityGuests) && totalCapacityGuests >= 1 && totalCapacityGuests <= maximumGuests && Number.isInteger(petsCount) && petsCount >= 0 && petsCount <= maxPetsAllowed;
+  const hasValidQuote = Boolean(
+    isDateRangeValid && isGuestSelectionValid && quote && !quoteError && !isQuoteLoading && !isAvailabilityLoading && !availabilityError,
+  );
+
+  const clearBookingDates = () => {
+    setCheckIn("");
+    setCheckOut("");
+    setQuoteError(null);
+    trackListingEvent({
+      eventType: "dates_cleared",
+      propertyId: listing.id,
+      city: listing.city,
+      country: listing.country,
+    });
+  };
+
+  const updateCheckIn = (nextCheckIn: string) => {
+    if (!isDateKey(nextCheckIn) || !isCheckInDateAllowed(listing, nextCheckIn)) {
+      setQuoteError("That check-in date does not meet this property's advance-notice or same-day booking rules.");
+      return;
+    }
+    if (isUnavailableDate(new Date(`${nextCheckIn}T00:00:00`), bookedDateRanges)) {
+      setQuoteError("That check-in date is unavailable. Please choose another date.");
+      trackListingEvent({
+        eventType: "availability_conflict",
+        propertyId: listing.id,
+        metadata: { date: nextCheckIn, type: "checkIn_unavailable" },
+      });
+      return;
+    }
+    setQuoteError(null);
+    setCheckIn(nextCheckIn);
+    trackListingEvent({
+      eventType: "checkin_selected",
+      propertyId: listing.id,
+      city: listing.city,
+      country: listing.country,
+      checkIn: nextCheckIn,
+    });
+    const nextNights = checkOut && isDateKey(checkOut) ? calendarNights(nextCheckIn, checkOut) : 0;
+    if (checkOut && (checkOut <= nextCheckIn || nextNights < minimumNights || nextNights > maximumNights || overlapsBookedRange(nextCheckIn, checkOut, bookedDateRanges))) {
+      setCheckOut("");
+      setQuoteError("Your previous checkout is no longer valid. Please choose another date.");
+    }
+  };
+
+  const updateCheckOut = (nextCheckOut: string) => {
+    if (!checkIn) {
+      setQuoteError("Choose a check-in date before selecting checkout.");
+      return;
+    }
+    if (!isDateKey(nextCheckOut) || nextCheckOut <= checkIn) {
+      setQuoteError("Checkout must be after check-in.");
+      return;
+    }
+    const nights = calendarNights(checkIn, nextCheckOut);
+    if (nights < minimumNights) {
+      setQuoteError(`This property requires a minimum stay of ${minimumNights} ${minimumNights === 1 ? "night" : "nights"}.`);
+      trackListingEvent({
+        eventType: "availability_conflict",
+        propertyId: listing.id,
+        metadata: { minimumNights, nightsRequested: nights },
+      });
+      return;
+    }
+    if (nights > maximumNights) {
+      setQuoteError(`This property allows a maximum stay of ${maximumNights} ${maximumNights === 1 ? "night" : "nights"}.`);
+      return;
+    }
+    if (overlapsBookedRange(checkIn, nextCheckOut, bookedDateRanges)) {
+      setCheckOut("");
+      setQuote(null);
+      setQuoteError("Those dates include an unavailable night. Please choose different dates.");
+      trackListingEvent({
+        eventType: "availability_conflict",
+        propertyId: listing.id,
+        metadata: { checkIn, checkOut: nextCheckOut, type: "stay_overlaps_booked" },
+      });
+      return;
+    }
+    setQuoteError(null);
+    setCheckOut(nextCheckOut);
+    trackListingEvent({
+      eventType: "checkout_selected",
+      propertyId: listing.id,
+      city: listing.city,
+      country: listing.country,
+      checkIn,
+      checkOut: nextCheckOut,
+    });
+  };
+
+  const updateAdults = (delta: number) => {
+    const next = adultsCount + delta;
+    if (next < 1) return;
+    if (delta > 0 && !canAddCapacityGuest) return;
+    setQuoteError(null);
+    setAdultsCount(next);
+    trackListingEvent({
+      eventType: "guest_count_changed",
+      propertyId: listing.id,
+      guestCount: next + childrenCount,
+      metadata: { category: "adults", adults: next, children: childrenCount, infants: infantsCount, pets: petsCount },
+    });
+  };
+
+  const updateChildren = (delta: number) => {
+    const next = childrenCount + delta;
+    if (next < 0) return;
+    if (delta > 0 && !canAddCapacityGuest) return;
+    setQuoteError(null);
+    setChildrenCount(next);
+    trackListingEvent({
+      eventType: "guest_count_changed",
+      propertyId: listing.id,
+      guestCount: adultsCount + next,
+      metadata: { category: "children", adults: adultsCount, children: next, infants: infantsCount, pets: petsCount },
+    });
+  };
+
+  const updateInfants = (delta: number) => {
+    const next = infantsCount + delta;
+    if (next < 0 || next > 5) return;
+    setInfantsCount(next);
+    trackListingEvent({
+      eventType: "guest_count_changed",
+      propertyId: listing.id,
+      guestCount: totalCapacityGuests,
+      metadata: { category: "infants", adults: adultsCount, children: childrenCount, infants: next, pets: petsCount },
+    });
+  };
+
+  const updatePets = (delta: number) => {
+    if (!allowsPets) {
+      setQuoteError("Pets are not allowed at this property.");
+      return;
+    }
+    const next = petsCount + delta;
+    if (next < 0 || next > maxPetsAllowed) return;
+    setQuoteError(null);
+    setPetsCount(next);
+    trackListingEvent({
+      eventType: "guest_count_changed",
+      propertyId: listing.id,
+      guestCount: totalCapacityGuests,
+      metadata: { category: "pets", adults: adultsCount, children: childrenCount, infants: infantsCount, pets: next },
+    });
+  };
+
+  const handleShare = async () => {
+    trackListingEvent({
+      eventType: "share_clicked",
+      propertyId: listing.id,
+      city: listing.city,
+      country: listing.country,
+    });
+
+    const shareData = {
+      title: listing.title,
+      text: locationString ? `${listing.title} in ${locationString}` : listing.title,
+      url: window.location.href,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else if (navigator.clipboard) {
+        await navigator.clipboard.writeText(shareData.url);
+      }
+    } catch {
+      // Share cancellation and clipboard denials are intentionally silent.
+    }
+  };
+
+  const handleSave = async () => {
+    const nextSaved = !wishlist.has(listing.id);
+    trackListingEvent({
+      eventType: "wishlist_toggled",
+      propertyId: listing.id,
+      metadata: { saved: nextSaved },
+    });
+    if (wishlist.has(listing.id)) await wishlist.remove(listing.id);
+    else await wishlist.add(listing.id);
+  };
+
+  const handleSendInquiry = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inquiryMessage.trim() || inquirySending) return;
+    setInquirySending(true);
+    setInquiryError(null);
+    try {
+      const res = await fetch("/api/v1/messages/inquiries", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          listingId: listing.id,
+          message: inquiryMessage.trim(),
+          startDate: checkIn || undefined,
+          endDate: checkOut || undefined,
+          guests: adultsCount + childrenCount,
+        }),
+      });
+      if (!res.ok) {
+        if (res.status === 401) {
+          router.push(`/login?callbackUrl=${encodeURIComponent(window.location.pathname)}`);
+          return;
+        }
+        const data = await res.json();
+        throw new Error(data?.error?.message || "Failed to send inquiry");
+      }
+      const json = await res.json();
+      setContactHostModalOpen(false);
+      setInquiryMessage("");
+      if (json.data?.conversation?.id) {
+        router.push(`/messages?id=${json.data.conversation.id}`);
+      } else {
+        router.push("/messages");
+      }
+    } catch (err: any) {
+      setInquiryError(err.message || "Failed to send message. Please try again.");
+    } finally {
+      setInquirySending(false);
+    }
+  };
+
+  // Handle Booking — validates all listing settings before redirecting to /book/[id]
+  const handleReserve = async () => {
+
+    if (!checkIn || !checkOut) {
+      setQuoteError("Please choose check-in and check-out dates to continue.");
+      trackListingEvent({
+        eventType: "reserve_validation_failed",
+        propertyId: listing.id,
+        metadata: { reason: "missing_dates" },
+      });
+      return;
+    }
+
+    if (!isDateKey(checkIn) || !isDateKey(checkOut)) {
+      setQuoteError("Please enter valid check-in and check-out dates.");
+      trackListingEvent({
+        eventType: "reserve_validation_failed",
+        propertyId: listing.id,
+        metadata: { reason: "invalid_date_format" },
+      });
+      return;
+    }
+
+    if (!isCheckInDateAllowed(listing, checkIn)) {
+      setQuoteError("That check-in date does not meet this property's advance-notice or same-day booking rules.");
+      trackListingEvent({
+        eventType: "reserve_validation_failed",
+        propertyId: listing.id,
+        metadata: { reason: "checkin_in_past" },
+      });
+      return;
+    }
+
+    if (checkOut <= checkIn) {
+      setQuoteError("Checkout must be after check-in.");
+      trackListingEvent({
+        eventType: "reserve_validation_failed",
+        propertyId: listing.id,
+        metadata: { reason: "checkout_before_checkin" },
+      });
+      return;
+    }
+
+    const nights = calendarNights(checkIn, checkOut);
+    if (nights < minimumNights) {
+      setQuoteError(`This property requires a minimum stay of ${minimumNights} ${minimumNights === 1 ? "night" : "nights"}.`);
+      trackListingEvent({
+        eventType: "reserve_validation_failed",
+        propertyId: listing.id,
+        metadata: { reason: "minimum_nights_not_met", minimumNights, nights },
+      });
+      return;
+    }
+
+    if (nights > maximumNights) {
+      setQuoteError(`This property allows a maximum stay of ${maximumNights} ${maximumNights === 1 ? "night" : "nights"}.`);
+      trackListingEvent({
+        eventType: "reserve_validation_failed",
+        propertyId: listing.id,
+        metadata: { reason: "maximum_nights_exceeded", maximumNights, nights },
+      });
+      return;
+    }
+
+    if (overlapsBookedRange(checkIn, checkOut, bookedDateRanges)) {
+      setQuoteError("Those dates include an unavailable night. Please choose different dates.");
+      trackListingEvent({
+        eventType: "reserve_validation_failed",
+        propertyId: listing.id,
+        metadata: { reason: "dates_unavailable" },
+      });
+      return;
+    }
+
+    if (!isGuestSelectionValid || totalCapacityGuests > maximumGuests) {
+      setQuoteError(
+        adultsCount < 1
+          ? "At least one adult is required for a reservation."
+          : petsCount > 0 && !allowsPets
+            ? "Pets are not allowed at this property."
+            : petsCount > maxPetsAllowed
+              ? `This property allows up to ${maxPetsAllowed} ${maxPetsAllowed === 1 ? "pet" : "pets"}.`
+              : `This property allows a maximum of ${maximumGuests} ${maximumGuests === 1 ? "guest" : "guests"}.`,
+      );
+      trackListingEvent({
+        eventType: "reserve_validation_failed",
+        propertyId: listing.id,
+        metadata: { reason: "max_guests_exceeded", totalCapacityGuests, maximumGuests },
+      });
+      return;
+    }
+
+    if (isQuoteLoading || isAvailabilityLoading) {
+      return;
+    }
+
+    if (quoteError) {
+      return;
+    }
+
+    if (!hasValidQuote || !quote) {
+      setQuoteError("Unable to calculate price quotation for these dates. Please try another selection.");
+      trackListingEvent({
+        eventType: "reserve_validation_failed",
+        propertyId: listing.id,
+        metadata: { reason: "missing_valid_quote" },
+      });
+      return;
+    }
+
+    const effectiveSpecialOffer = initialSpecialOfferId || searchParams.get("specialOfferId") || undefined;
+
+    setIsBookingSubmitting(true);
+    setQuoteError(null);
+    try {
+      saveBookingQuote({
+        listingId: listing.id,
+        checkIn,
+        checkOut,
+        guests: totalCapacityGuests,
+        pets: petsCount,
+        nonRefundable: isNonRefundable,
+        specialOfferId: effectiveSpecialOffer,
+      }, quote);
+      const checkoutUrl = buildBookingCheckoutUrl(
+        listing.customSlug || listing.id,
+        {
+          location: listing.city || undefined,
+          checkIn,
+          checkOut,
+          guests: totalCapacityGuests,
+          adults: adultsCount,
+          children: childrenCount,
+          infants: infantsCount,
+          pets: petsCount,
+          specialOfferId: effectiveSpecialOffer,
+        },
+        {
+          ...(isNonRefundable ? { nonRefundable: "true" } : {}),
+          bookingMode: quote.bookingMode,
+        },
+      );
+
+      trackListingEvent({
+        eventType: "reserve_clicked",
+        propertyId: listing.id,
+        city: listing.city,
+        country: listing.country,
+        checkIn,
+        checkOut,
+        guestCount: totalCapacityGuests,
+        metadata: {
+          adults: adultsCount,
+          children: childrenCount,
+          infants: infantsCount,
+          pets: petsCount,
+          isNonRefundable,
+          bookingMode: quote.bookingMode,
+        },
+      });
+
+      trackListingEvent({
+        eventType: "booking_flow_started",
+        propertyId: listing.id,
+        city: listing.city,
+        country: listing.country,
+        checkIn,
+        checkOut,
+        guestCount: totalCapacityGuests,
+      });
+
+      saveLastSearch({
+        location: listing.city || "",
+        checkIn,
+        checkOut,
+        guests: totalCapacityGuests,
+        adults: adultsCount,
+        children: childrenCount,
+        infants: infantsCount,
+        pets: petsCount,
+        specialOfferId: effectiveSpecialOffer,
+      });
+
+      if (!isAuthenticated) {
+        const callbackUrl = encodeURIComponent(checkoutUrl);
+        router.push(`/login?callbackUrl=${callbackUrl}`);
+        return;
+      }
+
+      router.push(checkoutUrl);
+    } catch {
+      setQuoteError("Unable to verify availability right now. Please try again.");
+    } finally {
+      setIsBookingSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="flex min-h-screen flex-col bg-white font-sans text-[#1f1f1f] antialiased">
+      <AppHeader />
+
+      <main className="w-full flex-1 pb-13 pt-5 sm:pt-10">
+        <Container>
+          <div className="single-listing-page">
+            {/* Header Section */}
+            <div className="hidden items-start justify-between gap-4 pb-5 sm:pb-6 lg:flex">
+              <div className="min-w-0 space-y-2">
+                <h1>
+                  {listing.title}
+                </h1>
+                {(listing.isGuestFavorite || listing.host?.isSuperhost || listing.isFeatured) && (
+                  <div className="flex flex-wrap items-center gap-2" aria-label="Listing distinctions">
+                    {listing.isGuestFavorite && (
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-950">
+                        <span aria-hidden="true">✦</span> {t("listing_detail_guest_favourite", "Guest favourite")}
+                      </span>
+                    )}
+                    {listing.host?.isSuperhost && (
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-xs font-medium text-sky-950">
+                        <span aria-hidden="true">★</span> {t("home_superhost", "Superhost")}
+                      </span>
+                    )}
+                    {listing.isFeatured && (
+                      <span className="inline-flex items-center rounded-full bg-zinc-100 px-3 py-2 text-xs font-medium text-[#1f1f1f]">
+                        {t("home_featured", "Featured stay")}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+              <div className="flex shrink-0 items-center gap-3 pt-0.5 sm:gap-8">
+                <button type="button" onClick={handleShare} className="group inline-flex items-center gap-3 rounded-full text-base font-normal text-[#1f1f1f] transition-colors hover:text-[#727272]" aria-label="Share this listing">
+                  <span className="flex size-10 items-center justify-center rounded-full border border-[#1f1f1f] bg-white transition-colors group-hover:border-zinc-500 group-hover:bg-zinc-50">
+                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.55" className="size-6"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="m8.6 10.6 6.8-4.1M8.6 13.4l6.8 4.1" /></svg>
+                  </span>
+                  <span className="hidden sm:inline">{t("listing_detail_share", "Share")}</span>
+                </button>
+                <button type="button" onClick={() => void handleSave()} disabled={wishlist.adding.has(listing.id) || wishlist.removeInFlight.has(listing.id)} className="group inline-flex items-center gap-3 rounded-full text-base font-normal text-[#1f1f1f] transition-colors hover:text-[#727272] disabled:opacity-50" aria-pressed={wishlist.has(listing.id)} aria-label={wishlist.has(listing.id) ? "Remove from wishlist" : "Save listing"}>
+                  <span className={`flex size-10 items-center justify-center rounded-full border transition-colors ${wishlist.has(listing.id) ? "border-red-700 bg-red-50 text-red-700" : "border-[#1f1f1f] bg-white group-hover:border-zinc-500 group-hover:bg-zinc-50"}`}>
+                    <svg aria-hidden="true" viewBox="0 0 24 24" fill={wishlist.has(listing.id) ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.55" className="size-6"><path d="M12 20.5 3.8 12a5.2 5.2 0 0 1 7.4-7.3L12 5.5l.8-.8a5.2 5.2 0 0 1 7.4 7.3L12 20.5Z" /></svg>
+                  </span>
+                  <span className="hidden sm:inline">{wishlist.has(listing.id) ? t("listing_detail_saved", "Saved") : t("listing_detail_save", "Save")}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Photo Gallery (ListingGallery component with Show all photos modal) */}
+            <div className="listing-galelry">
+              <ListingGallery key={listing.id} photos={photos} listingTitle={listing.title} onShare={handleShare} onSave={() => void handleSave()} isSaved={wishlist.has(listing.id)} saveDisabled={wishlist.adding.has(listing.id) || wishlist.removeInFlight.has(listing.id)} />
+            </div>
+
+            <h1 className="mb-4 lg:hidden">{listing.title}</h1>
+
+            {/* Main Content Layout: Left Details (7 cols) + Right Booking Widget (5 cols) */}
+            <div className="grid grid-cols-1 gap-9 lg:grid-cols-12 lg:gap-10">
+              {/* LEFT COLUMN */}
+              <div className="lg:col-span-7">
+                <section className="pb-1">
+                  <h2 className="text-[18px] font-normal leading-6 text-[#1f1f1f] lg:text-[20px] lg:leading-5">
+                    {listing.listingType ? listingTypeLabel(listing.listingType, t) : "Stay"}{listing.propertyType ? ` in ${propertyTypeLabel(listing.propertyType, t)}` : ""}{locationString ? ` in ${locationString}` : ""}
+                  </h2>
+                  {/* Where you'll sleep */}
+                  <p className="mt-1 text-sm font-light text-[#1F1F1F] lg:mt-2 lg:text-base">
+                    {(listing.guests || 1) === 1 ? t("home_guest_one", "{count} guest").replace("{count}", String(listing.guests || 1)) : t("home_guest_many", "{count} guests").replace("{count}", String(listing.guests || 1))} · {(listing.bedrooms || 1) === 1 ? t("listing_detail_bedroom_one", "{count} bedroom").replace("{count}", String(listing.bedrooms || 1)) : t("listing_detail_bedroom_many", "{count} bedrooms").replace("{count}", String(listing.bedrooms || 1))} · {(listing.beds || 1) === 1 ? t("listing_detail_bed_one", "{count} bed").replace("{count}", String(listing.beds || 1)) : t("listing_detail_bed_many", "{count} beds").replace("{count}", String(listing.beds || 1))} · {(listing.bathrooms || 1) === 1 ? t("listing_detail_bath_one", "{count} bath").replace("{count}", String(listing.bathrooms || 1)) : t("listing_detail_bath_many", "{count} baths").replace("{count}", String(listing.bathrooms || 1))}
+                  </p>
+                </section>
+
+                {listing.isGuestFavorite && reviewRating !== null && reviewCount > 0 && (
+                  <section className="mt-7 hidden w-full max-w-[720px] overflow-hidden rounded-[40px] border border-[#dedede] bg-white shadow-[0_2px_4px_rgba(0,0,0,0.16)] xl:grid xl:grid-cols-[1.1fr_1.75fr_.85fr_.62fr] xl:px-6" aria-label="Guest favourite rating summary">
+                    <div className="flex min-w-0 items-center justify-center gap-2.5 border-b border-[#dedede] px-4 py-5 md:border-r xl:border-b-0">
+                      <Image src="/images/icons/leaves-left.svg" alt="" width={39} height={71} aria-hidden="true" className="h-[71px] w-[39px] shrink-0" />
+                      <span className="text-[17px] font-normal leading-5 text-[#1f1f1f] text-center">{t("listing_detail_guest_favourite", "Guest favourite")}</span>
+                      <Image src="/images/icons/leaves-right.svg" alt="" width={39} height={71} aria-hidden="true" className="h-[71px] w-[39px] shrink-0" />
+                    </div>
+                    <p className="relative flex min-w-0 items-center border-b border-[#dedede] px-5 py-5 text-base font-normal leading-6 text-[#1f1f1f] xl:border-b-0 xl:after:absolute xl:after:right-0 xl:after:top-1/2 xl:after:h-[58px] xl:after:w-px xl:after:-translate-y-1/2 xl:after:bg-[#a9a9a9]">{t("listing_detail_loved_home", "One of the most loved homes on Homyz, according to guests.")}</p>
+                    <div className="relative flex items-center justify-center border-r border-[#dedede] px-4 py-5 xl:border-r-0 xl:after:absolute xl:after:right-0 xl:after:top-1/2 xl:after:h-[58px] xl:after:w-px xl:after:-translate-y-1/2 xl:after:bg-[#a9a9a9]">
+                      <div>
+                        <p className="text-[26px] font-medium leading-none text-[#1f1f1f]">{reviewRating.toFixed(2)}</p>
+                        <p className="mt-2 text-[15px] leading-none tracking-[0.1em] text-[#e9a400]" aria-label={`${reviewRating.toFixed(2)} out of 5 stars`}>★★★★★</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-center px-3 py-5">
+                      <p className="text-left text-[26px] font-medium leading-5 text-[#1f1f1f]">{reviewCount}<br /><span className="text-[15px] font-normal leading-5 text-[#1f1f1f]">{reviewCount === 1 ? t("listing_detail_review_one", "Review") : t("listing_detail_review_many", "Reviews")}</span></p>
+                    </div>
+                  </section>
+                )}
+
+                {listing.isGuestFavorite && reviewRating !== null && reviewCount > 0 && (
+                  <section className="mt-4 space-y-2 xl:hidden" aria-label="Guest favourite rating summary">
+                    <div className="rounded-[12px] border border-[#dedede] bg-white px-5 py-4 text-center shadow-[0_2px_4px_rgba(0,0,0,0.16)]">
+                      <div className="flex items-center justify-center gap-3">
+                        <Image src="/images/icons/leaves-left.svg" alt="" width={32} height={48} className="h-12 w-8" />
+                        <span className="text-base leading-5 text-[#1f1f1f]">{t("listing_detail_guest_favourite", "Guest favourite")}</span>
+                        <Image src="/images/icons/leaves-right.svg" alt="" width={32} height={48} className="h-12 w-8" />
+                      </div>
+                      <p className="mt-3 text-sm leading-5 text-[#1f1f1f]">{t("listing_detail_loved_home", "One of the most loved homes on Homyz, according to guests.")}</p>
+                    </div>
+                    <div className="grid grid-cols-2 overflow-hidden rounded-[12px] border border-[#dedede] bg-white shadow-[0_2px_4px_rgba(0,0,0,0.16)]">
+                      <div className="px-5 py-4 text-center"><p className="text-2xl font-medium leading-none">{reviewRating.toFixed(2)}</p><p className="mt-2 text-sm tracking-[0.08em] text-[#e9a400]">★★★★★</p></div>
+                      <div className="border-l border-[#a9a9a9] px-5 py-4 text-center"><p className="text-2xl font-medium leading-none">{reviewCount}</p><p className="mt-2 text-sm text-[#1f1f1f]">{reviewCount === 1 ? t("listing_detail_review_one", "Review") : t("listing_detail_review_many", "Reviews")}</p></div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleReportListing}
+                      className="flex items-center justify-center gap-3 py-2 text-sm text-[#1f1f1f] underline underline-offset-2 hover:text-[#727272] transition-colors"
+                    >
+                      <span className="flex size-9 items-center justify-center rounded-full border border-[#1F1F1F]">
+                        <Image src="/images/icons/report-icon.svg" alt="" width={16} height={16} className="size-4" />
+                      </span>
+                      {t("listing_detail_report", "Report this listing")}
+                    </button>
+                  </section>
+                )}
+
+                {/* Property Summary & Host */}
+                <section className="mt-7 flex items-center gap-4 border-b border-[#DDDDDE] pb-7.5 lg:mt-12 lg:gap-6">
+                  <div className="min-w-0 space-y-2">
+                    <h2 className="sm:text-xl text-base font-normal text-[#1f1f1f]">
+                      {hostProfileHref ? (
+                        <Link
+                          href={hostProfileHref}
+                          onClick={() => {
+                            trackListingEvent({
+                              eventType: "host_profile_clicked",
+                              propertyId: listing.id,
+                              metadata: { hostId: listing.host?.id, source: "summary_title" },
+                            });
+                          }}
+                          className="hover:underline underline-offset-2"
+                        >
+                          {t("listing_detail_hosted_by", "Hosted by {name}").replace("{name}", listing.host?.name || "Homyz host")}
+                        </Link>
+                      ) : (
+                        t("listing_detail_hosted_by", "Hosted by {name}").replace("{name}", listing.host?.name || "Homyz host")
+                      )}
+                    </h2>
+                    <p className="sm:text-base text-sm font-light text-[#1F1F1F]">{listing.host?.isSuperhost ? t("home_superhost", "Superhost") : "Homyz host"}{hostSince ? ` · ${t("listing_detail_hosting_since", "Hosting since {date}").replace("{date}", hostSince)}` : ""}</p>
+                  </div>
+                  {hostProfileHref ? (
+                    <Link
+                      href={hostProfileHref}
+                      aria-label={`View ${listing.host?.name || "host"}'s profile`}
+                      onClick={() => {
+                        trackListingEvent({
+                          eventType: "host_profile_clicked",
+                          propertyId: listing.id,
+                          metadata: { hostId: listing.host?.id, source: "summary_avatar" },
+                        });
+                      }}
+                      className="order-first block rounded-full transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f] shrink-0"
+                    >
+                      {listing.host?.image && !hostImageFailed ? (
+                        <img
+                          src={listing.host.image}
+                          alt={listing.host.name || "Host"}
+                          onError={() => setHostImageFailed(true)}
+                      className="order-first size-[76px] shrink-0 rounded-full border border-zinc-200 object-cover lg:size-[104px]"
+                        />
+                      ) : (
+                        <div className="order-first flex size-[76px] shrink-0 items-center justify-center rounded-full border border-amber-200 bg-amber-100 text-lg font-normal text-amber-900 lg:size-14">
+                          {(listing.host?.name || "H")[0].toUpperCase()}
+                        </div>
+                      )}
+                    </Link>
+                  ) : (
+                    listing.host?.image && !hostImageFailed ? (
+                      <img
+                        src={listing.host.image}
+                        alt={listing.host.name || "Host"}
+                        onError={() => setHostImageFailed(true)}
+                        className="order-first size-[76px] shrink-0 rounded-full border border-zinc-200 object-cover lg:size-[104px]"
+                      />
+                    ) : (
+                      <div className="order-first flex size-[76px] shrink-0 items-center justify-center rounded-full border border-amber-200 bg-amber-100 text-lg font-normal text-amber-900 lg:size-14">
+                        {(listing.host?.name || "H")[0].toUpperCase()}
+                      </div>
+                    )
+                  )}
+                </section>
+
+                {/* Highlights (if any) */}
+                {trustHighlights.length > 0 && (
+                  <section className="mt-7.5 space-y-3.5 border-b border-zinc-200/80 pb-6" aria-label="Property highlights">
+                    {trustHighlights.map((highlight) => (
+                      <div key={highlight.title} className="flex items-start gap-6">
+                        <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-full border border-[#1F1F1F] p-1.5 text-[#1F1F1F]"><TrustHighlightIcon name={highlight.icon} /></span>
+                        <div><h3 className="text-base font-normal text-[#222222]">{highlight.title}</h3><p className="mt-0.5 text-sm font-normal text-[#6A6A6A]">{highlight.description}</p></div>
+                      </div>
+                    ))}
+                  </section>
+                )}
+
+                {/* Description */}
+                {normalizedDescription && (
+                  <section className="mt-6 border-b border-zinc-200/80 pb-7.5">
+                    <h3 className="text-[20px] font-normal text-[#1f1f1f]">{t("listing_detail_about_place", "About this place")}</h3>
+                    <p className="mt-2.5 line-clamp-4 whitespace-pre-line break-words text-base font-normal text-[#727272]">
+                      {normalizedDescription}
+                    </p>
+                    {(normalizedDescription.length > 200 || aboutLocationDetails.length > 0) && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsDescriptionModalOpen(true);
+                          trackListingEvent({
+                            eventType: "description_expanded",
+                            propertyId: listing.id,
+                          });
+                        }}
+                        className="mt-8 rounded-full border border-[#1F1F1F] bg-[#F3F4F5] hover:bg-[#1f1f1f] sm:px-7 px-4 sm:py-3.25 py-2 sm:text-lg text-base font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f]"
+                      >
+                        {t("listing_detail_show_more", "Show more")}
+                      </button>
+                    )}
+                  </section>
+                )}
+
+                {/* Amenities Grid */}
+                <div className="mt-7.5 order-1 space-y-5 border-b border-zinc-200/80 pb-7.5">
+                  <h3 className="text-[20px] font-normal text-[#1f1f1f]">{t("listing_detail_what_place_offers", "What this place offers")}</h3>
+                  {categorizedAmenities.length === 0 ? (
+                    <p className="text-xs text-[#727272]">{t("listing_detail_no_amenities", "This host has not listed any amenities yet.")}</p>
+                  ) : <>
+                    <div className="grid grid-cols-1 gap-x-12 gap-y-2.5 text-[#1f1f1f] sm:grid-cols-2">
+                      {categorizedAmenities.slice(0, 6).map((am) => (
+                        <div key={am.id} className="flex min-w-0 items-center gap-3">
+                          <span className="flex size-9 shrink-0 items-center justify-center rounded-full border border-[#1f1f1f]/65">
+                            <AmenityIcon id={am.id} className="size-[18px]" />
+                          </span>
+                          <span className="break-words text-base font-normal leading-5">{t(getAmenityTranslationKey(am.id) as any, am.label)}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {categorizedAmenities.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsAllAmenitiesOpen(true);
+                          trackListingEvent({
+                            eventType: "amenities_opened",
+                            propertyId: listing.id,
+                            metadata: { totalAmenities: categorizedAmenities.length },
+                          });
+                        }}
+                          className="mt-3 rounded-full border border-[#1F1F1F] bg-[#F3F4F5] hover:bg-[#1f1f1f] px-7 sm:py-3.25 py-2 sm:text-lg text-base font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f]"
+                      >
+                        {t("listing_detail_show_all_amenities", "Show all amenities")}
+                      </button>
+                    )}
+                  </>}
+                </div>
+
+                {/* Calendar Section Ref */}
+                <div ref={calendarSectionRef} className="order-2 mt-7.5">
+                  <ListingAvailabilityCalendar
+                    month={availabilityMonth}
+                    onMonthChange={setAvailabilityMonth}
+                    ranges={bookedDateRanges}
+                    isLoading={isAvailabilityLoading}
+                    error={availabilityError}
+                    checkIn={checkIn}
+                    checkOut={checkOut}
+                    locationName={listing.city || listing.title || "this property"}
+                    minimumNights={minimumNights}
+                    maximumNights={maximumNights}
+                    earliestCheckIn={earliestCheckIn}
+                    onDateRangeChange={(nextCheckIn, nextCheckOut) => {
+                      if (nextCheckIn && !nextCheckOut) {
+                        updateCheckIn(nextCheckIn);
+                      } else if (nextCheckIn && nextCheckOut) {
+                        setCheckIn(nextCheckIn);
+                        updateCheckOut(nextCheckOut);
+                      }
+                    }}
+                    onClearDates={clearBookingDates}
+                    onErrorMessage={setQuoteError}
+                  />
+                </div>
+              </div>
+
+              {/* RIGHT COLUMN: BOOKING & PRICING PANEL */}
+              <div className="hidden lg:col-span-5 lg:block">
+                <div ref={bookingPanelRef} className={`space-y-6 ${isBookingPanelSticky ? "lg:sticky lg:top-24" : "lg:relative"}`}>
+                  <div className="flex min-h-[72px] items-center justify-center gap-4 rounded-[30px] bg-[rgba(255,255,255,0.6)] px-4 py-3 text-base text-[#1F1F1F] shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)]">
+                    <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-full border border-[#1F1F1F]">
+                      <Image src="/images/icons/price-icon.svg" alt="" width={24} height={24} className="size-6" />
+                    </span>
+                    {t("listing_detail_prices_include_all_fees", "Prices include all fees")}
+                  </div>
+                  <div className="space-y-4 rounded-[30px] border border-zinc-300 bg-[rgba(255,255,255,0.6)] p-6 shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)] sm:p-5">
+                    {bookingSuccess ? (
+                      <div className="py-8 text-center space-y-3">
+                        <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto text-xl font-bold">
+                          ✓
+                        </div>
+                        <h3 className="text-[20px] font-normal text-[#1f1f1f]">{isInstantBook ? t("listing_detail_reservation_confirmed", "Reservation confirmed") : t("listing_detail_reservation_submitted", "Reservation request submitted")}</h3>
+                        <p className="text-xs text-zinc-500 leading-relaxed font-normal">
+                          {t("listing_detail_stay_recorded", "Your stay has been recorded. You can manage your bookings in your trips dashboard.")}
+                        </p>
+                        <div className="pt-2">
+                          <Link
+                            href="/profile/tab/upcoming"
+                            className="rounded-full bg-[#1f1f1f] text-white font-medium text-xs px-6 py-2.5 inline-block"
+                          >
+                            {t("listing_detail_view_your_bookings", "View your bookings")}
+                          </Link>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex items-baseline justify-between border-b border-zinc-100 pb-4">
+                          <div>
+                            {(quote?.selectedDiscount || quote?.nonRefundableDiscount) && quote.discountAmount > 0 && quote.nights > 0 ? (
+                              <div className="flex items-baseline gap-2">
+                                <span className="text-[20px] font-medium text-[#1F1F1F] underline underline-offset-4">
+                                  {formatPrice(quote.discountedDisplayPrice ?? Math.round((quote.accommodationSubtotal ?? (quote.nightlySubtotal - quote.discountAmount)) / quote.nights), currencyCode)}
+                                </span>
+                                <span className="text-sm text-[#727272] line-through font-normal">
+                                  {formatPrice(quote.originalDisplayPrice ?? quote.baseNightlyPrice, currencyCode)}
+                                </span>
+                                <span className="text-base text-[#1F1F1F] font-normal"> / night</span>
+                              </div>
+                            ) : (
+                              <div>
+                                <span className="text-[20px] font-medium text-[#1F1F1F] underline underline-offset-4">{displayPrice ?? "Price unavailable"}</span>
+                                <span className="text-base text-[#1F1F1F] font-normal"> / night</span>
+                              </div>
+                            )}
+                          </div>
+                          <span className="text-xs text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full font-medium">
+                            {isInstantBook ? t("listing_detail_instant_book", "Instant Book") : t("listing_detail_host_approval_required", "Host approval required")}
+                          </span>
+                        </div>
+
+                        {/* Date Pickers */}
+                          <div className={`rounded-[10px] border overflow-hidden divide-y divide-[#727272] bg-[#F3F4F5] text-sm transition-colors ${quoteError && (!checkIn || !checkOut) ? "border-rose-400 ring-2 ring-rose-100" : "border-[#727272]"
+                          }`}>
+                          <div className="grid grid-cols-2 divide-x divide-[#727272]">
+                            <div className="p-3 space-y-1">
+                              <label className="block text-base font-normal text-[#1f1f1f]">
+                                {t("home_check_in", "Check-in")}
+                              </label>
+                              <input
+                                type="date"
+                                value={checkIn}
+                                min={earliestCheckIn}
+                                onFocus={() => setAvailabilityRequested(true)}
+                                onChange={(e) => updateCheckIn(e.target.value)}
+                                className="w-full bg-transparent outline-none font-normal text-[#727272] text-sm cursor-pointer"
+                              />
+                            </div>
+                            <div className="p-3 space-y-1">
+                              <label className="block text-base font-normal text-[#1f1f1f]">
+                                {t("home_check_out", "Check-out")}
+                              </label>
+                              <input
+                                type="date"
+                                value={checkOut}
+                                min={minimumCheckOut}
+                                disabled={!checkIn}
+                                onFocus={() => setAvailabilityRequested(true)}
+                                onChange={(e) => updateCheckOut(e.target.value)}
+                                className="w-full bg-transparent outline-none font-normal text-[#727272] text-sm cursor-pointer"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="p-3 space-y-1">
+                            <label className="block text-base font-normal text-[#1f1f1f]">
+                              {t("host_basics_guests", "Guests")}
+                            </label>
+                            <button
+                              type="button"
+                              aria-expanded={isGuestSelectorOpen}
+                              aria-controls="guest-selector"
+                              onClick={() => {
+                                const nextOpen = !isGuestSelectorOpen;
+                                setIsGuestSelectorOpen(nextOpen);
+                                if (nextOpen) {
+                                  trackListingEvent({
+                                    eventType: "guest_selector_opened",
+                                    propertyId: listing.id,
+                                    guestCount: totalCapacityGuests,
+                                  });
+                                }
+                              }}
+                              className="flex w-full items-center justify-between text-left text-sm font-normal text-[#727272]"
+                            >
+                              <span>{guestSummaryLabel}</span>
+                              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={`size-6 transition-transform relative -top-4 ${isGuestSelectorOpen ? "rotate-180" : ""}`}><path d="m6 9 6 6 6-6" /></svg>
+                            </button>
+                            {isGuestSelectorOpen && (
+                              <div id="guest-selector" className="mt-3 space-y-3.5 rounded-xl border border-zinc-200 bg-zinc-50 p-3.5 text-sm" aria-label="Guest selection">
+                                {/* Adults */}
+                                <div className="flex items-center justify-between gap-3">
+                                   <div>
+                                    <p className="font-medium text-[#1f1f1f]">{t("home_adults", "Adults")}</p>
+                                    <p className="text-xs text-[#727272]">{t("listing_detail_age_adults", "Age 13+")}</p>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <button type="button" onClick={() => updateAdults(-1)} disabled={adultsCount <= 1} aria-label="Remove one adult" className="flex size-7 items-center justify-center rounded-full border border-[#1f1f1f] text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">−</button>
+                                    <span className="min-w-4 text-center font-medium text-[#1f1f1f]" aria-live="polite">{adultsCount}</span>
+                                    <button type="button" onClick={() => updateAdults(1)} disabled={!canAddCapacityGuest} aria-label="Add one adult" className="flex size-7 items-center justify-center rounded-full border border-[#1f1f1f] text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">+</button>
+                                  </div>
+                                </div>
+
+                                {/* Children */}
+                                <div className="flex items-center justify-between gap-3 border-t border-zinc-200/80 pt-3">
+                                  <div>
+                                    <p className="font-medium text-[#1f1f1f]">{t("home_children", "Children")}</p>
+                                    <p className="text-xs text-[#727272]">{t("listing_detail_age_children", "Ages 2–12")}</p>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <button type="button" onClick={() => updateChildren(-1)} disabled={childrenCount <= 0} aria-label="Remove one child" className="flex size-7 items-center justify-center rounded-full border border-[#1f1f1f] text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">−</button>
+                                    <span className="min-w-4 text-center font-medium text-[#1f1f1f]" aria-live="polite">{childrenCount}</span>
+                                    <button type="button" onClick={() => updateChildren(1)} disabled={!canAddCapacityGuest} aria-label="Add one child" className="flex size-7 items-center justify-center rounded-full border border-[#1f1f1f] text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">+</button>
+                                  </div>
+                                </div>
+
+
+
+                                {/* Infants do not count toward the listing guest capacity. */}
+                                <div className="flex items-center justify-between gap-3 border-t border-zinc-200/80 pt-3">
+                                  <div>
+                                    <p className="font-medium text-[#1f1f1f]">{t("home_infants", "Infants")}</p>
+                                    <p className="text-xs text-[#727272]">Under 2</p>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <button type="button" onClick={() => updateInfants(-1)} disabled={infantsCount <= 0} aria-label="Remove one infant" className="flex size-7 items-center justify-center rounded-full border border-[#1f1f1f] text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">−</button>
+                                    <span className="min-w-4 text-center font-medium text-[#1f1f1f]" aria-live="polite">{infantsCount}</span>
+                                    <button type="button" onClick={() => updateInfants(1)} disabled={infantsCount >= 5} aria-label="Add one infant" className="flex size-7 items-center justify-center rounded-full border border-[#1f1f1f] text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">+</button>
+                                  </div>
+                                </div>
+
+                                {allowsPets && (
+                                  <div className="flex items-center justify-between gap-3 border-t border-zinc-200/80 pt-3">
+                                    <div>
+                                      <p className="font-medium text-[#1f1f1f]">{t("home_pets", "Pets")}</p>
+                                      <p className="text-xs text-[#727272]">{maxPetsAllowed === 1 ? "Up to 1 pet" : `Up to ${maxPetsAllowed} pets`}</p>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <button type="button" onClick={() => updatePets(-1)} disabled={petsCount <= 0} aria-label="Remove one pet" className="flex size-7 items-center justify-center rounded-full border border-[#1f1f1f] text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">−</button>
+                                      <span className="min-w-4 text-center font-medium text-[#1f1f1f]" aria-live="polite">{petsCount}</span>
+                                      <button type="button" onClick={() => updatePets(1)} disabled={petsCount >= maxPetsAllowed} aria-label="Add one pet" className="flex size-7 items-center justify-center rounded-full border border-[#1f1f1f] text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">+</button>
+                                    </div>
+                                  </div>
+                                )}
+
+                                <div className="border-t border-zinc-200/80 pt-2 text-sm text-[#727272]">
+                                  {totalCapacityGuests >= maximumGuests ? (
+                                    <p className="font-sm font-medium text-amber-700">Maximum property capacity of {maximumGuests} {maximumGuests === 1 ? "guest" : "guests"} reached.</p>
+                                  ) : (
+                                    <p>This property accommodates up to {maximumGuests} {maximumGuests === 1 ? "guest" : "guests"}.</p>
+                                  )}
+                                </div>
+
+                                <button
+                                  type="button"
+                                  onClick={() => setIsGuestSelectorOpen(false)}
+                                  className="w-full shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 text-base font-medium text-[#1F1F1F] hover:text-white transition-colors inline-flex justify-center border border-transparent hover:border-[#1F1F1F]"
+                                >
+                                  {t("header_done", "Done")}
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* <p className="text-sm leading-relaxed text-[#727272]" aria-live="polite">
+                          {isAvailabilityLoading || (Boolean(checkIn && checkOut) && isQuoteLoading)
+                            ? "Checking availability…"
+                            : isDateKey(checkIn) && isDateKey(checkOut) && overlapsBookedRange(checkIn, checkOut, bookedDateRanges)
+                              ? "Your selected dates are unavailable."
+                              : hasValidQuote
+                                ? "Your selected dates are available."
+                                : "Availability is confirmed before you reserve."}
+                        </p> */}
+
+                        {listing.bookingMessage && <p className="rounded-xl bg-zinc-50 border border-zinc-200 px-3 py-2 text-xs text-[#727272] whitespace-pre-wrap">{listing.bookingMessage}</p>}
+
+                        {/* {(quote?.nonRefundableAvailable || isNonRefundable) && (
+                          <fieldset className="space-y-2 rounded-xl border border-zinc-200 bg-zinc-50/70 p-3 text-xs">
+                            <legend className="px-1 font-medium text-[#1f1f1f]">Rate options</legend>
+                            <label className={`flex cursor-pointer items-start gap-2.5 rounded-lg border p-2.5 transition-colors ${!isNonRefundable ? "border-[#1f1f1f] bg-white shadow-2xs" : "border-transparent hover:bg-zinc-100/60"}`}>
+                              <input type="radio" name="reservation-type" checked={!isNonRefundable} onChange={() => setIsNonRefundable(false)} className="mt-0.5 cursor-pointer" />
+                              <div className="flex-1">
+                                <span className="block font-medium text-[#1f1f1f]">Standard rate</span>
+                                <span className="text-[#727272]">
+                                  {listing.cancellationPolicy ? `Cancellation: ${listing.cancellationPolicy}` : "Uses this listing's normal cancellation policy."}
+                                </span>
+                              </div>
+                            </label>
+                            <label className={`flex cursor-pointer items-start gap-2.5 rounded-lg border p-2.5 transition-colors ${isNonRefundable ? "border-amber-500 bg-amber-50/80 shadow-2xs" : "border-transparent hover:bg-zinc-100/60"}`}>
+                              <input type="radio" name="reservation-type" checked={isNonRefundable} onChange={() => setIsNonRefundable(true)} className="mt-0.5 cursor-pointer" />
+                              <div className="flex-1">
+                                <div className="flex items-center justify-between">
+                                  <span className="font-medium text-[#1f1f1f]">Non-refundable rate</span>
+                                  {quote?.nonRefundableDiscount?.amount ? (
+                                    <span className="font-medium text-emerald-700">Save {formatPrice(quote.nonRefundableDiscount.amount, currencyCode)}</span>
+                                  ) : null}
+                                </div>
+                                <span className="text-[#727272]">No refund if cancelled. Lower price in exchange for an immutable reservation.</span>
+                              </div>
+                            </label>
+                          </fieldset>
+                        )} */}
+
+                        {/* Live Quote Breakdown */}
+                        {isQuoteLoading && !quote && (
+                          <div className="py-4 text-center text-xs text-[#727272] animate-pulse font-medium">
+                            {t("listing_detail_calculating_breakdown", "Calculating price breakdown...")}
+                          </div>
+                        )}
+
+                        {quoteError && (
+                          <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium flex items-start gap-2 animate-in fade-in">
+                            <svg className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                            </svg>
+                            <span className="flex-1">{quoteError}</span>
+                          </div>
+                        )}
+
+                        {quote && (
+                          <div className="space-y-2.5 pt-2 border-t border-zinc-100 text-sm">
+                            {/* {isQuoteLoading && (
+                              <p className="text-xs font-medium text-[#727272]" aria-live="polite">Updating price…</p>
+                            )} */}
+                            <div className="flex items-center justify-between text-[#727272]">
+                              <span>
+                                {new Set(quote.breakdown.map((night) => night.price)).size <= 1
+                                  ? `${formatPrice(quote.breakdown[0]?.price ?? quote.baseNightlyPrice, listing.currency ?? getCurrencyForCountry(listing.country))} × ${quote.nights} ${quote.nights === 1 ? "night" : "nights"}`
+                                  : `Accommodation · ${quote.nights} nights (varying rates)`}
+                              </span>
+                              <span>{formatPrice(quote.nightlySubtotal, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
+                            </div>
+
+                            {quote.customPricedNights !== undefined && quote.customPricedNights > 0 && (
+                              <div className="flex items-center justify-between text-amber-700 text-sm font-medium bg-amber-50 px-2 py-0.5 rounded">
+                                <span>Includes {quote.customPricedNights} custom calendar rate {quote.customPricedNights === 1 ? "night" : "nights"}</span>
+                              </div>
+                            )}
+
+                            {quote.weekendNights > 0 && quote.weekendNightlyPrice && (
+                              <div className="flex items-center justify-between text-[#727272] text-sm">
+                                <span>Includes {quote.weekendNights} weekend nights</span>
+                                <span>{formatPrice(quote.weekendNightlyPrice, currencyCode)} / night</span>
+                              </div>
+                            )}
+
+                            {quote.extraGuestFee !== undefined && quote.extraGuestFee > 0 && (
+                              <div className="flex items-center justify-between text-[#727272]">
+                                <span>{t("listing_detail_extra_guest_fee", "Extra guest fee")}</span>
+                                <span>{formatPrice(quote.extraGuestFee, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
+                              </div>
+                            )}
+
+                            {quote.appliedDiscount && (
+                              <div className="flex items-center justify-between text-emerald-700 font-medium">
+                                <span>{quote.selectedDiscount?.label ? `${quote.selectedDiscount.label} (${quote.selectedDiscount.percentage}%)` : quote.appliedDiscount.name}</span>
+                                <span>−{formatPrice(quote.selectedDiscount?.amount ?? quote.appliedDiscount.amount, currencyCode)}</span>
+                              </div>
+                            )}
+
+                            {quote.nonRefundableDiscount && (
+                              <div className="flex items-center justify-between text-emerald-700 font-medium">
+                                <span>{quote.nonRefundableDiscount.name} ({quote.nonRefundableDiscount.percentage}%)</span>
+                                <span>−{formatPrice(quote.nonRefundableDiscount.amount, currencyCode)}</span>
+                              </div>
+                            )}
+
+                            {quote.taxes && quote.taxes.length > 0 ? (
+                              <>
+                                <div className="pt-2 border-t border-zinc-100 space-y-1.5">
+                                  <div className="flex items-center justify-between text-[#727272]">
+                                    <span className="flex items-center gap-1.5 font-medium">
+                                      {t("listing_detail_taxes_and_fees", "Taxes & fees")}
+                                      {quote.taxes.some((tax) => tax.exemptionApplied) && (
+                                        <span className="text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-1.5 py-0.5 rounded-full font-medium">
+                                          Exemption applied
+                                        </span>
+                                      )}
+                                    </span>
+                                    <span className="font-medium">{formatPrice(quote.taxTotal, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
+                                  </div>
+                                    <div className="pl-2.5 space-y-1 border-l-2 border-[#FCDF9C] text-sm font-light text-[#727272]">
+                                    {quote.taxes.map((tax, idx) => (
+                                      <div key={idx} className="flex items-center justify-between">
+                                        <span>
+                                          {tax.taxName}
+                                          {tax.rate ? ` (${tax.rate}%)` : ""}
+                                          {tax.exemptionApplied ? ` • ${tax.exemptionReason || "Exemption applied"}` : ""}
+                                        </span>
+                                        <span>{formatPrice(tax.taxAmount, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+
+                                <div className="pt-2 border-t border-zinc-200 flex items-center justify-between text-lg font-medium text-[#1f1f1f]">
+                                  <span>{t("listing_detail_total", "Total")}</span>
+                                  <span>{formatPrice((quote.guestTotal ?? quote.totalPrice) || 0, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
+                                </div>
+                              </>
+                            ) : (
+                                  <div className="pt-2 border-t border-zinc-200 flex items-center justify-between text-lg font-medium text-[#1f1f1f]">
+                                <span>{t("listing_detail_total", "Total")}</span>
+                                <span>{formatPrice((quote.guestTotal ?? quote.totalPrice) || 0, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Reserve CTA */}
+                        <button
+                          type="button"
+                          disabled={isBookingSubmitting}
+                          onClick={() => {
+                            if (!checkIn || !checkOut) {
+                              const calendarEl = calendarSectionRef.current || document.getElementById("availability-calendar-section");
+                              if (calendarEl) {
+                                calendarEl.scrollIntoView({ behavior: "smooth", block: "center" });
+                              }
+                              setQuoteError("Please choose check-in and check-out dates to continue.");
+                              return;
+                            }
+                            handleReserve();
+                          }}
+                          className={`w-full rounded-full py-3.5 text-lg font-medium transition-all shadow-xs ${hasValidQuote && !isBookingSubmitting
+                            ? "border border-[#1f1f1f] bg-[#FCDF9C] text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] cursor-pointer"
+                            : "border border-zinc-200 bg-zinc-100 text-[#727272] hover:border-zinc-300 hover:text-[#727272] cursor-pointer"
+                            }`}
+                          aria-disabled={!hasValidQuote || isBookingSubmitting}
+                        >
+                          {isBookingSubmitting
+                            ? "Confirming..."
+                            : isQuoteLoading
+                              ? "Checking availability..."
+                              : (!checkIn || !checkOut)
+                                ? "Check availability"
+                                : isInstantBook
+                                  ? "Reserve"
+                                  : "Request to book"}
+                        </button>
+
+                        <p className="text-xs text-[#727272] text-center font-normal">
+                          {t("listing_detail_not_charged_yet", "You won't be charged yet. Taxes and additional charges may be calculated at checkout.")}
+                        </p>
+                      </>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleReportListing}
+                    className="mx-auto flex items-center justify-center gap-4 text-base text-[#1f1f1f] underline underline-offset-2 hover:text-[#727272] group transition-colors"
+                  >
+                    <span className="flex size-10 shrink-0 items-center justify-center rounded-full border border-[#1F1F1F] no-underline group-hover:border-[#727272]">
+                      <Image src="/images/icons/report-icon.svg" alt="" width={18} height={18} className="size-4.5" />
+                    </span>
+                    {t("listing_detail_report", "Report this listing")}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-7.5 flex flex-col w-full sm:space-y-12 space-y-8">
+
+              {listing.host && (
+                <section className="sm:pt-12 pt-7.5 sm:pb-12 pb-7.5 order-5 border-y border-zinc-200/80 lg:relative lg:z-10 lg:w-[calc(100vw-3rem)] lg:max-w-[1262px] mx-auto  lg:bg-white" aria-labelledby="meet-host-heading">
+                  <h3 id="meet-host-heading" className="mb-6 text-[20px] font-normal text-[#1f1f1f]">{t("listing_detail_meet_host", "Meet your host")}</h3>
+                  <div className="grid gap-8 md:grid-cols-[376px_minmax(0,1fr)] md:gap-[100px]">
+                    <div>
+                      {hostProfileHref ? (
+                        <Link
+                          href={hostProfileHref}
+                          aria-label={`View ${listing.host.name || "host"}'s profile`}
+                          onClick={() => {
+                            trackListingEvent({
+                              eventType: "host_profile_clicked",
+                              propertyId: listing.id,
+                              metadata: { hostId: listing.host?.id },
+                            });
+                          }}
+                          className="block rounded-[25px] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#1f1f1f]"
+                        >
+                          <HostIdentityCard host={listing.host} imageFailed={hostImageFailed} onImageError={() => setHostImageFailed(true)} hostTenure={hostTenure} reviewRating={listing.host?.rating ?? reviewRating} reviewCount={listing.host?.reviewsCount ?? reviewCount} />
+                        </Link>
+                      ) : (
+                        <HostIdentityCard host={listing.host} imageFailed={hostImageFailed} onImageError={() => setHostImageFailed(true)} hostTenure={hostTenure} reviewRating={listing.host?.rating ?? reviewRating} reviewCount={listing.host?.reviewsCount ?? reviewCount} />
+                      )}
+
+                      {(hostWork || hostLanguages.length > 0) && <div className="mt-7 space-y-4 text-base text-[#1f1f1f]">
+                        {hostWork && <p className="flex items-center gap-5"><span aria-hidden="true" className="flex size-12 shrink-0 items-center justify-center rounded-full border border-[#1f1f1f]"><Image src="/images/icons/job-search.svg" alt="" width={24} height={24} className="size-6" /></span><span>{t("listing_detail_host_work", { work: hostWork }, `My work: ${hostWork}`)}</span></p>}
+                        {hostLanguages.length > 0 && <p className="flex items-center gap-5"><span aria-hidden="true" className="flex size-12 shrink-0 items-center justify-center rounded-full border border-[#1f1f1f]"><Image src="/images/icons/translate-icon.svg" alt="" width={24} height={24} className="size-6" /></span><span>{t("listing_detail_host_speaks", { languages: hostLanguages.join(", ") }, `Speaks ${hostLanguages.join(", ")}`)}</span></p>}
+                      </div>}
+                    </div>
+
+                    <div className="min-w-0 pt-1">
+                      <h4 className="text-[20px] font-normal text-[#1f1f1f]">{listing.host.isSuperhost ? t("listing_detail_host_is_superhost", { name: listing.host.name || "This host" }, `${listing.host.name || "This host"} is a superhost`) : t("listing_detail_hosted_by", { name: listing.host.name || "Homyz host" }, "Hosted by {name}").replace("{name}", listing.host.name || "Homyz host")}</h4>
+                      {listing.host.isSuperhost && <p className="mt-2 max-w-2xl text-base leading-6 text-[#727272]">{t("listing_detail_superhost_desc", "Superhosts are experienced, highly rated hosts who are committed to providing great stays for guests.")}</p>}
+                      {hostBio && <p className="mt-2 max-w-2xl line-clamp-3 whitespace-pre-line text-base leading-6 text-[#727272] font-normal">{hostBio}</p>}
+
+                      {(hostSince || listing.host.isSuperhost) && <div className="mt-8 space-y-2">
+                        <h5 className="text-[20px] font-normal text-[#1f1f1f]">{t("listing_detail_host_details_heading", "Host details")}</h5>
+                        {hostSince && <p className="text-base text-[#727272]">{t("listing_detail_joined_in", { date: hostSince }, `Joined Homyz in ${hostSince}`)}</p>}
+                        {listing.host.isSuperhost && <p className="flex items-center gap-1.5 text-base text-[#727272]"><span aria-hidden="true">★</span> {t("home_superhost", "Superhost")}</p>}
+                      </div>}
+
+                      <div className="mt-7 flex flex-wrap items-center gap-3">
+                        {hostProfileHref && (
+                          <Link
+                            href={hostProfileHref}
+                            onClick={() => {
+                              trackListingEvent({
+                                eventType: "host_profile_clicked",
+                                propertyId: listing.id,
+                                metadata: { hostId: listing.host?.id },
+                              });
+                            }}
+                            className="inline-flex min-h-12 items-center gap-2 rounded-full border border-[#1f1f1f] bg-[#F3F4F5] px-5 text-base font-normal text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f] group transition-colors"
+                          >
+                            {t("listing_detail_view_host_profile", "View host profile")}
+                          </Link>
+                        )}
+                        {canMessageHost && (
+                          <button
+                            type="button"
+                            onClick={() => setContactHostModalOpen(true)}
+                            className="inline-flex min-h-12 items-center gap-2 rounded-full border border-[#1F1F1F] bg-[#F3F4F5] px-5 text-base font-normal text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] transition-colors duration-300 shadow-2xs group"
+                          >
+                            <Image src="/images/icons/messages.svg" alt="" width={18} height={18} className="size-4 group-hover:brightness-0 group-hover:invert transition-colors duration-300" />
+                            {t("listing_detail_message_host", "Message host")}
+                          </button>
+                        )}
+                        {!isHostUser && listing.host && (
+                          <button
+                            type="button"
+                            onClick={handleReportHost}
+                            className="inline-flex min-h-12 items-center gap-2 rounded-full border border-zinc-300 bg-white px-5 text-sm font-normal text-[#727272] hover:text-red-600 hover:border-red-200 hover:bg-red-50/50 transition-colors shadow-2xs"
+                          >
+                            <svg className="size-4 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M3 3l1.664 9.526A2 2 0 006.644 14H17m0 0l1 5H6M17 14l1-7H7.5" />
+                            </svg>
+                            Report this host
+                          </button>
+                        )}
+                      </div>
+
+                      <p className="mt-7 max-w-3xl text-sm leading-5 text-[#6A6A6A]">{t("listing_detail_protect_payment_help", "*To help protect your payment, always use Homyz to send money and communicate with hosts.")}</p>
+                    </div>
+                  </div>
+                </section>
+              )}
+
+              {/* Guest Reviews Section */}
+              <div ref={reviewSectionRef} className="order-3 lg:relative lg:bg-white border-t border-[#DDDDDE]">
+                <DeferredReviewList
+                  listingId={listing.id}
+                  isGuestFavorite={listing.isGuestFavorite}
+                  initialSummary={{ averageRating: listing.rating, totalCount: listing.reviewsCount }}
+                  onStatsChange={({ rating, count }) => {
+                    setReviewRating(rating);
+                    setReviewCount(count);
+                  }}
+                />
+              </div>
+
+              {/* House Rules */}
+              <section className="order-6 md:pb-12 lg:relative lg:z-10 lg:w-[calc(100vw-3rem)] lg:max-w-[1262px] mx-auto lg:bg-white" aria-labelledby="things-to-know-heading">
+                <h3 id="things-to-know-heading" className="mb-7 text-[20px] font-normal text-[#1f1f1f]">{t("listing_detail_things_to_know", "Things to know")}</h3>
+                <div className="grid sm:gap-8 gap-4 md:grid-cols-[1fr_1fr_1.25fr]">
+                  <div className="order-1 flex min-h-[294px] flex-col sm:rounded-[30px] rounded-[10px] border border-[#dedede] bg-white/60 sm:p-7 py-8 px-5 shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)]" aria-labelledby="house-rules-heading">
+                    <h4 id="house-rules-heading" className="sm:text-[20px] text-lg font-normal text-[#1f1f1f]">{t("listing_detail_house_rules", "House rules")}</h4>
+                    <div className="shrink-0 mt-5 space-y-4 text-base text-[#1f1f1f]">
+                      {houseRuleItems.slice(0, 4).map((item) => (
+                        <div key={item.id} className="shrink-0 flex items-center gap-3">
+                          {item.icon}
+                          <span className="whitespace-pre-line break-words">{item.text}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <button type="button" onClick={() => setOpenThingsCard("rules")} className="mt-auto pt-6 text-left text-base text-[#727272] underline underline-offset-2">{t("listing_detail_show_more", "Show more")}</button>
+                  </div>
+
+                  {(cancellationLabel || longTermCancellationLabel) && <div className="order-3 flex min-h-[294px] flex-col sm:rounded-[30px] rounded-[10px] border border-[#dedede] bg-white py-8 px-5 shadow-[0_2px_5px_rgba(0,0,0,0.14)]" aria-labelledby="cancellation-heading">
+                    <h4 id="cancellation-heading" className="sm:text-[20px] text-lg font-normal text-[#1f1f1f]">{t("listing_detail_cancellation_policy", "Cancellation policy")}</h4>
+                    <div className="mt-4 space-y-4">
+                      {cancellationItems.slice(0, 4).map((item, index) => (
+                        <p key={`${item}-${index}`} className="text-base leading-6 text-[#1f1f1f]">{item}</p>
+                      ))}
+                    </div>
+                    <button type="button" onClick={() => setOpenThingsCard("cancellation")} className="mt-auto pt-6 text-left text-base text-[#727272] underline underline-offset-2">{t("listing_detail_show_more", "Show more")}</button>
+                  </div>}
+
+                  {/* Safety Disclosures */}
+                  <div className="order-2 flex min-h-[294px] flex-col sm:rounded-[30px] rounded-[10px] border border-[#dedede] bg-white py-8 px-5 shadow-[0_2px_5px_rgba(0,0,0,0.14)]">
+                    <h4 className="sm:text-[20px] text-lg font-normal text-[#1f1f1f]">{t("listing_detail_safety_property", "Safety & property")}</h4>
+                    <div className="mt-5 space-y-4 text-base text-[#1f1f1f]">
+                      {safetyItems.slice(0, 4).map((item, index) => (
+                        <p key={`${item}-${index}`}>{item}</p>
+                      ))}
+                      {safetyItems.length === 0 && <p>{t("listing_detail_no_safety_reported", "No safety equipment or property hazards have been reported.")}</p>}
+                    </div>
+                    <button type="button" onClick={() => setOpenThingsCard("safety")} className="mt-auto pt-6 text-left text-base text-[#727272] underline underline-offset-2">{t("listing_detail_show_more", "Show more")}</button>
+                  </div>
+                </div>
+              </section>
+
+              {/* Location & Map Section */}
+              <div className="order-4 space-y-3 sm:pb-12 pb-8 lg:relative lg:z-10 w-full lg:w-[calc(100vw-3rem)] lg:max-w-[1262px] mx-auto lg:bg-white">
+                <h3 className="text-[20px] font-normal text-[#1f1f1f]">{t("listing_detail_where_youll_be", "Where you'll be")}</h3>
+                <p className="mt-1 text-sm text-[#727272] font-normal">
+                  {locationString || "Location details are not available for this listing."}
+                  {!listing.showExactLocation && ` · ${t("listing_detail_approx_location", "Approximate location provided to protect host privacy")}`}
+                </p>
+                {publicCoordinates ? (
+                  <div className="h-[163px] w-full overflow-hidden sm:rounded-[30px] rounded-[10px] border border-zinc-200 shadow-sm sm:h-[604px] bg-[#F1F1F199]">
+                    <DeferredListingMap
+                      address={listing.shortAddress || listing.address || ""}
+                      city={listing.city || undefined}
+                      country={listing.country || undefined}
+                      latitude={publicCoordinates.latitude}
+                      longitude={publicCoordinates.longitude}
+                      showExactLocation={listing.showExactLocation ?? false}
+                      ariaLabel={`${listing.showExactLocation ? "Property" : "Approximate property"} location map for ${locationString || listing.title}`}
+                    />
+                  </div>
+                ) : (
+                  <p className="rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-6 text-xs text-[#727272]">
+                    {t("listing_detail_map_unavailable", "Map location is not available for this listing.")}
+                  </p>
+                )}
+                {/* {guidebooks.length > 0 && (
+                  <div className="pt-5 border-t border-zinc-200/80 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-bold text-sm text-[#1f1f1f]">{t("listing_detail_guidebook_heading", "Local Host Guidebook")}</h4>
+                      <span className="text-[11px] text-[#727272]">{t("listing_detail_guidebook_sub", "Curated recommendations")}</span>
+                    </div>
+                    <div className="space-y-2.5">
+                      {guidebooks.map((gb) => (
+                        <div
+                          key={gb.id}
+                          className="rounded-2xl border border-zinc-200 bg-white p-4 flex items-center justify-between gap-4 hover:border-zinc-300 transition-all shadow-2xs"
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="w-11 h-11 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-lg shrink-0">
+                              📖
+                            </div>
+                            <div className="min-w-0">
+                              <h5 className="text-xs font-bold text-[#1f1f1f] truncate">{gb.title}</h5>
+                              <p className="text-base font-light text-[#1F1F1F] truncate">
+                                {t("listing_detail_guidebook_count", { count: gb.itemsCount, host: gb.host?.name || "Host" }, "{count} recommendations by {host}")}
+                              </p>
+                            </div>
+                          </div>
+                          <Link
+                            href={`/guidebooks/${gb.id}`}
+                            className="rounded-full bg-[#FCDF9C] hover:bg-[#FDE047] text-zinc-950 font-medium text-xs px-4 py-2 shadow-2xs shrink-0 transition-all"
+                          >
+                            {t("listing_detail_guidebook_heading", "View guidebook")}
+                          </Link>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )} */}
+              </div>
+            </div>
+          </div>
+        </Container>
+      </main>
+
+      {/* ListingGallery provides an integrated lightbox/modal */}
+
+      {openThingsCard && (
+        <ModalOverlay
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="things-to-know-modal-title"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4 backdrop-blur-xs"
+          onMouseDown={(event) => { if (event.target === event.currentTarget) setOpenThingsCard(null); }}
+        >
+          <div className="flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-[20px] bg-white shadow-2xl">
+            <div className="flex items-center justify-between px-6 pb-4 pt-6 sm:px-8">
+              <h3 id="things-to-know-modal-title" className="md:text-2xl text-xl font-medium text-[#1f1f1f]">
+                {openThingsCard === "rules" ? t("listing_detail_house_rules", "House rules") : openThingsCard === "safety" ? t("listing_detail_safety_property", "Safety & property") : t("listing_detail_cancellation_policy", "Cancellation policy")}
+              </h3>
+              <button type="button" onClick={() => setOpenThingsCard(null)} aria-label={t("listing_detail_close_details", "Close details")} className="-mr-1 -mt-1 rounded-full w-7.5 h-7.5 flex justify-center items-center text-2xl leading-none text-[#1f1f1f] hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f] shrink-0">×</button>
+            </div>
+            <div className="visible-scrollbar overflow-y-auto px-6 pb-7 sm:px-8 sm:pb-8">
+              {openThingsCard === "rules" && (
+                <>
+                  <p className="text-base leading-6 text-[#1f1f1f]">{t("listing_detail_house_rules_modal_desc", "You’ll be staying in someone’s home, so please treat it with care and respect.")}</p>
+                  <div className="mt-7 divide-y divide-zinc-200 border-t border-zinc-200">
+                    {houseRuleItems.map((item) => (
+                      <div key={item.id} className="flex items-center gap-4 py-5 text-base text-[#1f1f1f]">
+                        {item.icon}
+                        <span className="whitespace-pre-line break-words">{item.text}</span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+              {openThingsCard === "safety" && (
+                <>
+                  <p className="text-base leading-6 text-[#1f1f1f]">{t("listing_detail_safety_modal_desc", "Avoid surprises by looking over these important details about your host’s property.")}</p>
+                  <div className="mt-7 divide-y divide-zinc-200 border-t border-zinc-200">
+                    {safetyItems.map((item, index) => <p key={`${item}-${index}`} className="py-5 text-base leading-6 text-[#1f1f1f]">{item}</p>)}
+                    {safetyItems.length === 0 && <p className="py-5 text-base leading-6 text-[#1f1f1f]">{t("listing_detail_no_safety_reported", "No safety equipment or property hazards have been reported.")}</p>}
+                  </div>
+                </>
+              )}
+              {openThingsCard === "cancellation" && (
+                <>
+                  <p className="text-base leading-6 text-[#1f1f1f]">{t("listing_detail_cancellation_modal_desc", "Review the cancellation terms for this listing before you reserve.")}</p>
+                  <div className="mt-7 divide-y divide-zinc-200 border-t border-zinc-200">
+                    {cancellationItems.map((item, index) => <p key={`${item}-${index}`} className="py-5 text-base leading-6 text-[#1f1f1f]">{item}</p>)}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </ModalOverlay>
+      )}
+
+
+      {isDescriptionModalOpen && (
+        <ModalOverlay role="dialog" aria-modal="true" aria-labelledby="description-modal-title" className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
+          <div className="flex max-h-[85vh] w-full max-w-2xl flex-col rounded-[20px] bg-white p-6">
+            <div className="flex items-center justify-between border-b border-zinc-200 pb-4">
+              <h3 id="description-modal-title" className="md:text-2xl text-xl font-medium text-[#1f1f1f]">{t("listing_detail_about_place", "About this place")}</h3>
+              <button type="button" onClick={() => setIsDescriptionModalOpen(false)} aria-label={t("listing_detail_close_description", "Close description")} className="cursor-pointer p-1 text-lg font-medium text-[#1f1f1f] hover:text-[#727272] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f]">✕</button>
+            </div>
+            <div className="visible-scrollbar mt-5 space-y-6 overflow-y-auto pr-1 sm:text-base text-sm leading-6 text-[#727272]">
+              <p className="whitespace-pre-line">{normalizedDescription}</p>
+              {aboutLocationDetails.map((detail) => (
+                <section key={detail.heading}>
+                  <h4 className="text-lg font-medium text-[#1f1f1f]">{detail.heading}</h4>
+                  <p className="mt-1.5 whitespace-pre-line sm:text-base text-sm leading-6 text-[#727272]">{detail.content}</p>
+                </section>
+              ))}
+            </div>
+          </div>
+        </ModalOverlay>
+      )}
+
+      {/* ALL AMENITIES MODAL */}
+      {isAllAmenitiesOpen && (
+        <ModalOverlay role="dialog" aria-modal="true" aria-labelledby="amenities-modal-title" className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
+          <div className="flex max-h-[85vh] w-full max-w-lg flex-col rounded-[20px] bg-white p-6">
+            <div className="flex items-center justify-between pb-4 border-b border-zinc-200">
+              <h3 id="amenities-modal-title" className="font-medium text-xl text-[#1f1f1f]">{t("listing_detail_what_place_offers", "What this place offers")}</h3>
+              <button
+                ref={amenityCloseRef}
+                type="button"
+                onClick={() => setIsAllAmenitiesOpen(false)}
+                aria-label="Close amenities"
+                className="cursor-pointer p-1 text-lg font-medium text-[#1f1f1f] hover:text-[#727272] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f]"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="py-5 relative">
+              <input
+                type="text"
+                value={amenitySearchQuery}
+                onChange={(e) => setAmenitySearchQuery(e.target.value)}
+                placeholder={t("listing_detail_search_amenities", "Search amenities...")}
+                className="w-full rounded-full border border-[#727272] text-[#1f1f1f] pl-4 pr-10 py-2 sm:min-h-[56px] min-h-[45px] text-sm outline-none focus:border-[#1f1f1f]"
+              />
+              {amenitySearchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setAmenitySearchQuery("")}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 flex h-6 w-6 items-center justify-center rounded-full bg-zinc-200/80 hover:bg-zinc-300 text-zinc-600 text-xs transition-colors cursor-pointer"
+                  aria-label={t("home_clear", "Clear search")}
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+
+            <div className="visible-scrollbar flex-1 space-y-5 overflow-y-auto pr-1">
+              {amenitySearchQuery.trim() ? (
+                filteredModalAmenities.map((am) => <AmenityRow key={am.id} amenity={am} />)
+              ) : amenityGroups.map(([category, amenities]) => {
+                const catKey = `host_amenity_cat_${category}` as any;
+                const fallbackCat = category.replace(/_/g, " ");
+                const translatedCategory = t(catKey, fallbackCat);
+                return (
+                  <section key={category} aria-label={`${translatedCategory} amenities`}>
+                    <h4 className="mb-4 pb-3 text-base font-medium capitalize text-[#1f1f1f] border-b border-zinc-200">
+                      {translatedCategory}
+                    </h4>
+                    <div className="space-y-3">{amenities.map((am) => <AmenityRow key={am.id} amenity={am} />)}</div>
+                  </section>
+                );
+              })}
+              {filteredModalAmenities.length === 0 && <p className="py-5 text-center text-xs text-[#727272]">{t("listing_detail_no_matching_amenities", "No matching amenities.")}</p>}
+            </div>
+          </div>
+        </ModalOverlay>
+      )}
+
+      {/* CONTACT HOST MODAL */}
+      {canMessageHost && contactHostModalOpen && (
+        <ModalOverlay
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="contact-host-modal-title"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs"
+        >
+          <div className="flex max-h-[90vh] w-full max-w-lg flex-col rounded-[24px] border border-zinc-200 bg-white p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-zinc-200">
+              <div>
+                <h3 id="contact-host-modal-title" className="font-bold text-lg text-[#1f1f1f]">
+                  {t("listing_detail_contact_host", "Contact host")} {listing.host?.name ? `(${listing.host.name})` : ""}
+                </h3>
+                <p className="text-xs text-zinc-500">{t("listing_detail_ask_host_subtitle", "Ask about dates, amenities, or special requests")}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setContactHostModalOpen(false)}
+                aria-label="Close"
+                className="cursor-pointer size-8 rounded-full flex items-center justify-center text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSendInquiry} className="space-y-4">
+              {checkIn && checkOut && (
+                <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-3 text-xs flex justify-between items-center">
+                  <div>
+                    <span className="text-zinc-500 block">{t("listing_detail_dates_selected", "Dates selected")}</span>
+                    <span className="font-medium text-zinc-800">{checkIn} – {checkOut}</span>
+                  </div>
+                  <div>
+                    <span className="text-zinc-500 block">{t("host_basics_guests", "Guests")}</span>
+                    <span className="font-medium text-zinc-800">{adultsCount + childrenCount}</span>
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-xs font-medium text-zinc-700 mb-1">
+                  {t("listing_detail_your_message_label", "Your message to the host")}
+                </label>
+                <textarea
+                  rows={4}
+                  required
+                  value={inquiryMessage}
+                  onChange={(e) => setInquiryMessage(e.target.value)}
+                  placeholder={t("listing_detail_message_placeholder", "Hi! I'm planning a trip and was wondering if...")}
+                  className="w-full rounded-2xl border border-zinc-300 p-3 text-xs sm:text-sm focus:border-zinc-500 focus:outline-none"
+                />
+              </div>
+
+              {inquiryError && (
+                <p className="text-xs text-rose-600">{inquiryError}</p>
+              )}
+
+              <p className="text-[11px] text-zinc-500">
+                {t("listing_detail_protect_payments_notice", "To protect your payments, always communicate and book through Homyz.")}
+              </p>
+
+              <div className="flex justify-end gap-2.5 pt-2 border-t border-zinc-100">
+                <button
+                  type="button"
+                  onClick={() => setContactHostModalOpen(false)}
+                  className="px-5 py-2.5 rounded-full text-xs font-medium text-zinc-600 hover:bg-zinc-100"
+                >
+                  {t("host_cancel", "Cancel")}
+                </button>
+                <button
+                  type="submit"
+                  disabled={inquirySending || !inquiryMessage.trim()}
+                  className="px-6 py-2.5 rounded-full bg-[#1f1f1f] text-white text-xs font-medium hover:bg-black disabled:opacity-50"
+                >
+                  {inquirySending ? t("listing_detail_sending", "Sending...") : t("listing_detail_send_message", "Send Message")}
+                </button>
+              </div>
+            </form>
+          </div>
+        </ModalOverlay>
+      )}
+
+      {/* Mobile Sticky Booking Bar (Visible below lg breakpoint where desktop card is not sticky) */}
+
+      <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-zinc-200 bg-white/95 px-4 py-3 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] backdrop-blur-md pb-[calc(0.75rem+env(safe-area-inset-bottom))] lg:hidden">
+        <div className="mx-auto flex max-w-[1180px] items-center justify-between gap-3">
+          <div className="min-w-0">
+            <div className="flex items-baseline gap-1 truncate">
+              <span className="text-[20px] font-normal text-[#1f1f1f] sm:text-lg">
+                {quote?.guestTotal || quote?.totalPrice
+                  ? formatPrice((quote.guestTotal ?? quote.totalPrice) || 0, currencyCode)
+                  : displayPrice ?? "Price unavailable"}
+              </span>
+              <span className="text-xs font-normal text-[#727272]">
+                {quote?.nights ? `total · ${quote.nights} ${quote.nights === 1 ? "night" : "nights"}` : ` ${t("listing_detail_per_night", "/ night")}`}
+              </span>
+            </div>
+            <div className="truncate text-xs font-medium text-[#727272]">
+              {checkIn && checkOut
+                ? `${new Intl.DateTimeFormat("en", { month: "short", day: "numeric" }).format(new Date(`${checkIn}T00:00:00`))} – ${new Intl.DateTimeFormat("en", { month: "short", day: "numeric" }).format(new Date(`${checkOut}T00:00:00`))}`
+                : "Choose your dates"}
+            </div>
+          </div>
+
+          <div className="shrink-0">
+            {!checkIn || !checkOut ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setAvailabilityRequested(true);
+                  const calendarEl = document.getElementById("availability-heading");
+                  if (calendarEl) {
+                    calendarEl.scrollIntoView({ behavior: "smooth", block: "center" });
+                  }
+                }}
+                className="rounded-2xl border border-amber-400 bg-[#fee09a] px-5 py-2.5 text-xs font-bold text-[#1f1f1f] shadow-xs transition hover:bg-[#fbd775] active:scale-[0.98] cursor-pointer"
+              >
+                {t("listing_detail_check_availability", "Check availability")}
+              </button>
+            ) : (
+              <button
+                type="button"
+                disabled={isBookingSubmitting || !hasValidQuote}
+                onClick={handleReserve}
+                className={`rounded-2xl px-5 py-2.5 text-xs font-bold transition-all shadow-xs ${hasValidQuote && !isBookingSubmitting
+                  ? "border border-amber-400 bg-[#fee09a] text-[#1f1f1f] hover:bg-[#fbd775] active:scale-[0.98] cursor-pointer"
+                  : "border border-zinc-200 bg-zinc-100 text-[#727272] cursor-not-allowed"
+                  }`}
+                aria-disabled={!hasValidQuote || isBookingSubmitting}
+              >
+                {isBookingSubmitting
+                  ? "Confirming..."
+                  : isQuoteLoading
+                    ? "Checking..."
+                    : isInstantBook
+                      ? t("listing_detail_reserve", "Reserve")
+                      : t("listing_detail_request_to_book", "Request to book")}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {isReportListingOpen && (
+        <ReportContentModal
+          isOpen={isReportListingOpen}
+          onClose={() => setIsReportListingOpen(false)}
+          targetType="LISTING"
+          targetId={listing.id}
+          targetTitle={listing.title}
+        />
+      )}
+
+      {isReportHostOpen && listing.host && (
+        <ReportContentModal
+          isOpen={isReportHostOpen}
+          onClose={() => setIsReportHostOpen(false)}
+          targetType="USER"
+          targetId={listing.host.id}
+          targetTitle={listing.host.name || "Host"}
+        />
+      )}
+
+      {isReportLoginOpen && (
+        <ModalOverlay
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="report-login-modal-title"
+          aria-describedby="report-login-modal-description"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setIsReportLoginOpen(false);
+              setOpenReportAfterAuthentication(false);
+            }
+          }}
+        >
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl sm:p-7">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2 id="report-login-modal-title" className="text-xl font-semibold text-[#1f1f1f]">
+                  {reportLoginTarget === "host" ? "Sign in to report this host" : "Sign in to report this listing"}
+                </h2>
+                <p id="report-login-modal-description" className="mt-2 text-sm leading-6 text-[#727272]">
+                  Please sign in or create an account before submitting a report. We&apos;ll bring you back to this form afterward.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsReportLoginOpen(false);
+                  setOpenReportAfterAuthentication(false);
+                }}
+                aria-label="Close sign-in prompt"
+                className="flex size-8 shrink-0 items-center justify-center rounded-full text-lg text-[#727272] transition hover:bg-zinc-100 hover:text-[#1f1f1f]"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsReportLoginOpen(false);
+                  setOpenReportAfterAuthentication(false);
+                }}
+                className="rounded-xl border border-zinc-300 px-4 py-2.5 text-sm font-semibold text-[#1f1f1f] transition hover:bg-zinc-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleContinueToLoginForReport}
+                className="rounded-xl bg-[#1f1f1f] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-black"
+              >
+                Continue to sign in
+              </button>
+            </div>
+          </div>
+        </ModalOverlay>
+      )}
+
+      <Footer />
+    </div>
+  );
+}

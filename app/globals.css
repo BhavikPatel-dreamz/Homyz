@@ -1,0 +1,808 @@
+@import "tailwindcss";
+@import "aos/dist/aos.css";
+
+@variant dark (&:where(.dark, .dark *));
+
+:root {
+  --Neutral-colors-600: #727272;
+  --background: #fafafb;
+  --foreground: #111827;
+  --surface: #ffffff;
+  --surface-secondary: #f4f4f6;
+  --card: #ffffff;
+  --card-foreground: #111827;
+  --card-highlight: #fceecb;
+  --card-highlight-border: #f7d687;
+  --border: #e4e4e7;
+  --border-subtle: #f0f0f4;
+  --muted: #f4f4f6;
+  --muted-foreground: #71717a;
+  --primary: #18181b;
+  --primary-foreground: #ffffff;
+  --secondary: #f4f4f6;
+  --secondary-foreground: #18181b;
+  --accent: #fbde9b;
+  --accent-hover: #f7d37e;
+  --accent-foreground: #291e05;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --info: #3b82f6;
+  --ring: #fbde9b;
+  --radius: 1.25rem;
+}
+
+/* Admin presentation of the shared listing editor. The editor retains Host
+   section structure and behavior, while these tokens align its workspace with
+   the Admin dashboard's neutral surfaces and amber action color. */
+.admin-listing-editor {
+  background: var(--background, #fafafa);
+  color: var(--foreground, #1f2937);
+}
+
+.admin-listing-editor .container {
+  max-width: 1440px;
+}
+
+.admin-listing-editor main > div {
+  border-color: var(--border, #e4e4e7);
+}
+
+.admin-listing-editor button:focus-visible,
+.admin-listing-editor input:focus-visible,
+.admin-listing-editor select:focus-visible,
+.admin-listing-editor textarea:focus-visible {
+  outline: 2px solid #f59e0b;
+  outline-offset: 2px;
+}
+
+/* Section UI overrides for the Admin presentation. These selectors are scoped
+   so the Host workspace keeps its existing product styling and behavior. */
+.admin-listing-editor {
+  --admin-editor-surface: var(--surface, #fff);
+  --admin-editor-muted: var(--surface-secondary, #f4f4f6);
+  --admin-editor-border: var(--border, #e4e4e7);
+  --admin-editor-ink: var(--foreground, #111827);
+}
+
+.admin-listing-editor main {
+  color: var(--admin-editor-ink);
+}
+
+.admin-listing-editor .admin-editor-content {
+  min-width: 0;
+}
+
+.admin-listing-editor .admin-editor-sidebar {
+  background: var(--surface) !important;
+  border-color: var(--border) !important;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 5%), 0 10px 24px rgb(15 23 42 / 4%) !important;
+}
+
+.admin-listing-editor .admin-editor-sidebar nav {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.admin-listing-editor .admin-editor-sidebar button {
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.admin-listing-editor .admin-editor-sidebar button:hover {
+  transform: none !important;
+}
+
+.admin-listing-editor main > * {
+  border-color: var(--admin-editor-border) !important;
+}
+
+.admin-listing-editor main [class*="animate-in"] {
+  width: 100%;
+}
+
+.admin-listing-editor main .rounded-3xl,
+.admin-listing-editor main .rounded-2xl {
+  border-color: var(--admin-editor-border) !important;
+}
+
+/* The shared editor still contains a few Host-specific neutral tokens. Map
+   those to the Admin palette only inside this presentation. */
+.admin-listing-editor :is([class*="text-[#1F1F1F]"], [class*="text-[#1f1f1f]"], [class*="text-[#1F1F1F]"], [class*="text-zinc-950"]) {
+  color: var(--admin-editor-ink) !important;
+}
+
+.admin-listing-editor :is([class*="border-[#727272]"], [class*="border-[#DDDDDD]"], [class*="border-[#B0B0B0]"], [class*="border-[#b0b0b0]"], [class*="border-[#E5E5E5]"], [class*="border-[#dedede]"]) {
+  border-color: var(--admin-editor-border) !important;
+}
+
+.admin-listing-editor :is([class*="bg-[#FCDF9C]"], [class*="bg-[#FCDF9C]"], [class*="bg-[#F5D98C]"], [class*="bg-[#E9C979]"]) {
+  background-color: var(--accent) !important;
+}
+
+.admin-listing-editor :is([class*="hover:bg-[#FDE047]"], [class*="hover:bg-[#FDD017]"], [class*="hover:bg-[#F7D37D]"], [class*="hover:bg-[#EFCF76]"]):hover {
+  background-color: var(--accent-hover) !important;
+}
+
+.admin-listing-editor main p {
+  color: var(--muted-foreground);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.admin-listing-editor main :is(label, legend) {
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.01em;
+}
+
+.admin-listing-editor main h1 {
+  font-size: 1.5rem !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.025em;
+}
+
+.admin-listing-editor main h2 {
+  font-size: 1.25rem !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em;
+}
+
+.admin-listing-editor main h3,
+.admin-listing-editor main h4 {
+  font-size: 0.875rem !important;
+  font-weight: 700 !important;
+}
+
+.admin-listing-editor main :is(.text-xl, .text-2xl, .text-3xl) {
+  letter-spacing: -0.02em;
+}
+
+.admin-listing-editor main .bg-white,
+.admin-listing-editor main .bg-zinc-50,
+.admin-listing-editor main .bg-zinc-100 {
+  background-color: var(--admin-editor-surface) !important;
+}
+
+.admin-listing-editor main :is(section, article, [role="group"]) {
+  border-color: var(--admin-editor-border);
+}
+
+.admin-listing-editor main .border-zinc-200,
+.admin-listing-editor main .border-zinc-300,
+.admin-listing-editor main .border-\[\#727272\] {
+  border-color: var(--admin-editor-border) !important;
+}
+
+.admin-listing-editor main :is(input, select, textarea) {
+  border-color: var(--admin-editor-border) !important;
+  background-color: var(--admin-editor-muted) !important;
+  color: var(--admin-editor-ink) !important;
+  border-radius: 0.75rem !important;
+  box-shadow: none !important;
+  font-size: 0.8125rem !important;
+  min-height: 2.75rem !important;
+}
+
+.admin-listing-editor main textarea {
+  min-height: 6.75rem;
+  line-height: 1.5;
+}
+
+.admin-listing-editor main :is(input, select, textarea)::placeholder {
+  color: var(--muted-foreground) !important;
+  opacity: 1;
+}
+
+.admin-listing-editor main :is(input, select, textarea):focus {
+  border-color: #f59e0b !important;
+  box-shadow: 0 0 0 3px rgb(245 158 11 / 15%) !important;
+}
+
+.admin-listing-editor main button:not([class*="bg-rose"], [class*="bg-red"], [class*="bg-emerald"], [class*="bg-green"]) {
+  border-color: var(--admin-editor-border);
+}
+
+.admin-listing-editor main button {
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+}
+
+.admin-listing-editor main button:not([class*="rounded-full"]) {
+  border-radius: 0.75rem;
+}
+
+.admin-listing-editor main button[class*="bg-[#FCDF9C]"],
+.admin-listing-editor main button[class*="bg-[#FCDF9C]"],
+.admin-listing-editor main button[class*="bg-[#F5D98C]"],
+.admin-listing-editor main button[class*="bg-amber"] {
+  background-color: #f59e0b !important;
+  border-color: #f59e0b !important;
+  color: #18181b !important;
+  box-shadow: none !important;
+}
+
+.admin-listing-editor main button:is([class*="bg-[#1F1F1F]"], [class*="bg-[#222]"]):not([class*="hover:bg"]) {
+  background-color: #18181b !important;
+}
+
+.admin-listing-editor main h1,
+.admin-listing-editor main h2,
+.admin-listing-editor main h3,
+.admin-listing-editor main h4,
+.admin-listing-editor main label {
+  color: var(--admin-editor-ink) !important;
+}
+
+.admin-listing-editor [class*="shadow-2xs"],
+.admin-listing-editor [class*="shadow-xs"] {
+  box-shadow: 0 1px 2px rgb(15 23 42 / 5%) !important;
+}
+
+.admin-listing-editor :is(.rounded-\[28px\], .rounded-\[24px\]) {
+  border-radius: 1rem !important;
+}
+
+.admin-listing-editor .admin-editor-sidebar > div > p:last-child {
+  color: var(--admin-editor-ink) !important;
+}
+
+@media (min-width: 1024px) {
+  .admin-listing-editor .fixed.right-0,
+  .admin-listing-editor [class*="lg:fixed"] {
+    background: var(--admin-editor-surface) !important;
+    border-color: var(--admin-editor-border) !important;
+  }
+}
+
+.dark {
+  --background: #0d0d10;
+  --foreground: #f4f4f5;
+  --surface: #141418;
+  --surface-secondary: #1e1e24;
+  --card: #141418;
+  --card-foreground: #f4f4f5;
+  --card-highlight: #2c2415;
+  --card-highlight-border: #57441d;
+  --border: #27272a;
+  --border-subtle: #1e1e24;
+  --muted: #1e1e24;
+  --muted-foreground: #a1a1aa;
+  --primary: #f4f4f5;
+  --primary-foreground: #09090b;
+  --secondary: #27272a;
+  --secondary-foreground: #f4f4f5;
+  --accent: #f59e0b;
+  --accent-hover: #d97706;
+  --accent-foreground: #ffffff;
+  --success: #34d399;
+  --warning: #fbbf24;
+  --error: #f87171;
+  --info: #60a5fa;
+  --ring: #f59e0b;
+}
+
+@theme inline {
+  --font-sans: var(--font-poppins), 'Poppins', sans-serif;
+  --font-mono: var(--font-geist-mono), monospace;
+  --font-script: var(--font-caveat), cursive;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-secondary: var(--surface-secondary);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-card-highlight: var(--card-highlight);
+  --color-card-highlight-border: var(--card-highlight-border);
+  --color-border: var(--border);
+  --color-border-subtle: var(--border-subtle);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-error: var(--error);
+  --color-info: var(--info);
+  --color-ring: var(--ring);
+}
+
+html {
+  color-scheme: light dark;
+  font-family: var(--font-poppins), 'Poppins', sans-serif;
+}
+
+body {
+  color: #727272;
+  font-family: var(--font-poppins), 'Poppins', sans-serif;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 24px;
+  min-height: 100vh;
+}
+
+@layer base {
+  h1,
+  h2 {
+    font-family: var(--font-poppins), sans-serif;
+    font-size: 22px;
+    font-weight: 500;
+    line-height: 30px;
+    color: #1f1f1f;
+  }
+
+  @media (min-width: 640px) {
+    h1,
+    h2 {
+      font-size: 28px;
+      line-height: 36px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    h1,
+    h2 {
+      font-size: 32px;
+      line-height: 40px;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    h1,
+    h2 {
+      font-size: 32px;
+      line-height: 40px;
+    }
+  }
+}
+
+.input {
+  width: 100%;
+  border: 1px solid #d4d4d8;
+  border-radius: 0.75rem;
+  background: #fff;
+  padding: 0.625rem 0.75rem;
+  font-size: 0.875rem;
+  color: #27272a;
+  outline: none;
+}
+
+.dark .input {
+  background: #27272a;
+  border-color: #3f3f46;
+  color: #f4f4f5;
+}
+
+.input:focus {
+  border-color: #18181b;
+}
+
+.dark .input:focus {
+  border-color: #a1a1aa;
+}
+
+/* Skeleton shimmer animation */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--muted) 25%,
+    var(--border-subtle) 37%,
+    var(--muted) 63%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite ease-in-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-shimmer {
+    animation: none !important;
+    background: var(--muted) !important;
+  }
+}
+
+/* Custom handwriting tagline */
+.tagline-cursive {
+  font-family: var(--font-caveat), 'Caveat', 'Reenie Beanie', 'Segoe Script', cursive;
+  font-size: 1.85rem;
+  letter-spacing: 0.5px;
+}
+
+/* Custom scrollbars */
+.custom-scrollbar::-webkit-scrollbar,
+.no-scrollbar::-webkit-scrollbar {
+  width: 0px !important;
+  height: 0px !important;
+  display: none !important;
+}
+
+.custom-scrollbar,
+.no-scrollbar {
+  -ms-overflow-style: none !important;  /* IE and Edge */
+  scrollbar-width: none !important;  /* Firefox */
+}
+
+::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
+  display: none;
+}
+
+* {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Opt-in scrollbar for compact menus that need a visible scroll affordance. */
+.visible-scrollbar {
+  -ms-overflow-style: auto;
+  scrollbar-color: #9b9b9b transparent;
+  scrollbar-width: thin;
+}
+
+.visible-scrollbar::-webkit-scrollbar {
+  display: block;
+  width: 8px;
+}
+
+.visible-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.visible-scrollbar::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 9999px;
+  background-clip: padding-box;
+  background-color: #9b9b9b;
+}
+
+.visible-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #727272;
+}
+
+.destination-scrollbar {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: auto;
+  left: auto;
+  appearance: none;
+  writing-mode: vertical-lr;
+  direction: ltr;
+  width: 16px;
+  height: 100%;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.destination-scrollbar::-webkit-slider-runnable-track {
+  width: 3px;
+  height: 100%;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 2px 5px rgb(0 0 0 / 22%);
+}
+
+.destination-scrollbar::-webkit-slider-thumb {
+  appearance: none;
+  width: 3px;
+  height: 32px;
+  border: 0;
+  border-radius: 999px;
+  background: #FCDF9C;
+}
+
+.destination-scrollbar::-moz-range-track {
+  width: 3px;
+  height: 100%;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 2px 5px rgb(0 0 0 / 22%);
+}
+
+.destination-scrollbar::-moz-range-thumb {
+  width: 3px;
+  height: 32px;
+  border: 0;
+  border-radius: 999px;
+  background: #FCDF9C;
+}
+
+.destination-scrollbar:focus-visible {
+  outline: 2px solid #FCDF9C;
+  outline-offset: 2px;
+  border-radius: 999px;
+}
+
+@keyframes toast-progress {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
+/* Ensure all buttons, selects, and interactive components display hand cursor (cursor: pointer) */
+button,
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+select,
+[role="button"],
+[tabindex]:not([tabindex="-1"]) {
+  cursor: pointer;
+}
+
+button:disabled,
+input:disabled,
+select:disabled,
+[role="button"][aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+/* Remove up/down spinner arrows from number input boxes */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+/*
+ * Form control outlines matching Figma:
+ * border: 1px solid var(--Neutral-colors-600, #727272);
+ */
+.brush-border,
+.brush-border-wide,
+.brush-border-responsive,
+.brush-email-password-border {
+  border: 1px solid var(--Neutral-colors-600, #727272) !important;
+  background-image: none !important;
+}
+
+.brush-button-border,
+.brush-back-border,
+.brush-back-to-top-border,
+.social-google-border,
+.social-apple-border,
+.social-facebook-border {
+  background-image: none !important;
+}
+
+/* Visible calendar panel scrollbars, matching the pricing reference. */
+.calendar-panel-scrollbar {
+  scrollbar-width: auto;
+  scrollbar-color: #d1d1d1 #f3f4f5;
+  scrollbar-gutter: stable;
+}
+
+/* Compact modal scrollbar with equal clearance from both panel edges. */
+.modal-content-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #d1d1d1 #f3f4f5;
+  scrollbar-gutter: stable;
+}
+
+/* Keep every divided modal row equally spaced above and below its border. */
+.modal-content-scrollbar.divide-y > * {
+  padding-block: 1rem !important;
+}
+
+.modal-content-scrollbar.divide-y > * + * {
+  margin-top: 0 !important;
+}
+
+/* Large, soft scrollbar for the Add amenities catalogue. */
+.amenities-list-scrollbar {
+  scrollbar-width: auto;
+  scrollbar-color: #d1d1d1 #f3f4f5;
+  scrollbar-gutter: stable;
+}
+
+/* Keep these outside @supports: Chromium otherwise falls back to its native
+   scrollbar (including arrow buttons) in some environments. */
+.amenities-list-scrollbar::-webkit-scrollbar {
+  display: block !important;
+  width: 22px !important;
+}
+
+.amenities-list-scrollbar::-webkit-scrollbar-track {
+  border-radius: 999px;
+  background: #f3f4f5;
+}
+
+.amenities-list-scrollbar::-webkit-scrollbar-thumb {
+  min-height: 62px;
+  border: 4px solid #f3f4f5;
+  border-radius: 999px;
+  background: #d1d1d1;
+  box-shadow: inset 0 0 0 1px #c5c5c5;
+}
+
+.amenities-list-scrollbar::-webkit-scrollbar-button {
+  display: none !important;
+  width: 0;
+  height: 0;
+}
+
+@supports selector(::-webkit-scrollbar) {
+  .calendar-panel-scrollbar {
+    scrollbar-color: auto;
+  }
+
+  .calendar-panel-scrollbar::-webkit-scrollbar {
+    display: block;
+    width: 18px;
+    height: 18px;
+  }
+
+  .modal-content-scrollbar::-webkit-scrollbar {
+    display: block;
+    width: 12px;
+  }
+
+  .amenities-list-scrollbar::-webkit-scrollbar {
+    display: block;
+    width: 22px;
+  }
+
+  .calendar-panel-scrollbar::-webkit-scrollbar-track {
+    border-radius: 999px;
+    background: #f3f4f5;
+  }
+
+  .modal-content-scrollbar::-webkit-scrollbar-track {
+    margin-block: 12px;
+    border-radius: 999px;
+    background: #f3f4f5;
+  }
+
+  .amenities-list-scrollbar::-webkit-scrollbar-track {
+    border-radius: 999px;
+    background: #f3f4f5;
+  }
+
+  .calendar-panel-scrollbar::-webkit-scrollbar-thumb {
+    min-height: 46px;
+    border: 3px solid #f3f4f5;
+    border-radius: 999px;
+    background: #d1d1d1;
+    box-shadow: inset 0 0 0 1px #c5c5c5;
+  }
+
+  .modal-content-scrollbar::-webkit-scrollbar-thumb {
+    min-height: 46px;
+    border: 2px solid #f3f4f5;
+    border-radius: 999px;
+    background: #d1d1d1;
+  }
+
+  .amenities-list-scrollbar::-webkit-scrollbar-thumb {
+    min-height: 62px;
+    border: 4px solid #f3f4f5;
+    border-radius: 999px;
+    background: #d1d1d1;
+    box-shadow: inset 0 0 0 1px #c5c5c5;
+  }
+
+  .calendar-panel-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #bcbcbc;
+  }
+
+  .modal-content-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #bcbcbc;
+  }
+
+  .amenities-list-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #bcbcbc;
+  }
+
+  .calendar-panel-scrollbar::-webkit-scrollbar-button {
+    display: none;
+  }
+
+  .modal-content-scrollbar::-webkit-scrollbar-button {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+
+  .calendar-panel-scrollbar::-webkit-scrollbar-button:vertical:decrement:start,
+  .calendar-panel-scrollbar::-webkit-scrollbar-button:vertical:increment:end {
+    display: block;
+    height: 22px;
+    border: 1px solid #d4d4d4;
+    border-radius: 999px;
+    background-color: #e8e8e8;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 12px 12px;
+  }
+
+  .calendar-panel-scrollbar::-webkit-scrollbar-button:vertical:decrement:start {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23858585' stroke-width='1.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m4 10 4-4 4 4'/%3E%3C/svg%3E");
+  }
+
+  .calendar-panel-scrollbar::-webkit-scrollbar-button:vertical:increment:end {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23858585' stroke-width='1.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m4 6 4 4 4-4'/%3E%3C/svg%3E");
+  }
+
+  .calendar-panel-scrollbar::-webkit-scrollbar-button:vertical:decrement:start:hover,
+  .calendar-panel-scrollbar::-webkit-scrollbar-button:vertical:increment:end:hover {
+    background-color: #d1d1d1;
+    border-color: #aaa;
+  }
+
+}
+
+@keyframes messages-filter-menu-in {
+  from { opacity: 0; transform: translateY(-4px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes messages-search-in {
+  from { opacity: 0; transform: translateX(8px) scaleX(0.96); }
+  to { opacity: 1; transform: translateX(0) scaleX(1); }
+}
+
+@keyframes messages-settings-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes messages-search-expand {
+  from { opacity: 0.7; transform: scaleX(0.16); }
+  to { opacity: 1; transform: scaleX(1); }
+}
+
+@keyframes messages-search-cancel-in {
+  from { opacity: 0; transform: translateX(4px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes messages-search-collapse {
+  from { opacity: 1; transform: scaleX(1); }
+  to { opacity: 0.7; transform: scaleX(0.16); }
+}
+
+@keyframes messages-search-cancel-out {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(4px); }
+}
+
+@keyframes messages-settings-sheet-in {
+  from { opacity: 0.96; transform: translateY(100%); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.messages-settings-sheet {
+  animation: messages-settings-sheet-in 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform, opacity;
+}
+
+@media (min-width: 640px) {
+  .messages-settings-sheet {
+    animation-name: messages-settings-in;
+    animation-duration: 200ms;
+    animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
+  }
+}

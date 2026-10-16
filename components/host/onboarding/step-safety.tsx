@@ -1,0 +1,112 @@
+"use client";
+
+import React from "react";
+import { StepProgressFooter } from "./step-progress-footer";
+import { OnboardingStepHeading } from "./onboarding-step-heading";
+import { OnboardingStepLayout } from "./onboarding-step-layout";
+import { useLanguage } from "@/lib/i18n/language-context";
+
+
+export interface SafetyOption {
+  id: string;
+  label: string;
+}
+
+interface StepSafetyProps {
+  selectedSafety: string[];
+  onAnswerSafety: (id: string, answer: "YES" | "NO") => void;
+  onBack: () => void;
+  onNext: () => void;
+  isLoading?: boolean;
+}
+
+export function StepSafety({
+  selectedSafety,
+  onAnswerSafety,
+  onBack,
+  onNext,
+  isLoading = false,
+}: StepSafetyProps) {
+  const { t } = useLanguage();
+
+  const safetyItems: SafetyOption[] = [
+    {
+      id: "SECURITY_CAMERA",
+      label: t("host_safety_camera"),
+    },
+    {
+      id: "NOISE_MONITOR",
+      label: t("host_safety_noise"),
+    },
+    {
+      id: "WEAPONS",
+      label: t("host_safety_weapons"),
+    },
+  ];
+
+  return (
+    <OnboardingStepLayout
+      isLoading={isLoading}
+      mainClassName="steps-safety min-h-dvh bg-white pb-8 sm:py-12 lg:pt-25 lg:pb-16"
+      wrapperClassName="wrapper flex-1 w-full flex flex-col sm:justify-between animate-in fade-in duration-200 min-h-[calc(100dvh-4rem)] sm:min-h-[calc(100dvh-6rem)] lg:min-h-[calc(100dvh-10.25rem)]"
+    >
+
+          <div className="max-w-[491px] mx-auto w-full flex flex-col items-start my-auto">
+            {/* Heading & Subtitle */}
+            <OnboardingStepHeading
+              title={t("host_safety_title")}
+              description={t("host_safety_subtitle")}
+              titleClassName="sm:mb-5 mb-3"
+              descriptionClassName="sm:mb-10 mb-6"
+            />
+
+            {/* Safety Options List */}
+            <div data-aos="fade-up" data-aos-delay="200" className="w-full space-y-3">
+              {safetyItems.map((item) => {
+                const answer = selectedSafety.find((value) => value.startsWith(`${item.id}:`))?.split(":")[1];
+                return (
+                  <fieldset
+                    key={item.id}
+                    className={`w-full border sm:rounded-lg rounded-md p-4 bg-white transition-all shadow-2xs ${answer ? "border-[#1f1f1f]" : "border-[#727272]"
+                      }`}
+                  >
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="text-base font-normal text-[#727272]">
+                        {item.label}
+                      </div>
+                      <button
+                        type="button"
+                        role="switch"
+                        aria-checked={answer === "YES"}
+                        aria-label={`Toggle ${item.label}`}
+                        onClick={() => onAnswerSafety(item.id, answer === "YES" ? "NO" : "YES")}
+                        className={`relative h-4 w-8 shrink-0 rounded-full transition-colors ${answer === "YES" ? "bg-[#DF4557]" : "bg-[#DDDDDE]"}`}
+                      >
+                        <span
+                          aria-hidden="true"
+                          className={`absolute left-0.5 top-0.5 size-3 rounded-full bg-white shadow-xs transition-transform ${answer === "YES" ? "translate-x-4" : "translate-x-0"}`}
+                        />
+                      </button>
+                    </div>
+                  </fieldset>
+                );
+              })}
+            </div>
+
+            {/* Paragraph Notice */}
+            <p className="sm:mt-12 mt-6">
+              {t("host_safety_notice")}
+            </p>
+          </div>
+
+          <StepProgressFooter
+            currentStep={4}
+            totalSteps={4}
+            onBack={onBack}
+            onNext={onNext}
+            isLoading={isLoading}
+            nextLabel={t("host_save")}
+          />
+    </OnboardingStepLayout>
+  );
+}

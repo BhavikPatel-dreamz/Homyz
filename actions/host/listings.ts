@@ -1,0 +1,228 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+
+import { runAction } from "@/lib/actions/result";
+import { AppError } from "@/lib/api/errors";
+import { getSessionUser } from "@/lib/auth/session";
+import { assertRole } from "@/lib/permissions/authorize";
+import { assertPermission, PERMISSIONS } from "@/lib/permissions/permissions";
+import {
+  createListingSchema,
+  updateListingSchema,
+  bulkAvailabilitySchema,
+} from "@/lib/validation/listing";
+import { listingService } from "@/services/listing.service";
+import { Role } from "@/generated/prisma/enums";
+
+export async function createListingAction(input: unknown) {
+  return runAction(async () => {
+    const actor = await getSessionUser();
+    assertRole(actor, [Role.USER, Role.HOST, Role.ADMIN]);
+    const data = createListingSchema.parse(input);
+    const listing = await listingService.create(actor, data);
+    revalidatePath("/host/listings");
+    return listing;
+  });
+}
+
+export async function updateListingAction(id: string, input: unknown) {
+  return runAction(async () => {
+    const actor = await getSessionUser();
+    if (!actor) throw AppError.unauthorized();
+    // The shared editor is also used by Admin. Preserve the Host ownership
+    // path while applying the listing-specific Admin permission boundary.
+    if (actor.role === Role.ADMIN) assertPermission(actor, PERMISSIONS.LISTINGS_EDIT);
+    const data = updateListingSchema.parse(input);
+    // Ownership (host must own; ADMIN bypasses) is enforced in the service.
+    const listing = await listingService.update(actor, id, data);
+    revalidatePath("/");
+    revalidatePath("/listings");
+    revalidatePath("/host/listings");
+    revalidatePath(`/host/listings/${id}`);
+    revalidatePath("/host/listings/[id]");
+    revalidatePath(`/listings/${id}`);
+    revalidatePath("/admin/listings");
+    revalidatePath(`/admin/listings/${id}`);
+    if (data.propertyType !== undefined || data.listingType !== undefined) {
+      revalidatePath(`/host/listings/${id}/property-type`);
+    }
+    revalidatePath("/host/calendar");
+    revalidatePath("/host/today");
+    return listing;
+  });
+}
+
+export async function deleteListingAction(
+  id: string,
+  feedback?: {
+    categories?: string[];
+    reasons?: string[];
+    customFeedback?: string;
+  }
+) {
+  return runAction(async () => {
+    const actor = await getSessionUser();
+    if (!actor) throw AppError.unauthorized();
+    if (actor.role === Role.ADMIN) assertPermission(actor, PERMISSIONS.LISTINGS_DELETE);
+    const result = await listingService.remove(actor, id, feedback);
+    revalidatePath("/");
+    revalidatePath("/listings");
+    revalidatePath("/host/listings");
+    revalidatePath("/admin/listings");
+    revalidatePath("/admin/hosts");
+    return result;
+  });
+}
+
+export async function publishListingAction(id: string) {
+  return runAction(async () => {
+    const actor = await getSessionUser();
+    if (!actor) throw AppError.unauthorized();
+    if (actor.role === Role.ADMIN) assertPermission(actor, PERMISSIONS.LISTINGS_APPROVE);
+    const listing = await listingService.publish(actor, id);
+    revalidatePath("/");
+    revalidatePath("/listings");
+    revalidatePath("/host/listings");
+    revalidatePath(`/host/listings/${id}`);
+    revalidatePath(`/listings/${id}`);
+    revalidatePath("/admin/listings");
+    revalidatePath(`/admin/listings/${id}`);
+    if (listing.customSlug) {
+      revalidatePath(`/stay/${listing.customSlug}`);
+    }
+    return listing;
+  });
+}
+
+export async function unpublishListingAction(id: string) {
+  return runAction(async () => {
+    const actor = await getSessionUser();
+    if (!actor) throw AppError.unauthorized();
+    if (actor.role === Role.ADMIN) assertPermission(actor, PERMISSIONS.LISTINGS_APPROVE);
+    const listing = await listingService.unpublish(actor, id);
+    revalidatePath("/");
+    revalidatePath("/listings");
+    revalidatePath("/host/listings");
+    revalidatePath(`/host/listings/${id}`);
+    revalidatePath(`/listings/${id}`);
+    revalidatePath("/admin/listings");
+    revalidatePath(`/admin/listings/${id}`);
+    if (listing.customSlug) {
+      revalidatePath(`/stay/${listing.customSlug}`);
+    }
+    return listing;
+  });
+}
+
+export async function submitListingForReviewAction(id: string) {
+  return runAction(async () => {
+    const actor = await getSessionUser();
+    if (!actor) throw AppError.unauthorized();
+    const listing = await listingService.submitForReview(actor, id);
+    revalidatePath("/host/listings");
+    revalidatePath(`/host/listings/${id}`);
+    return listing;
+  });
+}
+
+export async function resubmitListingForReviewAction(id: string) {
+  return runAction(async () => {
+    const actor = await getSessionUser();
+    if (!actor) throw AppError.unauthorized();
+    const listing = await listingService.resubmitForReview(actor, id);
+    revalidatePath("/host/listings");
+    revalidatePath(`/host/listings/${id}`);
+    return listing;
+  });
+}
+
+export async function approveListingByAdminAction(id: string) {
+  return runAction(async () => {
+    const actor = await getSessionUser();
+    assertRole(actor, [Role.ADMIN]);
+    assertPermission(actor, PERMISSIONS.LISTINGS_APPROVE);
+    const listing = await listingService.approveListingByAdmin(actor, id);
+    revalidatePath("/admin/hosts");
+    revalidatePath("/host/listings");
+    return listing;
+  });
+}
+
+export async function requestListingChangesByAdminAction(id: string, requestedChanges: string) {
+  return runAction(async () => {
+    const actor = await getSessionUser();
+    assertRole(actor, [Role.ADMIN]);
+    assertPermission(actor, PERMISSIONS.LISTINGS_APPROVE);
+    const listing = await listingService.requestChangesByAdmin(actor, id, requestedChanges);
+    revalidatePath("/admin/hosts");
+    revalidatePath("/host/listings");
+    return listing;
+  });
+}
+
+export async function rejectListingByAdminAction(id: string, reason: string) {
+  return runAction(async () => {
+    const actor = await getSessionUser();
+    assertRole(actor, [Role.ADMIN]);
+    assertPermission(actor, PERMISSIONS.LISTINGS_APPROVE);
+    const listing = await listingService.rejectListingByAdmin(actor, id, reason);
+    revalidatePath("/admin/hosts");
+    revalidatePath("/host/listings");
+    return listing;
+  });
+}
+
+export async function duplicateListingAction(id: string) {
+  return runAction(async () => {
+    const actor = await getSessionUser();
+    if (!actor) throw AppError.unauthorized();
+    const listing = await listingService.duplicate(actor, id);
+    revalidatePath("/host/listings");
+    return listing;
+  });
+}
+
+export async function togglePauseListingAction(id: string, isPaused: boolean) {
+  return runAction(async () => {
+    const actor = await getSessionUser();
+    if (!actor) throw AppError.unauthorized();
+    if (actor.role === Role.ADMIN) assertPermission(actor, PERMISSIONS.LISTINGS_SUSPEND);
+    const listing = await listingService.togglePause(actor, id, isPaused);
+    revalidatePath("/host/listings");
+    revalidatePath("/admin/hosts");
+    return listing;
+  });
+}
+
+export async function updateListingAvailabilityAction(id: string, blockedDates: string[]) {
+  return runAction(async () => {
+    const actor = await getSessionUser();
+    if (!actor) throw AppError.unauthorized();
+    if (actor.role === Role.ADMIN) assertPermission(actor, PERMISSIONS.LISTINGS_EDIT);
+    const listing = await listingService.updateAvailability(actor, id, blockedDates);
+    revalidatePath("/host/calendar");
+    revalidatePath("/host/listings");
+    return listing;
+  });
+}
+
+export async function bulkUpdateAvailabilityAction(
+  id: string,
+  input: {
+    action: "BLOCK" | "UNBLOCK" | "RESTORE";
+    dates: string[];
+  }
+) {
+  return runAction(async () => {
+    const actor = await getSessionUser();
+    if (!actor) throw AppError.unauthorized();
+    if (actor.role === Role.ADMIN) assertPermission(actor, PERMISSIONS.LISTINGS_EDIT);
+    const validatedInput = bulkAvailabilitySchema.parse(input);
+    const result = await listingService.bulkUpdateAvailability(actor, id, validatedInput);
+    revalidatePath("/host/listings");
+    revalidatePath(`/host/listings/${id}`);
+    revalidatePath("/host/calendar");
+    return result;
+  });
+}

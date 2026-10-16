@@ -1,0 +1,328 @@
+"use client";
+
+import React from "react";
+import Link from "next/link";
+import { CurrencyPrice } from "@/components/ui/currency-price";
+import type { AuthoritativePriceBreakdown } from "@/lib/booking/booking-price";
+import type { BookingStatusDetails, BookingAvailableActions } from "@/lib/booking/booking-status";
+import { useCurrency } from "@/lib/currency-context";
+import { useLanguage } from "@/lib/i18n/language-context";
+
+interface BookingPriceCardProps {
+  photo: string | null;
+  propertyTitle: string;
+  listingSlug: string | null;
+  listingId: string;
+  bookingId: string;
+  pricing: AuthoritativePriceBreakdown;
+  statusDetails: BookingStatusDetails;
+  actions: BookingAvailableActions;
+  onOpenCancel: () => void;
+  onOpenChange: () => void;
+  onOpenReceipt: () => void;
+  onOpenContact: () => void;
+}
+
+export function BookingPriceCard({
+  photo,
+  propertyTitle,
+  listingSlug,
+  listingId,
+  bookingId,
+  pricing,
+  statusDetails,
+  actions,
+  onOpenCancel,
+  onOpenChange,
+  onOpenReceipt,
+  onOpenContact,
+}: BookingPriceCardProps) {
+  const { currency: displayCurrency } = useCurrency();
+  const { t } = useLanguage();
+  const listingHref = `/listings/${listingSlug || listingId}`;
+  const { status, isCompleted, isCancelled, isCurrent, isUpcoming, isPending } = statusDetails;
+
+  return (
+    <aside
+      className="h-fit sm:rounded-3xl rounded-lg border border-zinc-200 bg-white p-6 shadow-sm lg:sticky lg:top-28"
+      aria-labelledby="price-summary-heading"
+    >
+      {/* Property Photo & Link */}
+      {photo && (
+        <Link href={listingHref} className="group block mb-5 overflow-hidden sm:rounded-2xl rounded-lg">
+          <img
+            src={photo}
+            alt={propertyTitle}
+            className="aspect-[16/10] w-full object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+        </Link>
+      )}
+
+      <div className="flex items-center justify-between gap-3 border-b border-zinc-100 pb-4">
+        <h2 id="price-summary-heading" className="text-lg font-medium text-[#1F1F1F]">
+          {t("booking_details_price_details", "Price details")}
+        </h2>
+        <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${statusDetails.badgeClass}`}>
+          {statusDetails.badgeLabel}
+        </span>
+      </div>
+
+      {/* Authoritative Price Line Items */}
+      <dl className="mt-4 space-y-3 text-sm text-zinc-700">
+        <div className="flex justify-between gap-4">
+          <dt className="text-zinc-600">
+            <CurrencyPrice
+              amountMinorUnits={pricing.nightlyPrice}
+              sourceCurrency={pricing.currency}
+              fractionDigits={2}
+            />{" "}
+            × {pricing.nights} {pricing.nights === 1 ? t("booking_details_night_singular", "night") : t("booking_details_nights_plural", "nights")}
+          </dt>
+          <dd className="font-medium text-[#1F1F1F]">
+            <CurrencyPrice
+              amountMinorUnits={pricing.nightlySubtotal}
+              sourceCurrency={pricing.currency}
+              fractionDigits={2}
+            />
+          </dd>
+        </div>
+
+        {pricing.extraGuestFee > 0 && (
+          <div className="flex justify-between gap-4">
+            <dt className="text-zinc-600">{t("booking_details_extra_guest_fee", "Extra guest fee")}</dt>
+            <dd className="font-medium text-[#1F1F1F]">
+              <CurrencyPrice
+                amountMinorUnits={pricing.extraGuestFee}
+                sourceCurrency={pricing.currency}
+                fractionDigits={2}
+              />
+            </dd>
+          </div>
+        )}
+
+        {pricing.petFee > 0 && (
+          <div className="flex justify-between gap-4">
+            <dt className="text-zinc-600">{t("booking_details_pet_fee", "Pet fee")}</dt>
+            <dd className="font-medium text-[#1F1F1F]">
+              <CurrencyPrice
+                amountMinorUnits={pricing.petFee}
+                sourceCurrency={pricing.currency}
+                fractionDigits={2}
+              />
+            </dd>
+          </div>
+        )}
+
+        {pricing.cleaningFee > 0 && (
+          <div className="flex justify-between gap-4">
+            <dt className="text-zinc-600">{t("booking_details_cleaning_fee", "Cleaning fee")}</dt>
+            <dd className="font-medium text-[#1F1F1F]">
+              <CurrencyPrice
+                amountMinorUnits={pricing.cleaningFee}
+                sourceCurrency={pricing.currency}
+                fractionDigits={2}
+              />
+            </dd>
+          </div>
+        )}
+
+        {pricing.discountAmount > 0 && (
+          <div className="flex justify-between gap-4 text-emerald-700">
+            <dt>{t("booking_details_discount", "Discount")}</dt>
+            <dd className="font-medium">
+              -
+              <CurrencyPrice
+                amountMinorUnits={pricing.discountAmount}
+                sourceCurrency={pricing.currency}
+                fractionDigits={2}
+              />
+            </dd>
+          </div>
+        )}
+
+        {pricing.taxes.map((tax, index) => (
+          <div key={`${tax.name}-${index}`} className="flex justify-between gap-4">
+            <dt className="text-zinc-600">
+              {tax.name}
+              {tax.exemptionApplied && tax.exemptionReason ? ` · ${tax.exemptionReason}` : ""}
+            </dt>
+            <dd className="font-medium text-[#1F1F1F]">
+              <CurrencyPrice amountMinorUnits={tax.amountMinorUnits} sourceCurrency={pricing.currency} fractionDigits={2} />
+            </dd>
+          </div>
+        ))}
+
+        {pricing.otherCharges !== 0 && (
+          <div className="flex justify-between gap-4 text-zinc-600">
+            <dt>{t("booking_details_other_charges", "Other charges")}</dt>
+            <dd className="font-medium text-[#1F1F1F]">
+              <CurrencyPrice
+                amountMinorUnits={pricing.otherCharges}
+                sourceCurrency={pricing.currency}
+                fractionDigits={2}
+              />
+            </dd>
+          </div>
+        )}
+
+        <div className="flex justify-between gap-4 border-t border-zinc-200 pt-4 sm:text-base text-sm font-semibold text-[#1F1F1F]">
+          <dt>{t("booking_details_total_paid", { currency: pricing.currency }, "Total paid ({currency})")}</dt>
+          <dd className="sm:text-lg text-sm text-emerald-800">
+            <CurrencyPrice
+              amountMinorUnits={pricing.totalPrice}
+              sourceCurrency={pricing.currency}
+              fractionDigits={2}
+            />
+          </dd>
+        </div>
+
+        <div className="flex items-center justify-between gap-4 border-t border-zinc-100 pt-3 text-xs text-[#1f1f1f]">
+          <dt className="text-sm font-medium">{t("booking_details_payment_status", "Payment")}</dt>
+          <dd className="font-semibold text-amber-900 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full">
+            {t("booking_details_pending_deferred", "Pending / Deferred")}
+          </dd>
+        </div>
+      </dl>
+
+      {/* Primary Contextual Actions */}
+      <div className="mt-6 space-y-2.5">
+        {/* COMPLETED STAY ACTIONS */}
+        {isCompleted && (
+          <>
+            {actions.canReview ? (
+              <Link
+                href={`/bookings/${bookingId}/review`}
+                className="flex min-h-11 w-full items-center justify-center rounded-lg bg-[#1F1F1F] px-5 text-base font-medium text-white transition-colors hover:bg-zinc-800 shadow-xs"
+              >
+                {t("booking_details_write_review", "Write a review")}
+              </Link>
+            ) : actions.hasReviewed ? (
+              <Link
+                href={`${listingHref}#reviews`}
+                  className="flex min-h-11 w-full items-center justify-center rounded-lg bg-emerald-50 border border-emerald-200 px-5 text-base font-medium text-emerald-800 hover:bg-emerald-100 transition-colors"
+              >
+                {t("booking_details_review_submitted", "✓ Review submitted · View reviews")}
+              </Link>
+            ) : (
+              <div className="rounded-xl bg-zinc-100 px-4 py-2.5 text-center text-xs text-[#727272] font-medium">
+                {actions.reviewDisabledReason || t("booking_details_review_ended", "Review period has ended")}
+              </div>
+            )}
+
+            <Link
+              href={listingHref}
+              className="flex min-h-11 w-full items-center justify-center rounded-lg border border-zinc-300 bg-white px-4 text-base font-medium text-zinc-800 hover:bg-zinc-50 hover:border-zinc-400 transition-colors"
+            >
+              {t("booking_details_book_again", "Book again")}
+            </Link>
+
+            <button
+              type="button"
+              onClick={onOpenReceipt}
+              className="flex min-h-11 w-full items-center justify-center rounded-lg border border-zinc-300 bg-white px-4 text-base font-medium text-zinc-800 hover:bg-zinc-50 hover:border-zinc-400 transition-colors cursor-pointer"
+            >
+              {t("booking_details_view_receipt", "View receipt")}
+            </button>
+          </>
+        )}
+
+        {/* CONFIRMED / UPCOMING STAY ACTIONS */}
+        {isUpcoming && !isPending && !isCancelled && (
+          <>
+            <button
+              type="button"
+              onClick={onOpenChange}
+              className="flex min-h-11 w-full items-center justify-center rounded-lg bg-[#1F1F1F] border border-[#1F1F1F] hover:border-[#D9D9D9]  px-5 text-base font-medium text-white hover:text-[#1f1f1f] transition-colors duration-300 hover:bg-[#D9D9D9] shadow-xs cursor-pointer"
+            >
+              {t("booking_details_change_reservation", "Change reservation")}
+            </button>
+
+            <button
+              type="button"
+              onClick={onOpenReceipt}
+              className="flex min-h-11 w-full items-center justify-center rounded-lg border border-[#1F1F1F] hover:border-[#D9D9D9]  bg-white px-4 text-base font-medium text-[#1F1F1F] hover:bg-[#D9D9D9] hover:text-[#1f1f1f] transition-colors cursor-pointer"
+            >
+              {t("booking_details_view_receipt", "View receipt")}
+            </button>
+
+            {actions.canCancel ? (
+              <button
+                type="button"
+                onClick={onOpenCancel}
+                className="flex min-h-11 w-full items-center justify-center rounded-lg border border-red-600 bg-white px-4 text-base font-medium text-red-600 hover:bg-red-50 hover:border-red-300 transition-colors cursor-pointer"
+              >
+                {t("booking_details_cancel_reservation", "Cancel reservation")}
+              </button>
+            ) : (
+              <p className="text-center text-xs text-[#727272] pt-1">
+                {actions.cancelDisabledReason || t("booking_details_cannot_cancel", "Reservation cannot be cancelled.")}
+              </p>
+            )}
+          </>
+        )}
+
+        {/* CURRENT STAY ACTIONS */}
+        {isCurrent && (
+          <>
+            <button
+              type="button"
+              onClick={onOpenContact}
+              className="flex min-h-11 w-full items-center justify-center rounded-lg bg-[#1F1F1F] px-5 text-base font-medium text-white transition-colors hover:bg-zinc-800 shadow-xs cursor-pointer"
+            >
+              {t("booking_details_contact_host_assist", "Contact host for assistance")}
+            </button>
+
+            <button
+              type="button"
+              onClick={onOpenReceipt}
+              className="flex min-h-11 w-full items-center justify-center rounded-lg border border-zinc-300 bg-white px-4 text-base font-medium text-zinc-800 hover:bg-zinc-50 hover:border-zinc-400 transition-colors cursor-pointer"
+            >
+              {t("booking_details_view_receipt", "View receipt")}
+            </button>
+          </>
+        )}
+
+        {/* CANCELLED ACTIONS */}
+        {isCancelled && (
+          <>
+            <button
+              type="button"
+              onClick={onOpenReceipt}
+              className="flex min-h-11 w-full items-center justify-center rounded-lg bg-[#1F1F1F] px-5 text-sm font-semibold text-white hover:bg-zinc-800 transition-colors cursor-pointer"
+            >
+              {t("booking_details_view_cancel_receipt", "View cancellation receipt")}
+            </button>
+
+            <Link
+              href="/listings"
+              className="flex min-h-10 w-full items-center justify-center rounded-lg border border-zinc-300 bg-white px-4 text-sm font-semibold text-zinc-800 hover:bg-zinc-50 transition-colors"
+            >
+              {t("booking_details_find_another_stay", "Find another stay")}
+            </Link>
+          </>
+        )}
+
+        {/* PENDING ACTIONS */}
+        {isPending && (
+          <>
+            <button
+              type="button"
+              onClick={onOpenContact}
+              className="flex min-h-11 w-full items-center justify-center rounded-lg bg-[#1F1F1F] px-5 text-sm font-semibold text-white hover:bg-zinc-800 transition-colors cursor-pointer"
+            >
+              {t("booking_details_message_host_btn", "Message host")}
+            </button>
+
+            <button
+              type="button"
+              onClick={onOpenCancel}
+              className="flex min-h-10 w-full items-center justify-center rounded-lg border border-red-200 bg-white px-4 text-sm font-medium text-red-600 hover:bg-red-50 hover:border-red-300 transition-colors cursor-pointer"
+            >
+              {t("booking_details_withdraw_request", "Withdraw request")}
+            </button>
+          </>
+        )}
+      </div>
+    </aside>
+  );
+}

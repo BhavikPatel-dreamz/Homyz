@@ -1,0 +1,11 @@
+[Unit]
+Description=Homyz daily Guest Favorite evaluation
+After=default.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/homyz
+EnvironmentFile=-%h/homyz/.env
+ExecStart=/usr/bin/env bash %h/homyz/scripts/deploy/run-guest-favorite-evaluation.sh
+TimeoutStartSec=30min
+SyslogIdentifier=homyz-guest-favorite-evaluation

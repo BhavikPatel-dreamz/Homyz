@@ -1,0 +1,2585 @@
+import { AppError } from "@/lib/api/errors";
+import type { AuthUser } from "@/lib/auth/types";
+import { assertOwnership, authorize } from "@/lib/permissions/authorize";
+import { assertHostPermission } from "@/lib/permissions/host-permissions-server";
+import { prisma } from "@/lib/db/prisma";
+import { bookingDateKey, parseBookingDate, shiftBookingDateKey } from "@/lib/booking/booking-date";
+import { deleteCache, getCache, getCounter, getOrSetCache, incrCounter, setCache } from "@/lib/redis/cache";
+import { invalidateListingCache } from "@/lib/redis/invalidation";
+import { hashFilters, keys } from "@/lib/redis/keys";
+import type {
+  CreateListingInput,
+  UpdateListingInput,
+} from "@/lib/validation/listing";
+import { BookingStatus, ListingCoHostStatus, ListingStatus, ReviewDirection, Role } from "@/generated/prisma/enums";
+import { Prisma, type Listing } from "@/generated/prisma/client";
+import { getExpiryThresholdDate, isBookingRequestExpired } from "@/lib/booking/booking-expiry";
+import { validateStayAvailability } from "@/lib/booking/availability";
+import { validatePublicListingSearchFilters } from "@/lib/validation/public-listing-search";
+
+import { auditService } from "./audit.service";
+import { qualificationService } from "./qualification.service";
+import {
+  reviveListingDTO,
+  hostListingCardSelect,
+  publicListingCardSelect,
+  toPublicListingCardDTO,
+  toListingDTO,
+  toPublicListingDTO,
+  type ListingDTO,
+  type HostListingCardDTO,
+  type PublicListingCardRecord,
+  type PublicListingCardDTO,
+  type PublicListingDTO,
+  type ListingReviewSummary,
+} from "./mappers";
+import { normalizeAmenities } from "@/lib/constants/amenities";
+import { LANGUAGE_OPTIONS } from "@/lib/utils/language-options";
+import { normalizeSlug } from "@/lib/utils/slug";
+import { deleteManagedMediaUrl, deleteManagedMediaUrls } from "@/lib/storage/media";
+import { normalizePhotoRoomAssignments } from "@/lib/listing/photo-room-assignments";
+import { bookingModePersistence, resolveBookingMode } from "@/lib/booking/booking-mode";
+import { calculateDistance } from "@/lib/location/places-search";
+import { forwardGeocodeQuery } from "@/lib/location/places-provider";
+import {
+  compareReviewSortCandidates,
+  type PublicListingSort,
+  type ReviewSortCandidate,
+} from "@/lib/listings/public-sort";
+
+// Cache TTLs (seconds). Deliberately distinct — a single listing changes rarely,
+// the paginated catalogue turns over faster (spec §13/§14). Freshly compiled with generated Prisma client.
+const LISTING_TTL = 300;
+const LISTINGS_LIST_TTL = 120;
+// Public detail pages are read-heavy. Cache the fully sanitized payload for a
+// short window; the existing public-listing version counter immediately
+// invalidates it whenever listing or review data changes.
+const PUBLIC_LISTING_DETAIL_TTL = 60;
+// Only shallow pages of the public catalogue are cached; deep pagination is rare
+// and would bloat the keyspace, so it falls straight through to the DB.
+const MAX_CACHED_LIST_SKIP = 200;
+const REQUIRED_SAFETY_RESPONSES = [
+  "SECURITY_CAMERA",
+  "NOISE_MONITOR",
+  "WEAPONS",
+] as const;
+
+// These fields are part of the listing a reviewer approves. Availability-only
+// changes deliberately do not interrupt a live listing.
+const REAPPROVAL_FIELDS = new Set<keyof UpdateListingInput>([
+  "title", "description", "descriptionSections", "price", "smartPricing",
+  "smartPricingMinPrice", "smartPricingMaxPrice", "hostingType", "placeCategory",
+  "propertyType", "listingType", "locationSearch", "shortAddress", "address",
+  "neighborhoodDescription", "gettingAround", "apartment", "city", "district",
+  "postalCode", "country", "latitude", "longitude", "showExactLocation", "guests",
+  "bedrooms", "beds", "bathrooms", "propertySize", "propertySizeUnit",
+  "listingFloor", "totalFloors", "yearBuilt", "yearRenovated", "privateEntrance",
+  "elevatorAvailable", "stairsRequired", "rooms", "fullBathrooms", "halfBathrooms",
+  "privateBathrooms", "sharedBathrooms", "parkingAvailable", "parkingType",
+  "parkingSpaces", "parkingReservation", "guestAccess", "photos", "photoRoomAssignments", "highlights",
+  "amenities", "safetyDisclosures", "safetyEquipment", "safetyHazards",
+  "accessibilityFeatures", "accessibilityDetails", "views", "locationFeatures",
+  "houseRules", "petsAllowed", "maxPets", "petFee", "petRestrictions", "dogsAllowed",
+  "catsAllowed", "smokingAllowed", "smokingLocation", "eventsAllowed", "childrenAllowed",
+  "infantsAllowed", "photographyAllowed", "quietHours", "quietHoursStart", "quietHoursEnd",
+  "additionalRules", "checkInMethod", "checkInStart", "checkInEnd", "checkOutTime",
+  "directions", "parkingInstructions", "checkInInstructions", "checkOutInstructions",
+  "houseManual", "wifiNetwork", "wifiPassword", "doorCode", "lockboxCode",
+  "cancellationPolicy", "longTermCancellationPolicy", "bookingMessage", "requireProfilePhoto",
+  "requireGoodTrackRecord", "bookingApprovalMode", "minNights", "maxNights",
+  "advanceNotice", "sameDayCutoff", "allowSameDayRequests", "instantBook",
+  "cleaningFee", "securityDeposit", "weekendPrice", "weekendPremium", "discounts",
+]);
+
+function requiresReapproval(input: UpdateListingInput): boolean {
+  return Object.keys(input).some((key) => REAPPROVAL_FIELDS.has(key as keyof UpdateListingInput));
+}
+
+function isSaudiArabia(country: string | null | undefined): boolean {
+  const value = country?.trim().toUpperCase() ?? "";
+  return value === "SA" || value === "KSA" || value.includes("SAUDI");
+}
+
+export type ListingPublishReadiness = {
+  publishable: boolean;
+  missing: string[];
+};
+
+function toPublicHostProfile(value: unknown): Record<string, unknown> | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const profile = value as Record<string, unknown>;
+  const promptSource = profile.prompts && typeof profile.prompts === "object" && !Array.isArray(profile.prompts)
+    ? profile.prompts as Record<string, unknown> : {};
+  const list = (input: unknown) => Array.isArray(input)
+    ? input.filter((item): item is string => typeof item === "string").slice(0, 20) : [];
+  const promptEntries: Array<[string, string | string[]]> = [];
+  for (const key of ["homeUnique", "guestsShouldKnow", "hobbies", "education", "perfectGuest"]) {
+      const value = promptSource[key];
+      if (typeof value === "string" && value.trim()) {
+        promptEntries.push([key, value.trim()]);
+        continue;
+      }
+      const values = list(value);
+      if (values.length) promptEntries.push([key, values]);
+  }
+  const prompts = Object.fromEntries(promptEntries);
+  const languages = list(profile.languages);
+  if (!languages.length && typeof profile.languages === "string" && profile.languages.trim()) {
+    languages.push(profile.languages.trim().slice(0, 300));
+  }
+  const profileDetails = Object.fromEntries(
+    [
+      "whereIWantToGo", "uselessSkill", "myWork", "funFact", "favoriteSong",
+      "obsessedWith", "pets", "bioTitle", "decadeBorn", "whereILive", "school",
+      "spendTooMuchTime", "breakfast",
+    ].filter((key) => typeof profile[key] === "string" && (profile[key] as string).trim())
+      .map((key) => [key, (profile[key] as string).trim().slice(0, 300)]),
+  );
+  return {
+    ...(typeof profile.bio === "string" ? { bio: profile.bio } : {}),
+    ...(Object.keys(prompts).length ? { prompts } : {}),
+    ...profileDetails,
+    languages,
+    interests: list(profile.interests),
+  };
+}
+
+function roundRating(value: number | null): number | null {
+  return value === null ? null : Math.round(value * 100) / 100;
+}
+
+export async function getPublishedReviewSummaries(listingIds: string[]): Promise<Map<string, ListingReviewSummary>> {
+  if (!listingIds.length) return new Map();
+  const summaries = await prisma.review.groupBy({
+    by: ["listingId"],
+    where: {
+      listingId: { in: listingIds },
+      status: "PUBLISHED",
+      direction: ReviewDirection.GUEST_TO_PROPERTY,
+    },
+    _avg: { rating: true },
+    _count: { _all: true },
+  }) as Array<{ listingId: string; _avg: { rating: number | null }; _count: { _all: number } }>;
+  return new Map<string, ListingReviewSummary>(summaries.map((summary) => [summary.listingId, {
+    averageRating: roundRating(summary._avg.rating),
+    totalCount: summary._count._all,
+  }]));
+}
+
+async function mapCardsWithReviewSummaries(
+  items: PublicListingCardRecord[],
+  pricingOptions?: { checkIn?: string | null; checkOut?: string | null; guests?: number | null },
+): Promise<PublicListingCardDTO[]> {
+  if (!items.length) return [];
+  const byListingId = await getPublishedReviewSummaries(items.map((item) => item.id));
+  return items.map((item) => toPublicListingCardDTO(
+    { ...item, reviewSummary: byListingId.get(item.id) },
+    pricingOptions,
+  ));
+}
+
+/**
+ * Resolves a small, ordered batch of current public card DTOs. This is used by
+ * client-side history surfaces so saved snapshots never become an independent
+ * source of truth for Guest Favorite or Superhost badges.
+ */
+async function getPublicCardsByIds(listingIds: string[]): Promise<PublicListingCardDTO[]> {
+  const ids = [...new Set(listingIds.filter((id) => typeof id === "string" && id.trim()))].slice(0, 12);
+  if (!ids.length) return [];
+
+  const records = await prisma.listing.findMany({
+    where: {
+      id: { in: ids },
+      published: true,
+      status: ListingStatus.ACTIVE,
+      isPaused: false,
+      deletedAt: null,
+    },
+    select: publicListingCardSelect,
+  });
+  const cardsById = new Map((await mapCardsWithReviewSummaries(records)).map((card) => [card.id, card]));
+  return ids.flatMap((id) => {
+    const card = cardsById.get(id);
+    return card ? [card] : [];
+  });
+}
+
+function getPublishReadiness(listing: {
+  propertyType: string | null;
+  listingType: string | null;
+  address: string | null;
+  city: string | null;
+  country: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  guests: number;
+  bedrooms: number;
+  beds: number;
+  bathrooms: number;
+  price: number;
+  weekdayBasePrice?: number | null;
+  weekendPrice: number | null;
+  photos: string[];
+  title: string;
+  description: string;
+  highlights: string[];
+  safetyDisclosures: string[];
+}): ListingPublishReadiness {
+  const missing: string[] = [];
+  if (!listing.propertyType) missing.push("propertyType");
+  if (!listing.listingType) missing.push("listingType");
+  if (!listing.address || !listing.city || !listing.country) missing.push("address");
+  if (listing.latitude === null || listing.longitude === null) missing.push("coordinates");
+  if (listing.guests < 1 || listing.bedrooms < 0 || listing.beds < 1 || listing.bathrooms < 0) {
+    missing.push("capacity");
+  }
+  const effectiveWeekday = (listing as any).weekdayBasePrice ?? listing.price;
+  if (!effectiveWeekday || effectiveWeekday <= 0) missing.push("weekdayPrice");
+  if (!listing.weekendPrice || listing.weekendPrice <= 0) missing.push("weekendPrice");
+  if (listing.photos.length < 5) missing.push("photos");
+  if (listing.title.trim().length < 3 || listing.title.length > 50) missing.push("title");
+  if (listing.description.trim().length < 10 || listing.description.length > 5000) missing.push("description");
+  if (listing.highlights.length > 3) missing.push("highlights");
+
+  // Safety disclosures are optional - no validation required
+  // Hosts can choose to answer or skip them entirely
+
+  return { publishable: missing.length === 0, missing };
+}
+
+/** Returns true when access comes from an accepted co-host assignment. */
+async function assertListingAccess(actor: AuthUser, listingId: string, hostId: string): Promise<boolean> {
+  if (actor.role === Role.ADMIN || hostId === actor.id) return false;
+
+  const assignment = await prisma.listingCoHost.findFirst({
+    where: {
+      listingId,
+      userId: actor.id,
+      status: ListingCoHostStatus.ACCEPTED,
+    },
+    select: { id: true },
+  });
+  if (!assignment) {
+    throw AppError.forbidden("Only the listing owner or an accepted co-host can access this listing");
+  }
+  return true;
+}
+
+async function queryList(opts: {
+  skip: number;
+  take: number;
+  publishedOnly?: boolean;
+}): Promise<{ items: PublicListingCardDTO[]; total: number }> {
+  const where = opts.publishedOnly === false
+    ? {}
+    : { published: true, status: ListingStatus.ACTIVE, isPaused: false, deletedAt: null };
+  const [items, total] = await Promise.all([
+    prisma.listing.findMany({
+      where,
+      skip: opts.skip,
+      take: opts.take,
+      orderBy: { createdAt: "desc" },
+      select: publicListingCardSelect,
+    }),
+    prisma.listing.count({ where }),
+  ]);
+  return { items: await mapCardsWithReviewSummaries(items), total };
+}
+
+// Public catalogue — published & active listings only by default.
+async function list(opts: {
+  skip: number;
+  take: number;
+  publishedOnly?: boolean;
+}): Promise<{ items: PublicListingCardDTO[]; total: number }> {
+  const isPublicView = opts.publishedOnly !== false;
+  if (!isPublicView || opts.skip > MAX_CACHED_LIST_SKIP) {
+    return queryList(opts);
+  }
+  const version = await getCounter(keys.listingsPublicVersion());
+  return getOrSetCache(
+    keys.listingsPublic(version, opts.skip, opts.take),
+    () => queryList(opts),
+    {
+      ttl: LISTINGS_LIST_TTL,
+      revive: (cached) => ({
+        items: cached.items,
+        total: cached.total,
+      }),
+    },
+  );
+}
+
+export type SortBy = PublicListingSort;
+
+export type PublicSearchFilters = {
+  city?: string;
+  country?: string;
+  destination?: string;
+  placeName?: string;
+  lat?: number;
+  lng?: number;
+  radiusKm?: number;
+  placeId?: string;
+  locationType?: string;
+  checkIn?: Date | string;
+  checkOut?: Date | string;
+  guests?: number;
+  adults?: number;
+  children?: number;
+  infants?: number;
+  pets?: number;
+  propertyType?: string;
+  propertyTypes?: string[];
+  listingType?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  amenities?: string[];
+  accessibilityFeatures?: string[];
+  languages?: string[];
+  bedrooms?: number;
+  bathrooms?: number;
+  beds?: number;
+  instantBook?: boolean;
+  featured?: boolean;
+  sortBy?: SortBy;
+  /** Geo bounds for map-based search */
+  mapBounds?: {
+    neLat: number;
+    neLng: number;
+    swLat: number;
+    swLng: number;
+  };
+  /** Page number (1-based). Convenience alias — computes skip = (page-1)*take. */
+  page?: number;
+  /** Alias for take */
+  limit?: number;
+  /** Lightweight result-count request used while a filter draft is being edited. */
+  countOnly?: boolean;
+  /** The server-rendered listings page needs slider bounds; paginated API calls do not. */
+  includePriceRange?: boolean;
+  skip?: number;
+  take?: number;
+};
+
+export interface PublicSearchResult {
+  items: PublicListingCardDTO[];
+  total: number;
+  page?: number;
+  totalPages?: number;
+  priceRange?: { min: number; max: number };
+  appliedRadiusKm?: number;
+  originalRadiusKm?: number;
+  isRadiusExpanded?: boolean;
+  locationContextName?: string;
+  targetCoords?: { lat: number; lng: number };
+}
+
+/** Accept ISO IDs as well as legacy display names from older shared URLs. */
+function normalizeSearchLanguages(languages: string[] | undefined): string[] {
+  if (!languages?.length) return [];
+  const lookup = new Map<string, string>();
+  for (const language of LANGUAGE_OPTIONS) {
+    lookup.set(language.id.toLowerCase(), language.id);
+    lookup.set(language.name.toLowerCase(), language.id);
+    if (language.nativeName) lookup.set(language.nativeName.toLowerCase(), language.id);
+  }
+  return [...new Set(languages.map((value) => {
+    const trimmed = value.trim();
+    return lookup.get(trimmed.toLowerCase()) ?? trimmed;
+  }).filter(Boolean))];
+}
+
+function getGeoBoundsClause(lat: number, lng: number, radiusKm: number): Prisma.ListingWhereInput {
+  const r = radiusKm;
+  const deltaLat = r / 111;
+  const deltaLng = r / (111 * Math.cos((lat * Math.PI) / 180));
+  return {
+    latitude: { gte: lat - deltaLat, lte: lat + deltaLat },
+    longitude: { gte: lng - deltaLng, lte: lng + deltaLng },
+  };
+}
+
+async function searchPublicListings(
+  filters: PublicSearchFilters,
+): Promise<PublicSearchResult> {
+  // This service is used by both route handlers and server-rendered pages.
+  // Validate here as a defensive boundary so malformed dates never silently
+  // degrade into date-free browsing through a non-API caller.
+  filters = validatePublicListingSearchFilters(filters) as PublicSearchFilters;
+  let requestedStay: { checkIn: string; checkOut: string } | null = null;
+  let effectiveLat = typeof filters.lat === "number" && !isNaN(filters.lat) ? filters.lat : undefined;
+  let effectiveLng = typeof filters.lng === "number" && !isNaN(filters.lng) ? filters.lng : undefined;
+  let effectivePlaceName = filters.placeName || filters.destination || filters.city;
+  let effectiveLocationType = filters.locationType;
+
+  // Forward geocoding fallback if coordinates are missing but search text was provided
+  if ((effectiveLat === undefined || effectiveLng === undefined) && effectivePlaceName && effectivePlaceName.trim()) {
+    try {
+      const geocoded = await forwardGeocodeQuery(effectivePlaceName.trim());
+      if (geocoded && typeof geocoded.latitude === "number" && typeof geocoded.longitude === "number" && geocoded.latitude !== 0) {
+        effectiveLat = geocoded.latitude;
+        effectiveLng = geocoded.longitude;
+        effectivePlaceName = geocoded.name || effectivePlaceName;
+        effectiveLocationType = geocoded.locationType || effectiveLocationType;
+      }
+    } catch {}
+  }
+
+  const isLandmarkOrPoi =
+    effectiveLocationType === "landmark" ||
+    effectiveLocationType === "poi" ||
+    effectiveLocationType === "station" ||
+    effectiveLocationType === "airport" ||
+    effectiveLocationType === "beach" ||
+    effectiveLocationType === "mall" ||
+    effectiveLocationType === "university" ||
+    effectiveLocationType === "hospital";
+
+  const defaultInitialRadius = isLandmarkOrPoi ? 5 : 25;
+  const initialRadius = filters.radiusKm && filters.radiusKm > 0 ? filters.radiusKm : defaultInitialRadius;
+  let appliedRadius = initialRadius;
+  let isRadiusExpanded = false;
+
+  const baseClauses: Prisma.ListingWhereInput[] = [
+    { published: true },
+    { status: ListingStatus.ACTIVE },
+    { isPaused: false },
+    { deletedAt: null },
+  ];
+
+  // Pets policy
+  if (filters.pets && filters.pets > 0) {
+    baseClauses.push({
+      petsAllowed: true,
+      OR: [
+        { maxPets: null },
+        { maxPets: { gte: filters.pets } },
+      ],
+    });
+  }
+
+  // Guest capacity
+  const totalGuests = (filters.guests && filters.guests > 0)
+    ? filters.guests
+    : ((filters.adults ?? 0) + (filters.children ?? 0)) > 0
+    ? (filters.adults ?? 0) + (filters.children ?? 0)
+    : 0;
+  if (totalGuests > 0) {
+    baseClauses.push({ guests: { gte: totalGuests } });
+  }
+
+  if (filters.propertyTypes && filters.propertyTypes.length > 0) {
+    baseClauses.push({
+      propertyType: { in: filters.propertyTypes, mode: "insensitive" },
+    });
+  } else if (filters.propertyType && filters.propertyType.trim()) {
+    baseClauses.push({
+      propertyType: { equals: filters.propertyType.trim(), mode: "insensitive" },
+    });
+  }
+
+  if (filters.listingType && filters.listingType.trim()) {
+    const rawType = filters.listingType.trim().toUpperCase();
+    if (rawType === "ROOM") {
+      baseClauses.push({
+        listingType: { in: ["ROOM", "Private room", "Room", "Shared room"], mode: "insensitive" },
+      });
+    } else if (rawType === "ENTIRE_HOME" || rawType === "ENTIRE_PLACE") {
+      baseClauses.push({
+        listingType: { in: ["ENTIRE_HOME", "ENTIRE_PLACE", "Entire place", "Entire home"], mode: "insensitive" },
+      });
+    } else {
+      baseClauses.push({
+        listingType: { equals: filters.listingType.trim(), mode: "insensitive" },
+      });
+    }
+  }
+
+  // Keep price conditions separate. The filter UI needs an absolute range for
+  // the current search context, rather than a range narrowed by a previously
+  // applied price filter (otherwise its slider can never be expanded again).
+  const priceClauses: Prisma.ListingWhereInput[] = [];
+  if (typeof filters.minPrice === "number") {
+    priceClauses.push({ price: { gte: filters.minPrice } });
+  }
+
+  if (typeof filters.maxPrice === "number") {
+    priceClauses.push({ price: { lte: filters.maxPrice } });
+  }
+  baseClauses.push(...priceClauses);
+
+  if (filters.amenities && filters.amenities.length > 0) {
+    const canonicalAmenityIds = normalizeAmenities(filters.amenities);
+    if (canonicalAmenityIds.length > 0) {
+      if (canonicalAmenityIds.includes("self_check_in")) {
+        const otherAmenities = canonicalAmenityIds.filter((id) => id !== "self_check_in");
+        if (otherAmenities.length > 0) {
+          baseClauses.push({ amenities: { hasEvery: otherAmenities } });
+        }
+        baseClauses.push({
+          OR: [
+            { amenities: { has: "self_check_in" } },
+            { checkInMethod: { in: ["SMART_LOCK", "KEYPAD", "LOCKBOX"] } },
+            { highlights: { has: "Self check-in" } },
+          ],
+        });
+      } else {
+        baseClauses.push({ amenities: { hasEvery: canonicalAmenityIds } });
+      }
+    }
+  }
+
+  if (filters.accessibilityFeatures && filters.accessibilityFeatures.length > 0) {
+    baseClauses.push({
+      OR: [
+        { accessibilityFeatures: { hasSome: filters.accessibilityFeatures } },
+        { amenities: { hasSome: filters.accessibilityFeatures } },
+      ],
+    });
+  }
+
+  const languageIds = normalizeSearchLanguages(filters.languages);
+  if (languageIds.length > 0) {
+    // Hosts can set languages in either the listing's arrival-guide editor or
+    // their shared “About your host” profile. Treat either source as a match.
+    const hostProfileLanguageClauses: Prisma.ListingWhereInput[] = languageIds.map((languageId) => ({
+      host: {
+        publicProfile: {
+          path: ["languages"],
+          array_contains: [languageId],
+        },
+      },
+    }));
+    baseClauses.push({
+      OR: [
+        { languages: { hasSome: languageIds } },
+        ...hostProfileLanguageClauses,
+      ],
+    });
+  }
+
+  if (typeof filters.bedrooms === "number" && filters.bedrooms > 0) {
+    baseClauses.push({ bedrooms: { gte: filters.bedrooms } });
+  }
+  if (typeof filters.bathrooms === "number" && filters.bathrooms > 0) {
+    baseClauses.push({ bathrooms: { gte: filters.bathrooms } });
+  }
+  if (typeof filters.beds === "number" && filters.beds > 0) {
+    baseClauses.push({ beds: { gte: filters.beds } });
+  }
+  if (filters.instantBook === true) {
+    baseClauses.push({ instantBook: true, bookingApprovalMode: "INSTANT" });
+  }
+  if (filters.featured === true) {
+    baseClauses.push({ isFeatured: true });
+  }
+
+  // Geo bounds (map-based search)
+  if (filters.mapBounds) {
+    const { neLat, neLng, swLat, swLng } = filters.mapBounds;
+    baseClauses.push({
+      latitude: { gte: swLat, lte: neLat },
+      longitude: { gte: swLng, lte: neLng },
+    });
+  }
+
+  // Availability: exclude listings with overlapping bookings + blockedDates
+  if (filters.checkIn && filters.checkOut) {
+    const cIn = parseBookingDate(filters.checkIn);
+    const cOut = parseBookingDate(filters.checkOut);
+    if (!isNaN(cIn.getTime()) && !isNaN(cOut.getTime()) && cOut > cIn) {
+      requestedStay = { checkIn: bookingDateKey(cIn), checkOut: bookingDateKey(cOut) };
+      // 1. Confirmed / Active Pending bookings (unexpired date holds) — database relation filter with NOT EXISTS
+      const expiryThreshold = getExpiryThresholdDate();
+      baseClauses.push({
+        bookings: {
+          none: {
+            startDate: { lt: cOut },
+            endDate: { gt: cIn },
+            OR: [
+              { status: BookingStatus.CONFIRMED },
+              { status: BookingStatus.PENDING, createdAt: { gt: expiryThreshold } },
+            ],
+          },
+        },
+      });
+
+      // 2. Listing blockedDates
+      const requestedNights: string[] = [];
+      const cur = new Date(cIn);
+      while (cur < cOut) {
+        requestedNights.push(bookingDateKey(cur));
+        cur.setUTCDate(cur.getUTCDate() + 1);
+      }
+      if (requestedNights.length > 0) {
+        baseClauses.push({
+          NOT: {
+            blockedDates: {
+              hasSome: requestedNights,
+            },
+          },
+        });
+      }
+    }
+  }
+
+  const andClauses = [...baseClauses];
+
+  // Coordinate Search with Adaptive Radius Expansion
+  if (effectiveLat !== undefined && effectiveLng !== undefined) {
+    const initialGeoClause = getGeoBoundsClause(effectiveLat, effectiveLng, initialRadius);
+    if (filters.radiusKm && filters.radiusKm >= 25) {
+      appliedRadius = filters.radiusKm;
+      andClauses.push(initialGeoClause);
+    } else {
+      const initialCount = await prisma.listing.count({
+        where: { AND: [...baseClauses, initialGeoClause] },
+      });
+
+      if (initialCount >= 3 || initialRadius >= 50) {
+        appliedRadius = initialRadius;
+        andClauses.push(initialGeoClause);
+      } else {
+        // Expand radius: 10km -> 25km -> 50km
+        const tiers = [10, 25, 50].filter((t) => t > initialRadius);
+        let chosenTier = initialRadius;
+        for (const tier of tiers) {
+          const tierGeoClause = getGeoBoundsClause(effectiveLat, effectiveLng, tier);
+          const count = await prisma.listing.count({
+            where: { AND: [...baseClauses, tierGeoClause] },
+          });
+          chosenTier = tier;
+          if (count >= 3) break;
+        }
+        if (chosenTier > initialRadius) {
+          appliedRadius = chosenTier;
+          isRadiusExpanded = true;
+        }
+        andClauses.push(getGeoBoundsClause(effectiveLat, effectiveLng, appliedRadius));
+      }
+    }
+  } else if (filters.city && filters.city.trim()) {
+    // Text-based fallback when coordinates could not be resolved
+    const raw = filters.city.trim();
+    const parts = raw.split(/,\s*/).map((p) => p.trim()).filter(Boolean);
+    andClauses.push({
+      OR: [
+        { city: { contains: raw, mode: "insensitive" } },
+        { district: { contains: raw, mode: "insensitive" } },
+        { address: { contains: raw, mode: "insensitive" } },
+        { country: { contains: raw, mode: "insensitive" } },
+        { title: { contains: raw, mode: "insensitive" } },
+        ...parts.map((p) => ({ city: { contains: p, mode: "insensitive" as const } })),
+      ],
+    });
+  }
+
+  if (filters.country && filters.country.trim()) {
+    andClauses.push({
+      country: { contains: filters.country.trim(), mode: "insensitive" },
+    });
+  }
+
+  // Database range predicates above efficiently remove booking and blocked-date
+  // conflicts. Run the remaining host rules through the shared availability
+  // engine before pagination so counts and every result page stay authoritative.
+  if (requestedStay) {
+    const ruleCandidates: Array<{
+      id: string;
+      guests: number;
+      minNights: number;
+      maxNights: number;
+      advanceNotice: string;
+      sameDayCutoff: string;
+      allowSameDayRequests: boolean;
+      blockedDates: string[];
+      discounts: unknown;
+    }> = await prisma.listing.findMany({
+      // Keep availability eligibility independent of the optional price slider
+      // so the response's absolute price range can still expand again.
+      where: {
+        AND: priceClauses.length
+          ? andClauses.filter((clause) => !priceClauses.includes(clause))
+          : andClauses,
+      },
+      select: {
+        id: true,
+        guests: true,
+        minNights: true,
+        maxNights: true,
+        advanceNotice: true,
+        sameDayCutoff: true,
+        allowSameDayRequests: true,
+        blockedDates: true,
+        discounts: true,
+      },
+    });
+    const now = new Date();
+    const eligibleIds = ruleCandidates
+      .filter((listing) => validateStayAvailability({
+        listing,
+        checkIn: requestedStay!.checkIn,
+        checkOut: requestedStay!.checkOut,
+        guests: totalGuests || 1,
+        now,
+      }).available)
+      .map((listing) => listing.id);
+    andClauses.push({ id: { in: eligibleIds } });
+  }
+
+  const where: Prisma.ListingWhereInput = { AND: andClauses };
+  const availablePriceWhere: Prisma.ListingWhereInput = {
+    AND: priceClauses.length
+      ? andClauses.filter((clause) => !priceClauses.includes(clause))
+      : andClauses,
+  };
+
+  // Sort order
+  let orderBy: Prisma.ListingOrderByWithRelationInput[] = [
+    { isFeatured: "desc" },
+    { createdAt: "desc" },
+    { id: "asc" },
+  ];
+  switch (filters.sortBy) {
+    case "price_low":
+      orderBy = [{ price: "asc" }, { createdAt: "desc" }, { id: "asc" }];
+      break;
+    case "price_high":
+      orderBy = [{ price: "desc" }, { createdAt: "desc" }, { id: "asc" }];
+      break;
+    case "top_rated":
+    case "most_reviewed":
+    case "recommended":
+    default:
+      orderBy = [{ isFeatured: "desc" }, { createdAt: "desc" }, { id: "asc" }];
+  }
+
+  // Pagination
+  const take = filters.take ?? filters.limit ?? 20;
+  const page = filters.page ?? 1;
+  const skip = filters.skip ?? (page - 1) * take;
+  const includePriceRange = filters.includePriceRange !== false;
+
+  if (filters.countOnly) {
+    const total = await prisma.listing.count({ where });
+    return {
+      items: [],
+      total,
+      page,
+      totalPages: Math.ceil(total / take),
+      appliedRadiusKm: appliedRadius,
+      originalRadiusKm: initialRadius,
+      isRadiusExpanded,
+      locationContextName: effectivePlaceName || filters.city || undefined,
+      targetCoords: (effectiveLat !== undefined && effectiveLng !== undefined) ? { lat: effectiveLat, lng: effectiveLng } : undefined,
+    };
+  }
+
+  const hasDateFilter = Boolean(filters.checkIn && filters.checkOut);
+
+  const findSortedCards = async (): Promise<PublicListingCardDTO[]> => {
+    if (filters.sortBy !== "top_rated" && filters.sortBy !== "most_reviewed") {
+      const records = await prisma.listing.findMany({
+        where,
+        skip,
+        take,
+        orderBy,
+        select: publicListingCardSelect,
+      });
+      return mapCardsWithReviewSummaries(records, {
+        checkIn: requestedStay?.checkIn,
+        checkOut: requestedStay?.checkOut,
+        guests: totalGuests || 1,
+      });
+    }
+
+    const candidates: Array<{ id: string; isFeatured: boolean; createdAt: Date }> = await prisma.listing.findMany({
+      where,
+      select: { id: true, isFeatured: true, createdAt: true },
+    });
+    const summaries = await getPublishedReviewSummaries(candidates.map((candidate) => candidate.id));
+    const sortedCandidates: ReviewSortCandidate[] = candidates.map((candidate) => {
+      const summary = summaries.get(candidate.id);
+      return {
+        ...candidate,
+        averageRating: summary?.averageRating ?? null,
+        reviewsCount: summary?.totalCount ?? 0,
+      };
+    });
+    sortedCandidates.sort((left, right) =>
+      compareReviewSortCandidates(left, right, filters.sortBy as "top_rated" | "most_reviewed"),
+    );
+
+    const pageIds = sortedCandidates.slice(skip, skip + take).map((candidate) => candidate.id);
+    if (!pageIds.length) return [];
+
+    const pageRecords: PublicListingCardRecord[] = await prisma.listing.findMany({
+      where: { AND: [where, { id: { in: pageIds } }] },
+      select: publicListingCardSelect,
+    });
+    const recordsById = new Map(pageRecords.map((record) => [record.id, record]));
+    return pageIds.flatMap((id) => {
+      const record = recordsById.get(id);
+      if (!record) return [];
+      return [toPublicListingCardDTO(
+        { ...record, reviewSummary: summaries.get(id) },
+        {
+          checkIn: requestedStay?.checkIn,
+          checkOut: requestedStay?.checkOut,
+          guests: totalGuests || 1,
+        },
+      )];
+    });
+  };
+
+  const cacheVersion = await getCounter(keys.listingsPublicVersion());
+  const filterHash = hashFilters({
+    lat: effectiveLat ?? "",
+    lng: effectiveLng ?? "",
+    radiusKm: appliedRadius,
+    city: filters.city ?? "",
+    country: filters.country ?? "",
+    checkIn: filters.checkIn ?? "",
+    checkOut: filters.checkOut ?? "",
+    guests: totalGuests,
+    pets: filters.pets ?? 0,
+    propertyType: filters.propertyType ?? "",
+    propertyTypes: (filters.propertyTypes ?? []).slice().sort().join(","),
+    listingType: filters.listingType ?? "",
+    minPrice: filters.minPrice ?? 0,
+    maxPrice: filters.maxPrice ?? 0,
+    amenities: (filters.amenities ?? []).slice().sort().join(","),
+    accessibilityFeatures: (filters.accessibilityFeatures ?? []).slice().sort().join(","),
+    languages: languageIds.slice().sort().join(","),
+    bedrooms: filters.bedrooms ?? 0,
+    bathrooms: filters.bathrooms ?? 0,
+    beds: filters.beds ?? 0,
+    instantBook: filters.instantBook ?? false,
+    featured: filters.featured ?? false,
+    sortBy: filters.sortBy ?? "recommended",
+    includePriceRange,
+    mapBounds: filters.mapBounds
+      ? `${filters.mapBounds.swLat},${filters.mapBounds.swLng},${filters.mapBounds.neLat},${filters.mapBounds.neLng}`
+      : "",
+    skip,
+    take,
+  });
+  const cacheKey = `homyz:listings:search:card:v2:v${cacheVersion}:${filterHash}:s${skip}:t${take}`;
+  type CachePayload = {
+    items: PublicListingCardDTO[];
+    total: number;
+    priceRange?: { min: number; max: number };
+    appliedRadiusKm: number;
+    originalRadiusKm: number;
+    isRadiusExpanded: boolean;
+    locationContextName?: string;
+    targetCoords?: { lat: number; lng: number };
+  };
+  const cached = await getCache<CachePayload>(cacheKey);
+  if (cached) {
+    return { ...cached, page, totalPages: Math.ceil(cached.total / take) };
+  }
+
+  const [items, total, priceAgg] = await Promise.all([
+    findSortedCards(),
+    prisma.listing.count({ where }),
+    includePriceRange
+      ? prisma.listing.aggregate({ where: availablePriceWhere, _min: { price: true }, _max: { price: true } })
+      : Promise.resolve(null),
+  ]);
+  const priceRange = priceAgg
+    ? { min: priceAgg._min.price ?? 0, max: priceAgg._max.price ?? 0 }
+    : undefined;
+  let mappedItems: PublicListingCardDTO[] = items;
+
+  if (effectiveLat !== undefined && effectiveLng !== undefined) {
+    mappedItems = mappedItems.map((dto: PublicListingCardDTO): PublicListingCardDTO => {
+      if (dto.latitude != null && dto.longitude != null) {
+        const dist = calculateDistance(effectiveLat!, effectiveLng!, dto.latitude, dto.longitude);
+        return { ...dto, distanceKm: Math.round(dist * 10) / 10 };
+      }
+      return dto;
+    });
+    if (!filters.sortBy || filters.sortBy === "recommended") {
+      mappedItems.sort((a: PublicListingCardDTO, b: PublicListingCardDTO) => {
+        if (a.distanceKm != null && b.distanceKm != null) return a.distanceKm - b.distanceKm;
+        if (a.distanceKm != null) return -1;
+        if (b.distanceKm != null) return 1;
+        return 0;
+      });
+    }
+  }
+
+  const payload: CachePayload = {
+    items: mappedItems,
+    total,
+    priceRange: priceRange,
+    appliedRadiusKm: appliedRadius,
+    originalRadiusKm: initialRadius,
+    isRadiusExpanded,
+    locationContextName: effectivePlaceName || filters.city || undefined,
+    targetCoords: (effectiveLat !== undefined && effectiveLng !== undefined) ? { lat: effectiveLat, lng: effectiveLng } : undefined,
+  };
+  await setCache(cacheKey, payload, hasDateFilter ? 60 : 120);
+  return { ...payload, page, totalPages: Math.ceil(total / take) };
+}
+
+type PublicListingDetail = PublicListingDTO & {
+  isGuestFavorite: boolean;
+  host?: {
+    id: string;
+    name: string | null;
+    image: string | null;
+    createdAt: Date;
+    publicProfile: Record<string, unknown> | null;
+    isSuperhost: boolean;
+    rating?: number | null;
+    reviewsCount?: number;
+  };
+};
+
+async function getPublicListingDetail(
+  where: Prisma.ListingWhereUniqueInput,
+): Promise<PublicListingDetail> {
+  const listing = await prisma.listing.findUnique({
+    where,
+    include: {
+      host: {
+        select: {
+          id: true,
+          name: true,
+          image: true,
+          createdAt: true,
+          publicProfile: true,
+          isSuperhost: true,
+        },
+      },
+    },
+  });
+
+  if (!listing || !listing.published || listing.status !== ListingStatus.ACTIVE || listing.isPaused || listing.deletedAt) {
+    throw AppError.notFound("Listing is not available or does not exist");
+  }
+
+  // These independent aggregates are latency-bound against the database, so
+  // run them together rather than making the public page wait for each one.
+  const [reviewSummary, hostReviewSummary] = await Promise.all([
+    prisma.review.aggregate({
+      where: {
+        listingId: listing.id,
+        status: "PUBLISHED",
+        direction: ReviewDirection.GUEST_TO_PROPERTY,
+      },
+      _avg: { rating: true },
+      _count: { _all: true },
+    }),
+    listing.hostId
+      ? prisma.review.aggregate({
+          where: {
+            listing: { hostId: listing.hostId },
+            status: "PUBLISHED",
+            direction: ReviewDirection.GUEST_TO_PROPERTY,
+          },
+          _avg: { rating: true },
+          _count: { _all: true },
+        })
+      : Promise.resolve({ _avg: { rating: null }, _count: { _all: 0 } }),
+  ]);
+  const propertyRating = roundRating(reviewSummary._avg.rating);
+  const propertyReviewCount = reviewSummary._count._all;
+  const isGuestFavorite = qualificationService.isGuestFavorite(listing);
+
+  const isSuperhost = qualificationService.isSuperhost(listing.host);
+
+  const publicDTO = toPublicListingDTO(listing);
+  return {
+    ...publicDTO,
+    rating: propertyRating,
+    reviewsCount: propertyReviewCount,
+    isGuestFavorite,
+    host: listing.host
+      ? {
+          id: listing.host.id,
+          name: listing.host.name,
+          image: listing.host.image,
+          createdAt: listing.host.createdAt,
+          publicProfile: toPublicHostProfile(listing.host.publicProfile),
+          isSuperhost,
+          rating: roundRating(hostReviewSummary._avg.rating),
+          reviewsCount: hostReviewSummary._count._all,
+        }
+      : undefined,
+  };
+}
+
+function revivePublicListingDetail(cached: PublicListingDetail): PublicListingDetail {
+  return {
+    ...cached,
+    createdAt: new Date(cached.createdAt),
+    updatedAt: new Date(cached.updatedAt),
+    host: cached.host
+      ? { ...cached.host, createdAt: new Date(cached.host.createdAt) }
+      : undefined,
+  };
+}
+
+async function getCachedPublicListingDetail(
+  cacheIdentity: string,
+  where: Prisma.ListingWhereUniqueInput,
+): Promise<PublicListingDetail> {
+  const version = await getCounter(keys.listingsPublicVersion());
+  return getOrSetCache(
+    `homyz:listings:detail:v1:v${version}:${cacheIdentity}`,
+    () => getPublicListingDetail(where),
+    { ttl: PUBLIC_LISTING_DETAIL_TTL, revive: revivePublicListingDetail },
+  );
+}
+
+async function getPublicListingById(id: string): Promise<PublicListingDetail> {
+  return getCachedPublicListingDetail(`id:${id}`, { id });
+}
+
+async function getPublicListingBySlug(slug: string): Promise<PublicListingDetail> {
+  const normalized = normalizeSlug(slug);
+  if (!normalized) {
+    throw AppError.notFound("Listing is not available or does not exist");
+  }
+
+  return getCachedPublicListingDetail(`slug:${normalized}`, { customSlug: normalized });
+}
+
+async function getById(id: string): Promise<ListingDTO> {
+  return getOrSetCache(
+    keys.listing(id),
+    async () => {
+      const listing = await prisma.listing.findUnique({ where: { id } });
+      if (!listing || listing.deletedAt) throw AppError.notFound("Listing not found");
+      return toListingDTO(listing);
+    },
+    { ttl: LISTING_TTL, revive: reviveListingDTO },
+  );
+}
+
+async function getForOwner(actor: AuthUser, id: string): Promise<ListingDTO> {
+  const listing = await getById(id);
+  const isCoHost = await assertListingAccess(actor, id, listing.hostId);
+  if (!isCoHost && actor.role === Role.HOST) {
+    await assertHostPermission(actor.id, "listing.view");
+  }
+  return listing;
+}
+
+/** Raw listing reads/writes used by the internal admin workspace. These stay
+ * uncached because admins need the current moderation state. */
+async function getAdminListingForUpdate(id: string) {
+  return prisma.listing.findUnique({ where: { id } });
+}
+
+async function updateForAdmin(id: string, data: Prisma.ListingUpdateInput) {
+  return prisma.listing.update({ where: { id }, data });
+}
+
+async function listForAdminDashboard(options?: { take?: number; skip?: number }) {
+  const [listings, totalCount, publishedCount, featuredCount, pausedCount] = await Promise.all([
+    prisma.listing.findMany({
+      where: { deletedAt: null },
+      ...(options?.take !== undefined ? { take: options.take } : {}),
+      ...(options?.skip !== undefined ? { skip: options.skip } : {}),
+      orderBy: { createdAt: "desc" },
+      include: {
+        host: { select: { id: true, name: true, email: true, image: true } },
+        _count: { select: { bookings: true } },
+      },
+    }),
+    prisma.listing.count({ where: { deletedAt: null } }),
+    prisma.listing.count({ where: { deletedAt: null, published: true } }),
+    prisma.listing.count({ where: { deletedAt: null, isFeatured: true } }),
+    prisma.listing.count({ where: { deletedAt: null, isPaused: true } }),
+  ]);
+
+  return { listings, totalCount, publishedCount, featuredCount, pausedCount };
+}
+
+async function getAdminListingDetail(id: string) {
+  const listing = await prisma.listing.findUnique({
+    where: { id },
+    include: {
+      host: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          image: true,
+          phone: true,
+          createdAt: true,
+          publicProfile: true,
+          hostRegistrations: {
+            orderBy: { updatedAt: "desc" },
+            take: 1,
+            select: {
+              status: true,
+              complianceStatus: true,
+              documents: {
+                select: { id: true, documentType: true, fileUrl: true, status: true, rejectionReason: true },
+                orderBy: { uploadedAt: "desc" },
+              },
+            },
+          },
+        },
+      },
+      coHosts: {
+        orderBy: { invitedAt: "desc" },
+        include: { user: { select: { id: true, name: true, image: true } } },
+      },
+      bookings: {
+        where: { status: BookingStatus.CONFIRMED },
+        select: { id: true },
+      },
+      _count: { select: { bookings: true } },
+      guidebookListings: {
+        include: {
+          guidebook: {
+            include: {
+              items: { orderBy: { sortOrder: "asc" } },
+              listings: { include: { listing: { select: { id: true, title: true, city: true, photos: true } } } },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!listing) return null;
+
+  const [auditHistory, reviewer, approvedBy] = await Promise.all([
+    auditService.listForResource("Listing", listing.id, { limit: 10 }),
+    listing.reviewerId
+      ? prisma.user.findUnique({ where: { id: listing.reviewerId }, select: { id: true, name: true, email: true } })
+      : null,
+    listing.approvedById
+      ? prisma.user.findUnique({ where: { id: listing.approvedById }, select: { id: true, name: true, email: true } })
+      : null,
+  ]);
+
+  return {
+    listing,
+    auditLogs: auditHistory.items,
+    auditLogTotal: auditHistory.total,
+    reviewer,
+    approvedBy,
+  };
+}
+
+async function getEditorWorkspaceListing(id: string) {
+  return prisma.listing.findUnique({
+    where: { id },
+    include: {
+      host: { select: { id: true, name: true, email: true, image: true, createdAt: true, publicProfile: true } },
+      coHosts: {
+        orderBy: { invitedAt: "desc" },
+        include: { user: { select: { id: true, name: true, image: true } } },
+      },
+      bookings: {
+        where: { status: BookingStatus.CONFIRMED },
+        select: { id: true },
+      },
+    },
+  });
+}
+
+type HostListingOptions = {
+  skip?: number;
+  take?: number | null;
+  page?: number;
+  limit?: number;
+  tab?: string;
+  status?: string;
+  search?: string;
+  cardOnly?: false;
+};
+
+type HostListingCardOptions = Omit<HostListingOptions, "cardOnly"> & {
+  cardOnly: true;
+};
+
+type HostListingResult<T> = {
+  items: T[];
+  total: number;
+  totalCount: number;
+  page: number;
+  totalPages: number;
+  hasMore: boolean;
+  counts: Record<string, number>;
+};
+
+// Listings a host owns or has accepted a co-host role for.
+function listForHost(
+  actor: AuthUser,
+  opts: HostListingCardOptions,
+): Promise<HostListingResult<HostListingCardDTO>>;
+function listForHost(
+  actor: AuthUser,
+  opts?: HostListingOptions,
+): Promise<HostListingResult<ListingDTO>>;
+async function listForHost(
+  actor: AuthUser,
+  opts?: HostListingOptions | HostListingCardOptions,
+): Promise<HostListingResult<ListingDTO | HostListingCardDTO>> {
+  authorize(actor, [Role.HOST, Role.USER, Role.ADMIN]);
+  if (actor.role === Role.HOST) {
+    await assertHostPermission(actor.id, "listing.view");
+  }
+
+  const baseWhere: Prisma.ListingWhereInput = actor.role === Role.ADMIN
+    ? { hostId: actor.id, deletedAt: null }
+    : {
+        deletedAt: null,
+        OR: [
+          { hostId: actor.id },
+          {
+            coHosts: {
+              some: {
+                userId: actor.id,
+                status: ListingCoHostStatus.ACCEPTED,
+              },
+            },
+          },
+        ],
+      };
+
+  const tab = (opts?.tab || opts?.status || "ALL").toUpperCase();
+  const whereConditions: Prisma.ListingWhereInput[] = [baseWhere];
+
+  if (tab === "ACTIVE") {
+    whereConditions.push({
+      isPaused: false,
+      OR: [
+        { status: ListingStatus.ACTIVE },
+        { published: true },
+      ],
+    });
+  } else if (tab === "PENDING_REVIEW") {
+    whereConditions.push({ status: ListingStatus.PENDING_REVIEW });
+  } else if (tab === "CHANGES_REQUESTED") {
+    whereConditions.push({ status: ListingStatus.CHANGES_REQUESTED });
+  } else if (tab === "DRAFT") {
+    whereConditions.push({
+      status: { in: [ListingStatus.DRAFT, ListingStatus.IN_PROGRESS] },
+    });
+  } else if (tab === "PAUSED") {
+    whereConditions.push({ isPaused: true });
+  } else if (tab === "REJECTED") {
+    whereConditions.push({ status: ListingStatus.REJECTED });
+  }
+
+  const search = opts?.search?.trim();
+  if (search) {
+    whereConditions.push({
+      OR: [
+        { title: { contains: search, mode: "insensitive" } },
+        { city: { contains: search, mode: "insensitive" } },
+        { district: { contains: search, mode: "insensitive" } },
+        { country: { contains: search, mode: "insensitive" } },
+      ],
+    });
+  }
+
+  const where: Prisma.ListingWhereInput = {
+    AND: whereConditions,
+  };
+
+  const limit = opts?.limit ?? (opts?.take === null ? null : (opts?.take ?? 12));
+  const page = Math.max(1, opts?.page ?? (opts?.skip !== undefined && limit ? Math.floor(opts.skip / limit) + 1 : 1));
+  const skip = opts?.skip !== undefined ? opts.skip : (limit ? (page - 1) * limit : 0);
+  const take = limit === null ? undefined : limit;
+
+  const orderBy: Prisma.ListingOrderByWithRelationInput[] = [
+    { createdAt: "desc" },
+    { id: "desc" },
+  ];
+
+  const itemQuery = opts?.cardOnly
+    ? prisma.listing.findMany({
+        where,
+        skip,
+        ...(take !== undefined ? { take } : {}),
+        orderBy,
+        select: hostListingCardSelect,
+      })
+    : prisma.listing.findMany({
+        where,
+        skip,
+        ...(take !== undefined ? { take } : {}),
+        orderBy,
+      });
+
+  const [rawItems, total, statusGroups] = await Promise.all([
+    itemQuery,
+    prisma.listing.count({ where }),
+    prisma.listing.groupBy({
+      by: ["status", "published", "isPaused"],
+      where: baseWhere,
+      _count: { id: true },
+    }),
+  ]);
+
+  const tabCounts: Record<string, number> = {
+    ALL: 0,
+    ACTIVE: 0,
+    PENDING_REVIEW: 0,
+    CHANGES_REQUESTED: 0,
+    DRAFT: 0,
+    PAUSED: 0,
+    REJECTED: 0,
+  };
+
+  for (const group of statusGroups) {
+    const cnt = group._count.id;
+    tabCounts.ALL += cnt;
+    if (group.isPaused) {
+      tabCounts.PAUSED += cnt;
+    }
+    if (!group.isPaused && (group.status === ListingStatus.ACTIVE || group.published)) {
+      tabCounts.ACTIVE += cnt;
+    }
+    if (group.status === ListingStatus.PENDING_REVIEW) {
+      tabCounts.PENDING_REVIEW += cnt;
+    }
+    if (group.status === ListingStatus.CHANGES_REQUESTED) {
+      tabCounts.CHANGES_REQUESTED += cnt;
+    }
+    if (group.status === ListingStatus.DRAFT || group.status === ListingStatus.IN_PROGRESS) {
+      tabCounts.DRAFT += cnt;
+    }
+    if (group.status === ListingStatus.REJECTED) {
+      tabCounts.REJECTED += cnt;
+    }
+  }
+
+  const totalPages = limit ? Math.max(1, Math.ceil(total / limit)) : 1;
+  const hasMore = page < totalPages;
+
+  if (opts?.cardOnly) {
+    return {
+      items: rawItems as HostListingCardDTO[],
+      total,
+      totalCount: total,
+      page,
+      totalPages,
+      hasMore,
+      counts: tabCounts,
+    };
+  }
+
+  const items = rawItems as Listing[];
+  return {
+    items: items.map(toListingDTO),
+    total,
+    totalCount: total,
+    page,
+    totalPages,
+    hasMore,
+    counts: tabCounts,
+  };
+}
+
+async function create(
+  actor: AuthUser,
+  input: CreateListingInput,
+): Promise<ListingDTO> {
+  authorize(actor, [Role.HOST, Role.USER, Role.ADMIN]);
+  if (actor.role === Role.HOST) {
+    await assertHostPermission(actor.id, "listing.create");
+  }
+
+  // Automatically promote regular USER to HOST role upon starting/creating a listing
+  if (actor.role === Role.USER) {
+    await prisma.user.update({
+      where: { id: actor.id },
+      data: { role: Role.HOST },
+    });
+  }
+
+  const bookingSettings = bookingModePersistence(resolveBookingMode(input));
+
+  // Ensure published is strictly false on creation unless Admin approves
+  const listing = await prisma.listing.create({
+    data: {
+      hostId: actor.id,
+      title: input.title || "Draft Listing",
+      description: input.description || "",
+      descriptionSections: input.descriptionSections ? JSON.parse(JSON.stringify(input.descriptionSections)) : null,
+      price: (input as any).weekdayBasePrice ?? input.price ?? 10000,
+      weekdayBasePrice: (input as any).weekdayBasePrice ?? input.price ?? 10000,
+      smartPricing: input.smartPricing ?? false,
+      smartPricingMinPrice: input.smartPricingMinPrice ?? null,
+      smartPricingMaxPrice: input.smartPricingMaxPrice ?? null,
+      published: false, // Strictly enforced: Host submission requires Admin approval before activation
+      hostingType: input.hostingType || "HOME",
+      placeCategory: input.placeCategory ?? null,
+      propertyType: input.propertyType || null,
+      listingType: input.listingType || null,
+      locationSearch: input.locationSearch || null,
+      shortAddress: input.shortAddress || null,
+      address: input.address || null,
+      neighborhoodDescription: input.neighborhoodDescription ?? null,
+      gettingAround: input.gettingAround ?? null,
+      apartment: input.apartment || null,
+      city: input.city || null,
+      district: input.district || null,
+      postalCode: input.postalCode || null,
+      country: input.country || null,
+      latitude: input.latitude ?? null,
+      longitude: input.longitude ?? null,
+      showExactLocation: input.showExactLocation ?? true,
+      guests: input.guests ?? 1,
+      bedrooms: input.bedrooms ?? 1,
+      beds: input.beds ?? 1,
+      bathrooms: input.bathrooms ?? 1,
+      // Professional Property Details
+      propertySize: input.propertySize ?? null,
+      propertySizeUnit: input.propertySizeUnit ?? null,
+      listingFloor: input.listingFloor ?? null,
+      totalFloors: input.totalFloors ?? null,
+      yearBuilt: input.yearBuilt ?? null,
+      yearRenovated: input.yearRenovated ?? null,
+      privateEntrance: input.privateEntrance ?? null,
+      elevatorAvailable: input.elevatorAvailable ?? null,
+      stairsRequired: input.stairsRequired ?? null,
+      rooms: input.rooms ? JSON.parse(JSON.stringify(input.rooms)) : null,
+      fullBathrooms: input.fullBathrooms ?? null,
+      halfBathrooms: input.halfBathrooms ?? null,
+      privateBathrooms: input.privateBathrooms ?? null,
+      sharedBathrooms: input.sharedBathrooms ?? null,
+      parkingAvailable: input.parkingAvailable ?? null,
+      parkingType: input.parkingType ?? null,
+      parkingSpaces: input.parkingSpaces ?? null,
+      parkingReservation: input.parkingReservation ?? null,
+      guestAccess: input.guestAccess || [],
+      languages: input.languages || [],
+      photos: input.photos || [],
+      photoRoomAssignments: input.photoRoomAssignments
+        ? JSON.parse(JSON.stringify(normalizePhotoRoomAssignments(input.photoRoomAssignments, input.photos || [])))
+        : null,
+      highlights: input.highlights || [],
+      amenities: input.amenities ? normalizeAmenities(input.amenities) : [],
+      safetyDisclosures: input.safetyDisclosures || [],
+      safetyEquipment: input.safetyEquipment || [],
+      safetyHazards: input.safetyHazards || [],
+      accessibilityFeatures: input.accessibilityFeatures || [],
+      accessibilityDetails: input.accessibilityDetails ? JSON.parse(JSON.stringify(input.accessibilityDetails)) : null,
+      views: input.views || [],
+      locationFeatures: input.locationFeatures || [],
+      houseRules: input.houseRules || [],
+      petsAllowed: input.petsAllowed ?? null,
+      maxPets: input.maxPets ?? null,
+      petFee: input.petFee ?? null,
+      petRestrictions: input.petRestrictions ?? null,
+      dogsAllowed: input.dogsAllowed ?? null,
+      catsAllowed: input.catsAllowed ?? null,
+      smokingAllowed: input.smokingAllowed ?? null,
+      smokingLocation: input.smokingLocation ?? null,
+      eventsAllowed: input.eventsAllowed ?? null,
+      childrenAllowed: input.childrenAllowed ?? null,
+      infantsAllowed: input.infantsAllowed ?? null,
+      photographyAllowed: input.photographyAllowed ?? null,
+      quietHours: input.quietHours ?? null,
+      quietHoursStart: input.quietHoursStart ?? null,
+      quietHoursEnd: input.quietHoursEnd ?? null,
+      additionalRules: input.additionalRules ?? null,
+      checkInMethod: input.checkInMethod || "SMART_LOCK",
+      checkInStart: input.checkInStart || "15:00",
+      checkInEnd: input.checkInEnd || "22:00",
+      checkOutTime: input.checkOutTime || "11:00",
+      directions: input.directions ?? null,
+      parkingInstructions: input.parkingInstructions ?? null,
+      checkInInstructions: input.checkInInstructions ?? null,
+      checkOutInstructions: input.checkOutInstructions ?? null,
+      houseManual: input.houseManual ?? null,
+      wifiNetwork: input.wifiNetwork ?? null,
+      wifiPassword: input.wifiPassword ?? null,
+      doorCode: input.doorCode ?? null,
+      lockboxCode: input.lockboxCode ?? null,
+      cancellationPolicy: input.cancellationPolicy || "FLEXIBLE",
+      longTermCancellationPolicy: input.longTermCancellationPolicy || "FIRM",
+      bookingMessage: input.bookingMessage ?? null,
+      requireProfilePhoto: input.requireProfilePhoto ?? false,
+      requireGoodTrackRecord: input.requireGoodTrackRecord ?? false,
+      bookingApprovalMode: bookingSettings.bookingApprovalMode,
+      minNights: input.minNights ?? 1,
+      maxNights: input.maxNights ?? 365,
+      advanceNotice: input.advanceNotice ?? "Same day",
+      sameDayCutoff: input.sameDayCutoff ?? "12:00 AM",
+      allowSameDayRequests: input.allowSameDayRequests ?? true,
+      instantBook: bookingSettings.instantBook,
+      isPaused: input.isPaused ?? false,
+      blockedDates: input.blockedDates || [],
+      // Fees are stored in minor units and are quoted again server-side during
+      // checkout. Do not discard a host-configured fee on initial creation.
+      cleaningFee: input.cleaningFee ?? 0,
+      securityDeposit: input.securityDeposit ?? 0,
+      weekendPrice: input.weekendPrice ?? null,
+      weekendPremium: input.weekendPremium ?? null,
+      customPrices: (input as any).customPrices ? JSON.parse(JSON.stringify((input as any).customPrices)) : null,
+      extraGuestFee: (input as any).extraGuestFee ?? 0,
+      discounts: input.discounts ? JSON.parse(JSON.stringify(input.discounts)) : null,
+      currentStep: input.currentStep ?? 1,
+      customSlug: typeof input.customSlug === "string" ? normalizeSlug(input.customSlug) : null,
+    },
+  }).catch((error: unknown) => {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      const target = String(error.meta?.target || error.meta?.constraint || error.message);
+      if (target.includes("customSlug")) {
+        throw AppError.conflict("This custom link is already in use by another listing.");
+      }
+    }
+    throw error;
+  });
+
+  // A new draft can promote a user to a host and changes the global listing
+  // count, both of which are represented in the cached admin summary.
+  await deleteCache(keys.statsGlobal());
+
+  await auditService.record({
+    actorId: actor.id,
+    actorEmail: actor.email,
+    action: "LISTING_CREATED",
+    resourceType: "Listing",
+    resourceId: listing.id,
+    description: `Created new listing draft "${listing.title}"`,
+  });
+
+  return toListingDTO(listing);
+}
+
+async function update(
+  actor: AuthUser,
+  id: string,
+  input: UpdateListingInput,
+): Promise<ListingDTO> {
+  const existing = await prisma.listing.findUnique({ where: { id } });
+  if (!existing) throw AppError.notFound("Listing not found");
+  if (existing.deletedAt !== null) {
+    throw AppError.forbidden("Cannot modify a removed listing");
+  }
+  const isCoHost = await assertListingAccess(actor, id, existing.hostId);
+
+  if (!isCoHost && actor.role === Role.HOST) {
+    await assertHostPermission(actor.id, "listing.edit");
+  }
+
+  // Automatically promote regular USER to HOST role upon updating a listing
+  if (!isCoHost && actor.role === Role.USER) {
+    await prisma.user.update({
+      where: { id: actor.id },
+      data: { role: Role.HOST },
+    });
+  }
+
+  // Hosts cannot directly change status to ACTIVE or published to true
+  const dataToUpdate = { ...input };
+  if (dataToUpdate.bookingApprovalMode !== undefined || dataToUpdate.instantBook !== undefined) {
+    const nextMode = dataToUpdate.bookingApprovalMode !== undefined && dataToUpdate.instantBook !== undefined
+      ? resolveBookingMode(dataToUpdate)
+      : dataToUpdate.bookingApprovalMode !== undefined
+        ? dataToUpdate.bookingApprovalMode === "INSTANT" ? "INSTANT_BOOK" : "REQUEST_TO_BOOK"
+        : dataToUpdate.instantBook ? "INSTANT_BOOK" : "REQUEST_TO_BOOK";
+    Object.assign(dataToUpdate, bookingModePersistence(nextMode));
+  }
+  if (actor.role !== Role.ADMIN) {
+    delete dataToUpdate.published;
+  }
+  if (dataToUpdate.descriptionSections !== undefined) {
+    dataToUpdate.descriptionSections = dataToUpdate.descriptionSections ? JSON.parse(JSON.stringify(dataToUpdate.descriptionSections)) : null;
+  }
+  if (dataToUpdate.accessibilityDetails !== undefined) {
+    dataToUpdate.accessibilityDetails = dataToUpdate.accessibilityDetails ? JSON.parse(JSON.stringify(dataToUpdate.accessibilityDetails)) : null;
+  }
+  if (dataToUpdate.photoRoomAssignments !== undefined) {
+    const photosForAssignments = Array.isArray(dataToUpdate.photos) ? dataToUpdate.photos : existing.photos;
+    dataToUpdate.photoRoomAssignments = JSON.parse(JSON.stringify(
+      normalizePhotoRoomAssignments(dataToUpdate.photoRoomAssignments, photosForAssignments),
+    ));
+  } else if (Array.isArray(dataToUpdate.photos)) {
+    // Removing or replacing a gallery photo also removes its stale room metadata.
+    dataToUpdate.photoRoomAssignments = JSON.parse(JSON.stringify(
+      normalizePhotoRoomAssignments(existing.photoRoomAssignments, dataToUpdate.photos),
+    ));
+  }
+  if (dataToUpdate.smartPricingMinPrice !== undefined) {
+    dataToUpdate.smartPricingMinPrice = dataToUpdate.smartPricingMinPrice ?? null;
+  }
+  if (dataToUpdate.smartPricingMaxPrice !== undefined) {
+    dataToUpdate.smartPricingMaxPrice = dataToUpdate.smartPricingMaxPrice ?? null;
+  }
+  if (dataToUpdate.neighborhoodDescription !== undefined) {
+    dataToUpdate.neighborhoodDescription = dataToUpdate.neighborhoodDescription ?? null;
+  }
+  if (dataToUpdate.gettingAround !== undefined) {
+    dataToUpdate.gettingAround = dataToUpdate.gettingAround ?? null;
+  }
+  if (dataToUpdate.bookingMessage !== undefined) {
+    dataToUpdate.bookingMessage = dataToUpdate.bookingMessage || null;
+  }
+  if (Array.isArray(dataToUpdate.amenities)) {
+    dataToUpdate.amenities = normalizeAmenities(dataToUpdate.amenities);
+  }
+  if (Array.isArray(dataToUpdate.languages)) {
+    dataToUpdate.languages = [...new Set(dataToUpdate.languages.map((language) => String(language).trim()).filter(Boolean))].slice(0, 20);
+  }
+  if (dataToUpdate.rooms !== undefined) {
+    dataToUpdate.rooms = dataToUpdate.rooms ? JSON.parse(JSON.stringify(dataToUpdate.rooms)) : null;
+  }
+  if (dataToUpdate.discounts !== undefined) {
+    dataToUpdate.discounts = dataToUpdate.discounts ? JSON.parse(JSON.stringify(dataToUpdate.discounts)) : null;
+  }
+  if ((dataToUpdate as any).weekdayBasePrice !== undefined && dataToUpdate.price === undefined) {
+    dataToUpdate.price = (dataToUpdate as any).weekdayBasePrice;
+  } else if (dataToUpdate.price !== undefined && (dataToUpdate as any).weekdayBasePrice === undefined) {
+    (dataToUpdate as any).weekdayBasePrice = dataToUpdate.price;
+  }
+  if ((dataToUpdate as any).customPrices !== undefined) {
+    const rawCustom = (dataToUpdate as any).customPrices;
+    if (rawCustom && typeof rawCustom === "object") {
+      const sanitizedCustom: Record<string, number> = {};
+      for (const [k, val] of Object.entries(rawCustom)) {
+        if (typeof val === "number" && val > 0) {
+          sanitizedCustom[k] = Math.round(val);
+        }
+      }
+      (dataToUpdate as any).customPrices = sanitizedCustom;
+    } else {
+      (dataToUpdate as any).customPrices = null;
+    }
+  }
+  if ((dataToUpdate as any).extraGuestFee !== undefined) {
+    (dataToUpdate as any).extraGuestFee = Math.max(0, Math.round(Number((dataToUpdate as any).extraGuestFee)));
+  }
+  if (dataToUpdate.customSlug !== undefined) {
+    dataToUpdate.customSlug = typeof dataToUpdate.customSlug === "string" ? normalizeSlug(dataToUpdate.customSlug) : null;
+  }
+
+  // A host changing reviewed material must not leave that revised content live.
+  // The listing is held for the same Admin review that governs initial launch.
+  const reapprovalRequired = actor.role !== Role.ADMIN
+    && existing.status === ListingStatus.ACTIVE
+    && !isSaudiArabia(dataToUpdate.country ?? existing.country)
+    && requiresReapproval(dataToUpdate);
+  if (reapprovalRequired) {
+    dataToUpdate.status = ListingStatus.PENDING_REVIEW;
+    dataToUpdate.published = false;
+    dataToUpdate.isPaused = false;
+    dataToUpdate.submittedAt = new Date();
+    dataToUpdate.reviewerId = null;
+    dataToUpdate.reviewStartedAt = null;
+  }
+
+  let listing;
+  try {
+    listing = await prisma.listing.update({ where: { id }, data: dataToUpdate });
+  } catch (error: unknown) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      const target = String(error.meta?.target || error.meta?.constraint || error.message);
+      if (target.includes("customSlug")) {
+        throw AppError.conflict("This custom link is already in use by another listing.");
+      }
+    }
+    throw error;
+  }
+  // Covers all public card/detail inputs updated through the listing editor,
+  // including price, calendar pricing, discounts, text, photos, and location.
+  await invalidateListingCache(id, existing.hostId);
+
+  await auditService.record({
+    actorId: actor.id,
+    actorEmail: actor.email,
+    action: "LISTING_UPDATED",
+    resourceType: "Listing",
+    resourceId: id,
+    description: reapprovalRequired
+      ? `Updated listing "${listing.title}" details; moved it back to Admin review.`
+      : `Updated listing "${listing.title}" details`,
+  });
+
+  if (Array.isArray(input.photos)) {
+    await deleteRemovedListingPhotos(id, existing.photos, input.photos);
+  }
+
+  return toListingDTO(listing);
+}
+
+async function deleteRemovedListingPhotos(
+  listingId: string,
+  previous: string[],
+  next: string[],
+): Promise<void> {
+  const removed = previous.filter((url) => !next.includes(url));
+  if (!removed.length) return;
+
+  await Promise.all(
+    removed.map(async (url) => {
+      const stillUsed = await prisma.listing.count({
+        where: { id: { not: listingId }, photos: { has: url } },
+      });
+      if (stillUsed === 0) await deleteManagedMediaUrl(url);
+    }),
+  );
+}
+
+async function submitForReview(actor: AuthUser, id: string): Promise<ListingDTO> {
+  const existing = await prisma.listing.findUnique({ where: { id } });
+  if (!existing) throw AppError.notFound("Listing not found");
+  const isCoHost = await assertListingAccess(actor, id, existing.hostId);
+
+  if (!isCoHost && actor.role === Role.HOST) {
+    await assertHostPermission(actor.id, "listing.edit");
+  }
+  if (![ListingStatus.DRAFT, ListingStatus.IN_PROGRESS].includes(existing.status)) {
+    throw AppError.badRequest("This listing cannot be submitted in its current state. Edit a draft or resubmit a returned listing.");
+  }
+
+  const readiness = getPublishReadiness(existing);
+  if (!readiness.publishable) {
+    throw AppError.badRequest(
+      `Cannot submit listing for review. Complete: ${readiness.missing.join(", ")}.`,
+      readiness.missing.map((field) => ({ path: field, message: "Required before submission" })),
+    );
+  }
+
+  const updated = await prisma.listing.update({
+    where: { id },
+    data: {
+      status: ListingStatus.PENDING_REVIEW,
+      published: false, // Stays false until Admin approval
+      submittedAt: new Date(),
+    },
+  });
+
+  await Promise.all([deleteCache(keys.listing(id)), incrCounter(keys.listingsPublicVersion())]);
+
+  await auditService.record({
+    actorId: actor.id,
+    actorEmail: actor.email,
+    action: "LISTING_SUBMITTED",
+    resourceType: "Listing",
+    resourceId: id,
+    description: `Submitted listing "${updated.title}" for ${isSaudiArabia(existing.country) ? "Saudi licensing and " : ""}Admin review`,
+    metadata: {
+      reviewRoute: isSaudiArabia(existing.country) ? "SAUDI_LICENSE_REVIEW" : "INTERNATIONAL_ADMIN_REVIEW",
+      locationVerified: Boolean(existing.country && existing.latitude !== null && existing.longitude !== null),
+    },
+  });
+
+  return toListingDTO(updated);
+}
+
+async function resubmitForReview(actor: AuthUser, id: string): Promise<ListingDTO> {
+  const existing = await prisma.listing.findUnique({ where: { id } });
+  if (!existing) throw AppError.notFound("Listing not found");
+  const isCoHost = await assertListingAccess(actor, id, existing.hostId);
+
+  if (!isCoHost && actor.role === Role.HOST) {
+    await assertHostPermission(actor.id, "listing.edit");
+  }
+  if (![ListingStatus.CHANGES_REQUESTED, ListingStatus.REJECTED].includes(existing.status)) {
+    throw AppError.badRequest("Only listings returned by Admin can be resubmitted.");
+  }
+
+  const readiness = getPublishReadiness(existing);
+  if (!readiness.publishable) {
+    throw AppError.badRequest(
+      `Cannot resubmit listing for review. Complete: ${readiness.missing.join(", ")}.`,
+      readiness.missing.map((field) => ({ path: field, message: "Required before submission" })),
+    );
+  }
+
+  const updated = await prisma.listing.update({
+    where: { id },
+    data: {
+      status: ListingStatus.PENDING_REVIEW,
+      published: false,
+      resubmittedAt: new Date(),
+      requestedChanges: Prisma.DbNull,
+      reviewerId: null,
+      reviewStartedAt: null,
+    },
+  });
+
+  await Promise.all([deleteCache(keys.listing(id)), incrCounter(keys.listingsPublicVersion())]);
+
+  await auditService.record({
+    actorId: actor.id,
+    actorEmail: actor.email,
+    action: "LISTING_RESUBMITTED",
+    resourceType: "Listing",
+    resourceId: id,
+    description: `Resubmitted listing "${updated.title}" for Admin review after updating details`,
+  });
+
+  return toListingDTO(updated);
+}
+
+async function publishListing(actor: AuthUser, id: string): Promise<ListingDTO> {
+  const existing = await prisma.listing.findUnique({ where: { id } });
+  if (!existing) throw AppError.notFound("Listing not found");
+  const isCoHost = await assertListingAccess(actor, id, existing.hostId);
+
+  if (!isCoHost && actor.role === Role.HOST) {
+    await assertHostPermission(actor.id, "listing.edit");
+  }
+
+  // Admin, Saudi Arabia listings, or approved/active listings can publish directly when complete.
+  if (
+    actor.role === Role.ADMIN ||
+    isSaudiArabia(existing.country) ||
+    existing.status === ListingStatus.APPROVED ||
+    existing.status === ListingStatus.ACTIVE ||
+    Boolean(existing.approvedAt)
+  ) {
+    const readiness = getPublishReadiness(existing);
+    if (!readiness.publishable) {
+      throw AppError.badRequest(
+        `Cannot publish listing. Complete: ${readiness.missing.join(", ")}.`,
+        readiness.missing.map((field) => ({ path: field, message: "Required before publishing" })),
+      );
+    }
+
+    const updated = await prisma.listing.update({
+      where: { id },
+      data: {
+        status: ListingStatus.ACTIVE,
+        published: true,
+        isPaused: false,
+        approvedAt: existing.approvedAt ?? new Date(),
+        ...(actor.role === Role.ADMIN ? { approvedById: actor.id, reviewerId: actor.id } : {}),
+      },
+    });
+
+    await Promise.all([deleteCache(keys.listing(id)), incrCounter(keys.listingsPublicVersion())]);
+
+    await auditService.record({
+      actorId: actor.id,
+      actorEmail: actor.email,
+      action: "LISTING_PUBLISHED",
+      resourceType: "Listing",
+      resourceId: id,
+      description: `${actor.role === Role.ADMIN ? "Admin" : "Host"} published listing "${updated.title}"`,
+      metadata: {
+        country: existing.country,
+        bypassAdminApproval: isSaudiArabia(existing.country) || actor.role === Role.ADMIN,
+      },
+    });
+
+    return toListingDTO(updated);
+  }
+
+  // International listings without direct publishing rights submit for admin review
+  return submitForReview(actor, id);
+}
+
+async function unpublishListing(actor: AuthUser, id: string): Promise<ListingDTO> {
+  const existing = await prisma.listing.findUnique({ where: { id } });
+  if (!existing) throw AppError.notFound("Listing not found");
+  const isCoHost = await assertListingAccess(actor, id, existing.hostId);
+
+  if (!isCoHost && actor.role === Role.HOST) {
+    await assertHostPermission(actor.id, "listing.edit");
+  }
+
+  const updated = await prisma.listing.update({
+    where: { id },
+    data: {
+      status: ListingStatus.DRAFT,
+      published: false,
+    },
+  });
+
+  await Promise.all([deleteCache(keys.listing(id)), incrCounter(keys.listingsPublicVersion())]);
+
+  await auditService.record({
+    actorId: actor.id,
+    actorEmail: actor.email,
+    action: "LISTING_UNPUBLISHED",
+    resourceType: "Listing",
+    resourceId: id,
+    description: `Host unpublished listing "${updated.title}"`,
+  });
+
+  return toListingDTO(updated);
+}
+
+async function approveListingByAdmin(actor: AuthUser, id: string): Promise<ListingDTO> {
+  authorize(actor, [Role.ADMIN]);
+
+  const existing = await prisma.listing.findUnique({
+    where: { id },
+    include: { host: true },
+  });
+  if (!existing) throw AppError.notFound("Listing not found");
+  if (existing.status !== ListingStatus.PENDING_REVIEW && existing.status !== ListingStatus.DRAFT) {
+    throw AppError.badRequest("Only listings submitted for Admin review or complete draft listings can be approved.");
+  }
+
+  const readiness = getPublishReadiness(existing);
+  if (!readiness.publishable) {
+    throw AppError.badRequest(
+      `Listing cannot be approved. Complete: ${readiness.missing.join(", ")}.`,
+      readiness.missing.map((field) => ({ path: field, message: "Required before approval" })),
+    );
+  }
+
+  // Update listing to APPROVED & ACTIVE
+  const updated = await prisma.listing.update({
+    where: { id },
+    data: {
+      status: ListingStatus.ACTIVE,
+      published: true,
+      approvedAt: new Date(),
+      approvedById: actor.id,
+      reviewerId: actor.id,
+      reviewStartedAt: existing.reviewStartedAt ?? new Date(),
+      rejectionReason: null,
+      requestedChanges: Prisma.DbNull,
+    },
+  });
+
+  // Ensure Host User account is promoted to Role.HOST & UserStatus.ACTIVE if pending
+  if (existing.host.role !== Role.HOST) {
+    await prisma.user.update({
+      where: { id: existing.hostId },
+      data: { role: Role.HOST, status: "ACTIVE" },
+    });
+  }
+
+  // Invalidate caches
+  await Promise.all([
+    deleteCache(keys.listing(id)),
+    incrCounter(keys.listingsPublicVersion()),
+    deleteCache(keys.userProfile(existing.hostId)),
+  ]);
+
+  await auditService.record({
+    actorId: actor.id,
+    actorEmail: actor.email,
+    action: "LISTING_APPROVED",
+    resourceType: "Listing",
+    resourceId: id,
+    description: `Approved listing "${updated.title}" (${updated.id}). Status is now ACTIVE.`,
+  });
+
+  return toListingDTO(updated);
+}
+
+async function requestChangesByAdmin(
+  actor: AuthUser,
+  id: string,
+  requestedChanges: unknown,
+): Promise<ListingDTO> {
+  authorize(actor, [Role.ADMIN]);
+
+  const existing = await prisma.listing.findUnique({ where: { id } });
+  if (!existing) throw AppError.notFound("Listing not found");
+  if (existing.status !== ListingStatus.PENDING_REVIEW) {
+    throw AppError.badRequest("Only listings submitted for Admin review can be returned for changes.");
+  }
+
+  const updated = await prisma.listing.update({
+    where: { id },
+    data: {
+      status: ListingStatus.CHANGES_REQUESTED,
+      published: false,
+      requestedChanges: JSON.parse(JSON.stringify(requestedChanges)),
+      reviewerId: actor.id,
+      reviewStartedAt: existing.reviewStartedAt ?? new Date(),
+    },
+  });
+
+  await Promise.all([deleteCache(keys.listing(id)), incrCounter(keys.listingsPublicVersion())]);
+
+  await auditService.record({
+    actorId: actor.id,
+    actorEmail: actor.email,
+    action: "LISTING_CHANGES_REQUESTED",
+    resourceType: "Listing",
+    resourceId: id,
+    description: `Requested changes on listing "${updated.title}" (${updated.id})`,
+    metadata: { requestedChanges },
+  });
+
+  return toListingDTO(updated);
+}
+
+async function rejectListingByAdmin(
+  actor: AuthUser,
+  id: string,
+  rejectionReason: string,
+): Promise<ListingDTO> {
+  authorize(actor, [Role.ADMIN]);
+
+  const existing = await prisma.listing.findUnique({ where: { id } });
+  if (!existing) throw AppError.notFound("Listing not found");
+  if (existing.status !== ListingStatus.PENDING_REVIEW) {
+    throw AppError.badRequest("Only listings submitted for Admin review can be rejected.");
+  }
+  const reason = rejectionReason.trim();
+  if (!reason) throw AppError.badRequest("A rejection reason is required.");
+
+  const updated = await prisma.listing.update({
+    where: { id },
+    data: {
+      status: ListingStatus.REJECTED,
+      published: false,
+      rejectionReason: reason,
+      reviewerId: actor.id,
+      reviewStartedAt: existing.reviewStartedAt ?? new Date(),
+    },
+  });
+
+  await Promise.all([deleteCache(keys.listing(id)), incrCounter(keys.listingsPublicVersion())]);
+
+  await auditService.record({
+    actorId: actor.id,
+    actorEmail: actor.email,
+    action: "LISTING_REJECTED",
+    resourceType: "Listing",
+    resourceId: id,
+    description: `Rejected listing "${updated.title}" (${updated.id}): ${reason}`,
+    metadata: { rejectionReason: reason },
+  });
+
+  return toListingDTO(updated);
+}
+
+async function remove(
+  actor: AuthUser,
+  id: string,
+  feedback?: {
+    categories?: string[];
+    reasons?: string[];
+    customFeedback?: string;
+  }
+): Promise<{ success: true }> {
+  const existing = await prisma.listing.findUnique({ where: { id } });
+  if (!existing) throw AppError.notFound("Listing not found");
+  assertOwnership(actor, existing.hostId);
+
+  if (actor.role === Role.HOST) {
+    await assertHostPermission(actor.id, "listing.delete");
+  }
+
+  const bookingCount = await prisma.booking.count({ where: { listingId: id } });
+  if (bookingCount > 0) {
+    throw AppError.conflict("Cannot delete a listing that has associated bookings");
+  }
+
+  // 1. Store exit survey and reasons in the database if provided
+  if (feedback && feedback.reasons && feedback.reasons.length > 0) {
+    await prisma.listingRemovalFeedback.create({
+      data: {
+        listingId: id,
+        hostId: actor.id,
+        listingTitle: existing.title,
+        categories: feedback.categories || [],
+        reasons: feedback.reasons || [],
+        customFeedback: feedback.customFeedback || null,
+        actionTaken: "PERMANENT_DELETE",
+      },
+    });
+  }
+
+  // 2. Soft-delete listing (always): mark unpublished, paused and record deletedAt + removalReason.
+  // This preserves booking history and prevents accidental loss of foreign keys.
+  await prisma.listing.update({
+    where: { id },
+    data: {
+      published: false,
+      isPaused: true,
+      deletedAt: new Date(),
+      removalReason: feedback
+        ? {
+            categories: feedback.categories ?? [],
+            reasons: feedback.reasons ?? [],
+            customFeedback: feedback.customFeedback ?? null,
+          }
+        : Prisma.DbNull,
+    },
+  });
+
+  await Promise.all([
+    deleteCache(keys.listing(id)),
+    incrCounter(keys.listingsPublicVersion()),
+  ]);
+
+  await auditService.record({
+    actorId: actor.id,
+    actorEmail: actor.email,
+    action: "LISTING_DELETED",
+    resourceType: "Listing",
+    resourceId: id,
+    description: `Removed listing "${existing.title}" with reasons: ${(feedback?.reasons || []).join(", ") || "No reason given"}`,
+  });
+
+  return { success: true };
+}
+
+/**
+ * Permanent hard delete for Administrators: completely purges the listing and
+ * all associated records (bookings, taxes, removal feedback, co-hosts, etc.)
+ * from the database, rather than soft-deleting or pausing it.
+ */
+async function permanentDeleteForAdmin(
+  actor: AuthUser,
+  id: string,
+): Promise<{ success: true }> {
+  authorize(actor, [Role.ADMIN]);
+
+  const existing = await prisma.listing.findUnique({
+    where: { id },
+    select: { id: true, title: true, photos: true },
+  });
+  if (!existing) throw AppError.notFound("Listing not found");
+
+  // Perform cascading hard delete in a transaction to satisfy all database relations
+  await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    // 1. Delete taxes for all bookings under this listing, then the bookings themselves
+    const bookings = await tx.booking.findMany({
+      where: { listingId: id },
+      select: { id: true },
+    });
+    const bookingIds = bookings.map((b: { id: string }) => b.id);
+    if (bookingIds.length > 0) {
+      await tx.reservationTax.deleteMany({
+        where: { bookingId: { in: bookingIds } },
+      });
+      await tx.booking.deleteMany({
+        where: { listingId: id },
+      });
+    }
+
+    // 2. Delete any listing removal feedback referencing this listing
+    await tx.listingRemovalFeedback.deleteMany({
+      where: { listingId: id },
+    });
+
+    // 3. Delete co-hosts, guidebook links, listing taxes, and tax audit logs
+    await tx.listingCoHost.deleteMany({
+      where: { listingId: id },
+    });
+    await tx.guidebookListing.deleteMany({
+      where: { listingId: id },
+    });
+    await tx.listingTax.deleteMany({
+      where: { listingId: id },
+    });
+    await tx.taxAuditLog.deleteMany({
+      where: { listingId: id },
+    });
+
+    // 4. Hard delete the listing record completely from the database
+    await tx.listing.delete({
+      where: { id },
+    });
+  });
+
+  // Invalidate Redis caches
+  await Promise.all([
+    deleteCache(keys.listing(id)),
+    incrCounter(keys.listingsPublicVersion()),
+  ]);
+
+  // Clean up managed media photos (best-effort)
+  if (existing.photos && existing.photos.length > 0) {
+    await deleteManagedMediaUrls(existing.photos);
+  }
+
+  // Record audit log
+  await auditService.record({
+    actorId: actor.id,
+    actorEmail: actor.email || "",
+    action: "ADMIN_LISTING_PERMANENTLY_DELETED",
+    resourceType: "Listing",
+    resourceId: id,
+    description: `Admin permanently deleted listing "${existing.title}" (${id}) and all associated records`,
+  });
+
+  return { success: true };
+}
+
+async function duplicate(actor: AuthUser, id: string): Promise<ListingDTO> {
+  const existing = await prisma.listing.findUnique({ where: { id } });
+  if (!existing) throw AppError.notFound("Listing not found");
+  await assertListingAccess(actor, id, existing.hostId);
+
+  const duplicated = await prisma.listing.create({
+    data: {
+      hostId: existing.hostId,
+      title: `${existing.title} (Copy)`,
+      description: existing.description,
+      price: existing.price,
+      published: false,
+      status: ListingStatus.DRAFT,
+      hostingType: existing.hostingType,
+      placeCategory: existing.placeCategory,
+      propertyType: existing.propertyType,
+      listingType: existing.listingType,
+      locationSearch: existing.locationSearch,
+      shortAddress: existing.shortAddress,
+      address: existing.address,
+      apartment: existing.apartment,
+      city: existing.city,
+      district: existing.district,
+      postalCode: existing.postalCode,
+      country: existing.country,
+      latitude: existing.latitude,
+      longitude: existing.longitude,
+      showExactLocation: existing.showExactLocation,
+      guests: existing.guests,
+      bedrooms: existing.bedrooms,
+      beds: existing.beds,
+      bathrooms: existing.bathrooms,
+      photos: existing.photos,
+      highlights: existing.highlights,
+      amenities: existing.amenities,
+      safetyDisclosures: existing.safetyDisclosures,
+      houseRules: existing.houseRules,
+      checkInMethod: existing.checkInMethod,
+      checkInStart: existing.checkInStart,
+      checkInEnd: existing.checkInEnd,
+      checkOutTime: existing.checkOutTime,
+      cancellationPolicy: existing.cancellationPolicy,
+      minNights: existing.minNights,
+      maxNights: existing.maxNights,
+      instantBook: existing.instantBook,
+      isPaused: false,
+      blockedDates: existing.blockedDates,
+      cleaningFee: 0,
+      securityDeposit: existing.securityDeposit,
+      weekendPrice: existing.weekendPrice,
+      weekendPremium: existing.weekendPremium,
+      discounts: existing.discounts ? JSON.parse(JSON.stringify(existing.discounts)) : null,
+      currentStep: 1,
+    },
+  });
+
+  await deleteCache(keys.statsGlobal());
+
+  await auditService.record({
+    actorId: actor.id,
+    actorEmail: actor.email,
+    action: "LISTING_DUPLICATED",
+    resourceType: "Listing",
+    resourceId: duplicated.id,
+    description: `Duplicated listing "${existing.title}" to new draft "${duplicated.title}"`,
+  });
+
+  return toListingDTO(duplicated);
+}
+
+async function togglePause(actor: AuthUser, id: string, isPaused: boolean): Promise<ListingDTO> {
+  const existing = await prisma.listing.findUnique({ where: { id } });
+  if (!existing) throw AppError.notFound("Listing not found");
+  await assertListingAccess(actor, id, existing.hostId);
+
+  const updated = await prisma.listing.update({
+    where: { id },
+    data: {
+      isPaused,
+      published: isPaused ? false : existing.status === ListingStatus.ACTIVE,
+    },
+  });
+
+  await Promise.all([
+    deleteCache(keys.listing(id)),
+    incrCounter(keys.listingsPublicVersion()),
+  ]);
+
+  await auditService.record({
+    actorId: actor.id,
+    actorEmail: actor.email,
+    action: isPaused ? "LISTING_PAUSED" : "LISTING_RESUMED",
+    resourceType: "Listing",
+    resourceId: id,
+    description: `${isPaused ? "Paused" : "Resumed"} listing "${updated.title}"`,
+  });
+
+  return toListingDTO(updated);
+}
+
+export interface BulkAvailabilityResult {
+  listing: ListingDTO;
+  action: "BLOCK" | "UNBLOCK" | "RESTORE";
+  affectedCount: number;
+  protectedCount: number;
+  newlyBookedCount: number;
+  previousBlockedDates: string[];
+}
+
+async function bulkUpdateAvailability(
+  actor: AuthUser,
+  id: string,
+  input: {
+    action: "BLOCK" | "UNBLOCK" | "RESTORE";
+    dates: string[];
+  },
+): Promise<BulkAvailabilityResult> {
+  const existing = await prisma.listing.findUnique({ where: { id } });
+  if (!existing) throw AppError.notFound("Listing not found");
+  if (existing.deletedAt !== null) {
+    throw AppError.forbidden("Cannot modify availability for a removed listing");
+  }
+  await assertListingAccess(actor, id, existing.hostId);
+
+  // 1. Fetch active bookings (CONFIRMED or non-expired PENDING) to establish immutable protected dates
+  const activeBookings = await prisma.booking.findMany({
+    where: {
+      listingId: id,
+      status: { in: [BookingStatus.CONFIRMED, BookingStatus.PENDING] },
+    },
+    select: { startDate: true, endDate: true, createdAt: true, status: true },
+  });
+
+  const now = new Date();
+  const protectedDatesSet = new Set<string>();
+  for (const b of activeBookings) {
+    if (b.status === BookingStatus.PENDING && isBookingRequestExpired(b.createdAt, now, b.endDate)) {
+      continue;
+    }
+    const startKey = bookingDateKey(b.startDate);
+    const endKey = bookingDateKey(b.endDate);
+    let cur = startKey;
+    while (cur < endKey) {
+      protectedDatesSet.add(cur);
+      cur = shiftBookingDateKey(cur, 1);
+    }
+  }
+
+  const previousBlockedDates = Array.isArray(existing.blockedDates) ? [...existing.blockedDates] : [];
+  let nextBlockedSet = new Set<string>(previousBlockedDates);
+  let affectedCount = 0;
+  let protectedCount = 0;
+  let newlyBookedCount = 0;
+
+  if (input.action === "RESTORE") {
+    // Revert to prior blocked dates, strictly excluding any dates that are currently booked
+    nextBlockedSet = new Set<string>();
+    for (const d of input.dates) {
+      if (protectedDatesSet.has(d)) {
+        newlyBookedCount++;
+      } else {
+        nextBlockedSet.add(d);
+      }
+    }
+    affectedCount = nextBlockedSet.size;
+  } else if (input.action === "BLOCK") {
+    for (const d of input.dates) {
+      if (protectedDatesSet.has(d)) {
+        protectedCount++;
+      } else {
+        if (!nextBlockedSet.has(d)) {
+          nextBlockedSet.add(d);
+          affectedCount++;
+        }
+      }
+    }
+  } else if (input.action === "UNBLOCK") {
+    for (const d of input.dates) {
+      if (protectedDatesSet.has(d)) {
+        protectedCount++;
+      } else {
+        if (nextBlockedSet.has(d)) {
+          nextBlockedSet.delete(d);
+          affectedCount++;
+        }
+      }
+    }
+  }
+
+  // Authoritative boundary: active reservations are never manually blocked
+  for (const p of protectedDatesSet) {
+    nextBlockedSet.delete(p);
+  }
+
+  const sortedBlockedDates = Array.from(nextBlockedSet).sort();
+
+  const updated = await prisma.listing.update({
+    where: { id },
+    data: { blockedDates: sortedBlockedDates },
+  });
+
+  await Promise.all([
+    deleteCache(keys.listing(id)),
+    incrCounter(keys.listingsPublicVersion()),
+  ]);
+
+  await auditService.record({
+    actorId: actor.id,
+    actorEmail: actor.email,
+    action: "LISTING_AVAILABILITY_UPDATED",
+    resourceType: "Listing",
+    resourceId: id,
+    description: `Bulk calendar availability update (${input.action}) for "${updated.title}"`,
+  });
+
+  return {
+    listing: toListingDTO(updated),
+    action: input.action,
+    affectedCount,
+    protectedCount,
+    newlyBookedCount,
+    previousBlockedDates,
+  };
+}
+
+async function updateAvailability(actor: AuthUser, id: string, blockedDates: string[]): Promise<ListingDTO> {
+  const result = await bulkUpdateAvailability(actor, id, {
+    action: "RESTORE",
+    dates: blockedDates,
+  });
+  return result.listing;
+}
+
+async function applyModerationAction(params: {
+  listingId: string;
+  action: "WARN_HOST" | "REQUEST_CORRECTION" | "TEMPORARY_RESTRICTION" | "SUSPEND" | "RESTORE" | "HIDE_PHOTO" | "REMOVE_PHOTO" | "REQUEST_REPLACEMENT" | "RESTORE_PHOTO" | "DISMISS";
+  photoUrl?: string;
+  reason?: string;
+  notes?: string;
+}): Promise<Listing> {
+  const { listingId, action, photoUrl, reason, notes } = params;
+  const existing = await prisma.listing.findUnique({ where: { id: listingId } });
+  if (!existing) throw AppError.notFound("Listing not found");
+
+  let updated = existing;
+
+  if (action === "DISMISS") {
+    return existing;
+  }
+
+  if (action === "REMOVE_PHOTO" || action === "HIDE_PHOTO") {
+    if (photoUrl && existing.photos.includes(photoUrl)) {
+      const nextPhotos = existing.photos.filter((p: string) => p !== photoUrl);
+      const requiresMorePhotos = nextPhotos.length < 5;
+      updated = await prisma.listing.update({
+        where: { id: listingId },
+        data: {
+          photos: nextPhotos,
+          ...(requiresMorePhotos
+            ? {
+                requestedChanges: {
+                  reason: "A photo was removed by moderation. Your listing currently has fewer than the required 5 photos. Please upload replacement photos.",
+                  removedPhoto: photoUrl,
+                  action,
+                  requestedAt: new Date().toISOString(),
+                },
+              }
+            : {}),
+        },
+      });
+      await invalidateListingCache(listingId, existing.hostId);
+    }
+  } else if (action === "REQUEST_REPLACEMENT") {
+    updated = await prisma.listing.update({
+      where: { id: listingId },
+      data: {
+        requestedChanges: {
+          reason: notes || reason || "Photo requires replacement due to content policy guidelines.",
+          flaggedPhoto: photoUrl || null,
+          requestedAt: new Date().toISOString(),
+        },
+      },
+    });
+  } else if (action === "RESTORE_PHOTO") {
+    if (photoUrl && !existing.photos.includes(photoUrl)) {
+      const nextPhotos = [...existing.photos, photoUrl];
+      updated = await prisma.listing.update({
+        where: { id: listingId },
+        data: {
+          photos: nextPhotos,
+        },
+      });
+      await invalidateListingCache(listingId, existing.hostId);
+    }
+  } else if (action === "REQUEST_CORRECTION") {
+    updated = await prisma.listing.update({
+      where: { id: listingId },
+      data: {
+        requestedChanges: {
+          reason: notes || reason || "Corrections requested by moderation team",
+          requestedAt: new Date().toISOString(),
+        },
+      },
+    });
+  } else if (action === "TEMPORARY_RESTRICTION") {
+    updated = await prisma.listing.update({
+      where: { id: listingId },
+      data: {
+        isPaused: true,
+        published: false,
+      },
+    });
+    await invalidateListingCache(listingId, existing.hostId);
+  } else if (action === "SUSPEND") {
+    updated = await prisma.listing.update({
+      where: { id: listingId },
+      data: {
+        isPaused: true,
+        published: false,
+        status: ListingStatus.REJECTED,
+        rejectionReason: notes || "Suspended by moderation for policy violation",
+      },
+    });
+    await invalidateListingCache(listingId, existing.hostId);
+  } else if (action === "RESTORE") {
+    updated = await prisma.listing.update({
+      where: { id: listingId },
+      data: {
+        published: true,
+        isPaused: false,
+        status: ListingStatus.ACTIVE,
+        rejectionReason: null,
+        requestedChanges: Prisma.DbNull,
+      },
+    });
+    await invalidateListingCache(listingId, existing.hostId);
+  }
+
+  return updated;
+}
+
+export const listingService = {
+  list,
+  searchPublicListings,
+  getPublicListingById,
+  getPublicListingBySlug,
+  getById,
+  getForOwner,
+  getAdminListingForUpdate,
+  updateForAdmin,
+  listForAdminDashboard,
+  getAdminListingDetail,
+  getEditorWorkspaceListing,
+  getPublishReadiness,
+  listForHost,
+  create,
+  update,
+  duplicate,
+  togglePause,
+  updateAvailability,
+  bulkUpdateAvailability,
+  publish: publishListing,
+  unpublish: unpublishListing,
+  publishListing,
+  unpublishListing,
+  submitForReview,
+  resubmitForReview,
+  approveListingByAdmin,
+  requestChangesByAdmin,
+  rejectListingByAdmin,
+  remove,
+  permanentDeleteForAdmin,
+  toPublic: toPublicListingDTO,
+  getPublishedReviewSummaries,
+  getPublicCardsByIds,
+  applyModerationAction,
+};

@@ -1,0 +1,224 @@
+"use client";
+
+import { useState } from "react";
+import Image from "next/image";
+import { useSession } from "next-auth/react";
+import { useLanguage } from "@/lib/i18n/language-context";
+import { ReportContentModal } from "@/components/moderation/report-content-modal";
+
+export interface ReviewCardProps {
+  id: string;
+  rating: number;
+  comment: string;
+  bookingId?: string | null;
+  canReport?: boolean;
+  author: {
+    id: string;
+    name: string | null;
+    image: string | null;
+    createdAt?: string | Date;
+  } | null;
+  createdAt: string | Date;
+  hostResponse?: {
+    comment: string;
+    createdAt: string | Date;
+    hostName?: string | null;
+    hostImage?: string | null;
+  } | null;
+  onShowMore?: (id: string) => void;
+  isModalView?: boolean;
+}
+
+function useRelativeDate() {
+  const { t, language } = useLanguage();
+  return (dateValue: string | Date) => {
+    const date = new Date(dateValue);
+    const elapsed = Date.now() - date.getTime();
+    const days = Math.floor(elapsed / 86_400_000);
+    if (days < 1) return t("reviews_date_today", "today");
+    if (days < 7) {
+      return days === 1
+        ? t("reviews_day_ago", "1 day ago")
+        : t("reviews_days_ago", "{count} days ago").replace("{count}", String(days));
+    }
+    if (days < 30) {
+      const weeks = Math.floor(days / 7);
+      return weeks === 1
+        ? t("reviews_week_ago", "1 week ago")
+        : t("reviews_weeks_ago", "{count} weeks ago").replace("{count}", String(weeks));
+    }
+    if (days < 365) {
+      const months = Math.floor(days / 30);
+      return months === 1
+        ? t("reviews_month_ago", "1 month ago")
+        : t("reviews_months_ago", "{count} months ago").replace("{count}", String(months));
+    }
+    return date.toLocaleDateString(language, { month: "short", year: "numeric" });
+  };
+}
+
+function previewText(text: string, maxLength = 260) {
+  if (text.length <= maxLength) return text;
+  const boundary = text.lastIndexOf(" ", maxLength);
+  return `${text.slice(0, boundary > 0 ? boundary : maxLength)}…`;
+}
+
+export function ReviewCard({
+  id,
+  rating,
+  comment,
+  bookingId,
+  canReport = true,
+  author,
+  createdAt,
+  hostResponse,
+  onShowMore,
+  isModalView = false,
+}: ReviewCardProps) {
+  const { t } = useLanguage();
+  const formatRelativeDate = useRelativeDate();
+  const { data: session, status: sessionStatus } = useSession();
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [imageFailed, setImageFailed] = useState(false);
+  const [isReportOpen, setIsReportOpen] = useState(false);
+
+  const isAuthor = Boolean(session?.user?.id && author?.id && session.user.id === author.id);
+  const showReportButton = canReport && sessionStatus === "authenticated" && !isAuthor;
+
+  const name = author?.name?.trim() || "Guest";
+  const initial = name.charAt(0).toUpperCase();
+  const isLongReview = !isModalView && comment.length > 260;
+  const visibleComment = isModalView || isExpanded ? comment : previewText(comment);
+
+  return (
+    <article id={`review-${id}`} className="min-w-0 break-words">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex size-12 items-center justify-center overflow-hidden rounded-full border-2 border-[#e9a400] bg-amber-100 text-sm font-semibold text-amber-950">
+          {author?.image && !imageFailed ? (
+            // eslint-disable-next-line @next/next/no-img-element -- reviewer avatars can be remote user media.
+            <img
+              src={author.image}
+              alt=""
+              className="h-full w-full object-cover"
+              onError={() => setImageFailed(true)}
+            />
+          ) : (
+            initial
+          )}
+        </div>
+
+        {showReportButton && (
+          <button
+            type="button"
+            onClick={() => setIsReportOpen(true)}
+            title="Report this review"
+            aria-label="Report this review"
+            className="rounded-full p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 transition-colors"
+          >
+            <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
+            </svg>
+          </button>
+        )}
+      </div>
+
+      <div className="mt-3 flex items-center text-xs text-zinc-600">
+        <span
+          className="flex items-center gap-0.5 text-[#1F1F1F]"
+          aria-label={`Rated ${rating} out of 5`}
+        >
+          {Array.from({ length: 5 }, (_, index) => (
+            <Image
+              key={index}
+              src="/images/icons/review-star.svg"
+              alt=""
+              width={15}
+              height={15}
+              className={`size-[15px] ${index < rating ? "opacity-100" : "opacity-20"}`}
+            />
+          ))}
+          <span className="sr-only">Rated {rating} out of 5</span>
+        </span>
+        <time className="sr-only" dateTime={new Date(createdAt).toISOString()}>
+          {formatRelativeDate(createdAt)}
+        </time>
+      </div>
+
+      {comment ? (
+        <p
+          id={`review-${id}`}
+          className="mt-3 whitespace-pre-wrap sm:text-base text-sm leading-6 text-[#727272]"
+        >
+          {visibleComment}
+          {isLongReview && (
+            <>
+              {" "}
+              <button
+                type="button"
+                className="font-medium text-[#727272] underline underline-offset-2 transition-colors hover:text-[#1f1f1f] cursor-pointer"
+                onClick={() => {
+                  if (onShowMore) {
+                    onShowMore(id);
+                  } else {
+                    setIsExpanded((expanded) => !expanded);
+                  }
+                }}
+                aria-expanded={isExpanded}
+                aria-controls={`review-${id}`}
+              >
+                {isExpanded ? t("reviews_read_less", "read less") : t("reviews_read_more", "read more")}
+              </button>
+            </>
+          )}
+        </p>
+      ) : null}
+      <p className="mt-3 min-w-0 truncate sm:text-base text-sm font-medium text-[#1f1f1f]">
+        {name}
+      </p>
+
+      {hostResponse && (
+        <div className="mt-4 rounded-xl border border-zinc-200/80 bg-zinc-50 p-4 pl-4 sm:pl-5">
+          <div className="flex items-center gap-2.5">
+            <div className="flex size-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-zinc-200 text-xs font-semibold text-zinc-800">
+              {hostResponse.hostImage ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={hostResponse.hostImage}
+                  alt=""
+                  className="size-full object-cover"
+                />
+              ) : (
+                (hostResponse.hostName || "H").charAt(0).toUpperCase()
+              )}
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-[#1f1f1f]">
+                {t("reviews_response_from_host", "Response from {host}").replace(
+                  "{host}",
+                  hostResponse.hostName || "Host",
+                )}
+              </p>
+              <p className="text-xs text-[#727272]">
+                {formatRelativeDate(hostResponse.createdAt)}
+              </p>
+            </div>
+          </div>
+          <p className="mt-2.5 whitespace-pre-wrap break-words text-sm leading-relaxed text-[#1f1f1f]">
+            {hostResponse.comment}
+          </p>
+        </div>
+      )}
+
+      {isReportOpen && (
+        <ReportContentModal
+          isOpen={isReportOpen}
+          onClose={() => setIsReportOpen(false)}
+          targetType="REVIEW"
+          targetId={id}
+          targetTitle={comment.slice(0, 60)}
+          relatedBookingId={bookingId || undefined}
+        />
+      )}
+    </article>
+  );
+}

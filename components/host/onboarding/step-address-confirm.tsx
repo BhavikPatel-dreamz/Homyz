@@ -1,0 +1,220 @@
+"use client";
+
+import React from "react";
+import { useRouter } from "next/navigation";
+import { CloseIcon } from "@/components/ui/close-icon";
+import { RealMap, LocationDetails } from "@/components/ui/real-map";
+import { LocationCoords } from "./types";
+import { StepProgressFooter } from "./step-progress-footer";
+import { Container } from "@/components/ui";
+import { OnboardingMobileCloseButton } from "./onboarding-mobile-close-button";
+import { ADDRESS_COUNTRIES } from "@/lib/location/address-countries";
+import { useLanguage } from "@/lib/i18n/language-context";
+
+interface StepAddressConfirmProps {
+  country: string;
+  setCountry: (val: string) => void;
+  shortAddress: string;
+  setShortAddress: (val: string) => void;
+  aptFloorBldg: string;
+  setAptFloorBldg: (val: string) => void;
+  streetAddress: string;
+  setStreetAddress: (val: string) => void;
+  district: string;
+  setDistrict: (val: string) => void;
+  postalCode: string;
+  setPostalCode: (val: string) => void;
+  city: string;
+  setCity: (val: string) => void;
+  showSpecificLocation: boolean;
+  setShowSpecificLocation: (val: boolean) => void;
+  coords: LocationCoords;
+  onLocationChange: (lat: number, lng: number, details?: LocationDetails) => void;
+  onBack: () => void;
+  onNext: () => void;
+  isLoading?: boolean;
+  showMapPreview?: boolean;
+}
+
+export function StepAddressConfirm({
+  country,
+  setCountry,
+  shortAddress,
+  setShortAddress,
+  aptFloorBldg,
+  setAptFloorBldg,
+  streetAddress,
+  setStreetAddress,
+  district,
+  setDistrict,
+  postalCode,
+  setPostalCode,
+  city,
+  setCity,
+  showSpecificLocation,
+  setShowSpecificLocation,
+  coords,
+  onLocationChange,
+  onBack,
+  onNext,
+  isLoading = false,
+  showMapPreview = true,
+}: StepAddressConfirmProps) {
+
+  const router = useRouter();
+  const { t } = useLanguage();
+
+  const handleBack = () => {
+    if (!isLoading) {
+      router.back();
+    }
+  };
+  return (
+    <main className="step-address-confirm min-h-dvh bg-white pb-8 sm:py-12 lg:pt-25 lg:pb-16">
+      <Container>
+        <div className="wrapper flex-1 w-full flex flex-col sm:justify-between animate-in fade-in duration-200 min-h-[calc(100dvh-4rem)] sm:min-h-[calc(100dvh-6rem)] lg:min-h-[calc(100dvh-10.25rem)]">
+
+          {/* Mobile-only close control shared by onboarding steps.  */}
+          <OnboardingMobileCloseButton disabled={isLoading} />
+
+          
+          <div className="max-w-187.5 mx-auto w-full flex flex-col items-start my-auto">
+            {/* Title & Subtitle */}
+            <h1 className="mb-2">
+              {t("host_address_confirm_title")}
+            </h1>
+            <p className="sm:mb-8.75 mb-8">
+              {t("host_pin_confirm_desc")}
+            </p>
+
+            {/* Address Form Inputs Stack */}
+            <div className="flex flex-col gap-3.5 w-full">
+              {/* Country / Region Select */}
+              <div className="relative w-full">
+                <select
+                  value={country}
+                  onChange={(e) => setCountry(e.target.value)}
+                  className="w-full px-4 pt-7 pb-2 rounded-lg border border-[#1F1F1F] focus:border-[#727272] outline-none text-lg font-medium text-[#1F1F1F] bg-white appearance-none cursor-pointer"
+                >
+                  <option value="" disabled>{t("host_select_country")}</option>
+                  {country && !ADDRESS_COUNTRIES.some((item) => item.value === country) && (
+                    <option value={country}>{country}</option>
+                  )}
+                  {ADDRESS_COUNTRIES.map((item) => (
+                    <option key={item.iso2} value={item.value}>{item.value}</option>
+                  ))}
+                </select>
+                <span className="absolute top-1.5 left-4 text-base font-normal text-[#727272] pointer-events-none">
+                  {t("host_country_region")}
+                </span>
+                <svg className="w-5 h-5 text-zinc-600 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                </svg>
+              </div>
+
+              {/* Short address */}
+              <input
+                type="text"
+                placeholder={t("host_short_address")}
+                value={shortAddress}
+                onChange={(e) => setShortAddress(e.target.value)}
+                className="w-full px-4 py-2 h-14 rounded-lg border border-[#1F1F1F] focus:border-[#727272] outline-none sm:text-lg text-base font-normal text-[#1F1F1F] bg-white placeholder:text-[#727272]"
+              />
+
+              {/* Apt, floor, bldg */}
+              <input
+                type="text"
+                placeholder={t("host_apt_floor_bldg")}
+                value={aptFloorBldg}
+                onChange={(e) => setAptFloorBldg(e.target.value)}
+                className="w-full px-4 py-2 h-14 rounded-lg border border-[#1F1F1F] focus:border-[#727272] outline-none sm:text-lg text-base font-normal text-[#1F1F1F] bg-white placeholder:text-[#727272]"
+              />
+
+              {/* Street address */}
+              <input
+                type="text"
+                placeholder={t("host_street_address")}
+                value={streetAddress}
+                onChange={(e) => setStreetAddress(e.target.value)}
+                className="w-full px-4 py-2 h-14 rounded-lg border border-[#1F1F1F] focus:border-[#727272] outline-none sm:text-lg text-base font-normal text-[#1F1F1F] bg-white placeholder:text-[#727272]"
+              />
+
+              {/* District */}
+              <input
+                type="text"
+                placeholder={t("host_district")}
+                value={district}
+                onChange={(e) => setDistrict(e.target.value)}
+                className="w-full px-4 py-2 h-14 rounded-lg border border-[#1F1F1F] focus:border-[#727272] outline-none sm:text-lg text-base font-normal text-[#1F1F1F] bg-white placeholder:text-[#727272]"
+              />
+
+              {/* Postal code */}
+              <input
+                type="text"
+                placeholder={t("host_postal_code")}
+                value={postalCode}
+                onChange={(e) => setPostalCode(e.target.value)}
+                className="w-full px-4 py-2 h-14 rounded-lg border border-[#1F1F1F] focus:border-[#727272] outline-none sm:text-lg text-base font-normal text-[#1F1F1F] bg-white placeholder:text-[#727272]"
+              />
+
+              {/* City / Town */}
+              <input
+                type="text"
+                placeholder={t("host_city_town")}
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                className="w-full px-4 py-2 h-14 rounded-lg border border-[#1F1F1F] focus:border-[#727272] outline-none sm:text-lg text-base font-normal text-[#1F1F1F] bg-white placeholder:text-[#727272]"
+              />
+            </div>
+
+            {showMapPreview && (
+              <>
+                {/* Show Specific Location Toggle Bar */}
+                <div className="w-full my-6">
+                  <div className="flex items-center justify-between gap-4 mb-2">
+                    <h3 className="text-lg font-medium text-[#1F1F1F]">
+                      {t("host_show_specific_location")}
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={() => setShowSpecificLocation(!showSpecificLocation)}
+                      className={`relative inline-flex sm:h-6 h-5 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${showSpecificLocation ? "bg-[#1F1F1F]" : "bg-[#DDDDDE]"
+                        }`}
+                    >
+                      <span
+                        className={`pointer-events-none inline-block sm:h-5 h-4 sm:w-5 w-4 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${showSpecificLocation ? "translate-x-5" : "translate-x-0"
+                          }`}
+                      />
+                    </button>
+                  </div>
+                  <p className="sm:text-base text-sm font-normal text-[#727272] leading-relaxed max-w-xl">
+                    {t("host_show_specific_location_desc")}
+                  </p>
+                  <button type="button" className="underline text-[#1F1F1F] text-sm font-medium mt-1 inline-block hover:opacity-80">
+                    {t("host_learn_more")}
+                  </button>
+                </div>
+
+                {/* Real Interactive Leaflet Map Preview */}
+                <div className="w-full rounded-3xl overflow-hidden border border-zinc-200 shadow-lg sm:mb-4 mb-12">
+                  <RealMap
+                    address={streetAddress}
+                    city={city}
+                    country={country}
+                    lat={coords.lat}
+                    lng={coords.lng}
+                    showExactLocation={showSpecificLocation}
+                    onLocationChange={onLocationChange}
+                    className="h-[256px] sm:h-[482px] w-full relative z-0"
+                  />
+                </div>
+              </>
+            )}
+          </div>
+
+          <StepProgressFooter currentStep={4} onBack={onBack} onNext={onNext} isLoading={isLoading} />
+        </div>
+      </Container>
+    </main>
+  );
+}

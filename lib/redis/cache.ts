@@ -1,0 +1,293 @@
+import { isRedisConfigured, redisConfig } from "./config";
+import { getRedisClient, isRedisAvailable } from "./client";
+import { randomUUID } from "crypto";
+
+// The ONE cache abstraction the rest of the app uses. Services call these;
+// nothing else touches the Redis client directly (spec §5).
+//
+// Every function is FAIL-OPEN: on any Redis error, timeout, or unavailability
+// it logs a short warning and behaves as a cache miss / no-op, so the caller
+// transparently falls back to the database. None of these ever throw — that
+// property is load-bearing (apiHandler maps unknown throws to 500, and RSC
+// pages call services with no try/catch).
+
+function logOpFailure(op: string, err: unknown): void {
+  const reason = err instanceof Error ? err.message : String(err);
+  console.warn(`[redis] ${op} failed (${reason}) — using database`);
+}
+
+const CACHE_MISS = Symbol("CACHE_MISS");
+
+// In-memory L1 cache tier: provides instant sub-1ms responses and acts as
+// a zero-downtime fallback when Redis is offline or disconnected.
+interface MemoryCacheEntry {
+  value: unknown;
+  expiresAt: number;
+}
+
+const memoryCache = new Map<string, MemoryCacheEntry>();
+const memoryCounters = new Map<string, number>();
+const processLocks = new Set<string>();
+const MAX_MEMORY_ENTRIES = 500;
+
+function getFromMemoryCache<T>(key: string): T | typeof CACHE_MISS {
+  const entry = memoryCache.get(key);
+  if (!entry) return CACHE_MISS;
+  if (Date.now() > entry.expiresAt) {
+    memoryCache.delete(key);
+    return CACHE_MISS;
+  }
+  return entry.value as T;
+}
+
+function setToMemoryCache(key: string, value: unknown, ttlSeconds?: number): void {
+  if (memoryCache.size >= MAX_MEMORY_ENTRIES) {
+    const keysToDelete = Array.from(memoryCache.keys()).slice(0, 50);
+    for (const k of keysToDelete) memoryCache.delete(k);
+  }
+  const ttl = Math.max(1, Math.trunc(ttlSeconds ?? redisConfig.defaultTtl));
+  memoryCache.set(key, {
+    value,
+    expiresAt: Date.now() + ttl * 1000,
+  });
+}
+
+/**
+ * Ceiling on any single Redis command so a hung/slow server can never stall a
+ * request. The losing command settles in the background and is ignored. This
+ * is belt-and-suspenders over enableOfflineQueue:false + maxRetriesPerRequest.
+ */
+function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([
+    p,
+    new Promise<T>((_resolve, reject) => {
+      const t = setTimeout(() => reject(new Error("operation timed out")), ms);
+      (t as { unref?: () => void }).unref?.();
+    }),
+  ]);
+}
+
+async function readCache<T>(key: string): Promise<T | typeof CACHE_MISS> {
+  // Check in-memory L1 cache first for fastest response
+  const mem = getFromMemoryCache<T>(key);
+  if (mem !== CACHE_MISS) return mem;
+
+  try {
+    const client = await getRedisClient();
+    if (!client || !isRedisAvailable()) return CACHE_MISS;
+    const raw = await withTimeout(client.get(key), redisConfig.connectTimeout);
+    if (raw == null) return CACHE_MISS;
+    const parsed = JSON.parse(raw) as T;
+    setToMemoryCache(key, parsed, 60);
+    return parsed;
+  } catch (err) {
+    logOpFailure("get", err);
+    return CACHE_MISS;
+  }
+}
+
+/** Get + JSON.parse a value. Returns null on miss, disabled, or any error. */
+export async function getCache<T>(key: string): Promise<T | null> {
+  const value = await readCache<T>(key);
+  return value === CACHE_MISS ? null : value;
+}
+
+/** JSON.stringify + set with a TTL (seconds). No-op on disabled/any error. */
+export async function setCache(
+  key: string,
+  value: unknown,
+  ttlSeconds?: number,
+): Promise<void> {
+  const ttl = Math.max(1, Math.trunc(ttlSeconds ?? redisConfig.defaultTtl));
+  setToMemoryCache(key, value, ttl);
+  try {
+    const client = await getRedisClient();
+    if (!client || !isRedisAvailable()) return;
+    const payload = JSON.stringify(value);
+    await withTimeout(client.set(key, payload, "EX", ttl), redisConfig.connectTimeout);
+  } catch (err) {
+    logOpFailure("set", err);
+  }
+}
+
+/** Delete one or more keys. No-op on disabled/any error. */
+export async function deleteCache(...cacheKeys: string[]): Promise<void> {
+  if (cacheKeys.length === 0) return;
+  for (const k of cacheKeys) memoryCache.delete(k);
+  try {
+    const client = await getRedisClient();
+    if (!client || !isRedisAvailable()) return;
+    await withTimeout(client.del(...cacheKeys), redisConfig.connectTimeout);
+  } catch (err) {
+    logOpFailure("del", err);
+  }
+}
+
+/** True if the key exists. Returns false on disabled/any error. */
+export async function hasCache(key: string): Promise<boolean> {
+  if (getFromMemoryCache(key) !== CACHE_MISS) return true;
+  try {
+    const client = await getRedisClient();
+    if (!client || !isRedisAvailable()) return false;
+    const n = await withTimeout(client.exists(key), redisConfig.connectTimeout);
+    return n === 1;
+  } catch (err) {
+    logOpFailure("exists", err);
+    return false;
+  }
+}
+
+/**
+ * Delete every key matching a glob pattern via a non-blocking SCAN. Provided
+ * for ops / rare bulk invalidation — hot mutation paths use O(1) version-tag
+ * bumps (incrCounter) instead, to avoid a keyspace scan on every write.
+ */
+export async function deleteCacheByPattern(pattern: string): Promise<void> {
+  const regex = new RegExp("^" + pattern.replace(/\*/g, ".*") + "$");
+  for (const k of memoryCache.keys()) {
+    if (regex.test(k)) memoryCache.delete(k);
+  }
+  try {
+    const client = await getRedisClient();
+    if (!client || !isRedisAvailable()) return;
+    const stream = client.scanStream({ match: pattern, count: 100 });
+    const deletes: Promise<unknown>[] = [];
+    for await (const batch of stream as AsyncIterable<string[]>) {
+      if (batch.length > 0) deletes.push(client.del(...batch));
+    }
+    await Promise.all(deletes);
+  } catch (err) {
+    logOpFailure("scan", err);
+  }
+}
+
+/** Atomically increment a counter (used for version-tag invalidation). */
+export async function incrCounter(key: string): Promise<void> {
+  const nextVal = (memoryCounters.get(key) || 0) + 1;
+  memoryCounters.set(key, nextVal);
+  try {
+    const client = await getRedisClient();
+    if (!client || !isRedisAvailable()) return;
+    await withTimeout(client.incr(key), redisConfig.connectTimeout);
+  } catch (err) {
+    logOpFailure("incr", err);
+  }
+}
+
+/** Read a counter's current value. Returns 0 when unset/disabled/any error. */
+export async function getCounter(key: string): Promise<number> {
+  try {
+    const client = await getRedisClient();
+    if (!client || !isRedisAvailable()) return memoryCounters.get(key) || 0;
+    const raw = await withTimeout(client.get(key), redisConfig.connectTimeout);
+    const n = raw == null ? 0 : Number(raw);
+    return Number.isFinite(n) && n > 0 ? n : memoryCounters.get(key) || 0;
+  } catch (err) {
+    logOpFailure("get", err);
+    return memoryCounters.get(key) || 0;
+  }
+}
+
+export type CacheLease = {
+  key: string;
+  token: string;
+  distributed: boolean;
+};
+
+/**
+ * Acquire a short-lived lease for singleton background work. Redis is the
+ * cross-process coordination layer when configured; a deliberately Redis-free
+ * local install still receives duplicate protection within one process.
+ */
+export async function acquireCacheLease(key: string, ttlSeconds: number): Promise<CacheLease | null> {
+  if (processLocks.has(key)) return null;
+
+  const token = randomUUID();
+  const ttl = Math.max(1, Math.trunc(ttlSeconds));
+  if (isRedisConfigured()) {
+    try {
+      const client = await getRedisClient();
+      if (!client || !isRedisAvailable()) return null;
+      const acquired = await withTimeout(
+        client.set(key, token, "EX", ttl, "NX"),
+        redisConfig.connectTimeout,
+      );
+      if (acquired !== "OK") return null;
+      processLocks.add(key);
+      return { key, token, distributed: true };
+    } catch (err) {
+      logOpFailure("acquire lease", err);
+      return null;
+    }
+  }
+
+  // A local development install may deliberately run without Redis. It still
+  // receives duplicate-trigger protection inside the one application process.
+  processLocks.add(key);
+  return { key, token, distributed: false };
+}
+
+/** Release a lease only when this caller still owns it. */
+export async function releaseCacheLease(lease: CacheLease): Promise<void> {
+  processLocks.delete(lease.key);
+  if (!lease.distributed) return;
+
+  try {
+    const client = await getRedisClient();
+    if (!client || !isRedisAvailable()) return;
+    await withTimeout(
+      client.eval(
+        "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) end return 0",
+        1,
+        lease.key,
+        lease.token,
+      ),
+      redisConfig.connectTimeout,
+    );
+  } catch (err) {
+    logOpFailure("release lease", err);
+  }
+}
+
+// In-process de-duplication of concurrent misses for the same key. A burst of
+// simultaneous requests that all miss will trigger a SINGLE database fetch;
+// the rest await its result. Lightweight stampede protection within one Node
+// process (spec §15) — not a distributed lock, which these endpoints don't warrant.
+const inflight = new Map<string, Promise<unknown>>();
+
+/**
+ * Cache-aside wrapper (spec §6):
+ *   hit  → return the cached value (revived to its declared type if `revive` given)
+ *   miss → fetchFn() (the source of truth), populate the cache best-effort,
+ *          and return the fresh value.
+ *
+ * `revive` restores types lost to JSON (e.g. Date) on a HIT; the MISS path
+ * returns fetchFn's value untouched (already correctly typed). If Redis is
+ * unavailable this degrades to calling fetchFn directly. Errors thrown by
+ * fetchFn (e.g. AppError.notFound) propagate normally; only Redis errors are
+ * swallowed.
+ */
+export async function getOrSetCache<T>(
+  key: string,
+  fetchFn: () => Promise<T>,
+  opts?: { ttl?: number; revive?: (raw: T) => T },
+): Promise<T> {
+  const cached = await readCache<T>(key);
+  if (cached !== CACHE_MISS) {
+    return opts?.revive ? opts.revive(cached) : cached;
+  }
+
+  const existing = inflight.get(key) as Promise<T> | undefined;
+  if (existing) return existing;
+
+  const promise = (async () => {
+    const fresh = await fetchFn();
+    await setCache(key, fresh, opts?.ttl);
+    return fresh;
+  })().finally(() => {
+    inflight.delete(key);
+  });
+
+  inflight.set(key, promise);
+  return promise;
+}

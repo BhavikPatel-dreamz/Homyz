@@ -1,0 +1,84 @@
+import { requirePageRole } from "@/lib/permissions/page-guards";
+import { Role } from "@/generated/prisma/enums";
+import { listingService } from "@/services/listing.service";
+import { AdminListingsClient } from "./admin-listings-client";
+
+export default async function AdminListingsPage(props: {
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  await requirePageRole([Role.ADMIN]);
+
+  const resolvedParams = props.searchParams ? await props.searchParams : {};
+  const initialSearch = typeof resolvedParams.search === "string" ? resolvedParams.search : "";
+  const initialStatus = typeof resolvedParams.status === "string" ? resolvedParams.status.toUpperCase() : "ALL";
+  const initialPage = typeof resolvedParams.page === "string" ? parseInt(resolvedParams.page, 10) || 1 : 1;
+  const initialPageSize = typeof resolvedParams.pageSize === "string" ? parseInt(resolvedParams.pageSize, 10) || 10 : 10;
+
+  const { listings, totalCount, publishedCount, featuredCount, pausedCount } =
+    await listingService.listForAdminDashboard();
+
+  const serializedListings = listings.map((l: any) => ({
+    id: l.id,
+    title: l.title,
+    description: l.description,
+    price: l.price,
+    published: l.published,
+    status: l.status,
+    hostingType: l.hostingType,
+    propertyType: l.propertyType || "Home",
+    listingType: l.listingType || "Entire place",
+    address: l.address || "",
+    apartment: l.apartment || "",
+    shortAddress: l.shortAddress || "",
+    locationSearch: l.locationSearch || "",
+    city: l.city || "",
+    district: l.district || "",
+    postalCode: l.postalCode || "",
+    country: l.country || "",
+    guests: l.guests,
+    bedrooms: l.bedrooms,
+    beds: l.beds,
+    bathrooms: l.bathrooms,
+    photos: l.photos || [],
+    amenities: l.amenities || [],
+    houseRules: l.houseRules || [],
+    highlights: l.highlights || [],
+    safetyDisclosures: l.safetyDisclosures || [],
+    checkInMethod: l.checkInMethod || "SMART_LOCK",
+    checkInStart: l.checkInStart || "15:00",
+    checkInEnd: l.checkInEnd || "22:00",
+    checkOutTime: l.checkOutTime || "11:00",
+    cancellationPolicy: l.cancellationPolicy || "FLEXIBLE",
+    instantBook: l.instantBook ?? true,
+    minNights: l.minNights ?? 1,
+    maxNights: l.maxNights ?? 365,
+    blockedDates: l.blockedDates || [],
+    cleaningFee: l.cleaningFee ?? 0,
+    securityDeposit: l.securityDeposit ?? 0,
+    weekendPrice: l.weekendPrice ?? null,
+    isPaused: l.isPaused ?? false,
+    isFeatured: l.isFeatured ?? false,
+    showExactLocation: l.showExactLocation ?? true,
+    rejectionReason: l.rejectionReason || null,
+    createdAt: l.createdAt.toISOString(),
+    host: l.host,
+    bookingCount: l._count.bookings,
+  }));
+
+  return (
+    <AdminListingsClient
+      initialListings={serializedListings}
+      summary={{
+        total: totalCount,
+        published: publishedCount,
+        draft: totalCount - publishedCount,
+        featured: featuredCount,
+        paused: pausedCount,
+      }}
+      initialSearch={initialSearch}
+      initialStatus={initialStatus}
+      initialPage={initialPage}
+      initialPageSize={initialPageSize}
+    />
+  );
+}

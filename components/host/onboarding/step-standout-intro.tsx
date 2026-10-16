@@ -1,0 +1,73 @@
+"use client";
+
+import { Container } from "@/components/ui";
+import React from "react";
+import { OnboardingBackButton } from "./onboarding-back-button";
+import { OnboardingPrimaryButton } from "./onboarding-primary-button";
+import Image from "next/image";
+import { OnboardingMobileCloseButton } from "./onboarding-mobile-close-button";
+import { useLanguage } from "@/lib/i18n/language-context";
+
+interface StepStandoutIntroProps {
+  onBack: () => void;
+  onNext: () => void;
+  isLoading?: boolean;
+}
+
+export function StepStandoutIntro({ onBack, onNext, isLoading = false }: StepStandoutIntroProps) {
+  const { t } = useLanguage();
+
+  return (
+    <main className="min-h-dvh bg-white pb-8 sm:py-12 lg:pt-25 lg:pb-16">
+      <Container>
+        <div className="wrapper flex-1 w-full flex flex-col sm:justify-between animate-in fade-in duration-200 min-h-[calc(100dvh-4rem)] sm:min-h-[calc(100dvh-6rem)] lg:min-h-[calc(100dvh-15.25rem)]">
+          
+          {/* Mobile-only close control shared by onboarding steps.  */}
+          <OnboardingMobileCloseButton disabled={isLoading} />
+          <div className="step-intro-panel max-w-219.25 w-full grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-8 items-center sm:m-auto mx-auto">
+
+            {/* Left Column: Step 2 Badge, Title & Subtitle */}
+            <div data-aos="fade-right" data-aos-duration="700" className="order-2 flex max-w-xl flex-col justify-center lg:order-1 lg:col-span-6">
+              <div className="mb-5">
+                <span className="inline-flex items-center rounded-full border border-[#1F1F1F] px-6 py-2.5 text-base font-medium text-[#1F1F1F] bg-white">
+                  {t("host_step_2")}
+                </span>
+              </div>
+              <h1>
+                {t("host_standout_title")}
+              </h1>
+              <p className="text-base font-normal text-[#727272] leading-relaxed mt-5">
+                {t("host_standout_desc")}
+              </p>
+            </div>
+
+            {/* Right Column: Cozy Room Interior Vector Illustration with Floating Accent Blobs */}
+            <div data-aos="fade-left" data-aos-delay="100" data-aos-duration="700" className="order-1 flex w-full justify-center lg:order-2 lg:col-span-6 lg:justify-end">
+
+              <div className="w-full relative">
+                {/* Main Illustration Container */}
+                <div className="w-full relative z-0">
+                  <Image src="/images/intro-new-banner.svg" alt="intro new banner" width={480} height={491} className="sm:block hidden" />
+                  <Image src="/images/intro-new-banner-mobile.svg" alt="intro-new-banner-mobile" width={480} height={491} className="sm:hidden block" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Action Footer Bar */}
+          <div className="max-w-7xl mx-auto w-full flex items-center justify-end sm:mt-8 sm:pt-0 pt-8 mt-auto">
+            <OnboardingBackButton
+              onClick={onBack}
+              disabled={isLoading}
+            />
+            <OnboardingPrimaryButton
+              onClick={onNext}
+              isLoading={isLoading}
+              label={t("host_next")}
+            />
+          </div>
+        </div>
+      </Container>
+    </main>
+  );
+}

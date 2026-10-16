@@ -1,0 +1,1856 @@
+// Prisma schema for homyz — auth, roles, and domain models.
+// Prisma 7 "prisma-client" generator: the datasource connection URL is supplied
+// by prisma7.config.ts (which loads .env via dotenv). See lib/db/prisma.ts for
+// the runtime client (it passes datasourceUrl explicitly).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Enums
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum Role {
+  ADMIN
+  HOST
+  USER
+}
+
+enum OtpChannel {
+  SMS
+  EMAIL
+}
+
+enum OtpPurpose {
+  PHONE_VERIFICATION
+  LOGIN
+  PASSWORD_RESET
+}
+
+enum NotificationType {
+  BOOKING
+  MESSAGE
+  PROMOTION
+  SYSTEM
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  AUTHORIZED
+  CAPTURED
+  FAILED
+  VOIDED
+  PARTIALLY_REFUNDED
+  REFUNDED
+}
+
+enum PaymentProvider {
+  MOCK
+  MOYASAR
+  DEFERRED
+}
+
+enum RefundStatus {
+  PENDING
+  PROCESSING
+  SUCCEEDED
+  FAILED
+  REJECTED
+}
+
+enum ListingCoHostStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  EXPIRED
+  REVOKED
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  INVITATION_PENDING
+}
+
+enum AdminInvitationStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
+  REVOKED
+  FAILED
+}
+
+enum HostRegistrationStatus {
+  PENDING
+  IN_REVIEW
+  WAITING_FOR_DOCUMENTS
+  DOCUMENTS_UNDER_REVIEW
+  APPROVED
+  REJECTED
+}
+
+enum HostDocumentStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+  EXPIRED
+}
+
+enum HostComplianceStatus {
+  PENDING
+  UNDER_REVIEW
+  ACTION_REQUIRED
+  COMPLIANT
+  NON_COMPLIANT
+}
+
+enum ComplianceCheckStatus {
+  PENDING
+  PASSED
+  FAILED
+}
+
+enum ComplianceIssueSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum ComplianceIssueStatus {
+  OPEN
+  UNDER_REVIEW
+  RESOLVED
+  REJECTED
+}
+
+enum ListingStatus {
+  DRAFT
+  IN_PROGRESS
+  PENDING_REVIEW
+  CHANGES_REQUESTED
+  APPROVED
+  REJECTED
+  ACTIVE
+}
+
+enum HostingType {
+  HOME
+  EXPERIENCE
+  SERVICE
+}
+
+enum ReviewStatus {
+  PRIVATE
+  PUBLISHED
+  HIDDEN
+  DELETED
+  PENDING_MODERATION
+  EXPIRED
+}
+
+enum ReviewDirection {
+  GUEST_TO_PROPERTY
+  HOST_TO_GUEST
+}
+
+enum ReferralRewardStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ConversationType {
+  INQUIRY
+  BOOKING_REQUEST
+  BOOKING
+  GENERAL
+}
+
+enum ConversationStatus {
+  ACTIVE
+  PRE_APPROVED
+  SPECIAL_OFFER_SENT
+  DECLINED
+  EXPIRED
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+enum MessageType {
+  TEXT
+  BOOKING_REQUEST
+  SYSTEM
+  SPECIAL_OFFER
+  PRE_APPROVAL
+  DECLINE
+  BOOKING_STATUS
+}
+
+enum SpecialOfferStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  EXPIRED
+}
+
+enum QualityIncidentStatus {
+  PENDING
+  CONFIRMED
+  REJECTED
+  RESOLVED
+}
+
+enum QualityIncidentCategory {
+  PROPERTY_CONDITION
+  LISTING_ACCURACY
+  CLEANLINESS
+  SAFETY_HAZARD
+  HOST_SERVICE
+  OTHER
+}
+
+enum QualityIncidentSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+// Central content-moderation foundation. These enums are intentionally
+// separate from booking dispute and listing approval lifecycles.
+enum ModerationTargetType {
+  REVIEW
+  LISTING
+  LISTING_PHOTO
+  PROFILE
+  USER
+  MESSAGE
+  OTHER_CONTENT
+}
+
+enum ModerationCaseStatus {
+  NEW
+  IN_REVIEW
+  NEEDS_INFORMATION
+  RESOLVED
+  DISMISSED
+  REOPENED
+}
+
+enum ModerationSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum ModerationEvidenceType {
+  EXISTING_MEDIA
+  MESSAGE_ATTACHMENT
+  DOCUMENT
+  EXTERNAL_REFERENCE
+  TEXT_NOTE
+}
+
+enum BackgroundJobStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  RETRY_SCHEDULED
+  FAILED
+}
+
+enum BackgroundJobType {
+  REVIEW_EXPIRY_PUBLISH
+  ACCOUNT_RESTRICTION_EXPIRY
+  MODERATION_NOTIFICATION_DELIVERY
+  AUDIT_LOG_ARCHIVE
+  SYSTEM_MAINTENANCE
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Auth / identity (NextAuth adapter models: User, Account, Session,
+// VerificationToken — shapes required by @next-auth/prisma-adapter)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model User {
+  id                        String     @id @default(cuid())
+  name                      String?
+  email                     String?    @unique
+  emailVerified             DateTime?
+  image                     String?
+  publicProfile             Json? // Stores bio, prompts, stamps visibility, etc.
+  // Local credentials + custom fields
+  passwordHash              String?
+  role                      Role       @default(USER)
+  status                    UserStatus @default(ACTIVE)
+  lastLoginAt               DateTime?
+  adminRoleId               String?
+  phone                     String?    @unique
+  phoneVerified             DateTime?
+  birthDate                 DateTime?  @db.Date
+  personalInfo              Json? // Stores private account settings: legalName, preferredName, identityStatus, addresses, emergencyContact
+  // Official Superhost state. Live qualification is calculated separately and
+  // may only update these fields at a quarterly evaluation checkpoint.
+  isSuperhost               Boolean    @default(false)
+  superhostQualifiedAt      DateTime?
+  superhostLastEvaluatedAt  DateTime?
+  superhostNextEvaluationAt DateTime?
+  createdAt                 DateTime   @default(now())
+  updatedAt                 DateTime   @updatedAt
+  tokenVersion              Int        @default(0)
+  referralCode              String?    @unique
+  referredById              String?
+
+  accounts                        Account[]
+  sessions                        Session[]
+  listings                        Listing[]
+  bookings                        Booking[]
+  favoriteListings                ListingFavorite[]
+  refreshTokens                   RefreshToken[]
+  passwordResetTokens             PasswordResetToken[]
+  adminRole                       AdminRole?                 @relation(fields: [adminRoleId], references: [id], onDelete: SetNull)
+  auditLogs                       AuditLog[]
+  hostPermissionOverrides         HostPermissionOverride[]   @relation("HostOverrides")
+  createdHostOverrides            HostPermissionOverride[]   @relation("HostOverridesCreated")
+  adminPermissionOverrides        AdminPermissionOverride[]  @relation("AdminOverrides")
+  createdAdminOverrides           AdminPermissionOverride[]  @relation("AdminOverridesCreated")
+  sentInvitations                 AdminInvitation[]          @relation("InvitedByAdmins")
+  assignedHostRegistrations       HostRegistrationRequest[]  @relation("AssignedRegistrations")
+  reviewedHostRegistrations       HostRegistrationRequest[]  @relation("ReviewedRegistrations")
+  hostRegistrations               HostRegistrationRequest[]  @relation("HostRegistrations")
+  verifiedHostDocuments           HostRegistrationDocument[] @relation("VerifiedDocuments")
+  rejectedHostDocuments           HostRegistrationDocument[] @relation("RejectedDocuments")
+  createdRegistrationNotes        HostRegistrationNote[]     @relation("CreatedRegistrationNotes")
+  complianceReviewedRegistrations HostRegistrationRequest[]  @relation("ComplianceReviewedRegistrations")
+  approvedRegistrations           HostRegistrationRequest[]  @relation("ApprovedRegistrations")
+  reopenedRegistrations           HostRegistrationRequest[]  @relation("ReopenedRegistrations")
+  completedComplianceChecks       HostComplianceCheck[]      @relation("CompletedComplianceChecks")
+  createdComplianceIssues         HostComplianceIssue[]      @relation("CreatedComplianceIssues")
+  resolvedComplianceIssues        HostComplianceIssue[]      @relation("ResolvedComplianceIssues")
+  createdInfoRequests             HostInfoRequest[]          @relation("CreatedInfoRequests")
+  tripPhotos                      TripPhoto[]
+  coHostInvitationsSent           ListingCoHost[]            @relation("ListingCoHostInviter")
+  coHostAssignments               ListingCoHost[]            @relation("ListingCoHostUser")
+  guidebooks                      Guidebook[]
+  taxRegistrations                TaxRegistration[]
+  taxAuditLogs                    TaxAuditLog[]
+  listingRemovalFeedbacks         ListingRemovalFeedback[]
+  authoredReviews                 Review[]                   @relation("AuthoredReviews")
+  receivedReviews                 Review[]                   @relation("ReceivedReviews")
+  moderatedReviews                Review[]                   @relation("ModeratedReviews")
+  authoredReviewResponses         ReviewResponse[]           @relation("AuthoredReviewResponses")
+  referredBy                      User?                      @relation("GuestReferrals", fields: [referredById], references: [id], onDelete: SetNull)
+  referredGuests                  User[]                     @relation("GuestReferrals")
+  referralRewards                 ReferralReward[]           @relation("ReferralRewardInviter")
+  referralRewardEarnedFor         ReferralReward?            @relation("ReferralRewardReferredGuest")
+  reviewedReferralRewards         ReferralReward[]           @relation("ReferralRewardReviewer")
+  notifications                   Notification[]
+  guestConversations              Conversation[]             @relation("GuestConversations")
+  hostConversations               Conversation[]             @relation("HostConversations")
+  sentMessages                    Message[]                  @relation("SentMessages")
+  guestSpecialOffers              SpecialOffer[]             @relation("GuestSpecialOffers")
+  hostSpecialOffers               SpecialOffer[]             @relation("HostSpecialOffers")
+  superhostEvaluations            SuperhostEvaluation[]
+  reportedQualityIncidents        ListingQualityIncident[]   @relation("ReportedQualityIncidents")
+  submittedModerationReports      ModerationReport[]         @relation("SubmittedModerationReports")
+  assignedModerationCases         ModerationCase[]           @relation("AssignedModerationCases")
+  submittedModerationEvidence     ModerationEvidence[]       @relation("SubmittedModerationEvidence")
+  moderationActivities            ModerationActivity[]       @relation("ModerationActivityActors")
+
+  @@index([role])
+  @@index([adminRoleId])
+  @@index([status])
+  @@index([referredById])
+  @@index([isSuperhost])
+}
+
+model SuperhostEvaluation {
+  id                             String   @id @default(cuid())
+  hostId                         String
+  evaluationDate                 DateTime @db.Date
+  windowStart                    DateTime @db.Date
+  windowEnd                      DateTime @db.Date
+  completedReservations          Int
+  completedNights                Int
+  overallRating                  Float?
+  publishedReviewCount           Int
+  responseRatePercentage         Float?
+  totalGuestInquiries            Int
+  hostCancellationRatePercentage Float
+  hostCancellationCount          Int
+  cancellationDenominator        Int
+  accountGoodStanding            Boolean
+  qualified                      Boolean
+  failureReasons                 String[] @default([])
+  createdAt                      DateTime @default(now())
+  updatedAt                      DateTime @updatedAt
+
+  host User @relation(fields: [hostId], references: [id], onDelete: Cascade)
+
+  @@unique([hostId, evaluationDate])
+  @@index([evaluationDate])
+  @@index([hostId, evaluationDate])
+}
+
+model Notification {
+  id         String           @id @default(cuid())
+  userId     String
+  type       NotificationType
+  title      String
+  message    String
+  isRead     Boolean          @default(false)
+  readAt     DateTime?
+  entityId   String?
+  entityType String?
+  link       String?
+  metadata   Json?
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead, createdAt])
+  @@index([userId, createdAt])
+  @@index([userId, type, entityId, entityType])
+}
+
+model TripPhoto {
+  id        String   @id @default(cuid())
+  userId    String
+  url       String
+  caption   String?
+  location  String?
+  tags      String[] @default([])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([createdAt])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  ip           String?
+  userAgent    String?
+  lastActiveAt DateTime @default(now())
+  isRevoked    Boolean  @default(false)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Custom auth flows: OTP, password reset, mobile refresh tokens
+// ─────────────────────────────────────────────────────────────────────────────
+
+model OtpCode {
+  id         String     @id @default(cuid())
+  identifier String // phone number (SMS) or email
+  channel    OtpChannel
+  purpose    OtpPurpose
+  codeHash   String
+  expiresAt  DateTime
+  consumedAt DateTime?
+  attempts   Int        @default(0)
+  createdAt  DateTime   @default(now())
+
+  @@index([identifier, purpose])
+}
+
+model PasswordResetToken {
+  id         String    @id @default(cuid())
+  userId     String
+  tokenHash  String    @unique
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// Long-lived mobile refresh tokens. Stored hashed; rotated on refresh, revoked on logout.
+model RefreshToken {
+  id           String    @id @default(cuid())
+  userId       String
+  tokenHash    String    @unique
+  expiresAt    DateTime
+  revokedAt    DateTime?
+  replacedById String?
+  userAgent    String?
+  ip           String?
+  createdAt    DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Domain models — exercise host ownership (Listing) and user ownership (Booking)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Listing {
+  id                  String        @id @default(cuid())
+  hostId              String
+  title               String
+  description         String        @db.Text
+  descriptionSections Json? // Structured property / guest access / interaction / notes
+  price               Int // minor units (e.g. cents) per night
+  published           Boolean       @default(false)
+  status              ListingStatus @default(DRAFT)
+  hostingType         HostingType   @default(HOME)
+
+  // Step 1 — Property & Location Details
+  placeCategory           String? // Broad category selected in "Which is most like your place?"
+  propertyType            String? // House, Apartment, Villa, Cabin, Cottage, etc.
+  listingType             String? // Entire place, Private room, Shared room
+  locationSearch          String?
+  shortAddress            String?
+  address                 String? @db.Text
+  neighborhoodDescription String? @db.Text
+  gettingAround           String? @db.Text
+  apartment               String?
+  city                    String?
+  district                String?
+  postalCode              String?
+  country                 String?
+  latitude                Float?
+  longitude               Float?
+  showExactLocation       Boolean @default(true)
+
+  guests    Int @default(1)
+  bedrooms  Int @default(1)
+  beds      Int @default(1)
+  bathrooms Int @default(1)
+
+  // Professional Property Details
+  propertySize      Int? // Size in sq meters or sq ft
+  propertySizeUnit  String? // "SQM" | "SQFT"
+  listingFloor      Int? // Floor number for apartments/condos
+  totalFloors       Int? // Total building floors
+  yearBuilt         Int?
+  yearRenovated     Int?
+  privateEntrance   Boolean?
+  elevatorAvailable Boolean?
+  stairsRequired    Boolean?
+
+  // Rooms & Sleeping Arrangements (Structured validated JSON)
+  rooms Json?
+
+  // Bathroom Breakdown
+  fullBathrooms    Int?
+  halfBathrooms    Int?
+  privateBathrooms Int?
+  sharedBathrooms  Int?
+
+  // Parking Details
+  parkingAvailable   Boolean?
+  parkingType        String? // "FREE" | "PAID"
+  parkingSpaces      Int?
+  parkingReservation Boolean?
+
+  // Guest Access
+  guestAccess String[] @default([])
+  languages   String[] @default([]) // ISO language codes chosen by host
+
+  // Step 2 — Photos & Content Details
+  photos                String[] @default([]) // Min 5 photos required for submission
+  photoRoomAssignments  Json? // Optional room metadata for existing photo URLs; gallery remains photos[]
+  highlights            String[] @default([]) // Max 3 highlights
+  amenities             String[] @default([]) // Canonical amenities list
+  safetyDisclosures     String[] @default([]) // Cameras, Noise monitor, Weapons disclosures
+  safetyEquipment       String[] @default([]) // Smoke alarm, CO alarm, Extinguisher, First aid
+  safetyHazards         String[] @default([]) // Water, Heights, Stairs, Animals, etc.
+  accessibilityFeatures String[] @default([]) // Step-free, Wide doors, Grab rails, etc.
+  accessibilityDetails  Json? // Per-feature evidence photos supplied by the host
+  views                 String[] @default([]) // City, Sea, Mountain, Garden, etc.
+  // Location context distinct from amenities (for example, nearby transit).
+  // Beach access remains a canonical amenity and is intentionally not duplicated here.
+  locationFeatures      String[] @default([])
+
+  // Step 3 — House Rules & Check-in Details
+  houseRules         String[] @default([]) // Legacy / summary house rules strings
+  petsAllowed        Boolean?
+  maxPets            Int?
+  petFee             Int? // In minor units (cents)
+  petRestrictions    String?
+  dogsAllowed        Boolean?
+  catsAllowed        Boolean?
+  smokingAllowed     Boolean?
+  smokingLocation    String? // "INSIDE" | "OUTSIDE_ONLY" | "DESIGNATED_AREA"
+  eventsAllowed      Boolean?
+  childrenAllowed    Boolean?
+  infantsAllowed     Boolean?
+  photographyAllowed Boolean?
+  quietHours         Boolean?
+  quietHoursStart    String?
+  quietHoursEnd      String?
+  additionalRules    String?  @db.Text
+
+  // Arrival, Access & Sensitive Guide Information
+  checkInMethod        String? @default("SMART_LOCK") // SMART_LOCK, KEYPAD, LOCKBOX, HOST_MEET, etc.
+  checkInStart         String? @default("15:00")
+  checkInEnd           String? @default("22:00")
+  checkOutTime         String? @default("11:00")
+  directions           String? @db.Text
+  parkingInstructions  String? @db.Text
+  checkInInstructions  String? @db.Text
+  checkOutInstructions String? @db.Text
+  houseManual          String? @db.Text
+  wifiNetwork          String?
+  wifiPassword         String?
+  doorCode             String?
+  lockboxCode          String?
+
+  // Step 4 — Policies & Constraints
+  cancellationPolicy           String?   @default("FLEXIBLE") // Short stays: FLEXIBLE, MODERATE, LIMITED, FIRM, STRICT
+  longTermCancellationPolicy   String?   @default("FIRM") // Stays of 28+ nights: FIRM or STRICT
+  bookingMessage               String?   @db.Text // Public pre-booking message from the host
+  requireProfilePhoto          Boolean   @default(false) // Host requires a guest profile photo before booking
+  requireGoodTrackRecord       Boolean   @default(false) // Instant Book requires a completed confirmed stay
+  bookingApprovalMode          String    @default("INSTANT") // FIRST_THREE, INSTANT, or MANUAL
+  minNights                    Int       @default(1)
+  maxNights                    Int       @default(365)
+  advanceNotice                String    @default("Same day")
+  sameDayCutoff                String    @default("12:00 AM")
+  allowSameDayRequests         Boolean   @default(true)
+  instantBook                  Boolean   @default(true)
+  isPaused                     Boolean   @default(false)
+  isFeatured                   Boolean   @default(false)
+  // Official listing-level Guest Favorite state. The daily evaluator owns
+  // these fields; they are never inferred from featured status or live UI data.
+  isGuestFavorite              Boolean   @default(false)
+  guestFavoriteSince           DateTime?
+  guestFavoriteLastEvaluatedAt DateTime?
+  customSlug                   String?   @unique
+
+  // Step 5 — Availability & Dates
+  blockedDates String[] @default([]) // Array of YYYY-MM-DD blocked dates
+
+  // Pricing & Fees
+  weekdayBasePrice     Int? // Weekday base price in cents
+  customPrices         Json? // Map of specific date overrides YYYY-MM-DD -> price in cents
+  extraGuestFee        Int?    @default(0) // Fee in cents per extra guest per night
+  cleaningFee          Int?    @default(0) // Fee in cents
+  securityDeposit      Int?    @default(0) // Fee in cents
+  smartPricing         Boolean @default(false)
+  smartPricingMinPrice Int? // Minimum Base price in cents when Smart Pricing is enabled
+  smartPricingMaxPrice Int? // Maximum Base price in cents when Smart Pricing is enabled
+  weekendPrice         Int? // Weekend price in cents
+  weekendPremium       Int? // Weekend premium percentage
+  discounts            Json? // Discounts configuration
+
+  // Wizard state & progress
+  currentStep Int @default(1)
+
+  // Admin Review & Approval
+  submittedAt      DateTime?
+  resubmittedAt    DateTime?
+  reviewStartedAt  DateTime?
+  reviewerId       String?
+  rejectionReason  String?   @db.Text
+  requestedChanges Json? // Structured action items requested by Admin
+  approvedAt       DateTime?
+  approvedById     String?
+
+  deletedAt     DateTime?
+  removalReason Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  host                     User                      @relation(fields: [hostId], references: [id], onDelete: Cascade)
+  bookings                 Booking[]
+  favorites                ListingFavorite[]
+  coHosts                  ListingCoHost[]
+  guidebookListings        GuidebookListing[]
+  taxes                    ListingTax[]
+  taxAuditLogs             TaxAuditLog[]
+  reviews                  Review[]                  @relation("ListingReviews")
+  conversations            Conversation[]
+  specialOffers            SpecialOffer[]
+  guestFavoriteEvaluations GuestFavoriteEvaluation[]
+  qualityIncidents         ListingQualityIncident[]
+
+  @@index([hostId])
+  @@index([published])
+  @@index([status])
+  @@index([status, published])
+  @@index([city])
+  @@index([latitude, longitude])
+  @@index([price])
+  @@index([guests])
+  @@index([status, published, isPaused, deletedAt])
+  @@index([isGuestFavorite])
+}
+
+model GuestFavoriteEvaluation {
+  id                               String   @id @default(cuid())
+  listingId                        String
+  evaluationDate                   DateTime @db.Date
+  publishedReviewCount             Int
+  overallRating                    Float?
+  subratings                       Json?
+  totalBookings                    Int
+  hostCancellationCount            Int
+  qualityIncidentCount             Int      @default(0)
+  reliabilityFailureRatePercentage Float
+  qualityIncidentDataStatus        String
+  qualified                        Boolean
+  failureReasons                   String[] @default([])
+  createdAt                        DateTime @default(now())
+  updatedAt                        DateTime @updatedAt
+
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@unique([listingId, evaluationDate])
+  @@index([evaluationDate])
+  @@index([listingId, evaluationDate])
+}
+
+model ListingFavorite {
+  id        String   @id @default(cuid())
+  userId    String
+  listingId String
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, listingId])
+  @@index([listingId])
+}
+
+model ListingCoHost {
+  id            String              @id @default(cuid())
+  listingId     String
+  inviterHostId String
+  userId        String?
+  email         String?
+  phone         String?
+  status        ListingCoHostStatus @default(PENDING)
+  tokenHash     String?             @unique
+  invitedAt     DateTime            @default(now())
+  expiresAt     DateTime?
+  acceptedAt    DateTime?
+  declinedAt    DateTime?
+  revokedAt     DateTime?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  listing     Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  inviterHost User    @relation("ListingCoHostInviter", fields: [inviterHostId], references: [id], onDelete: Cascade)
+  user        User?   @relation("ListingCoHostUser", fields: [userId], references: [id], onDelete: SetNull)
+
+  @@unique([listingId, email])
+  @@unique([listingId, phone])
+  @@unique([listingId, userId])
+  @@index([listingId, status])
+  @@index([email, status])
+  @@index([phone, status])
+}
+
+model Booking {
+  id                 String        @id @default(cuid())
+  submissionId       String?       @unique
+  userId             String
+  listingId          String
+  status             BookingStatus @default(PENDING)
+  startDate          DateTime      @db.Date
+  endDate            DateTime      @db.Date
+  guests             Int           @default(1)
+  totalPrice         Int? // Minor units / cents
+  nightlyPrice       Int? // Minor units / cents
+  cleaningFee        Int? // Minor units / cents
+  currency           String        @default("SAR")
+  priceBreakdown     Json? // Structured snapshot of nights, rates, discounts
+  cancellationPolicy String? // Applicable listing policy snapshot at booking time
+  isNonRefundable    Boolean       @default(false) // Immutable guest-selected booking term
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listing        Listing          @relation(fields: [listingId], references: [id], onDelete: Restrict)
+  taxes          ReservationTax[]
+  reviews        Review[]
+  referralReward ReferralReward?
+  conversations  Conversation[]
+  qualityIncidents ListingQualityIncident[]
+  payments       BookingPayment[]
+  refunds        BookingRefund[]
+  moderationReports ModerationReport[]
+
+  @@index([userId, createdAt])
+  @@index([listingId])
+  @@index([listingId, startDate, endDate, status])
+  @@index([status])
+  @@index([status, createdAt])
+  @@index([createdAt])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Central content moderation (Phase 1 foundation)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model ModerationReport {
+  id               String               @id @default(cuid())
+  reporterId       String
+  targetType       ModerationTargetType
+  targetId         String
+  category         String
+  reasonCode       String
+  description      String?              @db.Text
+  relatedBookingId String?
+  caseId           String?
+  source           String               @default("USER")
+  createdAt        DateTime             @default(now())
+
+  reporter       User            @relation("SubmittedModerationReports", fields: [reporterId], references: [id], onDelete: Restrict)
+  relatedBooking Booking?        @relation(fields: [relatedBookingId], references: [id], onDelete: SetNull)
+  case           ModerationCase? @relation(fields: [caseId], references: [id], onDelete: SetNull)
+
+  @@index([reporterId, createdAt])
+  @@index([targetType, targetId, category, createdAt])
+  @@index([caseId, createdAt])
+  @@index([relatedBookingId])
+}
+
+model ModerationCase {
+  id                  String               @id @default(cuid())
+  caseReference       String               @unique
+  targetType          ModerationTargetType
+  targetId            String
+  category            String
+  status              ModerationCaseStatus @default(NEW)
+  severity            ModerationSeverity   @default(MEDIUM)
+  priority            Int                  @default(0)
+  assignedModeratorId String?
+  resolutionCategory  String?
+  resolutionNotes     String?              @db.Text
+  policyVersion       String?              @default("moderation-policy-v1")
+  resolvedAt          DateTime?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  assignedModerator User?                @relation("AssignedModerationCases", fields: [assignedModeratorId], references: [id], onDelete: SetNull)
+  reports           ModerationReport[]
+  evidence          ModerationEvidence[]
+  activities        ModerationActivity[]
+  reviews           Review[]
+
+  @@index([targetType, targetId, category, status])
+  @@index([status, severity, priority, createdAt])
+  @@index([assignedModeratorId, status])
+  @@index([status, updatedAt])
+  @@index([category, createdAt])
+}
+
+model ModerationEvidence {
+  id               String                 @id @default(cuid())
+  caseId           String
+  submittedById    String?
+  evidenceType     ModerationEvidenceType
+  storageReference String
+  displayName      String?
+  accessScope      String                 @default("MODERATORS_ONLY")
+  retentionUntil   DateTime?
+  metadata         Json?
+  createdAt        DateTime               @default(now())
+
+  case        ModerationCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  submittedBy User?          @relation("SubmittedModerationEvidence", fields: [submittedById], references: [id], onDelete: SetNull)
+
+  @@index([caseId, createdAt])
+  @@index([submittedById])
+}
+
+model ModerationActivity {
+  id        String   @id @default(cuid())
+  caseId    String
+  actorId   String?
+  action    String
+  before    Json?
+  after     Json?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  case  ModerationCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  actor User?          @relation("ModerationActivityActors", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([caseId, createdAt])
+  @@index([actorId, createdAt])
+  @@index([action, createdAt])
+}
+
+model BackgroundJob {
+  id             String              @id @default(cuid())
+  type           BackgroundJobType
+  status         BackgroundJobStatus @default(PENDING)
+  payload        Json?
+  idempotencyKey String?             @unique
+  priority       Int                 @default(0)
+  attempts       Int                 @default(0)
+  maxAttempts    Int                 @default(3)
+  backoffSeconds Int                 @default(30)
+  lockedAt       DateTime?
+  lockedBy       String?
+  lastError      String?             @db.Text
+  errorStack     String?             @db.Text
+  runAt          DateTime            @default(now())
+  startedAt      DateTime?
+  completedAt    DateTime?
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  @@index([status, runAt, priority])
+  @@index([type, status])
+  @@index([lockedAt])
+  @@index([createdAt])
+}
+
+model BookingPayment {
+  id                   String          @id @default(cuid())
+  bookingId            String
+  provider             PaymentProvider @default(DEFERRED)
+  providerPaymentId    String?         @unique
+  idempotencyKey       String?         @unique
+  status               PaymentStatus   @default(PENDING)
+  currency             String          @default("SAR")
+  amount               Int             // Minor units / cents
+  capturedAmount       Int             @default(0)
+  refundedAmount       Int             @default(0)
+  paymentMethod        String?
+  paymentMethodDetails Json?
+  authorizedAt         DateTime?
+  capturedAt           DateTime?
+  voidedAt             DateTime?
+  failedAt             DateTime?
+  failureReason        String?
+  metadata             Json?
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+
+  booking              Booking         @relation(fields: [bookingId], references: [id], onDelete: Restrict)
+  refunds              BookingRefund[]
+
+  @@index([bookingId])
+  @@index([status])
+  @@index([providerPaymentId])
+  @@index([createdAt])
+}
+
+model BookingRefund {
+  id               String          @id @default(cuid())
+  bookingId        String
+  paymentId        String?
+  refundReference  String?         @unique
+  providerRefundId String?         @unique
+  idempotencyKey   String?         @unique
+  status           RefundStatus    @default(PENDING)
+  currency         String          @default("SAR")
+  amount           Int             // Minor units / cents
+  reason           String?
+  adminNotes       String?
+  requestedById    String?
+  approvedById     String?
+  processedAt      DateTime?
+  succeededAt      DateTime?
+  failedAt         DateTime?
+  failureReason    String?
+  metadata         Json?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  booking          Booking         @relation(fields: [bookingId], references: [id], onDelete: Restrict)
+  payment          BookingPayment? @relation(fields: [paymentId], references: [id], onDelete: Restrict)
+
+  @@index([bookingId])
+  @@index([paymentId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// A reward is created once after the referred guest's first completed confirmed
+// stay. It remains pending until an authorised administrator approves it.
+model ReferralReward {
+  id                  String               @id @default(cuid())
+  inviterId           String
+  referredUserId      String               @unique
+  qualifyingBookingId String               @unique
+  points              Int
+  status              ReferralRewardStatus @default(PENDING)
+  reviewedById        String?
+  reviewedAt          DateTime?
+  rejectionReason     String?
+  createdAt           DateTime             @default(now())
+
+  inviter           User    @relation("ReferralRewardInviter", fields: [inviterId], references: [id], onDelete: Cascade)
+  referredGuest     User    @relation("ReferralRewardReferredGuest", fields: [referredUserId], references: [id], onDelete: Cascade)
+  reviewedBy        User?   @relation("ReferralRewardReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  qualifyingBooking Booking @relation(fields: [qualifyingBookingId], references: [id], onDelete: Restrict)
+
+  @@index([inviterId, createdAt])
+  @@index([status, createdAt])
+  @@index([reviewedById])
+}
+
+model Review {
+  id                  String          @id @default(cuid())
+  listingId           String?
+  bookingId           String?
+  authorId            String
+  targetUserId        String?
+  direction           ReviewDirection @default(GUEST_TO_PROPERTY)
+  rating              Int // 1-5
+  cleanlinessRating   Int?
+  accuracyRating      Int?
+  checkInRating       Int?
+  communicationRating Int?
+  locationRating      Int?
+  valueRating         Int?
+  houseRulesRating    Int?
+  comment             String          @db.Text // Empty string allowed for rating-only reviews
+  privateNoteToHost   String          @db.Text @default("") // Private feedback only visible to host and guest
+  privateNoteToGuest  String?         @db.Text
+  topics              String[]        @default([])
+  recommendGuest      Boolean?
+  status              ReviewStatus    @default(PUBLISHED)
+  submittedAt         DateTime        @default(now())
+  publishedAt         DateTime?
+  reviewDeadline      DateTime?
+  editDeadline        DateTime?
+
+  // Moderation
+  moderatedAt         DateTime?
+  moderatedById       String?
+  rejectionReason     String?
+  moderationNotes     String?
+  moderationCaseId    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  listing        Listing?        @relation("ListingReviews", fields: [listingId], references: [id], onDelete: Cascade)
+  booking        Booking?        @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  author         User            @relation("AuthoredReviews", fields: [authorId], references: [id], onDelete: Cascade)
+  targetUser     User?           @relation("ReceivedReviews", fields: [targetUserId], references: [id], onDelete: SetNull)
+  moderator      User?           @relation("ModeratedReviews", fields: [moderatedById], references: [id], onDelete: SetNull)
+  moderationCase ModerationCase? @relation(fields: [moderationCaseId], references: [id], onDelete: SetNull)
+  response       ReviewResponse?
+
+  @@unique([bookingId, direction])
+  @@index([listingId])
+  @@index([listingId, status])
+  @@index([listingId, status, createdAt])
+  @@index([listingId, status, direction, createdAt])
+  @@index([authorId])
+  @@index([targetUserId])
+  @@index([bookingId])
+  @@index([direction, status])
+  @@index([status, reviewDeadline])
+  @@index([moderationCaseId])
+}
+
+model ReviewResponse {
+  id        String       @id @default(cuid())
+  reviewId  String       @unique
+  authorId  String
+  comment   String       @db.Text
+  status    ReviewStatus @default(PUBLISHED)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  author User   @relation("AuthoredReviewResponses", fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([authorId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Admin RBAC & Audit Logging
+// ─────────────────────────────────────────────────────────────────────────────
+
+model AdminRole {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  isSystem    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  permissions AdminRolePermission[]
+  users       User[]
+  invitations AdminInvitation[]
+
+  @@index([slug])
+}
+
+model AdminPermission {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  module      String
+  action      String
+  description String?
+  createdAt   DateTime @default(now())
+
+  roles AdminRolePermission[]
+
+  @@index([module])
+  @@index([slug])
+}
+
+model AdminRolePermission {
+  id           String @id @default(cuid())
+  roleId       String
+  permissionId String
+
+  role       AdminRole       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission AdminPermission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+  @@index([roleId])
+  @@index([permissionId])
+}
+
+model AuditLog {
+  id           String   @id @default(cuid())
+  actorId      String?
+  actorEmail   String?
+  action       String
+  resourceType String
+  resourceId   String?
+  description  String
+  status       String   @default("SUCCESS")
+  ip           String?
+  userAgent    String?
+  metadata     Json?
+  createdAt    DateTime @default(now())
+
+  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([actorId])
+  @@index([action])
+  @@index([resourceType])
+  @@index([createdAt])
+  @@index([resourceType, resourceId])
+}
+
+model HostPermissionOverride {
+  id          String   @id @default(cuid())
+  hostId      String
+  permission  String
+  effect      String // "ALLOW" or "DENY"
+  reason      String?
+  createdById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  host      User  @relation("HostOverrides", fields: [hostId], references: [id], onDelete: Cascade)
+  createdBy User? @relation("HostOverridesCreated", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@unique([hostId, permission])
+  @@index([hostId])
+}
+
+model AdminPermissionOverride {
+  id          String   @id @default(cuid())
+  adminId     String
+  permission  String
+  effect      String // "ALLOW" or "DENY"
+  reason      String?
+  createdById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  admin     User  @relation("AdminOverrides", fields: [adminId], references: [id], onDelete: Cascade)
+  createdBy User? @relation("AdminOverridesCreated", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@unique([adminId, permission])
+  @@index([adminId])
+}
+
+model AdminInvitation {
+  id                String                @id @default(cuid())
+  email             String
+  name              String?
+  role              Role                  @default(ADMIN)
+  adminRoleId       String?
+  tokenHash         String                @unique
+  status            AdminInvitationStatus @default(PENDING)
+  invitedById       String?
+  invitedByEmail    String?
+  expiresAt         DateTime
+  acceptedAt        DateTime?
+  revokedAt         DateTime?
+  lastResentAt      DateTime?
+  message           String?               @db.Text
+  customPermissions Json?
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+
+  invitedBy User?      @relation("InvitedByAdmins", fields: [invitedById], references: [id], onDelete: SetNull)
+  adminRole AdminRole? @relation(fields: [adminRoleId], references: [id], onDelete: SetNull)
+
+  @@index([email])
+  @@index([status])
+  @@index([tokenHash])
+}
+
+model HostRegistrationRequest {
+  id               String                 @id @default(cuid())
+  applicationId    String                 @unique @default(cuid())
+  applicantName    String
+  applicantEmail   String
+  applicantPhone   String?
+  registrationType String                 @default("INDIVIDUAL")
+  businessName     String?
+  propertyCount    Int                    @default(1)
+  location         String?
+  notes            String?                @db.Text
+  status           HostRegistrationStatus @default(PENDING)
+  onboardingStage  String                 @default("INITIAL_INTAKE")
+
+  hostId String?
+  host   User?   @relation("HostRegistrations", fields: [hostId], references: [id], onDelete: SetNull)
+
+  assignedReviewerId String?
+  assignedReviewer   User?     @relation("AssignedRegistrations", fields: [assignedReviewerId], references: [id], onDelete: SetNull)
+  assignedAt         DateTime?
+
+  reviewedById    String?
+  reviewedBy      User?     @relation("ReviewedRegistrations", fields: [reviewedById], references: [id], onDelete: SetNull)
+  reviewStartedAt DateTime?
+
+  complianceStatus       HostComplianceStatus @default(PENDING)
+  complianceReviewedById String?
+  complianceReviewedBy   User?                @relation("ComplianceReviewedRegistrations", fields: [complianceReviewedById], references: [id], onDelete: SetNull)
+  complianceReviewedAt   DateTime?
+  complianceNotes        String?              @db.Text
+
+  rejectionReason String?   @db.Text
+  approvedById    String?
+  approvedBy      User?     @relation("ApprovedRegistrations", fields: [approvedById], references: [id], onDelete: SetNull)
+  approvedAt      DateTime?
+
+  reopenedById String?
+  reopenedBy   User?     @relation("ReopenedRegistrations", fields: [reopenedById], references: [id], onDelete: SetNull)
+  reopenedAt   DateTime?
+  reopenReason String?   @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  documents        HostRegistrationDocument[]
+  reviewNotes      HostRegistrationNote[]
+  complianceChecks HostComplianceCheck[]
+  complianceIssues HostComplianceIssue[]
+  infoRequests     HostInfoRequest[]
+
+  @@index([applicantEmail])
+  @@index([applicantPhone])
+  @@index([status])
+  @@index([complianceStatus])
+  @@index([assignedReviewerId])
+  @@index([createdAt])
+}
+
+model HostRegistrationDocument {
+  id        String                  @id @default(cuid())
+  requestId String
+  request   HostRegistrationRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  documentType String // e.g. "GOVERNMENT_ID", "PROOF_OF_ADDRESS", "BUSINESS_LICENSE", "PROPERTY_DEED", "TAX_CERTIFICATE"
+  fileName     String
+  fileUrl      String
+  mimeType     String?
+  fileSize     Int?
+  status       HostDocumentStatus @default(PENDING)
+  uploadedAt   DateTime           @default(now())
+  expiryDate   DateTime?
+
+  verifiedById String?
+  verifiedBy   User?     @relation("VerifiedDocuments", fields: [verifiedById], references: [id], onDelete: SetNull)
+  verifiedAt   DateTime?
+
+  rejectedById    String?
+  rejectedBy      User?     @relation("RejectedDocuments", fields: [rejectedById], references: [id], onDelete: SetNull)
+  rejectedAt      DateTime?
+  rejectionReason String?
+
+  resubmissionRequested    Boolean   @default(false)
+  resubmissionInstructions String?
+  resubmissionRequestedAt  DateTime?
+
+  version            Int     @default(1)
+  previousDocumentId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([requestId])
+  @@index([documentType])
+  @@index([status])
+}
+
+model HostRegistrationNote {
+  id        String                  @id @default(cuid())
+  requestId String
+  request   HostRegistrationRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  authorId    String
+  author      User    @relation("CreatedRegistrationNotes", fields: [authorId], references: [id], onDelete: Cascade)
+  authorEmail String
+  authorName  String?
+
+  content    String  @db.Text
+  isInternal Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([requestId])
+  @@index([authorId])
+  @@index([createdAt])
+}
+
+model HostComplianceCheck {
+  id        String                  @id @default(cuid())
+  requestId String
+  request   HostRegistrationRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  checkKey  String // e.g. IDENTITY_VERIFIED, ADDRESS_VERIFIED, REQUIRED_DOCUMENTS_VERIFIED, PROPERTY_INFO_COMPLETED, BUSINESS_VERIFICATION, ADDITIONAL_REVIEW
+  checkName String
+  status    ComplianceCheckStatus @default(PENDING)
+
+  reviewerId  String?
+  reviewer    User?     @relation("CompletedComplianceChecks", fields: [reviewerId], references: [id], onDelete: SetNull)
+  completedAt DateTime?
+  notes       String?   @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([requestId])
+  @@index([checkKey])
+  @@index([status])
+}
+
+model HostComplianceIssue {
+  id        String                  @id @default(cuid())
+  requestId String
+  request   HostRegistrationRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  issueType   String // e.g. "Address Mismatch", "Document Inconsistency", "Sanctions Check", "Missing Tax ID"
+  description String                  @db.Text
+  severity    ComplianceIssueSeverity @default(MEDIUM)
+  status      ComplianceIssueStatus   @default(OPEN)
+
+  createdById String
+  createdBy   User     @relation("CreatedComplianceIssues", fields: [createdById], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  resolvedById    String?
+  resolvedBy      User?     @relation("ResolvedComplianceIssues", fields: [resolvedById], references: [id], onDelete: SetNull)
+  resolvedAt      DateTime?
+  resolutionNotes String?   @db.Text
+
+  updatedAt DateTime @updatedAt
+
+  @@index([requestId])
+  @@index([severity])
+  @@index([status])
+}
+
+model HostInfoRequest {
+  id        String                  @id @default(cuid())
+  requestId String
+  request   HostRegistrationRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  informationRequired String    @db.Text
+  reason              String    @db.Text
+  deadline            DateTime?
+
+  requestedById String
+  requestedBy   User   @relation("CreatedInfoRequests", fields: [requestedById], references: [id], onDelete: Cascade)
+  status        String @default("PENDING") // PENDING, FULFILLED
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([requestId])
+  @@index([status])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Host Guidebooks & Local Recommendations
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Guidebook {
+  id               String   @id @default(cuid())
+  hostId           String
+  title            String
+  coverImage       String?
+  description      String?  @db.Text
+  city             String?
+  state            String?
+  country          String?
+  countryCode      String?
+  latitude         Float?
+  longitude        Float?
+  formattedAddress String?
+  published        Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  host       User                @relation(fields: [hostId], references: [id], onDelete: Cascade)
+  listings   GuidebookListing[]
+  items      GuidebookItem[]
+  categories GuidebookCategory[]
+
+  @@index([hostId])
+  @@index([city])
+  @@index([published])
+}
+
+model GuidebookListing {
+  id          String   @id @default(cuid())
+  guidebookId String
+  listingId   String
+  createdAt   DateTime @default(now())
+
+  guidebook Guidebook @relation(fields: [guidebookId], references: [id], onDelete: Cascade)
+  listing   Listing   @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@unique([guidebookId, listingId])
+  @@index([guidebookId])
+  @@index([listingId])
+}
+
+model GuidebookItem {
+  id              String   @id @default(cuid())
+  guidebookId     String
+  type            String   @default("PLACE") // "PLACE" | "NEIGHBORHOOD" | "CITY_ADVICE" (legacy: "TIP")
+  title           String
+  category        String
+  categoryLabel   String?
+  adviceType      String?
+  description     String?  @db.Text
+  hostTip         String?  @db.Text
+  photo           String?
+  photos          String[] @default([])
+  placeProviderId String?
+  address         String?
+  latitude        Float?
+  longitude       Float?
+  isFavorite      Boolean  @default(false)
+  sortOrder       Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  guidebook Guidebook @relation(fields: [guidebookId], references: [id], onDelete: Cascade)
+
+  @@index([guidebookId])
+  @@index([guidebookId, sortOrder])
+}
+
+model GuidebookCategory {
+  id          String   @id @default(cuid())
+  guidebookId String
+  name        String
+  normalized  String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  guidebook Guidebook @relation(fields: [guidebookId], references: [id], onDelete: Cascade)
+
+  @@unique([guidebookId, normalized])
+  @@index([guidebookId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Tax Management Engine (Airbnb-Grade Multi-Jurisdiction Engine)
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum TaxType {
+  VAT
+  GST
+  TOURIST_TAX
+  OCCUPANCY_TAX
+  LODGING_TAX
+  SALES_TAX
+  CITY_TAX
+  OTHER
+}
+
+enum TaxCalculationMethod {
+  PERCENTAGE
+  FLAT_PER_BOOKING
+  AMOUNT_PER_NIGHT
+  AMOUNT_PER_GUEST
+  AMOUNT_PER_GUEST_PER_NIGHT
+}
+
+enum TaxRemittanceResponsibility {
+  PLATFORM
+  HOST
+  THIRD_PARTY
+  MANUAL
+}
+
+enum TaxRegistrationStatus {
+  UNVERIFIED
+  PENDING_VERIFICATION
+  VERIFIED
+  REJECTED
+}
+
+model TaxJurisdiction {
+  id            String   @id @default(cuid())
+  country       String // ISO 2-letter e.g. "SA", "AE", "US", "GB"
+  region        String? // State, Province, or District
+  city          String? // City or Municipality e.g. "Riyadh", "Dubai"
+  postalPattern String? // Regex or prefix for postal match
+  name          String // Friendly name e.g. "Saudi Arabia - Riyadh"
+  currency      String   @default("SAR")
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  rules         TaxRule[]
+  registrations TaxRegistration[]
+
+  @@index([country])
+  @@index([country, city])
+}
+
+model TaxRule {
+  id                       String                      @id @default(cuid())
+  jurisdictionId           String
+  taxType                  TaxType
+  name                     String // e.g. "Saudi Value-Added Tax", "Municipal Tourism Fee"
+  description              String?                     @db.Text
+  calculationMethod        TaxCalculationMethod        @default(PERCENTAGE)
+  rate                     Float? // e.g. 15.0 for 15%
+  amount                   Int? // in minor units / cents (for flat/night/guest)
+  taxableComponents        String[]                    @default(["BASE_PRICE", "CLEANING_FEE"])
+  remittanceResponsibility TaxRemittanceResponsibility @default(PLATFORM)
+  isSystemManaged          Boolean                     @default(true)
+  isInclusive              Boolean                     @default(false)
+  longStayExemptionNights  Int? // e.g. 28 -> stays >= 28 nights exempt
+  effectiveFrom            DateTime                    @default(now())
+  effectiveUntil           DateTime?
+  version                  Int                         @default(1)
+  isActive                 Boolean                     @default(true)
+  createdAt                DateTime                    @default(now())
+  updatedAt                DateTime                    @updatedAt
+
+  jurisdiction TaxJurisdiction @relation(fields: [jurisdictionId], references: [id], onDelete: Cascade)
+  listingTaxes ListingTax[]
+
+  @@index([jurisdictionId])
+  @@index([jurisdictionId, taxType])
+}
+
+model ListingTax {
+  id                             String                      @id @default(cuid())
+  listingId                      String
+  taxRuleId                      String?
+  customName                     String?
+  taxType                        TaxType
+  calculationMethod              TaxCalculationMethod        @default(PERCENTAGE)
+  rate                           Float?
+  amount                         Int? // in minor units / cents
+  taxableComponents              String[]                    @default(["BASE_PRICE"])
+  remittanceResponsibility       TaxRemittanceResponsibility @default(HOST)
+  maximumAmountPerPersonPerNight Int?
+  partialStayExemptionNights     Int?
+  fullStayExemptionNights        Int?
+  longStayExemptionNights        Int?
+  isActive                       Boolean                     @default(true)
+  createdAt                      DateTime                    @default(now())
+  updatedAt                      DateTime                    @updatedAt
+
+  listing Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  taxRule TaxRule? @relation(fields: [taxRuleId], references: [id], onDelete: SetNull)
+
+  @@unique([listingId, customName])
+  @@index([listingId])
+}
+
+model TaxRegistration {
+  id                 String                @id @default(cuid())
+  hostId             String
+  jurisdictionId     String?
+  taxType            String // "VAT_ID", "GST_NUMBER", "TOURIST_TAX_ID", "MUNICIPAL_LICENSE"
+  registrationNumber String
+  businessName       String?
+  businessAddress    String?
+  documentUrl        String?
+  status             TaxRegistrationStatus @default(UNVERIFIED)
+  verifiedAt         DateTime?
+  verifiedById       String?
+  notes              String?               @db.Text
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+
+  host         User             @relation(fields: [hostId], references: [id], onDelete: Cascade)
+  jurisdiction TaxJurisdiction? @relation(fields: [jurisdictionId], references: [id], onDelete: SetNull)
+
+  @@index([hostId])
+  @@index([hostId, taxType])
+}
+
+model ReservationTax {
+  id                       String                      @id @default(cuid())
+  bookingId                String
+  taxRuleId                String?
+  taxRuleVersion           Int                         @default(1)
+  taxName                  String
+  taxType                  TaxType
+  calculationMethod        TaxCalculationMethod
+  rate                     Float?
+  amount                   Int? // configured fixed amount
+  taxableBase              Int // in minor units (cents)
+  taxAmount                Int // in minor units (cents)
+  currency                 String                      @default("SAR")
+  remittanceResponsibility TaxRemittanceResponsibility
+  refundedTax              Int                         @default(0) // in minor units
+  createdAt                DateTime                    @default(now())
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId])
+}
+
+model TaxAuditLog {
+  id        String   @id @default(cuid())
+  listingId String?
+  hostId    String
+  action    String // "CREATE_TAX", "UPDATE_TAX", "DELETE_TAX", "ADD_REGISTRATION", "UPDATE_REGISTRATION"
+  oldValues Json?
+  newValues Json?
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  host    User     @relation(fields: [hostId], references: [id], onDelete: Cascade)
+  listing Listing? @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@index([listingId])
+  @@index([hostId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Listing Removal Feedback & Exit Survey
+// ─────────────────────────────────────────────────────────────────────────────
+
+model ListingRemovalFeedback {
+  id             String   @id @default(cuid())
+  listingId      String
+  hostId         String
+  listingTitle   String
+  categories     String[] // E.g. ["NO_LONGER_ABLE", "NOT_READY", "EXPECTED_MORE_HOMYZ", "WANTED_MORE_MONEY", "GUEST_ISSUES", "DUPLICATE"]
+  reasons        String[] // Array of all specific reason options selected
+  customFeedback String?  @db.Text
+  actionTaken    String   @default("PERMANENT_DELETE") // "PERMANENT_DELETE" | "ARCHIVED"
+  createdAt      DateTime @default(now())
+
+  host User @relation(fields: [hostId], references: [id], onDelete: Cascade)
+
+  @@index([listingId])
+  @@index([hostId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Global Application Settings & Configuration
+// ─────────────────────────────────────────────────────────────────────────────
+
+model AppSettings {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String? // Stored as string, parsed based on dataType
+  description String?
+  dataType    String   @default("STRING") // STRING, NUMBER, BOOLEAN, JSON
+  category    String   @default("GENERAL") // GENERAL, PRICING, BOOKING, TAX, etc.
+  isPublic    Boolean  @default(false) // Whether this setting is exposed to client
+  updatedBy   String? // User ID of last updater
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([key])
+  @@index([category])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Messaging & Inquiries System
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Conversation {
+  id            String             @id @default(cuid())
+  guestId       String
+  hostId        String
+  listingId     String
+  bookingId     String?
+  type          ConversationType   @default(GENERAL)
+  status        ConversationStatus @default(ACTIVE)
+  lastMessageAt DateTime           @default(now())
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  guest         User                @relation("GuestConversations", fields: [guestId], references: [id], onDelete: Cascade)
+  host          User                @relation("HostConversations", fields: [hostId], references: [id], onDelete: Cascade)
+  listing       Listing             @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  booking       Booking?            @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  messages      Message[]
+  specialOffers SpecialOffer[]
+  attachments   MessageAttachment[]
+
+  @@index([guestId, lastMessageAt])
+  @@index([hostId, lastMessageAt])
+  @@index([listingId])
+  @@index([bookingId])
+  @@index([status])
+}
+
+model Message {
+  id             String      @id @default(cuid())
+  conversationId String
+  senderId       String?
+  type           MessageType @default(TEXT)
+  content        String      @db.Text
+  readAt         DateTime?
+  metadata       Json?
+  createdAt      DateTime    @default(now())
+
+  conversation Conversation        @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User?               @relation("SentMessages", fields: [senderId], references: [id], onDelete: SetNull)
+  attachments  MessageAttachment[]
+
+  @@index([conversationId, createdAt])
+  @@index([conversationId, readAt])
+  @@index([senderId])
+}
+
+model SpecialOffer {
+  id             String             @id @default(cuid())
+  conversationId String
+  hostId         String
+  guestId        String
+  listingId      String
+  startDate      DateTime           @db.Date
+  endDate        DateTime           @db.Date
+  guests         Int                @default(1)
+  subtotalPrice  Int // Minor units / cents
+  currency       String             @default("SAR")
+  status         SpecialOfferStatus @default(PENDING)
+  expiresAt      DateTime?
+  messageId      String?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  host         User         @relation("HostSpecialOffers", fields: [hostId], references: [id], onDelete: Cascade)
+  guest        User         @relation("GuestSpecialOffers", fields: [guestId], references: [id], onDelete: Cascade)
+  listing      Listing      @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([guestId])
+  @@index([hostId])
+  @@index([status])
+}
+
+model MessageAttachment {
+  id             String   @id @default(cuid())
+  conversationId String
+  messageId      String?
+  fileName       String
+  fileType       String // "IMAGE" | "DOCUMENT"
+  mimeType       String
+  fileSize       Int
+  storagePath    String
+  fileUrl        String
+  createdAt      DateTime @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  message      Message?     @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([messageId])
+  @@index([createdAt])
+}
+
+model ListingQualityIncident {
+  id              String                  @id @default(cuid())
+  listingId       String
+  bookingId       String?
+  reportedById    String?
+  category        QualityIncidentCategory
+  status          QualityIncidentStatus   @default(PENDING)
+  severity        QualityIncidentSeverity?
+  description     String?                 @db.Text
+  resolutionNotes String?                 @db.Text
+  metadata        Json?
+  createdAt       DateTime                @default(now())
+  resolvedAt      DateTime?
+  updatedAt       DateTime                @updatedAt
+
+  listing    Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  booking    Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  reportedBy User?    @relation("ReportedQualityIncidents", fields: [reportedById], references: [id], onDelete: SetNull)
+
+  @@index([listingId])
+  @@index([listingId, status])
+  @@index([bookingId])
+  @@index([createdAt])
+}

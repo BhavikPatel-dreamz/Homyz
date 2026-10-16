@@ -1,0 +1,598 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { GuestDashboardSidebar } from "@/components/dashboard/guest-sidebar";
+import {
+  GUEST_NAV_ITEMS,
+  normalizeTabId,
+  extractTabFromQuery,
+  extractSubTabFromQuery,
+  extractProfileRoute,
+  getProfileTabHref,
+  getMgmtSubTabSlug,
+  ProfileMgmtSubTab,
+} from "@/lib/profile/tab-utils";
+import dynamic from "next/dynamic";
+import { LogoutButton } from "@/components/admin/logout-button";
+import { ReservationCardData } from "@/components/dashboard/reservation-card";
+import { BackButton } from "@/components/ui/back-button";
+import { getLanguageDisplayNames } from "@/lib/utils/language-options";
+import type { GuestAuthoredReviewDTO } from "@/lib/profile/profile-loader";
+import type { FavoriteCardItem } from "@/services/favorite.service";
+import { LoadingSkeleton } from "@/components/dashboard/loading-skeleton";
+import { useLanguage, type TranslationKey } from "@/lib/i18n/language-context";
+import {
+  SavedListingsSkeleton,
+  NotificationsSkeleton,
+  LoyaltyWalletSkeleton,
+  PersonalInfoSkeleton,
+  ProfileManagementSkeleton,
+  SupportChatSkeleton,
+  InviteEarnSkeleton,
+} from "@/components/dashboard/section-skeletons";
+
+const ReservationDashboard = dynamic(
+  () =>
+    import("@/components/dashboard/reservation-dashboard").then(
+      (m) => m.ReservationDashboard,
+    ),
+  { loading: () => <LoadingSkeleton count={4} compactCards /> },
+);
+
+const ProfileManagementClient = dynamic(
+  () =>
+    import(
+      "@/app/(protected)/profile-management/profile-management-client"
+    ).then((m) => m.ProfileManagementClient),
+  { loading: () => <ProfileManagementSkeleton /> },
+);
+
+const SavedListingsView = dynamic(
+  () =>
+    import("@/components/profile/saved-listings-view").then(
+      (m) => m.SavedListingsView,
+    ),
+  { loading: () => <SavedListingsSkeleton /> },
+);
+
+const LoyaltyWalletView = dynamic(
+  () =>
+    import("@/components/profile/loyalty-wallet-view").then(
+      (m) => m.LoyaltyWalletView,
+    ),
+  { loading: () => <LoyaltyWalletSkeleton /> },
+);
+
+const InviteEarnView = dynamic(
+  () =>
+    import("@/components/profile/invite-earn-view").then(
+      (m) => m.InviteEarnView,
+    ),
+  { loading: () => <InviteEarnSkeleton /> },
+);
+
+const SupportChatView = dynamic(
+  () =>
+    import("@/components/profile/support-chat-view").then(
+      (m) => m.SupportChatView,
+    ),
+  { loading: () => <SupportChatSkeleton /> },
+);
+
+const NotificationsView = dynamic(
+  () =>
+    import("@/components/profile/notifications-view").then(
+      (m) => m.NotificationsView,
+    ),
+  { loading: () => <NotificationsSkeleton /> },
+);
+
+const MyReviewsSection = dynamic(
+  () =>
+    import("@/components/profile/my-reviews-section").then(
+      (m) => m.MyReviewsSection,
+    ),
+  {
+    loading: () => (
+      <div aria-label="Loading reviews" role="status" className="w-full animate-pulse">
+        <div className="mb-5 h-6 w-28 rounded bg-zinc-200" />
+        <div className="grid grid-cols-1 gap-x-8 gap-y-10 md:grid-cols-2 xl:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <div key={index} className="space-y-3">
+              <div className="h-15 w-15 rounded-full bg-zinc-200" />
+              <div className="h-4 w-24 rounded bg-zinc-100" />
+              <div className="h-12 w-full rounded bg-zinc-100" />
+              <div className="h-4 w-2/3 rounded bg-zinc-200" />
+            </div>
+          ))}
+        </div>
+      </div>
+    ),
+  },
+);
+
+const PersonalInfoView = dynamic(
+  () =>
+    import("@/components/account-settings/personal-info-view").then(
+      (m) => m.PersonalInfoView,
+    ),
+  { loading: () => <PersonalInfoSkeleton /> },
+);
+
+export type PublicProfileData = {
+  whereIWantToGo?: string;
+  myWork?: string;
+  spendTooMuchTime?: string;
+  pets?: string;
+  decadeBorn?: string;
+  school?: string;
+  uselessSkill?: string;
+  funFact?: string;
+  favoriteSong?: string;
+  languages?: string | string[];
+  interests?: string[];
+  prompts?: {
+    homeUnique?: string;
+    guestsShouldKnow?: string;
+    hobbies?: string | string[];
+    education?: string;
+    perfectGuest?: string;
+  };
+  obsessedWith?: string;
+  bioTitle?: string;
+  whereILive?: string;
+  bio?: string;
+  profileVisible?: boolean;
+};
+
+type ProfileData = {
+  id: string;
+  name: string | null;
+  phone: string | null;
+  image: string | null;
+  email: string | null;
+  createdAt?: Date | string;
+  publicProfile?: PublicProfileData | null;
+};
+
+export type UserStatsData = {
+  trips: number;
+  likes: number;
+  reviews: number;
+  yearsOnHomyz?: number;
+};
+
+const IconTranslate = () => (
+  <svg className="w-4.5 h-4.5 text-zinc-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3 5h12M9 3v2m1 4c-1.5 3-3.5 5.5-6 7m2-7c1.5 2 3.5 4.5 5 7m6 3l4-8 4 8m-7-2h6" />
+  </svg>
+);
+
+const MobileAccountIcon = ({ type }: { type: string }) => {
+  const commonProps = {
+    className: "h-5 w-5",
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 1.5,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+    "aria-hidden": true,
+  };
+
+  if (type === "settings") {
+    return <svg {...commonProps}><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56V21h-4v-.08A1.7 1.7 0 0 0 9 19.37a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.63 15 1.7 1.7 0 0 0 3.08 14H3v-4h.08A1.7 1.7 0 0 0 4.63 9a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 9 4.63 1.7 1.7 0 0 0 10 3.08V3h4v.08A1.7 1.7 0 0 0 15 4.63a1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.37 9 1.7 1.7 0 0 0 20.92 10H21v4h-.08A1.7 1.7 0 0 0 19.4 15Z" /></svg>;
+  }
+
+  if (type === "help") {
+    return <svg {...commonProps}><circle cx="12" cy="12" r="9" /><path d="M9.8 9a2.4 2.4 0 1 1 3.05 2.32c-.85.28-.85.85-.85 1.68M12 17h.01" /></svg>;
+  }
+
+  if (type === "cohost") {
+    return <svg {...commonProps}><circle cx="12" cy="8" r="3" /><path d="M7.5 19v-1.5a4.5 4.5 0 0 1 9 0V19M9 12.5 7 11l-2 2 2 2" /></svg>;
+  }
+
+  if (type === "gift") {
+    return <svg {...commonProps}><rect x="4" y="10" width="16" height="10" rx="1" /><path d="M3 7h18v3H3zM12 7v13M12 7H8.5A2.5 2.5 0 1 1 11 4.5L12 7Zm0 0h3.5A2.5 2.5 0 1 0 13 4.5L12 7Z" /></svg>;
+  }
+
+  return <svg {...commonProps}><circle cx="9" cy="8" r="3" /><circle cx="16.5" cy="10" r="2.5" /><path d="M3.5 19a5.5 5.5 0 0 1 11 0M14 15.5a4.5 4.5 0 0 1 6.5 3.5" /></svg>;
+};
+
+type ProfileClientProps = {
+  initial: ProfileData;
+  initialTripPhotos?: unknown[];
+  initialTripPhotosLoaded?: boolean;
+  initialStats?: UserStatsData;
+  initialReservations?: ReservationCardData[];
+  initialFavorites?: FavoriteCardItem[];
+  initialFavoritesTotal?: number;
+  initialReviews?: GuestAuthoredReviewDTO[];
+  initialNotifications?: {
+    items: any[];
+    total: number;
+    unreadCount: number;
+  };
+  initialPersonalInfo?: import("@/services/personal-info.service").PersonalInfoDTO | null;
+  isOwner?: boolean;
+  initialTab?: string;
+  initialSubTab?: ProfileMgmtSubTab;
+};
+
+export function ProfileClient({
+  initial,
+  initialTripPhotos = [],
+  initialTripPhotosLoaded = false,
+  initialStats = { trips: 0, likes: 0, reviews: 0, yearsOnHomyz: 0 },
+  initialReservations = [],
+  initialFavorites = [],
+  initialFavoritesTotal = 0,
+  initialReviews = [],
+  initialNotifications,
+  initialPersonalInfo,
+  isOwner = true,
+  initialTab,
+  initialSubTab,
+}: ProfileClientProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const { t } = useLanguage();
+
+  const [currentUser, setCurrentUser] = useState<ProfileData>(initial);
+
+  useEffect(() => {
+    setCurrentUser(initial);
+  }, [initial]);
+
+  useEffect(() => {
+    function onProfileUpdated(e: Event) {
+      const ev = e as CustomEvent<ProfileData>;
+      if (ev?.detail) {
+        setCurrentUser(ev.detail);
+      }
+    }
+    window.addEventListener("homyz:profile-updated", onProfileUpdated);
+    return () => window.removeEventListener("homyz:profile-updated", onProfileUpdated);
+  }, []);
+
+  const route = extractProfileRoute({ pathname: pathname ?? undefined, searchParams });
+  const activeTab = pathname ? route.tab : normalizeTabId(initialTab);
+  const activeSubTab = pathname ? route.subTab : initialSubTab || route.subTab;
+
+  const [pendingTab, setPendingTab] = useState<string | null>(null);
+
+  useEffect(() => {
+    setPendingTab(null);
+  }, [pathname, searchParams]);
+
+  const handleSelectTab = (tabId: string) => {
+    const normalized = normalizeTabId(tabId);
+    if (normalized !== activeTab) {
+      setPendingTab(normalized);
+    }
+    const href = getProfileTabHref(normalized);
+    router.push(href, { scroll: false });
+  };
+
+  const currentTab = pendingTab || activeTab;
+  const isPendingTransition = Boolean(pendingTab && pendingTab !== activeTab);
+
+  const renderPendingSkeleton = (tab: string) => {
+    switch (tab) {
+      case "profile_management":
+        return <ProfileManagementSkeleton />;
+      case "account_settings":
+        return <PersonalInfoSkeleton />;
+      case "saved":
+        return <SavedListingsSkeleton />;
+      case "notifications":
+        return <NotificationsSkeleton />;
+      case "support":
+        return <SupportChatSkeleton />;
+      case "loyalty":
+        return <LoyaltyWalletSkeleton />;
+      case "invite":
+        return <InviteEarnSkeleton />;
+      case "today":
+      case "upcoming":
+      case "past":
+      default:
+        return <LoadingSkeleton count={4} />;
+    }
+  };
+
+  const pub = currentUser.publicProfile || {};
+  const hostPrompts = pub.prompts || {};
+  const hostHobbies = Array.isArray(hostPrompts.hobbies)
+    ? hostPrompts.hobbies.filter((hobby): hobby is string => typeof hobby === "string")
+    : typeof hostPrompts.hobbies === "string" && hostPrompts.hobbies.trim()
+      ? [hostPrompts.hobbies]
+      : [];
+  const hostInterests = Array.isArray(pub.interests)
+    ? pub.interests.filter((interest): interest is string => typeof interest === "string")
+    : [];
+  const hasHostProfileDetails = Boolean(
+    pub.bio || hostPrompts.homeUnique || hostPrompts.guestsShouldKnow ||
+    hostPrompts.education || hostPrompts.perfectGuest || hostHobbies.length || hostInterests.length,
+  );
+  const years = initialStats.yearsOnHomyz || (currentUser.createdAt ? Math.max(1, new Date().getFullYear() - new Date(currentUser.createdAt).getFullYear()) : 1);
+
+  return (
+    <div className="flex min-h-[85vh] w-full flex-col bg-white pb-14 sm:pt-5 font-sans lg:pb-12">
+        <div className="mb-5 flex items-center justify-between lg:hidden">
+          <BackButton
+            onClick={() => {
+              if (activeTab !== "about_me") {
+                handleSelectTab("about_me");
+              } else {
+                history.back();
+              }
+            }}
+            aria-label="Go back"
+            className="back-btn flex h-8 w-8 items-center justify-center rounded-full border border-[#D7D7D7] text-[#727272]"
+          />
+          
+        </div>
+
+      <div className="grid grid-cols-1 sm:gap-8 gap-3 lg:grid-cols-[300px_minmax(0,1fr)] lg:gap-12 xl:grid-cols-[452px_minmax(0,1fr)]">
+
+          <GuestDashboardSidebar
+            activeId={currentTab}
+            onSelectTab={handleSelectTab}
+            avatarUrl={currentUser.image}
+          />
+
+          <main className="order-1 flex w-full min-w-0 flex-col lg:order-2 lg:pt-0">
+            {isPendingTransition ? (
+              renderPendingSkeleton(currentTab)
+            ) : (
+              <>
+            {activeTab === "about_me" && (
+              <div className="flex flex-col animate-in fade-in">
+                {/* 1. Header with Title & Yellow Edit Button */}
+                <div className="mb-3 flex items-center gap-[19px] lg:mb-8 xl:mb-10">
+                  <h2 className="text-[22px] leading-[30px] font-medium tracking-[-0.02em] text-[#1F1F1F] sm:text-[28px] sm:leading-[36px] lg:text-[32px] lg:leading-[40px] xl:text-[36px] xl:leading-[44px]">
+                    <span className="lg:hidden text-[20px] leading-7">{t("profile_nav_my_profile", "My profile")}</span>
+                    <span className="hidden lg:inline">{t("profile_about_me", "About me")}</span>
+                  </h2>
+                  {isOwner && (
+                    <button
+                      type="button"
+                      onClick={() => handleSelectTab("profile_management")}
+                      className="hidden h-12 items-center justify-center rounded-full bg-[#FCDF9C] px-5 text-base font-normal text-[#1F1F1F] transition-colors hover:bg-[#F7D37D] lg:flex cursor-pointer"
+                    >
+                      {t("profile_edit_btn", "Edit")}
+                    </button>
+                  )}
+                </div>
+
+                {/* 2. Profile Overview Card */}
+                <div className="mb-0 flex flex-row items-start gap-6 lg:mb-[30px]">
+                  {/* Rounded rectangular profile image */}
+                  <div className="relative h-[124px] w-[124px] shrink-0 overflow-hidden rounded-xl border border-[#1F1F1F] bg-zinc-100 sm:h-[151px] sm:w-[233px] sm:rounded-2xl sm:border-2">
+                    {currentUser.image ? (
+                      <Image
+                        src={currentUser.image}
+                        alt={currentUser.name || "User profile image"}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 639px) 124px, 233px"
+                        priority
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center bg-zinc-100 text-[#727272]">
+                        <svg className="h-16 w-16" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                          <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Name, Location & 3 Circular Stats */}
+                  <div className="flex min-h-[124px] min-w-0 flex-1 flex-col justify-center gap-3 sm:min-h-[151px] sm:w-[195px] sm:flex-none sm:gap-4">
+                    <div className="flex flex-col gap-1 sm:gap-2">
+                      <h3 className="truncate text-sm leading-5 font-semibold text-[#1F1F1F] sm:text-base sm:leading-6">
+                        {currentUser.name || "Name"}
+                      </h3>
+                      <p className="truncate text-xs leading-[18px] font-normal text-[#727272] sm:text-sm sm:leading-[21px]">
+                        {pub.whereILive || (isOwner ? t("profile_add_location", "Add your location") : "")}
+                      </p>
+                    </div>
+
+                    {/* 3 Circular Stats */}
+                    <div className="flex items-start justify-between gap-2 border-t border-[#727272] pt-2 sm:gap-6 sm:pt-4">
+                      <div className="flex flex-col items-center">
+                        <div className="flex h-6 w-6 items-center justify-center rounded-full border border-[#1F1F1F] bg-white text-[10px] font-normal text-[#1F1F1F] sm:h-[37px] sm:w-[37px] sm:text-sm">
+                          {initialStats.trips ?? 0}
+                        </div>
+                        <span className="mt-1 text-[10px] leading-4 font-normal text-[#727272] sm:mt-1.5 sm:text-xs sm:leading-[18px]">{t("profile_stat_trips", "Trips")}</span>
+                      </div>
+
+                      <div className="flex flex-col items-center">
+                        <div className="flex h-6 w-6 items-center justify-center rounded-full border border-[#1F1F1F] bg-white text-[10px] font-normal text-[#1F1F1F] sm:h-[37px] sm:w-[37px] sm:text-sm">
+                          {initialStats.reviews ?? 0}
+                        </div>
+                        <span className="mt-1 text-[10px] leading-4 font-normal text-[#727272] sm:mt-1.5 sm:text-xs sm:leading-[18px]">{t("profile_stat_reviews", "Reviews")}</span>
+                      </div>
+
+                      <div className="flex flex-col items-center">
+                        <div className="flex h-6 w-6 items-center justify-center rounded-full border border-[#1F1F1F] bg-white text-[10px] font-normal text-[#1F1F1F] sm:h-[37px] sm:w-[37px] sm:text-sm">
+                          {years}
+                        </div>
+                        <span className="mt-1 text-center text-[9px] leading-3 font-normal text-[#727272] sm:mt-1.5 sm:text-xs sm:leading-[18px]">
+                          {t("profile_stat_years_on_homyz", "Years on Homyz")}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Languages Row */}
+                {pub.languages && (Array.isArray(pub.languages) ? pub.languages.length > 0 : Boolean(pub.languages)) ? (
+                  <div className="hidden items-center gap-4 border-b border-[#727272] pb-6 text-base leading-6 font-normal text-[#1F1F1F] lg:flex">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F3F4F5]">
+                      <IconTranslate />
+                    </span>
+                    <span>{t("profile_speaks_languages", { languages: Array.isArray(pub.languages) ? getLanguageDisplayNames(pub.languages).join(", ") : pub.languages })}</span>
+                  </div>
+                ) : null}
+
+                {hasHostProfileDetails && (
+                  <section className="mt-6 space-y-4 border-b border-zinc-200/80 pb-6">
+                    <h3 className="text-xl font-semibold text-[#1F1F1F]">{t("profile_about_me", "About me")}</h3>
+                    {pub.bio && <p className="text-sm leading-6 text-zinc-700">{pub.bio}</p>}
+                    <div className="space-y-3 text-sm text-zinc-700">
+                      {hostPrompts.homeUnique && <p><span className="font-semibold">{t("profile_prompt_home_unique", "What makes my home unique")}: </span>{hostPrompts.homeUnique}</p>}
+                      {hostPrompts.guestsShouldKnow && <p><span className="font-semibold">{t("profile_prompt_guests_should_know", "What guests should know")}: </span>{hostPrompts.guestsShouldKnow}</p>}
+                      {hostPrompts.education && <p><span className="font-semibold">{t("profile_prompt_education", "Education / background")}: </span>{hostPrompts.education}</p>}
+                      {hostPrompts.perfectGuest && <p><span className="font-semibold">{t("profile_prompt_perfect_guest", "Perfect guest")}: </span>{hostPrompts.perfectGuest}</p>}
+                    </div>
+                    {hostHobbies.length > 0 && <div><p className="mb-2 text-sm font-semibold text-zinc-700">{t("profile_hobbies", "Hobbies")}</p><div className="flex flex-wrap gap-2">{hostHobbies.map((hobby) => <span key={hobby} className="rounded-full bg-zinc-100 px-3 py-1 text-xs text-zinc-700">{hobby}</span>)}</div></div>}
+                    {hostInterests.length > 0 && <div><p className="mb-2 text-sm font-semibold text-zinc-700">{t("profile_my_interests", "My interests")}</p><div className="flex flex-wrap gap-2">{hostInterests.map((interest) => <span key={interest} className="rounded-full bg-zinc-100 px-3 py-1 text-xs text-zinc-700">{interest}</span>)}</div></div>}
+                  </section>
+                )}
+
+                {/* 3. My Reviews Section (Real Authenticated Guest Reviews) */}
+                <div className="mt-8 w-full border-t border-zinc-200/80 pt-6">
+                  <MyReviewsSection reviews={initialReviews} />
+                </div>
+              </div>
+            )}
+
+            {(activeTab === "upcoming_trips" || activeTab === "upcoming") && (
+              <div className="flex flex-col animate-in fade-in">
+                <ReservationDashboard
+                  key={searchParams.get("bookingView") === "all" ? "upcoming-all" : "upcoming"}
+                  initialReservations={initialReservations}
+                  initialTab="upcoming"
+                  reviews={initialReviews}
+                  onTabChange={(filterTab) => {
+                    if (filterTab === "past") handleSelectTab("past_bookings");
+                    else if (filterTab === "upcoming") handleSelectTab("upcoming_trips");
+                    else if (filterTab === "all") router.push("/profile/tab/upcoming?bookingView=all", { scroll: false });
+                  }}
+                />
+              </div>
+            )}
+
+            {(activeTab === "past_bookings" || activeTab === "past") && (
+              <div className="flex flex-col animate-in fade-in">
+                <ReservationDashboard
+                  initialReservations={initialReservations}
+                  initialTab="past"
+                  reviews={initialReviews}
+                  onTabChange={(filterTab) => {
+                    if (filterTab === "upcoming") handleSelectTab("upcoming_trips");
+                    else if (filterTab === "past") handleSelectTab("past_bookings");
+                  }}
+                />
+              </div>
+            )}
+
+            {activeTab === "loyalty" && (
+              <LoyaltyWalletView />
+            )}
+
+            {activeTab === "invite" && (
+              <InviteEarnView />
+            )}
+
+            {activeTab === "saved" && (
+              <SavedListingsView
+                initialFavorites={initialFavorites}
+                initialTotal={initialFavoritesTotal}
+              />
+            )}
+
+            {activeTab === "profile_management" && (
+              <ProfileManagementClient
+                key={`trip-photos-${initialTripPhotosLoaded ? "loaded" : "deferred"}`}
+                initial={currentUser}
+                onProfileUpdated={(updated) => setCurrentUser(updated)}
+                initialTripPhotos={initialTripPhotos as any}
+                initialTripPhotosLoaded={initialTripPhotosLoaded}
+                initialStats={initialStats}
+                isOwner={isOwner}
+                embedded={true}
+                initialSubTab={activeSubTab}
+                onSubTabChange={(sub) => {
+                  const href = getProfileTabHref("profile_management", sub);
+                  router.push(href, { scroll: false });
+                }}
+                onCancel={() => handleSelectTab("about_me")}
+              />
+            )}
+
+            {activeTab === "support" && (
+              <SupportChatView user={initial} />
+            )}
+
+            {activeTab === "notifications" && (
+              <NotificationsView initialData={initialNotifications} />
+            )}
+
+            {activeTab === "account_settings" && (
+            <div className="flex flex-col animate-in fade-in amenities-list-scrollbar lg:h-[calc(100dvh-10rem)] lg:overflow-y-auto lg:overscroll-contain lg:pr-5">
+                <PersonalInfoView initialData={initialPersonalInfo} />
+              </div>
+            )}
+              </>
+            )}
+          </main>
+        </div>
+
+        <div className="mt-8 lg:hidden">
+          <div>
+            {[
+              [t("profile_mobile_account_setting", "Account setting"), "profile_management", "settings"],
+              [t("profile_mobile_help_centre", "Help centre"), "/help", "help"],
+              [t("profile_mobile_refer_a_host", "Refer a Host"), "/host/refer", "refer"],
+              [t("profile_mobile_find_cohost", "Find a co-Host"), "/host/co-host", "cohost"],
+              [t("profile_mobile_gift_cards", "Gift Cards"), "/gift-cards", "gift"],
+            ].map(([label, target, icon], index) => {
+              const isTab = target.startsWith("profile_management") || target === "account_settings";
+              return isTab ? (
+                <button
+                  key={label}
+                  type="button"
+                  onClick={() => handleSelectTab(target)}
+                  className="flex w-full items-center gap-3 py-1.5 text-sm text-[#3F3F3F]"
+                >
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5]">
+                    <MobileAccountIcon type={icon} />
+                  </span>
+                  <span>{label}</span>
+                  <svg className="ml-auto h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="m9 18 6-6-6-6" />
+                  </svg>
+                </button>
+              ) : (
+                <Link
+                  key={label}
+                  href={target}
+                  className={`flex items-center gap-3 py-1.5 text-sm text-[#3F3F3F] ${
+                    index === 1 ? "mb-1.5 border-b border-[#D7D7D7]" : ""
+                  } ${index === 4 ? "border-b border-[#D7D7D7]" : ""}`}
+                >
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5]">
+                    <MobileAccountIcon type={icon} />
+                  </span>
+                  <span>{label}</span>
+                  <svg className="ml-auto h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="m9 18 6-6-6-6" />
+                  </svg>
+                </Link>
+              );
+            })}
+          </div>
+          <LogoutButton callbackUrl="/login?logged_out=true" className="mt-3 !rounded-none !border-0 !p-0 text-sm! !font-medium text-[#1F1F1F]! underline! underline-offset-3!">
+            {t("profile_mobile_log_out", "Log out")}
+          </LogoutButton>
+        </div>
+    </div>
+  );
+}
