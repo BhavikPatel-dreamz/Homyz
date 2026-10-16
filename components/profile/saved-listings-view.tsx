@@ -157,7 +157,7 @@ export function SavedListingsView({ initialFavorites, initialTotal = 0 }: SavedL
               {t("profile_saved_title", "Wishlists")}
             </h2>
             {validItems.length > 0 && (
-              <span className="inline-flex shrink-0 items-center whitespace-nowrap rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">
+              <span className="inline-flex shrink-0 items-center whitespace-nowrap rounded-full bg-amber-100 px-3 py-1 text-xs font-normal text-amber-800">
                 {validItems.length === 1
                   ? t("profile_saved_count_one", { count: 1 }, "1 saved stay")
                   : t("profile_saved_count_many", { count: validItems.length }, `${validItems.length} saved stays`)}
