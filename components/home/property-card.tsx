@@ -119,7 +119,7 @@ function PropertyCardComponent({
   return (
     <Link
       href={targetHref}
-      className="group block cursor-pointer overflow-hidden md:rounded-[20px] rounded-[10px] border border-[#727272] bg-white transition-all duration-200"
+      className="group block cursor-pointer overflow-hidden md:rounded-[20px] rounded-[10px] border border-[#727272] bg-white transition-all duration-200 h-full"
     >
       <div className="relative aspect-[233/246] w-full overflow-hidden bg-zinc-100">
         {displayImage ? (
@@ -183,20 +183,20 @@ function PropertyCardComponent({
             {displaySubtitle}
           </p>
         )}
-        <div className="flex items-center flex-wrap justify-between col-gap-2 row-gap-1 text-[10px] sm:text-xs font-normal text-[#1f1f1f] leading-normal mt-1.5 whitespace-nowrap truncate">
+        <div className="flex items-center flex-wrap justify-between gap-1 text-[10px] sm:text-xs font-normal text-[#1f1f1f] leading-normal mt-1 whitespace-nowrap truncate">
           {/* Price per night */}
           {cardPricing.hasDiscount && cardPricing.discountedDisplayPrice != null ? (
             <span className="font-normal text-[#1F1F1F] flex items-baseline gap-1">
-              <span className="line-through text-[#1f1f1f] font-normal text-[10px] sm:text-xs leading-4">
+              <span className="line-through text-[#727272] font-normal text-[10px] sm:text-xs leading-4">
                 {formatPrice(cardPricing.baseDisplayPrice, currency)}
               </span>
-              <span>{formatPrice(cardPricing.discountedDisplayPrice, currency)}</span>
+              <span className="font-medium">{formatPrice(cardPricing.discountedDisplayPrice, currency)}</span>
               <span className="font-normal text-[#1f1f1f] text-[10px] sm:text-xs leading-4"> / night</span>
             </span>
           ) : (
-              <span className="font-normal text-[#1F1F1F]">
-              {formattedPrice}
-                <span className="font-normal text-[#1f1f1f] text-[10px] sm:text-xs leading-4"> / night</span>
+            <span className="font-normal text-[#1F1F1F]">
+              <span className="font-medium">{formattedPrice}</span>
+              <span className="font-normal text-[#1f1f1f] text-[10px] sm:text-xs leading-4"> / night</span>
             </span>
           )}
 
@@ -220,7 +220,7 @@ function PropertyCardComponent({
               </span>
             </span>
           ) : (
-              <span className="text-[10px] sm:text-xs text-[#1f1f1f] font-normal">
+            <span className="text-[10px] sm:text-xs text-[#1f1f1f] font-normal">
               {guests ? t("home_up_to_guests", { count: guests }) : propertyType || "Stay"}
             </span>
           )}
