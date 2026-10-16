@@ -11,6 +11,7 @@ import { validateContentPayload, getContentTypeDefinition } from "@/lib/cms/cont
 import { invalidateCmsCache } from "@/lib/cms/cache";
 import { auditService } from "@/services/audit.service";
 import { cmsMediaService } from "@/services/cms-media.service";
+import type { Prisma } from "@/generated/prisma/client";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Input Interfaces
@@ -167,7 +168,7 @@ class CmsService {
 
     const validatedPayload = validateContentPayload(input.type, mergedPayload);
 
-    return prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // 1. Create content master record
       const content = await tx.cmsContent.create({
         data: {
@@ -275,7 +276,7 @@ class CmsService {
     const nextVersionNumber = latestVersion ? latestVersion.versionNumber + 1 : 1;
     const validatedPayload = validateContentPayload(content.type, input.payload);
 
-    return prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // 1. Create new immutable version
       const newVersion = await tx.cmsContentVersion.create({
         data: {
@@ -355,8 +356,8 @@ class CmsService {
     }
 
     const targetVersion = versionId
-      ? content.versions.find((v) => v.id === versionId)
-      : content.versions.find((v) => v.id === content.draftVersionId) || content.versions[0];
+      ? content.versions.find((v: { id: string }) => v.id === versionId)
+      : content.versions.find((v: { id: string }) => v.id === content.draftVersionId) || content.versions[0];
 
     if (!targetVersion) {
       throw AppError.badRequest("Target revision not found for publication");
@@ -365,7 +366,7 @@ class CmsService {
     // Re-validate target version payload to ensure integrity
     validateContentPayload(content.type, targetVersion.payload);
 
-    return prisma.$transaction(async (tx) => {
+    return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // 1. Upsert publication record
       const publication = await tx.cmsPublication.upsert({
         where: { contentId },
@@ -438,7 +439,7 @@ class CmsService {
       throw AppError.badRequest("Content is not currently published");
     }
 
-    return prisma.$transaction(async (tx) => {
+    return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // 1. Remove publication record
       await tx.cmsPublication.deleteMany({
         where: { contentId },
@@ -488,7 +489,7 @@ class CmsService {
       throw AppError.notFound("CMS content not found");
     }
 
-    const sourceVersion = content.versions.find((v) => v.id === versionId);
+    const sourceVersion = content.versions.find((v: { id: string }) => v.id === versionId);
     if (!sourceVersion) {
       throw AppError.badRequest("Historical version to restore was not found");
     }
@@ -496,7 +497,7 @@ class CmsService {
     const latestVersion = content.versions[0];
     const nextVersionNumber = latestVersion ? latestVersion.versionNumber + 1 : 1;
 
-    return prisma.$transaction(async (tx) => {
+    return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // 1. Create brand new version containing historical snapshot
       const restoredVersion = await tx.cmsContentVersion.create({
         data: {
@@ -585,7 +586,7 @@ class CmsService {
       throw AppError.notFound("CMS content not found");
     }
 
-    return prisma.$transaction(async (tx) => {
+    return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       if (content.publication) {
         await tx.cmsPublication.deleteMany({ where: { contentId } });
       }
@@ -929,7 +930,17 @@ class CmsService {
       },
     });
 
-    const siblings = candidates.filter((item) => {
+    const siblings = candidates.filter((item: {
+      id: string;
+      metadata: unknown;
+      slug: string | null;
+      locale: string;
+      title: string;
+      status: CmsContentStatus;
+      updatedAt: Date;
+      versions: { versionNumber: number }[];
+      publication: { version: { versionNumber: number } | null } | null;
+    }) => {
       if (item.id === current.id || item.id === translationGroupId) return true;
       const meta = item.metadata as Record<string, unknown> | null;
       if (meta?.translationGroupId === translationGroupId) return true;
@@ -937,7 +948,16 @@ class CmsService {
       return false;
     });
 
-    const translations: TranslationSummary[] = siblings.map((item) => ({
+    const translations: TranslationSummary[] = siblings.map((item: {
+      id: string;
+      locale: string;
+      title: string;
+      slug: string | null;
+      status: CmsContentStatus;
+      updatedAt: Date;
+      versions: { versionNumber: number }[];
+      publication: { version: { versionNumber: number } | null } | null;
+    }) => ({
       id: item.id,
       locale: item.locale,
       title: item.title,
@@ -1019,7 +1039,7 @@ class CmsService {
 
     const validatedPayload = validateContentPayload(source.type, mergedPayload);
 
-    return prisma.$transaction(async (tx) => {
+    return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       if (!sourceMeta.translationGroupId) {
         await tx.cmsContent.update({
           where: { id: source.id },
@@ -1092,4 +1112,3 @@ class CmsService {
 }
 
 export const cmsService = new CmsService();
-

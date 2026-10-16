@@ -7,10 +7,10 @@ import { revalidatePath, revalidateTag } from "next/cache";
 export async function invalidateCmsCache(type: string, slug?: string | null) {
   try {
     // Invalidate global CMS cache tag
-    revalidateTag("cms-content");
-    revalidateTag(`cms-${type.toLowerCase()}`);
+    revalidateTag("cms-content", "max");
+    revalidateTag(`cms-${type.toLowerCase()}`, "max");
     if (slug) {
-      revalidateTag(`cms-${type.toLowerCase()}-${slug}`);
+      revalidateTag(`cms-${type.toLowerCase()}-${slug}`, "max");
     }
 
     // Invalidate affected frontend pages
@@ -42,4 +42,3 @@ export async function invalidateCmsCache(type: string, slug?: string | null) {
     console.warn("[cms-cache] Cache revalidation warning:", err);
   }
 }
-

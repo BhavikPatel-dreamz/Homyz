@@ -195,7 +195,11 @@ class CmsPublicService {
     });
 
     if (locale === "en") {
-      return localePublications.map((pub) => ({
+      return localePublications.map((pub: {
+        content: { id: string; type: CmsContentTypeEnum; title: string; slug: string | null; locale: string };
+        version: { payload: unknown; versionNumber: number };
+        publishedAt: Date;
+      }) => ({
         id: pub.content.id,
         type: pub.content.type,
         title: pub.content.title,

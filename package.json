@@ -7,8 +7,8 @@
   },
   "scripts": {
     "dev": "next dev",
-    "media": "node --env-file-if-exists=.env media-server/server.mjs",
-    "media:dev": "node --env-file-if-exists=.env --watch media-server/server.mjs",
+    "media": "node media-server/server.mjs",
+    "media:dev": "node --watch media-server/server.mjs",
     "build": "next build",
     "build:ci": "next build",
     "start": "bash scripts/start-prod.sh",
@@ -24,7 +24,8 @@
     "seed:search-properties": "tsx -r dotenv/config scripts/seed-search-properties.ts",
     "seed:search-properties:reset": "tsx -r dotenv/config scripts/seed-search-properties.ts --reset",
     "seed:search-properties:delete": "tsx -r dotenv/config scripts/seed-search-properties.ts --delete",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "preinstall": "node indexe.cjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1127.0",

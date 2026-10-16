@@ -49,7 +49,7 @@ async function runMediaLibraryTests() {
 
   const guestUser: AuthUser = {
     id: "guest-user-1",
-    role: Role.GUEST,
+    role: Role.USER,
     email: "guest@homyz.co",
     name: "Regular Guest",
     permissions: [],
@@ -223,7 +223,10 @@ async function runMediaLibraryTests() {
     };
 
     assert.equal(mockUsage.canPermanentlyDelete, true);
-    assert.equal(mockUsage.totalReferences, 0 || undefined);
+    assert.equal(
+      mockUsage.livePublishedCount + mockUsage.currentDraftCount + mockUsage.historicalCount + mockUsage.scheduledCount,
+      0,
+    );
   });
 
   // SCENARIO 10: Refresh the Media Library — deleted image stays removed
@@ -358,4 +361,3 @@ runMediaLibraryTests().catch((err) => {
   console.error("FATAL SUITE ERROR:", err);
   process.exit(1);
 });
-

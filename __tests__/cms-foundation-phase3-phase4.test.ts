@@ -158,8 +158,8 @@ async function runCmsFoundationTests() {
   });
 
   await test("CMS-309", "Concurrent stale edit conflict check", () => {
-    const currentVersionNumber = 5;
-    const incomingExpectedVersion = 4; // Stale editor who opened page earlier
+    const currentVersionNumber: number = 5;
+    const incomingExpectedVersion: number = 4; // Stale editor who opened page earlier
     assert.ok(
       currentVersionNumber !== incomingExpectedVersion,
       "Optimistic concurrency detects mismatch"
@@ -293,7 +293,7 @@ async function runCmsFoundationTests() {
       publishedAt: new Date(),
     };
 
-    const isPublic = item.status === CmsContentStatus.PUBLISHED && item.publication !== null;
+    const isPublic = (item.status as CmsContentStatus) === CmsContentStatus.PUBLISHED && item.publication !== null;
     assert.equal(isPublic, true);
     assert.equal(item.publication.versionId, "ver-1");
   });
@@ -332,7 +332,8 @@ async function runCmsFoundationTests() {
     item.publication = null;
 
     // Public resolver check
-    const isPublic = item.status === CmsContentStatus.PUBLISHED && item.publication !== null;
+    const publishedStatuses: CmsContentStatus[] = [CmsContentStatus.PUBLISHED];
+    const isPublic = publishedStatuses.includes(item.status) && item.publication !== null;
     assert.equal(isPublic, false);
     // History intact
     assert.equal(item.versions.length, 2);
@@ -601,7 +602,7 @@ async function runCmsFoundationTests() {
       draftVersionId: "ver-1",
       publishedVersionId: null,
     };
-    const isAvailablePublicly = item.status === CmsContentStatus.PUBLISHED && item.publication !== null;
+    const isAvailablePublicly = (item.status as CmsContentStatus) === CmsContentStatus.PUBLISHED && item.publication !== null;
     assert.equal(isAvailablePublicly, false);
   });
 
@@ -832,8 +833,8 @@ async function runCmsFoundationTests() {
   });
 
   await test("CMS-513", "Optimistic concurrency check rejects edit with stale expectedVersionNumber", () => {
-    const currentVersionNumber = 3;
-    const clientExpectedVersionNumber = 2;
+    const currentVersionNumber: number = 3;
+    const clientExpectedVersionNumber: number = 2;
 
     let conflictThrown = false;
     if (clientExpectedVersionNumber !== currentVersionNumber) {

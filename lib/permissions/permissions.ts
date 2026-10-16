@@ -429,7 +429,9 @@ export function getRequiredDependencies(permissionSlug: string): string[] {
 }
 
 /** Check whether user has specific permission. Super Admin has ALL permissions automatically. */
-export function hasPermission(user: AuthUser | null | undefined, permission: PermissionSlug | string): boolean {
+type PermissionUser = Partial<AuthUser>;
+
+export function hasPermission(user: PermissionUser | null | undefined, permission: PermissionSlug | string): boolean {
   if (!user) return false;
   // Super Admin / default Admin has fixed full access
   if (isSuperAdmin(user)) return true;
@@ -447,7 +449,7 @@ export function hasPermission(user: AuthUser | null | undefined, permission: Per
   return false;
 }
 
-export function hasAnyPermission(user: AuthUser | null | undefined, permissions: (PermissionSlug | string)[]): boolean {
+export function hasAnyPermission(user: PermissionUser | null | undefined, permissions: (PermissionSlug | string)[]): boolean {
   if (!user) return false;
   return permissions.some((p) => hasPermission(user, p));
 }

@@ -262,7 +262,7 @@ class CmsMediaService {
       const isLivePublished = c.publishedVersionId === v.id && c.status === CmsContentStatus.PUBLISHED;
       const isCurrentDraft = c.draftVersionId === v.id;
       const isHistorical = !isLivePublished && !isCurrentDraft;
-      const isScheduled = c.scheduledActions?.some((a) => a.versionId === v.id) ?? false;
+      const isScheduled = c.scheduledActions?.some((a: { versionId: string | null }) => a.versionId === v.id) ?? false;
 
       referencesMap.set(`${c.id}_${v.id}`, {
         contentId: c.id,
@@ -311,7 +311,7 @@ class CmsMediaService {
           const isLivePublished = content.publishedVersionId === version.id && content.status === CmsContentStatus.PUBLISHED;
           const isCurrentDraft = content.draftVersionId === version.id;
           const isHistorical = !isLivePublished && !isCurrentDraft;
-          const isScheduled = content.scheduledActions?.some((a) => a.versionId === version.id) ?? false;
+          const isScheduled = content.scheduledActions?.some((a: { versionId: string | null }) => a.versionId === version.id) ?? false;
 
           referencesMap.set(`${content.id}_${version.id}`, {
             contentId: content.id,

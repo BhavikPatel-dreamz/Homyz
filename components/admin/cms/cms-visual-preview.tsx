@@ -326,7 +326,12 @@ function PromoRenderer({
   );
 }
 
-function StaticPageRenderer({ payload }: { payload: Record<string, any> }) {
+function StaticPageRenderer({
+  payload,
+}: {
+  payload: Record<string, any>;
+  viewport: "desktop" | "mobile";
+}) {
   return (
     <div className="bg-white rounded-2xl p-6 space-y-4 border border-zinc-200">
       <div className="border-b border-zinc-100 pb-3">
@@ -395,4 +400,3 @@ function GenericRenderer({
     </div>
   );
 }
-
