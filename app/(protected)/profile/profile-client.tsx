@@ -243,6 +243,7 @@ export function ProfileClient({
   const { t } = useLanguage();
 
   const [currentUser, setCurrentUser] = useState<ProfileData>(initial);
+  const [failedProfileImageUrl, setFailedProfileImageUrl] = useState<string | null>(null);
 
   useEffect(() => {
     setCurrentUser(initial);
@@ -374,7 +375,7 @@ export function ProfileClient({
                 <div className="mb-0 flex flex-row items-start gap-6 lg:mb-[30px]">
                   {/* Rounded rectangular profile image */}
                   <div className="relative h-[124px] w-[124px] shrink-0 overflow-hidden rounded-xl border border-[#1F1F1F] bg-zinc-100 sm:h-[151px] sm:w-[233px] sm:rounded-2xl sm:border-2">
-                    {currentUser.image ? (
+                    {currentUser.image && currentUser.image !== failedProfileImageUrl ? (
                       <Image
                         src={currentUser.image}
                         alt={currentUser.name || "User profile image"}
@@ -382,6 +383,7 @@ export function ProfileClient({
                         className="object-cover"
                         sizes="(max-width: 639px) 124px, 233px"
                         priority
+                        onError={() => setFailedProfileImageUrl(currentUser.image)}
                       />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center bg-zinc-100 text-[#727272]">

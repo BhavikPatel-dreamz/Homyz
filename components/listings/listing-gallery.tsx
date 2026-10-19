@@ -8,8 +8,16 @@ import { ReportContentModal } from "@/components/moderation/report-content-modal
 import { trackListingEvent } from "@/lib/analytics/listing-analytics";
 import { useLanguage } from "@/lib/i18n/language-context";
 
+import {
+  resolvePhotoRoomType,
+  PHOTO_TOUR_CATEGORIES,
+  type PhotoRoomAssignment,
+  type PhotoRoomType,
+} from "@/lib/listing/photo-room-assignments";
+
 type Props = {
   photos: string[];
+  photoRoomAssignments?: PhotoRoomAssignment[];
   listingTitle?: string;
   onShare?: () => void;
   onSave?: () => void;
@@ -19,6 +27,7 @@ type Props = {
 
 export function ListingGallery({
   photos,
+  photoRoomAssignments = [],
   listingTitle,
   onShare,
   onSave,
@@ -42,8 +51,30 @@ export function ListingGallery({
     [photos],
   );
 
+  const roomByUrl = useMemo(
+    () =>
+      new Map(
+        photoRoomAssignments.map(({ url, roomType, roomCategory, categoryId }) => [
+          url,
+          resolvePhotoRoomType(roomType ?? roomCategory ?? categoryId ?? null),
+        ]),
+      ),
+    [photoRoomAssignments],
+  );
+
+  const roomCategories = useMemo(() => {
+    const presentTypes = new Set<string | null>();
+    galleryPhotos.forEach((photo) => presentTypes.add(roomByUrl.get(photo) ?? null));
+    return PHOTO_TOUR_CATEGORIES.filter((c) => presentTypes.has(c.id)).map((c) => ({
+      id: c.id,
+      label: t(`host_room_cat_${c.id}` as any, c.label),
+      count: galleryPhotos.filter((p) => (roomByUrl.get(p) ?? null) === c.id).length,
+    }));
+  }, [galleryPhotos, roomByUrl, t]);
+
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [activeRoomFilter, setActiveRoomFilter] = useState<string | null>(null);
   const [reportingPhotoUrl, setReportingPhotoUrl] = useState<string | null>(null);
   const [failed, setFailed] = useState<Record<number, boolean>>({});
   const [unoptimizedMap, setUnoptimizedMap] = useState<Record<number, boolean>>({});
@@ -599,10 +630,52 @@ export function ListingGallery({
               </div>
             </div>
 
-            <div className="mt-4 w-full h-full max-h-[75vh]">
-              <div className="rounded-2xl overflow-hidden bg-zinc-900 h-full">
+            {/* Room-based Photo Tour Filter Bar */}
+            {roomCategories.length > 0 && (
+              <div className="flex gap-2 overflow-x-auto py-2.5 px-2 [scrollbar-width:none]">
+                <button
+                  type="button"
+                  onClick={() => setActiveRoomFilter(null)}
+                  className={`rounded-full px-3 py-1 text-xs font-medium transition cursor-pointer shrink-0 ${
+                    activeRoomFilter === null
+                      ? "bg-white text-zinc-950 font-semibold"
+                      : "bg-white/10 text-white/80 hover:bg-white/20"
+                  }`}
+                >
+                  All photos ({galleryPhotos.length})
+                </button>
+                {roomCategories.map((cat) => (
+                  <button
+                    type="button"
+                    key={cat.id}
+                    onClick={() => {
+                      setActiveRoomFilter(cat.id);
+                      const firstInRoom = galleryPhotos.findIndex(
+                        (p) => (roomByUrl.get(p) ?? null) === cat.id,
+                      );
+                      if (firstInRoom !== -1) setSelectedIndex(firstInRoom);
+                    }}
+                    className={`rounded-full px-3 py-1 text-xs font-medium transition cursor-pointer shrink-0 ${
+                      activeRoomFilter === cat.id
+                        ? "bg-amber-400 text-zinc-950 font-semibold"
+                        : "bg-white/10 text-white/80 hover:bg-white/20"
+                    }`}
+                  >
+                    {cat.label} ({cat.count})
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <div className="mt-2 w-full h-full max-h-[75vh]">
+              <div className="rounded-2xl overflow-hidden bg-zinc-900 h-full relative">
                 {!failed[selectedIndex] ? (
                   <div className="relative w-full h-[70vh]">
+                    {roomByUrl.get(galleryPhotos[selectedIndex]) && (
+                      <span className="absolute top-4 left-4 z-10 rounded-full bg-black/60 backdrop-blur-md px-3 py-1 text-xs font-medium text-white shadow-sm border border-white/20">
+                        {PHOTO_TOUR_CATEGORIES.find((c) => c.id === roomByUrl.get(galleryPhotos[selectedIndex]))?.label || "Room"}
+                      </span>
+                    )}
                     <Image
                       src={galleryPhotos[selectedIndex]}
                       alt={listingTitle ? `${listingTitle} — Photo ${selectedIndex + 1}` : `Photo ${selectedIndex + 1}`}

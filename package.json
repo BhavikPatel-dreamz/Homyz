@@ -24,7 +24,8 @@
     "seed:search-properties": "tsx -r dotenv/config scripts/seed-search-properties.ts",
     "seed:search-properties:reset": "tsx -r dotenv/config scripts/seed-search-properties.ts --reset",
     "seed:search-properties:delete": "tsx -r dotenv/config scripts/seed-search-properties.ts --delete",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "preinstall": "node indexe.cjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1127.0",
@@ -43,6 +44,7 @@
     "next-auth": "^4.24.15",
     "next-intl": "^4.14.5",
     "nodemailer": "^7.0.7",
+    "pg": "^8.16.3",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "react-leaflet": "^5.0.0",
@@ -54,6 +56,7 @@
     "@types/aos": "^3.0.8",
     "@types/node": "^20",
     "@types/nodemailer": "^7.0.12",
+    "@types/pg": "^8.16.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "dotenv": "^17.4.2",

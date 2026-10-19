@@ -371,6 +371,12 @@ model User {
   assignedModerationCases         ModerationCase[]           @relation("AssignedModerationCases")
   submittedModerationEvidence     ModerationEvidence[]       @relation("SubmittedModerationEvidence")
   moderationActivities            ModerationActivity[]       @relation("ModerationActivityActors")
+  createdCmsContents              CmsContent[]               @relation("CmsContentCreated")
+  updatedCmsContents              CmsContent[]               @relation("CmsContentUpdated")
+  authoredCmsVersions             CmsContentVersion[]        @relation("CmsVersionCreated")
+  publishedCmsPublications        CmsPublication[]           @relation("CmsPublishedBy")
+  uploadedCmsMedia                CmsMediaAsset[]            @relation("CmsMediaUploaded")
+  createdCmsScheduledActions      CmsScheduledAction[]       @relation("CmsScheduleCreated")
 
   @@index([role])
   @@index([adminRoleId])
@@ -1853,4 +1859,198 @@ model ListingQualityIncident {
   @@index([listingId, status])
   @@index([bookingId])
   @@index([createdAt])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Admin CMS Foundation & Content Management (Phase 3 + Phase 4)
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum CmsContentStatus {
+  DRAFT
+  SCHEDULED
+  PUBLISHED
+  UNPUBLISHED
+  ARCHIVED
+}
+
+enum CmsContentTypeEnum {
+  HOMEPAGE_BANNER
+  HERO_SECTION
+  FEATURED_CITIES
+  FEATURED_LISTINGS
+  PROPERTY_COLLECTION
+  PROMOTIONAL_CAMPAIGN
+  FAQ_CATEGORY
+  FAQ_ITEM
+  STATIC_PAGE
+  SEO_LANDING_PAGE
+  NAVIGATION_CONFIG
+  FOOTER_CONFIG
+  ANNOUNCEMENT_BAR
+}
+
+enum CmsScheduledStatus {
+  PENDING
+  RUNNING
+  EXECUTED
+  FAILED
+  CANCELLED
+}
+
+enum CmsScheduledActionType {
+  PUBLISH
+  UNPUBLISH
+}
+
+model CmsContent {
+  id                 String             @id @default(cuid())
+  type               CmsContentTypeEnum
+  title              String
+  slug               String?
+  locale             String             @default("en")
+  status             CmsContentStatus   @default(DRAFT)
+  draftVersionId     String?
+  publishedVersionId String?
+  metadata           Json?
+  createdById        String?
+  updatedById        String?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  createdBy          User?              @relation("CmsContentCreated", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy          User?              @relation("CmsContentUpdated", fields: [updatedById], references: [id], onDelete: SetNull)
+  versions           CmsContentVersion[]
+  publication        CmsPublication?
+  scheduledActions   CmsScheduledAction[]
+
+  @@index([type, status])
+  @@index([status])
+  @@index([slug])
+  @@index([slug, locale])
+  @@index([createdAt])
+  @@index([createdById])
+}
+
+model CmsContentVersion {
+  id               String               @id @default(cuid())
+  contentId        String
+  versionNumber    Int
+  title            String
+  slug             String?
+  locale           String               @default("en")
+  payload          Json
+  changeSummary    String?
+  createdById      String?
+  createdAt        DateTime             @default(now())
+
+  content          CmsContent           @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  createdBy        User?                @relation("CmsVersionCreated", fields: [createdById], references: [id], onDelete: SetNull)
+  publications     CmsPublication[]
+  mediaReferences  CmsMediaReference[]
+
+  @@unique([contentId, versionNumber])
+  @@index([contentId])
+  @@index([createdAt])
+  @@index([createdById])
+}
+
+model CmsPublication {
+  id            String            @id @default(cuid())
+  contentId     String            @unique
+  versionId     String
+  publishedById String?
+  publishedAt   DateTime          @default(now())
+  unpublishAt   DateTime?
+
+  content       CmsContent        @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  version       CmsContentVersion @relation(fields: [versionId], references: [id], onDelete: Restrict)
+  publishedBy   User?             @relation("CmsPublishedBy", fields: [publishedById], references: [id], onDelete: SetNull)
+
+  @@index([contentId])
+  @@index([versionId])
+  @@index([publishedAt])
+  @@index([publishedById])
+}
+
+model CmsMediaAsset {
+  id               String              @id @default(cuid())
+  key              String              @unique
+  url              String
+  originalFilename String
+  mimeType         String
+  size             Int
+  width            Int?
+  height           Int?
+  title            String?
+  altText          String?
+  uploaderId       String?
+  status           String              @default("READY")
+  metadata         Json?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+
+  uploader         User?               @relation("CmsMediaUploaded", fields: [uploaderId], references: [id], onDelete: SetNull)
+  variants         CmsMediaVariant[]
+  references       CmsMediaReference[]
+
+  @@index([mimeType])
+  @@index([uploaderId])
+  @@index([createdAt])
+}
+
+model CmsMediaVariant {
+  id           String        @id @default(cuid())
+  mediaAssetId String
+  variantName  String
+  key          String
+  url          String
+  mimeType     String
+  width        Int
+  height       Int
+  size         Int
+  createdAt    DateTime      @default(now())
+
+  mediaAsset   CmsMediaAsset @relation(fields: [mediaAssetId], references: [id], onDelete: Cascade)
+
+  @@unique([mediaAssetId, variantName])
+  @@index([mediaAssetId])
+}
+
+model CmsMediaReference {
+  id           String            @id @default(cuid())
+  mediaAssetId String
+  versionId    String
+  fieldPath    String
+  createdAt    DateTime          @default(now())
+
+  mediaAsset   CmsMediaAsset     @relation(fields: [mediaAssetId], references: [id], onDelete: Restrict)
+  version      CmsContentVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+
+  @@unique([mediaAssetId, versionId, fieldPath])
+  @@index([mediaAssetId])
+  @@index([versionId])
+}
+
+model CmsScheduledAction {
+  id          String                 @id @default(cuid())
+  contentId   String
+  versionId   String?
+  actionType  CmsScheduledActionType
+  scheduledFor DateTime
+  status      CmsScheduledStatus     @default(PENDING)
+  lockedAt    DateTime?
+  lockedBy    String?
+  executedAt  DateTime?
+  lastError   String?
+  createdById String?
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+
+  content     CmsContent             @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  createdBy   User?                  @relation("CmsScheduleCreated", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([status, scheduledFor])
+  @@index([contentId])
+  @@index([scheduledFor])
+  @@index([createdById])
 }

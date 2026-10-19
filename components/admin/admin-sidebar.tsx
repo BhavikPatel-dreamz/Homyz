@@ -38,8 +38,13 @@ const ROUTE_NAV_KEY: Array<{ prefix: string; key: string; exact?: boolean }> = [
   { prefix: "/admin/bookings/reports",       key: "reports" },
   // Bookings parent (catch-all for /admin/bookings — must be last bookings entry)
   { prefix: "/admin/bookings",               key: "bookings-overview" },
-  // Workspace / Management / Administration / System
   { prefix: "/admin/listings",               key: "listings" },
+  { prefix: "/admin/cms/media",              key: "cms-media" },
+  { prefix: "/admin/cms/footer",             key: "cms-footer" },
+  { prefix: "/admin/cms/settings",           key: "cms-settings" },
+  { prefix: "/admin/cms/sections",           key: "cms-sections" },
+  { prefix: "/admin/cms/audit",              key: "cms-audit" },
+  { prefix: "/admin/cms",                    key: "cms-content" },
   { prefix: "/admin/hosts",                  key: "hosts" },
   { prefix: "/admin/guests",                 key: "guests" },
   { prefix: "/admin/referrals",              key: "referrals" },
@@ -133,6 +138,7 @@ export function AdminSidebar({
     MANAGEMENT: true,
     "SUPPORT & OPERATIONS": true,
     INSIGHTS: true,
+    "CONTENT & CMS": true,
     ADMINISTRATION: true,
     SYSTEM: true,
   });
@@ -427,6 +433,78 @@ export function AdminSidebar({
         },
       ],
     },
+    // {
+    //   name: "CONTENT & CMS",
+    //   items: [
+    //     {
+    //       key: "cms-content",
+    //       label: "Content & Pages",
+    //       href: "/admin/cms",
+    //       requiredPermission: PERMISSIONS.CMS_VIEW,
+    //       icon: (
+    //         <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+    //           <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+    //         </svg>
+    //       ),
+    //     },
+    //     {
+    //       key: "cms-footer",
+    //       label: "Footer Management",
+    //       href: "/admin/cms/footer",
+    //       requiredPermission: PERMISSIONS.CMS_VIEW,
+    //       icon: (
+    //         <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+    //           <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M3 14h18m-9-4v8m-7 4h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+    //         </svg>
+    //       ),
+    //     },
+    //     {
+    //       key: "cms-settings",
+    //       label: "Global Settings",
+    //       href: "/admin/cms/settings",
+    //       requiredPermission: PERMISSIONS.CMS_VIEW,
+    //       icon: (
+    //         <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+    //           <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+    //           <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+    //         </svg>
+    //       ),
+    //     },
+    //     {
+    //       key: "cms-media",
+    //       label: "Media Library",
+    //       href: "/admin/cms/media",
+    //       requiredPermission: PERMISSIONS.CMS_MEDIA_VIEW,
+    //       icon: (
+    //         <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+    //           <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+    //         </svg>
+    //       ),
+    //     },
+    //     {
+    //       key: "cms-sections",
+    //       label: "Section Templates",
+    //       href: "/admin/cms/sections",
+    //       requiredPermission: PERMISSIONS.CMS_VIEW,
+    //       icon: (
+    //         <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+    //           <path strokeLinecap="round" strokeLinejoin="round" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+    //         </svg>
+    //       ),
+    //     },
+    //     {
+    //       key: "cms-audit",
+    //       label: "CMS Audit History",
+    //       href: "/admin/cms/audit",
+    //       requiredPermission: PERMISSIONS.CMS_AUDIT_VIEW,
+    //       icon: (
+    //         <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+    //           <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+    //         </svg>
+    //       ),
+    //     },
+    //   ],
+    // },
     {
       name: "ADMINISTRATION",
       items: [

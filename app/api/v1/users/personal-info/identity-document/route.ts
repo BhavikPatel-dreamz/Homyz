@@ -5,6 +5,7 @@ import { AppError } from "@/lib/api/errors";
 import { requireApiAuth } from "@/lib/permissions/guards";
 import { personalInfoService } from "@/services/personal-info.service";
 import { savePrivateMedia } from "@/lib/storage/media";
+import { validateDocumentUpload } from "@/lib/media/document-validation";
 
 export const dynamic = "force-dynamic";
 
@@ -39,14 +40,6 @@ export const POST = apiHandler(async (req) => {
     throw AppError.badRequest("Invalid document type. Allowed types: passport, license, national_id.");
   }
 
-  if (!ALLOWED_MIME_TYPES.has(file.type)) {
-    throw AppError.badRequest("Only JPEG, PNG, WebP, and PDF files are allowed for identity verification.");
-  }
-
-  if (file.size <= 0 || file.size > MAX_DOC_SIZE) {
-    throw AppError.badRequest("Document file must be between 1 byte and 15 MB.");
-  }
-
   const uploadedExtension = path.extname(file.name).toLowerCase();
   const extensionByMimeType: Record<string, string> = {
     "image/jpeg": ".jpg",
@@ -59,6 +52,16 @@ export const POST = apiHandler(async (req) => {
 
   const arrayBuffer = await file.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
+
+  const validation = validateDocumentUpload({
+    fileName: file.name,
+    mimeType: file.type,
+    size: file.size,
+    buffer,
+  });
+  if (validation) {
+    throw AppError.badRequest(validation.message);
+  }
 
   const saved = await savePrivateMedia({
     kind: "host-documents",

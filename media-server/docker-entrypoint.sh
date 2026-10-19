@@ -8,7 +8,13 @@ mkdir -p \
   "$DATA_DIR/listing-photos" \
   "$DATA_DIR/stamp-icons" \
   "$DATA_DIR/guidebook-photos" \
-  "$DATA_DIR/host-documents"
+  "$DATA_DIR/host-documents" \
+  "$DATA_DIR/message-attachments" \
+  "$DATA_DIR/cms-media" \
+  "$DATA_DIR/avatars" \
+  "$DATA_DIR/reviews" \
+  "$DATA_DIR/dispute-evidence" \
+  "$DATA_DIR/moderation-evidence"
 
 chown -R 999:999 "$DATA_DIR"
 

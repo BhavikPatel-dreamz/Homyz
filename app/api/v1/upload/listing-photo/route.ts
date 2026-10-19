@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getAuthContext } from "@/lib/auth/context";
-import { savePublicMedia } from "@/lib/storage/media";
 import { checkRateLimitAsync } from "@/lib/services/rate-limit";
-import { validatePublicImageUpload } from "@/lib/media/public-image-validation";
+import { listingMediaService } from "@/services/listing-media.service";
+import { type PhotoRoomType } from "@/lib/listing/photo-room-assignments";
+import { AppError } from "@/lib/api/errors";
 
-const UPLOAD_RATE_LIMIT = 20;
+const UPLOAD_RATE_LIMIT = 60;
 const UPLOAD_RATE_WINDOW_SECONDS = 10 * 60;
 
 export async function POST(req: NextRequest) {
@@ -28,6 +29,10 @@ export async function POST(req: NextRequest) {
 
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
+    const rawListingId = formData.get("listingId");
+    const listingId = typeof rawListingId === "string" && rawListingId.trim() ? rawListingId.trim() : undefined;
+    const rawRoom = formData.get("roomType");
+    const roomType = typeof rawRoom === "string" && rawRoom.trim() ? (rawRoom.trim() as PhotoRoomType) : undefined;
 
     if (!file || typeof file === "string") {
       return NextResponse.json({ error: "No image file provided." }, { status: 400 });
@@ -35,40 +40,24 @@ export async function POST(req: NextRequest) {
 
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    const validation = validatePublicImageUpload({
-      fileName: file.name,
-      mimeType: file.type,
-      size: file.size,
-      buffer,
-    });
-    if (validation) {
-      return NextResponse.json({ error: validation.message }, { status: validation.status });
-    }
 
-    const extensionByMimeType: Record<string, string> = {
-      "image/jpeg": ".jpg",
-      "image/png": ".png",
-      "image/webp": ".webp",
-      "image/avif": ".avif",
-    };
-    const cleanExt = extensionByMimeType[file.type];
-
-    const fileName = `photo_${Date.now()}_${Math.random().toString(36).slice(2, 8)}${cleanExt}`;
-    const contentType = file.type || "image/jpeg";
-    const saved = await savePublicMedia({
-      kind: "listing-photos",
-      fileName,
-      body: buffer,
-      contentType,
+    const result = await listingMediaService.uploadPhoto(actor, {
+      listingId,
+      file: {
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        buffer,
+      },
+      autoAssignRoom: roomType,
     });
 
-    return NextResponse.json({
-      success: true,
-      url: saved.url,
-      fileName: saved.fileName,
-    });
+    return NextResponse.json(result);
   } catch (err: unknown) {
-    console.error("[upload] listing photo upload failed");
+    if (err instanceof AppError) {
+      return NextResponse.json({ error: err.message }, { status: err.status });
+    }
+    console.error("[upload] listing photo upload failed", err);
     return NextResponse.json({ error: "Failed to upload photo." }, { status: 500 });
   }
 }

@@ -71,8 +71,19 @@ export async function POST(req: Request) {
     }),
   ]);
 
-  // 2. Process batch of due jobs
-  const batchResult = await jobQueueService.runBatch({ batchSize: 20 });
+  // 2. Process batch of due jobs and CMS scheduled publish/unpublish actions
+  const [batchResult, cmsScheduleResult] = await Promise.all([
+    jobQueueService.runBatch({ batchSize: 20 }),
+    (async () => {
+      try {
+        const { cmsSchedulerService } = await import("@/services/cms-scheduler.service");
+        return await cmsSchedulerService.executeDueScheduledActions();
+      } catch (err) {
+        console.warn("[cron] CMS scheduler execution warning:", err);
+        return { totalProcessed: 0, succeeded: 0, failed: 0, actions: [] };
+      }
+    })(),
+  ]);
   const stats = await jobQueueService.getQueueStats();
 
   return NextResponse.json({
@@ -83,6 +94,8 @@ export async function POST(req: Request) {
     failed: batchResult.failed,
     retried: batchResult.retried,
     durationMs: batchResult.durationMs,
+    cmsScheduledProcessed: cmsScheduleResult.totalProcessed,
+    cmsScheduledSucceeded: cmsScheduleResult.succeeded,
     jobs: batchResult.jobs,
     queueStats: stats,
   });

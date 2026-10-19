@@ -6,6 +6,7 @@ import type { AuthUser } from "@/lib/auth/types";
 import { Role } from "@/generated/prisma/enums";
 import { sendHostApplicationSubmittedEmail } from "@/lib/services/email";
 import { deleteManagedMediaUrl, readPrivateMedia, savePrivateMedia } from "@/lib/storage/media";
+import { validateDocumentUpload } from "@/lib/media/document-validation";
 
 export const REQUIRED_HOST_DOCUMENT_TYPES = [
   "GOVERNMENT_ID",
@@ -350,16 +351,14 @@ export class HostApplicationService {
       throw AppError.badRequest("Cannot upload documents to an already approved application.");
     }
 
-    // Check file size (max 10MB)
-    const maxBytes = 10 * 1024 * 1024;
-    if (file.fileSize > maxBytes) {
-      throw AppError.badRequest("File size exceeds maximum allowed limit of 10MB.");
-    }
-
-    // Check mime type (PDF, JPEG, PNG, WEBP)
-    const allowedTypes = ["application/pdf", "image/jpeg", "image/png", "image/webp"];
-    if (!allowedTypes.includes(file.mimeType)) {
-      throw AppError.badRequest("Invalid file type. Allowed formats: PDF, JPEG, PNG, WEBP.");
+    const validation = validateDocumentUpload({
+      fileName: file.fileName,
+      mimeType: file.mimeType,
+      size: file.fileSize,
+      buffer: file.buffer,
+    });
+    if (validation) {
+      throw AppError.badRequest(validation.message);
     }
 
     const fileExt = path.extname(file.fileName) || (file.mimeType === "application/pdf" ? ".pdf" : ".jpg");
@@ -533,13 +532,15 @@ export class HostApplicationService {
       include: { request: true },
     });
 
-    if (doc) {
-      const isOwner = doc.request.hostId === user.id || doc.request.applicantEmail === user.email;
-      const isAdmin = user.role === Role.ADMIN;
+    if (!doc) {
+      throw AppError.notFound("Requested document record not found.");
+    }
 
-      if (!isOwner && !isAdmin) {
-        throw AppError.forbidden("Access denied: You are not authorized to view this document.");
-      }
+    const isOwner = doc.request.hostId === user.id || doc.request.applicantEmail === user.email;
+    const isAdmin = user.role === Role.ADMIN;
+
+    if (!isOwner && !isAdmin) {
+      throw AppError.forbidden("Access denied: You are not authorized to view this document.");
     }
 
     let fileBuffer: Buffer;
