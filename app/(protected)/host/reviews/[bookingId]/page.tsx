@@ -1,10 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Role } from "@/generated/prisma/enums";
-import { Footer } from "@/components/dashboard/footer";
 import { HostHeader } from "@/components/host/host-header";
 import { HostReviewIntroduction } from "@/components/host/host-review-introduction";
-import { HostSubNav } from "@/components/host/host-sub-nav";
 import { Container } from "@/components/ui";
 import { AppError } from "@/lib/api/errors";
 import { requirePageRole } from "@/lib/permissions/page-guards";
@@ -30,11 +28,10 @@ export default async function HostReviewPage({
   const returnHref = `/host/today?tab=completed&reservation=${encodeURIComponent(context.bookingId)}&listing=${encodeURIComponent(context.listing.id)}`;
 
   return (
-    <div className="flex min-h-screen flex-col bg-white pb-[calc(110px+env(safe-area-inset-bottom))] text-zinc-900 sm:pb-0">
+    <div className="flex min-h-screen flex-col bg-white pb-0 text-zinc-900 sm:pb-0">
       <HostHeader />
-      <HostSubNav activeTab="today" />
-      <main className="flex-1 py-8 sm:py-12">
-        <Container>
+      <main className="flex-1 flex flex-col py-0 sm:py-12">
+        <Container className="flex-1 flex flex-col">
           {context.eligibility.eligible ? (
             <HostReviewIntroduction context={context} returnHref={returnHref} />
           ) : (
@@ -47,12 +44,12 @@ export default async function HostReviewPage({
                     ? "Review window expired"
                     : "Review unavailable"}
               </h1>
-              <p className="mt-3 text-sm leading-6 text-zinc-600">
+              <p className="mt-3 text-base leading-6 text-[#727272]">
                 {context.eligibility.reason || "This reservation is not eligible for a host review."}
               </p>
               <Link
                 href={returnHref}
-                className="mt-6 inline-flex min-h-11 items-center rounded-xl bg-[#1F1F1F] px-6 text-sm font-semibold text-white transition-colors hover:bg-zinc-700"
+                  className="mt-6 inline-flex min-h-11 items-center rounded-full bg-[#1F1F1F] px-6 text-sm font-normal text-white transition-colors hover:bg-[#FCDF9C] hover:text-[#1f1f1f]"
               >
                 Back to reservations
               </Link>
@@ -60,7 +57,6 @@ export default async function HostReviewPage({
           )}
         </Container>
       </main>
-      <Footer />
     </div>
   );
 }

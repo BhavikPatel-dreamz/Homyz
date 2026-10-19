@@ -14,6 +14,7 @@ export interface HostSubNavProps {
   filterActive?: boolean;
   onMenuClick?: () => void;
   showRightActions?: boolean;
+  showMobileNav?: boolean;
 }
 
 export function TodayNavIcon({ className = "" }: { className?: string }) {
@@ -113,11 +114,11 @@ export function FiltersNavIcon({ className = "" }: { className?: string }) {
 
 export function HostSubNav({
   activeTab: explicitActiveTab,
-  listingId,
   onFilterClick,
   filterActive = false,
   onMenuClick,
   showRightActions = true,
+  showMobileNav = true,
 }: HostSubNavProps) {
   const pathname = usePathname();
   const { t } = useLanguage();
@@ -198,39 +199,41 @@ export function HostSubNav({
   return (
     <>
       {/* Mobile Bottom Navigation */}
-      <nav
-        aria-label="Mobile host navigation"
-        className={styles.nav}
-      >
-        <svg className={styles.background} viewBox="0 0 390 84" preserveAspectRatio="none" aria-hidden="true">
-          <path d={`M0 0H${notchX - 34}C${notchX - 26} 0 ${notchX - 26} 30 ${notchX} 30C${notchX + 26} 30 ${notchX + 26} 0 ${notchX + 34} 0H390V84H0Z`} fill="#FCDF9C" />
-        </svg>
-        <div className={styles.tabs}>
-        {tabs.map((tab) => {
-          const selected = activeTab === tab.id;
-          return (
-            <Link
-              key={tab.id}
-              href={tab.href}
-              aria-label={tab.label}
-              aria-current={selected ? "page" : undefined}
-              className={`${styles.tab} ${selected ? styles.active : ""}`}
-            >
-              <span
-                className={styles.iconCircle}
+      {showMobileNav && (
+        <nav
+          aria-label="Mobile host navigation"
+          className={styles.nav}
+        >
+          <svg className={styles.background} viewBox="0 0 390 84" preserveAspectRatio="none" aria-hidden="true">
+            <path d={`M0 0H${notchX - 34}C${notchX - 26} 0 ${notchX - 26} 30 ${notchX} 30C${notchX + 26} 30 ${notchX + 26} 0 ${notchX + 34} 0H390V84H0Z`} fill="#FCDF9C" />
+          </svg>
+          <div className={styles.tabs}>
+          {tabs.map((tab) => {
+            const selected = activeTab === tab.id;
+            return (
+              <Link
+                key={tab.id}
+                href={tab.href}
+                aria-label={tab.label}
+                aria-current={selected ? "page" : undefined}
+                className={`${styles.tab} ${selected ? styles.active : ""}`}
               >
-                {tab.icon}
-              </span>
-              <span
-                className={styles.label}
-              >
-                {(tab as any).shortLabel || tab.label}
-              </span>
-            </Link>
-          );
-        })}
-        </div>
-      </nav>
+                <span
+                  className={styles.iconCircle}
+                >
+                  {tab.icon}
+                </span>
+                <span
+                  className={styles.label}
+                >
+                  {"shortLabel" in tab && typeof tab.shortLabel === "string" ? tab.shortLabel : tab.label}
+                </span>
+              </Link>
+            );
+          })}
+          </div>
+        </nav>
+      )}
 
       {/* Desktop Sub Navigation matching nav bar.jpg */}
       <div className="host-sub-nav hidden pt-8 sm:block">

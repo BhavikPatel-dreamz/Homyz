@@ -714,7 +714,7 @@ export function HostBookingApprovals({ bookings: initialBookings }: { bookings: 
             <h2 id="approve-bookings-title" className="text-xl font-semibold text-zinc-900">
               {t("host_booking_approvals_bulk_modal_title", "Approve all pending bookings?")}
             </h2>
-            <p className="mt-3 text-sm leading-6 text-zinc-600">
+            <p className="mt-3 text-sm leading-6 text-[#727272]">
               {t("host_booking_approvals_bulk_modal_desc", `This will confirm ${bookings.length} active pending bookings. Guests will see the updated status immediately.`).replace("{count}", String(bookings.length))}
             </p>
             <div className="mt-6 flex justify-end gap-3">
