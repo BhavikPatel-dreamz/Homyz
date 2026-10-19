@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import type { HostDashboardData } from "@/services/host-dashboard.service";
 import type { ListingDTO } from "@/services/mappers";
-import { useLanguage } from "@/lib/i18n/language-context";
+import { useLanguage, type TranslationKey } from "@/lib/i18n/language-context";
 
 interface HostKpiOverviewProps {
   initialData?: HostDashboardData | null;
@@ -31,7 +31,7 @@ function formatCurrency(cents: number, currency = "SAR") {
   return `${currency} ${(cents / 100).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 }
 
-function formatResponseTime(minutes: number | null, t: (key: any, fallback?: string) => string) {
+function formatResponseTime(minutes: number | null, t: (key: TranslationKey, fallback?: string) => string) {
   if (minutes === null) return t("host_dash_no_inquiries", "No inquiries yet");
   if (minutes < 60) return `${minutes} ${t("host_dash_time_min", "min")}`;
   const hours = Math.floor(minutes / 60);
@@ -60,6 +60,8 @@ export function HostKpiOverview({
   const [dataScopeKey, setDataScopeKey] = useState(() =>
     dashboardScopeKey(appliedPropertyId),
   );
+  const [propertyDropdownOpen, setPropertyDropdownOpen] = useState(false);
+  const propertyDropdownRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const isInitialMount = useRef(true);
   const requestIdRef = useRef(0);
@@ -137,6 +139,46 @@ export function HostKpiOverview({
     : null;
   const selectedScopeKey = dashboardScopeKey(selectedPropertyId);
   const isRefreshing = loading || dataScopeKey !== selectedScopeKey;
+  useEffect(() => {
+    if (!propertyDropdownOpen) return;
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        propertyDropdownRef.current &&
+        !propertyDropdownRef.current.contains(event.target as Node)
+      ) {
+        setPropertyDropdownOpen(false);
+      }
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setPropertyDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [propertyDropdownOpen]);
+
+  const handleSelectProperty = (nextPropertyId: string | null) => {
+    setPropertyDropdownOpen(false);
+    if (nextPropertyId === selectedPropertyId) return;
+    const cachedData = dashboardDataCache.get(
+      dashboardScopeKey(nextPropertyId),
+    );
+    setError(null);
+    setSelectedPropertyId(nextPropertyId);
+    if (cachedData) {
+      setData(cachedData);
+      setDataScopeKey(dashboardScopeKey(nextPropertyId));
+      setLoading(false);
+    } else {
+      setLoading(true);
+    }
+  };
+
   const retryPropertyAnalytics = () => {
     dashboardDataCache.delete(selectedScopeKey);
     setError(null);
@@ -196,36 +238,107 @@ export function HostKpiOverview({
         </div>
         <div className="flex items-center gap-3">
           {propertyOptions.length > 1 && (
-            <label className="text-xs font-medium text-[#727272]">
-              <span className="sr-only">Property</span>
-              <select
+            <div ref={propertyDropdownRef} className="relative">
+              <button
+                type="button"
                 aria-label="Filter dashboard by property"
-                value={selectedPropertyId ?? ""}
-                onChange={(event) => {
-                  const nextPropertyId = event.target.value || null;
-                  const cachedData = dashboardDataCache.get(
-                    dashboardScopeKey(nextPropertyId),
-                  );
-                  setError(null);
-                  setSelectedPropertyId(nextPropertyId);
-                  if (cachedData) {
-                    setData(cachedData);
-                    setDataScopeKey(dashboardScopeKey(nextPropertyId));
-                    setLoading(false);
-                  } else {
-                    setLoading(true);
-                  }
-                }}
-                className="h-10 min-w-40 rounded-full border border-[#1F1F1F] bg-white px-4 text-sm font-medium text-[#1F1F1F] outline-none transition-colors hover:bg-[#FCDF9C] focus:border-[#1F1F1F] focus:ring-2 focus:ring-[#FCDF9C]"
+                aria-expanded={propertyDropdownOpen}
+                aria-haspopup="listbox"
+                onClick={() => setPropertyDropdownOpen((prev) => !prev)}
+                className="inline-flex h-10 min-w-40 max-w-[280px] sm:max-w-xs items-center justify-between gap-2.5 rounded-full border border-[#1F1F1F] bg-white px-4 text-sm font-normal text-[#1F1F1F] hover:bg-[#F9FAFB] transition-colors cursor-pointer outline-none"
               >
-                <option value="">All properties</option>
-                {propertyOptions.map((listing) => (
-                  <option key={listing.id} value={listing.id}>
-                    {listing.title}
-                  </option>
-                ))}
-              </select>
-            </label>
+                <span className="truncate">
+                  {currentListing
+                    ? currentListing.title
+                    : t("host_dash_all_properties", "All properties")}
+                </span>
+                <svg
+                  className={`size-4 shrink-0 text-[#1F1F1F] transition-transform duration-200 ${
+                    propertyDropdownOpen ? "rotate-180" : ""
+                  }`}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="m6 9 6 6 6-6" />
+                </svg>
+              </button>
+
+              {propertyDropdownOpen && (
+                <div
+                  role="listbox"
+                  aria-label="Filter dashboard by property"
+                  className="absolute right-0 top-full z-50 mt-2 min-w-48 max-w-xs w-max max-h-72 overflow-y-auto rounded-2xl border border-zinc-200 bg-white p-1.5 shadow-xl"
+                >
+                  <button
+                    type="button"
+                    role="option"
+                    aria-selected={selectedPropertyId === null}
+                    onClick={() => handleSelectProperty(null)}
+                    className={`flex w-full items-center justify-between gap-3 rounded-xl px-3.5 py-2 text-left text-sm font-normal transition-colors cursor-pointer ${
+                      selectedPropertyId === null
+                        ? "bg-[#FDE29B] text-[#1F1F1F]"
+                        : "text-[#1F1F1F] hover:bg-[#F3F4F6]"
+                    }`}
+                  >
+                    <span className="truncate">
+                      {t("host_dash_all_properties", "All properties")}
+                    </span>
+                    {selectedPropertyId === null && (
+                      <svg
+                        className="size-4 shrink-0 text-[#1F1F1F]"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    )}
+                  </button>
+                  {propertyOptions.map((listing) => {
+                    const isSelected = selectedPropertyId === listing.id;
+                    return (
+                      <button
+                        key={listing.id}
+                        type="button"
+                        role="option"
+                        aria-selected={isSelected}
+                        onClick={() => handleSelectProperty(listing.id)}
+                        className={`flex w-full items-center justify-between gap-3 rounded-xl px-3.5 py-2 text-left text-sm font-normal transition-colors cursor-pointer ${
+                          isSelected
+                            ? "bg-[#FDE29B] text-[#1F1F1F] font-normal"
+                            : "text-[#1F1F1F] hover:bg-[#F3F4F6]"
+                        }`}
+                      >
+                        <span className="truncate">{listing.title}</span>
+                        {isSelected && (
+                          <svg
+                            className="size-4 shrink-0 text-[#1F1F1F]"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            aria-hidden="true"
+                          >
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           )}
           {loading && (
             <span
