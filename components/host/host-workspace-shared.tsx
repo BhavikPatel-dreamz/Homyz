@@ -552,7 +552,7 @@ export function ReservationDetails({
               <div className="grid gap-3 sm:grid-cols-2">
                 <Link
                   href={`/host/bookings/${booking.id}`}
-                  className="flex min-h-11 min-w-0 items-center justify-center rounded-full border border-[#1F1F1F] px-3 py-3 text-center text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-[#1F1F1F] hover:text-white dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-800"
+                  className="flex min-h-11 min-w-0 items-center justify-center rounded-full bg-[#FCDF9C] px-3 py-3 text-center text-sm font-medium text-[#1f1f1f] transition-colors duration-300 hover:bg-black hover:text-white dark:bg-zinc-100 dark:text-[#1F1F1F] dark:hover:bg-white"
                 >
                   View booking
                 </Link>
@@ -574,7 +574,7 @@ export function ReservationDetails({
               ) : canReviewGuest ? (
                 <Link
                   href={`/host/reviews/${booking.id}`}
-                  className="flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-[#1F1F1F] px-4 py-3 text-center text-sm font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-white dark:text-[#1F1F1F] dark:hover:bg-zinc-200"
+                    className="flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-[#1F1F1F] px-4 py-3 text-center text-sm font-medium text-white transition-colors hover:bg-[#FCDF9C] hover:text-[#1f1f1f] dark:bg-white dark:text-[#1F1F1F] dark:hover:bg-zinc-200"
                 >
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                     <path d="M12 20h9" />
