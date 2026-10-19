@@ -41,6 +41,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       const saved = localStorage.getItem("homyz_selected_language");
       if (saved) {
         applyLanguage(saved);
+      } else {
+        document.documentElement.dir = "ltr";
       }
     }
   }, []);
@@ -77,7 +79,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     if (typeof window !== "undefined") {
       localStorage.setItem("homyz_selected_language", label);
       document.documentElement.lang = code;
-      document.documentElement.dir = code === "ar" ? "rtl" : "ltr";
+      document.documentElement.dir = "ltr";
     }
   };
 
@@ -115,7 +117,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     return text;
   };
 
-  const dir = language === "ar" ? "rtl" : "ltr";
+  const dir = "ltr";
 
   return (
     <NextIntlClientProvider locale={language} messages={messages}>
