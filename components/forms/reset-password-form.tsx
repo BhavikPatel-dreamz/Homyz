@@ -74,7 +74,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
           <h2 className="text-2xl font-semibold text-zinc-950">
             {t("auth_reset_success_title")}
           </h2>
-          <p className="text-xs text-[#727272] mt-1.5 leading-relaxed">
+          <p className="text-sm text-[#727272] mt-1.5 leading-relaxed">
             {t("auth_reset_success_body")}
           </p>
         </div>
