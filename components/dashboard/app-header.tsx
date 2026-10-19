@@ -660,7 +660,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                               className="flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-medium text-[#1F1F1F] bg-[#FCDF9C]/50 hover:bg-[#FCDF9C] rounded-2xl transition-colors"
                             >
                               <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
-                                <Image src="/images/icons/today-icon.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
+                                    <Image src="/images/icons/streamline-freehand/home-chimney-2--Streamline-Freehand.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
                               </span>
                               <span>{t("header_switch_hosting") || "Switch to hosting"}</span>
                             </Link>

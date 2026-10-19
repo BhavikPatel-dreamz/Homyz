@@ -606,7 +606,7 @@ export function ReservationDetails({
                       Ratings shared for this reservation
                     </p>
                   </div>
-                  <span className="rounded-full bg-zinc-100 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wide text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+                  <span className="rounded-full bg-zinc-100 px-2.5 py-1 text-[10px] font-medium  text-[#727272] dark:bg-zinc-800 dark:text-zinc-300">
                     {[booking.hostReview, booking.guestReview].filter(Boolean).length} of 2
                   </span>
                 </div>
@@ -942,13 +942,13 @@ function ReviewRatingSummary({
   ].filter(([, value]) => typeof value === "number") as Array<[string, number]>;
 
   return (
-    <article className="rounded-xl border border-zinc-200 bg-zinc-50/70 p-3.5 dark:border-zinc-700 dark:bg-zinc-800/50">
+    <article className="rounded-xl border border-zinc-200 bg-[#F3F4F5] p-3.5 dark:border-zinc-700 dark:bg-zinc-800/50">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <h4 className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100">{title}</h4>
           <p className="mt-0.5 text-sm text-[#727272]">{detail}</p>
         </div>
-        <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-300" aria-label={`${review.rating} out of 5 stars`}>
+        <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-300" aria-label={`${review.rating} out of 5 stars`}>
           <span aria-hidden="true">★</span>
           {review.rating}/5
         </span>
@@ -974,7 +974,7 @@ function ReviewRatingSummary({
       )}
 
       {review.comment && (
-        <p className="mt-3 border-t border-zinc-200 pt-3 text-xs leading-5 text-zinc-700 dark:border-zinc-700 dark:text-zinc-300">
+        <p className="mt-3 border-t border-zinc-200 pt-3 text-sm leading-5 text-zinc-700 dark:border-zinc-700 dark:text-zinc-300">
           {review.comment}
         </p>
       )}

@@ -27,14 +27,14 @@ export function EmptyState({
           <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
         </svg>
       </div>
-      <h3 className="text-xl font-medium text-muted-foreground">{displayTitle}</h3>
-      <p className="mt-1.5 text-xs text-[var(--muted-foreground)] max-w-sm leading-relaxed">
+      <h3 className="text-xl font-medium text-[#1f1f1f]">{displayTitle}</h3>
+      <p className="mt-1.5 text-sm text-[#727272] max-w-xl leading-relaxed">
         {displayDescription}
       </p>
       {actionHref && (
         <Link
           href={actionHref}
-          className="mt-6 rounded-full bg-[#FCDF9C] hover:bg-[#1f1f1f] px-5 py-2.5 text-sm font-medium text-[#1f1f1f] hover:text-white transition-opacity duration-300"
+          className="mt-6 rounded-full bg-[#FCDF9C] hover:bg-[#1f1f1f] px-5 py-2.5 text-base font-normal text-[#1f1f1f] hover:text-white transition-all duration-300"
         >
           {displayActionText}
         </Link>
