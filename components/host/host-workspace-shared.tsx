@@ -872,10 +872,10 @@ export function ReservationDetails({
                 <button
                   type="button"
                   onClick={() => setShowInvoice(true)}
-                  className="flex min-h-11 w-full items-center justify-between rounded-lg border border-[#d7d7d7] p-3 text-zinc-700 hover:bg-zinc-50 hover:text-zinc-950 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-white transition-colors"
+                  className="flex min-h-11 w-full items-center justify-between rounded-full border border-[#1f1f1f] py-3 px-4 text-white bg-[#1f1f1f] hover:bg-[#FCDF9C] hover:text-[#1f1f1f] duration-300 transition-colors group"
                 >
                   <span className="text-base font-medium">View VAT invoice</span>
-                  <svg aria-hidden="true" className="size-4 shrink-0 text-[#1f1f1f]" viewBox="0 0 24 24" fill="none">
+                  <svg aria-hidden="true" className="size-6 shrink-0" viewBox="0 0 24 24" fill="none">
                     <path d="m9 18 6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </button>

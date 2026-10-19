@@ -92,7 +92,7 @@ export function CancelBookingModal({
           onClick={onClose}
           disabled={submitting}
           aria-label="Close dialog"
-          className="absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-full text-[#727272] hover:bg-zinc-100 hover:text-zinc-800 disabled:opacity-50"
+          className="absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-full text-[#727272] hover:bg-zinc-100 hover:text-[#1f1f1f] disabled:opacity-50"
         >
           <svg
             className="h-5 w-5"
@@ -128,7 +128,7 @@ export function CancelBookingModal({
           <div>
             <h2
               id="cancel-modal-title"
-              className="text-xl font-semibold text-[#1F1F1F]"
+              className="text-xl font-medium text-[#1F1F1F]"
             >
               {t("booking_details_cancel_modal_title", "Cancel reservation?")}
             </h2>
@@ -139,7 +139,7 @@ export function CancelBookingModal({
         </div>
 
         <div className="mt-5 rounded-2xl border border-[#d7d7d7] bg-zinc-50/80 p-4">
-          <h3 className="font-semibold text-sm text-[#1F1F1F] line-clamp-1">
+          <h3 className="font-medium text-sm text-[#1F1F1F] line-clamp-1">
             {booking.propertyName}
           </h3>
           <p className="text-xs text-zinc-600 mt-0.5">{booking.location}</p>
@@ -148,7 +148,7 @@ export function CancelBookingModal({
         <div className="mt-4 space-y-3 text-sm text-zinc-600">
           {booking.isNonRefundable ? (
             <div className="rounded-xl border border-amber-200 bg-amber-50/80 p-3.5 text-xs text-amber-900">
-              <span className="font-semibold">{t("booking_details_non_ref_tag", "Non-refundable booking:")}</span>{" "}
+              <span className="font-medium">{t("booking_details_non_ref_tag", "Non-refundable booking:")}</span>{" "}
               {t("booking_details_non_ref_desc", "This reservation was confirmed under non-refundable rate terms. No refund will be issued upon cancellation.")}
             </div>
           ) : (
@@ -175,7 +175,7 @@ export function CancelBookingModal({
             type="button"
             onClick={onClose}
             disabled={submitting}
-            className="flex h-11 items-center justify-center rounded-full border border-zinc-300 px-5 text-sm font-semibold text-zinc-700 hover:bg-zinc-100 disabled:opacity-50"
+            className="flex h-11 items-center justify-center rounded-full border border-zinc-300 px-5 text-sm font-medium text-zinc-700 hover:bg-zinc-100 disabled:opacity-50"
           >
             {t("booking_details_keep_reservation", "Keep reservation")}
           </button>
@@ -183,7 +183,7 @@ export function CancelBookingModal({
             type="button"
             onClick={handleConfirmCancel}
             disabled={submitting}
-            className="flex h-11 items-center justify-center gap-2 rounded-full bg-red-600 px-6 text-sm font-semibold text-white shadow-xs hover:bg-red-700 disabled:bg-red-300 cursor-pointer"
+            className="flex h-11 items-center justify-center gap-2 rounded-full bg-red-600 px-6 text-sm font-medium text-white shadow-xs hover:bg-red-700 disabled:bg-red-300 cursor-pointer"
           >
             {submitting ? (
               <>
@@ -299,7 +299,7 @@ export function ReceiptModal({
       >
         <div className="flex shrink-0 items-start justify-between gap-4 border-b border-[#d7d7d7] pb-4 sm:pb-5">
           <div>
-            <span className="text-xs font-semibold tracking-wider text-emerald-700 uppercase">
+            <span className="text-xs font-medium tracking-wider text-emerald-700 uppercase">
               {t("booking_details_official_receipt", "Official Tax Invoice & Receipt")}
             </span>
             <h2
@@ -313,7 +313,7 @@ export function ReceiptModal({
             type="button"
             onClick={onClose}
             aria-label="Close dialog"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[#727272] hover:bg-zinc-100 hover:text-zinc-800"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[#727272] hover:bg-zinc-100 hover:text-[#1f1f1f]"
           >
             <svg
               className="h-5 w-5"
@@ -358,11 +358,11 @@ export function ReceiptModal({
           </div>
         ) : error ? (
           <div className="my-8 rounded-2xl border border-red-200 bg-red-50 p-5 text-center">
-            <p className="text-sm font-semibold text-red-700">{error}</p>
+            <p className="text-sm font-medium text-red-700">{error}</p>
             <button
               type="button"
               onClick={onClose}
-              className="mt-3 rounded-full bg-red-600 px-4 py-1.5 text-xs font-semibold text-white"
+              className="mt-3 rounded-full bg-red-600 px-4 py-1.5 text-xs font-medium text-white"
             >
               {t("booking_details_dismiss", "Dismiss")}
             </button>
@@ -370,7 +370,7 @@ export function ReceiptModal({
         ) : invoice ? (
           <div className="mt-5 space-y-5 text-[#1F1F1F] sm:mt-6 sm:space-y-6">
             {/* Header Meta */}
-            <div className="grid grid-cols-2 gap-4 text-xs sm:text-sm">
+            <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <span className="text-[#727272] block">{t("booking_details_issue_date", "Issue Date")}</span>
                 <span className="font-medium">
@@ -394,41 +394,41 @@ export function ReceiptModal({
             </div>
 
             {/* Parties */}
-            <div className="grid grid-cols-1 gap-4 rounded-[12px] border border-white bg-[#F3F4F5] p-4 text-xs shadow-[0px_2px_4px_0px_#00000040] sm:grid-cols-2 sm:text-sm">
+                <div className="grid grid-cols-1 gap-6 sm:rounded-xl rounded-lg border border-white bg-[#F3F4F5] p-4 shadow-[0px_2px_4px_0px_#00000040] sm:grid-cols-2 text-sm">
               <div>
-                <span className="font-semibold text-zinc-800 block mb-1">
+                    <span className="font-medium text-[#1f1f1f] block mb-3 pb-3 border-b border-zinc-300 text-base">
                   {t("booking_details_supplier", "Host / Supplier")}
                 </span>
                 <p className="font-medium text-[#1F1F1F]">
                   {invoice.supplier?.name || "Host"}
                 </p>
                 {invoice.supplier?.taxId && (
-                  <p className="text-[#727272] text-xs sm:text-sm">
+                  <p className="text-[#727272] text-sm">
                     VAT: {invoice.supplier.taxId}
                   </p>
                 )}
                 {invoice.supplier?.address && (
-                  <p className="text-[#727272] text-xs sm:text-sm">
+                  <p className="text-[#727272] text-sm">
                     {invoice.supplier.address}
                   </p>
                 )}
               </div>
               <div>
-                <span className="font-semibold text-zinc-800 block mb-1">
+                    <span className="font-medium text-[#1f1f1f] block mb-3 pb-3 border-b border-zinc-300 text-base">
                   {t("booking_details_guest_label", "Guest")}
                 </span>
                 <p className="font-medium text-[#1F1F1F]">
                   {invoice.guest?.name || "Guest"}
                 </p>
-                <p className="text-[#727272] text-xs sm:text-sm">
+                <p className="text-[#727272] text-sm">
                   {invoice.guest?.email || ""}
                 </p>
               </div>
             </div>
 
             {/* Stay Details */}
-            <div className="space-y-1 rounded-[12px] border border-white bg-[#F3F4F5] p-4 text-xs shadow-[0px_2px_4px_0px_#00000040] sm:text-sm">
-              <span className="font-semibold text-zinc-800 block mb-1">
+                <div className="space-y-1 sm:rounded-xl rounded-lg border border-white bg-[#F3F4F5] p-4 shadow-[0px_2px_4px_0px_#00000040] text-sm">
+                  <span className="font-medium text-[#1f1f1f] block mb-3 pb-3 border-b border-zinc-300 text-base">
                 {t("booking_details_property_stay", "Property & Stay")}
               </span>
               <p className="font-medium text-[#1F1F1F]">
@@ -455,15 +455,15 @@ export function ReceiptModal({
             </div>
 
             {/* Line Items Table */}
-            <div className="overflow-hidden rounded-[12px] border border-[#d7d7d7]">
-              <table className="w-full table-fixed text-left text-xs sm:text-sm">
+            <div className="overflow-hidden rounded-xl border border-[#d7d7d7]">
+              <table className="w-full table-fixed text-left text-sm">
                 <thead className="bg-[#F3F4F5] text-zinc-700">
                   <tr>
-                    <th className="px-4 py-2.5 font-semibold">{t("booking_details_description", "Description")}</th>
-                    <th className="px-4 py-2.5 font-semibold text-center">
+                    <th className="px-4 py-2.5 font-medium">{t("booking_details_description", "Description")}</th>
+                    <th className="px-4 py-2.5 font-medium text-center">
                       {t("booking_details_qty", "Qty")}
                     </th>
-                    <th className="px-4 py-2.5 font-semibold text-right">
+                    <th className="px-4 py-2.5 font-medium text-right">
                       {t("booking_details_amount", "Amount")}
                     </th>
                   </tr>
@@ -471,7 +471,7 @@ export function ReceiptModal({
                 <tbody className="divide-y divide-zinc-200">
                   {(invoice.lineItems || []).map((item, idx) => (
                     <tr key={idx} className="hover:bg-zinc-50/50">
-                      <td className="break-words px-3 py-2.5 sm:px-4">
+                      <td className="wrap-break-word px-3 py-2.5 sm:px-4">
                         {item.description}
                       </td>
                       <td className="px-2 py-2.5 text-center text-[#727272] sm:px-4">
@@ -484,7 +484,7 @@ export function ReceiptModal({
                   ))}
                   {(invoice.taxBreakdown || []).map((tax, idx) => (
                     <tr key={`tax-${idx}`} className="text-zinc-600">
-                      <td className="break-words px-3 py-2 sm:px-4">
+                      <td className="wrap-break-word px-3 py-2 sm:px-4">
                         {tax.taxName}
                       </td>
                       <td className="px-2 py-2 text-center sm:px-4">—</td>
@@ -494,7 +494,7 @@ export function ReceiptModal({
                     </tr>
                   ))}
                 </tbody>
-                <tfoot className="border-t-2 border-zinc-300 bg-zinc-50 font-semibold text-[#1F1F1F]">
+                <tfoot className="border-t-2 border-zinc-300 bg-zinc-50 font-medium text-[#1F1F1F]">
                   <tr>
                     <td className="px-4 py-3" colSpan={2}>
                       {t("booking_details_grand_total", "Grand Total Paid")}
@@ -511,18 +511,18 @@ export function ReceiptModal({
             </div>
 
             {/* Actions */}
-            <div className="flex items-center justify-between pt-2">
+            <div className="flex flex-col gap-3 pt-3 sm:flex-row sm:items-center sm:justify-between sm:pt-4">
               <span className="text-xs text-[#727272]">
                 {t("booking_details_authorized_receipt_note", "Authorized electronic receipt generated by Homyz")}
               </span>
-              <div className="flex w-full gap-3 sm:w-auto">
+              <div className="flex w-full items-center gap-3 sm:w-auto">
                 <button
                   type="button"
                   onClick={() => window.print()}
-                  className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-full border border-[#1f1f1f] px-4 py-2 text-sm font-medium text-[#1f1f1f] transition-colors hover:bg-[#1f1f1f] hover:text-white sm:flex-none sm:text-base"
+                  className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-full border border-[#1f1f1f] px-4 py-2.5 text-sm font-medium whitespace-nowrap text-[#1f1f1f] transition-colors duration-300 hover:bg-[#1f1f1f] hover:text-white cursor-pointer sm:flex-none sm:px-6 sm:text-base"
                 >
                   <svg
-                    className="h-4 w-4"
+                    className="size-4 shrink-0"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -539,7 +539,7 @@ export function ReceiptModal({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="flex-1 rounded-full bg-[#FCDF9C] px-5 py-2 text-sm font-medium text-[#1f1f1f] transition-colors hover:bg-[#1f1f1f] hover:text-white sm:flex-none sm:text-base"
+                  className="flex min-h-11 flex-1 items-center justify-center rounded-full bg-[#FCDF9C] px-5 py-2.5 text-sm font-medium whitespace-nowrap text-[#1f1f1f] transition-colors duration-300 hover:bg-[#1f1f1f] hover:text-white cursor-pointer sm:flex-none sm:px-7 sm:text-base"
                 >
                   {t("booking_details_done", "Done")}
                 </button>
@@ -593,7 +593,7 @@ export function ContactHostModal({
           type="button"
           onClick={onClose}
           aria-label="Close dialog"
-          className="absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-full text-[#727272] hover:bg-zinc-100 hover:text-zinc-800"
+          className="absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-full text-[#727272] hover:bg-zinc-100 hover:text-[#1f1f1f]"
         >
           <svg
             className="h-5 w-5"
@@ -629,7 +629,7 @@ export function ContactHostModal({
           <div>
             <h2
               id="contact-modal-title"
-              className="text-xl font-semibold text-[#1F1F1F]"
+              className="text-xl font-medium text-[#1F1F1F]"
             >
               {t("booking_details_contact_host_title", "Contact Host")}
             </h2>
@@ -640,7 +640,7 @@ export function ContactHostModal({
         </div>
 
         <div className="mt-4 sm:rounded-2xl rounded-lg shadow-md bg-white p-4">
-          <p className="text-xs font-semibold text-zinc-800 line-clamp-1">{booking.propertyName}</p>
+          <p className="text-xs font-medium text-[#1f1f1f] line-clamp-1">{booking.propertyName}</p>
           <p className="text-xs text-[#727272]">{booking.location}</p>
         </div>
 
@@ -649,7 +649,7 @@ export function ContactHostModal({
             {t("booking_details_contact_host_notice", "Direct peer-to-peer guest messaging is currently being finalized. To protect host and guest privacy, private personal contact details are kept secure.")}
           </p>
           <div className="rounded-xl border border-blue-100 bg-blue-50/80 p-3 text-xs text-blue-900">
-            <span className="font-semibold block mb-0.5">
+            <span className="font-medium block mb-0.5">
               {t("booking_details_immediate_assist", "Need immediate assistance with this stay?")}
             </span>
             {t("booking_details_concierge_liaise", "Our 24/7 Concierge & Support desk can liaise directly with your host regarding arrival check-in, key handover, or special accommodation requests.")}
@@ -660,7 +660,7 @@ export function ContactHostModal({
           <button
             type="button"
             onClick={onClose}
-            className="flex h-11 items-center justify-center rounded-full border border-zinc-300 px-5 text-sm font-semibold text-zinc-700 hover:bg-[#1f1f1f] hover:text-white transition-colors duration-300"
+            className="flex h-11 items-center justify-center rounded-full border border-zinc-300 px-5 text-sm font-medium text-zinc-700 hover:bg-[#1f1f1f] hover:text-white transition-colors duration-300"
           >
             {t("booking_details_close", "Close")}
           </button>
