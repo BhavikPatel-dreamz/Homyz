@@ -15,6 +15,10 @@ import {
 import { toast } from "@/components/ui/toast";
 import { useLanguage } from "@/lib/i18n/language-context";
 import { GuestDashboardSidebar } from "@/components/dashboard/guest-sidebar";
+import { TravelMediaDraftsPanel } from "@/components/travel/travel-media-drafts-panel";
+import { TravelMediaUploadModal } from "@/components/travel/travel-media-upload-modal";
+import { OwnerTripsManager } from "@/components/travel/owner-trips-manager";
+import { TravelMemoriesManager } from "@/components/travel/travel-memories-manager";
 import { TagPeopleInput, TaggedUser } from "@/components/ui/tag-people-input";
 import { LocationSearchInput } from "@/components/ui/location-search-input";
 import {
@@ -73,7 +77,8 @@ export type TripPhotoItem = {
 
 export type UserStatsData = {
   trips: number;
-  likes: number;
+  likes: number | null;
+  likesSupported?: boolean;
   reviews: number;
 };
 
@@ -742,7 +747,7 @@ export function ProfileManagementClient({
   initial,
   initialTripPhotos = [],
   initialTripPhotosLoaded = false,
-  initialStats = { trips: 12, likes: 0, reviews: 10 },
+  initialStats = { trips: 0, likes: null, likesSupported: false, reviews: 0 },
   isOwner = true,
   embedded = false,
   onCancel,
@@ -807,6 +812,7 @@ export function ProfileManagementClient({
 
   // Modals & States
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  const [travelDraftRefreshKey, setTravelDraftRefreshKey] = useState(0);
   const [editPhotoModal, setEditPhotoModal] = useState<TripPhotoItem | null>(
     null,
   );
@@ -1573,7 +1579,11 @@ export function ProfileManagementClient({
       )}
 
       {/* TAB 2: TRIP PHOTOS */}
-      {activeMgmtTab === "photos" && (
+      {activeMgmtTab === "photos" && isOwner && <TravelMemoriesManager />}
+
+      {/* Retained only for backwards-compatible local modal state. The unified
+          manager above is the sole rendered Trip Photos workspace. */}
+      {false && activeMgmtTab === "photos" && (
         <div className="flex flex-col gap-6">
           <div className="flex sm:flex-nowrap flex-wrap sm:gap-0 gap-3 items-center sm:justify-between justify-center">
             <div>
@@ -1595,6 +1605,10 @@ export function ProfileManagementClient({
               </button>
             )}
           </div>
+
+          {isOwner && <TravelMediaDraftsPanel refreshKey={travelDraftRefreshKey} />}
+
+          {isOwner && <OwnerTripsManager />}
 
           {isTripPhotosLoading ? (
             <div
@@ -1788,19 +1802,12 @@ export function ProfileManagementClient({
   const modals = (
     <>
       {uploadModalOpen && (
-        <MultiImageUploadModal
+        <TravelMediaUploadModal
           onClose={() => setUploadModalOpen(false)}
-          onUploaded={(newPhotos) => {
-            setTripPhotos((prev) => {
-              const photosById = new Map(prev.map((photo) => [photo.id, photo]));
-              newPhotos.forEach((photo) => photosById.set(photo.id, photo));
-              return [...photosById.values()].sort(
-                (a, b) =>
-                  new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-              );
-            });
-            setIsTripPhotosLoading(false);
+          onCompleted={(assetIds) => {
+            setTravelDraftRefreshKey((current) => current + 1);
             setUploadModalOpen(false);
+            toast.success(`${assetIds.length} private travel draft${assetIds.length === 1 ? "" : "s"} ready.`);
           }}
         />
       )}

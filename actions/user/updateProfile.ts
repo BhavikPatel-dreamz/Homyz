@@ -16,6 +16,7 @@ export async function updateProfileAction(input: unknown) {
     const updated = await userService.updateProfile(actor.id, data);
     revalidatePath("/profile");
     revalidatePath("/profile-management");
+    revalidatePath("/travel-profile");
     return updated;
   });
 }

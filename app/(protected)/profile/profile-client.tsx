@@ -122,6 +122,7 @@ const PersonalInfoView = dynamic(
   { loading: () => <PersonalInfoSkeleton /> },
 );
 
+
 export type PublicProfileData = {
   whereIWantToGo?: string;
   myWork?: string;
@@ -160,7 +161,8 @@ type ProfileData = {
 
 export type UserStatsData = {
   trips: number;
-  likes: number;
+  likes: number | null;
+  likesSupported?: boolean;
   reviews: number;
   yearsOnHomyz?: number;
 };
@@ -226,7 +228,7 @@ export function ProfileClient({
   initial,
   initialTripPhotos = [],
   initialTripPhotosLoaded = false,
-  initialStats = { trips: 0, likes: 0, reviews: 0, yearsOnHomyz: 0 },
+  initialStats = { trips: 0, likes: null, likesSupported: false, reviews: 0, yearsOnHomyz: 0 },
   initialReservations = [],
   initialFavorites = [],
   initialFavoritesTotal = 0,
@@ -354,114 +356,134 @@ export function ProfileClient({
               <>
             {activeTab === "about_me" && (
               <div className="flex flex-col animate-in fade-in">
-                {/* 1. Header with Title & Yellow Edit Button */}
-                <div className="mb-3 flex items-center gap-[19px] lg:mb-8 xl:mb-10">
-                  <h2 className="text-[22px] leading-[30px] font-medium tracking-[-0.02em] text-[#1F1F1F] sm:text-[28px] sm:leading-[36px] lg:text-[32px] lg:leading-[40px] xl:text-[36px] xl:leading-[44px]">
-                    <span className="lg:hidden text-[20px] leading-7">{t("profile_nav_my_profile", "My profile")}</span>
-                    <span className="hidden lg:inline">{t("profile_about_me", "About me")}</span>
-                  </h2>
-                  {isOwner && (
-                    <button
-                      type="button"
-                      onClick={() => handleSelectTab("profile_management")}
-                      className="hidden h-12 items-center justify-center rounded-full bg-[#FCDF9C] px-5 text-base font-normal text-[#1F1F1F] transition-colors hover:bg-[#F7D37D] lg:flex cursor-pointer"
-                    >
-                      {t("profile_edit_btn", "Edit")}
-                    </button>
-                  )}
-                </div>
-
-                {/* 2. Profile Overview Card */}
-                <div className="mb-0 flex flex-row items-start gap-6 lg:mb-[30px]">
-                  {/* Rounded rectangular profile image */}
-                  <div className="relative h-[124px] w-[124px] shrink-0 overflow-hidden rounded-xl border border-[#1F1F1F] bg-zinc-100 sm:h-[151px] sm:w-[233px] sm:rounded-2xl sm:border-2">
-                    {currentUser.image && currentUser.image !== failedProfileImageUrl ? (
-                      <Image
-                        src={currentUser.image}
-                        alt={currentUser.name || "User profile image"}
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 639px) 124px, 233px"
-                        priority
-                        onError={() => setFailedProfileImageUrl(currentUser.image)}
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center bg-zinc-100 text-[#727272]">
-                        <svg className="h-16 w-16" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                          <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                        </svg>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Name, Location & 3 Circular Stats */}
-                  <div className="flex min-h-[124px] min-w-0 flex-1 flex-col justify-center gap-3 sm:min-h-[151px] sm:w-[195px] sm:flex-none sm:gap-4">
-                    <div className="flex flex-col gap-1 sm:gap-2">
-                      <h3 className="truncate text-sm leading-5 font-semibold text-[#1F1F1F] sm:text-base sm:leading-6">
-                        {currentUser.name || "Name"}
-                      </h3>
-                      <p className="truncate text-xs leading-[18px] font-normal text-[#727272] sm:text-sm sm:leading-[21px]">
-                        {pub.whereILive || (isOwner ? t("profile_add_location", "Add your location") : "")}
-                      </p>
-                    </div>
-
-                    {/* 3 Circular Stats */}
-                    <div className="flex items-start justify-between gap-2 border-t border-[#727272] pt-2 sm:gap-6 sm:pt-4">
-                      <div className="flex flex-col items-center">
-                        <div className="flex h-6 w-6 items-center justify-center rounded-full border border-[#1F1F1F] bg-white text-[10px] font-normal text-[#1F1F1F] sm:h-[37px] sm:w-[37px] sm:text-sm">
-                          {initialStats.trips ?? 0}
-                        </div>
-                        <span className="mt-1 text-[10px] leading-4 font-normal text-[#727272] sm:mt-1.5 sm:text-xs sm:leading-[18px]">{t("profile_stat_trips", "Trips")}</span>
-                      </div>
-
-                      <div className="flex flex-col items-center">
-                        <div className="flex h-6 w-6 items-center justify-center rounded-full border border-[#1F1F1F] bg-white text-[10px] font-normal text-[#1F1F1F] sm:h-[37px] sm:w-[37px] sm:text-sm">
-                          {initialStats.reviews ?? 0}
-                        </div>
-                        <span className="mt-1 text-[10px] leading-4 font-normal text-[#727272] sm:mt-1.5 sm:text-xs sm:leading-[18px]">{t("profile_stat_reviews", "Reviews")}</span>
-                      </div>
-
-                      <div className="flex flex-col items-center">
-                        <div className="flex h-6 w-6 items-center justify-center rounded-full border border-[#1F1F1F] bg-white text-[10px] font-normal text-[#1F1F1F] sm:h-[37px] sm:w-[37px] sm:text-sm">
-                          {years}
-                        </div>
-                        <span className="mt-1 text-center text-[9px] leading-3 font-normal text-[#727272] sm:mt-1.5 sm:text-xs sm:leading-[18px]">
-                          {t("profile_stat_years_on_homyz", "Years on Homyz")}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Languages Row */}
-                {pub.languages && (Array.isArray(pub.languages) ? pub.languages.length > 0 : Boolean(pub.languages)) ? (
-                  <div className="hidden items-center gap-4 border-b border-[#727272] pb-6 text-base leading-6 font-normal text-[#1F1F1F] lg:flex">
-                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F3F4F5]">
-                      <IconTranslate />
+                {/* Travel Profile New-Tab Banner */}
+                <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/80 p-4">
+                  <div className="flex items-center gap-3">
+                    <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-800">
+                      <Image src="/images/icons/trip.svg" alt="" width={20} height={20} className="size-5 object-contain" />
                     </span>
-                    <span>{t("profile_speaks_languages", { languages: Array.isArray(pub.languages) ? getLanguageDisplayNames(pub.languages).join(", ") : pub.languages })}</span>
-                  </div>
-                ) : null}
-
-                {hasHostProfileDetails && (
-                  <section className="mt-6 space-y-4 border-b border-zinc-200/80 pb-6">
-                    <h3 className="text-xl font-semibold text-[#1F1F1F]">{t("profile_about_me", "About me")}</h3>
-                    {pub.bio && <p className="text-sm leading-6 text-zinc-700">{pub.bio}</p>}
-                    <div className="space-y-3 text-sm text-zinc-700">
-                      {hostPrompts.homeUnique && <p><span className="font-semibold">{t("profile_prompt_home_unique", "What makes my home unique")}: </span>{hostPrompts.homeUnique}</p>}
-                      {hostPrompts.guestsShouldKnow && <p><span className="font-semibold">{t("profile_prompt_guests_should_know", "What guests should know")}: </span>{hostPrompts.guestsShouldKnow}</p>}
-                      {hostPrompts.education && <p><span className="font-semibold">{t("profile_prompt_education", "Education / background")}: </span>{hostPrompts.education}</p>}
-                      {hostPrompts.perfectGuest && <p><span className="font-semibold">{t("profile_prompt_perfect_guest", "Perfect guest")}: </span>{hostPrompts.perfectGuest}</p>}
+                    <div>
+                      <p className="text-sm font-semibold text-[#1F1F1F]">Guest Travel Profile & Albums</p>
+                      <p className="text-xs text-[#727272]">Explore your trips, photos, visited destinations, and travel stamps.</p>
                     </div>
-                    {hostHobbies.length > 0 && <div><p className="mb-2 text-sm font-semibold text-zinc-700">{t("profile_hobbies", "Hobbies")}</p><div className="flex flex-wrap gap-2">{hostHobbies.map((hobby) => <span key={hobby} className="rounded-full bg-zinc-100 px-3 py-1 text-xs text-zinc-700">{hobby}</span>)}</div></div>}
-                    {hostInterests.length > 0 && <div><p className="mb-2 text-sm font-semibold text-zinc-700">{t("profile_my_interests", "My interests")}</p><div className="flex flex-wrap gap-2">{hostInterests.map((interest) => <span key={interest} className="rounded-full bg-zinc-100 px-3 py-1 text-xs text-zinc-700">{interest}</span>)}</div></div>}
-                  </section>
-                )}
-
-                {/* 3. My Reviews Section (Real Authenticated Guest Reviews) */}
-                <div className="mt-8 w-full border-t border-zinc-200/80 pt-6">
-                  <MyReviewsSection reviews={initialReviews} />
+                  </div>
+                  <a
+                    href="/travel-profile"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-1.5 rounded-full bg-[#1F1F1F] px-4 py-2 text-xs font-semibold text-white hover:bg-zinc-800 transition shrink-0 shadow-2xs"
+                  >
+                    <span>Open Travel Profile</span>
+                    <span>↗</span>
+                  </a>
                 </div>
+
+                {/* 1. Header with Title & Yellow Edit Button */}
+                    <div className="mb-3 flex items-center gap-[19px] lg:mb-8 xl:mb-10">
+                      <h2 className="text-[22px] leading-[30px] font-medium tracking-[-0.02em] text-[#1F1F1F] sm:text-[28px] sm:leading-[36px] lg:text-[32px] lg:leading-[40px] xl:text-[36px] xl:leading-[44px]">
+                        <span className="lg:hidden text-[20px] leading-7">{t("profile_nav_my_profile", "My profile")}</span>
+                        <span className="hidden lg:inline">{t("profile_about_me", "About me")}</span>
+                      </h2>
+                      {isOwner && (
+                        <button
+                          type="button"
+                          onClick={() => handleSelectTab("profile_management")}
+                          className="hidden h-12 items-center justify-center rounded-full bg-[#FCDF9C] px-5 text-base font-normal text-[#1F1F1F] transition-colors hover:bg-[#F7D37D] lg:flex cursor-pointer"
+                        >
+                          {t("profile_edit_btn", "Edit")}
+                        </button>
+                      )}
+                    </div>
+
+                    {/* 2. Profile Overview Card */}
+                    <div className="mb-0 flex flex-row items-start gap-6 lg:mb-[30px]">
+                      {/* Rounded rectangular profile image */}
+                      <div className="relative h-[124px] w-[124px] shrink-0 overflow-hidden rounded-xl border border-[#1F1F1F] bg-zinc-100 sm:h-[151px] sm:w-[233px] sm:rounded-2xl sm:border-2">
+                        {currentUser.image && currentUser.image !== failedProfileImageUrl ? (
+                          <Image
+                            src={currentUser.image}
+                            alt={currentUser.name || "User profile image"}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 639px) 124px, 233px"
+                            priority
+                            onError={() => setFailedProfileImageUrl(currentUser.image)}
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center bg-zinc-100 text-[#727272]">
+                            <svg className="h-16 w-16" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                              <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Name, Location & 3 Circular Stats */}
+                      <div className="flex min-h-[124px] min-w-0 flex-1 flex-col justify-center gap-3 sm:min-h-[151px] sm:w-[195px] sm:flex-none sm:gap-4">
+                        <div className="flex flex-col gap-1 sm:gap-2">
+                          <h3 className="truncate text-sm leading-5 font-semibold text-[#1F1F1F] sm:text-base sm:leading-6">
+                            {currentUser.name || "Name"}
+                          </h3>
+                          <p className="truncate text-xs leading-[18px] font-normal text-[#727272] sm:text-sm sm:leading-[21px]">
+                            {pub.whereILive || (isOwner ? t("profile_add_location", "Add your location") : "")}
+                          </p>
+                        </div>
+
+                        {/* 3 Circular Stats */}
+                        <div className="flex items-start justify-between gap-2 border-t border-[#727272] pt-2 sm:gap-6 sm:pt-4">
+                          <div className="flex flex-col items-center">
+                            <div className="flex h-6 w-6 items-center justify-center rounded-full border border-[#1F1F1F] bg-white text-[10px] font-normal text-[#1F1F1F] sm:h-[37px] sm:w-[37px] sm:text-sm">
+                              {initialStats.trips ?? 0}
+                            </div>
+                            <span className="mt-1 text-[10px] leading-4 font-normal text-[#727272] sm:mt-1.5 sm:text-xs sm:leading-[18px]">{t("profile_stat_trips", "Trips")}</span>
+                          </div>
+
+                          <div className="flex flex-col items-center">
+                            <div className="flex h-6 w-6 items-center justify-center rounded-full border border-[#1F1F1F] bg-white text-[10px] font-normal text-[#1F1F1F] sm:h-[37px] sm:w-[37px] sm:text-sm">
+                              {initialStats.reviews ?? 0}
+                            </div>
+                            <span className="mt-1 text-[10px] leading-4 font-normal text-[#727272] sm:mt-1.5 sm:text-xs sm:leading-[18px]">{t("profile_stat_reviews", "Reviews")}</span>
+                          </div>
+
+                          <div className="flex flex-col items-center">
+                            <div className="flex h-6 w-6 items-center justify-center rounded-full border border-[#1F1F1F] bg-white text-[10px] font-normal text-[#1F1F1F] sm:h-[37px] sm:w-[37px] sm:text-sm">
+                              {years}
+                            </div>
+                            <span className="mt-1 text-center text-[9px] leading-3 font-normal text-[#727272] sm:mt-1.5 sm:text-xs sm:leading-[18px]">
+                              {t("profile_stat_years_on_homyz", "Years on Homyz")}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Languages Row */}
+                    {pub.languages && (Array.isArray(pub.languages) ? pub.languages.length > 0 : Boolean(pub.languages)) ? (
+                      <div className="hidden items-center gap-4 border-b border-[#727272] pb-6 text-base leading-6 font-normal text-[#1F1F1F] lg:flex">
+                        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F3F4F5]">
+                          <IconTranslate />
+                        </span>
+                        <span>{t("profile_speaks_languages", { languages: Array.isArray(pub.languages) ? getLanguageDisplayNames(pub.languages).join(", ") : pub.languages })}</span>
+                      </div>
+                    ) : null}
+
+                    <section className="mt-6 space-y-4 border-b border-zinc-200/80 pb-6">
+                      <h3 className="text-xl font-semibold text-[#1F1F1F]">{t("profile_about_me", "About me")}</h3>
+                      {pub.bio && <p className="text-sm leading-6 text-zinc-700">{pub.bio}</p>}
+                      <div className="space-y-3 text-sm text-zinc-700">
+                        {hostPrompts.homeUnique && <p><span className="font-semibold">{t("profile_prompt_home_unique", "What makes my home unique")}: </span>{hostPrompts.homeUnique}</p>}
+                        {hostPrompts.guestsShouldKnow && <p><span className="font-semibold">{t("profile_prompt_guests_should_know", "What guests should know")}: </span>{hostPrompts.guestsShouldKnow}</p>}
+                        {hostPrompts.education && <p><span className="font-semibold">{t("profile_prompt_education", "Education / background")}: </span>{hostPrompts.education}</p>}
+                        {hostPrompts.perfectGuest && <p><span className="font-semibold">{t("profile_prompt_perfect_guest", "Perfect guest")}: </span>{hostPrompts.perfectGuest}</p>}
+                      </div>
+                      {hostHobbies.length > 0 && <div><p className="mb-2 text-sm font-semibold text-zinc-700">{t("profile_hobbies", "Hobbies")}</p><div className="flex flex-wrap gap-2">{hostHobbies.map((hobby) => <span key={hobby} className="rounded-full bg-zinc-100 px-3 py-1 text-xs text-zinc-700">{hobby}</span>)}</div></div>}
+                      {hostInterests.length > 0 && <div><p className="mb-2 text-sm font-semibold text-zinc-700">{t("profile_my_interests", "My interests")}</p><div className="flex flex-wrap gap-2">{hostInterests.map((interest) => <span key={interest} className="rounded-full bg-zinc-100 px-3 py-1 text-xs text-zinc-700">{interest}</span>)}</div></div>}
+                    </section>
+
+                    {/* 3. My Reviews Section (Real Authenticated Guest Reviews) */}
+                    <div className="mt-8 w-full border-t border-zinc-200/80 pt-6">
+                      <MyReviewsSection reviews={initialReviews} />
+                    </div>
               </div>
             )}
 

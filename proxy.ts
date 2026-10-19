@@ -90,7 +90,11 @@ export const config = {
     "/admin/:path*",
     "/host/:path*",
     "/dashboard/:path*",
-    "/profile/:path*",
+    // Keep management routes protected while allowing the legacy public
+    // `/profile/[id]` read route to perform its own fail-closed visibility
+    // check. The later `/travelers/[handle]` route will replace this surface.
+    "/profile",
+    "/profile/tab/:path*",
     "/bookings/:path*",
     "/favorites/:path*",
   ],

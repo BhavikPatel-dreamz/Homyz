@@ -451,7 +451,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
             >
               <path d="M12 4.5v15m7.5-7.5h-15" />
             </svg>
-            <span>{t("host_dispute_add_internal_note", "Add Internal Note")}</span>
+            <span className="transition-colors text-[#1F1F1F] group-hover:text-white">{t("host_dispute_add_internal_note", "Add Internal Note")}</span>
           </button>
         </div>
       </header>
@@ -1376,7 +1376,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
             <div className="w-full max-w-lg rounded-[20px] bg-white border border-zinc-200 p-6 sm:p-7 shadow-2xl space-y-5">
               <div className="flex items-center justify-between border-b border-zinc-300 pb-3.5">
                 <div>
-                <h3 className="text-base sm:text-lg font-bold text-[#1F1F1F]">{t("host_dispute_resolve_own_title", "Resolve Your Dispute Complaint")}</h3>
+                <h3 className="text-lg sm:text-xl font-medium text-[#1F1F1F]">{t("host_dispute_resolve_own_title", "Resolve Your Dispute Complaint")}</h3>
                 <p className="text-xs text-[#727272]">{t("host_dispute_resolve_own_subtitle", "As the reporting host, you can resolve or withdraw your case.")}</p>
               </div >
     <button

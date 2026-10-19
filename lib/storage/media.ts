@@ -23,7 +23,10 @@ export type PrivateMediaKind =
   | "host-documents"
   | "message-attachments"
   | "dispute-evidence"
-  | "moderation-evidence";
+  | "moderation-evidence"
+  | "travel-photos"
+  | "travel-covers"
+  | "travel-variants";
 
 export type MediaKind = PublicMediaKind | PrivateMediaKind;
 
@@ -40,6 +43,9 @@ export const PRIVATE_KINDS = new Set<string>([
   "message-attachments",
   "dispute-evidence",
   "moderation-evidence",
+  "travel-photos",
+  "travel-covers",
+  "travel-variants",
 ]);
 export const ALL_KINDS = new Set<string>([...PUBLIC_KINDS, ...PRIVATE_KINDS]);
 
@@ -405,11 +411,8 @@ async function removeObject(kind: MediaKind, fileName: string): Promise<void> {
     return;
   }
   if (isMediaServerEnabled()) {
-    try {
-      await deleteMediaServer(key);
-    } catch {
-      // ignore
-    }
+    await deleteMediaServer(key);
+    return;
   }
   await deleteLocal(key);
 }
@@ -435,13 +438,20 @@ export async function savePrivateMedia(options: {
   fileName: string;
   body: Buffer;
   contentType: string;
-}): Promise<{ fileName: string; storagePath: string }> {
+}): Promise<{ fileName: string; storagePath: string; storageKey: string }> {
   const saved = await writeObject({
     ...options,
     cacheControl: "private, max-age=0, no-store",
   });
   const storagePath = saved.key.slice(options.kind.length + 1);
-  return { fileName: saved.fileName, storagePath };
+  return { fileName: saved.fileName, storagePath, storageKey: saved.key };
+}
+
+/** Identifies the active backing store without exposing its credentials. */
+export function getMediaStorageProvider(): "S3" | "MEDIA_SERVER" | "LOCAL" {
+  if (isS3Enabled()) return "S3";
+  if (isMediaServerEnabled()) return "MEDIA_SERVER";
+  return "LOCAL";
 }
 
 export async function readPrivateMedia(

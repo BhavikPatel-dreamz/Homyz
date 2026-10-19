@@ -11,6 +11,7 @@ export async function invalidateUserCache(userId: string): Promise<void> {
   await Promise.all([
     deleteCache(CACHE_KEYS.USER_PROFILE(userId)),
     deleteCache(CACHE_KEYS.USER_STATS(userId)),
+    deleteCache(CACHE_KEYS.USER_TRAVEL_STATS(userId)),
     deleteCache(CACHE_KEYS.PERSONAL_INFO(userId)),
   ]);
 }
@@ -48,6 +49,7 @@ export async function invalidateBookingCache(
   if (userId) {
     deletes.push(deleteCacheByPattern(`homyz:bookings:user:${userId}:*`));
     // Invalidate guest stats so trip counts stay accurate
+    deletes.push(deleteCache(CACHE_KEYS.USER_STATS(userId)));
   }
   if (hostId) {
     deletes.push(deleteCacheByPattern(`homyz:bookings:host:${hostId}:*`));

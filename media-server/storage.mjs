@@ -18,6 +18,9 @@ export const MEDIA_KINDS = Object.freeze([
   "reviews",
   "dispute-evidence",
   "moderation-evidence",
+  "travel-photos",
+  "travel-covers",
+  "travel-variants",
 ]);
 
 export const PUBLIC_MEDIA_KINDS = Object.freeze([

@@ -41,7 +41,11 @@ async function runGuestProfileTests() {
 
     // Test 2: User Stats Initial State
     const initialStats = await userService.getUserStats(testUserId);
-    if (typeof initialStats.trips !== "number" || typeof initialStats.likes !== "number") {
+    if (
+      typeof initialStats.trips !== "number" ||
+      initialStats.likes !== null ||
+      initialStats.likesSupported !== false
+    ) {
       throw new Error("Stats calculation failed");
     }
     console.log(" ✅ PASS: Dynamic Profile Statistics Calculation");

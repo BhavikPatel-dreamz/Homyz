@@ -18,7 +18,9 @@ export type BackgroundJobType =
   | "ACCOUNT_RESTRICTION_EXPIRY"
   | "MODERATION_NOTIFICATION_DELIVERY"
   | "AUDIT_LOG_ARCHIVE"
-  | "SYSTEM_MAINTENANCE";
+  | "SYSTEM_MAINTENANCE"
+  | "TRAVEL_MEDIA_PROCESS"
+  | "TRAVEL_MEDIA_CLEANUP";
 
 export interface BackgroundJobDTO {
   id: string;
@@ -876,4 +878,3 @@ export const jobQueueService = {
   registerJobHandler,
   enqueueNotificationDelivery,
 };
-

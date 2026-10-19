@@ -13,8 +13,9 @@ import type {
 import type { UpdateHostPublicProfileInput } from "@/lib/validation/host-profile";
 
 import { deleteManagedMediaUrl } from "@/lib/storage/media";
+import { isCompletedConfirmedBooking } from "@/lib/booking/booking-status";
 import type { Prisma } from "@/generated/prisma/client";
-import { ListingStatus, ReviewDirection, ReviewStatus } from "@/generated/prisma/enums";
+import { BookingStatus, ListingStatus, ReviewDirection, ReviewStatus } from "@/generated/prisma/enums";
 import { qualificationService } from "@/services/qualification.service";
 import { getMissingProfileFields, hasUsableProfileEmail } from "@/lib/auth/profile-completion";
 import { normalizeEmail, normalizePhone } from "@/lib/auth/normalization";
@@ -46,6 +47,60 @@ async function getById(id: string): Promise<PublicUser> {
     },
     { ttl: USER_PROFILE_TTL, revive: revivePublicUser },
   );
+}
+
+export type LegacyPublicProfile = {
+  id: string;
+  name: string | null;
+  image: string | null;
+  createdAt: Date;
+  publicProfile: {
+    profileVisible: true;
+    bio?: string;
+    whereILive?: string;
+  };
+};
+
+function getSafeLegacyPublicProfileFields(value: Prisma.JsonValue | null): LegacyPublicProfile["publicProfile"] | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const profile = value as Record<string, unknown>;
+
+  // Legacy public profiles are fail-closed until TravelProfile supplies the
+  // typed privacy contract. A missing flag must never make an account public.
+  if (profile.profileVisible !== true) return null;
+
+  const safeText = (candidate: unknown, maxLength: number) =>
+    typeof candidate === "string" ? candidate.trim().slice(0, maxLength) || undefined : undefined;
+
+  return {
+    profileVisible: true,
+    bio: safeText(profile.bio, 500),
+    whereILive: safeText(profile.whereILive, 160),
+  };
+}
+
+/**
+ * A deliberately narrow projection for the legacy `/profile/[id]` page.
+ * This must not reuse `getById`: that DTO is for authenticated owner/admin
+ * callers and includes account fields that are unsafe for anonymous visitors.
+ */
+async function getLegacyPublicProfile(id: string): Promise<LegacyPublicProfile> {
+  const user = await prisma.user.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      name: true,
+      image: true,
+      createdAt: true,
+      publicProfile: true,
+    },
+  });
+  if (!user) throw AppError.notFound("Profile not found");
+
+  const publicProfile = getSafeLegacyPublicProfileFields(user.publicProfile);
+  if (!publicProfile) throw AppError.notFound("Profile not found");
+
+  return { ...user, publicProfile };
 }
 
 async function updateProfile(
@@ -299,18 +354,69 @@ async function deleteTripPhoto(userId: string, photoId: string) {
   return { success: true };
 }
 
-async function getUserStats(userId: string) {
+export type UserTravelStats = {
+  trips: number;
+  /** Reactions are deliberately not implemented until the social phase. */
+  likes: null;
+  likesSupported: false;
+  reviews: number;
+};
+
+async function getUserStats(userId: string): Promise<UserTravelStats> {
   return getOrSetCache(
     CACHE_KEYS.USER_STATS(userId),
     async () => {
-      const [tripsCount, photosCount, reviewsCount] = await Promise.all([
-        prisma.booking.count({ where: { userId } }),
-        prisma.tripPhoto.count({ where: { userId } }),
-        prisma.review.count({ where: { authorId: userId, status: ReviewStatus.PUBLISHED } }),
+      const now = new Date();
+      const startOfToday = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+      const [completedBeforeToday, bookingsEndingToday, reviewsCount] = await Promise.all([
+        // All earlier checkout dates are complete. Today's records require the
+        // listing checkout time and are handled below with the shared helper.
+        prisma.booking.count({
+          where: {
+            userId,
+            status: BookingStatus.CONFIRMED,
+            endDate: { lt: startOfToday },
+          },
+        }),
+        prisma.booking.findMany({
+          where: {
+            userId,
+            status: BookingStatus.CONFIRMED,
+            endDate: startOfToday,
+          },
+          select: {
+            startDate: true,
+            endDate: true,
+            listing: { select: { checkInStart: true, checkOutTime: true } },
+          },
+        }),
+        prisma.review.count({
+          where: {
+            authorId: userId,
+            status: ReviewStatus.PUBLISHED,
+            direction: ReviewDirection.GUEST_TO_PROPERTY,
+          },
+        }),
       ]);
+
+      const completedToday = bookingsEndingToday.filter((booking: {
+        startDate: Date;
+        endDate: Date;
+        listing: { checkInStart: string | null; checkOutTime: string | null };
+      }) =>
+        isCompletedConfirmedBooking({
+          dbStatus: BookingStatus.CONFIRMED,
+          startDate: booking.startDate,
+          endDate: booking.endDate,
+          checkOutTime: booking.listing.checkOutTime,
+          now,
+        }),
+      ).length;
+
       return {
-        trips: Math.max(tripsCount, photosCount),
-        likes: 0,
+        trips: completedBeforeToday + completedToday,
+        likes: null,
+        likesSupported: false as const,
         reviews: reviewsCount,
       };
     },
@@ -471,6 +577,7 @@ async function searchUsers(query: string, limit = 10) {
 
 export const userService = {
   getById,
+  getLegacyPublicProfile,
   updateProfile,
   completeRegistrationProfile,
   updateHostPublicProfile,

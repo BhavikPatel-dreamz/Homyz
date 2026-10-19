@@ -6,15 +6,12 @@ import { AppError } from "@/lib/api/errors";
 import { getSessionUser } from "@/lib/auth/session";
 import { userService } from "@/services/user.service";
 
-export async function getTripPhotosAction(targetUserId?: string) {
+/** Owner-only legacy gallery read. Do not accept a target user ID here. */
+export async function getTripPhotosAction() {
   return runAction(async () => {
-    let userId = targetUserId;
-    if (!userId) {
-      const actor = await getSessionUser();
-      if (!actor) throw AppError.unauthorized();
-      userId = actor.id;
-    }
-    return userService.getTripPhotos(userId);
+    const actor = await getSessionUser();
+    if (!actor) throw AppError.unauthorized();
+    return userService.getTripPhotos(actor.id);
   });
 }
 
@@ -28,6 +25,7 @@ export async function uploadTripPhotosAction(
     revalidatePath("/profile");
     revalidatePath("/profile/tab/profile_management/trip_photos");
     revalidatePath("/profile-management");
+    revalidatePath("/travel-profile");
     return created;
   });
 }
@@ -43,6 +41,7 @@ export async function updateTripPhotoAction(
     revalidatePath("/profile");
     revalidatePath("/profile/tab/profile_management/trip_photos");
     revalidatePath("/profile-management");
+    revalidatePath("/travel-profile");
     return updated;
   });
 }
@@ -55,6 +54,7 @@ export async function deleteTripPhotoAction(photoId: string) {
     revalidatePath("/profile");
     revalidatePath("/profile/tab/profile_management/trip_photos");
     revalidatePath("/profile-management");
+    revalidatePath("/travel-profile");
     return res;
   });
 }

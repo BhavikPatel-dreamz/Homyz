@@ -88,7 +88,7 @@ export async function loadProfilePageData(tab?: string, subTab?: string, booking
     userService.getById(actor.id),
     needsStats
       ? userService.getUserStats(actor.id)
-      : Promise.resolve({ trips: 0, likes: 0, reviews: 0 }),
+      : Promise.resolve({ trips: 0, likes: null, likesSupported: false as const, reviews: 0 }),
     needsTripPhotos
       ? userService.getTripPhotos(actor.id).catch(() => [])
       : Promise.resolve([]),

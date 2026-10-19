@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { jobQueueService } from "@/services/job-queue.service";
+import "@/services/travel-media.service";
 
 function validateCronSecret(req: Request): boolean {
   const configuredSecret = process.env.CRON_SECRET?.trim();
@@ -66,6 +67,13 @@ export async function POST(req: Request) {
       type: "ACCOUNT_RESTRICTION_EXPIRY",
       idempotencyKey: `cron_restriction_expiry_${currentHourKey}`,
       priority: 5,
+      maxAttempts: 3,
+      backoffSeconds: 60,
+    }),
+    jobQueueService.enqueueJob({
+      type: "TRAVEL_MEDIA_CLEANUP",
+      idempotencyKey: `cron_travel_media_cleanup_${currentHourKey}`,
+      priority: 3,
       maxAttempts: 3,
       backoffSeconds: 60,
     }),

@@ -280,7 +280,66 @@ enum BackgroundJobType {
   MODERATION_NOTIFICATION_DELIVERY
   AUDIT_LOG_ARCHIVE
   SYSTEM_MAINTENANCE
+  TRAVEL_MEDIA_PROCESS
+  TRAVEL_MEDIA_CLEANUP
 }
+
+enum TravelMediaType {
+  TRAVEL_PHOTO
+  TRAVEL_COVER
+}
+
+enum TravelMediaUploadStatus {
+  CREATED
+  UPLOADING
+  UPLOADED
+  PROCESSING
+  READY
+  FAILED
+  CANCELLED
+  DELETED
+}
+
+enum TravelMediaProcessingStatus {
+  PENDING
+  PROCESSING
+  READY
+  FAILED
+}
+
+enum TravelMediaVisibility {
+  PRIVATE
+  PUBLIC
+}
+
+enum TravelTripStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum TravelTripVisibility {
+  PRIVATE
+  PUBLIC
+}
+
+enum TravelEvidenceSource {
+  VERIFIED_BOOKING
+  MANUAL_DECLARATION
+}
+
+enum TravelEvidenceStatus {
+  ACTIVE
+  SUPERSEDED
+  REVOKED
+}
+
+enum TravelTagStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Auth / identity (NextAuth adapter models: User, Account, Session,
@@ -344,6 +403,18 @@ model User {
   resolvedComplianceIssues        HostComplianceIssue[]      @relation("ResolvedComplianceIssues")
   createdInfoRequests             HostInfoRequest[]          @relation("CreatedInfoRequests")
   tripPhotos                      TripPhoto[]
+  travelMediaAssets               TravelMediaAsset[]
+  travelMediaUploadSessions       TravelMediaUploadSession[]
+  travelProfile                   TravelProfile?
+  travelTrips                     TravelTrip[]
+  travelPhotos                    TravelPhoto[]
+  travelPhotoTags                 TravelPhotoTag[]
+  travelProfileLikes              TravelProfileLike[]        @relation("UserTravelProfileLikes")
+  travelPhotoLikes                TravelPhotoLike[]          @relation("UserTravelPhotoLikes")
+  travelStamps                    UserTravelStamp[]
+  userDestinations                UserDestination[]
+  initiatedBlocks                 UserBlock[]                @relation("BlocksInitiated")
+  receivedBlocks                  UserBlock[]                @relation("BlocksReceived")
   coHostInvitationsSent           ListingCoHost[]            @relation("ListingCoHostInviter")
   coHostAssignments               ListingCoHost[]            @relation("ListingCoHostUser")
   guidebooks                      Guidebook[]
@@ -449,6 +520,304 @@ model TripPhoto {
 
   @@index([userId, createdAt])
   @@index([createdAt])
+}
+
+/// Managed private travel media. These assets are deliberately separate from
+/// legacy TripPhoto URL storage, which historically used public listing media.
+model TravelMediaAsset {
+  id               String                       @id @default(cuid())
+  ownerId          String
+  storageProvider  String
+  storageKey       String?                      @unique
+  originalFileName String
+  mimeType         String
+  fileSize         Int
+  width            Int?
+  height           Int?
+  mediaType        TravelMediaType
+  uploadStatus     TravelMediaUploadStatus      @default(CREATED)
+  processingStatus TravelMediaProcessingStatus  @default(PENDING)
+  moderationStatus String?
+  visibility       TravelMediaVisibility        @default(PRIVATE)
+  checksum         String?
+  failureReason    String?                      @db.Text
+  cleanupAfter     DateTime?
+  deleteAttempts   Int                          @default(0)
+  deletedAt        DateTime?
+  createdAt        DateTime                     @default(now())
+  updatedAt        DateTime                     @updatedAt
+
+  owner          User                      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  uploadSession  TravelMediaUploadSession?
+  variants       TravelMediaVariant[]
+  travelPhotos   TravelPhoto[]
+
+  @@index([ownerId, createdAt])
+  @@index([ownerId, uploadStatus, createdAt])
+  @@index([uploadStatus, cleanupAfter])
+  @@index([processingStatus, updatedAt])
+  @@index([deletedAt])
+}
+
+model TravelMediaUploadSession {
+  id               String                  @id @default(cuid())
+  assetId          String                  @unique
+  ownerId          String
+  mediaType        TravelMediaType
+  originalFileName String
+  declaredMimeType String
+  declaredFileSize Int
+  status           TravelMediaUploadStatus @default(CREATED)
+  expiresAt        DateTime
+  uploadedAt       DateTime?
+  finalizedAt      DateTime?
+  cancelledAt      DateTime?
+  createdAt        DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
+
+  asset TravelMediaAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  owner User              @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@index([ownerId, createdAt])
+  @@index([status, expiresAt])
+  @@index([expiresAt])
+}
+
+model TravelMediaVariant {
+  id           String            @id @default(cuid())
+  assetId      String
+  variantName  String
+  storageKey   String            @unique
+  mimeType     String
+  width        Int
+  height       Int
+  fileSize     Int
+  createdAt    DateTime          @default(now())
+
+  asset TravelMediaAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@unique([assetId, variantName])
+  @@index([assetId])
+}
+
+model TravelProfile {
+  id                String               @id @default(cuid())
+  userId            String               @unique
+  handle            String?              @unique
+  bio               String?              @db.Text
+  homeDestinationId String?
+  visibility        TravelTripVisibility @default(PRIVATE)
+  coverMediaId      String?
+  stampsVisible     Boolean              @default(true)
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+
+  user              User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  homeDestination   Destination?         @relation(fields: [homeDestinationId], references: [id], onDelete: SetNull)
+  likes             TravelProfileLike[]  @relation("ProfileLikes")
+
+  @@index([handle])
+}
+
+model UserBlock {
+  id        String   @id @default(cuid())
+  blockerId String
+  blockedId String
+  createdAt DateTime @default(now())
+
+  blocker   User     @relation("BlocksInitiated", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked   User     @relation("BlocksReceived", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  @@unique([blockerId, blockedId])
+  @@index([blockerId])
+  @@index([blockedId])
+}
+
+model Destination {
+  id              String             @id @default(cuid())
+  canonicalKey    String             @unique
+  name            String
+  normalizedName  String
+  countryCode     String
+  countryName     String
+  regionName      String?
+  regionCode      String?
+  latitude        Float?
+  longitude       Float?
+  providerPlaceId String?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  trips            TravelTrip[]
+  userDestinations UserDestination[]
+  homeProfiles     TravelProfile[]
+  travelPhotos     TravelPhoto[]
+
+  @@index([normalizedName])
+  @@index([countryCode])
+  @@index([countryName])
+  @@index([providerPlaceId])
+}
+
+model UserDestination {
+  id             String                @id @default(cuid())
+  userId         String
+  destinationId  String
+  firstVisitedAt DateTime?
+  lastVisitedAt  DateTime?
+  selfDeclared   Boolean               @default(true)
+  visibility     TravelTripVisibility  @default(PRIVATE)
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+
+  user           User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  destination    Destination           @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+  evidence       TravelVisitEvidence[]
+
+  @@unique([userId, destinationId])
+  @@index([userId, selfDeclared])
+  @@index([destinationId])
+}
+
+model TravelVisitEvidence {
+  id                String               @id @default(cuid())
+  userDestinationId String
+  bookingId         String?              @unique
+  source            TravelEvidenceSource @default(VERIFIED_BOOKING)
+  status            TravelEvidenceStatus @default(ACTIVE)
+  relevantDate      DateTime?
+  notes             String?              @db.Text
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+
+  userDestination   UserDestination      @relation(fields: [userDestinationId], references: [id], onDelete: Cascade)
+  booking           Booking?             @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+
+  @@index([userDestinationId, status])
+  @@index([source, status])
+}
+
+model TravelTrip {
+  id            String                @id @default(cuid())
+  userId        String
+  title         String
+  description   String?               @db.Text
+  destinationId String?
+  startedAt     DateTime?
+  endedAt       DateTime?
+  visibility    TravelTripVisibility  @default(PRIVATE)
+  status        TravelTripStatus      @default(DRAFT)
+  coverPhotoId  String?
+  deletedAt     DateTime?
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+
+  user          User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  destination   Destination?          @relation(fields: [destinationId], references: [id], onDelete: SetNull)
+  photos        TravelPhoto[]         @relation("TripPhotos")
+  coverPhoto    TravelPhoto?          @relation("TripCoverPhoto", fields: [coverPhotoId], references: [id], onDelete: SetNull)
+
+  @@index([userId, deletedAt, createdAt])
+  @@index([destinationId])
+  @@index([status, visibility])
+}
+
+model TravelPhoto {
+  id           String             @id @default(cuid())
+  tripId       String
+  userId       String
+  mediaAssetId String
+  caption      String?            @db.Text
+  location     String?
+  destinationId String?
+  displayOrder Int                @default(0)
+  deletedAt    DateTime?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  trip         TravelTrip         @relation("TripPhotos", fields: [tripId], references: [id], onDelete: Cascade)
+  user         User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mediaAsset   TravelMediaAsset   @relation(fields: [mediaAssetId], references: [id], onDelete: Cascade)
+  destination  Destination?       @relation(fields: [destinationId], references: [id], onDelete: SetNull)
+  coveredTrips TravelTrip[]       @relation("TripCoverPhoto")
+  tags         TravelPhotoTag[]
+  likes        TravelPhotoLike[]  @relation("PhotoLikes")
+
+  @@unique([tripId, mediaAssetId])
+  @@index([tripId, deletedAt, displayOrder])
+  @@index([userId, deletedAt])
+  @@index([mediaAssetId])
+  @@index([destinationId])
+}
+
+model TravelPhotoTag {
+  id           String          @id @default(cuid())
+  photoId      String
+  taggedUserId String
+  status       TravelTagStatus @default(PENDING)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  photo        TravelPhoto     @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  taggedUser   User            @relation(fields: [taggedUserId], references: [id], onDelete: Cascade)
+
+  @@unique([photoId, taggedUserId])
+  @@index([taggedUserId, status])
+  @@index([photoId])
+}
+
+model TravelProfileLike {
+  id        String        @id @default(cuid())
+  userId    String
+  profileId String
+  createdAt DateTime      @default(now())
+
+  user      User          @relation("UserTravelProfileLikes", fields: [userId], references: [id], onDelete: Cascade)
+  profile   TravelProfile @relation("ProfileLikes", fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, profileId])
+  @@index([profileId])
+  @@index([userId])
+}
+
+model TravelPhotoLike {
+  id        String      @id @default(cuid())
+  userId    String
+  photoId   String
+  createdAt DateTime    @default(now())
+
+  user      User        @relation("UserTravelPhotoLikes", fields: [userId], references: [id], onDelete: Cascade)
+  photo     TravelPhoto @relation("PhotoLikes", fields: [photoId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, photoId])
+  @@index([photoId])
+  @@index([userId])
+}
+
+model TravelStamp {
+  id          String            @id @default(cuid())
+  slug        String            @unique
+  title       String
+  category    String            @default("DESTINATION")
+  imageUrl    String
+  description String?
+  createdAt   DateTime          @default(now())
+  userStamps  UserTravelStamp[]
+}
+
+model UserTravelStamp {
+  id          String      @id @default(cuid())
+  userId      String
+  stampId     String
+  isDisplayed Boolean     @default(true)
+  earnedAt    DateTime    @default(now())
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stamp       TravelStamp @relation(fields: [stampId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, stampId])
+  @@index([userId, isDisplayed])
+  @@index([stampId])
 }
 
 model Account {
@@ -836,6 +1205,7 @@ model Booking {
   payments       BookingPayment[]
   refunds        BookingRefund[]
   moderationReports ModerationReport[]
+  travelEvidence TravelVisitEvidence?
 
   @@index([userId, createdAt])
   @@index([listingId])

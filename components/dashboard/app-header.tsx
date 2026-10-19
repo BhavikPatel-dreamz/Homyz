@@ -6,7 +6,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
-import { LogoutButton } from "@/components/admin/logout-button";
 import { primaryButtonInteractionClass } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
 import dynamic from "next/dynamic";
@@ -557,6 +556,23 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                             <span>{t("header_profile") || "Profile"}</span>
                           </Link>
 
+                          {/* My Travel Profile (Dedicated New Tab) */}
+                          <a
+                            href="/travel-profile"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={() => setMenuOpen(false)}
+                            className="flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors text-[#1F1F1F] hover:bg-white"
+                          >
+                            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
+                              <Image src="/images/icons/trip.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
+                            </span>
+                            <span className="flex flex-1 items-center justify-between">
+                              <span>My Travel Profile</span>
+                              <span className="text-xs text-[#727272]">↗</span>
+                            </span>
+                          </a>
+
                           {/* Notifications */}
                           <Link
                             href="/profile/tab/notifications"
@@ -726,6 +742,23 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                             </span>
                             <span>{t("header_profile") || "Profile"}</span>
                           </Link>
+
+                          {/* My Travel Profile (Dedicated New Tab) */}
+                          <a
+                            href="/travel-profile"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={() => setMenuOpen(false)}
+                            className="flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors text-[#1F1F1F] hover:bg-white"
+                          >
+                            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
+                              <Image src="/images/icons/trip.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
+                            </span>
+                            <span className="flex flex-1 items-center justify-between">
+                              <span>My Travel Profile</span>
+                              <span className="text-xs text-[#727272]">↗</span>
+                            </span>
+                          </a>
                         </div>
 
                         <div className="my-1 border-t border-zinc-200/80" />
@@ -831,13 +864,13 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                               >
                                 {t("header_find_cohost") || "Find a co-host"}
                               </Link>
-                              <Link
+                              {/* <Link
                                 href="/giftcards"
                                 onClick={() => setMenuOpen(false)}
                                 className="block px-3.5 py-2 text-sm sm:text-[15px] font-normal text-[#1F1F1F] hover:bg-white rounded-xl transition-colors"
                               >
                                 {t("header_gift_cards") || "Gift Cards"}
-                              </Link>
+                              </Link> */}
                             </div>
                           </>
                         )}

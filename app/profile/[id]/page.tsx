@@ -4,12 +4,8 @@ import { userService } from "@/services/user.service";
 import { ProfileClient } from "@/app/(protected)/profile/profile-client";
 
 async function loadPublicProfile(id: string) {
-  const user = await userService.getById(id);
-  if (user.publicProfile?.profileVisible === false) notFound();
-  const [tripPhotos, stats] = await Promise.all([
-    userService.getTripPhotos(id),
-    userService.getUserStats(id),
-  ]);
+  const user = await userService.getLegacyPublicProfile(id);
+  const stats = await userService.getUserStats(id);
 
   return {
     initial: {
@@ -21,7 +17,6 @@ async function loadPublicProfile(id: string) {
       email: null,
       phone: null,
     },
-    tripPhotos,
     stats,
   };
 }
@@ -44,7 +39,6 @@ export default async function PublicProfilePage({
   return (
     <ProfileClient
       initial={profile.initial}
-      initialTripPhotos={profile.tripPhotos}
       initialStats={profile.stats}
       isOwner={false}
     />
