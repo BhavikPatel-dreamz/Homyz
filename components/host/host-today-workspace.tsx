@@ -188,7 +188,7 @@ export function HostTodayWorkspace({
             !Array.isArray(payload.data?.bookings)
           ) {
             throw new Error(
-              payload?.error?.message || "Unable to refresh reservations.",
+              payload?.error?.message || t("host_today_refresh_err_fallback", "Unable to refresh reservations."),
             );
           }
           const fetchedBookings = deduplicateHostReservations(payload.data.bookings);
@@ -231,7 +231,7 @@ export function HostTodayWorkspace({
         setRefreshError(
           error instanceof Error
             ? error.message
-            : "Unable to refresh reservations.",
+            : t("host_today_refresh_err_fallback", "Unable to refresh reservations."),
         );
         setLoading(false);
       }
@@ -419,7 +419,7 @@ export function HostTodayWorkspace({
             <div
               className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1"
               role="tablist"
-              aria-label="Reservation period"
+              aria-label={t("host_today_aria_period", "Reservation period")}
             >
               {[
                 { id: "today", label: t("host_today_tab_today", "Today") },
@@ -448,7 +448,7 @@ export function HostTodayWorkspace({
             {/* Mobile Filter Button */}
             <button
               type="button"
-              aria-label="Filter listings"
+              aria-label={t("host_today_filter_title", "Filter listings")}
               onClick={openFilters}
               className={`flex size-12 shrink-0 items-center justify-center rounded-full sm:hidden transition-colors duration-300 ease-in-out ${appliedPropertyId
                 ? "bg-[#1F1F1F] text-white border-zinc-900"
@@ -478,21 +478,26 @@ export function HostTodayWorkspace({
           </div>
 
           {/* Section Headline */}
+
+          {/* Section Headline */}
           <h1 className="mb-6 wrap-break-word">
             You have {totalCount}{" "}
             {tab === "upcoming"
-              ? "upcoming "
+              ? `${t("host_today_period_upcoming", "upcoming")} `
               : tab === "staying"
-                ? "current "
+                ? `${t("host_today_period_staying", "current")} `
                 : tab === "completed"
-                  ? "completed "
+                  ? `${t("host_today_period_completed", "completed")} `
                   : tab === "pending"
-                    ? "pending "
+                    ? `${t("host_today_period_pending", "pending")} `
                     : tab === "cancelled"
-                      ? "cancelled "
+                      ? `${t("host_today_period_cancelled", "cancelled")} `
                       : ""}
-            {totalCount === 1 ? "reservation" : "reservations"}
+            {totalCount === 1
+              ? t("host_today_unit_single", "reservation")
+              : t("host_today_unit_plural", "reservations")}
           </h1>
+
 
           {refreshError && (
             <div
@@ -630,7 +635,7 @@ export function HostTodayWorkspace({
           {totalPages > 1 && (
             <div className="mt-8 flex flex-col items-center justify-between gap-4 border-t border-zinc-200 pt-6 sm:flex-row">
               <p className="text-sm text-[#727272]">
-                Page <span className="font-semibold text-[#1F1F1F]">{page}</span> of{" "}
+                {t("host_today_pagination_page", "Page")} <span className="font-semibold text-[#1F1F1F]">{page}</span> {t("host_today_pagination_of", "of")}{" "}
                 <span className="font-semibold text-[#1F1F1F]">{totalPages}</span>
               </p>
               <div className="flex items-center gap-2">
@@ -639,18 +644,18 @@ export function HostTodayWorkspace({
                   disabled={page <= 1 || loading}
                   onClick={() => handlePageChange(page - 1)}
                   className="rounded-full border border-[#727272] bg-white px-5 py-2 text-xs font-semibold text-[#1F1F1F] transition-colors hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
-                  aria-label="Previous page"
+                  aria-label={t("host_today_pagination_prev_aria", "Previous page")}
                 >
-                  Previous
+                  {t("host_today_pagination_prev", "Previous")}
                 </button>
                 <button
                   type="button"
                   disabled={page >= totalPages || loading}
                   onClick={() => handlePageChange(page + 1)}
                   className="rounded-full border border-[#727272] bg-white px-5 py-2 text-xs font-semibold text-[#1F1F1F] transition-colors hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
-                  aria-label="Next page"
+                  aria-label={t("host_today_pagination_next_aria", "Next page")}
                 >
-                  Next
+                  {t("host_today_pagination_next", "Next")}
                 </button>
               </div>
             </div>

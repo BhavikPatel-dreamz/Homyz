@@ -443,7 +443,11 @@ export function PhotoTourManager({
             </button>
             <span className="rounded-full bg-white/95 dark:bg-zinc-800/95 px-2 py-1 text-[10px] font-semibold text-zinc-700 dark:text-zinc-200 shadow-sm">#{index + 1}</span>
           </div>
-          {index === 0 && <span className="absolute bottom-3 left-3 rounded-full bg-zinc-900 dark:bg-amber-400 px-2.5 py-1 text-[10px] font-semibold text-white dark:text-zinc-950 shadow-sm">{t("host_cover_photo")}</span>}
+          {index === 0 && (
+            <span className="cover-photo-badge absolute bottom-3 left-3 z-10 pointer-events-none rounded-full bg-zinc-900 dark:bg-amber-400 px-2.5 py-1 text-[10px] font-semibold !text-white dark:!text-zinc-950 shadow-sm">
+              {t("host_cover_photo", "Cover photo")}
+            </span>
+          )}
         </div>
 
         <div className="space-y-3 p-3.5">
@@ -462,7 +466,7 @@ export function PhotoTourManager({
           </div>
           <div className="grid grid-cols-2 gap-2 border-t border-zinc-100 pt-3 text-center sm:grid-cols-3 sm:gap-0 sm:divide-x sm:divide-zinc-200 dark:border-zinc-700 dark:sm:divide-zinc-700">
             <button type="button" onClick={() => makeCover(index)} disabled={controlsDisabled || index === 0} className="col-span-2 flex min-h-11 items-center justify-center rounded-lg border border-zinc-200 bg-zinc-50 px-3 text-[13px] font-medium leading-4 text-[#1f1f1f] transition hover:border-zinc-300 hover:bg-zinc-100 disabled:cursor-not-allowed disabled:border-zinc-100 disabled:bg-zinc-50 disabled:text-[#727272] disabled:opacity-100 sm:col-span-1 sm:rounded-none sm:border-0 sm:bg-transparent sm:px-2 sm:hover:bg-transparent sm:hover:text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900/50 dark:text-zinc-300 dark:hover:border-zinc-600 dark:hover:bg-zinc-700/50 dark:disabled:border-zinc-700 dark:disabled:bg-zinc-900/30 dark:disabled:text-[#727272] dark:sm:bg-transparent dark:sm:hover:bg-transparent dark:sm:hover:text-white">
-              {index === 0 ? t("host_cover_photo") : t("host_make_cover")}
+              {index === 0 ? t("host_cover_photo", "Cover photo") : t("host_make_cover", "Make cover")}
             </button>
             <button type="button" onClick={() => { setReplaceIndex(index); replaceInput.current?.click(); }} disabled={controlsDisabled} className="flex min-h-11 items-center justify-center rounded-lg border border-zinc-200 bg-white px-2 text-[13px] font-medium leading-4 text-[#1f1f1f] transition hover:border-zinc-300 hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-40 sm:rounded-none sm:border-0 sm:bg-transparent sm:hover:bg-transparent sm:hover:text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:border-zinc-600 dark:hover:bg-zinc-700/50 dark:sm:bg-transparent dark:sm:hover:bg-transparent dark:sm:hover:text-white">{t("host_replace_photo")}</button>
             <button type="button" onClick={() => removePhoto(index)} disabled={controlsDisabled} className="flex min-h-11 items-center justify-center rounded-lg border border-rose-200 bg-rose-50 px-2 text-[13px] font-medium leading-4 text-rose-700 transition hover:border-rose-300 hover:bg-rose-100 disabled:opacity-40 sm:rounded-none sm:border-0 sm:bg-transparent sm:hover:bg-transparent sm:hover:text-rose-900 dark:border-rose-900/50 dark:bg-rose-950/20 dark:text-rose-400 dark:hover:border-rose-800 dark:hover:bg-rose-950/40 dark:sm:bg-transparent dark:sm:hover:bg-transparent dark:sm:hover:text-rose-300">{t("host_remove_photo")}</button>
@@ -606,12 +610,24 @@ export function PhotoTourManager({
               </div>
               <button type="button" onClick={() => setIsRoomPickerOpen(false)} className="rounded-full bg-white hover:bg-[#1f1f1f] border border-[#1f1f1f] hover:border-[#1f1f1f] dark:border-zinc-700 px-2.5 py-1 text-base font-medium text-[#1f1f1f] hover:text-white dark:text-zinc-300 dark:hover:border-zinc-600 transition duration-300">{t("host_close", "Close")}</button>
             </div>
-            <input
-              value={roomSearch}
-              onChange={(event) => setRoomSearch(event.target.value)}
-              placeholder={t("host_search_rooms_placeholder", "Search rooms and spaces")}
-              className="mb-4 w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 px-3 py-2.5 text-sm text-[#1F1F1F] dark:text-zinc-100 placeholder:text-[#727272] dark:placeholder:text-[#727272] outline-none transition focus:border-zinc-900 dark:focus:border-zinc-500 focus:bg-white dark:focus:bg-zinc-800 min-h-[56px] min-h-[45px]"
-            />
+            <div className="relative mb-4">
+              <input
+                value={roomSearch}
+                onChange={(event) => setRoomSearch(event.target.value)}
+                placeholder={t("host_search_rooms_placeholder", "Search rooms and spaces")}
+                className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 pl-3 pr-9 py-2.5 text-sm text-[#1F1F1F] dark:text-zinc-100 placeholder:text-[#727272] dark:placeholder:text-[#727272] outline-none transition focus:border-zinc-900 dark:focus:border-zinc-500 focus:bg-white dark:focus:bg-zinc-800 min-h-[56px] min-h-[45px]"
+              />
+              {roomSearch && (
+                <button
+                  type="button"
+                  onClick={() => setRoomSearch("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center text-xs font-bold text-[#727272] hover:text-zinc-600 dark:hover:text-zinc-300 cursor-pointer"
+                  aria-label={t("home_clear_search", "Clear search")}
+                >
+                  ✕
+                </button>
+              )}
+            </div>
             <div className="max-h-80 space-y-4 overflow-y-auto pr-1">
               {filteredRoomOptions.length === 0 ? (
                 <p className="rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 p-4 text-sm text-[#727272] dark:text-[#727272]">{t("host_no_matching_rooms", "No matching room types found.")}</p>
@@ -682,7 +698,7 @@ export function PhotoTourManager({
               );
             })}
 
-            
+
           </div>
         )}
       </section>

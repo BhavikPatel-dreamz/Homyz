@@ -214,7 +214,7 @@ export function PricingAndBookingViews({
               <BackButton onClick={() => setActiveSection("description")} className="mt-2" />
               <div>
                 <h1>{t("host_pricing_title")}</h1>
-                <p className="text-sm leading-5 text-[#727272] dark:text-[#727272]">*These settings apply to all nights, unless you customize them by date. <button type="button" className="text-[#1f1f1f] underline hover:opacity-80 dark:text-zinc-100 dark:hover:text-amber-400">Learn more</button></p>
+                <p className="text-sm leading-5 text-[#727272] dark:text-[#727272]">{t("host_availability_subtitle")} <button type="button" className="text-[#1f1f1f] underline hover:opacity-80 dark:text-zinc-100 dark:hover:text-amber-400">{t("host_learn_more", "Learn more")}</button></p>
               </div>
             </div>
 
@@ -609,7 +609,7 @@ export function PricingAndBookingViews({
                               ? "border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900"
                               : "border-zinc-200 dark:border-zinc-700/60 bg-zinc-50 dark:bg-zinc-800/60 opacity-60 cursor-not-allowed"
                           }`}>
-                            <span className="text-xs text-[#727272] dark:text-zinc-400">Within</span>
+                            <span className="text-xs text-[#727272] dark:text-zinc-400">{t("host_discount_within", "Within")}</span>
                             <input
                               type="number"
                               min={1}
@@ -622,7 +622,7 @@ export function PricingAndBookingViews({
                               }}
                               className="w-8 text-center text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none bg-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:cursor-not-allowed"
                             />
-                            <span className="text-xs text-[#727272] dark:text-zinc-400">days</span>
+                            <span className="text-xs text-[#727272] dark:text-zinc-400">{t("host_discount_days", "days")}</span>
                           </div>
                         </div>
 
@@ -699,7 +699,7 @@ export function PricingAndBookingViews({
                               ? "border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900"
                               : "border-zinc-200 dark:border-zinc-700/60 bg-zinc-50 dark:bg-zinc-800/60 opacity-60 cursor-not-allowed"
                           }`}>
-                            <span className="text-xs text-[#727272] dark:text-zinc-400">Made</span>
+                            <span className="text-xs text-[#727272] dark:text-zinc-400">{t("host_discount_made", "Made")}</span>
                             <input
                               type="number"
                               min={7}
@@ -712,7 +712,7 @@ export function PricingAndBookingViews({
                               }}
                               className="w-10 text-center text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 outline-none bg-transparent [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none disabled:cursor-not-allowed"
                             />
-                            <span className="text-xs text-[#727272] dark:text-zinc-400">+ days ahead</span>
+                            <span className="text-xs text-[#727272] dark:text-zinc-400">{t("host_discount_days_ahead", "+ days ahead")}</span>
                           </div>
                         </div>
 

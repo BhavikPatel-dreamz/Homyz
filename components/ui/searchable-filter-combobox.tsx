@@ -142,7 +142,26 @@ export function SearchableFilterCombobox({ label, placeholder, value, onChange, 
         <span className="text-[var(--muted-foreground)]">⌄</span>
       </button>
       {open && <div className={`absolute z-40 w-full min-w-60 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--surface)] p-2 shadow-xl ${openUpward ? "bottom-full mb-1.5" : "mt-1.5"}`}>
-        <div className="relative"><span className="pointer-events-none absolute left-2.5 top-2 text-[var(--muted-foreground)]">⌕</span><input ref={input} value={query} onChange={(event) => setQuery(event.target.value)} placeholder={`Search ${label.toLowerCase()}…`} className="h-8 w-full rounded-lg border border-[var(--border)] bg-[var(--surface-secondary)] pl-7 pr-2 text-xs text-foreground outline-none focus:ring-2 focus:ring-[var(--accent)]" /></div>
+        <div className="relative">
+          <span className="pointer-events-none absolute left-2.5 top-2 text-[var(--muted-foreground)]">⌕</span>
+          <input
+            ref={input}
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder={`Search ${label.toLowerCase()}…`}
+            className="h-8 w-full rounded-lg border border-[var(--border)] bg-[var(--surface-secondary)] pl-7 pr-7 text-xs text-foreground outline-none focus:ring-2 focus:ring-[var(--accent)]"
+          />
+          {query && (
+            <button
+              type="button"
+              onClick={() => setQuery("")}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-[var(--muted-foreground)] hover:text-foreground cursor-pointer"
+              aria-label="Clear search"
+            >
+              ✕
+            </button>
+          )}
+        </div>
         <div role="listbox" className="mt-2 max-h-56 overflow-y-auto">
           <button type="button" role="option" aria-selected={!value} onClick={() => choose("")} className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-xs font-semibold text-foreground hover:bg-[var(--surface-secondary)]"><span className="min-w-0 flex-1 truncate">{placeholder}</span>{!value && <span className="text-[var(--accent)]">✓</span>}</button>
           {value && <button type="button" onClick={() => choose("")} className="flex w-full items-center rounded-lg px-2.5 py-2 text-left text-xs font-semibold text-[var(--muted-foreground)] hover:bg-[var(--surface-secondary)]">Clear selection</button>}

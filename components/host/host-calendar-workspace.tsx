@@ -228,10 +228,11 @@ function MobileCalendarIndex({
   view: "month" | "year";
   onSelectView: (view: "month" | "year") => void;
 }) {
+  const { t } = useLanguage();
   return (
     <section className="sm:hidden">
       <div className="mb-6 flex items-center justify-between gap-3">
-        <h1>Calendars</h1>
+        <h1>   {t("host_calendar_title", "Calendar")}</h1>
         <MobileViewSelector view={view} onSelectView={onSelectView} />
       </div>
       <div
@@ -265,7 +266,7 @@ function MobileCalendarIndex({
                 </p>
                 <p className="mt-4 flex items-center gap-1.5 text-xs text-[#1F1F1F]">
                   <span className="size-2 rounded-full bg-[#37BE01]" />
-                  listed
+                  {t("host_badge_listed", "listed")}
                 </p>
               </div>
               <div className="grid w-[106px] shrink-0 grid-cols-7 gap-1 pr-1" aria-hidden="true">
@@ -316,12 +317,13 @@ function MobileYearCalendar({
   view: "month" | "year";
   onSelectView: (view: "month" | "year") => void;
 }) {
+  const { t, language } = useLanguage();
   const months = Array.from(
     { length: 12 },
     (_, index) => new Date(startMonth.getFullYear(), startMonth.getMonth() + index, 1),
   );
   const today = dateKey(new Date());
-  const propertyLabel = listing?.title || "Property name";
+  const propertyLabel = listing?.title || t("host_calendar_property_name", "Property name");
   const location = [listing?.district, listing?.city].filter(Boolean).join(", ") || listing?.country;
   const monthGroups = months.reduce<Array<{ year: number; months: Date[] }>>(
     (groups, calendarMonth) => {
@@ -343,7 +345,7 @@ function MobileYearCalendar({
     <section className="sm:hidden">
       <div className="mb-8 flex items-center justify-between">
         <h1>
-          Calendars
+          {t("host_calendar_title", "Calendar")}
         </h1>
         <div className="flex items-center gap-2">
           <MobileViewSelector view={view} onSelectView={onSelectView} />
@@ -362,13 +364,13 @@ function MobileYearCalendar({
             />
           </button>
         </div>
-      </div>
+      </div >
 
       <div className="mb-8 flex items-center gap-3">
         <button
           type="button"
           onClick={onBack}
-          aria-label="Back to calendars"
+          aria-label={t("host_calendar_back_to_calendars", "Back to calendars")}
           className="flex size-8 shrink-0 items-center justify-center rounded-full border border-[#1F1F1F] text-[#555555] transition-colors bg-[#F3F4F5] hover:bg-[#f7f7f7] dark:border-zinc-600 dark:text-zinc-300 dark:hover:bg-zinc-800"
         >
           <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -429,7 +431,7 @@ function MobileYearCalendar({
           </section>
         ))}
       </div>
-    </section>
+    </section >
   );
 }
 
@@ -709,87 +711,87 @@ function MonthGrid({
               <div className="flex min-h-0 w-full flex-1 flex-col items-center justify-center gap-2">
                 {/* Day number */}
                 <div className="flex w-full items-center justify-center px-1">
-                <span
-                  className={`flex items-center justify-center rounded-full font-medium transition-transform ${compact
-                    ? "size-5 max-[360px]:text-[9px] text-xs sm:size-6 sm:border sm:border-zinc-300 dark:sm:border-zinc-600 sm:bg-white dark:sm:bg-zinc-700 sm:text-zinc-800 dark:sm:text-zinc-200 sm:text-[12px]"
-                    : "size-6 text-xs sm:size-7 sm:text-xs"
-                    } ${isToday
-                    ? "border border-[#EBA900] bg-[#FCDF9C] text-[#1F1F1F] font-bold shadow-xs sm:!border-[#EBA900] sm:!bg-[#FCDF9C] dark:border-[#EBA900] dark:bg-[#FCDF9C] dark:text-[#1F1F1F]"
-                      : "text-zinc-800 dark:text-zinc-200 bg-white dark:bg-zinc-700"
-                    } ${blocked ? "line-through text-[#727272]" : ""} ${isSelected || primaryReservation ? "!text-xs" : ""}`}
-                >
-                  {dayNum}
-                </span>
+                  <span
+                    className={`flex items-center justify-center rounded-full font-medium transition-transform ${compact
+                      ? "size-5 max-[360px]:text-[9px] text-xs sm:size-6 sm:border sm:border-zinc-300 dark:sm:border-zinc-600 sm:bg-white dark:sm:bg-zinc-700 sm:text-zinc-800 dark:sm:text-zinc-200 sm:text-[12px]"
+                      : "size-6 text-xs sm:size-7 sm:text-xs"
+                      } ${isToday
+                        ? "border border-[#EBA900] bg-[#FCDF9C] text-[#1F1F1F] font-bold shadow-xs sm:!border-[#EBA900] sm:!bg-[#FCDF9C] dark:border-[#EBA900] dark:bg-[#FCDF9C] dark:text-[#1F1F1F]"
+                        : "text-zinc-800 dark:text-zinc-200 bg-white dark:bg-zinc-700"
+                      } ${blocked ? "line-through text-[#727272]" : ""} ${isSelected || primaryReservation ? "!text-xs" : ""}`}
+                  >
+                    {dayNum}
+                  </span>
 
                 </div>
 
                 {/* Price / Status */}
                 <div className="flex min-h-8 w-full flex-col items-center justify-center px-0.5 text-center">
-                {blocked ? (
-                  <span className="text-xs text-[#727272] line-through font-medium">{t("host_cal_blocked_label", "Blocked")}</span>
-                ) : primaryReservation ? (
-                  <span className={`font-['Poppins'] leading-normal tracking-normal text-[#1F1F1F] dark:text-zinc-100 ${compact
-                    ? "mt-0.5 block text-[12px] font-medium"
-                    : "text-[10px] lg:text-[16px] font-medium"
-                    }`}>{formatMoney(rate, sourceCurrency, 2)}</span>
-                ) : isPast ? (
-                  <span className="sm:text-sm text-[10px] leading-tight text-[#727272] line-through font-medium">{formatMoney(rate, sourceCurrency, 2)}</span>
-                ) : promo?.applied ? (
-                  compact ? (
-                    <>
-                      <span className="mt-0.5 block text-[12px] font-medium leading-4 text-[#08785d] dark:text-emerald-400">
-                        {formatMoney(promo.promotionalPrice, sourceCurrency, 2)}
-                      </span>
-                      <span className="mt-0.5 rounded-sm border border-[#a7e9ce] bg-[#d9f7eb] px-0.5 py-[2px] sm:text-[10px] text-[8px] font-medium leading-tight text-[#08785d] dark:border-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300">
-                        {promo.percentage}% promo
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <span className="text-[10px] sm:text-xs text-[#727272] dark:text-[#727272] line-through leading-none block mb-1">
-                        {formatMoney(dayPricing?.originalPrice ?? rate, sourceCurrency, 2)}
-                      </span>
-                      <span className="text-[10px] sm:text-[14px] font-medium text-emerald-700 dark:text-emerald-400 leading-tight block">
-                        {formatMoney(promo.promotionalPrice, sourceCurrency, 2)}
-                      </span>
-                      <div className="flex items-center gap-1 mt-0.5">
-                        <span className="sm:text-[10px] text-[8px] font-medium capitalize tracking-tight text-[#08785d] border border-[#a7e9ce] dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/80 px-1.5 py-1 sm:rounded-md roudned leading-tight">
+                  {blocked ? (
+                    <span className="text-xs text-[#727272] line-through font-medium">{t("host_cal_blocked_label", "Blocked")}</span>
+                  ) : primaryReservation ? (
+                    <span className={`font-['Poppins'] leading-normal tracking-normal text-[#1F1F1F] dark:text-zinc-100 ${compact
+                      ? "mt-0.5 block text-[12px] font-medium"
+                      : "text-[10px] lg:text-[16px] font-medium"
+                      }`}>{formatMoney(rate, sourceCurrency, 2)}</span>
+                  ) : isPast ? (
+                    <span className="sm:text-sm text-[10px] leading-tight text-[#727272] line-through font-medium">{formatMoney(rate, sourceCurrency, 2)}</span>
+                  ) : promo?.applied ? (
+                    compact ? (
+                      <>
+                        <span className="mt-0.5 block text-[12px] font-medium leading-4 text-[#08785d] dark:text-emerald-400">
+                          {formatMoney(promo.promotionalPrice, sourceCurrency, 2)}
+                        </span>
+                        <span className="mt-0.5 rounded-sm border border-[#a7e9ce] bg-[#d9f7eb] px-0.5 py-[2px] sm:text-[10px] text-[8px] font-medium leading-tight text-[#08785d] dark:border-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300">
                           {promo.percentage}% promo
                         </span>
-                        {customPrice !== null && (
-                          <span className="text-[9px] font-semibold text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/60 px-1 rounded">
-                            custom
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-[10px] sm:text-xs text-[#727272] dark:text-[#727272] line-through leading-none block mb-1">
+                          {formatMoney(dayPricing?.originalPrice ?? rate, sourceCurrency, 2)}
+                        </span>
+                        <span className="text-[10px] sm:text-[14px] font-medium text-emerald-700 dark:text-emerald-400 leading-tight block">
+                          {formatMoney(promo.promotionalPrice, sourceCurrency, 2)}
+                        </span>
+                        <div className="flex items-center gap-1 mt-0.5">
+                          <span className="sm:text-[10px] text-[8px] font-medium capitalize tracking-tight text-[#08785d] border border-[#a7e9ce] dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/80 px-1.5 py-1 sm:rounded-md roudned leading-tight">
+                            {promo.percentage}% promo
                           </span>
-                        )}
-                      </div>
-                    </>
-                  )
-                ) : (
-                  <>
-                    <span
-                      className={`${compact
-                        ? `mt-0.5 block text-[#1F1F1F] dark:text-zinc-100 text-[12px] leading-normal ${isSelected ? "font-medium" : "font-normal"}`
-                        : `font-['Poppins'] text-[10px] lg:text-[16px] lg:leading-6 leading-normal tracking-normal ${isSelected ? "font-medium" : "font-normal"}`
-                        } ${compact
-                        ? ""
-                        : isSelected
-                          ? customPrice !== null
-                            ? "text-amber-600 dark:text-amber-400"
-                            : "text-zinc-950 dark:text-amber-300"
-                          : customPrice !== null
-                            ? "text-amber-600 dark:text-amber-400 font-bold"
-                            : "text-[#1F1F1F] dark:text-zinc-100"
-                        }`}
-                    >
-                      {formatMoney(rate, sourceCurrency, 2)}
-                    </span>
-                    {customPrice !== null && (
-                      <span className="text-[9px] font-semibold text-[#1f1f1f] dark:text-amber-300 bg-[#FCDF9C] dark:bg-amber-950/60 px-1.5 py-1 rounded mt-0.5 border border-[#EBA900] leading-tight capitalize">
-                        custom
+                          {customPrice !== null && (
+                            <span className="text-[9px] font-semibold text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/60 px-1 rounded">
+                              custom
+                            </span>
+                          )}
+                        </div>
+                      </>
+                    )
+                  ) : (
+                    <>
+                      <span
+                        className={`${compact
+                          ? `mt-0.5 block text-[#1F1F1F] dark:text-zinc-100 text-[12px] leading-normal ${isSelected ? "font-medium" : "font-normal"}`
+                          : `font-['Poppins'] text-[10px] lg:text-[16px] lg:leading-6 leading-normal tracking-normal ${isSelected ? "font-medium" : "font-normal"}`
+                          } ${compact
+                            ? ""
+                            : isSelected
+                              ? customPrice !== null
+                                ? "text-amber-600 dark:text-amber-400"
+                                : "text-zinc-950 dark:text-amber-300"
+                              : customPrice !== null
+                                ? "text-amber-600 dark:text-amber-400 font-bold"
+                                : "text-[#1F1F1F] dark:text-zinc-100"
+                          }`}
+                      >
+                        {formatMoney(rate, sourceCurrency, 2)}
                       </span>
-                    )}
-                  </>
-                )}
+                      {customPrice !== null && (
+                        <span className="text-[9px] font-semibold text-[#1f1f1f] dark:text-amber-300 bg-[#FCDF9C] dark:bg-amber-950/60 px-1.5 py-1 rounded mt-0.5 border border-[#EBA900] leading-tight capitalize">
+                          custom
+                        </span>
+                      )}
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -900,10 +902,10 @@ function LazyMonthCard({
       <button
         type="button"
         onClick={() => onSelectMonth(month)}
-        aria-label={`Open ${monthName(month)} ${month.getFullYear()} month view`}
+        aria-label={`Open ${monthName(month, language)} ${month.getFullYear()} month view`}
         className="mb-5 flex w-full items-center text-left text-base font-medium text-[#1F1F1F] transition-colors hover:text-amber-400 dark:text-zinc-100 dark:hover:text-amber-400"
       >
-        {monthName(month)}
+        {monthName(month, language)}
       </button>
 
       {isVisible ? (
@@ -953,6 +955,18 @@ interface SelectedDatesStats {
   commonMinStay: number | null;
   minStayValues: number[];
   promoStats: SelectionPromotionStats;
+}
+
+function getLocalizedReason(reason: string, t: (k: any, ...args: any[]) => string): string {
+  if (reason.includes("High calendar compression")) return t("host_calendar_tip_high_occupancy", reason);
+  if (reason.includes("Healthy booking pace")) return t("host_calendar_tip_strong_occupancy", reason);
+  if (reason.includes("Unbooked date approaching")) return t("host_calendar_tip_last_minute", reason);
+  if (reason.includes("Low near-term occupancy")) return t("host_calendar_tip_low_occupancy", reason);
+  if (reason.includes("Far advance unbooked date")) return t("host_calendar_tip_early_bird", reason);
+  if (reason.includes("Strong advance booking momentum")) return t("host_calendar_tip_strong_advance", reason);
+  if (reason.includes("already well-aligned with demand signals")) return t("host_calendar_tip_optimal_rate", reason);
+  if (reason.includes("Standard nightly rate")) return t("host_calendar_tip_standard_baseline", reason);
+  return reason;
 }
 
 function ContextualManagementPanel({
@@ -1017,7 +1031,7 @@ function ContextualManagementPanel({
 
   const handleClearWithConfirm = () => {
     if (isDirty && typeof window !== "undefined") {
-      if (!window.confirm("You have unsaved changes in this selection. Discard them?")) {
+      if (!window.confirm(t("host_calendar_unsaved_confirm", "You have unsaved changes in this selection. Discard them?"))) {
         return;
       }
     }
@@ -1071,7 +1085,7 @@ function ContextualManagementPanel({
   const saveSpecialDaysDiscount = async () => {
     const percentage = Number(specialDaysDiscountInput);
     if (!Number.isFinite(percentage) || percentage <= 0 || percentage > 100) {
-      setPromoValidationError("Enter a discount between 1% and 100%.");
+      setPromoValidationError(t("host_calendar_err_promo_range", "Enter a discount between 1% and 100%."));
       return;
     }
 
@@ -1114,7 +1128,9 @@ function ContextualManagementPanel({
               {formattedDateRange}
             </h2>
             <p className="mt-1 truncate text-[12px] text-[#727272] dark:text-zinc-400">
-              {stats.totalNights} {stats.totalNights === 1 ? "night" : "nights"} · {listing.title}
+              {stats.totalNights === 1
+                ? t("host_calendar_night_count", { count: 1 })
+                : t("host_calendar_nights_count", { count: stats.totalNights })} · {listing.title}
             </p>
           </div>
           <button
@@ -1147,7 +1163,7 @@ function ContextualManagementPanel({
           )}
           {stats.pastCount > 0 && (
             <span className="rounded-full bg-zinc-200 dark:bg-zinc-800 px-2.5 py-0.5 font-medium text-[#727272]">
-              {stats.pastCount} past (read-only)
+              {t("host_calendar_past_readonly", { count: stats.pastCount })}
             </span>
           )}
         </div>
@@ -1156,10 +1172,9 @@ function ContextualManagementPanel({
       {/* Protected Reservations Notice */}
       {stats.bookedCount > 0 && stats.editableKeys.length > 0 && (
         <div className="rounded-xl bg-amber-50 dark:bg-amber-950/40 p-3 border border-amber-200/60 dark:border-amber-900/60 text-xs text-amber-900 dark:text-amber-300">
-          <p className="font-semibold mb-0.5">Protected Reservations</p>
+          <p className="font-semibold mb-0.5">{t("host_calendar_protected_reservations_title", "Protected Reservations")}</p>
           <p className="text-xs leading-relaxed">
-            {stats.bookedCount} {stats.bookedCount === 1 ? "night has" : "nights have"} confirmed reservations.
-            Updates will safely apply only to the {stats.editableKeys.length} editable dates.
+            {t("host_calendar_protected_reservations_desc", { count: stats.bookedCount, editable: stats.editableKeys.length })}
           </p>
         </div>
       )}
@@ -1179,7 +1194,7 @@ function ContextualManagementPanel({
       {stats.editableKeys.length > 0 && (
         <div
           role="tablist"
-          aria-label="Contextual panel mode"
+          aria-label={t("host_calendar_contextual_panel_mode", "Contextual panel mode")}
           className="mx-auto flex w-full overflow-hidden rounded-full border border-white bg-white p-1 gap-1 shadow-[0px_2px_4px_0px_#00000040] dark:border-white/20 dark:bg-zinc-900"
         >
           <button
@@ -1223,19 +1238,19 @@ function ContextualManagementPanel({
           <div className="space-y-3">
             <div className="rounded-[12px] border border-white bg-[#F3F4F5] px-5 py-4 shadow-[0_2px_4px_0px_#00000040] dark:border-zinc-700/80 dark:bg-zinc-800/70">
               <span className="block text-[13px] font-normal text-[#727272] dark:text-zinc-400">
-               {t("host_calendar_base_nightly_price", "Base Nightly Price")}
+                {t("host_calendar_base_nightly_price", "Base Nightly Price")}
               </span>
               <p className="mt-2 text-[17px] font-medium leading-none text-[#1F1F1F] dark:text-zinc-100">
-                {formatMoney(weekdayBasePrice, sourceCurrency, 2)} <span className="text-[13px] font-normal text-[#727272] dark:text-zinc-400">/ Night</span>
+                {formatMoney(weekdayBasePrice, sourceCurrency, 2)} <span className="text-[13px] font-normal text-[#727272] dark:text-zinc-400">{t("host_calendar_per_night", "/ night")}</span>
               </p>
             </div>
             {weekendPrice && weekendPrice > 0 ? (
               <div className="rounded-[12px] border border-white bg-[#F3F4F5] px-5 py-4 shadow-[0_2px_4px_0px_#00000040] dark:border-zinc-700/80 dark:bg-zinc-800/70">
                 <span className="block text-[13px] font-normal text-[#727272] dark:text-zinc-400">
-                 {t("host_calendar_weekend_rate", "Weekend Rate")}
+                  {t("host_calendar_weekend_rate", "Weekend Rate")}
                 </span>
                 <p className="mt-2 text-[17px] font-medium leading-none text-[#1F1F1F] dark:text-zinc-100">
-                  {formatMoney(weekendPrice, sourceCurrency, 2)} <span className="text-[13px] font-normal text-[#727272] dark:text-zinc-400">/ Night</span>
+                  {formatMoney(weekendPrice, sourceCurrency, 2)} <span className="text-[13px] font-normal text-[#727272] dark:text-zinc-400">{t("host_calendar_per_night", "/ night")}</span>
                 </p>
               </div>
             ) : null}
@@ -1325,11 +1340,11 @@ function ContextualManagementPanel({
               {/* Multi-date breakdown summary if applicable */}
               {priceTipsResult.applicableCount > 1 && (
                 <div className="flex items-center justify-between rounded-xl border border-[#F5D98C]/70 bg-white/70 p-2.5 text-[12px] text-[#5F5F5F] dark:border-amber-900/40 dark:bg-zinc-900/60 dark:text-zinc-300">
-                  <span>{priceTipsResult.applicableCount} nights selected</span>
+                  <span>{t("host_calendar_nights_selected", { count: priceTipsResult.applicableCount })}</span>
                   <span className="font-semibold text-zinc-700 dark:text-zinc-200">
-                    {priceTipsResult.increaseCount > 0 ? `${priceTipsResult.increaseCount} increase ` : ""}
-                    {priceTipsResult.decreaseCount > 0 ? `${priceTipsResult.decreaseCount} decrease ` : ""}
-                    {priceTipsResult.noChangeCount > 0 ? `${priceTipsResult.noChangeCount} optimal` : ""}
+                    {priceTipsResult.increaseCount > 0 ? `${priceTipsResult.increaseCount} ${t("host_calendar_price_tips_increase", "increase")} ` : ""}
+                    {priceTipsResult.decreaseCount > 0 ? `${priceTipsResult.decreaseCount} ${t("host_calendar_price_tips_decrease", "decrease")} ` : ""}
+                    {priceTipsResult.noChangeCount > 0 ? `${priceTipsResult.noChangeCount} ${t("host_calendar_price_tips_optimal_count", "optimal")}` : ""}
                   </span>
                 </div>
               )}
@@ -1338,7 +1353,7 @@ function ContextualManagementPanel({
               <div className="space-y-1.5 text-xs leading-normal text-[#5F5F5F] dark:text-zinc-300">
                 {priceTipsResult.reasons.map((r, idx) => (
                   <p key={idx} className="flex items-start gap-1.5 leading-5">
-                    <span className="text-[#727272] font-bold shrink-0">•</span> <span>{r}</span>
+                    <span className="text-[#727272] font-bold shrink-0">•</span> <span>{getLocalizedReason(r, t)}</span>
                   </p>
                 ))}
               </div>
@@ -1349,8 +1364,8 @@ function ContextualManagementPanel({
                   {priceTipsResult.averageDifference !== 0
                     ? `${priceTipsResult.averageDifference > 0 ? "+" : ""}${formatMoney(priceTipsResult.averageDifference, sourceCurrency, 2)} (${priceTipsResult.averagePercentChange > 0 ? "+" : ""}${priceTipsResult.averagePercentChange}%)`
                     : priceTipsResult.overallAction === "INSUFFICIENT_DATA"
-                      ? "No adjustment recommended"
-                      : "Matches current rate"}
+                      ? t("host_calendar_no_adj_rec", "No adjustment recommended")
+                      : t("host_calendar_matches_curr_rate", "Matches current rate")}
                 </span>
 
                 {priceTipsResult.overallAction === "INCREASE" || priceTipsResult.overallAction === "DECREASE" ? (
@@ -1387,7 +1402,7 @@ function ContextualManagementPanel({
               </div>
 
               <p className="text-xs leading-normal text-[#727272] dark:text-[#727272]">
-                {priceTipsResult.marketDataNote}
+                {t("host_calendar_price_tips_disclaimer", priceTipsResult.marketDataNote)}
               </p>
             </div>
           )}
@@ -1398,7 +1413,7 @@ function ContextualManagementPanel({
               e.preventDefault();
               const val = Number(customPriceInput);
               if (!Number.isFinite(val) || val <= 0) {
-                setValidationError("Please enter a valid price greater than 0.");
+                setValidationError(t("host_calendar_err_valid_price", "Please enter a valid price greater than 0."));
                 return;
               }
               setValidationError("");
@@ -1573,14 +1588,20 @@ function ContextualManagementPanel({
                     </p>
                   )}
                   <p className="text-[11px] text-zinc-500">
-                    Guests pay regular rate: {stats.isMixedPrice ? `${formatMoney(stats.minPrice ?? 0, sourceCurrency, 2)} – ${formatMoney(stats.maxPrice ?? 0, sourceCurrency, 2)}` : formatMoney(stats.commonPrice ?? 0, sourceCurrency, 2)} {t("host_calendar_per_night", "/ night")}
+                    {t("host_calendar_guests_pay_regular", "Guests pay regular rate:")}{" "}
+                    {stats.isMixedPrice
+                      ? `${formatMoney(stats.minPrice ?? 0, sourceCurrency, 2)} – ${formatMoney(stats.maxPrice ?? 0, sourceCurrency, 2)}`
+                      : formatMoney(stats.commonPrice ?? 0, sourceCurrency, 2)}{" "}
+                    {t("host_calendar_per_night", "/ night")}
                   </p>
                 </div>
               )
             ) : (
               <div className="space-y-2.5">
                 <p className="text-xs leading-normal text-[#5F5F5F] dark:text-zinc-400">
-                  Add a discount only to the selected {stats.totalNights === 1 ? "date" : "dates"}.
+                  {stats.totalNights === 1
+                    ? t("host_calendar_add_discount_selected_single", "Add a discount only to the selected date.")
+                    : t("host_calendar_add_discount_selected_plural", "Add a discount only to the selected dates.")}
                 </p>
                 <div className="flex items-end gap-2">
                   <label className="min-w-0 flex-1">
@@ -1599,7 +1620,7 @@ function ContextualManagementPanel({
                           setSpecialDaysDiscountInput(event.target.value);
                           if (promoValidationError) setPromoValidationError("");
                         }}
-                        aria-label="Special days discount percentage"
+                        aria-label={t("host_calendar_aria_promo_discount", "Special days discount percentage")}
                         className="min-w-0 flex-1 bg-transparent text-sm font-medium text-[#1f1f1f] outline-none dark:text-zinc-100"
                       />
                       <span className="text-sm font-semibold text-[#727272]">%</span>
@@ -1625,7 +1646,8 @@ function ContextualManagementPanel({
             {/* Selected-range source */}
             <div className="flex items-center justify-between border-t border-emerald-200/60 pt-2.5 text-sm dark:border-emerald-900/40">
               <span className="text-[#727272] dark:text-zinc-400 font-normal">
-                Applies only to: <strong className="text-[#1f1f1f] font-semibold dark:text-zinc-200">{formattedDateRange}</strong>
+                {t("host_calendar_applies_only_to", "Applies only to:")}{" "}
+                <strong className="text-[#1f1f1f] font-semibold dark:text-zinc-200">{formattedDateRange}</strong>
               </span>
             </div>
 
@@ -1723,9 +1745,9 @@ function ContextualManagementPanel({
               <span className="text-sm font-medium capitalize text-[#1f1f1f] dark:text-zinc-100">
                 {stats.isMixedAvailability
                   ? t("host_calendar_status_mixed", {
-                      available: stats.availableCount,
-                      blocked: stats.blockedCount,
-                    })
+                    available: stats.availableCount,
+                    blocked: stats.blockedCount,
+                  })
                   : stats.commonAvailability === "available"
                     ? t("host_calendar_status_available", { count: stats.availableCount })
                     : stats.commonAvailability === "blocked"
@@ -1808,8 +1830,12 @@ function ContextualManagementPanel({
             {lastUndo && (
               <div className="mt-2 flex items-center justify-between rounded-xl bg-zinc-900 text-white dark:bg-[#F3F4F5] dark:text-zinc-900 p-2.5 text-xs font-medium animate-in fade-in duration-200">
                 <span className="truncate mr-2">
-                  {lastUndo.affectedCount} dates {lastUndo.action === "BLOCK" ? "blocked" : "made available"}
-                  {lastUndo.protectedCount > 0 ? ` (${lastUndo.protectedCount} reserved unchanged)` : ""}.
+                  {lastUndo.action === "BLOCK"
+                    ? t("host_calendar_undo_blocked", { count: lastUndo.affectedCount }, "{count} dates blocked")
+                    : t("host_calendar_undo_available", { count: lastUndo.affectedCount }, "{count} dates made available")}
+                  {lastUndo.protectedCount > 0
+                    ? ` ${t("host_calendar_reserved_unchanged", { count: lastUndo.protectedCount }, "({count} reserved unchanged)")}`
+                    : ""}.
                 </span>
                 <button
                   type="button"
@@ -1846,7 +1872,7 @@ function ContextualManagementPanel({
             </div>
 
             <p className="text-xs text-[#727272] dark:text-zinc-400">
-              Set a required minimum stay for guests booking during these selected dates.
+              {t("host_calendar_min_stay_selected_helper", "Set a required minimum stay for guests booking during these selected dates.")}
             </p>
 
             <form
@@ -1854,7 +1880,7 @@ function ContextualManagementPanel({
                 e.preventDefault();
                 const minStay = Number(customMinStayInput);
                 if (!Number.isFinite(minStay) || minStay < 1 || minStay > 365) {
-                  setMinStayValidationError("Please enter a valid minimum stay between 1 and 365 nights.");
+                  setMinStayValidationError(t("host_calendar_err_min_stay_range", "Please enter a valid minimum stay between 1 and 365 nights."));
                   return;
                 }
                 setMinStayValidationError("");
@@ -1889,7 +1915,7 @@ function ContextualManagementPanel({
                     className="w-full bg-transparent px-3 py-2 text-xs font-medium text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                   />
                   <span className="pr-3 text-xs font-medium text-[#727272] dark:text-zinc-400 select-none shrink-0">
-                    Nights
+                    {t("host_nights", "Nights")}
                   </span>
                 </div>
                 <button
@@ -2559,12 +2585,12 @@ export function HostCalendarWorkspace({
           ...current,
           [targetListingId]: result.data,
         }));
-        setNotice("Changes saved.");
+        setNotice(t("host_calendar_notice_saved", "Changes saved."));
       } else {
-        setNotice(result.error || "Could not save.");
+        setNotice(result.error || t("host_calendar_notice_could_not_save", "Could not save."));
       }
     } catch {
-      setNotice("Could not save your changes. Please try again.");
+      setNotice(t("host_calendar_notice_save_err", "Could not save your changes. Please try again."));
     } finally {
       setSaving(false);
     }
@@ -2585,7 +2611,7 @@ export function HostCalendarWorkspace({
         dates,
       });
       if (!result.ok) {
-        setNotice(result.error || "Could not update availability.");
+        setNotice(result.error || t("host_calendar_notice_avail_err", "Could not update availability."));
         return null;
       }
       setSavedListings((current) => ({
@@ -2593,24 +2619,27 @@ export function HostCalendarWorkspace({
         [targetListingId]: result.data.listing,
       }));
       if (action === "RESTORE") {
-        setNotice("Restored previous availability.");
+        setNotice(t("host_calendar_notice_restored", "Restored previous availability."));
       } else {
-        const actionWord = action === "BLOCK" ? "blocked" : "made available";
+        const actionWord =
+          action === "BLOCK"
+            ? t("host_calendar_undo_blocked", { count: result.data.affectedCount }, "{count} dates blocked")
+            : t("host_calendar_undo_available", { count: result.data.affectedCount }, "{count} dates made available");
         const protectedPart =
           result.data.protectedCount > 0
-            ? ` (${result.data.protectedCount} reserved unchanged)`
+            ? ` ${t("host_calendar_reserved_unchanged", { count: result.data.protectedCount }, "({count} reserved unchanged)")}`
             : "";
         const newlyBookedPart =
           result.data.newlyBookedCount > 0
-            ? ` Note: ${result.data.newlyBookedCount} newly confirmed reservation was protected.`
+            ? ` ${t("host_calendar_newly_booked_protected", { count: result.data.newlyBookedCount }, "Note: {count} newly confirmed reservation was protected.")}`
             : "";
         setNotice(
-          `${result.data.affectedCount} dates ${actionWord}${protectedPart}.${newlyBookedPart}`,
+          `${actionWord}${protectedPart}.${newlyBookedPart}`,
         );
       }
       return result.data;
     } catch {
-      setNotice("Could not update availability. Please try again.");
+      setNotice(t("host_calendar_notice_avail_try_again", "Could not update availability. Please try again."));
       return null;
     } finally {
       setSaving(false);
@@ -2803,7 +2832,7 @@ export function HostCalendarWorkspace({
         {mobileCalendarOpen && selectedListing ? (
           <section className="sm:hidden">
             <h1 className="mb-7">
-              Calendars
+              {t("host_calendar_title", "Calendar")}
             </h1>
 
             <div className="mb-8 flex items-center gap-3">
@@ -2824,13 +2853,13 @@ export function HostCalendarWorkspace({
 
             <div className="flex items-center justify-between border-b border-[#d5d5d5] pb-3 dark:border-zinc-700">
               <h2 className="text-base font-medium text-[#272727] dark:text-zinc-100">
-                {monthName(month)}
+                {monthName(month, language)}
               </h2>
               <div className="flex items-center sm:gap-3 gap-2">
-                <button type="button" onClick={handlePrev} aria-label="Previous month" className="flex sm:size-9 size-7 items-center justify-center rounded-full border border-[#bdbdbd] bg-[#F3F4F5] text-[#1f1f1f] transition-colors hover:bg-[#f5f5f5] dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800">
+                <button type="button" onClick={handlePrev} aria-label={t("host_calendar_prev_month", "Previous month")} className="flex sm:size-9 size-7 items-center justify-center rounded-full border border-[#bdbdbd] bg-[#F3F4F5] text-[#1f1f1f] transition-colors hover:bg-[#f5f5f5] dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800">
                   <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
                 </button>
-                <button type="button" onClick={handleNext} aria-label="Next month" className="flex sm:size-9 size-7 items-center justify-center rounded-full border border-[#bdbdbd] bg-[#F3F4F5] text-[#1f1f1f] transition-colors hover:bg-[#f5f5f5] dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800">
+                <button type="button" onClick={handleNext} aria-label={t("host_calendar_next_month", "Next month")} className="flex sm:size-9 size-7 items-center justify-center rounded-full border border-[#bdbdbd] bg-[#F3F4F5] text-[#1f1f1f] transition-colors hover:bg-[#f5f5f5] dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800">
                   <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
                 </button>
               </div>
@@ -2853,7 +2882,7 @@ export function HostCalendarWorkspace({
               onDayPointerEnter={handleDayPointerEnter}
               onKeyDown={handleKeyDown}
             />
-          </section>
+          </section >
         ) : view === "year" && selectedListing ? (
           <MobileYearCalendar
             startMonth={month}
@@ -2878,7 +2907,8 @@ export function HostCalendarWorkspace({
             view={view}
             onSelectView={handleSelectView}
           />
-        )}
+        )
+        }
 
         {/* Mobile Title & Responsive Property Selector Trigger */}
         <div className="mb-4 hidden flex-col gap-3 sm:hidden">
@@ -3058,7 +3088,7 @@ export function HostCalendarWorkspace({
             <button
               type="button"
               onClick={handleToday}
-              aria-label="Jump to current month"
+              aria-label={t("host_calendar_jump_current_month", "Jump to current month")}
               className="hidden md:flex items-center gap-1.5 rounded-full bg-[#F3F4F5] dark:bg-zinc-800 px-4 py-2 lg:text-base text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 border border-transparent hover:border-[#1F1F1F] dark:hover:border-zinc-600 transition-colors shadow-2xs cursor-pointer"
             >
               {t("host_calendar_today", "Today")}
@@ -3076,7 +3106,7 @@ export function HostCalendarWorkspace({
               <span className="text-amber-500">
                 <Image
                   src={"/images/icons/price-tips.svg"}
-                  alt={"Price tips"}
+                  alt={t("host_calendar_price_tips", "Price tips")}
                   width={20}
                   height={20}
                   className="dark:invert"
@@ -3095,10 +3125,10 @@ export function HostCalendarWorkspace({
                 }}
                 aria-expanded={showViewDropdown}
                 aria-haspopup="menu"
-                aria-label="Calendar view"
+                aria-label={t("host_calendar_view_aria", "Calendar view")}
                 className="hidden md:flex items-center gap-1.5 rounded-full bg-[#F3F4F5] dark:bg-zinc-800 px-4 py-2 lg:text-base text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 border border-transparent hover:border-[#1F1F1F] dark:hover:border-zinc-600 transition-colors shadow-2xs cursor-pointer"
               >
-                {view === "month" ? "Month" : "Year"}
+                {view === "month" ? t("host_calendar_view_month", "Month") : t("host_calendar_view_year", "Year")}
                 <svg
                   className={`size-5 text-[#1F1F1F] transition-transform dark:text-zinc-400 ${showViewDropdown ? "rotate-180" : ""}`}
                   viewBox="0 0 24 24"
@@ -3116,7 +3146,7 @@ export function HostCalendarWorkspace({
               {showViewDropdown && (
                 <div
                   role="menu"
-                  aria-label="Calendar view switcher"
+                  aria-label={t("host_calendar_view_switcher_aria", "Calendar view switcher")}
                   className="absolute right-0 top-full z-50 mt-2 w-32 overflow-hidden rounded-xl border border-[#d7d7d7] bg-white p-1.5 shadow-xl dark:border-zinc-700 dark:bg-zinc-900"
                 >
                   {(["month", "year"] as const).map((option) => {
@@ -3133,7 +3163,9 @@ export function HostCalendarWorkspace({
                           : "text-[#525252] hover:bg-[#F3F4F5] dark:text-zinc-300 dark:hover:bg-zinc-800"
                           }`}
                       >
-                        {option}
+                        {option === "month"
+                          ? t("host_calendar_view_month", "Month")
+                          : t("host_calendar_view_year", "Year")}
                         {isSelected && <span aria-hidden="true">✓</span>}
                       </button>
                     );
@@ -3159,7 +3191,7 @@ export function HostCalendarWorkspace({
         <div className="hidden items-start gap-6 sm:flex lg:h-[970px]">
           {/* 1. Left Rail: Property Switcher (Desktop & Tablet) */}
           <aside
-            aria-label="Property selection"
+            aria-label={t("host_calendar_property_selection_aria", "Property selection")}
             className="hidden w-[105px] shrink-0 flex-col items-center gap-3 sm:flex lg:max-h-full lg:overflow-y-auto [scrollbar-width:none]"
           >
             {/* All Listings Option (when host has 2+ listings) */}
@@ -3167,7 +3199,7 @@ export function HostCalendarWorkspace({
               <button
                 type="button"
                 onClick={() => handleSelectProperty("all")}
-                title="All listings overview"
+                title={t("host_calendar_all_listings_overview", "All listings overview")}
                 aria-label={t("host_calendar_all_listings", "All listings")}
                 aria-pressed={isAllListings}
                 className={`group relative flex h-[94px] w-[105px] shrink-0 flex-col items-center justify-center rounded-2xl transition-all focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a5a0ff] cursor-pointer ${isAllListings
@@ -3287,7 +3319,7 @@ export function HostCalendarWorkspace({
 
           {/* 3. Right Settings / Contextual Management Panel (Desktop Sidebar) */}
           <aside
-            aria-label="Calendar settings"
+            aria-label={t("host_calendar_settings_title", "Calendar Settings")}
             className="hidden h-full w-[300px] shrink-0 overflow-y-auto border-l border-l-[#eeeeee] px-5 py-5 font-['Poppins'] lg:block xl:w-[338px] calendar-panel-scrollbar dark:border-zinc-800 dark:border-l-zinc-800"
           >
             {isAllListings ? (
@@ -3331,521 +3363,559 @@ export function HostCalendarWorkspace({
         {/* ─────────────────────────────────────────────────────────────────── */}
         {/* Mobile / Tablet Responsive Settings & Contextual Modal */}
         {/* ─────────────────────────────────────────────────────────────────── */}
-        {mobileSettingsOpen && (
-          <WorkspaceDialog
-            title={
-              isAllListings
-                ? "Portfolio Settings"
-                : normalizedSelectedRange
-                  ? "Manage Selected Dates"
-                  : "Price & Availability"
-            }
-            onClose={() => setMobileSettingsOpen(false)}
-            maxWidth="max-w-md"
-          >
-            {isAllListings ? (
-              <AllListingsOverviewPanel
-                listings={listings}
-                bookings={bookings}
-                onSelectListing={handleSelectProperty}
-              />
-            ) : selectedListing && normalizedSelectedRange && selectedDatesStats ? (
-              <ContextualManagementPanel
-                key={`mobile-${selectedListing.id}-${normalizedSelectedRange.start}-${normalizedSelectedRange.end}`}
-                listing={selectedListing}
-                range={normalizedSelectedRange}
-                stats={selectedDatesStats}
-                sourceCurrency={sourceCurrency}
-                saving={saving}
-                notice={notice}
-                onSave={save}
-                onBulkAvailability={handleBulkAvailability}
-                bookings={bookings}
-                onClear={() => {
-                  setSelection({ start: null, end: null, isDragging: false });
-                  setPreviewPrice(null);
-                  setMobileSettingsOpen(false);
-                }}
-                onPreviewPrice={setPreviewPrice}
-              />
-            ) : selectedListing ? (
-              <CalendarSettingsPanel
-                key={`${selectedListing.id}-${displayCurrency}`}
-                listing={selectedListing}
-                saving={saving}
-                notice={notice}
-                onSave={save}
-              />
-            ) : null}
-          </WorkspaceDialog>
-        )}
+        {
+          mobileSettingsOpen && (
+            <WorkspaceDialog
+              title={
+                isAllListings
+                  ? t("host_calendar_portfolio_settings", "Portfolio Settings")
+                  : normalizedSelectedRange
+                    ? t("host_calendar_manage_selected_dates", "Manage Selected Dates")
+                    : t("host_calendar_price_and_availability", "Price & Availability")
+              }
+              onClose={() => setMobileSettingsOpen(false)}
+              maxWidth="max-w-md"
+            >
+              {isAllListings ? (
+                <AllListingsOverviewPanel
+                  listings={listings}
+                  bookings={bookings}
+                  onSelectListing={handleSelectProperty}
+                />
+              ) : selectedListing && normalizedSelectedRange && selectedDatesStats ? (
+                <ContextualManagementPanel
+                  key={`mobile-${selectedListing.id}-${normalizedSelectedRange.start}-${normalizedSelectedRange.end}`}
+                  listing={selectedListing}
+                  range={normalizedSelectedRange}
+                  stats={selectedDatesStats}
+                  sourceCurrency={sourceCurrency}
+                  saving={saving}
+                  notice={notice}
+                  onSave={save}
+                  onBulkAvailability={handleBulkAvailability}
+                  bookings={bookings}
+                  onClear={() => {
+                    setSelection({ start: null, end: null, isDragging: false });
+                    setPreviewPrice(null);
+                    setMobileSettingsOpen(false);
+                  }}
+                  onPreviewPrice={setPreviewPrice}
+                />
+              ) : selectedListing ? (
+                <CalendarSettingsPanel
+                  key={`${selectedListing.id}-${displayCurrency}`}
+                  listing={selectedListing}
+                  saving={saving}
+                  notice={notice}
+                  onSave={save}
+                />
+              ) : null}
+            </WorkspaceDialog>
+          )
+        }
 
         {/* Phase 19: Mobile Sticky Selection Floating Bar */}
-        {normalizedSelectedRange && selectedDatesStats && !mobileSettingsOpen && (
-          <aside
-            aria-label="Selection summary bar"
-            className="fixed inset-x-0 bottom-0 z-40 flex flex-col gap-3 border-t border-white bg-[#F3F4F5] p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-[0px_-2px_12px_0px_#0000001F] animate-in slide-in-from-bottom duration-200 dark:border-white/20 dark:bg-zinc-900 sm:inset-x-4 sm:bottom-4 sm:rounded-[12px] sm:border sm:p-3 md:flex-row md:items-center md:justify-between lg:hidden"
-          >
-            <div className="min-w-0 rounded-[12px] border border-white bg-white/70 px-3 py-2.5 dark:border-white/20 dark:bg-zinc-800/70 md:flex-1">
-              <p className="truncate text-sm font-medium text-[#1F1F1F] dark:text-zinc-100">
-                {selectedDatesStats.totalNights === 1
-                  ? t("host_calendar_night_selected", { count: 1 })
-                  : t("host_calendar_nights_selected", { count: selectedDatesStats.totalNights })}
-              </p>
-              <p className="mt-0.5 truncate text-xs text-[#727272] dark:text-zinc-400">
-                {selectedDatesStats.editableKeys.length} editable · {selectedDatesStats.bookedCount} reserved
-              </p>
-            </div>
-            <div className="grid grid-cols-2 gap-2 md:flex md:shrink-0">
-              <button
-                type="button"
-                onClick={() => {
-                  setSelection({ start: null, end: null, isDragging: false });
-                  setPreviewPrice(null);
-                }}
-                className="min-h-10 rounded-full border border-white bg-white px-4 py-2 text-sm font-medium text-[#1F1F1F] shadow-[0px_2px_4px_0px_#00000040] transition-colors hover:bg-[#DDDDDE] dark:border-white/20 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700 cursor-pointer"
-              >
-                {t("host_calendar_clear", "Clear")}
-              </button>
-              <button
-                type="button"
-                onClick={() => setMobileSettingsOpen(true)}
-                className="min-h-10 rounded-full border border-transparent bg-[#FCDF9C] px-4 py-2 text-sm font-medium text-[#1F1F1F] shadow-[0px_2px_4px_0px_#00000040] transition-colors hover:border-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white dark:bg-amber-400 dark:text-zinc-950 dark:hover:bg-zinc-700 dark:hover:text-white cursor-pointer"
-              >
-                {t("host_calendar_edit_dates", "Edit dates")}
-              </button>
-            </div>
-          </aside>
-        )}
+        {
+          normalizedSelectedRange && selectedDatesStats && !mobileSettingsOpen && (
+            <aside
+              aria-label={t("host_calendar_selection_summary_aria", "Selection summary bar")}
+              className="fixed inset-x-0 bottom-0 z-40 flex flex-col gap-3 border-t border-white bg-[#F3F4F5] p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-[0px_-2px_12px_0px_#0000001F] animate-in slide-in-from-bottom duration-200 dark:border-white/20 dark:bg-zinc-900 sm:inset-x-4 sm:bottom-4 sm:rounded-[12px] sm:border sm:p-3 md:flex-row md:items-center md:justify-between lg:hidden"
+            >
+              <div className="min-w-0 rounded-[12px] border border-white bg-white/70 px-3 py-2.5 dark:border-white/20 dark:bg-zinc-800/70 md:flex-1">
+                <p className="truncate text-sm font-medium text-[#1F1F1F] dark:text-zinc-100">
+                  {selectedDatesStats.totalNights === 1
+                    ? t("host_calendar_night_selected", { count: 1 })
+                    : t("host_calendar_nights_selected", { count: selectedDatesStats.totalNights })}
+                </p>
+                <p className="mt-0.5 truncate text-xs text-[#727272] dark:text-zinc-400">
+                  {t("host_calendar_editable_count", { count: selectedDatesStats.editableKeys.length })} · {t("host_calendar_reserved_count", { count: selectedDatesStats.bookedCount })}
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-2 md:flex md:shrink-0">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelection({ start: null, end: null, isDragging: false });
+                    setPreviewPrice(null);
+                  }}
+                  className="min-h-10 rounded-full border border-white bg-white px-4 py-2 text-sm font-medium text-[#1F1F1F] shadow-[0px_2px_4px_0px_#00000040] transition-colors hover:bg-[#DDDDDE] dark:border-white/20 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700 cursor-pointer"
+                >
+                  {t("host_calendar_clear", "Clear")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMobileSettingsOpen(true)}
+                  className="min-h-10 rounded-full border border-transparent bg-[#FCDF9C] px-4 py-2 text-sm font-medium text-[#1F1F1F] shadow-[0px_2px_4px_0px_#00000040] transition-colors hover:border-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white dark:bg-amber-400 dark:text-zinc-950 dark:hover:bg-zinc-700 dark:hover:text-white cursor-pointer"
+                >
+                  {t("host_calendar_edit_dates", "Edit dates")}
+                </button>
+              </div>
+            </aside >
+          )
+        }
 
         {/* Mobile / Tablet Property Selector Bottom Sheet / Modal */}
-        {mobilePropertySelectorOpen && (
-          <ModalOverlay
-            className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-xs p-0 sm:p-4"
-            onClick={(e) => {
-              if (e.target === e.currentTarget)
-                setMobilePropertySelectorOpen(false);
-            }}
-          >
-            <div
-              role="dialog"
-              aria-modal="true"
-              aria-label={t("host_calendar_select_property_modal_title", "Select property")}
-              className="max-h-[85vh] w-full max-w-lg overflow-hidden rounded-t-3xl sm:rounded-3xl bg-white dark:bg-zinc-900 text-[#1F1F1F] dark:text-zinc-100 p-6 shadow-2xl flex flex-col"
+        {
+          mobilePropertySelectorOpen && (
+            <ModalOverlay
+              className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-xs p-0 sm:p-4"
+              onClick={(e) => {
+                if (e.target === e.currentTarget)
+                  setMobilePropertySelectorOpen(false);
+              }}
             >
-              <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-4">
-                <h2 className="text-lg font-bold">{t("host_calendar_select_property_modal_title", "Select property")}</h2>
-                <CloseButton
-                  onClick={() => setMobilePropertySelectorOpen(false)}
-                />
-              </div>
-
-              {/* Search input if host has multiple listings */}
-              {listings.length > 4 && (
-                <div className="pt-3">
-                  <input
-                    type="text"
-                    placeholder={t("host_calendar_search_properties_placeholder", "Search properties...")}
-                    value={propertySearchQuery}
-                    onChange={(e) => setPropertySearchQuery(e.target.value)}
-                    className="w-full rounded-xl border border-[#d7d7d7] dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 px-3.5 py-2 text-sm text-[#1F1F1F] dark:text-zinc-100 placeholder:text-[#727272] outline-none focus:ring-2 focus:ring-amber-400"
+              <div
+                role="dialog"
+                aria-modal="true"
+                aria-label={t("host_calendar_select_property_modal_title", "Select property")}
+                className="max-h-[85vh] w-full max-w-lg overflow-hidden rounded-t-3xl sm:rounded-3xl bg-white dark:bg-zinc-900 text-[#1F1F1F] dark:text-zinc-100 p-6 shadow-2xl flex flex-col"
+              >
+                <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-4">
+                  <h2 className="text-lg font-bold">{t("host_calendar_select_property_modal_title", "Select property")}</h2>
+                  <CloseButton
+                    onClick={() => setMobilePropertySelectorOpen(false)}
                   />
                 </div>
-              )}
 
-              {/* Listings Picker list */}
-              <div className="mt-4 flex-1 space-y-2 overflow-y-auto pr-1">
-                {/* All listings option */}
-                {listings.length > 1 && !propertySearchQuery && (
-                  <button
-                    type="button"
-                    onClick={() => handleSelectProperty("all")}
-                    className={`flex w-full items-center gap-3.5 rounded-2xl p-3 text-left transition-colors cursor-pointer ${isAllListings
-                      ? "bg-[#FDE29B] dark:bg-amber-400 text-zinc-950 font-bold"
-                      : "hover:bg-[#F3F4F5] dark:hover:bg-zinc-800 border border-[#d7d7d7] dark:border-zinc-700"
-                      }`}
-                  >
-                    <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-zinc-900 text-white font-bold text-xs">
-                      ALL
+                {/* Search input if host has multiple listings */}
+                {listings.length > 4 && (
+                  <div className="pt-3">
+                    <div className="relative">
+                      <input
+                        type="text"
+                        placeholder={t("host_calendar_search_properties_placeholder", "Search properties...")}
+                        value={propertySearchQuery}
+                        onChange={(e) => setPropertySearchQuery(e.target.value)}
+                        className="w-full rounded-xl border border-[#d7d7d7] dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 pl-3.5 pr-9 py-2 text-sm text-[#1F1F1F] dark:text-zinc-100 placeholder:text-[#727272] outline-none focus:ring-2 focus:ring-amber-400"
+                      />
+                      {propertySearchQuery && (
+                        <button
+                          type="button"
+                          onClick={() => setPropertySearchQuery("")}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer text-xs"
+                          aria-label={t("home_clear_search", "Clear search")}
+                        >
+                          ✕
+                        </button>
+                      )}
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-bold">{t("host_calendar_all_listings", "All listings")}</p>
-                      <p className="text-xs text-[#727272] dark:text-zinc-400">
-                        {t("host_calendar_properties_portfolio", { count: listings.length })}
-                      </p>
-                    </div>
-                    {isAllListings && (
-                      <span className="text-zinc-950 font-bold">✓</span>
-                    )}
-                  </button>
+                  </div>
                 )}
 
-                {filteredListings.map((l) => {
-                  const isSelected = l.id === selectedId;
-                  return (
+                {/* Listings Picker list */}
+                <div className="mt-4 flex-1 space-y-2 overflow-y-auto pr-1">
+                  {/* All listings option */}
+                  {listings.length > 1 && !propertySearchQuery && (
                     <button
-                      key={l.id}
                       type="button"
-                      onClick={() => handleSelectProperty(l.id)}
-                      className={`flex w-full items-center gap-3.5 rounded-2xl p-3 text-left transition-colors cursor-pointer ${isSelected
-                        ? "bg-[#FDE29B] dark:bg-amber-400 text-zinc-950 font-semibold"
+                      onClick={() => handleSelectProperty("all")}
+                      className={`flex w-full items-center gap-3.5 rounded-2xl p-3 text-left transition-colors cursor-pointer ${isAllListings
+                        ? "bg-[#FDE29B] dark:bg-amber-400 text-zinc-950 font-bold"
                         : "hover:bg-[#F3F4F5] dark:hover:bg-zinc-800 border border-[#d7d7d7] dark:border-zinc-700"
                         }`}
                     >
-                      <PropertyPhoto
-                        listing={l}
-                        className="size-12 shrink-0 rounded-xl object-cover"
-                      />
+                      <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-zinc-900 text-white font-bold text-xs">
+                        ALL
+                      </div>
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-semibold">
-                          {l.title}
-                        </p>
-                        <p className="truncate text-xs text-[#727272]">
-                          {[l.district, l.city].filter(Boolean).join(", ") ||
-                            l.country}
+                        <p className="text-sm font-bold">{t("host_calendar_all_listings", "All listings")}</p>
+                        <p className="text-xs text-[#727272] dark:text-zinc-400">
+                          {t("host_calendar_properties_portfolio", { count: listings.length })}
                         </p>
                       </div>
-                      {isSelected && (
+                      {isAllListings && (
                         <span className="text-zinc-950 font-bold">✓</span>
                       )}
                     </button>
-                  );
-                })}
-              </div>
-            </div>
-          </ModalOverlay>
-        )}
+                  )}
 
-        {/* All Listings Day Details Dialog */}
-        {allListingsDayBookings && (
-          <WorkspaceDialog
-            title={t("host_calendar_listings_on_date", {
-              date: new Date(
-                `${allListingsDayBookings.date}T12:00:00`,
-              ).toLocaleDateString(language || "en", {
-                month: "long",
-                day: "numeric",
-                year: "numeric",
-              }),
-            })}
-            onClose={() => setAllListingsDayBookings(null)}
-            maxWidth="max-w-lg"
-          >
-            <div className="space-y-5 text-sm">
-              {/* Booked Listings on this date */}
-              <div>
-                <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 mb-2">
-                  {t("host_calendar_reserved_properties", {
-                    count: allListingsDayBookings.bookings.length,
-                  })}
-                </h3>
-                {allListingsDayBookings.bookings.length === 0 ? (
-                  <p className="text-xs text-[#727272]">
-                    {t("host_calendar_no_bookings_night", "No bookings on this night.")}
-                  </p>
-                ) : (
-                  <div className="space-y-2.5">
-                    {allListingsDayBookings.bookings.map((b) => (
-                      <div
-                        key={b.id}
-                        className="flex items-center justify-between rounded-xl border border-[#d7d7d7] dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 p-3"
-                      >
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate font-semibold text-xs text-[#1F1F1F] dark:text-zinc-100">
-                            {b.listing?.title || "Property"}
-                          </p>
-                          <p className="text-xs text-[#727272]">
-                            {t("host_calendar_guest_label", "Guest:")}{" "}
-                            <span className="font-medium text-zinc-900 dark:text-zinc-200">
-                              {b.guestName}
-                            </span>{" "}
-                            · {shortDate(b.startDate)}–{shortDate(b.endDate)}
-                          </p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setAllListingsDayBookings(null);
-                            setSelectedBooking(b);
-                          }}
-                          className="ml-3 shrink-0 rounded-full bg-zinc-900 dark:bg-[#F3F4F5] px-3 py-1.5 text-xs font-semibold text-white dark:text-zinc-950 hover:bg-black dark:hover:bg-white cursor-pointer"
-                        >
-                          {t("host_calendar_details_btn", "Details")}
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Vacant Listings on this date */}
-              <div className="border-t border-zinc-100 dark:border-zinc-800 pt-4">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-2">
-                  {t("host_calendar_available_properties", {
-                    count: Math.max(
-                      0,
-                      listings.length - allListingsDayBookings.bookings.length,
-                    ),
-                  })}
-                </h3>
-                <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-                  {listings
-                    .filter(
-                      (l) =>
-                        !allListingsDayBookings.bookings.some(
-                          (b) => b.listingId === l.id,
-                        ),
-                    )
-                    .map((l) => (
-                      <div
+                  {filteredListings.map((l) => {
+                    const isSelected = l.id === selectedId;
+                    return (
+                      <button
                         key={l.id}
-                        className="flex items-center justify-between rounded-xl border border-[#d7d7d7] dark:border-zinc-700 p-2.5"
+                        type="button"
+                        onClick={() => handleSelectProperty(l.id)}
+                        className={`flex w-full items-center gap-3.5 rounded-2xl p-3 text-left transition-colors cursor-pointer ${isSelected
+                          ? "bg-[#FDE29B] dark:bg-amber-400 text-zinc-950 font-semibold"
+                          : "hover:bg-[#F3F4F5] dark:hover:bg-zinc-800 border border-[#d7d7d7] dark:border-zinc-700"
+                          }`}
                       >
+                        <PropertyPhoto
+                          listing={l}
+                          className="size-12 shrink-0 rounded-xl object-cover"
+                        />
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-xs font-medium">
+                          <p className="truncate text-sm font-semibold">
                             {l.title}
                           </p>
+                          <p className="truncate text-xs text-[#727272]">
+                            {[l.district, l.city].filter(Boolean).join(", ") ||
+                              l.country}
+                          </p>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setAllListingsDayBookings(null);
-                            handleSelectProperty(l.id);
-                          }}
-                          className="ml-3 text-xs font-semibold text-amber-600 dark:text-amber-400 hover:underline cursor-pointer"
-                        >
-                          {t("host_calendar_view_calendar_btn", "View calendar →")}
-                        </button>
-                      </div>
-                    ))}
+                        {isSelected && (
+                          <span className="text-zinc-950 font-bold">✓</span>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
-            </div>
-          </WorkspaceDialog>
-        )}
+            </ModalOverlay>
+          )
+        }
+
+        {/* All Listings Day Details Dialog */}
+        {
+          allListingsDayBookings && (
+            <WorkspaceDialog
+              title={t("host_calendar_listings_on_date", {
+                date: new Date(
+                  `${allListingsDayBookings.date}T12:00:00`,
+                ).toLocaleDateString(language || "en", {
+                  month: "long",
+                  day: "numeric",
+                  year: "numeric",
+                }),
+              })}
+              onClose={() => setAllListingsDayBookings(null)}
+              maxWidth="max-w-lg"
+            >
+              <div className="space-y-5 text-sm">
+                {/* Booked Listings on this date */}
+                <div>
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 mb-2">
+                    {t("host_calendar_reserved_properties", {
+                      count: allListingsDayBookings.bookings.length,
+                    })}
+                  </h3>
+                  {allListingsDayBookings.bookings.length === 0 ? (
+                    <p className="text-xs text-[#727272]">
+                      {t("host_calendar_no_bookings_night", "No bookings on this night.")}
+                    </p>
+                  ) : (
+                    <div className="space-y-2.5">
+                      {allListingsDayBookings.bookings.map((b) => (
+                        <div
+                          key={b.id}
+                          className="flex items-center justify-between rounded-xl border border-[#d7d7d7] dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 p-3"
+                        >
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate font-semibold text-xs text-[#1F1F1F] dark:text-zinc-100">
+                              {b.listing?.title || t("host_cal_res_property_label", "Property")}
+                            </p>
+                            <p className="text-xs text-[#727272]">
+                              {t("host_calendar_guest_label", "Guest:")}{" "}
+                              <span className="font-medium text-zinc-900 dark:text-zinc-200">
+                                {b.guestName}
+                              </span>{" "}
+                              · {shortDate(b.startDate)}–{shortDate(b.endDate)}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setAllListingsDayBookings(null);
+                              setSelectedBooking(b);
+                            }}
+                            className="ml-3 shrink-0 rounded-full bg-zinc-900 dark:bg-[#F3F4F5] px-3 py-1.5 text-xs font-semibold text-white dark:text-zinc-950 hover:bg-black dark:hover:bg-white cursor-pointer"
+                          >
+                            {t("host_calendar_details_btn", "Details")}
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Vacant Listings on this date */}
+                <div className="border-t border-zinc-100 dark:border-zinc-800 pt-4">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-2">
+                    {t("host_calendar_available_properties", {
+                      count: Math.max(
+                        0,
+                        listings.length - allListingsDayBookings.bookings.length,
+                      ),
+                    })}
+                  </h3>
+                  <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                    {listings
+                      .filter(
+                        (l) =>
+                          !allListingsDayBookings.bookings.some(
+                            (b) => b.listingId === l.id,
+                          ),
+                      )
+                      .map((l) => (
+                        <div
+                          key={l.id}
+                          className="flex items-center justify-between rounded-xl border border-[#d7d7d7] dark:border-zinc-700 p-2.5"
+                        >
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-xs font-medium">
+                              {l.title}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setAllListingsDayBookings(null);
+                              handleSelectProperty(l.id);
+                            }}
+                            className="ml-3 text-xs font-semibold text-amber-600 dark:text-amber-400 hover:underline cursor-pointer"
+                          >
+                            {t("host_calendar_view_calendar_btn", "View calendar →")}
+                          </button>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              </div>
+            </WorkspaceDialog>
+          )
+        }
 
         {/* Reservation Details Modal */}
-        {selectedBooking && selectedListing && (
-          <ReservationDetails
-            booking={selectedBooking}
-            listing={
-              listings.find((l) => l.id === selectedBooking.listingId) ||
-              selectedListing
-            }
-            onClose={() => setSelectedBooking(null)}
-            onMoney={() => setShowMoney(true)}
-          />
-        )}
+        {
+          selectedBooking && selectedListing && (
+            <ReservationDetails
+              booking={selectedBooking}
+              listing={
+                listings.find((l) => l.id === selectedBooking.listingId) ||
+                selectedListing
+              }
+              onClose={() => setSelectedBooking(null)}
+              onMoney={() => setShowMoney(true)}
+            />
+          )
+        }
 
         {/* Send or Request Money Dialog */}
-        {selectedBooking && showMoney && (
-          <MoneyDialog
-            booking={selectedBooking}
-            onClose={() => {
-              setShowMoney(false);
-              setSelectedBooking(null);
-            }}
-          />
-        )}
+        {
+          selectedBooking && showMoney && (
+            <MoneyDialog
+              booking={selectedBooking}
+              onClose={() => {
+                setShowMoney(false);
+                setSelectedBooking(null);
+              }}
+            />
+          )
+        }
 
         {/* Price Tips Dialog */}
-        {tips && (
-          <WorkspaceDialog
-            title={t("host_calendar_price_tips", "Price tips")}
-            onClose={() => setTips(false)}
-            maxWidth="max-w-md"
-          >
-            <div className="space-y-4 text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
-              {selectedListing && normalizedSelectedRange && selectedDatesStats && selectedDatesStats.editableKeys.length > 0 ? (
-                /* Contextual tips for selected range */
-                <div className="space-y-3">
-                  <div className="rounded-xl bg-amber-50 dark:bg-amber-950/40 p-4 border border-amber-200/60 dark:border-amber-900/60 space-y-2.5">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold uppercase tracking-wider text-amber-900 dark:text-amber-200">
-                        {t("host_calendar_price_tips_rec", "Selected Dates Recommendation")}
-                      </span>
-                      <span className="text-xs text-[#727272] font-medium">
-                        {selectedDatesStats.totalNights} {selectedDatesStats.totalNights === 1 ? t("host_calendar_night_count", { count: 1 })
-                          : t("host_calendar_nights_count", { count: selectedDatesStats.totalNights })}
-                      </span>
-                    </div>
-                    {(() => {
-                      const rangeTips = calculatePriceTips({
-                        listing: selectedListing,
-                        dateKeys: selectedDatesStats.editableKeys,
-                        bookings,
-                      });
-                      return (
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm text-[#727272] font-medium">
-                              {t("host_calendar_price_tips_status", "Recommendation Status")}
-                            </span>
-                            {rangeTips.overallAction === "INCREASE" ? (
-                              <span className="rounded-md bg-amber-200 dark:bg-amber-900/80 px-2 py-0.5 text-[10px] font-bold text-amber-950 dark:text-amber-200">
-                                {t("host_calendar_price_tips_surge", { pct: rangeTips.averagePercentChange })}
+        {
+          tips && (
+            <WorkspaceDialog
+              title={t("host_calendar_price_tips", "Price tips")}
+              onClose={() => setTips(false)}
+              maxWidth="max-w-md"
+            >
+              <div className="space-y-4 text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
+                {selectedListing && normalizedSelectedRange && selectedDatesStats && selectedDatesStats.editableKeys.length > 0 ? (
+                  /* Contextual tips for selected range */
+                  <div className="space-y-3">
+                    <div className="rounded-xl bg-amber-50 dark:bg-amber-950/40 p-4 border border-amber-200/60 dark:border-amber-900/60 space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold uppercase tracking-wider text-amber-900 dark:text-amber-200">
+                          {t("host_calendar_price_tips_rec", "Selected Dates Recommendation")}
+                        </span>
+                        <span className="text-xs text-[#727272] font-medium">
+                          {selectedDatesStats.totalNights} {selectedDatesStats.totalNights === 1 ? t("host_calendar_night_count", { count: 1 })
+                            : t("host_calendar_nights_count", { count: selectedDatesStats.totalNights })}
+                        </span>
+                      </div>
+                      {(() => {
+                        const rangeTips = calculatePriceTips({
+                          listing: selectedListing,
+                          dateKeys: selectedDatesStats.editableKeys,
+                          bookings,
+                        });
+                        return (
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm text-[#727272] font-medium">
+                                {t("host_calendar_price_tips_status", "Recommendation Status")}
                               </span>
-                            ) : rangeTips.overallAction === "DECREASE" ? (
-                              <span className="rounded-md bg-blue-100 dark:bg-blue-950 px-2 py-0.5 text-[10px] font-bold text-blue-900 dark:text-blue-200">
-                                {t("host_calendar_price_tips_incentive", { pct: rangeTips.averagePercentChange })}
-                              </span>
-                            ) : rangeTips.overallAction === "NO_CHANGE" ? (
-                              <span className="rounded-md bg-emerald-100 dark:bg-emerald-950 px-2 py-0.5 text-[10px] font-bold text-emerald-900 dark:text-emerald-200">
-                                {t("host_calendar_price_tips_optimal", "Optimal Rate")}
-                              </span>
-                            ) : (
-                              <span className="rounded-md bg-zinc-200 dark:bg-zinc-800 px-2 py-0.5 text-[10px] font-bold text-zinc-700 dark:text-zinc-300">
-                                {t("host_calendar_price_tips_advisory", "Advisory Only")}
-                              </span>
+                              {rangeTips.overallAction === "INCREASE" ? (
+                                <span className="rounded-md bg-amber-200 dark:bg-amber-900/80 px-2 py-0.5 text-[10px] font-bold text-amber-950 dark:text-amber-200">
+                                  {t("host_calendar_price_tips_surge", { pct: rangeTips.averagePercentChange })}
+                                </span>
+                              ) : rangeTips.overallAction === "DECREASE" ? (
+                                <span className="rounded-md bg-blue-100 dark:bg-blue-950 px-2 py-0.5 text-[10px] font-bold text-blue-900 dark:text-blue-200">
+                                  {t("host_calendar_price_tips_incentive", { pct: rangeTips.averagePercentChange })}
+                                </span>
+                              ) : rangeTips.overallAction === "NO_CHANGE" ? (
+                                <span className="rounded-md bg-emerald-100 dark:bg-emerald-950 px-2 py-0.5 text-[10px] font-bold text-emerald-900 dark:text-emerald-200">
+                                  {t("host_calendar_price_tips_optimal", "Optimal Rate")}
+                                </span>
+                              ) : (
+                                <span className="rounded-md bg-zinc-200 dark:bg-zinc-800 px-2 py-0.5 text-[10px] font-bold text-zinc-700 dark:text-zinc-300">
+                                  {t("host_calendar_price_tips_advisory", "Advisory Only")}
+                                </span>
+                              )}
+                            </div>
+
+                            <div className="flex items-baseline justify-between pt-1">
+                              <div>
+                                <span className="text-xs text-zinc-500 block">{t("host_calendar_price_tips_curr_avg", "Current avg")}</span>
+                                <span className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+                                  {formatMoney(rangeTips.averageCurrentPrice, sourceCurrency, 2)}
+                                </span>
+                              </div>
+                              {rangeTips.overallAction !== "NO_CHANGE" && rangeTips.overallAction !== "INSUFFICIENT_DATA" && (
+                                <span className="text-zinc-400">→</span>
+                              )}
+                              <div className="text-right">
+                                <span className="text-xs text-[#727272] block">
+                                  {rangeTips.overallAction === "NO_CHANGE"
+                                    ? t("host_calendar_price_tips_rec_avg", "Recommended avg")
+                                    : rangeTips.overallAction === "INSUFFICIENT_DATA"
+                                      ? t("host_calendar_price_tips_active_avg", "Active avg")
+                                      : t("host_calendar_price_tips_sugg_avg", "Suggested avg")}
+                                </span>
+                                <span className="text-base font-bold text-amber-700 dark:text-amber-400">
+                                  {formatMoney(rangeTips.averageSuggestedPrice, sourceCurrency, 2)}
+                                </span>
+                              </div>
+                            </div>
+
+                            {rangeTips.applicableCount > 1 && (
+                              <div className="rounded-lg bg-white/60 dark:bg-zinc-900/60 p-2 text-[11px] text-zinc-600 dark:text-zinc-300 flex items-center justify-between border border-amber-200/50 dark:border-amber-900/40">
+                                <span>{t("host_calendar_price_tips_breakdown", "Breakdown")}</span>
+                                <span className="font-semibold text-zinc-700 dark:text-zinc-200">
+                                  {rangeTips.increaseCount > 0 ? `${rangeTips.increaseCount} ${t("host_calendar_price_tips_increase", "increase")} ` : ""}
+                                  {rangeTips.decreaseCount > 0 ? `${rangeTips.decreaseCount} ${t("host_calendar_price_tips_decrease", "decrease")} ` : ""}
+                                  {rangeTips.noChangeCount > 0 ? `${rangeTips.noChangeCount} ${t("host_calendar_price_tips_optimal_count", "optimal")}` : ""}
+                                </span>
+                              </div>
                             )}
-                          </div>
 
-                          <div className="flex items-baseline justify-between pt-1">
-                            <div>
-                              <span className="text-xs text-zinc-500 block">{t("host_calendar_price_tips_curr_avg", "Current avg")}</span>
-                              <span className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-                                {formatMoney(rangeTips.averageCurrentPrice, sourceCurrency, 2)}
-                              </span>
+                            <div className="border-t border-amber-200/50 dark:border-amber-900/50 pt-2 space-y-1">
+                              {rangeTips.reasons.map((r, i) => (
+                                <p key={i} className="text-xs text-amber-900/80 dark:text-amber-300/80 flex items-center gap-1.5">
+                                  <span className="text-amber-500 font-bold">•</span> {getLocalizedReason(r, t)}
+                                </p>
+                              ))}
                             </div>
-                            {rangeTips.overallAction !== "NO_CHANGE" && rangeTips.overallAction !== "INSUFFICIENT_DATA" && (
-                              <span className="text-zinc-400">→</span>
-                            )}
-                            <div className="text-right">
-                              <span className="text-xs text-[#727272] block">
-                                {rangeTips.overallAction === "NO_CHANGE"
-                                  ? t("host_calendar_price_tips_rec_avg", "Recommended avg")
-                                  : rangeTips.overallAction === "INSUFFICIENT_DATA"
-                                    ? t("host_calendar_price_tips_active_avg", "Active avg")
-                                    : t("host_calendar_price_tips_sugg_avg", "Suggested avg")}
-                              </span>
-                              <span className="text-base font-bold text-amber-700 dark:text-amber-400">
-                                {formatMoney(rangeTips.averageSuggestedPrice, sourceCurrency, 2)}
-                              </span>
-                            </div>
-                          </div>
 
-                          {rangeTips.applicableCount > 1 && (
-                            <div className="rounded-lg bg-white/60 dark:bg-zinc-900/60 p-2 text-[11px] text-zinc-600 dark:text-zinc-300 flex items-center justify-between border border-amber-200/50 dark:border-amber-900/40">
-                              <span>{t("host_calendar_price_tips_breakdown", "Breakdown")}</span>
-                              <span className="font-semibold text-zinc-700 dark:text-zinc-200">
-                                {rangeTips.increaseCount > 0 ? `${rangeTips.increaseCount} ${t("host_calendar_price_tips_increase", "increase")} ` : ""}
-                                {rangeTips.decreaseCount > 0 ? `${rangeTips.decreaseCount} ${t("host_calendar_price_tips_decrease", "decrease")} ` : ""}
-                                {rangeTips.noChangeCount > 0 ? `${rangeTips.noChangeCount} ${t("host_calendar_price_tips_optimal_count", "optimal")}` : ""}
-                              </span>
-                            </div>
-                          )}
-
-                          <div className="border-t border-amber-200/50 dark:border-amber-900/50 pt-2 space-y-1">
-                            {rangeTips.reasons.map((r, i) => (
-                              <p key={i} className="text-xs text-amber-900/80 dark:text-amber-300/80 flex items-center gap-1.5">
-                                <span className="text-amber-500 font-bold">•</span> {r}
-                              </p>
-                            ))}
-                          </div>
-
-                          <div className="pt-2 flex items-center justify-end gap-2">
-                            <button
-                              type="button"
-                              onClick={() => setTips(false)}
-                              className="rounded-full px-4 py-1.5 text-xs font-semibold text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors cursor-pointer"
-                            >
-                              {t("host_calendar_cancel", "Cancel")}
-                            </button>
-                            {rangeTips.overallAction === "INCREASE" || rangeTips.overallAction === "DECREASE" ? (
+                            <div className="pt-2 flex items-center justify-end gap-2">
                               <button
                                 type="button"
-                                disabled={saving}
-                                onClick={async () => {
-                                  const nextCustom = {
-                                    ...(((selectedListing as any).customPrices || {}) as Record<string, number>),
-                                  };
-                                  for (const rec of rangeTips.recommendations) {
-                                    if (!rec.isBooked && (rec.action === "INCREASE" || rec.action === "DECREASE")) {
-                                      nextCustom[rec.dateKey] = rec.suggestedPrice;
-                                    }
-                                  }
-                                  await save({ customPrices: nextCustom });
-                                  setTips(false);
-                                }}
-                                className="rounded-full bg-amber-400 hover:bg-amber-300 px-5 py-2 text-xs font-bold text-zinc-950 transition-colors cursor-pointer disabled:opacity-70"
+                                onClick={() => setTips(false)}
+                                className="rounded-full px-4 py-1.5 text-xs font-semibold text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors cursor-pointer"
                               >
-                                {saving ? t("host_calendar_applying", "Applying…") : t("host_calendar_price_tips_apply_count", { count: rangeTips.increaseCount + rangeTips.decreaseCount })}
+                                {t("host_calendar_cancel", "Cancel")}
                               </button>
-                            ) : (
-                              <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 italic">
-                                {rangeTips.overallAction === "NO_CHANGE" ? t("host_calendar_price_tips_optimal_active", "Optimal rate active") : t("host_calendar_price_tips_manual_active", "Manual rate active")}
-                              </span>
-                            )}
+                              {rangeTips.overallAction === "INCREASE" || rangeTips.overallAction === "DECREASE" ? (
+                                <button
+                                  type="button"
+                                  disabled={saving}
+                                  onClick={async () => {
+                                    const nextCustom = {
+                                      ...(((selectedListing as any).customPrices || {}) as Record<string, number>),
+                                    };
+                                    for (const rec of rangeTips.recommendations) {
+                                      if (!rec.isBooked && (rec.action === "INCREASE" || rec.action === "DECREASE")) {
+                                        nextCustom[rec.dateKey] = rec.suggestedPrice;
+                                      }
+                                    }
+                                    await save({ customPrices: nextCustom });
+                                    setTips(false);
+                                  }}
+                                  className="rounded-full bg-amber-400 hover:bg-amber-300 px-5 py-2 text-xs font-bold text-zinc-950 transition-colors cursor-pointer disabled:opacity-70"
+                                >
+                                  {saving ? t("host_calendar_applying", "Applying…") : t("host_calendar_price_tips_apply_count", { count: rangeTips.increaseCount + rangeTips.decreaseCount })}
+                                </button>
+                              ) : (
+                                <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 italic">
+                                  {rangeTips.overallAction === "NO_CHANGE" ? t("host_calendar_price_tips_optimal_active", "Optimal rate active") : t("host_calendar_price_tips_manual_active", "Manual rate active")}
+                                </span>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      );
-                    })()}
+                        );
+                      })()}
+                    </div>
+                    <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-normal italic">
+                      {t("host_calendar_price_tips_disclaimer", "External market competitor comparison is unavailable. Recommendations are calculated using your property's base prices, weekend adjustments, booking occupancy signals, and calendar seasonality.")}
+                    </p>
                   </div>
-                  <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-normal italic">
-                    {t("host_calendar_price_tips_disclaimer", "External market competitor comparison is unavailable. Recommendations are calculated using your property's base prices, weekend adjustments, booking occupancy signals, and calendar seasonality.")}
-                  </p>
-                </div>
-              ) : (
-                /* Overall listing tips */
-                <div className="space-y-5">
-                  <div className="rounded-lg border border-[#f1dc94] bg-[#fffaf0] p-4 dark:border-amber-900/60 dark:bg-amber-950/30">
-                    <div className="flex items-start gap-3">
-                      <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-[#FCDF9C] text-[#6f4c00]">
-                        <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                          <path d="M12 3v2M12 19v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M3 12h2M19 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
-                          <circle cx="12" cy="12" r="4" />
-                        </svg>
-                      </span>
-                      <div>
-                        <h4 className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">
-                          Property Pricing Insights
-                        </h4>
-                        <p className="mt-1 text-sm leading-5 text-[#76500b] dark:text-amber-200">
-                          Optimize earnings with weekend premiums, Smart Pricing limits, and longer-stay promotions.
+                ) : (
+                  /* Overall listing tips */
+                  <div className="space-y-5">
+                    <div className="rounded-lg border border-[#f1dc94] bg-[#fffaf0] p-4 dark:border-amber-900/60 dark:bg-amber-950/30">
+                      <div className="flex items-start gap-3">
+                        <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-[#FCDF9C] text-[#6f4c00]">
+                          <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <path d="M12 3v2M12 19v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M3 12h2M19 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+                            <circle cx="12" cy="12" r="4" />
+                          </svg>
+                        </span>
+                        <div>
+                          <h4 className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">
+                            {t("host_calendar_price_tips_insights_title", "Property Pricing Insights")}
+                          </h4>
+                          <p className="mt-1 text-sm leading-5 text-[#76500b] dark:text-amber-200">
+                            {t("host_calendar_price_tips_insights_desc", "Optimize earnings by setting weekend premiums, configuring Smart Pricing limits, and applying promotional discounts for longer stays.")}
+                          </p>
+                        </div>
+                      </div >
+                    </div >
+
+                    <div className="space-y-3">
+                      <div className="flex items-start gap-3">
+                        <span className="mt-1 flex size-4 shrink-0 items-center justify-center rounded-full bg-[#DDDDDE] text-[9px] font-semibold text-[#6f4c00]">1</span>
+                        <p className="text-sm leading-6 text-[#595959] dark:text-zinc-300">
+                          <strong className="font-semibold text-[#1F1F1F] dark:text-zinc-100">{t("host_calendar_price_tips_weekend_title", "Weekend Pricing:")}</strong>
+                          <span className="text-[#727272] dark:text-zinc-400"> {t("host_calendar_price_tips_weekend_desc", "Configure weekend rates to capture higher weekend demand (Thursday & Friday nights).")}</span>
+                        </p>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <span className="mt-1 flex size-4 shrink-0 items-center justify-center rounded-full bg-[#DDDDDE] text-[9px] font-semibold text-[#6f4c00]">2</span>
+                        <p className="text-sm leading-6 text-[#595959] dark:text-zinc-300">
+                          <strong className="font-semibold text-[#1F1F1F] dark:text-zinc-100">{t("host_calendar_price_tips_select_title", "Select Dates:")}</strong>
+                          <span className="text-[#727272] dark:text-zinc-400"> {t("host_calendar_price_tips_select_desc", "Click or drag on the calendar to view tailored price recommendations for specific dates.")}</span>
+                        </p>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <span className="mt-1 flex size-4 shrink-0 items-center justify-center rounded-full bg-[#DDDDDE] text-[9px] font-semibold text-[#6f4c00]">3</span>
+                        <p className="text-sm leading-6 text-[#595959] dark:text-zinc-300">
+                          <strong className="font-semibold text-[#1F1F1F] dark:text-zinc-100">{t("host_calendar_price_tips_smart_title", "Smart Pricing Limits:")}</strong>
+                          <span className="text-[#727272] dark:text-zinc-400"> {t("host_calendar_price_tips_smart_desc", "Set minimum and maximum price boundaries in your listing settings to safeguard profitability.")}</span>
+                        </p>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <span className="mt-1 flex size-4 shrink-0 items-center justify-center rounded-full bg-[#DDDDDE] text-[9px] font-semibold text-[#6f4c00]">4</span>
+                        <p className="text-sm leading-6 text-[#595959] dark:text-zinc-300">
+                          <strong className="font-semibold text-[#1F1F1F] dark:text-zinc-100">{t("host_calendar_price_tips_discounts_title", "Weekly & Monthly Discounts:")}</strong>
+                          <span className="text-[#727272] dark:text-zinc-400"> {t("host_calendar_price_tips_discounts_desc", "Offer discounts to attract longer-stay guests and increase occupancy.")}</span>
                         </p>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="space-y-3">
-                    <div className="flex items-start gap-3">
-                      <span className="mt-1 flex size-4 shrink-0 items-center justify-center rounded-full bg-[#DDDDDE] text-[9px] font-semibold text-[#6f4c00]">1</span>
-                      <p className="text-sm leading-6 text-[#595959] dark:text-zinc-300"><strong className="font-semibold text-[#1F1F1F] dark:text-zinc-100">Weekend Pricing</strong><span className="text-[#727272] dark:text-zinc-400"> · Configure weekend rates to capture higher demand on Thursday and Friday nights.</span></p>
+                    <div className="flex items-start gap-2.5 rounded-xl border border-[#e7e7e7] bg-[#f7f7f7] p-3 text-sm leading-6 text-[#727272] dark:border-zinc-700 dark:bg-zinc-800/80 dark:text-zinc-400">
+                      <svg className="mt-0.5 size-4 shrink-0 text-[#727272]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 10v6M12 7h.01" strokeLinecap="round" /></svg>
+                      <p>{t("host_calendar_price_tips_disclaimer_bottom", "External market competitor data is currently unavailable. Suggestions are generated from your property's rules and calendar lead time.")}</p>
                     </div>
-                    <div className="flex items-start gap-3">
-                      <span className="mt-1 flex size-4 shrink-0 items-center justify-center rounded-full bg-[#DDDDDE] text-[9px] font-semibold text-[#6f4c00]">2</span>
-                      <p className="text-sm leading-6 text-[#595959] dark:text-zinc-300"><strong className="font-semibold text-[#1F1F1F] dark:text-zinc-100">Select Dates</strong><span className="text-[#727272] dark:text-zinc-400"> · Click or drag on the calendar to view tailored recommendations for specific dates.</span></p>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <span className="mt-1 flex size-4 shrink-0 items-center justify-center rounded-full bg-[#DDDDDE] text-[9px] font-semibold text-[#6f4c00]">3</span>
-                      <p className="text-sm leading-6 text-[#595959] dark:text-zinc-300"><strong className="font-semibold text-[#1F1F1F] dark:text-zinc-100">Smart Pricing Limits</strong><span className="text-[#727272] dark:text-zinc-400"> · Set minimum and maximum prices to safeguard profitability.</span></p>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <span className="mt-1 flex size-4 shrink-0 items-center justify-center rounded-full bg-[#DDDDDE] text-[9px] font-semibold text-[#6f4c00]">4</span>
-                      <p className="text-sm leading-6 text-[#595959] dark:text-zinc-300"><strong className="font-semibold text-[#1F1F1F] dark:text-zinc-100">Stay Length Discounts</strong><span className="text-[#727272] dark:text-zinc-400"> · Offer discounts to attract longer stays and increase occupancy.</span></p>
-                    </div>
-                  </div>
 
-                  <div className="flex items-start gap-2.5 rounded-xl border border-[#e7e7e7] bg-[#f7f7f7] p-3 text-sm leading-6 text-[#727272] dark:border-zinc-700 dark:bg-zinc-800/80 dark:text-zinc-400">
-                    <svg className="mt-0.5 size-4 shrink-0 text-[#727272]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 10v6M12 7h.01" strokeLinecap="round" /></svg>
-                    <p>External market competitor data is currently unavailable. Suggestions use your property&apos;s rules and calendar lead time.</p>
-                  </div>
-
-                  <div className="flex justify-end border-t border-[#e7e7e7] pt-4 dark:border-zinc-800">
-                    <button
-                      type="button"
-                      onClick={() => setTips(false)}
-                      className="rounded-full bg-[#1F1F1F] px-6 py-2.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-[#3a3a3a] dark:bg-[#F3F4F5] dark:text-[#1F1F1F] dark:hover:bg-white cursor-pointer"
-                    >
-                      {t("host_calendar_got_it", "Got it")}
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </WorkspaceDialog>
-        )}
-      </main>
+                    <div className="flex justify-end border-t border-[#e7e7e7] pt-4 dark:border-zinc-800">
+                      <button
+                        type="button"
+                        onClick={() => setTips(false)}
+                        className="rounded-full bg-[#1F1F1F] px-6 py-2.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-[#3a3a3a] dark:bg-[#F3F4F5] dark:text-[#1F1F1F] dark:hover:bg-white cursor-pointer"
+                      >
+                        {t("host_calendar_got_it", "Got it")}
+                      </button>
+                    </div>
+                  </div >
+                )
+                }
+              </div >
+            </WorkspaceDialog >
+          )}
+      </main >
     </>
   );
 }

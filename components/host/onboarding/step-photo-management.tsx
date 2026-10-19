@@ -34,6 +34,7 @@ export function StepPhotoManagement({
   onNext,
   isLoading = false,
 }: StepPhotoManagementProps) {
+  const { t } = useLanguage();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const replaceInputRef = useRef<HTMLInputElement>(null);
   const [replaceTargetIdx, setReplaceTargetIdx] = useState<number | null>(null);
@@ -139,7 +140,6 @@ export function StepPhotoManagement({
     e.preventDefault();
   };
 
-  const { t } = useLanguage();
   const extraPhotos = photos.slice(5);
 
   return (
@@ -245,7 +245,7 @@ export function StepPhotoManagement({
                       className="w-full h-full flex flex-col items-center justify-center cursor-pointer transition-colors hover:bg-[#E9EBFF]"
                     >
                       <CameraPlaceholder />
-                      <span className="mt-4 text-base font-normal text-[#727272] block">Click to add cover photo</span>
+                      <span className="mt-4 text-base font-normal text-[#727272] block">{t("host_click_add_cover_photo", "Click to add cover photo")}</span>
                     </button>
                   )}
                 </div>
@@ -270,13 +270,13 @@ export function StepPhotoManagement({
                                 onClick={() => handleSetCoverPhoto(slotIdx)}
                                 className="bg-white/90 text-[#1F1F1F] text-[10px] font-medium px-2 py-1 rounded-md hover:bg-white transition-colors cursor-pointer"
                               >
-                                Make cover
+                                {t("host_make_cover_short", "Make cover")}
                               </button>
                               <button
                                 type="button"
                                 onClick={() => handleRemovePhoto(slotIdx)}
                                 className="w-6 h-6 rounded-full bg-white/90 text-zinc-700 hover:bg-red-500 hover:text-white flex items-center justify-center text-xs font-semibold transition-colors cursor-pointer"
-                                title="Remove photo"
+                                title={t("host_remove_photo", "Remove photo")}
                               >
                                 ✕
                               </button>
@@ -286,7 +286,7 @@ export function StepPhotoManagement({
                               onClick={() => triggerReplace(slotIdx)}
                               className="bg-white/90 text-[#1F1F1F] text-[11px] font-medium py-1 px-2 rounded-md hover:bg-white transition-colors cursor-pointer self-start"
                             >
-                              Replace
+                              {t("host_replace_photo", "Replace")}
                             </button>
                           </div>
                         </>
@@ -308,7 +308,7 @@ export function StepPhotoManagement({
             {/* Additional Photos Section (If more than 5 photos uploaded) */}
             {extraPhotos.length > 0 && (
               <div className="w-full mt-4">
-                <h3 className="text-sm font-semibold text-zinc-800 mb-3">Additional photos ({extraPhotos.length})</h3>
+                <h3 className="text-sm font-semibold text-zinc-800 mb-3">{t("host_additional_photos", { count: extraPhotos.length }, `Additional photos (${extraPhotos.length})`)}</h3>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 w-full">
                   {extraPhotos.map((url, idx) => {
                     const actualIdx = idx + 5;
@@ -325,12 +325,13 @@ export function StepPhotoManagement({
                               onClick={() => handleSetCoverPhoto(actualIdx)}
                               className="bg-white/90 text-[#1F1F1F] text-[10px] font-semibold px-2 py-0.5 rounded-md hover:bg-white cursor-pointer"
                             >
-                              Make cover
+                              {t("host_make_cover_short", "Make cover")}
                             </button>
                             <button
                               type="button"
                               onClick={() => handleRemovePhoto(actualIdx)}
                               className="w-5 h-5 rounded-full bg-white/90 text-zinc-700 hover:bg-red-500 hover:text-white flex items-center justify-center text-xs font-semibold cursor-pointer"
+                              title={t("host_remove_photo", "Remove photo")}
                             >
                               ✕
                             </button>
@@ -340,7 +341,7 @@ export function StepPhotoManagement({
                             onClick={() => triggerReplace(actualIdx)}
                             className="bg-white/90 text-[#1F1F1F] text-[10px] font-semibold py-0.5 px-2 rounded-md hover:bg-white cursor-pointer self-start"
                           >
-                            Replace
+                            {t("host_replace_photo", "Replace")}
                           </button>
                         </div>
                       </div>
@@ -353,7 +354,7 @@ export function StepPhotoManagement({
                     className="rounded-2xl border-2 border-dashed border-zinc-300 bg-zinc-50 hover:bg-zinc-100/80 flex flex-col items-center justify-center aspect-square text-[#727272] cursor-pointer transition-colors"
                   >
                     <span className="text-2xl font-semibold mb-1">+</span>
-                    <span className="text-[11px] font-semibold">Add photo</span>
+                    <span className="text-[11px] font-semibold">{t("host_add_photo", "Add photo")}</span>
                   </button>
                 </div>
               </div>

@@ -27,13 +27,13 @@ import { useLanguage } from "@/lib/i18n/language-context";
 import { getCurrencyForCountry } from "@/lib/currency";
 
 export const LISTING_TABS = [
-  { id: "ALL", label: "All" },
-  { id: "ACTIVE", label: "Listed" },
-  { id: "PENDING_REVIEW", label: "Pending review" },
-  { id: "CHANGES_REQUESTED", label: "Changes requested" },
-  { id: "DRAFT", label: "Draft" },
-  { id: "PAUSED", label: "Paused" },
-  { id: "REJECTED", label: "Rejected" },
+  { id: "ALL", label: "All", key: "host_listings_tab_all" },
+  { id: "ACTIVE", label: "Listed", key: "host_listings_tab_listed" },
+  { id: "PENDING_REVIEW", label: "Pending review", key: "host_listings_tab_pending_review" },
+  { id: "CHANGES_REQUESTED", label: "Changes requested", key: "host_listings_tab_changes_requested" },
+  { id: "DRAFT", label: "Draft", key: "host_listings_tab_draft" },
+  { id: "PAUSED", label: "Paused", key: "host_listings_tab_paused" },
+  { id: "REJECTED", label: "Rejected", key: "host_listings_tab_rejected" },
 ] as const;
 
 function isOptimizableImage(src: string): boolean {
@@ -779,7 +779,7 @@ export function HostListingsWorkspace({
                 onClick={() => fetchListings(activeTab, page, searchQuery.trim(), { bypassCache: true })}
                 className="ml-4 rounded-full bg-rose-600 px-3 py-1 text-xs font-semibold text-white hover:bg-rose-700 cursor-pointer"
               >
-                Retry
+                {t("host_listings_btn_retry")}
               </button>
             </div>
           )}
@@ -805,13 +805,15 @@ export function HostListingsWorkspace({
                   </svg>
                 </div>
                 <input
-                  type="search"
+                  type="text"
+                  role="searchbox"
+                  autoComplete="off"
                   autoFocus
                   value={searchQuery}
                   onChange={(event) => handleSearchChange(event.target.value)}
-                  placeholder=""
+                  placeholder={t("host_search_listings_aria") ? `${t("host_search_listings_aria")}...` : ""}
                   aria-label={t("host_search_listings_aria")}
-                  className="h-11 w-full rounded-full border border-[#727272] bg-[#f3f4f6] pl-11 pr-4 font-['Poppins'] text-base text-[#1F1F1F] outline-none transition-colors focus:border-[#1F1F1F]"
+                  className="h-11 w-full rounded-full border border-[#727272] bg-[#f3f4f6] pl-11 pr-4 font-['Poppins'] text-base text-[#1F1F1F] outline-none transition-colors focus:border-[#1F1F1F] [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
                 />
               </div>
               <button
@@ -896,19 +898,22 @@ export function HostListingsWorkspace({
                   </svg>
                 </div>
                 <input
-                  type="search"
+                  type="text"
+                  role="searchbox"
+                  autoComplete="off"
                   value={searchQuery}
                   onChange={(e) => handleSearchChange(e.target.value)}
-                  placeholder="Search listings..."
+                  placeholder={t("host_search_listings_aria") ? `${t("host_search_listings_aria")}...` : "Search listings..."}
                   aria-label={t("host_search_listings_aria")}
-                  className="h-11 w-full rounded-full border border-zinc-300 bg-[#f9fafb] pl-10 pr-9 font-['Poppins'] text-sm text-[#1F1F1F] outline-none transition-colors focus:border-[#1F1F1F] focus:bg-white"
+                  className="h-11 w-full rounded-full border border-zinc-300 bg-[#f9fafb] pl-10 pr-9 font-['Poppins'] text-sm text-[#1F1F1F] outline-none transition-colors focus:border-[#1F1F1F] focus:bg-white [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
                 />
                 {searchQuery && (
                   <button
                     type="button"
                     onClick={() => handleSearchChange("")}
-                    className="absolute inset-y-0 right-3 flex items-center text-zinc-400 hover:text-zinc-600"
-                    title="Clear search"
+                    className="absolute inset-y-0 right-3 flex items-center text-zinc-400 hover:text-zinc-600 cursor-pointer"
+                    title={t("host_listings_clear_search")}
+                    aria-label={t("host_listings_clear_search")}
                   >
                     ✕
                   </button>
@@ -930,7 +935,7 @@ export function HostListingsWorkspace({
             <div
               className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1"
               role="tablist"
-              aria-label="Listing status"
+              aria-label={t("host_listings_tablist_aria", "Listing status")}
             >
               {LISTING_TABS.map((tabItem) => {
                 const isSelected = activeTab === tabItem.id;
@@ -947,7 +952,7 @@ export function HostListingsWorkspace({
                         : "bg-[#F3F4F6] text-[#717171] hover:bg-zinc-200 hover:text-[#1F1F1F]"
                     }`}
                   >
-                    <span>{tabItem.label}</span>
+                    <span>{t(tabItem.key, tabItem.label)}</span>
                     {count !== undefined && (
                       <span className={`ml-1.5 text-xs ${isSelected ? "text-zinc-300" : "text-zinc-500"}`}>
                         ({count})
@@ -975,7 +980,7 @@ export function HostListingsWorkspace({
                         onClick={() => handleSearchChange("")}
                         className="mt-3 text-sm text-[#1F1F1F] underline cursor-pointer"
                       >
-                        Clear search
+                        {t("host_listings_clear_search")}
                       </button>
                     </div>
                   ) : listings.length === 0 ? (
@@ -1039,7 +1044,7 @@ export function HostListingsWorkspace({
                       onClick={() => handleSearchChange("")}
                       className="mt-3 text-sm text-[#1F1F1F] underline cursor-pointer"
                     >
-                      Clear search
+                      {t("host_listings_clear_search")}
                     </button>
                   </div>
                 ) : listings.length === 0 ? (
@@ -1142,7 +1147,7 @@ export function HostListingsWorkspace({
               {/* Pagination Controls */}
               {totalPages > 1 && (
                 <nav
-                  aria-label="Listings pagination"
+                  aria-label={t("host_listings_pagination_aria", "Listings pagination")}
                   className="mt-10 flex items-center justify-between border-t border-zinc-200 pt-6"
                 >
                   <button
@@ -1151,13 +1156,13 @@ export function HostListingsWorkspace({
                     disabled={page <= 1 || loading}
                     className="inline-flex min-h-10 items-center justify-center rounded-full border border-zinc-300 bg-white px-5 text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-zinc-50 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
                   >
-                    ← Previous
+                    {t("host_listings_btn_prev", "← Previous")}
                   </button>
                   <span className="text-sm font-medium text-zinc-600">
-                    Page {page} of {Math.max(1, totalPages)}
+                    {t("host_listings_page_info", { page, totalPages: Math.max(1, totalPages) }, `Page ${page} of ${Math.max(1, totalPages)}`)}
                     {totalCount > 0 && (
                       <span className="ml-1.5 text-xs text-zinc-400">
-                        ({totalCount} {totalCount === 1 ? "listing" : "listings"})
+                        ({totalCount} {totalCount === 1 ? t("host_listings_count_single", "listing") : t("host_listings_count_multiple", "listings")})
                       </span>
                     )}
                   </span>
@@ -1167,7 +1172,7 @@ export function HostListingsWorkspace({
                     disabled={page >= totalPages || loading}
                     className="inline-flex min-h-10 items-center justify-center rounded-full border border-zinc-300 bg-white px-5 text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-zinc-50 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
                   >
-                    Next →
+                    {t("host_listings_btn_next", "Next →")}
                   </button>
                 </nav>
               )}
@@ -1194,10 +1199,10 @@ export function HostListingsWorkspace({
             <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-4">
               <div>
                 <h2 className="text-lg font-semibold text-muted-foreground">
-                  {editingListing ? `Edit Property: ${editingListing.title}` : "Create Property Listing"}
+                  {editingListing ? t("host_listings_modal_edit_title", { title: editingListing.title }) : t("host_listings_modal_create_title", "Create Property Listing")}
                 </h2>
                 <p className="text-xs text-[var(--muted-foreground)] mt-0.5">
-                  Configure property details, photos, amenities, pricing, house rules, check-in, and policies.
+                  {t("host_listings_modal_header_desc", "Configure property details, photos, amenities, pricing, house rules, check-in, and policies.")}
                 </p>
               </div>
               <button
@@ -1701,7 +1706,7 @@ export function HostListingsWorkspace({
                   onClick={() => setEditorStep((prev) => Math.max(1, prev - 1))}
                   className="rounded-full px-4 py-2 border border-[var(--border)] text-xs font-semibold text-muted-foreground hover:bg-[var(--surface-secondary)] hover:text-[var(--foreground)] transition-all cursor-pointer disabled:opacity-30 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
                 >
-                  ← Back
+                  ← {t("host_back", "Back")}
                 </button>
 
                 <div className="flex items-center gap-2">
@@ -1711,7 +1716,7 @@ export function HostListingsWorkspace({
                       onClick={() => setEditorStep((prev) => Math.min(5, prev + 1))}
                       className="rounded-full bg-[var(--foreground)] text-[var(--background)] px-5 py-2 text-xs font-semibold hover:opacity-90 transition-all"
                     >
-                      Next Step →
+                      {t("host_next", "Next")} →
                     </button>
                   ) : (
                     <button
@@ -1719,7 +1724,7 @@ export function HostListingsWorkspace({
                       disabled={pending}
                       className="rounded-full bg-emerald-600 text-white px-6 py-2 text-xs font-semibold hover:bg-emerald-700 transition-all shadow-md disabled:opacity-50"
                     >
-                      {editingListing ? "Save Changes" : "Create Listing Draft"}
+                      {editingListing ? t("host_save_changes", "Save Changes") : t("host_listings_create_draft_btn", "Create Listing Draft")}
                     </button>
                   )}
                 </div>
@@ -1757,7 +1762,7 @@ export function HostListingsWorkspace({
                   }}
                   className="rounded-xl bg-zinc-900 text-white dark:bg-zinc-100 dark:text-[#1F1F1F] font-semibold px-4 py-2"
                 >
-                  Block Date
+                  {t("host_listings_block_date")}
                 </button>
               </div>
 
@@ -1775,7 +1780,7 @@ export function HostListingsWorkspace({
                           onClick={() => setTempBlockedDates(tempBlockedDates.filter((d) => d !== dateStr))}
                           className="text-rose-600 font-semibold text-xs"
                         >
-                          Unblock
+                          {t("host_listings_unblock")}
                         </button>
                       </div>
                     ))
@@ -1789,14 +1794,14 @@ export function HostListingsWorkspace({
                   onClick={() => setShowAvailabilityModal(false)}
                   className="rounded-full px-4 py-2 text-xs font-semibold border border-[var(--border)] text-muted-foreground"
                 >
-                  Cancel
+                  {t("host_cancel", "Cancel")}
                 </button>
                 <button
                   type="submit"
                   disabled={pending}
                   className="rounded-full bg-emerald-600 text-white px-5 py-2 text-xs font-semibold hover:bg-emerald-700 disabled:opacity-50"
                 >
-                  Save Availability
+                  {t("host_save_availability", "Save Availability")}
                 </button>
               </div>
             </form>
@@ -1810,7 +1815,7 @@ export function HostListingsWorkspace({
           <div className="w-full max-w-sm max-h-[90dvh] overflow-y-auto rounded-2xl bg-[var(--surface)] p-6 shadow-xl space-y-4 border border-[var(--border)] font-sans">
             <h3 className="text-base font-medium text-rose-600">{t("host_listings_modal_delete_confirm", "Delete Property Listing?")}</h3>
             <p className="text-xs text-[var(--muted-foreground)]">
-              Are you sure you want to permanently delete <strong>{listingToDelete.title}</strong>? This action cannot be undone.
+              {t("host_listings_delete_confirm_desc", { title: listingToDelete.title })}
             </p>
             <div className="flex flex-wrap items-center justify-end gap-2 pt-2">
               <button
@@ -1818,7 +1823,7 @@ export function HostListingsWorkspace({
                 onClick={() => setShowDeleteModal(false)}
                 className="rounded-full px-4 py-1.5 text-xs font-semibold border border-[var(--border)]"
               >
-                Cancel
+                {t("host_cancel", "Cancel")}
               </button>
               <button
                 type="button"
@@ -1826,7 +1831,7 @@ export function HostListingsWorkspace({
                 disabled={pending}
                 className="rounded-full bg-rose-600 text-white px-4 py-1.5 text-xs font-semibold hover:bg-rose-700 disabled:opacity-50"
               >
-                Permanently Delete
+                {t("host_listings_delete_permanent_btn", "Permanently Delete")}
               </button>
             </div>
           </div>

@@ -794,7 +794,7 @@ export function TaxesManager({
 
                 {taxType && taxRate && Number.isFinite(Number(taxRate)) && (
                   <div className="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800/60 dark:text-zinc-300">
-                    <span className="font-semibold text-zinc-900 dark:text-zinc-100">How this tax is calculated: </span>
+                    <span className="font-semibold text-zinc-900 dark:text-zinc-100">{t("host_taxes_how_calculated", "How this tax is calculated:")} </span>
                     {taxType === "PERCENTAGE" && `${taxRate}% of the selected taxable base`}
                     {taxType === "FLAT_PER_BOOKING" && `${formatMajor(Number(taxRate) || 0, listingCurrency, 2)} once per booking`}
                     {taxType === "AMOUNT_PER_NIGHT" && `${formatMajor(Number(taxRate) || 0, listingCurrency, 2)} per taxable night`}
@@ -1012,7 +1012,7 @@ export function TaxesManager({
                 <span className="font-semibold text-[#1F1F1F] dark:text-zinc-100">{t("host_taxes_reg_number_label")}:</span> {viewingRegistration.registrationNumber}
               </div>
               <div>
-                <span className="font-semibold text-[#1F1F1F] dark:text-zinc-100">Status:</span> {viewingRegistration.status}
+                <span className="font-semibold text-[#1F1F1F] dark:text-zinc-100">{t("host_taxes_status_colon", "Status:")}</span> {viewingRegistration.status}
               </div>
             </div>
             <div className="flex justify-end border-t border-zinc-100 pt-4 dark:border-zinc-800">

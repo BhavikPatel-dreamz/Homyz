@@ -1015,7 +1015,7 @@ export function PropertyDetailsViews({
                   <p className="text-base font-normal leading-relaxed text-[#727272] dark:text-[#727272] mb-0">
                     {t("host_your_category_desc")}
                   </p>
-                  <button type="button" className="text-base font-normal text-[#1F1F1F] dark:text-zinc-100 underline underline-offset-2 hover:text-[#727272] dark:hover:text-amber-400 transition-all duration-300">Learn more</button>
+                  <button type="button" className="text-base font-normal text-[#1F1F1F] dark:text-zinc-100 underline underline-offset-2 hover:text-[#727272] dark:hover:text-amber-400 transition-all duration-300">{t("host_learn_more", "Learn more")}</button>
                 </div>
                 <div className="flex min-h-12 items-center rounded-lg bg-zinc-100 dark:bg-zinc-800/80 px-5 text-base font-normal text-[#1F1F1F] dark:text-zinc-200 sm:min-h-[140px] sm:rounded-[24px]">
                   {t("host_not_part_of_part")}

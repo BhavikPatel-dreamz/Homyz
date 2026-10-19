@@ -508,8 +508,18 @@ export function HostRegistrationRequestsTable() {
               placeholder="Search Host Name, Email, Phone, App ID..."
               value={search}
               onChange={(e) => handleFilterChange(setSearch, e.target.value)}
-              className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] pl-10 pr-4 py-2.5 text-xs text-muted-foreground outline-none focus:border-[var(--accent)]"
+              className="w-full rounded-xl border border-[var(--border)] bg-[var(--surface-secondary)] pl-10 pr-9 py-2.5 text-xs text-muted-foreground outline-none focus:border-[var(--accent)]"
             />
+            {search && (
+              <button
+                type="button"
+                onClick={() => handleFilterChange(setSearch, "")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center text-zinc-400 hover:text-foreground cursor-pointer text-xs"
+                aria-label="Clear search"
+              >
+                ✕
+              </button>
+            )}
           </div>
 
           {/* Status Filter */}

@@ -112,7 +112,7 @@ export function BookingDetailsClient({ data }: BookingDetailsClientProps) {
                   <p className="mt-1 text-sm text-zinc-600">Reports you filed for this reservation and their current review status.</p>
                 </div>
                 <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-zinc-700 shadow-2xs">
-                  {disputes.length} {disputes.length === 1 ? "case" : "cases"}
+                  {disputes.length} {disputes.length === 1 ? t("dispute_case_single", "case") : t("dispute_case_plural", "cases")}
                 </span>
               </div>
               <div className="mt-4 space-y-3">

@@ -34,7 +34,7 @@ export function CalendarNavIcon({ className = "" }: { className?: string }) {
   return (
     <Image
       src="/images/icons/date-picker-icon.svg"
-      alt="Calendar Icon"
+      alt=""
       width={24}
       height={19}
       className={className}
@@ -48,7 +48,7 @@ export function ListingNavIcon({ className = "" }: { className?: string }) {
   return (
     <Image
       src="/images/icons/listing-edit-icon.svg"
-      alt="Listing Edit Icon"
+      alt=""
       width={24}
       height={24}
       className={className}
@@ -62,7 +62,7 @@ export function MessagesNavIcon({ className = "" }: { className?: string }) {
   return (
     <Image
       src="/images/icons/message-icon.svg"
-      alt="Message Icon"
+      alt=""
       width={24}
       height={24}
       className={className}
@@ -178,8 +178,8 @@ export function HostSubNav({
     },
     {
       id: "resolution",
-      label: "Resolution Center",
-      shortLabel: "Resolution",
+      label: t("host_nav_resolution", "Resolution Center"),
+      shortLabel: t("host_nav_resolution_short", "Resolution"),
       href: "/host/resolution-center",
       icon: (
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -199,7 +199,7 @@ export function HostSubNav({
     <>
       {/* Mobile Bottom Navigation */}
       <nav
-        aria-label="Mobile host navigation"
+        aria-label={t("host_nav_mobile_aria", "Mobile host navigation")}
         className={styles.nav}
       >
         <svg className={styles.background} viewBox="0 0 390 84" preserveAspectRatio="none" aria-hidden="true">
