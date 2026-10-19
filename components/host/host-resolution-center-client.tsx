@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 type DisputeRow = {
   id: string;
@@ -41,10 +42,10 @@ type Props = {
 };
 
 const tabs = [
-  ["all", "All Disputes"],
-  ["response_required", "Response Required"],
-  ["open", "Under Review"],
-  ["resolved", "Resolved & Closed"],
+  ["all", "host_res_center_tab_all", "All Disputes"],
+  ["response_required", "host_res_center_tab_response_req", "Response Required"],
+  ["open", "host_res_center_tab_open", "Under Review"],
+  ["resolved", "host_res_center_tab_resolved", "Resolved & Closed"],
 ] as const;
 
 function formatDate(value: string) {
@@ -77,6 +78,7 @@ export function HostResolutionCenterClient({ data, listings }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { t } = useLanguage();
   const [search, setSearch] = useState(searchParams.get("search") || "");
   const activeTab = searchParams.get("tab") || "all";
 
@@ -97,11 +99,11 @@ export function HostResolutionCenterClient({ data, listings }: Props) {
 
   const hasActiveFilters = Boolean(
     searchParams.get("search") ||
-      searchParams.get("propertyId") ||
-      searchParams.get("status") ||
-      searchParams.get("startDate") ||
-      searchParams.get("endDate") ||
-      searchParams.get("tab"),
+    searchParams.get("propertyId") ||
+    searchParams.get("status") ||
+    searchParams.get("startDate") ||
+    searchParams.get("endDate") ||
+    searchParams.get("tab"),
   );
 
   return (
@@ -111,16 +113,16 @@ export function HostResolutionCenterClient({ data, listings }: Props) {
         <div>
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-[#727272]">
-              Host Operations
+              {t("host_res_center_breadcrumb_ops", "Host Operations")}
             </span>
             <span className="text-zinc-300">/</span>
-            <span className="text-sm sm:text-sm text-[#727272]">Resolution Center</span>
+            <span className="text-sm sm:text-sm text-[#727272]">{t("host_res_center_title", "Resolution Center")}</span>
           </div>
           <h1 className="mt-1.5">
-            Resolution Center
+            {t("host_res_center_title", "Resolution Center")}
           </h1>
           <p className="mt-1.5 text-sm text-[#727272] max-w-2xl leading-relaxed">
-            Manage booking complaints, respond to support inquiries, submit evidence, and propose resolutions for your properties.
+            {t("host_res_center_desc", "Manage booking complaints, respond to support inquiries, submit evidence, and propose resolutions for your properties.")}
           </p>
         </div>
       </div>
@@ -129,7 +131,7 @@ export function HostResolutionCenterClient({ data, listings }: Props) {
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <div className="sm:rounded-[20px] rounded-lg  border border-zinc-200 bg-white p-5 sm:p-6 shadow-xs">
           <span className="text-sm font-medium text-[#727272]">
-            Total Disputes
+            {t("host_res_center_kpi_total", "Total Disputes")}
           </span>
           <p className="mt-2 text-3xl sm:text-4xl font-medium text-[#1F1F1F]">
             {data.summary.totalCases.toLocaleString()}
@@ -138,7 +140,7 @@ export function HostResolutionCenterClient({ data, listings }: Props) {
 
         <div className="sm:rounded-[20px] rounded-lg border border-amber-300 bg-amber-50/70 p-5 sm:p-6 shadow-xs">
           <span className="text-sm font-medium text-amber-900">
-            Response Required
+            {t("host_res_center_kpi_response_req", "Response Required")}
           </span>
           <p className="mt-2 text-3xl sm:text-4xl font-medium text-amber-900">
             {data.summary.responseRequired.toLocaleString()}
@@ -147,7 +149,7 @@ export function HostResolutionCenterClient({ data, listings }: Props) {
 
         <div className="sm:rounded-[20px] rounded-lg border border-blue-200 bg-blue-50/70 p-5 sm:p-6 shadow-xs">
           <span className="text-sm font-medium text-blue-900">
-            Under Review
+            {t("host_res_center_kpi_under_review", "Under Review")}
           </span>
           <p className="mt-2 text-3xl sm:text-4xl font-medium text-blue-900">
             {data.summary.underReview.toLocaleString()}
@@ -156,7 +158,7 @@ export function HostResolutionCenterClient({ data, listings }: Props) {
 
         <div className="sm:rounded-[20px] rounded-lg border border-emerald-200 bg-emerald-50/70 p-5 sm:p-6 shadow-xs">
           <span className="text-sm font-medium text-emerald-900">
-            Resolved
+            {t("host_res_center_kpi_resolved", "Resolved")}
           </span>
           <p className="mt-2 text-3xl sm:text-4xl font-medium text-emerald-900">
             {data.summary.resolved.toLocaleString()}
@@ -166,18 +168,17 @@ export function HostResolutionCenterClient({ data, listings }: Props) {
 
       {/* Tabs */}
       <div className="flex items-center gap-2.5 overflow-x-auto pb-2 scrollbar-none">
-        {tabs.map(([id, label]) => (
+        {tabs.map(([id, key, label]) => (
           <button
             key={id}
             type="button"
             onClick={() => navigate({ tab: id === "all" ? undefined : id })}
-            className={`min-h-11 shrink-0 rounded-full px-5 py-2.5 text-xs sm:text-sm font-medium whitespace-nowrap transition-all cursor-pointer ${
-              activeTab === id
-                ? "bg-[#1F1F1F] text-white shadow-xs"
-                : "border border-zinc-200 bg-white text-[#555] hover:border-zinc-400 hover:text-[#1F1F1F]"
-            }`}
+            className={`min-h-11 shrink-0 rounded-full px-5 py-2.5 text-xs sm:text-sm font-medium whitespace-nowrap transition-all cursor-pointer ${activeTab === id
+              ? "bg-[#1F1F1F] text-white shadow-xs"
+              : "border border-zinc-200 bg-white text-[#555] hover:border-zinc-400 hover:text-[#1F1F1F]"
+              }`}
           >
-            {label}
+            {t(key, label)}
           </button>
         ))}
       </div>
@@ -185,11 +186,16 @@ export function HostResolutionCenterClient({ data, listings }: Props) {
       {/* Filter Controls Panel */}
       <div className="grid gap-3.5 sm:rounded-[20px] rounded-[10px] border border-zinc-200 bg-zinc-50/80 p-5 md:grid-cols-6 text-sm">
         <label className="md:col-span-2">
-          <span className="sr-only">Search disputes</span>
+          <span className="sr-only">
+            Search disputes
+          </span>
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search case #, booking #, or property title..."
+            placeholder={t(
+              "host_res_center_search_placeholder",
+              "Search case #, booking #, or property title..."
+            )}
             className="min-h-11 w-full sm:rounded-xl rounded-lg border border-zinc-300 bg-white px-4 text-sm outline-none focus:border-zinc-900"
           />
         </label>
@@ -201,10 +207,14 @@ export function HostResolutionCenterClient({ data, listings }: Props) {
           <select
             id="filter-property-select"
             value={searchParams.get("propertyId") || ""}
-            onChange={(e) => navigate({ propertyId: e.target.value || undefined })}
+            onChange={(e) =>
+              navigate({ propertyId: e.target.value || undefined })
+            }
             className="min-h-11 w-full appearance-none sm:rounded-xl rounded-lg border border-zinc-300 bg-white pl-3.5 pr-10 text-sm text-[#1F1F1F] outline-none transition focus:border-zinc-900 cursor-pointer"
           >
-            <option value="">All Properties</option>
+            <option value="">
+              {t("host_res_center_all_properties", "All Properties")}
+            </option>
             {listings.map((listing) => (
               <option key={listing.id} value={listing.id}>
                 {listing.title}
@@ -234,13 +244,23 @@ export function HostResolutionCenterClient({ data, listings }: Props) {
           <select
             id="filter-status-select"
             value={searchParams.get("status") || ""}
-            onChange={(e) => navigate({ status: e.target.value || undefined })}
+            onChange={(e) =>
+              navigate({ status: e.target.value || undefined })
+            }
             className="min-h-11 w-full appearance-none sm:rounded-xl rounded-lg border border-zinc-300 bg-white pl-3.5 pr-10 text-sm text-[#1F1F1F] outline-none transition focus:border-zinc-900 cursor-pointer"
           >
-            <option value="">All Statuses</option>
-            <option value="PENDING">Open</option>
-            <option value="CONFIRMED">Under Review</option>
-            <option value="RESOLVED">Resolved</option>
+            <option value="">
+              {t("host_res_center_all_statuses", "All Statuses")}
+            </option>
+            <option value="PENDING">
+              {t("host_res_center_status_open", "Open")}
+            </option>
+            <option value="CONFIRMED">
+              {t("host_res_center_status_under_review", "Under Review")}
+            </option>
+            <option value="RESOLVED">
+              {t("host_res_center_status_resolved", "Resolved")}
+            </option>
           </select>
           <div className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-[#1F1F1F]">
             <svg
@@ -257,35 +277,14 @@ export function HostResolutionCenterClient({ data, listings }: Props) {
             </svg>
           </div>
         </div>
-
-        <label>
-          <span className="sr-only">Filed from</span>
-          <input
-            type="date"
-            value={searchParams.get("startDate") || ""}
-            onChange={(e) => navigate({ startDate: e.target.value || undefined })}
-            className="min-h-11 w-full sm:rounded-xl rounded-lg border border-zinc-300 bg-white px-3.5 text-sm outline-none focus:border-zinc-900"
-            aria-label="Filed from"
-          />
-        </label>
-
-        <label>
-          <span className="sr-only">Filed through</span>
-          <input
-            type="date"
-            value={searchParams.get("endDate") || ""}
-            onChange={(e) => navigate({ endDate: e.target.value || undefined })}
-            className="min-h-11 w-full sm:rounded-xl rounded-lg border border-zinc-300 bg-white px-3.5 text-sm outline-none focus:border-zinc-900"
-            aria-label="Filed through"
-          />
-        </label>
       </div>
+
 
       {/* Disputes List */}
       {data.disputes.length === 0 ? (
         <div className="rounded-[20px] border border-dashed border-zinc-300 bg-zinc-50 px-6 py-20 text-center text-sm text-[#727272] space-y-3">
-          <p className="font-semibold text-base sm:text-lg text-[#1F1F1F]">No dispute cases found</p>
-          <p className="max-w-md mx-auto text-xs sm:text-sm">There are no cases matching the selected filter criteria.</p>
+          <p className="font-semibold text-base sm:text-lg text-[#1F1F1F]">{t("host_res_center_empty_title", "No dispute cases found")}</p>
+          <p className="max-w-md mx-auto text-xs sm:text-sm">{t("host_res_center_empty_desc", "There are no cases matching the selected filter criteria.")}</p>
           {hasActiveFilters && (
             <div className="pt-2">
               <button
@@ -293,7 +292,7 @@ export function HostResolutionCenterClient({ data, listings }: Props) {
                 onClick={() => router.push(pathname)}
                 className="rounded-full border border-zinc-300 bg-white px-5 py-2 text-sm font-semibold text-[#1F1F1F] hover:bg-zinc-100 cursor-pointer"
               >
-                Clear All Filters
+                {t("host_res_center_btn_clear_filters", "Clear All Filters")}
               </button>
             </div>
           )}
@@ -340,34 +339,35 @@ export function HostResolutionCenterClient({ data, listings }: Props) {
 
                         {/* Status Badge */}
                         <span
-                          className={`rounded-full px-3 py-0.5 text-xs font-medium ${
-                            isResolved
-                              ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
-                              : isClosed
-                                ? "bg-zinc-100 text-zinc-700 border border-zinc-200"
-                                : dispute.disputeWorkflowStatus === "UNDER_REVIEW"
-                                  ? "bg-blue-100 text-blue-800 border border-blue-200"
-                                  : "bg-amber-100 text-amber-800 border border-amber-200"
-                          }`}
+                          className={`rounded-full px-3 py-0.5 text-xs font-normal ${isResolved
+                            ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
+                            : isClosed
+                              ? "bg-zinc-100 text-zinc-700 border border-zinc-200"
+                              : dispute.disputeWorkflowStatus === "UNDER_REVIEW"
+                                ? "bg-blue-100 text-blue-800 border border-blue-200"
+                                : "bg-amber-100 text-amber-800 border border-amber-200"
+                            }`}
                         >
                           {isResolved
-                            ? "Resolved"
+                            ? t("host_res_center_status_resolved", "Resolved")
                             : isClosed
-                              ? "Closed"
-                              : dispute.disputeWorkflowStatus.replaceAll("_", " ")}
+                              ? t("host_res_center_status_closed", "Closed")
+                              : dispute.disputeWorkflowStatus === "UNDER_REVIEW"
+                                ? t("host_res_center_status_under_review", "Under Review")
+                                : dispute.disputeWorkflowStatus.replaceAll("_", " ")}
                         </span>
 
                         {/* Response Required Badge - only when genuinely open */}
                         {isOpen && dispute.responseRequired && (
                           <span className="rounded-full bg-amber-100 border border-amber-300 px-3 py-0.5 text-xs font-medium text-amber-900 shadow-2xs">
-                            Response Required
+                            {t("host_res_center_badge_response_req", "Response Required")}
                           </span>
                         )}
 
                         {/* Reporter Badge */}
                         <span className="inline-flex items-center gap-1.5 rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-600">
                           <span className="size-1.5 rounded-full bg-zinc-400" />
-                          Reported by {dispute.reporterRole.toLowerCase()}
+                          {t("host_res_center_reported_by", { role: dispute.reporterRole.toLowerCase() }, `Reported by ${dispute.reporterRole.toLowerCase()}`)}
                         </span>
                       </div>
 
@@ -394,78 +394,86 @@ export function HostResolutionCenterClient({ data, listings }: Props) {
                             href={`/host/bookings/${dispute.booking.id}`}
                             className="hover:text-black hover:underline"
                           >
-                            Booking:{" "}
+                            Booking: {" "}
                             <span className="text-zinc-800 font-medium">
                               #{dispute.booking.id.slice(0, 10)}
                             </span>
-                          </Link>
-                        )}
+                          </Link >
+                        )
+                        }
 
-                        {dispute.booking?.startDate && dispute.booking?.endDate && (
-                          <span className="text-zinc-500">
-                            Stay: {formatDate(dispute.booking.startDate)} – {formatDate(dispute.booking.endDate)}
-                          </span>
-                        )}
+                        {
+                          dispute.booking?.startDate && dispute.booking?.endDate && (
+                            <span className="text-zinc-500">
+                              {t("host_res_center_stay_label", { start: formatDate(dispute.booking.startDate), end: formatDate(dispute.booking.endDate) }, `Stay: ${formatDate(dispute.booking.startDate)} – ${formatDate(dispute.booking.endDate)}`)}
+                            </span>
+                          )
+                        }
 
-                        <span className="text-[#727272] text-lg font-bold hidden sm:inline">·</span>
-                        <span>Filed: {formatDate(dispute.createdAt)}</span>
-                        <span className="text-[#727272] text-lg font-bold hidden sm:inline">·</span>
-                        <span>Updated: {formatDate(dispute.updatedAt)}</span>
-                      </div>
-                    </div>
-                  </div>
+                        <span className="text-zinc-400 hidden sm:inline">·</span>
+                        <span>{t("host_res_center_filed_label", { date: formatDate(dispute.createdAt) }, `Filed: ${formatDate(dispute.createdAt)}`)}</span>
+                        <span className="text-zinc-400 hidden sm:inline">·</span>
+                        <span>{t("host_res_center_updated_label", { date: formatDate(dispute.updatedAt) }, `Updated: ${formatDate(dispute.updatedAt)}`)}</span>
+                      </div >
+                    </div >
+                  </div >
 
                   {/* Actions Column */}
-                  <div className="flex flex-wrap items-center gap-2.5 shrink-0 self-start md:self-center pt-2 md:pt-0">
-                    {dispute.booking?.id && (
-                      <Link
-                        href={`/host/bookings/${dispute.booking.id}`}
-                        className="inline-flex min-h-10 items-center justify-center rounded-full border border-[#1F1F1F] hover:border-[#1f1f1f] bg-white px-4 py-2 text-sm font-medium text-[#1F1F1F] hover:bg-[#1f1f1f] hover:text-white transition-colors"
-                      >
-                        Booking
-                      </Link>
-                    )}
+                  < div className="flex flex-wrap items-center gap-2.5 shrink-0 self-start md:self-center pt-2 md:pt-0" >
+                    {
+                      dispute.booking?.id && (
+                        <Link
+                          href={`/host/bookings/${dispute.booking.id}`}
+                          className="inline-flex min-h-10 items-center justify-center rounded-full border border-[#1F1F1F] hover:border-[#1f1f1f] bg-white px-4 py-2 text-sm font-medium text-[#1F1F1F] hover:bg-[#1f1f1f] hover:text-white transition-colors"
+                        >
+                          {t("host_res_center_btn_booking", "Booking")}
+                        </Link>
+                      )
+                    }
 
-                    <Link
-                      href={`/host/resolution-center/${dispute.id}`}
+                    < Link
+                      href={`/host/resolution-center/${dispute.id}`
+                      }
                       className="inline-flex min-h-10 items-center justify-center rounded-full bg-[#1F1F1F] border border-[#1F1F1F] px-5 py-2 text-sm font-medium text-white hover:text-[#1f1f1f] hover:bg-white transition-colors shadow-2xs"
                     >
-                      {isResolved || isClosed ? "View Decision" : "View Case"}
-                    </Link>
-                  </div>
-                </div>
+                      {isResolved || isClosed ? t("host_res_center_btn_view_decision", "View Decision") : t("host_res_center_btn_view_case", "View Case")}
+                    </Link >
+                  </div >
+                </div >
               );
             })}
-          </div>
+          </div >
 
           {/* Pagination */}
-          {data.pagination.totalPages > 1 && (
-            <div className="flex items-center justify-between border-t border-zinc-200 p-5 text-sm">
-              <span className="text-[#727272]">
-                Page {data.pagination.page} of {data.pagination.totalPages} · {data.pagination.total} cases
-              </span>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  disabled={data.pagination.page <= 1}
-                  onClick={() => navigate({ page: String(data.pagination.page - 1) })}
-                  className="rounded-xl border border-zinc-300 px-4 py-2 text-sm font-semibold disabled:opacity-40 hover:bg-zinc-50 cursor-pointer"
-                >
-                  Previous
-                </button>
-                <button
-                  type="button"
-                  disabled={data.pagination.page >= data.pagination.totalPages}
-                  onClick={() => navigate({ page: String(data.pagination.page + 1) })}
-                  className="rounded-xl border border-zinc-300 px-4 py-2 text-sm font-semibold disabled:opacity-40 hover:bg-zinc-50 cursor-pointer"
-                >
-                  Next
-                </button>
+          {
+            data.pagination.totalPages > 1 && (
+              <div className="flex items-center justify-between border-t border-zinc-200 p-5 text-sm">
+                <span className="text-[#727272]">
+                  {t("host_res_center_pagination", { page: data.pagination.page, totalPages: data.pagination.totalPages, total: data.pagination.total }, `Page ${data.pagination.page} of ${data.pagination.totalPages} · ${data.pagination.total} cases`)}
+                </span>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    disabled={data.pagination.page <= 1}
+                    onClick={() => navigate({ page: String(data.pagination.page - 1) })}
+                    className="rounded-xl border border-zinc-300 px-4 py-2 text-sm font-semibold disabled:opacity-40 hover:bg-zinc-50 cursor-pointer"
+                  >
+                    {t("host_res_center_btn_prev", "Previous")}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={data.pagination.page >= data.pagination.totalPages}
+                    onClick={() => navigate({ page: String(data.pagination.page + 1) })}
+                    className="rounded-xl border border-zinc-300 px-4 py-2 text-sm font-semibold disabled:opacity-40 hover:bg-zinc-50 cursor-pointer"
+                  >
+                    {t("host_res_center_btn_next", "Next")}
+                  </button>
+                </div>
               </div>
-            </div>
-          )}
-        </div>
+            )
+          }
+        </div >
       )}
-    </div>
+    </div >
   );
 }

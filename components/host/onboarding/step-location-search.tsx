@@ -166,6 +166,16 @@ export function StepLocationSearch({
                     data-1p-ignore="true"
                     className="min-w-0 flex-1 text-base font-normal text-[#1F1F1F] bg-transparent outline-none placeholder:text-[#1F1F1F] placeholder:opacity-50"
                   />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => handleInputChange("")}
+                      className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-200/80 hover:bg-zinc-300 text-zinc-600 hover:text-[#1F1F1F] text-xs transition-colors cursor-pointer"
+                      aria-label={t("home_clear_search", "Clear search")}
+                    >
+                      ✕
+                    </button>
+                  )}
                   {isSearching && (
                     <span className="w-4 h-4 rounded-full border-2 border-amber-500 border-t-transparent animate-spin shrink-0" />
                   )}

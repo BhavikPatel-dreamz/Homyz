@@ -589,7 +589,7 @@ export function HomyzAuthForm({
                           }}
                           placeholder="Jane Doe"
                           required
-                          className="h-[56px] w-full rounded-[8px] border border-[#727272] bg-white px-4 font-['Poppins'] text-[15px] text-[#1F1F1F] outline-none placeholder:text-[#1F1F1F]/50 focus:border-[#1F1F1F] transition-colors sm:text-[16px]"
+                          className="h-[56px] w-full rounded-[8px] border border-[#727272] bg-white px-4 font-['Poppins'] text-base text-[#1f1f1f] outline-none placeholder:text-[#1F1F1F]/50 focus:border-[#1F1F1F] transition-colors sm:text-[16px]"
                         />
                         {fieldErrors.name && (
                           <p className={authFieldErrorClass}>{fieldErrors.name}</p>

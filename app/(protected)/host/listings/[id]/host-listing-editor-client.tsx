@@ -1531,13 +1531,13 @@ export function HostListingEditorClient({
             {editorTab === "arrival" && (
               <div className="block lg:hidden rounded-2xl border border-zinc-200 bg-white p-4 shadow-2xs space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-[#1F1F1F]">Arrival Guide Progress</span>
+                  <span className="text-xs font-bold text-[#1F1F1F]">{t("host_editor_arrival_guide_progress", "Arrival Guide Progress")}</span>
                   <button
                     type="button"
                     onClick={() => setIsMobileSidebarOpen(true)}
                     className="text-xs font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200 cursor-pointer"
                   >
-                    {arrivalGuideCompletedCount} of 8 completed · View all →
+                    {t("host_editor_completed_view_all", { count: arrivalGuideCompletedCount })}
                   </button>
                 </div>
                 <div className="h-1.5 w-full rounded-full bg-zinc-100 overflow-hidden">
@@ -1558,8 +1558,8 @@ export function HostListingEditorClient({
                       <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse mt-1 shrink-0" />
                       <div>
                         <div className="font-semibold text-amber-950 text-sm flex items-center gap-2">
-                          <span>Listing Status: Pending Admin Approval</span>
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-200/80 text-amber-900 uppercase">Under Review</span>
+                          <span>{t("host_editor_status_pending", "Listing Status: Pending Admin Approval")}</span>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-200/80 text-amber-900 uppercase">{t("host_editor_under_review", "Under Review")}</span>
                         </div>
                         <p className="text-amber-900 mt-1 leading-relaxed">
                           This listing has already been submitted for approval. You can continue reviewing your listing details, but the property will not become publicly available until the admin approves it.
@@ -1582,8 +1582,8 @@ export function HostListingEditorClient({
                       <span className="w-2.5 h-2.5 rounded-full bg-rose-500 mt-1 shrink-0" />
                       <div>
                         <div className="font-semibold text-rose-950 text-sm flex items-center gap-2">
-                          <span>Listing Status: Changes Required</span>
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-200 text-rose-900 uppercase">Action Needed</span>
+                          <span>{t("host_editor_status_changes_req", "Listing Status: Changes Required")}</span>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-200 text-rose-900 uppercase">{t("host_editor_action_needed", "Action Needed")}</span>
                         </div>
                         <p className="text-rose-900 mt-1 leading-relaxed line-clamp-2">
                           The admin requested updates before this listing can be approved:{" "}
@@ -2161,17 +2161,17 @@ export function HostListingEditorClient({
           >
             <button
               type="button"
-              aria-label="Close unsaved changes dialog"
               onClick={() => {
                 pendingNavigationRef.current = null;
                 setIsUnsavedChangesDialogOpen(false);
               }}
+              aria-label={t("host_editor_close_unsaved_aria")}
               className="absolute right-4 top-4 inline-flex size-8 items-center justify-center rounded-full text-[#727272] transition-colors hover:bg-zinc-100 hover:text-zinc-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 dark:text-[#727272] dark:hover:bg-zinc-800 dark:hover:text-zinc-100 dark:focus-visible:outline-zinc-100 cursor-pointer"
             >
               <CloseIcon className="size-4" />
             </button>
             <h2 id="unsaved-preferences-title" className="text-lg font-semibold tracking-tight text-zinc-950 dark:text-zinc-100">
-              You have unsaved changes
+              {t("host_editor_unsaved_title")}
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-zinc-600 dark:text-[#727272]">
               Your changes haven&apos;t been saved. Are you sure you want to leave?
@@ -2185,7 +2185,7 @@ export function HostListingEditorClient({
                 }}
                 className="inline-flex h-9 items-center justify-center whitespace-nowrap rounded-full border border-zinc-300 bg-white px-3.5 text-xs font-medium text-[#1f1f1f] transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700 cursor-pointer"
               >
-                Keep editing
+                {t("host_editor_keep_editing")}
               </button>
               <button
                 type="button"

@@ -56,6 +56,9 @@ importers:
       nodemailer:
         specifier: ^7.0.7
         version: 7.0.13
+      pg:
+        specifier: ^8.16.3
+        version: 8.23.0
       react:
         specifier: 19.2.8
         version: 19.2.8
@@ -84,6 +87,9 @@ importers:
       '@types/nodemailer':
         specifier: ^7.0.12
         version: 7.0.12
+      '@types/pg':
+        specifier: ^8.16.0
+        version: 8.23.1
       '@types/react':
         specifier: ^19
         version: 19.2.18

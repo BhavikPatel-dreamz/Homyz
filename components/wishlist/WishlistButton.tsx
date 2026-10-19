@@ -34,7 +34,7 @@ export function WishlistButton({ listingId, className = "" }: { listingId: strin
       aria-pressed={isFavorite}
       onClick={handleClick}
       disabled={inFlight}
-      className={`absolute right-3 top-3 z-1 flex h-8 w-8 items-center justify-center rounded-full text-[#1f1f1f] transition-transform hover:scale-110 cursor-pointer disabled:opacity-60 ${className}`}
+      className={`absolute sm:right-3 right-2 sm:top-3 top-2 z-1 flex h-8 w-8 items-center justify-center rounded-full text-[#1f1f1f] transition-transform hover:scale-110 cursor-pointer disabled:opacity-60 ${className}`}
     >
       {isFavorite ? (
         <svg aria-hidden="true" viewBox="0 0 24 24" fill="#f43f5e" stroke="#f43f5e" strokeWidth="1.5" className="h-6 w-6 drop-shadow-md">

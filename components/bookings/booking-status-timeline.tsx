@@ -38,7 +38,7 @@ export function BookingStatusTimeline({ events, className = "" }: BookingStatusT
       aria-labelledby="booking-timeline-heading"
       className={`rounded-xl border border-white bg-white shadow-[0_2px_4px_0px_#00000040] p-5 sm:p-6 ${className}`}
     >
-      <div className="flex items-center justify-between border-b border-zinc-100 pb-3.5 mb-5">
+      <div className="flex md:flex-row flex-col md:items-center items-start justify-between border-b border-zinc-100 pb-3.5 mb-5">
         <h3 id="booking-timeline-heading" className="text-base sm:text-lg font-medium text-[#1F1F1F]">
           {t("booking_details_timeline_title", "Reservation timeline")}
         </h3>

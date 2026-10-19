@@ -94,14 +94,26 @@ export const StaticPagePayloadSchema = z.object({
   metaDescription: z.string().max(300).optional().default(""),
   heroTitle: z.string().min(1, "Hero title is required").max(200),
   heroSubtitle: z.string().max(500).optional().default(""),
+  badge: z.string().max(50).optional().default(""),
+  lastUpdated: z.string().max(50).optional().default(""),
   sections: z.array(
     z.object({
       id: z.string().optional(),
       title: z.string().max(200).optional().default(""),
       body: z.string().min(1, "Section body text is required"),
-      layout: z.enum(["STANDARD", "TWO_COLUMN", "ACCORDION", "CALLOUT"]).default("STANDARD"),
+      layout: z.enum(["STANDARD", "TWO_COLUMN", "ACCORDION", "CALLOUT", "GRID", "MEDIA"]).default("STANDARD"),
+      calloutVariant: z.enum(["info", "warning", "success", "tip"]).optional(),
+      imageUrl: z.string().optional(),
+      imageAlt: z.string().optional(),
+      items: z.array(
+        z.object({
+          label: z.string().min(1),
+          text: z.string().min(1),
+        })
+      ).optional(),
     })
   ).min(1, "At least one section is required"),
+  translations: z.record(z.string(), z.any()).optional(),
 });
 
 export const SeoLandingPagePayloadSchema = z.object({
@@ -142,18 +154,118 @@ export const NavigationConfigPayloadSchema = z.object({
 export const FooterConfigPayloadSchema = z.object({
   columns: z.array(
     z.object({
+      id: z.string().optional(),
       title: z.string().min(1),
+      displayOrder: z.number().int().optional().default(0),
+      enabled: z.boolean().optional().default(true),
+      translations: z.record(z.string(), z.object({ title: z.string() })).optional(),
       links: z.array(
         z.object({
+          id: z.string().optional(),
           label: z.string().min(1),
           href: z.string().min(1),
+          targetPageSlug: z.string().optional(),
+          openInNewTab: z.boolean().optional(),
+          enabled: z.boolean().optional(),
+          displayOrder: z.number().int().optional(),
+          badge: z.string().optional(),
+          translations: z.record(z.string(), z.object({ label: z.string() })).optional(),
         })
       ),
     })
   ),
+  socialLinks: z.array(
+    z.object({
+      id: z.string().optional(),
+      platform: z.string().min(1),
+      url: z.string().min(1),
+      label: z.string().optional(),
+      enabled: z.boolean().optional(),
+      displayOrder: z.number().int().optional(),
+    })
+  ).optional().default([]),
+  bottomLinks: z.array(
+    z.object({
+      id: z.string().optional(),
+      label: z.string().min(1),
+      href: z.string().min(1),
+      targetPageSlug: z.string().optional(),
+      openInNewTab: z.boolean().optional(),
+      enabled: z.boolean().optional(),
+      displayOrder: z.number().int().optional(),
+      translations: z.record(z.string(), z.object({ label: z.string() })).optional(),
+    })
+  ).optional().default([]),
   copyrightNotice: z.string().max(200).optional().default("© 2026 Homyz Inc. All rights reserved."),
   legalNotice: z.string().max(500).optional().default(""),
+  showBackToTop: z.boolean().optional().default(true),
+  showSocialIcons: z.boolean().optional().default(true),
+  appearance: z.object({
+    backgroundColor: z.string().optional().default("#F3F4F5"),
+    textColor: z.string().optional().default("#000000"),
+    mutedTextColor: z.string().optional().default("#727272"),
+    borderColor: z.string().optional().default("rgba(31,31,31,0.9)"),
+    accentColor: z.string().optional().default("#FCDF9C"),
+  }).optional().default({
+    backgroundColor: "#F3F4F5",
+    textColor: "#000000",
+    mutedTextColor: "#727272",
+    borderColor: "rgba(31,31,31,0.9)",
+    accentColor: "#FCDF9C",
+  }),
+  translations: z.record(z.string(), z.object({
+    copyrightNotice: z.string().optional(),
+    legalNotice: z.string().optional(),
+  })).optional(),
 });
+
+export const GlobalSettingsPayloadSchema = z.object({
+  siteName: z.string().min(1).default("Homyz"),
+  tagline: z.string().default("Travel & Hospitality Platform"),
+  logoUrl: z.string().optional().default("/images/home/homyz-logo.png"),
+  faviconUrl: z.string().optional().default("/favicon.ico"),
+  supportEmail: z.string().email().default("support@homyz.com"),
+  supportPhone: z.string().default("+966 11 000 0000"),
+  legalEntityName: z.string().default("Homyz Hospitality Ltd."),
+  registeredAddress: z.string().default("King Fahd Road, Riyadh, Kingdom of Saudi Arabia"),
+  businessRegistrationNumber: z.string().default("CR-1010892341"),
+  defaultLocale: z.string().default("en"),
+  supportedLocales: z.array(z.string()).default(["en", "ar", "es", "fr", "de", "hi"]),
+  defaultCurrency: z.string().default("SAR"),
+  socialMedia: z.object({
+    facebook: z.string().optional().default("https://facebook.com"),
+    twitter: z.string().optional().default("https://twitter.com"),
+    instagram: z.string().optional().default("https://instagram.com"),
+    linkedin: z.string().optional().default(""),
+    youtube: z.string().optional().default(""),
+  }).default({
+    facebook: "https://facebook.com",
+    twitter: "https://twitter.com",
+    instagram: "https://instagram.com",
+    linkedin: "",
+    youtube: "",
+  }),
+  seo: z.object({
+    defaultMetaTitle: z.string().default("Homyz — Travel & Hospitality Platform"),
+    defaultMetaDescription: z.string().default("Stay like a homie. Premium booking and property management."),
+    ogImageUrl: z.string().optional().default("/images/home/hero.png"),
+  }).default({
+    defaultMetaTitle: "Homyz — Travel & Hospitality Platform",
+    defaultMetaDescription: "Stay like a homie. Premium booking and property management.",
+    ogImageUrl: "/images/home/hero.png",
+  }),
+  footer: z.object({
+    copyrightText: z.string().default("© 2026 Homyz Inc. All rights reserved."),
+    showBackToTop: z.boolean().default(true),
+  }).default({
+    copyrightText: "© 2026 Homyz Inc. All rights reserved.",
+    showBackToTop: true,
+  }),
+});
+
+export type GlobalSettingsPayload = z.infer<typeof GlobalSettingsPayloadSchema>;
+export type FooterConfigPayload = z.infer<typeof FooterConfigPayloadSchema>;
+export type StaticPagePayload = z.infer<typeof StaticPagePayloadSchema>;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Content Type Registry Contract
@@ -390,14 +502,68 @@ export const CONTENT_TYPE_REGISTRY: Record<CmsContentTypeEnum, ContentTypeDefini
     defaultPayload: {
       columns: [
         {
+          id: "col-support",
           title: "Support",
+          displayOrder: 1,
+          enabled: true,
           links: [
-            { label: "Help Center", href: "/help" },
-            { label: "Safety Information", href: "/not-available?page=safety-issue" },
+            { id: "lnk-help", label: "Help Center", href: "/help", enabled: true, displayOrder: 1 },
+            { id: "lnk-safety", label: "Get help with a safety issue", href: "/safety", targetPageSlug: "safety", enabled: true, displayOrder: 2 },
+            { id: "lnk-disability", label: "Disability support", href: "/accessibility", targetPageSlug: "accessibility", enabled: true, displayOrder: 3 },
+            { id: "lnk-cancellation", label: "Cancellation options", href: "/cancellation-policy", targetPageSlug: "cancellation-policy", enabled: true, displayOrder: 4 },
+            { id: "lnk-report", label: "Report neighborhood concern", href: "/anti-discrimination", targetPageSlug: "anti-discrimination", enabled: true, displayOrder: 5 },
+          ],
+        },
+        {
+          id: "col-hosting",
+          title: "Hosting",
+          displayOrder: 2,
+          enabled: true,
+          links: [
+            { id: "lnk-homyz-home", label: "Homyz your home", href: "/become-a-host", enabled: true, displayOrder: 1 },
+            { id: "lnk-homyz-exp", label: "Homyz your experience", href: "/hosting-resources", targetPageSlug: "hosting-resources", enabled: true, displayOrder: 2 },
+            { id: "lnk-homyz-srv", label: "Homyz your service", href: "/hosting-responsibly", targetPageSlug: "hosting-responsibly", enabled: true, displayOrder: 3 },
+            { id: "lnk-for-hosts", label: "Homyz for Hosts", href: "/host/onboarding", enabled: true, displayOrder: 4 },
+            { id: "lnk-hosting-res", label: "Hosting resources", href: "/hosting-resources", targetPageSlug: "hosting-resources", enabled: true, displayOrder: 5 },
+            { id: "lnk-hosting-resp", label: "Hosting responsibly", href: "/hosting-responsibly", targetPageSlug: "hosting-responsibly", enabled: true, displayOrder: 6 },
+            { id: "lnk-find-cohost", label: "Find a co-host", href: "/host/co-host", enabled: true, displayOrder: 7 },
+          ],
+        },
+        {
+          id: "col-homyz",
+          title: "Homyz",
+          displayOrder: 3,
+          enabled: true,
+          links: [
+            { id: "lnk-newsroom", label: "Newsroom", href: "/newsroom", targetPageSlug: "newsroom", enabled: true, displayOrder: 1 },
+            { id: "lnk-careers", label: "Careers", href: "/careers", targetPageSlug: "careers", enabled: true, displayOrder: 2 },
+            { id: "lnk-about", label: "About Us", href: "/about", targetPageSlug: "about", enabled: true, displayOrder: 3 },
+            { id: "lnk-giftcards", label: "Gift cards", href: "/giftcards", enabled: true, displayOrder: 4 },
+            { id: "lnk-contact", label: "Contact Us", href: "/contact", targetPageSlug: "contact", enabled: true, displayOrder: 5 },
           ],
         },
       ],
+      socialLinks: [
+        { id: "soc-fb", platform: "facebook", url: "https://facebook.com", enabled: true, displayOrder: 1 },
+        { id: "soc-tw", platform: "twitter", url: "https://twitter.com", enabled: true, displayOrder: 2 },
+        { id: "soc-ig", platform: "instagram", url: "https://instagram.com", enabled: true, displayOrder: 3 },
+      ],
+      bottomLinks: [
+        { id: "bot-privacy", label: "Privacy", href: "/privacy", targetPageSlug: "privacy", enabled: true, displayOrder: 1 },
+        { id: "bot-terms", label: "Terms", href: "/terms", targetPageSlug: "terms", enabled: true, displayOrder: 2 },
+        { id: "bot-cookies", label: "Cookies", href: "/cookies", targetPageSlug: "cookies", enabled: true, displayOrder: 3 },
+      ],
       copyrightNotice: "© 2026 Homyz Inc. All rights reserved.",
+      legalNotice: "",
+      showBackToTop: true,
+      showSocialIcons: true,
+      appearance: {
+        backgroundColor: "#F3F4F5",
+        textColor: "#000000",
+        mutedTextColor: "#727272",
+        borderColor: "rgba(31,31,31,0.9)",
+        accentColor: "#FCDF9C",
+      },
     },
     allowedPlacements: ["GLOBAL_FOOTER"],
   },

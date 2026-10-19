@@ -9,6 +9,7 @@ import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { isValidE164Phone, normalizePhone } from "@/lib/auth/normalization";
 import { COUNTRY_CODES, getCountryByCallingCode } from "@/lib/auth/country-codes";
 import type { RequiredProfileField } from "@/lib/auth/profile-completion";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 type FieldErrors = Partial<Record<"name" | "birthDate" | "email" | "phone", string>>;
 
@@ -41,6 +42,7 @@ function ProfileCompletionDialog({
 }) {
   const router = useRouter();
   const { update } = useSession();
+  const { t } = useLanguage();
   const needsEmail = missingFields.includes("email");
   const needsPhone = missingFields.includes("phone");
 
@@ -64,9 +66,11 @@ function ProfileCompletionDialog({
 
   function validate(): FieldErrors {
     const errors: FieldErrors = {};
-    if (name.trim().length < 2) errors.name = "Enter your full name.";
+    if (name.trim().length < 2) {
+      errors.name = t("profile_completion_err_name", "Enter your full name.");
+    }
     if (!birthDate) {
-      errors.birthDate = "Birth date is required.";
+      errors.birthDate = t("profile_completion_err_birth_date_required", "Birth date is required.");
     } else {
       const parsed = new Date(`${birthDate}T00:00:00.000Z`);
       const today = new Date().toISOString().slice(0, 10);
@@ -76,21 +80,26 @@ function ProfileCompletionDialog({
         birthDate < "1900-01-01" ||
         birthDate > today
       ) {
-        errors.birthDate = "Enter a valid birth date.";
+        errors.birthDate = t("profile_completion_err_birth_date_invalid", "Enter a valid birth date.");
       }
     }
     if (needsEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      errors.email = "Enter a valid email address.";
+      errors.email = t("profile_completion_err_email_invalid", "Enter a valid email address.");
     }
     if (needsPhone) {
       if (!cleanPhoneDigits) {
-        errors.phone = "Mobile number is required.";
+        errors.phone = t("profile_completion_err_phone_required", "Mobile number is required.");
       } else if (cleanPhoneDigits.length < minPhoneLen || cleanPhoneDigits.length > maxPhoneLen) {
-        errors.phone = `Enter a valid number for ${selectedCountry?.name ?? "the selected country"} (${minPhoneLen}–${maxPhoneLen} digits).`;
+        const countryLabel = selectedCountry?.name ?? t("profile_completion_selected_country", "the selected country");
+        errors.phone = t(
+          "profile_completion_err_phone_range",
+          { country: countryLabel, min: minPhoneLen, max: maxPhoneLen },
+          `Enter a valid number for ${countryLabel} (${minPhoneLen}–${maxPhoneLen} digits).`
+        );
       } else {
         const fullPhone = `${countryCode}${cleanPhoneDigits}`;
         if (!isValidE164Phone(normalizePhone(fullPhone))) {
-          errors.phone = "Enter a valid mobile number.";
+          errors.phone = t("profile_completion_err_phone_invalid", "Enter a valid mobile number.");
         }
       }
     }
@@ -117,7 +126,17 @@ function ProfileCompletionDialog({
       });
 
       if (!result.ok) {
-        setError(result.error);
+        let errMessage = result.error;
+        if (result.error?.toLowerCase().includes("email address is already in use")) {
+          errMessage = t("profile_completion_err_email_in_use", "That email address is already in use.");
+        } else if (result.error?.toLowerCase().includes("mobile number is already in use")) {
+          errMessage = t("profile_completion_err_phone_in_use", "That mobile number is already in use.");
+        } else if (result.error?.toLowerCase().includes("email address or mobile number is already in use")) {
+          errMessage = t("profile_completion_err_conflict", "That email address or mobile number is already in use.");
+        } else if (result.error?.toLowerCase().includes("all required profile fields")) {
+          errMessage = t("profile_completion_err_required_fields", "Complete all required profile fields.");
+        }
+        setError(errMessage);
         setFieldErrors((result.fieldErrors ?? {}) as FieldErrors);
         return;
       }
@@ -143,10 +162,10 @@ function ProfileCompletionDialog({
       >
         <div className="border-b border-zinc-200 px-6 py-5 text-center sm:px-8">
           <h2 id="profile-completion-title" className="text-xl font-semibold tracking-tight">
-            Let&apos;s complete your profile
+            {t("profile_completion_title", "Let's complete your profile")}
           </h2>
           <p id="profile-completion-description" className="mt-1 text-sm text-[#727272]">
-            This information is required to use your Homyz account.
+            {t("profile_completion_desc", "This information is required to use your Homyz account.")}
           </p>
         </div>
 
@@ -160,7 +179,7 @@ function ProfileCompletionDialog({
           {/* Full name */}
           <div>
             <label htmlFor="profile-full-name" className="mb-2 block text-sm font-semibold">
-              Full name <span aria-hidden="true">*</span>
+              {t("profile_completion_name_label", "Full name")} <span aria-hidden="true">*</span>
             </label>
             <input
               id="profile-full-name"
@@ -179,7 +198,7 @@ function ProfileCompletionDialog({
           {/* Birth date */}
           <div>
             <label htmlFor="profile-birth-date" className="mb-2 block text-sm font-semibold">
-              Birth date <span aria-hidden="true">*</span>
+              {t("profile_completion_birth_date_label", "Birth date")} <span aria-hidden="true">*</span>
             </label>
             <input
               id="profile-birth-date"
@@ -199,7 +218,7 @@ function ProfileCompletionDialog({
           {needsEmail ? (
             <div>
               <label htmlFor="profile-email" className="mb-2 block text-sm font-semibold">
-                Email address <span aria-hidden="true">*</span>
+                {t("profile_completion_email_label", "Email address")} <span aria-hidden="true">*</span>
               </label>
               <input
                 id="profile-email"
@@ -208,7 +227,7 @@ function ProfileCompletionDialog({
                 onChange={(event) => setEmail(event.target.value)}
                 className={inputClass}
                 autoComplete="email"
-                placeholder="name@example.com"
+                placeholder={t("profile_completion_email_placeholder", "name@example.com")}
                 required
                 disabled={pending}
                 aria-invalid={Boolean(fieldErrors.email)}
@@ -221,7 +240,7 @@ function ProfileCompletionDialog({
           {needsPhone ? (
             <div>
               <label className="mb-2 block text-sm font-semibold">
-                Mobile number <span aria-hidden="true">*</span>
+                {t("profile_completion_phone_label", "Mobile number")} <span aria-hidden="true">*</span>
               </label>
 
               <div className="flex gap-2">
@@ -243,7 +262,7 @@ function ProfileCompletionDialog({
                       setFieldErrors((prev) => ({ ...prev, phone: undefined }));
                     }}
                     disabled={pending}
-                    aria-label="Country calling code"
+                    aria-label={t("profile_completion_country_code_aria", "Country calling code")}
                     className="h-12 w-full appearance-none rounded-xl border border-zinc-300 bg-transparent pl-3 pr-8 text-transparent outline-none transition focus:border-[#1F1F1F] focus:ring-2 focus:ring-zinc-200 disabled:bg-zinc-100 cursor-pointer"
                   >
                     {COUNTRY_CODES.map((c, idx) => (
@@ -282,7 +301,7 @@ function ProfileCompletionDialog({
                 <p className="mt-1.5 text-xs text-red-600">{fieldErrors.phone}</p>
               ) : (
                 <p className="mt-1.5 text-xs text-[#727272]">
-                  Select your country, then enter your local number.
+                  {t("profile_completion_phone_help", "Select your country, then enter your local number.")}
                 </p>
               )}
             </div>
@@ -293,7 +312,7 @@ function ProfileCompletionDialog({
             disabled={pending}
             className="flex h-12 w-full items-center justify-center rounded-xl bg-[#1F1F1F] px-5 text-sm font-semibold text-white transition hover:bg-black disabled:cursor-wait disabled:opacity-65"
           >
-            {pending ? "Saving profile…" : "Save and continue"}
+            {pending ? t("profile_completion_btn_saving", "Saving profile…") : t("profile_completion_btn_save", "Save and continue")}
           </button>
         </form>
       </section>
