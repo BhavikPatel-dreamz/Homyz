@@ -31,6 +31,7 @@ interface PaymentDetailsProps {
       metadata: any;
       createdAt: string;
       updatedAt: string;
+      refunds?: any[];
     };
     booking: {
       id: string;
@@ -61,9 +62,10 @@ interface PaymentDetailsProps {
         };
       };
       storedHostPayout?: any;
+      refunds?: any[];
     };
-    refunds: any[];
-    auditLogs: any[];
+    refunds?: any[];
+    auditLogs?: any[];
   };
 }
 
@@ -108,8 +110,9 @@ export function AdminPaymentDetailsClient({ initialData }: PaymentDetailsProps) 
   const [reconcileResult, setReconcileResult] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const payment = data.payment;
-  const booking = data.booking;
+  const payment = data?.payment ?? ({} as any);
+  const booking = data?.booking ?? ({} as any);
+  const refunds = data?.refunds ?? payment?.refunds ?? booking?.refunds ?? [];
 
   const capturedMajor = (payment.capturedAmount || 0) / 100;
   const refundedMajor = (payment.refundedAmount || 0) / 100;
@@ -364,9 +367,9 @@ export function AdminPaymentDetailsClient({ initialData }: PaymentDetailsProps) 
               Associated Refund Transactions
             </h2>
 
-            {data.refunds.length > 0 ? (
+            {refunds.length > 0 ? (
               <div className="divide-y divide-[var(--border)] border border-[var(--border)] rounded-xl overflow-hidden text-xs">
-                {data.refunds.map((r: any) => (
+                {refunds.map((r: any) => (
                   <div key={r.id} className="p-3 flex items-center justify-between hover:bg-[var(--surface-secondary)]/40">
                     <div>
                       <span className="font-mono font-semibold text-foreground block">

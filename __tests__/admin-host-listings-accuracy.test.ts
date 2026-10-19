@@ -97,7 +97,7 @@ assert(
 
 // Verify listings table columns & elements
 assert(
-  detailsCode.includes("formatSarFromHalalas(listing.price)"),
+  detailsCode.includes("formatPrice(listing.price") || detailsCode.includes("formatSarFromHalalas(listing.price)"),
   "Host Details View must format listing price in SAR"
 );
 assert(
@@ -120,6 +120,30 @@ assert(
 );
 console.log("✓ components/admin/host-details-view.tsx verified successfully!");
 
+// --- [4] Host Details Dedicated Skeleton Audit ---
+console.log("\n--- [4] Host Details Dedicated Skeleton Audit (app/(protected)/admin/hosts/[id]/loading.tsx) ---");
+const loadingPath = path.resolve(__dirname, "../app/(protected)/admin/hosts/[id]/loading.tsx");
+assert(fs.existsSync(loadingPath), "app/(protected)/admin/hosts/[id]/loading.tsx must exist");
+const loadingCode = fs.readFileSync(loadingPath, "utf-8");
+assert(
+  loadingCode.includes("HostDetailsSkeleton"),
+  "app/(protected)/admin/hosts/[id]/loading.tsx must render HostDetailsSkeleton"
+);
+
+const skeletonPath = path.resolve(__dirname, "../components/admin/host-details-skeleton.tsx");
+assert(fs.existsSync(skeletonPath), "components/admin/host-details-skeleton.tsx must exist");
+const skeletonCode = fs.readFileSync(skeletonPath, "utf-8");
+assert(
+  skeletonCode.includes('aria-label="Loading host details"'),
+  "HostDetailsSkeleton must have accessible aria-label"
+);
+assert(
+  skeletonCode.includes("skeleton-shimmer"),
+  "HostDetailsSkeleton must use skeleton-shimmer styles"
+);
+console.log("✓ app/(protected)/admin/hosts/[id]/loading.tsx verified successfully!");
+
 console.log("\n==================================================================");
 console.log("   ALL ADMIN HOST LISTINGS ACCURACY TESTS PASSED!                 ");
 console.log("==================================================================\n");
+

@@ -2,7 +2,7 @@
 
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { AdminPersonalInformationPanel } from "@/components/admin/personal-information-panel";
-import React, { useState, useTransition } from "react";
+import React, { useState, useEffect, useTransition } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { toast } from "@/components/ui/toast";
@@ -15,6 +15,129 @@ import {
   toggleGuestSuspensionAction,
   deleteGuestAction,
 } from "@/actions/admin/guestActions";
+
+export function GuestTabSkeleton({ tabId }: { tabId: "overview" | "bookings" | "activity" }) {
+  if (tabId === "bookings") {
+    return (
+      <div
+        aria-busy="true"
+        aria-label="Loading bookings history"
+        className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] overflow-hidden shadow-2xs animate-in fade-in duration-200"
+      >
+        <div className="flex items-center justify-between border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)]/50 px-5 py-3.5">
+          <div className="flex items-center gap-2.5">
+            <span className="inline-block size-3.5 animate-spin rounded-full border-2 border-[var(--accent)] border-t-transparent" />
+            <span className="text-xs font-semibold text-muted-foreground">Loading Bookings History...</span>
+          </div>
+          <div className="h-4 w-28 rounded bg-zinc-200 dark:bg-zinc-800 skeleton-shimmer" />
+        </div>
+        <div className="p-5 space-y-3">
+          <div className="grid grid-cols-6 gap-4 pb-2 border-b border-[var(--border-subtle)]">
+            {["w-20", "w-32", "w-24", "w-20", "w-16", "w-16"].map((w, i) => (
+              <div key={i} className={`h-3 ${w} rounded bg-zinc-200 dark:bg-zinc-800 skeleton-shimmer`} />
+            ))}
+          </div>
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="grid grid-cols-6 items-center gap-4 py-3 border-b border-[var(--border-subtle)] last:border-0">
+              <div className="h-3.5 w-24 rounded bg-zinc-200 dark:bg-zinc-800 skeleton-shimmer" />
+              <div className="h-4 w-36 rounded bg-zinc-200 dark:bg-zinc-800 skeleton-shimmer" />
+              <div className="h-3.5 w-28 rounded bg-zinc-200 dark:bg-zinc-800 skeleton-shimmer" />
+              <div className="h-3.5 w-20 rounded bg-zinc-200 dark:bg-zinc-800 skeleton-shimmer" />
+              <div className="h-5 w-16 rounded-full bg-zinc-200 dark:bg-zinc-800 skeleton-shimmer" />
+              <div className="h-3.5 w-16 rounded bg-zinc-200 dark:bg-zinc-800 skeleton-shimmer justify-self-end" />
+            </div>
+          ))}
+        </div>
+        <div className="flex items-center justify-between border-t border-[var(--border-subtle)] px-5 py-3">
+          <div className="h-4 w-24 rounded bg-zinc-200 dark:bg-zinc-800 skeleton-shimmer" />
+          <div className="h-7 w-48 rounded bg-zinc-200 dark:bg-zinc-800 skeleton-shimmer" />
+        </div>
+      </div>
+    );
+  }
+
+  if (tabId === "activity") {
+    return (
+      <div
+        aria-busy="true"
+        aria-label="Loading guest activity logs"
+        className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs space-y-4 animate-in fade-in duration-200"
+      >
+        <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-3">
+          <div className="flex items-center gap-2.5">
+            <span className="inline-block size-3.5 animate-spin rounded-full border-2 border-[var(--accent)] border-t-transparent" />
+            <span className="text-xs font-semibold text-muted-foreground">Loading Guest Activity History Logs...</span>
+          </div>
+          <div className="h-4 w-20 rounded bg-zinc-200 dark:bg-zinc-800 skeleton-shimmer" />
+        </div>
+        <div className="space-y-3 pt-1">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="flex items-start justify-between p-3.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)]">
+              <div className="space-y-2">
+                <div className="h-4 w-40 rounded bg-zinc-200 dark:bg-zinc-800 skeleton-shimmer" />
+                <div className="h-3 w-64 rounded bg-zinc-200 dark:bg-zinc-800 skeleton-shimmer" />
+                <div className="h-2.5 w-28 rounded bg-zinc-200 dark:bg-zinc-800 skeleton-shimmer" />
+              </div>
+              <div className="h-3 w-32 rounded bg-zinc-200 dark:bg-zinc-800 skeleton-shimmer" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Overview skeleton
+  return (
+    <div
+      aria-busy="true"
+      aria-label="Loading overview and identity details"
+      className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in duration-200"
+    >
+      <div className="md:col-span-2 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs space-y-4">
+        <div className="flex items-center gap-2.5 pb-3 border-b border-[var(--border-subtle)]">
+          <span className="inline-block size-3.5 animate-spin rounded-full border-2 border-[var(--accent)] border-t-transparent" />
+          <span className="text-xs font-semibold text-muted-foreground">Loading Personal Information & Identity Documents...</span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-1">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="p-3.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--surface-secondary)] space-y-2">
+              <div className="h-2.5 w-16 rounded bg-zinc-200 dark:bg-zinc-800 skeleton-shimmer" />
+              <div className="h-4 w-28 rounded bg-zinc-200 dark:bg-zinc-800 skeleton-shimmer" />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs space-y-4">
+        <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-3">
+          <div className="h-4 w-44 rounded bg-zinc-200 dark:bg-zinc-800 skeleton-shimmer" />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="space-y-1.5">
+              <div className="h-2.5 w-20 rounded bg-zinc-200 dark:bg-zinc-800 skeleton-shimmer" />
+              <div className="h-4 w-32 rounded bg-zinc-200 dark:bg-zinc-800 skeleton-shimmer" />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs space-y-4">
+        <div className="border-b border-[var(--border-subtle)] pb-3">
+          <div className="h-4 w-48 rounded bg-zinc-200 dark:bg-zinc-800 skeleton-shimmer" />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          {Array.from({ length: 2 }).map((_, i) => (
+            <div key={i} className="space-y-1.5">
+              <div className="h-2.5 w-24 rounded bg-zinc-200 dark:bg-zinc-800 skeleton-shimmer" />
+              <div className="h-4 w-36 rounded bg-zinc-200 dark:bg-zinc-800 skeleton-shimmer" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 interface GuestDetailsViewProps {
   initialData: GuestDetailsData;
@@ -31,7 +154,22 @@ export function GuestDetailsView({
   const pathname = usePathname();
 
   const tabParam = (searchParams.get("tab") || "").toLowerCase() as "overview" | "bookings" | "activity";
-  const activeTab = ["overview", "bookings", "activity"].includes(tabParam) ? tabParam : "overview";
+  const initialActiveTab = ["overview", "bookings", "activity"].includes(tabParam) ? tabParam : "overview";
+
+  const [activeTab, setActiveTab] = useState<"overview" | "bookings" | "activity">(initialActiveTab);
+  const [targetTab, setTargetTab] = useState<"overview" | "bookings" | "activity">(initialActiveTab);
+  const [isTabPending, startTabTransition] = useTransition();
+
+  useEffect(() => {
+    if (tabParam && ["overview", "bookings", "activity"].includes(tabParam)) {
+      setActiveTab(tabParam as "overview" | "bookings" | "activity");
+      setTargetTab(tabParam as "overview" | "bookings" | "activity");
+    }
+  }, [tabParam]);
+
+  useEffect(() => {
+    setData(initialData);
+  }, [initialData]);
 
   function getTabHref(tabId: string) {
     const params = new URLSearchParams(searchParams.toString());
@@ -42,6 +180,21 @@ export function GuestDetailsView({
     }
     const qs = params.toString();
     return qs ? `${pathname}?${qs}` : pathname;
+  }
+
+  function handleTabChange(tabId: "overview" | "bookings" | "activity") {
+    if (tabId === activeTab && !isTabPending) return;
+    setTargetTab(tabId);
+    startTabTransition(async () => {
+      const startTime = Date.now();
+      const nextHref = getTabHref(tabId);
+      router.replace(nextHref, { scroll: false });
+      setActiveTab(tabId);
+      const elapsed = Date.now() - startTime;
+      if (elapsed < 200) {
+        await new Promise((resolve) => setTimeout(resolve, 200 - elapsed));
+      }
+    });
   }
 
   const [data, setData] = useState<GuestDetailsData>(initialData);
@@ -235,28 +388,45 @@ export function GuestDetailsView({
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-[var(--border)] flex items-center gap-2 overflow-x-auto pt-2">
+      <div className="border-b border-[var(--border)] flex items-center gap-2 overflow-x-auto pt-2" role="tablist">
         {[
-          { id: "overview", label: "Overview" },
-          { id: "bookings", label: `Bookings History (${data.bookings.length})` },
-          { id: "activity", label: `Activity (${data.activity.length})` },
-        ].map((tab) => (
-          <Link
-            key={tab.id}
-            href={getTabHref(tab.id)}
-            className={`px-4 py-2.5 text-xs font-semibold border-b-2 transition-all whitespace-nowrap cursor-pointer ${
-              activeTab === tab.id
-                ? "border-[var(--accent)] text-muted-foreground font-semibold"
-                : "border-transparent text-[var(--muted-foreground)] hover:text-muted-foreground"
-            }`}
-          >
-            {tab.label}
-          </Link>
-        ))}
+          { id: "overview" as const, label: "Overview" },
+          { id: "bookings" as const, label: `Bookings History (${data.bookings.length})` },
+          { id: "activity" as const, label: `Activity (${data.activity.length})` },
+        ].map((tab) => {
+          const isSelected = (isTabPending ? targetTab : activeTab) === tab.id;
+          const isLoadingThis = isTabPending && targetTab === tab.id;
+
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              role="tab"
+              aria-selected={isSelected}
+              disabled={isTabPending && isLoadingThis}
+              onClick={() => handleTabChange(tab.id)}
+              className={`inline-flex items-center gap-2 px-4 py-2.5 text-xs font-semibold border-b-2 transition-all whitespace-nowrap cursor-pointer ${
+                isSelected
+                  ? "border-[var(--accent)] text-muted-foreground font-semibold"
+                  : "border-transparent text-[var(--muted-foreground)] hover:text-muted-foreground"
+              } ${isTabPending && !isLoadingThis ? "opacity-70" : ""}`}
+            >
+              {isLoadingThis ? (
+                <span className="inline-block size-3 animate-spin rounded-full border-2 border-current border-t-transparent shrink-0" />
+              ) : null}
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
       </div>
 
-      {/* Tab 1: OVERVIEW */}
-      {activeTab === "overview" && (
+      {/* Tab Content with Dedicated Loader */}
+      {isTabPending ? (
+        <GuestTabSkeleton tabId={targetTab} />
+      ) : (
+        <>
+          {/* Tab 1: OVERVIEW */}
+          {activeTab === "overview" && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="md:col-span-2">
             <AdminPersonalInformationPanel
@@ -405,6 +575,8 @@ export function GuestDetailsView({
             </div>
           )}
         </div>
+      )}
+        </>
       )}
 
       {/* EDIT GUEST MODAL */}
