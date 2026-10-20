@@ -449,14 +449,14 @@ body {
 
 /* Opt-in scrollbar for compact menus that need a visible scroll affordance. */
 .visible-scrollbar {
-  -ms-overflow-style: auto;
-  scrollbar-color: #9b9b9b transparent;
-  scrollbar-width: thin;
+  -ms-overflow-style: auto !important;
+  scrollbar-color: #9b9b9b transparent !important;
+  scrollbar-width: thin !important;
 }
 
 .visible-scrollbar::-webkit-scrollbar {
-  display: block;
-  width: 8px;
+  display: block !important;
+  width: 6px !important;
 }
 
 .visible-scrollbar::-webkit-scrollbar-track {
