@@ -37,6 +37,7 @@ import {
   compareBookingDates,
   differenceInBookingNights,
 } from "@/lib/booking/booking-date";
+import { buildHostCalendarReservationSpans } from "@/lib/booking/host-calendar-spans";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { CloseButton } from "@/components/ui/close-button";
 import { calculatePriceTips } from "@/lib/pricing/price-tips";
@@ -506,7 +507,7 @@ function MonthGrid({
 
       {/* Days grid */}
       <div
-        className={`grid grid-cols-7 md:gap-1 gap-[2px] ${compact ? "" : "lg:grid-cols-[repeat(7,136px)] lg:justify-center"
+        className={`grid grid-cols-7 gap-[2px] md:gap-1 ${compact ? "" : "lg:grid-cols-[repeat(7,minmax(88px,1fr))]"
           }`}
       >
         {Array.from({ length: offset }, (_, i) => (
@@ -704,7 +705,7 @@ function MonthGrid({
               aria-pressed={isSelected}
               className={`group relative flex min-w-0 self-stretch flex-col items-center border text-center transition-all duration-100 focus-visible:outline-2 focus-visible:outline-offset-2 ${cellRoundingClass} ${cellBgClass} ${compact
                 ? "min-h-[48px] p-1 sm:min-h-[68px] sm:py-1.5"
-                : "min-h-[84px] sm:p-2 p-1 sm:min-h-[126px] lg:h-[146px] lg:min-h-[146px]"
+                : "min-h-[72px] p-1 sm:min-h-[96px] sm:p-2 lg:h-[108px] lg:min-h-[108px]"
                 }`}
             >
               <div className="flex min-h-0 w-full flex-1 flex-col items-center justify-center gap-2">
@@ -796,7 +797,7 @@ function MonthGrid({
 
               {/* Continuous Reservation Bar — hidden in the compact Year view. */}
               {primaryReservation && !compact ? (
-                <div className="mt-3 md:flex hidden items-center gap-1 truncate rounded-lg bg-[#1F1F1F] pr-2 pl-0 min-h-8 text-xs font-medium text-white relative w-full">
+                <div className={`relative z-10 mt-3 hidden min-h-8 items-center gap-1 bg-[#1F1F1F] text-xs font-medium text-white md:flex ${isBookingStart ? "ml-0 rounded-l-lg pl-0" : "-ml-1 rounded-l-none pl-0"} ${isBookingEndNight ? "mr-0 rounded-r-lg pr-2" : "-mr-1 rounded-r-none pr-0"}`}>
                   {isBookingStart && (
                     primaryReservation.guestImage ? (
                       // Reservation data already supplies an optional guest image.
@@ -817,9 +818,7 @@ function MonthGrid({
                     )
                   )}
                   <span className="truncate pl-2">
-                    {isBookingStart
-                      ? primaryReservation.guestName
-                      : `Stay · ${primaryReservation.guestName}`}
+                    {isBookingStart ? primaryReservation.guestName : ""}
                   </span>
                 </div>
               ) : null}
@@ -926,6 +925,119 @@ function LazyMonthCard({
         <div className="h-[200px] w-full rounded-xl bg-zinc-50 dark:bg-zinc-800/40 animate-pulse" />
       )}
     </section>
+  );
+}
+
+function MultiPropertyCalendar({
+  month,
+  listings,
+  bookings,
+  onSelectReservation,
+  onOpenPropertyDate,
+}: {
+  month: Date;
+  listings: ListingDTO[];
+  bookings: HostReservation[];
+  onSelectReservation: (booking: HostReservation) => void;
+  onOpenPropertyDate: (listingId: string, date: string) => void;
+}) {
+  const { language } = useLanguage();
+  const year = month.getFullYear();
+  const monthIndex = month.getMonth();
+  const dayCount = new Date(year, monthIndex + 1, 0).getDate();
+  const dateKeys = useMemo(
+    () => Array.from({ length: dayCount }, (_, index) => dateKey(new Date(year, monthIndex, index + 1))),
+    [year, monthIndex, dayCount],
+  );
+  const visibleStart = dateKeys[0] || "";
+  const visibleEnd = shiftDateKey(dateKeys.at(-1) || visibleStart, 1);
+  const listingIds = useMemo(() => new Set(listings.map((listing) => listing.id)), [listings]);
+  const spans = useMemo(
+    () => buildHostCalendarReservationSpans(bookings, visibleStart, visibleEnd, listingIds),
+    [bookings, visibleStart, visibleEnd, listingIds],
+  );
+  const dateIndex = useMemo(() => new Map(dateKeys.map((key, index) => [key, index])), [dateKeys]);
+  const gridStyle = { gridTemplateColumns: `176px repeat(${dateKeys.length}, minmax(44px, 1fr))` };
+
+  return (
+    <div className="overflow-x-auto rounded-xl border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900">
+      <div className="min-w-[920px]">
+        <div className="sticky top-0 z-20 grid border-b border-zinc-200 bg-white text-center dark:border-zinc-700 dark:bg-zinc-900" style={gridStyle}>
+          <div className="sticky left-0 z-30 flex items-center border-r border-zinc-200 bg-white px-3 text-xs font-semibold text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
+            Properties
+          </div>
+          {dateKeys.map((key) => {
+            const day = new Date(`${key}T12:00:00`);
+            return (
+              <div key={key} className="border-r border-zinc-100 py-2 text-[11px] font-medium text-zinc-600 dark:border-zinc-800 dark:text-zinc-300">
+                <span className="block uppercase">{day.toLocaleDateString(language || "en", { weekday: "short" })}</span>
+                <span className="text-sm text-zinc-950 dark:text-white">{day.getDate()}</span>
+              </div>
+            );
+          })}
+        </div>
+
+        {listings.map((listing) => {
+          const rowSpans = spans.filter((span) => span.booking.listingId === listing.id);
+          const laneEnds: string[] = [];
+          const laidOutSpans = rowSpans.map((span) => {
+            let lane = laneEnds.findIndex((end) => end <= span.visibleStart);
+            if (lane < 0) lane = laneEnds.length;
+            laneEnds[lane] = span.visibleEnd;
+            return { ...span, lane };
+          });
+          const laneCount = Math.max(1, laneEnds.length);
+
+          return (
+            <div
+              key={listing.id}
+              className="grid border-b border-zinc-200 last:border-b-0 dark:border-zinc-700"
+              style={{ ...gridStyle, gridTemplateRows: `repeat(${laneCount}, 30px)` }}
+            >
+              <div
+                className="sticky left-0 z-10 row-span-full flex items-center border-r border-zinc-200 bg-white p-2 dark:border-zinc-700 dark:bg-zinc-900"
+                style={{ gridColumn: 1, gridRow: `1 / span ${laneCount}` }}
+              >
+                <div className="relative size-11 shrink-0 overflow-hidden rounded-md bg-zinc-100">
+                  <PropertyPhoto listing={listing} className="size-full object-cover" />
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent px-1 pt-3">
+                    <p className="truncate text-[8px] font-semibold text-white" title={listing.title}>{listing.title || "Property"}</p>
+                  </div>
+                </div>
+                <p className="ml-2 truncate text-xs font-medium text-zinc-800 dark:text-zinc-100" title={listing.title}>{listing.title || "Property"}</p>
+              </div>
+              {dateKeys.map((key, index) => (
+                <button
+                  key={key}
+                  type="button"
+                  aria-label={`${listing.title || "Property"}, ${key}`}
+                  onClick={() => onOpenPropertyDate(listing.id, key)}
+                  className="row-span-full border-r border-zinc-100 bg-white transition-colors hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+                  style={{ gridColumn: index + 2, gridRow: `1 / span ${laneCount}` }}
+                />
+              ))}
+              {laidOutSpans.map((span) => {
+                const startIndex = dateIndex.get(span.visibleStart);
+                const endIndex = dateIndex.get(span.visibleEnd);
+                if (startIndex === undefined || endIndex === undefined || endIndex <= startIndex) return null;
+                return (
+                  <button
+                    key={`${span.booking.listingId}:${span.booking.id}`}
+                    type="button"
+                    onClick={() => onSelectReservation(span.booking)}
+                    title={`${span.booking.guestName} · ${formatBookingDateRange(span.start, span.end)}`}
+                    className={`z-[1] mx-px flex min-w-0 items-center truncate bg-[#1F1F1F] px-2 text-left text-xs font-medium text-white transition-colors hover:bg-zinc-700 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-amber-400 ${span.continuesBefore ? "rounded-l-none" : "rounded-l-md"} ${span.continuesAfter ? "rounded-r-none" : "rounded-r-md"}`}
+                    style={{ gridColumn: `${startIndex + 2} / span ${endIndex - startIndex}`, gridRow: span.lane + 1 }}
+                  >
+                    <span className="truncate">{span.booking.guestName}</span>
+                  </button>
+                );
+              })}
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }
 
@@ -2156,6 +2268,9 @@ export function HostCalendarWorkspace({
   }, [listings, initialListingId, searchParams]);
 
   const [selectedId, setSelectedId] = useState<string>(defaultSelectedId);
+  const [selectedPropertyIds, setSelectedPropertyIds] = useState<string[]>(() =>
+    initialListings.map((listing) => listing.id),
+  );
 
   // Initialize month from initialMonth / searchParams or current date
   const defaultMonth = useMemo(() => {
@@ -2299,6 +2414,7 @@ export function HostCalendarWorkspace({
   const handleSelectProperty = useCallback(
     (id: string) => {
       setSelectedId(id);
+      if (id === "all") setSelectedPropertyIds(listings.map((listing) => listing.id));
       setSelection({ start: null, end: null, isDragging: false });
       setPreviewPrice(null);
       setSelectedBooking(null);
@@ -2306,7 +2422,21 @@ export function HostCalendarWorkspace({
       setMobilePropertySelectorOpen(false);
       syncUrl(id, month, view);
     },
-    [month, view, syncUrl],
+    [month, view, syncUrl, listings],
+  );
+
+  const toggleAllPropertySelection = useCallback((id: string) => {
+    setSelectedPropertyIds((current) => {
+      if (current.includes(id)) {
+        return current.length > 1 ? current.filter((propertyId) => propertyId !== id) : current;
+      }
+      return [...current, id];
+    });
+  }, []);
+
+  const visibleAllListings = useMemo(
+    () => listings.filter((listing) => selectedPropertyIds.includes(listing.id)),
+    [listings, selectedPropertyIds],
   );
 
   // Handle month change: resets selection safely if in single month view
@@ -2404,12 +2534,17 @@ export function HostCalendarWorkspace({
       end: string;
     }> = [];
 
-    for (const b of bookings) {
-      if (b.status === "CANCELLED") continue;
-      if (!isAllListings && b.listingId !== selectedListing?.id) continue;
+    const scopedListingIds = isAllListings
+      ? new Set(visibleAllListings.map((listing) => listing.id))
+      : selectedListing ? new Set([selectedListing.id]) : new Set<string>();
 
-      const start = b.startDate.slice(0, 10);
-      const end = b.endDate.slice(0, 10);
+    for (const span of buildHostCalendarReservationSpans(
+      bookings,
+      "1900-01-01",
+      "2200-01-01",
+      scopedListingIds,
+    )) {
+      const { booking: b, start, end } = span;
       ranges.push({ booking: b, start, end });
 
       let cur = start;
@@ -2421,7 +2556,7 @@ export function HostCalendarWorkspace({
       }
     }
     return { bookingsByDate: map, bookingRanges: ranges };
-  }, [bookings, isAllListings, selectedListing?.id]);
+  }, [bookings, isAllListings, selectedListing?.id, visibleAllListings]);
 
   const blockedDatesSet = useMemo(() => {
     if (!selectedListing) return new Set<string>();
@@ -2981,7 +3116,7 @@ export function HostCalendarWorkspace({
                 }}
                 aria-expanded={showMonthDropdown}
                 aria-haspopup="dialog"
-                aria-label={t("host_calendar_select_month_year", "Select month and year")}
+                aria-label="Select month and year"
                 className="flex items-center gap-2 rounded-xl px-2.5 py-1 text-xl sm:text-2xl font-semibold tracking-tight text-[#1F1F1F] dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors cursor-pointer"
               >
                 <span className="capitalize">
@@ -3187,7 +3322,7 @@ export function HostCalendarWorkspace({
         <div className="hidden items-start gap-6 sm:flex lg:h-[970px]">
           {/* 1. Left Rail: Property Switcher (Desktop & Tablet) */}
           <aside
-            aria-label={t("host_calendar_property_selection_aria", "Property selection")}
+            aria-label="Property selection"
             className="hidden w-[105px] shrink-0 flex-col items-center gap-3 sm:flex lg:max-h-full lg:overflow-y-auto [scrollbar-width:none]"
           >
             {/* All Listings Option (when host has 2+ listings) */}
@@ -3245,10 +3380,32 @@ export function HostCalendarWorkspace({
                     className="h-full w-full object-cover"
                   />
                   <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-1 text-center">
-                    <p className="truncate text-[10px] font-semibold text-white">
-                      {l.city || l.title}
+                    <p className="truncate text-[10px] font-semibold text-white" title={l.title}>
+                      {l.title || l.city || "Property"}
                     </p>
                   </div>
+                  {isAllListings && (
+                    <span
+                      role="checkbox"
+                      aria-checked={selectedPropertyIds.includes(l.id)}
+                      tabIndex={0}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        toggleAllPropertySelection(l.id);
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          event.stopPropagation();
+                          toggleAllPropertySelection(l.id);
+                        }
+                      }}
+                      className={`absolute right-1.5 top-1.5 flex size-5 items-center justify-center rounded-full border text-[11px] ${selectedPropertyIds.includes(l.id) ? "border-white bg-zinc-950 text-white" : "border-white/80 bg-black/40 text-transparent"}`}
+                      title={selectedPropertyIds.includes(l.id) ? "Hide property" : "Show property"}
+                    >
+                      ✓
+                    </span>
+                  )}
                 </button>
               );
             })}
@@ -3256,7 +3413,20 @@ export function HostCalendarWorkspace({
 
           {/* 2. Center Calendar Matrix */}
           <div className="relative min-w-0 flex-1 border-b border-[#d7d7d7] pb-4 lg:h-full lg:overflow-y-auto lg:pr-4 calendar-panel-scrollbar dark:border-zinc-700">
-            {view === "month" ? (
+            {isAllListings ? (
+              <MultiPropertyCalendar
+                month={month}
+                listings={visibleAllListings}
+                bookings={bookings}
+                onSelectReservation={setSelectedBooking}
+                onOpenPropertyDate={(listingId, date) => {
+                  setSelectedId(listingId);
+                  setSelection({ start: date, end: date, isDragging: false });
+                  setPreviewPrice(null);
+                  syncUrl(listingId, month, view);
+                }}
+              />
+            ) : view === "month" ? (
               <MonthGrid
                 month={month}
                 listing={selectedListing}
