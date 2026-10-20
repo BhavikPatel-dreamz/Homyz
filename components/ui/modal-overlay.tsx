@@ -3,8 +3,8 @@
 import { useLayoutEffect, useRef, type ComponentPropsWithoutRef } from "react";
 import { lockBodyScroll } from "@/lib/ui/body-scroll-lock";
 
-/** Render only while open. Preserves the existing overlay markup and styling. */
-export function ModalOverlay({ style, ...props }: ComponentPropsWithoutRef<"div">) {
+/** Render only while open. Preserves the existing overlay markup and styling, and applies universal smooth modal transitions. */
+export function ModalOverlay({ className = "", style, ...props }: ComponentPropsWithoutRef<"div">) {
   const ref = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
@@ -31,5 +31,20 @@ export function ModalOverlay({ style, ...props }: ComponentPropsWithoutRef<"div"
     };
   }, []);
 
-  return <div {...props} ref={ref} style={{ overscrollBehavior: "contain", ...style }} />;
+  const hasBackdropOut = className.includes("modal-backdrop-animate-out");
+  const overlayClass = hasBackdropOut
+    ? className
+    : className.includes("modal-backdrop-animate-in")
+      ? className
+      : `modal-backdrop-animate-in ${className}`.trim();
+
+  return (
+    <div
+      {...props}
+      ref={ref}
+      data-modal-overlay=""
+      className={overlayClass}
+      style={{ overscrollBehavior: "contain", ...style }}
+    />
+  );
 }

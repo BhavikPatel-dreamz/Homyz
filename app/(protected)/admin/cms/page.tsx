@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { PERMISSIONS, hasPermission } from "@/lib/permissions/permissions";
+import { ModalOverlay } from "@/components/ui/modal-overlay";
 
 interface CmsContentItem {
   id: string;
@@ -409,7 +410,7 @@ export default function CmsManagementPage() {
 
       {/* Create Content Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl border border-zinc-200">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-bold text-zinc-900">Create New Content</h3>
@@ -479,7 +480,7 @@ export default function CmsManagementPage() {
               </div>
             </form>
           </div>
-        </div>
+        </ModalOverlay>
       )}
     </div>
   );

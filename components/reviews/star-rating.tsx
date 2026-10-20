@@ -52,7 +52,7 @@ export function StarRating({
   };
 
   return (
-    <div className="mt-12 flex flex-col items-start sm:items-center" role="radiogroup" aria-label={label}>
+    <div className="md:mt-12 mt-8 flex flex-col items-start sm:items-center" role="radiogroup" aria-label={label}>
       <div className="flex flex-col items-start">
         <div
           className="flex items-center gap-4 sm:gap-5"
