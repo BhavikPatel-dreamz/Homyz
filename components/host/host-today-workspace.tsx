@@ -733,7 +733,7 @@ export function HostTodayWorkspace({
                 )}
               </div>
 
-              <div className="sticky bottom-0 mt-3 flex items-center justify-between gap-4 border-t border-[#D7D7D7] bg-white pt-4 sm:mt-5 sm:justify-start sm:gap-6 sm:pt-6">
+              <div className="sticky bottom-0 mt-3 flex items-center justify-between gap-4 border-t border-[#D7D7D7] bg-white pt-4 sm:mt-5 sm:gap-6 sm:pt-6">
                 <button
                   type="button"
                   onClick={() => {
@@ -753,7 +753,7 @@ export function HostTodayWorkspace({
                         : null;
                     handleApplyFilter(nextProp);
                   }}
-                  className="min-h-12 rounded-full border border-[#727272] bg-[#FCDF9C] px-7 py-3 text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-[#F7D37D] sm:text-base sm:min-h-11 sm:border-transparent sm:px-7 sm:py-2.5"
+                  className="min-h-12 rounded-full border border-[#727272] bg-[#FCDF9C] px-7 py-3 text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors hover:bg-[#1f1f1f] sm:text-base sm:min-h-11 sm:border-transparent sm:px-7 sm:py-2.5"
                 >
                   {t("host_today_apply", "Apply")}
                 </button>
