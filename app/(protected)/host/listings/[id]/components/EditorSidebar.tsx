@@ -370,6 +370,19 @@ export function EditorSidebar({
 }: EditorSidebarProps) {
   const { t } = useLanguage();
   const { formatMajor } = useCurrency();
+  const hostAbout = listing?.hostAbout;
+  const hostName = listing?.host?.name || "Host";
+  const hostCreatedAt = listing?.host?.createdAt ? new Date(listing.host.createdAt) : null;
+  const yearsHosting = hostCreatedAt && !Number.isNaN(hostCreatedAt.getTime())
+    ? Math.max(
+        0,
+        new Date().getFullYear() - hostCreatedAt.getFullYear() -
+          Number(
+            new Date().getMonth() < hostCreatedAt.getMonth() ||
+              (new Date().getMonth() === hostCreatedAt.getMonth() && new Date().getDate() < hostCreatedAt.getDate()),
+          ),
+      )
+    : null;
   const computedSafetyState = React.useMemo(() => {
     if (guestSafetyState) return guestSafetyState;
     return parseSafetyData({
@@ -460,7 +473,7 @@ export function EditorSidebar({
       className={`editor-sidebar ${mobileOpen
         ? "flex h-full w-full overflow-hidden border-0 bg-white px-5 pt-6 sm:px-8 sm:pt-8"
         : "hidden border-r border-transparent [border-image:linear-gradient(270deg,#1F1F1F_0%,rgba(31,31,31,0.2)_100%)_1]"
-        } min-w-0 flex-col lg:sticky lg:top-[6.5rem] lg:col-span-1 lg:flex lg:h-[calc(100dvh-7.5rem)] lg:w-auto lg:self-start lg:overflow-hidden lg:border-r lg:border-transparent lg:[border-image:linear-gradient(270deg,#1F1F1F_0%,rgba(31,31,31,0.2)_100%)_1] lg:bg-[rgba(241,241,241,0.5)] lg:px-0 lg:pl-8 lg:pt-10`}
+        } min-w-0 flex-col lg:col-span-1 lg:flex lg:h-full lg:w-auto lg:overflow-hidden lg:px-0 lg:pl-8 lg:pt-10`}
     >
       <div className={`flex w-full min-w-0 flex-col overflow-hidden ${mobileOpen ? "h-full max-h-none bg-white" : "max-h-[calc(100vh-2rem)] rounded-3xl border border-zinc-200 bg-zinc-50/80 p-5 shadow-xs"} lg:h-full lg:max-h-none lg:rounded-none lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none`}>
         {/* Header Title & Status Badge */}
@@ -1172,7 +1185,7 @@ export function EditorSidebar({
                         />
                       ) : (
                         <div className="w-16 h-16 rounded-full border border-amber-200 bg-amber-100 text-amber-900 flex items-center justify-center font-semibold text-lg shadow-2xs">
-                          {(listing.host?.name || "Host")
+                          {hostName
                             .split(/\s+/)
                             .slice(0, 2)
                             .map((part: string) => part[0])
@@ -1181,11 +1194,13 @@ export function EditorSidebar({
                         </div>
                       )}
                       <h4 className="text-base font-normal text-[#727272] mt-2 block leading-tight truncate max-w-[120px]">
-                        {listing.host?.name || "Host"}
+                        {hostName}
                       </h4>
-                      <span className="text-base text-[#727272] font-normal mt-0.5 block leading-tight">
-                        {listing.host?.isSuperhost ? t("host_superhost") : (listing.host?.badge || t("host_superhost"))}
-                      </span>
+                      {listing.host?.isSuperhost && (
+                        <span className="text-base text-[#727272] font-normal mt-0.5 block leading-tight">
+                          {t("host_superhost")}
+                        </span>
+                      )}
                     </div>
 
                     {/* Right Column: 3 Stacked Stats with Dividers */}
@@ -1193,7 +1208,7 @@ export function EditorSidebar({
                       {/* Ratings are system-generated, never host-entered. */}
                       <div className="w-full flex flex-col items-center">
                         <span className="text-base font-medium text-[#1F1F1F] block leading-tight">
-                          {listing.host?.reviewsCount ?? listing.host?.reviewCount ?? "XX"}
+                          {hostAbout?.reviewCount ?? 0}
                         </span>
                         <span className="text-base text-[#727272] font-normal block mt-0.5">
                           {t("host_review_single")}
@@ -1203,11 +1218,12 @@ export function EditorSidebar({
                       {/* Divider 1 */}
                       <div className="w-full border-t border-zinc-200 my-2" />
 
-                      {/* Avoid a fabricated rating until the review system provides one. */}
                       <div className="w-full flex flex-col items-center">
                         <div className="flex items-center justify-center gap-1">
                           <span className="text-base font-medium text-[#1F1F1F] leading-tight">
-                            {listing.host?.rating ? String(listing.host.rating).replace(".", ",") : "4,98"}
+                            {hostAbout?.rating !== null && hostAbout?.rating !== undefined
+                              ? hostAbout.rating.toFixed(2)
+                              : "—"}
                           </span>
                         </div>
                         <span className="text-base text-[#727272] font-normal block mt-0.5">
@@ -1218,12 +1234,9 @@ export function EditorSidebar({
                       {/* Divider 2 */}
                       <div className="w-full border-t border-zinc-200 my-2" />
 
-                      {/* The account creation date is the authoritative tenure source. */}
                       <div className="w-full flex flex-col items-center">
                         <span className="text-base font-medium text-[#1F1F1F] block leading-tight">
-                          {listing.host?.createdAt
-                            ? Math.max(1, new Date().getFullYear() - new Date(listing.host.createdAt).getFullYear())
-                            : 3}
+                          {yearsHosting ?? "—"}
                         </span>
                         <span className="text-base text-[#727272] font-normal block mt-0.5">
                           {t("host_years_hosting")}

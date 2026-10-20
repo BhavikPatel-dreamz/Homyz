@@ -11,7 +11,7 @@ import type {
   CreateListingInput,
   UpdateListingInput,
 } from "@/lib/validation/listing";
-import { BookingStatus, ListingCoHostStatus, ListingStatus, ReviewDirection, Role } from "@/generated/prisma/enums";
+import { BookingStatus, ListingCoHostStatus, ListingStatus, ReviewDirection, ReviewStatus, Role } from "@/generated/prisma/enums";
 import { Prisma, type Listing } from "@/generated/prisma/client";
 import { getExpiryThresholdDate, isBookingRequestExpired } from "@/lib/booking/booking-expiry";
 import { validateStayAvailability } from "@/lib/booking/availability";
@@ -1175,7 +1175,7 @@ async function getEditorWorkspaceListing(id: string) {
   return prisma.listing.findUnique({
     where: { id },
     include: {
-      host: { select: { id: true, name: true, email: true, image: true, createdAt: true, publicProfile: true } },
+      host: { select: { id: true, name: true, email: true, image: true, isSuperhost: true, createdAt: true, publicProfile: true } },
       coHosts: {
         orderBy: { invitedAt: "desc" },
         include: { user: { select: { id: true, name: true, image: true } } },
@@ -1186,6 +1186,104 @@ async function getEditorWorkspaceListing(id: string) {
       },
     },
   });
+}
+
+export type HostAboutProfileData = {
+  rating: number | null;
+  reviewCount: number;
+  reviews: Array<{
+    id: string;
+    author: { name: string | null; image: string | null };
+    rating: number;
+    comment: string;
+    createdAt: string;
+  }>;
+  listings: Array<{
+    id: string;
+    title: string;
+    propertyType: string | null;
+    listingType: string | null;
+    photos: string[];
+    rating: number | null;
+    reviewCount: number;
+  }>;
+};
+
+/** Data displayed in a host's About profile inside the listing editor. */
+async function getHostAboutProfileData(hostId: string): Promise<HostAboutProfileData> {
+  const reviewWhere = {
+    targetUserId: hostId,
+    direction: ReviewDirection.GUEST_TO_PROPERTY,
+    status: ReviewStatus.PUBLISHED,
+  };
+  const [recentReviews, reviewSummary, hostListings] = await Promise.all([
+    prisma.review.findMany({
+      where: reviewWhere,
+      orderBy: { createdAt: "desc" },
+      take: 12,
+      select: {
+        id: true,
+        rating: true,
+        comment: true,
+        createdAt: true,
+        author: { select: { name: true, image: true } },
+      },
+    }),
+    prisma.review.aggregate({
+      where: reviewWhere,
+      _avg: { rating: true },
+      _count: { _all: true },
+    }),
+    prisma.listing.findMany({
+      where: { hostId, deletedAt: null },
+      orderBy: { createdAt: "desc" },
+      take: 24,
+      select: {
+        id: true,
+        title: true,
+        propertyType: true,
+        listingType: true,
+        photos: true,
+      },
+    }),
+  ]);
+
+  const listingIds = hostListings.map((listing) => listing.id);
+  const summaries = listingIds.length
+    ? await prisma.review.groupBy({
+        by: ["listingId"],
+        where: {
+          listingId: { in: listingIds },
+          direction: ReviewDirection.GUEST_TO_PROPERTY,
+          status: ReviewStatus.PUBLISHED,
+        },
+        _avg: { rating: true },
+        _count: { _all: true },
+      })
+    : [];
+  const summaryByListingId = new Map(
+    summaries.map((summary) => [summary.listingId, summary]),
+  );
+
+  return {
+    rating: roundRating(reviewSummary._avg.rating),
+    reviewCount: reviewSummary._count._all,
+    reviews: recentReviews.map((review) => ({
+      id: review.id,
+      author: review.author,
+      rating: review.rating,
+      comment: review.comment,
+      createdAt: review.createdAt.toISOString(),
+    })),
+    listings: hostListings.map((listing) => {
+      const summary = summaryByListingId.get(listing.id);
+      return {
+        ...listing,
+        rating: roundRating(summary?._avg.rating ?? null),
+        reviewCount: summary?._count._all ?? 0,
+      };
+    }),
+  };
 }
 
 type HostListingOptions = {
@@ -2585,6 +2683,7 @@ export const listingService = {
   getPublicListingBySlug,
   getById,
   getForOwner,
+  getHostAboutProfileData,
   getAdminListingForUpdate,
   updateForAdmin,
   listForAdminDashboard,

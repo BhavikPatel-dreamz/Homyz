@@ -216,12 +216,20 @@ export function HostListingEditorClient({
   // form before the host chooses a section from the Editor Sidebar.
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(true);
   const activeSectionRef = useRef(activeSection);
+  const editorContentScrollRef = useRef<HTMLElement>(null);
   const requestSectionNavigationRef = useRef<(section: SectionKey, fromHistory?: boolean) => void>(() => {});
   const requestBrowserLeaveRef = useRef<(destination: string) => void>(() => {});
 
   const scrollEditorToTop = useCallback(() => {
     if (typeof window === "undefined") return;
-    window.requestAnimationFrame(() => window.scrollTo({ top: 0, left: 0, behavior: "auto" }));
+    window.requestAnimationFrame(() => {
+      const contentPane = editorContentScrollRef.current;
+      if (contentPane && window.matchMedia("(min-width: 1024px)").matches) {
+        contentPane.scrollTo({ top: 0, behavior: "auto" });
+        return;
+      }
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    });
   }, []);
 
   const applySectionNavigation = useCallback(
@@ -1494,11 +1502,11 @@ export function HostListingEditorClient({
   return (
     <div
       suppressHydrationWarning
-      className={`flex min-h-screen min-w-0 flex-col overflow-x-clip bg-white pb-12 font-sans text-[#1F1F1F] selection:bg-[#FCDF9C] selection:text-[#1F1F1F] lg:pb-0 ${presentation === "admin" ? "admin-listing-editor" : ""}`}
+      className={`flex min-h-screen min-w-0 flex-col overflow-x-clip bg-white pb-12 font-sans text-[#1F1F1F] selection:bg-[#FCDF9C] selection:text-[#1F1F1F] lg:h-dvh lg:min-h-0 lg:overflow-hidden lg:pb-0 ${presentation === "admin" ? "admin-listing-editor" : ""}`}
     >
       {/* 1. TOP HEADER (Matches Figma Header Bar) */}
       {presentation === "host" && (
-      <div className="hidden lg:block">
+      <div className="hidden shrink-0 lg:block">
         <HostHeader user={listing.host} />
       </div>)}
 
@@ -1516,12 +1524,12 @@ export function HostListingEditorClient({
       </div>
 
       {/* 3. MAIN EDITOR CONTENT AREA (2-Column Split Layout) */}
-      <Container className={presentation === "admin" ? "max-w-full !px-0" : "lg:-mt-3"}>
-        <div className={`flex-1 grid grid-cols-1 gap-8 sm:py-10 py-6 lg:py-0 ${presentation === "admin" ? "lg:grid-cols-[260px_minmax(0,1fr)] xl:grid-cols-[280px_minmax(0,1fr)] lg:gap-6 xl:gap-8 lg:h-[calc(100vh-6.5rem)] lg:overflow-hidden" : "lg:grid-cols-[340px_minmax(0,1fr)] xl:grid-cols-[400px_minmax(0,1fr)] lg:gap-8 xl:gap-10"}`}>
+      <Container className={presentation === "admin" ? "max-w-full !px-0" : "lg:-mt-3 lg:flex-1 lg:min-h-0 lg:overflow-hidden"}>
+        <div className={`flex-1 grid grid-cols-1 gap-8 sm:py-10 py-6 lg:py-0 ${presentation === "admin" ? "lg:grid-cols-[260px_minmax(0,1fr)] xl:grid-cols-[280px_minmax(0,1fr)] lg:h-[calc(100vh-6.5rem)] lg:gap-6 lg:overflow-hidden xl:gap-8" : "lg:grid-cols-[340px_minmax(0,1fr)] xl:grid-cols-[400px_minmax(0,1fr)] lg:grid-rows-1 lg:h-full lg:min-h-0 lg:gap-8 lg:overflow-hidden xl:gap-10"}`}>
           {/* ============================================================ */}
           {/* LEFT COLUMN: MAIN SECTION EDITOR PANEL */}
           {/* ============================================================ */}
-          <main className={`flex min-w-0 flex-col space-y-6 pb-12 lg:col-span-1 lg:pb-12 ${presentation === "admin" ? "admin-editor-content lg:order-2 lg:pt-0 lg:h-full lg:max-h-full lg:overflow-y-auto lg:pr-3 custom-scrollbar" : "lg:order-2 lg:pt-10"}`}>
+          <main ref={editorContentScrollRef} className={`flex min-w-0 flex-col space-y-6 pb-12 lg:col-span-1 lg:pb-12 ${presentation === "admin" ? "admin-editor-content lg:order-2 lg:pt-0 lg:h-full lg:max-h-full lg:overflow-y-auto lg:pr-3 custom-scrollbar" : "lg:order-2 lg:pt-10 lg:h-full lg:max-h-full lg:overflow-y-auto lg:overscroll-contain lg:pr-4 custom-scrollbar"}`}>
             {/* Mobile/Tablet Arrival Guide Progress Banner */}
             {editorTab === "arrival" && (
               <div className="block lg:hidden rounded-2xl border border-zinc-200 bg-white p-4 shadow-2xs space-y-2">
@@ -1873,6 +1881,7 @@ export function HostListingEditorClient({
               coHosts={coHosts}
               setCoHosts={setCoHosts}
               hostProfile={listing.host}
+              hostAbout={listing.hostAbout}
               presentation={presentation}
               canEdit={presentation === "admin" ? (adminCapabilities?.canEdit ?? false) : true}
               onHostProfileSaved={(publicProfile, hostUpdate) => setListing((prev) => ({
@@ -2054,7 +2063,7 @@ export function HostListingEditorClient({
         {/* ============================================================ */}
         {/* LEFT COLUMN: LISTING EDITOR NAVIGATION */}
         {/* ============================================================ */}
-        <div className={presentation === "admin" ? "order-first lg:order-1 lg:h-full lg:max-h-full" : "lg:order-1 lg:min-w-0"}><EditorSidebar
+        <div className={presentation === "admin" ? "order-first lg:order-1 lg:h-full lg:max-h-full" : "lg:order-1 lg:min-w-0 lg:h-full lg:overflow-hidden lg:bg-[rgba(241,241,241,0.5)] lg:border-r lg:border-transparent lg:[border-image:linear-gradient(270deg,#1F1F1F_0%,rgba(31,31,31,0.2)_100%)_1]"}><EditorSidebar
           presentation={presentation}
           routeBase={routeBase}
           editorTab={editorTab}

@@ -1,13 +1,11 @@
 "use client";
 /* eslint-disable react-hooks/set-state-in-effect */
 
-import React, { useEffect, useId, useRef, useState } from "react";
+import React, { useEffect, useId, useState } from "react";
 import Image from "next/image";
 import { BackButton } from "@/components/ui/back-button";
 import { useLanguage } from "@/lib/i18n/language-context";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { RealMap, type LocationDetails } from "@/components/ui/real-map";
 import { AddressAutocomplete } from "@/components/ui/address-autocomplete";
@@ -16,17 +14,13 @@ import {
   inviteListingCoHostAction,
   revokeListingCoHostAction,
 } from "@/actions/host/cohosts";
-import { updateHostPublicProfileAction } from "@/actions/host/profile";
-import { updateProfileAction } from "@/actions/user/updateProfile";
 import { COUNTRY_CODES, getCountryByCallingCode } from "@/lib/auth/country-codes";
-import { getLanguageNameById, LANGUAGE_OPTIONS } from "@/lib/utils/language-options";
 import {
   LocationSkeleton,
-  AboutHostSkeleton,
   CoHostSkeleton,
 } from "./YourSpaceSkeletons";
 import { AdminAboutHostView } from "@/app/(protected)/admin/listings/[id]/components/AdminAboutHostView";
-import { HostAboutHostView } from "./HostAboutHostView";
+import { HostAboutHostView, type HostAboutData } from "./HostAboutHostView";
 import { CloseIcon } from "@/components/ui/close-icon";
 
 type CoHost = {
@@ -46,6 +40,7 @@ export type HostProfile = {
   publicProfile: Record<string, unknown> | null;
   email?: string | null;
   rating?: number | null;
+  isSuperhost?: boolean;
 };
 interface Props {
   activeSection: string;
@@ -91,6 +86,7 @@ interface Props {
   coHosts: CoHost[];
   setCoHosts: React.Dispatch<React.SetStateAction<CoHost[]>>;
   hostProfile: HostProfile;
+  hostAbout?: HostAboutData;
   onHostProfileSaved: (
     profile: Record<string, unknown>,
     hostUpdate?: Pick<HostProfile, "image">,
@@ -150,14 +146,6 @@ function Toggle({
       />
     </button>
   );
-}
-function initials(name: string | null) {
-  return (name || "Host")
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase();
 }
 export function HostAndLocationViews(props: Props) {
   if (props.activeSection === "location") return <LocationView {...props} />;
@@ -799,37 +787,12 @@ function SaveButton({
     </button>
   );
 }
-const REFERENCE_INTERESTS = [
-  "Architecture", "Cooking", "Food", "History", "Music", "Outdoors", "Photography", "Sports", "Travel",
-] as const;
-
-function getPrompt(raw: Record<string, unknown>, key: string): string {
-  const prompts = raw.prompts;
-  if (!prompts || typeof prompts !== "object" || Array.isArray(prompts)) return "";
-  const value = (prompts as Record<string, unknown>)[key];
-  return typeof value === "string" ? value : "";
-}
-
-function getStringList(value: unknown): string[] {
-  return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string" && item.trim().length > 0) : [];
-}
-
-function getTagList(value: unknown): string[] {
-  if (typeof value === "string" && value.trim()) return [value.trim()];
-  return getStringList(value);
-}
-
-function getLanguageIds(value: unknown): string[] {
-  if (Array.isArray(value)) return getStringList(value);
-  if (typeof value !== "string") return [];
-  return value.split(/,|\sand\s/i).map((name) => LANGUAGE_OPTIONS.find((language) => language.name.toLowerCase() === name.trim().toLowerCase())?.id).filter((id): id is string => Boolean(id));
-}
-
 function AboutHostView(props: Props) {
   return (
     <HostAboutHostView
       listingId={props.listingId}
       hostProfile={props.hostProfile}
+      hostAbout={props.hostAbout}
       onHostProfileSaved={props.onHostProfileSaved}
       isLoading={props.isLoading}
     />

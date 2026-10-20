@@ -13,6 +13,9 @@ test("host listing editor keeps navigation on the desktop left and forms on the 
   assert.match(editor, /lg:grid-cols-\[340px_minmax\(0,1fr\)\]/);
   assert.match(editor, /lg:order-2 lg:pt-10/);
   assert.match(editor, /lg:-mt-3/);
+  assert.match(editor, /lg:h-dvh lg:min-h-0 lg:overflow-hidden/);
+  assert.match(editor, /lg:h-full lg:min-h-0 lg:gap-8 lg:overflow-hidden/);
+  assert.match(editor, /lg:h-full lg:max-h-full lg:overflow-y-auto lg:overscroll-contain/);
   assert.match(editor, /lg:order-1 lg:min-w-0/);
   assert.match(editor, /window\.history\.pushState/);
   assert.match(editor, /beforeunload/);

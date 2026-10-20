@@ -202,11 +202,11 @@ async function runDarkModeBackButtonTests() {
 
   assert(
     hostAboutHostContent.includes("dark:text-zinc-100") &&
-    hostAboutHostContent.includes("dark:text-[#727272]") &&
-    hostAboutHostContent.includes("dark:bg-zinc-800/90") &&
+    hostAboutHostContent.includes("dark:text-zinc-300") &&
+    hostAboutHostContent.includes("dark:bg-zinc-800") &&
     hostAboutHostContent.includes("dark:border-zinc-700") &&
-    hostAboutHostContent.includes("dark:bg-amber-400"),
-    "HostAboutHostView section cards, headers, inputs, prompts, chips, and action buttons include dark mode styling"
+    hostAboutHostContent.includes("dark:bg-amber-950/60"),
+    "HostAboutHostView read-only profile card, details, interests, and listing preview include dark mode styling"
   );
 
   // 14. Admin Workspace About Host View Dark Mode Styling
@@ -391,6 +391,5 @@ runDarkModeBackButtonTests().catch((err) => {
   console.error(err);
   process.exit(1);
 });
-
 
 

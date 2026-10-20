@@ -355,6 +355,27 @@ export interface HostListingData {
     phone?: string | null;
     createdAt: Date | string;
     publicProfile: Record<string, unknown> | null;
+    isSuperhost?: boolean;
+  };
+  hostAbout?: {
+    rating: number | null;
+    reviewCount: number;
+    reviews: Array<{
+      id: string;
+      author: { name: string | null; image: string | null };
+      rating: number;
+      comment: string;
+      createdAt: string;
+    }>;
+    listings: Array<{
+      id: string;
+      title: string;
+      propertyType: string | null;
+      listingType: string | null;
+      photos: string[];
+      rating: number | null;
+      reviewCount: number;
+    }>;
   };
   hostVerification?: {
     status: string;
@@ -564,6 +585,7 @@ export function serializeListingForEditor(
           : listing.host?.createdAt?.toISOString?.() ?? new Date().toISOString(),
       publicProfile:
         (listing.host?.publicProfile as Record<string, unknown> | null) ?? null,
+      isSuperhost: listing.host?.isSuperhost ?? false,
     },
     hostVerification: listing.host?.hostRegistrations?.[0]
       ? {
@@ -601,4 +623,3 @@ export function serializeListingForEditor(
     reviewCount: 0,
   };
 }
-
