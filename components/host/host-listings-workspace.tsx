@@ -970,7 +970,7 @@ export function HostListingsWorkspace({
                               {item.city || item.country ? `${item.city || ""}${item.city && item.country ? ", " : ""}${item.country || ""}` : t("host_no_location_yet")}
                             </p>
                             {item.status === "PENDING_REVIEW" && (
-                              <p className="mt-1 text-xs font-medium text-amber-700">
+                              <p className="mt-1 text-xs font-medium text-[#349010]">
                                 {isSaudiArabia(item.country) ? t("host_ready_to_publish") : t("host_submitted_for_admin_approval")}
                               </p>
                             )}

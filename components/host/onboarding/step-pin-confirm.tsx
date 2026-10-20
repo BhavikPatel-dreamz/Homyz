@@ -76,7 +76,7 @@ export function StepPinConfirm({
                   </svg>
                 </div>
                 <div className="text-left min-w-0">
-                  <p className="text-sm font-semibold text-[#1F1F1F] truncate">
+                  <p className="text-sm font-medium text-[#1F1F1F] truncate">
                     {formattedStreet || t("host_street_address")}
                   </p>
                   <p className="text-xs text-[#727272] truncate">
@@ -87,9 +87,23 @@ export function StepPinConfirm({
               <button
                 type="button"
                 onClick={onEditAddress}
-                className="shrink-0 text-xs font-semibold text-[#1F1F1F] underline hover:text-zinc-600 px-3 py-1.5 rounded-lg hover:bg-zinc-200/60 transition-colors cursor-pointer"
+                className="shrink-0 inline-flex items-center gap-1.5 rounded-full border border-[#1F1F1F] bg-white px-4 py-2 text-xs sm:text-sm font-medium text-[#1F1F1F] shadow-2xs hover:bg-[#1F1F1F] hover:text-white transition-all duration-200 cursor-pointer active:scale-95"
               >
-                {t("host_edit_address")}
+                <svg
+                  className="size-3.5 shrink-0"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  aria-hidden="true"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
+                  />
+                </svg>
+                <span>{t("host_edit_address")}</span>
               </button>
             </div>
 
@@ -124,7 +138,7 @@ export function StepPinConfirm({
                   aria-pressed={showSpecificLocation}
                   aria-label="Toggle show specific location"
                   className={`relative inline-flex sm:h-6 h-5 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                    showSpecificLocation ? "bg-[#1F1F1F]" : "bg-[#DDDDDE]"
+                    showSpecificLocation ? "bg-[#DF4557]" : "bg-[#DDDDDE]"
                   }`}
                 >
                   <span

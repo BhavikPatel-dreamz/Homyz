@@ -865,7 +865,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                         className="rounded-2xl border border-zinc-200 p-5 flex items-center justify-between gap-3 bg-zinc-50/50 hover:border-zinc-400 transition-all"
                       >
                         <div className="min-w-0 space-y-0.5">
-                          <p className="text-sm font-semibold text-[#1F1F1F] truncate">{item.fileName}</p>
+                          <p className="text-sm font-medium text-[#1F1F1F] truncate">{item.fileName}</p>
                           <p className="text-xs text-[#727272]">Uploaded {formatDate(item.createdAt)}</p>
                         </div>
                         <a

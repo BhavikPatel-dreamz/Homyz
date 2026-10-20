@@ -552,7 +552,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                   /* ------------------------------------------------------------- */
                   <div className="flex min-h-0 flex-1 flex-col">
                     <div className="mb-1 shrink-0 border-b border-[#727272]/30 px-2 pb-2 sm:px-3.5 sm:py-3">
-                      <p className="text-sm font-semibold text-[#1F1F1F] truncate">{user.name || user.email}</p>
+                      <p className="text-sm font-medium text-[#1F1F1F] truncate">{user.name || user.email}</p>
                       <div className="flex items-center justify-between gap-5">
                         <p className="text-sm text-[#727272] truncate mt-0.5">{user.email}</p>
                         <span className="mt-2 inline-block rounded-full bg-amber-100 px-2.5 py-0.5 text-[10px] font-semibold text-amber-800">
@@ -803,7 +803,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                   /* ------------------------------------------------------------- */
                   <div className="flex min-h-0 flex-1 flex-col">
                     <div className="mb-1 shrink-0 border-b border-[#727272]/30 px-3.5 py-3">
-                      <p className="text-sm font-semibold text-[#1F1F1F] truncate">{user.name || user.email}</p>
+                      <p className="text-sm font-medium text-[#1F1F1F] truncate">{user.name || user.email}</p>
                       <div className="flex items-center justify-between gap-5">
                         <p className="text-sm text-[#727272] truncate mt-0.5">{user.email}</p>
                         <span className="mt-2 inline-block rounded-full bg-amber-100 px-2.5 py-0.5 text-[10px] font-semibold text-amber-800">
