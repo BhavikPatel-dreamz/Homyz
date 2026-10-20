@@ -3,7 +3,6 @@ import { requirePageRole } from "@/lib/permissions/page-guards";
 import { disputeService } from "@/services/dispute.service";
 import { listingService } from "@/services/listing.service";
 import { HostHeader } from "@/components/host/host-header";
-import { HostSubNav } from "@/components/host/host-sub-nav";
 import { Footer } from "@/components/dashboard/footer";
 import { Container } from "@/components/ui";
 import { HostResolutionCenterClient } from "@/components/host/host-resolution-center-client";
@@ -36,7 +35,6 @@ export default async function HostResolutionCenterPage({
   return (
     <div className="flex min-h-screen flex-col bg-white pb-[calc(110px+env(safe-area-inset-bottom))] text-[#1F1F1F] sm:pb-0">
       <HostHeader />
-      <HostSubNav activeTab="resolution" showRightActions={false} />
       <main className="flex-1 py-8 sm:py-10">
         <Container className="px-4 sm:px-6">
           <HostResolutionCenterClient data={data} listings={listings.items.map((listing) => ({ id: listing.id, title: listing.title }))} />

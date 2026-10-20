@@ -140,7 +140,7 @@ export function LoyaltyWalletView() {
       <div className="relative mb-8 overflow-hidden rounded-3xl border border-[#E5E5E5] bg-gradient-to-br from-[#FFF8E8] via-white to-[#FDF4D8] p-6 shadow-xs sm:p-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
           <div className="flex flex-col gap-2">
-            <span className="text-xs font-semibold uppercase tracking-wider text-[#727272]">
+            <span className="text-sm font-medium text-[#727272]">
               {t("profile_loyalty_current_balance", "Current Balance")}
             </span>
             <div className="flex items-baseline gap-3">

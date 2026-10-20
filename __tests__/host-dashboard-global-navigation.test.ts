@@ -84,10 +84,10 @@ runTest("Logo navigates to /host/today when in host mode, preserving host contex
 // -----------------------------------------------------------------------------
 // 3. HOST ↔ GUEST MODE SWITCH
 // -----------------------------------------------------------------------------
-runTest("Host mode switch allows instant transition to /dashboard across responsive viewports", () => {
+runTest("Host mode switch allows instant transition to the main page across responsive viewports", () => {
   assert.ok(
-    appHeaderCode.includes('href="/dashboard"'),
-    "Mode switch must link to /dashboard when switching to traveling"
+    appHeaderCode.includes('href="/"'),
+    "Mode switch must link to the main page when switching to traveling"
   );
   assert.ok(
     appHeaderCode.includes("Switch to traveling"),
@@ -224,8 +224,8 @@ runTest("HostSubNav mobile bottom notch gracefully positions when tab is active 
     "HostSubNav must check if an active tab exists"
   );
   assert.ok(
-    hostSubNavCode.includes('notchX = hasActiveTab ? 81.9 + activeTabIndex * 70.2 : -100;'),
-    "HostSubNav notch must not highlight tab 0 when no tab matches"
+    hostSubNavCode.includes('notchX = hasActiveTab ? (activeTabIndex + 0.5) * (390 / tabs.length) : -100;'),
+    "HostSubNav notch must not highlight tab 0 when no tab matches and scale concentric with tabs"
   );
 });
 
@@ -247,33 +247,33 @@ runTest("Host Today, Calendar, and Messages pages enforce HOST or ADMIN role", (
   );
 });
 
-runTest("Host Bookings pages enforce HOST or ADMIN role and render HostSubNav", () => {
+runTest("Host Bookings pages enforce HOST or ADMIN role without duplicating workspace navigation", () => {
   assert.ok(
     hostBookingsPageCode.includes("requirePageRole([Role.HOST, Role.ADMIN])"),
     "/host/bookings must require HOST or ADMIN role"
   );
   assert.ok(
-    hostBookingsPageCode.includes("<HostSubNav />"),
-    "/host/bookings must render HostSubNav for navigation continuity"
+    !hostBookingsPageCode.includes("HostSubNav"),
+    "/host/bookings must not render the HostSubNav shortcut strip"
   );
   assert.ok(
     hostBookingDetailPageCode.includes("requirePageRole([Role.HOST, Role.ADMIN])"),
     "/host/bookings/[id] must require HOST or ADMIN role"
   );
   assert.ok(
-    hostBookingDetailPageCode.includes("<HostSubNav />"),
-    "/host/bookings/[id] must render HostSubNav"
+    !hostBookingDetailPageCode.includes("HostSubNav"),
+    "/host/bookings/[id] must not render the HostSubNav shortcut strip"
   );
 });
 
-runTest("Listing editor preserves full workspace state and renders HostHeader and HostSubNav", () => {
+runTest("Listing editor preserves host identity without duplicating shortcut navigation", () => {
   assert.ok(
     hostListingEditorCode.includes("<HostHeader user={listing.host} />"),
     "Listing editor must mount HostHeader with host identity"
   );
   assert.ok(
-    hostListingEditorCode.includes('<HostSubNav activeTab="listing"'),
-    "Listing editor must mount HostSubNav with activeTab='listing'"
+    !hostListingEditorCode.includes("HostSubNav"),
+    "Listing editor must not mount the HostSubNav shortcut strip"
   );
 });
 

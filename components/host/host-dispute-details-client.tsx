@@ -522,7 +522,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                         <button
                           type="button"
                           onClick={() => setActiveTab("conversation")}
-                          className="rounded-full bg-amber-900 px-5 py-3 text-xs sm:text-sm font-semibold text-white hover:bg-black transition-colors cursor-pointer"
+                          className="rounded-full bg-amber-900 px-5 py-3 text-xs sm:text-sm font-medium text-white hover:bg-black transition-colors cursor-pointer"
                         >
                           Go to Response Inquiry →
                         </button>

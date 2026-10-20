@@ -5,7 +5,6 @@ import { requirePageRole } from "@/lib/permissions/page-guards";
 import { bookingService } from "@/services/booking.service";
 import { disputeService } from "@/services/dispute.service";
 import { HostHeader } from "@/components/host/host-header";
-import { HostSubNav } from "@/components/host/host-sub-nav";
 import { Footer } from "@/components/dashboard/footer";
 import { HostBookingDetailsClient } from "@/components/host/host-booking-details-client";
 
@@ -45,7 +44,6 @@ export default async function HostBookingDetailPage({
   return (
     <div className="flex min-h-screen flex-col bg-white text-zinc-900">
       <HostHeader />
-      <HostSubNav />
       <main className="flex-1 px-4 sm:px-6">
         <HostBookingDetailsClient details={details} relatedCases={relatedCases.disputes.map((dispute: {
           id: string;

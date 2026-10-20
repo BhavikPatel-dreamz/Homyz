@@ -970,9 +970,9 @@ export function HostMessagesWorkspace({
         {/* ========================================================================= */}
         {/* COLUMN 1: CONVERSATIONS LIST                                              */}
         {/* ========================================================================= */}
-        <div className={`flex-col bg-white overflow-hidden lg:border-r lg:border-zinc-300 ${mobileView === "thread" ? "hidden lg:flex" : "flex"}`}>
+        <div className={`flex-col bg-white overflow-hidden h-[calc(100dvh-76px)] lg:h-auto lg:border-r lg:border-zinc-300 ${mobileView === "thread" ? "hidden lg:flex" : "flex"}`}>
           {/* Header & Tabs */}
-          <div className="border-b border-zinc-200 px-4 pb-8 xl:pt-12 lg:pt-5 pt-4 space-y-3">
+          <div className="shrink-0 border-b border-zinc-200 px-4 pb-4 pt-4 space-y-3 lg:pb-8 lg:pt-5 xl:pt-12">
             <div className="flex h-6 items-center justify-between">
               <h1 className="text-lg font-medium text-[#1F1F1F]">{t("messages_column_title", "Messages")}</h1>
             </div>
@@ -1077,9 +1077,9 @@ export function HostMessagesWorkspace({
           </div>
 
           {/* Conversations Scroll Area */}
-          <div className="flex-1 overflow-y-auto divide-y divide-zinc-100">
+          <div className="flex-1 overflow-y-auto divide-y divide-zinc-100 pb-[calc(108px+env(safe-area-inset-bottom))] sm:pb-0">
             {visibleConversations.length === 0 ? (
-              <div className="p-8 text-center text-[#727272] space-y-2">
+              <div className="p-8 pb-32 text-center text-[#727272] space-y-2 sm:pb-8">
                 <svg
                   className="mx-auto size-10 text-zinc-400"
                   fill="none"

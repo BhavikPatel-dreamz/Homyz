@@ -2,7 +2,6 @@ import { Role } from "@/generated/prisma/enums";
 import { Footer } from "@/components/dashboard/footer";
 import { HostBookingApprovals } from "@/components/host/host-booking-approvals";
 import { HostHeader } from "@/components/host/host-header";
-import { HostSubNav } from "@/components/host/host-sub-nav";
 import { requirePageRole } from "@/lib/permissions/page-guards";
 import { bookingService } from "@/services/booking.service";
 import { bookingDateKey } from "@/lib/booking/booking-date";
@@ -14,7 +13,6 @@ export default async function HostBookingApprovalsPage() {
   return (
     <div className="flex min-h-screen flex-col bg-white text-zinc-900">
       <HostHeader />
-      <HostSubNav />
       <main className="flex-1 px-4 sm:px-6">
         <HostBookingApprovals
           bookings={bookings.map((booking) => ({

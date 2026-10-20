@@ -15,6 +15,7 @@ export interface HostSubNavProps {
   onMenuClick?: () => void;
   showRightActions?: boolean;
   showMobileNav?: boolean;
+  showDesktopNav?: boolean;
 }
 
 export function TodayNavIcon({ className = "" }: { className?: string }) {
@@ -119,6 +120,7 @@ export function HostSubNav({
   onMenuClick,
   showRightActions = true,
   showMobileNav = true,
+  showDesktopNav = true,
 }: HostSubNavProps) {
   const pathname = usePathname();
   const { t } = useLanguage();
@@ -181,7 +183,12 @@ export function HostSubNav({
 
   const activeTabIndex = tabs.findIndex((tab) => tab.id === activeTab);
   const hasActiveTab = activeTabIndex !== -1;
-  const notchX = hasActiveTab ? 39 + activeTabIndex * 78 : -100;
+  const notchX = hasActiveTab ? (activeTabIndex + 0.5) * (390 / tabs.length) : -100;
+  const startX = Math.max(0, notchX - 34);
+  const endX = Math.min(390, notchX + 34);
+  const backgroundPath = hasActiveTab
+    ? `M0 0H${startX}C${notchX - 26} 0 ${notchX - 26} 30 ${notchX} 30C${notchX + 26} 30 ${notchX + 26} 0 ${endX} 0H390V84H0Z`
+    : "M0 0H390V84H0Z";
 
   return (
     <>
@@ -192,7 +199,7 @@ export function HostSubNav({
           className={styles.nav}
         >
           <svg className={styles.background} viewBox="0 0 390 84" preserveAspectRatio="none" aria-hidden="true">
-            <path d={`M0 0H${notchX - 34}C${notchX - 26} 0 ${notchX - 26} 30 ${notchX} 30C${notchX + 26} 30 ${notchX + 26} 0 ${notchX + 34} 0H390V84H0Z`} fill="#FCDF9C" />
+            <path d={backgroundPath} fill="#FCDF9C" />
           </svg>
           <div className={styles.tabs}>
           {tabs.map((tab) => {
@@ -223,83 +230,85 @@ export function HostSubNav({
       )}
 
       {/* Desktop Sub Navigation matching nav bar.jpg */}
-      <div className="host-sub-nav hidden pt-8 sm:block">
-        <Container>
-          <div className="mx-auto flex w-full items-center justify-between">
-            {/* Left Nav Tabs */}
-            <nav aria-label="Host navigation" className="flex items-center gap-3 xl:gap-4 overflow-x-auto scrollbar-none py-1">
-              {tabs.map((tab) => {
-                const isActive = activeTab === tab.id;
-                return (
-                  <Link
-                    key={tab.id}
-                    href={tab.href}
-                    aria-current={isActive ? "page" : undefined}
-                    className={`group flex h-[76px] px-3.5 border flex-col items-center justify-center gap-1 rounded-[20px] transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 ${
-                      tab.minWidthClass
-                    } ${
-                      isActive
-                      ? "bg-[#FCDF9C] border-[#FCDF9C] text-[#1F1F1F] dark:bg-amber-400 dark:border-amber-400 dark:text-zinc-950"
+      {showDesktopNav && (
+        <div className="host-sub-nav hidden pt-8 sm:block">
+          <Container>
+            <div className="mx-auto flex w-full items-center justify-between">
+              {/* Left Nav Tabs */}
+              <nav aria-label="Host navigation" className="flex items-center gap-3 xl:gap-4 overflow-x-auto scrollbar-none py-1">
+                {tabs.map((tab) => {
+                  const isActive = activeTab === tab.id;
+                  return (
+                    <Link
+                      key={tab.id}
+                      href={tab.href}
+                      aria-current={isActive ? "page" : undefined}
+                      className={`group flex h-[76px] px-3.5 border flex-col items-center justify-center gap-1 rounded-[20px] transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 ${
+                        tab.minWidthClass
+                      } ${
+                        isActive
+                        ? "bg-[#FCDF9C] border-[#FCDF9C] text-[#1F1F1F] dark:bg-amber-400 dark:border-amber-400 dark:text-zinc-950"
+                          : "bg-white border-[#727272] text-[#727272] hover:border-[#1F1F1F] hover:text-[#1F1F1F] dark:bg-zinc-800/80 dark:border-zinc-700 dark:text-zinc-300 dark:hover:border-zinc-500 dark:hover:text-zinc-100"
+                      }`}
+                    >
+                      <div className="shrink-0">{tab.icon}</div>
+                      <span
+                        className={`font-['Poppins'] font-normal text-[15px] leading-tight whitespace-nowrap ${
+                          isActive
+                            ? "text-[#1F1F1F] dark:text-zinc-950"
+                            : "text-[#727272] group-hover:text-[#1F1F1F] dark:text-zinc-300 dark:group-hover:text-zinc-100"
+                        }`}
+                      >
+                        {tab.label}
+                      </span>
+                    </Link>
+                  );
+                })}
+              </nav>
+
+              {/* Right Actions: Menu & Filters */}
+              {showRightActions && (
+                <div className="flex items-center gap-4">
+                  {/* Menu Button */}
+                  <button
+                    type="button"
+                    onClick={handleMenuClick}
+                    aria-label={t("host_nav_menu") || "Host menu"}
+                    className="group flex h-[76px] w-[78px] shrink-0 flex-col items-center justify-center gap-1 rounded-[20px] bg-white border border-[#727272] text-[#727272] hover:border-[#1F1F1F] hover:text-[#1F1F1F] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 cursor-pointer dark:bg-zinc-800/80 dark:border-zinc-700 dark:text-zinc-300 dark:hover:border-zinc-500 dark:hover:text-zinc-100"
+                  >
+                    <MenuNavIcon className="shrink-0" />
+                    <span className="font-['Poppins'] text-[14px] font-normal leading-tight text-[#727272] group-hover:text-[#1F1F1F] dark:text-zinc-300 dark:group-hover:text-zinc-100">
+                      {t("host_nav_menu")}
+                    </span>
+                  </button>
+
+                  {/* Filters Button */}
+                  <button
+                    type="button"
+                    onClick={onFilterClick}
+                    className={`group flex h-[76px] w-[80px] shrink-0 flex-col items-center justify-center gap-1 rounded-[20px] border transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 cursor-pointer ${
+                      filterActive
+                        ? "bg-[#1F1F1F] border-[#1F1F1F] text-[#FCDF9C] dark:bg-zinc-700 dark:border-zinc-600 dark:text-amber-300"
                         : "bg-white border-[#727272] text-[#727272] hover:border-[#1F1F1F] hover:text-[#1F1F1F] dark:bg-zinc-800/80 dark:border-zinc-700 dark:text-zinc-300 dark:hover:border-zinc-500 dark:hover:text-zinc-100"
                     }`}
                   >
-                    <div className="shrink-0">{tab.icon}</div>
+                    <FiltersNavIcon className="shrink-0" />
                     <span
-                      className={`font-['Poppins'] font-normal text-[15px] leading-tight whitespace-nowrap ${
-                        isActive
-                          ? "text-[#1F1F1F] dark:text-zinc-950"
-                          : "text-[#727272] group-hover:text-[#1F1F1F] dark:text-zinc-300 dark:group-hover:text-zinc-100"
+                      className={`font-['Poppins'] text-[14px] leading-tight ${
+                        filterActive
+                          ? "font-medium text-[#FCDF9C] dark:text-amber-300"
+                          : "font-normal text-[#727272] group-hover:text-[#1F1F1F] dark:text-zinc-300 dark:group-hover:text-zinc-100"
                       }`}
                     >
-                      {tab.label}
+                      {t("host_nav_filters")}
                     </span>
-                  </Link>
-                );
-              })}
-            </nav>
-
-            {/* Right Actions: Menu & Filters */}
-            {showRightActions && (
-              <div className="flex items-center gap-4">
-                {/* Menu Button */}
-                <button
-                  type="button"
-                  onClick={handleMenuClick}
-                  aria-label={t("host_nav_menu") || "Host menu"}
-                  className="group flex h-[76px] w-[78px] shrink-0 flex-col items-center justify-center gap-1 rounded-[20px] bg-white border border-[#727272] text-[#727272] hover:border-[#1F1F1F] hover:text-[#1F1F1F] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 cursor-pointer dark:bg-zinc-800/80 dark:border-zinc-700 dark:text-zinc-300 dark:hover:border-zinc-500 dark:hover:text-zinc-100"
-                >
-                  <MenuNavIcon className="shrink-0" />
-                  <span className="font-['Poppins'] text-[14px] font-normal leading-tight text-[#727272] group-hover:text-[#1F1F1F] dark:text-zinc-300 dark:group-hover:text-zinc-100">
-                    {t("host_nav_menu")}
-                  </span>
-                </button>
-
-                {/* Filters Button */}
-                <button
-                  type="button"
-                  onClick={onFilterClick}
-                  className={`group flex h-[76px] w-[80px] shrink-0 flex-col items-center justify-center gap-1 rounded-[20px] border transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 cursor-pointer ${
-                    filterActive
-                      ? "bg-[#1F1F1F] border-[#1F1F1F] text-[#FCDF9C] dark:bg-zinc-700 dark:border-zinc-600 dark:text-amber-300"
-                      : "bg-white border-[#727272] text-[#727272] hover:border-[#1F1F1F] hover:text-[#1F1F1F] dark:bg-zinc-800/80 dark:border-zinc-700 dark:text-zinc-300 dark:hover:border-zinc-500 dark:hover:text-zinc-100"
-                  }`}
-                >
-                  <FiltersNavIcon className="shrink-0" />
-                  <span
-                    className={`font-['Poppins'] text-[14px] leading-tight ${
-                      filterActive
-                        ? "font-medium text-[#FCDF9C] dark:text-amber-300"
-                        : "font-normal text-[#727272] group-hover:text-[#1F1F1F] dark:text-zinc-300 dark:group-hover:text-zinc-100"
-                    }`}
-                  >
-                    {t("host_nav_filters")}
-                  </span>
-                </button>
-              </div>
-            )}
-          </div>
-        </Container>
-      </div>
+                  </button>
+                </div>
+              )}
+            </div>
+          </Container>
+        </div>
+      )}
     </>
   );
 }

@@ -5,7 +5,6 @@ import { useState, useEffect, useTransition, useCallback, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { HostHeader } from "./host-header";
-import { HostSubNav } from "./host-sub-nav";
 import { HostListingCardsSkeleton } from "./host-listings-skeleton";
 import { BecomeHostModal } from "./become-host-modal";
 import { Footer } from "@/components/dashboard/footer";
@@ -142,7 +141,7 @@ function EmptyListingsState({
         type="button"
         onClick={onCreate}
         disabled={pending}
-        className="mt-6 inline-flex min-h-11 items-center gap-2 whitespace-nowrap rounded-full border border-transparent hover:border-[#1F1F1F] bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1F1F1F] hover:text-white font-medium text-base px-5 py-2.5 transition-all shadow-2xs cursor-pointer"
+        className="mt-6 inline-flex min-h-11 items-center gap-2 whitespace-nowrap rounded-full border border-transparent hover:border-[#1F1F1F] bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1F1F1F] hover:text-white font-normal text-base px-5 py-2.5 transition-all shadow-2xs cursor-pointer"
       >
         {t("host_create_first_listing")}
       </button>
@@ -158,7 +157,6 @@ export function HostListingsWorkspace({
   initialPage = 1,
   initialCounts,
   currentUserId,
-  initialShowSearch = false,
   initialSearchQuery = "",
 }: {
   initialListings: HostListingCardDTO[];
@@ -182,8 +180,7 @@ export function HostListingsWorkspace({
     initialTotalPages ?? Math.max(1, Math.ceil((initialTotalCount ?? initialListings.length) / 12)),
   );
   const [counts, setCounts] = useState<Record<string, number> | undefined>(initialCounts);
-  const [showSearch, setShowSearch] = useState(initialShowSearch);
-  const [compactGrid, setCompactGrid] = useState(false);
+  const compactGrid = false;
   const [searchQuery, setSearchQuery] = useState<string>(initialSearchQuery);
   const [loading, setLoading] = useState(false);
   const [refreshError, setRefreshError] = useState<string | null>(null);
@@ -381,7 +378,6 @@ export function HostListingsWorkspace({
   };
 
   const handleCancelSearch = () => {
-    setShowSearch(false);
     setSearchQuery("");
     if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
     if (searchQuery.trim()) {
@@ -757,7 +753,6 @@ export function HostListingsWorkspace({
     <div className="min-h-screen bg-white text-[#1F1F1F] font-sans flex flex-col selection:bg-[#FCDF9C]">
       {/* ── 1. TOP HEADER (Matches Figma Screenshot Header) ── */}
       <HostHeader />
-      <HostSubNav activeTab="listing" />
 
       {/* ── 2. MAIN CONTENT AREA ── */}
       <main className="listing-main min-w-0 flex-1 pt-7.5 pb-[calc(128px+env(safe-area-inset-bottom))] sm:pt-12 sm:pb-14 lg:pt-16 lg:pb-16">
@@ -784,103 +779,15 @@ export function HostListingsWorkspace({
             </div>
           )}
 
-          {/* Mobile Search Bar Row (When search is active on mobile - matches listing-search-mobile.jpg) */}
-          {showSearch ? (
-            <div className="mb-8 flex items-center gap-3 sm:hidden">
-              <div className="relative flex-1">
-                <div className="pointer-events-none absolute inset-y-0 left-4 flex items-center">
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="#1F1F1F"
-                    strokeWidth="1.6"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <circle cx="10.5" cy="10.5" r="7" />
-                    <path d="m16 16 5 5" />
-                  </svg>
-                </div>
-                <input
-                  type="text"
-                  role="searchbox"
-                  autoComplete="off"
-                  autoFocus
-                  value={searchQuery}
-                  onChange={(event) => handleSearchChange(event.target.value)}
-                  placeholder={t("host_search_listings_aria") ? `${t("host_search_listings_aria")}...` : ""}
-                  aria-label={t("host_search_listings_aria")}
-                  className="h-11 w-full rounded-full border border-[#727272] bg-[#f3f4f6] pl-11 pr-4 font-['Poppins'] text-base text-[#1F1F1F] outline-none transition-colors focus:border-[#1F1F1F] [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
-                />
-              </div>
-              <button
-                type="button"
-                onClick={handleCancelSearch}
-                className="flex h-11 shrink-0 items-center justify-center rounded-full border border-[#727272] bg-white px-6 font-['Poppins'] text-base font-normal text-[#717171] transition-colors hover:bg-zinc-50 active:scale-95 cursor-pointer"
-              >
-                {t("host_search_cancel")}
-              </button>
-            </div>
-          ) : (
-            /* Mobile Title & Action Icons (When search is closed on mobile) */
-            <div className="listing-title mb-8 flex items-center justify-between gap-3 sm:hidden">
-              <h1 className="min-w-0">
-                {t("host_listing_title_mobile")}
-              </h1>
-
-              <div className="flex shrink-0 items-center gap-2">
-                <button
-                  type="button"
-                  aria-label={t("host_search_listings_aria")}
-                  aria-expanded={false}
-                  onClick={() => setShowSearch(true)}
-                  className="flex size-11 items-center justify-center rounded-full bg-[#f5f5f5]"
-                >
-                  <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
-                    <circle cx="10.5" cy="10.5" r="7" />
-                    <path d="m16 16 5 5" />
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  aria-label={t("host_toggle_compact_layout_aria")}
-                  aria-pressed={compactGrid}
-                  onClick={() => setCompactGrid(!compactGrid)}
-                  className={`flex size-11 items-center justify-center rounded-full text-[#1F1F1F] transition-colors ${
-                    compactGrid ? "bg-zinc-200" : "bg-[#f5f5f5] hover:bg-[#eaeaea]"
-                  }`}
-                >
-                  <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.2} aria-hidden="true">
-                    <rect x="4" y="3" width="16" height="4" rx="1" />
-                    <rect x="4" y="11" width="6" height="10" rx="1" />
-                    <rect x="14" y="11" width="6" height="6" rx="1" />
-                  </svg>
-                  <span className="sr-only">{t("host_toggle_compact_layout_aria")}</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={handleOpenCreate}
-                  disabled={pending}
-                  className="inline-flex items-center justify-center w-11 h-11 rounded-full bg-[#f5f5f5] text-[#1F1F1F] font-normal text-[28px] shadow-xs cursor-pointer"
-                  title={t("host_create_new_listing")}
-                >
-                  +
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Desktop Title & Action (Always shown on sm: and up) */}
-          <div className="listing-title mb-8 hidden items-center justify-between gap-3 sm:mb-9 sm:flex lg:mb-12">
-            <h1>
+          {/* Listings Title & Actions Bar (Fully Responsive without changing flow) */}
+          <div className="listing-title mb-6 flex flex-col gap-4 sm:mb-8 md:mb-9 lg:mb-10 min-[900px]:flex-row min-[900px]:items-center min-[900px]:justify-between">
+            <h1 className="text-2xl font-medium tracking-tight text-[#1F1F1F] sm:text-3xl lg:text-[32px] shrink-0 whitespace-nowrap">
               {t("host_listings_title")}
             </h1>
-            <div className="flex items-center gap-3">
-              {/* Desktop Search Bar */}
-              <div className="relative w-64 lg:w-80">
+
+            <div className="flex w-full items-center gap-2.5 sm:gap-3 min-[900px]:w-auto min-[900px]:justify-end">
+              {/* Search Bar */}
+              <div className="relative flex-1 min-w-0 sm:w-64 lg:w-80 min-[900px]:flex-initial">
                 <div className="pointer-events-none absolute inset-y-0 left-3.5 flex items-center">
                   <svg
                     width="18"
@@ -910,28 +817,29 @@ export function HostListingsWorkspace({
                 {searchQuery && (
                   <button
                     type="button"
-                    onClick={() => handleSearchChange("")}
-                    className="absolute inset-y-0 right-3 flex items-center text-zinc-400 hover:text-zinc-600 cursor-pointer"
-                    title={t("host_listings_clear_search")}
-                    aria-label={t("host_listings_clear_search")}
+                    onClick={handleCancelSearch}
+                    className="absolute inset-y-0 right-3 flex items-center text-zinc-400 hover:text-zinc-600"
+                    title="Clear search"
                   >
                     ✕
                   </button>
                 )}
               </div>
+
+              {/* Create New Listing Button */}
               <button
                 type="button"
                 onClick={handleOpenCreate}
                 disabled={pending}
-                className="inline-flex min-h-11 items-center gap-2 whitespace-nowrap rounded-full border border-transparent hover:border-[#1F1F1F] bg-[#FCDF9C] hover:bg-[#1F1F1F] text-[#1F1F1F] hover:text-white font-medium text-base px-5 py-2.5 transition-all shadow-2xs cursor-pointer"
+                className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5] hover:bg-[#FCDF9C] text-[#1F1F1F] hover:text-white font-normal text-sm transition-all cursor-pointer disabled:opacity-50"
               >
-                {t("host_create_new_listing")}
+                <Image src="/images/icons/Plus.svg" alt="Plus.svg" width={24} height={24}/>
               </button>
             </div>
           </div>
 
           {/* Status Tabs Pill Switcher matching /host/today style */}
-          <div className="mb-6 flex w-full items-center justify-between gap-3 border-b border-[#727272] pb-5 sm:mb-8 sm:pb-6">
+          <div className="mb-6 flex w-full items-center justify-between gap-3 border-b border-[#727272]/20 pb-5 sm:mb-8 sm:pb-6">
             <div
               className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1"
               role="tablist"
@@ -969,73 +877,8 @@ export function HostListingsWorkspace({
               <HostListingCardsSkeleton cardCount={12} compact={compactGrid} />
             ) : (
               <>
-              {/* Mobile Search View (100% matches listing-search-mobile.jpg) */}
-              {showSearch && (
-                <div className="sm:hidden">
-                  {listings.length === 0 && searchQuery ? (
-                    <div className="py-10 text-center text-[#727272]">
-                      <p>{t("host_no_listings_matching_search")}</p>
-                      <button
-                        type="button"
-                        onClick={() => handleSearchChange("")}
-                        className="mt-3 text-sm text-[#1F1F1F] underline cursor-pointer"
-                      >
-                        {t("host_listings_clear_search")}
-                      </button>
-                    </div>
-                  ) : listings.length === 0 ? (
-                    <EmptyListingsState onCreate={handleOpenCreate} pending={pending} />
-                  ) : (
-                    <div className="flex flex-col space-y-5">
-                      {listings.map((item) => {
-                        const photos = Array.isArray(item.photos) ? item.photos : [];
-                        const coverPhoto = photos[0] || null;
-                        const isListed = !item.isPaused && (item.status === "ACTIVE" || item.published);
-
-                        return (
-                          <Link
-                            key={item.id}
-                            href={`/host/listings/${item.id}`}
-                            className="group flex w-full items-start gap-4 text-left cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900"
-                          >
-                            <div className="relative aspect-[442/394] w-[110px] shrink-0 overflow-hidden rounded-[18px] border border-[#777] bg-[#f1f1f1]">
-                              {coverPhoto ? (
-                                <Image
-                                  src={coverPhoto}
-                                  alt={item.title || t("host_no_photo_yet")}
-                                  fill
-                                  sizes="110px"
-                                  className="h-full w-full object-cover"
-                                  loading="lazy"
-                                  unoptimized={!isOptimizableImage(coverPhoto)}
-                                />
-                              ) : (
-                                <div className="grid h-full w-full place-items-center bg-[#F1F1F1] text-xs text-[#717171]">{t("host_no_photo_yet")}</div>
-                              )}
-                              <span className="absolute top-2 left-2 flex size-5 items-center justify-center rounded-full bg-white shadow-xs">
-                                <span className={`size-2 shrink-0 rounded-full ${isListed ? "bg-[#37BE01]" : "bg-rose-500"}`} />
-                              </span>
-                            </div>
-                            <div className="flex min-w-0 flex-1 flex-col justify-start pt-1.5">
-                              <h3 className="truncate font-['Poppins'] text-[17px] font-semibold leading-tight text-[#1F1F1F]">
-                                {item.title === "Draft Listing" ? t("host_untitled_draft") : item.title || t("host_untitled_listing")}
-                              </h3>
-                              <p className="mt-1 truncate font-['Poppins'] text-sm leading-tight text-[#717171]">
-                                {item.city || item.country
-                                  ? `${item.city || ""}${item.city && item.country ? ", " : ""}${item.country || ""}`
-                                  : t("host_no_location_yet")}
-                              </p>
-                            </div>
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Property Cards Grid (Shown on desktop, and on mobile only when search is not active) */}
-              <div className={showSearch ? "hidden sm:block" : "block"}>
+              {/* Property Cards Grid */}
+              <div className="block">
                 {listings.length === 0 && searchQuery ? (
                   <div className="py-10 text-center text-[#727272]">
                     <p>{t("host_no_listings_matching_search")}</p>

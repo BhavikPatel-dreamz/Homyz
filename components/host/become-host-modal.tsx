@@ -44,24 +44,35 @@ export function BecomeHostModal({
     return initialType || "HOME";
   });
   const [isNavigating, setIsNavigating] = useState<boolean>(false);
+  const [isClosing, setIsClosing] = useState<boolean>(false);
+
+  const handleClose = React.useCallback(() => {
+    if (isClosing) return;
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsClosing(false);
+      onClose();
+    }, 180);
+  }, [isClosing, onClose]);
 
   // Close on Escape key press
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        onClose();
+        handleClose();
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onClose]);
+  }, [isOpen, handleClose]);
 
   // Reset to initialStep whenever modal opens
   const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
   if (isOpen !== prevIsOpen) {
     setPrevIsOpen(isOpen);
     if (isOpen) {
+      setIsClosing(false);
       setStep(initialStep ?? 1);
       if (typeof window !== "undefined") {
         const saved = sessionStorage.getItem("host_type");
@@ -76,13 +87,13 @@ export function BecomeHostModal({
     }
   }
 
-  if (!isOpen) return null;
+  if (!isOpen && !isClosing) return null;
 
   const displayName = user?.name
     ? user.name.split(" ")[0]
     : user?.email
-    ? user.email.split("@")[0]
-    : "Host";
+      ? user.email.split("@")[0]
+      : "Host";
 
   // Step 1 Actions
   const handleSelectCreateNew = () => {
@@ -116,19 +127,35 @@ export function BecomeHostModal({
     <ModalOverlay className="fixed inset-0 z-[100] flex items-center justify-center sm:p-4">
       {/* Dark overlay backdrop */}
       <div
-        className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity animate-in fade-in"
-        onClick={onClose}
+        className={`fixed inset-0 bg-black/40 backdrop-blur-xs ${
+          isClosing ? "modal-backdrop-animate-out" : "modal-backdrop-animate-in"
+        }`}
+        onClick={handleClose}
         aria-hidden="true"
       />
 
       {/* STEP 1: Welcome back, [Name] - Start a new listing */}
       {step === 1 && (
-        <div className="relative z-10 w-full sm:max-w-lg sm:h-auto h-full sm:rounded-3xl bg-white py-6 px-6 sm:px-8 shadow-2xl border border-zinc-100 animate-in zoom-in-95 duration-200">
+        <div
+          className={`relative z-10 w-full sm:max-w-lg sm:h-auto h-full sm:rounded-3xl bg-white py-6 px-6 sm:px-8 shadow-2xl border border-zinc-100 ${
+            isClosing ? "modal-dialog-animate-out" : "modal-dialog-animate-in"
+          }`}
+        >
           {/* Header Controls: Close Button */}
-          <div className="flex items-center justify-end mb-2">
+          <div className="flex items-top justify-between mb-2">
+
+            {/* Modal Header Titles */}
+            <div className="px-2 mb-6">
+              <h2 className="text-lg sm:text-xl font-medium text-[#727272] tracking-tight">
+                {t("host_welcome_back")} <span className="capitalize text-[#1F1F1F] ">{displayName}</span>
+              </h2>
+              <p className="text-sm font-normal text-[#727272] mt-3">
+                {t("host_start_new_listing")}
+              </p>
+            </div>
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               className="flex h-10 w-10 items-center justify-center rounded-full text-[#727272] hover:bg-[#E9EBFF] hover:text-zinc-700 transition-colors cursor-pointer"
               aria-label="Close modal"
             >
@@ -138,15 +165,6 @@ export function BecomeHostModal({
             </button>
           </div>
 
-          {/* Modal Header Titles */}
-          <div className="px-2 mb-6">
-            <h2 className="text-lg sm:text-xl font-medium text-[#727272] tracking-tight">
-              {t("host_welcome_back")} <span className="capitalize text-[#1F1F1F] ">{displayName}</span>
-            </h2>
-            <p className="text-sm font-normal text-[#727272] mt-3">
-              {t("host_start_new_listing")}
-            </p>
-          </div>
 
           {/* Options List with Separators */}
           <div className="my-2 divide-y divide-[#727272]">
@@ -199,7 +217,11 @@ export function BecomeHostModal({
 
       {/* STEP 2: What would you like to host? */}
       {step === 2 && (
-        <div className="relative z-10 w-full max-w-172.5 sm:h-auto h-full sm:rounded-3xl bg-white dark:bg-zinc-900 p-6 sm:p-8 shadow-2xl border border-zinc-100 dark:border-zinc-800 animate-in zoom-in-95 duration-200">
+        <div
+          className={`relative z-10 w-full max-w-172.5 sm:h-auto h-full sm:rounded-3xl bg-white dark:bg-zinc-900 p-6 sm:p-8 shadow-2xl border border-zinc-100 dark:border-zinc-800 ${
+            isClosing ? "modal-dialog-animate-out" : "modal-dialog-animate-in"
+          }`}
+        >
           {/* Header Controls: Back Button & Close Button */}
           <div className="flex items-center justify-between mb-4">
             <BackButton
@@ -210,7 +232,7 @@ export function BecomeHostModal({
 
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               className="flex h-10 w-10 items-center justify-center rounded-full text-[#727272] hover:bg-[#E9EBFF] hover:text-zinc-700 transition-colors cursor-pointer dark:text-[#727272] dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
               aria-label="Close modal"
             >
@@ -236,11 +258,10 @@ export function BecomeHostModal({
                   sessionStorage.setItem("host_type", "home");
                 }
               }}
-              className={`relative flex sm:flex-col flex-row-reverse items-center sm:justify-center justify-between p-6 rounded-2xl transition-all cursor-pointer select-none text-center sm:min-h-[172px] min-h-[164px] ${
-                selectedType === "HOME"
+              className={`relative flex sm:flex-col flex-row-reverse items-center sm:justify-center justify-between p-6 rounded-2xl transition-all cursor-pointer select-none text-center sm:min-h-[172px] min-h-[164px] ${selectedType === "HOME"
                   ? "border-2 border-zinc-950 bg-white shadow-md ring-2 ring-zinc-950/10"
                   : "border border-zinc-200 bg-white hover:border-zinc-400 hover:shadow-2xs"
-              }`}
+                }`}
             >
               {/* House Icon */}
               <div className="w-16 h-16 flex items-center justify-center mb-3">
@@ -258,11 +279,10 @@ export function BecomeHostModal({
                   sessionStorage.setItem("host_type", "experience");
                 }
               }}
-              className={`relative flex sm:flex-col flex-row-reverse items-center sm:justify-center justify-between p-6 rounded-2xl transition-all cursor-pointer select-none text-center sm:min-h-[172px] min-h-[164px] ${
-                selectedType === "EXPERIENCE"
+              className={`relative flex sm:flex-col flex-row-reverse items-center sm:justify-center justify-between p-6 rounded-2xl transition-all cursor-pointer select-none text-center sm:min-h-[172px] min-h-[164px] ${selectedType === "EXPERIENCE"
                   ? "border-2 border-zinc-950 bg-white shadow-md ring-2 ring-zinc-950/10"
                   : "border border-zinc-200 bg-white hover:border-zinc-400 hover:shadow-2xs"
-              }`}
+                }`}
             >
               <span className="absolute top-2 right-2 px-2 py-0.5 text-[10px] font-medium bg-amber-100 text-amber-800 rounded-full">
                 {t("host_soon")}
@@ -288,11 +308,10 @@ export function BecomeHostModal({
                   sessionStorage.setItem("host_type", "service");
                 }
               }}
-              className={`relative flex sm:flex-col flex-row-reverse items-center sm:justify-center justify-between p-6 rounded-2xl transition-all cursor-pointer select-none text-center sm:min-h-[172px] min-h-[164px] ${
-                selectedType === "SERVICE"
+              className={`relative flex sm:flex-col flex-row-reverse items-center sm:justify-center justify-between p-6 rounded-2xl transition-all cursor-pointer select-none text-center sm:min-h-[172px] min-h-[164px] ${selectedType === "SERVICE"
                   ? "border-2 border-zinc-950 bg-white shadow-md ring-2 ring-zinc-950/10"
                   : "border border-zinc-200 bg-white hover:border-zinc-400 hover:shadow-2xs"
-              }`}
+                }`}
             >
               <span className="absolute top-2 right-2 px-2 py-0.5 text-[10px] font-medium bg-amber-100 text-amber-800 rounded-full">
                 {t("host_soon")}
@@ -328,7 +347,7 @@ export function BecomeHostModal({
           <div className="flex items-center justify-end gap-3 pt-2">
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               className="px-6.75 py-3 rounded-full border border-[#1F1F1F] hover:bg-[#1F1F1F] text-sm font-medium text-[#1F1F1F] hover:text-white  transition-colors delay-300 duration-300 cursor-pointer"
             >
               {t("host_cancel")}
@@ -337,11 +356,10 @@ export function BecomeHostModal({
               type="button"
               onClick={handleStep2Next}
               disabled={!selectedType || !isTypeSupported || isNavigating}
-              className={`px-4 py-3 rounded-full text-sm hover:bg-[#1F1F1F] text-[#1F1F1F] hover:text-white font-medium shadow-xs transition-colors delay-300 duration-300 flex items-center justify-center gap-2 min-w-[100px] border border-transparent hover:border-[#1F1F1F] ${
-                selectedType && isTypeSupported && !isNavigating
-                ? "bg-[#FCDF9C] cursor-pointer"
-                : "bg-[#F3F4F5] text-[#727272] cursor-not-allowed"
-              }`}
+              className={`px-4 py-3 rounded-full text-sm hover:bg-[#1F1F1F] text-[#1F1F1F] hover:text-white font-medium shadow-xs transition-colors delay-300 duration-300 flex items-center justify-center gap-2 min-w-[100px] border border-transparent hover:border-[#1F1F1F] ${selectedType && isTypeSupported && !isNavigating
+                  ? "bg-[#FCDF9C] cursor-pointer"
+                  : "bg-[#F3F4F5] text-[#727272] cursor-not-allowed"
+                }`}
             >
               {isNavigating ? t("host_loading") : t("host_next")}
             </button>

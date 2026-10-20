@@ -2,7 +2,6 @@
 
 import React from "react";
 import { HostHeader } from "@/components/host/host-header";
-import { HostSubNav } from "@/components/host/host-sub-nav";
 import { Container } from "@/components/ui/container";
 import { Footer } from "@/components/dashboard/footer";
 
@@ -1135,11 +1134,6 @@ export function YourSpaceEditorSkeleton({ section = "propertyType" }: { section?
       {/* 1. TOP HEADER */}
       <div className="hidden lg:block">
         <HostHeader />
-      </div>
-
-      {/* 2. TOP NAV TABS */}
-      <div className="hidden lg:block">
-        <HostSubNav activeTab="listing" showRightActions={false} />
       </div>
 
       {/* Mobile top spacing button placeholder */}

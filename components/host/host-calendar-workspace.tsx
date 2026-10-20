@@ -14,7 +14,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { CalendarSettingsPanel } from "./calendar-settings-panel";
-import { HostSubNav } from "./host-sub-nav";
 import { updateListingAction, bulkUpdateAvailabilityAction } from "@/actions/host/listings";
 import type { ListingDTO } from "@/services/mappers";
 import { resolvePropertyCurrency } from "@/lib/currency";
@@ -2090,7 +2089,7 @@ function AllListingsOverviewPanel({
       </div>
 
       <div className="space-y-2.5">
-        <p className="text-xs font-semibold uppercase tracking-wider text-[#727272]">
+        <p className="text-sm font-medium text-[#727272]">
           {t("host_calendar_select_property_edit", "Select property to edit rates:")}
         </p>
         <div className="space-y-2 max-h-[480px] overflow-y-auto pr-1">
@@ -2783,7 +2782,6 @@ export function HostCalendarWorkspace({
   if (listings.length === 0) {
     return (
       <>
-        <HostSubNav activeTab="calendar" />
         <main className="mx-auto flex min-h-[60vh] w-full max-w-4xl flex-col items-center justify-center px-6 py-16 text-center">
           <div className="flex size-20 items-center justify-center rounded-3xl bg-amber-100 text-amber-900 dark:bg-amber-950/60 dark:text-amber-300">
             <svg
@@ -2826,8 +2824,6 @@ export function HostCalendarWorkspace({
   // ───────────────────────────────────────────────────────────────────────────
   return (
     <>
-      <HostSubNav activeTab="calendar" />
-
       <main className="mx-auto w-full max-w-[1600px] flex-1 px-4 pb-28 pt-6 sm:px-8 sm:pt-8">
         {mobileCalendarOpen && selectedListing ? (
           <section className="sm:hidden">
@@ -3900,22 +3896,26 @@ export function HostCalendarWorkspace({
                       <p>{t("host_calendar_price_tips_disclaimer_bottom", "External market competitor data is currently unavailable. Suggestions are generated from your property's rules and calendar lead time.")}</p>
                     </div>
 
-                    <div className="flex justify-end border-t border-[#e7e7e7] pt-4 dark:border-zinc-800">
-                      <button
-                        type="button"
-                        onClick={() => setTips(false)}
-                        className="rounded-full bg-[#1F1F1F] px-6 py-2.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-[#3a3a3a] dark:bg-[#F3F4F5] dark:text-[#1F1F1F] dark:hover:bg-white cursor-pointer"
-                      >
-                        {t("host_calendar_got_it", "Got it")}
-                      </button>
-                    </div>
-                  </div >
-                )
-                }
-              </div >
-            </WorkspaceDialog >
-          )}
-      </main >
+                  <div className="flex items-start gap-2.5 rounded-xl border border-[#e7e7e7] bg-[#f7f7f7] p-3 text-sm leading-6 text-[#727272] dark:border-zinc-700 dark:bg-zinc-800/80 dark:text-zinc-400">
+                    <svg className="mt-0.5 size-4 shrink-0 text-[#727272]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 10v6M12 7h.01" strokeLinecap="round" /></svg>
+                    <p>External market competitor data is currently unavailable. Suggestions use your property&apos;s rules and calendar lead time.</p>
+                  </div>
+
+                  <div className="flex justify-end border-t border-[#e7e7e7] pt-4 dark:border-zinc-800">
+                    <button
+                      type="button"
+                      onClick={() => setTips(false)}
+                        className="rounded-full bg-[#1F1F1F] px-6 py-2.5 text-base font-medium text-white hover:text-[#1f1f1f] transition-colors duration-300 hover:bg-[#FCDF9C] dark:bg-[#F3F4F5] dark:text-[#1F1F1F] dark:hover:bg-white cursor-pointer"
+                    >
+                      {t("host_calendar_got_it", "Got it")}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </WorkspaceDialog>
+        )}
+      </main>
     </>
   );
 }

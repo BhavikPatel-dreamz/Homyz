@@ -8,7 +8,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { updateListingAction, deleteListingAction, publishListingAction, unpublishListingAction } from "@/actions/host/listings";
 import { HostHeader } from "@/components/host/host-header";
-import { HostSubNav } from "@/components/host/host-sub-nav";
 import { Footer } from "@/components/dashboard/footer";
 import { RealMap } from "@/components/ui/real-map";
 import { Container } from "@/components/ui/container";
@@ -1499,12 +1498,6 @@ export function HostListingEditorClient({
       {presentation === "host" && (
       <div className="hidden lg:block">
         <HostHeader user={listing.host} />
-      </div>)}
-
-      {/* 2. TOP NAV TABS (Matches Figma Tab Row: Today, Calendar, Listing, Messages 100%) */}
-      {presentation === "host" && (
-      <div className="hidden lg:block">
-        <HostSubNav activeTab="listing" listingId={listing.id} showRightActions={false} />
       </div>)}
 
       <div className="flex justify-end px-8 sm:pt-10 pt-5 lg:hidden">

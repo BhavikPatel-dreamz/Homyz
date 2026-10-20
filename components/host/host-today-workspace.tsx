@@ -34,8 +34,6 @@ const reservationPeriods: ReservationPeriod[] = [
   "all",
 ];
 
-const primaryReservationPeriods: ReservationPeriod[] = ["today", "upcoming"];
-
 function parseReservationPeriod(value: string | null): ReservationPeriod {
   return reservationPeriods.includes(value as ReservationPeriod)
     ? (value as ReservationPeriod)
@@ -453,10 +451,11 @@ export function HostTodayWorkspace({
 
   return (
     <>
-      <main className="w-full min-w-0 pb-12 pt-10 sm:pb-24 sm:pt-10">
+      <main className="w-full min-w-0 pb-12 pt-6 sm:pb-24 sm:pt-8">
         <Container>
-          {/* Primary period tabs with additional periods in the Filters dialog. */}
-          <div className="mb-6 grid w-full grid-cols-[1fr_auto_1fr] items-center gap-3 pb-5 sm:mb-10 sm:pb-7">
+          {/* Toggle & Filter Bar */}
+          <div className="mb-6 grid w-full grid-cols-[1fr_auto_1fr] items-center gap-3 pb-5 sm:mb-8 sm:pb-6">
+            {/* Reservation Period Pill Switcher */}
             <div
               className="col-start-2 flex items-center gap-2 py-1"
               role="tablist"
@@ -471,7 +470,7 @@ export function HostTodayWorkspace({
                   role="tab"
                   aria-selected={tab === filterTab.id}
                   onClick={() => handleTabChange(filterTab.id as ReservationPeriod)}
-                  className={`rounded-full px-4 py-2.5 text-sm sm:px-4.5 sm:py-2.5 font-medium transition-all duration-200 shrink-0 font-sans cursor-pointer ${tab === filterTab.id
+                  className={`rounded-full px-4 py-2 text-sm sm:px-4.5 sm:py-2.5 font-medium transition-all duration-200 shrink-0 font-sans cursor-pointer ${tab === filterTab.id
                     ? "bg-[#1F1F1F] text-white shadow-xs"
                     : "bg-[#F3F4F5] text-[#1F1F1F] hover:bg-zinc-200"
                     }`}
@@ -481,42 +480,49 @@ export function HostTodayWorkspace({
               ))}
             </div>
 
+            {/* Filter Button */}
             <button
               type="button"
               aria-label={t("host_today_filters", "Filters")}
               aria-expanded={filtersOpen}
               onClick={openFilters}
-              className={`col-start-3 justify-self-end flex min-h-10 items-center gap-2 rounded-full px-3.5 text-sm font-medium transition-colors duration-300 ease-in-out ${appliedPropertyId || !primaryReservationPeriods.includes(tab)
-                ? "bg-[#1F1F1F] text-white"
-                : "bg-[#F3F4F5] text-[#1F1F1F] hover:bg-zinc-200"
-                }`}
+              className={`col-start-3 justify-self-end inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-full px-4 text-sm font-medium transition-colors duration-200 cursor-pointer border ${
+                appliedPropertyId
+                  ? "bg-[#1F1F1F] text-white border-[#1F1F1F]"
+                  : "bg-white text-[#1F1F1F] border-zinc-300 hover:bg-zinc-50 shadow-2xs"
+              }`}
             >
               <svg
-                width="18"
-                height="18"
+                width="16"
+                height="16"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2"
                 strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
               >
-                <line x1="4" y1="21" x2="4" y2="14" />
-                <line x1="4" y1="10" x2="4" y2="3" />
-                <line x1="12" y1="21" x2="12" y2="12" />
-                <line x1="12" y1="8" x2="12" y2="3" />
-                <line x1="20" y1="21" x2="20" y2="16" />
-                <line x1="20" y1="12" x2="20" y2="3" />
-                <circle cx="4" cy="12" r="2" />
-                <circle cx="12" cy="10" r="2" />
-                <circle cx="20" cy="14" r="2" />
+                <line x1="4" x2="4" y1="21" y2="14" />
+                <line x1="4" x2="4" y1="10" y2="3" />
+                <line x1="12" x2="12" y1="21" y2="12" />
+                <line x1="12" x2="12" y1="8" y2="3" />
+                <line x1="20" x2="20" y1="21" y2="16" />
+                <line x1="20" x2="20" y1="12" y2="3" />
+                <line x1="1" x2="7" y1="14" y2="14" />
+                <line x1="9" x2="15" y1="8" y2="8" />
+                <line x1="17" x2="23" y1="16" y2="16" />
               </svg>
-              <span>{t("host_today_filters", "Filters")}</span>
+              <span>{t("host_nav_filters", "Filters")}</span>
+              {appliedPropertyId && (
+                <span
+                  aria-hidden="true"
+                  className="size-2 rounded-full bg-emerald-400"
+                />
+              )}
             </button>
           </div>
 
-          {/* Section Headline */}
-
-          {/* Section Headline */}
           {isTabLoading ? (
             <div
               aria-label={t("host_today_loading_aria", "Loading reservations")}
@@ -541,7 +547,6 @@ export function HostTodayWorkspace({
                 : t("host_today_unit_plural", "reservations")}
             </h1>
           )}
-
 
           {/* Reservation Cards Grid */}
           {isTabLoading ? (

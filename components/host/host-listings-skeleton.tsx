@@ -1,7 +1,6 @@
 "use client";
 
 import { HostHeader } from "./host-header";
-import { HostSubNav } from "./host-sub-nav";
 import { Container } from "../ui";
 import { Footer } from "@/components/dashboard/footer";
 
@@ -34,7 +33,6 @@ export function HostListingsSkeleton({ cardCount = 12 }: { cardCount?: number })
     <div className="min-h-screen bg-white text-[#1F1F1F] font-sans flex flex-col selection:bg-[#FCDF9C]">
       {/* 1. TOP HEADER & SUBNAV */}
       <HostHeader />
-      <HostSubNav activeTab="listing" />
 
       {/* 2. MAIN CONTENT AREA */}
       <main className="listing-main min-w-0 flex-1 pt-7.5 pb-[calc(128px+env(safe-area-inset-bottom))] sm:pt-12 sm:pb-14 lg:pt-16 lg:pb-16">
