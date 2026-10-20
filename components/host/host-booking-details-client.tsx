@@ -254,7 +254,7 @@ export function HostBookingDetailsClient({ details, relatedCases = [] }: HostBoo
                     href={`/host/resolution-center/${relatedCases[0].id}`}
                     className="order-2 sm:order-3 inline-flex min-h-10 w-full sm:w-auto items-center justify-center rounded-full border border-zinc-300 bg-white px-5 py-2 text-center text-sm font-medium text-[#1f1f1f] transition-colors hover:border-[#1f1f1f] whitespace-nowrap"
                   >
-                    {relatedCases[0].responseRequired ? "Respond to dispute" : "View dispute"}
+                    {relatedCases[0].responseRequired ? t("host_booking_respond_dispute", "Respond to dispute") : t("host_booking_view_dispute", "View dispute")}
                   </Link>
                 )}
                 {relatedCases.length > 1 && (
@@ -262,7 +262,7 @@ export function HostBookingDetailsClient({ details, relatedCases = [] }: HostBoo
                     href={`/host/resolution-center?bookingId=${encodeURIComponent(details.id)}`}
                     className="order-2 sm:order-3 inline-flex min-h-10 w-full sm:w-auto items-center justify-center rounded-full border border-zinc-300 bg-white px-5 py-2 text-center text-sm font-medium text-[#1f1f1f] transition-colors hover:border-[#1f1f1f] whitespace-nowrap"
                   >
-                    View {relatedCases.length} disputes
+                    {t("common_view", "View")} {relatedCases.length} {t("host_booking_disputes_plural", "disputes")}
                   </Link>
                 )}
               </div>
@@ -271,7 +271,7 @@ export function HostBookingDetailsClient({ details, relatedCases = [] }: HostBoo
                 onClick={() => setIsReportGuestOpen(true)}
                 className="w-full rounded-full border border-zinc-200 bg-white px-4 py-2 text-center text-sm font-medium text-[#727272] transition-colors hover:border-red-300 hover:text-red-600 sm:w-auto"
               >
-                Report guest
+                {t("host_booking_report_guest", "Report guest")}
               </button>
             </div>
 

@@ -167,7 +167,7 @@ export function AirbnbOrgStaysView({
                   : "bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-700"
                 }`}
             >
-              [ {isEnabled ? "ON" : "OFF"} ]
+              [ {isEnabled ? t("common_on", "ON") : t("common_off", "OFF")} ]
             </span>
           </div>
           <p className="text-sm text-[#E01563] dark:text-rose-400 font-semibold tracking-tight pt-0.5">

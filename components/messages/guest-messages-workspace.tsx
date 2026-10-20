@@ -846,23 +846,23 @@ export function GuestMessagesWorkspace({
                                 </span>
                                 {hasBooking ? (
                                   <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-medium text-emerald-800 border border-emerald-300">
-                                    Booked
+                                    {t("messages_guest_so_status_booked", "Booked")}
                                   </span>
                                 ) : isExpired ? (
                                   <span className="inline-flex items-center rounded-full bg-zinc-200 px-2 py-0.5 text-[10px] font-medium text-zinc-600 border border-zinc-300">
-                                    Expired
+                                    {t("messages_guest_so_status_expired", "Expired")}
                                   </span>
                                 ) : isDeclined ? (
                                   <span className="inline-flex items-center rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-medium text-rose-700 border border-rose-200">
-                                    Declined
+                                    {t("messages_guest_so_status_declined", "Declined")}
                                   </span>
                                 ) : isAccepted ? (
                                   <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-medium text-emerald-800 border border-emerald-300">
-                                    Accepted
+                                    {t("messages_guest_so_status_accepted", "Accepted")}
                                   </span>
                                 ) : (
                                   <span className="inline-flex items-center rounded-full bg-amber-200/80 px-2 py-0.5 text-[10px] font-medium text-amber-900 border border-amber-300">
-                                    Available
+                                    {t("messages_guest_so_status_available", "Available")}
                                   </span>
                                 )}
                               </div>
@@ -1069,7 +1069,7 @@ export function GuestMessagesWorkspace({
                                           : "bg-zinc-200 hover:bg-zinc-300 text-zinc-800"
                                       }`}
                                     >
-                                      Open
+                                      {t("messages_guest_doc_open", "Open")}
                                     </a>
                                     <a
                                       href={`${att.fileUrl}?download=true`}
@@ -1105,8 +1105,8 @@ export function GuestMessagesWorkspace({
                               type="button"
                               onClick={() => setReportingMessageId(m.id)}
                               className="text-zinc-400 hover:text-red-600 transition-colors ml-1 p-0.5 rounded cursor-pointer"
-                              title="Report message"
-                              aria-label="Report message"
+                              title={t("messages_guest_report_msg", "Report message")}
+                              aria-label={t("messages_guest_report_msg", "Report message")}
                             >
                               <svg className="size-3 inline-block" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 3l1.664 9.526A2 2 0 006.644 14H17m0 0l1 5H6M17 14l1-7H7.5" />

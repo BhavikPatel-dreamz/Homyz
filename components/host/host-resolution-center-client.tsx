@@ -187,7 +187,7 @@ export function HostResolutionCenterClient({ data, listings }: Props) {
       <div className="grid gap-3.5 sm:rounded-[20px] rounded-[10px] border border-zinc-200 bg-zinc-50/80 p-5 md:grid-cols-6 text-sm">
         <label className="md:col-span-2">
           <span className="sr-only">
-            Search disputes
+            {t("host_res_search_label", "Search disputes")}
           </span>
           <input
             value={search}
@@ -202,7 +202,7 @@ export function HostResolutionCenterClient({ data, listings }: Props) {
 
         <div className="relative">
           <label htmlFor="filter-property-select" className="sr-only">
-            Filter by property
+            {t("host_res_filter_property", "Filter by property")}
           </label>
           <select
             id="filter-property-select"
@@ -239,7 +239,7 @@ export function HostResolutionCenterClient({ data, listings }: Props) {
 
         <div className="relative">
           <label htmlFor="filter-status-select" className="sr-only">
-            Filter by status
+            {t("host_res_filter_status", "Filter by status")}
           </label>
           <select
             id="filter-status-select"
@@ -394,10 +394,7 @@ export function HostResolutionCenterClient({ data, listings }: Props) {
                             href={`/host/bookings/${dispute.booking.id}`}
                             className="hover:text-black hover:underline"
                           >
-                            Booking: {" "}
-                            <span className="text-zinc-800 font-medium">
-                              #{dispute.booking.id.slice(0, 10)}
-                            </span>
+                            {t("host_res_booking_prefix", { id: dispute.booking.id.slice(0, 10) }, `Booking: #${dispute.booking.id.slice(0, 10)}`)}
                           </Link >
                         )
                         }

@@ -549,13 +549,13 @@ export function ReservationDetails({
             </section>
 
             {/* 3. Primary & Secondary Actions */}
-            <section aria-label="Reservation actions" className="space-y-3">
+            <section aria-label={t("host_cal_res_actions_aria", "Reservation actions")} className="space-y-3">
               <div className="grid gap-3 sm:grid-cols-2">
                 <Link
                   href={`/host/bookings/${booking.id}`}
                   className="flex min-h-11 min-w-0 items-center justify-center rounded-full border border-[#1F1F1F] px-3 py-3 text-center text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-[#1F1F1F] hover:text-white dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-800"
                 >
-                  View booking
+                  {t("host_cal_res_view_booking", "View booking")}
                 </Link>
                 <Link
                   href={messageHref}
@@ -581,7 +581,7 @@ export function ReservationDetails({
                     <path d="M12 20h9" />
                     <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
                   </svg>
-                  Review guest
+                  {t("host_cal_res_review_guest", "Review guest")}
                 </Link>
               ) : null}
 
@@ -601,29 +601,29 @@ export function ReservationDetails({
                 <div className="mb-3 flex items-center justify-between gap-3">
                   <div>
                     <h3 id="reservation-reviews-heading" className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">
-                      Reviews
+                      {t("host_cal_res_reviews_heading", "Reviews")}
                     </h3>
                     <p className="mt-0.5 text-sm text-[#727272]">
-                      Ratings shared for this reservation
+                      {t("host_cal_res_reviews_desc", "Ratings shared for this reservation")}
                     </p>
                   </div>
                   <span className="rounded-full bg-zinc-100 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wide text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
-                    {[booking.hostReview, booking.guestReview].filter(Boolean).length} of 2
+                    {t("host_cal_res_reviews_count", { count: [booking.hostReview, booking.guestReview].filter(Boolean).length }, `${[booking.hostReview, booking.guestReview].filter(Boolean).length} of 2`)}
                   </span>
                 </div>
                 <div className="space-y-3">
                   {booking.hostReview && (
                     <ReviewRatingSummary
                       review={booking.hostReview}
-                      title="Your review of this guest"
-                      detail={booking.hostReview.status === "PRIVATE" ? "Private until the guest also submits a review" : "Published review"}
+                      title={t("host_cal_res_your_review", "Your review of this guest")}
+                      detail={booking.hostReview.status === "PRIVATE" ? t("host_cal_res_private_until_guest", "Private until the guest also submits a review") : t("host_cal_res_published_review", "Published review")}
                     />
                   )}
                   {booking.guestReview && (
                     <ReviewRatingSummary
                       review={booking.guestReview}
-                      title="Guest’s review of your property"
-                      detail="Published review"
+                      title={t("host_cal_res_guest_review", "Guest’s review of your property")}
+                      detail={t("host_cal_res_published_review", "Published review")}
                     />
                   )}
                 </div>
@@ -936,14 +936,15 @@ function ReviewRatingSummary({
   title: string;
   detail: string;
 }) {
+  const { t } = useLanguage();
   const categoryRatings = [
-    ["Cleanliness", review.cleanlinessRating],
-    ["Accuracy", review.accuracyRating],
-    ["Check-in", review.checkInRating],
-    ["Communication", review.communicationRating],
-    ["Location", review.locationRating],
-    ["Value", review.valueRating],
-    ["House rules", review.houseRulesRating],
+    [t("reviews_category_cleanliness", "Cleanliness"), review.cleanlinessRating],
+    [t("reviews_category_accuracy", "Accuracy"), review.accuracyRating],
+    [t("reviews_category_check_in", "Check-in"), review.checkInRating],
+    [t("reviews_category_communication", "Communication"), review.communicationRating],
+    [t("reviews_category_location", "Location"), review.locationRating],
+    [t("reviews_category_value", "Value"), review.valueRating],
+    [t("host_house_rules", "House rules"), review.houseRulesRating],
   ].filter(([, value]) => typeof value === "number") as Array<[string, number]>;
 
   return (
@@ -974,7 +975,7 @@ function ReviewRatingSummary({
 
       {review.recommendGuest !== null && (
         <p className={`mt-3 text-sm font-medium ${review.recommendGuest ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400"}`}>
-          {review.recommendGuest ? "Recommends this guest" : "Does not recommend this guest"}
+          {review.recommendGuest ? t("host_cal_res_recommends_guest", "Recommends this guest") : t("host_cal_res_not_recommends_guest", "Does not recommend this guest")}
         </p>
       )}
 

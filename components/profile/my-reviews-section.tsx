@@ -14,10 +14,12 @@ interface MyReviewsSectionProps {
 }
 
 function StarRating({ rating }: { rating: number }) {
+  const { t } = useLanguage();
+  const label = t("reviews_rated_out_of_5", { rating }, `Rated ${rating} out of 5`);
   return (
     <span
       className="flex items-center gap-0.5 text-[#1F1F1F]"
-      aria-label={`Rated ${rating} out of 5`}
+      aria-label={label}
     >
       {Array.from({ length: 5 }, (_, index) => (
         <Image
@@ -29,7 +31,7 @@ function StarRating({ rating }: { rating: number }) {
           className={`size-[15px] ${index < rating ? "opacity-100" : "opacity-20"}`}
         />
       ))}
-      <span className="sr-only">Rated {rating} out of 5</span>
+      <span className="sr-only">{label}</span>
     </span>
   );
 }
@@ -69,7 +71,7 @@ export function MyReviewsSection({ reviews, className = "" }: MyReviewsSectionPr
               year: "numeric",
             });
             const listing = rev.listing;
-            const propertyTitle = listing?.title || "Property Stay";
+            const propertyTitle = listing?.title || t("profile_reviews_property_stay", "Property Stay");
             const propertyLocation = [listing?.city, listing?.country].filter(Boolean).join(", ");
             const propertyHref = listing ? `/listings/${listing.customSlug || listing.id}` : undefined;
             const isLong = rev.comment.length > 150;
@@ -115,7 +117,7 @@ export function MyReviewsSection({ reviews, className = "" }: MyReviewsSectionPr
                 {propertyHref ? (
                   <Link
                     href={propertyHref}
-                    aria-label={`View ${propertyTitle}`}
+                    aria-label={t("profile_reviews_view_property_aria", { title: propertyTitle }, `View ${propertyTitle}`)}
                     className="relative block rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1F1F1F] focus-visible:ring-offset-2"
                   >
                     {reviewContent}

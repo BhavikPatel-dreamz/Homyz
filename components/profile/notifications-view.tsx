@@ -26,7 +26,7 @@ interface NotificationsViewProps {
   };
 }
 
-type Translator = (key: TranslationKey, fallback?: string) => string;
+type Translator = (key: any, ...args: any[]) => string;
 
 function formatRelativeTime(dateStr: string, t?: Translator): string {
   try {
@@ -38,10 +38,10 @@ function formatRelativeTime(dateStr: string, t?: Translator): string {
     const diffDays = Math.floor(diffHours / 24);
 
     if (diffMins < 1) return t ? t("profile_notif_time_just_now", "Just now") : "Just now";
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffMins < 60) return t ? t("profile_notif_time_mins_ago", { count: diffMins }, `${diffMins}m ago`) : `${diffMins}m ago`;
+    if (diffHours < 24) return t ? t("profile_notif_time_hours_ago", { count: diffHours }, `${diffHours}h ago`) : `${diffHours}h ago`;
     if (diffDays === 1) return t ? t("profile_notif_time_yesterday", "Yesterday") : "Yesterday";
-    if (diffDays < 7) return `${diffDays}d ago`;
+    if (diffDays < 7) return t ? t("profile_notif_time_days_ago", { count: diffDays }, `${diffDays}d ago`) : `${diffDays}d ago`;
 
     return date.toLocaleDateString("en-US", {
       month: "short",
@@ -64,7 +64,7 @@ function getTypeBadge(
       const isDispute = entityType?.startsWith("dispute-");
       if (isDispute) {
         return {
-          label: "Dispute",
+          label: t ? t("profile_notif_type_dispute", "Dispute") : "Dispute",
           icon: (
             <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M12 3 4.5 6v5c0 4.8 3.1 8.6 7.5 10 4.4-1.4 7.5-5.2 7.5-10V6L12 3Z" />
@@ -193,7 +193,7 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
         take: 20,
       });
       if (!res.ok) {
-        setError(res.error || "Failed to load more notifications.");
+        setError(res.error || t("profile_notif_error_load_more", "Failed to load more notifications."));
         return;
       }
       const nextPage = res.data;
@@ -205,7 +205,7 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
       setTotal(nextPage.total);
       publishUnreadNotificationCount(nextPage.unreadCount);
     } catch {
-      setError("An unexpected error occurred while fetching notifications.");
+      setError(t("profile_notif_error_unexpected", "An unexpected error occurred while fetching notifications."));
     } finally {
       setLoadingMore(false);
     }
@@ -229,13 +229,13 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
           setNotifications(previousNotifications);
           setUnreadCount(previousUnreadCount);
           publishUnreadNotificationCount(previousUnreadCount);
-          setError(res.error || "Failed to mark notifications as read.");
+          setError(res.error || t("profile_notif_error_mark_read", "Failed to mark notifications as read."));
         }
       } catch {
         setNotifications(previousNotifications);
         setUnreadCount(previousUnreadCount);
         publishUnreadNotificationCount(previousUnreadCount);
-        setError("Failed to mark notifications as read.");
+        setError(t("profile_notif_error_mark_read", "Failed to mark notifications as read."));
       }
     });
   };
@@ -277,7 +277,7 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
         setNotifications(previousNotifications);
         setUnreadCount(previousUnreadCount);
         publishUnreadNotificationCount(previousUnreadCount);
-        setError("Failed to update the notification. Please try again.");
+        setError(t("profile_notif_error_update", "Failed to update the notification. Please try again."));
       }
     });
   };
@@ -303,7 +303,7 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
             );
             setUnreadCount((prev) => prev + 1);
             publishUnreadNotificationCount(unreadCount);
-            setError(res.error || "Failed to update the notification.");
+            setError(res.error || t("profile_notif_error_update", "Failed to update the notification. Please try again."));
           }
         } catch {
           setNotifications((prev) =>
@@ -311,7 +311,7 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
           );
           setUnreadCount((prev) => prev + 1);
           publishUnreadNotificationCount(unreadCount);
-          setError("Failed to update the notification.");
+          setError(t("profile_notif_error_update", "Failed to update the notification. Please try again."));
         }
       });
     }
@@ -514,7 +514,7 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
                 disabled={loadingMore}
                 className="rounded-full border border-[#D7D7D7] bg-white px-5 py-2 text-xs font-semibold text-[#1F1F1F] transition-colors hover:bg-zinc-50 disabled:cursor-wait disabled:opacity-60"
               >
-                {loadingMore ? "Loading..." : "Load more"}
+                {loadingMore ? t("profile_notif_loading", "Loading...") : t("profile_notif_load_more", "Load more")}
               </button>
             </div>
           )}

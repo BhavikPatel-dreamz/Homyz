@@ -16,10 +16,11 @@ interface PublicHostReviewsViewProps {
 type SortOption = "recent" | "oldest" | "highest" | "lowest";
 
 function ReviewStarRating({ rating }: { rating: number }) {
+  const { t } = useLanguage();
   return (
     <span
       className="flex items-center gap-0.5 text-[#1F1F1F]"
-      aria-label={`Rated ${rating} out of 5`}
+      aria-label={t("public_host_reviews_rated_aria", { rating }, `Rated ${rating} out of 5`)}
     >
       {Array.from({ length: 5 }, (_, index) => (
         <Image
@@ -31,7 +32,7 @@ function ReviewStarRating({ rating }: { rating: number }) {
           className={`size-[15px] ${index < rating ? "opacity-100" : "opacity-20"}`}
         />
       ))}
-      <span className="sr-only">Rated {rating} out of 5</span>
+      <span className="sr-only">{t("public_host_reviews_rated_aria", { rating }, `Rated ${rating} out of 5`)}</span>
     </span>
   );
 }
@@ -234,7 +235,7 @@ export function PublicHostReviewsView({ host, reviews, stats }: PublicHostReview
   return (
     <div className="mx-auto w-full max-w-[1262px]">
       {/* Back to Host Profile Navigation */}
-      <nav aria-label="Breadcrumb">
+      <nav aria-label={t("public_host_reviews_breadcrumb", "Breadcrumb")}>
         <Link
           href={`/users/profile/${host.id}`}
           className="group inline-flex items-center gap-3 text-sm font-medium text-[#1F1F1F] transition-colors hover:text-zinc-600"
@@ -267,7 +268,7 @@ export function PublicHostReviewsView({ host, reviews, stats }: PublicHostReview
             <div className="flex items-baseline justify-between">
               <div>
                 <p className="text-xs font-semibold tracking-wider text-[#727272] uppercase">
-                  Rating Overview
+                  {t("public_host_reviews_rating_overview", "Rating Overview")}
                 </p>
                 <div className="mt-1 flex items-baseline gap-2">
                   <span className="text-3xl sm:text-4xl font-medium tracking-tight text-[#1F1F1F]">
@@ -284,7 +285,7 @@ export function PublicHostReviewsView({ host, reviews, stats }: PublicHostReview
               </div>
               <div className="text-right">
                 <p className="text-sm font-medium text-[#1F1F1F]">{reviewsCountText}</p>
-                <p className="text-xs text-[#727272]">from verified guests</p>
+                <p className="text-xs text-[#727272]">{t("public_host_reviews_from_verified", "from verified guests")}</p>
               </div>
             </div>
 
@@ -306,7 +307,7 @@ export function PublicHostReviewsView({ host, reviews, stats }: PublicHostReview
                         ? "bg-zinc-100 font-semibold ring-1 ring-zinc-300"
                         : "text-[#727272] hover:bg-zinc-50 hover:text-[#1F1F1F]"
                     }`}
-                    aria-label={`Filter by ${star} star reviews (${count})`}
+                    aria-label={t("public_host_reviews_filter_star_aria", { star, count }, `Filter by ${star} star reviews (${count})`)}
                   >
                     <span className="flex w-6 items-center gap-1 font-medium text-[#1F1F1F]">
                       <span>{star}</span>
@@ -339,7 +340,7 @@ export function PublicHostReviewsView({ host, reviews, stats }: PublicHostReview
                   onClick={() => setSelectedStar(null)}
                   className="w-full text-center text-xs font-medium text-[#727272] hover:text-[#1F1F1F] underline underline-offset-4 cursor-pointer"
                 >
-                  Clear star filter
+                  {t("public_host_reviews_clear_star", "Clear star filter")}
                 </button>
               </div>
             )}
@@ -373,14 +374,14 @@ export function PublicHostReviewsView({ host, reviews, stats }: PublicHostReview
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search reviews by keyword, guest, or stay…"
+                  placeholder={t("public_host_reviews_search_placeholder", "Search reviews by keyword, guest, or stay…")}
                   className="w-full rounded-full border border-zinc-200 bg-[#F3F4F5] py-2.5 pl-10 pr-10 text-sm text-[#1F1F1F] placeholder:text-[#727272] focus:border-[#1F1F1F] focus:bg-white focus:outline-none transition-all"
                 />
                 {searchQuery && (
                   <button
                     type="button"
                     onClick={() => setSearchQuery("")}
-                    aria-label="Clear search"
+                    aria-label={t("public_host_reviews_clear_search_aria", "Clear search")}
                     className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-zinc-400 hover:text-zinc-700 cursor-pointer"
                   >
                     <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -403,7 +404,7 @@ export function PublicHostReviewsView({ host, reviews, stats }: PublicHostReview
                         : "bg-white text-[#1F1F1F] border border-zinc-200 hover:border-zinc-400"
                     }`}
                   >
-                    All ({reviews.length})
+                    {t("public_host_reviews_filter_all", { count: reviews.length }, `All (${reviews.length})`)}
                   </button>
                   {([5, 4, 3, 2, 1] as const).map((star) => {
                     const count = ratingDistribution[star] || 0;
@@ -437,7 +438,7 @@ export function PublicHostReviewsView({ host, reviews, stats }: PublicHostReview
                 {/* Sort Dropdown */}
                 <div className="flex items-center gap-2">
                   <label htmlFor="reviews-sort" className="text-xs text-[#727272]">
-                    Sort:
+                    {t("public_host_reviews_sort_label", "Sort:")}
                   </label>
                   <select
                     id="reviews-sort"
@@ -445,10 +446,10 @@ export function PublicHostReviewsView({ host, reviews, stats }: PublicHostReview
                     onChange={(e) => setSortBy(e.target.value as SortOption)}
                     className="rounded-full border border-zinc-200 bg-white py-1.5 pl-3 pr-8 text-xs font-medium text-[#1F1F1F] focus:border-zinc-900 focus:outline-none cursor-pointer"
                   >
-                    <option value="recent">Most recent</option>
-                    <option value="oldest">Oldest first</option>
-                    <option value="highest">Highest rating</option>
-                    <option value="lowest">Lowest rating</option>
+                    <option value="recent">{t("public_host_reviews_sort_recent", "Most recent")}</option>
+                    <option value="oldest">{t("public_host_reviews_sort_oldest", "Oldest first")}</option>
+                    <option value="highest">{t("public_host_reviews_sort_highest", "Highest rating")}</option>
+                    <option value="lowest">{t("public_host_reviews_sort_lowest", "Lowest rating")}</option>
                   </select>
                 </div>
               </div>
@@ -457,9 +458,9 @@ export function PublicHostReviewsView({ host, reviews, stats }: PublicHostReview
               {hasActiveFilters && (
                 <div className="flex items-center justify-between rounded-xl bg-[#F3F4F5] px-4 py-2.5 text-xs text-[#1F1F1F]">
                   <span>
-                    Showing {filteredReviews.length} of {reviews.length} reviews
-                    {selectedStar !== null ? ` · ${selectedStar} stars` : ""}
-                    {searchQuery.trim() ? ` · matching "${searchQuery}"` : ""}
+                    {t("public_host_reviews_showing_count", { filtered: filteredReviews.length, total: reviews.length }, `Showing ${filteredReviews.length} of ${reviews.length} reviews`)}
+                    {selectedStar !== null ? t("public_host_reviews_filter_star_suffix", { star: selectedStar }, ` · ${selectedStar} stars`) : ""}
+                    {searchQuery.trim() ? t("public_host_reviews_filter_query_suffix", { query: searchQuery }, ` · matching "${searchQuery}"`) : ""}
                   </span>
                   <button
                     type="button"
@@ -469,7 +470,7 @@ export function PublicHostReviewsView({ host, reviews, stats }: PublicHostReview
                     }}
                     className="font-medium text-[#727272] hover:text-[#1F1F1F] underline underline-offset-2 cursor-pointer"
                   >
-                    Clear all filters
+                    {t("public_host_reviews_clear_all", "Clear all filters")}
                   </button>
                 </div>
               )}
@@ -496,9 +497,9 @@ export function PublicHostReviewsView({ host, reviews, stats }: PublicHostReview
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </div>
-              <h3 className="mt-3 text-base font-medium text-[#1F1F1F]">No reviews match your filters</h3>
+              <h3 className="mt-3 text-base font-medium text-[#1F1F1F]">{t("public_host_reviews_no_match_title", "No reviews match your filters")}</h3>
               <p className="mt-1 text-xs sm:text-sm text-[#727272]">
-                Try adjusting your search terms or clearing your star rating filter.
+                {t("public_host_reviews_no_match_desc", "Try adjusting your search terms or clearing your star rating filter.")}
               </p>
               <button
                 type="button"
@@ -508,7 +509,7 @@ export function PublicHostReviewsView({ host, reviews, stats }: PublicHostReview
                 }}
                 className="mt-4 inline-flex items-center rounded-full bg-[#1F1F1F] px-5 py-2 text-xs font-semibold text-white transition-colors hover:bg-black cursor-pointer"
               >
-                Clear all filters
+                {t("public_host_reviews_clear_all", "Clear all filters")}
               </button>
             </div>
           ) : (
@@ -519,7 +520,7 @@ export function PublicHostReviewsView({ host, reviews, stats }: PublicHostReview
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
                 </svg>
               </div>
-              <h3 className="mt-3 text-base font-medium text-[#1F1F1F]">No reviews published yet</h3>
+              <h3 className="mt-3 text-base font-medium text-[#1F1F1F]">{t("public_host_reviews_none_title", "No reviews published yet")}</h3>
               <p className="mt-1 text-xs sm:text-sm text-[#727272] max-w-sm mx-auto">
                 {t("public_reviews_none_yet", "This host does not have any published written reviews yet.")}
               </p>

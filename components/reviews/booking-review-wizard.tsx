@@ -59,7 +59,7 @@ function StarRating({ value, onChange, label }: { value: number; onChange: (rati
             type="button"
             role="radio"
             aria-checked={value === star}
-            aria-label={`${star} out of 5 stars`}
+            aria-label={t("public_host_review_rating_aria" as any, { rating: star }, `${star} out of 5 stars`)}
             onClick={() => onChange(star)}
             onMouseEnter={() => setHovered(star)}
             className="cursor-pointer transition-transform"
@@ -98,9 +98,10 @@ function DesktopPropertyCard({
   currencyDisplay: string;
   totalPaid: ReactNode;
 }) {
+  const { t } = useLanguage();
   return (
     <aside
-      aria-label="Booking summary"
+      aria-label={t("book_summary_title", "Booking summary")}
       className="w-full max-w-[570px] rounded-[30px] bg-white px-10 py-8 shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)]"
     >
       <h2 className="text-lg sm:text-xl font-medium text-[#1F1F1F] tracking-tight">{listingName}</h2>
@@ -116,7 +117,7 @@ function DesktopPropertyCard({
             <span className="text-zinc-300" aria-hidden="true">|</span>
             <span className="inline-flex items-center gap-1 text-xs sm:text-sm font-medium">
               <Image src="/images/icons/leaves-left.svg" alt="" width={14} height={20} className="h-4 w-auto inline-block" />
-              <span>Guest favorite</span>
+              <span>{t("book_guest_favorite", "Guest favorite")}</span>
               <Image src="/images/icons/leaves-right.svg" alt="" width={14} height={20} className="h-4 w-auto inline-block" />
             </span>
           </>
@@ -127,19 +128,19 @@ function DesktopPropertyCard({
         {listingPhoto ? (
           <img src={listingPhoto} alt={listingName} className="h-full w-full object-cover" />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-sm text-zinc-400">Photo unavailable</div>
+          <div className="flex h-full w-full items-center justify-center text-sm text-zinc-400">{t("review_photo_unavailable", "Photo unavailable")}</div>
         )}
       </div>
 
       <div className="mt-5">
-        <p className="text-base font-medium text-[#1F1F1F]">Dates</p>
+        <p className="text-base font-medium text-[#1F1F1F]">{t("book_dates", "Dates")}</p>
         <p className="mt-1 text-sm text-[#727272]">{stayDates}</p>
       </div>
 
       <div className="my-5 border-t border-zinc-200" />
 
       <div className="flex items-center justify-between text-base font-medium text-[#1F1F1F]">
-        <span>Total <span className="underline underline-offset-4">{currencyDisplay}</span></span>
+        <span>{t("review_total_with_currency" as any, { currency: currencyDisplay }, `Total ${currencyDisplay}`)}</span>
         <span>{totalPaid}</span>
       </div>
     </aside>
@@ -163,6 +164,7 @@ function MobilePropertyCard({
   currencyDisplay: string;
   totalPaid: ReactNode;
 }) {
+  const { t } = useLanguage();
   return (
     <div className="w-full rounded-2xl border border-zinc-200/90 bg-white p-4 sm:p-5 shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)]">
       <div className="flex items-start gap-3.5 sm:gap-4">
@@ -170,7 +172,7 @@ function MobilePropertyCard({
           {listingPhoto ? (
             <img src={listingPhoto} alt={listingName} className="h-full w-full object-cover" />
           ) : (
-            <div className="flex h-full w-full items-center justify-center text-xs text-zinc-400">No photo</div>
+            <div className="flex h-full w-full items-center justify-center text-xs text-zinc-400">{t("review_photo_unavailable", "Photo unavailable")}</div>
           )}
         </div>
         <div className="flex min-w-0 flex-1 flex-col pt-0.5">
@@ -184,7 +186,7 @@ function MobilePropertyCard({
           {showGuestFavorite && (
             <div className="mt-1.5 inline-flex items-center gap-1 text-xs sm:text-sm font-medium text-[#1F1F1F]">
               <Image src="/images/icons/leaves-left.svg" alt="" width={12} height={18} className="h-3.5 w-auto inline-block" />
-              <span>Guest favorite</span>
+              <span>{t("book_guest_favorite", "Guest favorite")}</span>
               <Image src="/images/icons/leaves-right.svg" alt="" width={12} height={18} className="h-3.5 w-auto inline-block" />
             </div>
           )}
@@ -192,14 +194,14 @@ function MobilePropertyCard({
       </div>
 
       <div className="mt-4 pt-1 flex items-center justify-between text-base font-medium text-[#1F1F1F]">
-        <span>Dates</span>
+        <span>{t("book_dates", "Dates")}</span>
         <span className="text-sm font-normal text-[#727272]">{stayDates}</span>
       </div>
 
       <div className="my-3.5 border-t border-zinc-200" />
 
       <div className="flex items-center justify-between text-base font-medium text-[#1F1F1F]">
-        <span>Total <span className="underline underline-offset-4">{currencyDisplay}</span></span>
+        <span>{t("review_total_with_currency" as any, { currency: currencyDisplay }, `Total ${currencyDisplay}`)}</span>
         <span>{totalPaid}</span>
       </div>
     </div>
@@ -217,6 +219,7 @@ function IntroSection({
   onContinue: () => void;
   isMobile?: boolean;
 }) {
+  const { t } = useLanguage();
   const [isExpanded, setIsExpanded] = useState(false);
   const fallback =
     "Lorem ipsum dolor sit amet consectetur. Fames quis facilisis dolor turpis lacus eu tellus faucibus. Blandit porttitor justo pretium ridiculus. Metus non in gravida tristique. Vitae iaculis suscipit enim el...";
@@ -231,7 +234,7 @@ function IntroSection({
       </div> */}
 
       <h1 className={`${isMobile ? "mt-5" : "mt-12"} font-medium tracking-tight text-[#727272] leading-tight`}>
-        Write a review for <span className="font-medium text-[#1f1f1f]">{displayName}</span>
+        {t("review_intro_title", { name: displayName }, `Write a review for ${displayName}`)}
       </h1>
 
       <p className="mt-4 text-sm sm:text-base leading-relaxed text-[#727272]">
@@ -244,7 +247,7 @@ function IntroSection({
               onClick={() => setIsExpanded(!isExpanded)}
               className="font-medium text-[#727272] underline underline-offset-2 hover:text-black cursor-pointer"
             >
-              {isExpanded ? "read less" : "read more"}
+              {isExpanded ? t("reviews_read_less", "read less") : t("reviews_read_more", "read more")}
             </button>
           </>
         )}
@@ -256,7 +259,7 @@ function IntroSection({
           onClick={onContinue}
           className="mt-10 lg:mt-auto w-full rounded-full bg-[#1F1F1F] sm:py-4 py-3 text-base font-medium text-white text-center transition hover:bg-black focus-visible:outline-none cursor-pointer"
         >
-          Next
+          {t("review_btn_continue", "Next")}
         </button>
       ) : (
         <div>
@@ -265,7 +268,7 @@ function IntroSection({
             onClick={onContinue}
             className="mt-8 inline-flex items-center justify-center rounded-full bg-[#1F1F1F] border border-transparent hover:border-[#1f1f1f] px-12 py-3 text-base font-medium text-white transition hover:bg-white hover:text-[#1f1f1f] focus-visible:outline-none cursor-pointer min-w-58.25"
           >
-            Next
+            {t("review_btn_continue", "Next")}
           </button>
         </div>
       )}
@@ -277,7 +280,7 @@ function FeedbackBlock({
   value,
   onChange,
   placeholder,
-  title = "Your feedback",
+  title,
   maxLength = 500,
 }: {
   value: string;
@@ -286,13 +289,15 @@ function FeedbackBlock({
   title?: string;
   maxLength?: number;
 }) {
+  const { t } = useLanguage();
   const available = Math.max(0, maxLength - value.length);
+  const effectiveTitle = title || t("review_feedback_title" as any, "Your feedback");
 
   return (
     <div className="mt-8 w-full rounded-[12px] bg-[#F3F4F5] border border-white shadow-[0px_2px_4px_rgba(0,0,0,0.25)] sm:px-6 sm:pt-3 sm:pb-6 p-3">
-      <h3 className="text-base sm:text-lg font-medium text-[#1F1F1F]">{title}</h3>
+      <h3 className="text-base sm:text-lg font-medium text-[#1F1F1F]">{effectiveTitle}</h3>
       <p className="mt-3 text-xs font-normal text-[#727272]">
-        <span className="font-medium text-[#1F1F1F]">{available}</span>/{maxLength} available
+        {t("review_feedback_available" as any, { count: available, max: maxLength }, `${available}/${maxLength} available`)}
       </p>
       <div className="mt-1.5 w-full rounded-lg bg-white px-4 py-3 shadow-xs">
         <textarea
@@ -308,13 +313,14 @@ function FeedbackBlock({
 }
 
 function ReviewProgressBar({ currentStep, totalSteps }: { currentStep: number; totalSteps: number }) {
+  const { t } = useLanguage();
   return (
     <div
       role="progressbar"
       aria-valuenow={currentStep}
       aria-valuemin={1}
       aria-valuemax={totalSteps}
-      aria-label={`Step ${currentStep} of ${totalSteps}`}
+      aria-label={t("review_step_indicator", { current: currentStep, total: totalSteps }, `Step ${currentStep} of ${totalSteps}`)}
       className="mt-25 md:flex hidden w-full items-center gap-1.5"
     >
       {Array.from({ length: currentStep }).map((_, index) => (
@@ -476,10 +482,12 @@ export function BookingReviewWizard(props: ReviewWizardProps) {
   const ratingDisplay =
     typeof props.averageRating === "number" && !isNaN(props.averageRating)
       ? `${props.averageRating.toFixed(2).replace(".", ",")} (${props.reviewsCount && props.reviewsCount > 0
-        ? `${props.reviewsCount} review${props.reviewsCount === 1 ? "" : "s"}`
-        : "xx review"
+        ? props.reviewsCount === 1
+          ? t("review_count_singular" as any, "1 review")
+          : t("review_count_plural" as any, { count: props.reviewsCount }, `${props.reviewsCount} reviews`)
+        : t("review_count_unrated" as any, { count: 0 }, "0 reviews")
       })`
-      : "4,98 (xx review)";
+      : "";
   const showGuestFavorite = props.isGuestFavorite !== false;
 
   return (
@@ -523,7 +531,7 @@ export function BookingReviewWizard(props: ReviewWizardProps) {
                 value={draft.comment}
                 onChange={(val) => setDraft((current) => ({ ...current, comment: val }))}
                 placeholder={t("review_comment_ph", "Say a few words about your stay")}
-                title="Your feedback"
+                title={t("review_feedback_title" as any, "Your feedback")}
                 maxLength={500}
               />
             )}
@@ -533,7 +541,7 @@ export function BookingReviewWizard(props: ReviewWizardProps) {
                 value={draft.privateNoteToHost}
                 onChange={(val) => setDraft((current) => ({ ...current, privateNoteToHost: val }))}
                 placeholder={t("review_private_ph", "Share constructive feedback for the host (optional)")}
-                title="Your feedback"
+                title={t("review_feedback_title" as any, "Your feedback")}
                 maxLength={500}
               />
             )}
@@ -600,7 +608,7 @@ export function BookingReviewWizard(props: ReviewWizardProps) {
               setDraft((current) => ({ ...current, step: current.step - 1 }));
             }
           }}
-          aria-label={draft.step === 0 ? "Back to reservation" : "Go back"}
+          aria-label={draft.step === 0 ? t("review_btn_back_res", "Back to reservation") : t("listing_gallery_go_back" as any, "Go back")}
           className="mb-4"
         />
 
@@ -642,7 +650,7 @@ export function BookingReviewWizard(props: ReviewWizardProps) {
                 value={draft.comment}
                 onChange={(val) => setDraft((current) => ({ ...current, comment: val }))}
                 placeholder={t("review_comment_ph", "Say a few words about your stay")}
-                title="Your feedback"
+                title={t("review_feedback_title" as any, "Your feedback")}
                 maxLength={500}
               />
             )}
@@ -652,7 +660,7 @@ export function BookingReviewWizard(props: ReviewWizardProps) {
                 value={draft.privateNoteToHost}
                 onChange={(val) => setDraft((current) => ({ ...current, privateNoteToHost: val }))}
                 placeholder={t("review_private_ph", "Share constructive feedback for the host (optional)")}
-                title="Your feedback"
+                title={t("review_feedback_title" as any, "Your feedback")}
                 maxLength={500}
               />
             )}

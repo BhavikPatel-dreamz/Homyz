@@ -486,8 +486,8 @@ export function BookingCheckoutClient({
       const timer = window.setTimeout(() => {
         setQuote(null);
         setQuoteError(!checkIn || !checkOut
-          ? "Choose valid check-in and check-out dates to continue."
-          : "Checkout date must be after check-in date.");
+          ? t("book_err_choose_valid_dates", "Choose valid check-in and check-out dates to continue.")
+          : t("book_err_checkout_after_checkin", "Checkout date must be after check-in date."));
         setIsQuoteLoading(false);
       }, 0);
       return () => window.clearTimeout(timer);
@@ -512,7 +512,7 @@ export function BookingCheckoutClient({
       .then(({ ok, data }) => {
         if (!isCurrent) return;
         if (!ok || data.error || !data.data) {
-          setQuoteError(data.error?.message || "Selected dates are not available.");
+          setQuoteError(data.error?.message || t("book_err_dates_unavailable", "Selected dates are not available."));
           return;
         }
         setQuote((current) => {
@@ -522,7 +522,7 @@ export function BookingCheckoutClient({
             && current.guests === guestsCount
             && current.pets === petsCount;
           if (sameSelection && (current.guestTotal !== data.data.guestTotal || current.currency !== data.data.currency)) {
-            setQuoteNotice("The price changed since the property page. Review the updated total before continuing.");
+            setQuoteNotice(t("book_notice_price_changed", "The price changed since the property page. Review the updated total before continuing."));
           } else {
             setQuoteNotice(null);
           }
@@ -533,7 +533,7 @@ export function BookingCheckoutClient({
       })
       .catch((err) => {
         if (!isCurrent || err?.name === "AbortError") return;
-        setQuoteError("Unable to calculate price quotation.");
+        setQuoteError(t("book_err_quote_failed", "Unable to calculate price quotation."));
       })
       .finally(() => {
         if (isCurrent) setIsQuoteLoading(false);
@@ -553,8 +553,8 @@ export function BookingCheckoutClient({
   const checkoutTotalLabel = quote
     ? formatMoney(quote.guestTotal, 2)
     : isQuoteLoading
-      ? "Calculating…"
-      : "Unavailable";
+      ? t("book_calculating", "Calculating…")
+      : t("book_unavailable", "Unavailable");
   const partNowAmount = quote ? Math.ceil(quote.guestTotal / 2) : 0;
   const partLaterAmount = quote ? quote.guestTotal - partNowAmount : 0;
   const paymentTimingOptions = getAvailablePaymentTimingOptions();
@@ -588,7 +588,7 @@ export function BookingCheckoutClient({
 
   const handlePaymentTimingChange = (nextTiming: PaymentTiming) => {
     if (!paymentTimingOptions.some((option) => option.type === nextTiming)) {
-      setPaymentTimingError("This payment option is no longer available for this booking.");
+      setPaymentTimingError(t("book_err_payment_option_unavailable", "This payment option is no longer available for this booking."));
       return;
     }
     if (paymentPlan !== nextTiming) {
@@ -602,7 +602,7 @@ export function BookingCheckoutClient({
   const handleStep1Next = () => {
     if (step1FinalizingRef.current) return;
     if (!paymentPlan || !paymentTimingOptions.some((option) => option.type === paymentPlan)) {
-      setPaymentTimingError("Please choose when you want to pay.");
+      setPaymentTimingError(t("book_err_choose_payment_timing", "Please choose when you want to pay."));
       window.requestAnimationFrame(() => paymentTimingGroupRef.current?.focus());
       return;
     }
@@ -629,7 +629,7 @@ export function BookingCheckoutClient({
         cvc: rawCardCvc,
       });
       if (!validation.valid) {
-        setCardError(validation.error || "Please enter valid card details.");
+        setCardError(validation.error || t("book_err_valid_card_details", "Please enter valid card details."));
         return;
       }
       setCardError(null);
@@ -678,18 +678,18 @@ export function BookingCheckoutClient({
     if (firstIncompleteStep) {
       setActiveStep(firstIncompleteStep);
       focusStepHeading(firstIncompleteStep);
-      setSubmitError("Complete each checkout step before submitting.");
+      setSubmitError(t("book_err_complete_each_step", "Complete each checkout step before submitting."));
       return;
     }
     const selectedPaymentTiming = paymentPlan;
     if (!selectedPaymentTiming || !paymentTimingOptions.some((option) => option.type === selectedPaymentTiming)) {
       setActiveStep(1);
-      setPaymentTimingError("Please choose when you want to pay.");
+      setPaymentTimingError(t("book_err_choose_payment_timing", "Please choose when you want to pay."));
       focusStepHeading(1);
       return;
     }
     if (isQuoteLoading || quoteError || !quote) {
-      setSubmitError("Refresh the current price and availability before submitting your request.");
+      setSubmitError(t("book_err_refresh_price", "Refresh the current price and availability before submitting your request."));
       setQuoteRefreshKey((current) => current + 1);
       return;
     }
@@ -782,11 +782,11 @@ export function BookingCheckoutClient({
         } else if (data.error?.code === "BOOKING_MODE_CHANGED") {
           setQuoteRefreshKey((current) => current + 1);
         }
-        setSubmitError(data.error?.message || "Failed to submit the booking request. Please try again.");
+        setSubmitError(data.error?.message || t("book_err_submit_failed", "Failed to submit the booking request. Please try again."));
       } else if (!data.data?.id) {
-        setSubmitError("The booking was created, but its confirmation details were unavailable. View your bookings to continue.");
+        setSubmitError(t("book_err_confirmation_unavailable", "The booking was created, but its confirmation details were unavailable. View your bookings to continue."));
       } else if (isInstantBook && data.data.status !== "CONFIRMED") {
-        setSubmitError("Instant Book did not return a confirmed reservation. Please review your bookings before trying again.");
+        setSubmitError(t("book_err_instant_not_confirmed", "Instant Book did not return a confirmed reservation. Please review your bookings before trying again."));
       } else {
         setCompletedSteps((current) => new Set(current).add(4));
         try {
@@ -795,7 +795,7 @@ export function BookingCheckoutClient({
         setBookingResult({ id: data.data.id, status: data.data.status });
       }
     } catch {
-      setSubmitError("An unexpected network error occurred. Please try again.");
+      setSubmitError(t("book_err_network_error", "An unexpected network error occurred. Please try again."));
     } finally {
       setIsSubmitting(false);
     }
@@ -852,7 +852,7 @@ export function BookingCheckoutClient({
           paymentTimingLabel: getPaymentTimingSummary(paymentPlan, formatMoney(quote.guestTotal, 2)),
           paymentMethodLabel: checkoutDraft.paymentMethod
             ? checkoutDraft.paymentMethod.displayLabel
-            : "Visa •••• 4242",
+            : t("book_default_card_fallback", "Visa •••• 4242"),
           paymentAuthorizationValid: true,
           paymentRequiredNow: false,
           hostMessage,
@@ -871,7 +871,7 @@ export function BookingCheckoutClient({
     return (
       <div className="flex min-h-screen flex-col bg-white font-sans text-zinc-900">
         <AppHeader showBottomBorder={true} />
-        <main className="w-full flex-1 py-12 lg:py-24" aria-busy="true" aria-label="Loading checkout">
+        <main className="w-full flex-1 py-12 lg:py-24" aria-busy="true" aria-label={t("book_loading_checkout_aria", "Loading checkout")}>
           <Container>
             <div className="mx-auto max-w-[1263px] animate-pulse">
               <div className="mb-10 h-10 w-56 rounded-lg bg-zinc-100" />
@@ -1054,7 +1054,7 @@ export function BookingCheckoutClient({
                         <p className="mt-1 text-base font-normal text-[#1F1F1F]">
                           {paymentPlan
                             ? getPaymentTimingSummary(paymentPlan, checkoutTotalLabel)
-                            : "Payment timing required"}
+                            : t("book_payment_timing_required", "Payment timing required")}
                         </p>
                       </div>
                       <button
@@ -1110,7 +1110,7 @@ export function BookingCheckoutClient({
                           {t("book_mock_payment_notice", "This is a mock payment step. No real money will be charged.")}
                         </div>
                         <p className="mt-1 text-xs text-amber-800 leading-relaxed">
-                          No payment is processed in test mode. No real payment will be processed. Do not enter a real card. Use mock test card <span className="font-mono font-semibold">4242 4242 4242 4242</span>, expiry <span className="font-mono font-semibold">12/30</span>, CVC <span className="font-mono font-semibold">123</span>.
+                          {t("book_mock_payment_instructions", { number: "4242 4242 4242 4242", expiry: "12/30", cvc: "123" }, "No payment is processed in test mode. No real payment will be processed. Do not enter a real card. Use mock test card 4242 4242 4242 4242, expiry 12/30, CVC 123.")}
                         </p>
                       </div>
 
@@ -1481,13 +1481,13 @@ export function BookingCheckoutClient({
                           message={hostMessage}
                           quote={quote}
                           paymentTiming={getPaymentTimingSummary(paymentPlan, formatMoney(quote.guestTotal, 2))}
-                          paymentMethod={checkoutDraft.paymentMethod?.displayLabel || "Payment method selected"}
+                          paymentMethod={checkoutDraft.paymentMethod?.displayLabel || t("book_payment_method_selected", "Payment method selected")}
                           formatMoney={formatBookingMoney}
                         />
                       )}
 
                       {!bookingSuccess && isQuoteLoading && (
-                        <div role="status" aria-live="polite" className="mt-5 space-y-3" aria-label="Refreshing review details">
+                        <div role="status" aria-live="polite" className="mt-5 space-y-3" aria-label={t("book_refreshing_review_aria", "Refreshing review details")}>
                           <p className="text-sm font-medium text-zinc-600">{t("book_refreshing_availability", "Refreshing availability and price…")}</p>
                           <div className="h-20 animate-pulse rounded-2xl bg-zinc-100" />
                           <div className="h-32 animate-pulse rounded-2xl bg-zinc-100" />
@@ -1572,7 +1572,7 @@ export function BookingCheckoutClient({
               <button
                 type="button"
                 onClick={() => setIsDatesModalOpen(false)}
-                aria-label="Close date selector"
+                aria-label={t("book_close_date_selector_aria", "Close date selector")}
                 className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-zinc-100 text-zinc-500 cursor-pointer"
               >
                 ✕
@@ -1657,7 +1657,7 @@ export function BookingCheckoutClient({
               <button
                 type="button"
                 onClick={() => setIsGuestsModalOpen(false)}
-                aria-label="Close guest selector"
+                aria-label={t("book_close_guest_selector_aria", "Close guest selector")}
                 className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-zinc-100 text-zinc-500 cursor-pointer"
               >
                 ✕
@@ -1676,7 +1676,7 @@ export function BookingCheckoutClient({
                     type="button"
                     disabled={adultsCount <= 1}
                     onClick={() => updateAdults(-1)}
-                    aria-label="Remove one adult"
+                    aria-label={t("listing_detail_remove_adult_aria", "Remove one adult")}
                     className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-300 disabled:opacity-40 hover:border-zinc-900 cursor-pointer"
                   >
                     −
@@ -1688,7 +1688,7 @@ export function BookingCheckoutClient({
                     type="button"
                     disabled={!canAddCapacityGuest}
                     onClick={() => updateAdults(1)}
-                    aria-label="Add one adult"
+                    aria-label={t("listing_detail_add_adult_aria", "Add one adult")}
                     className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-300 disabled:opacity-40 hover:border-zinc-900 cursor-pointer"
                   >
                     +
@@ -1703,9 +1703,9 @@ export function BookingCheckoutClient({
                   <p className="text-xs text-zinc-500">{t("book_children_desc", "Ages 2–12")}{!allowsChildren ? ` · ${t("book_not_allowed", "Not allowed")}` : ""}</p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <button type="button" disabled={childrenCount <= 0} onClick={() => updateChildren(-1)} aria-label="Remove one child" className="flex size-8 items-center justify-center rounded-full border border-zinc-300 hover:border-zinc-900 disabled:cursor-not-allowed disabled:opacity-40">−</button>
+                  <button type="button" disabled={childrenCount <= 0} onClick={() => updateChildren(-1)} aria-label={t("listing_detail_remove_child_aria", "Remove one child")} className="flex size-8 items-center justify-center rounded-full border border-zinc-300 hover:border-zinc-900 disabled:cursor-not-allowed disabled:opacity-40">−</button>
                   <span className="w-6 text-center text-sm font-bold tabular-nums" aria-live="polite">{childrenCount}</span>
-                  <button type="button" disabled={!allowsChildren || !canAddCapacityGuest} onClick={() => updateChildren(1)} aria-label="Add one child" className="flex size-8 items-center justify-center rounded-full border border-zinc-300 hover:border-zinc-900 disabled:cursor-not-allowed disabled:opacity-40">+</button>
+                  <button type="button" disabled={!allowsChildren || !canAddCapacityGuest} onClick={() => updateChildren(1)} aria-label={t("listing_detail_add_child_aria", "Add one child")} className="flex size-8 items-center justify-center rounded-full border border-zinc-300 hover:border-zinc-900 disabled:cursor-not-allowed disabled:opacity-40">+</button>
                 </div>
               </div>
 
@@ -1716,9 +1716,9 @@ export function BookingCheckoutClient({
                   <p className="text-xs text-zinc-500">{t("book_infants_desc", "Under 2")}{!allowsInfants ? ` · ${t("book_not_allowed", "Not allowed")}` : ""}</p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <button type="button" disabled={infantsCount <= 0} onClick={() => updateInfants(-1)} aria-label="Remove one infant" className="flex size-8 items-center justify-center rounded-full border border-zinc-300 hover:border-zinc-900 disabled:cursor-not-allowed disabled:opacity-40">−</button>
+                  <button type="button" disabled={infantsCount <= 0} onClick={() => updateInfants(-1)} aria-label={t("listing_detail_remove_infant_aria", "Remove one infant")} className="flex size-8 items-center justify-center rounded-full border border-zinc-300 hover:border-zinc-900 disabled:cursor-not-allowed disabled:opacity-40">−</button>
                   <span className="w-6 text-center text-sm font-bold tabular-nums" aria-live="polite">{infantsCount}</span>
-                  <button type="button" disabled={!allowsInfants || infantsCount >= 5} onClick={() => updateInfants(1)} aria-label="Add one infant" className="flex size-8 items-center justify-center rounded-full border border-zinc-300 hover:border-zinc-900 disabled:cursor-not-allowed disabled:opacity-40">+</button>
+                  <button type="button" disabled={!allowsInfants || infantsCount >= 5} onClick={() => updateInfants(1)} aria-label={t("listing_detail_add_infant_aria", "Add one infant")} className="flex size-8 items-center justify-center rounded-full border border-zinc-300 hover:border-zinc-900 disabled:cursor-not-allowed disabled:opacity-40">+</button>
                 </div>
               </div>
 
@@ -1733,7 +1733,7 @@ export function BookingCheckoutClient({
                     type="button"
                     disabled={petsCount <= 0}
                     onClick={() => updatePets(-1)}
-                    aria-label="Remove one pet"
+                    aria-label={t("listing_detail_remove_pet_aria", "Remove one pet")}
                     className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-300 disabled:opacity-40 hover:border-zinc-900 cursor-pointer"
                   >
                     −
@@ -1745,7 +1745,7 @@ export function BookingCheckoutClient({
                     type="button"
                     disabled={!allowsPets || petsCount >= maximumPets}
                     onClick={() => updatePets(1)}
-                    aria-label="Add one pet"
+                    aria-label={t("listing_detail_add_pet_aria", "Add one pet")}
                     className="flex h-8 w-8 items-center justify-center rounded-full border border-zinc-300 disabled:opacity-40 hover:border-zinc-900 cursor-pointer"
                   >
                     +
@@ -1803,7 +1803,7 @@ export function BookingCheckoutClient({
               <button
                 type="button"
                 onClick={() => setIsPolicyModalOpen(false)}
-                aria-label="Close cancellation policy"
+                aria-label={t("book_close_policy_aria", "Close cancellation policy")}
                 className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-zinc-100 text-zinc-500 cursor-pointer"
               >
                 ✕

@@ -312,6 +312,7 @@ function GuidebookModal({
   footer?: React.ReactNode;
   width?: string;
 }) {
+  const { t } = useLanguage();
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") onClose();
@@ -342,7 +343,7 @@ function GuidebookModal({
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close dialog"
+            aria-label={t("host_close_dialog_aria", "Close dialog")}
             className="-mr-2 flex size-9 items-center justify-center rounded-full text-[#1f1f1f] hover:bg-zinc-100 focus-visible:outline-2 focus-visible:outline-offset-2 dark:text-zinc-300 dark:hover:bg-zinc-800 cursor-pointer transition-colors"
           >
             <CloseIcon />
@@ -567,7 +568,7 @@ function GuidebookRecommendationForm({
             {photos[0] && (
               <button
                 type="button"
-                aria-label="Remove photo"
+                aria-label={t("host_guidebook_remove_photo_aria", "Remove photo")}
                 onClick={() => setPhotos([])}
                 className="absolute right-1.5 top-1.5 flex size-6 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black"
               >
@@ -822,7 +823,7 @@ export function GuidebooksManager({
     target: "item" | "cover" = "item",
   ) => {
     if (!guidebook) {
-      toast.error("Open a guidebook before uploading photos.");
+      toast.error(t("host_guidebook_toast_open_first", "Open a guidebook before uploading photos."));
       return;
     }
     const current = target === "cover" ? coverDraft : formPhotos;
@@ -996,7 +997,7 @@ export function GuidebooksManager({
         ),
       });
       setModal(null);
-      toast.success("Listings updated.");
+      toast.success(t("host_guidebook_toast_listings_updated", "Listings updated."));
     } else toast.error(actionError(result, "Could not update listings."));
     setSaving(false);
   };
@@ -1009,7 +1010,7 @@ export function GuidebooksManager({
     if (result.ok) {
       setGuidebook({ ...guidebook, coverImage });
       setModal(null);
-      toast.success("Cover updated.");
+      toast.success(t("host_guidebook_toast_cover_updated", "Cover updated."));
     } else toast.error(actionError(result, "Could not update the cover."));
     setSaving(false);
   };
@@ -1025,7 +1026,7 @@ export function GuidebooksManager({
       });
       setDeleteItem(null);
       setModal(null);
-      toast.success("Recommendation removed.");
+      toast.success(t("host_guidebook_toast_rec_removed", "Recommendation removed."));
     } else
       toast.error(actionError(result, "Could not remove this recommendation."));
     setSaving(false);
@@ -1045,7 +1046,7 @@ export function GuidebooksManager({
       }
       setGuidebookToDelete(null);
       setModal(null);
-      toast.success("Guidebook deleted.");
+      toast.success(t("host_guidebook_toast_deleted", "Guidebook deleted."));
     } else {
       toast.error(actionError(result, "Could not delete this guidebook."));
     }
@@ -1167,7 +1168,7 @@ export function GuidebooksManager({
                     <h2 className="text-xl font-semibold">{item.title}</h2>
                     <p className="mt-1 text-sm text-[#727272]">
                       {t("host_guidebooks_recs_count", "{count} recommendations").replace("{count}", String(item.itemsCount || 0))} ·{" "}
-                      {item.listings?.length || 0} listings
+                      {t("host_guidebook_listings_count", { count: item.listings?.length || 0 }, "{count} listings")}
                     </p>
                     <div className="mt-5 flex items-center justify-between gap-3">
                       <button
@@ -1175,7 +1176,7 @@ export function GuidebooksManager({
                         onClick={() => void openGuidebook(item.id)}
                         className="rounded-xl bg-[#1f1f1f] px-5 py-2.5 text-sm font-medium text-white hover:text-[#1f1f1f] border border-[#1f1f1f] transition hover:bg-white"
                       >
-                        Edit
+                        {t("common_edit", "Edit")}
                       </button>
                       <button
                         type="button"
@@ -1346,7 +1347,7 @@ export function GuidebooksManager({
             <div className="relative h-48 overflow-hidden rounded-3xl sm:h-64">
               <Image
                 src={guidebook.coverImage}
-                alt="Guidebook cover"
+                alt={t("host_guidebook_cover_alt", "Guidebook cover")}
                 fill
                 sizes="1100px"
                 unoptimized

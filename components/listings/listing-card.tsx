@@ -449,7 +449,7 @@ export function ListingCard({
   return (
     <Link
       href={targetHref}
-      aria-label={listing.title || "View property"}
+      aria-label={listing.title || t("listings_view_property", "View property")}
       onClick={() => {
         setIsNavigating(true);
         trackListingEvent({
@@ -493,7 +493,7 @@ export function ListingCard({
                   {shouldRenderImage ? (
                     <img
                       src={photo}
-                      alt={listing.title || `Photo ${idx + 1}`}
+                      alt={listing.title || t("listings_photo_number", { number: idx + 1 }, `Photo ${idx + 1}`)}
                       onError={() => {
                         setFailedIndices((prev) => new Set(prev).add(idx));
                       }}
@@ -542,7 +542,7 @@ export function ListingCard({
           (favoriteVariant === "remove") ? (
             <button
               type="button"
-              aria-label="Remove from wishlist"
+              aria-label={t("listings_remove_from_wishlist", "Remove from wishlist")}
               onClick={handleRemoveOnly}
               disabled={isFavoriting}
               className={`absolute right-3 top-3 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-white/80 backdrop-blur-xs text-[#1f1f1f] transition-transform group-hover:bg-red-500 cursor-pointer shadow-2xs disabled:opacity-60`}
@@ -563,7 +563,7 @@ export function ListingCard({
         {hasMultiplePhotos && currentPhotoIndex > 0 && (
           <button
             type="button"
-            aria-label="Previous photo"
+            aria-label={t("listing_gallery_prev_photo", "Previous photo")}
             onClick={handlePrev}
             className="absolute left-2.5 top-1/2 -translate-y-1/2 z-20 flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-white/90 text-[#1f1f1f] shadow-md transition-all hover:bg-[#FCDF9C] cursor-pointer opacity-0 group-hover:opacity-100 focus:opacity-100 backdrop-blur-xs"
           >
@@ -583,7 +583,7 @@ export function ListingCard({
         {hasMultiplePhotos && currentPhotoIndex < validPhotos.length - 1 && (
           <button
             type="button"
-            aria-label="Next photo"
+            aria-label={t("listing_gallery_next_photo", "Next photo")}
             onClick={handleNext}
             className="absolute right-2.5 top-1/2 -translate-y-1/2 z-20 flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-white/90 text-[#1f1f1f] shadow-md transition-all hover:bg-[#FCDF9C] cursor-pointer opacity-0 group-hover:opacity-100 focus:opacity-100 backdrop-blur-xs"
           >
@@ -614,7 +614,7 @@ export function ListingCard({
                 <button
                   key={idx}
                   type="button"
-                  aria-label={`Go to photo ${idx + 1}`}
+                  aria-label={t("listings_go_to_photo", { number: idx + 1 }, `Go to photo ${idx + 1}`)}
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -648,7 +648,7 @@ export function ListingCard({
                     <button
                       key={idx}
                       type="button"
-                      aria-label={`Go to photo ${idx + 1}`}
+                      aria-label={t("listings_go_to_photo", { number: idx + 1 }, `Go to photo ${idx + 1}`)}
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
@@ -706,7 +706,7 @@ export function ListingCard({
                   {formatPrice(totalPrice, currency)}
                 </span>
                 <span className="text-[#1f1f1f]">
-                  for {nights} {nights === 1 ? "night" : "nights"}
+                  {nights === 1 ? t("listings_for_night", { count: nights }, "for 1 night") : t("listings_for_nights", { count: nights }, `for ${nights} nights`)}
                 </span>
               </span>
 

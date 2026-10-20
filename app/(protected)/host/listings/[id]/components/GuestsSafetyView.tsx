@@ -441,7 +441,7 @@ export function GuestsSafetyView({
                     </button>
                   </div>
                   <AllowDenyButtons
-                    label="not suitable for children"
+                    label={t("host_safety_unsuitable_children_short", "Not a good fit for children 2–12")}
                     value={draftState.considerations.unsuitableChildren}
                     onChange={(val) =>
                       handleToggleQuestion("considerations", "unsuitableChildren", "unsuitableChildrenDetails", val)
@@ -485,7 +485,7 @@ export function GuestsSafetyView({
                     </button>
                   </div>
                   <AllowDenyButtons
-                    label="not suitable for infants"
+                    label={t("host_safety_unsuitable_infants_short", "Not a good fit for infants under 2")}
                     value={draftState.considerations.unsuitableInfants}
                     onChange={(val) =>
                       handleToggleQuestion("considerations", "unsuitableInfants", "unsuitableInfantsDetails", val)
@@ -522,7 +522,7 @@ export function GuestsSafetyView({
                     </p>
                   </div>
                   <AllowDenyButtons
-                    label="pool without gate"
+                    label={t("host_safety_pool_no_gate_short", "Pool or hot tub doesn't have a gate or lock")}
                     value={draftState.considerations.poolNoGate}
                     onChange={(val) =>
                       handleToggleQuestion("considerations", "poolNoGate", "poolNoGateDetails", val)
@@ -559,7 +559,7 @@ export function GuestsSafetyView({
                     </p>
                   </div>
                   <AllowDenyButtons
-                    label="nearby water"
+                    label={t("host_safety_nearby_water_short", "Nearby water, like a lake or river")}
                     value={draftState.considerations.nearbyWater}
                     onChange={(val) =>
                       handleToggleQuestion("considerations", "nearbyWater", "nearbyWaterDetails", val)
@@ -596,7 +596,7 @@ export function GuestsSafetyView({
                     </p>
                   </div>
                   <AllowDenyButtons
-                    label="climbing play structure"
+                    label={t("host_safety_climbing_structure_short", "Climbing or play structure(s)")}
                     value={draftState.considerations.climbingStructure}
                     onChange={(val) =>
                       handleToggleQuestion("considerations", "climbingStructure", "climbingStructureDetails", val)
@@ -633,7 +633,7 @@ export function GuestsSafetyView({
                     </p>
                   </div>
                   <AllowDenyButtons
-                    label="heights without rails"
+                    label={t("host_safety_heights_no_rails_short", "Heights without rails or protection")}
                     value={draftState.considerations.heightsNoRails}
                     onChange={(val) =>
                       handleToggleQuestion("considerations", "heightsNoRails", "heightsNoRailsDetails", val)
@@ -677,7 +677,7 @@ export function GuestsSafetyView({
                     </button>
                   </div>
                   <AllowDenyButtons
-                    label="dangerous animals"
+                    label={t("host_safety_dangerous_animals_short", "Potentially dangerous animal(s)")}
                     value={draftState.considerations.dangerousAnimals}
                     onChange={(val) =>
                       handleToggleQuestion("considerations", "dangerousAnimals", "dangerousAnimalsDetails", val)
@@ -721,7 +721,7 @@ export function GuestsSafetyView({
                     </button>
                   </div>
                   <AllowDenyButtons
-                    label="other safety or regulatory notes"
+                    label={t("host_safety_special_notes_short", "Other safety or regulatory notes")}
                     value={draftState.considerations.specialConsiderations}
                     onChange={(val) =>
                       handleToggleQuestion("considerations", "specialConsiderations", "specialConsiderationsDetails", val)
@@ -840,7 +840,7 @@ export function GuestsSafetyView({
                     </button>
                   </div>
                   <AllowDenyButtons
-                    label="exterior security camera"
+                    label={t("host_safety_camera_short", "Camera")}
                     value={draftState.devices.securityCamera}
                     onChange={(val) =>
                       handleToggleQuestion("devices", "securityCamera", "securityCameraDetails", val)
@@ -901,7 +901,7 @@ export function GuestsSafetyView({
                     </button>
                   </div>
                   <AllowDenyButtons
-                    label="noise decibel monitor"
+                    label={t("host_safety_noise_monitor_short", "Noise monitor")}
                     value={draftState.devices.noiseMonitor}
                     onChange={(val) =>
                       handleToggleQuestion("devices", "noiseMonitor", "noiseMonitorDetails", val)
@@ -962,7 +962,7 @@ export function GuestsSafetyView({
                     </button>
                   </div>
                   <AllowDenyButtons
-                    label="carbon monoxide alarm"
+                    label={t("host_safety_co_alarm_short", "CO alarm")}
                     value={draftState.devices.carbonMonoxideAlarm}
                     onChange={(val) =>
                       handleToggleQuestion("devices", "carbonMonoxideAlarm", "carbonMonoxideAlarmDetails", val)
@@ -1006,7 +1006,7 @@ export function GuestsSafetyView({
                     </button>
                   </div>
                   <AllowDenyButtons
-                    label="smoke alarm"
+                    label={t("host_safety_smoke_alarm_short", "Smoke alarm")}
                     value={draftState.devices.smokeAlarm}
                     onChange={(val) =>
                       handleToggleQuestion("devices", "smokeAlarm", "smokeAlarmDetails", val)
@@ -1098,7 +1098,7 @@ export function GuestsSafetyView({
                     </p>
                   </div>
                   <AllowDenyButtons
-                    label="climb stairs"
+                    label={t("host_safety_climb_stairs_short", "Must climb stairs")}
                     value={draftState.propertyInfo.climbStairs}
                     onChange={(val) =>
                       handleToggleQuestion("propertyInfo", "climbStairs", "climbStairsDetails", val)
@@ -1152,7 +1152,7 @@ export function GuestsSafetyView({
                     </p>
                   </div>
                   <AllowDenyButtons
-                    label="construction or other potential noise"
+                    label={t("host_safety_potential_noise_short", "Construction or other potential noise during stays")}
                     value={draftState.propertyInfo.potentialNoise}
                     onChange={(val) =>
                       handleToggleQuestion("propertyInfo", "potentialNoise", "potentialNoiseDetails", val)
@@ -1206,7 +1206,7 @@ export function GuestsSafetyView({
                     </p>
                   </div>
                   <AllowDenyButtons
-                    label="pets live at property"
+                    label={t("host_safety_pets_live_short", "Pet(s) live at the property")}
                     value={draftState.propertyInfo.petsLiveOnProperty}
                     onChange={(val) =>
                       handleToggleQuestion("propertyInfo", "petsLiveOnProperty", "petsLiveOnPropertyDetails", val)
@@ -1260,7 +1260,7 @@ export function GuestsSafetyView({
                     </p>
                   </div>
                   <AllowDenyButtons
-                    label="no parking"
+                    label={t("host_safety_no_parking_short", "No parking on the property")}
                     value={draftState.propertyInfo.noParking}
                     onChange={(val) =>
                       handleToggleQuestion("propertyInfo", "noParking", "noParkingDetails", val)
@@ -1314,7 +1314,7 @@ export function GuestsSafetyView({
                     </p>
                   </div>
                   <AllowDenyButtons
-                    label="shared spaces"
+                    label={t("host_safety_shared_spaces_short", "Property has shared spaces")}
                     value={draftState.propertyInfo.sharedSpaces}
                     onChange={(val) =>
                       handleToggleQuestion("propertyInfo", "sharedSpaces", "sharedSpacesDetails", val)
@@ -1368,7 +1368,7 @@ export function GuestsSafetyView({
                     </p>
                   </div>
                   <AllowDenyButtons
-                    label="limited essential amenities"
+                    label={t("host_safety_limited_amenities_short", "Limited essential amenities")}
                     value={draftState.propertyInfo.limitedAmenities}
                     onChange={(val) =>
                       handleToggleQuestion("propertyInfo", "limitedAmenities", "limitedAmenitiesDetails", val)
@@ -1432,7 +1432,7 @@ export function GuestsSafetyView({
                     </button>
                   </div>
                   <AllowDenyButtons
-                    label="weapons on property"
+                    label={t("host_safety_weapons_short", "Weapon(s) on the property")}
                     value={draftState.propertyInfo.weapons}
                     onChange={(val) =>
                       handleToggleQuestion("propertyInfo", "weapons", "weaponsDetails", val)

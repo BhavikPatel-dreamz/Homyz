@@ -78,7 +78,7 @@ export function StepSafety({
                         type="button"
                         role="switch"
                         aria-checked={answer === "YES"}
-                        aria-label={`Toggle ${item.label}`}
+                        aria-label={t("host_toggle_safety_item_aria", { label: item.label }, `Toggle ${item.label}`)}
                         onClick={() => onAnswerSafety(item.id, answer === "YES" ? "NO" : "YES")}
                         className={`relative h-4 w-8 shrink-0 rounded-full transition-colors ${answer === "YES" ? "bg-[#DF4557]" : "bg-[#DDDDDE]"}`}
                       >

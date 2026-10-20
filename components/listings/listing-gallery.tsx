@@ -227,7 +227,7 @@ export function ListingGallery({
           {!failed[0] ? (
             <button
               type="button"
-              aria-label={`Open photo 1 of 1`}
+              aria-label={t("listing_gallery_open_photo_x_of_y" as any, { current: 1, total: 1 }, "Open photo 1 of 1")}
               onClick={handleOpenLightbox}
               onTouchStart={(event) => {
                 touchStartX.current = event.touches[0]?.clientX ?? null;
@@ -237,7 +237,7 @@ export function ListingGallery({
             >
               <Image
                 src={galleryPhotos[0]}
-                alt={listingTitle ? `${listingTitle} — Photo 1` : "Property photo 1"}
+                alt={listingTitle ? `${listingTitle} — ${t("listing_gallery_photo_n" as any, { number: 1 }, "Photo 1")}` : t("listing_gallery_photo_n" as any, { number: 1 }, "Photo 1")}
                 sizes="(max-width: 768px) 100vw, 1200px"
                 fill
                 style={{ objectFit: "cover" }}
@@ -260,7 +260,7 @@ export function ListingGallery({
               {!failed[index] ? (
                 <button
                   type="button"
-                  aria-label={`Open photo ${index + 1} of 2`}
+                  aria-label={t("listing_gallery_open_photo_x_of_y" as any, { current: index + 1, total: 2 }, `Open photo ${index + 1} of 2`)}
                   onClick={() => {
                     setSelectedIndex(index);
                     handleOpenLightbox();
@@ -269,7 +269,7 @@ export function ListingGallery({
                 >
                   <Image
                     src={photo}
-                    alt={listingTitle ? `${listingTitle} — Photo ${index + 1}` : `Photo ${index + 1}`}
+                    alt={listingTitle ? `${listingTitle} — ${t("listing_gallery_photo_n" as any, { number: index + 1 }, `Photo ${index + 1}`)}` : t("listing_gallery_photo_n" as any, { number: index + 1 }, `Photo ${index + 1}`)}
                     sizes="(max-width: 768px) 100vw, 50vw"
                     fill
                     style={{ objectFit: "cover" }}
@@ -294,7 +294,7 @@ export function ListingGallery({
             {!failed[0] ? (
               <button
                 type="button"
-                aria-label={`Open photo 1 of 3`}
+                aria-label={t("listing_gallery_open_photo_x_of_y" as any, { current: 1, total: 3 }, "Open photo 1 of 3")}
                 onClick={() => {
                   setSelectedIndex(0);
                   handleOpenLightbox();
@@ -303,7 +303,7 @@ export function ListingGallery({
               >
                 <Image
                   src={galleryPhotos[0]}
-                  alt={listingTitle ? `${listingTitle} — Photo 1` : "Photo 1"}
+                  alt={listingTitle ? `${listingTitle} — ${t("listing_gallery_photo_n" as any, { number: 1 }, "Photo 1")}` : t("listing_gallery_photo_n" as any, { number: 1 }, "Photo 1")}
                   sizes="(max-width: 768px) 100vw, 50vw"
                   fill
                   style={{ objectFit: "cover" }}
@@ -328,12 +328,12 @@ export function ListingGallery({
                         setSelectedIndex(index);
                         handleOpenLightbox();
                       }}
-                      aria-label={`Open photo ${index + 1} of 3`}
+                      aria-label={t("listing_gallery_open_photo_x_of_y" as any, { current: index + 1, total: 3 }, `Open photo ${index + 1} of 3`)}
                       className="h-full w-full p-0 m-0 block cursor-pointer hover:opacity-95 transition-opacity"
                     >
                       <Image
                         src={photo}
-                        alt={listingTitle ? `${listingTitle} — Photo ${index + 1}` : `Photo ${index + 1}`}
+                        alt={listingTitle ? `${listingTitle} — ${t("listing_gallery_photo_n" as any, { number: index + 1 }, `Photo ${index + 1}`)}` : t("listing_gallery_photo_n" as any, { number: index + 1 }, `Photo ${index + 1}`)}
                         fill
                         sizes="(max-width: 768px) 50vw, 25vw"
                         style={{ objectFit: "cover" }}
@@ -359,7 +359,7 @@ export function ListingGallery({
             {!failed[0] ? (
               <button
                 type="button"
-                aria-label={`Open photo 1 of 4`}
+                aria-label={t("listing_gallery_open_photo_x_of_y" as any, { current: 1, total: 4 }, "Open photo 1 of 4")}
                 onClick={() => {
                   setSelectedIndex(0);
                   handleOpenLightbox();
@@ -368,7 +368,7 @@ export function ListingGallery({
               >
                 <Image
                   src={galleryPhotos[0]}
-                  alt={listingTitle ? `${listingTitle} — Photo 1` : "Photo 1"}
+                  alt={listingTitle ? `${listingTitle} — ${t("listing_gallery_photo_n" as any, { number: 1 }, "Photo 1")}` : t("listing_gallery_photo_n" as any, { number: 1 }, "Photo 1")}
                   sizes="(max-width: 768px) 100vw, 50vw"
                   fill
                   style={{ objectFit: "cover" }}
@@ -390,12 +390,12 @@ export function ListingGallery({
                     setSelectedIndex(1);
                     handleOpenLightbox();
                   }}
-                  aria-label="Open photo 2 of 4"
+                  aria-label={t("listing_gallery_open_photo_x_of_y" as any, { current: 2, total: 4 }, "Open photo 2 of 4")}
                   className="h-full w-full cursor-pointer hover:opacity-95 transition-opacity"
                 >
                   <Image
                     src={galleryPhotos[1]}
-                    alt={listingTitle ? `${listingTitle} — Photo 2` : "Photo 2"}
+                    alt={listingTitle ? `${listingTitle} — ${t("listing_gallery_photo_n" as any, { number: 2 }, "Photo 2")}` : t("listing_gallery_photo_n" as any, { number: 2 }, "Photo 2")}
                     fill
                     sizes="(max-width: 768px) 50vw, 25vw"
                     style={{ objectFit: "cover" }}
@@ -419,12 +419,12 @@ export function ListingGallery({
                         setSelectedIndex(index);
                         handleOpenLightbox();
                       }}
-                      aria-label={`Open photo ${index + 1} of 4`}
+                      aria-label={t("listing_gallery_open_photo_x_of_y" as any, { current: index + 1, total: 4 }, `Open photo ${index + 1} of 4`)}
                       className="h-full w-full cursor-pointer hover:opacity-95 transition-opacity"
                     >
                       <Image
                         src={photo}
-                        alt={listingTitle ? `${listingTitle} — Photo ${index + 1}` : `Photo ${index + 1}`}
+                        alt={listingTitle ? `${listingTitle} — ${t("listing_gallery_photo_n" as any, { number: index + 1 }, `Photo ${index + 1}`)}` : t("listing_gallery_photo_n" as any, { number: index + 1 }, `Photo ${index + 1}`)}
                         fill
                         sizes="(max-width: 768px) 25vw, 12vw"
                         style={{ objectFit: "cover" }}
@@ -450,7 +450,7 @@ export function ListingGallery({
             {!failed[selectedIndex] ? (
               <button
                 type="button"
-                aria-label={`Open photo ${selectedIndex + 1} of ${total}`}
+                aria-label={t("listing_gallery_open_photo_x_of_y" as any, { current: selectedIndex + 1, total }, `Open photo ${selectedIndex + 1} of ${total}`)}
                 onClick={handleOpenLightbox}
                 onTouchStart={(event) => {
                   touchStartX.current = event.touches[0]?.clientX ?? null;
@@ -461,7 +461,7 @@ export function ListingGallery({
                 <div className="relative w-full h-full min-h-[220px]">
                   <Image
                     src={galleryPhotos[selectedIndex]}
-                    alt={listingTitle ? `${listingTitle} — Photo ${selectedIndex + 1}` : `Photo ${selectedIndex + 1}`}
+                    alt={listingTitle ? `${listingTitle} — ${t("listing_gallery_photo_n" as any, { number: selectedIndex + 1 }, `Photo ${selectedIndex + 1}`)}` : t("listing_gallery_photo_n" as any, { number: selectedIndex + 1 }, `Photo ${selectedIndex + 1}`)}
                     sizes="(max-width: 768px) 100vw, 50vw"
                     fill
                     style={{ objectFit: "cover" }}
@@ -485,7 +485,7 @@ export function ListingGallery({
                   type="button"
                   key={index}
                   onClick={() => handleSelectPhoto(index)}
-                  aria-label={`Select photo ${index + 1}`}
+                  aria-label={t("listing_gallery_select_photo_n" as any, { number: index + 1 }, `Select photo ${index + 1}`)}
                   className={`relative h-full overflow-hidden bg-zinc-100 cursor-pointer hover:opacity-95 transition-opacity rounded-[10px] ${
                     isActive ? "ring-2 ring-amber-400" : ""
                   }`}
@@ -493,7 +493,7 @@ export function ListingGallery({
                   {!failed[index] ? (
                     <Image
                       src={photo}
-                      alt={listingTitle ? `${listingTitle} — Photo ${index + 1}` : `Photo ${index + 1}`}
+                      alt={listingTitle ? `${listingTitle} — ${t("listing_gallery_photo_n" as any, { number: index + 1 }, `Photo ${index + 1}`)}` : t("listing_gallery_photo_n" as any, { number: index + 1 }, `Photo ${index + 1}`)}
                       fill
                       sizes="(max-width: 768px) 50vw, 25vw"
                       style={{ objectFit: "cover" }}
@@ -528,7 +528,7 @@ export function ListingGallery({
         <button
           type="button"
           onClick={() => router.back()}
-          aria-label="Go back"
+          aria-label={t("listing_gallery_go_back" as any, "Go back")}
           className="flex size-9 items-center justify-center rounded-full border border-[#1f1f1f]/30 bg-white/95 text-[#1f1f1f] shadow-sm cursor-pointer"
         >
           <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="size-5">
@@ -539,7 +539,7 @@ export function ListingGallery({
           <button
             type="button"
             onClick={onShare}
-            aria-label="Share this listing"
+            aria-label={t("listing_gallery_share_aria" as any, "Share this listing")}
             className="flex size-9 items-center justify-center rounded-full border border-[#1f1f1f]/20 bg-white/95 text-[#1f1f1f] shadow-sm cursor-pointer"
           >
             <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.55" className="size-5">
@@ -554,7 +554,7 @@ export function ListingGallery({
             onClick={onSave}
             disabled={saveDisabled}
             aria-pressed={isSaved}
-            aria-label={isSaved ? "Remove from wishlist" : "Save listing"}
+            aria-label={isSaved ? t("listing_gallery_remove_wishlist" as any, "Remove from wishlist") : t("listing_gallery_save_listing" as any, "Save listing")}
             className={`flex size-9 items-center justify-center rounded-full border bg-white/95 shadow-sm disabled:opacity-50 cursor-pointer ${
               isSaved ? "border-amber-300 text-amber-800" : "border-[#1f1f1f]/20 text-[#1f1f1f]"
             }`}
@@ -581,7 +581,7 @@ export function ListingGallery({
         <ModalOverlay
           role="dialog"
           aria-modal="true"
-          aria-label={`${listingTitle || "Property"} photo gallery`}
+          aria-label={t("listing_gallery_dialog_label" as any, { title: listingTitle || t("listing_gallery_property_default" as any, "Property") }, `${listingTitle || "Property"} photo gallery`)}
           className="fixed inset-0 z-50 overflow-y-auto bg-black/90 p-4"
         >
           <div className="max-w-5xl w-full h-full mx-auto my-8">
@@ -594,16 +594,16 @@ export function ListingGallery({
                   type="button"
                   onClick={() => setReportingPhotoUrl(galleryPhotos[selectedIndex])}
                   className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-xs font-medium text-white hover:bg-white/20 transition cursor-pointer"
-                  aria-label="Report this photo"
+                  aria-label={t("listing_gallery_report_photo_aria" as any, "Report this photo")}
                 >
                   <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
                   </svg>
-                  Report photo
+                  {t("listing_gallery_report_photo_btn" as any, "Report photo")}
                 </button>
                 <button
                   type="button"
-                  aria-label="Previous photo"
+                  aria-label={t("listing_gallery_prev_photo" as any, "Previous photo")}
                   disabled={!canGoPrevious}
                   onClick={goToPrevious}
                   className="px-3 py-2 disabled:opacity-35 cursor-pointer text-lg font-bold"
@@ -612,7 +612,7 @@ export function ListingGallery({
                 </button>
                 <button
                   type="button"
-                  aria-label="Next photo"
+                  aria-label={t("listing_gallery_next_photo" as any, "Next photo")}
                   disabled={!canGoNext}
                   onClick={goToNext}
                   className="px-3 py-2 disabled:opacity-35 cursor-pointer text-lg font-bold"
@@ -621,7 +621,7 @@ export function ListingGallery({
                 </button>
                 <button
                   ref={lightboxCloseBtnRef}
-                  aria-label="Close gallery"
+                  aria-label={t("listing_gallery_close" as any, "Close gallery")}
                   onClick={closeLightbox}
                   className="px-3 py-2 cursor-pointer text-lg font-bold"
                 >
@@ -642,7 +642,7 @@ export function ListingGallery({
                       : "bg-white/10 text-white/80 hover:bg-white/20"
                   }`}
                 >
-                  All photos ({galleryPhotos.length})
+                  {t("listing_gallery_all_photos" as any, { count: galleryPhotos.length }, `All photos (${galleryPhotos.length})`)}
                 </button>
                 {roomCategories.map((cat) => (
                   <button
@@ -673,12 +673,12 @@ export function ListingGallery({
                   <div className="relative w-full h-[70vh]">
                     {roomByUrl.get(galleryPhotos[selectedIndex]) && (
                       <span className="absolute top-4 left-4 z-10 rounded-full bg-black/60 backdrop-blur-md px-3 py-1 text-xs font-medium text-white shadow-sm border border-white/20">
-                        {PHOTO_TOUR_CATEGORIES.find((c) => c.id === roomByUrl.get(galleryPhotos[selectedIndex]))?.label || "Room"}
+                        {t(`host_room_cat_${roomByUrl.get(galleryPhotos[selectedIndex])}` as any, PHOTO_TOUR_CATEGORIES.find((c) => c.id === roomByUrl.get(galleryPhotos[selectedIndex]))?.label || t("listing_gallery_room_fallback" as any, "Room"))}
                       </span>
                     )}
                     <Image
                       src={galleryPhotos[selectedIndex]}
-                      alt={listingTitle ? `${listingTitle} — Photo ${selectedIndex + 1}` : `Photo ${selectedIndex + 1}`}
+                      alt={listingTitle ? `${listingTitle} — ${t("listing_gallery_photo_n" as any, { number: selectedIndex + 1 }, `Photo ${selectedIndex + 1}`)}` : t("listing_gallery_photo_n" as any, { number: selectedIndex + 1 }, `Photo ${selectedIndex + 1}`)}
                       fill
                       style={{ objectFit: "contain" }}
                       sizes="100vw"
@@ -687,7 +687,7 @@ export function ListingGallery({
                     />
                   </div>
                 ) : (
-                  renderSlotFallback("Full photo unavailable")
+                  renderSlotFallback(t("listing_gallery_full_photo_unavailable" as any, "Full photo unavailable"))
                 )}
               </div>
 
@@ -701,12 +701,12 @@ export function ListingGallery({
                     className={`relative shrink-0 w-20 h-12 rounded overflow-hidden border cursor-pointer ${
                       ii === selectedIndex ? "ring-2 ring-amber-400" : "border-zinc-200"
                     }`}
-                    aria-label={`Lightbox select ${ii + 1}`}
+                    aria-label={t("listing_gallery_thumb_select" as any, { number: ii + 1 }, `Lightbox select ${ii + 1}`)}
                   >
                     {!failed[ii] ? (
                       <Image
                         src={pp}
-                        alt={`Photo ${ii + 1}`}
+                        alt={t("listing_gallery_photo_n" as any, { number: ii + 1 }, `Photo ${ii + 1}`)}
                         fill
                         style={{ objectFit: "cover" }}
                         sizes="80px"
@@ -731,7 +731,7 @@ export function ListingGallery({
           onClose={() => setReportingPhotoUrl(null)}
           targetType="LISTING_PHOTO"
           targetId={reportingPhotoUrl}
-          targetTitle={`${listingTitle ? `${listingTitle} — ` : ""}Photo ${selectedIndex + 1}`}
+          targetTitle={`${listingTitle ? `${listingTitle} — ` : ""}${t("listing_gallery_photo_n" as any, { number: selectedIndex + 1 }, `Photo ${selectedIndex + 1}`)}`}
         />
       )}
     </div>

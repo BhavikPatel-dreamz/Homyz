@@ -317,10 +317,10 @@ export function HostAboutHostView({
         await updateSession({ user: { ...session.user, image: data.url } });
       }
 
-      toast.success("Profile photo updated successfully.");
+      toast.success(t("host_about_photo_updated_toast", "Profile photo updated successfully."));
       setFeedback({
         type: "success",
-        text: "Profile photo updated successfully.",
+        text: t("host_about_photo_updated_toast", "Profile photo updated successfully."),
       });
       router.refresh();
     } catch (error: unknown) {
@@ -1035,7 +1035,7 @@ export function HostAboutHostView({
       </div>
       {aboutHostScrollThumb.visible && (
         <div ref={aboutHostScrollTrackRef} className="absolute inset-y-0 right-0 hidden w-[22px] rounded-[30px] bg-[#F3F4F5] dark:bg-zinc-800 lg:block">
-          <button type="button" aria-label="Scroll about host up" onClick={() => scrollAboutHostByPage("up")} className="absolute left-0 top-1 z-10 flex size-[22px] items-center justify-center rounded-full text-[#727272] transition hover:bg-white/70 hover:text-[#1f1f1f] dark:text-zinc-300 dark:hover:bg-zinc-700">
+          <button type="button" aria-label={t("host_about_scroll_up_aria", "Scroll about host up")} onClick={() => scrollAboutHostByPage("up")} className="absolute left-0 top-1 z-10 flex size-[22px] items-center justify-center rounded-full text-[#727272] transition hover:bg-white/70 hover:text-[#1f1f1f] dark:text-zinc-300 dark:hover:bg-zinc-700">
             <svg aria-hidden="true" className="size-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m18 15-6-6-6 6" /></svg>
           </button>
           <div
@@ -1043,7 +1043,7 @@ export function HostAboutHostView({
             className={`absolute left-0 top-0 w-[22px] touch-none select-none rounded-[30px] border border-white bg-[#DDDDDE] shadow-[0_2px_4px_rgba(0,0,0,0.25)] will-change-transform dark:border-zinc-700 dark:bg-zinc-600 ${isAboutHostScrollbarDragging ? "cursor-grabbing" : "cursor-grab"}`}
             style={{ height: `${aboutHostScrollThumb.height}px`, transform: `translate3d(0, ${aboutHostScrollThumb.top}px, 0)` }}
           />
-          <button type="button" aria-label="Scroll about host down" onClick={() => scrollAboutHostByPage("down")} className="absolute bottom-1 left-0 z-10 flex size-[22px] items-center justify-center rounded-full text-[#727272] transition hover:bg-white/70 hover:text-[#1f1f1f] dark:text-zinc-300 dark:hover:bg-zinc-700">
+          <button type="button" aria-label={t("host_about_scroll_down_aria", "Scroll about host down")} onClick={() => scrollAboutHostByPage("down")} className="absolute bottom-1 left-0 z-10 flex size-[22px] items-center justify-center rounded-full text-[#727272] transition hover:bg-white/70 hover:text-[#1f1f1f] dark:text-zinc-300 dark:hover:bg-zinc-700">
             <svg aria-hidden="true" className="size-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m6 9 6 6 6-6" /></svg>
           </button>
         </div>

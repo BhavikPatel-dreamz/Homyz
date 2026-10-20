@@ -22,7 +22,7 @@ export function MessagesHeader() {
   return (
     <header className="sticky top-0 z-40 bg-white/95 text-[#1F1F1F] backdrop-blur">
       <div className="mx-auto flex h-[76px] w-full max-w-[1520px] items-center justify-between px-5 sm:px-6 lg:h-[88px]">
-        <Link href="/" aria-label="Homyz home" className="shrink-0">
+        <Link href="/" aria-label={t("host_msg_home_aria", "Homyz home")} className="shrink-0">
           <Image
             src="/images/brand/homyz-logo-dark-v1.svg"
             alt="Homyz"
@@ -33,7 +33,7 @@ export function MessagesHeader() {
           />
           <Image
             src="/images/brand/homyz-logo-dark-v2.svg"
-            alt="Stay like a homie."
+            alt={t("host_msg_logo_tagline", "Stay like a homie.")}
             width={200}
             height={53}
             className="h-auto w-[200px] sm:hidden"

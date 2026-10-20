@@ -130,7 +130,7 @@ export function BecomeHostModal({
               type="button"
               onClick={onClose}
               className="flex h-10 w-10 items-center justify-center rounded-full text-[#727272] hover:bg-[#E9EBFF] hover:text-zinc-700 transition-colors cursor-pointer"
-              aria-label="Close modal"
+              aria-label={t("host_close", "Close modal")}
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="#1A1A1A" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -204,15 +204,15 @@ export function BecomeHostModal({
           <div className="flex items-center justify-between mb-4">
             <BackButton
               onClick={() => setStep(1)}
-              aria-label="Back to welcome screen"
-              title="Back"
+              aria-label={t("host_back_welcome_screen_aria", "Back to welcome screen")}
+              title={t("common_back", "Back")}
             />
 
             <button
               type="button"
               onClick={onClose}
               className="flex h-10 w-10 items-center justify-center rounded-full text-[#727272] hover:bg-[#E9EBFF] hover:text-zinc-700 transition-colors cursor-pointer dark:text-[#727272] dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
-              aria-label="Close modal"
+              aria-label={t("host_close", "Close modal")}
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />

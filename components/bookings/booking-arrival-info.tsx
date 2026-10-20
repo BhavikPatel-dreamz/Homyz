@@ -39,6 +39,7 @@ function formatDate(val: Date | string): string {
 }
 
 function CopyBadge({ text, label }: { text: string; label: string }) {
+  const { t } = useLanguage();
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
@@ -52,9 +53,9 @@ function CopyBadge({ text, label }: { text: string; label: string }) {
       type="button"
       onClick={handleCopy}
       className={`inline-flex cursor-pointer items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-medium transition-colors ${copied ? "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:border-emerald-300" : "border-zinc-300 bg-white text-zinc-700 hover:border-zinc-400 hover:bg-zinc-50"}`}
-      title={`Copy ${label}`}
+      title={t("booking_arrival_copy_title", { label }, `Copy ${label}`)}
     >
-      <span>{copied ? "Copied!" : "Copy"}</span>
+      <span>{copied ? t("booking_arrival_copied", "Copied!") : t("booking_arrival_copy", "Copy")}</span>
       <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
       </svg>
@@ -131,7 +132,7 @@ export function BookingArrivalInfo({
             </div>
             {directionsUrl && (
               <div className="flex items-center gap-2 shrink-0">
-                <CopyBadge text={fullAddress} label="address" />
+                <CopyBadge text={fullAddress} label={t("booking_arrival_address_label", "address")} />
                 <a
                   href={directionsUrl}
                   target="_blank"
@@ -206,14 +207,14 @@ export function BookingArrivalInfo({
                         <div className="flex items-center gap-2 rounded-xl bg-white border border-emerald-200 px-3.5 py-2">
                           <span className="text-xs text-[#727272] font-medium">{t("booking_details_door_code", "Door code:")}</span>
                           <span className="font-mono text-sm font-bold text-[#1F1F1F]">{doorCode}</span>
-                          <CopyBadge text={doorCode} label="door code" />
+                          <CopyBadge text={doorCode} label={t("booking_arrival_door_code_label", "door code")} />
                         </div>
                       )}
                       {lockboxCode && (
                         <div className="flex items-center gap-2 rounded-xl bg-white border border-emerald-200 px-3.5 py-2">
                           <span className="text-xs text-[#727272] font-medium">{t("booking_details_lockbox_code", "Lockbox code:")}</span>
                           <span className="font-mono text-sm font-bold text-[#1F1F1F]">{lockboxCode}</span>
-                          <CopyBadge text={lockboxCode} label="lockbox code" />
+                          <CopyBadge text={lockboxCode} label={t("booking_arrival_lockbox_code_label", "lockbox code")} />
                         </div>
                       )}
                     </div>
@@ -240,7 +241,7 @@ export function BookingArrivalInfo({
                             <span className="block text-[11px] text-[#727272] uppercase tracking-wider font-semibold">{t("booking_details_network", "Network")}</span>
                             <span className="font-medium text-sm text-[#1F1F1F]">{wifiNetwork}</span>
                           </div>
-                          <CopyBadge text={wifiNetwork} label="network" />
+                          <CopyBadge text={wifiNetwork} label={t("booking_arrival_network_label", "network")} />
                         </div>
                       )}
                       {wifiPassword && (
@@ -249,7 +250,7 @@ export function BookingArrivalInfo({
                             <span className="block text-[11px] text-[#727272] uppercase tracking-wider font-semibold">{t("booking_details_password", "Password")}</span>
                             <span className="font-mono font-medium text-sm text-[#1F1F1F]">{wifiPassword}</span>
                           </div>
-                          <CopyBadge text={wifiPassword} label="password" />
+                          <CopyBadge text={wifiPassword} label={t("booking_arrival_password_label", "password")} />
                         </div>
                       )}
                     </div>

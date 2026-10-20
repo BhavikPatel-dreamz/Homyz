@@ -232,7 +232,7 @@ export function PricingAndBookingViews({
                     <span className="text-base font-normal text-[#727272]">{t("host_smart_pricing")}</span>
                     <button
                       type="button"
-                      aria-label="Toggle smart pricing"
+                      aria-label={t("host_toggle_smart_pricing_aria", "Toggle smart pricing")}
                       onClick={() => setSmartPricing?.(!smartPricing)}
                       className={`h-[19px] w-[43px] rounded-full transition-colors relative cursor-pointer shrink-0 ${smartPricing ? "bg-[#DF4557]" : "bg-zinc-300"
                         }`}
@@ -307,19 +307,19 @@ export function PricingAndBookingViews({
                           <div className="flex items-center gap-3">
                             <button
                               type="button"
-                              aria-label="Decrease weekend premium"
+                              aria-label={t("host_decrease_weekend_premium_aria", "Decrease weekend premium")}
                               onClick={() => setWeekendPremium?.((weekendPremium || 0) - 1)}
                               className="group flex size-8 items-center justify-center rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 text-lg font-normal text-[#1F1F1F] dark:text-zinc-100 hover:text-white hover:bg-[#1F1F1F] dark:hover:bg-zinc-700 dark:hover:border-zinc-600 transition-colors duration-300 cursor-pointer"
                             >
-                              <Image src="/images/icons/minus-icon.svg" alt="Decrease weekend premium" width={14} height={14} className="size-3.5 object-contain dark:invert group-hover:invert" />
+                              <Image src="/images/icons/minus-icon.svg" alt={t("host_decrease_weekend_premium_aria", "Decrease weekend premium")} width={14} height={14} className="size-3.5 object-contain dark:invert group-hover:invert" />
                             </button>
                             <button
                               type="button"
-                              aria-label="Increase weekend premium"
+                              aria-label={t("host_increase_weekend_premium_aria", "Increase weekend premium")}
                               onClick={() => setWeekendPremium?.((weekendPremium || 0) + 1)}
                               className="group ml-auto flex size-8 items-center justify-center rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 text-lg font-normal text-[#1F1F1F] dark:text-zinc-100 hover:text-white hover:bg-[#1F1F1F] dark:hover:bg-zinc-700 dark:hover:border-zinc-600 transition-colors duration-300 cursor-pointer"
                             >
-                              <Image src="/images/icons/Plus.svg" alt="Increase weekend premium" width={14} height={14} className="size-3.5 object-contain dark:invert group-hover:invert" />
+                              <Image src="/images/icons/Plus.svg" alt={t("host_increase_weekend_premium_aria", "Increase weekend premium")} width={14} height={14} className="size-3.5 object-contain dark:invert group-hover:invert" />
                             </button>
                           </div>
                         </div>
@@ -333,7 +333,7 @@ export function PricingAndBookingViews({
                     <div>
                       <h2 className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">{t("host_discounts") || "Stay length discounts"}</h2>
                       <p className="mt-1 text-xs text-[#727272] dark:text-zinc-400 font-normal leading-relaxed">
-                        Offer discounts for extended reservations to increase overall occupancy.
+                        {t("host_discounts_desc", "Offer discounts for extended reservations to increase overall occupancy.")}
                       </p>
                     </div>
 
@@ -352,7 +352,7 @@ export function PricingAndBookingViews({
                           type="button"
                           role="switch"
                           aria-checked={weeklyEnabled}
-                          aria-label="Toggle weekly discount"
+                          aria-label={t("host_toggle_weekly_discount_aria", "Toggle weekly discount")}
                           onClick={() => {
                             const next = !weeklyEnabled;
                             setWeeklyEnabled?.(next);
@@ -417,7 +417,7 @@ export function PricingAndBookingViews({
                           type="button"
                           role="switch"
                           aria-checked={monthlyEnabled}
-                          aria-label="Toggle monthly discount"
+                          aria-label={t("host_toggle_monthly_discount_aria", "Toggle monthly discount")}
                           onClick={() => {
                             const next = !monthlyEnabled;
                             setMonthlyEnabled?.(next);
@@ -492,7 +492,7 @@ export function PricingAndBookingViews({
                           type="button"
                           role="switch"
                           aria-checked={newListingEnabled}
-                          aria-label="Toggle new listing promotion"
+                          aria-label={t("host_toggle_new_listing_promotion_aria", "Toggle new listing promotion")}
                           onClick={() => {
                             const next = !newListingEnabled;
                             setNewListingEnabled?.(next);
@@ -537,7 +537,7 @@ export function PricingAndBookingViews({
                           <span className="text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100">%</span>
                         </div>
                         <span className="text-xs text-[#727272] dark:text-[#727272] font-normal">
-                          Guest pays {formatMajor(Math.max(0, (editPrice || 0) * (1 - (newListingDiscount || 0) / 100)), currency)} / night
+                          {t("host_pricing_guest_pays", { amount: formatMajor(Math.max(0, (editPrice || 0) * (1 - (newListingDiscount || 0) / 100)), currency) }, "Guest pays {amount} / night")}
                         </span>
                       </div>
                     </div>
@@ -557,7 +557,7 @@ export function PricingAndBookingViews({
                           type="button"
                           role="switch"
                           aria-checked={lastMinuteEnabled}
-                          aria-label="Toggle last-minute discount"
+                          aria-label={t("host_toggle_last_minute_discount_aria", "Toggle last-minute discount")}
                           onClick={() => {
                             const next = !lastMinuteEnabled;
                             setLastMinuteEnabled(next);
@@ -627,7 +627,7 @@ export function PricingAndBookingViews({
                         </div>
 
                         <span className="text-xs text-[#727272] dark:text-[#727272] font-normal">
-                          Guest pays {formatMajor(Math.max(0, (editPrice || 0) * (1 - (lastMinuteDiscount || 0) / 100)), currency)} / night
+                          {t("host_pricing_guest_pays", { amount: formatMajor(Math.max(0, (editPrice || 0) * (1 - (lastMinuteDiscount || 0) / 100)), currency) }, "Guest pays {amount} / night")}
                         </span>
                       </div>
                     </div>
@@ -647,7 +647,7 @@ export function PricingAndBookingViews({
                           type="button"
                           role="switch"
                           aria-checked={earlyBirdEnabled}
-                          aria-label="Toggle early-bird discount"
+                          aria-label={t("host_toggle_early_bird_discount_aria", "Toggle early-bird discount")}
                           onClick={() => {
                             const next = !earlyBirdEnabled;
                             setEarlyBirdEnabled?.(next);
@@ -717,7 +717,7 @@ export function PricingAndBookingViews({
                         </div>
 
                         <span className="text-xs text-[#727272] dark:text-[#727272] font-normal">
-                          Guest pays {formatMajor(Math.max(0, (editPrice || 0) * (1 - (earlyBirdDiscount || 0) / 100)), currency)} / night
+                          {t("host_pricing_guest_pays", { amount: formatMajor(Math.max(0, (editPrice || 0) * (1 - (earlyBirdDiscount || 0) / 100)), currency) }, "Guest pays {amount} / night")}
                         </span>
                       </div>
                     </div>
@@ -737,7 +737,7 @@ export function PricingAndBookingViews({
                           type="button"
                           role="switch"
                           aria-checked={customPromoEnabled}
-                          aria-label="Toggle custom promotion"
+                          aria-label={t("host_toggle_custom_promotion_aria", "Toggle custom promotion")}
                           onClick={() => {
                             const next = !customPromoEnabled;
                             setCustomPromoEnabled?.(next);
@@ -782,7 +782,7 @@ export function PricingAndBookingViews({
                           <span className="text-xl font-semibold text-[#1F1F1F] dark:text-zinc-100">%</span>
                         </div>
                         <span className="text-xs text-[#727272] dark:text-[#727272] font-normal">
-                          Guest pays {formatMajor(Math.max(0, (editPrice || 0) * (1 - (customPromoDiscount || 0) / 100)), currency)} / night
+                          {t("host_pricing_guest_pays", { amount: formatMajor(Math.max(0, (editPrice || 0) * (1 - (customPromoDiscount || 0) / 100)), currency) }, "Guest pays {amount} / night")}
                         </span>
                       </div>
                     </div>
@@ -826,7 +826,7 @@ export function PricingAndBookingViews({
                       />
                     </div>
                     <span className="text-xs text-[#727272] dark:text-[#727272] font-normal">
-                      One-time fee per reservation (host accounting)
+                      {t("host_pricing_cleaning_fee_note", "One-time fee per reservation (host accounting)")}
                     </span>
                   </div>
                 </div>
@@ -835,7 +835,7 @@ export function PricingAndBookingViews({
 
               {/* 5. Calendar notice card */}
               <div className="rounded-md bg-[#F3F4F5] dark:bg-zinc-800/90 dark:border dark:border-zinc-700 px-6 py-2 flex items-center gap-4 transition-all cursor-pointer sm:min-h-22">
-                <Image src="/images/icons/calendar-date.svg" alt="calendar-date.svg" width={24} height={24} className="dark:invert" />
+                <Image src="/images/icons/calendar-date.svg" alt="" aria-hidden="true" width={24} height={24} className="dark:invert" />
                 <span className="text-base text-[#1f1f1f] dark:text-zinc-100 font-normal">{t("host_calendar_notice")}</span>
               </div>
 
@@ -856,7 +856,7 @@ export function PricingAndBookingViews({
                     onClick={onDiscardPricing}
                     className="rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-[#1F1F1F] dark:text-zinc-200 font-medium text-base px-6 py-2.5 transition-all cursor-pointer disabled:opacity-50"
                   >
-                    Discard changes
+                    {t("common_discard_changes", "Discard changes")}
                   </button>
                 )}
               </div>

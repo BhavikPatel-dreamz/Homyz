@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import type { ModerationPolicy } from "@/lib/moderation/policies";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 export interface ReportContentModalProps {
   isOpen: boolean;
@@ -38,8 +39,31 @@ export function ReportContentModal({
   relatedBookingId,
   onReportSubmitted,
 }: ReportContentModalProps) {
+  const { t } = useLanguage();
   const router = useRouter();
   const { status: sessionStatus } = useSession();
+
+  const targetNoun =
+    targetType === "LISTING_PHOTO"
+      ? t("guest_report_target_photo", "photo")
+      : targetType === "LISTING"
+        ? t("guest_report_target_listing", "listing")
+        : targetType === "MESSAGE"
+          ? t("guest_report_target_message", "message")
+          : targetType === "PROFILE" || targetType === "USER"
+            ? t("guest_report_target_user", "user")
+            : t("guest_report_target_content", "content");
+
+  const reportModalTitle =
+    targetType === "LISTING_PHOTO"
+      ? t("guest_report_title_photo", "Report Photo")
+      : targetType === "LISTING"
+        ? t("guest_report_title_listing", "Report Listing")
+        : targetType === "PROFILE" || targetType === "USER"
+          ? t("guest_report_title_user", "Report User")
+          : targetType === "MESSAGE"
+            ? t("guest_report_title_message", "Report Message")
+            : t("guest_report_title_review", "Report Review");
   const [policies, setPolicies] = useState<ModerationPolicy[]>(DEFAULT_REVIEW_REASONS);
   const [reasonCode, setReasonCode] = useState("");
   const [description, setDescription] = useState("");
@@ -150,10 +174,10 @@ export function ReportContentModal({
             </div>
             <div>
               <h2 id="report-modal-title" className="text-xl font-bold text-slate-900">
-                Sign in to submit a report
+                {t("guest_report_signin_title", "Sign in to submit a report")}
               </h2>
               <p className="mt-1.5 text-sm text-slate-500">
-                Please sign in or create an account to report this {targetType === "LISTING_PHOTO" ? "photo" : targetType === "LISTING" ? "listing" : targetType === "MESSAGE" ? "message" : targetType === "PROFILE" || targetType === "USER" ? "user" : "content"}.
+                {t("guest_report_signin_desc", { type: targetNoun }, `Please sign in or create an account to report this ${targetNoun}.`)}
               </p>
             </div>
             <div className="pt-3 flex flex-col gap-2">
@@ -165,14 +189,14 @@ export function ReportContentModal({
                 }}
                 className="w-full rounded-xl bg-slate-900 py-3 text-sm font-semibold text-white hover:bg-slate-800 transition-colors cursor-pointer"
               >
-                Sign in to continue
+                {t("guest_report_signin_btn", "Sign in to continue")}
               </button>
               <button
                 type="button"
                 onClick={handleClose}
                 className="w-full rounded-xl border border-slate-200 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
               >
-                Cancel
+                {t("guest_report_cancel_btn", "Cancel")}
               </button>
             </div>
           </div>
@@ -184,17 +208,17 @@ export function ReportContentModal({
               </svg>
             </div>
             <h2 id="report-modal-title" className="text-xl font-bold text-slate-900">
-              Report Submitted
+              {t("guest_report_submitted_title", "Report Submitted")}
             </h2>
             <p className="text-sm text-slate-600">
-              Thank you for helping keep the Homyz community safe and honest. Our trust & safety team has received your report.
+              {t("guest_report_submitted_desc", "Thank you for helping keep the Homyz community safe and honest. Our trust & safety team has received your report.")}
             </p>
             <div className="rounded-lg bg-slate-50 border border-slate-200 p-3 text-xs text-slate-700">
-              <span className="font-semibold">Case Reference: </span>
+              <span className="font-semibold">{t("guest_report_case_ref", "Case Reference:")} </span>
               <code className="font-mono text-indigo-700">{successReference}</code>
             </div>
             <p className="text-xs text-slate-500">
-              Negative feedback alone does not qualify a review for removal. Genuine stays and honest opinions are protected under our marketplace policy.
+              {t("guest_report_policy_notice", "Negative feedback alone does not qualify a review for removal. Genuine stays and honest opinions are protected under our marketplace policy.")}
             </p>
             <div className="pt-2">
               <button
@@ -202,7 +226,7 @@ export function ReportContentModal({
                 onClick={handleClose}
                 className="w-full rounded-xl bg-slate-900 py-3 text-sm font-semibold text-white hover:bg-slate-800 transition-colors"
               >
-                Close
+                {t("reports_btn_close", "Close")}
               </button>
             </div>
           </div>
@@ -211,22 +235,14 @@ export function ReportContentModal({
             <div>
               <div className="flex items-center justify-between">
                 <h2 id="report-modal-title" className="text-xl font-bold text-slate-900">
-                  {targetType === "LISTING_PHOTO"
-                    ? "Report Photo"
-                    : targetType === "LISTING"
-                      ? "Report Listing"
-                      : targetType === "PROFILE" || targetType === "USER"
-                        ? "Report User"
-                        : targetType === "MESSAGE"
-                          ? "Report Message"
-                          : "Report Review"}
+                  {reportModalTitle}
                 </h2>
                 <button
                   type="button"
                   onClick={handleClose}
                   disabled={isPending}
                   className="rounded-full p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
-                  aria-label="Close"
+                  aria-label={t("reports_btn_close", "Close")}
                 >
                   <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -234,7 +250,7 @@ export function ReportContentModal({
                 </button>
               </div>
               <p className="mt-1 text-xs text-slate-500">
-                {targetTitle ? `Reporting: “${targetTitle}”` : "Submit a formal content violation report."}
+                {targetTitle ? t("guest_report_subtitle_reporting", { title: targetTitle }, `Reporting: “${targetTitle}”`) : t("guest_report_subtitle_formal", "Submit a formal content violation report.")}
               </p>
             </div>
 
@@ -264,7 +280,7 @@ export function ReportContentModal({
 
             <div>
               <label htmlFor="report-reason" className="block text-xs font-semibold text-slate-700">
-                Why are you reporting this {targetType === "LISTING_PHOTO" ? "photo" : targetType === "LISTING" ? "listing" : targetType === "PROFILE" || targetType === "USER" ? "user" : targetType === "MESSAGE" ? "message" : "content"}? <span className="text-red-500">*</span>
+                {t("guest_report_why_reporting", { type: targetNoun }, `Why are you reporting this ${targetNoun}?`)} <span className="text-red-500">*</span>
               </label>
               <select
                 id="report-reason"
@@ -274,7 +290,7 @@ export function ReportContentModal({
                 className="mt-1.5 w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 focus:border-slate-900 focus:outline-none"
                 required
               >
-                <option value="">Select a policy reason</option>
+                <option value="">{t("guest_report_select_reason", "Select a policy reason")}</option>
                 {policies.map((policy) => (
                   <option key={policy.code} value={policy.code}>
                     {policy.code.replaceAll("_", " ")} — {policy.description}
@@ -285,7 +301,7 @@ export function ReportContentModal({
 
             <div>
               <label htmlFor="report-description" className="block text-xs font-semibold text-slate-700">
-                Detailed Explanation <span className="text-slate-400 font-normal">(optional)</span>
+                {t("guest_report_detailed_explanation", "Detailed Explanation")} <span className="text-slate-400 font-normal">({t("reports_optional", "optional")})</span>
               </label>
               <textarea
                 id="report-description"
@@ -294,14 +310,14 @@ export function ReportContentModal({
                 disabled={isPending}
                 rows={3}
                 maxLength={2000}
-                placeholder="Explain why this review violates Homyz policies..."
+                placeholder={t("guest_report_placeholder_explanation", "Explain why this review violates Homyz policies...")}
                 className="mt-1.5 w-full rounded-xl border border-slate-300 p-3 text-sm text-slate-800 placeholder:text-slate-400 focus:border-slate-900 focus:outline-none"
               />
             </div>
 
             <div>
               <label htmlFor="report-evidence" className="block text-xs font-semibold text-slate-700">
-                Supporting Evidence &amp; Documentation <span className="text-slate-400 font-normal">(optional)</span>
+                {t("guest_report_supporting_evidence", "Supporting Evidence & Documentation")} <span className="text-slate-400 font-normal">({t("reports_optional", "optional")})</span>
               </label>
               <textarea
                 id="report-evidence"
@@ -310,20 +326,20 @@ export function ReportContentModal({
                 disabled={isPending}
                 rows={2}
                 maxLength={2000}
-                placeholder="Reference message timestamps, checkout records, or incident numbers..."
+                placeholder={t("guest_report_placeholder_evidence", "Reference message timestamps, checkout records, or incident numbers...")}
                 className="mt-1.5 w-full rounded-xl border border-slate-300 p-3 text-sm text-slate-800 placeholder:text-slate-400 focus:border-slate-900 focus:outline-none"
               />
             </div>
 
             {relatedBookingId ? (
               <div className="rounded-lg bg-slate-50 border border-slate-200 px-3 py-2 text-xs text-slate-600">
-                <span className="font-semibold text-slate-700">Booking Reference: </span>
+                <span className="font-semibold text-slate-700">{t("guest_report_booking_ref", "Booking Reference:")} </span>
                 <span className="font-mono">{relatedBookingId}</span>
               </div>
             ) : (
               <div>
                 <label htmlFor="report-booking" className="block text-xs font-semibold text-slate-700">
-                  Related Reservation ID <span className="text-slate-400 font-normal">(if available)</span>
+                  {t("guest_report_related_booking_id", "Related Reservation ID")} <span className="text-slate-400 font-normal">({t("reports_if_available", "if available")})</span>
                 </label>
                 <input
                   id="report-booking"
@@ -331,15 +347,15 @@ export function ReportContentModal({
                   value={bookingId}
                   onChange={(e) => setBookingId(e.target.value)}
                   disabled={isPending}
-                  placeholder="e.g. bk_123456"
+                  placeholder={t("guest_report_placeholder_booking", "e.g. bk_123456")}
                   className="mt-1.5 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:border-slate-900 focus:outline-none"
                 />
               </div>
             )}
 
             <div className="rounded-xl bg-amber-50 border border-amber-200 p-3 text-xs text-amber-900">
-              <span className="font-semibold">Review Moderation Policy: </span>
-              Submitting a report opens an investigation. Reviews remain published during review unless a severe policy violation is confirmed by our moderators.
+              <span className="font-semibold">{t("guest_report_policy_title", "Review Moderation Policy:")} </span>
+              {t("guest_report_policy_body", "Submitting a report opens an investigation. Reviews remain published during review unless a severe policy violation is confirmed by our moderators.")}
             </div>
 
             <div className="flex items-center justify-end gap-3 pt-2">
@@ -349,14 +365,14 @@ export function ReportContentModal({
                 disabled={isPending}
                 className="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50"
               >
-                Cancel
+                {t("guest_report_cancel_btn", "Cancel")}
               </button>
               <button
                 type="submit"
                 disabled={isPending || !reasonCode}
                 className="rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 transition-colors disabled:opacity-50"
               >
-                {isPending ? "Submitting..." : "Submit Report"}
+                {isPending ? t("guest_report_submitting_btn", "Submitting...") : t("guest_report_submit_btn", "Submit Report")}
               </button>
             </div>
           </form>

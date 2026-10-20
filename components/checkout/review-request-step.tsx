@@ -29,7 +29,7 @@ function ChangeButton({ label, onClick }: { label: string; onClick: () => void }
       type="button"
       onClick={onClick}
       className="min-h-11 shrink-0 rounded-full border border-[#1f1f1f] bg-[#f3f4f5] px-4 text-sm font-medium text-[#1f1f1f] transition-colors hover:bg-[#1f1f1f] hover:text-white"
-      aria-label={`${t("book_change", "Change")} ${label}`}
+      aria-label={t("book_change_field_aria", { field: label }, `Change ${label}`)}
     >
       {t("book_change", "Change")}
     </button>
@@ -79,7 +79,7 @@ export function ReviewRequestStep({
               <p className="text-sm font-medium text-zinc-900">{t("book_payment_timing", "Payment timing")}</p>
               <p className="mt-1 break-words text-sm text-zinc-600">{data.payment.timing}</p>
             </div>
-            <ChangeButton label="payment timing" onClick={onChangePaymentTiming} />
+            <ChangeButton label={t("book_payment_timing", "Payment timing")} onClick={onChangePaymentTiming} />
           </div>
           <div className="flex min-w-0 items-start justify-between gap-4">
             <div className="min-w-0">
@@ -92,7 +92,7 @@ export function ReviewRequestStep({
                 </span>
               </div>
             </div>
-            <ChangeButton label="payment method" onClick={onChangePaymentMethod} />
+            <ChangeButton label={t("book_payment_method", "Payment method")} onClick={onChangePaymentMethod} />
           </div>
         </div>
       </section>
@@ -103,7 +103,7 @@ export function ReviewRequestStep({
             <h3 id="review-message-heading" className="text-base font-medium text-[#1f1f1f]">{t("book_message_to_host", "Message to host")}</h3>
             <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-zinc-600">{data.message || t("book_no_message_added", "No message added")}</p>
           </div>
-          <ChangeButton label="message to host" onClick={onChangeMessage} />
+          <ChangeButton label={t("book_message_to_host", "Message to host")} onClick={onChangeMessage} />
         </div>
       </section>
 
@@ -115,14 +115,14 @@ export function ReviewRequestStep({
               <div><dt className="font-medium text-zinc-900">{t("book_check_in", "Check-in")}</dt><dd className="break-words text-zinc-600">{data.trip.checkIn}</dd></div>
               <div><dt className="font-medium text-zinc-900">{t("book_check_out", "Check-out")}</dt><dd className="break-words text-zinc-600">{data.trip.checkOut}</dd></div>
             </dl>
-            <ChangeButton label="dates" onClick={onChangeDates} />
+            <ChangeButton label={t("book_dates_label", "dates")} onClick={onChangeDates} />
           </div>
           <div className="flex min-w-0 items-start justify-between gap-4">
             <div className="min-w-0">
               <p className="text-sm font-medium text-zinc-900">{t("book_guests", "Guests")}</p>
               <p className="mt-1 break-words text-sm text-zinc-600">{data.trip.guests}</p>
             </div>
-            <ChangeButton label="guests" onClick={onChangeGuests} />
+            <ChangeButton label={t("book_guests", "Guests")} onClick={onChangeGuests} />
           </div>
         </div>
       </section>
@@ -145,7 +145,7 @@ export function ReviewRequestStep({
 
       <div className="pt-5 space-y-4">
         {data.isNonRefundable && (
-          <div className="rounded-2xl border border-amber-300 bg-amber-50 p-4 text-sm leading-6 text-amber-950" role="note" aria-label="Non-refundable policy acknowledgment">
+          <div className="rounded-2xl border border-amber-300 bg-amber-50 p-4 text-sm leading-6 text-amber-950" role="note" aria-label={t("book_nonref_ack_aria", "Non-refundable policy acknowledgment")}>
             <p className="font-semibold">{t("book_non_refundable_notice_title", "Non-refundable rate")}</p>
             <p>{t("book_non_refundable_notice_desc", "You have selected the non-refundable rate. If you cancel this reservation, you will not receive a refund.")}</p>
           </div>

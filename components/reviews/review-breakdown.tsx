@@ -53,13 +53,13 @@ export function ReviewBreakdown({
 
   if (variant === "sidebar") {
     return (
-      <div className={`w-full space-y-6 ${className}`} aria-label="Rating breakdown">
+      <div className={`w-full space-y-6 ${className}`} aria-label={t("reviews_breakdown_aria", "Rating breakdown")}>
         {/* Overall rating distribution (5 to 1) */}
         <div>
           <p className="text-sm font-semibold text-[#1f1f1f]">
             {t("reviews_overall_rating", "Overall rating")}
           </p>
-          <div className="mt-3 space-y-2" aria-label="Rating star distribution">
+          <div className="mt-3 space-y-2" aria-label={t("reviews_star_dist_aria", "Rating star distribution")}>
             {([5, 4, 3, 2, 1] as const).map((star) => {
               const count = ratingDistribution[star] ?? 0;
               const pct = totalCount > 0 ? Math.round((count / totalCount) * 100) : 0;
@@ -140,7 +140,7 @@ export function ReviewBreakdown({
 
   // Horizontal variant (default, property details page responsive ratings breakdown)
   return (
-    <div className={`w-full ${className}`} aria-label="Rating breakdown">
+    <div className={`w-full ${className}`} aria-label={t("reviews_breakdown_aria", "Rating breakdown")}>
       {/* 1. Mobile Layout (320px–767px): Overall rating & count at top, histogram below, 2-column category grid */}
       <div className="block md:hidden space-y-6">
         {/* Overall Rating and Review Count header */}
@@ -156,7 +156,7 @@ export function ReviewBreakdown({
           </div>
 
           {/* Rating Distribution Bars below */}
-          <div className="border-t border-zinc-200/70 pt-3 space-y-1.5" aria-label="Rating star distribution">
+          <div className="border-t border-zinc-200/70 pt-3 space-y-1.5" aria-label={t("reviews_star_dist_aria", "Rating star distribution")}>
             {([5, 4, 3, 2, 1] as const).map((star) => {
               const count = ratingDistribution[star] ?? 0;
               const pct = totalCount > 0 ? Math.round((count / totalCount) * 100) : 0;
@@ -215,7 +215,7 @@ export function ReviewBreakdown({
           <p className="text-sm font-semibold text-[#1f1f1f]">
             {t("reviews_overall_rating", "Overall rating")}
           </p>
-          <div className="mt-3 space-y-2" aria-label="Rating star distribution">
+          <div className="mt-3 space-y-2" aria-label={t("reviews_star_dist_aria", "Rating star distribution")}>
             {([5, 4, 3, 2, 1] as const).map((star) => {
               const count = ratingDistribution[star] ?? 0;
               const pct = totalCount > 0 ? Math.round((count / totalCount) * 100) : 0;
@@ -271,7 +271,7 @@ export function ReviewBreakdown({
           <p className="text-sm font-medium text-[#1f1f1f]">
             {t("reviews_overall_rating", "Overall rating")}
           </p>
-          <div className="mt-3 space-y-1.5" aria-label="Rating star distribution">
+          <div className="mt-3 space-y-1.5" aria-label={t("reviews_star_dist_aria", "Rating star distribution")}>
             {([5, 4, 3, 2, 1] as const).map((star) => {
               const count = ratingDistribution[star] ?? 0;
               const pct = totalCount > 0 ? Math.round((count / totalCount) * 100) : 0;

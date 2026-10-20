@@ -409,7 +409,7 @@ export function PhotoTourManager({
             </button>
           ) : (
             <div className="flex h-full w-full flex-col items-center justify-center bg-zinc-100 dark:bg-zinc-800 p-3 text-center text-[#727272]">
-              <span className="text-xs font-medium">Image unavailable</span>
+              <span className="text-xs font-medium">{t("host_photos_image_unavailable", "Image unavailable")}</span>
             </div>
           )}
           <label className="absolute left-3 top-3 flex size-7 cursor-pointer items-center justify-center rounded-full bg-white/95 dark:bg-zinc-800/95 shadow-sm">
@@ -540,15 +540,17 @@ export function PhotoTourManager({
         {uploading && uploadProgress && (
           <section
             aria-live="polite"
-            aria-label="Photo upload progress"
+            aria-label={t("host_photos_upload_progress_aria", "Photo upload progress")}
             className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-950 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200"
           >
             <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
               <p className="font-semibold">
-                Uploading {uploadProgress.completed} of {uploadProgress.total} photo{uploadProgress.total === 1 ? "" : "s"}
+                {t("host_photos_uploading_count", { completed: uploadProgress.completed, total: uploadProgress.total }, "Uploading {completed} of {total} photos")}
               </p>
               <span className="text-xs font-medium">
-                {MAX_CONCURRENT_UPLOADS > 1 ? `Up to ${MAX_CONCURRENT_UPLOADS} files upload at once` : "Uploading one file at a time"}
+                {MAX_CONCURRENT_UPLOADS > 1
+                  ? t("host_photos_concurrent_uploads", { count: MAX_CONCURRENT_UPLOADS }, "Up to {count} files upload at once")
+                  : t("host_photos_single_upload", "Uploading one file at a time")}
               </span>
             </div>
             <div
@@ -721,19 +723,19 @@ export function PhotoTourManager({
         <ModalOverlay
           role="dialog"
           aria-modal="true"
-          aria-label="Photo Preview"
+          aria-label={t("host_photos_preview_dialog_aria", "Photo Preview")}
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4"
         >
           <div className="relative max-w-4xl w-full max-h-[90vh] flex flex-col items-center">
             <div className="w-full flex justify-between items-center text-white mb-2 px-1">
               <span className="text-sm font-semibold">
-                Photo #{previewPhoto.index + 1} of {photos.length}
-                {previewPhoto.index === 0 && " (Cover Photo)"}
+                {t("host_photos_counter", { current: previewPhoto.index + 1, total: photos.length }, "Photo #{current} of {total}")}
+                {previewPhoto.index === 0 && (" " + t("host_photos_cover_badge", "(Cover Photo)"))}
               </span>
               <button
                 type="button"
                 onClick={() => setPreviewPhoto(null)}
-                aria-label="Close preview"
+                aria-label={t("host_photos_close_preview_aria", "Close preview")}
                 className="rounded-full bg-white/20 hover:bg-white/30 text-white p-1.5 transition text-sm font-bold size-8 flex items-center justify-center"
               >
                 ✕
@@ -742,7 +744,7 @@ export function PhotoTourManager({
             <div className="relative max-h-[80vh] w-full flex items-center justify-center overflow-hidden rounded-xl bg-zinc-950">
               <img
                 src={previewPhoto.url}
-                alt={`Photo ${previewPhoto.index + 1}`}
+                alt={t("host_photos_numbered_alt", { number: previewPhoto.index + 1 }, "Photo {number}")}
                 className="max-h-[80vh] w-auto max-w-full object-contain rounded-xl"
               />
             </div>

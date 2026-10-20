@@ -241,7 +241,7 @@ function AdminEditorSidebar({
       </div>
 
       {/* Navigation list */}
-      <nav className="mt-2.5 flex-1 min-h-0 overflow-y-auto px-0.5 pb-2 custom-scrollbar space-y-3.5" aria-label="Admin listing sections">
+      <nav className="mt-2.5 flex-1 min-h-0 overflow-y-auto px-0.5 pb-2 custom-scrollbar space-y-3.5" aria-label={t("host_sidebar_admin_sections_aria", "Admin listing sections")}>
         {ADMIN_EDITOR_SECTIONS.map((section) => (
           <div key={section.group} className="space-y-0.5">
             <div className="flex items-center justify-between px-2.5 pt-1.5 pb-1">
@@ -518,7 +518,7 @@ export function EditorSidebar({
             {mobileOpen && (
               <button
                 type="button"
-                aria-label="Return to listing form"
+                aria-label={t("host_sidebar_return_form_aria", "Return to listing form")}
                 onClick={onMobileClose}
                 className="flex h-10 w-10 items-center justify-center text-[#1F1F1F] dark:text-zinc-100 xl:hidden"
               >
@@ -597,7 +597,7 @@ export function EditorSidebar({
 
           <button
             type="button"
-            aria-label="Listing preferences"
+            aria-label={t("host_sidebar_preferences_aria", "Listing preferences")}
             onClick={() => {
               setEditorTab("preferences");
               setActiveSection("listing-status");
@@ -694,7 +694,7 @@ export function EditorSidebar({
                         const languages = getLanguageDisplayNames(
                           Array.isArray(listing?.languages) ? listing.languages : [],
                         );
-                        return languages.length > 0 ? languages.join(", ") : "No languages selected";
+                        return languages.length > 0 ? languages.join(", ") : t("host_sidebar_no_languages", "No languages selected");
                       })()}
                     </p>
                   </div>
@@ -891,7 +891,7 @@ export function EditorSidebar({
                       ? ""
                       : "hover:bg-zinc-100/50"
                       }`}
-                    aria-label="Photo tour preview"
+                    aria-label={t("host_sidebar_photo_tour_preview", "Photo tour preview")}
                   >
                     <div className="relative w-full max-w-[70%] h-36 sm:h-45">
                       {/* Card 0 (Leftmost, z-0) */}
@@ -901,13 +901,13 @@ export function EditorSidebar({
                         {editPhotos.length > 3 ? (
                           <img
                             src={editPhotos[3]}
-                            alt="Listing photo 4"
+                            alt={t("host_sidebar_listing_photo_alt", { number: 4 }, "Listing photo 4")}
                             className="w-full h-full object-cover transition-all duration-300"
                           />
                         ) : editPhotos.length > 0 ? (
                           <img
                             src={editPhotos[editPhotos.length - 1]}
-                            alt="Listing photo"
+                            alt={t("host_sidebar_listing_photo_default_alt", "Listing photo")}
                             className="w-full h-full object-cover opacity-80"
                           />
                         ) : (
@@ -924,13 +924,13 @@ export function EditorSidebar({
                         {editPhotos.length > 2 ? (
                           <img
                             src={editPhotos[2]}
-                            alt="Listing photo 3"
+                            alt={t("host_sidebar_listing_photo_alt", { number: 3 }, "Listing photo 3")}
                             className="w-full h-full object-cover transition-all duration-300"
                           />
                         ) : editPhotos.length > 0 ? (
                           <img
                             src={editPhotos[0]}
-                            alt="Listing photo"
+                            alt={t("host_sidebar_listing_photo_default_alt", "Listing photo")}
                             className="w-full h-full object-cover opacity-85"
                           />
                         ) : (
@@ -947,13 +947,13 @@ export function EditorSidebar({
                         {editPhotos.length > 1 ? (
                           <img
                             src={editPhotos[1]}
-                            alt="Listing photo 2"
+                            alt={t("host_sidebar_listing_photo_alt", { number: 2 }, "Listing photo 2")}
                             className="w-full h-full object-cover transition-all duration-300"
                           />
                         ) : editPhotos.length > 0 ? (
                           <img
                             src={editPhotos[0]}
-                            alt="Listing photo"
+                            alt={t("host_sidebar_listing_photo_default_alt", "Listing photo")}
                             className="w-full h-full object-cover "
                           />
                         ) : (
@@ -970,7 +970,7 @@ export function EditorSidebar({
                         {editPhotos.length > 0 ? (
                           <img
                             src={editPhotos[0]}
-                            alt="Property cover"
+                            alt={t("host_sidebar_property_cover_alt", "Property cover")}
                             className="w-full h-full object-cover transition-all duration-300"
                           />
                         ) : (
@@ -1053,7 +1053,7 @@ export function EditorSidebar({
                       </>
                     )}
                     {typeof cleaningFee === "number" && cleaningFee > 0 && (
-                      <p className="text-xs text-[#727272] pt-0.5">Cleaning: {formatMajor(cleaningFee, currency)}</p>
+                      <p className="text-xs text-[#727272] pt-0.5">{t("host_sidebar_cleaning_label", "Cleaning:")} {formatMajor(cleaningFee, currency)}</p>
                     )}
                   </div>
                 </div>
@@ -1248,7 +1248,7 @@ export function EditorSidebar({
                       {listing.host?.image ? (
                         <img
                           src={listing.host.image}
-                          alt="Host profile"
+                          alt={t("host_sidebar_host_profile_alt", "Host profile")}
                           className="w-16 h-16 rounded-full object-cover text-xs bg-[#D9D9D9]"
                         />
                       ) : (
@@ -1641,7 +1641,7 @@ export function EditorSidebar({
           </div>
           {sidebarScrollThumb.visible && (
             <div ref={sidebarScrollTrackRef} className="absolute inset-y-0 right-0 hidden w-[22px] rounded-[30px] bg-[#fff] xl:block">
-              <button type="button" aria-label="Scroll listing editor up" onClick={() => scrollSidebarByPage("up")} className="absolute left-0 top-1 z-10 flex size-[22px] items-center justify-center rounded-full text-[#727272] transition hover:bg-white/70 hover:text-[#1f1f1f]">
+              <button type="button" aria-label={t("host_sidebar_scroll_up_aria", "Scroll listing editor up")} onClick={() => scrollSidebarByPage("up")} className="absolute left-0 top-1 z-10 flex size-[22px] items-center justify-center rounded-full text-[#727272] transition hover:bg-white/70 hover:text-[#1f1f1f]">
                 <svg aria-hidden="true" className="size-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m18 15-6-6-6 6" /></svg>
               </button>
               <div
@@ -1649,7 +1649,7 @@ export function EditorSidebar({
                 className={`absolute left-0 top-0 w-[22px] touch-none select-none rounded-[30px] border border-white bg-[#DDDDDE] shadow-[0_2px_4px_rgba(0,0,0,0.25)] will-change-transform ${isSidebarScrollbarDragging ? "cursor-grabbing" : "cursor-grab"}`}
                 style={{ height: `${sidebarScrollThumb.height}px`, transform: `translate3d(0, ${sidebarScrollThumb.top}px, 0)` }}
               />
-              <button type="button" aria-label="Scroll listing editor down" onClick={() => scrollSidebarByPage("down")} className="absolute bottom-1 left-0 z-10 flex size-[22px] items-center justify-center rounded-full text-[#727272] transition hover:bg-white/70 hover:text-[#1f1f1f]">
+              <button type="button" aria-label={t("host_sidebar_scroll_down_aria", "Scroll listing editor down")} onClick={() => scrollSidebarByPage("down")} className="absolute bottom-1 left-0 z-10 flex size-[22px] items-center justify-center rounded-full text-[#727272] transition hover:bg-white/70 hover:text-[#1f1f1f]">
                 <svg aria-hidden="true" className="size-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m6 9 6 6 6-6" /></svg>
               </button>
             </div>

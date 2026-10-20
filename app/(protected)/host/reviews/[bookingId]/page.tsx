@@ -4,6 +4,7 @@ import { Role } from "@/generated/prisma/enums";
 import { Footer } from "@/components/dashboard/footer";
 import { HostHeader } from "@/components/host/host-header";
 import { HostReviewIntroduction } from "@/components/host/host-review-introduction";
+import { HostReviewIneligibleCard } from "@/components/host/host-review-ineligible-card";
 import { HostSubNav } from "@/components/host/host-sub-nav";
 import { Container } from "@/components/ui";
 import { AppError } from "@/lib/api/errors";
@@ -38,25 +39,11 @@ export default async function HostReviewPage({
           {context.eligibility.eligible ? (
             <HostReviewIntroduction context={context} returnHref={returnHref} />
           ) : (
-            <section className="mx-auto max-w-xl rounded-3xl border border-zinc-200 bg-white p-6 text-center shadow-sm sm:p-8">
-              <span className="mx-auto flex size-12 items-center justify-center rounded-full bg-amber-100 text-xl text-amber-800">!</span>
-              <h1 className="mt-4">
-                {context.eligibility.status === "REVIEW_SUBMITTED"
-                  ? "Review submitted"
-                  : context.eligibility.status === "REVIEW_WINDOW_EXPIRED"
-                    ? "Review window expired"
-                    : "Review unavailable"}
-              </h1>
-              <p className="mt-3 text-sm leading-6 text-zinc-600">
-                {context.eligibility.reason || "This reservation is not eligible for a host review."}
-              </p>
-              <Link
-                href={returnHref}
-                className="mt-6 inline-flex min-h-11 items-center rounded-xl bg-[#1F1F1F] px-6 text-sm font-semibold text-white transition-colors hover:bg-zinc-700"
-              >
-                Back to reservations
-              </Link>
-            </section>
+            <HostReviewIneligibleCard
+              status={context.eligibility.status}
+              reason={context.eligibility.reason}
+              returnHref={returnHref}
+            />
           )}
         </Container>
       </main>

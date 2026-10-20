@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { useState, useTransition, type FormEvent } from "react";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 import { registerAction } from "@/actions/auth/register";
 
@@ -11,6 +12,7 @@ import { Alert, buttonClass, inputClass, labelClass } from "../ui";
 
 export function RegisterForm() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [pending, startTransition] = useTransition();
@@ -47,14 +49,14 @@ export function RegisterForm() {
       {error ? <Alert>{error}</Alert> : null}
       <div className="flex flex-col gap-1.5">
         <label htmlFor="name" className={labelClass}>
-          Full name
+          {t("auth_full_name", "Full name")}
         </label>
         <input
           id="name"
           name="name"
           type="text"
           autoComplete="name"
-          placeholder="Optional"
+          placeholder={t("common_optional", "Optional")}
           className={inputClass}
         />
         {fieldErrors.name ? (
@@ -63,7 +65,7 @@ export function RegisterForm() {
       </div>
       <div className="flex flex-col gap-1.5">
         <label htmlFor="email" className={labelClass}>
-          Email
+          {t("auth_email_address", "Email")}
         </label>
         <input
           id="email"
@@ -79,7 +81,7 @@ export function RegisterForm() {
       </div>
       <div className="flex flex-col gap-1.5">
         <label htmlFor="password" className={labelClass}>
-          Password
+          {t("auth_password", "Password")}
         </label>
         <div className="relative">
           <input
@@ -94,7 +96,7 @@ export function RegisterForm() {
             type="button"
             onClick={() => setShowPassword(!showPassword)}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-[#727272] hover:text-zinc-700 transition-colors"
-            aria-label="Toggle password visibility"
+            aria-label={t("auth_pwd_toggle_visibility", "Toggle password visibility")}
           >
             {showPassword ? (
               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -114,23 +116,23 @@ export function RegisterForm() {
       </div>
       <div className="flex flex-col gap-1.5">
         <label htmlFor="role" className={labelClass}>
-          I want to
+          {t("auth_join_as", "I want to")}
         </label>
         <select id="role" name="role" defaultValue="USER" className={inputClass}>
-          <option value="USER">Book places to stay</option>
-          <option value="HOST">List my property (host)</option>
+          <option value="USER">{t("auth_role_book_places", "Book places to stay")}</option>
+          <option value="HOST">{t("auth_role_list_property", "List my property (host)")}</option>
         </select>
       </div>
       <button type="submit" disabled={pending} className={buttonClass}>
-        {pending ? "Creating account…" : "Create account"}
+        {pending ? t("auth_creating_account", "Creating account…") : t("auth_create_account_btn", "Create account")}
       </button>
       <p className="text-center text-sm text-[#727272]">
-        Already have an account?{" "}
+        {t("auth_already_have_account", "Already have an account?")}{" "}
         <Link
           href="/login"
           className="font-medium text-[#1F1F1F] "
         >
-          Sign in
+          {t("auth_signin", "Sign in")}
         </Link>
       </p>
     </form>

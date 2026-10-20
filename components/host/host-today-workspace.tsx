@@ -481,21 +481,29 @@ export function HostTodayWorkspace({
 
           {/* Section Headline */}
           <h1 className="mb-6 wrap-break-word">
-            You have {totalCount}{" "}
-            {tab === "upcoming"
-              ? `${t("host_today_period_upcoming", "upcoming")} `
-              : tab === "staying"
-                ? `${t("host_today_period_staying", "current")} `
-                : tab === "completed"
-                  ? `${t("host_today_period_completed", "completed")} `
-                  : tab === "pending"
-                    ? `${t("host_today_period_pending", "pending")} `
-                    : tab === "cancelled"
-                      ? `${t("host_today_period_cancelled", "cancelled")} `
-                      : ""}
-            {totalCount === 1
-              ? t("host_today_unit_single", "reservation")
-              : t("host_today_unit_plural", "reservations")}
+            {t(
+              "host_today_headline",
+              {
+                count: totalCount,
+                period:
+                  tab === "upcoming"
+                    ? t("host_today_period_upcoming", "upcoming")
+                    : tab === "staying"
+                      ? t("host_today_period_staying", "current")
+                      : tab === "completed"
+                        ? t("host_today_period_completed", "completed")
+                        : tab === "pending"
+                          ? t("host_today_period_pending", "pending")
+                          : tab === "cancelled"
+                            ? t("host_today_period_cancelled", "cancelled")
+                            : "",
+                unit:
+                  totalCount === 1
+                    ? t("host_today_unit_single", "reservation")
+                    : t("host_today_unit_plural", "reservations"),
+              },
+              `You have ${totalCount} reservations`
+            )}
           </h1>
 
 

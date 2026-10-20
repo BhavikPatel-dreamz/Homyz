@@ -151,6 +151,7 @@ function MobileViewSelector({
   view: "month" | "year";
   onSelectView: (view: "month" | "year") => void;
 }) {
+  const { t } = useLanguage();
   const [isViewMenuOpen, setIsViewMenuOpen] = useState(false);
 
   return (
@@ -160,10 +161,12 @@ function MobileViewSelector({
         onClick={() => setIsViewMenuOpen((isOpen) => !isOpen)}
         aria-expanded={isViewMenuOpen}
         aria-haspopup="menu"
-        aria-label="Calendar view"
+        aria-label={t("host_calendar_view_aria", "Calendar view")}
         className="flex items-center gap-1.5 rounded-full bg-[#F3F4F5] px-3.5 py-2 text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-[#e9e9e9]"
       >
-        {view === "month" ? "Month" : "Year"}
+        {view === "month"
+          ? t("host_calendar_view_month", "Month")
+          : t("host_calendar_view_year", "Year")}
         <svg
           className={`size-4 transition-transform ${isViewMenuOpen ? "rotate-180" : ""}`}
           viewBox="0 0 24 24"
@@ -181,7 +184,7 @@ function MobileViewSelector({
       {isViewMenuOpen && (
         <div
           role="menu"
-          aria-label="Calendar view switcher"
+          aria-label={t("host_calendar_view_switcher_aria", "Calendar view switcher")}
           className="absolute right-0 top-full z-20 mt-2 w-28 overflow-hidden rounded-xl border border-[#d7d7d7] bg-white p-1.5 shadow-xl"
         >
           {(["month", "year"] as const).map((option) => {
@@ -201,7 +204,9 @@ function MobileViewSelector({
                   : "text-[#525252] hover:bg-[#F3F4F5]"
                   }`}
               >
-                {option}
+                {option === "month"
+                  ? t("host_calendar_view_month", "Month")
+                  : t("host_calendar_view_year", "Year")}
                 {isSelected && <span aria-hidden="true">✓</span>}
               </button>
             );
@@ -352,7 +357,7 @@ function MobileYearCalendar({
           <button
             type="button"
             onClick={onOpenSettings}
-            aria-label="Calendar settings"
+            aria-label={t("host_calendar_settings_title", "Calendar Settings")}
             className="flex size-10 items-center justify-center rounded-full bg-[#F3F4F5] text-[#1F1F1F] transition-colors hover:bg-[#ebebeb] dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700"
           >
             <Image
@@ -684,8 +689,8 @@ function MonthGrid({
           const statusDescription = primaryReservation
             ? `reserved by ${primaryReservation.guestName}`
             : blocked
-              ? "blocked"
-              : "available";
+              ? t("host_calendar_status_blocked_desc", "blocked")
+              : t("host_calendar_status_available_desc", "available");
 
           const dayPricing = dayPricingMap.get(key);
           const promo = dayPricing?.promotion;
@@ -701,7 +706,7 @@ function MonthGrid({
               onPointerDown={(e) => onDayPointerDown?.(key, e)}
               onPointerEnter={() => onDayPointerEnter?.(key)}
               onKeyDown={(e) => onKeyDown?.(key, e)}
-              aria-label={`${key}, ${statusDescription}, ${promo?.applied ? `${formatMoney(promo.promotionalPrice, sourceCurrency, 2)} (${promo.percentage}% promo, regular ${formatMoney(rate, sourceCurrency, 2)})` : formatMoney(rate, sourceCurrency, 2)}${isSelected ? ", selected" : ""}`}
+              aria-label={`${key}, ${statusDescription}, ${promo?.applied ? `${formatMoney(promo.promotionalPrice, sourceCurrency, 2)} (${t("host_calendar_promo_pct", { percentage: promo.percentage }, `${promo.percentage}% promo`)}, regular ${formatMoney(rate, sourceCurrency, 2)})` : formatMoney(rate, sourceCurrency, 2)}${isSelected ? t("host_calendar_selected_desc", ", selected") : ""}`}
               aria-pressed={isSelected}
               className={`group relative flex min-w-0 self-stretch flex-col items-center border text-center transition-all duration-100 focus-visible:outline-2 focus-visible:outline-offset-2 ${cellRoundingClass} ${cellBgClass} ${compact
                 ? "min-h-[48px] p-1 sm:min-h-[68px] sm:py-1.5"
@@ -743,7 +748,7 @@ function MonthGrid({
                           {formatMoney(promo.promotionalPrice, sourceCurrency, 2)}
                         </span>
                         <span className="mt-0.5 rounded-sm border border-[#a7e9ce] bg-[#d9f7eb] px-0.5 py-[2px] sm:text-[10px] text-[8px] font-medium leading-tight text-[#08785d] dark:border-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300">
-                          {promo.percentage}% promo
+                          {t("host_calendar_promo_pct", { percentage: promo.percentage }, `${promo.percentage}% promo`)}
                         </span>
                       </>
                     ) : (
@@ -756,11 +761,11 @@ function MonthGrid({
                         </span>
                         <div className="flex items-center gap-1 mt-0.5">
                           <span className="sm:text-[10px] text-[8px] font-medium capitalize tracking-tight text-[#08785d] border border-[#a7e9ce] dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/80 px-1.5 py-1 sm:rounded-md roudned leading-tight">
-                            {promo.percentage}% promo
+                            {t("host_calendar_promo_pct", { percentage: promo.percentage }, `${promo.percentage}% promo`)}
                           </span>
                           {customPrice !== null && (
                             <span className="text-[9px] font-semibold text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/60 px-1 rounded">
-                              custom
+                              {t("host_calendar_custom_badge", "custom")}
                             </span>
                           )}
                         </div>
@@ -1154,7 +1159,7 @@ function ContextualManagementPanel({
         {/* Breakdown Badges */}
         <div className="mt-3 flex flex-wrap gap-1.5 text-xs">
           <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
-            {stats.editableKeys.length} editable
+            {t("host_calendar_editable_count", { count: stats.editableKeys.length }, `${stats.editableKeys.length} editable`)}
           </span>
           {stats.bookedCount > 0 && (
             <span className="rounded-full bg-zinc-900 dark:bg-zinc-700 px-2.5 py-0.5 font-semibold text-white">
@@ -1497,7 +1502,7 @@ function ContextualManagementPanel({
                 ? "bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300"
                 : "bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300"
                 }`}>
-                {stats.promoStats.enabled ? `${stats.promoStats.percentage}% active` : "Disabled"}
+                {stats.promoStats.enabled ? t("host_calendar_pct_active", { percentage: stats.promoStats.percentage }, `${stats.promoStats.percentage}% active`) : t("host_calendar_disabled", "Disabled")}
               </span>
             </div>
 
@@ -1546,7 +1551,7 @@ function ContextualManagementPanel({
                       <span>{t("host_calendar_guest_price_after_promo", "Guest price after promotion")}</span>
                       <span className="text-emerald-700 dark:text-emerald-400">
                         {formatMoney(stats.promoStats.avgGuestPrice, sourceCurrency, 2)}{" "}
-                        <span className="text-[10px] font-normal text-zinc-500">avg {t("host_calendar_per_night", "/ night")}</span>
+                        <span className="text-[10px] font-normal text-zinc-500">{t("host_calendar_avg_label", "avg")} {t("host_calendar_per_night", "/ night")}</span>
                       </span>
                     </div>
                   </div>
@@ -1663,7 +1668,7 @@ function ContextualManagementPanel({
                     }}
                     className="w-full cursor-pointer rounded-full border border-emerald-300 bg-white px-3 py-2 text-[12px] font-medium text-emerald-800 transition-colors hover:bg-emerald-50 disabled:opacity-70 dark:border-emerald-700 dark:bg-zinc-800 dark:text-emerald-300 dark:hover:bg-zinc-700"
                   >
-                    Set window to selected dates ({range.start} – {range.end})
+                    {t("host_calendar_set_window_selected", { start: range.start, end: range.end }, `Set window to selected dates (${range.start} – ${range.end})`)}
                   </button>
                 ) : null}
               </div>
@@ -1760,15 +1765,30 @@ function ContextualManagementPanel({
           {/* Availability Action Buttons */}
           <div className="space-y-2 rounded-xl bg-[#F3F4F5] dark:bg-zinc-800/40 p-3.5 shadow-[0px_2px_4px_0px_#00000040] border border-white">
             <p className="text-sm text-[#1f1f1f] dark:text-zinc-400">
-              Change availability for {stats.editableKeys.length} {stats.editableKeys.length === 1 ? "date" : "dates"}:
+              {t("host_calendar_change_avail_for", {
+                count: stats.editableKeys.length,
+                unit: stats.editableKeys.length === 1
+                  ? t("host_calendar_unit_date", "date")
+                  : t("host_calendar_unit_dates", "dates"),
+              }, `Change availability for ${stats.editableKeys.length} dates:`)}
               {stats.bookedCount > 0 && (
                 <span className="block text-xs text-[#727272] mt-0.5">
-                  ({stats.bookedCount} reserved {stats.bookedCount === 1 ? "date is" : "dates are"} protected and will not change)
+                  {t("host_calendar_reserved_protected_note", {
+                    count: stats.bookedCount,
+                    unit: stats.bookedCount === 1
+                      ? t("host_calendar_unit_date_is", "date is")
+                      : t("host_calendar_unit_dates_are", "dates are"),
+                  }, `(${stats.bookedCount} reserved dates are protected and will not change)`)}
                 </span>
               )}
               {stats.pastCount > 0 && (
                 <span className="block text-xs text-zinc-400 mt-0.5">
-                  ({stats.pastCount} past {stats.pastCount === 1 ? "date is" : "dates are"} historical)
+                  {t("host_calendar_past_historical_note", {
+                    count: stats.pastCount,
+                    unit: stats.pastCount === 1
+                      ? t("host_calendar_unit_date_is", "date is")
+                      : t("host_calendar_unit_dates_are", "dates are"),
+                  }, `(${stats.pastCount} past dates are historical)`)}
                 </span>
               )}
             </p>
@@ -2839,7 +2859,7 @@ export function HostCalendarWorkspace({
               <button
                 type="button"
                 onClick={() => setMobileCalendarOpen(false)}
-                aria-label="Back to calendars"
+                aria-label={t("host_calendar_back_to_calendars", "Back to calendars")}
                 className="flex size-8 shrink-0 items-center justify-center rounded-full border border-[#1F1F1F] text-[#555555] transition-colors bg-[#F3F4F5] hover:bg-[#f7f7f7] dark:border-zinc-600 dark:text-zinc-300 dark:hover:bg-zinc-800"
               >
                 <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -2847,7 +2867,7 @@ export function HostCalendarWorkspace({
                 </svg>
               </button>
               <p className="truncate text-base font-normal text-[#1F1F1F] dark:text-zinc-100">
-                {selectedListing.title || "Property name"}{[selectedListing.district, selectedListing.city].filter(Boolean).join(", ") || selectedListing.country ? `, ${[selectedListing.district, selectedListing.city].filter(Boolean).join(", ") || selectedListing.country}` : ""}
+                {selectedListing.title || t("host_calendar_property_name_fallback", "Property name")}{[selectedListing.district, selectedListing.city].filter(Boolean).join(", ") || selectedListing.country ? `, ${[selectedListing.district, selectedListing.city].filter(Boolean).join(", ") || selectedListing.country}` : ""}
               </p>
             </div>
 

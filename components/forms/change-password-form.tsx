@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, useTransition, type FormEvent } from "react";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 import { changePasswordAction } from "@/actions/user/changePassword";
 
@@ -8,6 +9,7 @@ import { Alert, buttonClass, inputClass, labelClass } from "../ui";
 
 export function ChangePasswordForm() {
   const formRef = useRef<HTMLFormElement>(null);
+  const { t } = useLanguage();
   const [msg, setMsg] = useState<{
     tone: "success" | "error";
     text: string;
@@ -31,7 +33,7 @@ export function ChangePasswordForm() {
         setMsg({ tone: "error", text: res.error });
         return;
       }
-      setMsg({ tone: "success", text: "Password changed." });
+      setMsg({ tone: "success", text: t("auth_pwd_changed_success", "Password changed.") });
       formRef.current?.reset();
     });
   }
@@ -41,7 +43,7 @@ export function ChangePasswordForm() {
       {msg ? <Alert tone={msg.tone}>{msg.text}</Alert> : null}
       <div className="flex flex-col gap-1.5">
         <label htmlFor="currentPassword" className={labelClass}>
-          Current password
+          {t("auth_pwd_current", "Current password")}
         </label>
         <div className="relative">
           <input
@@ -56,7 +58,7 @@ export function ChangePasswordForm() {
             type="button"
             onClick={() => setShowCurrentPassword(!showCurrentPassword)}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-[#727272] hover:text-zinc-700 transition-colors"
-            aria-label="Toggle current password visibility"
+            aria-label={t("auth_pwd_toggle_current", "Toggle current password visibility")}
           >
             {showCurrentPassword ? (
               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -73,7 +75,7 @@ export function ChangePasswordForm() {
       </div>
       <div className="flex flex-col gap-1.5">
         <label htmlFor="newPassword" className={labelClass}>
-          New password
+          {t("auth_pwd_new", "New password")}
         </label>
         <div className="relative">
           <input
@@ -88,7 +90,7 @@ export function ChangePasswordForm() {
             type="button"
             onClick={() => setShowNewPassword(!showNewPassword)}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-[#727272] hover:text-zinc-700 transition-colors"
-            aria-label="Toggle new password visibility"
+            aria-label={t("auth_pwd_toggle_new", "Toggle new password visibility")}
           >
             {showNewPassword ? (
               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -104,7 +106,7 @@ export function ChangePasswordForm() {
         </div>
       </div>
       <button type="submit" disabled={pending} className={buttonClass}>
-        {pending ? "Updating…" : "Change password"}
+        {pending ? t("auth_pwd_updating", "Updating…") : t("auth_pwd_change_btn", "Change password")}
       </button>
     </form>
   );

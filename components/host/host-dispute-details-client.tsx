@@ -335,14 +335,14 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
               router.push("/host/resolution-center");
             }
           }}
-          aria-label="Back to Resolution Center"
+          aria-label={t("host_dispute_back_center", "Back to Resolution Center")}
           className="shrink-0"
         />
         <nav
-          aria-label="Breadcrumb"
+          aria-label={t("common_breadcrumb", "Breadcrumb")}
           className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-[#727272] min-w-0 py-0.5"
         >
-          <span className="shrink-0 font-normal">Case Details</span>
+          <span className="shrink-0 font-normal">{t("host_dispute_case_details", "Case Details")}</span>
           <span className="text-[#727272] shrink-0 font-normal" aria-hidden="true">/</span>
           <span className="text-[#727272] shrink-0 font-normal">#{dispute.caseReference}</span>
         </nav>
@@ -354,11 +354,11 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
           {/* Status & Category Badges */}
           <div className="flex flex-wrap items-center gap-2.5">
             <span className="text-sm font-medium text-[#727272]">
-              Case #{dispute.caseReference}
+              {t("host_dispute_case_number_prefix", { ref: dispute.caseReference }, `Case #${dispute.caseReference}`)}
             </span>
             {dispute.responseRequired && (
               <span className="rounded-full bg-amber-100 border border-amber-300 px-3.5 py-1 text-xs font-medium text-amber-900 shadow-2xs">
-                Response Required
+                {t("host_dispute_badge_response_required", "Response Required")}
               </span>
             )}
             <span
@@ -374,7 +374,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                   : dispute.disputeWorkflowStatus.replaceAll("_", " ")}
             </span>
             <span className="rounded-full bg-zinc-100 border border-zinc-200 px-3 py-1 text-xs font-medium text-[#727272]">
-              {dispute.severity} Priority
+              {t("host_dispute_priority_badge", { severity: dispute.severity }, `${dispute.severity} Priority`)}
             </span>
             <span className="rounded-full bg-zinc-100 border border-zinc-200 px-3 py-1 text-xs font-medium text-[#727272]">
               {t("host_res_center_reported_by", { role: dispute.reporterRole.toLowerCase() }, `Reported by ${dispute.reporterRole.toLowerCase()}`)}
@@ -514,9 +514,9 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                       !
                     </span>
                     <div className="flex-1 space-y-1">
-                      <h3 className="text-base font-medium text-amber-950">Action Required: Support Inquiry</h3>
+                      <h3 className="text-base font-medium text-amber-950">{t("host_dispute_action_inquiry_title", "Action Required: Support Inquiry")}</h3>
                       <p className="text-sm text-amber-900 leading-relaxed">
-                        Homyz Support has requested information from you regarding this case. Please review the inquiry in the Conversation tab and submit your response.
+                        {t("host_dispute_action_inquiry_desc", "Homyz Support has requested information from you regarding this case. Please review the inquiry in the Conversation tab and submit your response.")}
                       </p>
                       <div className="pt-2">
                         <button
@@ -524,7 +524,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                           onClick={() => setActiveTab("conversation")}
                           className="rounded-full bg-amber-900 px-5 py-3 text-xs sm:text-sm font-semibold text-white hover:bg-black transition-colors cursor-pointer"
                         >
-                          Go to Response Inquiry →
+                          {t("host_dispute_btn_go_to_inquiry", "Go to Response Inquiry →")}
                         </button>
                       </div>
                     </div>
@@ -536,10 +536,10 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
               <section className="sm:rounded-[20px] rounded-[10px] border border-zinc-200 bg-white p-6 sm:p-7 shadow-xs">
                 <div className="flex items-center justify-between border-b border-zinc-100 pb-4">
                   <h2 className="text-base sm:text-lg font-medium text-[#1F1F1F]">
-                    Complaint &amp; Issue Details
+                    {t("host_dispute_complaint_issue_details", "Complaint & Issue Details")}
                   </h2>
                   <span className="text-xs sm:text-sm font-medium text-[#727272]">
-                    Reported by {dispute.reporterRole}
+                    {t("host_dispute_reported_by_label", { role: dispute.reporterRole }, `Reported by ${dispute.reporterRole}`)}
                   </span>
                 </div>
                 <div className="mt-5">
@@ -555,19 +555,19 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-emerald-200/60 pb-4">
                     <div>
                       <span className="text-sm font-medium text-[#727272]">
-                        Official Case Decision
+                        {t("host_dispute_official_decision", "Official Case Decision")}
                       </span>
                       <h2 className="text-lg sm:text-xl font-medium text-[#1f1f1f] mt-2">
                         {dispute.resolution.decisionCategory.replaceAll("_", " ")}
                       </h2>
                     </div>
                     <span className="self-start sm:self-center rounded-full bg-emerald-100 border border-emerald-200 px-3.5 py-1 text-xs font-medium text-emerald-800">
-                      Resolved on {formatDate(dispute.resolution.resolvedAt)}
+                      {t("host_dispute_resolved_on", { date: formatDate(dispute.resolution.resolvedAt) }, `Resolved on ${formatDate(dispute.resolution.resolvedAt)}`)}
                     </span>
                   </div>
                   <div>
                     <span className="text-sm font-medium text-[#727272] block mb-1.5">
-                      Decision Explanation &amp; Terms
+                      {t("host_dispute_decision_explanation_terms", "Decision Explanation & Terms")}
                     </span>
                     <p className="text-sm sm:text-base leading-relaxed text-[#1f1f1f] whitespace-pre-wrap">
                       {dispute.resolution.explanation}
@@ -580,25 +580,25 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
               {isOpen && (
                 <section className="rounded-[20px] border border-zinc-200 bg-white p-6 sm:p-7 shadow-xs">
                   <h2 className="text-base sm:text-lg font-medium text-[#1F1F1F] mb-4">
-                    Available Host Case Actions
+                    {t("host_dispute_available_actions", "Available Host Case Actions")}
                   </h2>
                   <div className="grid sm:grid-cols-3 gap-4">
                     <div
                       onClick={() => setActiveTab("conversation")}
                       className="cursor-pointer rounded-2xl border border-zinc-200 p-5 hover:border-[#1F1F1F] transition-all bg-zinc-50/50 hover:bg-zinc-50"
                     >
-                      <h4 className="text-sm sm:text-base font-medium text-[#1F1F1F]">Send Reply</h4>
+                      <h4 className="text-sm sm:text-base font-medium text-[#1F1F1F]">{t("host_dispute_send_reply", "Send Reply")}</h4>
                       <p className="text-sm text-[#727272] mt-1.5 leading-relaxed">
-                        Submit official statements or responses directly to Homyz Support.
+                        {t("host_dispute_send_reply_desc", "Submit official statements or responses directly to Homyz Support.")}
                       </p>
                     </div>
                     <div
                       onClick={() => setProposeModalOpen(true)}
                       className="cursor-pointer rounded-2xl border border-zinc-200 p-5 hover:border-[#1F1F1F] transition-all bg-zinc-50/50 hover:bg-zinc-50"
                     >
-                      <h4 className="text-sm sm:text-base font-medium text-[#1F1F1F]">Propose Settlement</h4>
+                      <h4 className="text-sm sm:text-base font-medium text-[#1F1F1F]">{t("host_dispute_propose_settlement", "Propose Settlement")}</h4>
                       <p className="text-sm text-[#727272] mt-1.5 leading-relaxed">
-                        Offer a mutual resolution, replacement, or on-site remedy for review.
+                        {t("host_dispute_propose_settlement_desc", "Offer a mutual resolution, replacement, or on-site remedy for review.")}
                       </p>
                     </div>
                     <div
@@ -609,9 +609,9 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                       }}
                       className="cursor-pointer rounded-2xl border border-zinc-200 p-5 hover:border-[#1F1F1F] transition-all bg-zinc-50/50 hover:bg-zinc-50"
                     >
-                      <h4 className="text-sm sm:text-base font-medium text-[#1F1F1F]">Private Note</h4>
+                      <h4 className="text-sm sm:text-base font-medium text-[#1F1F1F]">{t("host_dispute_private_note", "Private Note")}</h4>
                       <p className="text-sm text-[#727272] mt-1.5 leading-relaxed">
-                        Record private notes and reminders visible only to you.
+                        {t("host_dispute_private_note_desc", "Record private notes and reminders visible only to you.")}
                       </p>
                     </div>
                   </div>
@@ -626,14 +626,14 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
               <section className="rounded-[20px] border border-zinc-200 bg-white p-6 sm:p-7 shadow-xs">
                 <div className="flex items-center justify-between border-b border-zinc-100 pb-4">
                   <h2 className="text-base sm:text-lg font-medium text-[#1F1F1F]">
-                    Support Communications
+                    {t("host_dispute_support_comms", "Support Communications")}
                   </h2>
-                  <span className="text-xs sm:text-sm text-[#727272]">Visible to Homyz Support</span>
+                  <span className="text-xs sm:text-sm text-[#727272]">{t("host_dispute_visible_to_support", "Visible to Homyz Support")}</span>
                 </div>
 
                 {dispute.infoRequests.length === 0 && dispute.replies.length === 0 ? (
                   <div className="py-14 text-center text-sm text-[#727272] italic">
-                    No communication messages exchanged yet.
+                    {t("host_dispute_no_comms", "No communication messages exchanged yet.")}
                   </div>
                 ) : (
                   <div className="mt-6 space-y-4">
@@ -646,7 +646,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                         <div className="flex items-center justify-between">
                           <span className="text-sm sm:text-base font-medium text-amber-950 flex items-center gap-2">
                             <span className="h-2.5 w-2.5 rounded-full bg-amber-500" />
-                            Homyz Support Request
+                            {t("host_dispute_support_request", "Homyz Support Request")}
                           </span>
                           <span
                             className={`rounded-full px-3 py-0.5 text-xs font-normal ${request.status === "PENDING_RESPONSE"
@@ -654,7 +654,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                               : "bg-emerald-100 text-emerald-800"
                               }`}
                           >
-                            {request.status === "PENDING_RESPONSE" ? "Response Required" : "Responded"}
+                            {request.status === "PENDING_RESPONSE" ? t("host_dispute_badge_response_required", "Response Required") : t("host_dispute_badge_responded", "Responded")}
                           </span>
                         </div>
                         <p className="text-sm sm:text-base text-[#1F1F1F] whitespace-pre-wrap leading-relaxed">
@@ -673,9 +673,9 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                         <div className="flex items-center justify-between">
                           <span className="text-sm sm:text-base font-medium text-[#1F1F1F] flex items-center gap-2">
                             <span className="h-2.5 w-2.5 rounded-full bg-[#1F1F1F]" />
-                            Your Host Reply
+                            {t("host_dispute_your_host_reply", "Your Host Reply")}
                           </span>
-                          <span className="text-xs text-[#727272]">Sent to Homyz Support</span>
+                          <span className="text-xs text-[#727272]">{t("host_dispute_sent_to_support", "Sent to Homyz Support")}</span>
                         </div>
                         <p className="text-sm sm:text-base text-[#1F1F1F] whitespace-pre-wrap leading-relaxed">
                           {reply.content || "Evidence files submitted."}
@@ -683,7 +683,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                         <div className="flex items-center justify-between text-xs text-[#727272]">
                           <span>{formatDate(reply.createdAt, true)}</span>
                           {reply.evidenceIds.length > 0 && (
-                            <span className="font-medium">{reply.evidenceIds.length} file(s) attached</span>
+                            <span className="font-medium">{t("host_dispute_files_attached", { count: reply.evidenceIds.length }, `${reply.evidenceIds.length} file(s) attached`)}</span>
                           )}
                         </div>
                       </article>
@@ -700,10 +700,10 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                 >
                   <div>
                     <h3 className="text-base sm:text-lg font-medium text-[#1F1F1F]">
-                      {dispute.responseRequired ? "Submit Requested Information" : "Send Official Reply to Support"}
+                      {dispute.responseRequired ? t("host_dispute_submit_requested_info", "Submit Requested Information") : t("host_dispute_send_official_reply", "Send Official Reply to Support")}
                     </h3>
                     <p className="mt-1 text-xs sm:text-sm text-[#727272]">
-                      This response is recorded in the official investigation record and shared with Homyz Support.
+                      {t("host_dispute_reply_record_notice", "This response is recorded in the official investigation record and shared with Homyz Support.")}
                     </p>
                   </div>
 
@@ -720,8 +720,8 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                     {/* Evidence Attachment */}
                     <div>
                       <label className="block rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-4 text-sm text-[#555] hover:border-zinc-400 cursor-pointer">
-                        <span className="text-base font-medium block text-[#1F1F1F]">Attach Evidence (Optional)</span>
-                        <span className="text-sm text-[#727272] mt-2 block">Up to 5 files (JPG, PNG, WEBP, or PDF, max 15MB each)</span>
+                        <span className="text-base font-medium block text-[#1F1F1F]">{t("host_dispute_attach_evidence_opt", "Attach Evidence (Optional)")}</span>
+                        <span className="text-sm text-[#727272] mt-2 block">{t("host_dispute_attach_evidence_hint", "Up to 5 files (JPG, PNG, WEBP, or PDF, max 15MB each)")}</span>
                         <input
                           type="file"
                           multiple
@@ -732,7 +732,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                       </label>
                       {replyFiles.length > 0 && (
                         <p className="mt-2 text-sm text-[#727272] font-normal">
-                          Selected files: {replyFiles.map((f) => f.name).join(", ")}
+                          {t("host_dispute_selected_files_prefix", { files: replyFiles.map((f) => f.name).join(", ") }, `Selected files: ${replyFiles.map((f) => f.name).join(", ")}`)}
                         </p>
                       )}
                     </div>
@@ -744,10 +744,10 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                         className="min-h-11 rounded-full bg-[#1F1F1F] border border-[#1f1f1f] px-6 py-2.5 text-sm font-medium text-white hover:text-[#1f1f1f] hover:bg-white transition-all duration-300 disabled:opacity-50 cursor-pointer"
                       >
                         {isSubmittingReply
-                          ? "Sending..."
+                          ? t("host_dispute_btn_sending", "Sending...")
                           : dispute.responseRequired
-                            ? "Submit Response"
-                            : "Send Reply"}
+                            ? t("host_dispute_btn_submit_response", "Submit Response")
+                            : t("host_dispute_send_reply", "Send Reply")}
                       </button>
                     </div>
                   </form>
@@ -763,10 +763,10 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-100 pb-4">
                   <div>
                     <h2 className="text-base sm:text-lg font-medium text-[#1F1F1F]">
-                      My Private Case Notes ({dispute.privateNotes.length})
+                      {t("host_dispute_private_notes_count", { count: dispute.privateNotes.length }, `My Private Case Notes (${dispute.privateNotes.length})`)}
                     </h2>
                     <span className="text-xs font-normal text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full inline-block mt-1.5">
-                      🔒 Private Note — Not shared with Guest or Admin
+                      {t("host_dispute_private_notes_banner", "🔒 Private Note — Not shared with Guest or Admin")}
                     </span>
                   </div>
                   <button
@@ -790,14 +790,14 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                     >
                       <path d="M12 4.5v15m7.5-7.5h-15" />
                     </svg>
-                    <span>Add Note</span>
+                    <span>{t("host_dispute_btn_add_note", "Add Note")}</span>
                   </button>
                 </div>
 
                 {dispute.privateNotes.length === 0 ? (
                   <div className="py-14 text-center text-sm text-[#727272] space-y-1">
-                    <p className="text-base">You haven't saved any private notes for this case.</p>
-                    <p className="text-sm">Keep personal reminders, inspection findings, or timeline notes for your records.</p>
+                    <p className="text-base">{t("host_dispute_no_notes_title", "You haven't saved any private notes for this case.")}</p>
+                    <p className="text-sm">{t("host_dispute_no_notes_desc", "Keep personal reminders, inspection findings, or timeline notes for your records.")}</p>
                   </div>
                 ) : (
                   <div className="mt-6 space-y-4">
@@ -825,7 +825,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                               }}
                               className="font-semibold text-[#1F1F1F] underline underline-offset-2 hover:text-[#555] cursor-pointer"
                             >
-                              Edit
+                              {t("common_edit", "Edit")}
                             </button>
                             <button
                               type="button"
@@ -850,14 +850,14 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
               <section className="rounded-[20px] border border-zinc-200 bg-white p-6 sm:p-7 shadow-xs">
                 <div className="flex items-center justify-between border-b border-zinc-100 pb-4">
                   <h2 className="text-base sm:text-lg font-medium text-[#1F1F1F]">
-                    Uploaded Case Evidence ({dispute.evidence.length})
+                    {t("host_dispute_evidence_count", { count: dispute.evidence.length }, `Uploaded Case Evidence (${dispute.evidence.length})`)}
                   </h2>
-                  <span className="text-xs sm:text-sm text-[#727272]">Secure platform storage</span>
+                  <span className="text-xs sm:text-sm text-[#727272]">{t("host_dispute_evidence_secure_storage", "Secure platform storage")}</span>
                 </div>
 
                 {dispute.evidence.length === 0 ? (
                   <div className="py-14 text-center text-sm text-[#727272] italic">
-                    No evidence files uploaded by you yet. Attach photos or documents when replying or proposing resolutions.
+                    {t("host_dispute_no_evidence_desc", "No evidence files uploaded by you yet. Attach photos or documents when replying or proposing resolutions.")}
                   </div>
                 ) : (
                   <div className="mt-6 grid sm:grid-cols-2 gap-4">
@@ -868,7 +868,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                       >
                         <div className="min-w-0 space-y-0.5">
                           <p className="text-sm font-semibold text-[#1F1F1F] truncate">{item.fileName}</p>
-                          <p className="text-xs text-[#727272]">Uploaded {formatDate(item.createdAt)}</p>
+                          <p className="text-xs text-[#727272]">{t("host_dispute_uploaded_at", { date: formatDate(item.createdAt) }, `Uploaded ${formatDate(item.createdAt)}`)}</p>
                         </div>
                         <a
                           href={item.url}
@@ -876,7 +876,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                           rel="noreferrer"
                           className="rounded-xl bg-white border border-zinc-300 px-4 py-2 text-xs sm:text-sm font-semibold text-[#1F1F1F] hover:bg-zinc-100 shrink-0 transition-colors"
                         >
-                          View / Download
+                          {t("host_dispute_view_download", "View / Download")}
                         </a>
                       </div>
                     ))}
@@ -892,14 +892,14 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
               <section className="rounded-[20px] border border-zinc-200 bg-white p-6 sm:p-7 shadow-xs">
                 <div className="flex items-center justify-between border-b border-zinc-100 pb-4">
                   <h2 className="text-base sm:text-lg font-medium text-[#1F1F1F]">
-                    Activity Timeline
+                    {t("host_dispute_activity_timeline", "Activity Timeline")}
                   </h2>
-                  <span className="text-xs sm:text-sm text-[#727272]">Official audit history</span>
+                  <span className="text-xs sm:text-sm text-[#727272]">{t("host_dispute_audit_history", "Official audit history")}</span>
                 </div>
 
                 {dispute.timeline.length === 0 ? (
                   <div className="py-14 text-center text-sm text-[#727272] italic">
-                    No milestone events recorded yet.
+                    {t("host_dispute_no_timeline", "No milestone events recorded yet.")}
                   </div>
                 ) : (
                   <ol className="mt-6 space-y-6 border-l-2 border-zinc-200 pl-5 ml-3">
@@ -930,19 +930,19 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-emerald-200 pb-4">
                     <div>
                       <span className="text-xs font-medium text-[#727272]">
-                        Final Resolution Decision
+                        {t("host_dispute_final_resolution", "Final Resolution Decision")}
                       </span>
                       <h2 className="text-lg sm:text-xl font-bold text-emerald-950 mt-0.5">
                         {dispute.resolution.decisionCategory.replaceAll("_", " ")}
                       </h2>
                     </div>
                     <span className="self-start sm:self-center rounded-full bg-emerald-100 border border-emerald-200 px-3.5 py-1 text-xs font-semibold text-emerald-800">
-                      Resolved {formatDate(dispute.resolution.resolvedAt)}
+                      {t("host_res_center_status_resolved", "Resolved")} {formatDate(dispute.resolution.resolvedAt)}
                     </span>
                   </div>
                   <div>
                     <span className="text-xs font-medium text-[#727272] block mb-1.5">
-                      Official Decision Explanation
+                      {t("host_dispute_official_explanation", "Official Decision Explanation")}
                     </span>
                     <p className="text-sm sm:text-base leading-relaxed text-emerald-950 whitespace-pre-wrap">
                       {dispute.resolution.explanation}
@@ -951,9 +951,9 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                 </section>
               ) : (
                 <section className="rounded-[20px] border border-zinc-200 bg-white p-6 sm:p-7 shadow-xs space-y-4">
-                  <h3 className="text-base sm:text-lg font-medium text-[#1F1F1F]">Dispute Investigation Active</h3>
+                  <h3 className="text-base sm:text-lg font-medium text-[#1F1F1F]">{t("host_dispute_investigation_active", "Dispute Investigation Active")}</h3>
                   <p className="text-sm text-[#727272] leading-relaxed">
-                    This case is currently under review by Homyz Support. As a host, you can propose a mutual resolution or mark your own complaint as resolved.
+                    {t("host_dispute_under_review_desc", "This case is currently under review by Homyz Support. As a host, you can propose a mutual resolution or mark your own complaint as resolved.")}
                   </p>
                   {isOpen && (
                     <div className="flex flex-wrap gap-3 pt-2">
@@ -962,7 +962,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                         onClick={() => setProposeModalOpen(true)}
                         className="rounded-full bg-[#1F1F1F] px-5 py-2.5 text-sm font-semibold text-white hover:bg-black transition-all cursor-pointer"
                       >
-                        Propose Resolution Outcome
+                        {t("host_dispute_btn_propose_outcome", "Propose Resolution Outcome")}
                       </button>
                       {dispute.isReporter && (
                         <button
@@ -970,7 +970,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                           onClick={() => setResolveOwnModalOpen(true)}
                           className="rounded-full border border-emerald-300 bg-emerald-50 px-5 py-2.5 text-sm font-semibold text-emerald-800 hover:bg-emerald-100 transition-all cursor-pointer"
                         >
-                          Resolve / Withdraw My Complaint
+                          {t("host_dispute_btn_withdraw_complaint", "Resolve / Withdraw My Complaint")}
                         </button>
                       )}
                     </div>
@@ -982,13 +982,13 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
               <section className="rounded-[20px] border border-zinc-200 bg-white p-6 sm:p-7 shadow-xs">
                 <div className="flex items-center justify-between border-b border-zinc-100 pb-4">
                   <h2 className="text-base sm:text-lg font-medium text-[#1F1F1F]">
-                    Your Submitted Proposals ({dispute.resolutionProposals.length})
+                    {t("host_dispute_proposals_count", { count: dispute.resolutionProposals.length }, `Your Submitted Proposals (${dispute.resolutionProposals.length})`)}
                   </h2>
                 </div>
 
                 {dispute.resolutionProposals.length === 0 ? (
                   <div className="py-14 text-center text-sm text-[#727272] italic">
-                    No resolution proposals submitted yet.
+                    {t("host_dispute_no_proposals", "No resolution proposals submitted yet.")}
                   </div>
                 ) : (
                   <div className="mt-6 space-y-4">
@@ -999,7 +999,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                       >
                         <div className="flex items-center justify-between">
                           <span className="text-sm sm:text-base font-medium text-[#1F1F1F]">
-                            Proposal: {proposal.proposalType.replaceAll("_", " ")}
+                            {t("host_dispute_proposal_type_prefix", { type: proposal.proposalType.replaceAll("_", " ") }, `Proposal: ${proposal.proposalType.replaceAll("_", " ")}`)}
                           </span>
                           <span className="rounded-full bg-blue-100 text-blue-800 px-3 py-0.5 text-xs font-semibold">
                             {proposal.status}
@@ -1023,11 +1023,11 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
           {/* Section 1: Case Summary */}
           <section className="rounded-[20px] rounded-[10px] border border-zinc-200 p-6 bg-[rgba(255,255,255,0.6)] shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)]">
             <h3 className="text-base sm:text-lg font-medium text-[#1F1F1F] border-b border-[#727272] pb-3">
-              Case Summary
+              {t("host_dispute_case_summary", "Case Summary")}
             </h3>
             <dl className="mt-4 divide-y divide-zinc-100 text-sm">
               <div className="flex items-center justify-between py-2.5">
-                <dt className="text-[#727272]">Case Status</dt>
+                <dt className="text-[#727272]">{t("host_dispute_case_status", "Case Status")}</dt>
                 <dd className="font-medium text-[#1F1F1F]">
                   <span
                     className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${dispute.status === "RESOLVED"
@@ -1040,27 +1040,27 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                 </dd>
               </div>
               <div className="flex items-center justify-between py-2.5">
-                <dt className="text-[#727272]">Priority</dt>
+                <dt className="text-[#727272]">{t("host_dispute_priority_label", "Priority")}</dt>
                 <dd className="font-medium uppercase text-[#1F1F1F]">{dispute.severity}</dd>
               </div>
               <div className="flex items-center justify-between py-2.5">
-                <dt className="text-[#727272]">Issue Category</dt>
+                <dt className="text-[#727272]">{t("host_dispute_issue_category", "Issue Category")}</dt>
                 <dd className="font-medium text-[#1F1F1F]">
                   {dispute.category.replaceAll("_", " ")}
                 </dd>
               </div>
               <div className="flex items-center justify-between py-2.5">
-                <dt className="text-[#727272]">Case Reviewer</dt>
+                <dt className="text-[#727272]">{t("host_dispute_case_reviewer", "Case Reviewer")}</dt>
                 <dd className="font-medium text-[#1F1F1F]">
-                  {dispute.hasAssignedReviewer ? "Assigned (Support)" : "Triage Queue"}
+                  {dispute.hasAssignedReviewer ? t("host_dispute_reviewer_assigned", "Assigned (Support)") : t("host_dispute_reviewer_triage", "Triage Queue")}
                 </dd>
               </div>
               <div className="flex items-center justify-between py-2.5">
-                <dt className="text-[#727272]">Date Filed</dt>
+                <dt className="text-[#727272]">{t("host_dispute_date_filed", "Date Filed")}</dt>
                 <dd className="text-[#555]">{formatDate(dispute.createdAt)}</dd>
               </div>
               <div className="flex items-center justify-between py-2.5">
-                <dt className="text-[#727272]">Last Updated</dt>
+                <dt className="text-[#727272]">{t("host_dispute_last_updated", "Last Updated")}</dt>
                 <dd className="text-[#555]">{formatDate(dispute.updatedAt, true)}</dd>
               </div>
             </dl>
@@ -1069,7 +1069,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
           {/* Section 2: Reservation & Property Details */}
           <section className="rounded-[20px] rounded-[10px] border border-zinc-200 p-6 bg-[rgba(255,255,255,0.6)] shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)]">
             <h3 className="text-base sm:text-lg font-medium text-[#1F1F1F] border-b border-[#727272] pb-3">
-              Reservation Details
+              {t("host_dispute_reservation_details", "Reservation Details")}
             </h3>
 
             {listing && (
@@ -1096,30 +1096,30 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
             {booking && (
               <div className="mt-4 space-y-3 text-sm pt-4 border-t border-zinc-100">
                 <div className="flex items-center justify-between">
-                  <span className="text-[#727272]">Booking Code:</span>
+                  <span className="text-[#727272]">{t("host_dispute_booking_code", "Booking Code:")}</span>
                   <span className=" font-medium text-[#1F1F1F]">
                     #{booking.id.slice(0, 10).toUpperCase()}
                   </span>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span className="text-[#727272]">Check-in:</span>
+                  <span className="text-[#727272]">{t("host_dispute_checkin_label", "Check-in:")}</span>
                   <span className="font-medium text-[#1F1F1F]">{formatDate(booking.startDate)}</span>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span className="text-[#727272]">Check-out:</span>
+                  <span className="text-[#727272]">{t("host_dispute_checkout_label", "Check-out:")}</span>
                   <span className="font-medium text-[#1F1F1F]">{formatDate(booking.endDate)}</span>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span className="text-[#727272]">Guests:</span>
-                  <span className="font-medium text-[#1F1F1F]">{booking.guests} guest(s)</span>
+                  <span className="text-[#727272]">{t("host_dispute_guests_label", "Guests:")}</span>
+                  <span className="font-medium text-[#1F1F1F]">{t("host_dispute_guest_count", { count: booking.guests }, `${booking.guests} guest(s)`)}</span>
                 </div>
 
                 {typeof booking.totalPrice === "number" && (
                   <div className="flex items-center justify-between pt-2 border-t border-zinc-400">
-                    <span className="text-[#727272]">Total Booking:</span>
+                    <span className="text-[#727272]">{t("host_dispute_total_booking", "Total Booking:")}</span>
                     <span className="font-medium text-base text-[#1F1F1F]">
                       {formatPrice(booking.totalPrice / 100, booking.currency || "SAR")}
                     </span>
@@ -1131,7 +1131,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                     href={`/host/bookings/${booking.id}`}
                     className="flex min-h-11 w-full items-center justify-center rounded-full border border-[#727272] bg-white px-4 py-3 text-base font-medium text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white transition-colors"
                   >
-                    View Booking Details →
+                    {t("host_dispute_view_booking_details", "View Booking Details →")}
                   </Link>
                 </div>
               </div>
@@ -1142,7 +1142,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
           {booking?.user && (
             <section className="rounded-[20px] rounded-[10px] border border-zinc-200 p-6 bg-[rgba(255,255,255,0.6)] shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)]">
               <h3 className="text-base sm:text-lg font-medium text-[#1F1F1F] border-b border-[#727272] pb-3">
-                Guest Information
+                {t("host_dispute_guest_information", "Guest Information")}
               </h3>
               <div className="mt-4 flex items-center gap-3.5">
                 <div className="relative h-12 w-12 rounded-full overflow-hidden bg-zinc-100 shrink-0 border border-zinc-200">
@@ -1158,7 +1158,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                   <p className="text-sm sm:text-base font-medium text-[#1f1f1f] truncate">
                     {booking.user.name || "Guest"}
                   </p>
-                  <p className="text-sm text-[#727272]">Booking Guest</p>
+                  <p className="text-sm text-[#727272]">{t("host_dispute_booking_guest_label", "Booking Guest")}</p>
                 </div>
               </div>
             </section>
@@ -1167,10 +1167,10 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
           {/* Section 4: Privacy & Security Policy Badge */}
           <section className="rounded-[20px] rounded-[10px] border border-zinc-200 bg-[rgba(255,255,255,0.6)] shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)] p-5  space-y-1.5 leading-relaxed">
             <p className="font-medium text-[#1f1f1f] flex items-center gap-1.5 text-base">
-              <span className="text-lg">🛡️</span> Security &amp; Privacy Notice
+              <span className="text-lg">🛡️</span> {t("host_dispute_security_notice", "Security & Privacy Notice")}
             </p>
             <p className="text-[#727272] text-sm">
-              Your private notes are never shared with Guests or Homyz Support. Official replies and evidence files are reviewed only by authorized resolution administrators.
+              {t("host_dispute_security_notice_desc", "Your private notes are never shared with Guests or Homyz Support. Official replies and evidence files are reviewed only by authorized resolution administrators.")}
             </p>
           </section>
         </aside>
@@ -1185,10 +1185,10 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
             <div className="flex items-center justify-between border-b border-zinc-300 pb-3.5">
               <div>
                 <h3 className="text-base sm:text-lg font-medium text-[#1F1F1F]">
-                  {editingNoteId ? "Edit Private Note" : "Add Private Note"}
+                  {editingNoteId ? t("host_dispute_modal_edit_note", "Edit Private Note") : t("host_dispute_modal_add_note", "Add Private Note")}
                 </h3>
                 <span className="text-xs text-emerald-800 font-medium">
-                  🔒 Visible only to you (Host)
+                  {t("host_dispute_modal_visible_host_only", "🔒 Visible only to you (Host)")}
                 </span>
               </div>
               <button
@@ -1338,7 +1338,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                 </label>
                 {proposalFiles.length > 0 && (
                   <p className="mt-2 text-sm text-[#727272] font-normal">
-                    Selected files: {proposalFiles.map((f) => f.name).join(", ")}
+                    {t("host_dispute_selected_files_prefix", { files: proposalFiles.map((f) => f.name).join(", ") }, `Selected files: ${proposalFiles.map((f) => f.name).join(", ")}`)}
                   </p>
                 )}
               </div>

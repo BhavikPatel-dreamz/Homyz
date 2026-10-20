@@ -122,7 +122,7 @@ export function StepPinConfirm({
                   type="button"
                   onClick={() => setShowSpecificLocation(!showSpecificLocation)}
                   aria-pressed={showSpecificLocation}
-                  aria-label="Toggle show specific location"
+                  aria-label={t("host_toggle_show_specific_location_aria", "Toggle show specific location")}
                   className={`relative inline-flex sm:h-6 h-5 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
                     showSpecificLocation ? "bg-[#1F1F1F]" : "bg-[#DDDDDE]"
                   }`}

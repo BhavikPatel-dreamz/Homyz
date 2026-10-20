@@ -19,8 +19,8 @@ export function SupportChatView({ user }: { user?: { name?: string | null } }) {
     {
       id: "msg-1",
       sender: "agent",
-      text: "Hello! Welcome to Homyz 24/7 Guest Care. How can I assist you with your trips, booking modifications, or account today?",
-      time: "Just now",
+      text: t("profile_support_welcome_msg", "Hello! Welcome to Homyz 24/7 Guest Care. How can I assist you with your trips, booking modifications, or account today?"),
+      time: t("profile_support_just_now", "Just now"),
     },
   ];
 
@@ -56,7 +56,7 @@ export function SupportChatView({ user }: { user?: { name?: string | null } }) {
       id: `msg-${messageIdRef.current++}`,
       sender: "user",
       text: trimmed,
-      time: "Just now",
+      time: t("profile_support_just_now", "Just now"),
     };
 
     setMessages((prev) => [...prev, userMsg]);
@@ -65,23 +65,23 @@ export function SupportChatView({ user }: { user?: { name?: string | null } }) {
 
     // Automated agent reply simulation
     setTimeout(() => {
-      let replyText = "Thank you for reaching out! A member of our concierge team is reviewing your request and will follow up with full details.";
+      let replyText = t("profile_support_agent_fallback_reply", "Thank you for reaching out! A member of our concierge team is reviewing your request and will follow up with full details.");
       const lower = trimmed.toLowerCase();
       if (lower.includes("check-in") || lower.includes("time")) {
-        replyText = "Early check-in requests are handled directly by your host. You can message them through your Reservation Details card or let us know your desired arrival hour!";
+        replyText = t("profile_support_reply_checkin", "Early check-in requests are handled directly by your host. You can message them through your Reservation Details card or let us know your desired arrival hour!");
       } else if (lower.includes("cancel") || lower.includes("refund")) {
-        replyText = "Free cancellation depends on your booking's policy. If cancelled at least 48 hours prior to check-in, you receive a full refund.";
+        replyText = t("profile_support_reply_cancel", "Free cancellation depends on your booking's policy. If cancelled at least 48 hours prior to check-in, you receive a full refund.");
       } else if (lower.includes("invoice") || lower.includes("payment")) {
-        replyText = "Receipts and PDF invoices are available in your Past Bookings tab under each completed stay. We can also email a copy directly!";
+        replyText = t("profile_support_reply_invoice", "Receipts and PDF invoices are available in your Past Bookings tab under each completed stay. We can also email a copy directly!");
       } else if (lower.includes("host") || lower.includes("contact")) {
-        replyText = "Your host's direct phone number and message portal are accessible from your Upcoming Trips reservation card.";
+        replyText = t("profile_support_reply_host", "Your host's direct phone number and message portal are accessible from your Upcoming Trips reservation card.");
       }
 
       const agentReply: ChatMessage = {
         id: `msg-${messageIdRef.current++}`,
         sender: "agent",
         text: replyText,
-        time: "Just now",
+        time: t("profile_support_just_now", "Just now"),
       };
       setMessages((prev) => [...prev, agentReply]);
       setIsTyping(false);

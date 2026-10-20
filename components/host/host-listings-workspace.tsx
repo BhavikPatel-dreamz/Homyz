@@ -1426,12 +1426,12 @@ export function HostListingsWorkspace({
                     <div>
                       <h4 className="font-semibold text-muted-foreground">{t("host_listings_modal_photos", "Property Photos Gallery")}</h4>
                       <p className="text-[11px] text-[var(--muted-foreground)]">
-                        Add high quality image URLs. Minimum 5 photos required for Admin review & approval.
+                        {t("host_listings_photos_minimum_note", "Add high quality image URLs. Minimum 5 photos required for Admin review & approval.")}
                       </p>
                     </div>
                     <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${formData.photos.length >= 5 ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-amber-50 text-amber-800 border border-amber-300"
                       }`}>
-                      {formData.photos.length} / 5 photos minimum
+                      {t("host_listings_photos_minimum_count", { count: formData.photos.length }, `${formData.photos.length} / 5 photos minimum`)}
                     </span>
                   </div>
 
@@ -1478,7 +1478,7 @@ export function HostListingsWorkspace({
                           type="url"
                           value={formData.newPhotoUrl}
                           onChange={(e) => setFormData({ ...formData, newPhotoUrl: e.target.value })}
-                          placeholder="Or paste image URL (e.g. https://images.unsplash.com/...)"
+                          placeholder={t("host_listings_paste_url_placeholder", "Or paste image URL (e.g. https://images.unsplash.com/...)")}
                           className="flex-1 rounded-xl border border-[var(--border)] p-2.5 bg-[var(--surface)] text-muted-foreground outline-none"
                         />
                         <button
@@ -1493,7 +1493,7 @@ export function HostListingsWorkspace({
                           }}
                           className="rounded-xl bg-emerald-600 text-white font-semibold px-4 py-2 hover:bg-emerald-700 transition-all shrink-0"
                         >
-                          + Add URL
+                          {t("host_listings_add_url_btn", "+ Add URL")}
                         </button>
                       </div>
                     </div>
@@ -1512,13 +1512,13 @@ export function HostListingsWorkspace({
                               setFormData({ ...formData, photos: updated });
                             }}
                             className="bg-rose-600 text-white rounded-full p-1.5 text-xs font-semibold"
-                            title="Remove Photo"
+                            title={t("host_listings_remove_photo_title", "Remove Photo")}
                           >
-                            🗑 Remove
+                            {t("host_listings_remove_photo_btn", "🗑 Remove")}
                           </button>
                         </div>
                         <span className="absolute bottom-1.5 left-1.5 bg-black/70 text-white text-[10px] px-1.5 py-0.5 rounded font-mono">
-                          #{idx + 1} {idx === 0 ? "Cover" : ""}
+                          #{idx + 1} {idx === 0 ? t("host_listings_cover_badge", "Cover") : ""}
                         </span>
                       </div>
                     ))}
@@ -1593,7 +1593,7 @@ export function HostListingsWorkspace({
                     <h4 className="font-semibold text-muted-foreground mb-3">{t("host_listings_modal_pricing", "Pricing")}</h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-[var(--muted-foreground)] font-medium mb-1">Nightly Rate ({getCurrencyForCountry(formData.country)}) *</label>
+                        <label className="block text-[var(--muted-foreground)] font-medium mb-1">{t("host_listings_nightly_rate_label", { currency: getCurrencyForCountry(formData.country) }, `Nightly Rate (${getCurrencyForCountry(formData.country)}) *`)}</label>
                         <input
                           type="number"
                           min={1}
@@ -1604,7 +1604,7 @@ export function HostListingsWorkspace({
                         />
                       </div>
                       <div>
-                        <label className="block text-[var(--muted-foreground)] font-medium mb-1">Weekend Rate ({getCurrencyForCountry(formData.country)})</label>
+                        <label className="block text-[var(--muted-foreground)] font-medium mb-1">{t("host_listings_weekend_rate_label", { currency: getCurrencyForCountry(formData.country) }, `Weekend Rate (${getCurrencyForCountry(formData.country)})`)}</label>
                         <input
                           type="number"
                           min={0}
@@ -1640,7 +1640,7 @@ export function HostListingsWorkspace({
                             onChange={(e) => setFormData({ ...formData, checkInStart: e.target.value })}
                             className="w-full rounded-xl border border-[var(--border)] p-2 bg-[var(--surface)] text-muted-foreground font-semibold text-center outline-none"
                           />
-                          <span>to</span>
+                          <span>{t("common_to", "to")}</span>
                           <input
                             type="time"
                             value={formData.checkInEnd}
@@ -1739,10 +1739,10 @@ export function HostListingsWorkspace({
         <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
           <div className="w-full max-w-md max-h-[90dvh] overflow-y-auto rounded-3xl bg-[var(--surface)] p-6 shadow-2xl space-y-4 border border-[var(--border)] font-sans">
             <h3 className="text-base font-medium text-muted-foreground">
-              Calendar Availability: {selectedListingForCal.title}
+              {t("host_listings_cal_avail_title", { title: selectedListingForCal.title }, `Calendar Availability: ${selectedListingForCal.title}`)}
             </h3>
             <p className="text-xs text-[var(--muted-foreground)]">
-              Manage blocked dates when your property is unavailable for booking.
+              {t("host_listings_cal_avail_desc", "Manage blocked dates when your property is unavailable for booking.")}
             </p>
 
             <form onSubmit={handleSaveAvailability} className="space-y-4 text-xs">
@@ -1767,7 +1767,7 @@ export function HostListingsWorkspace({
               </div>
 
               <div className="space-y-2">
-                <span className="font-semibold text-muted-foreground block">Blocked Dates List ({tempBlockedDates.length})</span>
+                <span className="font-semibold text-muted-foreground block">{t("host_listings_blocked_dates_count", { count: tempBlockedDates.length }, `Blocked Dates List (${tempBlockedDates.length})`)}</span>
                 <div className="max-h-40 overflow-y-auto space-y-1.5 pr-1">
                   {tempBlockedDates.length === 0 ? (
                     <p className="text-xs text-[var(--muted-foreground)] italic">{t("host_listings_modal_no_dates_blocked", "No dates blocked.")}</p>

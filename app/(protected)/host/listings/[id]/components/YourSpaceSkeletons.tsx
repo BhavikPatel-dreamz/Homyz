@@ -5,6 +5,7 @@ import { HostHeader } from "@/components/host/host-header";
 import { HostSubNav } from "@/components/host/host-sub-nav";
 import { Container } from "@/components/ui/container";
 import { Footer } from "@/components/dashboard/footer";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 // ============================================================================
 // BASE SHIMMER & SKELETON PRIMITIVES
@@ -957,8 +958,9 @@ export const CustomLinkBoxSkeleton = CustomLinkSkeleton;
 // ============================================================================
 
 export function EditorSidebarSkeleton() {
+  const { t } = useLanguage();
   return (
-    <aside className="w-full space-y-3 font-sans" aria-label="Sidebar loading skeleton">
+    <aside className="w-full space-y-3 font-sans" aria-label={t("host_sidebar_skeleton_aria", "Sidebar loading skeleton")}>
       {/* 1. Photo preview card (4-card horizontal stack skeleton) */}
       <div className="relative h-36 sm:h-40 w-full my-2 overflow-hidden rounded-2xl p-0.5">
         <div className="absolute top-0 bottom-0 left-0 w-[54%] rounded-2xl border border-zinc-200 bg-zinc-200/80 skeleton-shimmer z-0" />

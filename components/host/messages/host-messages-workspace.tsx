@@ -739,7 +739,7 @@ export function HostMessagesWorkspace({
       // Remove optimistic message on error
       setMessages((prev) => prev.filter((m) => m.id !== tempId));
       setInputText(text);
-      alert("Failed to send message. Please try again.");
+      alert(t("host_msg_err_send_failed", "Failed to send message. Please try again."));
     } finally {
       setSending(false);
     }
@@ -762,7 +762,7 @@ export function HostMessagesWorkspace({
       await fetchConversations();
     } catch (err) {
       console.error("Pre-approval error:", err);
-      alert("Failed to pre-approve inquiry.");
+      alert(t("host_msg_err_preapprove_failed", "Failed to pre-approve inquiry."));
     } finally {
       setModalSubmitting(false);
     }
@@ -779,7 +779,7 @@ export function HostMessagesWorkspace({
 
     const subtotal = Math.round(parseFloat(offerSubtotal) * 100);
     if (isNaN(subtotal) || subtotal <= 0) {
-      alert("Please enter a valid subtotal amount.");
+      alert(t("host_msg_err_invalid_amount", "Please enter a valid subtotal amount."));
       return;
     }
 
@@ -803,7 +803,7 @@ export function HostMessagesWorkspace({
       await fetchConversations();
     } catch (err) {
       console.error("Special offer error:", err);
-      alert("Failed to send special offer.");
+      alert(t("host_msg_err_offer_failed", "Failed to send special offer."));
     } finally {
       setModalSubmitting(false);
     }
@@ -829,7 +829,7 @@ export function HostMessagesWorkspace({
       await fetchConversations();
     } catch (err) {
       console.error("Decline error:", err);
-      alert("Failed to decline inquiry.");
+      alert(t("host_msg_err_decline_failed", "Failed to decline inquiry."));
     } finally {
       setModalSubmitting(false);
     }
@@ -1058,7 +1058,7 @@ export function HostMessagesWorkspace({
                     <button type="button" onClick={() => { setFilter("unread"); setFilterMenuOpen(false); }} className="inline-flex h-8 min-w-[67px] items-center justify-center rounded-full border border-zinc-400 bg-white px-3 text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-zinc-50"><span>{t("messages_filter_unread", "Unread")}</span></button>
                   </div>
                   <div className="ml-auto flex shrink-0 items-center gap-2">
-                    <button type="button" onClick={() => { setFilterMenuOpen(false); setSearchClosing(false); setSearchOpen(true); }} aria-label="Search messages" className="flex size-8 items-center justify-center rounded-full border border-[#727272] text-[#1F1F1F] transition-transform duration-150 hover:scale-105 hover:bg-zinc-50 active:scale-95">
+                    <button type="button" onClick={() => { setFilterMenuOpen(false); setSearchClosing(false); setSearchOpen(true); }} aria-label={t("host_msg_search_placeholder", "Search messages")} className="flex size-8 items-center justify-center rounded-full border border-[#727272] text-[#1F1F1F] transition-transform duration-150 hover:scale-105 hover:bg-zinc-50 active:scale-95">
                       <Image src="/images/icons/search-icon.svg" alt="" width={16} height={16} className="size-4" />
                     </button>
                     {/* <button
@@ -1301,15 +1301,15 @@ export function HostMessagesWorkspace({
                                     </span>
                                     {hasBooking ? (
                                       <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800 border border-emerald-300 whitespace-nowrap">
-                                        Booked & Confirmed
+                                        {t("host_msg_status_booked", "Booked & Confirmed")}
                                       </span>
                                     ) : isExpired ? (
                                       <span className="inline-flex items-center rounded-full bg-zinc-200 px-2 py-0.5 text-[10px] font-medium text-zinc-600 border border-zinc-300 whitespace-nowrap leading-4">
-                                        Expired
+                                        {t("host_msg_status_expired", "Expired")}
                                       </span>
                                     ) : isDeclined ? (
                                       <span className="inline-flex items-center rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-semibold text-rose-700 border border-rose-200 whitespace-nowrap">
-                                        Declined
+                                        {t("host_msg_status_declined", "Declined")}
                                       </span>
                                     ) : isAccepted ? (
                                             <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800 border border-emerald-300 whitespace-nowrap">
@@ -1404,15 +1404,15 @@ export function HostMessagesWorkspace({
                               </div>
                             )}
                             <div className="order-1 mb-1 flex items-center gap-2 px-1 text-[10px] text-zinc-400">
-                              <span>{isHost ? "You" : selectedConversation.guest.name || "Guest"}</span>
+                              <span>{isHost ? t("host_msg_sender_you", "You") : selectedConversation.guest.name || t("common_guest_singular", "Guest")}</span>
                               <span>{formatMessageTime(m.createdAt)}</span>
                               {!isHost && (
                                 <button
                                   type="button"
                                   onClick={() => setReportingMessageId(m.id)}
                                   className="text-zinc-400 hover:text-red-600 transition-colors ml-0.5 p-0.5 rounded cursor-pointer"
-                                  title="Report message"
-                                  aria-label="Report message"
+                                  title={t("host_msg_report_message", "Report message")}
+                                  aria-label={t("host_msg_report_message", "Report message")}
                                 >
                                   <svg className="size-3 inline-block" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M3 3l1.664 9.526A2 2 0 006.644 14H17m0 0l1 5H6M17 14l1-7H7.5" />
@@ -1441,7 +1441,7 @@ export function HostMessagesWorkspace({
                                             type="button"
                                             onClick={() => setLightboxAttachment(att)}
                                             className="relative group block overflow-hidden rounded-xl bg-black/10 border border-black/5 hover:opacity-95 transition-opacity text-left"
-                                            title="Click to view full image"
+                                            title={t("host_msg_click_view_full", "Click to view full image")}
                                           >
                                             <img
                                               src={att.fileUrl}
@@ -1498,7 +1498,7 @@ export function HostMessagesWorkspace({
                                             ? "bg-white/20 hover:bg-white/30 text-white"
                                             : "bg-zinc-200 hover:bg-zinc-300 text-zinc-800"
                                             }`}
-                                          title="Download document"
+                                          title={t("host_msg_download_doc", "Download document")}
                                         >
                                           <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -1590,9 +1590,9 @@ export function HostMessagesWorkspace({
                           <p className="text-xs font-medium text-zinc-700 truncate">{s.fileName}</p>
                           <p className="text-[10px] text-zinc-400">
                             {s.status === "UPLOADING"
-                              ? "Uploading..."
+                              ? t("host_msg_uploading", "Uploading...")
                               : s.status === "FAILED"
-                                ? "Failed"
+                                ? t("host_msg_failed", "Failed")
                                 : formatFileSize(s.fileSize)}
                           </p>
                         </div>
@@ -1600,7 +1600,7 @@ export function HostMessagesWorkspace({
                           type="button"
                           onClick={() => handleRemoveStagedAttachment(s.id)}
                           className="size-5 rounded-full bg-zinc-200 hover:bg-zinc-300 text-zinc-600 flex items-center justify-center text-xs transition-colors shrink-0 ml-1"
-                          title="Remove attachment"
+                          title={t("host_msg_remove_attachment", "Remove attachment")}
                         >
                           ✕
                         </button>
@@ -1714,11 +1714,11 @@ export function HostMessagesWorkspace({
                   ? "absolute right-8 top-8 flex size-10 items-center justify-center rounded-full border border-zinc-200 bg-white text-[#1A1A1A] shadow-sm transition-colors hover:bg-zinc-50"
                   : "absolute right-6 top-8 flex size-9 items-center justify-center rounded-full text-[#1A1A1A] transition-colors hover:bg-zinc-100"
                 : "ml-auto hidden rounded-full border border-zinc-300 px-3 py-1.5 text-xs font-medium text-[#1F1F1F] transition-colors hover:bg-zinc-50 lg:flex xl:hidden"}
-              aria-label="Close inquiry details"
+              aria-label={t("host_msg_close_inquiry_details", "Close inquiry details")}
             >
               {panelIsModal ? (
                 <svg className="size-6" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
-              ) : "Close details"}
+              ) : t("host_msg_close_details", "Close details")}
             </button>
             {selectedConversation ? (
               <>
@@ -1773,14 +1773,14 @@ export function HostMessagesWorkspace({
                     rel="noopener noreferrer"
                     className="block w-full py-2.5 rounded-lg border border-zinc-400 hover:border-[#1f1f1f] text-[#1F1F1F] hover:text-white text-base font-medium hover:bg-[#1f1f1f] transition-colors duration-300 cursor-pointer text-center"
                   >
-                    View Listing
+                    {t("host_msg_view_listing", "View Listing")}
                   </Link>
                 </div>
 
                 {/* 3. Guest Profile Card */}
                 <section className="space-y-4 sm:rounded-2xl rounded-lg border border-[#E5E5E5] bg-white p-5 shadow-[0_2px_5px_rgba(0,0,0,0.12)] sm:p-6">
                   <h4 className="text-xl font-medium leading-tight text-[#1F1F1F]">
-                    <span className="text-[#727272]">About </span>
+                    <span className="text-[#727272]">{t("host_msg_about", "About")} </span>
                     <span className="break-words">{selectedConversation.guest.name || "Guest"}</span>
                   </h4>
 
@@ -1792,7 +1792,7 @@ export function HostMessagesWorkspace({
                       <span>
                         {selectedConversation.booking
                           ? `Booking ${selectedConversation.booking.status.toLowerCase().replaceAll("_", " ")}`
-                          : "New guest inquiry"}
+                          : t("host_msg_new_inquiry", "New guest inquiry")}
                       </span>
                     </div>
 
@@ -1801,7 +1801,7 @@ export function HostMessagesWorkspace({
                         <span className="flex size-8 shrink-0 items-center justify-center text-[#1554D1]" aria-hidden="true">
                           <Image src="/images/icons/homyz-icon.svg" alt="homyz-icon.svg" width={24} height={20} className="w-6" />
                         </span>
-                        <span>Joined Homyz in {new Date(selectedConversation.guest.createdAt).getUTCFullYear()}</span>
+                        <span>{t("host_msg_joined_in", { year: new Date(selectedConversation.guest.createdAt).getUTCFullYear() }, `Joined Homyz in ${new Date(selectedConversation.guest.createdAt).getUTCFullYear()}`)}</span>
                       </div>
                     )}
 
@@ -1829,7 +1829,7 @@ export function HostMessagesWorkspace({
                       href={`/users/profile/${selectedConversation.guest.id}`}
                       className="inline-flex text-base font-medium text-[#1F1F1F] underline underline-offset-4 transition-colors hover:text-[#727272]"
                     >
-                      Show profile
+                      {t("host_msg_show_profile", "Show profile")}
                     </Link>
                   )}
                 </section>
@@ -1852,7 +1852,7 @@ export function HostMessagesWorkspace({
                         <div className={cardClass}>
                           <p className="text-base font-medium text-[#1F1F1F]">{t("messages_guests_label", "Guests")}</p>
                           <p className="text-base text-zinc-500">
-                            {b.guests} {b.guests === 1 ? "guest" : "guests"}
+                            {b.guests} {b.guests === 1 ? t("common_guest_singular", "guest") : t("common_guests_plural", "guests")}
                           </p>
                         </div>
 
@@ -1908,7 +1908,7 @@ export function HostMessagesWorkspace({
                             onClick={() => setShowReservationDetails(true)}
                             className="mt-3 block text-center w-full py-3 rounded-full bg-[#FCDF9C] text-[#1F1F1F] hover:text-white text-base font-medium hover:bg-[#1F1F1F] transition-colors cursor-pointer duration-300"
                           >
-                            View Reservation Details
+                            {t("host_msg_view_reservation_details", "View Reservation Details")}
                           </button>
                         )}
                       </div>
@@ -1931,7 +1931,7 @@ export function HostMessagesWorkspace({
                           <div className="rounded-[10px] bg-white px-4 py-3 shadow-[0_2px_5px_rgba(0,0,0,0.12)] border border-[#E5E5E5]">
                             <p className="text-base font-medium text-[#1F1F1F]">{t("messages_guests_label", "Guests")}</p>
                             <p className="text-base text-zinc-500">
-                              {inquiryDetails.guests} {inquiryDetails.guests === 1 ? "guest" : "guests"}
+                              {inquiryDetails.guests} {inquiryDetails.guests === 1 ? t("common_guest_singular", "guest") : t("common_guests_plural", "guests")}
                             </p>
                           </div>
                         )}
@@ -2012,8 +2012,8 @@ export function HostMessagesWorkspace({
                         <p className="text-xs text-zinc-600 mt-1">
                           {selectedConversation.activeSpecialOffer.guests}{" "}
                           {selectedConversation.activeSpecialOffer.guests === 1
-                            ? "guest"
-                            : "guests"}
+                            ? t("common_guest_singular", "guest")
+                            : t("common_guests_plural", "guests")}
                         </p>
                         <div className="mt-2.5 pt-2 border-t border-zinc-100 flex justify-between items-center text-sm">
                           <span className="text-zinc-600 font-medium">{t("messages_offer_total_label")}</span>
@@ -2035,18 +2035,18 @@ export function HostMessagesWorkspace({
                   {t("messages_select_convo_details")}
                 </p>
                 <p className="text-xs text-zinc-500">
-                  Choose a guest from the left panel to review inquiries, send special offers, or respond to booking messages.
+                  {t("host_msg_empty_conversation_desc", "Choose a guest from the left panel to review inquiries, send special offers, or respond to booking messages.")}
                 </p>
               </div>
             )}
           </aside>
           {rightPanelScrollThumb.visible && (
             <div ref={rightPanelScrollTrackRef} className="absolute inset-y-0 right-0 hidden w-[22px] rounded-[30px] bg-[#F3F4F5] lg:block">
-              <button type="button" aria-label="Scroll message details up" onClick={() => scrollRightPanelByPage("up")} className="absolute left-0 top-1 z-10 flex h-[28px] w-[24px] items-center justify-center rounded-full bg-[#DDDDDE] text-[#727272] shadow-[0px_2px_4px_rgba(0,0,0,0.25)] transition hover:bg-white/70 hover:text-[#1f1f1f]">
+              <button type="button" aria-label={t("host_msg_scroll_up_aria", "Scroll message details up")} onClick={() => scrollRightPanelByPage("up")} className="absolute left-0 top-1 z-10 flex h-[28px] w-[24px] items-center justify-center rounded-full bg-[#DDDDDE] text-[#727272] shadow-[0px_2px_4px_rgba(0,0,0,0.25)] transition hover:bg-white/70 hover:text-[#1f1f1f]">
                 <svg aria-hidden="true" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m6 15 6-6 6 6" /></svg>
               </button>
               <div onPointerDown={onRightPanelThumbPointerDown} className={`absolute left-0 top-0 w-[22px] touch-none select-none rounded-[30px] border border-white bg-[#DDDDDE] shadow-[0_2px_4px_rgba(0,0,0,0.25)] will-change-transform ${isRightPanelScrollbarDragging ? "cursor-grabbing" : "cursor-grab"}`} style={{ height: `${rightPanelScrollThumb.height}px`, transform: `translate3d(0, ${rightPanelScrollThumb.top}px, 0)` }} />
-              <button type="button" aria-label="Scroll message details down" onClick={() => scrollRightPanelByPage("down")} className="absolute bottom-1 left-0 z-10 flex h-[28px] w-[24px] items-center justify-center rounded-full bg-[#DDDDDE] text-[#727272] shadow-[0px_2px_4px_rgba(0,0,0,0.25)] transition hover:bg-white/70 hover:text-[#1f1f1f]">
+              <button type="button" aria-label={t("host_msg_scroll_down_aria", "Scroll message details down")} onClick={() => scrollRightPanelByPage("down")} className="absolute bottom-1 left-0 z-10 flex h-[28px] w-[24px] items-center justify-center rounded-full bg-[#DDDDDE] text-[#727272] shadow-[0px_2px_4px_rgba(0,0,0,0.25)] transition hover:bg-white/70 hover:text-[#1f1f1f]">
                 <svg aria-hidden="true" className="size-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m6 9 6 6 6-6" /></svg>
               </button>
             </div>
@@ -2326,7 +2326,7 @@ export function HostMessagesWorkspace({
                   <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                   </svg>
-                  Download
+                  {t("common_download", "Download")}
                 </a>
                 <button
                   type="button"
@@ -2354,7 +2354,7 @@ export function HostMessagesWorkspace({
           onClose={() => setReportingMessageId(null)}
           targetType="MESSAGE"
           targetId={reportingMessageId}
-          targetTitle={selectedConversation?.guest?.name ? `Message from ${selectedConversation.guest.name}` : "Message"}
+          targetTitle={selectedConversation?.guest?.name ? `${t("common_message", "Message")} (${selectedConversation.guest.name})` : t("common_message", "Message")}
           relatedBookingId={selectedConversation?.bookingId || selectedConversation?.booking?.id || undefined}
         />
       )}

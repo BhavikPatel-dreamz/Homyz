@@ -333,7 +333,7 @@ export function ProfileClient({
                 history.back();
               }
             }}
-            aria-label="Go back"
+            aria-label={t("common_go_back", "Go back")}
             className="back-btn flex h-8 w-8 items-center justify-center rounded-full border border-[#D7D7D7] text-[#727272]"
           />
           
@@ -378,7 +378,7 @@ export function ProfileClient({
                     {currentUser.image && currentUser.image !== failedProfileImageUrl ? (
                       <Image
                         src={currentUser.image}
-                        alt={currentUser.name || "User profile image"}
+                        alt={currentUser.name || t("profile_avatar_alt", "User profile image")}
                         fill
                         className="object-cover"
                         sizes="(max-width: 639px) 124px, 233px"
@@ -398,7 +398,7 @@ export function ProfileClient({
                   <div className="flex min-h-[124px] min-w-0 flex-1 flex-col justify-center gap-3 sm:min-h-[151px] sm:w-[195px] sm:flex-none sm:gap-4">
                     <div className="flex flex-col gap-1 sm:gap-2">
                       <h3 className="truncate text-sm leading-5 font-semibold text-[#1F1F1F] sm:text-base sm:leading-6">
-                        {currentUser.name || "Name"}
+                        {currentUser.name || t("profile_name_placeholder", "Name")}
                       </h3>
                       <p className="truncate text-xs leading-[18px] font-normal text-[#727272] sm:text-sm sm:leading-[21px]">
                         {pub.whereILive || (isOwner ? t("profile_add_location", "Add your location") : "")}

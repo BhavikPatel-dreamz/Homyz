@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { StarRating } from "@/components/reviews/star-rating";
 import { CurrencyPrice } from "@/components/ui/currency-price";
 import { formatBookingDateRange } from "@/lib/booking/booking-date";
+import { useLanguage } from "@/lib/i18n/language-context";
 import {
   CLEANLINESS_FEEDBACK_TAGS,
   CLEANLINESS_RATING_LABELS,
@@ -117,9 +118,13 @@ function FeedbackTagSelector<Tag extends string>({
   selectedTags: readonly Tag[];
   onToggle: (tag: Tag) => void;
 }) {
+  const { t } = useLanguage();
   return (
     <div className="mt-7 text-left">
-      <p className="text-sm font-semibold text-[#1F1F1F]">What went well? <span className="font-normal text-[#727272]">Optional</span></p>
+      <p className="text-sm font-semibold text-[#1F1F1F]">
+        {t("host_review_what_went_well", "What went well?")}{" "}
+        <span className="font-normal text-[#727272]">{t("common_optional", "Optional")}</span>
+      </p>
       <div className="mt-3 flex flex-wrap justify-center gap-2" aria-label={label}>
         {tags.map((tag) => {
           const selected = selectedTags.includes(tag);
@@ -148,6 +153,7 @@ export function HostReviewIntroduction({
   returnHref: string;
 }) {
   const router = useRouter();
+  const { t } = useLanguage();
   const draftKey = `homyz:host-review-draft:${context.hostId}:${context.bookingId}`;
   const [draft, setDraft] = useState(() => initialDraft(context));
   const [draftReady, setDraftReady] = useState(false);
@@ -325,17 +331,17 @@ export function HostReviewIntroduction({
           ✓
         </span>
         <h1 className="mt-4">
-          Review submitted
+          {t("host_review_submitted_title", "Review submitted")}
         </h1>
         <p className="mt-3 text-sm leading-6 text-[#727272]">
-          Thank you for sharing your feedback about {context.guest.name}. Your review has been saved and submitted successfully.
+          {t("host_review_submitted_desc", { name: context.guest.name }, `Thank you for sharing your feedback about ${context.guest.name}. Your review has been saved and submitted successfully.`)}
         </p>
         <div className="mt-8 flex justify-center">
           <Link
             href={returnHref}
             className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[#1F1F1F] px-6 text-sm font-semibold text-white transition-colors hover:bg-zinc-700"
           >
-            Back to reservations
+            {t("host_review_back_to_reservations", "Back to reservations")}
           </Link>
         </div>
       </section>
@@ -349,84 +355,84 @@ export function HostReviewIntroduction({
           // eslint-disable-next-line @next/next/no-img-element
           <img src={context.listing.photos[0]} alt={context.listing.title} className="aspect-[4/3] w-full rounded-2xl object-cover" />
         ) : (
-          <div className="flex aspect-[4/3] items-center justify-center rounded-2xl bg-zinc-100 text-sm text-[#727272]">Photo unavailable</div>
+          <div className="flex aspect-[4/3] items-center justify-center rounded-2xl bg-zinc-100 text-sm text-[#727272]">{t("host_review_photo_unavailable", "Photo unavailable")}</div>
         )}
         <h2 className="mt-4 text-lg font-semibold text-[#1F1F1F]">{context.listing.title}</h2>
         <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-sm text-zinc-600">
-          {context.listing.overallRating !== null ? <span>★ {context.listing.overallRating.toFixed(2)} overall</span> : <span>No property rating yet</span>}
-          {context.listing.isGuestFavorite && <span className="font-medium text-[#1F1F1F]">Guest favorite</span>}
+          {context.listing.overallRating !== null ? <span>★ {context.listing.overallRating.toFixed(2)} {t("host_review_overall", "overall")}</span> : <span>{t("host_review_no_property_rating", "No property rating yet")}</span>}
+          {context.listing.isGuestFavorite && <span className="font-medium text-[#1F1F1F]">{t("host_review_guest_favorite", "Guest favorite")}</span>}
         </div>
         <p className="mt-3 text-sm leading-5 text-zinc-600">{stayDates}</p>
         <div className="mt-4 border-t border-zinc-200 pt-4 text-sm font-medium text-[#1F1F1F]">
-          <p className="text-xs font-semibold uppercase tracking-wider text-[#727272]">Total payout</p>
-          <p className="mt-1">{context.payout ? <CurrencyPrice amountMinorUnits={context.payout.amount} sourceCurrency={context.payout.currency} fractionDigits={2} /> : "Payout unavailable"}</p>
+          <p className="text-xs font-semibold uppercase tracking-wider text-[#727272]">{t("host_review_total_payout", "Total payout")}</p>
+          <p className="mt-1">{context.payout ? <CurrencyPrice amountMinorUnits={context.payout.amount} sourceCurrency={context.payout.currency} fractionDigits={2} /> : t("host_review_payout_unavailable", "Payout unavailable")}</p>
         </div>
       </aside>
 
       <section className="flex min-h-[560px] flex-col rounded-3xl bg-white px-2 py-3 sm:px-8 sm:py-8 pb-20 sm:pb-8" aria-labelledby="host-review-step-title">
         <div className="mx-auto flex w-full max-w-xl flex-1 flex-col justify-center text-center">
-          <p className="text-xs font-medium text-[#727272]">Step {step + 1} of {REVIEW_STEPS.length}</p>
+          <p className="text-xs font-medium text-[#727272]">{t("host_review_step_indicator", { current: step + 1, total: REVIEW_STEPS.length }, `Step ${step + 1} of ${REVIEW_STEPS.length}`)}</p>
           {step === 0 && (
             <>
-              <h1 id="host-review-step-title" className="mt-5 text-3xl font-semibold leading-tight tracking-tight text-[#1F1F1F] sm:text-4xl">Write a review for {context.guest.name}</h1>
-              <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-zinc-600">Honest feedback helps other hosts assess guest reliability and strengthens trust across Homyz.</p>
-              <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-zinc-600">Some submitted feedback will be shared with the guest and other hosts.</p>
+              <h1 id="host-review-step-title" className="mt-5 text-3xl font-semibold leading-tight tracking-tight text-[#1F1F1F] sm:text-4xl">{t("host_review_write_title", { name: context.guest.name }, `Write a review for ${context.guest.name}`)}</h1>
+              <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-zinc-600">{t("host_review_write_desc1", "Honest feedback helps other hosts assess guest reliability and strengthens trust across Homyz.")}</p>
+              <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-zinc-600">{t("host_review_write_desc2", "Some submitted feedback will be shared with the guest and other hosts.")}</p>
             </>
           )}
           {step === 1 && (
             <>
-              <h1 id="host-review-step-title" className="mt-5 text-3xl font-semibold leading-tight tracking-tight text-[#1F1F1F] sm:text-4xl">How clean did {context.guest.name} leave your place?</h1>
+              <h1 id="host-review-step-title" className="mt-5 text-3xl font-semibold leading-tight tracking-tight text-[#1F1F1F] sm:text-4xl">{t("host_review_cleanliness_q", { name: context.guest.name }, `How clean did ${context.guest.name} leave your place?`)}</h1>
               <StarRating value={draft.cleanlinessRating} onChange={(cleanlinessRating) => setDraft((current) => ({ ...current, cleanlinessRating }))} label={`Cleanliness rating for ${context.guest.name}`} ratingLabels={CLEANLINESS_RATING_LABELS} />
               {!cleanlinessValid && (
                 <p className="mt-2 text-center text-xs font-medium text-amber-700" role="status">
-                  Please select a rating.
+                  {t("host_review_err_select_rating", "Please select a rating.")}
                 </p>
               )}
-              <FeedbackTagSelector label="Cleanliness feedback tags" tags={CLEANLINESS_FEEDBACK_TAGS} selectedTags={draft.cleanlinessTags} onToggle={toggleCleanlinessTag} />
+              <FeedbackTagSelector label={t("host_review_cleanliness_tags_aria", "Cleanliness feedback tags")} tags={CLEANLINESS_FEEDBACK_TAGS} selectedTags={draft.cleanlinessTags} onToggle={toggleCleanlinessTag} />
             </>
           )}
           {step === 2 && (
             <>
-              <h1 id="host-review-step-title" className="mt-5 text-3xl font-semibold leading-tight tracking-tight text-[#1F1F1F] sm:text-4xl">How well did {context.guest.name} follow your house rules?</h1>
+              <h1 id="host-review-step-title" className="mt-5 text-3xl font-semibold leading-tight tracking-tight text-[#1F1F1F] sm:text-4xl">{t("host_review_rules_q", { name: context.guest.name }, `How well did ${context.guest.name} follow your house rules?`)}</h1>
               <StarRating value={draft.houseRulesRating} onChange={(houseRulesRating) => setDraft((current) => ({ ...current, houseRulesRating }))} label={`House rules rating for ${context.guest.name}`} ratingLabels={HOUSE_RULES_RATING_LABELS} />
               {!houseRulesValid && (
                 <p className="mt-2 text-center text-xs font-medium text-amber-700" role="status">
-                  Please select a rating.
+                  {t("host_review_err_select_rating", "Please select a rating.")}
                 </p>
               )}
             </>
           )}
           {step === 3 && (
             <>
-              <h1 id="host-review-step-title" className="mt-5 text-3xl font-semibold leading-tight tracking-tight text-[#1F1F1F] sm:text-4xl">How well did {context.guest.name} communicate?</h1>
+              <h1 id="host-review-step-title" className="mt-5 text-3xl font-semibold leading-tight tracking-tight text-[#1F1F1F] sm:text-4xl">{t("host_review_comm_q", { name: context.guest.name }, `How well did ${context.guest.name} communicate?`)}</h1>
               <StarRating value={draft.communicationRating} onChange={(communicationRating) => setDraft((current) => ({ ...current, communicationRating }))} label={`Communication rating for ${context.guest.name}`} ratingLabels={COMMUNICATION_RATING_LABELS} />
               {!communicationValid && (
                 <p className="mt-2 text-center text-xs font-medium text-amber-700" role="status">
-                  Please select a rating.
+                  {t("host_review_err_select_rating", "Please select a rating.")}
                 </p>
               )}
-              <FeedbackTagSelector label="Communication feedback tags" tags={COMMUNICATION_FEEDBACK_TAGS} selectedTags={draft.communicationTags} onToggle={toggleCommunicationTag} />
+              <FeedbackTagSelector label={t("host_review_comm_tags_aria", "Communication feedback tags")} tags={COMMUNICATION_FEEDBACK_TAGS} selectedTags={draft.communicationTags} onToggle={toggleCommunicationTag} />
             </>
           )}
           {step === 4 && (
             <>
-              <h1 id="host-review-step-title" className="mt-5 text-3xl font-semibold leading-tight tracking-tight text-[#1F1F1F] sm:text-4xl">Write a public review</h1>
-              <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-zinc-600">The guest and other hosts can see this review. It helps build trust in the community and is not shown on public property or profile pages.</p>
+              <h1 id="host-review-step-title" className="mt-5 text-3xl font-semibold leading-tight tracking-tight text-[#1F1F1F] sm:text-4xl">{t("host_review_public_title", "Write a public review")}</h1>
+              <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-zinc-600">{t("host_review_public_desc", "The guest and other hosts can see this review. It helps build trust in the community and is not shown on public property or profile pages.")}</p>
               <div className="mx-auto mt-8 w-full max-w-xl text-left">
-                <label htmlFor="host-public-review" className="sr-only">Public review of {context.guest.name}</label>
-                <textarea id="host-public-review" value={draft.publicReview} onChange={(event) => setDraft((current) => ({ ...current, publicReview: event.target.value.slice(0, HOST_PUBLIC_REVIEW_MAX_LENGTH) }))} maxLength={HOST_PUBLIC_REVIEW_MAX_LENGTH} placeholder="Say a few words about your experience hosting this guest" className="min-h-40 w-full resize-y rounded-2xl border border-zinc-300 p-4 text-sm leading-6 text-[#1F1F1F] outline-none placeholder:text-[#727272] focus:border-zinc-900" />
+                <label htmlFor="host-public-review" className="sr-only">{t("host_review_public_label", { name: context.guest.name }, `Public review of ${context.guest.name}`)}</label>
+                <textarea id="host-public-review" value={draft.publicReview} onChange={(event) => setDraft((current) => ({ ...current, publicReview: event.target.value.slice(0, HOST_PUBLIC_REVIEW_MAX_LENGTH) }))} maxLength={HOST_PUBLIC_REVIEW_MAX_LENGTH} placeholder={t("host_review_public_placeholder", "Say a few words about your experience hosting this guest")} className="min-h-40 w-full resize-y rounded-2xl border border-zinc-300 p-4 text-sm leading-6 text-[#1F1F1F] outline-none placeholder:text-[#727272] focus:border-zinc-900" />
                 <p className="mt-2 text-right text-xs text-[#727272]" aria-live="polite">{draft.publicReview.length} / {HOST_PUBLIC_REVIEW_MAX_LENGTH}</p>
               </div>
             </>
           )}
           {step === 5 && (
             <>
-              <h1 id="host-review-step-title" className="mt-5 text-3xl font-semibold leading-tight tracking-tight text-[#1F1F1F] sm:text-4xl">Would you recommend {context.guest.name} to other hosts?</h1>
-              <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-zinc-600">Your recommendation helps other hosts evaluate this guest and strengthens trust across the community.</p>
+              <h1 id="host-review-step-title" className="mt-5 text-3xl font-semibold leading-tight tracking-tight text-[#1F1F1F] sm:text-4xl">{t("host_review_recommend_q", { name: context.guest.name }, `Would you recommend ${context.guest.name} to other hosts?`)}</h1>
+              <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-zinc-600">{t("host_review_recommend_desc", "Your recommendation helps other hosts evaluate this guest and strengthens trust across the community.")}</p>
               <div
                 className="mx-auto mt-8 flex w-full max-w-xs justify-center gap-4"
                 role="radiogroup"
-                aria-label={`Would you recommend ${context.guest.name} to other hosts?`}
+                aria-label={t("host_review_recommend_q", { name: context.guest.name }, `Would you recommend ${context.guest.name} to other hosts?`)}
                 onKeyDown={(e) => {
                   if (e.key === "ArrowRight" || e.key === "ArrowDown") {
                     e.preventDefault();
@@ -449,7 +455,7 @@ export function HostReviewIntroduction({
                       : "border-zinc-300 bg-white text-zinc-700 hover:border-zinc-400 hover:bg-zinc-50"
                   }`}
                 >
-                  Yes
+                  {t("common_yes", "Yes")}
                 </button>
                 <button
                   type="button"
@@ -463,22 +469,22 @@ export function HostReviewIntroduction({
                       : "border-zinc-300 bg-white text-zinc-700 hover:border-zinc-400 hover:bg-zinc-50"
                   }`}
                 >
-                  No
+                  {t("common_no", "No")}
                 </button>
               </div>
               {!recommendationValid && (
                 <p className="mt-3 text-center text-xs font-medium text-amber-700" role="status">
-                  Please choose Yes or No.
+                  {t("host_review_err_choose_yes_no", "Please choose Yes or No.")}
                 </p>
               )}
             </>
           )}
           {step === 6 && (
             <>
-              <h1 id="host-review-step-title" className="mt-5 text-3xl font-semibold leading-tight tracking-tight text-[#1F1F1F] sm:text-4xl">Write a private note</h1>
-              <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-zinc-600">Is there anything else you&apos;d like to share with {context.guest.name}?</p>
+              <h1 id="host-review-step-title" className="mt-5 text-3xl font-semibold leading-tight tracking-tight text-[#1F1F1F] sm:text-4xl">{t("host_review_private_title", "Write a private note")}</h1>
+              <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-zinc-600">{t("host_review_private_desc", { name: context.guest.name }, `Is there anything else you'd like to share with ${context.guest.name}?`)}</p>
               <div className="mx-auto mt-8 w-full max-w-xl text-left">
-                <label htmlFor="host-private-note" className="sr-only">Private note to {context.guest.name}</label>
+                <label htmlFor="host-private-note" className="sr-only">{t("host_review_private_label", { name: context.guest.name }, `Private note to ${context.guest.name}`)}</label>
                 <textarea
                   id="host-private-note"
                   value={draft.privateNote}
@@ -500,9 +506,9 @@ export function HostReviewIntroduction({
           )}
           {step === 7 && (
             <>
-              <h1 id="host-review-step-title" className="mt-5 text-3xl font-semibold leading-tight tracking-tight text-[#1F1F1F] sm:text-4xl">Submit review</h1>
-              <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-zinc-600">Please review your feedback before submitting.</p>
-              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-zinc-500">Once submitted, this review is final and cannot be edited. Your feedback helps other hosts make informed decisions.</p>
+              <h1 id="host-review-step-title" className="mt-5 text-3xl font-semibold leading-tight tracking-tight text-[#1F1F1F] sm:text-4xl">{t("host_review_submit_title", "Submit review")}</h1>
+              <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-zinc-600">{t("host_review_submit_subtitle", "Please review your feedback before submitting.")}</p>
+              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-zinc-500">{t("host_review_submit_warning", "Once submitted, this review is final and cannot be edited. Your feedback helps other hosts make informed decisions.")}</p>
               {submitError && (
                 <div role="alert" className="mx-auto mt-6 flex w-full max-w-md flex-col items-center gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 text-center text-sm text-red-700">
                   <p>{submitError}</p>
@@ -512,7 +518,7 @@ export function HostReviewIntroduction({
                     disabled={isSubmitting}
                     className="inline-flex min-h-9 items-center justify-center rounded-xl bg-red-700 px-4 text-xs font-semibold text-white transition-colors hover:bg-red-800 disabled:opacity-50"
                   >
-                    Try again
+                    {t("common_try_again", "Try again")}
                   </button>
                 </div>
               )}
@@ -521,7 +527,7 @@ export function HostReviewIntroduction({
         </div>
 
         <div className="mx-auto mt-8 w-full max-w-xl">
-          <div className="h-1 overflow-hidden rounded-full bg-zinc-200" role="progressbar" aria-label="Host review progress" aria-valuemin={1} aria-valuemax={REVIEW_STEPS.length} aria-valuenow={step + 1}>
+          <div className="h-1 overflow-hidden rounded-full bg-zinc-200" role="progressbar" aria-label={t("host_review_progress_aria", "Host review progress")} aria-valuemin={1} aria-valuemax={REVIEW_STEPS.length} aria-valuenow={step + 1}>
             <div className="h-full rounded-full bg-zinc-700 transition-all" style={{ width: `${((step + 1) / REVIEW_STEPS.length) * 100}%` }} />
           </div>
         </div>
@@ -534,7 +540,7 @@ export function HostReviewIntroduction({
               onClick={goBack}
               className="min-h-11 rounded-xl px-5 text-sm font-semibold text-zinc-700 hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Back
+              {t("common_back", "Back")}
             </button>
             {step < 7 ? (
               <button
@@ -543,7 +549,7 @@ export function HostReviewIntroduction({
                 onClick={continueReview}
                 className="min-h-11 rounded-xl bg-[#1F1F1F] px-8 text-sm font-semibold text-white transition-colors hover:bg-zinc-700 disabled:cursor-not-allowed disabled:bg-zinc-300"
               >
-                Continue
+                {t("common_continue", "Continue")}
               </button>
             ) : (
               <button
@@ -555,10 +561,10 @@ export function HostReviewIntroduction({
                 {isSubmitting ? (
                   <span className="inline-flex items-center gap-2">
                     <span className="size-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                    <span>Submitting...</span>
+                    <span>{t("common_submitting", "Submitting...")}</span>
                   </span>
                 ) : (
-                  "Submit"
+                  t("common_submit", "Submit")
                 )}
               </button>
             )}

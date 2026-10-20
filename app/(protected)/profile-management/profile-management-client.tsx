@@ -341,7 +341,7 @@ function LanguageMultiSelect({
                     removeLanguage(item);
                   }}
                   className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-white/20 hover:bg-white/40 text-white transition-colors cursor-pointer"
-                  aria-label={`Remove ${displayName}`}
+                  aria-label={t("profile_lang_remove", { name: displayName }, `Remove ${displayName}`)}
                 >
                   <svg viewBox="0 0 10 10" className="w-2.5 h-2.5" fill="none" stroke="currentColor" strokeWidth="1">
                     <path d="M2 2l6 6M8 2l-6 6" />
@@ -388,10 +388,10 @@ function LanguageMultiSelect({
           {/* Header */}
           <div className="flex items-center justify-between px-3.5 py-2 border-b border-zinc-100 bg-zinc-50/70">
             <span className="text-xs font-semibold text-[#727272] uppercase tracking-wider">
-              {filtered.length} {filtered.length === 1 ? "Language" : "Languages"} Available
+              {filtered.length} {filtered.length === 1 ? t("profile_lang_single_available", "Language Available") : t("profile_lang_multi_available", "Languages Available")}
             </span>
             <span className="text-xs text-[#727272]">
-              Press Enter to add · Esc to close
+              {t("profile_lang_keyboard_hint", "Press Enter to add · Esc to close")}
             </span>
           </div>
 
@@ -423,11 +423,11 @@ function LanguageMultiSelect({
             {filtered.length === 0 ? (
               <div className="px-4 py-6 text-center">
                 <p className="text-sm font-medium text-zinc-600 mb-1">
-                  {query ? `No languages match "${query}"` : "All languages have been selected"}
+                  {query ? t("profile_lang_no_match", { query }, `No languages match "${query}"`) : t("profile_lang_all_selected", "All languages have been selected")}
                 </p>
                 {query && (
                   <p className="text-xs text-[#727272]">
-                    Try typing the English name or native spelling (e.g. Français, Español).
+                    {t("profile_lang_try_typing", "Try typing the English name or native spelling (e.g. Français, Español).")}
                   </p>
                 )}
               </div>
@@ -640,8 +640,8 @@ function InlineLocationSearch({
               handleClear();
             }}
             className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-100 hover:bg-zinc-200 text-[#727272] transition-colors cursor-pointer"
-            title="Clear location"
-            aria-label="Clear location"
+            title={t("profile_location_clear", "Clear location")}
+            aria-label={t("profile_location_clear", "Clear location")}
           >
             <svg viewBox="0 0 10 10" className="w-2.5 h-2.5" fill="none" stroke="currentColor" strokeWidth="2.5">
               <path d="M2 2l6 6M8 2l-6 6" />
@@ -655,10 +655,10 @@ function InlineLocationSearch({
         <div className="absolute left-0 right-0 top-full mt-1.5 z-50 rounded-2xl bg-white border border-zinc-200 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-100">
           <div className="flex items-center justify-between px-3.5 py-2 border-b border-zinc-100 bg-zinc-50/70">
             <span className="text-[11px] font-semibold text-[#727272] uppercase tracking-wider">
-              {query.trim().length >= 2 ? "Search Results" : "Popular Destinations"}
+              {query.trim().length >= 2 ? t("profile_location_search_results", "Search Results") : t("profile_location_popular_destinations", "Popular Destinations")}
             </span>
             <span className="text-xs text-[#727272]">
-              Select one to apply
+              {t("profile_location_select_to_apply", "Select one to apply")}
             </span>
           </div>
 
@@ -673,10 +673,10 @@ function InlineLocationSearch({
           ) : suggestions.length === 0 ? (
             <div className="px-4 py-6 text-center">
               <p className="text-sm font-medium text-zinc-600 mb-1">
-                No places found for &ldquo;{query}&rdquo;
+                {t("profile_location_no_places_found", { query }, `No places found for "${query}"`)}
               </p>
               <p className="text-xs text-[#727272]">
-                Try searching for a city, district, or country name.
+                {t("profile_location_try_searching", "Try searching for a city, district, or country name.")}
               </p>
             </div>
           ) : (
@@ -870,7 +870,7 @@ export function ProfileManagementClient({
         publicProfile: nextPublicProfile,
       });
       if (!res.ok) {
-        toast.error(res.error || "Failed to update settings.");
+        toast.error(res.error || t("profile_mgmt_update_settings_failed", "Failed to update settings."));
         return;
       }
       if (res.data) {
@@ -881,7 +881,7 @@ export function ProfileManagementClient({
           window.dispatchEvent(new CustomEvent("homyz:profile-updated", { detail: updated }));
         }
       }
-      toast.success("Settings updated successfully.");
+      toast.success(t("profile_mgmt_settings_updated_success", "Settings updated successfully."));
       router.refresh();
     });
   };
@@ -924,13 +924,13 @@ export function ProfileManagementClient({
         const res = await updateProfileAction(payload);
         if (!res.ok) {
           setSaveStatus("error");
-          toast.error(res.error || "Failed to update profile.");
+          toast.error(res.error || t("profile_mgmt_update_failed", "Failed to update profile."));
           return;
         }
         const updated = res.data as ProfileData;
         setProfileData(updated);
         setSaveStatus("saved");
-        toast.success("Profile changes saved successfully!");
+        toast.success(t("profile_mgmt_saved_success", "Profile changes saved successfully!"));
 
         onProfileUpdated?.(updated);
         if (typeof window !== "undefined") {
@@ -944,7 +944,7 @@ export function ProfileManagementClient({
         router.refresh();
       } catch (err) {
         setSaveStatus("error");
-        toast.error(err instanceof Error ? err.message : "Failed to update profile.");
+        toast.error(err instanceof Error ? err.message : t("profile_mgmt_update_failed", "Failed to update profile."));
       }
     });
   };
@@ -956,7 +956,7 @@ export function ProfileManagementClient({
     e.target.value = "";
 
     if (!ACCEPTED_AVATAR_TYPES.has(file.type) || file.size <= 0 || file.size > MAX_AVATAR_FILE_SIZE) {
-      const message = "Use a JPEG, PNG, WebP, or AVIF image up to 10 MB.";
+      const message = t("profile_avatar_type_error", "Use a JPEG, PNG, WebP, or AVIF image up to 10 MB.");
       setAvatarUploadError(message);
       toast.error(message);
       return;
@@ -974,7 +974,7 @@ export function ProfileManagementClient({
         body: fd,
       });
       const data = await res.json().catch(() => null) as { error?: string; url?: string } | null;
-      if (!res.ok || !data?.url) throw new Error(data?.error || "Upload failed");
+      if (!res.ok || !data?.url) throw new Error(data?.error || t("profile_avatar_upload_failed", "Upload failed"));
       setAvatarUploadStage("saving");
 
       const saveRes = await updateProfileAction({
@@ -985,7 +985,7 @@ export function ProfileManagementClient({
       });
 
       if (!saveRes.ok) {
-        throw new Error(saveRes.error || "Failed to save updated avatar.");
+        throw new Error(saveRes.error || t("profile_avatar_save_failed", "Failed to save updated avatar."));
       }
 
       // Do not replace the visible image until both storage and profile save
@@ -1004,10 +1004,10 @@ export function ProfileManagementClient({
         await updateSession({ user: { ...session.user, image: data.url } });
       }
 
-      toast.success("Profile image updated and saved.");
+      toast.success(t("profile_avatar_updated_toast", "Profile image updated and saved."));
       router.refresh();
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Upload error";
+      const message = err instanceof Error ? err.message : t("profile_avatar_upload_error", "Upload error");
       setAvatarUploadError(message);
       toast.error(message);
     } finally {
@@ -1022,7 +1022,7 @@ export function ProfileManagementClient({
           <button
             type="button"
             onClick={() => (onCancel ? onCancel() : router.back())}
-            aria-label="Go back"
+            aria-label={t("common_go_back", "Go back")}
             className="flex h-9 w-9 shrink-0 items-center justify-center self-start rounded-full border border-[#aaa] bg-[#f5f5f5] text-[#727272] transition-colors hover:bg-zinc-200 sm:hidden"
           >
             <svg
@@ -1048,7 +1048,7 @@ export function ProfileManagementClient({
             {imageUrl && imageUrl !== failedAvatarPreviewUrl ? (
               <Image
                 src={imageUrl}
-                alt="Profile photo"
+                alt={t("profile_avatar_alt", "Profile photo")}
                 fill
                 className="object-cover"
                 sizes="(max-width: 639px) 220px, 362px"
@@ -1069,7 +1069,7 @@ export function ProfileManagementClient({
             {uploading && (
               <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 bg-black/55 px-4 text-center text-sm font-medium text-white" aria-live="polite">
                 <span className="size-7 animate-spin rounded-full border-2 border-white/35 border-t-white" aria-hidden="true" />
-                <span>{avatarUploadStage === "saving" ? "Saving your profile image…" : "Uploading your profile image…"}</span>
+                <span>{avatarUploadStage === "saving" ? t("profile_avatar_saving", "Saving your profile image…") : t("profile_avatar_uploading", "Uploading your profile image…")}</span>
               </div>
             )}
           </div>
@@ -1079,7 +1079,7 @@ export function ProfileManagementClient({
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
-                aria-label={uploading ? "Profile image upload in progress" : t("profile_mgmt_edit", "Edit")}
+                aria-label={uploading ? t("profile_avatar_upload_in_progress", "Profile image upload in progress") : t("profile_mgmt_edit", "Edit")}
                 className={`absolute -bottom-8 left-1/2 z-10 flex h-[52px] -translate-x-1/2 cursor-pointer items-center justify-center rounded-full bg-[#FCDF9C] text-base font-normal text-[#1F1F1F] transition-transform hover:bg-[#F7D37D] disabled:cursor-wait sm:bottom-auto sm:left-auto sm:-right-12 sm:top-1/2 sm:h-24 sm:translate-x-0 sm:-translate-y-1/2 ${uploading ? "w-[52px] sm:w-24" : "w-[110px] sm:w-24"}`}
               >
                 {uploading ? (
@@ -1646,7 +1646,7 @@ export function ProfileManagementClient({
                   ) : (
                     <Image
                       src={photo.url}
-                      alt={photo.caption || "Trip photo"}
+                      alt={photo.caption || t("trip_photos_fallback_alt", "Trip photo")}
                       fill
                       unoptimized
                       className="object-cover transition-transform duration-300 group-hover:scale-105 cursor-pointer"
@@ -1907,11 +1907,11 @@ function MultiImageUploadModal({
 
     for (const file of files) {
       if (file.size > 10 * 1024 * 1024) {
-        toast.error(`File ${file.name} exceeds 10MB limit.`);
+        toast.error(t("trip_photos_file_too_large", { name: file.name }, `File ${file.name} exceeds 10MB limit.`));
         continue;
       }
       if (!file.type.startsWith("image/")) {
-        toast.error(`File ${file.name} is not an image.`);
+        toast.error(t("trip_photos_not_an_image", { name: file.name }, `File ${file.name} is not an image.`));
         continue;
       }
       validFiles.push(file);
@@ -1962,8 +1962,8 @@ function MultiImageUploadModal({
           body: fd,
         });
         const data = await res.json().catch(() => null);
-        if (!res.ok) throw new Error(data?.error || "Upload failed");
-        if (!data?.url) throw new Error("Upload did not return an image URL");
+        if (!res.ok) throw new Error(data?.error || t("trip_photos_upload_failed", "Upload failed"));
+        if (!data?.url) throw new Error(t("trip_photos_no_url", "Upload did not return an image URL"));
         uploadedUrls[index] = data.url;
         setUploadProgress((current) => ({
           ...current,
@@ -1996,13 +1996,13 @@ function MultiImageUploadModal({
       }));
 
       const res = await uploadTripPhotosAction(payload);
-      if (!res.ok) throw new Error(res.error || "Save trip photos failed");
+      if (!res.ok) throw new Error(res.error || t("trip_photos_save_failed", "Save trip photos failed"));
 
       onUploaded(res.data as TripPhotoItem[]);
-      toast.success("Trip photos uploaded successfully!");
+      toast.success(t("trip_photos_uploaded_success", "Trip photos uploaded successfully!"));
       onClose();
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Upload error");
+      toast.error(err instanceof Error ? err.message : t("trip_photos_upload_error", "Upload error"));
       setUploading(false);
       setUploadProgress({ completed: 0, total: 0, phase: "idle" });
     }
@@ -2096,8 +2096,8 @@ function MultiImageUploadModal({
               <div className="flex items-center justify-between gap-3 font-semibold">
                 <span>
                   {uploadProgress.phase === "saving"
-                    ? "Saving your photos..."
-                    : `Uploading ${uploadProgress.completed} of ${uploadProgress.total} photos...`}
+                    ? t("trip_photos_saving_photos", "Saving your photos...")
+                    : t("trip_photos_uploading_progress", { completed: uploadProgress.completed, total: uploadProgress.total }, `Uploading ${uploadProgress.completed} of ${uploadProgress.total} photos...`)}
                 </span>
                 <span className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-amber-700 border-t-transparent" />
               </div>
@@ -2209,12 +2209,12 @@ function EditTripPhotoModal({
         tags,
       });
 
-      if (!res.ok) throw new Error(res.error || "Update photo failed");
+      if (!res.ok) throw new Error(res.error || t("trip_photos_update_failed", "Update photo failed"));
       onSaved(res.data as TripPhotoItem);
-      toast.success("Photo details updated successfully!");
+      toast.success(t("trip_photos_updated_success", "Photo details updated successfully!"));
       onClose();
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Save error");
+      toast.error(err instanceof Error ? err.message : t("trip_photos_save_error", "Save error"));
       setSaving(false);
     }
   };
@@ -2327,12 +2327,12 @@ function DeleteTripPhotoModal({
 
     try {
       const res = await deleteTripPhotoAction(photo.id);
-      if (!res.ok) throw new Error(res.error || "Delete failed");
+      if (!res.ok) throw new Error(res.error || t("trip_photos_delete_failed", "Delete failed"));
       onDeleted(photo.id);
-      toast.success("Trip photo deleted successfully.");
+      toast.success(t("trip_photos_deleted_success", "Trip photo deleted successfully."));
       onClose();
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Deletion error");
+      toast.error(err instanceof Error ? err.message : t("trip_photos_deletion_error", "Deletion error"));
       setDeleting(false);
     }
   };

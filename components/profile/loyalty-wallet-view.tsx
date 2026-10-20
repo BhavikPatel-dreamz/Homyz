@@ -49,49 +49,58 @@ const INITIAL_TRANSACTIONS: Transaction[] = [
   },
 ];
 
-const REWARDS = [
-  {
-    id: "rew-1",
-    title: "$10 Stay Credit",
-    points: 1000,
-    description: "Instant discount on any stay of $100 or more.",
-    badge: "Popular",
-  },
-  {
-    id: "rew-2",
-    title: "$25 Stay Credit",
-    points: 2500,
-    description: "Instant discount on any stay of $200 or more.",
-    badge: "Best Value",
-  },
-  {
-    id: "rew-3",
-    title: "Early Check-in (2 hrs)",
-    points: 600,
-    description: "Guaranteed check-in 2 hours before standard time.",
-  },
-  {
-    id: "rew-4",
-    title: "Late Check-out (2 hrs)",
-    points: 600,
-    description: "Relax longer with 2 hours extra before departure.",
-  },
-  {
-    id: "rew-5",
-    title: "Homie Welcome Basket",
-    points: 1500,
-    description: "Locally sourced treats and wine waiting at arrival.",
-  },
-];
+type RewardItem = {
+  id: string;
+  title: string;
+  points: number;
+  description: string;
+  badge?: string;
+};
 
 export function LoyaltyWalletView() {
-  const [balance, setBalance] = useState(2450);
-  const [transactions, setTransactions] = useState<Transaction[]>(INITIAL_TRANSACTIONS);
-  const [redeemingReward, setRedeemingReward] = useState<(typeof REWARDS)[0] | null>(null);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const { t } = useLanguage();
 
-  const handleRedeem = (reward: (typeof REWARDS)[0]) => {
+  const REWARDS: RewardItem[] = [
+    {
+      id: "rew-1",
+      title: t("profile_loyalty_rew_1_title", "$10 Stay Credit"),
+      points: 1000,
+      description: t("profile_loyalty_rew_1_desc", "Instant discount on any stay of $100 or more."),
+      badge: t("profile_loyalty_badge_popular", "Popular"),
+    },
+    {
+      id: "rew-2",
+      title: t("profile_loyalty_rew_2_title", "$25 Stay Credit"),
+      points: 2500,
+      description: t("profile_loyalty_rew_2_desc", "Instant discount on any stay of $200 or more."),
+      badge: t("profile_loyalty_badge_best_value", "Best Value"),
+    },
+    {
+      id: "rew-3",
+      title: t("profile_loyalty_rew_3_title", "Early Check-in (2 hrs)"),
+      points: 600,
+      description: t("profile_loyalty_rew_3_desc", "Guaranteed check-in 2 hours before standard time."),
+    },
+    {
+      id: "rew-4",
+      title: t("profile_loyalty_rew_4_title", "Late Check-out (2 hrs)"),
+      points: 600,
+      description: t("profile_loyalty_rew_4_desc", "Relax longer with 2 hours extra before departure."),
+    },
+    {
+      id: "rew-5",
+      title: t("profile_loyalty_rew_5_title", "Homie Welcome Basket"),
+      points: 1500,
+      description: t("profile_loyalty_rew_5_desc", "Locally sourced treats and wine waiting at arrival."),
+    },
+  ];
+
+  const [balance, setBalance] = useState(2450);
+  const [transactions, setTransactions] = useState<Transaction[]>(INITIAL_TRANSACTIONS);
+  const [redeemingReward, setRedeemingReward] = useState<RewardItem | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const handleRedeem = (reward: RewardItem) => {
     if (balance < reward.points) {
       setToastMessage(t("profile_loyalty_need_pts_toast", { count: reward.points - balance }));
       setTimeout(() => setToastMessage(null), 3000);
@@ -105,8 +114,8 @@ export function LoyaltyWalletView() {
     setBalance((prev) => prev - redeemingReward.points);
     const newTx: Transaction = {
       id: `tx-${Date.now()}`,
-      title: `${redeemingReward.title} Voucher`,
-      date: "Just now",
+      title: t("profile_loyalty_voucher_title", { title: redeemingReward.title }, `${redeemingReward.title} Voucher`),
+      date: t("profile_loyalty_just_now", "Just now"),
       points: -redeemingReward.points,
       type: "redeemed",
       category: "Reward",

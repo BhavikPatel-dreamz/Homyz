@@ -237,7 +237,7 @@ export function HostSubNav({
         <Container>
           <div className="mx-auto flex w-full items-center justify-between">
             {/* Left Nav Tabs */}
-            <nav aria-label="Host navigation" className="flex items-center gap-3 xl:gap-4 overflow-x-auto scrollbar-none py-1">
+            <nav aria-label={t("host_nav_aria", "Host navigation")} className="flex items-center gap-3 xl:gap-4 overflow-x-auto scrollbar-none py-1">
               {tabs.map((tab) => {
                 const isActive = activeTab === tab.id;
                 return (

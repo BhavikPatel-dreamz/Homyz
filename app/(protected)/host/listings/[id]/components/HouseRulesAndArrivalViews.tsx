@@ -37,11 +37,12 @@ function AllowDenyButtons({
   onChange: (value: boolean) => void;
   label: string;
 }) {
+  const { t } = useLanguage();
   return (
     <div className="flex shrink-0 items-center gap-3" aria-label={label}>
       <button
         type="button"
-        aria-label={`Do not allow ${label}`}
+        aria-label={t("host_safety_allow_deny_no", "Do not allow {label}").replace("{label}", label)}
         aria-pressed={value === false}
         onClick={() => onChange(false)}
         className={`flex size-10 cursor-pointer items-center justify-center rounded-full text-xs font-semibold transition-all ${value === false
@@ -60,7 +61,7 @@ function AllowDenyButtons({
       </button>
       <button
         type="button"
-        aria-label={`Allow ${label}`}
+        aria-label={t("host_safety_allow_deny_yes", "Allow {label}").replace("{label}", label)}
         aria-pressed={value === true}
         onClick={() => onChange(true)}
         className={`flex size-10 cursor-pointer items-center justify-center rounded-full text-xs font-semibold transition-all ${value === true
@@ -335,7 +336,7 @@ export function HouseRulesAndArrivalViews({
                       </p>
                     </div>
                     <AllowDenyButtons
-                      label="pets"
+                      label={t("host_rules_pets", "pets")}
                       value={petsAllowed}
                       onChange={(val) => setPetsAllowed(val)}
                     />
@@ -428,7 +429,7 @@ export function HouseRulesAndArrivalViews({
                     <span className="font-medium text-lg text-[#1F1F1F] dark:text-[#1f1f1f] block">{t("host_events_allowed") || "Events allowed"}</span>
                   </div>
                   <AllowDenyButtons
-                    label="events"
+                    label={t("host_rules_events", "events")}
                     value={eventsAllowed}
                     onChange={(val) => setEventsAllowed(val)}
                   />
@@ -440,7 +441,7 @@ export function HouseRulesAndArrivalViews({
                     <span className="font-medium text-lg text-[#1F1F1F] dark:text-[#1f1f1f] block">{t("host_smoking_allowed") || "Smoking, vaping, e-cigarettes allowed"}</span>
                   </div>
                   <AllowDenyButtons
-                    label="smoking"
+                    label={t("host_rules_smoking", "smoking")}
                     value={smokingAllowed}
                     onChange={(val) => setSmokingAllowed(val)}
                   />
@@ -453,7 +454,7 @@ export function HouseRulesAndArrivalViews({
                       <span className="font-medium text-lg text-[#1F1F1F] dark:text-[#1f1f1f] block">{t("host_quiet_hours") || "Quiet hours"}</span>
                     </div>
                     <AllowDenyButtons
-                      label="quiet hours"
+                      label={t("host_rules_quiet_hours", "quiet hours")}
                       value={quietHours}
                       onChange={(val) => setQuietHours(val)}
                     />
@@ -515,7 +516,7 @@ export function HouseRulesAndArrivalViews({
                     <span className="font-medium text-lg text-[#1F1F1F] dark:text-[#1f1f1f] block">{t("host_commercial_filming_allowed") || "Commercial photography and filming allowed"}</span>
                   </div>
                   <AllowDenyButtons
-                    label="commercial photography and filming"
+                    label={t("host_rules_commercial_photography", "commercial photography and filming")}
                     value={commercialFilmingAllowed}
                     onChange={setCommercialFilmingAllowed}
                   />
@@ -748,7 +749,7 @@ export function HouseRulesAndArrivalViews({
               <div className="flex items-center gap-1.5">
                 <button
                   type="button"
-                  aria-label="Parking is not available"
+                  aria-label={t("host_parking_not_available_aria", "Parking is not available")}
                   aria-pressed={parkingAvailable === false}
                   onClick={() => setParkingAvailable?.(false)}
                   className={`flex size-8 cursor-pointer items-center justify-center rounded-full border text-xs font-semibold transition-all ${parkingAvailable === false
@@ -767,7 +768,7 @@ export function HouseRulesAndArrivalViews({
                 </button>
                 <button
                   type="button"
-                  aria-label="Parking is available"
+                  aria-label={t("host_parking_is_available_aria", "Parking is available")}
                   aria-pressed={parkingAvailable === true}
                   onClick={() => setParkingAvailable?.(true)}
                   className={`flex size-8 cursor-pointer items-center justify-center rounded-full border text-xs font-semibold transition-all ${parkingAvailable === true
@@ -845,7 +846,7 @@ export function HouseRulesAndArrivalViews({
                   <div className="flex items-center gap-1.5">
                     <button
                       type="button"
-                      aria-label="Parking reservation is not required"
+                      aria-label={t("host_parking_res_not_required_aria", "Parking reservation is not required")}
                       aria-pressed={parkingReservation === false}
                       onClick={() => setParkingReservation?.(false)}
                       className={`flex size-8 cursor-pointer items-center justify-center rounded-full border text-xs font-semibold transition-all ${parkingReservation === false
@@ -864,7 +865,7 @@ export function HouseRulesAndArrivalViews({
                     </button>
                     <button
                       type="button"
-                      aria-label="Parking reservation is required"
+                      aria-label={t("host_parking_res_is_required_aria", "Parking reservation is required")}
                       aria-pressed={parkingReservation === true}
                       onClick={() => setParkingReservation?.(true)}
                       className={`flex size-8 cursor-pointer items-center justify-center rounded-full border text-xs font-semibold transition-all ${parkingReservation === true
@@ -1822,7 +1823,7 @@ function LanguagesView({
                 type="button"
                 onClick={() => setSearchLang("")}
                 className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer text-xs"
-                aria-label="Clear search"
+                aria-label={t("home_clear_search", "Clear search")}
               >
                 ✕
               </button>
@@ -2914,11 +2915,11 @@ function RegulationsView({
               ) : (
                 <div className="space-y-3 pt-1">
                   <div>
-                    <p className="text-sm text-[#727272] font-normal">XXXXXXXX</p>
+                    <p className="text-sm text-[#727272] font-normal">{t("host_regulations_label_reg_number", "Registration Number")}</p>
                     <p className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100">{regNumber}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-[#727272] font-normal">Address, Country</p>
+                    <p className="text-sm text-[#727272] font-normal">{t("host_regulations_label_address_country", "Address & Country")}</p>
                     <p className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100">{regAddress}</p>
                   </div>
                 </div>
@@ -3052,23 +3053,24 @@ function TaxesView({
   isSaving: boolean;
   handleSaveSection: (key: any) => void;
 }) {
+  const { t } = useLanguage();
   const [isSaved, setIsSaved] = React.useState(false);
 
   return (
     <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
       <div className="flex items-center gap-6">
         <BackButton onClick={() => setActiveSection("description")} />
-        <h1>Taxes</h1>
+        <h1>{t("host_taxes_title", "Taxes")}</h1>
       </div>
 
       <p className="text-xs text-[#727272] font-normal leading-relaxed pt-1">
-        Learn how local occupancy taxes and value-added tax (VAT) apply to your host earnings and how Homyz helps collect and remit taxes on eligible bookings.
+        {t("host_taxes_desc", "Learn how local occupancy taxes and value-added tax (VAT) apply to your host earnings and how Homyz helps collect and remit taxes on eligible bookings.")}
       </p>
 
       <div className="rounded-2xl border border-zinc-200/90 bg-white p-5 space-y-3 shadow-2xs">
-        <h3 className="text-xs font-semibold text-[#1F1F1F]">Occupancy Tax Collection</h3>
+        <h3 className="text-xs font-semibold text-[#1F1F1F]">{t("host_taxes_occupancy_title", "Occupancy Tax Collection")}</h3>
         <p className="text-xs text-[#727272] font-normal leading-relaxed">
-          Depending on your jurisdiction, occupancy tax may automatically be included at checkout for guest reservations.
+          {t("host_taxes_occupancy_desc", "Depending on your jurisdiction, occupancy tax may automatically be included at checkout for guest reservations.")}
         </p>
       </div>
 
@@ -3083,7 +3085,7 @@ function TaxesView({
           }}
           className="rounded-full bg-[#FCDF9C] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
         >
-          {isSaving ? "Saving..." : isSaved ? "Saved!" : "Save"}
+          {isSaving ? t("common_saving", "Saving...") : isSaved ? t("common_saved", "Saved!") : t("host_save_btn", "Save")}
         </button>
 
         <button
@@ -3091,7 +3093,7 @@ function TaxesView({
           onClick={() => setActiveSection("description")}
           className="rounded-full bg-white border border-zinc-300 hover:bg-zinc-100 text-zinc-800 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
         >
-          Cancel
+          {t("host_cancel_btn", "Cancel")}
         </button>
       </div>
     </div>
@@ -3110,23 +3112,24 @@ function HomyzStaysView({
   isSaving: boolean;
   handleSaveSection: (key: any) => void;
 }) {
+  const { t } = useLanguage();
   const [isSaved, setIsSaved] = React.useState(false);
 
   return (
     <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
       <div className="flex items-center gap-6">
         <BackButton onClick={() => setActiveSection("description")} />
-        <h1>Homyz.com stays</h1>
+        <h1>{t("host_stays_title", "Homyz.com stays")}</h1>
       </div>
 
       <p className="text-xs text-[#727272] font-normal leading-relaxed pt-1">
-        Learn how host contributions and community hosting initiatives help support local stays, emergency relief housing, and community experiences.
+        {t("host_stays_desc", "Learn how host contributions and community hosting initiatives help support local stays, emergency relief housing, and community experiences.")}
       </p>
 
       <div className="rounded-2xl border border-zinc-200/90 bg-white p-5 space-y-3 shadow-2xs">
-        <h3 className="text-xs font-semibold text-[#1F1F1F]">Community Housing Network</h3>
+        <h3 className="text-xs font-semibold text-[#1F1F1F]">{t("host_stays_network_title", "Community Housing Network")}</h3>
         <p className="text-xs text-[#727272] font-normal leading-relaxed">
-          Opt in to share emergency housing or offer discounted stays for non-profit and community partners.
+          {t("host_stays_network_desc", "Opt in to share emergency housing or offer discounted stays for non-profit and community partners.")}
         </p>
       </div>
 
@@ -3141,7 +3144,7 @@ function HomyzStaysView({
           }}
           className="rounded-full bg-[#FCDF9C] hover:bg-[#FDE047] text-zinc-950 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
         >
-          {isSaving ? "Saving..." : isSaved ? "Saved!" : "Save"}
+          {isSaving ? t("common_saving", "Saving...") : isSaved ? t("common_saved", "Saved!") : t("host_save_btn", "Save")}
         </button>
 
         <button
@@ -3149,7 +3152,7 @@ function HomyzStaysView({
           onClick={() => setActiveSection("description")}
           className="rounded-full bg-white border border-zinc-300 hover:bg-zinc-100 text-zinc-800 font-semibold text-xs px-7 py-2.5 shadow-2xs transition-all cursor-pointer"
         >
-          Cancel
+          {t("host_cancel_btn", "Cancel")}
         </button>
       </div>
     </div>

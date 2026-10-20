@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { useState, useTransition, type FormEvent } from "react";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 import { Alert, buttonClass, inputClass, labelClass } from "../ui";
 import { OAuthButtons, type OAuthProviders } from "./oauth-buttons";
@@ -16,6 +17,7 @@ export function LoginForm({
   callbackUrl: string;
 }) {
   const router = useRouter();
+  const { t } = useLanguage();
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const [showPassword, setShowPassword] = useState(false);
@@ -36,8 +38,8 @@ export function LoginForm({
       if (!res || res.error) {
         setError(
           res?.error === "CredentialsSignin"
-            ? "Incorrect email or password. Please check your credentials and try again."
-            : (res?.error ?? "Invalid email or password")
+            ? t("auth_err_incorrect_credentials", "Incorrect email or password. Please check your credentials and try again.")
+            : (res?.error ?? t("auth_err_invalid_credentials", "Invalid email or password"))
         );
         return;
       }
@@ -53,7 +55,7 @@ export function LoginForm({
         {error ? <Alert>{error}</Alert> : null}
         <div className="flex flex-col gap-1.5">
           <label htmlFor="email" className={labelClass}>
-            Email
+            {t("auth_email_address", "Email")}
           </label>
           <input
             id="email"
@@ -67,13 +69,13 @@ export function LoginForm({
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center justify-between">
             <label htmlFor="password" className={labelClass}>
-              Password
+              {t("auth_password", "Password")}
             </label>
             <Link
               href="/forgot-password"
               className="text-xs text-[#727272] hover:text-[#1F1F1F]"
             >
-              Forgot password?
+              {t("auth_forgot_password", "Forgot password?")}
             </Link>
           </div>
           <div className="relative">
@@ -89,7 +91,7 @@ export function LoginForm({
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-[#727272] hover:text-zinc-700 transition-colors"
-              aria-label="Toggle password visibility"
+              aria-label={t("auth_pwd_toggle_visibility", "Toggle password visibility")}
             >
               {showPassword ? (
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -105,16 +107,16 @@ export function LoginForm({
           </div>
         </div>
         <button type="submit" disabled={pending} className={buttonClass}>
-          {pending ? "Signing in…" : "Sign in"}
+          {pending ? t("auth_login_signing_in", "Signing in…") : t("auth_signin", "Sign in")}
         </button>
       </form>
       <p className="text-center text-sm text-[#727272]">
-        No account?{" "}
+        {t("auth_dont_have_account", "No account?")}{" "}
         <Link
           href="/register"
           className="font-medium text-[#1F1F1F] "
         >
-          Create one
+          {t("auth_signup_create_one", "Create one")}
         </Link>
       </p>
     </div>

@@ -39,23 +39,33 @@ import {
 // Reviews and the map sit below the booking decision. Split them out of the
 // initial route bundle, and keep a stable placeholder until each chunk loads.
 // The map is server-rendered: RealMap only attaches Leaflet in the browser.
+function ReviewListLoading() {
+  const { t } = useLanguage();
+  return (
+    <section className="border-b border-zinc-200/80 py-8" aria-label={t("listing_detail_loading_reviews" as any, "Loading guest reviews")}>
+      <h2 className="text-[20px] font-normal text-[#1f1f1f]">{t("listing_detail_guest_reviews" as any, "Guest reviews")}</h2>
+      <div className="mt-5 h-28 animate-pulse rounded-2xl bg-zinc-100" />
+    </section>
+  );
+}
+
 const ReviewList = dynamic(
   () => import("@/components/reviews").then((module) => module.ReviewList),
   {
     ssr: false,
-    loading: () => (
-      <section className="border-b border-zinc-200/80 py-8" aria-label="Loading guest reviews">
-        <h2 className="text-[20px] font-normal text-[#1f1f1f]">Guest reviews</h2>
-        <div className="mt-5 h-28 animate-pulse rounded-2xl bg-zinc-100" />
-      </section>
-    ),
+    loading: ReviewListLoading,
   },
 );
+
+function RealMapLoading() {
+  const { t } = useLanguage();
+  return <div className="h-full w-full animate-pulse bg-zinc-100" aria-label={t("listing_detail_loading_map" as any, "Loading map")} />;
+}
 
 const RealMap = dynamic(
   () => import("@/components/ui/real-map").then((module) => module.RealMap),
   {
-    loading: () => <div className="h-full w-full animate-pulse bg-zinc-100" aria-label="Loading map" />,
+    loading: RealMapLoading,
   },
 );
 
@@ -70,6 +80,7 @@ function DeferredReviewList({
   initialSummary: { averageRating: number | null; totalCount: number };
   onStatsChange: (stats: { rating: number | null; count: number }) => void;
 }) {
+  const { t } = useLanguage();
   const containerRef = useRef<HTMLDivElement>(null);
   const [shouldLoad, setShouldLoad] = useState(false);
 
@@ -98,7 +109,7 @@ function DeferredReviewList({
         <ReviewList listingId={listingId} isGuestFavorite={isGuestFavorite} initialSummary={initialSummary} onStatsChange={onStatsChange} />
       ) : (
         <section className="border-b border-zinc-200/80 py-8" aria-labelledby="guest-reviews-heading">
-          <h2 id="guest-reviews-heading" className="text-[20px] font-normal text-[#1f1f1f]">Guest reviews</h2>
+          <h2 id="guest-reviews-heading" className="text-[20px] font-normal text-[#1f1f1f]">{t("listing_detail_guest_reviews" as any, "Guest reviews")}</h2>
           <div className="mt-5 h-28 rounded-2xl bg-zinc-100" />
         </section>
       )}
@@ -123,6 +134,7 @@ function DeferredListingMap({
   showExactLocation: boolean;
   ariaLabel: string;
 }) {
+  const { t } = useLanguage();
   const containerRef = useRef<HTMLDivElement>(null);
   const [shouldLoad, setShouldLoad] = useState(false);
 
@@ -162,7 +174,7 @@ function DeferredListingMap({
           ariaLabel={ariaLabel}
         />
       ) : (
-        <div className="h-full w-full bg-zinc-100" aria-label="Map loads when this section is visible" />
+        <div className="h-full w-full bg-zinc-100" aria-label={t("listing_detail_map_lazy_label" as any, "Map loads when this section is visible")} />
       )}
     </div>
   );
@@ -320,6 +332,7 @@ function HostIdentityCard({
   reviewRating: number | null;
   reviewCount: number;
 }) {
+  const { t } = useLanguage();
   const effectiveReviewCount =
     typeof host.reviewsCount === "number" && host.reviewsCount > 0
       ? host.reviewsCount
@@ -342,15 +355,15 @@ function HostIdentityCard({
       <div className="grid grid-cols-2 gap-x-7 gap-y-4">
         <div className="host-left flex flex-col items-center justify-center text-center">
           {host.image && !imageFailed ? (
-            <img src={host.image} alt={`${host.name || "Host"}'s profile photo`} loading="lazy" decoding="async" onError={onImageError} className="size-[104px] shrink-0 rounded-full border border-zinc-200 object-cover" />
+            <img src={host.image} alt={t("public_host_card_photo_alt" as any, "Host profile photo")} loading="lazy" decoding="async" onError={onImageError} className="size-[104px] shrink-0 rounded-full border border-zinc-200 object-cover" />
           ) : (
             <div aria-hidden="true" className="flex size-[104px] shrink-0 items-center justify-center rounded-full border border-amber-200 bg-amber-100 text-2xl font-bold text-amber-900">
               {(host.name || "H")[0]?.toUpperCase()}
             </div>
           )}
           <div className="pt-4 text-center">
-            <p className="break-words sm:text-[20px] text-lg font-medium text-[#1f1f1f] capitalize">{host.name || "Homyz host"}</p>
-            <p className="sm:mt-2 mt-1 text-base font-light text-[#1f1f1f]">{host.isSuperhost ? "Superhost" : "Host"}</p>
+            <p className="break-words sm:text-[20px] text-lg font-medium text-[#1f1f1f] capitalize">{host.name || t("public_host_default_name" as any, "Homyz host")}</p>
+            <p className="sm:mt-2 mt-1 text-base font-light text-[#1f1f1f]">{host.isSuperhost ? t("public_host_card_superhost" as any, "Superhost") : t("public_host_card_host" as any, "Host")}</p>
           </div>
         </div>
 
@@ -359,7 +372,7 @@ function HostIdentityCard({
             <p className="sm:text-[20px] text-lg font-normal leading-5 text-[#1f1f1f]">
               {effectiveReviewCount > 0 ? effectiveReviewCount : "—"}
             </p>
-            <p className="mt-1 text-xs font-normal text-[#727272]">Reviews</p>
+            <p className="mt-1 text-xs font-normal text-[#727272]">{t("public_host_card_reviews_label" as any, "Reviews")}</p>
           </div>
           <div className="py-4">
             <p className="flex items-center gap-1 sm:text-[20px] text-lg font-normal leading-5 text-[#1f1f1f]">
@@ -369,14 +382,14 @@ function HostIdentityCard({
                   <span className="text-[#e9a400]">★</span>
                 </>
               ) : (
-                <span className="text-base font-normal text-[#727272]">★ New</span>
+                <span className="text-base font-normal text-[#727272]">{t("listings_new" as any, "★ New")}</span>
               )}
             </p>
-            <p className="mt-2 text-xs font-normal text-[#727272]">Rating</p>
+            <p className="mt-2 text-xs font-normal text-[#727272]">{t("public_host_card_rating_label" as any, "Rating")}</p>
           </div>
           <div className="pt-4">
             <p className="sm:text-[20px] text-base font-normal leading-5 text-[#1f1f1f]">{hostTenure || "—"}</p>
-            <p className="mt-2 text-xs font-normal text-[#727272]">time hosting</p>
+            <p className="mt-2 text-xs font-normal text-[#727272]">{t("public_host_card_tenure_label" as any, "time hosting")}</p>
           </div>
         </div>
 
@@ -544,28 +557,32 @@ function ListingAvailabilityCalendar({
       {error ? (
         <div role="alert" className="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
           <span>{error}</span>
-          <button type="button" onClick={() => onMonthChange(new Date(month.getFullYear(), month.getMonth(), 1))} className="font-medium underline underline-offset-2 cursor-pointer">Try again</button>
+          <button type="button" onClick={() => onMonthChange(new Date(month.getFullYear(), month.getMonth(), 1))} className="font-medium underline underline-offset-2 cursor-pointer">{t("listing_detail_try_again" as any, "Try again")}</button>
         </div>
       ) : (
         <div className="max-w-[608px] rounded-2xl bg-[#F3F4F5] p-3 sm:p-4">
           <div className="rounded-2xl bg-white px-3 py-5 sm:px-5 sm:py-6">
             <div className="grid grid-cols-[2rem_minmax(0,1fr)_2rem] items-start gap-1 sm:gap-3">
-              <button type="button" aria-label="Previous two months" disabled={!canGoBack || isLoading} onClick={() => onMonthChange(new Date(month.getFullYear(), month.getMonth() - 1, 1))} className="mt-0.5 flex size-8 items-center justify-center rounded-full text-lg text-[#727272] hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-30 cursor-pointer"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="size-6"><path d="m15 18-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" /></svg></button>
+              <button type="button" aria-label={t("listing_detail_cal_prev_months" as any, "Previous two months")} disabled={!canGoBack || isLoading} onClick={() => onMonthChange(new Date(month.getFullYear(), month.getMonth() - 1, 1))} className="mt-0.5 flex size-8 items-center justify-center rounded-full text-lg text-[#727272] hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-30 cursor-pointer"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="size-6"><path d="m15 18-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" /></svg></button>
               <div className="grid min-w-0 grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-6">
                 {displayedMonths.map(renderMonth)}
               </div>
-              <button type="button" aria-label="Next two months" disabled={isLoading} onClick={() => onMonthChange(new Date(month.getFullYear(), month.getMonth() + 1, 1))} className="mt-0.5 flex size-8 items-center justify-center rounded-full text-lg text-[#727272] hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-30 cursor-pointer"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="size-6"><path d="m9 18 6-6-6-6" strokeLinecap="round" strokeLinejoin="round" /></svg></button>
+              <button type="button" aria-label={t("listing_detail_cal_next_months" as any, "Next two months")} disabled={isLoading} onClick={() => onMonthChange(new Date(month.getFullYear(), month.getMonth() + 1, 1))} className="mt-0.5 flex size-8 items-center justify-center rounded-full text-lg text-[#727272] hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-30 cursor-pointer"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="size-6"><path d="m9 18 6-6-6-6" strokeLinecap="round" strokeLinejoin="round" /></svg></button>
             </div>
           </div>
           <div className="flex flex-wrap items-center justify-between gap-2 px-1 pt-3 text-sm text-[#727272]">
             <span aria-live="polite">
               {isLoading
-                ? "Updating availability…"
+                ? t("listing_detail_cal_updating_avail" as any, "Updating availability…")
                 : !checkIn
-                  ? "Select check-in date"
+                  ? t("listing_detail_cal_select_checkin" as any, "Select check-in date")
                   : !checkOut
-                    ? `Minimum stay: ${minimumNights} ${minimumNights === 1 ? "night" : "nights"}. Select checkout date.`
-                    : `${nights} ${nights === 1 ? "night" : "nights"} selected`}
+                    ? minimumNights === 1
+                      ? t("listing_detail_cal_min_stay_one" as any, "Minimum stay: 1 night. Select checkout date.")
+                      : t("listing_detail_cal_min_stay" as any, { count: minimumNights }, `Minimum stay: ${minimumNights} nights. Select checkout date.`)
+                    : nights === 1
+                      ? t("listing_detail_cal_night_selected_one" as any, "1 night selected")
+                      : t("listing_detail_cal_nights_selected" as any, { count: nights }, `${nights} nights selected`)}
             </span>
             {(checkIn || checkOut) && (
               <button
@@ -573,7 +590,7 @@ function ListingAvailabilityCalendar({
                 onClick={onClearDates}
                 className="font-medium underline decoration-zinc-400 underline-offset-2 hover:text-[#1f1f1f] cursor-pointer"
               >
-                Clear dates
+                {t("listing_detail_clear_dates" as any, "Clear dates")}
               </button>
             )}
           </div>
@@ -1905,13 +1922,13 @@ export function PublicListingDetailClient({
                 )}
               </div>
               <div className="flex shrink-0 items-center gap-3 pt-0.5 sm:gap-8">
-                <button type="button" onClick={handleShare} className="group inline-flex items-center gap-3 rounded-full text-base font-normal text-[#1f1f1f] transition-colors hover:text-[#727272]" aria-label="Share this listing">
+                <button type="button" onClick={handleShare} className="group inline-flex items-center gap-3 rounded-full text-base font-normal text-[#1f1f1f] transition-colors hover:text-[#727272]" aria-label={t("listing_gallery_share_aria" as any, "Share this listing")}>
                   <span className="flex size-10 items-center justify-center rounded-full border border-[#1f1f1f] bg-white transition-colors group-hover:border-zinc-500 group-hover:bg-zinc-50">
                     <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.55" className="size-6"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="m8.6 10.6 6.8-4.1M8.6 13.4l6.8 4.1" /></svg>
                   </span>
                   <span className="hidden sm:inline">{t("listing_detail_share", "Share")}</span>
                 </button>
-                <button type="button" onClick={() => void handleSave()} disabled={wishlist.adding.has(listing.id) || wishlist.removeInFlight.has(listing.id)} className="group inline-flex items-center gap-3 rounded-full text-base font-normal text-[#1f1f1f] transition-colors hover:text-[#727272] disabled:opacity-50" aria-pressed={wishlist.has(listing.id)} aria-label={wishlist.has(listing.id) ? "Remove from wishlist" : "Save listing"}>
+                <button type="button" onClick={() => void handleSave()} disabled={wishlist.adding.has(listing.id) || wishlist.removeInFlight.has(listing.id)} className="group inline-flex items-center gap-3 rounded-full text-base font-normal text-[#1f1f1f] transition-colors hover:text-[#727272] disabled:opacity-50" aria-pressed={wishlist.has(listing.id)} aria-label={wishlist.has(listing.id) ? t("listing_gallery_remove_wishlist" as any, "Remove from wishlist") : t("listing_gallery_save_listing" as any, "Save listing")}>
                   <span className={`flex size-10 items-center justify-center rounded-full border transition-colors ${wishlist.has(listing.id) ? "border-red-700 bg-red-50 text-red-700" : "border-[#1f1f1f] bg-white group-hover:border-zinc-500 group-hover:bg-zinc-50"}`}>
                     <svg aria-hidden="true" viewBox="0 0 24 24" fill={wishlist.has(listing.id) ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.55" className="size-6"><path d="M12 20.5 3.8 12a5.2 5.2 0 0 1 7.4-7.3L12 5.5l.8-.8a5.2 5.2 0 0 1 7.4 7.3L12 20.5Z" /></svg>
                   </span>
@@ -1942,7 +1959,7 @@ export function PublicListingDetailClient({
               <div className="lg:col-span-7">
                 <section className="pb-1">
                   <h2 className="text-[18px] font-normal leading-6 text-[#1f1f1f] lg:text-[20px] lg:leading-5">
-                    {listing.listingType ? listingTypeLabel(listing.listingType, t) : "Stay"}{listing.propertyType ? ` in ${propertyTypeLabel(listing.propertyType, t)}` : ""}{locationString ? ` in ${locationString}` : ""}
+                    {listing.listingType ? listingTypeLabel(listing.listingType, t) : t("listing_detail_property_exact" as any, "Property")}{listing.propertyType ? ` in ${propertyTypeLabel(listing.propertyType, t)}` : ""}{locationString ? ` in ${locationString}` : ""}
                   </h2>
                   {/* Where you'll sleep */}
                   <p className="mt-1 text-sm font-light text-[#1F1F1F] lg:mt-2 lg:text-base">
@@ -1951,7 +1968,7 @@ export function PublicListingDetailClient({
                 </section>
 
                 {listing.isGuestFavorite && reviewRating !== null && reviewCount > 0 && (
-                  <section className="mt-7 hidden w-full max-w-[720px] overflow-hidden rounded-[40px] border border-[#dedede] bg-white shadow-[0_2px_4px_rgba(0,0,0,0.16)] xl:grid xl:grid-cols-[1.1fr_1.75fr_.85fr_.62fr] xl:px-6" aria-label="Guest favourite rating summary">
+                  <section className="mt-7 hidden w-full max-w-[720px] overflow-hidden rounded-[40px] border border-[#dedede] bg-white shadow-[0_2px_4px_rgba(0,0,0,0.16)] xl:grid xl:grid-cols-[1.1fr_1.75fr_.85fr_.62fr] xl:px-6" aria-label={t("listing_detail_gf_summary_aria" as any, "Guest favourite rating summary")}>
                     <div className="flex min-w-0 items-center justify-center gap-2.5 border-b border-[#dedede] px-4 py-5 md:border-r xl:border-b-0">
                       <Image src="/images/icons/leaves-left.svg" alt="" width={39} height={71} aria-hidden="true" className="h-[71px] w-[39px] shrink-0" />
                       <span className="text-[17px] font-normal leading-5 text-[#1f1f1f] text-center">{t("listing_detail_guest_favourite", "Guest favourite")}</span>
@@ -2276,7 +2293,7 @@ export function PublicListingDetailClient({
                               <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={`size-6 transition-transform relative -top-4 ${isGuestSelectorOpen ? "rotate-180" : ""}`}><path d="m6 9 6 6 6-6" /></svg>
                             </button>
                             {isGuestSelectorOpen && (
-                              <div id="guest-selector" className="mt-3 space-y-3.5 rounded-xl border border-zinc-200 bg-zinc-50 p-3.5 text-sm" aria-label="Guest selection">
+                              <div id="guest-selector" className="mt-3 space-y-3.5 rounded-xl border border-zinc-200 bg-zinc-50 p-3.5 text-sm" aria-label={t("listing_detail_guest_select_aria" as any, "Guest selection")}>
                                 {/* Adults */}
                                 <div className="flex items-center justify-between gap-3">
                                   <div>
@@ -2284,9 +2301,9 @@ export function PublicListingDetailClient({
                                     <p className="text-xs text-[#727272]">{t("listing_detail_age_adults", "Age 13+")}</p>
                                   </div>
                                   <div className="flex items-center gap-2">
-                                    <button type="button" onClick={() => updateAdults(-1)} disabled={adultsCount <= 1} aria-label="Remove one adult" className="flex size-7 items-center justify-center rounded-full border border-[#1f1f1f] text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">−</button>
+                                    <button type="button" onClick={() => updateAdults(-1)} disabled={adultsCount <= 1} aria-label={t("listing_detail_remove_adult_aria" as any, "Remove one adult")} className="flex size-7 items-center justify-center rounded-full border border-[#1f1f1f] text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">−</button>
                                     <span className="min-w-4 text-center font-medium text-[#1f1f1f]" aria-live="polite">{adultsCount}</span>
-                                    <button type="button" onClick={() => updateAdults(1)} disabled={!canAddCapacityGuest} aria-label="Add one adult" className="flex size-7 items-center justify-center rounded-full border border-[#1f1f1f] text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">+</button>
+                                    <button type="button" onClick={() => updateAdults(1)} disabled={!canAddCapacityGuest} aria-label={t("listing_detail_add_adult_aria" as any, "Add one adult")} className="flex size-7 items-center justify-center rounded-full border border-[#1f1f1f] text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">+</button>
                                   </div>
                                 </div>
 
@@ -2297,9 +2314,9 @@ export function PublicListingDetailClient({
                                     <p className="text-xs text-[#727272]">{t("listing_detail_age_children", "Ages 2–12")}</p>
                                   </div>
                                   <div className="flex items-center gap-2">
-                                    <button type="button" onClick={() => updateChildren(-1)} disabled={childrenCount <= 0} aria-label="Remove one child" className="flex size-7 items-center justify-center rounded-full border border-[#1f1f1f] text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">−</button>
+                                    <button type="button" onClick={() => updateChildren(-1)} disabled={childrenCount <= 0} aria-label={t("listing_detail_remove_child_aria" as any, "Remove one child")} className="flex size-7 items-center justify-center rounded-full border border-[#1f1f1f] text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">−</button>
                                     <span className="min-w-4 text-center font-medium text-[#1f1f1f]" aria-live="polite">{childrenCount}</span>
-                                    <button type="button" onClick={() => updateChildren(1)} disabled={!canAddCapacityGuest} aria-label="Add one child" className="flex size-7 items-center justify-center rounded-full border border-[#1f1f1f] text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">+</button>
+                                    <button type="button" onClick={() => updateChildren(1)} disabled={!canAddCapacityGuest} aria-label={t("listing_detail_add_child_aria" as any, "Add one child")} className="flex size-7 items-center justify-center rounded-full border border-[#1f1f1f] text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">+</button>
                                   </div>
                                 </div>
 
@@ -2309,12 +2326,12 @@ export function PublicListingDetailClient({
                                 <div className="flex items-center justify-between gap-3 border-t border-zinc-200/80 pt-3">
                                   <div>
                                     <p className="font-medium text-[#1f1f1f]">{t("home_infants", "Infants")}</p>
-                                    <p className="text-xs text-[#727272]">Under 2</p>
+                                    <p className="text-xs text-[#727272]">{t("listing_detail_age_infants" as any, "Under 2")}</p>
                                   </div>
                                   <div className="flex items-center gap-2">
-                                    <button type="button" onClick={() => updateInfants(-1)} disabled={infantsCount <= 0} aria-label="Remove one infant" className="flex size-7 items-center justify-center rounded-full border border-[#1f1f1f] text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">−</button>
+                                    <button type="button" onClick={() => updateInfants(-1)} disabled={infantsCount <= 0} aria-label={t("listing_detail_remove_infant_aria" as any, "Remove one infant")} className="flex size-7 items-center justify-center rounded-full border border-[#1f1f1f] text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">−</button>
                                     <span className="min-w-4 text-center font-medium text-[#1f1f1f]" aria-live="polite">{infantsCount}</span>
-                                    <button type="button" onClick={() => updateInfants(1)} disabled={infantsCount >= 5} aria-label="Add one infant" className="flex size-7 items-center justify-center rounded-full border border-[#1f1f1f] text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">+</button>
+                                    <button type="button" onClick={() => updateInfants(1)} disabled={infantsCount >= 5} aria-label={t("listing_detail_add_infant_aria" as any, "Add one infant")} className="flex size-7 items-center justify-center rounded-full border border-[#1f1f1f] text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">+</button>
                                   </div>
                                 </div>
 
@@ -2322,21 +2339,21 @@ export function PublicListingDetailClient({
                                   <div className="flex items-center justify-between gap-3 border-t border-zinc-200/80 pt-3">
                                     <div>
                                       <p className="font-medium text-[#1f1f1f]">{t("home_pets", "Pets")}</p>
-                                      <p className="text-xs text-[#727272]">{maxPetsAllowed === 1 ? "Up to 1 pet" : `Up to ${maxPetsAllowed} pets`}</p>
+                                      <p className="text-xs text-[#727272]">{maxPetsAllowed === 1 ? t("listing_detail_up_to_one_pet" as any, "Up to 1 pet") : t("listing_detail_up_to_many_pets" as any, { max: maxPetsAllowed }, `Up to ${maxPetsAllowed} pets`)}</p>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                      <button type="button" onClick={() => updatePets(-1)} disabled={petsCount <= 0} aria-label="Remove one pet" className="flex size-7 items-center justify-center rounded-full border border-[#1f1f1f] text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">−</button>
+                                      <button type="button" onClick={() => updatePets(-1)} disabled={petsCount <= 0} aria-label={t("listing_detail_remove_pet_aria" as any, "Remove one pet")} className="flex size-7 items-center justify-center rounded-full border border-[#1f1f1f] text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">−</button>
                                       <span className="min-w-4 text-center font-medium text-[#1f1f1f]" aria-live="polite">{petsCount}</span>
-                                      <button type="button" onClick={() => updatePets(1)} disabled={petsCount >= maxPetsAllowed} aria-label="Add one pet" className="flex size-7 items-center justify-center rounded-full border border-[#1f1f1f] text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">+</button>
+                                      <button type="button" onClick={() => updatePets(1)} disabled={petsCount >= maxPetsAllowed} aria-label={t("listing_detail_add_pet_aria" as any, "Add one pet")} className="flex size-7 items-center justify-center rounded-full border border-[#1f1f1f] text-base leading-none hover:bg-white disabled:cursor-not-allowed disabled:opacity-35">+</button>
                                     </div>
                                   </div>
                                 )}
 
                                 <div className="border-t border-zinc-200/80 pt-2 text-sm text-[#727272]">
                                   {totalCapacityGuests >= maximumGuests ? (
-                                    <p className="font-sm font-medium text-amber-700">Maximum property capacity of {maximumGuests} {maximumGuests === 1 ? "guest" : "guests"} reached.</p>
+                                    <p className="font-sm font-medium text-amber-700">{maximumGuests === 1 ? t("listing_detail_max_capacity_reached_one" as any, "Maximum property capacity of 1 guest reached.") : t("listing_detail_max_capacity_reached" as any, { count: maximumGuests }, `Maximum property capacity of ${maximumGuests} guests reached.`)}</p>
                                   ) : (
-                                    <p>This property accommodates up to {maximumGuests} {maximumGuests === 1 ? "guest" : "guests"}.</p>
+                                    <p>{maximumGuests === 1 ? t("listing_detail_accommodates_up_to_one" as any, "This property accommodates up to 1 guest.") : t("listing_detail_accommodates_up_to" as any, { count: maximumGuests }, `This property accommodates up to ${maximumGuests} guests.`)}</p>
                                   )}
                                 </div>
 
@@ -2415,21 +2432,21 @@ export function PublicListingDetailClient({
                             <div className="flex items-center justify-between text-[#727272]">
                               <span>
                                 {new Set(quote.breakdown.map((night) => night.price)).size <= 1
-                                  ? `${formatPrice(quote.breakdown[0]?.price ?? quote.baseNightlyPrice, listing.currency ?? getCurrencyForCountry(listing.country))} × ${quote.nights} ${quote.nights === 1 ? "night" : "nights"}`
-                                  : `Accommodation · ${quote.nights} nights (varying rates)`}
+                                  ? `${formatPrice(quote.breakdown[0]?.price ?? quote.baseNightlyPrice, listing.currency ?? getCurrencyForCountry(listing.country))} × ${quote.nights === 1 ? t("booking_details_night_count", { count: 1 }, "1 night") : t("booking_details_nights_count", { count: quote.nights }, `${quote.nights} nights`)}`
+                                  : t("listing_detail_accommodation_varying", { nights: quote.nights }, `Accommodation · ${quote.nights} nights (varying rates)`)}
                               </span>
                               <span>{formatPrice(quote.nightlySubtotal, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                             </div>
 
                             {quote.customPricedNights !== undefined && quote.customPricedNights > 0 && (
                               <div className="flex items-center justify-between text-amber-700 text-sm font-medium bg-amber-50 px-2 py-0.5 rounded">
-                                <span>Includes {quote.customPricedNights} custom calendar rate {quote.customPricedNights === 1 ? "night" : "nights"}</span>
+                                <span>{quote.customPricedNights === 1 ? t("listing_detail_custom_calendar_rate_one", "Includes 1 custom calendar rate night") : t("listing_detail_custom_calendar_rate", { count: quote.customPricedNights }, `Includes ${quote.customPricedNights} custom calendar rate nights`)}</span>
                               </div>
                             )}
 
                             {quote.weekendNights > 0 && quote.weekendNightlyPrice && (
                               <div className="flex items-center justify-between text-[#727272] text-sm">
-                                <span>Includes {quote.weekendNights} weekend nights</span>
+                                <span>{t("listing_detail_weekend_calendar_rate", { count: quote.weekendNights }, `Includes ${quote.weekendNights} weekend nights`)}</span>
                                 <span>{formatPrice(quote.weekendNightlyPrice, currencyCode)} / night</span>
                               </div>
                             )}
@@ -2463,7 +2480,7 @@ export function PublicListingDetailClient({
                                       {t("listing_detail_taxes_and_fees", "Taxes & fees")}
                                       {quote.taxes.some((tax) => tax.exemptionApplied) && (
                                         <span className="text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-1.5 py-0.5 rounded-full font-medium">
-                                          Exemption applied
+                                          {t("listing_detail_tax_exemption_applied", "Exemption applied")}
                                         </span>
                                       )}
                                     </span>
@@ -2475,7 +2492,7 @@ export function PublicListingDetailClient({
                                         <span>
                                           {tax.taxName}
                                           {tax.rate ? ` (${tax.rate}%)` : ""}
-                                          {tax.exemptionApplied ? ` • ${tax.exemptionReason || "Exemption applied"}` : ""}
+                                          {tax.exemptionApplied ? ` • ${tax.exemptionReason || t("listing_detail_tax_exemption_applied", "Exemption applied")}` : ""}
                                         </span>
                                         <span>{formatPrice(tax.taxAmount, listing.currency ?? getCurrencyForCountry(listing.country))}</span>
                                       </div>
@@ -2519,14 +2536,14 @@ export function PublicListingDetailClient({
                           aria-disabled={!hasValidQuote || isBookingSubmitting}
                         >
                           {isBookingSubmitting
-                            ? "Confirming..."
+                            ? t("listing_detail_btn_confirming", "Confirming...")
                             : isQuoteLoading
-                              ? "Checking availability..."
+                              ? t("listing_detail_btn_checking", "Checking availability...")
                               : (!checkIn || !checkOut)
-                                ? "Check availability"
+                                ? t("listing_detail_check_availability", "Check availability")
                                 : isInstantBook
-                                  ? "Reserve"
-                                  : "Request to book"}
+                                  ? t("listing_detail_reserve", "Reserve")
+                                  : t("listing_detail_request_to_book", "Request to book")}
                         </button>
 
                         <p className="text-xs text-[#727272] text-center font-normal">
@@ -2625,7 +2642,7 @@ export function PublicListingDetailClient({
                             className="inline-flex min-h-12 items-center gap-2 rounded-full border border-[#1F1F1F] bg-[#F3F4F5] px-5 text-base font-normal text-[#1f1f1f] hover:text-white hover:bg-[#1f1f1f] transition-colors duration-300 group"
                           >
                             <Image src="/images/icons/report-icon.svg" alt="" width={18} height={18} className="size-4 group-hover:brightness-0 group-hover:invert transition-colors duration-300" />
-                            Report this host
+                            {t("public_host_report_btn", "Report this host")}
                           </button>
                         )}
                       </div>
@@ -2706,7 +2723,16 @@ export function PublicListingDetailClient({
                       latitude={publicCoordinates.latitude}
                       longitude={publicCoordinates.longitude}
                       showExactLocation={listing.showExactLocation ?? false}
-                      ariaLabel={`${listing.showExactLocation ? "Property" : "Approximate property"} location map for ${locationString || listing.title}`}
+                      ariaLabel={t(
+                        "listing_detail_map_aria",
+                        {
+                          type: listing.showExactLocation
+                            ? t("listing_detail_property_exact", "Property")
+                            : t("listing_detail_property_approx", "Approximate property"),
+                          location: locationString || listing.title,
+                        },
+                        `${listing.showExactLocation ? "Property" : "Approximate property"} location map for ${locationString || listing.title}`,
+                      )}
                     />
                   </div>
                 ) : (
@@ -2838,7 +2864,7 @@ export function PublicListingDetailClient({
                 ref={amenityCloseRef}
                 type="button"
                 onClick={() => setIsAllAmenitiesOpen(false)}
-                aria-label="Close amenities"
+                aria-label={t("listing_detail_close_amenities_aria" as any, "Close amenities")}
                 className="cursor-pointer p-1 text-lg font-medium text-[#1f1f1f] hover:text-[#727272] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f]"
               >
                 ✕
@@ -2906,7 +2932,7 @@ export function PublicListingDetailClient({
               <button
                 type="button"
                 onClick={() => setContactHostModalOpen(false)}
-                aria-label="Close"
+                aria-label={t("book_close", "Close")}
                 className="cursor-pointer size-8 rounded-full flex items-center justify-center text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100"
               >
                 ✕
@@ -2982,13 +3008,13 @@ export function PublicListingDetailClient({
                   : displayPrice ?? "Price unavailable"}
               </span>
               <span className="text-xs font-normal text-[#727272]">
-                {quote?.nights ? `total · ${quote.nights} ${quote.nights === 1 ? "night" : "nights"}` : ` ${t("listing_detail_per_night", "/ night")}`}
+                {quote?.nights ? (quote.nights === 1 ? t("listing_detail_total_for_night_one" as any, "total · 1 night") : t("listing_detail_total_for_nights" as any, { count: quote.nights }, `total · ${quote.nights} nights`)) : ` ${t("listing_detail_per_night", "/ night")}`}
               </span>
             </div>
             <div className="truncate text-xs font-medium text-[#727272]">
               {checkIn && checkOut
                 ? `${new Intl.DateTimeFormat("en", { month: "short", day: "numeric" }).format(new Date(`${checkIn}T00:00:00`))} – ${new Intl.DateTimeFormat("en", { month: "short", day: "numeric" }).format(new Date(`${checkOut}T00:00:00`))}`
-                : "Choose your dates"}
+                : t("listing_detail_choose_dates" as any, "Choose your dates")}
             </div>
           </div>
 
@@ -3019,9 +3045,9 @@ export function PublicListingDetailClient({
                 aria-disabled={!hasValidQuote || isBookingSubmitting}
               >
                 {isBookingSubmitting
-                  ? "Confirming..."
+                  ? t("listing_detail_btn_confirming" as any, "Confirming...")
                   : isQuoteLoading
-                    ? "Checking..."
+                    ? t("listing_detail_btn_checking_short" as any, "Checking...")
                     : isInstantBook
                       ? t("listing_detail_reserve", "Reserve")
                       : t("listing_detail_request_to_book", "Request to book")}
@@ -3069,10 +3095,10 @@ export function PublicListingDetailClient({
             <div className="flex items-start justify-between gap-4">
               <div>
                 <h2 id="report-login-modal-title" className="text-xl font-semibold text-[#1f1f1f]">
-                  {reportLoginTarget === "host" ? "Sign in to report this host" : "Sign in to report this listing"}
+                  {reportLoginTarget === "host" ? t("listing_detail_signin_report_host" as any, "Sign in to report this host") : t("listing_detail_signin_report_listing" as any, "Sign in to report this listing")}
                 </h2>
                 <p id="report-login-modal-description" className="mt-2 text-sm leading-6 text-[#727272]">
-                  Please sign in or create an account before submitting a report. We&apos;ll bring you back to this form afterward.
+                  {t("listing_detail_signin_report_desc" as any, "Please sign in or create an account before submitting a report. We'll bring you back to this form afterward.")}
                 </p>
               </div>
               <button
@@ -3081,7 +3107,7 @@ export function PublicListingDetailClient({
                   setIsReportLoginOpen(false);
                   setOpenReportAfterAuthentication(false);
                 }}
-                aria-label="Close sign-in prompt"
+                aria-label={t("listing_detail_close_signin_aria" as any, "Close sign-in prompt")}
                 className="flex size-8 shrink-0 items-center justify-center rounded-full text-lg text-[#727272] transition hover:bg-zinc-100 hover:text-[#1f1f1f]"
               >
                 ×
@@ -3097,14 +3123,14 @@ export function PublicListingDetailClient({
                 }}
                 className="rounded-xl border border-zinc-300 px-4 py-2.5 text-sm font-semibold text-[#1f1f1f] transition hover:bg-zinc-50"
               >
-                Cancel
+                {t("guest_report_cancel_btn", "Cancel")}
               </button>
               <button
                 type="button"
                 onClick={handleContinueToLoginForReport}
                 className="rounded-xl bg-[#1f1f1f] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-black"
               >
-                Continue to sign in
+                {t("listing_detail_continue_signin" as any, "Continue to sign in")}
               </button>
             </div>
           </div>

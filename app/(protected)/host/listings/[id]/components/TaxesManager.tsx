@@ -446,7 +446,7 @@ export function TaxesManager({
           <BackButton
             onClick={() => setActiveSection("propertyType")}
             className="mb-4"
-            aria-label="Back to listing editor"
+            aria-label={t("host_taxes_back_aria", "Back to listing editor")}
           />
           <div>
             <h1>{t("host_taxes_heading")}</h1>
@@ -488,12 +488,12 @@ export function TaxesManager({
                         : `${formatPrice(tax.amount || 0, jurisdiction?.currency || listingCurrency, 2)} (${formatCalculationMethod(tax.calculationMethod, t).toLowerCase()})`}
                       {tax.partialStayExemptionNights && (
                         <span className="ml-2 px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 text-[10px]">
-                          First {tax.partialStayExemptionNights} nights taxable
+                          {t("host_taxes_first_nights_taxable", { count: tax.partialStayExemptionNights || 0 }, "First {count} nights taxable")}
                         </span>
                       )}
                       {(tax.fullStayExemptionNights || tax.longStayExemptionNights) && (
                         <span className="ml-2 px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 text-[10px]">
-                          Entire stay exempt at {tax.fullStayExemptionNights || tax.longStayExemptionNights}+ nights
+                          {t("host_taxes_entire_stay_exempt", { count: (tax.fullStayExemptionNights || tax.longStayExemptionNights || 0) }, "Entire stay exempt at {count}+ nights")}
                         </span>
                       )}
                     </div>
@@ -564,7 +564,7 @@ export function TaxesManager({
                   type="button"
                   onClick={handleCancel}
                   className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[#1f1f1f] transition-colors hover:bg-zinc-100 hover:text-zinc-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 dark:text-[#727272] dark:hover:bg-zinc-800 dark:hover:text-white dark:focus-visible:ring-zinc-100 dark:focus-visible:ring-offset-zinc-900"
-                  aria-label="Close"
+                  aria-label={t("host_close", "Close")}
                 >
                   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round">
                     <path d="M6 6l12 12M18 6 6 18" />
@@ -679,7 +679,7 @@ export function TaxesManager({
                         step="0.01"
                         min="0"
                         max={taxType === "PERCENTAGE" ? "100" : undefined}
-                        placeholder={rateMode === "Percentage" ? "10 (%)" : "0.00 (Amount)"}
+                        placeholder={rateMode === "Percentage" ? t("host_taxes_placeholder_pct", "10 (%)") : t("host_taxes_placeholder_amt", "0.00 (Amount)")}
                         value={taxRate}
                         onChange={(e) => setTaxRate(e.target.value)}
                         className="w-full bg-transparent px-3 py-2.5 text-sm text-[#1F1F1F] focus:outline-none dark:text-zinc-100"
@@ -899,7 +899,7 @@ export function TaxesManager({
                 type="button"
                 onClick={() => setLearnMoreTopic(null)}
                 className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#727272] transition-colors hover:bg-zinc-100 hover:text-zinc-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 dark:text-[#727272] dark:hover:bg-zinc-800 dark:hover:text-white dark:focus-visible:ring-zinc-100 dark:focus-visible:ring-offset-zinc-900"
-                aria-label="Close modal"
+                aria-label={t("host_close", "Close")}
               >
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round">
                   <path d="M6 6l12 12M18 6 6 18" />
@@ -997,7 +997,7 @@ export function TaxesManager({
                 type="button"
                 onClick={() => setViewingRegistration(null)}
                 className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#727272] transition-colors hover:bg-zinc-100 hover:text-zinc-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 dark:text-[#727272] dark:hover:bg-zinc-800 dark:hover:text-white dark:focus-visible:ring-zinc-100 dark:focus-visible:ring-offset-zinc-900"
-                aria-label="Close registration details"
+                aria-label={t("host_taxes_close_reg_details_aria", "Close registration details")}
               >
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round">
                   <path d="M6 6l12 12M18 6 6 18" />
@@ -1040,7 +1040,7 @@ export function TaxesManager({
                 type="button"
                 onClick={() => setViewingInvoiceModal(false)}
                 className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[#727272] transition-colors hover:bg-zinc-100 hover:text-zinc-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 dark:text-[#727272] dark:hover:bg-zinc-800 dark:hover:text-white dark:focus-visible:ring-zinc-100 dark:focus-visible:ring-offset-zinc-900"
-                aria-label="Close tax statement"
+                aria-label={t("host_taxes_close_statement_aria", "Close tax statement")}
               >
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round">
                   <path d="M6 6l12 12M18 6 6 18" />

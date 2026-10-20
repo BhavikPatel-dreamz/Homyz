@@ -276,12 +276,12 @@ export function ListingStatusView({
   const handleSelectStatus = (target: "listed" | "unlisted") => {
     if (target === "listed") {
       if (isSaudi && missing.length > 0) {
-        toast.error("Please complete all required sections before changing to Listed status.");
+        toast.error(t("host_status_toast_complete_req", "Please complete all required sections before changing to Listed status."));
         return;
       }
       if (!isSaudi && !isApproved) {
         toast.error(
-          "Admin approval required: Your listing must be reviewed and approved by an administrator before it can be listed publicly.",
+          t("host_status_toast_admin_approval_req", "Admin approval required: Your listing must be reviewed and approved by an administrator before it can be listed publicly."),
         );
         return;
       }
@@ -306,7 +306,7 @@ export function ListingStatusView({
           published: false,
           submittedAt: new Date().toISOString(),
         });
-        toast.success("Listing submitted successfully for Admin review!");
+        toast.success(t("host_status_toast_submitted_success", "Listing submitted successfully for Admin review!"));
       } else {
         toast.error((res as any).error || "Failed to submit listing. Please ensure all required fields are complete.");
       }
@@ -331,7 +331,7 @@ export function ListingStatusView({
           requestedChanges: null,
           rejectionReason: null,
         });
-        toast.success("Listing resubmitted successfully for Admin review!");
+        toast.success(t("host_status_toast_resubmitted_success", "Listing resubmitted successfully for Admin review!"));
       } else {
         toast.error((res as any).error || "Failed to resubmit listing.");
       }
@@ -345,14 +345,14 @@ export function ListingStatusView({
     if (!isApproved) {
       toast.error(
         isSaudi
-          ? "Please complete all required sections before changing to Listed status."
-          : "Admin approval required before changing to Listed status."
+          ? t("host_status_toast_complete_req", "Please complete all required sections before changing to Listed status.")
+          : t("host_status_toast_admin_approval_req", "Admin approval required: Your listing must be reviewed and approved by an administrator before it can be listed publicly.")
       );
       return;
     }
     if (handleSaveSection) {
       await handleSaveSection("listing-status");
-      toast.success("Listing status updated successfully!");
+      toast.success(t("host_status_toast_updated_success", "Listing status updated successfully!"));
     } else if (listing) {
       setIsSubmitting(true);
       try {
@@ -361,7 +361,7 @@ export function ListingStatusView({
           setIsSubmitting(false);
           if (res.ok && res.data) {
             onUpdateListing?.({ published: true, status: "ACTIVE" });
-            toast.success("Listing published successfully!");
+            toast.success(t("host_status_toast_published_success", "Listing published successfully!"));
           } else {
             toast.error((res as any).error || "Failed to publish listing.");
           }
@@ -370,7 +370,7 @@ export function ListingStatusView({
           setIsSubmitting(false);
           if (res.ok && res.data) {
             onUpdateListing?.({ published: false, status: "DRAFT" });
-            toast.success("Listing unpublished successfully.");
+            toast.success(t("host_status_toast_unpublished_success", "Listing unpublished successfully."));
           } else {
             toast.error((res as any).error || "Failed to unpublish listing.");
           }
@@ -391,7 +391,7 @@ export function ListingStatusView({
       </div>
 
       {/* Visual Approval Progress Timeline */}
-      <section aria-label="Approval and publishing progress" className="overflow-hidden rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 shadow-2xs">
+      <section aria-label={t("host_status_approval_progress_aria", "Approval and publishing progress")} className="overflow-hidden rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 shadow-2xs">
         <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-700 px-5 py-4 sm:px-6">
           <div>
             <p className="text-sm font-normal text-[#727272] dark:text-[#727272]">{t("host_status_journey")}</p>
@@ -469,7 +469,7 @@ export function ListingStatusView({
           <div className="p-3 rounded-xl bg-white/90 dark:bg-zinc-900/80 border border-amber-200 dark:border-amber-800/60 text-xs text-amber-950 dark:text-amber-200 flex items-start gap-2.5">
             <span className="text-sm">🔒</span>
             <span className="leading-relaxed">
-              <strong>Do not show the listing as fully published until the admin has actually approved it.</strong> {t("host_listed_option_disabled")}
+              <strong>{t("host_status_approval_pending_note", "Your listing will not appear as published until an administrator approves it.")}</strong> {t("host_listed_option_disabled")}
             </span>
           </div>
           {formattedDate && (

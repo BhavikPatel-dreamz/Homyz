@@ -395,7 +395,7 @@ function LocationView(props: Props) {
         <button
           type="button"
           onClick={onBack}
-          aria-label="Close location editor"
+          aria-label={t("host_location_close_editor_aria", "Close location editor")}
           className="absolute right-0 top-1 flex size-10 items-center justify-center text-4xl font-normal leading-none text-[#1F1F1F] dark:text-zinc-100 sm:hidden"
         >
           <CloseIcon className="size-5" />
@@ -741,6 +741,7 @@ function Card({
   mutedWhenOpen?: boolean;
   children: React.ReactNode;
 }) {
+  const { t } = useLanguage();
   return (
     <section className={`overflow-hidden rounded-xl border border-white dark:border-zinc-700 shadow-[0_2px_4px_rgba(0,0,0,0.2)] ${open && mutedWhenOpen ? "bg-[#F3F4F5] dark:bg-zinc-800/90" : "bg-white dark:bg-zinc-800"}`}>
       <button
@@ -753,7 +754,7 @@ function Card({
           {summary && !open && <span className="mt-0.5 block truncate text-[14px] font-normal text-[#727272] dark:text-[#727272]">{summary}</span>}
         </span>
         <span className={`flex size-6 shrink-0 items-center justify-center transition-transform duration-200 ease-out ${open ? "rotate-180" : "rotate-[270deg]"}`}>
-          <Image src="/images/icons/chevron-down-dark.svg" alt={open ? "Collapse" : "Expand"} width={16} height={16} className="size-4 object-contain dark:invert" />
+          <Image src="/images/icons/chevron-down-dark.svg" alt={open ? t("host_collapse", "Collapse") : t("host_expand", "Expand")} width={16} height={16} className="size-4 object-contain dark:invert" />
         </span>
       </button>
       {open && (

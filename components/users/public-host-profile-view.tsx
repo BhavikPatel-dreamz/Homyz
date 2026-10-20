@@ -121,7 +121,7 @@ export function PublicHostProfileView({ host, stats, reviews, listings }: Public
             <svg className="size-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 3l1.664 9.526A2 2 0 006.644 14H17m0 0l1 5H6M17 14l1-7H7.5" />
             </svg>
-            Report this host
+            {t("public_host_report_btn", "Report this host")}
           </button>
         </div>
       )}

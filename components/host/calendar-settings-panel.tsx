@@ -506,7 +506,7 @@ export function CalendarSettingsPanel({
 
           <section className="border-y border-[#E7E7E7] py-5 dark:border-zinc-800">
             <h3 className="text-base font-medium text-[#1f1f1f] dark:text-zinc-100">
-              Trip length
+              {t("host_trip_length", "Trip length")}
             </h3>
             <div className="mt-5 space-y-3">
               {renderAvailabilityNumberRow({
@@ -529,7 +529,7 @@ export function CalendarSettingsPanel({
               name: "guests",
               label: t("host_calendar_max_guest_label", "Maximum guest capacity"),
               defaultValue: listing.guests ?? 1,
-              suffix: "guests",
+              suffix: t("common_guests_plural", "guests"),
               min: 1,
               max: 50,
               inputMode: "numeric",
