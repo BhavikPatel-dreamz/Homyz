@@ -376,7 +376,7 @@ function LanguageMultiSelect({
 
         {/* Count badge when closed */}
         {!open && uniqueSelected.length > 0 && !disabled && (
-          <span className="ml-auto shrink-0 rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-semibold text-zinc-500">
+          <span className="ml-auto shrink-0 rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-medium text-zinc-500">
             {uniqueSelected.length} {t("profile_info_languages_selected", "selected")}
           </span>
         )}
@@ -387,7 +387,7 @@ function LanguageMultiSelect({
         <div className="absolute left-0 right-0 top-full mt-1.5 z-50 rounded-2xl bg-white border border-zinc-200 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-100">
           {/* Header */}
           <div className="flex items-center justify-between px-3.5 py-2 border-b border-zinc-100 bg-zinc-50/70">
-            <span className="text-xs font-semibold text-[#727272] uppercase tracking-wider">
+            <span className="text-xs font-medium text-[#727272] uppercase tracking-wider">
               {filtered.length} {filtered.length === 1 ? "Language" : "Languages"} Available
             </span>
             <span className="text-xs text-[#727272]">
@@ -654,7 +654,7 @@ function InlineLocationSearch({
       {open && !disabled && (
         <div className="absolute left-0 right-0 top-full mt-1.5 z-50 rounded-2xl bg-white border border-zinc-200 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-100">
           <div className="flex items-center justify-between px-3.5 py-2 border-b border-zinc-100 bg-zinc-50/70">
-            <span className="text-[11px] font-semibold text-[#727272] uppercase tracking-wider">
+            <span className="text-[11px] font-medium text-[#727272] uppercase tracking-wider">
               {query.trim().length >= 2 ? "Search Results" : "Popular Destinations"}
             </span>
             <span className="text-xs text-[#727272]">
@@ -714,7 +714,7 @@ function InlineLocationSearch({
                     </div>
                     {dest.countryCode && (
                       <span
-                        className={`shrink-0 text-[10px] font-semibold px-1.5 py-0.5 rounded ${
+                        className={`shrink-0 text-[10px] font-medium px-1.5 py-0.5 rounded ${
                           isActive
                             ? "bg-white/20 text-white"
                             : "bg-zinc-100 text-[#727272]"
@@ -1080,7 +1080,7 @@ export function ProfileManagementClient({
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
                 aria-label={uploading ? "Profile image upload in progress" : t("profile_mgmt_edit", "Edit")}
-                className={`absolute -bottom-8 left-1/2 z-10 flex h-[52px] -translate-x-1/2 cursor-pointer items-center justify-center rounded-full bg-[#FCDF9C] text-base font-normal text-[#1F1F1F] transition-transform hover:bg-[#F7D37D] disabled:cursor-wait sm:bottom-auto sm:left-auto sm:-right-12 sm:top-1/2 sm:h-24 sm:translate-x-0 sm:-translate-y-1/2 ${uploading ? "w-[52px] sm:w-24" : "w-[110px] sm:w-24"}`}
+                className={`absolute -bottom-8 left-1/2 z-10 flex h-[52px] -translate-x-1/2 cursor-pointer items-center justify-center rounded-full bg-[#FCDF9C] text-base font-normal text-[#1F1F1F] transition-transform hover:bg-[#F7D37D] disabled:cursor-wait sm:bottom-auto sm:left-auto sm:-right-12 sm:top-1/2 sm:h-24 sm:translate-x-0 sm:-translate-y-1/2 gap-3 ${uploading ? "w-[52px] sm:w-24" : "w-[110px] sm:w-24"}`}
               >
                 {uploading ? (
                   <span className="size-5 animate-spin rounded-full border-2 border-[#1F1F1F]/30 border-t-[#1F1F1F]" aria-hidden="true" />
@@ -1114,7 +1114,7 @@ export function ProfileManagementClient({
           </h1>
           <p className="text-base text-[#727272] leading-relaxed font-normal">
             {t("profile_mgmt_community_note", "Your profile is visible to both hosts and guests, and may be shown throughout Homyz to support a trustworthy community.")}{" "}
-            <span className="font-semibold underline cursor-pointer hover:text-black transition">
+            <span className="font-medium underline cursor-pointer hover:text-black transition">
               {t("profile_mgmt_learn_more", "Learn more")}
             </span>
           </p>
@@ -1513,7 +1513,7 @@ export function ProfileManagementClient({
               <h3 className="text-lg font-medium text-[#1F1F1F]">
                 {t("profile_info_about_me", "About me")}
               </h3>
-              <span className={`text-xs ${((formDataState.bio || "").length >= MAX_BIO_LENGTH) ? "text-amber-600 font-semibold" : "text-[#727272]"}`}>
+              <span className={`text-xs ${((formDataState.bio || "").length >= MAX_BIO_LENGTH) ? "text-amber-600 font-medium" : "text-[#727272]"}`}>
                 {(formDataState.bio || "").length} / {MAX_BIO_LENGTH}
               </span>
             </div>
@@ -1577,7 +1577,7 @@ export function ProfileManagementClient({
         <div className="flex flex-col gap-6">
           <div className="flex sm:flex-nowrap flex-wrap sm:gap-0 gap-3 items-center sm:justify-between justify-center">
             <div>
-              <h3 className="text-lg font-semibold text-[#1F1F1F]">
+              <h3 className="text-lg font-medium text-[#1F1F1F]">
                 {t("trip_photos_mgmt_title", "Trip Photos Management")}
               </h3>
               <p className="text-xs text-zinc-500">
@@ -1588,7 +1588,7 @@ export function ProfileManagementClient({
               <button
                 type="button"
                 onClick={() => setUploadModalOpen(true)}
-                className="flex items-center gap-2 bg-[#FCDF9C] hover:bg-[#F3F4F5] text-[#1F1F1F] border border-transparent hover:border-[#1F1F1F] hover:text-[#1F1F1F] font-semibold text-sm px-6 py-3 rounded-full transition-colors cursor-pointer shadow-2xs"
+                className="flex items-center gap-2 bg-[#FCDF9C] hover:bg-[#F3F4F5] text-[#1F1F1F] border border-transparent hover:border-[#1F1F1F] hover:text-[#1F1F1F] font-medium text-sm px-6 py-3 rounded-full transition-colors cursor-pointer shadow-2xs"
               >
                 <IconCamera />
                 <span>{t("trip_photos_upload_btn", "Upload Photos")}</span>
@@ -1625,7 +1625,7 @@ export function ProfileManagementClient({
                 <button
                   type="button"
                   onClick={() => setUploadModalOpen(true)}
-                  className="bg-[#FCDF9C] hover:bg-[#F3F4F5] text-[#1F1F1F] border border-transparent hover:border-[#1F1F1F] hover:text-[#1F1F1F] font-semibold text-sm px-6 py-3 rounded-full transition-colors cursor-pointer shadow-2xs"
+                  className="bg-[#FCDF9C] hover:bg-[#F3F4F5] text-[#1F1F1F] border border-transparent hover:border-[#1F1F1F] hover:text-[#1F1F1F] font-medium text-sm px-6 py-3 rounded-full transition-colors cursor-pointer shadow-2xs"
                 >
                   {t("trip_photos_upload_btn", "Upload Photos")}
                 </button>
@@ -1690,7 +1690,7 @@ export function ProfileManagementClient({
 
                     <div className="mt-auto">
                       {photo.location && (
-                        <p className="text-xs font-semibold text-white truncate">
+                        <p className="text-xs font-medium text-white truncate">
                           📍 {photo.location}
                         </p>
                       )}
@@ -1712,7 +1712,7 @@ export function ProfileManagementClient({
       {activeMgmtTab === "privacy" && (
         <div className="flex flex-col gap-6">
           <div>
-            <h3 className="text-xl font-semibold text-[#1F1F1F]">
+            <h3 className="text-xl font-medium text-[#1F1F1F]">
               {t("profile_privacy_settings_title", "Privacy & Visibility Settings")}
             </h3>
             <p className="text-xs text-zinc-500 mt-1">
@@ -1724,7 +1724,7 @@ export function ProfileManagementClient({
             {/* Row 1: Public Profile Visibility */}
             <div className="flex items-center justify-between gap-4">
               <div>
-                <h4 className="text-sm font-semibold text-[#1F1F1F]">
+                <h4 className="text-sm font-medium text-[#1F1F1F]">
                   {t("profile_privacy_public_label", "Public Profile Visibility")}
                 </h4>
                 <p className="text-xs text-zinc-500 mt-0.5">
@@ -1735,7 +1735,7 @@ export function ProfileManagementClient({
               <div className="flex items-center gap-3">
                 {/* Active/OFF Badge */}
                 <span
-                  className={`text-xs font-semibold px-3.5 py-1 rounded-full border transition-all ${
+                  className={`text-xs font-medium px-3.5 py-1 rounded-full border transition-all ${
                     (formDataState.profileVisible ?? true)
                       ? "bg-emerald-50 text-emerald-600 border-emerald-200"
                       : "bg-zinc-200 text-zinc-700 border-zinc-300"
@@ -2013,7 +2013,7 @@ function MultiImageUploadModal({
       <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl border border-zinc-200 text-[#1F1F1F] relative my-auto max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between border-b border-zinc-100 pb-3 mb-4">
           <div>
-            <h3 className="sm:text-lg text-sm sm:font-semibold font-normal text-[#1F1F1F] tracking-tight">
+            <h3 className="sm:text-lg text-sm sm:font-medium font-normal text-[#1F1F1F] tracking-tight">
               {t("trip_photos_modal_upload_title", "Upload Trip Photos")}
             </h3>
             <p className="text-xs text-zinc-500 mt-0.5">
@@ -2039,7 +2039,7 @@ function MultiImageUploadModal({
             <div className="w-10 h-10 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center mx-auto mb-2 shadow-2xs">
               <IconCamera />
             </div>
-            <p className="text-xs font-semibold text-zinc-800">
+            <p className="text-xs font-medium text-zinc-800">
               {t("trip_photos_dropzone_title", "Select trip photos")}
             </p>
             <p className="text-[11px] text-zinc-400 mt-0.5">
@@ -2059,7 +2059,7 @@ function MultiImageUploadModal({
           {/* Selected Photo Previews Grid */}
           {previews.length > 0 && (
             <div>
-              <p className="text-xs font-semibold text-zinc-800 mb-2">
+              <p className="text-xs font-medium text-zinc-800 mb-2">
                 {t("trip_photos_selected_photos", "Selected Photos")} ({previews.length})
               </p>
               <div className="grid grid-cols-4 gap-2.5 max-h-36 overflow-y-auto p-1 bg-zinc-50 rounded-2xl border border-zinc-200/80">
@@ -2093,7 +2093,7 @@ function MultiImageUploadModal({
               aria-live="polite"
               className="rounded-2xl border border-amber-200 bg-amber-50 px-3.5 py-3 text-xs text-amber-900"
             >
-              <div className="flex items-center justify-between gap-3 font-semibold">
+              <div className="flex items-center justify-between gap-3 font-medium">
                 <span>
                   {uploadProgress.phase === "saving"
                     ? "Saving your photos..."
@@ -2130,10 +2130,10 @@ function MultiImageUploadModal({
           {/* Caption Multiline Field with Character Counter */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="block text-xs font-semibold text-[#1F1F1F]">
+              <label className="block text-xs font-medium text-[#1F1F1F]">
                 {t("trip_photos_caption_label", "Caption")}
               </label>
-              <span className="text-[11px] font-semibold text-[#727272]">
+              <span className="text-[11px] font-medium text-[#727272]">
                 {caption.length} / 300
               </span>
             </div>
@@ -2152,14 +2152,14 @@ function MultiImageUploadModal({
               type="button"
               onClick={onClose}
               disabled={uploading}
-              className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-medium text-xs px-7 py-2.5 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
             >
               {t("trip_photos_cancel", "Cancel")}
             </button>
             <button
               type="submit"
               disabled={uploading || selectedFiles.length === 0}
-              className="bg-[#FDE29B] hover:bg-[#FCD885] text-[#1F1F1F] text-xs font-semibold px-7 py-2.5 rounded-full transition-all shadow-2xs disabled:opacity-50 cursor-pointer"
+              className="bg-[#FDE29B] hover:bg-[#FCD885] text-[#1F1F1F] text-xs font-medium px-7 py-2.5 rounded-full transition-all shadow-2xs disabled:opacity-50 cursor-pointer"
             >
               {uploading
                 ? t("trip_photos_uploading", "Uploading...")
@@ -2223,7 +2223,7 @@ function EditTripPhotoModal({
     <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in">
       <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl border border-zinc-200 text-[#1F1F1F] relative my-auto max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between border-b border-zinc-100 pb-3 mb-4">
-          <h3 className="text-lg font-semibold text-[#1F1F1F]">
+          <h3 className="text-lg font-medium text-[#1F1F1F]">
             {t("trip_photos_edit_modal_title", "Edit Photo Details")}
           </h3>
           <button
@@ -2262,10 +2262,10 @@ function EditTripPhotoModal({
 
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="block text-xs font-semibold text-[#1F1F1F]">
+              <label className="block text-xs font-medium text-[#1F1F1F]">
                 {t("trip_photos_caption_label", "Caption")}
               </label>
-              <span className="text-[11px] font-semibold text-[#727272]">
+              <span className="text-[11px] font-medium text-[#727272]">
                 {caption.length} / 300
               </span>
             </div>
@@ -2282,7 +2282,7 @@ function EditTripPhotoModal({
             <button
               type="button"
               onClick={() => onDeleteTrigger(photo)}
-              className="text-xs font-semibold text-rose-600 hover:underline cursor-pointer"
+              className="text-xs font-medium text-rose-600 hover:underline cursor-pointer"
             >
               {t("trip_photos_delete_photo_link", "Delete Photo")}
             </button>
@@ -2291,14 +2291,14 @@ function EditTripPhotoModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-semibold text-xs px-7 py-2.5 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-medium text-xs px-7 py-2.5 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {t("trip_photos_cancel", "Cancel")}
               </button>
               <button
                 type="submit"
                 disabled={saving}
-                className="inline-flex min-w-32 items-center justify-center gap-2 rounded-full bg-[#FCDF9C] px-8 py-2.5 text-xs font-semibold text-zinc-950 shadow-2xs transition-all hover:bg-[#FDE047] disabled:cursor-wait disabled:opacity-70"
+                className="inline-flex min-w-32 items-center justify-center gap-2 rounded-full bg-[#FCDF9C] px-8 py-2.5 text-xs font-medium text-zinc-950 shadow-2xs transition-all hover:bg-[#FDE047] disabled:cursor-wait disabled:opacity-70"
               >
                 {saving ? t("trip_photos_saving_details", "Saving...") : t("trip_photos_save_details", "Save Details")}
               </button>
@@ -2340,7 +2340,7 @@ function DeleteTripPhotoModal({
   return (
     <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in">
       <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl border border-zinc-200 text-[#1F1F1F] relative my-auto">
-        <h3 className="text-lg font-semibold text-[#1F1F1F] mb-2">
+        <h3 className="text-lg font-medium text-[#1F1F1F] mb-2">
           {t("trip_photos_delete_modal_title", "Delete Trip Photo")}
         </h3>
         <p className="text-xs text-zinc-500 mb-4">
@@ -2362,7 +2362,7 @@ function DeleteTripPhotoModal({
             type="button"
             onClick={onClose}
             disabled={deleting}
-            className="px-4 py-2 rounded-full text-xs font-semibold text-zinc-600 hover:bg-zinc-100"
+            className="px-4 py-2 rounded-full text-xs font-medium text-zinc-600 hover:bg-zinc-100"
           >
             {t("trip_photos_cancel", "Cancel")}
           </button>
@@ -2370,7 +2370,7 @@ function DeleteTripPhotoModal({
             type="button"
             onClick={handleDelete}
             disabled={deleting}
-            className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold px-6 py-2 rounded-full disabled:opacity-50"
+            className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-medium px-6 py-2 rounded-full disabled:opacity-50"
           >
             {deleting ? t("trip_photos_deleting", "Deleting...") : t("trip_photos_confirm_delete", "Confirm Delete")}
           </button>
@@ -2400,7 +2400,7 @@ function LightboxModal({
         <button
           type="button"
           onClick={onClose}
-          className="absolute -top-10 right-0 text-white text-sm font-semibold"
+          className="absolute -top-10 right-0 text-white text-sm font-medium"
         >
           ✕ {t("trip_photos_lightbox_close", "Close")}
         </button>
