@@ -321,7 +321,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                           });
                         }
                       }}
-                      className={`relative z-10 px-2.5 py-1.5 md:mx-3 md:py-2 lg:mx-3.5 text-xs md:text-sm font-medium transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 rounded-lg ${
+                      className={`relative z-10 mx-2.5 py-1.5 md:mx-3 md:py-2 lg:mx-3.5 text-xs md:text-sm font-medium transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 rounded-lg ${
                         isActive
                           ? "font-medium text-[#1F1F1F] dark:text-zinc-100"
                           : "text-[#717171] hover:text-[#1F1F1F] dark:text-zinc-400 dark:hover:text-zinc-100"
