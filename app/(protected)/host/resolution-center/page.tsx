@@ -3,7 +3,6 @@ import { requirePageRole } from "@/lib/permissions/page-guards";
 import { disputeService } from "@/services/dispute.service";
 import { listingService } from "@/services/listing.service";
 import { HostHeader } from "@/components/host/host-header";
-import { Footer } from "@/components/dashboard/footer";
 import { Container } from "@/components/ui";
 import { HostResolutionCenterClient } from "@/components/host/host-resolution-center-client";
 
@@ -40,7 +39,6 @@ export default async function HostResolutionCenterPage({
           <HostResolutionCenterClient data={data} listings={listings.items.map((listing) => ({ id: listing.id, title: listing.title }))} />
         </Container>
       </main>
-      <Footer />
     </div>
   );
 }

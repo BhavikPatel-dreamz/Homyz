@@ -6,7 +6,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useLanguage } from "@/lib/i18n/language-context";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
-import { useScrollbarDrag } from "@/components/ui/use-scrollbar-drag";
 import { RealMap } from "@/components/ui/real-map";
 import { AmenityIcon } from "@/components/ui/amenity-icon";
 import { getAmenityMeta, getAmenityTranslationKey } from "@/lib/constants/amenities";
@@ -25,7 +24,6 @@ import {
   getActiveSafetyItems,
   parseSafetyData,
 } from "./guest-safety-helpers";
-import { EditorSidebarSkeleton } from "./YourSpaceSkeletons";
 import { getLanguageDisplayNames } from "@/lib/utils/language-options";
 import { computeMissingRequirements, getListingDisplayState } from "./ListingStatusView";
 import { getCheckInMethodLabel } from "./HouseRulesAndArrivalViews";
@@ -372,61 +370,6 @@ export function EditorSidebar({
 }: EditorSidebarProps) {
   const { t } = useLanguage();
   const { formatMajor } = useCurrency();
-  const sidebarScrollRef = React.useRef<HTMLDivElement>(null);
-  const sidebarScrollTrackRef = React.useRef<HTMLDivElement>(null);
-  const sidebarScrollFrameRef = React.useRef<number | null>(null);
-  const [sidebarScrollThumb, setSidebarScrollThumb] = React.useState({ height: 0, top: 0, visible: false });
-  const { isDragging: isSidebarScrollbarDragging, onThumbPointerDown: onSidebarThumbPointerDown, scrollByPage: scrollSidebarByPage } = useScrollbarDrag(
-    sidebarScrollRef,
-    sidebarScrollTrackRef,
-    sidebarScrollThumb.height,
-  );
-
-  const updateSidebarScrollThumb = React.useCallback(() => {
-    if (sidebarScrollFrameRef.current !== null) cancelAnimationFrame(sidebarScrollFrameRef.current);
-
-    sidebarScrollFrameRef.current = requestAnimationFrame(() => {
-      const element = sidebarScrollRef.current;
-      if (!element) return;
-
-      const hasOverflow = element.scrollHeight > element.clientHeight + 1;
-      const trackHeight = sidebarScrollTrackRef.current?.clientHeight || element.clientHeight;
-      const arrowSpace = 28;
-      const usableTrackHeight = Math.max(0, trackHeight - arrowSpace * 2);
-      // The reference uses a compact, fixed-size visual thumb instead of the
-      // browser's proportional thumb. Its travel still maps 1:1 to scrollTop.
-      const height = hasOverflow ? Math.min(60, usableTrackHeight) : 0;
-      const maxTop = Math.max(0, usableTrackHeight - height);
-      const scrollRange = Math.max(1, element.scrollHeight - element.clientHeight);
-      const top = hasOverflow ? arrowSpace + Math.round((element.scrollTop / scrollRange) * maxTop) : 0;
-
-      setSidebarScrollThumb((current) => (
-        current.height === height && current.top === top && current.visible === hasOverflow
-          ? current
-          : { height, top, visible: hasOverflow }
-      ));
-      sidebarScrollFrameRef.current = null;
-    });
-  }, []);
-
-  React.useEffect(() => {
-    const element = sidebarScrollRef.current;
-    if (!element) return;
-
-    updateSidebarScrollThumb();
-    const resizeObserver = new ResizeObserver(updateSidebarScrollThumb);
-    const mutationObserver = new MutationObserver(updateSidebarScrollThumb);
-    resizeObserver.observe(element);
-    if (sidebarScrollTrackRef.current) resizeObserver.observe(sidebarScrollTrackRef.current);
-    mutationObserver.observe(element, { childList: true, subtree: true });
-
-    return () => {
-      resizeObserver.disconnect();
-      mutationObserver.disconnect();
-      if (sidebarScrollFrameRef.current !== null) cancelAnimationFrame(sidebarScrollFrameRef.current);
-    };
-  }, [sidebarScrollThumb.visible, updateSidebarScrollThumb]);
-
   const computedSafetyState = React.useMemo(() => {
     if (guestSafetyState) return guestSafetyState;
     return parseSafetyData({
@@ -476,6 +419,17 @@ export function EditorSidebar({
     missingReqs.length,
     listing?.country
   );
+  const listingStatusLabel = displayState === "PUBLISHED"
+    ? t("host_status_published_live")
+    : displayState === "PENDING_APPROVAL"
+      ? t("host_status_pending_admin_approval")
+      : displayState === "REJECTED"
+        ? t("host_status_changes_required")
+        : displayState === "APPROVED"
+          ? (isSaudi ? t("host_status_ready_to_publish") : t("host_status_approved"))
+          : displayState === "READY_TO_SUBMIT"
+            ? t("host_status_ready_for_review")
+            : t("host_status_draft_incomplete");
 
   const hasCheckInCheckOut = Boolean(checkInStart && checkOutTime);
   const hasDirections = Boolean(directions && directions.trim().length > 0);
@@ -506,9 +460,9 @@ export function EditorSidebar({
       className={`editor-sidebar ${mobileOpen
         ? "flex h-full w-full overflow-hidden border-0 bg-white px-5 pt-6 sm:px-8 sm:pt-8"
         : "hidden border-r border-transparent [border-image:linear-gradient(270deg,#1F1F1F_0%,rgba(31,31,31,0.2)_100%)_1]"
-        } min-w-0 flex-col xl:col-span-1 xl:-mt-[109px] xl:flex xl:h-auto xl:w-auto xl:self-stretch xl:overflow-visible xl:border-r xl:border-transparent xl:[border-image:linear-gradient(270deg,#1F1F1F_0%,rgba(31,31,31,0.2)_100%)_1] xl:bg-[rgba(241,241,241,0.5)] xl:px-0 xl:pl-8 xl:pt-[176px]`}
+        } min-w-0 flex-col lg:sticky lg:top-[6.5rem] lg:col-span-1 lg:flex lg:h-[calc(100dvh-7.5rem)] lg:w-auto lg:self-start lg:overflow-hidden lg:border-r lg:border-transparent lg:[border-image:linear-gradient(270deg,#1F1F1F_0%,rgba(31,31,31,0.2)_100%)_1] lg:bg-[rgba(241,241,241,0.5)] lg:px-0 lg:pl-8 lg:pt-10`}
     >
-      <div className={`flex w-full min-w-0 flex-col overflow-hidden ${mobileOpen ? "h-full max-h-none bg-white" : "max-h-[calc(100vh-2rem)] rounded-3xl border border-zinc-200 bg-zinc-50/80 p-5 shadow-xs"} xl:max-h-none xl:self-start xl:rounded-none xl:border-0 xl:bg-transparent xl:p-0 xl:shadow-none`}>
+      <div className={`flex w-full min-w-0 flex-col overflow-hidden ${mobileOpen ? "h-full max-h-none bg-white" : "max-h-[calc(100vh-2rem)] rounded-3xl border border-zinc-200 bg-zinc-50/80 p-5 shadow-xs"} lg:h-full lg:max-h-none lg:rounded-none lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none`}>
         {/* Header Title & Status Badge */}
         <div className="flex shrink-0 flex-col pb-5 lg:pb-9">
           <div className="flex items-center justify-between">
@@ -520,7 +474,7 @@ export function EditorSidebar({
                 type="button"
                 aria-label="Return to listing form"
                 onClick={onMobileClose}
-                className="flex h-10 w-10 items-center justify-center text-[#1F1F1F] dark:text-zinc-100 xl:hidden"
+                className="flex h-10 w-10 items-center justify-center text-[#1F1F1F] dark:text-zinc-100 lg:hidden"
               >
                 <svg aria-hidden="true" viewBox="0 0 24 24" className="h-7 w-7" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round">
                   <path d="m5 5 14 14M19 5 5 19" />
@@ -614,9 +568,7 @@ export function EditorSidebar({
         {/* Scrollable Sidebar Content Body */}
         <div className="relative min-h-0 flex-1">
           <div
-            ref={sidebarScrollRef}
-            onScroll={updateSidebarScrollThumb}
-            className={`custom-scrollbar h-full min-w-0 touch-pan-y overflow-x-hidden overflow-y-auto space-y-3 pb-8 pr-1 lg:pb-5 lg:pr-[55px] ${editorTab === "space" ? "lg:h-[1850px]" : "lg:h-auto"}`}
+            className="visible-scrollbar h-full min-w-0 touch-pan-y overflow-x-hidden overflow-y-auto overscroll-contain space-y-3 pb-8 pr-1 [scrollbar-gutter:stable] lg:pb-5 lg:pr-3"
           >
             {/* Preferences Cards Stack */}
             {editorTab === "preferences" ? (
@@ -629,46 +581,13 @@ export function EditorSidebar({
                     : "bg-white dark:bg-zinc-800 border-white dark:border-zinc-800"
                     }`}
                 >
-                  <div className="flex items-center justify-between">
+                  <div className="min-w-0">
                     <span className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100 block mb-0.5">
                       {t("host_sidebar_listing_status")}
                     </span>
-                    <span
-                      className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-0.5 rounded-full border ${displayState === "PUBLISHED" || displayState === "APPROVED"
-                        ? "text-emerald-700 dark:text-emerald-300 bg-emerald-100/70 dark:bg-emerald-950/60 border-emerald-500"
-                        : displayState === "PENDING_APPROVAL"
-                          ? "text-amber-800 dark:text-amber-300 bg-amber-100/70 dark:bg-amber-950/60 border-amber-500"
-                          : displayState === "REJECTED"
-                            ? "text-rose-800 dark:text-rose-300 bg-rose-100/70 dark:bg-rose-950/60 border-rose-500"
-                            : displayState === "READY_TO_SUBMIT"
-                              ? "text-indigo-800 dark:text-indigo-300 bg-indigo-100/70 dark:bg-indigo-950/60 border-indigo-500"
-                              : "text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-700 border-zinc-500"
-                        }`}
-                    >
-                      <span
-                        className={`w-1.5 h-1.5 rounded-full ${displayState === "PUBLISHED" || displayState === "APPROVED"
-                          ? "bg-emerald-500"
-                          : displayState === "PENDING_APPROVAL"
-                            ? "bg-amber-500 animate-pulse"
-                            : displayState === "REJECTED"
-                              ? "bg-rose-500"
-                              : displayState === "READY_TO_SUBMIT"
-                                ? "bg-indigo-500"
-                                : "bg-zinc-400"
-                          }`}
-                      />
-                      {displayState === "PUBLISHED"
-                        ? t("host_status_published_live")
-                        : displayState === "PENDING_APPROVAL"
-                          ? t("host_status_pending_admin_approval")
-                          : displayState === "REJECTED"
-                            ? t("host_status_changes_required")
-                            : displayState === "APPROVED"
-                              ? (isSaudi ? t("host_status_ready_to_publish") : t("host_status_approved"))
-                              : displayState === "READY_TO_SUBMIT"
-                                ? t("host_status_ready_for_review")
-                                : t("host_status_draft_incomplete")}
-                    </span>
+                    <p className="truncate text-base font-normal text-[#727272] dark:text-zinc-400">
+                      {listingStatusLabel}
+                    </p>
                   </div>
                 </div>
 
@@ -1005,7 +924,7 @@ export function EditorSidebar({
                   <span className="text-base font-medium tracking-tight text-[#1F1F1F] block mb-0.5">
                     {t("host_title_heading")}
                   </span>
-                  <span className="sm:text-xl text-lg font-normal text-[#727272] block truncate">
+                  <span className="block truncate text-base font-normal text-[#727272] dark:text-zinc-400">
                     {editTitle || t("host_untitled_listing")}
                   </span>
                 </div>
@@ -1514,7 +1433,7 @@ export function EditorSidebar({
                   <span className="text-base font-medium text-[#1F1F1F] block mb-0.5">
                     {t("host_checkin_method")}
                   </span>
-                  <p className="text-base text-[#1F1F1F] font-normal">
+                  <p className="text-base text-[#727272] dark:text-zinc-400 font-normal">
                     {getCheckInMethodLabel(checkInMethod, t)}
                   </p>
                 </div>
@@ -1639,28 +1558,13 @@ export function EditorSidebar({
               </div>
             )}
           </div>
-          {sidebarScrollThumb.visible && (
-            <div ref={sidebarScrollTrackRef} className="absolute inset-y-0 right-0 hidden w-[22px] rounded-[30px] bg-[#fff] xl:block">
-              <button type="button" aria-label="Scroll listing editor up" onClick={() => scrollSidebarByPage("up")} className="absolute left-0 top-1 z-10 flex size-[22px] items-center justify-center rounded-full text-[#727272] transition hover:bg-white/70 hover:text-[#1f1f1f]">
-                <svg aria-hidden="true" className="size-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m18 15-6-6-6 6" /></svg>
-              </button>
-              <div
-                onPointerDown={onSidebarThumbPointerDown}
-                className={`absolute left-0 top-0 w-[22px] touch-none select-none rounded-[30px] border border-white bg-[#DDDDDE] shadow-[0_2px_4px_rgba(0,0,0,0.25)] will-change-transform ${isSidebarScrollbarDragging ? "cursor-grabbing" : "cursor-grab"}`}
-                style={{ height: `${sidebarScrollThumb.height}px`, transform: `translate3d(0, ${sidebarScrollThumb.top}px, 0)` }}
-              />
-              <button type="button" aria-label="Scroll listing editor down" onClick={() => scrollSidebarByPage("down")} className="absolute bottom-1 left-0 z-10 flex size-[22px] items-center justify-center rounded-full text-[#727272] transition hover:bg-white/70 hover:text-[#1f1f1f]">
-                <svg aria-hidden="true" className="size-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="m6 9 6 6 6-6" /></svg>
-              </button>
-            </div>
-          )}
         </div>
       </div>
     </aside>
   );
 
   return mobileOpen ? (
-    <ModalOverlay className="fixed inset-0 z-50 bg-white xl:contents">
+    <ModalOverlay className="fixed inset-0 z-50 bg-white lg:contents">
       {sidebar}
     </ModalOverlay>
   ) : sidebar;

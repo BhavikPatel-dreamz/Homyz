@@ -2,7 +2,6 @@
 
 import { HostHeader } from "./host-header";
 import { Container } from "../ui";
-import { Footer } from "@/components/dashboard/footer";
 
 export function HostListingCardsSkeleton({
   cardCount = 12,
@@ -67,7 +66,6 @@ export function HostListingsSkeleton({ cardCount = 12 }: { cardCount?: number })
         </Container>
       </main>
 
-      <Footer />
     </div>
   );
 }

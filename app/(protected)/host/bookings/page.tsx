@@ -1,5 +1,4 @@
 import { Role } from "@/generated/prisma/enums";
-import { Footer } from "@/components/dashboard/footer";
 import { HostBookingApprovals } from "@/components/host/host-booking-approvals";
 import { HostHeader } from "@/components/host/host-header";
 import { requirePageRole } from "@/lib/permissions/page-guards";
@@ -31,7 +30,6 @@ export default async function HostBookingApprovalsPage() {
           }))}
         />
       </main>
-      <Footer />
     </div>
   );
 }

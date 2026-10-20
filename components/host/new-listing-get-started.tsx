@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { toast } from "@/components/ui/toast";
 import { AppHeader } from "@/components/dashboard/app-header";
-import { Footer } from "@/components/dashboard/footer";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { formatAddressCountry } from "@/lib/location/address-countries";
 import { getCurrencyForCountry } from "@/lib/currency";
@@ -1194,8 +1193,6 @@ export function NewListingGetStarted({
         </ModalOverlay>
       )}
 
-      {/* Shared Application Footer */}
-      <Footer />
     </div>
   );
 }

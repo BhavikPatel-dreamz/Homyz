@@ -1,5 +1,4 @@
 import { HostHeader } from "@/components/host/host-header";
-import { Footer } from "@/components/dashboard/footer";
 import { Container } from "@/components/ui";
 import { HostResolutionCenterSkeleton } from "@/components/host/host-resolution-center-skeleton";
 
@@ -12,7 +11,6 @@ export default function HostResolutionCenterLoading() {
           <HostResolutionCenterSkeleton />
         </Container>
       </main>
-      <Footer />
     </div>
   );
 }

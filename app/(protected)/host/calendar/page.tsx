@@ -1,7 +1,6 @@
 import { requirePageRole } from "@/lib/permissions/page-guards";
 import { Role } from "@/generated/prisma/enums";
 import { HostHeader } from "@/components/host/host-header";
-import { Footer } from "@/components/dashboard/footer";
 import { HostCalendarWorkspace } from "@/components/host/host-calendar-workspace";
 import { getHostWorkspace } from "@/services/host-workspace.service";
 
@@ -23,7 +22,6 @@ export default async function HostCalendarPage({
         initialMonth={sp?.month}
         initialView={sp?.view}
       />
-      <Footer />
     </div>
   );
 }

@@ -29,8 +29,6 @@ export default async function HostMessagesPage(props: {
           initialRenderedAt={initialRenderedAt}
         />
       </main>
-
-      {/* <Footer /> */}
     </div>
   );
 }

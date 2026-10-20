@@ -3,7 +3,6 @@
 import React from "react";
 import { HostHeader } from "@/components/host/host-header";
 import { Container } from "@/components/ui/container";
-import { Footer } from "@/components/dashboard/footer";
 
 // ============================================================================
 // BASE SHIMMER & SKELETON PRIMITIVES
@@ -1141,22 +1140,20 @@ export function YourSpaceEditorSkeleton({ section = "propertyType" }: { section?
         <div className="h-8 w-8 rounded-full skeleton-shimmer" />
       </div>
 
-      {/* 3. MAIN EDITOR CONTENT AREA (2-Column Split Layout - 100% Matches HostListingEditorClient) */}
-      <Container>
-        <div className="flex-1 grid grid-cols-1 gap-8 sm:py-10 py-6 lg:py-0 lg:gap-0 xl:grid-cols-[minmax(0,1fr)_440px]">
-          {/* LEFT COLUMN: MAIN SECTION EDITOR PANEL */}
-          <main className="flex min-w-0 flex-col space-y-6 pb-12 lg:col-span-1 lg:pb-12 lg:pt-[58px]">
-            <YourSpaceSectionSkeleton section={section} />
-          </main>
-
-          {/* RIGHT COLUMN: EDITOR SIDEBAR PANEL */}
-          <aside className="hidden lg:block">
+      {/* 3. MAIN EDITOR CONTENT AREA (matches the desktop editor split) */}
+      <Container className="lg:-mt-3">
+        <div className="flex-1 grid grid-cols-1 gap-8 sm:py-10 py-6 lg:grid-cols-[340px_minmax(0,1fr)] lg:gap-8 lg:py-0 xl:grid-cols-[400px_minmax(0,1fr)] xl:gap-10">
+          {/* LEFT COLUMN: LISTING EDITOR NAVIGATION */}
+          <aside className="hidden lg:order-1 lg:block lg:min-w-0">
             <EditorSidebarSkeleton />
           </aside>
+
+          {/* RIGHT COLUMN: SECTION EDITOR */}
+          <main className="flex min-w-0 flex-col space-y-6 pb-12 lg:order-2 lg:pb-12 lg:pt-10">
+            <YourSpaceSectionSkeleton section={section} />
+          </main>
         </div>
       </Container>
-
-      <Footer />
     </div>
   );
 }

@@ -5,7 +5,6 @@ import { requirePageRole } from "@/lib/permissions/page-guards";
 import { bookingService } from "@/services/booking.service";
 import { disputeService } from "@/services/dispute.service";
 import { HostHeader } from "@/components/host/host-header";
-import { Footer } from "@/components/dashboard/footer";
 import { HostBookingDetailsClient } from "@/components/host/host-booking-details-client";
 
 export async function generateMetadata({
@@ -57,7 +56,6 @@ export default async function HostBookingDetailPage({
           responseRequired: dispute.responseRequired,
         }))} />
       </main>
-      <Footer />
     </div>
   );
 }

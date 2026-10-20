@@ -4,7 +4,6 @@ import { AppError } from "@/lib/api/errors";
 import { requirePageRole } from "@/lib/permissions/page-guards";
 import { disputeService } from "@/services/dispute.service";
 import { HostHeader } from "@/components/host/host-header";
-import { Footer } from "@/components/dashboard/footer";
 import { Container } from "@/components/ui";
 import { HostDisputeDetailsClient } from "@/components/host/host-dispute-details-client";
 
@@ -30,7 +29,6 @@ export default async function HostDisputeDetailPage({ params }: { params: Promis
           <HostDisputeDetailsClient initialData={details} />
         </Container>
       </main>
-      <Footer />
     </div>
   );
 }

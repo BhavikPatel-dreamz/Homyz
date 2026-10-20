@@ -1,4 +1,3 @@
-import { HostDashboardFooter } from "@/components/host/dashboard/host-dashboard-footer";
 import { HostHeader } from "@/components/host/host-header";
 import { Container } from "@/components/ui";
 
@@ -21,8 +20,6 @@ export default function HostEarningsLoading() {
           </div>
         </Container>
       </main>
-      <HostDashboardFooter />
     </div>
   );
 }
-

@@ -8,7 +8,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { updateListingAction, deleteListingAction, publishListingAction, unpublishListingAction } from "@/actions/host/listings";
 import { HostHeader } from "@/components/host/host-header";
-import { Footer } from "@/components/dashboard/footer";
 import { RealMap } from "@/components/ui/real-map";
 import { Container } from "@/components/ui/container";
 import { toast } from "@/components/ui/toast";
@@ -249,7 +248,10 @@ export function HostListingEditorClient({
   );
 
   useEffect(() => {
-    const mobileQuery = window.matchMedia("(max-width: 1279px)");
+    // The editor becomes a desktop split layout at Tailwind's `lg` breakpoint.
+    // Keep the navigation overlay in sync with that CSS boundary so it never
+    // renders on top of the desktop sidebar at intermediate widths.
+    const mobileQuery = window.matchMedia("(max-width: 1023px)");
     if (!mobileQuery.matches) setIsMobileSidebarOpen(false);
 
     const closeOnDesktop = () => {
@@ -1514,12 +1516,12 @@ export function HostListingEditorClient({
       </div>
 
       {/* 3. MAIN EDITOR CONTENT AREA (2-Column Split Layout) */}
-      <Container className={presentation === "admin" ? "max-w-full !px-0" : ""}>
-        <div className={`flex-1 grid grid-cols-1 gap-8 sm:py-10 py-6 lg:py-0 ${presentation === "admin" ? "lg:grid-cols-[260px_minmax(0,1fr)] xl:grid-cols-[280px_minmax(0,1fr)] lg:gap-6 xl:gap-8 lg:h-[calc(100vh-6.5rem)] lg:overflow-hidden" : "lg:gap-0 xl:grid-cols-[minmax(0,1fr)_440px]"}`}>
+      <Container className={presentation === "admin" ? "max-w-full !px-0" : "lg:-mt-3"}>
+        <div className={`flex-1 grid grid-cols-1 gap-8 sm:py-10 py-6 lg:py-0 ${presentation === "admin" ? "lg:grid-cols-[260px_minmax(0,1fr)] xl:grid-cols-[280px_minmax(0,1fr)] lg:gap-6 xl:gap-8 lg:h-[calc(100vh-6.5rem)] lg:overflow-hidden" : "lg:grid-cols-[340px_minmax(0,1fr)] xl:grid-cols-[400px_minmax(0,1fr)] lg:gap-8 xl:gap-10"}`}>
           {/* ============================================================ */}
           {/* LEFT COLUMN: MAIN SECTION EDITOR PANEL */}
           {/* ============================================================ */}
-          <main className={`flex min-w-0 flex-col space-y-6 pb-12 lg:col-span-1 lg:pb-12 ${presentation === "admin" ? "admin-editor-content lg:order-2 lg:pt-0 lg:h-full lg:max-h-full lg:overflow-y-auto lg:pr-3 custom-scrollbar" : "lg:pt-[58px]"}`}>
+          <main className={`flex min-w-0 flex-col space-y-6 pb-12 lg:col-span-1 lg:pb-12 ${presentation === "admin" ? "admin-editor-content lg:order-2 lg:pt-0 lg:h-full lg:max-h-full lg:overflow-y-auto lg:pr-3 custom-scrollbar" : "lg:order-2 lg:pt-10"}`}>
             {/* Mobile/Tablet Arrival Guide Progress Banner */}
             {editorTab === "arrival" && (
               <div className="block lg:hidden rounded-2xl border border-zinc-200 bg-white p-4 shadow-2xs space-y-2">
@@ -2050,9 +2052,9 @@ export function HostListingEditorClient({
           </main>
 
         {/* ============================================================ */}
-        {/* RIGHT COLUMN: LISTING EDITOR LIVE PREVIEW SIDEBAR (Figma Panel) */}
+        {/* LEFT COLUMN: LISTING EDITOR NAVIGATION */}
         {/* ============================================================ */}
-        <div className={presentation === "admin" ? "order-first lg:order-1 lg:h-full lg:max-h-full" : ""}><EditorSidebar
+        <div className={presentation === "admin" ? "order-first lg:order-1 lg:h-full lg:max-h-full" : "lg:order-1 lg:min-w-0"}><EditorSidebar
           presentation={presentation}
           routeBase={routeBase}
           editorTab={editorTab}
@@ -2141,8 +2143,6 @@ export function HostListingEditorClient({
         /></div>
           </div>
       </Container>
-
-      {presentation === "host" && <Footer />}
 
       {isUnsavedChangesDialogOpen && (
         <ModalOverlay className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">

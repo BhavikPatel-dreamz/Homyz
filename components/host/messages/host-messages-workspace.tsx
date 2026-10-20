@@ -23,7 +23,6 @@ import type { ListingDTO } from "@/services/mappers";
 import type {
   ConversationDTO,
   MessageDTO,
-  SpecialOfferDTO,
   MessageAttachmentDTO,
 } from "@/services/messaging.service";
 
@@ -390,7 +389,12 @@ export function HostMessagesWorkspace({
                 p.unreadCount !== n.unreadCount ||
                 p.lastMessageAt !== n.lastMessageAt ||
                 p.status !== n.status ||
-                p.lastMessage?.id !== n.lastMessage?.id
+                p.lastMessage?.id !== n.lastMessage?.id ||
+                p.reservationContext.kind !== n.reservationContext.kind ||
+                p.reservationContext.booking?.id !== n.reservationContext.booking?.id ||
+                p.reservationContext.booking?.status !== n.reservationContext.booking?.status ||
+                p.reservationContext.booking?.startDate !== n.reservationContext.booking?.startDate ||
+                p.reservationContext.booking?.endDate !== n.reservationContext.booking?.endDate
               ) {
                 isSame = false;
                 break;
@@ -930,35 +934,35 @@ export function HostMessagesWorkspace({
     }
   };
 
-  const getStatusBadge = (status: string, activeOffer?: any) => {
-    if (activeOffer && status !== "CONFIRMED" && status !== "CANCELLED" && status !== "COMPLETED") {
-      if (activeOffer.status === "ACCEPTED") {
-        return (
-          <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-800 border border-emerald-200">
-            {t("messages_badge_offer_accepted", "Offer accepted")}
-          </span>
-        );
-      }
-      return (
-        <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-800 border border-amber-200">
-          {t("messages_badge_special_offer_sent", "Special offer sent")}
-        </span>
-      );
-    }
-    switch (status) {
-      case "PRE_APPROVED":
-        return <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 border border-emerald-200">{t("messages_badge_pre_approved", "Pre-approved")}</span>;
-      case "SPECIAL_OFFER_SENT":
-        return <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-800 border border-amber-200">{t("messages_badge_special_offer_sent", "Special offer sent")}</span>;
-      case "CONFIRMED":
-        return <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-900 border border-emerald-300">{t("messages_badge_confirmed_stay", "Confirmed stay")}</span>;
-      case "DECLINED":
-        return <span className="inline-flex items-center rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-600 border border-zinc-200">{t("messages_badge_declined", "Declined")}</span>;
-      case "CANCELLED":
-        return <span className="inline-flex items-center rounded-full bg-rose-50 px-2 py-0.5 text-xs font-medium text-rose-700 border border-rose-200">{t("messages_badge_cancelled", "Cancelled")}</span>;
+  const getReservationContextLabel = (
+    context: ConversationDTO["reservationContext"],
+  ) => {
+    switch (context.kind) {
+      case "ACTIVE_RESERVATION":
+        return t("messages_badge_active_reservation", "Active reservation");
+      case "PAST_STAY":
+        return t("messages_badge_past_stay", "Past stay");
       default:
-        return <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700 border border-blue-200">{t("messages_badge_inquiry", "Inquiry")}</span>;
+        return t("messages_badge_inquiry", "Inquiry");
     }
+  };
+
+  const getReservationContextBadge = (
+    context: ConversationDTO["reservationContext"],
+  ) => {
+    const label = getReservationContextLabel(context);
+    const className =
+      context.kind === "ACTIVE_RESERVATION"
+        ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+        : context.kind === "PAST_STAY"
+          ? "bg-zinc-100 text-zinc-700 border-zinc-200"
+          : "bg-blue-50 text-blue-700 border-blue-200";
+
+    return (
+      <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${className}`}>
+        {label}
+      </span>
+    );
   };
 
   const panelIsModal = isCompactViewport && laptopDetailsOpen;
@@ -1151,7 +1155,9 @@ export function HostMessagesWorkspace({
                         <p className={`truncate text-xs text-[#616161]`}>
                           {getMessagePreview(conv.lastMessage, t)}
                         </p>
-                        {/* <span className="shrink-0">{getStatusBadge(conv.status, conv.activeSpecialOffer)}</span> */}
+                        <span className="shrink-0">
+                          {getReservationContextBadge(conv.reservationContext)}
+                        </span>
                       </div>
                     </div>
                   </button>
@@ -1201,7 +1207,7 @@ export function HostMessagesWorkspace({
                     aria-expanded={laptopDetailsOpen}
                     aria-controls="mobile-message-details"
                   >
-                    {t("messages_badge_inquiry", "Inquiry")}
+                    {getReservationContextBadge(selectedConversation.reservationContext)}
                   </button>
                 </div>
 
@@ -1247,7 +1253,7 @@ export function HostMessagesWorkspace({
                   aria-expanded={laptopDetailsOpen}
                   aria-controls="laptop-message-details"
                 >
-                  {t("messages_badge_inquiry", "Inquiry")}
+                  {getReservationContextBadge(selectedConversation.reservationContext)}
                 </button>
               </div>
 
@@ -1790,9 +1796,7 @@ export function HostMessagesWorkspace({
                         <Image src="/images/icons/upcoming-trips.svg" alt="upcoming-trips.svg" width={16} height={16} className="w-4" />
                       </span>
                       <span>
-                        {selectedConversation.booking
-                          ? `Booking ${selectedConversation.booking.status.toLowerCase().replaceAll("_", " ")}`
-                          : "New guest inquiry"}
+                        {getReservationContextLabel(selectedConversation.reservationContext)}
                       </span>
                     </div>
 
@@ -1833,6 +1837,37 @@ export function HostMessagesWorkspace({
                     </Link>
                   )}
                 </section>
+
+                {selectedConversation.reservationContext.booking && !selectedConversation.booking && (
+                  <section className="space-y-3 border-t border-[#E5E5E5] pt-5">
+                    <div className="flex items-center justify-between gap-3">
+                      <h4 className="text-lg font-medium text-[#1F1F1F]">
+                        {t("messages_reservation_context_header", "Reservation context")}
+                      </h4>
+                      {getReservationContextBadge(selectedConversation.reservationContext)}
+                    </div>
+                    <div className="rounded-[10px] border border-[#E5E5E5] bg-white px-4 py-3 shadow-[0_2px_5px_rgba(0,0,0,0.12)]">
+                      <p className="truncate text-sm text-zinc-500">
+                        {selectedConversation.listing.title}
+                      </p>
+                      <p className="text-base font-medium text-[#1F1F1F]">
+                        {formatBookingDateRange(
+                          selectedConversation.reservationContext.booking.startDate,
+                          selectedConversation.reservationContext.booking.endDate,
+                        )}
+                      </p>
+                      <p className="mt-1 text-sm text-zinc-500">
+                        {selectedConversation.reservationContext.booking.guests} {selectedConversation.reservationContext.booking.guests === 1 ? "guest" : "guests"}
+                      </p>
+                    </div>
+                    <Link
+                      href={`/host/bookings/${selectedConversation.reservationContext.booking.id}`}
+                      className="inline-flex text-base font-medium text-[#1F1F1F] underline underline-offset-4 transition-colors hover:text-[#727272]"
+                    >
+                      {t("messages_view_reservation", "View reservation")}
+                    </Link>
+                  </section>
+                )}
 
                 {/* Booking details */}
                 {selectedConversation.booking ? (() => {
@@ -1918,7 +1953,7 @@ export function HostMessagesWorkspace({
                   <section className="border-t border-[#E5E5E5] pt-5 space-y-3">
                     <div className="flex items-center justify-between">
                       <h4 className="sm:text-xl text-lg font-medium text-[#1F1F1F]">{t("messages_booking_details_header", "Booking details")}</h4>
-                      {getStatusBadge(selectedConversation.status, selectedConversation.activeSpecialOffer)}
+                      {getReservationContextBadge(selectedConversation.reservationContext)}
                     </div>
 
                     <div className="space-y-3 text-sm text-zinc-600">

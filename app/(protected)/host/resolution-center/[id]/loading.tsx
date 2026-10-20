@@ -1,5 +1,4 @@
 import { HostHeader } from "@/components/host/host-header";
-import { Footer } from "@/components/dashboard/footer";
 import { Container } from "@/components/ui";
 import { HostDisputeDetailsSkeleton } from "@/components/host/host-dispute-details-skeleton";
 
@@ -12,7 +11,6 @@ export default function HostDisputeDetailsLoading() {
           <HostDisputeDetailsSkeleton />
         </Container>
       </main>
-      <Footer />
     </div>
   );
 }

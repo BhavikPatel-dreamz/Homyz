@@ -7,7 +7,6 @@ import Image from "next/image";
 import { HostHeader } from "./host-header";
 import { HostListingCardsSkeleton } from "./host-listings-skeleton";
 import { BecomeHostModal } from "./become-host-modal";
-import { Footer } from "@/components/dashboard/footer";
 import {
   createListingAction,
   updateListingAction,
@@ -1024,9 +1023,6 @@ export function HostListingsWorkspace({
           </div>
         </Container>
       </main>
-
-      {/* ── 3. FOOTER SECTION (Shared Dashboard Footer) ── */}
-      <Footer />
 
       <BecomeHostModal
         isOpen={becomeHostModalOpen}

@@ -1,6 +1,5 @@
 import { Role } from "@/generated/prisma/enums";
 import { HostHeader } from "@/components/host/host-header";
-import { HostDashboardFooter } from "@/components/host/dashboard/host-dashboard-footer";
 import { HostKpiOverview } from "@/components/host/dashboard/host-kpi-overview";
 import { Container } from "@/components/ui";
 import { requirePageRole } from "@/lib/permissions/page-guards";
@@ -23,7 +22,6 @@ export default async function HostDashboardPage() {
           <HostKpiOverview initialData={dashboardData} />
         </Container>
       </main>
-      <HostDashboardFooter />
     </div>
   );
 }

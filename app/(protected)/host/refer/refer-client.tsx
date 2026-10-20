@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { AppHeader } from "@/components/dashboard/app-header";
-import { Footer } from "@/components/dashboard/footer";
 import { Container } from "@/components/ui/container";
 import { useLanguage } from "@/lib/i18n/language-context";
 
@@ -49,7 +48,6 @@ export function ReferClient() {
           </div>
         </Container>
       </main>
-      <Footer />
     </div>
   );
 }
