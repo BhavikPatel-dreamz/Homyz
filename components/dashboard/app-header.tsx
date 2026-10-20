@@ -1,16 +1,15 @@
 "use client";
 
 import { ModalOverlay } from "@/components/ui/modal-overlay";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
-import { LogoutButton } from "@/components/admin/logout-button";
 import { primaryButtonInteractionClass } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
 import dynamic from "next/dynamic";
-import { useLanguage } from "@/lib/i18n/language-context";
+import { useLanguage, type TranslationKey } from "@/lib/i18n/language-context";
 import { DISPLAY_CURRENCIES, useCurrency } from "@/lib/currency-context";
 import { ListingHeaderSearch } from "@/components/listings/listing-header-search";
 import {
@@ -53,6 +52,14 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
   const unreadCount = useUnreadNotificationCount();
   const { currency: selectedCurrency, setCurrency: setSelectedCurrency } = useCurrency();
   const menuRef = useRef<HTMLDivElement>(null);
+  const [hoveredNavIndex, setHoveredNavIndex] = useState<number | null>(null);
+  const [indicatorReady, setIndicatorReady] = useState(false);
+  const [indicatorStyle, setIndicatorStyle] = useState<{ left: number; width: number; opacity: number }>({
+    left: 0,
+    width: 0,
+    opacity: 0,
+  });
+  const navTabsRef = useRef<(HTMLAnchorElement | null)[]>([]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -105,13 +112,81 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
   }, [hasUser]);
 
   const isHostRoute = pathname?.startsWith("/host") ?? false;
-  const logoHref = "/";
+  const logoHref = isHostRoute ? "/host/today" : "/";
   const logoAriaLabel = "Homyz home";
   const isListingRoute = showSearchBar === true;
   const routeHasHeaderDivider = !["/", "/dashboard"].some(
     (route) => pathname === route || pathname?.startsWith(`${route}/`),
   );
   const hasHeaderDivider = showBottomBorder ?? routeHasHeaderDivider;
+
+  const hostNavTabs = useMemo(
+    () => [
+      {
+        id: "today",
+        label: t("host_nav_today") || "Today",
+        href: "/host/today",
+        isActive: pathname === "/host/today" || pathname?.startsWith("/host/today/"),
+      },
+      {
+        id: "calendar",
+        label: t("host_nav_calendar") || "Calendar",
+        href: "/host/calendar",
+        isActive: pathname === "/host/calendar" || pathname?.startsWith("/host/calendar/"),
+      },
+      {
+        id: "listing",
+        label: t("host_nav_listing") || "Listing",
+        href: "/host/listings",
+        isActive: pathname === "/host/listings" || pathname?.startsWith("/host/listings/"),
+      },
+      {
+        id: "messages",
+        label: t("host_nav_messages") || "Messages",
+        href: "/host/messages",
+        isActive: pathname === "/host/messages" || pathname?.startsWith("/host/messages/"),
+      },
+    ],
+    [pathname, t],
+  );
+
+  const activeNavIndex = hostNavTabs.findIndex((tab) => tab.isActive);
+  const isActiveHovered = hoveredNavIndex !== null && hoveredNavIndex === activeNavIndex;
+
+  useEffect(() => {
+    if (!isHostRoute) return;
+
+    const updateIndicator = () => {
+      const activeIndex = hostNavTabs.findIndex((tab) => tab.isActive);
+      if (activeIndex !== -1 && navTabsRef.current[activeIndex]) {
+        const el = navTabsRef.current[activeIndex];
+        if (el) {
+          setIndicatorStyle({
+            left: el.offsetLeft,
+            width: el.offsetWidth,
+            opacity: 1,
+          });
+        }
+      } else {
+        setIndicatorStyle((prev) => ({ ...prev, opacity: 0 }));
+      }
+    };
+
+    updateIndicator();
+
+    if (!indicatorReady) {
+      const timer = requestAnimationFrame(() => setIndicatorReady(true));
+      return () => cancelAnimationFrame(timer);
+    }
+
+    window.addEventListener("resize", updateIndicator);
+    if (typeof document !== "undefined" && document.fonts) {
+      document.fonts.ready.then(updateIndicator);
+    }
+    return () => {
+      window.removeEventListener("resize", updateIndicator);
+    };
+  }, [isHostRoute, indicatorReady, hostNavTabs]);
 
   const handleBecomeHost = async () => {
     if (isConvertingRole) return;
@@ -146,12 +221,12 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
     <header className="header sticky top-0 lg:z-99 z-40 w-full bg-white text-[#1F1F1F]" suppressHydrationWarning>
       <Container>
         <div
-          className={`header-wrapper relative flex min-h-[96px] w-full items-center justify-between border-b-0 py-0 md:min-h-0 md:py-4 lg:py-5 ${hasHeaderDivider ? "md:border-b md:border-[#1F1F1F]" : ""
+          className={`header-wrapper relative flex min-h-[96px] w-full items-center justify-between border-b-0 py-0 md:min-h-0 md:py-4 lg:py-5 ${hasHeaderDivider ? "md:border-b md:border-[#727272]/20" : ""
             }`}
         >
           <Link
             href={logoHref}
-            className="absolute left-0 block h-[68px] w-[66px] shrink-0 overflow-hidden transition-opacity hover:opacity-80 md:hidden"
+            className="absolute left-0 top-1/2 -translate-y-1/2 block h-[68px] w-[66px] shrink-0 overflow-hidden transition-opacity hover:opacity-80 md:hidden"
             aria-label={logoAriaLabel}
           >
             <Image
@@ -164,9 +239,28 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
             />
           </Link>
 
-          <Link href={logoHref} className="hidden shrink-0 transition-opacity hover:opacity-80 md:block focus-visible:outline-none" aria-label={logoAriaLabel}>
-            <Image src="/images/brand/homyz-logo-dark-v2.svg" alt="Stay like a homie." width={200} height={53} className="h-auto w-[145px] md:w-[150px] lg:w-[160px] xl:w-[185px] 2xl:w-[200px]" priority />
-          </Link>
+          {isHostRoute ? (
+            <div className="hidden md:flex flex-1 items-center justify-start">
+              <Link
+                href={logoHref}
+                className="shrink-0 transition-opacity hover:opacity-80 focus-visible:outline-none"
+                aria-label={logoAriaLabel}
+              >
+                <Image
+                  src="/images/brand/homyz-logo-dark-v1.svg"
+                  alt="Homyz"
+                  width={160}
+                  height={58}
+                  className="h-auto w-[125px] md:w-[135px] lg:w-[145px]"
+                  priority
+                />
+              </Link>
+            </div>
+          ) : (
+            <Link href={logoHref} className="hidden shrink-0 transition-opacity hover:opacity-80 md:block focus-visible:outline-none" aria-label={logoAriaLabel}>
+              <Image src="/images/brand/homyz-logo-dark-v2.svg" alt="Stay like a homie." width={200} height={53} className="h-auto w-[145px] md:w-[150px] lg:w-[160px] xl:w-[185px] 2xl:w-[200px]" priority />
+            </Link>
+          )}
 
           {isListingRoute ? (
             <>
@@ -180,9 +274,85 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                 <ListingHeaderSearch />
               </div>
             </>
+          ) : isHostRoute ? (
+            <>
+              {/* Mobile Center Logo for <= 767px (matches Figma All listing pages_Homyz/mobile) */}
+              <Link
+                href={logoHref}
+                className="group absolute left-[53%] top-1/2 block -translate-x-1/2 -translate-y-1/2 md:hidden outline-0"
+                aria-label={logoAriaLabel}
+              >
+                <Image
+                  src="/images/brand/homyz-logo-dark-v2.svg"
+                  alt="Stay like a homie."
+                  width={200}
+                  height={53}
+                  className="h-auto w-[149px] transition-transform"
+                  priority
+                />
+              </Link>
+
+              {/* Primary Host Navigation Tabs (Today, Calendar, Listing, Messages) with sliding indicator */}
+              <nav
+                aria-label={t("header_aria_host_navigation" as TranslationKey, "Host primary navigation")}
+                onMouseLeave={() => setHoveredNavIndex(null)}
+                className="relative hidden md:flex shrink-0 items-center gap-0.5 sm:gap-1 lg:gap-2 py-1"
+              >
+                {hostNavTabs.map((tab, index) => {
+                  const isActive = tab.isActive;
+                  return (
+                    <Link
+                      key={tab.id}
+                      ref={(el) => {
+                        navTabsRef.current[index] = el;
+                      }}
+                      href={tab.href}
+                      aria-current={isActive ? "page" : undefined}
+                      onMouseEnter={() => setHoveredNavIndex(index)}
+                      onFocus={() => setHoveredNavIndex(index)}
+                      onBlur={() => setHoveredNavIndex(null)}
+                      onClick={() => {
+                        const el = navTabsRef.current[index];
+                        if (el) {
+                          setIndicatorStyle({
+                            left: el.offsetLeft,
+                            width: el.offsetWidth,
+                            opacity: 1,
+                          });
+                        }
+                      }}
+                      className={`relative z-10 px-2.5 py-1.5 md:px-3 md:py-2 lg:px-3.5 text-xs md:text-sm font-medium transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 rounded-lg ${
+                        isActive
+                          ? "font-medium text-[#1F1F1F] dark:text-zinc-100"
+                          : "text-[#717171] hover:text-[#1F1F1F] dark:text-zinc-400 dark:hover:text-zinc-100"
+                      }`}
+                    >
+                      {tab.label}
+                    </Link>
+                  );
+                })}
+
+                {/* Animated sliding bottom border: 1px on active, 2px on active hover */}
+                <span
+                  aria-hidden="true"
+                  className={`pointer-events-none absolute bottom-0 left-0 rounded-full bg-[#1F1F1F] dark:bg-white ${
+                    isActiveHovered ? "h-[2px]" : "h-[1px]"
+                  } ${
+                    indicatorReady
+                      ? "transition-all duration-300 ease-[cubic-bezier(0.2,0,0,1)]"
+                      : "transition-none"
+                  }`}
+                  style={{
+                    transform: `translateX(${indicatorStyle.left}px)`,
+                    width: `${indicatorStyle.width}px`,
+                    opacity: indicatorStyle.opacity,
+                  }}
+                />
+              </nav>
+            </>
           ) : (
             <>
-              <Link href={logoHref} className="group absolute left-[53%] block -translate-x-1/2 md:hidden outline-0" aria-label={logoAriaLabel}>
+              <Link href={logoHref} className="group absolute left-[53%] top-1/2 block -translate-x-1/2 -translate-y-1/2 md:hidden outline-0" aria-label={logoAriaLabel}>
                 <Image
                   src="/images/brand/homyz-logo-dark-v2.svg"
                   alt="Stay like a homie."
@@ -201,7 +371,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
             </>
           )}
 
-          <div className="ml-auto flex min-w-0 items-center gap-2 sm:gap-2.5 xl:gap-5" ref={menuRef}>
+          <div className={`${isHostRoute ? "flex-1 justify-end" : "ml-auto"} flex min-w-0 items-center gap-2 sm:gap-2.5 xl:gap-5`} ref={menuRef}>
             {sessionLoading ? (
               <div
                 aria-label="Loading account"
@@ -211,14 +381,14 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
               isHostRoute ? (
                 <Link
                   href="/dashboard"
-                  className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-4 py-2.5 md:px-6 md:py-2.75 lg:text-base text-sm font-normal text-[#1F1F1F] hover:text-white transition-colors duration-300 min-[992px]:inline-flex ${primaryButtonInteractionClass}`}
+                  className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-3.5 py-2 md:px-4 md:py-2 lg:px-5 lg:py-2.5 text-xs sm:text-sm lg:text-base font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 min-[992px]:inline-flex ${primaryButtonInteractionClass}`}
                 >
                   {t("header_switch_traveling") || "Switch to traveling"}
                 </Link>
               ) : (
                 <Link
                   href="/host/dashboard"
-                      className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-4 py-2.5 md:px-6 md:py-2.75 lg:text-base text-sm font-normal text-[#1F1F1F] hover:text-white transition-colors duration-300 sm:inline-flex ${primaryButtonInteractionClass}`}
+                      className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-3.5 py-2 md:px-4 md:py-2 lg:px-5 lg:py-2.5 text-xs sm:text-sm lg:text-base font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 min-[992px]:inline-flex ${primaryButtonInteractionClass}`}
                 >
                   {t("header_switch_hosting") || "Switch to hosting"}
                 </Link>
@@ -228,7 +398,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                 type="button"
                 onClick={handleBecomeHost}
                 disabled={isConvertingRole}
-                    className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-2.75 lg:text-base text-sm font-normal text-[#1F1F1F] hover:text-white transition-colors duration-300 min-[992px]:inline-flex ${primaryButtonInteractionClass}`}
+                    className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-2.75 lg:text-base text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 min-[992px]:inline-flex ${primaryButtonInteractionClass}`}
               >
                 {isConvertingRole ? (t("host_loading") || "Loading...") : (t("header_become_a_host") || "Become a host")}
               </button>
@@ -261,38 +431,23 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
               </button>
             )}
 
-            {/* Notifications Icon Button */}
-            {user && (
-              <Link
-                href="/profile/tab/notifications"
-                className="relative hidden h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5] text-[#1F1F1F] transition-colors hover:bg-zinc-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 min-[992px]:flex min-[992px]:h-9 min-[992px]:w-9"
-                aria-label={unreadCount !== null && unreadCount > 0 ? `${t("header_notifications") || "Notifications"}, ${unreadCount} unread` : (t("header_notifications") || "Notifications")}
-                title={t("header_notifications") || "Notifications"}
-              >
-                <Image
-                  src="/images/icons/Notifications.svg"
-                  alt=""
-                  width={18}
-                  height={18}
-                  className="size-[18px] object-contain"
-                />
-                {unreadCount !== null && unreadCount > 0 && (
-                  <span
-                    aria-label={`${unreadCount} unread notifications`}
-                    className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white shadow-xs"
-                  >
-                    {unreadCount > 99 ? "99+" : unreadCount}
-                  </span>
-                )}
-              </Link>
-            )}
-
-            <button type="button" onClick={() => setLangModalOpen(!langModalOpen)} className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5] transition-colors hover:bg-zinc-200 min-[992px]:flex" title="Language" aria-label="Choose language and currency">
-              <Image src="/images/icons/translate-icon.svg" alt="" width={24} height={24} className="h-6 w-6" />
-            </button>
-
-            <button type="button" onClick={() => setMenuOpen(!menuOpen)} disabled={sessionLoading} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5] transition-colors hover:bg-zinc-200 disabled:cursor-wait md:h-9 md:w-9" aria-label={sessionLoading ? "Loading account" : "Open menu"} aria-expanded={menuOpen}>
+            <button
+              type="button"
+              onClick={() => setMenuOpen(!menuOpen)}
+              disabled={sessionLoading}
+              className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5] transition-colors hover:bg-zinc-200 disabled:cursor-wait md:h-9 md:w-9"
+              aria-label={sessionLoading ? "Loading account" : "Open menu"}
+              aria-expanded={menuOpen}
+            >
               <Image src="/images/icons/menu-icon.svg" alt="" width={18} height={16} className="h-4 w-[18px] md:h-[14px] md:w-4" />
+              {unreadCount !== null && unreadCount > 0 && (
+                <span
+                  aria-label={`${unreadCount} unread notifications`}
+                  className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white shadow-xs"
+                >
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </span>
+              )}
             </button>
 
             {/* Logged-in menus keep their account details and sign-out action visible; only their links scroll. */}
@@ -408,8 +563,8 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
 
                     <div className="visible-scrollbar min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-contain pr-1">
                       <div className="space-y-1">
-                        {/* Switch to traveling action */}
-                        {/* <div className="pt-0.5 pb-1">
+                        {/* Mode Switcher inside Host Dropdown Menu */}
+                        <div className="pt-0.5 pb-1">
                           <Link
                             href="/dashboard"
                             onClick={() => setMenuOpen(false)}
@@ -420,7 +575,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                             </span>
                             <span>{t("header_switch_traveling") || "Switch to traveling"}</span>
                           </Link>
-                        </div> */}
+                        </div>
 
                         <div className="my-1 border-t border-zinc-200/80" />
 
@@ -569,6 +724,14 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                               <Image src="/images/icons/Notifications.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
                             </span>
                             <span>{t("header_notifications") || "Notifications"}</span>
+                            {unreadCount !== null && unreadCount > 0 && (
+                              <span
+                                aria-label={`${unreadCount} unread notifications`}
+                                className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1.5 text-[10px] font-bold text-white shadow-xs"
+                              >
+                                {unreadCount > 99 ? "99+" : unreadCount}
+                              </span>
+                            )}
                           </Link>
 
                           {/* Account settings */}
@@ -743,6 +906,14 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                               <Image src="/images/icons/Notifications.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
                             </span>
                             <span>{t("header_notifications") || "Notifications"}</span>
+                            {unreadCount !== null && unreadCount > 0 && (
+                              <span
+                                aria-label={`${unreadCount} unread notifications`}
+                                className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1.5 text-[10px] font-bold text-white shadow-xs"
+                              >
+                                {unreadCount > 99 ? "99+" : unreadCount}
+                              </span>
+                            )}
                           </Link>
 
                           <Link

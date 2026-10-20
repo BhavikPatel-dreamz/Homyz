@@ -306,15 +306,59 @@ export function HostResolutionCenterClient({ data, listings }: Props) {
               const isClosed = dispute.disputeWorkflowStatus === "CLOSED";
               const isOpen = !isResolved && !isClosed;
 
+              const statusBadge = (
+                <span
+                  className={`rounded-full px-2.5 sm:px-3 py-0.5 text-xs font-normal whitespace-nowrap ${
+                    isResolved
+                      ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
+                      : isClosed
+                        ? "bg-zinc-100 text-zinc-700 border border-zinc-200"
+                        : dispute.disputeWorkflowStatus === "UNDER_REVIEW"
+                          ? "bg-blue-100 text-blue-800 border border-blue-200"
+                          : "bg-amber-100 text-amber-800 border border-amber-200"
+                  }`}
+                >
+                  {isResolved
+                    ? "Resolved"
+                    : isClosed
+                      ? "Closed"
+                      : dispute.disputeWorkflowStatus.replaceAll("_", " ")}
+                </span>
+              );
+
+              const responseRequiredBadge = isOpen && dispute.responseRequired ? (
+                <span className="rounded-full bg-amber-100 border border-amber-300 px-2.5 sm:px-3 py-0.5 text-xs font-normal text-amber-900 shadow-2xs whitespace-nowrap">
+                  Response Required
+                </span>
+              ) : null;
+
+              const reporterBadge = (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-normal text-zinc-600 whitespace-nowrap">
+                  <span className="size-1.5 rounded-full bg-zinc-400" />
+                  Reported by {dispute.reporterRole.toLowerCase()}
+                </span>
+              );
+
               return (
                 <div
                   key={dispute.id}
-                  className="flex flex-col gap-5 p-5 sm:p-7 md:flex-row md:items-center md:justify-between hover:bg-zinc-50/70 transition-colors"
+                  className="flex flex-col gap-3.5 p-4 sm:p-6 md:p-7 md:flex-row md:items-center md:justify-between md:gap-5 hover:bg-zinc-50/70 transition-colors"
                 >
-                  {/* Left: Thumbnail & Content Info */}
-                  <div className="flex items-start gap-4 sm:gap-5 min-w-0">
+                  {/* Top Row on Mobile: Case Ref & Badges */}
+                  <div className="flex flex-wrap items-center justify-between gap-2 md:hidden">
+                    <span className="text-xs font-medium text-[#727272]">
+                      #{dispute.caseReference}
+                    </span>
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      {statusBadge}
+                      {responseRequiredBadge}
+                    </div>
+                  </div>
+
+                  {/* Main Content Block */}
+                  <div className="flex items-start gap-3.5 sm:gap-5 min-w-0">
                     {/* Property Thumbnail */}
-                    <div className="relative size-20 sm:size-24 shrink-0 overflow-hidden rounded-2xl border border-zinc-200/80 bg-zinc-100">
+                    <div className="relative size-20 sm:size-24 shrink-0 overflow-hidden rounded-xl md:rounded-2xl border border-zinc-200/80 bg-zinc-100">
                       {dispute.listing.photos?.[0] ? (
                         <img
                           src={dispute.listing.photos[0]}
@@ -331,65 +375,42 @@ export function HostResolutionCenterClient({ data, listings }: Props) {
                       )}
                     </div>
 
-                    <div className="min-w-0 space-y-2">
-                      {/* Badges Line */}
-                      <div className="flex flex-wrap items-center gap-2">
+                    <div className="min-w-0 flex-1 space-y-1.5 sm:space-y-2">
+                      {/* Badges Line (Desktop only) */}
+                      <div className="hidden md:flex flex-wrap items-center gap-2">
                         <span className="text-xs sm:text-sm font-medium text-[#727272]">
                           #{dispute.caseReference}
                         </span>
-
-                        {/* Status Badge */}
-                        <span
-                          className={`rounded-full px-3 py-0.5 text-xs font-normal ${
-                            isResolved
-                              ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
-                              : isClosed
-                                ? "bg-zinc-100 text-zinc-700 border border-zinc-200"
-                                : dispute.disputeWorkflowStatus === "UNDER_REVIEW"
-                                  ? "bg-blue-100 text-blue-800 border border-blue-200"
-                                  : "bg-amber-100 text-amber-800 border border-amber-200"
-                          }`}
-                        >
-                          {isResolved
-                            ? "Resolved"
-                            : isClosed
-                              ? "Closed"
-                              : dispute.disputeWorkflowStatus.replaceAll("_", " ")}
-                        </span>
-
-                        {/* Response Required Badge - only when genuinely open */}
-                        {isOpen && dispute.responseRequired && (
-                          <span className="rounded-full bg-amber-100 border border-amber-300 px-3 py-0.5 text-xs font-medium text-amber-900 shadow-2xs">
-                            Response Required
-                          </span>
-                        )}
-
-                        {/* Reporter Badge */}
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium text-zinc-600">
-                          <span className="size-1.5 rounded-full bg-zinc-400" />
-                          Reported by {dispute.reporterRole.toLowerCase()}
-                        </span>
+                        {statusBadge}
+                        {responseRequiredBadge}
+                        {reporterBadge}
                       </div>
 
-                      {/* Property Title */}
-                      <div className="flex flex-wrap items-baseline gap-2">
+                      {/* Property Title & City */}
+                      <div className="flex items-baseline gap-1.5 min-w-0">
                         <p className="truncate text-base font-medium text-[#1F1F1F]">
                           {dispute.listing.title}
                         </p>
                         {dispute.listing.city && (
-                          <span className="text-xs sm:text-sm text-zinc-500 font-normal">
+                          <span className="shrink-0 text-xs sm:text-sm text-zinc-500 font-normal">
                             · {dispute.listing.city}
                           </span>
                         )}
                       </div>
 
-                      {/* Metadata Row */}
-                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs font-normal text-[#727272]">
-                        <span className="text-xs rounded-md bg-[#DDDDDE] px-2 py-1 text-[#1f1f1f]">
+                      {/* Category & Reporter (Mobile) */}
+                      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                        <span className="text-xs rounded-md bg-[#DDDDDE] px-2 py-0.5 text-[#1f1f1f] font-normal">
                           {formatCategory(dispute.category)}
                         </span>
+                        <div className="md:hidden">
+                          {reporterBadge}
+                        </div>
+                      </div>
 
-                        {dispute.booking?.id && (
+                      {/* Booking reference */}
+                      {dispute.booking?.id && (
+                        <div className="text-xs font-normal text-[#727272]">
                           <Link
                             href={`/host/bookings/${dispute.booking.id}`}
                             className="hover:text-black hover:underline"
@@ -399,28 +420,47 @@ export function HostResolutionCenterClient({ data, listings }: Props) {
                               #{dispute.booking.id.slice(0, 10)}
                             </span>
                           </Link>
-                        )}
+                        </div>
+                      )}
 
+                      {/* Desktop Metadata Row (Stay, Filed, Updated) */}
+                      <div className="hidden md:flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs font-normal text-[#727272]">
                         {dispute.booking?.startDate && dispute.booking?.endDate && (
                           <span className="text-zinc-500">
                             Stay: {formatDate(dispute.booking.startDate)} – {formatDate(dispute.booking.endDate)}
                           </span>
                         )}
 
-                        <span className="text-[#727272] text-lg font-bold hidden sm:inline">·</span>
+                        <span className="text-[#727272] text-lg font-bold">·</span>
                         <span>Filed: {formatDate(dispute.createdAt)}</span>
-                        <span className="text-[#727272] text-lg font-bold hidden sm:inline">·</span>
+                        <span className="text-[#727272] text-lg font-bold">·</span>
                         <span>Updated: {formatDate(dispute.updatedAt)}</span>
                       </div>
                     </div>
                   </div>
 
+                  {/* Mobile Dates Section (Stay, Filed, Updated) */}
+                  <div className="flex flex-col gap-1 border-t border-zinc-100 pt-2.5 text-xs font-normal text-[#727272] md:hidden">
+                    {dispute.booking?.startDate && dispute.booking?.endDate && (
+                      <div>
+                        <span className="text-zinc-500">
+                          Stay: {formatDate(dispute.booking.startDate)} – {formatDate(dispute.booking.endDate)}
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2">
+                      <span>Filed: {formatDate(dispute.createdAt)}</span>
+                      <span>·</span>
+                      <span>Updated: {formatDate(dispute.updatedAt)}</span>
+                    </div>
+                  </div>
+
                   {/* Actions Column */}
-                  <div className="flex flex-wrap items-center gap-2.5 shrink-0 self-start md:self-center pt-2 md:pt-0">
+                  <div className="flex items-center gap-2.5 shrink-0 w-full md:w-auto pt-1 md:pt-0">
                     {dispute.booking?.id && (
                       <Link
                         href={`/host/bookings/${dispute.booking.id}`}
-                        className="inline-flex min-h-10 items-center justify-center rounded-full border border-[#1F1F1F] hover:border-[#1f1f1f] bg-white px-4 py-2 text-sm font-medium text-[#1F1F1F] hover:bg-[#1f1f1f] hover:text-white transition-colors"
+                        className="flex-1 md:flex-initial inline-flex min-h-10 items-center justify-center rounded-full border border-[#1F1F1F] hover:border-[#1f1f1f] bg-white px-4 py-2 text-sm font-medium text-[#1F1F1F] hover:bg-[#1f1f1f] hover:text-white transition-colors text-center"
                       >
                         Booking
                       </Link>
@@ -428,7 +468,7 @@ export function HostResolutionCenterClient({ data, listings }: Props) {
 
                     <Link
                       href={`/host/resolution-center/${dispute.id}`}
-                      className="inline-flex min-h-10 items-center justify-center rounded-full bg-[#1F1F1F] border border-[#1F1F1F] px-5 py-2 text-sm font-medium text-white hover:text-[#1f1f1f] hover:bg-white transition-colors shadow-2xs"
+                      className="flex-1 md:flex-initial inline-flex min-h-10 items-center justify-center rounded-full bg-[#1F1F1F] border border-[#1F1F1F] px-5 py-2 text-sm font-medium text-white hover:text-[#1f1f1f] hover:bg-white transition-colors shadow-2xs text-center whitespace-nowrap"
                     >
                       {isResolved || isClosed ? "View Decision" : "View Case"}
                     </Link>

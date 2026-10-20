@@ -2064,7 +2064,7 @@ function AllListingsOverviewPanel({
       </div>
 
       <div className="space-y-2.5">
-        <p className="text-xs font-semibold uppercase tracking-wider text-[#727272]">
+        <p className="text-sm font-medium text-[#727272]">
           {t("host_calendar_select_property_edit", "Select property to edit rates:")}
         </p>
         <div className="space-y-2 max-h-[480px] overflow-y-auto pr-1">
@@ -3835,7 +3835,7 @@ export function HostCalendarWorkspace({
                     <button
                       type="button"
                       onClick={() => setTips(false)}
-                      className="rounded-full bg-[#1F1F1F] px-6 py-2.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-[#3a3a3a] dark:bg-[#F3F4F5] dark:text-[#1F1F1F] dark:hover:bg-white cursor-pointer"
+                        className="rounded-full bg-[#1F1F1F] px-6 py-2.5 text-base font-medium text-white hover:text-[#1f1f1f] transition-colors duration-300 hover:bg-[#FCDF9C] dark:bg-[#F3F4F5] dark:text-[#1F1F1F] dark:hover:bg-white cursor-pointer"
                     >
                       {t("host_calendar_got_it", "Got it")}
                     </button>

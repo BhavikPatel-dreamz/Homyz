@@ -1,7 +1,6 @@
 import { requirePageRole } from "@/lib/permissions/page-guards";
 import { Role } from "@/generated/prisma/enums";
-import { MessagesHeader } from "@/components/host/messages/messages-header";
-import { Footer } from "@/components/dashboard/footer";
+import { HostHeader } from "@/components/host/host-header";
 import { HostMessagesWorkspace } from "@/components/host/messages/host-messages-workspace";
 import { messagingService } from "@/services/messaging.service";
 
@@ -21,8 +20,7 @@ export default async function HostMessagesPage(props: {
 
   return (
     <div className="min-h-screen sm:pb-0 bg-zinc-50/50 text-[#1F1F1F] font-sans flex flex-col selection:bg-[#FCDF9C] selection:text-[#1F1F1F]">
-      {/* Messages has a dedicated workspace header. */}
-      <MessagesHeader />
+      <HostHeader />
 
       <main className="flex-1 flex flex-col">
         <HostMessagesWorkspace

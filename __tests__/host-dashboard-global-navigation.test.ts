@@ -223,8 +223,8 @@ runTest("HostSubNav mobile bottom notch gracefully positions when tab is active 
     "HostSubNav must check if an active tab exists"
   );
   assert.ok(
-    hostSubNavCode.includes('notchX = hasActiveTab ? 81.9 + activeTabIndex * 70.2 : -100;'),
-    "HostSubNav notch must not highlight tab 0 when no tab matches"
+    hostSubNavCode.includes('notchX = hasActiveTab ? (activeTabIndex + 0.5) * (390 / tabs.length) : -100;'),
+    "HostSubNav notch must not highlight tab 0 when no tab matches and scale concentric with tabs"
   );
 });
 

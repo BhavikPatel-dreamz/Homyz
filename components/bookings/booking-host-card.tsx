@@ -51,7 +51,7 @@ export function BookingHostCard({
             </div>
           )}
           <div>
-            <span className="text-xs font-semibold uppercase tracking-wider text-[#727272]">
+            <span className="text-sm font-medium text-[#727272]">
               {t("booking_details_property_host", "Property Host")}
             </span>
             <h2 id="host-heading" className="text-lg font-semibold text-[#1F1F1F]">

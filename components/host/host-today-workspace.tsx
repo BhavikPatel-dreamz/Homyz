@@ -411,10 +411,10 @@ export function HostTodayWorkspace({
         filterActive={Boolean(appliedPropertyId)}
       />
 
-      <main className="w-full min-w-0 pb-12 pt-10 sm:pb-24 sm:pt-10">
+      <main className="w-full min-w-0 pb-12 pt-6 sm:pb-24 sm:pt-8">
         <Container>
-          {/* Toggle & Mobile Filter Bar */}
-          <div className="mb-6 flex w-full items-center justify-between gap-3 border-b border-[#727272] pb-5 sm:mb-10 sm:pb-7">
+          {/* Toggle & Filter Bar */}
+          <div className="mb-6 flex w-full items-center justify-between gap-3 border-b border-[#727272]/20 pb-5 sm:mb-8 sm:pb-6">
             {/* Reservation Period Pill Switcher */}
             <div
               className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1"
@@ -435,7 +435,7 @@ export function HostTodayWorkspace({
                   role="tab"
                   aria-selected={tab === filterTab.id}
                   onClick={() => handleTabChange(filterTab.id as ReservationPeriod)}
-                  className={`rounded-full px-4 py-2.5 text-sm sm:px-4.5 sm:py-2.5 font-medium transition-all duration-200 shrink-0 font-sans cursor-pointer ${tab === filterTab.id
+                  className={`rounded-full px-4 py-2 text-sm sm:px-4.5 sm:py-2.5 font-medium transition-all duration-200 shrink-0 font-sans cursor-pointer ${tab === filterTab.id
                     ? "bg-[#1F1F1F] text-white shadow-xs"
                     : "bg-[#F3F4F5] text-[#1F1F1F] hover:bg-zinc-200"
                     }`}
@@ -445,35 +445,45 @@ export function HostTodayWorkspace({
               ))}
             </div>
 
-            {/* Mobile Filter Button */}
+            {/* Filter Button */}
             <button
               type="button"
               aria-label="Filter listings"
               onClick={openFilters}
-              className={`flex size-12 shrink-0 items-center justify-center rounded-full sm:hidden transition-colors duration-300 ease-in-out ${appliedPropertyId
-                ? "bg-[#1F1F1F] text-white border-zinc-900"
-                : "bg-[#F3F4F5] text-[#1F1F1F]"
-                }`}
+              className={`inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-full px-4 text-sm font-medium transition-colors duration-200 cursor-pointer border ${
+                appliedPropertyId
+                  ? "bg-[#1F1F1F] text-white border-[#1F1F1F]"
+                  : "bg-white text-[#1F1F1F] border-zinc-300 hover:bg-zinc-50 shadow-2xs"
+              }`}
             >
               <svg
-                width="18"
-                height="18"
+                width="16"
+                height="16"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2"
                 strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
               >
-                <line x1="4" y1="21" x2="4" y2="14" />
-                <line x1="4" y1="10" x2="4" y2="3" />
-                <line x1="12" y1="21" x2="12" y2="12" />
-                <line x1="12" y1="8" x2="12" y2="3" />
-                <line x1="20" y1="21" x2="20" y2="16" />
-                <line x1="20" y1="12" x2="20" y2="3" />
-                <circle cx="4" cy="12" r="2" />
-                <circle cx="12" cy="10" r="2" />
-                <circle cx="20" cy="14" r="2" />
+                <line x1="4" x2="4" y1="21" y2="14" />
+                <line x1="4" x2="4" y1="10" y2="3" />
+                <line x1="12" x2="12" y1="21" y2="12" />
+                <line x1="12" x2="12" y1="8" y2="3" />
+                <line x1="20" x2="20" y1="21" y2="16" />
+                <line x1="20" x2="20" y1="12" y2="3" />
+                <line x1="1" x2="7" y1="14" y2="14" />
+                <line x1="9" x2="15" y1="8" y2="8" />
+                <line x1="17" x2="23" y1="16" y2="16" />
               </svg>
+              <span>{t("host_nav_filters", "Filters")}</span>
+              {appliedPropertyId && (
+                <span
+                  aria-hidden="true"
+                  className="size-2 rounded-full bg-emerald-400"
+                />
+              )}
             </button>
           </div>
 
@@ -505,7 +515,7 @@ export function HostTodayWorkspace({
               <button
                 type="button"
                 onClick={() => void refreshReservations()}
-                className="font-semibold underline underline-offset-4 cursor-pointer"
+                className="font-medium underline underline-offset-3 cursor-pointer"
               >
                 {t("host_today_retry", "Retry")}
               </button>

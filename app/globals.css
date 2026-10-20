@@ -751,3 +751,116 @@ input[type="number"] {
     animation-timing-function: cubic-bezier(0.2, 0, 0, 1);
   }
 }
+
+/* Become Host Modal & Dialog Smooth Animations */
+@keyframes modal-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modal-backdrop-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes modal-dialog-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes modal-dialog-out {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+}
+
+@keyframes modal-dialog-mobile-in {
+  from {
+    opacity: 0.6;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes modal-dialog-mobile-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}
+
+@keyframes modal-step-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-backdrop-animate-in {
+  animation: modal-backdrop-in 280ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: opacity;
+}
+
+.modal-backdrop-animate-out {
+  animation: modal-backdrop-out 180ms ease-in forwards;
+  will-change: opacity;
+}
+
+.modal-dialog-animate-in {
+  animation: modal-dialog-mobile-in 300ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+.modal-dialog-animate-out {
+  animation: modal-dialog-mobile-out 180ms cubic-bezier(0.4, 0, 1, 1) forwards;
+  will-change: transform, opacity;
+}
+
+@media (min-width: 640px) {
+  .modal-dialog-animate-in {
+    animation-name: modal-dialog-in;
+    animation-duration: 320ms;
+    animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .modal-dialog-animate-out {
+    animation-name: modal-dialog-out;
+    animation-duration: 180ms;
+    animation-timing-function: cubic-bezier(0.4, 0, 1, 1);
+  }
+}
+
+.modal-step-animate-in {
+  animation: modal-step-fade-in 220ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
