@@ -2,8 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { HostSubNav } from "./host-sub-nav";
+import { useSearchParams } from "next/navigation";
 import { ReservationCard } from "./reservation-card";
 import {
   PropertyPhoto,
@@ -25,6 +24,24 @@ import {
 import { useHostDashboardState } from "./host-dashboard-state";
 import { useLanguage } from "@/lib/i18n/language-context";
 
+const reservationPeriods: ReservationPeriod[] = [
+  "today",
+  "upcoming",
+  "staying",
+  "completed",
+  "pending",
+  "cancelled",
+  "all",
+];
+
+const primaryReservationPeriods: ReservationPeriod[] = ["today", "upcoming"];
+
+function parseReservationPeriod(value: string | null): ReservationPeriod {
+  return reservationPeriods.includes(value as ReservationPeriod)
+    ? (value as ReservationPeriod)
+    : "today";
+}
+
 export function HostTodayWorkspace({
   listings,
   bookings,
@@ -43,19 +60,11 @@ export function HostTodayWorkspace({
   initialPage?: number;
 }) {
   const { t } = useLanguage();
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const requestedTab = searchParams.get("tab");
-  const parsedInitialTab: ReservationPeriod =
-    initialTab ||
-    (requestedTab === "upcoming" ||
-      requestedTab === "staying" ||
-      requestedTab === "completed" ||
-      requestedTab === "pending" ||
-      requestedTab === "cancelled" ||
-      requestedTab === "all"
-      ? requestedTab
-      : "today");
+  const [pendingUrlListingId, setPendingUrlListingId] = useState(
+    () => searchParams.get("listing"),
+  );
+  const parsedInitialTab: ReservationPeriod = initialTab || parseReservationPeriod(searchParams.get("tab"));
 
   const [tab, setTab] = useState<ReservationPeriod>(parsedInitialTab);
   const [page, setPage] = useState<number>(
@@ -82,7 +91,7 @@ export function HostTodayWorkspace({
     initialTotalPagesProp ?? Math.max(1, Math.ceil((initialTotalCount ?? initialTotal ?? bookings.length) / 12)),
   );
   const [loading, setLoading] = useState(false);
-  const [refreshError, setRefreshError] = useState<string | null>(null);
+  const [isTabLoading, setIsTabLoading] = useState(false);
 
   // Map listings for fast lookup
   const listingsMap = useMemo(() => {
@@ -97,7 +106,23 @@ export function HostTodayWorkspace({
   const appliedPropertyId =
     selectedPropertyId && listingsMap.has(selectedPropertyId)
       ? selectedPropertyId
-      : null;
+      : pendingUrlListingId && listingsMap.has(pendingUrlListingId)
+        ? pendingUrlListingId
+        : null;
+
+  // Hydrate a deep-linked listing filter once. Clearing a filter later must
+  // stay cleared instead of being reapplied from stale useSearchParams data.
+  useEffect(() => {
+    const initialListingId = pendingUrlListingId;
+    if (!initialListingId) return;
+    const syncId = window.setTimeout(() => {
+      setPendingUrlListingId(null);
+      if (listingsMap.has(initialListingId)) {
+        setSelectedPropertyId(initialListingId);
+      }
+    }, 0);
+    return () => window.clearTimeout(syncId);
+  }, [listingsMap, pendingUrlListingId, setSelectedPropertyId]);
 
   // In-memory client cache to support instantaneous tab switching
   const cacheRef = useRef<
@@ -115,18 +140,24 @@ export function HostTodayWorkspace({
   const inFlightRef = useRef<
     Map<
       string,
-      Promise<{
-        bookings: HostReservation[];
-        totalCount: number;
-        totalPages: number;
-      }>
+      {
+        controller: AbortController;
+        promise: Promise<{
+          bookings: HostReservation[];
+          totalCount: number;
+          totalPages: number;
+        }>;
+      }
     >
   >(new Map());
-  const abortControllerRef = useRef<AbortController | null>(null);
+  const abortControllerRef = useRef<Set<AbortController>>(new Set());
+  const unmountAbortTimeoutRef = useRef<number | null>(null);
+  const viewRequestIdRef = useRef(0);
 
   // Seed cache with server-rendered initial data
   useEffect(() => {
-    const initialKey = `${parsedInitialTab}:${page}:${appliedPropertyId || "all"}`;
+    const initialPageNumber = initialPage || initialPageProp || 1;
+    const initialKey = `${parsedInitialTab}:${initialPageNumber}:${appliedPropertyId || "all"}`;
     if (!cacheRef.current.has(initialKey)) {
       cacheRef.current.set(initialKey, {
         bookings: initialDeduplicated,
@@ -134,37 +165,48 @@ export function HostTodayWorkspace({
         totalPages: initialTotalPagesProp ?? Math.max(1, Math.ceil((initialTotalCount ?? initialTotal ?? bookings.length) / 12)),
       });
     }
-  }, [parsedInitialTab, page, appliedPropertyId, initialDeduplicated, initialTotalCount, initialTotal, initialTotalPagesProp, bookings.length]);
+  }, [parsedInitialTab, initialPage, initialPageProp, appliedPropertyId, initialDeduplicated, initialTotalCount, initialTotal, initialTotalPagesProp, bookings.length]);
 
   const fetchReservations = useCallback(
     async (
       targetTab: ReservationPeriod,
       targetPage: number,
       targetPropertyId: string | null,
-      options?: { bypassCache?: boolean },
+      options?: {
+        force?: boolean;
+        showSkeleton?: boolean;
+      },
     ) => {
       const cacheKey = `${targetTab}:${targetPage}:${targetPropertyId || "all"}`;
+      // Every view change, including an instant cache hit, must invalidate an
+      // older request. Otherwise a slower previous-tab response can overwrite
+      // the data after the host has already switched back.
+      const viewRequestId = ++viewRequestIdRef.current;
 
-      if (!options?.bypassCache && cacheRef.current.has(cacheKey)) {
+      if (!options?.force && cacheRef.current.has(cacheKey)) {
         const cached = cacheRef.current.get(cacheKey)!;
         setReservations(cached.bookings);
         setTotalCount(cached.totalCount);
         setTotalPages(cached.totalPages);
-        setRefreshError(null);
         setLoading(false);
-        return;
+        setIsTabLoading(false);
+        return cached;
       }
 
-      abortControllerRef.current?.abort();
-      const controller = new AbortController();
-      abortControllerRef.current = controller;
-
       setLoading(true);
+      setIsTabLoading(Boolean(options?.showSkeleton));
 
       const requestKey = `${targetTab}:${targetPage}:${targetPropertyId || "all"}`;
-      let pendingPromise = inFlightRef.current.get(requestKey);
+      let pendingRequest = inFlightRef.current.get(requestKey);
+      if (pendingRequest?.controller.signal.aborted) {
+        inFlightRef.current.delete(requestKey);
+        pendingRequest = undefined;
+      }
 
-      if (!pendingPromise) {
+      if (!pendingRequest) {
+        const controller = new AbortController();
+        abortControllerRef.current.add(controller);
+
         const queryParams = new URLSearchParams();
         queryParams.set("tab", targetTab);
         queryParams.set("page", String(targetPage));
@@ -173,7 +215,7 @@ export function HostTodayWorkspace({
           queryParams.set("propertyId", targetPropertyId);
         }
 
-        pendingPromise = (async () => {
+        const promise = (async () => {
           // Exactly matches regex: fetch("/api/v1/host/workspace?includeCancelled=1"
           const endpoint = `/api/v1/host/workspace?includeCancelled=1&${queryParams.toString()}`;
           const response = await fetch(endpoint, {
@@ -187,9 +229,7 @@ export function HostTodayWorkspace({
             !payload?.success ||
             !Array.isArray(payload.data?.bookings)
           ) {
-            throw new Error(
-              payload?.error?.message || t("host_today_refresh_err_fallback", "Unable to refresh reservations."),
-            );
+            throw new Error("Unable to refresh reservations.");
           }
           const fetchedBookings = deduplicateHostReservations(payload.data.bookings);
           const count =
@@ -211,108 +251,135 @@ export function HostTodayWorkspace({
           cacheRef.current.set(cacheKey, result);
           return result;
         })().finally(() => {
-          inFlightRef.current.delete(requestKey);
+          abortControllerRef.current.delete(controller);
+          if (
+            inFlightRef.current.get(requestKey)?.controller === controller
+          ) {
+            inFlightRef.current.delete(requestKey);
+          }
         });
 
-        inFlightRef.current.set(requestKey, pendingPromise);
+        pendingRequest = { controller, promise };
+        inFlightRef.current.set(requestKey, pendingRequest);
       }
 
       try {
-        const result = await pendingPromise;
-        if (!controller.signal.aborted) {
+        const result = await pendingRequest.promise;
+        if (!pendingRequest.controller.signal.aborted && viewRequestId === viewRequestIdRef.current) {
           setReservations(result.bookings);
           setTotalCount(result.totalCount);
           setTotalPages(result.totalPages);
-          setRefreshError(null);
           setLoading(false);
+          setIsTabLoading(false);
         }
-      } catch (error) {
-        if (controller.signal.aborted) return;
-        setRefreshError(
-          error instanceof Error
-            ? error.message
-            : t("host_today_refresh_err_fallback", "Unable to refresh reservations."),
-        );
-        setLoading(false);
+        return result;
+      } catch {
+        // Background refreshes should keep the last known reservations visible.
+        // A failed request is intentionally silent so intermittent network/API
+        // failures do not repeatedly interrupt the host workspace.
+        if (!pendingRequest.controller.signal.aborted && viewRequestId === viewRequestIdRef.current) {
+          setLoading(false);
+          setIsTabLoading(false);
+        }
+        return null;
       }
     },
     [],
   );
+
+  useEffect(() => {
+    if (unmountAbortTimeoutRef.current !== null) {
+      window.clearTimeout(unmountAbortTimeoutRef.current);
+      unmountAbortTimeoutRef.current = null;
+    }
+    const controllers = abortControllerRef.current;
+    return () => {
+      // React Strict Mode replays effects in development. Deferring this by one
+      // task lets the replay reuse the in-flight initial-tab request instead of
+      // aborting it and starting a duplicate request.
+      unmountAbortTimeoutRef.current = window.setTimeout(() => {
+        for (const controller of controllers) controller.abort();
+        controllers.clear();
+      }, 0);
+    };
+  }, []);
+
+  // The server renders the first view, then the browser refreshes only that
+  // selected tab. Other tabs remain idle until the host explicitly opens one.
+  useEffect(() => {
+    void fetchReservations(tab, page, appliedPropertyId, {
+      force: true,
+      showSkeleton: true,
+    });
+    // Initial data is intentionally refreshed once after hydration.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const pushClientUrl = useCallback((nextParams: URLSearchParams) => {
+    const query = nextParams.toString();
+    window.history.pushState(
+      window.history.state,
+      "",
+      query ? `/host/today?${query}` : "/host/today",
+    );
+  }, []);
 
   const handleTabChange = useCallback(
     (newTab: ReservationPeriod) => {
       if (newTab === tab) return;
       setTab(newTab);
       setPage(1);
-      const nextParams = new URLSearchParams(searchParams.toString());
+      const nextParams = new URLSearchParams(window.location.search);
       nextParams.set("tab", newTab);
       nextParams.delete("page");
       if (appliedPropertyId) {
         nextParams.set("listing", appliedPropertyId);
       }
-      router.replace(`/host/today?${nextParams.toString()}`, { scroll: false });
-      void fetchReservations(newTab, 1, appliedPropertyId);
+      pushClientUrl(nextParams);
+      void fetchReservations(newTab, 1, appliedPropertyId, { showSkeleton: true });
     },
-    [tab, searchParams, appliedPropertyId, router, fetchReservations],
+    [tab, appliedPropertyId, fetchReservations, pushClientUrl],
   );
 
   const handlePageChange = useCallback(
     (newPage: number) => {
       if (newPage === page || newPage < 1 || newPage > totalPages) return;
       setPage(newPage);
-      const nextParams = new URLSearchParams(searchParams.toString());
+      const nextParams = new URLSearchParams(window.location.search);
       nextParams.set("tab", tab);
       nextParams.set("page", String(newPage));
       if (appliedPropertyId) {
         nextParams.set("listing", appliedPropertyId);
       }
-      router.replace(`/host/today?${nextParams.toString()}`, { scroll: false });
-      void fetchReservations(tab, newPage, appliedPropertyId);
+      pushClientUrl(nextParams);
+      void fetchReservations(tab, newPage, appliedPropertyId, { showSkeleton: true });
     },
-    [page, totalPages, searchParams, tab, appliedPropertyId, router, fetchReservations],
+    [page, totalPages, tab, appliedPropertyId, fetchReservations, pushClientUrl],
   );
 
-  const refreshReservations = useCallback(async () => {
-    void fetchReservations(tab, page, appliedPropertyId, { bypassCache: true });
-  }, [fetchReservations, tab, page, appliedPropertyId]);
-
   useEffect(() => {
-    const refreshWhenVisible = () => {
-      if (document.visibilityState === "visible") void refreshReservations();
-    };
-    const interval = window.setInterval(refreshWhenVisible, 60_000);
-    window.addEventListener("focus", refreshWhenVisible);
-    document.addEventListener("visibilitychange", refreshWhenVisible);
-    window.addEventListener("homyz:reservations-updated", refreshWhenVisible);
-    return () => {
-      window.clearInterval(interval);
-      window.removeEventListener("focus", refreshWhenVisible);
-      document.removeEventListener("visibilitychange", refreshWhenVisible);
-      window.removeEventListener(
-        "homyz:reservations-updated",
-        refreshWhenVisible,
-      );
-    };
-  }, [refreshReservations]);
+    const restoreWorkspaceFromHistory = () => {
+      const params = new URLSearchParams(window.location.search);
+      const historyTab = parseReservationPeriod(params.get("tab"));
+      const historyPage = Math.max(1, Number(params.get("page")) || 1);
+      const requestedPropertyId = params.get("listing");
+      const historyPropertyId =
+        requestedPropertyId && listingsMap.has(requestedPropertyId)
+          ? requestedPropertyId
+          : null;
 
-  useEffect(() => {
-    if (
-      requestedTab === "upcoming" ||
-      requestedTab === "staying" ||
-      requestedTab === "completed" ||
-      requestedTab === "pending" ||
-      requestedTab === "cancelled" ||
-      requestedTab === "all" ||
-      requestedTab === "today"
-    ) {
-      if (requestedTab !== tab) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setTab(requestedTab);
-        setPage(1);
-        void fetchReservations(requestedTab, 1, appliedPropertyId);
-      }
-    }
-  }, [requestedTab, tab, appliedPropertyId, fetchReservations]);
+      setTab(historyTab);
+      setPage(historyPage);
+      setPendingUrlListingId(null);
+      setSelectedPropertyId(historyPropertyId);
+      void fetchReservations(historyTab, historyPage, historyPropertyId, {
+        showSkeleton: true,
+      });
+    };
+
+    window.addEventListener("popstate", restoreWorkspaceFromHistory);
+    return () => window.removeEventListener("popstate", restoreWorkspaceFromHistory);
+  }, [fetchReservations, listingsMap, setSelectedPropertyId]);
 
   useEffect(() => {
     const updateCurrentTime = () => {
@@ -324,18 +391,6 @@ export function HostTodayWorkspace({
     const interval = window.setInterval(updateCurrentTime, 60_000);
     return () => window.clearInterval(interval);
   }, []);
-
-  useEffect(() => {
-    const requestedListingId = searchParams.get("listing");
-    if (requestedListingId && listingsMap.has(requestedListingId)) {
-      if (requestedListingId !== selectedPropertyId) {
-        setSelectedPropertyId(requestedListingId);
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setPage(1);
-        void fetchReservations(tab, 1, requestedListingId);
-      }
-    }
-  }, [listingsMap, searchParams, setSelectedPropertyId, selectedPropertyId, tab, fetchReservations]);
 
   useEffect(() => {
     const requestedReservationId = searchParams.get("reservation");
@@ -379,19 +434,12 @@ export function HostTodayWorkspace({
     return listings[0] || null;
   }, [selected, listingsMap, listings]);
 
-  const closeReservationDetails = () => {
-    setSelected(null);
-    const nextParams = new URLSearchParams(searchParams.toString());
-    nextParams.delete("reservation");
-    const query = nextParams.toString();
-    router.replace(query ? `/host/today?${query}` : "/host/today", { scroll: false });
-  };
-
   const handleApplyFilter = (propId: string | null) => {
+    setPendingUrlListingId(null);
     setSelectedPropertyId(propId);
     setFiltersOpen(false);
     setPage(1);
-    const nextParams = new URLSearchParams(searchParams.toString());
+    const nextParams = new URLSearchParams(window.location.search);
     nextParams.set("tab", tab);
     nextParams.delete("page");
     if (propId) {
@@ -399,36 +447,24 @@ export function HostTodayWorkspace({
     } else {
       nextParams.delete("listing");
     }
-    router.replace(`/host/today?${nextParams.toString()}`, { scroll: false });
-    void fetchReservations(tab, 1, propId);
+    pushClientUrl(nextParams);
+    void fetchReservations(tab, 1, propId, { showSkeleton: true });
   };
 
   return (
     <>
-      <HostSubNav
-        activeTab="today"
-        onFilterClick={openFilters}
-        filterActive={Boolean(appliedPropertyId)}
-      />
-
       <main className="w-full min-w-0 pb-12 pt-10 sm:pb-24 sm:pt-10">
         <Container>
-          {/* Toggle & Mobile Filter Bar */}
-          <div className="mb-6 flex w-full items-center justify-between gap-3 border-b border-[#727272] pb-5 sm:mb-10 sm:pb-7">
-            {/* Reservation Period Pill Switcher */}
+          {/* Primary period tabs with additional periods in the Filters dialog. */}
+          <div className="mb-6 grid w-full grid-cols-[1fr_auto_1fr] items-center gap-3 pb-5 sm:mb-10 sm:pb-7">
             <div
-              className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1"
+              className="col-start-2 flex items-center gap-2 py-1"
               role="tablist"
               aria-label={t("host_today_aria_period", "Reservation period")}
             >
               {[
                 { id: "today", label: t("host_today_tab_today", "Today") },
                 { id: "upcoming", label: t("host_today_tab_upcoming", "Upcoming") },
-                { id: "staying", label: t("host_today_tab_staying", "Current stays") },
-                { id: "completed", label: t("host_today_tab_completed", "Completed") },
-                { id: "pending", label: t("host_today_tab_pending", "Pending") },
-                { id: "cancelled", label: t("host_today_tab_cancelled", "Cancelled") },
-                { id: "all", label: t("host_today_tab_all", "All") },
               ].map((filterTab) => (
                 <button
                   key={filterTab.id}
@@ -445,14 +481,14 @@ export function HostTodayWorkspace({
               ))}
             </div>
 
-            {/* Mobile Filter Button */}
             <button
               type="button"
-              aria-label={t("host_today_filter_title", "Filter listings")}
+              aria-label={t("host_today_filters", "Filters")}
+              aria-expanded={filtersOpen}
               onClick={openFilters}
-              className={`flex size-12 shrink-0 items-center justify-center rounded-full sm:hidden transition-colors duration-300 ease-in-out ${appliedPropertyId
-                ? "bg-[#1F1F1F] text-white border-zinc-900"
-                : "bg-[#F3F4F5] text-[#1F1F1F]"
+              className={`col-start-3 justify-self-end flex min-h-10 items-center gap-2 rounded-full px-3.5 text-sm font-medium transition-colors duration-300 ease-in-out ${appliedPropertyId || !primaryReservationPeriods.includes(tab)
+                ? "bg-[#1F1F1F] text-white"
+                : "bg-[#F3F4F5] text-[#1F1F1F] hover:bg-zinc-200"
                 }`}
             >
               <svg
@@ -474,58 +510,73 @@ export function HostTodayWorkspace({
                 <circle cx="12" cy="10" r="2" />
                 <circle cx="20" cy="14" r="2" />
               </svg>
+              <span>{t("host_today_filters", "Filters")}</span>
             </button>
           </div>
 
           {/* Section Headline */}
 
           {/* Section Headline */}
-          <h1 className="mb-6 wrap-break-word">
-            You have {totalCount}{" "}
-            {tab === "upcoming"
-              ? `${t("host_today_period_upcoming", "upcoming")} `
-              : tab === "staying"
-                ? `${t("host_today_period_staying", "current")} `
-                : tab === "completed"
-                  ? `${t("host_today_period_completed", "completed")} `
-                  : tab === "pending"
-                    ? `${t("host_today_period_pending", "pending")} `
-                    : tab === "cancelled"
-                      ? `${t("host_today_period_cancelled", "cancelled")} `
-                      : ""}
-            {totalCount === 1
-              ? t("host_today_unit_single", "reservation")
-              : t("host_today_unit_plural", "reservations")}
-          </h1>
-
-
-          {refreshError && (
+          {isTabLoading ? (
             <div
-              className="mb-5 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
-              role="status"
-            >
-              <span>
-                {t("host_today_refresh_error", "Reservations could not be refreshed. Showing the last available data.")}
-              </span>
-              <button
-                type="button"
-                onClick={() => void refreshReservations()}
-                className="font-semibold underline underline-offset-4 cursor-pointer"
-              >
-                {t("host_today_retry", "Retry")}
-              </button>
-            </div>
+              aria-label={t("host_today_loading_aria", "Loading reservations")}
+              className="mb-6 h-9 w-64 max-w-full rounded-md skeleton-shimmer"
+            />
+          ) : (
+            <h1 className="mb-6 wrap-break-word">
+              You have {totalCount}{" "}
+              {tab === "upcoming"
+                ? `${t("host_today_period_upcoming", "upcoming")} `
+                : tab === "staying"
+                  ? `${t("host_today_period_staying", "current")} `
+                  : tab === "completed"
+                    ? `${t("host_today_period_completed", "completed")} `
+                    : tab === "pending"
+                      ? `${t("host_today_period_pending", "pending")} `
+                      : tab === "cancelled"
+                        ? `${t("host_today_period_cancelled", "cancelled")} `
+                        : ""}
+              {totalCount === 1
+                ? t("host_today_unit_single", "reservation")
+                : t("host_today_unit_plural", "reservations")}
+            </h1>
           )}
 
+
           {/* Reservation Cards Grid */}
-          {displayedEvents.length > 0 ? (
+          {isTabLoading ? (
+            <div className="grid grid-cols-1 items-stretch gap-5 pb-2 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="relative flex min-h-[386px] w-full min-w-0 flex-col items-center justify-center rounded-[12px] border border-zinc-100 px-4 py-7 sm:min-h-[416px] sm:rounded-[20px] bg-white shadow-[0_1px_5px_rgba(0,0,0,0.1)]"
+                >
+                  <div className="relative flex w-[min(100%,190px)] flex-col items-center gap-5 sm:gap-6">
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="h-5 w-24 rounded-md skeleton-shimmer" />
+                      <div className="h-4 w-32 rounded-md skeleton-shimmer" />
+                    </div>
+                    <div className="relative flex flex-col items-center">
+                      <div className="h-[110px] w-[149.79px] rounded-[23px] skeleton-shimmer" />
+                      <div className="absolute -top-[20px] left-1/2 -translate-x-1/2 size-10 rounded-full skeleton-shimmer border border-zinc-200" />
+                    </div>
+                    <div className="flex flex-col items-center gap-1.5 w-full">
+                      <div className="h-3.5 w-3/4 rounded-md skeleton-shimmer" />
+                      <div className="h-3 w-1/2 rounded-md skeleton-shimmer" />
+                    </div>
+                    <div className="h-10 w-full rounded-xl skeleton-shimmer" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : displayedEvents.length > 0 ? (
             <div className={`grid grid-cols-1 items-stretch gap-5 pb-2 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4 transition-opacity duration-200 ${loading ? "opacity-60" : "opacity-100"}`}>
               {displayedEvents.map((event) => (
                 <ReservationCard
-                  key={event.booking.id}
+                  key={event.id}
                   event={event}
                   selected={selected?.id === event.booking.id}
-                  isActive={priorityReservationId === event.booking.id}
+                  isActive={priorityReservationId === event.id}
                   priorityLabel={
                     event.eventType === "staying"
                       ? t("host_today_priority_now", "Now")
@@ -611,10 +662,8 @@ export function HostTodayWorkspace({
                 <button
                   type="button"
                   onClick={() => {
-                    setSelectedPropertyId(null);
                     setDraftPropertyId(null);
-                    setPage(1);
-                    void fetchReservations(tab, 1, null);
+                    handleApplyFilter(null);
                   }}
                   className="mt-6 rounded-full bg-[#1F1F1F] px-6 py-2.5 text-sm font-medium text-white hover:bg-white border border-[#1f1f1f] hover:text-[#1f1f1f] transition-colors cursor-pointer"
                 >
@@ -664,11 +713,52 @@ export function HostTodayWorkspace({
           {/* Filter Listings Modal */}
           {filtersOpen && (
             <WorkspaceDialog
-              title={t("host_today_filter_title", "Filter listings")}
+              title={t("host_today_filters", "Filters")}
               onClose={() => setFiltersOpen(false)}
               maxWidth="max-w-[520px]"
               variant="listing-filter"
             >
+              <section className="border-b border-[#D7D7D7] pb-5">
+                <h3 className="text-sm font-semibold text-[#1F1F1F]">
+                  {t("host_today_filter_period", "Reservation status")}
+                </h3>
+                <div className="mt-3 flex flex-wrap gap-2" role="tablist" aria-label={t("host_today_filter_period", "Reservation status")}>
+                  {reservationPeriods.map((period) => {
+                    const labels: Record<ReservationPeriod, string> = {
+                      today: t("host_today_tab_today", "Today"),
+                      upcoming: t("host_today_tab_upcoming", "Upcoming"),
+                      staying: t("host_today_tab_staying", "Current stays"),
+                      completed: t("host_today_tab_completed", "Completed"),
+                      pending: t("host_today_tab_pending", "Pending"),
+                      cancelled: t("host_today_tab_cancelled", "Cancelled"),
+                      all: t("host_today_tab_all", "All"),
+                    };
+                    const selectedPeriod = tab === period;
+                    return (
+                      <button
+                        key={period}
+                        type="button"
+                        role="tab"
+                        aria-selected={selectedPeriod}
+                        onClick={() => {
+                          setFiltersOpen(false);
+                          handleTabChange(period);
+                        }}
+                        className={`rounded-full px-3.5 py-2 text-sm font-medium transition-colors ${selectedPeriod
+                          ? "bg-[#1F1F1F] text-white"
+                          : "bg-[#F3F4F5] text-[#1F1F1F] hover:bg-zinc-200"
+                          }`}
+                      >
+                        {labels[period]}
+                      </button>
+                    );
+                  })}
+                </div>
+              </section>
+
+              <p className="mb-3 mt-5 text-sm font-semibold text-[#1F1F1F]">
+                {t("host_today_filter_listing", "Listing")}
+              </p>
               <div className="max-h-[calc(100dvh-190px)] space-y-1.5 overflow-y-auto overscroll-contain pr-1 sm:max-h-[50dvh] sm:space-y-2 sm:py-1">
                 <label className="flex min-h-12 cursor-pointer items-center gap-3 rounded-xl px-1 transition-colors hover:bg-zinc-50 sm:min-h-[60px] sm:gap-5">
                   <span

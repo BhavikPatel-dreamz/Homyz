@@ -18,14 +18,17 @@ test("host performance reporting is rendered on the dedicated dashboard route", 
   assert.match(dashboardPage, /<HostKpiOverview initialData=\{dashboardData\} \/>/);
 });
 
-test("host entry points route to the dedicated dashboard", () => {
+test("host entry points route to the Today workspace", () => {
   const loginPage = read("app/(auth)/login/page.tsx");
   const registerPage = read("app/(auth)/register/page.tsx");
   const authForm = read("components/forms/homyz-auth-form.tsx");
   const appHeader = read("components/dashboard/app-header.tsx");
 
-  assert.match(loginPage, /redirect\("\/host\/dashboard"\)/);
-  assert.match(registerPage, /redirect\("\/host\/dashboard"\)/);
-  assert.match(authForm, /return "\/host\/dashboard"/);
-  assert.match(appHeader, /href="\/host\/dashboard"/);
+  const guestDashboard = read("app/(protected)/dashboard/page.tsx");
+
+  assert.match(loginPage, /redirect\("\/host\/today"\)/);
+  assert.match(registerPage, /redirect\("\/host\/today"\)/);
+  assert.match(authForm, /return "\/host\/today"/);
+  assert.match(appHeader, /href="\/host\/today"/);
+  assert.match(guestDashboard, /redirect\("\/host\/today"\)/);
 });

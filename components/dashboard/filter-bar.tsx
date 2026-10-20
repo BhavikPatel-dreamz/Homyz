@@ -79,9 +79,9 @@ export function FilterBar({
             placeholder={t("dashboard_search_placeholder", "Search by property, guest name, or location...")}
             value={filters.search}
             onChange={(e) => onChange({ search: e.target.value })}
-            className={`w-full rounded-[30px] border border-[var(--border)] bg-[var(--surface)] pl-10 ${
+            className={`w-full rounded-[30px] border border-[#727272] bg-[white] pl-10 ${
               filters.search ? "pr-10" : "pr-4"
-            } py-2 text-sm font-normal text-muted-foreground placeholder:text-muted-foreground outline-none focus:border-[var(--muted-foreground)] transition-colors min-h-[46px]`}
+            } py-2 text-sm font-normal text-[#1f1f1f] placeholder:text-[#727272] outline-none focus:border-[#1f1f1f] transition-colors min-h-[46px]`}
           />
           {filters.search.trim().length > 0 && (
             <button
@@ -102,7 +102,7 @@ export function FilterBar({
           <select
             value={filters.status}
             onChange={(e) => onChange({ status: e.target.value })}
-            className="w-full sm:w-auto appearance-none rounded-[30px] border border-[var(--border)] bg-[var(--surface)] pl-4 pr-9 py-2 text-xs font-semibold text-muted-foreground outline-none focus:border-[var(--muted-foreground)] transition-colors cursor-pointer min-h-[46px]"
+            className="w-full sm:w-auto appearance-none rounded-[30px] border border-[#727272] bg-white pl-4 pr-9 py-2 text-sm font-normal text-[#1f1f1f] outline-none focus:border-[#727272] transition-colors cursor-pointer min-h-[46px]"
           >
             <option value="ALL">{t("dashboard_status_all", "All Statuses")}</option>
             <option value="CONFIRMED">{t("dashboard_status_confirmed", "Confirmed")}</option>

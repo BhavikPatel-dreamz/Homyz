@@ -553,7 +553,7 @@ export function ReservationDetails({
               <div className="grid gap-3 sm:grid-cols-2">
                 <Link
                   href={`/host/bookings/${booking.id}`}
-                  className="flex min-h-11 min-w-0 items-center justify-center rounded-full border border-[#1F1F1F] px-3 py-3 text-center text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-[#1F1F1F] hover:text-white dark:border-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-800"
+                  className="flex min-h-11 min-w-0 items-center justify-center rounded-full bg-[#FCDF9C] px-3 py-3 text-center text-sm font-medium text-[#1f1f1f] transition-colors duration-300 hover:bg-black hover:text-white dark:bg-zinc-100 dark:text-[#1F1F1F] dark:hover:bg-white"
                 >
                   View booking
                 </Link>
@@ -575,7 +575,7 @@ export function ReservationDetails({
               ) : canReviewGuest ? (
                 <Link
                   href={`/host/reviews/${booking.id}`}
-                  className="flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-[#1F1F1F] px-4 py-3 text-center text-sm font-medium text-white transition-colors hover:bg-zinc-700 dark:bg-white dark:text-[#1F1F1F] dark:hover:bg-zinc-200"
+                    className="flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-[#1F1F1F] px-4 py-3 text-center text-sm font-medium text-white transition-colors hover:bg-[#FCDF9C] hover:text-[#1f1f1f] dark:bg-white dark:text-[#1F1F1F] dark:hover:bg-zinc-200"
                 >
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                     <path d="M12 20h9" />
@@ -607,7 +607,7 @@ export function ReservationDetails({
                       Ratings shared for this reservation
                     </p>
                   </div>
-                  <span className="rounded-full bg-zinc-100 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wide text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+                  <span className="rounded-full bg-zinc-100 px-2.5 py-1 text-[10px] font-medium  text-[#727272] dark:bg-zinc-800 dark:text-zinc-300">
                     {[booking.hostReview, booking.guestReview].filter(Boolean).length} of 2
                   </span>
                 </div>
@@ -875,12 +875,10 @@ export function ReservationDetails({
                 <button
                   type="button"
                   onClick={() => setShowInvoice(true)}
-                  className="flex min-h-11 w-full items-center justify-between rounded-lg border border-[#d7d7d7] p-3 text-zinc-700 hover:bg-zinc-50 hover:text-zinc-950 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-white transition-colors"
+                  className="flex min-h-11 w-full items-center justify-between rounded-full border border-[#1f1f1f] py-3 px-4 text-white bg-[#1f1f1f] hover:bg-[#FCDF9C] hover:text-[#1f1f1f] duration-300 transition-colors group"
                 >
-                  <span className="text-base font-medium">
-                    {t("host_cal_res_view_vat_invoice", "View VAT invoice")}
-                  </span>
-                  <svg aria-hidden="true" className="size-4 shrink-0 text-[#1f1f1f]" viewBox="0 0 24 24" fill="none">
+                  <span className="text-base font-medium">View VAT invoice</span>
+                  <svg aria-hidden="true" className="size-6 shrink-0" viewBox="0 0 24 24" fill="none">
                     <path d="m9 18 6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </button>
@@ -947,13 +945,13 @@ function ReviewRatingSummary({
   ].filter(([, value]) => typeof value === "number") as Array<[string, number]>;
 
   return (
-    <article className="rounded-xl border border-zinc-200 bg-zinc-50/70 p-3.5 dark:border-zinc-700 dark:bg-zinc-800/50">
+    <article className="rounded-xl border border-zinc-200 bg-[#F3F4F5] p-3.5 dark:border-zinc-700 dark:bg-zinc-800/50">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <h4 className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100">{title}</h4>
           <p className="mt-0.5 text-sm text-[#727272]">{detail}</p>
         </div>
-        <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-300" aria-label={`${review.rating} out of 5 stars`}>
+        <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-300" aria-label={`${review.rating} out of 5 stars`}>
           <span aria-hidden="true">★</span>
           {review.rating}/5
         </span>
@@ -979,7 +977,7 @@ function ReviewRatingSummary({
       )}
 
       {review.comment && (
-        <p className="mt-3 border-t border-zinc-200 pt-3 text-xs leading-5 text-zinc-700 dark:border-zinc-700 dark:text-zinc-300">
+        <p className="mt-3 border-t border-zinc-200 pt-3 text-sm leading-5 text-zinc-700 dark:border-zinc-700 dark:text-zinc-300">
           {review.comment}
         </p>
       )}

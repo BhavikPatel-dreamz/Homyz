@@ -1,7 +1,6 @@
 "use client";
 
 import { HostHeader } from "./host-header";
-import { HostSubNav } from "./host-sub-nav";
 import { Container } from "../ui";
 import { Footer } from "@/components/dashboard/footer";
 import { useLanguage } from "@/lib/i18n/language-context";
@@ -11,9 +10,8 @@ export function HostTodaySkeleton({ cardCount = 4 }: { cardCount?: number }) {
 
   return (
     <div className="min-h-screen bg-white text-[#1F1F1F] font-sans flex flex-col selection:bg-[#FCDF9C]">
-      {/* 1. TOP HEADER & SUBNAV */}
+      {/* 1. TOP HEADER */}
       <HostHeader />
-      <HostSubNav activeTab="today" />
 
       {/* 2. MAIN CONTENT AREA */}
       <main aria-busy="true" aria-label={t("host_today_loading_aria", "Loading reservations")} className="w-full min-w-0 flex-1 pb-12 pt-10 sm:pb-24 sm:pt-10">

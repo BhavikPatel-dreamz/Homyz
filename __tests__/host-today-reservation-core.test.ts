@@ -77,6 +77,20 @@ describe("Host Today reservation core flow", () => {
     assert.equal(events[2].subtitleDisplay, "Guest checks in");
   });
 
+  it("keeps same-day checkout and check-in as separate operational events", () => {
+    const events = buildOperationalEvents([
+      reservation({
+        id: "turnover",
+        listingId: "listing-a",
+        startDate: today,
+        endDate: today,
+      }),
+    ], listings, "today", today);
+
+    assert.deepEqual(events.map((event) => event.eventType), ["checkout", "checkin"]);
+    assert.deepEqual(events.map((event) => event.id), ["turnover:checkout", "turnover:checkin"]);
+  });
+
   it("shows only future starts under Upcoming and preserves exact booking dates", () => {
     const events = buildOperationalEvents([
       reservation({ id: "today", listingId: "listing-a", startDate: today }),
@@ -120,7 +134,7 @@ describe("Host Today reservation core flow", () => {
     assert.equal(selectedListingEvents[0].listing.title, "Riyadh Loft");
   });
 
-  it("uses one server fetch and client-only tab filtering with a reusable card", () => {
+  it("uses one server data source and a reusable card for client-side tab views", () => {
     const page = fs.readFileSync(
       path.join(root, "app/(protected)/host/today/page.tsx"),
       "utf8",
@@ -138,7 +152,7 @@ describe("Host Today reservation core flow", () => {
     assert.match(page, /today=\{today\}/);
     assert.match(workspace, /buildOperationalEvents\(reservations, listingsMap, tab, currentDate\)/);
     assert.match(workspace, /<ReservationCard/);
-    assert.equal(workspace.match(/fetch\("\/api\/v1\/host\/workspace"/g)?.length, 1);
+    assert.equal(workspace.match(/fetch\(endpoint/g)?.length, 1);
     assert.match(card, /PropertyPhoto/);
     assert.match(card, /guestCount/);
   });

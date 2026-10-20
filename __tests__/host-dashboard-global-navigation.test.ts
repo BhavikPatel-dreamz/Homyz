@@ -177,6 +177,7 @@ runTest("HostSubNav defines the 4 canonical host sections: Today, Calendar, List
 
   assert.ok(hostSubNavCode.includes('id: "messages"'), "HostSubNav must include 'messages' tab");
   assert.ok(hostSubNavCode.includes('href: "/host/messages"'), "Messages tab must point to /host/messages");
+  assert.ok(!hostSubNavCode.includes('href: "/host/resolution-center"'), "Resolution Center must be available only through the host menu");
 });
 
 runTest("HostSubNav accurately resolves active tab from pathname including sub-routes and queries", () => {

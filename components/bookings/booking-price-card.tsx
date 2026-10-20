@@ -62,7 +62,7 @@ export function BookingPriceCard({
         <h2 id="price-summary-heading" className="text-lg font-medium text-[#1F1F1F]">
           {t("booking_details_price_details", "Price details")}
         </h2>
-        <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${statusDetails.badgeClass}`}>
+        <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${statusDetails.badgeClass}`}>
           {statusDetails.badgeLabel}
         </span>
       </div>
@@ -165,7 +165,7 @@ export function BookingPriceCard({
           </div>
         )}
 
-        <div className="flex justify-between gap-4 border-t border-zinc-200 pt-4 sm:text-base text-sm font-semibold text-[#1F1F1F]">
+        <div className="flex justify-between gap-4 border-t border-zinc-200 pt-4 sm:text-base text-sm font-medium text-[#1F1F1F]">
           <dt>{t("booking_details_total_paid", { currency: pricing.currency }, "Total paid ({currency})")}</dt>
           <dd className="sm:text-lg text-sm text-emerald-800">
             <CurrencyPrice
@@ -178,7 +178,7 @@ export function BookingPriceCard({
 
         <div className="flex items-center justify-between gap-4 border-t border-zinc-100 pt-3 text-xs text-[#1f1f1f]">
           <dt className="text-sm font-medium">{t("booking_details_payment_status", "Payment")}</dt>
-          <dd className="font-semibold text-amber-900 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full">
+          <dd className="font-medium text-amber-900 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full">
             {t("booking_details_pending_deferred", "Pending / Deferred")}
           </dd>
         </div>
@@ -288,14 +288,14 @@ export function BookingPriceCard({
             <button
               type="button"
               onClick={onOpenReceipt}
-              className="flex min-h-11 w-full items-center justify-center rounded-lg bg-[#1F1F1F] px-5 text-sm font-semibold text-white hover:bg-zinc-800 transition-colors cursor-pointer"
+              className="flex min-h-11 w-full items-center justify-center rounded-lg bg-[#1F1F1F] px-5 text-sm font-medium text-white hover:bg-zinc-800 transition-colors cursor-pointer"
             >
               {t("booking_details_view_cancel_receipt", "View cancellation receipt")}
             </button>
 
             <Link
               href="/listings"
-              className="flex min-h-10 w-full items-center justify-center rounded-lg border border-zinc-300 bg-white px-4 text-sm font-semibold text-zinc-800 hover:bg-zinc-50 transition-colors"
+              className="flex min-h-10 w-full items-center justify-center rounded-lg border border-zinc-300 bg-white px-4 text-sm font-medium text-zinc-800 hover:bg-zinc-50 transition-colors"
             >
               {t("booking_details_find_another_stay", "Find another stay")}
             </Link>
@@ -308,7 +308,7 @@ export function BookingPriceCard({
             <button
               type="button"
               onClick={onOpenContact}
-              className="flex min-h-11 w-full items-center justify-center rounded-lg bg-[#1F1F1F] px-5 text-sm font-semibold text-white hover:bg-zinc-800 transition-colors cursor-pointer"
+              className="flex min-h-11 w-full items-center justify-center rounded-lg bg-[#1F1F1F] px-5 text-sm font-medium text-white hover:bg-zinc-800 transition-colors cursor-pointer"
             >
               {t("booking_details_message_host_btn", "Message host")}
             </button>

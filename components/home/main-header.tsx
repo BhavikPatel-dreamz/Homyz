@@ -90,7 +90,7 @@ export function MainHeader() {
           ) : isHost ? (
             <Link
               className="px-5 py-2 rounded-full bg-[#F3D79F] hover:bg-[#ebce92] text-sm font-medium text-gray-800 transition-all shadow-sm whitespace-nowrap"
-              href="/host/listings"
+              href="/host/today"
             >
               {t("header_switch_hosting") || "Switch to hosting"}
             </Link>
@@ -137,7 +137,7 @@ export function MainHeader() {
               {user ? (
                 isHost ? (
                   <div className="space-y-1">
-                    <Link href="/host/listings" onClick={() => setMenuOpen(false)} className="block rounded-xl px-3 py-2 text-xs font-semibold text-gray-700 transition hover:bg-gray-50">
+                    <Link href="/host/today" onClick={() => setMenuOpen(false)} className="block rounded-xl px-3 py-2 text-xs font-semibold text-gray-700 transition hover:bg-gray-50">
                       {t("header_host_workspace") || "Host Workspace"}
                     </Link>
                     <Link href="/dashboard" onClick={() => setMenuOpen(false)} className="block rounded-xl px-3 py-2 text-xs font-semibold text-gray-700 transition hover:bg-gray-50">

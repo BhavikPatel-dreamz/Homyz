@@ -143,7 +143,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
   const isHosting = isHost && isHostRoute;
 
   return (
-    <header className="header sticky top-0 lg:z-9999 z-40 w-full bg-white text-[#1F1F1F]" suppressHydrationWarning>
+    <header className="header sticky top-0 lg:z-99 z-40 w-full bg-white text-[#1F1F1F]" suppressHydrationWarning>
       <Container>
         <div
           className={`header-wrapper relative flex min-h-[96px] w-full items-center justify-between border-b-0 py-0 md:min-h-0 md:py-4 lg:py-5 ${hasHeaderDivider ? "md:border-b md:border-[#1F1F1F]" : ""
@@ -211,14 +211,14 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
               isHostRoute ? (
                 <Link
                   href="/dashboard"
-                  className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-4 py-2.5 md:px-6 md:py-3 lg:text-base text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 min-[992px]:inline-flex ${primaryButtonInteractionClass}`}
+                  className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-4 py-2.5 md:px-6 md:py-2.75 lg:text-base text-sm font-normal text-[#1F1F1F] hover:text-white transition-colors duration-300 min-[992px]:inline-flex ${primaryButtonInteractionClass}`}
                 >
                   {t("header_switch_traveling") || "Switch to traveling"}
                 </Link>
               ) : (
                 <Link
-                  href="/host/dashboard"
-                  className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-4 py-2.5 md:px-6 md:py-3 lg:text-base text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 sm:inline-flex ${primaryButtonInteractionClass}`}
+                  href="/host/today"
+                      className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-4 py-2.5 md:px-6 md:py-2.75 lg:text-base text-sm font-normal text-[#1F1F1F] hover:text-white transition-colors duration-300 sm:inline-flex ${primaryButtonInteractionClass}`}
                 >
                   {t("header_switch_hosting") || "Switch to hosting"}
                 </Link>
@@ -228,7 +228,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                 type="button"
                 onClick={handleBecomeHost}
                 disabled={isConvertingRole}
-                className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-3 lg:text-base text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 min-[992px]:inline-flex ${primaryButtonInteractionClass}`}
+                    className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-2.75 lg:text-base text-sm font-normal text-[#1F1F1F] hover:text-white transition-colors duration-300 min-[992px]:inline-flex ${primaryButtonInteractionClass}`}
               >
                 {isConvertingRole ? (t("host_loading") || "Loading...") : (t("header_become_a_host") || "Become a host")}
               </button>
@@ -655,12 +655,12 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                         {isHost && (
                           <div className="pt-0.5 pb-1">
                             <Link
-                              href="/host/dashboard"
+                              href="/host/today"
                               onClick={() => setMenuOpen(false)}
                               className="flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-medium text-[#1F1F1F] bg-[#FCDF9C]/50 hover:bg-[#FCDF9C] rounded-2xl transition-colors"
                             >
                               <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
-                                <Image src="/images/icons/today-icon.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
+                                    <Image src="/images/icons/streamline-freehand/home-chimney-2--Streamline-Freehand.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
                               </span>
                               <span>{t("header_switch_hosting") || "Switch to hosting"}</span>
                             </Link>

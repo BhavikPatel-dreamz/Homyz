@@ -6,7 +6,7 @@ import test from "node:test";
 const read = (relativePath: string) =>
   fs.readFileSync(path.join(process.cwd(), relativePath), "utf8");
 
-test("host dashboard omits workspace navigation without changing other host navigation users", () => {
+test("host dashboard and Today omit workspace navigation without changing other host navigation users", () => {
   const dashboardPage = read("app/(protected)/host/dashboard/page.tsx");
   const todayWorkspace = read("components/host/host-today-workspace.tsx");
   const calendarWorkspace = read("components/host/host-calendar-workspace.tsx");
@@ -14,7 +14,7 @@ test("host dashboard omits workspace navigation without changing other host navi
   assert.doesNotMatch(dashboardPage, /HostSubNav/);
   assert.match(dashboardPage, /<HostHeader\s*\/>/);
   assert.match(dashboardPage, /pb-5 pt-4 sm:flex-1 sm:pt-10 xl:pb-24/);
-  assert.match(todayWorkspace, /<HostSubNav/);
+  assert.doesNotMatch(todayWorkspace, /HostSubNav/);
   assert.match(calendarWorkspace, /<HostSubNav activeTab="calendar"/);
 });
 

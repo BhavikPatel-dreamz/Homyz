@@ -23,7 +23,7 @@ export default async function RegisterPage({
       redirect("/admin");
     }
     if (user.role === "HOST" && (safeCallbackUrl === "/" || safeCallbackUrl === "/dashboard")) {
-      redirect("/host/dashboard");
+      redirect("/host/today");
     }
     if (safeCallbackUrl === "/dashboard") {
       redirect("/");

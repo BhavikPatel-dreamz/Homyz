@@ -1,11 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { StarRating } from "@/components/reviews/star-rating";
-import { CurrencyPrice } from "@/components/ui/currency-price";
-import { formatBookingDateRange } from "@/lib/booking/booking-date";
 import {
   CLEANLINESS_FEEDBACK_TAGS,
   CLEANLINESS_RATING_LABELS,
@@ -118,9 +116,11 @@ function FeedbackTagSelector<Tag extends string>({
   onToggle: (tag: Tag) => void;
 }) {
   return (
-    <div className="mt-7 text-left">
-      <p className="text-sm font-semibold text-[#1F1F1F]">What went well? <span className="font-normal text-[#727272]">Optional</span></p>
-      <div className="mt-3 flex flex-wrap justify-center gap-2" aria-label={label}>
+    <div className="mt-8 text-left sm:text-center">
+      <h2 className="text-lg sm:text-2xl font-medium text-[#1F1F1F] text-left sm:text-center">
+        Tell them what went well
+      </h2>
+      <div className="mt-4 sm:mt-5 flex flex-wrap items-center justify-start sm:justify-center gap-2 sm:gap-3" aria-label={label}>
         {tags.map((tag) => {
           const selected = selectedTags.includes(tag);
           return (
@@ -129,7 +129,10 @@ function FeedbackTagSelector<Tag extends string>({
               type="button"
               aria-pressed={selected}
               onClick={() => onToggle(tag)}
-              className={`min-h-10 rounded-full border px-4 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 ${selected ? "border-[#1F1F1F] bg-[#FCDF9C] text-[#1F1F1F]" : "border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50"}`}
+              className={`min-h-[46px] sm:min-h-[48px] rounded-lg sm:rounded-xl px-5 py-3 sm:px-6 sm:py-3.5 text-sm sm:text-base font-normal sm:font-medium transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 ${selected
+                ? "border border-white bg-[#E9EBFF] text-[#1F1F1F] shadow-none"
+                : "border border-white bg-white text-[#1F1F1F] shadow-[0_2px_4px_rgba(0,0,0,0.25)] hover:bg-[#E9EBFF]"
+                }`}
             >
               {tag}
             </button>
@@ -154,16 +157,14 @@ export function HostReviewIntroduction({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const stayDates = useMemo(
-    () => formatBookingDateRange(context.stay.startDate, context.stay.endDate),
-    [context.stay.endDate, context.stay.startDate],
-  );
   const step = draft.step as ReviewStep;
   const cleanlinessValid = isHostReviewRating(draft.cleanlinessRating);
   const houseRulesValid = isHostReviewRating(draft.houseRulesRating);
   const communicationValid = isHostReviewRating(draft.communicationRating);
   const recommendationValid = isHostRecommendation(draft.recommendGuest);
   const privateNoteValid = isHostPrivateNoteText(draft.privateNote);
+  const TOTAL_REVIEW_SEGMENTS = 6;
+  const activePillsCount = Math.min(TOTAL_REVIEW_SEGMENTS, Math.max(1, step));
 
   useEffect(() => {
     const restoreId = window.setTimeout(() => {
@@ -321,13 +322,13 @@ export function HostReviewIntroduction({
   if (isSubmitted) {
     return (
       <section className="mx-auto max-w-xl rounded-3xl border border-zinc-200 bg-white p-8 text-center shadow-sm sm:p-10">
-        <span className="mx-auto flex size-14 items-center justify-center rounded-full bg-emerald-100 text-2xl font-bold text-emerald-800">
+        <span className="mx-auto flex size-14 items-center justify-center rounded-full bg-emerald-100 text-2xl font-normal text-emerald-800">
           ✓
         </span>
         <h1 className="mt-4">
           Review submitted
         </h1>
-        <p className="mt-3 text-sm leading-6 text-[#727272]">
+        <p className="mt-3 text-base leading-6 text-[#727272]">
           Thank you for sharing your feedback about {context.guest.name}. Your review has been saved and submitted successfully.
         </p>
         <div className="mt-8 flex justify-center">
@@ -343,228 +344,332 @@ export function HostReviewIntroduction({
   }
 
   return (
-    <div className="mx-auto grid w-full max-w-6xl gap-8 lg:grid-cols-[300px_minmax(0,1fr)] lg:gap-14">
-      <aside className="h-fit rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm lg:sticky lg:top-28">
-        {context.listing.photos[0] ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={context.listing.photos[0]} alt={context.listing.title} className="aspect-[4/3] w-full rounded-2xl object-cover" />
-        ) : (
-          <div className="flex aspect-[4/3] items-center justify-center rounded-2xl bg-zinc-100 text-sm text-[#727272]">Photo unavailable</div>
-        )}
-        <h2 className="mt-4 text-lg font-semibold text-[#1F1F1F]">{context.listing.title}</h2>
-        <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-sm text-zinc-600">
-          {context.listing.overallRating !== null ? <span>★ {context.listing.overallRating.toFixed(2)} overall</span> : <span>No property rating yet</span>}
-          {context.listing.isGuestFavorite && <span className="font-medium text-[#1F1F1F]">Guest favorite</span>}
-        </div>
-        <p className="mt-3 text-sm leading-5 text-zinc-600">{stayDates}</p>
-        <div className="mt-4 border-t border-zinc-200 pt-4 text-sm font-medium text-[#1F1F1F]">
-          <p className="text-xs font-semibold uppercase tracking-wider text-[#727272]">Total payout</p>
-          <p className="mt-1">{context.payout ? <CurrencyPrice amountMinorUnits={context.payout.amount} sourceCurrency={context.payout.currency} fractionDigits={2} /> : "Payout unavailable"}</p>
-        </div>
-      </aside>
-
-      <section className="flex min-h-[560px] flex-col rounded-3xl bg-white px-2 py-3 sm:px-8 sm:py-8 pb-20 sm:pb-8" aria-labelledby="host-review-step-title">
-        <div className="mx-auto flex w-full max-w-xl flex-1 flex-col justify-center text-center">
-          <p className="text-xs font-medium text-[#727272]">Step {step + 1} of {REVIEW_STEPS.length}</p>
-          {step === 0 && (
-            <>
-              <h1 id="host-review-step-title" className="mt-5 text-3xl font-semibold leading-tight tracking-tight text-[#1F1F1F] sm:text-4xl">Write a review for {context.guest.name}</h1>
-              <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-zinc-600">Honest feedback helps other hosts assess guest reliability and strengthens trust across Homyz.</p>
-              <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-zinc-600">Some submitted feedback will be shared with the guest and other hosts.</p>
-            </>
-          )}
-          {step === 1 && (
-            <>
-              <h1 id="host-review-step-title" className="mt-5 text-3xl font-semibold leading-tight tracking-tight text-[#1F1F1F] sm:text-4xl">How clean did {context.guest.name} leave your place?</h1>
-              <StarRating value={draft.cleanlinessRating} onChange={(cleanlinessRating) => setDraft((current) => ({ ...current, cleanlinessRating }))} label={`Cleanliness rating for ${context.guest.name}`} ratingLabels={CLEANLINESS_RATING_LABELS} />
-              {!cleanlinessValid && (
-                <p className="mt-2 text-center text-xs font-medium text-amber-700" role="status">
-                  Please select a rating.
-                </p>
-              )}
-              <FeedbackTagSelector label="Cleanliness feedback tags" tags={CLEANLINESS_FEEDBACK_TAGS} selectedTags={draft.cleanlinessTags} onToggle={toggleCleanlinessTag} />
-            </>
-          )}
-          {step === 2 && (
-            <>
-              <h1 id="host-review-step-title" className="mt-5 text-3xl font-semibold leading-tight tracking-tight text-[#1F1F1F] sm:text-4xl">How well did {context.guest.name} follow your house rules?</h1>
-              <StarRating value={draft.houseRulesRating} onChange={(houseRulesRating) => setDraft((current) => ({ ...current, houseRulesRating }))} label={`House rules rating for ${context.guest.name}`} ratingLabels={HOUSE_RULES_RATING_LABELS} />
-              {!houseRulesValid && (
-                <p className="mt-2 text-center text-xs font-medium text-amber-700" role="status">
-                  Please select a rating.
-                </p>
-              )}
-            </>
-          )}
-          {step === 3 && (
-            <>
-              <h1 id="host-review-step-title" className="mt-5 text-3xl font-semibold leading-tight tracking-tight text-[#1F1F1F] sm:text-4xl">How well did {context.guest.name} communicate?</h1>
-              <StarRating value={draft.communicationRating} onChange={(communicationRating) => setDraft((current) => ({ ...current, communicationRating }))} label={`Communication rating for ${context.guest.name}`} ratingLabels={COMMUNICATION_RATING_LABELS} />
-              {!communicationValid && (
-                <p className="mt-2 text-center text-xs font-medium text-amber-700" role="status">
-                  Please select a rating.
-                </p>
-              )}
-              <FeedbackTagSelector label="Communication feedback tags" tags={COMMUNICATION_FEEDBACK_TAGS} selectedTags={draft.communicationTags} onToggle={toggleCommunicationTag} />
-            </>
-          )}
-          {step === 4 && (
-            <>
-              <h1 id="host-review-step-title" className="mt-5 text-3xl font-semibold leading-tight tracking-tight text-[#1F1F1F] sm:text-4xl">Write a public review</h1>
-              <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-zinc-600">The guest and other hosts can see this review. It helps build trust in the community and is not shown on public property or profile pages.</p>
-              <div className="mx-auto mt-8 w-full max-w-xl text-left">
-                <label htmlFor="host-public-review" className="sr-only">Public review of {context.guest.name}</label>
-                <textarea id="host-public-review" value={draft.publicReview} onChange={(event) => setDraft((current) => ({ ...current, publicReview: event.target.value.slice(0, HOST_PUBLIC_REVIEW_MAX_LENGTH) }))} maxLength={HOST_PUBLIC_REVIEW_MAX_LENGTH} placeholder="Say a few words about your experience hosting this guest" className="min-h-40 w-full resize-y rounded-2xl border border-zinc-300 p-4 text-sm leading-6 text-[#1F1F1F] outline-none placeholder:text-[#727272] focus:border-zinc-900" />
-                <p className="mt-2 text-right text-xs text-[#727272]" aria-live="polite">{draft.publicReview.length} / {HOST_PUBLIC_REVIEW_MAX_LENGTH}</p>
-              </div>
-            </>
-          )}
-          {step === 5 && (
-            <>
-              <h1 id="host-review-step-title" className="mt-5 text-3xl font-semibold leading-tight tracking-tight text-[#1F1F1F] sm:text-4xl">Would you recommend {context.guest.name} to other hosts?</h1>
-              <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-zinc-600">Your recommendation helps other hosts evaluate this guest and strengthens trust across the community.</p>
-              <div
-                className="mx-auto mt-8 flex w-full max-w-xs justify-center gap-4"
-                role="radiogroup"
-                aria-label={`Would you recommend ${context.guest.name} to other hosts?`}
-                onKeyDown={(e) => {
-                  if (e.key === "ArrowRight" || e.key === "ArrowDown") {
-                    e.preventDefault();
-                    setDraft((current) => ({ ...current, recommendGuest: false }));
-                  } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
-                    e.preventDefault();
-                    setDraft((current) => ({ ...current, recommendGuest: true }));
-                  }
-                }}
+    <div className="mx-auto flex w-full max-w-[490px] flex-1 flex-col px-0 sm:px-4 py-2 sm:py-8">
+      {step === 0 ? (
+        <section
+          className="flex flex-1 min-h-[calc(100dvh-6.5rem)] sm:min-h-0 flex-col justify-between sm:justify-center px-0 sm:px-8 py-2 sm:py-8"
+          aria-labelledby="host-review-step-title"
+        >
+          {/* Top content block */}
+          <div>
+            {/* Mobile top circular back button matching Figma mobile */}
+            <div className="flex items-center justify-start sm:hidden pt-3">
+              <button
+                type="button"
+                disabled={isSubmitting}
+                onClick={goBack}
+                className="inline-flex size-9 items-center justify-center rounded-full border border-zinc-200 bg-[#F3F4F6] text-[#1F1F1F] transition-colors hover:bg-zinc-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900"
+                aria-label="Back to reservations"
+                title="Back to reservations"
               >
-                <button
-                  type="button"
-                  role="radio"
-                  tabIndex={draft.recommendGuest === true || draft.recommendGuest === null ? 0 : -1}
-                  aria-checked={draft.recommendGuest === true}
-                  onClick={() => setDraft((current) => ({ ...current, recommendGuest: true }))}
-                  className={`flex min-h-14 flex-1 items-center justify-center rounded-2xl border text-base font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 ${
-                    draft.recommendGuest === true
-                      ? "border-[#1F1F1F] bg-[#1F1F1F] text-white shadow-sm"
-                      : "border-zinc-300 bg-white text-zinc-700 hover:border-zinc-400 hover:bg-zinc-50"
-                  }`}
-                >
-                  Yes
-                </button>
-                <button
-                  type="button"
-                  role="radio"
-                  tabIndex={draft.recommendGuest === false ? 0 : -1}
-                  aria-checked={draft.recommendGuest === false}
-                  onClick={() => setDraft((current) => ({ ...current, recommendGuest: false }))}
-                  className={`flex min-h-14 flex-1 items-center justify-center rounded-2xl border text-base font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 ${
-                    draft.recommendGuest === false
-                      ? "border-[#1F1F1F] bg-[#1F1F1F] text-white shadow-sm"
-                      : "border-zinc-300 bg-white text-zinc-700 hover:border-zinc-400 hover:bg-zinc-50"
-                  }`}
-                >
-                  No
-                </button>
-              </div>
-              {!recommendationValid && (
-                <p className="mt-3 text-center text-xs font-medium text-amber-700" role="status">
-                  Please choose Yes or No.
-                </p>
-              )}
-            </>
-          )}
-          {step === 6 && (
-            <>
-              <h1 id="host-review-step-title" className="mt-5 text-3xl font-semibold leading-tight tracking-tight text-[#1F1F1F] sm:text-4xl">Write a private note</h1>
-              <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-zinc-600">Is there anything else you&apos;d like to share with {context.guest.name}?</p>
-              <div className="mx-auto mt-8 w-full max-w-xl text-left">
-                <label htmlFor="host-private-note" className="sr-only">Private note to {context.guest.name}</label>
-                <textarea
-                  id="host-private-note"
-                  value={draft.privateNote}
-                  onChange={(event) =>
-                    setDraft((current) => ({
-                      ...current,
-                      privateNote: event.target.value.slice(0, HOST_PRIVATE_NOTE_MAX_LENGTH),
-                    }))
-                  }
-                  maxLength={HOST_PRIVATE_NOTE_MAX_LENGTH}
-                  placeholder={`Share private feedback with ${context.guest.name} (optional)`}
-                  className="min-h-40 w-full resize-y rounded-2xl border border-zinc-300 p-4 text-sm leading-6 text-[#1F1F1F] outline-none placeholder:text-[#727272] focus:border-zinc-900"
-                />
-                <p className="mt-2 text-right text-xs text-[#727272]" aria-live="polite">
-                  {draft.privateNote.length} / {HOST_PRIVATE_NOTE_MAX_LENGTH}
-                </p>
-              </div>
-            </>
-          )}
-          {step === 7 && (
-            <>
-              <h1 id="host-review-step-title" className="mt-5 text-3xl font-semibold leading-tight tracking-tight text-[#1F1F1F] sm:text-4xl">Submit review</h1>
-              <p className="mx-auto mt-4 max-w-md text-sm leading-6 text-zinc-600">Please review your feedback before submitting.</p>
-              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-zinc-500">Once submitted, this review is final and cannot be edited. Your feedback helps other hosts make informed decisions.</p>
-              {submitError && (
-                <div role="alert" className="mx-auto mt-6 flex w-full max-w-md flex-col items-center gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 text-center text-sm text-red-700">
-                  <p>{submitError}</p>
-                  <button
-                    type="button"
-                    onClick={handleSubmit}
-                    disabled={isSubmitting}
-                    className="inline-flex min-h-9 items-center justify-center rounded-xl bg-red-700 px-4 text-xs font-semibold text-white transition-colors hover:bg-red-800 disabled:opacity-50"
-                  >
-                    Try again
-                  </button>
-                </div>
-              )}
-            </>
-          )}
-        </div>
+                <svg className="size-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                </svg>
+              </button>
+            </div>
 
-        <div className="mx-auto mt-8 w-full max-w-xl">
-          <div className="h-1 overflow-hidden rounded-full bg-zinc-200" role="progressbar" aria-label="Host review progress" aria-valuemin={1} aria-valuemax={REVIEW_STEPS.length} aria-valuenow={step + 1}>
-            <div className="h-full rounded-full bg-zinc-700 transition-all" style={{ width: `${((step + 1) / REVIEW_STEPS.length) * 100}%` }} />
+            {/* Desktop step counter */}
+            <p className="hidden sm:block w-fit mx-auto text-center text-base font-normal text-[#1f1f1f] bg-[#DDDDDE] rounded-full px-4 py-3">
+              Step 1 of {REVIEW_STEPS.length}
+            </p>
+
+            {/* Title matching Figma */}
+            <h1
+              id="host-review-step-title"
+              className="mt-6 sm:mt-6 text-center text-2xl sm:text-4xl md:text-[44px] lg:text-[48px] font-medium leading-tight sm:leading-[1.15] tracking-tight"
+            >
+              <span className="block text-[#727272]">Write a review for</span>
+              <span className="mt-2 sm:mt-1.5 block font-medium text-[#1F1F1F]">{context.guest.name}</span>
+            </h1>
+
+            {/* Description matching Figma */}
+            <div className="mx-auto mt-6 max-w-[342px] sm:max-w-[619px] text-center text-sm sm:text-base leading-relaxed text-[#727272]">
+              <p>Honest feedback helps other hosts assess guest reliability and strengthens trust across Homyz.</p>
+              <p className="mt-2">Some submitted feedback will be shared with the guest and other hosts.</p>
+            </div>
+
+            {/* Desktop action buttons: side-by-side Back + Continue */}
+            <div className="hidden sm:flex mt-10 w-full items-center justify-center gap-4">
+              <button
+                type="button"
+                disabled={isSubmitting}
+                onClick={goBack}
+                className="inline-flex h-[48px] items-center justify-center rounded-full border border-[#1F1F1F] px-8 text-base font-normal text-[#1F1F1F] transition-colors duration-300 hover:bg-[#1F1F1F] hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Back
+              </button>
+              <button
+                type="button"
+                onClick={continueReview}
+                className="inline-flex h-[48px] items-center justify-center rounded-full bg-[#1F1F1F] px-10 py-3.5 text-base font-normal text-white hover:text-[#1f1f1f] transition-colors duration-300 hover:bg-[#FCDF9C]"
+              >
+                Continue
+              </button>
+            </div>
           </div>
-        </div>
 
-        <div className="sticky bottom-0 z-20 mt-8 -mx-2 -mb-3 border-t border-zinc-200 bg-white/95 px-4 py-3 backdrop-blur-md pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:static sm:mx-0 sm:mb-0 sm:border-0 sm:bg-transparent sm:p-0 sm:backdrop-blur-none">
-          <div className="mx-auto flex w-full max-w-xl items-center justify-between gap-3">
+          {/* Mobile bottom action: Pinned at bottom matching Figma mobile */}
+          <div className="mt-auto pt-8 pb-[max(2rem,env(safe-area-inset-bottom))] sm:hidden w-full">
+            <button
+              type="button"
+              onClick={continueReview}
+              className="inline-flex h-[48px] w-full items-center justify-center rounded-full bg-[#1F1F1F] px-6 text-base font-normal text-white transition-colors duration-300 hover:bg-[#FCDF9C] focus-visible:outline-none"
+            >
+              Continue
+            </button>
+          </div>
+        </section>
+      ) : (
+        <div className="flex flex-1 flex-col">
+          {/* Mobile top circular back button */}
+          <div className="flex items-center justify-start sm:hidden pt-3 mb-2">
             <button
               type="button"
               disabled={isSubmitting}
               onClick={goBack}
-              className="min-h-11 rounded-xl px-5 text-sm font-semibold text-zinc-700 hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex size-9 items-center justify-center rounded-full border border-zinc-200 bg-[#F3F4F6] text-[#1F1F1F] transition-colors hover:bg-zinc-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900"
+              aria-label="Previous step"
+              title="Previous step"
             >
-              Back
+              <svg className="size-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+              </svg>
             </button>
-            {step < 7 ? (
-              <button
-                type="button"
-                disabled={!canContinue}
-                onClick={continueReview}
-                className="min-h-11 rounded-xl bg-[#1F1F1F] px-8 text-sm font-semibold text-white transition-colors hover:bg-zinc-700 disabled:cursor-not-allowed disabled:bg-zinc-300"
-              >
-                Continue
-              </button>
-            ) : (
-              <button
-                type="button"
-                disabled={!canSubmit || isSubmitting}
-                onClick={handleSubmit}
-                className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[#1F1F1F] px-8 text-sm font-semibold text-white transition-colors hover:bg-zinc-700 disabled:cursor-not-allowed disabled:bg-zinc-300"
-              >
-                {isSubmitting ? (
-                  <span className="inline-flex items-center gap-2">
-                    <span className="size-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                    <span>Submitting...</span>
-                  </span>
-                ) : (
-                  "Submit"
-                )}
-              </button>
-            )}
           </div>
+
+          <section className="flex flex-1 min-h-[calc(100dvh-12rem)] sm:min-h-[460px] flex-col justify-between sm:justify-center" aria-labelledby="host-review-step-title">
+            <div className="mx-auto flex w-full max-w-xl flex-1 flex-col justify-center text-left sm:text-center">
+              <p className="hidden sm:block w-fit mx-auto text-center text-base font-normal text-[#1f1f1f] bg-[#DDDDDE] rounded-full px-4 py-3">
+                Step {step + 1} of {REVIEW_STEPS.length}
+              </p>
+              {step === 1 && (
+                <>
+                  <h1 id="host-review-step-title" className="mt-6 sm:mt-6 text-left sm:text-center text-2xl sm:text-4xl md:text-[44px] lg:text-[48px] font-medium leading-tight sm:leading-[1.2] tracking-tight">How clean did <span className="capitalize">&ldquo;{context.guest.name}&rdquo;</span> leave your place?</h1>
+                  <p className="mt-2 text-sm sm:text-base leading-relaxed text-[#727272] text-left sm:text-center font-normal">We&apos;ll share this with &ldquo;{context.guest.name}&rdquo; and other Hosts.</p>
+                  <StarRating value={draft.cleanlinessRating} onChange={(cleanlinessRating) => setDraft((current) => ({ ...current, cleanlinessRating }))} label={`Cleanliness rating for ${context.guest.name}`} ratingLabels={CLEANLINESS_RATING_LABELS} />
+                  {!cleanlinessValid && (
+                    <p className="mt-2 text-left sm:text-center text-sm font-normal text-[#DF4557]" role="status">
+                      Please select a rating.
+                    </p>
+                  )}
+                  <FeedbackTagSelector label="Cleanliness feedback tags" tags={CLEANLINESS_FEEDBACK_TAGS} selectedTags={draft.cleanlinessTags} onToggle={toggleCleanlinessTag} />
+                </>
+              )}
+              {step === 2 && (
+                <>
+                  <h1 id="host-review-step-title" className="mt-6 sm:mt-6 text-left sm:text-center text-2xl sm:text-4xl md:text-[44px] lg:text-[48px] font-medium leading-tight sm:leading-[1.2] tracking-tight">How well did {context.guest.name} follow your house rules?</h1>
+                  <p className="mt-2 text-sm sm:text-base leading-relaxed text-[#727272] text-left sm:text-center font-normal">We&apos;ll share this with &ldquo;{context.guest.name}&rdquo; and other Hosts.</p>
+                  <StarRating value={draft.houseRulesRating} onChange={(houseRulesRating) => setDraft((current) => ({ ...current, houseRulesRating }))} label={`House rules rating for ${context.guest.name}`} ratingLabels={HOUSE_RULES_RATING_LABELS} />
+                  {!houseRulesValid && (
+                    <p className="mt-2 text-left sm:text-center text-sm font-normal text-[#DF4557]" role="status">
+                      Please select a rating.
+                    </p>
+                  )}
+                </>
+              )}
+              {step === 3 && (
+                <>
+                  <h1 id="host-review-step-title" className="mt-6 sm:mt-6 text-left sm:text-center text-2xl sm:text-4xl md:text-[44px] lg:text-[48px] font-medium leading-tight sm:leading-[1.2] tracking-tight">How well did {context.guest.name} communicate?</h1>
+                  <p className="mt-2 text-sm sm:text-base leading-relaxed text-[#727272] text-left sm:text-center font-normal">We&apos;ll share this with &ldquo;{context.guest.name}&rdquo; and other Hosts.</p>
+                  <StarRating value={draft.communicationRating} onChange={(communicationRating) => setDraft((current) => ({ ...current, communicationRating }))} label={`Communication rating for ${context.guest.name}`} ratingLabels={COMMUNICATION_RATING_LABELS} />
+                  {!communicationValid && (
+                    <p className="mt-2 text-left sm:text-center text-sm font-normal text-[#DF4557]" role="status">
+                      Please select a rating.
+                    </p>
+                  )}
+                  <FeedbackTagSelector label="Communication feedback tags" tags={COMMUNICATION_FEEDBACK_TAGS} selectedTags={draft.communicationTags} onToggle={toggleCommunicationTag} />
+                </>
+              )}
+              {step === 4 && (
+                <>
+                  <h1 id="host-review-step-title" className="mt-6 sm:mt-6 text-left sm:text-center text-2xl sm:text-4xl md:text-[44px] lg:text-[48px] font-medium leading-tight sm:leading-[1.2] tracking-tight">Write a public review</h1>
+                  <p className="mt-2 sm:mt-3 text-center text-sm sm:text-base leading-relaxed text-[#727272] font-normal">We&apos;ll share this with &ldquo;{context.guest.name}&rdquo; and other Hosts.</p>
+                  <div className="mx-auto mt-8 sm:mt-12 w-full max-w-[490px] rounded-lg sm:rounded-xl bg-[#F3F4F5] py-4 sm:px-6 text-left shadow-[0_2px_4px_rgb(0,0,0,0.25)]">
+                    <h2 className="text-lg font-medium text-[#1F1F1F]">Your review</h2>
+                    <p className="mt-3 text-xs text-[#727272]" aria-live="polite">
+                      <span className="font-medium text-[#1F1F1F]">{HOST_PUBLIC_REVIEW_MAX_LENGTH - draft.publicReview.length}</span>/{HOST_PUBLIC_REVIEW_MAX_LENGTH} available
+                    </p>
+                    <div className="mt-4">
+                      <label htmlFor="host-public-review" className="sr-only">Public review of {context.guest.name}</label>
+                      <textarea
+                        id="host-public-review"
+                        value={draft.publicReview}
+                        onChange={(event) => setDraft((current) => ({ ...current, publicReview: event.target.value.slice(0, HOST_PUBLIC_REVIEW_MAX_LENGTH) }))}
+                        maxLength={HOST_PUBLIC_REVIEW_MAX_LENGTH}
+                        placeholder="Say a few words about your stay"
+                        className="min-h-[126px] sm:min-h-[150px] w-full resize-none rounded-lg bg-white p-3 sm:px-4 sm:py-3 text-sm sm:text-base font-normal leading-relaxed text-[#1F1F1F] outline-none placeholder:text-[#727272] border-0 focus:ring-0 focus-visible:outline-none"
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+              {step === 5 && (
+                <>
+                  <h1 id="host-review-step-title" className="mt-6 sm:mt-6 text-center text-2xl sm:text-4xl md:text-[44px] lg:text-[48px] font-medium leading-tight sm:leading-[1.15] tracking-tight">Would you recommend {context.guest.name} to other hosts?</h1>
+                  <p className="mx-auto mt-4 text-base leading-6 text-[#727272] font-normal">Your recommendation helps other hosts evaluate this guest and strengthens trust across the community.</p>
+                  <div
+                    className="mx-auto mt-8 flex w-full max-w-xs justify-center gap-4"
+                    role="radiogroup"
+                    aria-label={`Would you recommend ${context.guest.name} to other hosts?`}
+                    onKeyDown={(e) => {
+                      if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+                        e.preventDefault();
+                        setDraft((current) => ({ ...current, recommendGuest: false }));
+                      } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+                        e.preventDefault();
+                        setDraft((current) => ({ ...current, recommendGuest: true }));
+                      }
+                    }}
+                  >
+                    <button
+                      type="button"
+                      role="radio"
+                      tabIndex={draft.recommendGuest === true || draft.recommendGuest === null ? 0 : -1}
+                      aria-checked={draft.recommendGuest === true}
+                      onClick={() => setDraft((current) => ({ ...current, recommendGuest: true }))}
+                      className={`flex min-h-12 min-w-31 items-center justify-center rounded-full border text-base font-normal transition-colors focus-visible:outline-none ${draft.recommendGuest === true
+                        ? "border-[#1F1F1F] bg-[#1F1F1F] hover:bg-white text-white hover:text-[#1f1f1f]"
+                        : "border-[#1F1F1F] bg-white text-[#1f1f1f] hover:text-white hover:border-[#1f1f1f] hover:bg-[#1f1f1f]"
+                        }`}
+                    >
+                      Yes
+                    </button>
+                    <button
+                      type="button"
+                      role="radio"
+                      tabIndex={draft.recommendGuest === false ? 0 : -1}
+                      aria-checked={draft.recommendGuest === false}
+                      onClick={() => setDraft((current) => ({ ...current, recommendGuest: false }))}
+                      className={`flex min-h-12 min-w-31 items-center justify-center rounded-full border text-base font-normal transition-colors focus-visible:outline-none ${draft.recommendGuest === false
+                        ? "border-[#1F1F1F] bg-[#1F1F1F] text-white"
+                        : "border-[#1F1F1F] bg-white text-[#1f1f1f] hover:text-white hover:border-[#1f1f1f] hover:bg-[#1f1f1f]"
+                        }`}
+                    >
+                      No
+                    </button>
+                  </div>
+                  {!recommendationValid && (
+                    <p className="mt-3 text-center text-xs font-medium text-amber-700" role="status">
+                      Please choose Yes or No.
+                    </p>
+                  )}
+                </>
+              )}
+              {step === 6 && (
+                <>
+                  <h1 id="host-review-step-title" className="mt-6 sm:mt-6 text-center text-2xl sm:text-4xl md:text-[44px] lg:text-[48px] font-medium leading-tight sm:leading-[1.15] tracking-tight">Write a private note</h1>
+                  <p className="mx-auto mt-4 text-base leading-6 text-[#727272] font-normal">Is there anything else you&apos;d like to share with {context.guest.name}?</p>
+                  <div className="mx-auto mt-8 sm:mt-12 w-full max-w-[490px] rounded-lg sm:rounded-xl bg-[#F3F4F5] py-4 sm:px-6 text-left shadow-[0_2px_4px_rgb(0,0,0,0.25)]">
+                    <h2 className="text-lg font-medium text-[#1F1F1F]">Your note</h2>
+                    <p className="mt-3 text-xs text-[#727272]" aria-live="polite">
+                      <span className="font-medium text-[#1F1F1F]">{HOST_PUBLIC_REVIEW_MAX_LENGTH - draft.publicReview.length}</span>/{HOST_PUBLIC_REVIEW_MAX_LENGTH} available
+                    </p>
+                    <label htmlFor="host-private-note" className="sr-only">Private note to {context.guest.name}</label>
+                    <div className="mt-4">
+                      <textarea
+                        id="host-private-note"
+                        value={draft.privateNote}
+                        onChange={(event) =>
+                          setDraft((current) => ({
+                            ...current,
+                            privateNote: event.target.value.slice(0, HOST_PRIVATE_NOTE_MAX_LENGTH),
+                          }))
+                        }
+                        maxLength={HOST_PRIVATE_NOTE_MAX_LENGTH}
+                        placeholder={`Share private feedback with ${context.guest.name} (optional)`}
+                          className="min-h-[126px] sm:min-h-[150px] w-full resize-none rounded-lg bg-white p-3 sm:px-4 sm:py-3 text-sm sm:text-base font-normal leading-relaxed text-[#1F1F1F] outline-none placeholder:text-[#727272] border-0 focus:ring-0 focus-visible:outline-none"
+                      />
+                    </div>
+                    <p className="mt-2 text-right text-xs text-[#727272]" aria-live="polite">
+                      {draft.privateNote.length} / {HOST_PRIVATE_NOTE_MAX_LENGTH}
+                    </p>
+                  </div>
+                </>
+              )}
+              {step === 7 && (
+                <>
+                  <h1 id="host-review-step-title" className="mt-6 sm:mt-6 text-center text-2xl sm:text-4xl md:text-[44px] lg:text-[48px] font-medium leading-tight sm:leading-[1.15] tracking-tight">Submit review</h1>
+                  <p className="mx-auto mt-4 text-base leading-6 text-[#727272] font-normal">Please review your feedback before submitting.</p>
+                  <p className="mx-auto mt-2 text-sm leading-6 text-[#727272] font-normal">Once submitted, this review is final and cannot be edited. Your feedback helps other hosts make informed decisions.</p>
+                  {submitError && (
+                    <div role="alert" className="mx-auto mt-6 flex w-full flex-col items-center gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 text-center text-sm text-red-700">
+                      <p>{submitError}</p>
+                      <button
+                        type="button"
+                        onClick={handleSubmit}
+                        disabled={isSubmitting}
+                        className="inline-flex min-h-9 items-center justify-center rounded-xl bg-red-700 px-4 text-xs font-semibold text-white transition-colors hover:bg-red-800 disabled:opacity-50"
+                      >
+                        Try again
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+
+            <div className="sticky bottom-0 z-20 mt-12 -mx-2 -mb-3 border-t border-zinc-200 bg-white/95 px-4 py-3 backdrop-blur-md pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:static sm:mx-0 sm:mb-0 sm:border-0 sm:bg-transparent sm:p-0 sm:backdrop-blur-none">
+              <div className="mx-auto flex w-full max-w-xl items-center justify-between gap-3">
+                <button
+                  type="button"
+                  disabled={isSubmitting}
+                  onClick={goBack}
+                  className="inline-flex h-[48px] items-center justify-center rounded-full border border-[#1F1F1F] px-8 text-base font-normal text-[#1F1F1F] transition-colors duration-300 hover:bg-[#1F1F1F] hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Back
+                </button>
+                {step < 7 ? (
+                  <button
+                    type="button"
+                    disabled={!canContinue}
+                    onClick={continueReview}
+                    className="inline-flex h-[48px] items-center justify-center rounded-full bg-[#1F1F1F] px-10 py-3.5 text-base font-normal text-white hover:text-[#1f1f1f] transition-colors duration-300 hover:bg-[#FCDF9C]"
+                  >
+                    Continue
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={!canSubmit || isSubmitting}
+                    onClick={handleSubmit}
+                    className="inline-flex h-[48px] items-center justify-center rounded-full bg-[#1F1F1F] px-10 py-3.5 text-base font-normal text-white hover:text-[#1f1f1f] transition-colors duration-300 hover:bg-[#FCDF9C]"
+                  >
+                    {isSubmitting ? (
+                      <span className="inline-flex items-center gap-2">
+                        <span className="size-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                        <span>Submitting...</span>
+                      </span>
+                    ) : (
+                      "Submit"
+                    )}
+                  </button>
+                )}
+              </div>
+
+              {/* Segmented progress bar matching Figma */}
+              <div
+                className="mx-auto mt-4 sm:mt-14 md:mt-20 lg:mt-[100px] mb-1 sm:mb-4 flex w-full max-w-[490px] items-center gap-1"
+                role="progressbar"
+                aria-label="Host review progress"
+                aria-valuemin={1}
+                aria-valuemax={REVIEW_STEPS.length}
+                aria-valuenow={step + 1}
+              >
+                {Array.from({ length: activePillsCount }, (_, index) => (
+                  <div
+                    key={index}
+                    className="h-2 rounded-full bg-[#727272] shrink-0 transition-all duration-300"
+                    style={{ width: `calc((100% - ${TOTAL_REVIEW_SEGMENTS - 1} * 4px) / ${TOTAL_REVIEW_SEGMENTS})` }}
+                  />
+                ))}
+                {activePillsCount < TOTAL_REVIEW_SEGMENTS && (
+                  <div className="h-1 flex-1 rounded-full bg-[#DDDDDE]" />
+                )}
+              </div>
+            </div>
+          </section>
         </div>
-      </section>
+      )}
     </div>
   );
 }

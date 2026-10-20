@@ -3,7 +3,6 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { HostHeader } from "@/components/host/host-header";
-import { HostSubNav } from "@/components/host/host-sub-nav";
 import { Container } from "@/components/ui";
 import { Footer } from "@/components/dashboard/footer";
 import { useLanguage } from "@/lib/i18n/language-context";
@@ -24,7 +23,6 @@ export default function HostTodayError({
   return (
     <div className="flex min-h-screen flex-col bg-white font-sans text-[#1F1F1F]">
       <HostHeader />
-      <HostSubNav activeTab="today" />
       <main className="flex-1 py-16">
         <Container>
           <div className="mx-auto flex max-w-md flex-col items-center justify-center rounded-[24px] border border-zinc-200 bg-zinc-50/50 p-8 text-center shadow-xs">
@@ -59,4 +57,3 @@ export default function HostTodayError({
     </div>
   );
 }
-

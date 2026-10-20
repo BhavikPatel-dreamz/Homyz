@@ -14,6 +14,7 @@ export interface HostSubNavProps {
   filterActive?: boolean;
   onMenuClick?: () => void;
   showRightActions?: boolean;
+  showMobileNav?: boolean;
 }
 
 export function TodayNavIcon({ className = "" }: { className?: string }) {
@@ -113,11 +114,11 @@ export function FiltersNavIcon({ className = "" }: { className?: string }) {
 
 export function HostSubNav({
   activeTab: explicitActiveTab,
-  listingId,
   onFilterClick,
   filterActive = false,
   onMenuClick,
   showRightActions = true,
+  showMobileNav = true,
 }: HostSubNavProps) {
   const pathname = usePathname();
   const { t } = useLanguage();
@@ -176,19 +177,6 @@ export function HostSubNav({
       icon: <MessagesNavIcon />,
       minWidthClass: "w-[118px] shrink-0",
     },
-    {
-      id: "resolution",
-      label: t("host_nav_resolution", "Resolution Center"),
-      shortLabel: t("host_nav_resolution_short", "Resolution"),
-      href: "/host/resolution-center",
-      icon: (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M12 3 4.5 6v5c0 4.8 3.1 8.6 7.5 10 4.4-1.4 7.5-5.2 7.5-10V6L12 3Z" />
-          <path d="m8.5 12 2.2 2.2 4.8-4.8" />
-        </svg>
-      ),
-      minWidthClass: "w-[178px] shrink-0",
-    },
   ];
 
   const activeTabIndex = tabs.findIndex((tab) => tab.id === activeTab);
@@ -198,39 +186,41 @@ export function HostSubNav({
   return (
     <>
       {/* Mobile Bottom Navigation */}
-      <nav
-        aria-label={t("host_nav_mobile_aria", "Mobile host navigation")}
-        className={styles.nav}
-      >
-        <svg className={styles.background} viewBox="0 0 390 84" preserveAspectRatio="none" aria-hidden="true">
-          <path d={`M0 0H${notchX - 34}C${notchX - 26} 0 ${notchX - 26} 30 ${notchX} 30C${notchX + 26} 30 ${notchX + 26} 0 ${notchX + 34} 0H390V84H0Z`} fill="#FCDF9C" />
-        </svg>
-        <div className={styles.tabs}>
-        {tabs.map((tab) => {
-          const selected = activeTab === tab.id;
-          return (
-            <Link
-              key={tab.id}
-              href={tab.href}
-              aria-label={tab.label}
-              aria-current={selected ? "page" : undefined}
-              className={`${styles.tab} ${selected ? styles.active : ""}`}
-            >
-              <span
-                className={styles.iconCircle}
+      {showMobileNav && (
+        <nav
+          aria-label="Mobile host navigation"
+          className={styles.nav}
+        >
+          <svg className={styles.background} viewBox="0 0 390 84" preserveAspectRatio="none" aria-hidden="true">
+            <path d={`M0 0H${notchX - 34}C${notchX - 26} 0 ${notchX - 26} 30 ${notchX} 30C${notchX + 26} 30 ${notchX + 26} 0 ${notchX + 34} 0H390V84H0Z`} fill="#FCDF9C" />
+          </svg>
+          <div className={styles.tabs}>
+          {tabs.map((tab) => {
+            const selected = activeTab === tab.id;
+            return (
+              <Link
+                key={tab.id}
+                href={tab.href}
+                aria-label={tab.label}
+                aria-current={selected ? "page" : undefined}
+                className={`${styles.tab} ${selected ? styles.active : ""}`}
               >
-                {tab.icon}
-              </span>
-              <span
-                className={styles.label}
-              >
-                {(tab as any).shortLabel || tab.label}
-              </span>
-            </Link>
-          );
-        })}
-        </div>
-      </nav>
+                <span
+                  className={styles.iconCircle}
+                >
+                  {tab.icon}
+                </span>
+                <span
+                  className={styles.label}
+                >
+                  {"shortLabel" in tab && typeof tab.shortLabel === "string" ? tab.shortLabel : tab.label}
+                </span>
+              </Link>
+            );
+          })}
+          </div>
+        </nav>
+      )}
 
       {/* Desktop Sub Navigation matching nav bar.jpg */}
       <div className="host-sub-nav hidden pt-8 sm:block">
