@@ -1525,7 +1525,7 @@ export function HostListingEditorClient({
 
       {/* 3. MAIN EDITOR CONTENT AREA (2-Column Split Layout) */}
       <Container className={presentation === "admin" ? "max-w-full !px-0" : "lg:-mt-3 lg:flex-1 lg:min-h-0 lg:overflow-hidden"}>
-        <div className={`flex-1 grid grid-cols-1 gap-8 sm:py-10 py-6 lg:py-0 ${presentation === "admin" ? "lg:grid-cols-[260px_minmax(0,1fr)] xl:grid-cols-[280px_minmax(0,1fr)] lg:h-[calc(100vh-6.5rem)] lg:gap-6 lg:overflow-hidden xl:gap-8" : "lg:grid-cols-[340px_minmax(0,1fr)] xl:grid-cols-[400px_minmax(0,1fr)] lg:grid-rows-1 lg:h-full lg:min-h-0 lg:gap-8 lg:overflow-hidden xl:gap-10"}`}>
+        <div className={`flex-1 grid grid-cols-1 gap-8 sm:py-10 py-6 lg:py-0 ${presentation === "admin" ? "lg:grid-cols-[260px_minmax(0,1fr)] xl:grid-cols-[280px_minmax(0,1fr)] lg:h-[calc(100vh-6.5rem)] lg:gap-6 lg:overflow-hidden xl:gap-8" : "lg:grid-cols-[340px_minmax(0,1fr)] xl:grid-cols-[440px_minmax(0,1fr)] lg:grid-rows-1 lg:h-full lg:min-h-0 lg:gap-8 lg:overflow-hidden xl:gap-10"}`}>
           {/* ============================================================ */}
           {/* LEFT COLUMN: MAIN SECTION EDITOR PANEL */}
           {/* ============================================================ */}
@@ -2063,7 +2063,7 @@ export function HostListingEditorClient({
         {/* ============================================================ */}
         {/* LEFT COLUMN: LISTING EDITOR NAVIGATION */}
         {/* ============================================================ */}
-        <div className={presentation === "admin" ? "order-first lg:order-1 lg:h-full lg:max-h-full" : "lg:order-1 lg:min-w-0 lg:h-full lg:overflow-hidden lg:bg-[rgba(241,241,241,0.5)] lg:border-r lg:border-transparent lg:[border-image:linear-gradient(270deg,#1F1F1F_0%,rgba(31,31,31,0.2)_100%)_1]"}><EditorSidebar
+        <div className={presentation === "admin" ? "order-first lg:order-1 lg:h-full lg:max-h-full" : "lg:order-1 lg:min-w-0 lg:h-full lg:overflow-hidden lg:bg-[rgba(241,241,241,0.5)]"}><EditorSidebar
           presentation={presentation}
           routeBase={routeBase}
           editorTab={editorTab}

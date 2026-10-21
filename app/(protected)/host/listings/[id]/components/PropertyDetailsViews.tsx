@@ -947,22 +947,41 @@ export function PropertyDetailsViews({
                 )}
 
                 {/* 6. Year built */}
-                <div className="w-full space-y-2 sm:w-[13.5rem]">
-                  <label className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">{t("host_year_built")}</label>
-                  <div className="relative">
+                <div className="w-full space-y-2 sm:max-w-xs">
+                  <label className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">
+                    {t("host_year_built")}
+                  </label>
+                  <div className="relative group">
                     <select
                       value={yearBuilt}
                       onChange={(e) => setYearBuilt?.(e.target.value)}
-                        className="appearance-none rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 py-3.5 pr-10 text-base text-[#727272] dark:text-zinc-100 font-normal outline-none focus:border-[#1F1F1F] dark:focus:border-zinc-500 transition-colors cursor-pointer min-h-[56px]"
+                      className={`w-full min-h-[56px] appearance-none rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 py-3.5 pr-11 text-base outline-none transition-all shadow-2xs cursor-pointer hover:border-[#1F1F1F] dark:hover:border-zinc-500 focus:border-[#1F1F1F] dark:focus:border-zinc-400 focus:ring-1 focus:ring-[#1F1F1F]/20 dark:focus:ring-zinc-600 ${
+                        yearBuilt
+                          ? "text-[#1F1F1F] dark:text-zinc-100 font-medium"
+                          : "text-[#727272] dark:text-zinc-400 font-normal"
+                      }`}
                     >
-                      <option value="">{t("host_select_year_optional")}</option>
+                      <option value="" className="text-[#727272] dark:text-zinc-400 bg-white dark:bg-zinc-800">
+                        {t("host_select_year_optional")}
+                      </option>
                       {["2026", "2025", "2024", "2023", "2022", "2021", "2020", "2018", "2015", "2010", "2005", "2000", "1995", "1990", "1980"].map((yr) => (
-                        <option key={yr} value={yr}>{yr}</option>
+                        <option key={yr} value={yr} className="text-[#1F1F1F] dark:text-zinc-100 bg-white dark:bg-zinc-800">
+                          {yr}
+                        </option>
                       ))}
                     </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-[#727272] dark:text-zinc-300">
-                      <svg width="14" height="8" viewBox="0 0 16 9" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M15 1L8 8L1 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-[#727272] dark:text-zinc-400 transition-colors group-hover:text-[#1F1F1F] dark:group-hover:text-zinc-200">
+                      <svg
+                        className="h-4 w-4"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <polyline points="6 9 12 15 18 9" />
                       </svg>
                     </div>
                   </div>

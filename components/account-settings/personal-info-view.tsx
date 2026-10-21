@@ -1237,7 +1237,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                       <select
                         value={emCountryCode}
                         onChange={(e) => setEmCountryCode(e.target.value)}
-                        className="w-full appearance-none rounded-xl border border-zinc-300 bg-white pl-3 pr-9 py-2.5 text-sm text-[#1F1F1F] outline-none transition-colors focus:border-zinc-900 cursor-pointer"
+                        className="w-full appearance-none rounded-lg border border-[#727272] bg-white pl-3 pr-9 py-2.5 text-sm text-[#1F1F1F] outline-none transition-colors focus:border-zinc-900 cursor-pointer"
                       >
                         {COUNTRY_CODES.map((c, idx) => (
                           <option key={`${c.iso2}-${idx}`} value={c.code}>

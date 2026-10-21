@@ -446,7 +446,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
               {unreadCount !== null && unreadCount > 0 && (
                 <span
                   aria-label={`${unreadCount} unread notifications`}
-                  className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white shadow-xs"
+                  className="absolute -top-1 -right-1 flex h-4 min-w-4 min-h-4 items-center justify-center leading-tight rounded-full bg-rose-500 text-[10px] font-medium text-white shadow-xs"
                 >
                   {unreadCount > 99 ? "99+" : unreadCount}
                 </span>
@@ -703,7 +703,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                             {unreadCount !== null && unreadCount > 0 && (
                               <span
                                 aria-label={`${unreadCount} unread notifications`}
-                                className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1.5 text-[10px] font-bold text-white shadow-xs"
+                                className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1.5 text-[10px] font-medium text-white shadow-xs"
                               >
                                 {unreadCount > 99 ? "99+" : unreadCount}
                               </span>
@@ -885,7 +885,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                             {unreadCount !== null && unreadCount > 0 && (
                               <span
                                 aria-label={`${unreadCount} unread notifications`}
-                                className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1.5 text-[10px] font-bold text-white shadow-xs"
+                                    className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1.5 text-[10px] font-medium text-white shadow-xs"
                               >
                                 {unreadCount > 99 ? "99+" : unreadCount}
                               </span>
