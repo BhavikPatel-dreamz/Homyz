@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ReservationCard } from "./reservation-card";
 import {
   PropertyPhoto,
@@ -41,12 +41,13 @@ function parseReservationPeriod(value: string | null): ReservationPeriod {
 }
 
 export function HostTodayWorkspace({
-  listings,
+  listings: initialListings,
   bookings,
   totalCount: initialTotalCount,
   total: initialTotal,
   page: initialPageProp,
   totalPages: initialTotalPagesProp,
+  pendingRequestCount: initialPendingRequestCount,
   today,
   initialCurrentTimeMinutes,
   initialTab,
@@ -58,6 +59,7 @@ export function HostTodayWorkspace({
   initialPage?: number;
 }) {
   const { t } = useLanguage();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const [pendingUrlListingId, setPendingUrlListingId] = useState(
     () => searchParams.get("listing"),
@@ -69,6 +71,7 @@ export function HostTodayWorkspace({
     () => Number(searchParams.get("page")) || initialPage || initialPageProp || 1,
   );
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [listings, setListings] = useState<ListingDTO[]>(initialListings);
   const { selectedPropertyId, setSelectedPropertyId } = useHostDashboardState();
   const [draftPropertyId, setDraftPropertyId] = useState<string | null>(null);
   const [selected, setSelected] = useState<HostReservation | null>(null);
@@ -89,7 +92,19 @@ export function HostTodayWorkspace({
     initialTotalPagesProp ?? Math.max(1, Math.ceil((initialTotalCount ?? initialTotal ?? bookings.length) / 12)),
   );
   const [loading, setLoading] = useState(false);
-  const [isTabLoading, setIsTabLoading] = useState(false);
+  // Today starts with an empty client shell. Set loading immediately so the
+  // first API request cannot flash an empty state before its response arrives.
+  const [isTabLoading, setIsTabLoading] = useState(
+    () => bookings.length === 0 && initialTotalCount === undefined,
+  );
+  const [pendingRequestCount, setPendingRequestCount] = useState(
+    initialPendingRequestCount ?? (parsedInitialTab === "pending" ? initialTotalCount ?? initialTotal ?? bookings.length : 0),
+  );
+  const [actionBookingId, setActionBookingId] = useState<string | null>(null);
+  const [decliningBooking, setDecliningBooking] = useState<HostReservation | null>(null);
+  const [declineReason, setDeclineReason] = useState("");
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [actionNotice, setActionNotice] = useState<string | null>(null);
 
   // Map listings for fast lookup
   const listingsMap = useMemo(() => {
@@ -130,6 +145,8 @@ export function HostTodayWorkspace({
         bookings: HostReservation[];
         totalCount: number;
         totalPages: number;
+        pendingRequestCount: number;
+        listings: ListingDTO[];
       }
     >
   >(new Map());
@@ -144,6 +161,8 @@ export function HostTodayWorkspace({
           bookings: HostReservation[];
           totalCount: number;
           totalPages: number;
+          pendingRequestCount: number;
+          listings: ListingDTO[];
         }>;
       }
     >
@@ -161,9 +180,11 @@ export function HostTodayWorkspace({
         bookings: initialDeduplicated,
         totalCount: initialTotalCount ?? initialTotal ?? bookings.length,
         totalPages: initialTotalPagesProp ?? Math.max(1, Math.ceil((initialTotalCount ?? initialTotal ?? bookings.length) / 12)),
+        pendingRequestCount: initialPendingRequestCount ?? (parsedInitialTab === "pending" ? initialTotalCount ?? initialTotal ?? bookings.length : 0),
+        listings: initialListings,
       });
     }
-  }, [parsedInitialTab, initialPage, initialPageProp, appliedPropertyId, initialDeduplicated, initialTotalCount, initialTotal, initialTotalPagesProp, bookings.length]);
+  }, [parsedInitialTab, initialPage, initialPageProp, appliedPropertyId, initialDeduplicated, initialTotalCount, initialTotal, initialTotalPagesProp, initialPendingRequestCount, initialListings, bookings.length]);
 
   const fetchReservations = useCallback(
     async (
@@ -186,6 +207,8 @@ export function HostTodayWorkspace({
         setReservations(cached.bookings);
         setTotalCount(cached.totalCount);
         setTotalPages(cached.totalPages);
+        setPendingRequestCount(cached.pendingRequestCount);
+        setListings(cached.listings);
         setLoading(false);
         setIsTabLoading(false);
         return cached;
@@ -230,6 +253,9 @@ export function HostTodayWorkspace({
             throw new Error("Unable to refresh reservations.");
           }
           const fetchedBookings = deduplicateHostReservations(payload.data.bookings);
+          const fetchedListings = Array.isArray(payload.data.listings)
+            ? payload.data.listings as ListingDTO[]
+            : [];
           const count =
             typeof payload.data.totalCount === "number"
               ? payload.data.totalCount
@@ -240,11 +266,19 @@ export function HostTodayWorkspace({
             typeof payload.data.totalPages === "number"
               ? payload.data.totalPages
               : Math.max(1, Math.ceil(count / 12));
+          const pendingCount =
+            typeof payload.data.pendingRequestCount === "number"
+              ? payload.data.pendingRequestCount
+              : targetTab === "pending"
+                ? count
+                : 0;
 
           const result = {
             bookings: fetchedBookings,
             totalCount: count,
             totalPages: pages,
+            pendingRequestCount: pendingCount,
+            listings: fetchedListings,
           };
           cacheRef.current.set(cacheKey, result);
           return result;
@@ -267,6 +301,8 @@ export function HostTodayWorkspace({
           setReservations(result.bookings);
           setTotalCount(result.totalCount);
           setTotalPages(result.totalPages);
+          setPendingRequestCount(result.pendingRequestCount);
+          setListings(result.listings);
           setLoading(false);
           setIsTabLoading(false);
         }
@@ -284,6 +320,66 @@ export function HostTodayWorkspace({
     },
     [],
   );
+
+  const removePendingBooking = useCallback((bookingId: string) => {
+    // Request actions affect more than the visible tab, so stale tab caches
+    // must not bring an already-decided request back into the active queue.
+    cacheRef.current.clear();
+    setReservations((current) => current.filter((booking) => booking.id !== bookingId));
+    setTotalCount((count) => Math.max(0, count - 1));
+    setPendingRequestCount((count) => Math.max(0, count - 1));
+    setSelected((current) => (current?.id === bookingId ? null : current));
+  }, []);
+
+  const acceptPendingBooking = useCallback(async (booking: HostReservation) => {
+    if (actionBookingId) return;
+    setActionBookingId(booking.id);
+    setActionError(null);
+    try {
+      const response = await fetch(`/api/v1/host/bookings/${booking.id}/accept`, { method: "POST" });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(payload?.error?.message || "Unable to accept this booking request.");
+      removePendingBooking(booking.id);
+      setActionNotice("Booking request accepted. The reservation is now confirmed.");
+      router.refresh();
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : "Unable to accept this booking request.");
+    } finally {
+      setActionBookingId(null);
+    }
+  }, [actionBookingId, removePendingBooking, router]);
+
+  const declinePendingBooking = useCallback(async () => {
+    if (!decliningBooking || actionBookingId) return;
+    setActionBookingId(decliningBooking.id);
+    setActionError(null);
+    try {
+      const response = await fetch(`/api/v1/host/bookings/${decliningBooking.id}/reject`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason: declineReason.trim() || undefined }),
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(payload?.error?.message || "Unable to decline this booking request.");
+      removePendingBooking(decliningBooking.id);
+      setDecliningBooking(null);
+      setDeclineReason("");
+      setActionNotice("Booking request declined. The dates are available again.");
+      router.refresh();
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : "Unable to decline this booking request.");
+    } finally {
+      setActionBookingId(null);
+    }
+  }, [actionBookingId, declineReason, decliningBooking, removePendingBooking, router]);
+
+  useEffect(() => {
+    if (tab !== "pending") return;
+    const interval = window.setInterval(() => {
+      void fetchReservations("pending", page, appliedPropertyId, { force: true });
+    }, 30_000);
+    return () => window.clearInterval(interval);
+  }, [tab, page, appliedPropertyId, fetchReservations]);
 
   useEffect(() => {
     if (unmountAbortTimeoutRef.current !== null) {
@@ -475,7 +571,7 @@ export function HostTodayWorkspace({
                     : "bg-[#F3F4F5] text-[#1F1F1F] hover:bg-zinc-200"
                     }`}
                 >
-                  {filterTab.label}
+                  <span>{filterTab.label}</span>
                 </button>
               ))}
             </div>
@@ -530,7 +626,7 @@ export function HostTodayWorkspace({
             />
           ) : (
             <h1 className="mb-6 wrap-break-word">
-              You have {totalCount}{" "}
+              {tab === "pending" && "Booking requests — "}You have {totalCount}{" "}
               {tab === "upcoming"
                 ? `${t("host_today_period_upcoming", "upcoming")} `
                 : tab === "staying"
@@ -546,6 +642,18 @@ export function HostTodayWorkspace({
                 ? t("host_today_unit_single", "reservation")
                 : t("host_today_unit_plural", "reservations")}
             </h1>
+          )}
+
+          {actionError && (
+            <div role="alert" className="mb-5 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+              {actionError}
+            </div>
+          )}
+          {actionNotice && (
+            <div role="status" className="mb-5 flex items-center justify-between gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+              <span>{actionNotice}</span>
+              <button type="button" onClick={() => setActionNotice(null)} className="font-medium underline">Dismiss</button>
+            </div>
           )}
 
           {/* Reservation Cards Grid */}
@@ -596,6 +704,12 @@ export function HostTodayWorkspace({
                               : t("host_today_priority_upcoming", "Upcoming")
                   }
                   onSelect={() => setSelected(event.booking)}
+                  onAccept={event.eventType === "pending" ? () => void acceptPendingBooking(event.booking) : undefined}
+                  onDecline={event.eventType === "pending" ? () => {
+                    setActionError(null);
+                    setDecliningBooking(event.booking);
+                  } : undefined}
+                  actionLoading={actionBookingId === event.booking.id}
                 />
               ))}
             </div>
@@ -641,7 +755,7 @@ export function HostTodayWorkspace({
                         : tab === "completed"
                           ? t("host_today_empty_completed", "No completed stays yet")
                           : tab === "pending"
-                            ? t("host_today_empty_pending", "No pending requests")
+                            ? t("host_today_empty_pending", "No pending booking requests")
                             : tab === "cancelled"
                               ? t("host_today_empty_cancelled", "No cancelled reservations")
                               : t("host_today_empty_default", "No reservations found")}
@@ -658,7 +772,7 @@ export function HostTodayWorkspace({
                         : tab === "completed"
                           ? t("host_today_empty_completed_desc", "Past completed stays will be listed here after checkout.")
                           : tab === "pending"
-                            ? t("host_today_empty_pending_desc", "Reservation requests awaiting your review will appear here.")
+                            ? t("host_today_empty_pending_desc", "New booking requests from guests will appear here.")
                             : tab === "cancelled"
                               ? t("host_today_empty_cancelled_desc", "Cancelled reservations and refund records will appear here.")
                               : t("host_today_empty_default_desc", "Your reservations will appear here once guests book your space.")}
@@ -734,7 +848,9 @@ export function HostTodayWorkspace({
                       upcoming: t("host_today_tab_upcoming", "Upcoming"),
                       staying: t("host_today_tab_staying", "Current stays"),
                       completed: t("host_today_tab_completed", "Completed"),
-                      pending: t("host_today_tab_pending", "Pending"),
+                      pending: pendingRequestCount > 0
+                        ? `${t("host_today_tab_pending", "Pending")} (${pendingRequestCount})`
+                        : t("host_today_tab_pending", "Pending"),
                       cancelled: t("host_today_tab_cancelled", "Cancelled"),
                       all: t("host_today_tab_all", "All"),
                     };
@@ -793,7 +909,11 @@ export function HostTodayWorkspace({
                     className="size-[22px] shrink-0 appearance-none rounded-full border border-[#1F1F1F] bg-white checked:border-[6px] checked:bg-[#FCDF9C] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#1F1F1F]"
                   />
                 </label>
-                {listings.length === 0 ? (
+                {isTabLoading && listings.length === 0 ? (
+                  <p className="py-4 text-center text-sm text-[#727272]">
+                    Loading listings…
+                  </p>
+                ) : listings.length === 0 ? (
                   <p className="py-4 text-center text-sm text-[#727272]">
                     {t("host_today_no_listings", "No listings available.")}
                   </p>
@@ -858,6 +978,55 @@ export function HostTodayWorkspace({
               listing={selectedListing}
               onClose={() => setSelected(null)}
             />
+          )}
+
+          {decliningBooking && (
+            <WorkspaceDialog
+              title="Decline booking request?"
+              onClose={() => {
+                if (actionBookingId) return;
+                setDecliningBooking(null);
+                setDeclineReason("");
+              }}
+              maxWidth="max-w-md"
+            >
+              <p className="text-sm leading-6 text-[#727272]">
+                Declining this request releases the held dates and notifies the guest.
+              </p>
+              <label className="mt-5 block text-sm font-medium text-[#1F1F1F]" htmlFor="today-decline-reason">
+                Reason (optional)
+              </label>
+              <textarea
+                id="today-decline-reason"
+                rows={3}
+                maxLength={500}
+                value={declineReason}
+                onChange={(event) => setDeclineReason(event.target.value)}
+                className="mt-2 w-full rounded-xl border border-zinc-300 p-3 text-sm"
+                placeholder="Let the guest know why you cannot accommodate them..."
+              />
+              <div className="mt-6 flex justify-end gap-3">
+                <button
+                  type="button"
+                  disabled={Boolean(actionBookingId)}
+                  onClick={() => {
+                    setDecliningBooking(null);
+                    setDeclineReason("");
+                  }}
+                  className="min-h-11 rounded-full px-4 text-sm font-medium hover:bg-zinc-100 disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  disabled={Boolean(actionBookingId)}
+                  onClick={() => void declinePendingBooking()}
+                  className="min-h-11 rounded-full bg-rose-600 px-5 text-sm font-medium text-white hover:bg-rose-700 disabled:opacity-50"
+                >
+                  {actionBookingId ? "Declining…" : "Decline request"}
+                </button>
+              </div>
+            </WorkspaceDialog>
           )}
         </Container>
       </main>

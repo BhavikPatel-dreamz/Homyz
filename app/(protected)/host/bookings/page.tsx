@@ -1,35 +1,7 @@
-import { Role } from "@/generated/prisma/enums";
-import { HostBookingApprovals } from "@/components/host/host-booking-approvals";
-import { HostHeader } from "@/components/host/host-header";
-import { requirePageRole } from "@/lib/permissions/page-guards";
-import { bookingService } from "@/services/booking.service";
-import { bookingDateKey } from "@/lib/booking/booking-date";
+import { redirect } from "next/navigation";
 
 export default async function HostBookingApprovalsPage() {
-  const actor = await requirePageRole([Role.HOST, Role.ADMIN]);
-  const bookings = await bookingService.listPendingForHost(actor);
-
-  return (
-    <div className="flex min-h-screen flex-col bg-white text-zinc-900">
-      <HostHeader />
-      <main className="flex-1 px-4 sm:px-6">
-        <HostBookingApprovals
-          bookings={bookings.map((booking) => ({
-            id: booking.id,
-            startDate: bookingDateKey(booking.startDate),
-            endDate: bookingDateKey(booking.endDate),
-            guests: booking.guests,
-            totalPrice: booking.totalPrice ?? null,
-            currency: booking.currency || "SAR",
-            status: booking.status ?? "PENDING",
-            createdAt: booking.createdAt.toISOString(),
-            expiresAt: booking.expiresAt.toISOString(),
-            isExpired: booking.isExpired,
-            guest: booking.guest,
-            listing: booking.listing,
-          }))}
-        />
-      </main>
-    </div>
-  );
+  // Keep existing bookmarks working while Today is the single queue for
+  // requests that require the host's decision.
+  redirect("/host/today?tab=pending");
 }

@@ -386,7 +386,11 @@ async function syncRealEventsForUser(userId: string): Promise<void> {
 
             let title = `New Reservation: ${listingTitle}`;
             let message = `${guestName} booked ${listingTitle} from ${startStr} to ${endStr}.`;
-            const link = "/host/bookings";
+            const link = hb.status === BookingStatus.PENDING
+              ? "/host/today?tab=pending"
+              : hb.status === BookingStatus.CANCELLED
+                ? "/host/today?tab=cancelled"
+                : "/host/today?tab=upcoming";
 
             if (isCancelled) {
               title = `Reservation Cancelled: ${listingTitle}`;

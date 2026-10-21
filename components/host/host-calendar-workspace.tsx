@@ -506,10 +506,7 @@ function MonthGrid({
       </div>
 
       {/* Days grid */}
-      <div
-        className={`grid grid-cols-7 gap-[2px] md:gap-1 ${compact ? "" : "lg:grid-cols-[repeat(7,minmax(88px,1fr))]"
-          }`}
-      >
+      <div className="grid min-w-0 grid-cols-7 gap-1.5 sm:gap-2">
         {Array.from({ length: offset }, (_, i) => (
           <span key={`blank-${i}`} aria-hidden="true" />
         ))}
@@ -524,8 +521,12 @@ function MonthGrid({
           const primaryReservation = dayBookings[0];
 
           // Check if key is part of normalized selected range
+          // A reservation is actionable as a reservation, not as an editable
+          // date range. Keeping its surface out of the selection treatment
+          // prevents the range border from visually overlapping a stay.
           const isSelected =
             !isAllListings &&
+            !primaryReservation &&
             normalizedRange !== null &&
             key >= normalizedRange.start &&
             key <= normalizedRange.end;
@@ -705,10 +706,10 @@ function MonthGrid({
               aria-pressed={isSelected}
               className={`group relative flex min-w-0 self-stretch flex-col items-center border text-center transition-all duration-100 focus-visible:outline-2 focus-visible:outline-offset-2 ${cellRoundingClass} ${cellBgClass} ${compact
                 ? "min-h-[48px] p-1 sm:min-h-[68px] sm:py-1.5"
-                : "min-h-[72px] p-1 sm:min-h-[96px] sm:p-2 lg:h-[108px] lg:min-h-[108px]"
+                : "min-h-[76px] p-2 sm:min-h-[102px] sm:p-2.5 lg:h-[116px] lg:min-h-[116px] lg:p-3"
                 }`}
             >
-              <div className="flex min-h-0 w-full flex-1 flex-col items-center justify-center gap-2">
+              <div className="flex min-h-0 w-full flex-1 flex-col items-center">
                 {/* Day number */}
                 <div className="flex w-full items-center justify-center px-1">
                   <span
@@ -726,7 +727,7 @@ function MonthGrid({
                 </div>
 
                 {/* Price / Status */}
-                <div className="flex min-h-8 w-full flex-col items-center justify-center px-0.5 text-center">
+                <div className="mt-1 flex min-h-8 w-full flex-1 flex-col items-center justify-center px-0.5 text-center">
                   {blocked ? (
                     <span className="text-xs text-[#727272] line-through font-medium">{t("host_cal_blocked_label", "Blocked")}</span>
                   ) : primaryReservation ? (
@@ -755,7 +756,7 @@ function MonthGrid({
                           {formatMoney(promo.promotionalPrice, sourceCurrency, 2)}
                         </span>
                         <div className="flex items-center gap-1 mt-0.5">
-                          <span className="sm:text-[10px] text-[8px] font-medium capitalize tracking-tight text-[#08785d] border border-[#a7e9ce] dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/80 px-1.5 py-1 sm:rounded-md roudned leading-tight">
+                          <span className="rounded-sm border border-[#a7e9ce] bg-emerald-100 px-1.5 py-1 text-[8px] font-medium capitalize leading-tight tracking-tight text-[#08785d] dark:border-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 sm:rounded-md sm:text-[10px]">
                             {promo.percentage}% promo
                           </span>
                           {customPrice !== null && (
@@ -795,30 +796,13 @@ function MonthGrid({
                 </div>
               </div>
 
-              {/* Continuous Reservation Bar — hidden in the compact Year view. */}
+              {/* One reservation is rendered as joined segments across its stay.
+                  The segments only extend into the grid gutter, so the grid's
+                  column geometry remains stable when the settings panel opens. */}
               {primaryReservation && !compact ? (
-                <div className={`relative z-10 mt-3 hidden min-h-8 items-center gap-1 bg-[#1F1F1F] text-xs font-medium text-white md:flex ${isBookingStart ? "ml-0 rounded-l-lg pl-0" : "-ml-1 rounded-l-none pl-0"} ${isBookingEndNight ? "mr-0 rounded-r-lg pr-2" : "-mr-1 rounded-r-none pr-0"}`}>
-                  {isBookingStart && (
-                    primaryReservation.guestImage ? (
-                      // Reservation data already supplies an optional guest image.
-                      // Keeping the image inside the existing booking bar makes the
-                      // status easier to scan without changing its interaction.
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <span className="flex size-8 shrink-0 items-center justify-center rounded-sm bg-amber-300 text-xs font-medium text-[#1F1F1F]">
-                        <img
-                          src={primaryReservation.guestImage}
-                          alt=""
-                          className="size-4 shrink-0 rounded-lg border border-white/50 object-cover"
-                        />
-                      </span>
-                    ) : (
-                      <span className="flex size-8 shrink-0 items-center justify-center rounded-sm bg-amber-300 text-xs font-medium text-[#1F1F1F]">
-                        {primaryReservation.guestName[0]}
-                      </span>
-                    )
-                  )}
-                  <span className="truncate pl-2">
-                    {isBookingStart ? primaryReservation.guestName : ""}
+                <div className={`pointer-events-none relative z-10 mt-1 hidden h-7 min-w-0 items-center overflow-hidden bg-[#1F1F1F] px-2 text-xs font-medium text-white md:flex ${isBookingStart ? "ml-0 rounded-l-lg" : "-ml-3 sm:-ml-4 rounded-l-none"} ${isBookingEndNight ? "mr-0 rounded-r-lg" : "-mr-3 sm:-mr-4 rounded-r-none"}`}>
+                  <span className={`truncate ${isBookingStart ? "w-full text-center" : "sr-only"}`}>
+                    {primaryReservation.guestName}
                   </span>
                 </div>
               ) : null}
@@ -2629,6 +2613,9 @@ export function HostCalendarWorkspace({
 
       if (booking) {
         // If clicking on an active reservation, open reservation modal
+        // and clear any previous editable-range treatment behind it.
+        setSelection({ start: null, end: null, isDragging: false });
+        setPreviewPrice(null);
         setSelectedBooking(booking);
         return;
       }

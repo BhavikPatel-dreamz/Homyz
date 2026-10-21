@@ -835,7 +835,7 @@ async function create(
           : `${guestName} requested to book ${listing.title} from ${input.startDate} to ${input.endDate}. Review request now.`,
         entityId: booking.id,
         entityType: "host_booking",
-        link: `/host/bookings/${booking.id}`,
+        link: isAutoConfirmed ? "/host/today?tab=upcoming" : "/host/today?tab=pending",
         metadata: {
           event: isAutoConfirmed ? "BOOKING_CONFIRMED" : "BOOKING_REQUEST_CREATED",
           bookingId: booking.id,
@@ -1805,7 +1805,7 @@ async function cancelNonRefundableByGuest(actor: AuthUser, id: string): Promise<
         message: `A guest cancelled their reservation for ${cancelled.listing.title}.`,
         entityId: cancelled.id,
         entityType: "host_booking",
-        link: "/host/bookings",
+        link: "/host/today?tab=cancelled",
         metadata: {
           bookingId: cancelled.id,
           listingId: cancelled.listingId,
@@ -2023,7 +2023,7 @@ async function cancelBookingByGuest(actor: AuthUser, id: string): Promise<Bookin
         message: `A guest cancelled their reservation for ${cancelled.listing.title}.`,
         entityId: cancelled.id,
         entityType: "host_booking",
-        link: "/host/bookings",
+        link: "/host/today?tab=cancelled",
         metadata: {
           bookingId: cancelled.id,
           listingId: cancelled.listingId,
