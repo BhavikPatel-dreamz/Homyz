@@ -11,6 +11,7 @@ export const GET = apiHandler(async (req) => {
   const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") || "12", 10) || 12));
   const tab = searchParams.get("tab") || searchParams.get("status") || "ALL";
   const search = searchParams.get("search") || searchParams.get("q") || "";
+  const ownedOnly = searchParams.get("ownedOnly") === "true";
 
   const result = await listingService.listForHost(actor, {
     cardOnly: true,
@@ -20,6 +21,7 @@ export const GET = apiHandler(async (req) => {
     take: limit,
     tab,
     search,
+    ownedOnly,
   });
 
   return ok(result);

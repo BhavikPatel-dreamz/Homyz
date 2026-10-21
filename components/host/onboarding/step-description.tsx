@@ -48,7 +48,7 @@ export function StepDescription({
         />
 
         {/* Description Input Card Container */}
-        <div data-aos="fade-up" data-aos-delay="200" className="w-full max-w-2xl bg-[#F3F4F5] border border-white rounded-xl px-3 sm:py-6 py-3 flex flex-col shadow-[0px_2px_4px_rgba(0,0,0,0.25)]">
+        <div data-aos="fade-up" data-aos-delay="200" className="flex w-full max-w-2xl flex-col rounded-xl border border-white bg-[#F3F4F5] px-3 py-4 shadow-[0px_2px_4px_rgba(0,0,0,0.25)] sm:py-6">
           <div className="flex sm:flex-col flex-row sm:items-start items-center sm:justify-start justify-between">
             <label htmlFor="property-description" className="text-lg font-medium text-[#1F1F1F] mb-2">
               {t("host_your_description")}
@@ -60,11 +60,11 @@ export function StepDescription({
 
           <textarea
             id="property-description"
-            rows={5}
+            rows={9}
             maxLength={maxChars}
             value={description}
             onChange={handleChange}
-            className="w-full bg-white rounded-lg p-4 sm:text-base text-sm font-normal text-[#727272] focus:outline-none focus:ring-1 focus:ring-[#727272] resize-none shadow-2xs transition-shadow max-h-[126px]"
+            className="min-h-[220px] w-full resize-y rounded-lg bg-white p-4 text-sm font-normal text-[#727272] shadow-2xs transition-shadow focus:outline-none focus:ring-1 focus:ring-[#727272] sm:min-h-[280px] sm:text-base"
           />
         </div>
       </div>

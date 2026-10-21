@@ -173,11 +173,11 @@ export async function rejectListingByAdminAction(id: string, reason: string) {
   });
 }
 
-export async function duplicateListingAction(id: string) {
+export async function duplicateListingAction(id: string, includePhotos = true, idempotencyKey?: string) {
   return runAction(async () => {
     const actor = await getSessionUser();
     if (!actor) throw AppError.unauthorized();
-    const listing = await listingService.duplicate(actor, id);
+    const listing = await listingService.duplicate(actor, id, { includePhotos, idempotencyKey });
     revalidatePath("/host/listings");
     return listing;
   });

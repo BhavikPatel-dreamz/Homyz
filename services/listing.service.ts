@@ -1,10 +1,21 @@
 import { AppError } from "@/lib/api/errors";
+import { randomUUID } from "node:crypto";
+import path from "node:path";
 import type { AuthUser } from "@/lib/auth/types";
 import { assertOwnership, authorize } from "@/lib/permissions/authorize";
 import { assertHostPermission } from "@/lib/permissions/host-permissions-server";
 import { prisma } from "@/lib/db/prisma";
 import { bookingDateKey, parseBookingDate, shiftBookingDateKey } from "@/lib/booking/booking-date";
-import { deleteCache, getCache, getCounter, getOrSetCache, incrCounter, setCache } from "@/lib/redis/cache";
+import {
+  acquireCacheLease,
+  deleteCache,
+  getCache,
+  getCounter,
+  getOrSetCache,
+  incrCounter,
+  releaseCacheLease,
+  setCache,
+} from "@/lib/redis/cache";
 import { invalidateListingCache } from "@/lib/redis/invalidation";
 import { hashFilters, keys } from "@/lib/redis/keys";
 import type {
@@ -36,7 +47,13 @@ import {
 import { normalizeAmenities } from "@/lib/constants/amenities";
 import { LANGUAGE_OPTIONS } from "@/lib/utils/language-options";
 import { normalizeSlug } from "@/lib/utils/slug";
-import { deleteManagedMediaUrl, deleteManagedMediaUrls } from "@/lib/storage/media";
+import {
+  deleteManagedMediaUrl,
+  deleteManagedMediaUrls,
+  parseManagedMediaUrl,
+  readPublicMediaFile,
+  savePublicMedia,
+} from "@/lib/storage/media";
 import { normalizePhotoRoomAssignments } from "@/lib/listing/photo-room-assignments";
 import { bookingModePersistence, resolveBookingMode } from "@/lib/booking/booking-mode";
 import { calculateDistance } from "@/lib/location/places-search";
@@ -1295,6 +1312,8 @@ type HostListingOptions = {
   status?: string;
   search?: string;
   cardOnly?: false;
+  /** Used by the duplication picker: co-hosted listings cannot be copied. */
+  ownedOnly?: boolean;
 };
 
 type HostListingCardOptions = Omit<HostListingOptions, "cardOnly"> & {
@@ -1329,7 +1348,7 @@ async function listForHost(
     await assertHostPermission(actor.id, "listing.view");
   }
 
-  const baseWhere: Prisma.ListingWhereInput = actor.role === Role.ADMIN
+  const baseWhere: Prisma.ListingWhereInput = actor.role === Role.ADMIN || opts?.ownedOnly
     ? { hostId: actor.id, deletedAt: null }
     : {
         deletedAt: null,
@@ -2335,74 +2354,255 @@ async function permanentDeleteForAdmin(
   return { success: true };
 }
 
-async function duplicate(actor: AuthUser, id: string): Promise<ListingDTO> {
+type DuplicateListingOptions = {
+  includePhotos?: boolean;
+  idempotencyKey?: string;
+};
+
+function cloneJson(value: Prisma.JsonValue | null): Prisma.InputJsonValue | null {
+  return value == null ? null : JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue;
+}
+
+function remapPhotoUrls(
+  value: Prisma.JsonValue | null,
+  photoUrlMap: Map<string, string>,
+): Prisma.InputJsonValue | null {
+  const remap = (item: unknown): unknown => {
+    if (typeof item === "string") return photoUrlMap.get(item) ?? item;
+    if (Array.isArray(item)) return item.map(remap);
+    if (item && typeof item === "object") {
+      return Object.fromEntries(Object.entries(item).map(([key, child]) => [key, remap(child)]));
+    }
+    return item;
+  };
+  return value == null ? null : remap(cloneJson(value)) as Prisma.InputJsonValue;
+}
+
+async function cloneListingPhotos(sourcePhotos: string[]) {
+  const copiedUrls: string[] = [];
+  // Only these files belong to the new listing and may be removed if creating
+  // the draft fails. Unmanaged URLs still belong to their original provider.
+  const createdUrls: string[] = [];
+  const photoUrlMap = new Map<string, string>();
+
+  try {
+    for (const sourceUrl of sourcePhotos) {
+      const parsed = parseManagedMediaUrl(sourceUrl);
+      // Older listings can contain valid CDN/external image URLs. They do not
+      // need storage cloning and are not deleted by our managed-media cleanup,
+      // so retain the reference rather than silently dropping the photo.
+      if (!parsed) {
+        copiedUrls.push(sourceUrl);
+        photoUrlMap.set(sourceUrl, sourceUrl);
+        continue;
+      }
+
+      // A listing gallery must never expose another kind of managed media,
+      // especially private documents.
+      if (parsed.kind !== "listing-photos" || parsed.visibility !== "public") continue;
+
+      const source = await readPublicMediaFile(parsed.kind, parsed.fileName);
+      // Keep the existing URL if the storage read is temporarily unavailable.
+      // The browser may still be able to serve it through its configured CDN,
+      // and a visible source gallery must not become an empty draft gallery.
+      if (!source) {
+        copiedUrls.push(sourceUrl);
+        photoUrlMap.set(sourceUrl, sourceUrl);
+        continue;
+      }
+
+      const extension = path.extname(parsed.fileName) || ".jpg";
+      const copied = await savePublicMedia({
+        kind: "listing-photos",
+        fileName: `copy_${randomUUID()}${extension}`,
+        body: source.body,
+        contentType: source.contentType,
+      });
+      copiedUrls.push(copied.url);
+      createdUrls.push(copied.url);
+      photoUrlMap.set(sourceUrl, copied.url);
+    }
+
+    return { copiedUrls, createdUrls, photoUrlMap };
+  } catch (error) {
+    // Media is stored outside the database transaction. Remove any objects
+    // created before a storage failure so the operation has no orphaned media.
+    await deleteManagedMediaUrls(createdUrls);
+    throw error;
+  }
+}
+
+async function duplicate(
+  actor: AuthUser,
+  id: string,
+  options: DuplicateListingOptions = {},
+): Promise<ListingDTO> {
   const existing = await prisma.listing.findUnique({ where: { id } });
   if (!existing) throw AppError.notFound("Listing not found");
-  await assertListingAccess(actor, id, existing.hostId);
+  if (existing.deletedAt !== null || existing.hostId !== actor.id) {
+    throw AppError.forbidden("You can only duplicate your own active listings.");
+  }
+  if (existing.hostingType !== "HOME") {
+    throw AppError.badRequest("Only home listings can be duplicated in this flow.");
+  }
 
-  const duplicated = await prisma.listing.create({
-    data: {
-      hostId: existing.hostId,
-      title: `${existing.title} (Copy)`,
-      description: existing.description,
-      price: existing.price,
-      published: false,
-      status: ListingStatus.DRAFT,
-      hostingType: existing.hostingType,
-      placeCategory: existing.placeCategory,
-      propertyType: existing.propertyType,
-      listingType: existing.listingType,
-      locationSearch: existing.locationSearch,
-      shortAddress: existing.shortAddress,
-      address: existing.address,
-      apartment: existing.apartment,
-      city: existing.city,
-      district: existing.district,
-      postalCode: existing.postalCode,
-      country: existing.country,
-      latitude: existing.latitude,
-      longitude: existing.longitude,
-      showExactLocation: existing.showExactLocation,
-      guests: existing.guests,
-      bedrooms: existing.bedrooms,
-      beds: existing.beds,
-      bathrooms: existing.bathrooms,
-      photos: existing.photos,
-      highlights: existing.highlights,
-      amenities: existing.amenities,
-      safetyDisclosures: existing.safetyDisclosures,
-      houseRules: existing.houseRules,
-      checkInMethod: existing.checkInMethod,
-      checkInStart: existing.checkInStart,
-      checkInEnd: existing.checkInEnd,
-      checkOutTime: existing.checkOutTime,
-      cancellationPolicy: existing.cancellationPolicy,
-      minNights: existing.minNights,
-      maxNights: existing.maxNights,
-      instantBook: existing.instantBook,
-      isPaused: false,
-      blockedDates: existing.blockedDates,
-      cleaningFee: 0,
-      securityDeposit: existing.securityDeposit,
-      weekendPrice: existing.weekendPrice,
-      weekendPremium: existing.weekendPremium,
-      discounts: existing.discounts ? JSON.parse(JSON.stringify(existing.discounts)) : null,
-      currentStep: 1,
-    },
-  });
+  // Protect the source listing from concurrent double-clicks (and duplicate
+  // requests from another browser tab) while media is copied and the draft is
+  // created. Redis coordinates this across app instances; local development
+  // receives the same protection within its single process.
+  const lease = await acquireCacheLease(`listing-duplicate:${actor.id}:${id}`, 60);
+  if (!lease) throw AppError.conflict("A copy of this listing is already being created.");
 
-  await deleteCache(keys.statsGlobal());
+  let photos: string[] = [];
+  let createdPhotoUrls: string[] = [];
+  let photoUrlMap = new Map<string, string>();
+  let draftCreated = false;
+  try {
+    const copiedMedia = options.includePhotos === false
+      ? { copiedUrls: [], createdUrls: [], photoUrlMap: new Map<string, string>() }
+      : await cloneListingPhotos(existing.photos);
+    photos = copiedMedia.copiedUrls;
+    createdPhotoUrls = copiedMedia.createdUrls;
+    photoUrlMap = copiedMedia.photoUrlMap;
 
-  await auditService.record({
-    actorId: actor.id,
-    actorEmail: actor.email,
-    action: "LISTING_DUPLICATED",
-    resourceType: "Listing",
-    resourceId: duplicated.id,
-    description: `Duplicated listing "${existing.title}" to new draft "${duplicated.title}"`,
-  });
+    const duplicated = await prisma.$transaction((tx) => tx.listing.create({
+      data: {
+        hostId: actor.id,
+        title: existing.title,
+        description: existing.description,
+        descriptionSections: cloneJson(existing.descriptionSections),
+        price: existing.price,
+        weekdayBasePrice: existing.weekdayBasePrice,
+        smartPricing: existing.smartPricing,
+        smartPricingMinPrice: existing.smartPricingMinPrice,
+        smartPricingMaxPrice: existing.smartPricingMaxPrice,
+        published: false,
+        status: ListingStatus.DRAFT,
+        hostingType: existing.hostingType,
+        placeCategory: existing.placeCategory,
+        propertyType: existing.propertyType,
+        listingType: existing.listingType,
+        locationSearch: existing.locationSearch,
+        shortAddress: existing.shortAddress,
+        address: existing.address,
+        neighborhoodDescription: existing.neighborhoodDescription,
+        gettingAround: existing.gettingAround,
+        apartment: existing.apartment,
+        city: existing.city,
+        district: existing.district,
+        postalCode: existing.postalCode,
+        country: existing.country,
+        latitude: existing.latitude,
+        longitude: existing.longitude,
+        showExactLocation: existing.showExactLocation,
+        guests: existing.guests,
+        bedrooms: existing.bedrooms,
+        beds: existing.beds,
+        bathrooms: existing.bathrooms,
+        propertySize: existing.propertySize,
+        propertySizeUnit: existing.propertySizeUnit,
+        listingFloor: existing.listingFloor,
+        totalFloors: existing.totalFloors,
+        yearBuilt: existing.yearBuilt,
+        yearRenovated: existing.yearRenovated,
+        privateEntrance: existing.privateEntrance,
+        elevatorAvailable: existing.elevatorAvailable,
+        stairsRequired: existing.stairsRequired,
+        rooms: cloneJson(existing.rooms),
+        fullBathrooms: existing.fullBathrooms,
+        halfBathrooms: existing.halfBathrooms,
+        privateBathrooms: existing.privateBathrooms,
+        sharedBathrooms: existing.sharedBathrooms,
+        parkingAvailable: existing.parkingAvailable,
+        parkingType: existing.parkingType,
+        parkingSpaces: existing.parkingSpaces,
+        parkingReservation: existing.parkingReservation,
+        guestAccess: existing.guestAccess,
+        languages: existing.languages,
+        photos,
+        photoRoomAssignments: photos.length > 0 ? remapPhotoUrls(cloneJson(existing.photoRoomAssignments), photoUrlMap) : null,
+        highlights: existing.highlights,
+        amenities: existing.amenities,
+        safetyDisclosures: existing.safetyDisclosures,
+        safetyEquipment: existing.safetyEquipment,
+        safetyHazards: existing.safetyHazards,
+        accessibilityFeatures: existing.accessibilityFeatures,
+        accessibilityDetails: photos.length > 0 ? remapPhotoUrls(cloneJson(existing.accessibilityDetails), photoUrlMap) : null,
+        views: existing.views,
+        locationFeatures: existing.locationFeatures,
+        houseRules: existing.houseRules,
+        petsAllowed: existing.petsAllowed,
+        maxPets: existing.maxPets,
+        petFee: existing.petFee,
+        petRestrictions: existing.petRestrictions,
+        dogsAllowed: existing.dogsAllowed,
+        catsAllowed: existing.catsAllowed,
+        smokingAllowed: existing.smokingAllowed,
+        smokingLocation: existing.smokingLocation,
+        eventsAllowed: existing.eventsAllowed,
+        childrenAllowed: existing.childrenAllowed,
+        infantsAllowed: existing.infantsAllowed,
+        photographyAllowed: existing.photographyAllowed,
+        quietHours: existing.quietHours,
+        quietHoursStart: existing.quietHoursStart,
+        quietHoursEnd: existing.quietHoursEnd,
+        additionalRules: existing.additionalRules,
+        checkInMethod: existing.checkInMethod,
+        checkInStart: existing.checkInStart,
+        checkInEnd: existing.checkInEnd,
+        checkOutTime: existing.checkOutTime,
+        cancellationPolicy: existing.cancellationPolicy,
+        longTermCancellationPolicy: existing.longTermCancellationPolicy,
+        bookingMessage: existing.bookingMessage,
+        requireProfilePhoto: existing.requireProfilePhoto,
+        requireGoodTrackRecord: existing.requireGoodTrackRecord,
+        bookingApprovalMode: existing.bookingApprovalMode,
+        minNights: existing.minNights,
+        maxNights: existing.maxNights,
+        advanceNotice: existing.advanceNotice,
+        sameDayCutoff: existing.sameDayCutoff,
+        allowSameDayRequests: existing.allowSameDayRequests,
+        instantBook: existing.instantBook,
+        isPaused: false,
+        blockedDates: [],
+        cleaningFee: existing.cleaningFee,
+        securityDeposit: existing.securityDeposit,
+        weekendPrice: existing.weekendPrice,
+        weekendPremium: existing.weekendPremium,
+        customPrices: null,
+        extraGuestFee: existing.extraGuestFee,
+        discounts: cloneJson(existing.discounts),
+        currentStep: 1,
+      },
+    }));
+    draftCreated = true;
 
-  return toListingDTO(duplicated);
+    await deleteCache(keys.statsGlobal());
+
+    await auditService.record({
+      actorId: actor.id,
+      actorEmail: actor.email,
+      action: "LISTING_DUPLICATED",
+      resourceType: "Listing",
+      resourceId: duplicated.id,
+      description: `Duplicated listing "${existing.title}" to new draft "${duplicated.title}"`,
+      metadata: {
+        sourceListingId: existing.id,
+        includePhotos: options.includePhotos !== false,
+        duplicateRequestId: options.idempotencyKey ?? null,
+      },
+    });
+
+    return toListingDTO(duplicated);
+  } catch (error) {
+    // cloneListingPhotos cleans a partial storage failure itself. This cleans
+    // only new media if the database transaction subsequently fails; external
+    // source URLs must remain untouched.
+    if (!draftCreated) await deleteManagedMediaUrls(createdPhotoUrls);
+    throw error;
+  } finally {
+    await releaseCacheLease(lease);
+  }
 }
 
 async function togglePause(actor: AuthUser, id: string, isPaused: boolean): Promise<ListingDTO> {

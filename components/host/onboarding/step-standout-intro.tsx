@@ -2,11 +2,10 @@
 
 import { Container } from "@/components/ui";
 import React from "react";
-import { OnboardingBackButton } from "./onboarding-back-button";
-import { OnboardingPrimaryButton } from "./onboarding-primary-button";
 import Image from "next/image";
 import { OnboardingMobileCloseButton } from "./onboarding-mobile-close-button";
 import { useLanguage } from "@/lib/i18n/language-context";
+import { StepProgressFooter } from "./step-progress-footer";
 
 interface StepStandoutIntroProps {
   onBack: () => void;
@@ -54,18 +53,7 @@ export function StepStandoutIntro({ onBack, onNext, isLoading = false }: StepSta
             </div>
           </div>
 
-          {/* Bottom Action Footer Bar */}
-          <div className="max-w-7xl mx-auto w-full flex items-center justify-end sm:mt-8 sm:pt-0 pt-8 mt-auto">
-            <OnboardingBackButton
-              onClick={onBack}
-              disabled={isLoading}
-            />
-            <OnboardingPrimaryButton
-              onClick={onNext}
-              isLoading={isLoading}
-              label={t("host_next")}
-            />
-          </div>
+          <StepProgressFooter currentStep={2} totalSteps={3} onBack={onBack} onNext={onNext} isLoading={isLoading} />
         </div>
       </Container>
     </main>

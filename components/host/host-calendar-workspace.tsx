@@ -435,8 +435,7 @@ function MobileYearCalendar({
   );
 }
 
-function MonthGrid({
-  month,
+const MonthGrid = memo(function MonthGrid({
   listing,
   bookingsByDate,
   bookingRanges,
@@ -447,7 +446,7 @@ function MonthGrid({
   isAllListings,
   listingsCount,
   compact,
-  onDayClick,
+  hideWeekdayHeader = false,
   onDayPointerDown,
   onDayPointerEnter,
   onKeyDown,
@@ -467,9 +466,8 @@ function MonthGrid({
       const d = new Date(2026, 0, 4 + i);
       return {
         full: d.toLocaleDateString(language || "en", { weekday: "long" }),
-        short: d.toLocaleDateString(language || "en", { weekday: "narrow" }),
-      };
-    });
+        short: d.toLocaleDateString(language || "en", { weekday: "short" }),
+        narrow: d.toLocaleDateString(language || "en", { weekday: "narrow" }),
   }, [language]);
 
   const weekdayBase = listing
@@ -493,30 +491,19 @@ function MonthGrid({
   return (
     <div className="min-w-0 select-none">
       {/* Weekday headers */}
-      <div
-        className={`mb-3 grid grid-cols-7 border-b border-b-[#dddddd] py-3 text-center text-base font-medium text-[#1F1F1F] dark:border-b-zinc-800 dark:text-zinc-300 ${compact ? "max-sm:hidden text-[12px]" : ""
-          }`}
-      >
-        {localizedWeekdays.map((d, i) => (
-          <span key={i}>
-            <span className={compact ? "hidden" : "hidden xl:inline"}>{d.full}</span>
-            <span className={compact ? "" : "xl:hidden"}>{d.short}</span>
-          </span>
-        ))}
-      </div>
-
-      {/* Days grid */}
-      <div
-        className={`grid grid-cols-7 gap-[2px] md:gap-1 ${compact ? "" : "lg:grid-cols-[repeat(7,minmax(88px,1fr))]"
-          }`}
-      >
-        {Array.from({ length: offset }, (_, i) => (
-          <span key={`blank-${i}`} aria-hidden="true" />
-        ))}
-
-        {Array.from({ length: count }, (_, i) => {
-          const dayNum = i + 1;
-          const date = new Date(year, monthIndex, dayNum);
+      {!hideWeekdayHeader && (
+        <div
+          className={`mb-3 grid grid-cols-7 border-b border-b-[#dddddd] py-3 text-center text-base font-medium text-[#1F1F1F] dark:border-b-zinc-800 dark:text-zinc-300 ${compact ? "max-sm:hidden text-[12px]" : ""
+            }`}
+        >
+          {localizedWeekdays.map((d, i) => (
+            <span key={i}>
+              <span className={compact ? "hidden" : "hidden xl:inline"}>{d.full}</span>
+              <span className={compact ? "" : "xl:hidden"}>{d.short}</span>
+            </span>
+          ))}
+        </div>
+      )}
           const key = dateKey(date);
           const isToday = key === today;
           const isPast = key < today;
@@ -828,7 +815,7 @@ function MonthGrid({
       </div>
     </div>
   );
-}
+});
 
 // ─────────────────────────────────────────────────────────────────────────────
 // LazyMonthCard: Lazy rendered month for buttery smooth 12+ month Year View
@@ -842,7 +829,6 @@ function LazyMonthCard({
   blockedDatesSet,
   customPricesMap,
   selection,
-  isAllListings,
   listingsCount,
   onDayClick,
   onSelectMonth,
@@ -2291,20 +2277,20 @@ export function HostCalendarWorkspace({
 
   const [view, setView] = useState<"month" | "year">(defaultView);
 
-  // Range & Date Selection state
-  const [selection, setSelection] = useState<CalendarSelection>({
-    start: null,
-    end: null,
-    isDragging: false,
-  });
-  const [focusedDateKey, setFocusedDateKey] = useState<string | null>(null);
-  const [previewPrice, setPreviewPrice] = useState<number | null>(null);
+  const localizedWeekdays = useMemo(() => {
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(2026, 0, 4 + i);
+      return {
+        full: d.toLocaleDateString(language || "en", { weekday: "long" }),
+        short: d.toLocaleDateString(language || "en", { weekday: "short" }),
+        narrow: d.toLocaleDateString(language || "en", { weekday: "narrow" }),
+      };
+    });
+  }, [language]);
 
-  // UI state
-  const [showMonthDropdown, setShowMonthDropdown] = useState(false);
-  const [showViewDropdown, setShowViewDropdown] = useState(false);
-  const [pickerYear, setPickerYear] = useState(month.getFullYear());
-  const viewDropdownRef = useRef<HTMLDivElement>(null);
+  // Continuous multi-month scroll window state (Airbnb-style)
+  const [startOffset, setStartOffset] = useState(-12);
+  const [endOffset, setEndOffset] = useState(24);
   const monthDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -2439,20 +2425,20 @@ export function HostCalendarWorkspace({
     [listings, selectedPropertyIds],
   );
 
-  // Handle month change: resets selection safely if in single month view
-  const handleSelectMonth = useCallback(
-    (newMonth: Date) => {
-      setMonth(newMonth);
-      setSelection({ start: null, end: null, isDragging: false });
-      setPreviewPrice(null);
-      syncUrl(selectedId, newMonth, view);
+  // Debounced URL synchronization for smooth scrolling
+  const debouncedSyncUrl = useCallback(
+    (newListingId: string, newMonth: Date, newView: "month" | "year") => {
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+      debounceTimerRef.current = setTimeout(() => {
+        syncUrl(newListingId, newMonth, newView);
+      }, 250);
     },
-    [selectedId, view, syncUrl],
+    [syncUrl],
   );
 
-  // Handle view switch
-  const handleSelectView = useCallback(
-    (newView: "month" | "year") => {
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
       setView(newView);
       setShowViewDropdown(false);
       syncUrl(selectedId, month, newView);
@@ -2487,9 +2473,8 @@ export function HostCalendarWorkspace({
     setSelection({ start: null, end: null, isDragging: false });
     setPreviewPrice(null);
     if (view === "year") {
-      setMonth(
-        (prev) => new Date(prev.getFullYear() - 1, prev.getMonth(), 1),
-      );
+      const prev = new Date(month.getFullYear() - 1, month.getMonth(), 1);
+      setMonth(prev);
       syncUrl(
         selectedId,
         new Date(month.getFullYear() - 1, month.getMonth(), 1),
@@ -2497,33 +2482,26 @@ export function HostCalendarWorkspace({
       );
     } else {
       const prev = new Date(month.getFullYear(), month.getMonth() - 1, 1);
-      setMonth(prev);
-      syncUrl(selectedId, prev, view);
+      handleJumpToMonth(prev);
     }
-  }, [view, month, selectedId, syncUrl]);
+  }, [view, month, selectedId, syncUrl, handleJumpToMonth]);
 
   const handleNext = useCallback(() => {
     setSelection({ start: null, end: null, isDragging: false });
     setPreviewPrice(null);
     if (view === "year") {
-      const next = new Date(month.getFullYear() + 1, month.getMonth(), 1);
-      setMonth(next);
       syncUrl(selectedId, next, view);
     } else {
       const next = new Date(month.getFullYear(), month.getMonth() + 1, 1);
-      setMonth(next);
-      syncUrl(selectedId, next, view);
+      handleJumpToMonth(next);
     }
-  }, [view, month, selectedId, syncUrl]);
+  }, [view, month, selectedId, syncUrl, handleJumpToMonth]);
 
   const handleToday = useCallback(() => {
     setSelection({ start: null, end: null, isDragging: false });
-    setPreviewPrice(null);
     const now = new Date();
     const todayMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    setMonth(todayMonth);
-    syncUrl(selectedId, todayMonth, view);
-  }, [selectedId, view, syncUrl]);
+  }, [handleJumpToMonth]);
 
   // Precompute O(1) lookups for active bookings, blocked dates, custom prices
   const { bookingsByDate, bookingRanges } = useMemo(() => {
@@ -2535,10 +2513,8 @@ export function HostCalendarWorkspace({
     }> = [];
 
     const scopedListingIds = isAllListings
-      ? new Set(visibleAllListings.map((listing) => listing.id))
       : selectedListing ? new Set([selectedListing.id]) : new Set<string>();
 
-    for (const span of buildHostCalendarReservationSpans(
       bookings,
       "1900-01-01",
       "2200-01-01",
@@ -2548,8 +2524,6 @@ export function HostCalendarWorkspace({
       ranges.push({ booking: b, start, end });
 
       let cur = start;
-      while (cur < end) {
-        const list = map.get(cur) || [];
         list.push(b);
         map.set(cur, list);
         cur = shiftDateKey(cur, 1);
@@ -2959,7 +2933,7 @@ export function HostCalendarWorkspace({
   // ───────────────────────────────────────────────────────────────────────────
   return (
     <>
-      <main className="mx-auto w-full max-w-[1600px] flex-1 px-4 pb-28 pt-6 sm:px-8 sm:pt-8">
+      <main className="mx-auto w-full max-w-[1600px] flex-1 px-4 pb-28 pt-6 sm:px-8 sm:pt-8 lg:pb-4">
         {mobileCalendarOpen && selectedListing ? (
           <section className="sm:hidden">
             <h1 className="mb-7">
@@ -2986,7 +2960,6 @@ export function HostCalendarWorkspace({
               <h2 className="text-base font-medium text-[#272727] dark:text-zinc-100">
                 {monthName(month, language)}
               </h2>
-              <div className="flex items-center sm:gap-3 gap-2">
                 <button type="button" onClick={handlePrev} aria-label={t("host_calendar_prev_month", "Previous month")} className="flex sm:size-9 size-7 items-center justify-center rounded-full border border-[#bdbdbd] bg-[#F3F4F5] text-[#1f1f1f] transition-colors hover:bg-[#f5f5f5] dark:border-zinc-600 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800">
                   <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
                 </button>
@@ -3197,7 +3170,7 @@ export function HostCalendarWorkspace({
                           title={`${monthLong} ${pickerYear}`}
                           onClick={() => {
                             const newDate = new Date(pickerYear, idx, 1);
-                            handleSelectMonth(newDate);
+                            handleJumpToMonth(newDate);
                             setShowMonthDropdown(false);
                             if (view === "year") handleSelectView("month");
                           }}
@@ -3225,7 +3198,6 @@ export function HostCalendarWorkspace({
               {t("host_calendar_today", "Today")}
             </button>
           </div>
-
           {/* Right: Price tips, calendar view dropdown, mobile settings button */}
           <div className="flex items-center gap-2 sm:gap-3">
             {/* Price tips button */}
@@ -3319,7 +3291,7 @@ export function HostCalendarWorkspace({
         </div>
 
         {/* 3-Column Layout: Left Rail | Center Calendar Matrix | Right Settings */}
-        <div className="hidden items-start gap-6 sm:flex lg:h-[970px]">
+        <div className="hidden items-start gap-6 sm:flex sm:h-[calc(100vh-170px)] sm:min-h-[600px]">
           {/* 1. Left Rail: Property Switcher (Desktop & Tablet) */}
           <aside
             aria-label="Property selection"
@@ -3348,7 +3320,6 @@ export function HostCalendarWorkspace({
                   strokeLinejoin="round"
                 >
                   <rect x="3" y="3" width="7" height="7" />
-                  <rect x="14" y="3" width="7" height="7" />
                   <rect x="14" y="14" width="7" height="7" />
                   <rect x="3" y="14" width="7" height="7" />
                 </svg>
@@ -3412,7 +3383,26 @@ export function HostCalendarWorkspace({
           </aside>
 
           {/* 2. Center Calendar Matrix */}
-          <div className="relative min-w-0 flex-1 border-b border-[#d7d7d7] pb-4 lg:h-full lg:overflow-y-auto lg:pr-4 calendar-panel-scrollbar dark:border-zinc-700">
+          <div
+            ref={scrollContainerRef}
+            onScroll={handleCalendarScroll}
+            className="relative min-w-0 flex-1 border-b border-[#d7d7d7] pb-4 sm:h-full sm:overflow-y-auto sm:pr-4 calendar-panel-scrollbar dark:border-zinc-700"
+          >
+            {/* Sticky Weekday Header for Month View (Airbnb style) */}
+            {!isAllListings && view === "month" && (
+              <div
+                className="sticky top-0 z-20 grid grid-cols-7 gap-[2px] md:gap-1 lg:grid-cols-[repeat(7,minmax(88px,1fr))] border-b border-b-[#dddddd] bg-white py-3 text-center text-sm lg:text-base font-medium text-[#1F1F1F] dark:border-b-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 sticky-weekday-header"
+              >
+                {localizedWeekdays.map((d, i) => (
+                  <span key={i}>
+                    <span className="hidden xl:inline">{d.full}</span>
+                    <span className="hidden sm:inline xl:hidden">{d.short}</span>
+                    <span className="sm:hidden">{d.narrow}</span>
+                  </span>
+                ))}
+              </div>
+            )}
+
             {isAllListings ? (
               <MultiPropertyCalendar
                 month={month}
@@ -3423,27 +3413,25 @@ export function HostCalendarWorkspace({
                   setSelectedId(listingId);
                   setSelection({ start: date, end: date, isDragging: false });
                   setPreviewPrice(null);
-                  syncUrl(listingId, month, view);
-                }}
-              />
-            ) : view === "month" ? (
-              <MonthGrid
-                month={month}
-                listing={selectedListing}
-                bookingsByDate={bookingsByDate}
-                bookingRanges={bookingRanges}
-                blockedDatesSet={blockedDatesSet}
-                customPricesMap={customPricesMap}
-                selection={selection}
-                focusedDateKey={focusedDateKey}
-                isAllListings={isAllListings}
-                listingsCount={listings.length}
-                compact={false}
-                onDayClick={handleDayClick}
-                onDayPointerDown={handleDayPointerDown}
-                onDayPointerEnter={handleDayPointerEnter}
-                onKeyDown={handleKeyDown}
-              />
+                        bookingsByDate={bookingsByDate}
+                        bookingRanges={bookingRanges}
+                        blockedDatesSet={blockedDatesSet}
+                        customPricesMap={customPricesMap}
+                        selection={selection}
+                        focusedDateKey={focusedDateKey}
+                        isAllListings={isAllListings}
+                        listingsCount={listings.length}
+                        compact={false}
+                        hideWeekdayHeader
+                        onDayClick={handleDayClick}
+                        onDayPointerDown={handleDayPointerDown}
+                        onDayPointerEnter={handleDayPointerEnter}
+                        onKeyDown={handleKeyDown}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
             ) : (
               /* 12+ Months Year View with Lazy Loading */
               <div className="grid grid-cols-1 min-[1366px]:grid-cols-2 gap-x-8 xl:gap-y-6 gap-y-6 mt-6">
@@ -3456,30 +3444,10 @@ export function HostCalendarWorkspace({
                   return (
                     <Fragment key={d.toISOString()}>
                       {i > 0 && d.getMonth() === 0 && (
-                        <h2 className="col-span-full dark:border-zinc-800 text-xl sm:text-2xl font-medium text-[#1f1f1f] dark:text-zinc-100">
-                          {d.getFullYear()}
-                        </h2>
-                      )}
-                      <LazyMonthCard
-                        month={d}
-                        listing={selectedListing}
-                        bookingsByDate={bookingsByDate}
-                        bookingRanges={bookingRanges}
-                        blockedDatesSet={blockedDatesSet}
-                        customPricesMap={customPricesMap}
-                        selection={selection}
-                        isAllListings={isAllListings}
-                        listingsCount={listings.length}
-                        onDayClick={handleDayClick}
-                        onSelectMonth={(targetMonth) => {
-                          handleSelectMonth(targetMonth);
-                          handleSelectView("month");
-                        }}
-                      />
-                    </Fragment>
-                  );
-                })}
-              </div>
+                <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="m18 15-6-6-6 6" />
+                </svg>
+              </button>
             )}
           </div>
 
@@ -3505,7 +3473,6 @@ export function HostCalendarWorkspace({
                 saving={saving}
                 notice={notice}
                 onSave={save}
-                onBulkAvailability={handleBulkAvailability}
                 bookings={bookings}
                 onClear={() => {
                   setSelection({ start: null, end: null, isDragging: false });
@@ -3514,21 +3481,6 @@ export function HostCalendarWorkspace({
                 onPreviewPrice={setPreviewPrice}
               />
             ) : selectedListing ? (
-              /* The compact overview opens the unchanged full editors on click. */
-              <CalendarSettingsPanel
-                key={`${selectedListing.id}-${displayCurrency}`}
-                listing={selectedListing}
-                saving={saving}
-                notice={notice}
-                onSave={save}
-              />
-            ) : null}
-          </aside>
-        </div>
-
-        {/* ─────────────────────────────────────────────────────────────────── */}
-        {/* Mobile / Tablet Responsive Settings & Contextual Modal */}
-        {/* ─────────────────────────────────────────────────────────────────── */}
         {
           mobileSettingsOpen && (
             <WorkspaceDialog

@@ -7,6 +7,8 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useLanguage } from "@/lib/i18n/language-context";
+import { duplicateListingAction } from "@/actions/host/listings";
+import type { HostListingCardDTO } from "@/services/mappers";
 
 export type HostingTypeOption = "HOME" | "EXPERIENCE" | "SERVICE";
 
@@ -30,7 +32,7 @@ export function BecomeHostModal({
 
   // Step 1: "Welcome back, [Name] - Start a new listing"
   // Step 2: "What would you like to host?"
-  const [step, setStep] = useState<1 | 2>(initialStep ?? 1);
+  const [step, setStep] = useState<1 | 2 | 3 | 4>(initialStep ?? 1);
   const [selectedType, setSelectedType] = useState<HostingTypeOption | null>(() => {
     if (typeof window !== "undefined") {
       const saved = sessionStorage.getItem("host_type");
@@ -45,6 +47,13 @@ export function BecomeHostModal({
   });
   const [isNavigating, setIsNavigating] = useState<boolean>(false);
   const [isClosing, setIsClosing] = useState<boolean>(false);
+  const [sourceListings, setSourceListings] = useState<HostListingCardDTO[]>([]);
+  const [sourcePage, setSourcePage] = useState(1);
+  const [hasMoreSources, setHasMoreSources] = useState(false);
+  const [isLoadingSources, setIsLoadingSources] = useState(false);
+  const [sourceError, setSourceError] = useState<string | null>(null);
+  const [selectedSource, setSelectedSource] = useState<HostListingCardDTO | null>(null);
+  const duplicateRequestRef = React.useRef<string | null>(null);
 
   const handleClose = React.useCallback(() => {
     if (isClosing) return;
@@ -84,8 +93,35 @@ export function BecomeHostModal({
         }
       }
       setIsNavigating(false);
+      setSelectedSource(null);
+      setSourceError(null);
+      setSourcePage(1);
+      setSourceListings([]);
     }
   }
+
+  const loadSourceListings = React.useCallback(async (page: number, append = false) => {
+    setIsLoadingSources(true);
+    setSourceError(null);
+    try {
+      const response = await fetch(`/api/v1/host/listings?tab=ALL&ownedOnly=true&page=${page}&limit=24`, {
+        cache: "no-store",
+        headers: { Accept: "application/json" },
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok || !payload?.success || !Array.isArray(payload?.data?.items)) {
+        throw new Error(payload?.error?.message || "Unable to load your listings.");
+      }
+      const items = payload.data.items as HostListingCardDTO[];
+      setSourceListings((current) => append ? [...current, ...items] : items);
+      setHasMoreSources(Boolean(payload.data.hasMore));
+      setSourcePage(page);
+    } catch (error) {
+      setSourceError(error instanceof Error ? error.message : "Unable to load your listings.");
+    } finally {
+      setIsLoadingSources(false);
+    }
+  }, []);
 
   if (!isOpen && !isClosing) return null;
 
@@ -101,12 +137,34 @@ export function BecomeHostModal({
   };
 
   const handleCreateFromExisting = () => {
+    setSourceListings([]);
+    setSourceError(null);
+    void loadSourceListings(1);
+    setStep(3);
+  };
+
+  const handleDuplicate = async (includePhotos: boolean) => {
+    if (!selectedSource || isNavigating || duplicateRequestRef.current) return;
+    const requestKey = typeof globalThis.crypto?.randomUUID === "function"
+      ? globalThis.crypto.randomUUID()
+      : `${selectedSource.id}-${Date.now()}`;
+    duplicateRequestRef.current = requestKey;
     setIsNavigating(true);
-    onClose();
-    if (user?.role === "HOST" || user?.role === "ADMIN") {
-      router.push(`/host/listings?mode=duplicate&type=HOME`);
-    } else {
-      router.push(`/host/listings/new?type=HOME`);
+    let didStartNavigation = false;
+    try {
+      const result = await duplicateListingAction(selectedSource.id, includePhotos, requestKey);
+      if (!result.ok) throw new Error(result.error || "Unable to duplicate this listing.");
+      didStartNavigation = true;
+      onClose();
+      router.push(`/host/listings/new?type=HOME&draftId=${result.data.id}`);
+    } catch (error) {
+      setSourceError(error instanceof Error ? error.message : "Unable to duplicate this listing.");
+      setStep(3);
+    } finally {
+      if (!didStartNavigation) {
+        duplicateRequestRef.current = null;
+        setIsNavigating(false);
+      }
     }
   };
 
@@ -365,6 +423,164 @@ export function BecomeHostModal({
             </button>
           </div>
         </div>
+      )}
+
+      {/* STEP 3: Choose an owned listing to duplicate. */}
+      {step === 3 && (
+        <section
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="duplicate-listing-title"
+          className={`relative z-10 flex h-full w-full flex-col bg-white px-5 py-6 shadow-2xl sm:h-auto sm:max-h-[min(740px,calc(100dvh-2rem))] sm:max-w-5xl sm:rounded-3xl sm:px-7 sm:py-6 ${
+            isClosing ? "modal-dialog-animate-out" : "modal-dialog-animate-in"
+          }`}
+        >
+          <h2 id="duplicate-listing-title" className="text-center text-lg font-semibold text-[#1F1F1F]">
+            Choose a listing
+          </h2>
+          <button
+            type="button"
+            onClick={handleClose}
+            className="absolute right-4 top-4 inline-flex size-10 items-center justify-center rounded-full text-[#1F1F1F] transition-colors hover:bg-zinc-100"
+            aria-label="Close modal"
+          >
+            <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="m6 6 12 12M18 6 6 18" />
+            </svg>
+          </button>
+
+          <div className="mt-8 min-h-0 flex-1 overflow-y-auto pr-1 sm:mt-10">
+            {isLoadingSources && sourceListings.length === 0 ? (
+              <div className="space-y-3" aria-label="Loading listings">
+                {Array.from({ length: 4 }).map((_, index) => (
+                  <div key={index} className="h-26 animate-pulse rounded-2xl border border-zinc-200 bg-zinc-50" />
+                ))}
+              </div>
+            ) : sourceError ? (
+              <div className="flex min-h-56 flex-col items-center justify-center rounded-2xl border border-rose-200 bg-rose-50 p-6 text-center">
+                <p className="text-sm font-medium text-rose-800">{sourceError}</p>
+                <button
+                  type="button"
+                  onClick={() => void loadSourceListings(1)}
+                  className="mt-4 rounded-full border border-rose-300 px-4 py-2 text-sm font-semibold text-rose-800 hover:bg-white"
+                >
+                  Retry
+                </button>
+              </div>
+            ) : sourceListings.length === 0 ? (
+              <div className="flex min-h-56 flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-6 text-center">
+                <p className="text-base font-semibold text-[#1F1F1F]">No listings to copy yet</p>
+                <p className="mt-2 max-w-sm text-sm text-[#727272]">Create your first listing to use it as a starting point for another one.</p>
+                <button
+                  type="button"
+                  onClick={() => setStep(2)}
+                  className="mt-5 rounded-full bg-[#FCDF9C] px-5 py-2.5 text-sm font-semibold text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white"
+                >
+                  Create a new listing
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {sourceListings.map((listing) => {
+                  const thumbnail = listing.photos[0];
+                  return (
+                    <button
+                      key={listing.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedSource(listing);
+                        setStep(4);
+                      }}
+                      className="group flex min-h-24 w-full items-center gap-4 rounded-2xl border border-zinc-300 bg-white p-3 text-left transition-colors hover:border-[#1F1F1F] hover:bg-zinc-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1F1F1F]"
+                    >
+                      <div className="relative flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-zinc-100 text-zinc-600 sm:size-14">
+                        {thumbnail ? (
+                          <Image src={thumbnail} alt="" fill unoptimized sizes="56px" className="object-cover" />
+                        ) : (
+                          <svg aria-hidden="true" className="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M3 21h18M5 21V9l7-5 7 5v12M9 21v-6h6v6" />
+                          </svg>
+                        )}
+                      </div>
+                      <span className="min-w-0 flex-1 truncate text-base font-semibold text-[#1F1F1F]">{listing.title || "Untitled listing"}</span>
+                      <svg aria-hidden="true" className="size-5 shrink-0 text-[#1F1F1F]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="m9 5 7 7-7 7" />
+                      </svg>
+                    </button>
+                  );
+                })}
+                {hasMoreSources && (
+                  <button
+                    type="button"
+                    onClick={() => void loadSourceListings(sourcePage + 1, true)}
+                    disabled={isLoadingSources}
+                    className="mx-auto mt-2 block rounded-full border border-zinc-300 px-5 py-2 text-sm font-semibold text-[#1F1F1F] hover:border-[#1F1F1F] disabled:opacity-50"
+                  >
+                    {isLoadingSources ? "Loading…" : "Load more"}
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* STEP 4: Explicit media choice keeps each duplicated gallery independent. */}
+      {step === 4 && selectedSource && (
+        <section
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="duplicate-photo-title"
+          className={`relative z-10 flex h-full w-full flex-col bg-white px-5 py-6 shadow-2xl sm:h-auto sm:min-h-[520px] sm:max-w-5xl sm:rounded-3xl sm:px-7 sm:py-6 ${
+            isClosing ? "modal-dialog-animate-out" : "modal-dialog-animate-in"
+          }`}
+        >
+          <h2 id="duplicate-photo-title" className="text-center text-lg font-semibold text-[#1F1F1F]">
+            Want to use the same photos?
+          </h2>
+          <button
+            type="button"
+            onClick={handleClose}
+            disabled={isNavigating}
+            className="absolute right-4 top-4 inline-flex size-10 items-center justify-center rounded-full text-[#1F1F1F] transition-colors hover:bg-zinc-100 disabled:opacity-50"
+            aria-label="Close modal"
+          >
+            <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="m6 6 12 12M18 6 6 18" />
+            </svg>
+          </button>
+
+          <div className="my-auto space-y-3 py-10">
+            <button
+              type="button"
+              onClick={() => void handleDuplicate(true)}
+              disabled={isNavigating}
+              className="group flex min-h-26 w-full items-center gap-4 rounded-2xl border border-zinc-300 bg-white px-5 text-left transition-colors hover:border-[#1F1F1F] hover:bg-zinc-50 disabled:cursor-wait disabled:opacity-60"
+            >
+              <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-zinc-100 text-[#1F1F1F]">
+                <svg aria-hidden="true" className="size-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                  <rect x="3" y="4" width="18" height="16" rx="2" /><circle cx="8.5" cy="9" r="1.5" /><path strokeLinecap="round" strokeLinejoin="round" d="m21 15-4.5-4.5L8 19" />
+                </svg>
+              </span>
+              <span className="flex-1 text-base font-semibold text-[#1F1F1F]">{isNavigating ? "Creating draft…" : "Duplicate with photos"}</span>
+              <svg aria-hidden="true" className="size-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="m9 5 7 7-7 7" /></svg>
+            </button>
+            <button
+              type="button"
+              onClick={() => void handleDuplicate(false)}
+              disabled={isNavigating}
+              className="group flex min-h-26 w-full items-center gap-4 rounded-2xl border border-zinc-300 bg-white px-5 text-left transition-colors hover:border-[#1F1F1F] hover:bg-zinc-50 disabled:cursor-wait disabled:opacity-60"
+            >
+              <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-zinc-100 text-[#1F1F1F]">
+                <svg aria-hidden="true" className="size-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                  <rect x="7" y="5" width="11" height="15" rx="2" /><path strokeLinecap="round" strokeLinejoin="round" d="M4 16V6a2 2 0 0 1 2-2h8" />
+                </svg>
+              </span>
+              <span className="flex-1 text-base font-semibold text-[#1F1F1F]">Duplicate without photos</span>
+              <svg aria-hidden="true" className="size-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="m9 5 7 7-7 7" /></svg>
+            </button>
+          </div>
+        </section>
       )}
     </ModalOverlay>
   );

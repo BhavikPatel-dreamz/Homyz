@@ -128,7 +128,7 @@ export function StepLocationSearch({
       <Container>
         <div className="wrapper flex-1 w-full flex flex-col sm:justify-between animate-in fade-in duration-200 min-h-[calc(100dvh-4rem)] sm:min-h-[calc(100dvh-6rem)] lg:min-h-[calc(100dvh-10.25rem)]">
           <OnboardingMobileCloseButton disabled={isLoading} />
-          <div className="max-w-124.25 mx-auto w-full flex flex-col items-start text-left my-auto">
+          <div className="mx-auto flex w-full max-w-[760px] flex-col items-start text-left my-auto">
             <h1 data-aos="fade-up" className="mb-4">
               {t("host_location_title")}
             </h1>
@@ -136,9 +136,9 @@ export function StepLocationSearch({
               {t("host_pin_confirm_desc")}
             </p>
 
-            <div data-aos="fade-up" data-aos-delay="200" className="relative w-full max-w-xl">
+            <div data-aos="fade-up" data-aos-delay="200" className="relative w-full">
               {/* Autocomplete Search Input Field */}
-              <div className="relative sm:absolute sm:top-5 sm:left-1/2 sm:-translate-x-1/2 z-30 w-full sm:w-[90%] bg-white/95 backdrop-blur-md sm:h-18 h-12 sm:rounded-[20px] rounded-[10px] border border-[#1F1F1F] shadow-lg px-4 sm:py-3 flex items-center">
+              <div className="relative z-30 flex h-12 w-full items-center border border-[#1F1F1F] bg-white/95 px-4 shadow-lg backdrop-blur-md sm:absolute sm:left-1/2 sm:top-5 sm:h-18 sm:w-[calc(100%-3rem)] sm:-translate-x-1/2 sm:rounded-[20px] sm:py-3 rounded-[10px]">
                 <div className="flex min-w-0 flex-1 items-center gap-3">
                   <span className="sm:w-8 sm:h-8 rounded-full sm:border border-[#1F1F1F] shrink-0 flex justify-center items-center">
                     <svg className="w-4 h-5 text-[#727272]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -213,7 +213,8 @@ export function StepLocationSearch({
                 lng={coords.lng}
                 showExactLocation={true}
                 onLocationChange={onLocationChange}
-                className="h-100 sm:h-112.5 w-full relative z-0 rounded-3xl overflow-hidden shadow-2xl border-2 border-[#1F1F1F] bg-white sm:mt-0 mt-3"
+                zoomControlsPlacement="below-top-overlay"
+                className="relative z-0 mt-3 h-[380px] w-full overflow-hidden rounded-3xl border-2 border-[#1F1F1F] bg-white shadow-2xl sm:mt-0 sm:h-[500px] lg:h-[560px]"
               />
             </div>
           </div>

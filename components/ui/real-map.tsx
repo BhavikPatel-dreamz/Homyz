@@ -53,6 +53,11 @@ interface RealMapProps {
   ariaLabel?: string;
   onLocationChange?: (lat: number, lng: number, details?: LocationDetails) => void;
   onLocationError?: (message: string) => void;
+  /**
+   * Keeps map controls clear of UI layered over the top of the map, such as
+   * the address search field in the host onboarding flow.
+   */
+  zoomControlsPlacement?: "top-right" | "below-top-overlay";
   className?: string;
 }
 
@@ -69,6 +74,7 @@ export function RealMap({
   ariaLabel = "Property location map",
   onLocationChange,
   onLocationError,
+  zoomControlsPlacement = "top-right",
   className = "h-[220px] w-full rounded-3xl overflow-hidden border border-zinc-200 shadow-xs relative",
 }: RealMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -118,15 +124,17 @@ export function RealMap({
 
   // Synchronize internal coords when parent lat/lng props change from outside (e.g. autocomplete selection)
   useEffect(() => {
-    if (
-      Number.isFinite(initialLat) &&
-      Number.isFinite(initialLng) &&
-      (initialLat !== coords.lat || initialLng !== coords.lng)
-    ) {
-      if (!isInternalUpdateRef.current) {
-        setCoords({ lat: initialLat!, lng: initialLng! });
-      }
+    if (!Number.isFinite(initialLat) || !Number.isFinite(initialLng)) return;
+
+    // A click or drag has already updated this map locally. The matching
+    // parent update is only an acknowledgement, not a command to reset it.
+    if (isInternalUpdateRef.current) {
       isInternalUpdateRef.current = false;
+      return;
+    }
+
+    if (initialLat !== coords.lat || initialLng !== coords.lng) {
+      setCoords({ lat: initialLat, lng: initialLng });
     }
   }, [initialLat, initialLng, coords.lat, coords.lng]);
 
@@ -134,6 +142,14 @@ export function RealMap({
   const handlePositionChange = useCallback(
     (newLat: number, newLng: number) => {
       setCoords({ lat: newLat, lng: newLng });
+      // Keep the visual pin responsive before the reverse-geocoding request
+      // completes. This also persists the selected point if that request is
+      // slow or unavailable.
+      markerRef.current?.setLatLng([newLat, newLng]);
+      mapInstanceRef.current?.setView([newLat, newLng], mapInstanceRef.current.getZoom());
+      isInternalUpdateRef.current = true;
+      onLocationChange?.(newLat, newLng);
+
       const requestId = ++reverseRequestIdRef.current;
 
       if (reverseDebounceRef.current) {
@@ -403,8 +419,10 @@ export function RealMap({
         </div>
       )}
 
-      {/* Zoom Controls Overlay (Top Right - Matches Figma Layout) */}
-      {!mapLoadError && shouldLoadMap && <div className="absolute top-3 right-3 flex flex-col gap-3 items-center text-xs font-semibold text-zinc-800 dark:text-zinc-100 z-10">
+      {/* Zoom Controls Overlay */}
+      {!mapLoadError && shouldLoadMap && <div className={`absolute right-3 z-10 flex flex-col items-center gap-3 text-xs font-semibold text-zinc-800 dark:text-zinc-100 sm:right-4 ${
+        zoomControlsPlacement === "below-top-overlay" ? "top-3 sm:top-[6.5rem]" : "top-3"
+      }`}>
         <button
           type="button"
           onClick={handleZoomIn}
