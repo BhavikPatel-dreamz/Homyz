@@ -435,7 +435,7 @@ export function BecomeHostModal({
             isClosing ? "modal-dialog-animate-out" : "modal-dialog-animate-in"
           }`}
         >
-          <h2 id="duplicate-listing-title" className="text-center text-lg font-semibold text-[#1F1F1F]">
+          <h2 id="duplicate-listing-title" className="text-center text-xl font-medium text-[#1F1F1F]">
             Choose a listing
           </h2>
           <button
@@ -502,7 +502,7 @@ export function BecomeHostModal({
                           </svg>
                         )}
                       </div>
-                      <span className="min-w-0 flex-1 truncate text-base font-semibold text-[#1F1F1F]">{listing.title || "Untitled listing"}</span>
+                      <span className="min-w-0 flex-1 truncate text-base font-medium text-[#1F1F1F]">{listing.title || "Untitled listing"}</span>
                       <svg aria-hidden="true" className="size-5 shrink-0 text-[#1F1F1F]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="m9 5 7 7-7 7" />
                       </svg>
@@ -514,7 +514,7 @@ export function BecomeHostModal({
                     type="button"
                     onClick={() => void loadSourceListings(sourcePage + 1, true)}
                     disabled={isLoadingSources}
-                    className="mx-auto mt-2 block rounded-full border border-zinc-300 px-5 py-2 text-sm font-semibold text-[#1F1F1F] hover:border-[#1F1F1F] disabled:opacity-50"
+                          className="mx-auto mt-2 block rounded-full border border-[#FCDF9C] bg-[#FCDF9C] hover:bg-[#1f1f1f] px-5 py-2 text-sm font-medium text-[#1F1F1F] hover:text-white hover:border-[#1F1F1F] disabled:opacity-50 duration-300"
                   >
                     {isLoadingSources ? "Loading…" : "Load more"}
                   </button>

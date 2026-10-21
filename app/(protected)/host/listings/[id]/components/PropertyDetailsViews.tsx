@@ -1963,7 +1963,7 @@ export function PropertyDetailsViews({
                                 }`}>
                                 {!isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white dark:bg-zinc-950" />}
                               </div>
-                              <span className={`${!isSelected ? "font-semibold" : "font-medium"} text-base text-[#1F1F1F] dark:text-zinc-100`}>{t("host_acc_dont_have_feature")}</span>
+                              <span className={`${!isSelected ? "font-medium" : "font-medium"} text-base text-[#1F1F1F] dark:text-zinc-100`}>{t("host_acc_dont_have_feature")}</span>
                             </div>
 
                             {/* Option 2: I have this feature */}
@@ -1986,7 +1986,7 @@ export function PropertyDetailsViews({
                                 }`}>
                                 {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white dark:bg-zinc-950" />}
                               </div>
-                              <span className={`${isSelected ? "font-semibold" : "font-medium"} text-base text-[#1F1F1F] dark:text-zinc-100`}>{t("host_acc_have_feature")}</span>
+                              <span className={`${isSelected ? "font-medium" : "font-medium"} text-base text-[#1F1F1F] dark:text-zinc-100`}>{t("host_acc_have_feature")}</span>
                             </div>
                           </div>
 

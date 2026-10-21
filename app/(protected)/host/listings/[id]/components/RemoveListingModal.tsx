@@ -99,7 +99,7 @@ export function RemoveListingModal({
   };
 
   return (
-    <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/40 p-4 backdrop-blur-xs">
+    <ModalOverlay className="fixed inset-0 z-999 flex items-center justify-center overflow-y-auto bg-black/40 p-4 backdrop-blur-xs">
       <section
         role="dialog"
         aria-modal="true"
@@ -122,7 +122,7 @@ export function RemoveListingModal({
           <>
             {/* Modal Heading */}
             <div className="border-b border-zinc-100 px-6 pb-5 pt-7 pr-16 dark:border-zinc-800 sm:px-8 sm:pr-16">
-              <h2 id="remove-listing-survey-title" className="text-xl font-semibold tracking-tight text-[#1F1F1F] dark:text-zinc-100 sm:text-2xl">
+              <h2 id="remove-listing-survey-title" className="text-lg font-medium tracking-tight text-[#1F1F1F] dark:text-zinc-100 sm:text-xl">
                 {t("host_remove_survey_heading") || "Let us know why you've changed your mind about hosting"}
               </h2>
               <p className="mt-2 text-base leading-6 text-[#727272] dark:text-[#727272]">
@@ -146,7 +146,7 @@ export function RemoveListingModal({
                       className="group flex w-full items-center justify-between rounded-xl px-1 py-3 text-left transition-colors hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900/15 dark:hover:bg-zinc-800/60 dark:focus-visible:ring-zinc-100/20"
                     >
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100 group-hover:text-zinc-950 dark:group-hover:text-white">
+                        <span className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100 group-hover:text-zinc-950 dark:group-hover:text-white">
                           {translatedCategoryTitle}
                         </span>
                         {/* show badge if any selected and category is collapsed */}
@@ -158,7 +158,7 @@ export function RemoveListingModal({
                       </div>
 
                       <svg
-                        className={`w-4 h-4 text-[#727272] dark:text-[#727272] transition-transform duration-200 shrink-0 ${
+                        className={`w-4 h-4 text-[#1f1f1f] dark:text-[#727272] transition-transform duration-200 shrink-0 ${
                           isExpanded ? "rotate-180" : ""
                         }`}
                         fill="none"
