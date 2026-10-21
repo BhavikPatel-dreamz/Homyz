@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 import { useLanguage } from "@/lib/i18n/language-context";
 
@@ -115,7 +116,7 @@ export function SupportChatView({ user }: { user?: { name?: string | null } }) {
                 />
               </div>
               <div className="flex min-w-0 flex-col">
-                <span className="truncate text-sm font-semibold text-[#1F1F1F]">{t("profile_support_agent_name", "Sarah • Homyz Care")}</span>
+                <span className="truncate text-sm font-medium text-[#1F1F1F]">{t("profile_support_agent_name", "Sarah • Homyz Care")}</span>
                 <span className="flex items-center gap-1.5 text-xs text-emerald-700 font-medium">
                   <span className="h-2 w-2 rounded-full bg-emerald-500 inline-block" />
                   {t("profile_support_online", "Online • Typically replies instantly")}
@@ -235,13 +236,26 @@ export function SupportChatView({ user }: { user?: { name?: string | null } }) {
             <p className="mt-1 text-sm text-[#727272] leading-relaxed">
               {t("profile_support_help_desc", "Find instant answers to FAQs, cancellation policies, and guest guides.")}
             </p>
-            <a
+            <Link
               href="/help"
-              className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-[#1F1F1F] hover:underline"
+              className="group mt-3.5 inline-flex items-center gap-1.5 text-sm font-semibold text-[#1F1F1F] transition-colors hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FCDF9C] rounded-sm"
             >
-              <span>{t("profile_support_browse_help", "Browse Help Articles")}</span>
-              <span>→</span>
-            </a>
+              <span className="underline decoration-[#727272]/40 underline-offset-4 transition-colors group-hover:decoration-[#1F1F1F]">
+                {t("profile_support_browse_help", "Browse Help Articles")}
+              </span>
+              <svg
+                className="h-4 w-4 shrink-0 transition-transform duration-200 group-hover:translate-x-1 text-[#1F1F1F]"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M3 10a.75.75 0 0 1 .75-.75h10.638L10.23 5.29a.75.75 0 1 1 1.04-1.08l5.5 5.25a.75.75 0 0 1 0 1.08l-5.5 5.25a.75.75 0 1 1-1.04-1.08l4.158-3.96H3.75A.75.75 0 0 1 3 10Z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </Link>
           </div>
         </div>
       </div>

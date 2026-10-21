@@ -598,7 +598,7 @@ export function ListingHeaderSearch() {
                 <div className="text-[11px] font-bold uppercase tracking-wider text-zinc-700">
                   Check in
                 </div>
-                <div className="truncate text-sm font-semibold text-[#1F1F1F]">
+                <div className="truncate text-sm font-medium text-[#1F1F1F]">
                   {formatShortDate(checkIn) || "Add dates"}
                 </div>
               </div>
@@ -615,7 +615,7 @@ export function ListingHeaderSearch() {
                 <div className="text-[11px] font-bold uppercase tracking-wider text-zinc-700">
                   Check out
                 </div>
-                <div className="truncate text-sm font-semibold text-[#1F1F1F]">
+                <div className="truncate text-sm font-medium text-[#1F1F1F]">
                   {formatShortDate(checkOut) || "Add dates"}
                 </div>
               </div>
@@ -632,7 +632,7 @@ export function ListingHeaderSearch() {
                 <div className="text-[11px] font-bold uppercase tracking-wider text-zinc-700">
                   Who
                 </div>
-                <div className="truncate text-sm font-semibold text-[#1F1F1F]">
+                <div className="truncate text-sm font-medium text-[#1F1F1F]">
                   {pillGuests}
                 </div>
               </div>
@@ -713,7 +713,7 @@ export function ListingHeaderSearch() {
                             📍
                           </div>
                           <div className="min-w-0 flex-1">
-                            <div className="truncate text-sm font-semibold text-[#1F1F1F]">{p.name || p.city}</div>
+                            <div className="truncate text-sm font-medium text-[#1F1F1F]">{p.name || p.city}</div>
                             <div className="truncate text-xs text-[#727272]">{p.subtitle || p.fullLabel}</div>
                           </div>
                           {p.badge && (
@@ -733,7 +733,7 @@ export function ListingHeaderSearch() {
                             📍
                           </div>
                           <div className="min-w-0 flex-1">
-                            <div className="truncate text-sm font-semibold text-[#1F1F1F]">{c.city}</div>
+                            <div className="truncate text-sm font-medium text-[#1F1F1F]">{c.city}</div>
                             <div className="truncate text-xs text-[#727272]">{c.country}</div>
                           </div>
                         </button>
