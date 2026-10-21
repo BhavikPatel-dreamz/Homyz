@@ -3,6 +3,7 @@
 import React from "react";
 
 import { BackButton } from "@/components/ui/back-button";
+import { useLanguage, type TranslationKey } from "@/lib/i18n/language-context";
 
 type LicenseManagement = {
   listing: {
@@ -49,33 +50,36 @@ type LicenseManagement = {
 
 type ApiEnvelope<T> = { success: true; data: T } | { success: false; error?: { message?: string } };
 
-function formattedDate(value: string | null | undefined) {
-  if (!value) return "Not available";
+function formattedDate(value: string | null | undefined, fallback: string) {
+  if (!value) return fallback;
   const parsed = new Date(value);
   return Number.isNaN(parsed.getTime())
-    ? "Not available"
+    ? fallback
     : new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(parsed);
 }
 
-function humanize(value: string | null | undefined) {
-  if (!value) return "Not available";
+function humanize(value: string | null | undefined, fallback: string) {
+  if (!value) return fallback;
   return value.toLowerCase().replace(/_/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
-function statusPresentation(license?: LicenseManagement["license"]) {
-  if (!license) return { label: "No license added", tone: "zinc" as const };
+function statusPresentation(
+  license: LicenseManagement["license"] | undefined,
+  t: (key: TranslationKey, valuesOrFallback?: Record<string, string | number | boolean> | string, fallback?: string) => string,
+) {
+  if (!license) return { label: t("host_license_status_none", "No license added"), tone: "zinc" as const };
   const expiresAt = license.expiryDate ? new Date(license.expiryDate) : null;
   const daysToExpiry = expiresAt ? Math.ceil((expiresAt.getTime() - Date.now()) / 86_400_000) : null;
   if (license.status === "ACTIVE" && license.eligibilityStatus === "ELIGIBLE" && (daysToExpiry === null || daysToExpiry > 30)) {
-    return { label: "Verified / active", tone: "emerald" as const };
+    return { label: t("host_license_status_active", "Verified / active"), tone: "emerald" as const };
   }
   if (license.status === "ACTIVE" && daysToExpiry !== null && daysToExpiry >= 0 && daysToExpiry <= 30) {
-    return { label: "Expiring soon", tone: "amber" as const };
+    return { label: t("host_license_status_expiring", "Expiring soon"), tone: "amber" as const };
   }
-  if (license.status === "EXPIRED" || license.eligibilityStatus === "EXPIRED") return { label: "Expired", tone: "rose" as const };
-  if (["REVOKED", "SUSPENDED", "INVALID"].includes(license.status)) return { label: "Invalid / restricted", tone: "rose" as const };
-  if (license.status === "UNAVAILABLE") return { label: "Verification failed", tone: "rose" as const };
-  return { label: "Pending verification", tone: "amber" as const };
+  if (license.status === "EXPIRED" || license.eligibilityStatus === "EXPIRED") return { label: t("host_license_status_expired", "Expired"), tone: "rose" as const };
+  if (["REVOKED", "SUSPENDED", "INVALID"].includes(license.status)) return { label: t("host_license_status_restricted", "Invalid / restricted"), tone: "rose" as const };
+  if (license.status === "UNAVAILABLE") return { label: t("host_license_status_failed", "Verification failed"), tone: "rose" as const };
+  return { label: t("host_license_status_pending", "Pending verification"), tone: "amber" as const };
 }
 
 const toneClasses = {
@@ -98,6 +102,7 @@ export function LicenseRegulationsView({
   canManage?: boolean;
   setActiveSection: (section: string) => void;
 }) {
+  const { t } = useLanguage();
   const [management, setManagement] = React.useState<LicenseManagement | null>(null);
   const [licenseNumber, setLicenseNumber] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(true);
@@ -111,15 +116,15 @@ export function LicenseRegulationsView({
     try {
       const response = await fetch(`/api/v1/host/licenses/${encodeURIComponent(listingId)}`, { credentials: "same-origin" });
       const payload = await response.json() as ApiEnvelope<LicenseManagement | null>;
-      if (!response.ok || !payload.success) throw new Error(("error" in payload && payload.error?.message) || "Unable to load license information.");
+      if (!response.ok || !payload.success) throw new Error(("error" in payload && payload.error?.message) || t("host_license_err_load", "Unable to load license information."));
       setManagement(payload.data);
       setLicenseNumber(payload.data?.license.number ?? "");
     } catch (error) {
-      setNotice({ type: "error", message: error instanceof Error ? error.message : "Unable to load license information." });
+      setNotice({ type: "error", message: error instanceof Error ? error.message : t("host_license_err_load", "Unable to load license information.") });
     } finally {
       setIsLoading(false);
     }
-  }, [listingId]);
+  }, [listingId, t]);
 
   React.useEffect(() => {
     // Defer the request until after the effect commits; the request callback,
@@ -131,16 +136,21 @@ export function LicenseRegulationsView({
   const save = async () => {
     const nextNumber = licenseNumber.trim();
     if (!nextNumber) {
-      setNotice({ type: "error", message: "Enter a Saudi license number before saving." });
+      setNotice({ type: "error", message: t("host_license_err_enter_before_save", "Enter a Saudi license number before saving.") });
       return;
     }
     if (presentation === "admin" && !adminReason.trim()) {
-      setNotice({ type: "error", message: "Enter a reason before changing this license record." });
+      setNotice({ type: "error", message: t("host_license_err_enter_reason", "Enter a reason before changing this license record.") });
       return;
     }
-    if (management && nextNumber !== management.license.number && management.linkedProperties.length > 1 && !window.confirm(
-      `This license is linked to ${management.linkedProperties.length} properties. This change only replaces the license for this property and requires fresh verification. Continue?`,
-    )) return;
+    if (
+      management &&
+      nextNumber !== management.license.number &&
+      management.linkedProperties.length > 1 &&
+      !window.confirm(
+        t("host_license_confirm_replace", { count: management.linkedProperties.length }, `This license is linked to ${management.linkedProperties.length} properties. This change only replaces the license for this property and requires fresh verification. Continue?`),
+      )
+    ) return;
     setIsSaving(true);
     setNotice(null);
     try {
@@ -151,13 +161,13 @@ export function LicenseRegulationsView({
         body: JSON.stringify({ licenseNumber: nextNumber, ...(presentation === "admin" ? { reason: adminReason.trim() } : {}) }),
       });
       const payload = await response.json() as ApiEnvelope<LicenseManagement>;
-      if (!response.ok || !payload.success) throw new Error(("error" in payload && payload.error?.message) || "Unable to save license information.");
+      if (!response.ok || !payload.success) throw new Error(("error" in payload && payload.error?.message) || t("host_license_err_save", "Unable to save license information."));
       setManagement(payload.data);
       setLicenseNumber(payload.data.license.number);
       setAdminReason("");
-      setNotice({ type: "success", message: "License saved. Verify it to restore publishing eligibility." });
+      setNotice({ type: "success", message: t("host_license_success_saved", "License saved. Verify it to restore publishing eligibility.") });
     } catch (error) {
-      setNotice({ type: "error", message: error instanceof Error ? error.message : "Unable to save license information." });
+      setNotice({ type: "error", message: error instanceof Error ? error.message : t("host_license_err_save", "Unable to save license information.") });
     } finally {
       setIsSaving(false);
     }
@@ -165,7 +175,7 @@ export function LicenseRegulationsView({
 
   const verify = async () => {
     if (!management?.license.number) {
-      setNotice({ type: "error", message: "Save a license number before verification." });
+      setNotice({ type: "error", message: t("host_license_err_save_before_verify", "Save a license number before verification.") });
       return;
     }
     setIsVerifying(true);
@@ -176,32 +186,34 @@ export function LicenseRegulationsView({
         credentials: "same-origin",
       });
       const payload = await response.json() as ApiEnvelope<LicenseManagement>;
-      if (!response.ok || !payload.success) throw new Error(("error" in payload && payload.error?.message) || "License verification failed.");
+      if (!response.ok || !payload.success) throw new Error(("error" in payload && payload.error?.message) || t("host_license_err_verify_failed", "License verification failed."));
       setManagement(payload.data);
       setLicenseNumber(payload.data.license.number);
-      setNotice({ type: "success", message: "License verification completed. Review the official details below." });
+      setNotice({ type: "success", message: t("host_license_success_verified", "License verification completed. Review the official details below.") });
     } catch (error) {
-      setNotice({ type: "error", message: error instanceof Error ? error.message : "License verification failed." });
+      setNotice({ type: "error", message: error instanceof Error ? error.message : t("host_license_err_verify_failed", "License verification failed.") });
     } finally {
       setIsVerifying(false);
     }
   };
 
-  const status = statusPresentation(management?.license);
+  const notAvailable = t("host_license_not_available", "Not available");
+  const notSupplied = t("host_license_detail_not_supplied", "Not supplied by provider");
+  const status = statusPresentation(management?.license, t);
   const listing = management?.listing;
   const details: Array<[string, string]> = management ? [
-    ["License category", humanize(management.license.licenseCategory)],
-    ["Country", "Saudi Arabia"],
-    ["Facility / business", management.license.facilityName || "Not supplied by provider"],
-    ["Licensed entity", management.license.verifiedEntity || "Not supplied by provider"],
-    ["Official license status", humanize(management.license.status)],
-    ["Verification eligibility", humanize(management.license.eligibilityStatus)],
-    ["Issue date", formattedDate(management.license.issueDate)],
-    ["Expiration date", formattedDate(management.license.expiryDate)],
-    ["Last verified", formattedDate(management.license.lastVerifiedAt)],
-    ["Verification source", humanize(management.license.verificationSource)],
-    ["Approval method", listing?.approvalMethod === "SAUDI_LICENSE_AUTOMATIC" ? "Automatic Saudi license approval" : "Manual review"],
-    ["Publishing status", listing?.published ? "Listed" : "Unlisted"],
+    [t("host_license_detail_category", "License category"), humanize(management.license.licenseCategory, notAvailable)],
+    [t("host_license_detail_country", "Country"), t("host_license_country_saudi", "Saudi Arabia")],
+    [t("host_license_detail_facility", "Facility / business"), management.license.facilityName || notSupplied],
+    [t("host_license_detail_entity", "Licensed entity"), management.license.verifiedEntity || notSupplied],
+    [t("host_license_detail_official_status", "Official license status"), humanize(management.license.status, notAvailable)],
+    [t("host_license_detail_eligibility", "Verification eligibility"), humanize(management.license.eligibilityStatus, notAvailable)],
+    [t("host_license_detail_issue_date", "Issue date"), formattedDate(management.license.issueDate, notAvailable)],
+    [t("host_license_detail_expiry_date", "Expiration date"), formattedDate(management.license.expiryDate, notAvailable)],
+    [t("host_license_detail_last_verified", "Last verified"), formattedDate(management.license.lastVerifiedAt, notAvailable)],
+    [t("host_license_detail_source", "Verification source"), humanize(management.license.verificationSource, notAvailable)],
+    [t("host_license_detail_approval_method", "Approval method"), listing?.approvalMethod === "SAUDI_LICENSE_AUTOMATIC" ? t("host_license_approval_auto", "Automatic Saudi license approval") : t("host_license_approval_manual", "Manual review")],
+    [t("host_license_detail_publishing_status", "Publishing status"), listing?.published ? t("host_license_status_listed", "Listed") : t("host_license_status_unlisted", "Unlisted")],
   ] : [];
 
   return (
@@ -209,13 +221,17 @@ export function LicenseRegulationsView({
       <div className="flex items-center gap-5">
         <BackButton onClick={() => setActiveSection("listing-status")} />
         <div>
-          <p className="text-xs font-medium uppercase tracking-[0.16em] text-[#727272]">{presentation === "admin" ? "Admin property details" : "Property regulations"}</p>
-          <h1>{presentation === "admin" ? "License & regulations" : "License details"}</h1>
+          <p className="text-xs font-medium uppercase tracking-[0.16em] text-[#727272]">
+            {presentation === "admin" ? t("host_license_admin_details", "Admin property details") : t("host_license_property_regulations", "Property regulations")}
+          </p>
+          <h1>
+            {presentation === "admin" ? t("host_license_admin_title", "License & regulations") : t("host_license_details_title", "License details")}
+          </h1>
         </div>
       </div>
 
       <p className="max-w-2xl text-sm leading-6 text-[#727272]">
-        Saudi government fields are read-only and update only after verification. Saving a different license number never verifies it automatically.
+        {t("host_license_readonly_notice", "Saudi government fields are read-only and update only after verification. Saving a different license number never verifies it automatically.")}
       </p>
 
       {notice && (
@@ -227,72 +243,136 @@ export function LicenseRegulationsView({
       <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm sm:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h2 className="text-lg font-semibold">Saudi Arabia license</h2>
+            <h2 className="text-lg font-semibold">{t("host_license_saudi_title", "Saudi Arabia license")}</h2>
             <p className="mt-1 text-sm text-[#727272]">{listing?.title || listingTitle}</p>
-            {presentation === "admin" && listing?.host && <p className="mt-1 text-xs text-[#727272]">Host: {listing.host.name || listing.host.email || listing.host.id}</p>}
+            {presentation === "admin" && listing?.host && (
+              <p className="mt-1 text-xs text-[#727272]">
+                {t("host_license_host_prefix", "Host:")} {listing.host.name || listing.host.email || listing.host.id}
+              </p>
+            )}
           </div>
           <span className={`inline-flex w-fit items-center rounded-full px-3 py-1.5 text-xs font-semibold ring-1 ${toneClasses[status.tone]}`}>{status.label}</span>
         </div>
 
         <div className="mt-6 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-end">
           <label className="block text-sm font-medium">
-            Saudi license number
+            {t("host_license_saudi_number_label", "Saudi license number")}
             <input
               value={licenseNumber}
               onChange={(event) => setLicenseNumber(event.target.value)}
               disabled={!canManage || isSaving || isVerifying}
-              placeholder="Enter your license number"
+              placeholder={t("host_license_saudi_placeholder", "Enter your license number")}
               className="mt-2 min-h-12 w-full rounded-xl border border-zinc-300 bg-white px-3 text-sm outline-none transition focus:border-zinc-900 disabled:cursor-not-allowed disabled:bg-zinc-100"
             />
           </label>
-          <button type="button" onClick={save} disabled={!canManage || isSaving || isVerifying || licenseNumber.trim() === (management?.license.number ?? "") || (presentation === "admin" && !adminReason.trim())}
-            className="min-h-12 rounded-full border border-zinc-900 px-5 text-sm font-semibold transition hover:bg-zinc-900 hover:text-white disabled:cursor-not-allowed disabled:border-zinc-200 disabled:text-zinc-400 disabled:hover:bg-transparent disabled:hover:text-zinc-400">
-            {isSaving ? "Saving…" : "Save"}
+          <button
+            type="button"
+            onClick={save}
+            disabled={!canManage || isSaving || isVerifying || licenseNumber.trim() === (management?.license.number ?? "") || (presentation === "admin" && !adminReason.trim())}
+            className="min-h-12 rounded-full border border-zinc-900 px-5 text-sm font-semibold transition hover:bg-zinc-900 hover:text-white disabled:cursor-not-allowed disabled:border-zinc-200 disabled:text-zinc-400 disabled:hover:bg-transparent disabled:hover:text-zinc-400"
+          >
+            {isSaving ? t("host_license_btn_saving", "Saving…") : t("host_license_btn_save", "Save")}
           </button>
-          <button type="button" onClick={verify} disabled={!canManage || isSaving || isVerifying || !management?.license.number}
-            className="min-h-12 rounded-full bg-[#FCDF9C] px-5 text-sm font-semibold text-[#1F1F1F] transition hover:bg-[#1F1F1F] hover:text-white disabled:cursor-not-allowed disabled:bg-zinc-200 disabled:text-zinc-500">
-            {isVerifying ? "Verifying…" : management ? "Reverify license" : "Verify license"}
+          <button
+            type="button"
+            onClick={verify}
+            disabled={!canManage || isSaving || isVerifying || !management?.license.number}
+            className="min-h-12 rounded-full bg-[#FCDF9C] px-5 text-sm font-semibold text-[#1F1F1F] transition hover:bg-[#1F1F1F] hover:text-white disabled:cursor-not-allowed disabled:bg-zinc-200 disabled:text-zinc-500"
+          >
+            {isVerifying ? t("host_license_btn_verifying", "Verifying…") : management ? t("host_license_btn_reverify", "Reverify license") : t("host_license_btn_verify", "Verify license")}
           </button>
         </div>
         {presentation === "admin" && canManage && (
-          <label className="mt-3 block text-sm font-medium">Reason for administrative change
-            <input value={adminReason} onChange={(event) => setAdminReason(event.target.value)} disabled={isSaving || isVerifying}
-              placeholder="Required when saving a license change" className="mt-2 min-h-11 w-full rounded-xl border border-zinc-300 bg-white px-3 text-sm outline-none transition focus:border-zinc-900 disabled:bg-zinc-100" />
+          <label className="mt-3 block text-sm font-medium">
+            {t("host_license_admin_reason_label", "Reason for administrative change")}
+            <input
+              value={adminReason}
+              onChange={(event) => setAdminReason(event.target.value)}
+              disabled={isSaving || isVerifying}
+              placeholder={t("host_license_admin_reason_placeholder", "Required when saving a license change")}
+              className="mt-2 min-h-11 w-full rounded-xl border border-zinc-300 bg-white px-3 text-sm outline-none transition focus:border-zinc-900 disabled:bg-zinc-100"
+            />
           </label>
         )}
-        {!canManage && <p className="mt-3 text-xs text-[#727272]">You can view this license record, but your role cannot change or verify it.</p>}
+        {!canManage && <p className="mt-3 text-xs text-[#727272]">{t("host_license_readonly_role_notice", "You can view this license record, but your role cannot change or verify it.")}</p>}
       </div>
 
-      {isLoading && <div className="rounded-2xl border border-zinc-200 bg-white p-6 text-sm text-[#727272]">Loading license information…</div>}
+      {isLoading && <div className="rounded-2xl border border-zinc-200 bg-white p-6 text-sm text-[#727272]">{t("host_license_loading", "Loading license information…")}</div>}
 
       {!isLoading && management && (
         <>
           <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm sm:p-6">
-            <h2 className="text-lg font-semibold">Official verification details</h2>
-            <p className="mt-1 text-sm text-[#727272]">These values come from the latest trusted verification response and cannot be edited here.</p>
+            <h2 className="text-lg font-semibold">{t("host_license_official_details_title", "Official verification details")}</h2>
+            <p className="mt-1 text-sm text-[#727272]">{t("host_license_official_details_desc", "These values come from the latest trusted verification response and cannot be edited here.")}</p>
             <dl className="mt-5 grid gap-x-8 gap-y-4 sm:grid-cols-2">
-              {details.map(([label, value]) => <div key={label} className="border-b border-zinc-100 pb-3"><dt className="text-xs font-medium uppercase tracking-wide text-[#727272]">{label}</dt><dd className="mt-1 text-sm font-medium break-words">{value}</dd></div>)}
+              {details.map(([label, value]) => (
+                <div key={label} className="border-b border-zinc-100 pb-3">
+                  <dt className="text-xs font-medium uppercase tracking-wide text-[#727272]">{label}</dt>
+                  <dd className="mt-1 text-sm font-medium break-words">{value}</dd>
+                </div>
+              ))}
             </dl>
-            {management.license.verificationError && <p className="mt-5 rounded-xl bg-rose-50 px-3 py-2.5 text-sm text-rose-800">Latest verification message: {management.license.verificationError}</p>}
-            {listing?.licenseUnlistingReason && <p className="mt-3 rounded-xl bg-amber-50 px-3 py-2.5 text-sm text-amber-900">Unlisting reason: {humanize(listing.licenseUnlistingReason)}</p>}
+            {management.license.verificationError && (
+              <p className="mt-5 rounded-xl bg-rose-50 px-3 py-2.5 text-sm text-rose-800">
+                {t("host_license_latest_verification_message", "Latest verification message: ")}{management.license.verificationError}
+              </p>
+            )}
+            {listing?.licenseUnlistingReason && (
+              <p className="mt-3 rounded-xl bg-amber-50 px-3 py-2.5 text-sm text-amber-900">
+                {t("host_license_unlisting_reason", "Unlisting reason: ")}{humanize(listing.licenseUnlistingReason, notAvailable)}
+              </p>
+            )}
           </div>
 
           <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm sm:p-6">
-            <div className="flex items-baseline justify-between gap-4"><h2 className="text-lg font-semibold">Linked properties</h2><span className="text-sm text-[#727272]">{management.linkedProperties.length} linked</span></div>
-            <p className="mt-1 text-sm text-[#727272]">If this license expires or is restricted, all linked listed properties are automatically unlisted.</p>
+            <div className="flex items-baseline justify-between gap-4">
+              <h2 className="text-lg font-semibold">{t("host_license_linked_properties_title", "Linked properties")}</h2>
+              <span className="text-sm text-[#727272]">{t("host_license_linked_count", { count: management.linkedProperties.length }, `${management.linkedProperties.length} linked`)}</span>
+            </div>
+            <p className="mt-1 text-sm text-[#727272]">{t("host_license_linked_warning", "If this license expires or is restricted, all linked listed properties are automatically unlisted.")}</p>
             <ul className="mt-4 divide-y divide-zinc-100">
-              {management.linkedProperties.map((property) => <li key={property.id} className="flex flex-wrap items-center justify-between gap-3 py-3 text-sm"><div><p className="font-medium">{property.title}</p><p className="mt-0.5 text-xs text-[#727272]">{property.id}</p></div><span className={`rounded-full px-2.5 py-1 text-xs font-medium ${property.published ? "bg-emerald-50 text-emerald-800" : "bg-zinc-100 text-zinc-700"}`}>{property.published ? "Listed" : "Unlisted"}</span></li>)}
+              {management.linkedProperties.map((property) => (
+                <li key={property.id} className="flex flex-wrap items-center justify-between gap-3 py-3 text-sm">
+                  <div>
+                    <p className="font-medium">{property.title}</p>
+                    <p className="mt-0.5 text-xs text-[#727272]">{property.id}</p>
+                  </div>
+                  <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${property.published ? "bg-emerald-50 text-emerald-800" : "bg-zinc-100 text-zinc-700"}`}>
+                    {property.published ? t("host_license_status_listed", "Listed") : t("host_license_status_unlisted", "Unlisted")}
+                  </span>
+                </li>
+              ))}
             </ul>
           </div>
 
           <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm sm:p-6">
-            <h2 className="text-lg font-semibold">Verification history</h2>
-            {management.verificationHistory.length === 0 ? <p className="mt-3 text-sm text-[#727272]">No license events have been recorded yet.</p> : <ol className="mt-4 space-y-4 border-l border-zinc-200 pl-4">{management.verificationHistory.map((entry) => <li key={entry.id} className="relative text-sm"><span className="absolute -left-[21px] top-1.5 size-2.5 rounded-full bg-zinc-400" /><p className="font-medium">{humanize(entry.providerResultCategory)} · {humanize(entry.newStatus)}</p><p className="mt-0.5 text-xs text-[#727272]">{formattedDate(entry.createdAt)}{entry.previousStatus ? ` · Previous status: ${humanize(entry.previousStatus)}` : ""}</p>{entry.errorReason && <p className="mt-1 text-xs text-rose-700">{entry.errorReason}</p>}</li>)}</ol>}
+            <h2 className="text-lg font-semibold">{t("host_license_history_title", "Verification history")}</h2>
+            {management.verificationHistory.length === 0 ? (
+              <p className="mt-3 text-sm text-[#727272]">{t("host_license_history_empty", "No license events have been recorded yet.")}</p>
+            ) : (
+              <ol className="mt-4 space-y-4 border-l border-zinc-200 pl-4">
+                {management.verificationHistory.map((entry) => (
+                  <li key={entry.id} className="relative text-sm">
+                    <span className="absolute -left-[21px] top-1.5 size-2.5 rounded-full bg-zinc-400" />
+                    <p className="font-medium">{humanize(entry.providerResultCategory, notAvailable)} · {humanize(entry.newStatus, notAvailable)}</p>
+                    <p className="mt-0.5 text-xs text-[#727272]">
+                      {formattedDate(entry.createdAt, notAvailable)}
+                      {entry.previousStatus ? ` · ${t("host_license_history_previous_status", "Previous status: ")}${humanize(entry.previousStatus, notAvailable)}` : ""}
+                    </p>
+                    {entry.errorReason && <p className="mt-1 text-xs text-rose-700">{entry.errorReason}</p>}
+                  </li>
+                ))}
+              </ol>
+            )}
           </div>
         </>
       )}
 
-      {!isLoading && !management && <div className="rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-6 text-sm text-[#727272]">No Saudi license has been added. Save a license number, then verify it with the government provider.</div>}
+      {!isLoading && !management && (
+        <div className="rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 p-6 text-sm text-[#727272]">
+          {t("host_license_empty_state", "No Saudi license has been added. Save a license number, then verify it with the government provider.")}
+        </div>
+      )}
     </section>
   );
 }

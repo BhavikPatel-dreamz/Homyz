@@ -43,7 +43,7 @@ export function StepPhotoManagement({
 
   const uploadFile = async (file: File): Promise<string> => {
     if (!ACCEPTED_IMAGE_TYPES.has(file.type) || file.size <= 0 || file.size > MAX_FILE_SIZE) {
-      throw new Error("Use JPEG, PNG, WebP, or AVIF photos up to 10 MB each.");
+      throw new Error(t("wizard_photos_err_invalid", "Use JPEG, PNG, WebP, or AVIF photos up to 10 MB each."));
     }
     const formData = new FormData();
     formData.append("file", file);
@@ -57,7 +57,7 @@ export function StepPhotoManagement({
       const message =
         result && typeof result === "object" && "error" in result
           ? String((result as { error?: string }).error)
-          : "Photo upload failed.";
+          : t("wizard_photos_err_upload", "Photo upload failed.");
       throw new Error(message);
     }
     return String((result as { url: string }).url);
@@ -74,7 +74,7 @@ export function StepPhotoManagement({
       const uploadedUrls = await Promise.all(newFiles.map(uploadFile));
       onUpdatePhotos([...photos, ...uploadedUrls]);
     } catch (err: unknown) {
-      setUploadError(err instanceof Error ? err.message : "Failed to upload photo(s).");
+      setUploadError(err instanceof Error ? err.message : t("wizard_photos_err_upload", "Failed to upload photo(s)."));
     } finally {
       setIsUploading(false);
     }
@@ -95,7 +95,7 @@ export function StepPhotoManagement({
       updated[targetIdx] = persistentUrl;
       onUpdatePhotos(updated);
     } catch (err: unknown) {
-      setUploadError(err instanceof Error ? err.message : "Failed to replace photo.");
+      setUploadError(err instanceof Error ? err.message : t("wizard_photos_err_replace", "Failed to replace photo."));
     } finally {
       setIsUploading(false);
     }
@@ -129,7 +129,7 @@ export function StepPhotoManagement({
         const uploadedUrls = await Promise.all(droppedFiles.map(uploadFile));
         onUpdatePhotos([...photos, ...uploadedUrls]);
       } catch (err: unknown) {
-        setUploadError(err instanceof Error ? err.message : "Failed to upload dropped photo(s).");
+        setUploadError(err instanceof Error ? err.message : t("wizard_photos_err_upload", "Failed to upload dropped photo(s)."));
       } finally {
         setIsUploading(false);
       }
@@ -216,7 +216,7 @@ export function StepPhotoManagement({
                 <div className="w-full h-72 sm:h-111 sm:rounded-[20px] rounded-[10px] border border-[#727272] hover:border-[#727272] transition-all duration-300 bg-[#F3F4F5] flex items-center justify-center relative overflow-hidden shadow-xs group">
                   {photos[0] ? (
                     <>
-                      <img src={photos[0]} alt="Cover Photo" className="h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-105" />
+                      <img src={photos[0]} alt={t("host_cover_photo", "Cover photo")} className="h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-105" />
                       <span className="absolute top-4 left-4 bg-zinc-900/80 backdrop-blur-xs text-white text-xs font-medium px-3.5 py-1.5 rounded-full shadow-xs">
                         {t("host_cover_photo")}
                       </span>
@@ -232,7 +232,7 @@ export function StepPhotoManagement({
                           type="button"
                           onClick={() => handleRemovePhoto(0)}
                           className="w-8 h-8 rounded-full bg-white/90 text-zinc-700 hover:bg-red-500 hover:text-white flex items-center justify-center text-xs font-medium transition-colors cursor-pointer"
-                          title="Remove photo"
+                          title={t("host_remove_photo_title", "Remove photo")}
                         >
                           ✕
                         </button>

@@ -33,13 +33,13 @@ export function OnboardingStickyFooter({
   const { t } = useLanguage();
   const displayNextLabel = nextLabel ?? t("host_next");
   const progressLabel = currentStep && totalSteps
-    ? `Step ${currentStep} of ${totalSteps}`
+    ? t("review_step_indicator", { current: currentStep, total: totalSteps }, `Step ${currentStep} of ${totalSteps}`)
     : undefined;
 
   return (
     <footer
       className="fixed inset-x-0 bottom-0 z-40 border-t border-zinc-200 bg-white shadow-[0_-3px_12px_rgba(0,0,0,0.14)]"
-      aria-label="Listing actions"
+      aria-label={t("host_listing_actions_aria", "Listing actions")}
     >
       <Container>
         <div className="flex min-h-[5.5rem] items-center justify-end py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">

@@ -2177,7 +2177,7 @@ export function HostListingEditorClient({
               {t("host_editor_unsaved_title")}
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-zinc-600 dark:text-[#727272]">
-              Your changes haven&apos;t been saved. Are you sure you want to leave?
+              {t("host_editor_unsaved_desc", "Your changes haven't been saved. Are you sure you want to leave?")}
             </p>
             <div className="mt-5 flex flex-wrap items-center justify-end gap-2">
               <button
@@ -2200,7 +2200,7 @@ export function HostListingEditorClient({
                 }}
                 className="inline-flex h-9 items-center justify-center whitespace-nowrap rounded-full border border-zinc-950 bg-zinc-950 px-3.5 text-xs font-medium text-white transition-colors hover:bg-zinc-800 dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-950 dark:hover:bg-zinc-200 cursor-pointer"
               >
-                Discard & leave
+                {t("host_editor_discard_leave", "Discard & leave")}
               </button>
             </div>
           </section>

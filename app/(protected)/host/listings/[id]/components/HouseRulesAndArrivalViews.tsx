@@ -2932,7 +2932,7 @@ function RegulationsView({
                     <p className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100">{regNumber}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-[#727272] font-normal">Address, Country</p>
+                    <p className="text-sm text-[#727272] font-normal">{t("host_regulations_label_address_country")}</p>
                     <p className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100">{regAddress}</p>
                   </div>
                 </div>
