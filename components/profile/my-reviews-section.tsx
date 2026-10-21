@@ -187,7 +187,7 @@ export function MyReviewsSection({ reviews, className = "" }: MyReviewsSectionPr
                   )}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h3 id="review-modal-title" className="text-sm font-semibold text-[#1F1F1F] truncate">
+                  <h3 id="review-modal-title" className="text-sm font-medium text-[#1F1F1F] truncate">
                     {selectedReview.listing.title}
                   </h3>
                   <p className="text-xs text-[#727272] truncate">

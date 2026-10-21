@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
+import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { PERMISSIONS, hasPermission } from "@/lib/permissions/permissions";
 import type { FooterConfigPayload } from "@/lib/cms/content-types";
 
@@ -1064,7 +1065,7 @@ export function FooterManagementClient() {
 
       {/* Revision History Modal */}
       {showHistory && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+        <ModalOverlay className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-xl w-full p-6 space-y-4 shadow-xl border border-zinc-200">
             <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
               <h3 className="text-base font-bold text-zinc-900">
@@ -1123,7 +1124,7 @@ export function FooterManagementClient() {
               )}
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
     </div>
   );

@@ -616,7 +616,7 @@ export function ListingHeaderSearch() {
                 <div className="text-[11px] font-bold uppercase tracking-wider text-zinc-700">
                   {t("host_checkin")}
                 </div>
-                <div className="truncate text-sm font-semibold text-[#1F1F1F]">
+                <div className="truncate text-sm font-medium text-[#1F1F1F]">
                   {formatShortDate(checkIn) || t("header_search_add_dates")}
                 </div>
               </div>
@@ -633,7 +633,7 @@ export function ListingHeaderSearch() {
                 <div className="text-[11px] font-bold uppercase tracking-wider text-zinc-700">
                   {t("host_checkout")}
                 </div>
-                <div className="truncate text-sm font-semibold text-[#1F1F1F]">
+                <div className="truncate text-sm font-medium text-[#1F1F1F]">
                   {formatShortDate(checkOut) || t("header_search_add_dates")}
                 </div>
               </div>
@@ -650,7 +650,7 @@ export function ListingHeaderSearch() {
                 <div className="text-[11px] font-bold uppercase tracking-wider text-zinc-700">
                   {t("header_search_who")}
                 </div>
-                <div className="truncate text-sm font-semibold text-[#1F1F1F]">
+                <div className="truncate text-sm font-medium text-[#1F1F1F]">
                   {pillGuests}
                 </div>
               </div>
@@ -731,7 +731,7 @@ export function ListingHeaderSearch() {
                             📍
                           </div>
                           <div className="min-w-0 flex-1">
-                            <div className="truncate text-sm font-semibold text-[#1F1F1F]">{p.name || p.city}</div>
+                            <div className="truncate text-sm font-medium text-[#1F1F1F]">{p.name || p.city}</div>
                             <div className="truncate text-xs text-[#727272]">{p.subtitle || p.fullLabel}</div>
                           </div>
                           {p.badge && (
@@ -751,7 +751,7 @@ export function ListingHeaderSearch() {
                             📍
                           </div>
                           <div className="min-w-0 flex-1">
-                            <div className="truncate text-sm font-semibold text-[#1F1F1F]">{c.city}</div>
+                            <div className="truncate text-sm font-medium text-[#1F1F1F]">{c.city}</div>
                             <div className="truncate text-xs text-[#727272]">{c.country}</div>
                           </div>
                         </button>

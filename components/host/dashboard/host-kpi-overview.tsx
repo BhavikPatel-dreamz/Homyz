@@ -276,7 +276,7 @@ export function HostKpiOverview({
                 <div
                   role="listbox"
                   aria-label="Filter dashboard by property"
-                  className="absolute right-0 top-full z-50 mt-2 min-w-48 max-w-xs w-max max-h-72 overflow-y-auto rounded-2xl border border-zinc-200 bg-white p-1.5 shadow-xl"
+                  className="visible-scrollbar absolute right-0 top-full z-50 mt-2 min-w-48 max-w-xs w-max max-h-72 overflow-y-auto rounded-2xl border border-zinc-200 bg-white p-1.5 shadow-xl"
                 >
                   <button
                     type="button"

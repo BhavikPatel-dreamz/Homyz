@@ -344,7 +344,10 @@ export function HostReviewIntroduction({
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-[490px] flex-1 flex-col px-0 sm:px-4 py-2 sm:py-8">
+    <div
+      className={`mx-auto flex w-full ${step === 0 ? "max-w-155" : "max-w-[490px]"
+        } flex-1 flex-col`}
+    >
       {step === 0 ? (
         <section
           className="flex flex-1 min-h-[calc(100dvh-6.5rem)] sm:min-h-0 flex-col justify-between sm:justify-center px-0 sm:px-8 py-2 sm:py-8"
@@ -369,7 +372,7 @@ export function HostReviewIntroduction({
             </div>
 
             {/* Desktop step counter */}
-            <p className="hidden sm:block w-fit mx-auto text-center text-base font-normal text-[#1f1f1f] bg-[#DDDDDE] rounded-full px-4 py-3">
+            <p className="hidden sm:block w-fit mx-auto text-center md:text-base text-sm font-normal text-[#1f1f1f] bg-[#DDDDDE] rounded-full px-4 py-3">
               Step 1 of {REVIEW_STEPS.length}
             </p>
 
@@ -394,14 +397,14 @@ export function HostReviewIntroduction({
                 type="button"
                 disabled={isSubmitting}
                 onClick={goBack}
-                className="inline-flex h-[48px] items-center justify-center rounded-full border border-[#1F1F1F] px-8 text-base font-normal text-[#1F1F1F] transition-colors duration-300 hover:bg-[#1F1F1F] hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                className="inline-flex h-[48px] items-center justify-center rounded-full border border-[#1F1F1F] px-8 sm:text-base text-sm font-normal text-[#1F1F1F] transition-colors duration-300 hover:bg-[#1F1F1F] hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Back
               </button>
               <button
                 type="button"
                 onClick={continueReview}
-                className="inline-flex h-[48px] items-center justify-center rounded-full bg-[#1F1F1F] px-10 py-3.5 text-base font-normal text-white hover:text-[#1f1f1f] transition-colors duration-300 hover:bg-[#FCDF9C]"
+                className="inline-flex h-[48px] items-center justify-center rounded-full bg-[#1F1F1F] px-10 py-3.5 sm:text-base text-sm font-normal text-white hover:text-[#1f1f1f] transition-colors duration-300 hover:bg-[#FCDF9C]"
               >
                 Continue
               </button>
@@ -413,7 +416,7 @@ export function HostReviewIntroduction({
             <button
               type="button"
               onClick={continueReview}
-              className="inline-flex h-[48px] w-full items-center justify-center rounded-full bg-[#1F1F1F] px-6 text-base font-normal text-white transition-colors duration-300 hover:bg-[#FCDF9C] focus-visible:outline-none"
+              className="inline-flex h-[48px] w-full items-center justify-center rounded-full bg-[#1F1F1F] px-6 sm:text-base text-sm font-normal text-white transition-colors duration-300 hover:bg-[#FCDF9C] focus-visible:outline-none"
             >
               Continue
             </button>
@@ -438,8 +441,8 @@ export function HostReviewIntroduction({
           </div>
 
           <section className="flex flex-1 min-h-[calc(100dvh-12rem)] sm:min-h-[460px] flex-col justify-between sm:justify-center" aria-labelledby="host-review-step-title">
-            <div className="mx-auto flex w-full max-w-xl flex-1 flex-col justify-center text-left sm:text-center">
-              <p className="hidden sm:block w-fit mx-auto text-center text-base font-normal text-[#1f1f1f] bg-[#DDDDDE] rounded-full px-4 py-3">
+            <div className="mx-auto flex w-full max-w-[490px] flex-1 flex-col md:justify-center justify-baseline text-left sm:text-center">
+                <p className="hidden sm:block w-fit mx-auto text-center md:text-base text-sm font-normal text-[#1f1f1f] bg-[#DDDDDE] rounded-full px-4 md:py-3 py-2">
                 Step {step + 1} of {REVIEW_STEPS.length}
               </p>
               {step === 1 && (
@@ -483,13 +486,13 @@ export function HostReviewIntroduction({
               {step === 4 && (
                 <>
                   <h1 id="host-review-step-title" className="mt-6 sm:mt-6 text-left sm:text-center text-2xl sm:text-4xl md:text-[44px] lg:text-[48px] font-medium leading-tight sm:leading-[1.2] tracking-tight">Write a public review</h1>
-                  <p className="mt-2 sm:mt-3 text-center text-sm sm:text-base leading-relaxed text-[#727272] font-normal">We&apos;ll share this with &ldquo;{context.guest.name}&rdquo; and other Hosts.</p>
-                  <div className="mx-auto mt-8 sm:mt-12 w-full max-w-[490px] rounded-lg sm:rounded-xl bg-[#F3F4F5] py-4 sm:px-6 text-left shadow-[0_2px_4px_rgb(0,0,0,0.25)]">
+                  <p className="mt-2 sm:mt-3 md:text-center text-left text-sm sm:text-base leading-relaxed text-[#727272] font-normal">We&apos;ll share this with &ldquo;{context.guest.name}&rdquo; and other Hosts.</p>
+                  <div className="mx-auto mt-8 sm:mt-12 w-full max-w-[490px] rounded-lg sm:rounded-xl bg-[#F3F4F5] p-4 sm:px-6 text-left shadow-[0_2px_4px_rgb(0,0,0,0.25)]">
                     <h2 className="text-lg font-medium text-[#1F1F1F]">Your review</h2>
                     <p className="mt-3 text-xs text-[#727272]" aria-live="polite">
                       <span className="font-medium text-[#1F1F1F]">{HOST_PUBLIC_REVIEW_MAX_LENGTH - draft.publicReview.length}</span>/{HOST_PUBLIC_REVIEW_MAX_LENGTH} available
                     </p>
-                    <div className="mt-4">
+                    <div className="mt-4 leading-0">
                       <label htmlFor="host-public-review" className="sr-only">Public review of {context.guest.name}</label>
                       <textarea
                         id="host-public-review"
@@ -505,10 +508,9 @@ export function HostReviewIntroduction({
               )}
               {step === 5 && (
                 <>
-                  <h1 id="host-review-step-title" className="mt-6 sm:mt-6 text-center text-2xl sm:text-4xl md:text-[44px] lg:text-[48px] font-medium leading-tight sm:leading-[1.15] tracking-tight">Would you recommend {context.guest.name} to other hosts?</h1>
+                  <h1 id="host-review-step-title" className="mt-6 sm:mt-6 md:text-center text-left text-2xl sm:text-4xl md:text-[44px] lg:text-[48px] font-medium leading-tight sm:leading-[1.15] tracking-tight">Would you recommend {context.guest.name} to other hosts?</h1>
                   <p className="mx-auto mt-4 text-base leading-6 text-[#727272] font-normal">Your recommendation helps other hosts evaluate this guest and strengthens trust across the community.</p>
-                  <div
-                    className="mx-auto mt-8 flex w-full max-w-xs justify-center gap-4"
+                  <div className="mx-auto mt-8 flex sm:flex-row flex-col w-full md:max-w-xs max-w-full justify-center gap-4"
                     role="radiogroup"
                     aria-label={`Would you recommend ${context.guest.name} to other hosts?`}
                     onKeyDown={(e) => {
@@ -549,7 +551,7 @@ export function HostReviewIntroduction({
                     </button>
                   </div>
                   {!recommendationValid && (
-                    <p className="mt-3 text-center text-xs font-medium text-amber-700" role="status">
+                    <p className="mt-3 text-center text-xs font-medium text-[#DF4557]" role="status">
                       Please choose Yes or No.
                     </p>
                   )}
@@ -559,13 +561,13 @@ export function HostReviewIntroduction({
                 <>
                   <h1 id="host-review-step-title" className="mt-6 sm:mt-6 text-center text-2xl sm:text-4xl md:text-[44px] lg:text-[48px] font-medium leading-tight sm:leading-[1.15] tracking-tight">Write a private note</h1>
                   <p className="mx-auto mt-4 text-base leading-6 text-[#727272] font-normal">Is there anything else you&apos;d like to share with {context.guest.name}?</p>
-                  <div className="mx-auto mt-8 sm:mt-12 w-full max-w-[490px] rounded-lg sm:rounded-xl bg-[#F3F4F5] py-4 sm:px-6 text-left shadow-[0_2px_4px_rgb(0,0,0,0.25)]">
+                  <div className="mx-auto mt-8 sm:mt-12 w-full max-w-[490px] rounded-lg sm:rounded-xl bg-[#F3F4F5] p-4 sm:px-6 text-left shadow-[0_2px_4px_rgb(0,0,0,0.25)]">
                     <h2 className="text-lg font-medium text-[#1F1F1F]">Your note</h2>
                     <p className="mt-3 text-xs text-[#727272]" aria-live="polite">
                       <span className="font-medium text-[#1F1F1F]">{HOST_PUBLIC_REVIEW_MAX_LENGTH - draft.publicReview.length}</span>/{HOST_PUBLIC_REVIEW_MAX_LENGTH} available
                     </p>
                     <label htmlFor="host-private-note" className="sr-only">Private note to {context.guest.name}</label>
-                    <div className="mt-4">
+                    <div className="mt-4 leading-0">
                       <textarea
                         id="host-private-note"
                         value={draft.privateNote}
@@ -577,7 +579,7 @@ export function HostReviewIntroduction({
                         }
                         maxLength={HOST_PRIVATE_NOTE_MAX_LENGTH}
                         placeholder={`Share private feedback with ${context.guest.name} (optional)`}
-                          className="min-h-[126px] sm:min-h-[150px] w-full resize-none rounded-lg bg-white p-3 sm:px-4 sm:py-3 text-sm sm:text-base font-normal leading-relaxed text-[#1F1F1F] outline-none placeholder:text-[#727272] border-0 focus:ring-0 focus-visible:outline-none"
+                        className="min-h-[126px] sm:min-h-[150px] w-full resize-none rounded-lg bg-white p-3 sm:px-4 sm:py-3 text-sm sm:text-base font-normal leading-relaxed text-[#1F1F1F] outline-none placeholder:text-[#727272] border-0 focus:ring-0 focus-visible:outline-none"
                       />
                     </div>
                     <p className="mt-2 text-right text-xs text-[#727272]" aria-live="polite">
@@ -608,13 +610,13 @@ export function HostReviewIntroduction({
               )}
             </div>
 
-            <div className="sticky bottom-0 z-20 mt-12 -mx-2 -mb-3 border-t border-zinc-200 bg-white/95 px-4 py-3 backdrop-blur-md pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:static sm:mx-0 sm:mb-0 sm:border-0 sm:bg-transparent sm:p-0 sm:backdrop-blur-none">
-              <div className="mx-auto flex w-full max-w-xl items-center justify-between gap-3">
+            <div className="sticky bottom-0 z-20 mt-12 -mx-2 -mb-3 bg-white/95 backdrop-blur-md pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:static sm:mx-0 sm:mb-0 sm:bg-transparent sm:p-0 sm:backdrop-blur-none">
+              <div className="mx-auto flex w-full max-w-[490px] items-center justify-between gap-3">
                 <button
                   type="button"
                   disabled={isSubmitting}
                   onClick={goBack}
-                  className="inline-flex h-[48px] items-center justify-center rounded-full border border-[#1F1F1F] px-8 text-base font-normal text-[#1F1F1F] transition-colors duration-300 hover:bg-[#1F1F1F] hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex h-[48px] items-center justify-center rounded-full border border-[#1F1F1F] px-8 md:text-base text-sm font-normal text-[#1F1F1F] transition-colors duration-300 hover:bg-[#1F1F1F] hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Back
                 </button>
@@ -623,7 +625,7 @@ export function HostReviewIntroduction({
                     type="button"
                     disabled={!canContinue}
                     onClick={continueReview}
-                    className="inline-flex h-[48px] items-center justify-center rounded-full bg-[#1F1F1F] px-10 py-3.5 text-base font-normal text-white hover:text-[#1f1f1f] transition-colors duration-300 hover:bg-[#FCDF9C]"
+                    className="inline-flex h-[48px] items-center justify-center rounded-full bg-[#1F1F1F] px-10 py-3.5 md:text-base text-sm font-normal text-white hover:text-[#1f1f1f] transition-colors duration-300 hover:bg-[#FCDF9C]"
                   >
                     Continue
                   </button>
@@ -632,7 +634,7 @@ export function HostReviewIntroduction({
                     type="button"
                     disabled={!canSubmit || isSubmitting}
                     onClick={handleSubmit}
-                    className="inline-flex h-[48px] items-center justify-center rounded-full bg-[#1F1F1F] px-10 py-3.5 text-base font-normal text-white hover:text-[#1f1f1f] transition-colors duration-300 hover:bg-[#FCDF9C]"
+                    className="inline-flex h-[48px] items-center justify-center rounded-full bg-[#1F1F1F] px-10 py-3.5 md:text-base text-sm font-normal text-white hover:text-[#1f1f1f] transition-colors duration-300 hover:bg-[#FCDF9C]"
                   >
                     {isSubmitting ? (
                       <span className="inline-flex items-center gap-2">
@@ -648,7 +650,7 @@ export function HostReviewIntroduction({
 
               {/* Segmented progress bar matching Figma */}
               <div
-                className="mx-auto mt-4 sm:mt-14 md:mt-20 lg:mt-[100px] mb-1 sm:mb-4 flex w-full max-w-[490px] items-center gap-1"
+                className="mx-auto mt-4 sm:mt-14 md:mt-20 lg:mt-[100px] mb-1 sm:mb-4 md:flex hidden w-full max-w-[490px] items-center gap-1"
                 role="progressbar"
                 aria-label="Host review progress"
                 aria-valuemin={1}

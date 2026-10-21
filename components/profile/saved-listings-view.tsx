@@ -224,7 +224,7 @@ export function SavedListingsView({ initialFavorites, initialTotal = 0 }: SavedL
           </p>
           <Link
             href="/listings"
-            className="mt-6 rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-2.5 text-sm font-semibold text-[#1F1F1F] hover:text-white transition-colors shadow-2xs"
+            className="mt-6 rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-6 py-2.5 text-sm font-medium text-[#1F1F1F] hover:text-white transition-colors shadow-2xs"
           >
             {t("profile_saved_explore_stays", "Explore stays")}
           </Link>

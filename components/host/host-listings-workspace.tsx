@@ -969,7 +969,7 @@ export function HostListingsWorkspace({
                               {item.city || item.country ? `${item.city || ""}${item.city && item.country ? ", " : ""}${item.country || ""}` : t("host_no_location_yet")}
                             </p>
                             {item.status === "PENDING_REVIEW" && (
-                              <p className="mt-1 text-xs font-medium text-amber-700">
+                              <p className="mt-1 text-xs font-medium text-[#349010]">
                                 {isSaudiArabia(item.country) ? t("host_ready_to_publish") : t("host_submitted_for_admin_approval")}
                               </p>
                             )}
@@ -996,14 +996,24 @@ export function HostListingsWorkspace({
                     type="button"
                     onClick={() => handlePageChange(page - 1)}
                     disabled={page <= 1 || loading}
-                    className="inline-flex min-h-10 items-center justify-center rounded-full border border-zinc-300 bg-white px-5 text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-zinc-50 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
+                    className="group inline-flex min-h-10 items-center justify-center gap-2 rounded-full border border-zinc-300 bg-white px-5 text-sm font-medium text-[#1F1F1F] shadow-2xs transition-all duration-200 hover:border-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white disabled:hover:border-zinc-300 disabled:hover:bg-white disabled:hover:text-[#1F1F1F] active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:border-white dark:hover:bg-white dark:hover:text-[#1F1F1F]"
                   >
-                    {t("host_listings_btn_prev", "← Previous")}
+                    <svg
+                      className="size-4 shrink-0 transition-transform duration-200 group-hover:-translate-x-0.5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                      aria-hidden="true"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                    </svg>
+                    <span>Previous</span>
                   </button>
-                  <span className="text-sm font-medium text-zinc-600">
+                  <span className="text-sm font-medium text-[#1f1f1f]">
                     {t("host_listings_page_info", { page, totalPages: Math.max(1, totalPages) }, `Page ${page} of ${Math.max(1, totalPages)}`)}
                     {totalCount > 0 && (
-                      <span className="ml-1.5 text-xs text-zinc-400">
+                      <span className="ml-1.5 text-xs text-[#727272]">
                         ({totalCount} {totalCount === 1 ? t("host_listings_count_single", "listing") : t("host_listings_count_multiple", "listings")})
                       </span>
                     )}
@@ -1012,9 +1022,19 @@ export function HostListingsWorkspace({
                     type="button"
                     onClick={() => handlePageChange(page + 1)}
                     disabled={page >= totalPages || loading}
-                    className="inline-flex min-h-10 items-center justify-center rounded-full border border-zinc-300 bg-white px-5 text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-zinc-50 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
+                    className="group inline-flex min-h-10 items-center justify-center gap-2 rounded-full border border-zinc-300 bg-white px-5 text-sm font-medium text-[#1F1F1F] shadow-2xs transition-all duration-200 hover:border-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white disabled:hover:border-zinc-300 disabled:hover:bg-white disabled:hover:text-[#1F1F1F] active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:border-white dark:hover:bg-white dark:hover:text-[#1F1F1F]"
                   >
-                    {t("host_listings_btn_next", "Next →")}
+                    <span>Next</span>
+                    <svg
+                      className="size-4 shrink-0 transition-transform duration-200 group-hover:translate-x-0.5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                      aria-hidden="true"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                    </svg>
                   </button>
                 </nav>
               )}

@@ -324,7 +324,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                           });
                         }
                       }}
-                      className={`relative z-10 px-2.5 py-1.5 md:px-3 md:py-2 lg:px-3.5 text-xs md:text-sm font-medium transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 rounded-lg ${
+                      className={`relative z-10 mx-2.5 py-1.5 md:mx-3 md:py-2 lg:mx-3.5 text-xs md:text-sm font-medium transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 rounded-lg ${
                         isActive
                           ? "font-medium text-[#1F1F1F] dark:text-zinc-100"
                           : "text-[#717171] hover:text-[#1F1F1F] dark:text-zinc-400 dark:hover:text-zinc-100"
@@ -555,7 +555,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                   /* ------------------------------------------------------------- */
                   <div className="flex min-h-0 flex-1 flex-col">
                     <div className="mb-1 shrink-0 border-b border-[#727272]/30 px-2 pb-2 sm:px-3.5 sm:py-3">
-                      <p className="text-sm font-semibold text-[#1F1F1F] truncate">{user.name || user.email}</p>
+                      <p className="text-sm font-medium text-[#1F1F1F] truncate">{user.name || user.email}</p>
                       <div className="flex items-center justify-between gap-5">
                         <p className="text-sm text-[#727272] truncate mt-0.5">{user.email}</p>
                         <span className="mt-2 inline-block rounded-full bg-amber-100 px-2.5 py-0.5 text-[10px] font-semibold text-amber-800">
@@ -779,7 +779,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                   /* ------------------------------------------------------------- */
                   <div className="flex min-h-0 flex-1 flex-col">
                     <div className="mb-1 shrink-0 border-b border-[#727272]/30 px-3.5 py-3">
-                      <p className="text-sm font-semibold text-[#1F1F1F] truncate">{user.name || user.email}</p>
+                      <p className="text-sm font-medium text-[#1F1F1F] truncate">{user.name || user.email}</p>
                       <div className="flex items-center justify-between gap-5">
                         <p className="text-sm text-[#727272] truncate mt-0.5">{user.email}</p>
                         <span className="mt-2 inline-block rounded-full bg-amber-100 px-2.5 py-0.5 text-[10px] font-semibold text-amber-800">

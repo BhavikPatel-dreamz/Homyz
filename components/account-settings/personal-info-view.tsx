@@ -558,7 +558,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                 <button
                   type="button"
                   onClick={closeEditRow}
-                  className="text-sm font-semibold underline text-[#1F1F1F] hover:opacity-75 cursor-pointer shrink-0"
+                  className="text-sm font-medium underline text-[#1F1F1F] hover:opacity-75 cursor-pointer shrink-0"
                 >
                   {t("personal_info_cancel", "Cancel")}
                 </button>
@@ -616,7 +616,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
               <button
                 type="button"
                 onClick={() => openEditRow("legalName")}
-                className="text-sm font-semibold underline text-[#1F1F1F] hover:opacity-75 cursor-pointer shrink-0"
+                className="text-sm font-medium underline text-[#1F1F1F] hover:opacity-75 cursor-pointer shrink-0"
               >
                 {t("personal_info_edit", "Edit")}
               </button>
@@ -640,7 +640,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                 <button
                   type="button"
                   onClick={closeEditRow}
-                  className="text-sm font-semibold underline text-[#1F1F1F] hover:opacity-75 cursor-pointer shrink-0"
+                  className="text-sm font-medium underline text-[#1F1F1F] hover:opacity-75 cursor-pointer shrink-0"
                 >
                   {t("personal_info_cancel", "Cancel")}
                 </button>
@@ -680,7 +680,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
               <button
                 type="button"
                 onClick={() => openEditRow("preferredName")}
-                className="text-sm font-semibold underline text-[#1F1F1F] hover:opacity-75 cursor-pointer shrink-0"
+                className="text-sm font-medium underline text-[#1F1F1F] hover:opacity-75 cursor-pointer shrink-0"
               >
                 {data.preferredFirstName ? t("personal_info_edit", "Edit") : t("personal_info_add", "Add")}
               </button>
@@ -704,7 +704,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                 <button
                   type="button"
                   onClick={closeEditRow}
-                  className="text-sm font-semibold underline text-[#1F1F1F] hover:opacity-75 cursor-pointer shrink-0"
+                  className="text-sm font-medium underline text-[#1F1F1F] hover:opacity-75 cursor-pointer shrink-0"
                 >
                   {t("personal_info_cancel", "Cancel")}
                 </button>
@@ -746,7 +746,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
               <button
                 type="button"
                 onClick={() => openEditRow("email")}
-                className="text-sm font-semibold underline text-[#1F1F1F] hover:opacity-75 cursor-pointer shrink-0"
+                className="text-sm font-medium underline text-[#1F1F1F] hover:opacity-75 cursor-pointer shrink-0"
               >
                 {t("personal_info_edit", "Edit")}
               </button>
@@ -770,7 +770,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                 <button
                   type="button"
                   onClick={closeEditRow}
-                  className="text-sm font-semibold underline text-[#1F1F1F] hover:opacity-75 cursor-pointer shrink-0"
+                  className="text-sm font-medium underline text-[#1F1F1F] hover:opacity-75 cursor-pointer shrink-0"
                 >
                   {t("personal_info_cancel", "Cancel")}
                 </button>
@@ -831,7 +831,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
               <button
                 type="button"
                 onClick={() => openEditRow("phone")}
-                className="text-sm font-semibold underline text-[#1F1F1F] hover:opacity-75 cursor-pointer shrink-0"
+                className="text-sm font-medium underline text-[#1F1F1F] hover:opacity-75 cursor-pointer shrink-0"
               >
                 {data.phone ? t("personal_info_edit", "Edit") : t("personal_info_add", "Add")}
               </button>
@@ -893,7 +893,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                 setDocUploadError(null);
                 setIdentityModalOpen(true);
               }}
-              className="text-sm font-semibold underline text-[#1F1F1F] hover:opacity-75 cursor-pointer shrink-0"
+              className="text-sm font-medium underline text-[#1F1F1F] hover:opacity-75 cursor-pointer shrink-0"
             >
               {data.identityStatus === "NOT_STARTED"
                 ? t("personal_info_id_start", "Start")
@@ -920,7 +920,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                 <button
                   type="button"
                   onClick={closeEditRow}
-                  className="text-sm font-semibold underline text-[#1F1F1F] hover:opacity-75 cursor-pointer shrink-0"
+                  className="text-sm font-medium underline text-[#1F1F1F] hover:opacity-75 cursor-pointer shrink-0"
                 >
                   {t("personal_info_cancel", "Cancel")}
                 </button>
@@ -1014,7 +1014,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
               <button
                 type="button"
                 onClick={() => openEditRow("residentialAddress")}
-                className="text-sm font-semibold underline text-[#1F1F1F] hover:opacity-75 cursor-pointer shrink-0"
+                className="text-sm font-medium underline text-[#1F1F1F] hover:opacity-75 cursor-pointer shrink-0"
               >
                 {data.residentialAddress ? t("personal_info_edit", "Edit") : t("personal_info_add", "Add")}
               </button>
@@ -1038,7 +1038,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                 <button
                   type="button"
                   onClick={closeEditRow}
-                  className="text-sm font-semibold underline text-[#1F1F1F] hover:opacity-75 cursor-pointer shrink-0"
+                  className="text-sm font-medium underline text-[#1F1F1F] hover:opacity-75 cursor-pointer shrink-0"
                 >
                   {t("personal_info_cancel", "Cancel")}
                 </button>
@@ -1155,7 +1155,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
               <button
                 type="button"
                 onClick={() => openEditRow("postalAddress")}
-                className="text-sm font-semibold underline text-[#1F1F1F] hover:opacity-75 cursor-pointer shrink-0"
+                className="text-sm font-medium underline text-[#1F1F1F] hover:opacity-75 cursor-pointer shrink-0"
               >
                 {data.postalAddress || data.sameAsResidential ? t("personal_info_edit", "Edit") : t("personal_info_add", "Add")}
               </button>
@@ -1179,7 +1179,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                 <button
                   type="button"
                   onClick={closeEditRow}
-                  className="text-sm font-semibold underline text-[#1F1F1F] hover:opacity-75 cursor-pointer shrink-0"
+                  className="text-sm font-medium underline text-[#1F1F1F] hover:opacity-75 cursor-pointer shrink-0"
                 >
                   {t("personal_info_cancel", "Cancel")}
                 </button>
@@ -1296,7 +1296,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
               <button
                 type="button"
                 onClick={() => openEditRow("emergencyContact")}
-                className="text-sm font-semibold underline text-[#1F1F1F] hover:opacity-75 cursor-pointer shrink-0"
+                className="text-sm font-medium underline text-[#1F1F1F] hover:opacity-75 cursor-pointer shrink-0"
               >
                 {data.emergencyContact ? t("personal_info_edit", "Edit") : t("personal_info_add", "Add")}
               </button>
@@ -1319,7 +1319,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
             </svg>
           </div>
           <div>
-            <h4 className="text-sm font-semibold text-[#1F1F1F]">
+            <h4 className="text-sm font-medium text-[#1F1F1F]">
               {t("personal_info_card_why_title", "Why isn’t my info shown here?")}
             </h4>
             <p className="text-xs text-zinc-500 mt-1 leading-relaxed">
@@ -1339,7 +1339,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
             </svg>
           </div>
           <div>
-            <h4 className="text-sm font-semibold text-[#1F1F1F]">
+            <h4 className="text-sm font-medium text-[#1F1F1F]">
               {t("personal_info_card_edit_title", "Which details can be edited?")}
             </h4>
             <p className="text-xs text-zinc-500 mt-1 leading-relaxed">
@@ -1360,7 +1360,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
             </svg>
           </div>
           <div>
-            <h4 className="text-sm font-semibold text-[#1F1F1F]">
+            <h4 className="text-sm font-medium text-[#1F1F1F]">
               {t("personal_info_card_share_title", "What info is shared with others?")}
             </h4>
             <p className="text-xs text-zinc-500 mt-1 leading-relaxed">
@@ -1383,7 +1383,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
           <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl space-y-5 animate-in zoom-in-95 max-h-[90vh] overflow-y-auto">
             <div className="flex items-start justify-between">
               <div>
-                <h3 id="identity-modal-title" className="text-lg font-semibold text-[#1F1F1F]">
+                <h3 id="identity-modal-title" className="text-lg font-medium text-[#1F1F1F]">
                   {t("personal_info_modal_id_title", "Identity Verification")}
                 </h3>
                 <p className="text-xs text-zinc-500 mt-1 leading-relaxed">
@@ -1409,7 +1409,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
             {/* Current Status banner */}
             {data.identityStatus === "VERIFIED" ? (
               <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-4 text-xs text-emerald-800 space-y-1">
-                <div className="flex items-center gap-1.5 font-semibold text-emerald-900">
+                <div className="flex items-center gap-1.5 font-medium text-emerald-900">
                   <svg className="w-4 h-4 text-emerald-600" viewBox="0 0 20 20" fill="currentColor">
                     <path
                       fillRule="evenodd"
@@ -1422,13 +1422,13 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                 <p>
                   {t("personal_info_modal_id_verified_desc", "Your identity has been verified by the Homyz team.")}
                   {data.identityDocument?.fileName && (
-                    <> {t("personal_info_modal_verified_doc", "Verified document:")} <span className="font-semibold">{data.identityDocument.fileName}</span>.</>
+                    <> {t("personal_info_modal_verified_doc", "Verified document:")} <span className="font-medium">{data.identityDocument.fileName}</span>.</>
                   )}
                 </p>
               </div>
             ) : data.identityStatus === "PENDING" ? (
               <div className="rounded-xl bg-amber-50 border border-amber-200 p-4 text-xs text-amber-800 space-y-1">
-                <div className="flex items-center gap-1.5 font-semibold text-amber-900">
+                <div className="flex items-center gap-1.5 font-medium text-amber-900">
                   <svg className="w-4 h-4 animate-spin text-amber-600" viewBox="0 0 24 24" fill="none">
                     <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" className="opacity-25" />
                     <path fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" className="opacity-75" />
@@ -1438,7 +1438,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                 <p>
                   {t("personal_info_modal_id_pending_desc", "Your document is currently under review by our verification team.")}
                   {data.identityDocument?.fileName && (
-                    <> {t("personal_info_modal_current_sub", "Current submission:")} <span className="font-semibold">{data.identityDocument.fileName}</span>.</>
+                    <> {t("personal_info_modal_current_sub", "Current submission:")} <span className="font-medium">{data.identityDocument.fileName}</span>.</>
                   )}
                 </p>
               </div>
@@ -1446,7 +1446,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
 
             {/* Document Selection */}
             <div className="space-y-2 pt-1">
-              <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-600">
+              <label className="block text-xs font-medium uppercase tracking-wider text-zinc-600">
                 {t("personal_info_modal_choose_doc_type", "Choose ID Document Type")}
               </label>
               {[
@@ -1479,7 +1479,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
 
             {/* File Upload / Dropzone */}
             <div className="space-y-2">
-              <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-600">
+              <label className="block text-xs font-medium uppercase tracking-wider text-zinc-600">
                 {t("personal_info_modal_upload_file", "Upload Document File")}
               </label>
 

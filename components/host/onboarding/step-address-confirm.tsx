@@ -178,7 +178,7 @@ export function StepAddressConfirm({
                     <button
                       type="button"
                       onClick={() => setShowSpecificLocation(!showSpecificLocation)}
-                      className={`relative inline-flex sm:h-6 h-5 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${showSpecificLocation ? "bg-[#1F1F1F]" : "bg-[#DDDDDE]"
+                      className={`relative inline-flex sm:h-6 h-5 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${showSpecificLocation ? "bg-[#DF4557]" : "bg-[#DDDDDE]"
                         }`}
                     >
                       <span

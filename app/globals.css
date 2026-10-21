@@ -457,14 +457,14 @@ body {
 
 /* Opt-in scrollbar for compact menus that need a visible scroll affordance. */
 .visible-scrollbar {
-  -ms-overflow-style: auto;
-  scrollbar-color: #9b9b9b transparent;
-  scrollbar-width: thin;
+  -ms-overflow-style: auto !important;
+  scrollbar-color: #9b9b9b transparent !important;
+  scrollbar-width: thin !important;
 }
 
 .visible-scrollbar::-webkit-scrollbar {
-  display: block;
-  width: 8px;
+  display: block !important;
+  width: 6px !important;
 }
 
 .visible-scrollbar::-webkit-scrollbar-track {
@@ -760,7 +760,10 @@ input[type="number"] {
   }
 }
 
-/* Become Host Modal & Dialog Smooth Animations */
+/* ==========================================================================
+   Universal Modal Smooth Open Transitions
+   Applies to all modals across the entire site (same transition effect as Become Host / Create Listing modal)
+   ========================================================================== */
 @keyframes modal-backdrop-in {
   from {
     opacity: 0;
@@ -834,37 +837,48 @@ input[type="number"] {
   }
 }
 
-.modal-backdrop-animate-in {
+/* Modal overlay / backdrop fade in */
+.modal-backdrop-animate-in,
+[data-modal-overlay]:not(.modal-backdrop-animate-out) {
   animation: modal-backdrop-in 280ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
   will-change: opacity;
 }
 
 .modal-backdrop-animate-out {
-  animation: modal-backdrop-out 180ms ease-in forwards;
+  animation: modal-backdrop-out 180ms ease-in forwards !important;
   will-change: opacity;
 }
 
-.modal-dialog-animate-in {
+/* Modal dialog card enter animation (mobile: smooth slide-up, desktop: smooth scale & lift) */
+.modal-dialog-animate-in,
+[data-modal-overlay]:not(.modal-dialog-no-animate) > [role="dialog"]:not(.modal-dialog-animate-out):not(.modal-step-animate-in):not([class*="slide-in-from-left"]):not([class*="slide-in-from-right"]):not(.modal-dialog-no-animate),
+[data-modal-overlay]:not(.modal-dialog-no-animate) > section:not(.modal-dialog-animate-out):not(.modal-step-animate-in):not([class*="slide-in-from-left"]):not([class*="slide-in-from-right"]):not(.modal-dialog-no-animate),
+[data-modal-overlay]:not(.modal-dialog-no-animate) > form:not(.modal-dialog-animate-out):not(.modal-step-animate-in):not([class*="slide-in-from-left"]):not([class*="slide-in-from-right"]):not(.modal-dialog-no-animate),
+[data-modal-overlay]:not(.modal-dialog-no-animate) > div:not([aria-hidden="true"]):not(.fixed):not(.modal-dialog-animate-out):not(.modal-step-animate-in):not([class*="slide-in-from-left"]):not([class*="slide-in-from-right"]):not(.modal-dialog-no-animate) {
   animation: modal-dialog-mobile-in 300ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
   will-change: transform, opacity;
 }
 
 .modal-dialog-animate-out {
-  animation: modal-dialog-mobile-out 180ms cubic-bezier(0.4, 0, 1, 1) forwards;
+  animation: modal-dialog-mobile-out 180ms cubic-bezier(0.4, 0, 1, 1) forwards !important;
   will-change: transform, opacity;
 }
 
 @media (min-width: 640px) {
-  .modal-dialog-animate-in {
+  .modal-dialog-animate-in,
+  [data-modal-overlay]:not(.modal-dialog-no-animate) > [role="dialog"]:not(.modal-dialog-animate-out):not(.modal-step-animate-in):not([class*="slide-in-from-left"]):not([class*="slide-in-from-right"]):not(.modal-dialog-no-animate),
+  [data-modal-overlay]:not(.modal-dialog-no-animate) > section:not(.modal-dialog-animate-out):not(.modal-step-animate-in):not([class*="slide-in-from-left"]):not([class*="slide-in-from-right"]):not(.modal-dialog-no-animate),
+  [data-modal-overlay]:not(.modal-dialog-no-animate) > form:not(.modal-dialog-animate-out):not(.modal-step-animate-in):not([class*="slide-in-from-left"]):not([class*="slide-in-from-right"]):not(.modal-dialog-no-animate),
+  [data-modal-overlay]:not(.modal-dialog-no-animate) > div:not([aria-hidden="true"]):not(.fixed):not(.modal-dialog-animate-out):not(.modal-step-animate-in):not([class*="slide-in-from-left"]):not([class*="slide-in-from-right"]):not(.modal-dialog-no-animate) {
     animation-name: modal-dialog-in;
     animation-duration: 320ms;
     animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .modal-dialog-animate-out {
-    animation-name: modal-dialog-out;
-    animation-duration: 180ms;
-    animation-timing-function: cubic-bezier(0.4, 0, 1, 1);
+    animation-name: modal-dialog-out !important;
+    animation-duration: 180ms !important;
+    animation-timing-function: cubic-bezier(0.4, 0, 1, 1) !important;
   }
 }
 
