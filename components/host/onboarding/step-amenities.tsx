@@ -3,12 +3,11 @@
 import React from "react";
 
 import { normalizeAmenityId, getAmenityTranslationKey } from "@/lib/constants/amenities";
-import { OnboardingBackButton } from "./onboarding-back-button";
-import { OnboardingPrimaryButton } from "./onboarding-primary-button";
 import { OnboardingAmenitySection } from "./onboarding-amenity-section";
 import { OnboardingStepHeading } from "./onboarding-step-heading";
 import { OnboardingStepLayout } from "./onboarding-step-layout";
 import { useLanguage } from "@/lib/i18n/language-context";
+import { StepProgressFooter } from "./step-progress-footer";
 
 
 interface AmenityOption {
@@ -301,18 +300,7 @@ export function StepAmenities({
             </div>
           </div>
 
-          {/* Bottom Action Footer Bar */}
-          <div className="max-w-7xl mx-auto w-full flex items-center justify-end sm:mt-8 sm:pt-0 pt-8 mt-auto">
-            <OnboardingBackButton
-              onClick={onBack}
-              disabled={isLoading}
-            />
-            <OnboardingPrimaryButton
-              onClick={onNext}
-              isLoading={isLoading}
-              label={t("host_next")}
-            />
-          </div>
+          <StepProgressFooter currentStep={2} totalSteps={3} onBack={onBack} onNext={onNext} isLoading={isLoading} />
     </OnboardingStepLayout>
   );
 }

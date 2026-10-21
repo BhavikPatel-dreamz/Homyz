@@ -2,9 +2,7 @@
 
 import React from "react";
 import { HostHeader } from "@/components/host/host-header";
-import { HostSubNav } from "@/components/host/host-sub-nav";
 import { Container } from "@/components/ui/container";
-import { Footer } from "@/components/dashboard/footer";
 
 // ============================================================================
 // BASE SHIMMER & SKELETON PRIMITIVES
@@ -958,7 +956,7 @@ export const CustomLinkBoxSkeleton = CustomLinkSkeleton;
 
 export function EditorSidebarSkeleton() {
   return (
-    <aside className="w-full space-y-3 font-sans" aria-label="Sidebar loading skeleton">
+    <aside className="w-full space-y-3 font-sans lg:h-full lg:overflow-y-auto lg:overflow-x-hidden lg:pl-8 lg:pt-10 lg:pr-4" aria-label="Sidebar loading skeleton">
       {/* 1. Photo preview card (4-card horizontal stack skeleton) */}
       <div className="relative h-36 sm:h-40 w-full my-2 overflow-hidden rounded-2xl p-0.5">
         <div className="absolute top-0 bottom-0 left-0 w-[54%] rounded-2xl border border-zinc-200 bg-zinc-200/80 skeleton-shimmer z-0" />
@@ -1131,15 +1129,10 @@ export function YourSpaceSectionSkeleton({ section }: { section: string }) {
 
 export function YourSpaceEditorSkeleton({ section = "propertyType" }: { section?: string }) {
   return (
-    <div className="flex min-h-screen min-w-0 flex-col overflow-x-clip bg-white pb-12 font-sans text-[#1F1F1F] selection:bg-[#FCDF9C] selection:text-[#1F1F1F] lg:pb-0">
+    <div className="flex min-h-screen min-w-0 flex-col overflow-x-clip bg-white pb-12 font-sans text-[#1F1F1F] selection:bg-[#FCDF9C] selection:text-[#1F1F1F] lg:h-dvh lg:min-h-0 lg:overflow-hidden lg:pb-0">
       {/* 1. TOP HEADER */}
-      <div className="hidden lg:block">
+      <div className="hidden shrink-0 lg:block">
         <HostHeader />
-      </div>
-
-      {/* 2. TOP NAV TABS */}
-      <div className="hidden lg:block">
-        <HostSubNav activeTab="listing" showRightActions={false} />
       </div>
 
       {/* Mobile top spacing button placeholder */}
@@ -1147,22 +1140,20 @@ export function YourSpaceEditorSkeleton({ section = "propertyType" }: { section?
         <div className="h-8 w-8 rounded-full skeleton-shimmer" />
       </div>
 
-      {/* 3. MAIN EDITOR CONTENT AREA (2-Column Split Layout - 100% Matches HostListingEditorClient) */}
-      <Container>
-        <div className="flex-1 grid grid-cols-1 gap-8 sm:py-10 py-6 lg:py-0 lg:gap-0 xl:grid-cols-[minmax(0,1fr)_440px]">
-          {/* LEFT COLUMN: MAIN SECTION EDITOR PANEL */}
-          <main className="flex min-w-0 flex-col space-y-6 pb-12 lg:col-span-1 lg:pb-12 lg:pt-[58px]">
+      {/* 3. MAIN EDITOR CONTENT AREA (matches the desktop editor split) */}
+      <Container className="lg:-mt-3 lg:flex-1 lg:min-h-0 lg:overflow-hidden">
+        <div className="flex-1 grid grid-cols-1 gap-8 sm:py-10 py-6 lg:grid-cols-[340px_minmax(0,1fr)] xl:grid-cols-[400px_minmax(0,1fr)] lg:grid-rows-1 lg:h-full lg:min-h-0 lg:gap-8 lg:overflow-hidden lg:py-0 xl:gap-10">
+          {/* LEFT COLUMN: LISTING EDITOR NAVIGATION */}
+          <div className="hidden lg:order-1 lg:flex lg:min-w-0 lg:h-full lg:overflow-hidden lg:bg-[rgba(241,241,241,0.5)] lg:border-r lg:border-transparent lg:[border-image:linear-gradient(270deg,#1F1F1F_0%,rgba(31,31,31,0.2)_100%)_1]">
+            <EditorSidebarSkeleton />
+          </div>
+
+          {/* RIGHT COLUMN: SECTION EDITOR */}
+          <main className="flex min-w-0 flex-col space-y-6 pb-12 lg:order-2 lg:pb-12 lg:pt-10 lg:h-full lg:max-h-full lg:overflow-y-auto lg:overscroll-contain lg:pr-4 custom-scrollbar">
             <YourSpaceSectionSkeleton section={section} />
           </main>
-
-          {/* RIGHT COLUMN: EDITOR SIDEBAR PANEL */}
-          <aside className="hidden lg:block">
-            <EditorSidebarSkeleton />
-          </aside>
         </div>
       </Container>
-
-      <Footer />
     </div>
   );
 }

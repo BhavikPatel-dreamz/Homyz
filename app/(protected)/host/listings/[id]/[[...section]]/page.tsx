@@ -44,12 +44,15 @@ export default async function HostListingEditorPage({ params, searchParams }: Pa
   const rawSection = resolvedParams.section?.[0] || resolvedSearchParams.section;
   const initialSection = slugToSection(rawSection);
 
+  const [initialGuidebooks, hostAbout] = await Promise.all([
+    guidebookService.getGuidebooksForHost(actor),
+    listingService.getHostAboutProfileData(listing.hostId),
+  ]);
+
   const serializedListing = serializeListingForEditor(listing, {
     nonRefundableDiscountPercentage,
   });
-
-  // Prefetch the host's guidebooks to avoid an extra client fetch in the manager.
-  const initialGuidebooks = await guidebookService.getGuidebooksForHost(actor);
+  serializedListing.hostAbout = hostAbout;
 
   return (
     <HostListingEditorClient

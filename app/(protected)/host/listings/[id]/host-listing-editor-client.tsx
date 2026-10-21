@@ -8,8 +8,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { updateListingAction, deleteListingAction, publishListingAction, unpublishListingAction } from "@/actions/host/listings";
 import { HostHeader } from "@/components/host/host-header";
-import { HostSubNav } from "@/components/host/host-sub-nav";
-import { Footer } from "@/components/dashboard/footer";
 import { RealMap } from "@/components/ui/real-map";
 import { Container } from "@/components/ui/container";
 import { toast } from "@/components/ui/toast";
@@ -218,12 +216,20 @@ export function HostListingEditorClient({
   // form before the host chooses a section from the Editor Sidebar.
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(true);
   const activeSectionRef = useRef(activeSection);
+  const editorContentScrollRef = useRef<HTMLElement>(null);
   const requestSectionNavigationRef = useRef<(section: SectionKey, fromHistory?: boolean) => void>(() => {});
   const requestBrowserLeaveRef = useRef<(destination: string) => void>(() => {});
 
   const scrollEditorToTop = useCallback(() => {
     if (typeof window === "undefined") return;
-    window.requestAnimationFrame(() => window.scrollTo({ top: 0, left: 0, behavior: "auto" }));
+    window.requestAnimationFrame(() => {
+      const contentPane = editorContentScrollRef.current;
+      if (contentPane && window.matchMedia("(min-width: 1024px)").matches) {
+        contentPane.scrollTo({ top: 0, behavior: "auto" });
+        return;
+      }
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    });
   }, []);
 
   const applySectionNavigation = useCallback(
@@ -250,7 +256,10 @@ export function HostListingEditorClient({
   );
 
   useEffect(() => {
-    const mobileQuery = window.matchMedia("(max-width: 1279px)");
+    // The editor becomes a desktop split layout at Tailwind's `lg` breakpoint.
+    // Keep the navigation overlay in sync with that CSS boundary so it never
+    // renders on top of the desktop sidebar at intermediate widths.
+    const mobileQuery = window.matchMedia("(max-width: 1023px)");
     if (!mobileQuery.matches) setIsMobileSidebarOpen(false);
 
     const closeOnDesktop = () => {
@@ -1493,18 +1502,12 @@ export function HostListingEditorClient({
   return (
     <div
       suppressHydrationWarning
-      className={`flex min-h-screen min-w-0 flex-col overflow-x-clip bg-white pb-12 font-sans text-[#1F1F1F] selection:bg-[#FCDF9C] selection:text-[#1F1F1F] lg:pb-0 ${presentation === "admin" ? "admin-listing-editor" : ""}`}
+      className={`flex min-h-screen min-w-0 flex-col overflow-x-clip bg-white pb-12 font-sans text-[#1F1F1F] selection:bg-[#FCDF9C] selection:text-[#1F1F1F] lg:h-dvh lg:min-h-0 lg:overflow-hidden lg:pb-0 ${presentation === "admin" ? "admin-listing-editor" : ""}`}
     >
       {/* 1. TOP HEADER (Matches Figma Header Bar) */}
       {presentation === "host" && (
-      <div className="hidden lg:block">
+      <div className="hidden shrink-0 lg:block">
         <HostHeader user={listing.host} />
-      </div>)}
-
-      {/* 2. TOP NAV TABS (Matches Figma Tab Row: Today, Calendar, Listing, Messages 100%) */}
-      {presentation === "host" && (
-      <div className="hidden lg:block">
-        <HostSubNav activeTab="listing" listingId={listing.id} showRightActions={false} />
       </div>)}
 
       <div className="flex justify-end px-8 sm:pt-10 pt-5 lg:hidden">
@@ -1521,23 +1524,23 @@ export function HostListingEditorClient({
       </div>
 
       {/* 3. MAIN EDITOR CONTENT AREA (2-Column Split Layout) */}
-      <Container className={presentation === "admin" ? "max-w-full !px-0" : ""}>
-        <div className={`flex-1 grid grid-cols-1 gap-8 sm:py-10 py-6 lg:py-0 ${presentation === "admin" ? "lg:grid-cols-[260px_minmax(0,1fr)] xl:grid-cols-[280px_minmax(0,1fr)] lg:gap-6 xl:gap-8 lg:h-[calc(100vh-6.5rem)] lg:overflow-hidden" : "lg:gap-0 xl:grid-cols-[minmax(0,1fr)_440px]"}`}>
+      <Container className={presentation === "admin" ? "max-w-full !px-0" : "lg:-mt-3 lg:flex-1 lg:min-h-0 lg:overflow-hidden"}>
+        <div className={`flex-1 grid grid-cols-1 gap-8 sm:py-10 py-6 lg:py-0 ${presentation === "admin" ? "lg:grid-cols-[260px_minmax(0,1fr)] xl:grid-cols-[280px_minmax(0,1fr)] lg:h-[calc(100vh-6.5rem)] lg:gap-6 lg:overflow-hidden xl:gap-8" : "lg:grid-cols-[340px_minmax(0,1fr)] xl:grid-cols-[400px_minmax(0,1fr)] lg:grid-rows-1 lg:h-full lg:min-h-0 lg:gap-8 lg:overflow-hidden xl:gap-10"}`}>
           {/* ============================================================ */}
           {/* LEFT COLUMN: MAIN SECTION EDITOR PANEL */}
           {/* ============================================================ */}
-          <main className={`flex min-w-0 flex-col space-y-6 pb-12 lg:col-span-1 lg:pb-12 ${presentation === "admin" ? "admin-editor-content lg:order-2 lg:pt-0 lg:h-full lg:max-h-full lg:overflow-y-auto lg:pr-3 custom-scrollbar" : "lg:pt-[58px]"}`}>
+          <main ref={editorContentScrollRef} className={`flex min-w-0 flex-col space-y-6 pb-12 lg:col-span-1 lg:pb-12 ${presentation === "admin" ? "admin-editor-content lg:order-2 lg:pt-0 lg:h-full lg:max-h-full lg:overflow-y-auto lg:pr-3 custom-scrollbar" : "lg:order-2 lg:pt-10 lg:h-full lg:max-h-full lg:overflow-y-auto lg:overscroll-contain lg:pr-4 custom-scrollbar"}`}>
             {/* Mobile/Tablet Arrival Guide Progress Banner */}
             {editorTab === "arrival" && (
               <div className="block lg:hidden rounded-2xl border border-zinc-200 bg-white p-4 shadow-2xs space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-[#1F1F1F]">Arrival Guide Progress</span>
+                  <span className="text-xs font-bold text-[#1F1F1F]">{t("host_editor_arrival_guide_progress", "Arrival Guide Progress")}</span>
                   <button
                     type="button"
                     onClick={() => setIsMobileSidebarOpen(true)}
                     className="text-xs font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200 cursor-pointer"
                   >
-                    {arrivalGuideCompletedCount} of 8 completed · View all →
+                    {t("host_editor_completed_view_all", { count: arrivalGuideCompletedCount })}
                   </button>
                 </div>
                 <div className="h-1.5 w-full rounded-full bg-zinc-100 overflow-hidden">
@@ -1558,8 +1561,8 @@ export function HostListingEditorClient({
                       <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse mt-1 shrink-0" />
                       <div>
                         <div className="font-semibold text-amber-950 text-sm flex items-center gap-2">
-                          <span>Listing Status: Pending Admin Approval</span>
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-200/80 text-amber-900 uppercase">Under Review</span>
+                          <span>{t("host_editor_status_pending", "Listing Status: Pending Admin Approval")}</span>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-200/80 text-amber-900 uppercase">{t("host_editor_under_review", "Under Review")}</span>
                         </div>
                         <p className="text-amber-900 mt-1 leading-relaxed">
                           This listing has already been submitted for approval. You can continue reviewing your listing details, but the property will not become publicly available until the admin approves it.
@@ -1582,8 +1585,8 @@ export function HostListingEditorClient({
                       <span className="w-2.5 h-2.5 rounded-full bg-rose-500 mt-1 shrink-0" />
                       <div>
                         <div className="font-semibold text-rose-950 text-sm flex items-center gap-2">
-                          <span>Listing Status: Changes Required</span>
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-200 text-rose-900 uppercase">Action Needed</span>
+                          <span>{t("host_editor_status_changes_req", "Listing Status: Changes Required")}</span>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-200 text-rose-900 uppercase">{t("host_editor_action_needed", "Action Needed")}</span>
                         </div>
                         <p className="text-rose-900 mt-1 leading-relaxed line-clamp-2">
                           The admin requested updates before this listing can be approved:{" "}
@@ -1878,6 +1881,7 @@ export function HostListingEditorClient({
               coHosts={coHosts}
               setCoHosts={setCoHosts}
               hostProfile={listing.host}
+              hostAbout={listing.hostAbout}
               presentation={presentation}
               canEdit={presentation === "admin" ? (adminCapabilities?.canEdit ?? false) : true}
               onHostProfileSaved={(publicProfile, hostUpdate) => setListing((prev) => ({
@@ -2057,9 +2061,9 @@ export function HostListingEditorClient({
           </main>
 
         {/* ============================================================ */}
-        {/* RIGHT COLUMN: LISTING EDITOR LIVE PREVIEW SIDEBAR (Figma Panel) */}
+        {/* LEFT COLUMN: LISTING EDITOR NAVIGATION */}
         {/* ============================================================ */}
-        <div className={presentation === "admin" ? "order-first lg:order-1 lg:h-full lg:max-h-full" : ""}><EditorSidebar
+        <div className={presentation === "admin" ? "order-first lg:order-1 lg:h-full lg:max-h-full" : "lg:order-1 lg:min-w-0 lg:h-full lg:overflow-hidden lg:bg-[rgba(241,241,241,0.5)] lg:border-r lg:border-transparent lg:[border-image:linear-gradient(270deg,#1F1F1F_0%,rgba(31,31,31,0.2)_100%)_1]"}><EditorSidebar
           presentation={presentation}
           routeBase={routeBase}
           editorTab={editorTab}
@@ -2149,8 +2153,6 @@ export function HostListingEditorClient({
           </div>
       </Container>
 
-      {presentation === "host" && <Footer />}
-
       {isUnsavedChangesDialogOpen && (
         <ModalOverlay className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
           <section
@@ -2161,17 +2163,17 @@ export function HostListingEditorClient({
           >
             <button
               type="button"
-              aria-label="Close unsaved changes dialog"
               onClick={() => {
                 pendingNavigationRef.current = null;
                 setIsUnsavedChangesDialogOpen(false);
               }}
+              aria-label={t("host_editor_close_unsaved_aria")}
               className="absolute right-4 top-4 inline-flex size-8 items-center justify-center rounded-full text-[#727272] transition-colors hover:bg-zinc-100 hover:text-zinc-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 dark:text-[#727272] dark:hover:bg-zinc-800 dark:hover:text-zinc-100 dark:focus-visible:outline-zinc-100 cursor-pointer"
             >
               <CloseIcon className="size-4" />
             </button>
             <h2 id="unsaved-preferences-title" className="text-lg font-semibold tracking-tight text-zinc-950 dark:text-zinc-100">
-              You have unsaved changes
+              {t("host_editor_unsaved_title")}
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-zinc-600 dark:text-[#727272]">
               Your changes haven&apos;t been saved. Are you sure you want to leave?
@@ -2185,7 +2187,7 @@ export function HostListingEditorClient({
                 }}
                 className="inline-flex h-9 items-center justify-center whitespace-nowrap rounded-full border border-zinc-300 bg-white px-3.5 text-xs font-medium text-[#1f1f1f] transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700 cursor-pointer"
               >
-                Keep editing
+                {t("host_editor_keep_editing")}
               </button>
               <button
                 type="button"

@@ -156,7 +156,7 @@ describe("Host Today reservation overview — 7 tabs, pagination, and API audit"
     assert.match(workspace, /"all"/);
 
     // Pagination controls & label
-    assert.match(workspace, /Page <span/);
+    assert.match(workspace, /host_today_pagination_page", "Page"/);
     assert.match(workspace, /Previous/);
     assert.match(workspace, /Next/);
     assert.match(workspace, /handlePageChange/);
@@ -166,6 +166,11 @@ describe("Host Today reservation overview — 7 tabs, pagination, and API audit"
     assert.match(workspace, /cacheRef/);
     assert.match(workspace, /inFlightRef/);
     assert.match(workspace, /abortControllerRef/);
+    assert.doesNotMatch(workspace, /Warm the first page of every reservation tab/);
+    assert.match(workspace, /window\.history\.pushState/);
+    assert.match(workspace, /window\.addEventListener\("popstate"/);
+    assert.match(workspace, /isTabLoading/);
+    assert.doesNotMatch(workspace, /requestedTab !== tab/);
 
     // Correct headline count
     assert.match(workspace, /You have \{totalCount\}/);

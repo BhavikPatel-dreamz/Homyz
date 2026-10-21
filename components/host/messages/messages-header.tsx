@@ -60,7 +60,7 @@ export function MessagesHeader() {
         </nav>
         <div className="flex items-center gap-3">
           <Link
-            href="/dashboard"
+            href="/"
             className="hidden rounded-full bg-[#FCDF9C] px-4 py-2 text-sm font-medium transition-colors hover:bg-[#F7D37D] xl:block"
           >
             {t("header_switch_traveling", "Switch to traveling")}

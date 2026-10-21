@@ -4,7 +4,7 @@ import { ModalOverlay } from "@/components/ui/modal-overlay";
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { primaryButtonInteractionClass } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
@@ -36,12 +36,15 @@ type AppHeaderProps = {
 
 export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }: AppHeaderProps = {}) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const { data: session, status: sessionStatus, update } = useSession();
   const user = session?.user ?? initialUser ?? null;
   const hasUser = Boolean(user);
   const sessionLoading = sessionStatus === "loading" && !initialUser;
   const role = user?.role;
+  const isReservationsView =
+    pathname === "/host/today" && searchParams.get("tab") === "all";
   const [isConvertingRole, setIsConvertingRole] = useState(false);
   const [failedAvatarUrl, setFailedAvatarUrl] = useState<string | null>(null);
 
@@ -380,14 +383,14 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
             ) : isHost ? (
               isHostRoute ? (
                 <Link
-                  href="/dashboard"
+                  href="/"
                   className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-3.5 py-2 md:px-4 md:py-2 lg:px-5 lg:py-2.5 text-xs sm:text-sm lg:text-base font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 min-[992px]:inline-flex ${primaryButtonInteractionClass}`}
                 >
                   {t("header_switch_traveling") || "Switch to traveling"}
                 </Link>
               ) : (
                 <Link
-                  href="/host/dashboard"
+                  href="/host/today"
                       className={`hidden shrink-0 whitespace-nowrap rounded-full bg-[#FCDF9C] hover:bg-[#1F1F1F] px-3.5 py-2 md:px-4 md:py-2 lg:px-5 lg:py-2.5 text-xs sm:text-sm lg:text-base font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 min-[992px]:inline-flex ${primaryButtonInteractionClass}`}
                 >
                   {t("header_switch_hosting") || "Switch to hosting"}
@@ -418,13 +421,13 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                 <Image src={user.image} alt={user.name || "User avatar"} fill className="object-cover" sizes="36px" priority onError={() => setFailedAvatarUrl(user.image ?? null)} />
               </Link>
             ) : user ? (
-              <Link href="/profile" className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5] text-[#727272] transition-colors hover:bg-zinc-200 min-[992px]:flex" title="Profile">
+              <Link href="/profile" className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5] text-[#727272] transition-colors hover:bg-zinc-200 min-[992px]:flex" title={t("header_profile") || "Profile"}>
                 <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
                 </svg>
               </Link>
             ) : (
-              <button type="button" onClick={() => setMenuOpen(!menuOpen)} className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5] text-[#727272] transition-colors hover:bg-zinc-200 min-[992px]:flex" title="Account">
+              <button type="button" onClick={() => setMenuOpen(!menuOpen)} className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5] text-[#727272] transition-colors hover:bg-zinc-200 min-[992px]:flex" title={t("header_account_settings") || "Account"}>
                 <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
                 </svg>
@@ -563,20 +566,6 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
 
                     <div className="visible-scrollbar min-h-0 flex-1 touch-pan-y overflow-y-auto overscroll-contain pr-1">
                       <div className="space-y-1">
-                        {/* Mode Switcher inside Host Dropdown Menu */}
-                        <div className="pt-0.5 pb-1">
-                          <Link
-                            href="/dashboard"
-                            onClick={() => setMenuOpen(false)}
-                            className="flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-medium text-[#1F1F1F] bg-[#FCDF9C]/50 hover:bg-[#FCDF9C] rounded-2xl transition-colors"
-                          >
-                            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
-                              <Image src="/images/icons/trip.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
-                            </span>
-                            <span>{t("header_switch_traveling") || "Switch to traveling"}</span>
-                          </Link>
-                        </div>
-
                         <div className="my-1 border-t border-zinc-200/80" />
 
                         {/* Host Navigation */}
@@ -594,7 +583,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                                 <path d="M4 19V9m6 10V5m6 14v-7m4 7H2" strokeLinecap="round" strokeLinejoin="round" />
                               </svg>
                             </span>
-                            <span>Dashboard</span>
+                            <span>{t("header_nav_dashboard") || "Dashboard"}</span>
                           </Link>
 
                           {/* Today */}
@@ -654,19 +643,6 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                           </Link>
 
                           <Link
-                            href="/host/today?tab=all"
-                            onClick={() => setMenuOpen(false)}
-                            className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${
-                              pathname?.startsWith("/host/today") ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
-                            }`}
-                          >
-                            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
-                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M7 3v4M17 3v4M3 10h18" /></svg>
-                            </span>
-                            <span>Reservations</span>
-                          </Link>
-
-                          <Link
                             href="/host/resolution-center"
                             onClick={() => setMenuOpen(false)}
                             className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${
@@ -676,7 +652,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                             <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
                               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M12 3 4.5 6v5c0 4.8 3.1 8.6 7.5 10 4.4-1.4 7.5-5.2 7.5-10V6L12 3Z" /><path d="m8.5 12 2.2 2.2 4.8-4.8" /></svg>
                             </span>
-                            <span>Resolution Center</span>
+                            <span>{t("host_nav_resolution") || "Resolution Center"}</span>
                           </Link>
 
                           {/* Messages */}
@@ -818,7 +794,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                         {isHost && (
                           <div className="pt-0.5 pb-1">
                             <Link
-                              href="/host/dashboard"
+                              href="/host/today"
                               onClick={() => setMenuOpen(false)}
                               className="flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-medium text-[#1F1F1F] bg-[#FCDF9C]/50 hover:bg-[#FCDF9C] rounded-2xl transition-colors"
                             >

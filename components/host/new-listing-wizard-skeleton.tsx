@@ -2,7 +2,6 @@
 
 import { AppHeader } from "@/components/dashboard/app-header";
 import { Container } from "@/components/ui/container";
-import { Footer } from "@/components/dashboard/footer";
 import {
   SkeletonBox,
   SkeletonText,
@@ -149,7 +148,6 @@ export function NewListingWizardSkeleton({ step = "overview" }: { step?: string 
         </Container>
       </footer>
 
-      <Footer />
     </div>
   );
 }

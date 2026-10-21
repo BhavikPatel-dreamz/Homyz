@@ -1,32 +1,33 @@
 "use client";
 
 import { HostHeader } from "./host-header";
-import { HostSubNav } from "./host-sub-nav";
 import { Container } from "../ui";
 import { Footer } from "@/components/dashboard/footer";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 export function HostTodaySkeleton({ cardCount = 4 }: { cardCount?: number }) {
+  const { t } = useLanguage();
+
   return (
     <div className="min-h-screen bg-white text-[#1F1F1F] font-sans flex flex-col selection:bg-[#FCDF9C]">
-      {/* 1. TOP HEADER & SUBNAV */}
+      {/* 1. TOP HEADER */}
       <HostHeader />
-      <HostSubNav activeTab="today" />
 
       {/* 2. MAIN CONTENT AREA */}
-      <main className="w-full min-w-0 flex-1 pb-12 pt-10 sm:pb-24 sm:pt-10">
+      <main aria-busy="true" aria-label={t("host_today_loading_aria", "Loading reservations")} className="w-full min-w-0 flex-1 pb-12 pt-6 sm:pb-24 sm:pt-8">
         <Container>
-          {/* Toggle & Filter Bar Skeleton */}
-          <div className="mb-6 flex w-full items-center justify-between gap-3 border-b border-[#727272] pb-5 sm:mb-10 sm:pb-7">
-            <div className="flex items-center gap-2">
-              <div className="h-11 w-20 rounded-full skeleton-shimmer" />
-              <div className="h-11 w-24 rounded-full skeleton-shimmer" />
+          {/* Mirrors the centered Today/Upcoming controls and right Filters button. */}
+          <div className="mb-6 grid w-full grid-cols-[1fr_auto_1fr] items-center gap-3 pb-5 sm:mb-8 sm:pb-6">
+            <div className="col-start-2 flex items-center gap-2 py-1">
+              <div className="h-10 w-20 rounded-full skeleton-shimmer" />
+              <div className="h-10 w-24 rounded-full skeleton-shimmer" />
             </div>
-            <div className="size-12 rounded-full sm:hidden skeleton-shimmer" />
+            <div className="col-start-3 justify-self-end h-10 w-24 rounded-full skeleton-shimmer" />
           </div>
 
           {/* Section Headline Skeleton */}
-          <div className="mb-6 sm:mb-8">
-            <div className="h-9 w-64 sm:w-80 rounded-lg skeleton-shimmer" />
+          <div className="mb-6">
+            <div className="h-9 w-72 max-w-full rounded-md skeleton-shimmer" />
           </div>
 
           {/* Reservation Cards Grid Skeleton */}

@@ -79,6 +79,24 @@ export function getEffectiveDateTime(
   return new Date(Date.UTC(base.getUTCFullYear(), base.getUTCMonth(), base.getUTCDate(), hour, minute, 0, 0));
 }
 
+/**
+ * Whether a reservation represents a completed, confirmed stay. Database
+ * bookings remain CONFIRMED after checkout, so completion is derived from the
+ * configured checkout time rather than a persisted COMPLETED status.
+ */
+export function isCompletedConfirmedBooking(opts: {
+  dbStatus: string | null | undefined;
+  startDate: Date | string;
+  endDate: Date | string;
+  checkOutTime?: string | null;
+  now?: Date;
+}): boolean {
+  if (opts.dbStatus?.trim().toUpperCase() !== "CONFIRMED") return false;
+
+  const checkoutDateTime = getEffectiveDateTime(opts.endDate, opts.checkOutTime, 11, 0);
+  return (opts.now ?? new Date()).getTime() >= checkoutDateTime.getTime();
+}
+
 /** Computes the total number of calendar nights between two dates. */
 export function calculateCalendarNights(startDate: Date | string, endDate: Date | string): number {
   return differenceInBookingNights(startDate, endDate);

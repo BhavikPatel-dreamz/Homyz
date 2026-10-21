@@ -4,9 +4,8 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { Container } from "@/components/ui";
 import { useLanguage } from "@/lib/i18n/language-context";
-import { OnboardingBackButton } from "./onboarding-back-button";
-import { OnboardingPrimaryButton } from "./onboarding-primary-button";
 import { OnboardingMobileCloseButton } from "./onboarding-mobile-close-button";
+import { StepProgressFooter } from "./step-progress-footer";
 
 interface StepOverviewProps {
   onGetStarted: () => void;
@@ -52,7 +51,7 @@ export function StepOverview({
   return (
     <main className="step-overview min-h-dvh bg-white pb-8 sm:py-12 lg:pt-25 lg:pb-16">
       <Container>
-        <div className="flex min-h-[calc(100dvh-4rem)] w-full flex-col animate-in fade-in duration-200 sm:min-h-[calc(100dvh-6rem)] lg:min-h-[calc(100dvh-10.25rem)]">
+        <div className="flex min-h-[calc(100dvh-4rem)] w-full lg:pt-25 flex-col animate-in fade-in duration-200 sm:min-h-[calc(100dvh-6rem)] lg:min-h-[calc(100dvh-10.25rem)]">
           
           {/* Mobile-only close control shared by onboarding steps.  */}
           <OnboardingMobileCloseButton disabled={isLoading} />
@@ -108,25 +107,14 @@ export function StepOverview({
             </div>
           </div>
 
-          {/* Action buttons */}
-          <div
-            data-aos="fade"
-            data-aos-anchor="main"
-            data-aos-delay="200"
-            data-aos-duration="700"
-            className="mt-10.75 flex w-full items-center lg:justify-end"
-          >
-            <OnboardingBackButton
-              onClick={handleBack}
-              disabled={isLoading}
-            />
-
-            <OnboardingPrimaryButton
-              onClick={onGetStarted}
-              isLoading={isLoading}
-              label={t("host_get_started")}
-            />
-          </div>
+          <StepProgressFooter
+            currentStep={1}
+            totalSteps={3}
+            onBack={handleBack}
+            onNext={onGetStarted}
+            isLoading={isLoading}
+            nextLabel={t("host_get_started")}
+          />
         </div>
       </Container>
     </main>

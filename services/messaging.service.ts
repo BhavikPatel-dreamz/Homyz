@@ -66,6 +66,32 @@ export type SpecialOfferDTO = {
   createdAt: string;
 };
 
+export type ConversationBookingDTO = {
+  id: string;
+  status: BookingStatus;
+  startDate: string;
+  endDate: string;
+  guests: number;
+  totalPrice: number | null;
+  nightlyPrice: number | null;
+  currency: string;
+  cancellationPolicy: string | null;
+  isNonRefundable?: boolean;
+  priceBreakdown?: any;
+  createdAt?: string;
+};
+
+/**
+ * A host-visible status derived from confirmed reservations for this exact
+ * guest/listing conversation. Upcoming confirmed bookings are intentionally
+ * considered active reservation context; cancelled and pending bookings remain
+ * inquiries until they are confirmed.
+ */
+export type ReservationContextDTO = {
+  kind: "ACTIVE_RESERVATION" | "PAST_STAY" | "INQUIRY";
+  booking: ConversationBookingDTO | null;
+};
+
 export type ConversationDTO = {
   id: string;
   guestId: string;
@@ -111,20 +137,8 @@ export type ConversationDTO = {
     checkOutTime?: string | null;
     cancellationPolicy?: string | null;
   };
-  booking?: {
-    id: string;
-    status: BookingStatus;
-    startDate: string;
-    endDate: string;
-    guests: number;
-    totalPrice: number | null;
-    nightlyPrice: number | null;
-    currency: string;
-    cancellationPolicy: string | null;
-    isNonRefundable?: boolean;
-    priceBreakdown?: any;
-    createdAt?: string;
-  } | null;
+  booking?: ConversationBookingDTO | null;
+  reservationContext: ReservationContextDTO;
   lastMessage?: MessageDTO | null;
   activeSpecialOffer?: SpecialOfferDTO | null;
   specialOffers?: SpecialOfferDTO[];
@@ -193,7 +207,58 @@ function toSpecialOfferDTO(o: any): SpecialOfferDTO {
   };
 }
 
-function toConversationDTO(c: any, currentUserId: string, unreadCount = 0): ConversationDTO {
+function toConversationBookingDTO(booking: any): ConversationBookingDTO {
+  return {
+    id: booking.id,
+    status: booking.status,
+    startDate: bookingDateKey(booking.startDate),
+    endDate: bookingDateKey(booking.endDate),
+    guests: booking.guests,
+    totalPrice: booking.totalPrice,
+    nightlyPrice: booking.nightlyPrice,
+    currency: booking.currency,
+    cancellationPolicy: booking.cancellationPolicy,
+    isNonRefundable: Boolean(booking.isNonRefundable),
+    priceBreakdown: booking.priceBreakdown ?? null,
+    createdAt: booking.createdAt ? booking.createdAt.toISOString() : undefined,
+  };
+}
+
+/**
+ * Precedence: a current or upcoming confirmed reservation wins; otherwise the
+ * most recently checked-out confirmed reservation is a past stay; all other
+ * states (pending, cancelled, expired inquiry) are an inquiry.
+ */
+export function classifyReservationContext(
+  bookings: Array<ConversationBookingDTO | null | undefined>,
+  today = bookingDateKey(new Date()),
+): ReservationContextDTO {
+  const confirmed = bookings
+    .filter((booking): booking is ConversationBookingDTO => Boolean(booking && booking.status === BookingStatus.CONFIRMED));
+  const active = confirmed
+    .filter((booking) => booking.endDate >= today)
+    .sort((left, right) => {
+      const leftIsCurrent = left.startDate <= today;
+      const rightIsCurrent = right.startDate <= today;
+      if (leftIsCurrent !== rightIsCurrent) return leftIsCurrent ? -1 : 1;
+      return left.startDate.localeCompare(right.startDate);
+    })[0];
+  if (active) return { kind: "ACTIVE_RESERVATION", booking: active };
+
+  const past = confirmed
+    .filter((booking) => booking.endDate < today)
+    .sort((left, right) => right.endDate.localeCompare(left.endDate))[0];
+  if (past) return { kind: "PAST_STAY", booking: past };
+
+  return { kind: "INQUIRY", booking: null };
+}
+
+function toConversationDTO(
+  c: any,
+  currentUserId: string,
+  unreadCount = 0,
+  reservationContext?: ReservationContextDTO,
+): ConversationDTO {
   const latestMessage = Array.isArray(c.messages) && c.messages.length > 0 ? c.messages[0] : null;
   const isAlreadyBooked = Boolean(
     c.booking && c.booking.status === BookingStatus.CONFIRMED
@@ -255,22 +320,10 @@ function toConversationDTO(c: any, currentUserId: string, unreadCount = 0): Conv
       checkOutTime: c.listing.checkOutTime || null,
       cancellationPolicy: c.listing.cancellationPolicy || null,
     },
-    booking: c.booking
-      ? {
-          id: c.booking.id,
-          status: c.booking.status,
-          startDate: bookingDateKey(c.booking.startDate),
-          endDate: bookingDateKey(c.booking.endDate),
-          guests: c.booking.guests,
-          totalPrice: c.booking.totalPrice,
-          nightlyPrice: c.booking.nightlyPrice,
-          currency: c.booking.currency,
-          cancellationPolicy: c.booking.cancellationPolicy,
-          isNonRefundable: Boolean(c.booking.isNonRefundable),
-          priceBreakdown: c.booking.priceBreakdown ?? null,
-          createdAt: c.booking.createdAt ? c.booking.createdAt.toISOString() : undefined,
-        }
-      : null,
+    booking: c.booking ? toConversationBookingDTO(c.booking) : null,
+    reservationContext: reservationContext ?? classifyReservationContext(
+      c.booking ? [toConversationBookingDTO(c.booking)] : [],
+    ),
     lastMessage: latestMessage ? toMessageDTO(latestMessage, currentUserId) : null,
     activeSpecialOffer: activeOffer ? toSpecialOfferDTO(activeOffer) : null,
     specialOffers: specialOffersList,
@@ -399,6 +452,44 @@ async function listConversationsForUser(
   const unreadMap = new Map<string, number>();
   unreadCounts.forEach((u: any) => unreadMap.set(u.conversationId, u._count.id));
 
+  // Inquiry conversations do not always have a bookingId. Resolve reservation
+  // context in one scoped query using the exact guest/listing pairs shown to the
+  // authenticated host, rather than looking at unrelated guest reservations.
+  const unlinkedConversationPairs = conversations
+    .filter((conversation: any) => !conversation.bookingId)
+    .map((conversation: any) => ({ userId: conversation.guestId, listingId: conversation.listingId }));
+  const contextBookings = unlinkedConversationPairs.length > 0
+    ? await prisma.booking.findMany({
+        where: {
+          status: BookingStatus.CONFIRMED,
+          OR: unlinkedConversationPairs,
+        },
+        select: {
+          id: true,
+          status: true,
+          startDate: true,
+          endDate: true,
+          guests: true,
+          totalPrice: true,
+          nightlyPrice: true,
+          currency: true,
+          cancellationPolicy: true,
+          isNonRefundable: true,
+          priceBreakdown: true,
+          createdAt: true,
+          userId: true,
+          listingId: true,
+        },
+      })
+    : [];
+  const contextBookingsByPair = new Map<string, ConversationBookingDTO[]>();
+  for (const booking of contextBookings) {
+    const key = `${booking.userId}:${booking.listingId}`;
+    const current = contextBookingsByPair.get(key) ?? [];
+    current.push(toConversationBookingDTO(booking));
+    contextBookingsByPair.set(key, current);
+  }
+
   // Compute total unread conversations across all conversations for this user
   const unreadTotal = await prisma.conversation.count({
     where: {
@@ -417,9 +508,14 @@ async function listConversationsForUser(
   });
 
   return {
-    conversations: conversations.map((c: any) =>
-      toConversationDTO(c, actor.id, unreadMap.get(c.id) || 0)
-    ),
+    conversations: conversations.map((c: any) => {
+      const context = c.booking
+        ? classifyReservationContext([toConversationBookingDTO(c.booking)])
+        : classifyReservationContext(
+            contextBookingsByPair.get(`${c.guestId}:${c.listingId}`) ?? [],
+          );
+      return toConversationDTO(c, actor.id, unreadMap.get(c.id) || 0, context);
+    }),
     total,
     unreadTotal,
   };
@@ -506,7 +602,36 @@ async function getConversationById(
     },
   });
 
-  return toConversationDTO(conversation, actor.id, unreadCount);
+  const contextBookings = conversation.booking
+    ? [toConversationBookingDTO(conversation.booking)]
+    : (await prisma.booking.findMany({
+        where: {
+          userId: conversation.guestId,
+          listingId: conversation.listingId,
+          status: BookingStatus.CONFIRMED,
+        },
+        select: {
+          id: true,
+          status: true,
+          startDate: true,
+          endDate: true,
+          guests: true,
+          totalPrice: true,
+          nightlyPrice: true,
+          currency: true,
+          cancellationPolicy: true,
+          isNonRefundable: true,
+          priceBreakdown: true,
+          createdAt: true,
+        },
+      })).map(toConversationBookingDTO);
+
+  return toConversationDTO(
+    conversation,
+    actor.id,
+    unreadCount,
+    classifyReservationContext(contextBookings),
+  );
 }
 
 /**

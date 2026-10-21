@@ -17,6 +17,8 @@ export type HostOperationalListing =
   | NonNullable<HostReservation["listing"]>;
 
 export type OperationalEvent = {
+  /** A booking can produce more than one operational event on the same day. */
+  id: string;
   booking: HostReservation;
   listing: HostOperationalListing;
   eventType: "checkout" | "checkin" | "staying" | "upcoming" | "completed" | "pending" | "cancelled";
@@ -62,6 +64,7 @@ export function buildOperationalEvents(
       if (booking.status !== "CONFIRMED" && booking.status !== "PENDING") continue;
       if (booking.endDate === today) {
         events.push({
+          id: `${booking.id}:checkout`,
           booking,
           listing,
           eventType: "checkout",
@@ -69,8 +72,10 @@ export function buildOperationalEvents(
           timeDisplay: formatTime12h(listing.checkOutTime, "11:00 AM"),
           subtitleDisplay: `${booking.guestName || "Guest"} checks out`,
         });
-      } else if (booking.startDate === today) {
+      }
+      if (booking.startDate === today) {
         events.push({
+          id: `${booking.id}:checkin`,
           booking,
           listing,
           eventType: "checkin",
@@ -80,6 +85,7 @@ export function buildOperationalEvents(
         });
       } else if (booking.startDate < today && booking.endDate > today) {
         events.push({
+          id: `${booking.id}:staying`,
           booking,
           listing,
           eventType: "staying",
@@ -92,6 +98,7 @@ export function buildOperationalEvents(
       if (booking.status !== "CONFIRMED" && booking.status !== "PENDING") continue;
       if (booking.startDate > today) {
         events.push({
+          id: `${booking.id}:upcoming`,
           booking,
           listing,
           eventType: "upcoming",
@@ -104,6 +111,7 @@ export function buildOperationalEvents(
     } else if (period === "staying") {
       if (booking.status === "CONFIRMED" && booking.startDate <= today && booking.endDate > today) {
         events.push({
+          id: `${booking.id}:staying`,
           booking,
           listing,
           eventType: "staying",
@@ -116,6 +124,7 @@ export function buildOperationalEvents(
     } else if (period === "completed") {
       if (booking.status === "CONFIRMED" && booking.endDate <= today) {
         events.push({
+          id: `${booking.id}:completed`,
           booking,
           listing,
           eventType: "completed",
@@ -128,6 +137,7 @@ export function buildOperationalEvents(
     } else if (period === "pending") {
       if (booking.status === "PENDING") {
         events.push({
+          id: `${booking.id}:pending`,
           booking,
           listing,
           eventType: "pending",
@@ -140,6 +150,7 @@ export function buildOperationalEvents(
     } else if (period === "cancelled") {
       if (booking.status === "CANCELLED") {
         events.push({
+          id: `${booking.id}:cancelled`,
           booking,
           listing,
           eventType: "cancelled",
@@ -174,6 +185,7 @@ export function buildOperationalEvents(
         : formatTime12h(listing.checkInStart, "3:00 PM");
 
       events.push({
+        id: `${booking.id}:${eventType}`,
         booking,
         listing,
         eventType,
@@ -215,15 +227,15 @@ export function selectPriorityReservationId(
   currentTimeMinutes: number,
 ): string | null {
   if (visibleEvents.length === 0) return null;
-  if (period === "upcoming") return visibleEvents[0].booking.id;
+  if (period === "upcoming") return visibleEvents[0].id;
 
   const activeStay = visibleEvents.find((event) => event.eventType === "staying");
-  if (activeStay) return activeStay.booking.id;
+  if (activeStay) return activeStay.id;
 
   const nextEvent = visibleEvents.find(
     (event) => event.timeMinutes >= currentTimeMinutes,
   );
-  return (nextEvent ?? visibleEvents[0]).booking.id;
+  return (nextEvent ?? visibleEvents[0]).id;
 }
 
 export function filterOperationalEventsByProperty(

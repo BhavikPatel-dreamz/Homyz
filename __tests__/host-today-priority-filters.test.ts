@@ -62,7 +62,7 @@ describe("Host Today priority and property filters", () => {
     ], listings, "today", today);
 
     assert.deepEqual(events.map((event) => event.timeMinutes), [540, 720, 900]);
-    assert.equal(selectPriorityReservationId(events, "today", 11 * 60), "checkin-12");
+    assert.equal(selectPriorityReservationId(events, "today", 11 * 60), "checkin-12:checkin");
   });
 
   it("prioritizes an active stay, then the first chronological upcoming reservation", () => {
@@ -78,8 +78,8 @@ describe("Host Today priority and property filters", () => {
       reservation("oct-08", property.id, "2026-10-08", "2026-10-10"),
     ], listings, "upcoming", today);
 
-    assert.equal(selectPriorityReservationId(todayEvents, "today", 14 * 60), "active-stay");
-    assert.equal(selectPriorityReservationId(upcomingEvents, "upcoming", 0), "oct-05");
+    assert.equal(selectPriorityReservationId(todayEvents, "today", 14 * 60), "active-stay:staying");
+    assert.equal(selectPriorityReservationId(upcomingEvents, "upcoming", 0), "oct-05:upcoming");
   });
 
   it("derives count, cards, and priority from the same single-property result", () => {
@@ -97,7 +97,7 @@ describe("Host Today priority and property filters", () => {
 
     assert.equal(visibleEvents.length, 1);
     assert.equal(visibleEvents[0].booking.id, "b");
-    assert.equal(selectPriorityReservationId(visibleEvents, "today", 9 * 60), "b");
+    assert.equal(selectPriorityReservationId(visibleEvents, "today", 9 * 60), "b:checkin");
     assert.deepEqual(filterOperationalEventsByProperty(allEvents, "no-results"), []);
     assert.equal(filterOperationalEventsByProperty(allEvents, null), allEvents);
   });
@@ -113,7 +113,6 @@ describe("Host Today priority and property filters", () => {
 
   it("uses radio draft/apply controls, the existing menu, and a session-scoped provider", () => {
     const workspace = read("components/host/host-today-workspace.tsx");
-    const subNav = read("components/host/host-sub-nav.tsx");
     const protectedShell = read("app/(protected)/protected-shell.tsx");
     const dialog = read("components/host/host-workspace-shared.tsx");
 
@@ -122,8 +121,8 @@ describe("Host Today priority and property filters", () => {
     assert.match(workspace, /type="radio"/);
     assert.doesNotMatch(workspace, /type="checkbox"/);
     assert.match(workspace, /All properties/);
-    assert.match(workspace, /setSelectedPropertyId\(null\)/);
-    assert.match(subNav, /homyz:toggle-menu/);
+    assert.match(workspace, /handleApplyFilter\(null\)/);
+    assert.doesNotMatch(workspace, /HostSubNav/);
     assert.match(protectedShell, /HostDashboardStateProvider/);
     assert.match(dialog, /h-dvh max-h-dvh rounded-none/);
   });

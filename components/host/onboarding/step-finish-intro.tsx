@@ -3,10 +3,9 @@
 import React from "react";
 import { Container } from "@/components/ui";
 import Image from "next/image";
-import { OnboardingBackButton } from "./onboarding-back-button";
 import { OnboardingMobileCloseButton } from "./onboarding-mobile-close-button";
-import { OnboardingPrimaryButton } from "./onboarding-primary-button";
 import { useLanguage } from "@/lib/i18n/language-context";
+import { StepProgressFooter } from "./step-progress-footer";
 
 interface StepFinishIntroProps {
   onBack: () => void;
@@ -46,10 +45,7 @@ export function StepFinishIntro({ onBack, onNext, isLoading = false }: StepFinis
             </div>
           </div>
 
-          <div className="mx-auto mt-auto flex w-full max-w-7xl items-center justify-end pt-8 sm:mt-8 sm:pt-0">
-            <OnboardingBackButton onClick={onBack} disabled={isLoading} />
-            <OnboardingPrimaryButton onClick={onNext} isLoading={isLoading} label={t("host_next")} />
-          </div>
+          <StepProgressFooter currentStep={3} totalSteps={3} onBack={onBack} onNext={onNext} isLoading={isLoading} />
         </div>
       </Container>
     </main>

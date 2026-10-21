@@ -3,11 +3,10 @@
 import { Container } from "@/components/ui";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import React, { useState, useRef } from "react";
-import { OnboardingBackButton } from "./onboarding-back-button";
-import { OnboardingPrimaryButton } from "./onboarding-primary-button";
 import Image from "next/image";
 import { OnboardingMobileCloseButton } from "./onboarding-mobile-close-button";
 import { useLanguage } from "@/lib/i18n/language-context";
+import { StepProgressFooter } from "./step-progress-footer";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const ACCEPTED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/avif"]);
@@ -317,19 +316,14 @@ export function StepPhotos({
             </ModalOverlay>
           )}
 
-          {/* Bottom Action Footer Bar */}
-          <div className="max-w-7xl mx-auto w-full flex items-center justify-end sm:mt-8 sm:pt-0 pt-8 mt-auto">
-            <OnboardingBackButton
-              onClick={onBack}
-              disabled={isLoading}
-            />
-            <OnboardingPrimaryButton
-              onClick={onNext}
-              disabled={isUploading}
-              isLoading={isLoading}
-              label={t("host_next")}
-            />
-          </div>
+          <StepProgressFooter
+            currentStep={2}
+            totalSteps={3}
+            onBack={onBack}
+            onNext={onNext}
+            isLoading={isLoading}
+            disableNext={isUploading}
+          />
         </div>
       </Container>
     </main>

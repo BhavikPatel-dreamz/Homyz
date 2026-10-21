@@ -36,7 +36,7 @@ export function CalendarNavIcon({ className = "" }: { className?: string }) {
   return (
     <Image
       src="/images/icons/date-picker-icon.svg"
-      alt="Calendar Icon"
+      alt=""
       width={24}
       height={19}
       className={className}
@@ -50,7 +50,7 @@ export function ListingNavIcon({ className = "" }: { className?: string }) {
   return (
     <Image
       src="/images/icons/listing-edit-icon.svg"
-      alt="Listing Edit Icon"
+      alt=""
       width={24}
       height={24}
       className={className}
@@ -64,7 +64,7 @@ export function MessagesNavIcon({ className = "" }: { className?: string }) {
   return (
     <Image
       src="/images/icons/message-icon.svg"
-      alt="Message Icon"
+      alt=""
       width={24}
       height={24}
       className={className}
@@ -178,19 +178,6 @@ export function HostSubNav({
       href: "/host/messages",
       icon: <MessagesNavIcon />,
       minWidthClass: "w-[118px] shrink-0",
-    },
-    {
-      id: "resolution",
-      label: "Resolution Center",
-      shortLabel: "Resolution",
-      href: "/host/resolution-center",
-      icon: (
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M12 3 4.5 6v5c0 4.8 3.1 8.6 7.5 10 4.4-1.4 7.5-5.2 7.5-10V6L12 3Z" />
-          <path d="m8.5 12 2.2 2.2 4.8-4.8" />
-        </svg>
-      ),
-      minWidthClass: "w-[178px] shrink-0",
     },
   ];
 

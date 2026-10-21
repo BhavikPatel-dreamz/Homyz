@@ -6,8 +6,6 @@ import type AOS from "aos";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { toast } from "@/components/ui/toast";
-import { AppHeader } from "@/components/dashboard/app-header";
-import { Footer } from "@/components/dashboard/footer";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { formatAddressCountry } from "@/lib/location/address-countries";
 import { getCurrencyForCountry } from "@/lib/currency";
@@ -34,6 +32,7 @@ import { StepPrice } from "./onboarding/step-price";
 import { StepWeekendPrice } from "./onboarding/step-weekend-price";
 import { StepDiscounts } from "./onboarding/step-discounts";
 import { StepSafety } from "./onboarding/step-safety";
+import { OnboardingHeader } from "./onboarding/onboarding-header";
 import { WIZARD_STEPS } from "./onboarding/wizard-steps";
 import type { ListingDTO } from "@/services/mappers";
 
@@ -532,6 +531,69 @@ export function NewListingGetStarted({
     }
   };
 
+  // Unlike Next, saving and exiting intentionally allows incomplete drafts.
+  // This lets a host leave the wizard at any point and resume later.
+  const handleSaveAndExit = async () => {
+    if (isSavingStep) return;
+
+    const activeDraftId = draftIdRef.current || draftId;
+    // Before a category is picked the wizard has no meaningful draft data to
+    // persist, so leave without creating an empty listing.
+    if (!activeDraftId && !selectedCategory) {
+      router.push("/host/listings");
+      return;
+    }
+
+    setIsSavingStep(true);
+    try {
+      // Complete a pending autosave before the explicit save so it cannot
+      // overwrite the final state after the host leaves the wizard.
+      await saveQueueRef.current.catch(() => undefined);
+      const payload = buildDraftPayload(step);
+      let savedDraftId = activeDraftId;
+
+      if (savedDraftId) {
+        const response = await fetch(`/api/v1/listings/${savedDraftId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (!response.ok) throw new Error(await readSaveError(response));
+      } else {
+        const response = await fetch("/api/v1/listings", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (!response.ok) throw new Error(await readSaveError(response));
+        const body: unknown = await response.json().catch(() => null);
+        savedDraftId = body && typeof body === "object" && "data" in body
+          ? ((body as { data?: { id?: string } }).data?.id ?? null)
+          : null;
+        if (!savedDraftId) throw new Error("The draft was saved, but no listing ID was returned.");
+        draftIdRef.current = savedDraftId;
+        setDraftId(savedDraftId);
+      }
+
+      if (session?.user?.role !== "HOST" && session?.user?.role !== "ADMIN") {
+        void updateSession?.({ role: "HOST" }).catch(() => undefined);
+      }
+
+      toast.success(t("wizard_toast_draft_saved", "Draft listing saved successfully!"));
+      router.push("/host/listings");
+    } catch (error: unknown) {
+      const message = error instanceof Error
+        ? error.message
+        : t("wizard_error_save_failed", "We couldn't save your listing. Please try again.");
+      setWizardError({
+        title: t("wizard_error_changes_not_saved", "Your changes weren't saved"),
+        messages: [message],
+      });
+    } finally {
+      setIsSavingStep(false);
+    }
+  };
+
   useEffect(() => {
     if (!initialDraftId) {
       hydratedDraftRef.current = true;
@@ -762,7 +824,7 @@ export function NewListingGetStarted({
   ];
 
   // Map position change handler
-  const handleLocationChange = (lat: number, lng: number, details?: LocationDetails) => {
+  const handleLocationChange = useCallback((lat: number, lng: number, details?: LocationDetails) => {
     setCoords({ lat, lng });
     setHasConfirmedLocation(true);
     if (details) {
@@ -778,13 +840,13 @@ export function NewListingGetStarted({
         setCountry(formatAddressCountry(details.country, details.countryCode));
       }
     }
-  };
+  }, []);
 
   // Pin drag handler for "Is the pin in the right spot?"
   // Keep the address fields aligned with the reverse-geocoded pin position.
-  const handlePinChange = (lat: number, lng: number, details?: LocationDetails) => {
+  const handlePinChange = useCallback((lat: number, lng: number, details?: LocationDetails) => {
     handleLocationChange(lat, lng, details);
-  };
+  }, [handleLocationChange]);
 
   // Location Autocomplete Selection
   const handleSelectSuggestion = (item: NominatimSuggestion) => {
@@ -851,9 +913,8 @@ export function NewListingGetStarted({
   const errorFixStep = wizardError?.fixStep;
 
   return (
-    <div className="flex min-h-screen flex-col bg-white">
-      {/* Shared Application Header */}
-      <AppHeader />
+    <div className="flex min-h-screen flex-col bg-white pb-[calc(5.5rem+env(safe-area-inset-bottom))] [&>main]:!pt-0">
+      <OnboardingHeader onSaveAndExit={handleSaveAndExit} isSaving={isSavingStep} />
 
       {/* Step 0: Overview */}
       {step === 0 && (
@@ -1194,8 +1255,6 @@ export function NewListingGetStarted({
         </ModalOverlay>
       )}
 
-      {/* Shared Application Footer */}
-      <Footer />
     </div>
   );
 }

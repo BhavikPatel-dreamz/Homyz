@@ -1,7 +1,6 @@
 import React from "react";
 import { Role } from "@/generated/prisma/enums";
 import { HostHeader } from "@/components/host/host-header";
-import { HostDashboardFooter } from "@/components/host/dashboard/host-dashboard-footer";
 import { Container } from "@/components/ui";
 import { requirePageRole } from "@/lib/permissions/page-guards";
 import { payoutService } from "@/services/payout.service";
@@ -22,8 +21,6 @@ export default async function HostEarningsPage() {
           <HostEarningsClient initialData={overview} />
         </Container>
       </main>
-      <HostDashboardFooter />
     </div>
   );
 }
-

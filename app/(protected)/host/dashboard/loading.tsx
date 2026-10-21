@@ -1,4 +1,3 @@
-import { HostDashboardFooter } from "@/components/host/dashboard/host-dashboard-footer";
 import { HostDashboardOverviewSkeleton } from "@/components/host/dashboard/host-kpi-overview";
 import { HostHeader } from "@/components/host/host-header";
 import { Container } from "@/components/ui";
@@ -13,7 +12,6 @@ export default function HostDashboardLoading() {
           <HostDashboardOverviewSkeleton />
         </Container>
       </main>
-      <HostDashboardFooter />
     </div>
   );
 }

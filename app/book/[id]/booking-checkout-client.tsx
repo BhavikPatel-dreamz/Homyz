@@ -956,7 +956,7 @@ export function BookingCheckoutClient({
                         aria-describedby={paymentTimingError ? "payment-timing-error" : undefined}
                         className="focus:outline-none"
                       >
-                        <legend className="sr-only">Choose when to pay</legend>
+                        <legend className="sr-only">{t("book_step_1_title", "Choose when to pay")}</legend>
                         {paymentTimingOptions.map((option) => (
                           <label
                             key={option.type}
