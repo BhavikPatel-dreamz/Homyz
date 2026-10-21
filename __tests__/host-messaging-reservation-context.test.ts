@@ -23,7 +23,7 @@ function booking(
   id: string,
   startDate: string,
   endDate: string,
-  status = BookingStatus.CONFIRMED,
+  status: BookingStatus = BookingStatus.CONFIRMED,
 ): ConversationBookingDTO {
   return {
     id,

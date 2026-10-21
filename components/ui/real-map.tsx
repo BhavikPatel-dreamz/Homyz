@@ -124,7 +124,7 @@ export function RealMap({
 
   // Synchronize internal coords when parent lat/lng props change from outside (e.g. autocomplete selection)
   useEffect(() => {
-    if (!Number.isFinite(initialLat) || !Number.isFinite(initialLng)) return;
+    if (typeof initialLat !== "number" || !Number.isFinite(initialLat) || typeof initialLng !== "number" || !Number.isFinite(initialLng)) return;
 
     // A click or drag has already updated this map locally. The matching
     // parent update is only an acknowledgement, not a command to reset it.

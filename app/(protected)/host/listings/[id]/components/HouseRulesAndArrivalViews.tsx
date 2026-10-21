@@ -16,6 +16,7 @@ import React from "react";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { GuidebooksManager } from "./GuidebooksManager";
 import { LocalLawsView } from "./LocalLawsView";
+import { LicenseRegulationsView } from "./LicenseRegulationsView";
 import { TaxesManager } from "./TaxesManager";
 import { AirbnbOrgStaysView } from "./AirbnbOrgStaysView";
 import {
@@ -27,6 +28,7 @@ import {
 } from "../section-helpers";
 import { HouseRulesSkeleton } from "./YourSpaceSkeletons";
 import type { HostListingData } from "../host-listing-editor-client";
+import { isSaudiArabia } from "@/lib/location/address-countries";
 
 function AllowDenyButtons({
   value,
@@ -181,6 +183,7 @@ interface HouseRulesAndArrivalViewsProps {
   listingLongitude?: number | null;
   guidebooksEnabled?: boolean;
   presentation?: "host" | "admin";
+  canManageLicense?: boolean;
   listingDiscounts?: any;
   onSaveOrgStays?: (cfg: any) => Promise<void>;
   initialGuidebooks?: any[];
@@ -199,6 +202,7 @@ export function HouseRulesAndArrivalViews({
   listingLongitude,
   guidebooksEnabled = true,
   presentation = "host",
+  canManageLicense = true,
   listingDiscounts,
   onSaveOrgStays,
   activeSection,
@@ -1149,12 +1153,22 @@ export function HouseRulesAndArrivalViews({
       )}
 
       {activeSection === "regulations" && (
-        <RegulationsView
-          setActiveSection={setActiveSection}
-          isSaving={isSaving}
-          handleSaveSection={handleSaveSection}
-          onDirtyChange={onRegulationsDirtyChange}
-        />
+        isSaudiArabia(listingCountry) ? (
+          <LicenseRegulationsView
+            listingId={listingId || ""}
+            listingTitle={listing?.title || "Your property"}
+            presentation={presentation}
+            canManage={canManageLicense}
+            setActiveSection={setActiveSection}
+          />
+        ) : (
+          <RegulationsView
+            setActiveSection={setActiveSection}
+            isSaving={isSaving}
+            handleSaveSection={handleSaveSection}
+            onDirtyChange={onRegulationsDirtyChange}
+          />
+        )
       )}
 
       {activeSection === "taxes" && (

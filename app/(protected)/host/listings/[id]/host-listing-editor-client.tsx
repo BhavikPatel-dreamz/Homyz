@@ -1900,6 +1900,7 @@ export function HostListingEditorClient({
             listingLongitude={listing.longitude}
             guidebooksEnabled={true}
             presentation={presentation}
+            canManageLicense={presentation === "host" || (adminCapabilities?.canEdit ?? false)}
             listingDiscounts={listing.discounts}
             onSaveOrgStays={handleSaveOrgStays}
             initialGuidebooks={initialGuidebooks}

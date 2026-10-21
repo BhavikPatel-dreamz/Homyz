@@ -17,6 +17,7 @@ import {
 import { auditService } from "@/services/audit.service";
 import { listingService } from "@/services/listing.service";
 import { notificationService } from "@/services/notification.service";
+import { hasPermission, PERMISSIONS } from "@/lib/permissions/permissions";
 
 type ProviderResult = {
   status: PropertyLicenseStatus;
@@ -280,18 +281,38 @@ function eligibility(result: ProviderResult): ListingLicenseEligibilityStatus {
   return ListingLicenseEligibilityStatus.INELIGIBLE;
 }
 
-async function getOwnedSaudiListing(actor: AuthUser, listingId: string) {
-  const listing = await prisma.listing.findUnique({ where: { id: listingId } });
+async function getOwnedSaudiListing(actor: AuthUser, listingId: string, access: "view" | "manage" = "view") {
+  const listing = await prisma.listing.findUnique({
+    where: { id: listingId },
+    include: {
+      host: { select: { id: true, name: true, email: true } },
+      coHosts: { where: { userId: actor.id, status: "ACCEPTED" }, select: { id: true } },
+    },
+  });
   if (!listing) throw AppError.notFound("Listing not found");
-  if (listing.hostId !== actor.id && actor.role !== "ADMIN") throw AppError.forbidden("You cannot manage this listing's license.");
+  const isAuthorizedCoHost = listing.coHosts.length > 0;
+  if (listing.hostId !== actor.id && actor.role !== "ADMIN" && !isAuthorizedCoHost) {
+    throw AppError.forbidden("You cannot manage this listing's license.");
+  }
+  if (actor.role === "ADMIN") {
+    const permission = access === "manage" ? PERMISSIONS.LISTINGS_EDIT : PERMISSIONS.LISTINGS_VIEW;
+    if (!hasPermission(actor, permission)) throw AppError.forbidden(`Missing required permission: ${permission}`);
+  }
   if (!isSaudiArabia(listing.country)) throw AppError.badRequest("Saudi license verification is only available for properties in Saudi Arabia.");
   return listing;
 }
 
 async function verifyForListing(actor: AuthUser, listingId: string, input: string) {
-  const listing = await getOwnedSaudiListing(actor, listingId);
+  const listing = await getOwnedSaudiListing(actor, listingId, "manage");
   const licenseNumber = normalizedLicense(input);
   if (!licenseNumber || licenseNumber.length > 120) throw AppError.validation("Enter a valid license number.");
+  const knownLicense = await prisma.propertyLicense.findUnique({
+    where: { licenseNumber_countryCode: { licenseNumber, countryCode: "SA" } },
+    include: { ownerships: { select: { hostId: true } } },
+  });
+  if (knownLicense && !knownLicense.ownerships.some((ownership: { hostId: string }) => ownership.hostId === listing.hostId)) {
+    throw AppError.forbidden("This license is already associated with another host. Contact support if it should be transferred.");
+  }
 
   debugVerification("verification requested", {
     listingId,
@@ -425,19 +446,21 @@ async function verifyForListing(actor: AuthUser, listingId: string, input: strin
   // A revoked, suspended, invalid, or expired licence applies to every linked
   // property. Do not wait for the scheduled expiry pass before removing those
   // properties from search and new-booking eligibility.
-  const blocksLinkedProperties = [
-    PropertyLicenseStatus.EXPIRED,
-    PropertyLicenseStatus.REVOKED,
-    PropertyLicenseStatus.SUSPENDED,
-    PropertyLicenseStatus.INVALID,
-  ].includes(result.status);
+  const blocksLinkedProperties = (
+    [
+      PropertyLicenseStatus.EXPIRED,
+      PropertyLicenseStatus.REVOKED,
+      PropertyLicenseStatus.SUSPENDED,
+      PropertyLicenseStatus.INVALID,
+    ] as PropertyLicenseStatus[]
+  ).includes(result.status);
   if (blocksLinkedProperties) {
     const linked = await prisma.propertyLicenseLink.findMany({
       where: { licenseId: saved.license.id, listing: { published: true } },
       include: { listing: { select: { id: true, hostId: true } } },
     });
     if (linked.length) {
-      const linkedIds = linked.map((entry) => entry.listingId);
+      const linkedIds = linked.map((entry: { listingId: string }) => entry.listingId);
       await prisma.$transaction([
         prisma.propertyLicenseLink.updateMany({
           where: { licenseId: saved.license.id },
@@ -454,7 +477,7 @@ async function verifyForListing(actor: AuthUser, listingId: string, input: strin
           },
         }),
       ]);
-      await Promise.all(linked.flatMap(({ listing: linkedListing }) => [
+      await Promise.all(linked.flatMap(({ listing: linkedListing }: { listing: { id: string; hostId: string } }) => [
         invalidateListingCache(linkedListing.id, linkedListing.hostId),
         notificationService.create({
           userId: linkedListing.hostId,
@@ -508,6 +531,122 @@ async function getListingLicense(actor: AuthUser, listingId: string) {
   };
 }
 
+/**
+ * Stores a host/admin supplied Saudi licence number without treating it as
+ * verified. Replacing a number deliberately removes this property's previous
+ * eligibility until the new number is checked with the provider.
+ */
+async function saveLicenseForListing(actor: AuthUser, listingId: string, input: string, reason?: string) {
+  const listing = await getOwnedSaudiListing(actor, listingId, "manage");
+  const licenseNumber = normalizedLicense(input);
+  if (!licenseNumber || licenseNumber.length > 120) throw AppError.validation("Enter a valid license number.");
+  const changeReason = reason?.trim();
+  if (actor.role === "ADMIN" && !changeReason) {
+    throw AppError.validation("Enter a reason for this administrative license change.");
+  }
+
+  const previousLink = await prisma.propertyLicenseLink.findUnique({
+    where: { listingId },
+    include: { license: { select: { id: true, licenseNumber: true, status: true } } },
+  });
+  if (previousLink?.license.licenseNumber === licenseNumber) {
+    return getLicenseManagement(actor, listingId);
+  }
+
+  const now = new Date();
+  await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    const existing = await tx.propertyLicense.findUnique({
+      where: { licenseNumber_countryCode: { licenseNumber, countryCode: "SA" } },
+      include: { ownerships: { where: { hostId: listing.hostId }, select: { id: true } } },
+    });
+
+    // Neither a host nor an admin can attach a licence owned by another host
+    // through this normal edit path. A transfer needs a separate audited
+    // ownership process; saving a number must not manufacture authorization.
+    if (existing && existing.ownerships.length === 0) {
+      throw AppError.forbidden("This license is already associated with another host. Contact support if it should be transferred.");
+    }
+
+    const license = existing ?? await tx.propertyLicense.create({
+      data: {
+        licenseNumber,
+        countryCode: "SA",
+        status: PropertyLicenseStatus.PENDING,
+        verificationSource: LicenseVerificationSource.SAUDI_GOVERNMENT,
+        verificationMethod: "HOST_SUBMITTED",
+      },
+    });
+
+    await tx.licenseOwnership.upsert({
+      where: { licenseId_hostId: { licenseId: license.id, hostId: listing.hostId } },
+      create: { licenseId: license.id, hostId: listing.hostId, authorizationStatus: LicenseAuthorizationStatus.PENDING },
+      update: {},
+    });
+    await tx.propertyLicenseLink.upsert({
+      where: { listingId },
+      create: { listingId, licenseId: license.id, eligibilityStatus: ListingLicenseEligibilityStatus.PENDING },
+      update: { licenseId: license.id, eligibilityStatus: ListingLicenseEligibilityStatus.PENDING },
+    });
+    await tx.listing.update({
+      where: { id: listingId },
+      data: {
+        licenseEligibilityStatus: ListingLicenseEligibilityStatus.PENDING,
+        ...(listing.published
+          ? {
+              published: false,
+              isPaused: true,
+              licenseUnlistedAt: now,
+              licenseUnlistingReason: "LICENSE_REPLACED_REQUIRES_VERIFICATION",
+            }
+          : {}),
+      },
+    });
+    await tx.licenseVerificationHistory.create({
+      data: {
+        licenseId: license.id,
+        hostId: listing.hostId,
+        listingId,
+        previousStatus: previousLink?.license.status ?? null,
+        newStatus: PropertyLicenseStatus.PENDING,
+        providerResultCategory: "LICENSE_SAVED",
+        metadata: {
+          previousLicenseNumber: previousLink?.license.licenseNumber ?? null,
+          licenseChanged: true,
+          changedByAdmin: actor.role === "ADMIN",
+          adminReason: actor.role === "ADMIN" ? changeReason : null,
+        },
+      },
+    });
+  });
+
+  await invalidateListingCache(listingId, listing.hostId);
+  await auditService.record({
+    actorId: actor.id,
+    actorEmail: actor.email,
+    action: "SAUDI_LICENSE_SAVED",
+    resourceType: "Listing",
+    resourceId: listingId,
+    description: `Saudi license number ${previousLink ? "replaced" : "saved"} for listing "${listing.title}".`,
+    metadata: {
+      previousLicense: previousLink ? maskedLicense(previousLink.license.licenseNumber) : null,
+      license: maskedLicense(licenseNumber),
+      ...(actor.role === "ADMIN" ? { reason: changeReason } : {}),
+    },
+  });
+  if (listing.published) {
+    await notificationService.create({
+      userId: listing.hostId,
+      type: NotificationType.SYSTEM,
+      title: "Property unlisted pending license verification",
+      message: "Your license number changed. Reverify it before publishing this property again.",
+      entityId: listingId,
+      entityType: "SAUDI_LICENSE_REPLACED",
+      link: `/host/listings/${listingId}/regulations`,
+    });
+  }
+  return getLicenseManagement(actor, listingId);
+}
+
 async function reverifyForListing(actor: AuthUser, listingId: string) {
   const license = await getListingLicense(actor, listingId);
   if (!license) throw AppError.badRequest("Verify a Saudi license before requesting reverification.");
@@ -532,6 +671,17 @@ async function getLicenseManagement(actor: AuthUser, listingId: string) {
   if (!link) return null;
   const canSeeAllLinked = actor.role === "ADMIN";
   return {
+    listing: {
+      id: listing.id,
+      title: listing.title,
+      country: listing.country,
+      status: listing.status,
+      published: listing.published,
+      approvalMethod: listing.approvalMethod,
+      eligibilityStatus: link.eligibilityStatus,
+      licenseUnlistingReason: listing.licenseUnlistingReason,
+      ...(actor.role === "ADMIN" ? { host: listing.host } : {}),
+    },
     license: {
       number: link.license.licenseNumber,
       status: link.license.status,
@@ -674,6 +824,7 @@ async function enforceExpiry() {
 
 export const saudiLicenseService = {
   verifyForListing,
+  saveLicenseForListing,
   reverifyForListing,
   getListingLicense,
   getLicenseManagement,

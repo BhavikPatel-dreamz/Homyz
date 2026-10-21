@@ -1282,8 +1282,13 @@ async function getHostAboutProfileData(hostId: string): Promise<HostAboutProfile
     }),
   ]);
 
-  const listingIds = hostListings.map((listing) => listing.id);
-  const summaries = listingIds.length
+  const listingIds = hostListings.map((listing: { id: string }) => listing.id);
+  type ReviewSummary = {
+    listingId: string;
+    _avg: { rating: number | null };
+    _count: { _all: number };
+  };
+  const summaries: ReviewSummary[] = listingIds.length
     ? await prisma.review.groupBy({
         by: ["listingId"],
         where: {
@@ -1295,21 +1300,33 @@ async function getHostAboutProfileData(hostId: string): Promise<HostAboutProfile
         _count: { _all: true },
       })
     : [];
-  const summaryByListingId = new Map(
+  const summaryByListingId = new Map<string, ReviewSummary>(
     summaries.map((summary) => [summary.listingId, summary]),
   );
 
   return {
     rating: roundRating(reviewSummary._avg.rating),
     reviewCount: reviewSummary._count._all,
-    reviews: recentReviews.map((review) => ({
+    reviews: recentReviews.map((review: {
+      id: string;
+      rating: number;
+      comment: string | null;
+      createdAt: Date;
+      author: { name: string | null; image: string | null };
+    }) => ({
       id: review.id,
       author: review.author,
       rating: review.rating,
       comment: review.comment,
       createdAt: review.createdAt.toISOString(),
     })),
-    listings: hostListings.map((listing) => {
+    listings: hostListings.map((listing: {
+      id: string;
+      title: string;
+      propertyType: string | null;
+      listingType: string | null;
+      photos: string[];
+    }) => {
       const summary = summaryByListingId.get(listing.id);
       return {
         ...listing,
@@ -2383,14 +2400,14 @@ type DuplicateListingOptions = {
   idempotencyKey?: string;
 };
 
-function cloneJson(value: Prisma.JsonValue | null): Prisma.InputJsonValue | null {
-  return value == null ? null : JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue;
+function cloneJson(value: Prisma.JsonValue | null): Prisma.InputJsonValue | undefined {
+  return value == null ? undefined : JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue;
 }
 
 function remapPhotoUrls(
   value: Prisma.JsonValue | null,
   photoUrlMap: Map<string, string>,
-): Prisma.InputJsonValue | null {
+): Prisma.InputJsonValue | undefined {
   const remap = (item: unknown): unknown => {
     if (typeof item === "string") return photoUrlMap.get(item) ?? item;
     if (Array.isArray(item)) return item.map(remap);
@@ -2399,7 +2416,8 @@ function remapPhotoUrls(
     }
     return item;
   };
-  return value == null ? null : remap(cloneJson(value)) as Prisma.InputJsonValue;
+  const cloned = cloneJson(value);
+  return cloned === undefined ? undefined : remap(cloned) as Prisma.InputJsonValue;
 }
 
 async function cloneListingPhotos(sourcePhotos: string[]) {
@@ -2489,7 +2507,7 @@ async function duplicate(
     createdPhotoUrls = copiedMedia.createdUrls;
     photoUrlMap = copiedMedia.photoUrlMap;
 
-    const duplicated = await prisma.$transaction((tx) => tx.listing.create({
+    const duplicated = await prisma.$transaction((tx: Prisma.TransactionClient) => tx.listing.create({
       data: {
         hostId: actor.id,
         title: existing.title,
@@ -2544,14 +2562,14 @@ async function duplicate(
         guestAccess: existing.guestAccess,
         languages: existing.languages,
         photos,
-        photoRoomAssignments: photos.length > 0 ? remapPhotoUrls(cloneJson(existing.photoRoomAssignments), photoUrlMap) : null,
+        photoRoomAssignments: photos.length > 0 ? remapPhotoUrls(existing.photoRoomAssignments, photoUrlMap) : undefined,
         highlights: existing.highlights,
         amenities: existing.amenities,
         safetyDisclosures: existing.safetyDisclosures,
         safetyEquipment: existing.safetyEquipment,
         safetyHazards: existing.safetyHazards,
         accessibilityFeatures: existing.accessibilityFeatures,
-        accessibilityDetails: photos.length > 0 ? remapPhotoUrls(cloneJson(existing.accessibilityDetails), photoUrlMap) : null,
+        accessibilityDetails: photos.length > 0 ? remapPhotoUrls(existing.accessibilityDetails, photoUrlMap) : undefined,
         views: existing.views,
         locationFeatures: existing.locationFeatures,
         houseRules: existing.houseRules,
@@ -2593,7 +2611,7 @@ async function duplicate(
         securityDeposit: existing.securityDeposit,
         weekendPrice: existing.weekendPrice,
         weekendPremium: existing.weekendPremium,
-        customPrices: null,
+        customPrices: undefined,
         extraGuestFee: existing.extraGuestFee,
         discounts: cloneJson(existing.discounts),
         currentStep: 1,
