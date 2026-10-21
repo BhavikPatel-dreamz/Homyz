@@ -79,11 +79,11 @@ function getYearsHosting(createdAt: Date | string): number {
   const years = Math.max(
     0,
     now.getFullYear() -
-      created.getFullYear() -
-      Number(
-        now.getMonth() < created.getMonth() ||
-          (now.getMonth() === created.getMonth() && now.getDate() < created.getDate()),
-      ),
+    created.getFullYear() -
+    Number(
+      now.getMonth() < created.getMonth() ||
+      (now.getMonth() === created.getMonth() && now.getDate() < created.getDate()),
+    ),
   );
   return years;
 }
@@ -376,9 +376,9 @@ export function HostAboutHostView({
     if (key === "languages") {
       const langArray = value
         ? value
-            .split(/,|\sand\s/i)
-            .map((s) => s.trim())
-            .filter(Boolean)
+          .split(/,|\sand\s/i)
+          .map((s) => s.trim())
+          .filter(Boolean)
         : [];
       updates = { languages: langArray };
     } else {
@@ -493,7 +493,7 @@ export function HostAboutHostView({
       {/* Top Header & Mode Switcher */}
       {/* ------------------------------------------------------------------- */}
       <div className="flex items-center justify-between pb-6">
-        <h1 className="text-[30px] sm:text-[34px] font-bold tracking-tight text-[#1F1F1F] dark:text-white">
+        <h1>
           About the host
         </h1>
 
@@ -502,22 +502,20 @@ export function HostAboutHostView({
           <button
             type="button"
             onClick={() => setActiveTab("view")}
-            className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
-              activeTab === "view"
-                ? "bg-white text-[#1F1F1F] shadow-xs dark:bg-zinc-900 dark:text-white"
-                : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
-            }`}
+            className={`rounded-full px-4 py-1.5 text-sm transition-all cursor-pointer ${activeTab === "view"
+                ? "bg-white text-[#1F1F1F] shadow-xs dark:bg-zinc-900 dark:text-white font-medium"
+              : "text-[#727272] hover:text-[#1F1F1F] dark:text-[#727272] dark:hover:text-white font-normal"
+              }`}
           >
             View profile
           </button>
           <button
             type="button"
             onClick={() => setActiveTab("edit")}
-            className={`rounded-full px-4 py-1.5 text-xs font-semibold transition-all cursor-pointer ${
-              activeTab === "edit"
-                ? "bg-white text-[#1F1F1F] shadow-xs dark:bg-zinc-900 dark:text-white"
-                : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
-            }`}
+            className={`rounded-full px-4 py-1.5 text-sm transition-all cursor-pointer ${activeTab === "edit"
+              ? "bg-white text-[#1F1F1F] shadow-xs dark:bg-zinc-900 dark:text-white font-medium"
+              : "text-[#727272] hover:text-[#1F1F1F] dark:text-[#727272] dark:hover:text-white font-normal"
+              }`}
           >
             Edit profile
           </button>
@@ -540,7 +538,7 @@ export function HostAboutHostView({
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={displayImage} alt={hostName} className="size-full object-cover" />
                     ) : (
-                      <span className="flex size-full items-center justify-center bg-amber-100 text-3xl font-bold text-amber-950 dark:bg-amber-950/60 dark:text-amber-300">
+                      <span className="flex size-full items-center justify-center bg-amber-100 text-3xl font-medium text-amber-950 dark:bg-amber-950/60 dark:text-amber-300">
                         {getInitials(hostName)}
                       </span>
                     )}
@@ -556,7 +554,7 @@ export function HostAboutHostView({
                     </span>
                   )}
                 </div>
-                <h3 className="mt-3 truncate text-[25px] font-bold leading-tight text-[#222222] dark:text-white">
+                <h3 className="mt-3 truncate text-[20px] font-medium leading-tight text-[#222222] dark:text-white">
                   {hostName}
                 </h3>
                 {hostProfile.isSuperhost && (
@@ -572,19 +570,19 @@ export function HostAboutHostView({
               {/* Right Column: Stats (Reviews, Rating, Tenure) */}
               <dl className="divide-y divide-zinc-200 dark:divide-zinc-700 pl-2">
                 <div className="pb-2.5">
-                  <dd className="text-[22px] font-bold leading-none text-[#222222] dark:text-white">
+                  <dd className="text-[22px] font-medium leading-none text-[#222222] dark:text-white">
                     {reviewCount}
                   </dd>
                   <dt className="mt-1 text-[11px] text-[#717171] font-medium">Reviews</dt>
                 </div>
                 <div className="py-2.5">
-                  <dd className="text-[22px] font-bold leading-none text-[#222222] dark:text-white flex items-center gap-1">
+                  <dd className="text-[22px] font-medium leading-none text-[#222222] dark:text-white flex items-center gap-1">
                     {rating !== null ? <>{rating.toFixed(2)} <span className="text-base text-amber-500">★</span></> : "—"}
                   </dd>
                   <dt className="mt-1 text-[11px] text-[#717171] font-medium">Rating</dt>
                 </div>
                 <div className="pt-2.5">
-                  <dd className="text-[22px] font-bold leading-none text-[#222222] dark:text-white">
+                  <dd className="text-[22px] font-medium leading-none text-[#222222] dark:text-white">
                     {tenureYears}
                   </dd>
                   <dt className="mt-1 text-[11px] text-[#717171] font-medium">Years hosting</dt>
@@ -629,142 +627,142 @@ export function HostAboutHostView({
           {reviews.length > 0 && <>
             <div className="border-b border-zinc-200 dark:border-zinc-800" />
             <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-[#222222] dark:text-white">
-                {hostName}&apos;s reviews
-              </h2>
-              {/* Carousel Arrows */}
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  aria-label="Previous reviews"
-                  onClick={() => scrollReviews("left")}
-                  className="size-8 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 transition-colors cursor-pointer text-base select-none"
-                >
-                  ‹
-                </button>
-                <button
-                  type="button"
-                  aria-label="Next reviews"
-                  onClick={() => scrollReviews("right")}
-                  className="size-8 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 transition-colors cursor-pointer text-base select-none"
-                >
-                  ›
-                </button>
-              </div>
-            </div>
-
-            {/* Review Cards in a Scrollable Row */}
-            <div
-              ref={reviewsScrollRef}
-              className="flex gap-4 overflow-x-auto pb-2 scroll-smooth no-scrollbar"
-            >
-              {reviews.map((rev) => (
-                <div
-                  key={rev.id}
-                  className="w-[280px] sm:w-[310px] shrink-0 flex flex-col justify-between rounded-2xl border border-zinc-200/90 bg-white p-5 shadow-2xs dark:border-zinc-700 dark:bg-zinc-900"
-                >
-                  <div>
-                    <div className="flex items-center gap-3">
-                      {rev.author.image ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={rev.author.image} alt={rev.author.name || "Guest"} className="size-10 rounded-full object-cover" />
-                      ) : (
-                        <span className="size-10 rounded-full bg-pink-100 text-pink-700 dark:bg-pink-950/60 dark:text-pink-300 flex items-center justify-center font-bold text-sm">
-                          {getInitials(rev.author.name || "Guest")}
-                        </span>
-                      )}
-                      <div>
-                        <h4 className="text-sm font-bold text-[#222222] dark:text-white leading-tight">{rev.author.name || "Guest"}</h4>
-                        <p className="text-[11px] text-[#717171] mt-0.5">{"★".repeat(rev.rating)} · {formatReviewDate(rev.createdAt)}</p>
-                      </div>
-                    </div>
-                    <p className="mt-3.5 text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed line-clamp-4">
-                      {rev.comment || "No written review."}
-                    </p>
-                  </div>
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-medium text-[#222222] dark:text-white">
+                  {hostName}&apos;s reviews
+                </h2>
+                {/* Carousel Arrows */}
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    aria-label="Previous reviews"
+                    onClick={() => scrollReviews("left")}
+                    className="size-8 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 transition-colors cursor-pointer text-base select-none"
+                  >
+                    ‹
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Next reviews"
+                    onClick={() => scrollReviews("right")}
+                    className="size-8 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 transition-colors cursor-pointer text-base select-none"
+                  >
+                    ›
+                  </button>
                 </div>
-              ))}
-            </div>
+              </div>
+
+              {/* Review Cards in a Scrollable Row */}
+              <div
+                ref={reviewsScrollRef}
+                className="flex gap-4 overflow-x-auto pb-2 scroll-smooth no-scrollbar"
+              >
+                {reviews.map((rev) => (
+                  <div
+                    key={rev.id}
+                    className="w-[280px] sm:w-[310px] shrink-0 flex flex-col justify-between rounded-2xl border border-zinc-200/90 bg-white p-5 shadow-2xs dark:border-zinc-700 dark:bg-zinc-900"
+                  >
+                    <div>
+                      <div className="flex items-center gap-3">
+                        {rev.author.image ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={rev.author.image} alt={rev.author.name || "Guest"} className="size-10 rounded-full object-cover" />
+                        ) : (
+                          <span className="size-10 rounded-full bg-pink-100 text-pink-700 dark:bg-pink-950/60 dark:text-pink-300 flex items-center justify-center font-medium text-sm">
+                            {getInitials(rev.author.name || "Guest")}
+                          </span>
+                        )}
+                        <div>
+                          <h4 className="text-sm font-medium text-[#222222] dark:text-white leading-tight">{rev.author.name || "Guest"}</h4>
+                          <p className="text-[11px] text-[#717171] mt-0.5">{"★".repeat(rev.rating)} · {formatReviewDate(rev.createdAt)}</p>
+                        </div>
+                      </div>
+                      <p className="mt-3.5 text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed line-clamp-4">
+                        {rev.comment || "No written review."}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
 
             </div>
           </>}
 
           {askAboutList.length > 0 && <>
-          <div className="border-b border-zinc-200 dark:border-zinc-800" />
-          <div className="space-y-4">
-            <h2 className="text-xl font-bold text-[#222222] dark:text-white">
-              Ask {hostName} about
-            </h2>
+            <div className="border-b border-zinc-200 dark:border-zinc-800" />
+            <div className="space-y-4">
+              <h2 className="text-xl font-medium text-[#222222] dark:text-white">
+                Ask {hostName} about
+              </h2>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-y-4 gap-x-6 pt-1">
-              {askAboutList.map((item, idx) => {
-                const iconNode = ASK_ABOUT_ICONS[item.label] || (
-                  <span className="text-lg select-none">{item.icon}</span>
-                );
-                return (
-                  <div key={idx} className="flex items-center gap-3 text-sm text-[#222222] dark:text-zinc-200 font-medium">
-                    {iconNode}
-                    <span>{item.label}</span>
-                  </div>
-                );
-              })}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-y-4 gap-x-6 pt-1">
+                {askAboutList.map((item, idx) => {
+                  const iconNode = ASK_ABOUT_ICONS[item.label] || (
+                    <span className="text-lg select-none">{item.icon}</span>
+                  );
+                  return (
+                    <div key={idx} className="flex items-center gap-3 text-sm text-[#222222] dark:text-zinc-200 font-medium">
+                      {iconNode}
+                      <span>{item.label}</span>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-          </div>
           </>}
 
           {hostListings.length > 0 && <>
-          <div className="border-b border-zinc-200 dark:border-zinc-800" />
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-[#222222] dark:text-white">
-                {hostName}&apos;s listings
-              </h2>
-              {/* Carousel Arrows */}
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  aria-label="Previous listings"
-                  onClick={() => scrollListings("left")}
-                  className="size-8 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 transition-colors cursor-pointer text-base select-none"
-                >
-                  ‹
-                </button>
-                <button
-                  type="button"
-                  aria-label="Next listings"
-                  onClick={() => scrollListings("right")}
-                  className="size-8 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 transition-colors cursor-pointer text-base select-none"
-                >
-                  ›
-                </button>
+            <div className="border-b border-zinc-200 dark:border-zinc-800" />
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-medium text-[#222222] dark:text-white">
+                  {hostName}&apos;s listings
+                </h2>
+                {/* Carousel Arrows */}
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    aria-label="Previous listings"
+                    onClick={() => scrollListings("left")}
+                    className="size-8 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 transition-colors cursor-pointer text-base select-none"
+                  >
+                    ‹
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Next listings"
+                    onClick={() => scrollListings("right")}
+                    className="size-8 rounded-full border border-zinc-300 bg-white flex items-center justify-center text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 transition-colors cursor-pointer text-base select-none"
+                  >
+                    ›
+                  </button>
+                </div>
+              </div>
+
+              {/* Listings Row */}
+              <div
+                ref={listingsScrollRef}
+                className="flex items-start gap-4 overflow-x-auto pb-3 scroll-smooth no-scrollbar"
+              >
+                {hostListings.map((item) => (
+                  <div key={item.id} className="w-[188px] shrink-0 space-y-2">
+                    <div className="aspect-[4/3] w-full overflow-hidden rounded-2xl bg-zinc-100 dark:bg-zinc-800">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      {item.photos[0] ? <img src={item.photos[0]} alt={item.title} className="size-full object-cover hover:scale-105 transition-transform duration-300" /> : <span className="flex size-full items-center justify-center text-xs text-zinc-500">No photo</span>}
+                    </div>
+                    <div className="space-y-0.5 text-xs">
+                      <p className="text-[#717171] text-[11px] font-medium">{item.listingType || item.propertyType || "Property"}</p>
+                      <p className="truncate font-semibold text-[#222222] dark:text-white text-xs leading-snug" title={item.title}>
+                        {item.title}
+                      </p>
+                      <p className="text-[#222222] dark:text-zinc-300 text-xs">
+                        {item.rating !== null ? `★ ${item.rating.toFixed(2)} · ` : ""}{item.reviewCount} reviews
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-
-            {/* Listings Row */}
-            <div
-              ref={listingsScrollRef}
-              className="flex items-start gap-4 overflow-x-auto pb-3 scroll-smooth no-scrollbar"
-            >
-              {hostListings.map((item) => (
-                <div key={item.id} className="w-[188px] shrink-0 space-y-2">
-                  <div className="aspect-[4/3] w-full overflow-hidden rounded-2xl bg-zinc-100 dark:bg-zinc-800">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    {item.photos[0] ? <img src={item.photos[0]} alt={item.title} className="size-full object-cover hover:scale-105 transition-transform duration-300" /> : <span className="flex size-full items-center justify-center text-xs text-zinc-500">No photo</span>}
-                  </div>
-                  <div className="space-y-0.5 text-xs">
-                    <p className="text-[#717171] text-[11px] font-medium">{item.listingType || item.propertyType || "Property"}</p>
-                    <p className="truncate font-semibold text-[#222222] dark:text-white text-xs leading-snug" title={item.title}>
-                      {item.title}
-                    </p>
-                    <p className="text-[#222222] dark:text-zinc-300 text-xs">
-                      {item.rating !== null ? `★ ${item.rating.toFixed(2)} · ` : ""}{item.reviewCount} reviews
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
           </>}
         </div>
       )}
@@ -782,7 +780,7 @@ export function HostAboutHostView({
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={hostImage} alt={hostName} className="size-full object-cover" />
                 ) : (
-                  <span className="text-5xl font-bold text-[#E03A3A] select-none">
+                  <span className="text-5xl font-medium text-[#E03A3A] select-none">
                     {getInitials(hostName)}
                   </span>
                 )}
@@ -1009,7 +1007,7 @@ export function HostAboutHostView({
 
             {/* Header */}
             <div className="mt-2 shrink-0">
-              <h3 className="text-2xl sm:text-[26px] font-bold text-[#222222] dark:text-white leading-tight">
+              <h3 className="text-2xl sm:text-[26px] font-medium text-[#222222] dark:text-white leading-tight">
                 About you
               </h3>
               <p className="mt-2 text-sm text-[#717171] leading-relaxed">
@@ -1066,7 +1064,7 @@ export function HostAboutHostView({
               >
                 <CloseIcon className="size-4" />
               </button>
-              <h3 className="mt-2 text-2xl font-bold text-[#1F1F1F] dark:text-white leading-tight">
+              <h3 className="mt-2 text-2xl font-medium text-[#1F1F1F] dark:text-white leading-tight">
                 What are you into?
               </h3>
               <p className="mt-1.5 text-xs sm:text-sm text-[#727272] leading-relaxed">
@@ -1097,11 +1095,10 @@ export function HostAboutHostView({
                           setInterestDraft([...interestDraft, opt.label]);
                         }
                       }}
-                      className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs sm:text-sm font-medium transition-all cursor-pointer ${
-                        isSelected
+                      className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs sm:text-sm font-medium transition-all cursor-pointer ${isSelected
                           ? "border-[#1F1F1F] bg-[#1F1F1F] text-white shadow-xs dark:border-white dark:bg-white dark:text-zinc-950 font-semibold"
                           : "border-zinc-300 bg-white text-zinc-800 hover:border-zinc-400 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
-                      }`}
+                        }`}
                     >
                       <span className="text-base select-none">{opt.icon}</span>
                       <span>{opt.label}</span>

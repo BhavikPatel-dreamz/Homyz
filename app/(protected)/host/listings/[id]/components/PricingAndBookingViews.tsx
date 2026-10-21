@@ -311,7 +311,7 @@ export function PricingAndBookingViews({
                               onClick={() => setWeekendPremium?.((weekendPremium || 0) - 1)}
                               className="group flex size-8 items-center justify-center rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 text-lg font-normal text-[#1F1F1F] dark:text-zinc-100 hover:text-white hover:bg-[#1F1F1F] dark:hover:bg-zinc-700 dark:hover:border-zinc-600 transition-colors duration-300 cursor-pointer"
                             >
-                              <Image src="/images/icons/minus-icon.svg" alt="Decrease weekend premium" width={14} height={14} className="size-3.5 object-contain dark:invert group-hover:invert" />
+                              <Image src="/images/icons/minus-icon.svg" alt="Decrease weekend premium" width={14} height={14} className="size-4 object-contain dark:invert group-hover:invert" />
                             </button>
                             <button
                               type="button"
@@ -319,7 +319,7 @@ export function PricingAndBookingViews({
                               onClick={() => setWeekendPremium?.((weekendPremium || 0) + 1)}
                               className="group ml-auto flex size-8 items-center justify-center rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 text-lg font-normal text-[#1F1F1F] dark:text-zinc-100 hover:text-white hover:bg-[#1F1F1F] dark:hover:bg-zinc-700 dark:hover:border-zinc-600 transition-colors duration-300 cursor-pointer"
                             >
-                              <Image src="/images/icons/Plus.svg" alt="Increase weekend premium" width={14} height={14} className="size-3.5 object-contain dark:invert group-hover:invert" />
+                              <Image src="/images/icons/Plus.svg" alt="Increase weekend premium" width={14} height={14} className="size-4 object-contain dark:invert group-hover:invert" />
                             </button>
                           </div>
                         </div>

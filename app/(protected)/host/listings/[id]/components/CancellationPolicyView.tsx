@@ -254,7 +254,7 @@ export function CancellationPolicyView({
             <div className="flex items-end justify-between gap-4 py-4">
               <div>
                 <p className="text-base text-[#727272] dark:text-zinc-300">{t("host_your_policy", "Your policy")}</p>
-                  <p className="mt-1 sm:text-lg text-base sm:font-semibold font-normal text-[#1F1F1F] dark:text-zinc-100">
+                  <p className="mt-1 sm:text-lg text-base sm:font-medium font-normal text-[#1F1F1F] dark:text-zinc-100">
                   {cancellationPolicyLabel(cancellationPolicy, t)}
                 </p>
               </div>
@@ -356,7 +356,7 @@ export function CancellationPolicyView({
             <div className="flex items-end justify-between gap-4 pt-4">
               <div>
                 <p className="text-base text-[#727272] dark:text-zinc-300">{t("host_your_policy", "Your policy")}</p>
-                <p className="mt-1 sm:text-lg text-base sm:font-semibold font-normal text-[#1F1F1F] dark:text-zinc-100">
+                <p className="mt-1 sm:text-lg text-base sm:font-medium font-normal text-[#1F1F1F] dark:text-zinc-100">
                   {longTermCancellationPolicy === "STRICT" ? t("host_strict_long_term") : t("host_firm_long_term")}
                 </p>
               </div>
