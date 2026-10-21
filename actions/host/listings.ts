@@ -13,6 +13,7 @@ import {
   bulkAvailabilitySchema,
 } from "@/lib/validation/listing";
 import { listingService } from "@/services/listing.service";
+import { saudiLicenseService } from "@/services/saudi-license.service";
 import { Role } from "@/generated/prisma/enums";
 
 export async function createListingAction(input: unknown) {
@@ -133,6 +134,32 @@ export async function resubmitListingForReviewAction(id: string) {
     const listing = await listingService.resubmitForReview(actor, id);
     revalidatePath("/host/listings");
     revalidatePath(`/host/listings/${id}`);
+    return listing;
+  });
+}
+
+export async function verifySaudiLicenseAction(listingId: string, licenseNumber: string) {
+  return runAction(async () => {
+    const actor = await getSessionUser();
+    if (!actor) throw AppError.unauthorized();
+    const result = await saudiLicenseService.verifyForListing(actor, listingId, licenseNumber);
+    revalidatePath(`/host/listings/${listingId}`);
+    return result;
+  });
+}
+
+export async function submitListingFinalApprovalAction(
+  listingId: string,
+  method: "automatic" | "manual",
+) {
+  return runAction(async () => {
+    const actor = await getSessionUser();
+    if (!actor) throw AppError.unauthorized();
+    const listing = await saudiLicenseService.submitFinal(actor, listingId, method);
+    revalidatePath("/");
+    revalidatePath("/listings");
+    revalidatePath("/host/listings");
+    revalidatePath(`/host/listings/${listingId}`);
     return listing;
   });
 }

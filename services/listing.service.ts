@@ -108,8 +108,25 @@ const REAPPROVAL_FIELDS = new Set<keyof UpdateListingInput>([
   "cleaningFee", "securityDeposit", "weekendPrice", "weekendPremium", "discounts",
 ]);
 
-function requiresReapproval(input: UpdateListingInput): boolean {
-  return Object.keys(input).some((key) => REAPPROVAL_FIELDS.has(key as keyof UpdateListingInput));
+function valuesMatchForReapproval(current: unknown, next: unknown): boolean {
+  if (current === next) return true;
+  if (current instanceof Date || next instanceof Date) {
+    const currentTime = current instanceof Date ? current.getTime() : new Date(String(current)).getTime();
+    const nextTime = next instanceof Date ? next.getTime() : new Date(String(next)).getTime();
+    return !Number.isNaN(currentTime) && currentTime === nextTime;
+  }
+  if (typeof current === "object" && current !== null && typeof next === "object" && next !== null) {
+    return JSON.stringify(current) === JSON.stringify(next);
+  }
+  return false;
+}
+
+function requiresReapproval(existing: Listing, input: UpdateListingInput): boolean {
+  return Object.entries(input).some(([key, next]) => {
+    if (next === undefined || !REAPPROVAL_FIELDS.has(key as keyof UpdateListingInput)) return false;
+    const current = (existing as unknown as Record<string, unknown>)[key];
+    return !valuesMatchForReapproval(current, next);
+  });
 }
 
 function isSaudiArabia(country: string | null | undefined): boolean {
@@ -1781,8 +1798,7 @@ async function update(
   // The listing is held for the same Admin review that governs initial launch.
   const reapprovalRequired = actor.role !== Role.ADMIN
     && existing.status === ListingStatus.ACTIVE
-    && !isSaudiArabia(dataToUpdate.country ?? existing.country)
-    && requiresReapproval(dataToUpdate);
+    && requiresReapproval(existing, dataToUpdate);
   if (reapprovalRequired) {
     dataToUpdate.status = ListingStatus.PENDING_REVIEW;
     dataToUpdate.published = false;
@@ -1977,10 +1993,18 @@ async function publishListing(actor: AuthUser, id: string): Promise<ListingDTO> 
     await assertHostPermission(actor.id, "listing.edit");
   }
 
-  // Admin, Saudi Arabia listings, or approved/active listings can publish directly when complete.
+  // An existing Saudi licence link is a legal eligibility constraint, not a
+  // replacement for normal moderation.  Check it synchronously so a listing
+  // cannot be republished in the gap before the expiry job next runs. Listings
+  // without a licence link can still follow the normal manual-review path.
+  if (isSaudiArabia(existing.country) && ["EXPIRED", "INELIGIBLE"].includes(existing.licenseEligibilityStatus)) {
+    throw AppError.badRequest("This Saudi listing has an expired or ineligible license and cannot be published until it is reverified.");
+  }
+
+  // Direct publishing is reserved for admins and listings already approved
+  // through the lifecycle. Saudi location alone is never approval evidence.
   if (
     actor.role === Role.ADMIN ||
-    isSaudiArabia(existing.country) ||
     existing.status === ListingStatus.APPROVED ||
     existing.status === ListingStatus.ACTIVE ||
     Boolean(existing.approvedAt)
@@ -2015,7 +2039,7 @@ async function publishListing(actor: AuthUser, id: string): Promise<ListingDTO> 
       description: `${actor.role === Role.ADMIN ? "Admin" : "Host"} published listing "${updated.title}"`,
       metadata: {
         country: existing.country,
-        bypassAdminApproval: isSaudiArabia(existing.country) || actor.role === Role.ADMIN,
+        bypassAdminApproval: actor.role === Role.ADMIN,
       },
     });
 

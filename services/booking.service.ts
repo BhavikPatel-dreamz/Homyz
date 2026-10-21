@@ -191,7 +191,7 @@ export async function getBookingQuote(opts: {
         include: { taxes: { where: { isActive: true } } },
       });
 
-  if (!listing || !listing.published || listing.status !== ListingStatus.ACTIVE || listing.isPaused) {
+  if (!listing || !listing.published || listing.status !== ListingStatus.ACTIVE || listing.isPaused || listing.licenseEligibilityStatus === "EXPIRED") {
     throw AppError.notFound("Listing is not available or does not exist");
   }
 
@@ -513,7 +513,7 @@ async function create(
         where: { id: input.listingId },
         include: { taxes: { where: { isActive: true } } },
       });
-  if (!listing || !listing.published || listing.status !== ListingStatus.ACTIVE || listing.isPaused) {
+  if (!listing || !listing.published || listing.status !== ListingStatus.ACTIVE || listing.isPaused || listing.licenseEligibilityStatus === "EXPIRED") {
     throw AppError.notFound("Listing is not available or does not exist");
   }
 
@@ -630,10 +630,11 @@ async function create(
         published: true,
         status: true,
         isPaused: true,
+        licenseEligibilityStatus: true,
         deletedAt: true,
       },
     });
-    if (!currentListing || !currentListing.published || currentListing.status !== ListingStatus.ACTIVE || currentListing.isPaused || currentListing.deletedAt) {
+    if (!currentListing || !currentListing.published || currentListing.status !== ListingStatus.ACTIVE || currentListing.isPaused || currentListing.licenseEligibilityStatus === "EXPIRED" || currentListing.deletedAt) {
       throw AppError.conflict("This listing is no longer available");
     }
     if (currentListing.updatedAt.getTime() !== listing.updatedAt.getTime()) {
@@ -1196,7 +1197,7 @@ async function acceptBookingRequest(
       );
     }
 
-    if (!booking.listing.published || booking.listing.status !== ListingStatus.ACTIVE || booking.listing.isPaused) {
+    if (!booking.listing.published || booking.listing.status !== ListingStatus.ACTIVE || booking.listing.isPaused || booking.listing.licenseEligibilityStatus === "EXPIRED") {
       throw new AppError(
         ErrorCode.PROPERTY_NOT_AVAILABLE,
         "This property is no longer available for booking.",

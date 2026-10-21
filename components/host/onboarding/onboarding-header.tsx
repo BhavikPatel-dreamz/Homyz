@@ -6,10 +6,11 @@ import { LoadingIcon } from "@/components/ui/loading-icon";
 interface OnboardingHeaderProps {
   onSaveAndExit: () => void;
   isSaving?: boolean;
+  disabled?: boolean;
 }
 
 /** A focused header for the listing wizard, intentionally separate from host navigation. */
-export function OnboardingHeader({ onSaveAndExit, isSaving = false }: OnboardingHeaderProps) {
+export function OnboardingHeader({ onSaveAndExit, isSaving = false, disabled = false }: OnboardingHeaderProps) {
   return (
     <header className="flex h-20 shrink-0 items-center justify-between px-6 sm:h-24 sm:px-10 lg:px-16">
       <Image
@@ -33,7 +34,7 @@ export function OnboardingHeader({ onSaveAndExit, isSaving = false }: Onboarding
         <button
           type="button"
           onClick={onSaveAndExit}
-          disabled={isSaving}
+          disabled={disabled || isSaving}
           className="inline-flex min-h-11 items-center justify-center rounded-full border border-zinc-300 px-4 text-sm font-semibold text-[#1F1F1F] transition-colors hover:border-[#1F1F1F] hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60 sm:px-5"
         >
           {isSaving && <LoadingIcon className="mr-2 size-4 animate-spin" />}

@@ -146,6 +146,46 @@ enum ListingStatus {
   ACTIVE
 }
 
+// Saudi tourism licence lifecycle. These records are intentionally separate
+// from ListingStatus so manual approval and legal eligibility cannot drift.
+enum PropertyLicenseStatus {
+  PENDING
+  ACTIVE
+  EXPIRED
+  REVOKED
+  SUSPENDED
+  INVALID
+  UNKNOWN
+  UNAVAILABLE
+}
+
+enum LicenseAuthorizationStatus {
+  PENDING
+  AUTHORIZED
+  REJECTED
+  REVOKED
+}
+
+enum ListingLicenseEligibilityStatus {
+  NOT_REQUIRED
+  PENDING
+  ELIGIBLE
+  INELIGIBLE
+  EXPIRED
+  AUTHORIZATION_REQUIRED
+  PROVIDER_UNAVAILABLE
+}
+
+enum ListingApprovalMethod {
+  MANUAL_REVIEW
+  SAUDI_LICENSE_AUTOMATIC
+}
+
+enum LicenseVerificationSource {
+  SANDBOX
+  SAUDI_GOVERNMENT
+}
+
 enum HostingType {
   HOME
   EXPERIENCE
@@ -377,6 +417,9 @@ model User {
   publishedCmsPublications        CmsPublication[]           @relation("CmsPublishedBy")
   uploadedCmsMedia                CmsMediaAsset[]            @relation("CmsMediaUploaded")
   createdCmsScheduledActions      CmsScheduledAction[]       @relation("CmsScheduleCreated")
+  licenseOwnerships               LicenseOwnership[]         @relation("LicenseOwnershipHost")
+  verifiedLicenseOwnerships       LicenseOwnership[]         @relation("LicenseOwnershipVerifier")
+  licenseVerificationHistory      LicenseVerificationHistory[] @relation("LicenseVerificationHost")
 
   @@index([role])
   @@index([adminRoleId])
@@ -710,6 +753,13 @@ model Listing {
   approvedAt       DateTime?
   approvedById     String?
 
+  // Saudi licensing. The reusable licence relationship itself is modeled
+  // below so a licence can only support an authorized host's properties.
+  licenseEligibilityStatus ListingLicenseEligibilityStatus @default(NOT_REQUIRED)
+  approvalMethod           ListingApprovalMethod?
+  licenseUnlistedAt        DateTime?
+  licenseUnlistingReason   String? @db.Text
+
   deletedAt     DateTime?
   removalReason Json?
 
@@ -728,6 +778,8 @@ model Listing {
   specialOffers            SpecialOffer[]
   guestFavoriteEvaluations GuestFavoriteEvaluation[]
   qualityIncidents         ListingQualityIncident[]
+  propertyLicenseLink      PropertyLicenseLink?
+  licenseVerificationHistory LicenseVerificationHistory[]
 
   @@index([hostId])
   @@index([published])
@@ -739,6 +791,92 @@ model Listing {
   @@index([guests])
   @@index([status, published, isPaused, deletedAt])
   @@index([isGuestFavorite])
+  @@index([licenseEligibilityStatus])
+}
+
+model PropertyLicense {
+  id                  String                    @id @default(cuid())
+  licenseNumber       String
+  countryCode         String                    @default("SA")
+  licenseCategory     String?
+  facilityName        String?
+  verifiedEntity      String?
+  status              PropertyLicenseStatus     @default(PENDING)
+  issueDate           DateTime?                 @db.Date
+  expiryDate          DateTime?                 @db.Date
+  verificationSource  LicenseVerificationSource
+  verificationMethod  String?
+  lastVerifiedAt      DateTime?
+  lastAttemptedAt     DateTime?
+  nextVerificationAt  DateTime?
+  verificationError   String?                   @db.Text
+  createdAt           DateTime                  @default(now())
+  updatedAt           DateTime                  @updatedAt
+
+  ownerships          LicenseOwnership[]
+  listingLinks        PropertyLicenseLink[]
+  verificationHistory LicenseVerificationHistory[]
+
+  @@unique([licenseNumber, countryCode])
+  @@index([status, nextVerificationAt])
+  @@index([expiryDate])
+}
+
+model LicenseOwnership {
+  id                  String                     @id @default(cuid())
+  licenseId           String
+  hostId              String
+  authorizationStatus LicenseAuthorizationStatus @default(PENDING)
+  authorizationMethod String?
+  evidenceReference   String?
+  verifiedById        String?
+  verifiedAt          DateTime?
+  revokedAt           DateTime?
+  createdAt           DateTime                   @default(now())
+  updatedAt           DateTime                   @updatedAt
+
+  license             PropertyLicense @relation(fields: [licenseId], references: [id], onDelete: Cascade)
+  host                User            @relation("LicenseOwnershipHost", fields: [hostId], references: [id], onDelete: Cascade)
+  verifiedBy          User?           @relation("LicenseOwnershipVerifier", fields: [verifiedById], references: [id], onDelete: SetNull)
+
+  @@unique([licenseId, hostId])
+  @@index([hostId, authorizationStatus])
+}
+
+model PropertyLicenseLink {
+  id                String                           @id @default(cuid())
+  listingId         String                           @unique
+  licenseId         String
+  eligibilityStatus ListingLicenseEligibilityStatus @default(PENDING)
+  linkedAt          DateTime                         @default(now())
+  updatedAt         DateTime                         @updatedAt
+
+  listing           Listing         @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  license           PropertyLicense @relation(fields: [licenseId], references: [id], onDelete: Restrict)
+
+  @@index([licenseId, eligibilityStatus])
+}
+
+model LicenseVerificationHistory {
+  id                     String                    @id @default(cuid())
+  licenseId              String
+  hostId                 String
+  listingId              String?
+  previousStatus         PropertyLicenseStatus?
+  newStatus              PropertyLicenseStatus
+  providerResultCategory String
+  errorReason            String?                   @db.Text
+  requestId              String?
+  metadata               Json?
+  createdAt              DateTime                  @default(now())
+
+  license                PropertyLicense @relation(fields: [licenseId], references: [id], onDelete: Cascade)
+  host                   User            @relation("LicenseVerificationHost", fields: [hostId], references: [id], onDelete: Cascade)
+  listing                Listing?        @relation(fields: [listingId], references: [id], onDelete: SetNull)
+
+  @@index([licenseId, createdAt])
+  @@index([hostId, createdAt])
+  @@index([listingId, createdAt])
 }
 
 model GuestFavoriteEvaluation {

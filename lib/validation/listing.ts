@@ -4,7 +4,7 @@ import { PHOTO_ROOM_TYPES } from "@/lib/listing/photo-room-assignments";
 
 export const HOSTING_TYPES = ["HOME", "EXPERIENCE", "SERVICE"] as const;
 export const LISTING_TYPES = ["ENTIRE_PLACE", "ROOM", "SHARED_ROOM"] as const;
-export const MAX_ONBOARDING_STEP = 19;
+export const MAX_ONBOARDING_STEP = 21;
 export const LOCATION_FEATURE_IDS = [
   "near_public_transport",
   "near_landmarks",

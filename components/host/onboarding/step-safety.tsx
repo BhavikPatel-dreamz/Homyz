@@ -105,7 +105,7 @@ export function StepSafety({
             onBack={onBack}
             onNext={onNext}
             isLoading={isLoading}
-            nextLabel={t("host_save")}
+            nextLabel={t("host_next")}
           />
     </OnboardingStepLayout>
   );

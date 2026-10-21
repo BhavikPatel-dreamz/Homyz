@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { jobQueueService } from "@/services/job-queue.service";
+import { saudiLicenseService } from "@/services/saudi-license.service";
 
 function validateCronSecret(req: Request): boolean {
   const configuredSecret = process.env.CRON_SECRET?.trim();
@@ -71,8 +72,9 @@ export async function POST(req: Request) {
     }),
   ]);
 
-  // 2. Process batch of due jobs and CMS scheduled publish/unpublish actions
-  const [batchResult, cmsScheduleResult] = await Promise.all([
+  // 2. Process batch of due jobs, CMS actions, and Saudi licence expiry.
+  // Expiry is independently safe to re-run and has a distributed lease.
+  const [batchResult, cmsScheduleResult, licenseExpiryResult] = await Promise.all([
     jobQueueService.runBatch({ batchSize: 20 }),
     (async () => {
       try {
@@ -83,6 +85,10 @@ export async function POST(req: Request) {
         return { totalProcessed: 0, succeeded: 0, failed: 0, actions: [] };
       }
     })(),
+    saudiLicenseService.enforceExpiry().catch((err) => {
+      console.warn("[cron] Saudi license expiry execution warning:", err);
+      return { checked: 0, unlisted: 0, skipped: false };
+    }),
   ]);
   const stats = await jobQueueService.getQueueStats();
 
@@ -96,6 +102,8 @@ export async function POST(req: Request) {
     durationMs: batchResult.durationMs,
     cmsScheduledProcessed: cmsScheduleResult.totalProcessed,
     cmsScheduledSucceeded: cmsScheduleResult.succeeded,
+    saudiLicensesChecked: licenseExpiryResult.checked,
+    saudiListingsUnlisted: licenseExpiryResult.unlisted,
     jobs: batchResult.jobs,
     queueStats: stats,
   });
