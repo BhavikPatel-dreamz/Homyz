@@ -218,7 +218,7 @@ export function CancellationPolicyView({
   };
 
   return (
-    <div className="w-full max-w-[880px] space-y-8 pb-16 font-sans animate-in fade-in">
+    <div className="w-full max-w-[880px] mx-auto space-y-8 pb-16 font-sans animate-in fade-in">
       {/* Header */}
       <div className="space-y-1.5">
         <div className="flex items-center gap-6">

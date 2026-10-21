@@ -298,7 +298,7 @@ export function HouseRulesAndArrivalViews({
       {/* VIEW: HOUSE RULES (Professional Airbnb-Style Structured) */}
       {/* --------------------------------------------------------- */}
       {activeSection === "house-rules" && (
-        <div className="max-w-3xl space-y-6 pb-10 font-sans animate-in fade-in">
+        <div className="max-w-3xl mx-auto space-y-6 pb-10 font-sans animate-in fade-in">
           {/* Header & Subtitle */}
           <div className="space-y-2">
             <div className="flex items-center gap-6">
@@ -727,7 +727,7 @@ export function HouseRulesAndArrivalViews({
       {/* VIEW: PARKING INSTRUCTIONS & CONFIGURATION */}
       {/* --------------------------------------------------------- */}
       {activeSection === "parking" && (
-        <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
+        <div className="space-y-6 animate-in fade-in w-full max-w-xl pb-10 font-sans mx-auto">
           <div className="flex items-start gap-6">
             <BackButton onClick={() => setActiveSection("arrival-guide")} className="mt-2" />
             <div>
@@ -973,7 +973,7 @@ export function HouseRulesAndArrivalViews({
       {/* VIEW: WIFI DETAILS (Matches Figma Screenshot 100%) */}
       {/* --------------------------------------------------------- */}
       {activeSection === "wifi-details" && (
-        <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
+        <div className="space-y-6 animate-in fade-in w-full max-w-xl pb-10 font-sans mx-auto">
           <div className="flex items-center gap-6">
             <BackButton onClick={() => setActiveSection("check-in-out")} />
             <h1>{t("host_wifi_details") || "Wifi details"}</h1>
@@ -1020,7 +1020,7 @@ export function HouseRulesAndArrivalViews({
       {/* VIEW: HOUSE MANUAL */}
       {/* --------------------------------------------------------- */}
       {activeSection === "house-manual" && (
-        <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
+        <div className="space-y-6 animate-in fade-in w-full max-w-xl pb-10 font-sans mx-auto">
           <div className="flex items-start gap-6">
             <BackButton onClick={() => setActiveSection("check-in-out")} className="mt-2" />
             <div>
@@ -1249,7 +1249,7 @@ function CheckOutInstructionsView({
   const formattedCheckOut = formatTimeDisplay(checkOutTime, "11:00 AM");
 
   return (
-    <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
+    <div className="space-y-6 animate-in fade-in w-full max-w-xl pb-10 font-sans mx-auto">
       {/* Header & Back Button */}
       <div className="flex items-start gap-6">
         <BackButton onClick={() => setActiveSection("arrival-guide")} className="mt-2" />
@@ -1506,7 +1506,7 @@ function GuidebooksView({
   ]);
 
   return (
-    <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
+    <div className="space-y-6 animate-in fade-in w-full max-w-xl pb-10 font-sans mx-auto">
       {/* Header & Back Button & Plus Circle Icon (Matches Figma Screenshot 100%) */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-6">
@@ -1752,7 +1752,7 @@ function LanguagesView({
   );
 
   return (
-    <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
+    <div className="space-y-6 animate-in fade-in w-full max-w-xl pb-10 font-sans mx-auto">
       {/* Header & Back Button */}
       <div className="flex items-center gap-6">
         <BackButton onClick={() => setActiveSection("arrival-guide")} />
@@ -2045,7 +2045,7 @@ function CheckInCheckOutView({
   const timesList = [...ALL_HOURS_OPTIONS, "Flexible"];
 
   return (
-    <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
+    <div className="space-y-6 animate-in fade-in w-full max-w-xl pb-10 font-sans mx-auto">
       {/* Header & Back Button */}
       <div className="flex items-center gap-6">
         <BackButton onClick={() => setActiveSection("house-rules")} />
@@ -2211,7 +2211,7 @@ function DirectionsView({
   const { t } = useLanguage();
 
   return (
-    <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
+    <div className="space-y-6 animate-in fade-in w-full max-w-xl pb-10 font-sans mx-auto">
       {/* Header & Back Button */}
       <div className="space-y-1">
         <div className="flex items-start gap-6">
@@ -2540,7 +2540,7 @@ function CheckInMethodView({
   const selectedDetailMethod = checkInMethodsData.find((m) => m.id === selectedMethodId);
 
   return (
-    <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
+    <div className="space-y-6 animate-in fade-in w-full max-w-xl pb-10 font-sans mx-auto">
       {/* Header & Back Button */}
       <div className="flex items-center gap-6">
         <BackButton onClick={() => setActiveSection("check-in-out")} />
@@ -3006,7 +3006,7 @@ function RegulationsView({
   }
 
   return (
-    <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
+    <div className="space-y-6 animate-in fade-in w-full max-w-xl pb-10 font-sans mx-auto">
       {/* Header & Back Button */}
       <div className="flex items-center gap-6">
         <BackButton onClick={() => setActiveSection("description")} />
@@ -3055,7 +3055,7 @@ function TaxesView({
   const [isSaved, setIsSaved] = React.useState(false);
 
   return (
-    <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
+    <div className="space-y-6 animate-in fade-in w-full max-w-xl pb-10 font-sans mx-auto">
       <div className="flex items-center gap-6">
         <BackButton onClick={() => setActiveSection("description")} />
         <h1>Taxes</h1>
@@ -3113,7 +3113,7 @@ function HomyzStaysView({
   const [isSaved, setIsSaved] = React.useState(false);
 
   return (
-    <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
+    <div className="space-y-6 animate-in fade-in w-full max-w-xl pb-10 font-sans mx-auto">
       <div className="flex items-center gap-6">
         <BackButton onClick={() => setActiveSection("description")} />
         <h1>Homyz.com stays</h1>

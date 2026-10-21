@@ -42,7 +42,7 @@ function ExpandControl({
     >
       <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 transition-colors dark:hover:bg-zinc-800/70 [&::-webkit-details-marker]:hidden">
         <div className="min-w-0 flex-1">
-          <span className="block text-sm font-medium text-[#1f1f1f] dark:text-zinc-100">
+          <span className="block text-base font-normal text-[#1f1f1f] dark:text-zinc-100">
             {title}
           </span>
           {subtitle && (

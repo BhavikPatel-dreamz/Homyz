@@ -436,7 +436,7 @@ export function PropertyDetailsViews({
       {/* VIEW 1: DESCRIPTION */}
       {/* --------------------------------------------------------- */}
       {activeSection === "description" && (
-        <div className="w-full max-w-full space-y-6 animate-in fade-in sm:pb-10 font-sans lg:max-w-[calc(100%-75px)]">
+        <div className="w-full max-w-full space-y-6 animate-in fade-in sm:pb-10 font-sans lg:max-w-[calc(100%-75px)] mx-auto">
           {/* Header & Back Button */}
           <div className="sm:space-y-1.5 space-y-3">
             <div className="flex items-start gap-6">
@@ -680,7 +680,7 @@ export function PropertyDetailsViews({
       {/* VIEW 4: TITLE */}
       {/* --------------------------------------------------------- */}
       {activeSection === "title" && (
-        <div className="w-full max-w-xl space-y-6 animate-in fade-in pb-10">
+        <div className="w-full max-w-xl space-y-6 animate-in fade-in pb-10 mx-auto">
           <div className="flex min-w-0 items-center gap-4 sm:gap-6">
             <BackButton onClick={() => setActiveSection("description")} />
             <h1 className="min-w-0">{t("host_listing_title")}</h1>
@@ -1064,7 +1064,7 @@ export function PropertyDetailsViews({
         <div className={activeSection === "guests" ? "w-full max-w-none animate-in fade-in pb-6 font-sans" : "w-full animate-in fade-in pb-10 font-sans"}>
           {/* Header */}
           <div className={activeSection === "guests" ? "hidden" : "space-y-1"}>
-            <div className="flex items-start gap-6 max-w-[491px]">
+            <div className="flex items-start gap-6 max-w-[491px] mx-auto">
               <BackButton onClick={() => setActiveSection("propertyType")} className="mt-2" />
               <div className="space-y-1.5">
                 <h1>{activeSection === "guests" ? t("host_number_of_guests") : t("host_sleeping_arrangements_title")}</h1>
@@ -1082,9 +1082,9 @@ export function PropertyDetailsViews({
               <GuestsSkeleton />
             )
           ) : (
-            <div className="space-y-6 pt-12">
+              <div className="space-y-6 pt-12 max-w-[491px] mx-auto">
               {/* Section 1: Guest Capacity Counter */}
-              <div className={`Guest-Capacity-Counter max-w-[491px] ${activeSection === "guests" ? "mx-auto" : ""}`}>
+              <div className={`Guest-Capacity-Counter  ${activeSection === "guests" ? "" : ""}`}>
                 <div className={`${activeSection === "guests" ? "flex min-h-[500px] flex-col items-center justify-center gap-9 pb-14" : "space-y-4 rounded-md border border-[#DDDDDE] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4"}`}>
                   {activeSection === "guests" && (
                     <p className="max-w-[320px] text-center text-xl font-normal leading-7 text-[#727272] dark:text-zinc-300">
@@ -1173,7 +1173,7 @@ export function PropertyDetailsViews({
               </div>
 
               {/* Section 2: Room-Level Sleeping Arrangements */}
-              {activeSection !== "guests" && <div className="max-w-[491px] space-y-4">
+              {activeSection !== "guests" && <div className="space-y-4">
                 <div className="flex sm:flex-row flex-col sm:items-center items-start justify-between gap-6">
                   <div>
                     <h3 className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">{t("host_room_by_room_arrangements")}</h3>
@@ -1342,7 +1342,7 @@ export function PropertyDetailsViews({
               </div>}
 
               {/* Section 3: Bathroom Breakdown */}
-              {activeSection !== "guests" && <div className="max-w-[491px] rounded-md border border-[#DDDDDE] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4 space-y-4">
+              {activeSection !== "guests" && <div className="rounded-md border border-[#DDDDDE] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4 space-y-4">
                 <div>
                   <h3 className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">{t("host_bathroom_breakdown")}</h3>
                   <p className="text-[14px] font-normal text-[#727272] dark:text-[#727272]">{t("host_bathroom_breakdown_desc")}</p>
@@ -1451,12 +1451,12 @@ export function PropertyDetailsViews({
               </div>}
 
               {/* Save Button */}
-              <div className={`${activeSection === "guests" ? "pt-2 text-center" : "pt-2"}`}>
+              <div className={`${activeSection === "guests" ? "pt-2 text-center " : "pt-2"}`}>
                 <button
                   type="button"
                   disabled={isSaving}
                   onClick={() => handleSaveSection("guests")}
-                  className={`${activeSection === "guests" ? "w-full sm:w-auto sm:min-w-[136px]" : ""} rounded-full bg-[#FCDF9C] dark:bg-amber-400 hover:bg-[#1F1F1F] dark:hover:bg-zinc-700 text-[#1F1F1F] dark:text-zinc-950 hover:text-white dark:hover:text-white font-medium text-sm px-8 py-3.5 shadow-2xs transition-all duration-300 cursor-pointer`}
+                    className={`${activeSection === "guests" ? "w-full sm:w-auto sm:min-w-[136px]" : ""} rounded-full bg-[#FCDF9C] dark:bg-amber-400 hover:bg-[#1F1F1F] dark:hover:bg-zinc-700 text-[#1F1F1F] dark:text-zinc-950 hover:text-white dark:hover:text-white font-medium text-sm px-8 py-3.5 shadow-2xs transition-all duration-300 cursor-pointer ml-auto`}
                 >
                   {isSaving ? t("host_saving") : t("host_save")}
                 </button>
@@ -1550,7 +1550,7 @@ export function PropertyDetailsViews({
         };
 
         return (
-          <div className="w-full sm:max-w-[calc(100%-75px)] space-y-5 animate-in fade-in font-sans">
+          <div className="w-full sm:max-w-[calc(100%-75px)] mx-auto space-y-5 animate-in fade-in font-sans">
             {/* Header */}
             <div className="flex sm:flex-row flex-col sm:gap-0 gap-5 sm:items-center items-start justify-between">
               <div className="space-y-1">
@@ -1805,7 +1805,7 @@ export function PropertyDetailsViews({
       {/* VIEW 2: ACCESSIBILITY FEATURES */}
       {/* --------------------------------------------------------- */}
       {activeSection === "accessibility" && (
-        <div className="w-full max-w-full space-y-6 animate-in fade-in sm:pb-10 font-sans lg:max-w-[calc(100%-75px)]">
+        <div className="w-full max-w-full space-y-6 animate-in fade-in sm:pb-10 font-sans lg:max-w-[calc(100%-75px)] mx-auto">
           {/* Header */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-6">

@@ -321,7 +321,7 @@ export function GuestsSafetyView({
       {/* --------------------------------------------------------- */}
       {/* MAIN VIEW: GUEST SAFETY 3 CATEGORY ROWS */}
       {/* --------------------------------------------------------- */}
-      <div className="space-y-6 animate-in fade-in max-w-xl pb-12 font-sans">
+      <div className="space-y-6 animate-in fade-in max-w-xl mx-auto pb-12 font-sans">
         {/* Header with Back Button */}
         <div className="space-y-2 border-b border-zinc-200/80 dark:border-zinc-800 pb-5">
           <div className="flex items-start gap-6">
