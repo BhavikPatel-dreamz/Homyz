@@ -224,7 +224,7 @@ export function WorkspaceDialog({
   }, []);
   return (
     <ModalOverlay
-      className={`fixed inset-0 z-[100] flex ${dark ? "items-end sm:items-center" : variant === "listing-filter" || variant === "reservation-details" ? "items-stretch sm:items-center" : "items-center"} justify-center ${variant === "listing-filter" ? "bg-black/10 p-0 sm:p-6" : variant === "reservation-details" ? "bg-black/30 p-0 backdrop-blur-xs sm:p-4" : "bg-black/30 p-4 backdrop-blur-xs"}`}
+      className={`fixed inset-0 z-[100] flex ${dark ? "items-end sm:items-center" : variant === "listing-filter" || variant === "reservation-details" ? "items-stretch sm:items-center" : "items-center"} justify-center ${variant === "listing-filter" ? "bg-black/30 p-0 sm:p-6 backdrop-blur-xs" : variant === "reservation-details" ? "bg-black/30 p-0 backdrop-blur-xs sm:p-4" : "bg-black/30 p-4 backdrop-blur-xs"}`}
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}

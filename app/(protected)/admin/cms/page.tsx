@@ -410,7 +410,7 @@ export default function CmsManagementPage() {
 
       {/* Create Content Modal */}
       {showCreateModal && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <ModalOverlay className="fixed inset-0 z-999 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs animate-in fade-in">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl border border-zinc-200">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-bold text-zinc-900">Create New Content</h3>

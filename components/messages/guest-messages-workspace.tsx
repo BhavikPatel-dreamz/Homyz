@@ -675,7 +675,7 @@ export function GuestMessagesWorkspace({
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-1 mb-0.5">
-                        <span className={`text-sm truncate ${hasUnread ? "font-bold text-[#1F1F1F]" : "font-medium text-zinc-800"}`}>
+                        <span className={`text-sm truncate ${hasUnread ? "font-semibold text-[#1F1F1F]" : "font-medium text-zinc-800"}`}>
                           {conv.host.name || t("messages_guest_default_host_name")}
                         </span>
                         <span className="text-xs text-[#727272] shrink-0">

@@ -229,7 +229,7 @@ export const BookingSummary = memo(function BookingSummary({ state, actions, isB
       </aside>
 
       {isBreakdownOpen && pricing.quote && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={closeBreakdown}>
+        <ModalOverlay className="fixed inset-0 z-999 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs animate-in fade-in" onClick={closeBreakdown}>
           <section id="checkout-price-breakdown" role="dialog" aria-modal="true" aria-labelledby="checkout-price-breakdown-title" className="max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto rounded-[30px] bg-white p-6 shadow-lg" onClick={(event) => event.stopPropagation()} onKeyDown={(event) => { if (event.key === "Escape") closeBreakdown(); }}>
             <div className="flex items-center justify-between border-b border-[#727272] pb-4">
               <h2 id="checkout-price-breakdown-title" className="text-lg font-medium text-[#1f1f1f]">{t("book_price_breakdown", "Price breakdown")}</h2>

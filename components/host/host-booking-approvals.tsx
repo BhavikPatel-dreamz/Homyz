@@ -704,7 +704,7 @@ export function HostBookingApprovals({ bookings: initialBookings }: { bookings: 
 
       {/* BULK APPROVE MODAL */}
       {isBulkConfirmOpen && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <ModalOverlay className="fixed inset-0 z-999 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs animate-in fade-in">
           <div
             role="dialog"
             aria-modal="true"

@@ -643,7 +643,7 @@ function InlineLocationSearch({
             title="Clear location"
             aria-label="Clear location"
           >
-            <svg viewBox="0 0 10 10" className="w-2.5 h-2.5" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <svg viewBox="0 0 10 10" className="w-2.5 h-2.5" fill="none" stroke="currentColor" strokeWidth="1.5">
               <path d="M2 2l6 6M8 2l-6 6" />
             </svg>
           </button>
@@ -1540,7 +1540,7 @@ export function ProfileManagementClient({
               <button
                 type="submit"
                 disabled={pending || saveStatus === "saving"}
-                className={`inline-flex items-center justify-center gap-2 shrink-0 whitespace-nowrap rounded-full px-7 py-3 text-base font-medium transition-colors cursor-pointer ${
+                className={`inline-flex items-center justify-center gap-2 shrink-0 whitespace-nowrap rounded-full px-7 py-3 xl:text-base text-sm font-medium transition-colors cursor-pointer ${
                   saveStatus === "saving"
                     ? "bg-zinc-200 text-[#727272] cursor-not-allowed"
                     : saveStatus === "saved"

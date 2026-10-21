@@ -1557,7 +1557,7 @@ export function BookingCheckoutClient({
       {/* ======================================================== */}
       {isDatesModalOpen && (
         <ModalOverlay
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          className="fixed inset-0 z-999 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs animate-in fade-in"
           onClick={() => setIsDatesModalOpen(false)}
         >
           <div
@@ -1642,7 +1642,7 @@ export function BookingCheckoutClient({
       {/* ======================================================== */}
       {isGuestsModalOpen && (
         <ModalOverlay
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          className="fixed inset-0 z-999 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs animate-in fade-in"
           onClick={() => setIsGuestsModalOpen(false)}
         >
           <div
@@ -1788,7 +1788,7 @@ export function BookingCheckoutClient({
       {/* ======================================================== */}
       {isPolicyModalOpen && (
         <ModalOverlay
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          className="fixed inset-0 z-999 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs animate-in fade-in"
           onClick={() => setIsPolicyModalOpen(false)}
         >
           <div
