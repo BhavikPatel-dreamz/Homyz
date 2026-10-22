@@ -42,7 +42,7 @@ export function StepTitle({
         <OnboardingStepHeading
           title={t("host_title_step_title")}
           description={t("host_title_step_subtitle")}
-          titleClassName="sm:mb-5 mb-3"
+          titleClassName="mb-2"
           descriptionClassName="sm:mb-10 mb-8"
         />
 

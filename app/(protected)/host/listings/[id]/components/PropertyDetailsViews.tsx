@@ -818,7 +818,7 @@ export function PropertyDetailsViews({
                   <>
                     {/* 4. How many floors are in the building */}
                     <div className="flex sm:flex-row flex-col sm:items-center items-start justify-between gap-5">
-                      <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">{t("host_how_many_floors")}</label>
+                      <label className="text-base font-normal text-[#1f1f1f] dark:text-zinc-200">{t("host_how_many_floors")}</label>
                       <div className="flex items-center sm:gap-3 gap-1 min-w-[86px]">
                         <button
                           type="button"
@@ -840,7 +840,7 @@ export function PropertyDetailsViews({
 
                     {/* 5. Which floor is the listing on? */}
                     <div className="flex sm:flex-row flex-col sm:items-center items-start justify-between gap-5">
-                      <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">{t("host_which_floor")}</label>
+                      <label className="text-base font-normal text-[#1f1f1f] dark:text-zinc-200">{t("host_which_floor")}</label>
                       <div className="flex items-center sm:gap-3 gap-1 min-w-[86px]">
                         <button
                           type="button"
@@ -863,29 +863,45 @@ export function PropertyDetailsViews({
                     {/* Elevator Available */}
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
-                        <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">{t("host_elevator_available")}</label>
+                        <label className="text-base font-normal text-[#1f1f1f] dark:text-zinc-200">{t("host_elevator_available")}</label>
                         <p className="text-base text-[#727272] dark:text-[#727272] font-normal">{t("host_elevator_desc")}</p>
                       </div>
                       <div className="flex items-center gap-1.5">
                         <button
                           type="button"
                           onClick={() => setElevatorAvailable?.(false)}
-                          className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold cursor-pointer transition-all ${elevatorAvailable === false
-                            ? "bg-[#FCDF9C] dark:bg-amber-400 border-amber-300 dark:border-amber-400 text-zinc-950 shadow-2xs"
-                            : "bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
+                          aria-label="No"
+                          className={`group w-8 h-8 rounded-full border flex items-center justify-center cursor-pointer transition-all duration-300 ${elevatorAvailable === false
+                            ? "bg-[#FCDF9C] dark:bg-amber-400 border-[#FCDF9C] dark:border-amber-400 hover:bg-[#1f1f1f] hover:border-[#1f1f1f] dark:hover:bg-[#1f1f1f] dark:hover:border-[#1f1f1f]"
+                            : "bg-white dark:bg-zinc-800 border-[#1F1F1F] dark:border-zinc-700 hover:bg-[#1f1f1f] hover:border-[#1f1f1f] dark:hover:bg-[#1f1f1f] dark:hover:border-[#1f1f1f]"
                             }`}
                         >
-                          ✕
+                          <Image
+                            src="/images/icons/close-icon.svg"
+                            alt="No"
+                            width={12}
+                            height={12}
+                            className={`size-3 object-contain transition-all duration-300 group-hover:brightness-0 group-hover:invert ${elevatorAvailable === false ? "" : "dark:invert"
+                              }`}
+                          />
                         </button>
                         <button
                           type="button"
                           onClick={() => setElevatorAvailable?.(true)}
-                          className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold cursor-pointer transition-all ${elevatorAvailable === true
-                            ? "bg-[#FCDF9C] dark:bg-amber-400 border-amber-300 dark:border-amber-400 text-zinc-950 shadow-2xs"
-                            : "bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
+                          aria-label="Yes"
+                          className={`group w-8 h-8 rounded-full border flex items-center justify-center cursor-pointer transition-all duration-300 ${elevatorAvailable === true
+                            ? "bg-[#FCDF9C] dark:bg-amber-400 border-[#FCDF9C] dark:border-amber-400 hover:bg-[#1f1f1f] hover:border-[#1f1f1f] dark:hover:bg-[#1f1f1f] dark:hover:border-[#1f1f1f]"
+                            : "bg-white dark:bg-zinc-800 border-[#1F1F1F] dark:border-zinc-700 hover:bg-[#1f1f1f] hover:border-[#1f1f1f] dark:hover:bg-[#1f1f1f] dark:hover:border-[#1f1f1f]"
                             }`}
                         >
-                          ✓
+                          <Image
+                            src="/images/icons/right-mark.svg"
+                            alt="Yes"
+                            width={12}
+                            height={12}
+                            className={`size-3 object-contain transition-all duration-300 group-hover:brightness-0 group-hover:invert ${elevatorAvailable === true ? "" : "dark:invert"
+                              }`}
+                          />
                         </button>
                       </div>
                     </div>
@@ -924,22 +940,38 @@ export function PropertyDetailsViews({
                         <button
                           type="button"
                           onClick={() => setPrivateEntrance?.(false)}
-                          className={`w-8 h-8 rounded-full border flex items-center justify-center text-lg font-normal cursor-pointer transition-all ${privateEntrance === false
-                            ? "bg-[#FCDF9C] dark:bg-amber-400 border-[#FCDF9C] dark:border-amber-400 text-[#1F1F1F] dark:text-zinc-950"
-                            : "bg-white dark:bg-zinc-800 border-[#1F1F1F] dark:border-zinc-700 text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] dark:hover:bg-zinc-700 hover:text-white"
+                          aria-label="No"
+                          className={`group w-8 h-8 rounded-full border flex items-center justify-center cursor-pointer transition-all duration-300 ${privateEntrance === false
+                            ? "bg-[#FCDF9C] dark:bg-amber-400 border-[#FCDF9C] dark:border-amber-400 hover:bg-[#1f1f1f] hover:border-[#1f1f1f] dark:hover:bg-[#1f1f1f] dark:hover:border-[#1f1f1f]"
+                            : "bg-white dark:bg-zinc-800 border-[#1F1F1F] dark:border-zinc-700 hover:bg-[#1f1f1f] hover:border-[#1f1f1f] dark:hover:bg-[#1f1f1f] dark:hover:border-[#1f1f1f]"
                             }`}
                         >
-                          ✕
+                          <Image
+                            src="/images/icons/close-icon.svg"
+                            alt="No"
+                            width={12}
+                            height={12}
+                            className={`size-3 object-contain transition-all duration-300 group-hover:brightness-0 group-hover:invert ${privateEntrance === false ? "" : "dark:invert"
+                              }`}
+                          />
                         </button>
                         <button
                           type="button"
                           onClick={() => setPrivateEntrance?.(true)}
-                          className={`w-8 h-8 rounded-full border flex items-center justify-center text-lg font-normal cursor-pointer transition-all ${privateEntrance === true
-                            ? "bg-[#FCDF9C] dark:bg-amber-400 border-[#FCDF9C] dark:border-amber-400 text-[#1F1F1F] dark:text-zinc-950"
-                            : "bg-white dark:bg-zinc-800 border-[#1F1F1F] dark:border-zinc-700 text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] dark:hover:bg-zinc-700 hover:text-white"
+                          aria-label="Yes"
+                          className={`group w-8 h-8 rounded-full border flex items-center justify-center cursor-pointer transition-all duration-300 ${privateEntrance === true
+                            ? "bg-[#FCDF9C] dark:bg-amber-400 border-[#FCDF9C] dark:border-amber-400 hover:bg-[#1f1f1f] hover:border-[#1f1f1f] dark:hover:bg-[#1f1f1f] dark:hover:border-[#1f1f1f]"
+                            : "bg-white dark:bg-zinc-800 border-[#1F1F1F] dark:border-zinc-700 hover:bg-[#1f1f1f] hover:border-[#1f1f1f] dark:hover:bg-[#1f1f1f] dark:hover:border-[#1f1f1f]"
                             }`}
                         >
-                          ✓
+                          <Image
+                            src="/images/icons/right-mark.svg"
+                            alt="Yes"
+                            width={12}
+                            height={12}
+                            className={`size-3 object-contain transition-all duration-300 group-hover:brightness-0 group-hover:invert ${privateEntrance === true ? "" : "dark:invert"
+                              }`}
+                          />
                         </button>
                       </div>
                     </div>
@@ -947,7 +979,7 @@ export function PropertyDetailsViews({
                 )}
 
                 {/* 6. Year built */}
-                <div className="w-full space-y-2 sm:max-w-xs">
+                <div className="w-full space-y-2">
                   <label className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">
                     {t("host_year_built")}
                   </label>
@@ -955,11 +987,10 @@ export function PropertyDetailsViews({
                     <select
                       value={yearBuilt}
                       onChange={(e) => setYearBuilt?.(e.target.value)}
-                      className={`w-full min-h-[56px] appearance-none rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 py-3.5 pr-11 text-base outline-none transition-all shadow-2xs cursor-pointer hover:border-[#1F1F1F] dark:hover:border-zinc-500 focus:border-[#1F1F1F] dark:focus:border-zinc-400 focus:ring-1 focus:ring-[#1F1F1F]/20 dark:focus:ring-zinc-600 ${
-                        yearBuilt
-                          ? "text-[#1F1F1F] dark:text-zinc-100 font-medium"
-                          : "text-[#727272] dark:text-zinc-400 font-normal"
-                      }`}
+                      className={`w-full min-h-[56px] appearance-none rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 py-3.5 pr-11 text-base outline-none transition-all shadow-2xs cursor-pointer hover:border-[#1F1F1F] dark:hover:border-zinc-500 focus:border-[#1F1F1F] dark:focus:border-zinc-400 focus:ring-1 focus:ring-[#1F1F1F]/20 dark:focus:ring-zinc-600 ${yearBuilt
+                        ? "text-[#1F1F1F] dark:text-zinc-100 font-medium"
+                        : "text-[#727272] dark:text-zinc-400 font-normal"
+                        }`}
                     >
                       <option value="" className="text-[#727272] dark:text-zinc-400 bg-white dark:bg-zinc-800">
                         {t("host_select_year_optional")}
@@ -999,7 +1030,7 @@ export function PropertyDetailsViews({
                         placeholder="e.g. 120"
                         min={1}
                         max={50000}
-                          className="min-h-[56px] w-full rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 text-base font-normal text-[#727272] dark:text-zinc-100 placeholder:text-[#727272] dark:placeholder:text-[#727272] outline-none transition-colors shadow-2xs focus:border-[#1F1F1F] dark:focus:border-zinc-500 sm:h-11 sm:px-3"
+                        className="min-h-[56px] w-full rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 text-base font-normal text-[#727272] dark:text-zinc-100 placeholder:text-[#727272] dark:placeholder:text-[#727272] outline-none transition-colors shadow-2xs focus:border-[#1F1F1F] dark:focus:border-zinc-500 sm:h-11 sm:px-3"
                       />
                     </div>
                     <div className="space-y-2">
@@ -1008,7 +1039,7 @@ export function PropertyDetailsViews({
                         <select
                           value={propertySizeUnit}
                           onChange={(e) => setPropertySizeUnit?.(e.target.value)}
-                            className="min-h-[56px] w-full appearance-none rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 pr-10 text-base font-normal text-[#727272] dark:text-zinc-100 outline-none transition-colors shadow-2xs focus:border-[#1F1F1F] dark:focus:border-zinc-500 sm:h-11 sm:px-3 sm:pr-8"
+                          className="min-h-[56px] w-full appearance-none rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 pr-10 text-base font-normal text-[#727272] dark:text-zinc-100 outline-none transition-colors shadow-2xs focus:border-[#1F1F1F] dark:focus:border-zinc-500 sm:h-11 sm:px-3 sm:pr-8"
                         >
                           <option value="SQM">SQM (m²)</option>
                           <option value="SQFT">SQFT (sq ft)</option>
@@ -1082,7 +1113,7 @@ export function PropertyDetailsViews({
               <GuestsSkeleton />
             )
           ) : (
-              <div className="space-y-6 pt-12 max-w-[491px] mx-auto">
+            <div className="space-y-6 pt-12 max-w-[491px] mx-auto">
               {/* Section 1: Guest Capacity Counter */}
               <div className={`Guest-Capacity-Counter  ${activeSection === "guests" ? "" : ""}`}>
                 <div className={`${activeSection === "guests" ? "flex min-h-[500px] flex-col items-center justify-center gap-9 pb-14" : "space-y-4 rounded-md border border-[#DDDDDE] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4"}`}>
@@ -1456,7 +1487,7 @@ export function PropertyDetailsViews({
                   type="button"
                   disabled={isSaving}
                   onClick={() => handleSaveSection("guests")}
-                    className={`${activeSection === "guests" ? "w-full sm:w-auto sm:min-w-[136px]" : ""} rounded-full bg-[#FCDF9C] dark:bg-amber-400 hover:bg-[#1F1F1F] dark:hover:bg-zinc-700 text-[#1F1F1F] dark:text-zinc-950 hover:text-white dark:hover:text-white font-medium text-sm px-8 py-3.5 shadow-2xs transition-all duration-300 cursor-pointer ml-auto`}
+                  className={`${activeSection === "guests" ? "w-full sm:w-auto sm:min-w-[136px]" : ""} rounded-full bg-[#FCDF9C] dark:bg-amber-400 hover:bg-[#1F1F1F] dark:hover:bg-zinc-700 text-[#1F1F1F] dark:text-zinc-950 hover:text-white dark:hover:text-white font-medium text-sm px-8 py-3.5 shadow-2xs transition-all duration-300 cursor-pointer ml-auto`}
                 >
                   {isSaving ? t("host_saving") : t("host_save")}
                 </button>
@@ -1742,7 +1773,7 @@ export function PropertyDetailsViews({
                       onScroll={updateMainAmenitiesScrollThumb}
                       className={`custom-scrollbar overflow-x-hidden pr-1 lg:pr-[85px] ${presentation === "admin" ? "" : "lg:h-[1850px] overflow-y-auto"}`}
                     >
-                            <div className="max-w-[716px] divide-y divide-[#DDDDDE] dark:divide-zinc-800">
+                      <div className="max-w-[716px] divide-y divide-[#DDDDDE] dark:divide-zinc-800">
                         {editAmenities.map((am) => {
                           const meta = getAmenityMeta(am);
                           const localizedLabel = getAmenityLabel(meta.id, meta.label);

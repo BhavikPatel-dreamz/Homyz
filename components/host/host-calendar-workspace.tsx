@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/set-state-in-effect, react-hooks/preserve-manual-memoization */
 
 import {
   Fragment,
@@ -1389,11 +1390,8 @@ function ContextualManagementPanel({
                     strokeLinejoin="round"
                     aria-hidden="true"
                   >
-                    <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
-                    <path d="M5 3v4" />
-                    <path d="M19 17v4" />
-                    <path d="M3 5h4" />
-                    <path d="M17 19h4" />
+                    <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+                    <polyline points="16 7 22 7 22 13" />
                   </svg>
                   <span className="text-sm font-medium text-amber-950 dark:text-amber-200">
                     {t("host_calendar_price_tip_recommendation", "Price Tip Recommendation")}

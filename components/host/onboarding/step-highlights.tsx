@@ -119,7 +119,7 @@ export function StepHighlights({
             <OnboardingStepHeading
               title={t("host_highlights_title")}
               description={t("host_highlights_subtitle")}
-              titleClassName="sm:mb-5 mb-3"
+              titleClassName="mb-2"
               descriptionClassName="text-base font-normal text-[#727272] sm:mb-10 mb-6"
             />
 

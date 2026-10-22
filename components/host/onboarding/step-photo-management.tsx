@@ -1,11 +1,11 @@
 "use client";
 
 import { Container } from "@/components/ui";
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { StepProgressFooter } from "./step-progress-footer";
 import { OnboardingMobileCloseButton } from "./onboarding-mobile-close-button";
 import Image from "next/image";
-import { useLanguage } from "@/lib/i18n/language-context";
+import { useLanguage, type TranslationKey } from "@/lib/i18n/language-context";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const ACCEPTED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/avif"]);
@@ -15,6 +15,78 @@ function CameraPlaceholder() {
   return (
     <div className="w-22.5 h-22.5 flex items-center justify-center pointer-events-none">
       <Image src="/images/icons/camera-icon.svg" alt="camera-icon.svg" width={90} height={90}/>
+    </div>
+  );
+}
+
+interface PhotoDropdownMenuProps {
+  index: number;
+  openMenuIdx: number | null;
+  onToggle: (index: number) => void;
+  onEdit: (index: number) => void;
+  onMakeCover: (index: number) => void;
+  onDelete: (index: number) => void;
+  t: (key: TranslationKey, fallback?: string) => string;
+}
+
+function PhotoDropdownMenu({
+  index,
+  openMenuIdx,
+  onToggle,
+  onEdit,
+  onMakeCover,
+  onDelete,
+  t,
+}: PhotoDropdownMenuProps) {
+  const isOpen = openMenuIdx === index;
+  return (
+    <div
+      data-photo-menu="true"
+      className="absolute top-3.5 right-3.5"
+      style={{ zIndex: isOpen ? 50 : 20 }}
+    >
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          onToggle(index);
+        }}
+        className="w-8 h-8 rounded-full bg-white/90 hover:bg-white text-zinc-800 shadow-[0_2px_4px_rgba(0,0,0,0.18)] hover:shadow-md flex items-center justify-center transition-all cursor-pointer"
+        aria-label="Photo options"
+      >
+        <svg className="size-4" viewBox="0 0 24 24" fill="currentColor">
+          <circle cx="5" cy="12" r="1.8" />
+          <circle cx="12" cy="12" r="1.8" />
+          <circle cx="19" cy="12" r="1.8" />
+        </svg>
+      </button>
+      {isOpen && (
+        <div className="absolute right-0 top-10 w-48 rounded-2xl bg-white py-2 shadow-[0_4px_20px_rgba(0,0,0,0.15)] border border-zinc-100 z-50 animate-in fade-in zoom-in-95 duration-150">
+          <button
+            type="button"
+            onClick={() => onEdit(index)}
+            className="w-full text-left px-4 py-2.5 text-sm font-normal text-[#1F1F1F] hover:bg-zinc-100 transition-colors cursor-pointer"
+          >
+            {t("host_edit", "Edit")}
+          </button>
+          {index !== 0 && (
+            <button
+              type="button"
+              onClick={() => onMakeCover(index)}
+              className="w-full text-left px-4 py-2.5 text-sm font-normal text-[#1F1F1F] hover:bg-zinc-100 transition-colors cursor-pointer"
+            >
+              {t("host_make_cover", "Make cover photo")}
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => onDelete(index)}
+            className="w-full text-left px-4 py-2.5 text-sm font-normal text-[#1F1F1F] hover:bg-zinc-100 transition-colors cursor-pointer"
+          >
+            {t("host_delete", "Delete")}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -38,8 +110,21 @@ export function StepPhotoManagement({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const replaceInputRef = useRef<HTMLInputElement>(null);
   const [replaceTargetIdx, setReplaceTargetIdx] = useState<number | null>(null);
+  const [openMenuIdx, setOpenMenuIdx] = useState<number | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (openMenuIdx === null) return;
+    const handleOutsideClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest("[data-photo-menu]")) {
+        setOpenMenuIdx(null);
+      }
+    };
+    document.addEventListener("click", handleOutsideClick);
+    return () => document.removeEventListener("click", handleOutsideClick);
+  }, [openMenuIdx]);
 
   const uploadFile = async (file: File): Promise<string> => {
     if (!ACCEPTED_IMAGE_TYPES.has(file.type) || file.size <= 0 || file.size > MAX_FILE_SIZE) {
@@ -102,16 +187,19 @@ export function StepPhotoManagement({
   };
 
   const triggerReplace = (idx: number) => {
+    setOpenMenuIdx(null);
     setReplaceTargetIdx(idx);
     replaceInputRef.current?.click();
   };
 
   const handleRemovePhoto = (index: number) => {
+    setOpenMenuIdx(null);
     const updated = photos.filter((_, idx) => idx !== index);
     onUpdatePhotos(updated);
   };
 
   const handleSetCoverPhoto = (index: number) => {
+    setOpenMenuIdx(null);
     if (index === 0) return;
     const updated = [...photos];
     const [selected] = updated.splice(index, 1);
@@ -181,7 +269,7 @@ export function StepPhotoManagement({
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="sm:w-10 sm:h-10 w-8 h-8 rounded-full border border-[#1f1f1f] hover:border-[#1F1F1F] bg-[#F3F4F5] hover:bg-[#1F1F1F] flex items-center justify-center hover:text-white text-[#1F1F1F] transition-colors duration-300 shadow-2xs cursor-pointer shrink-0"
+                className="sm:w-10 sm:h-10 w-8 h-8 rounded-full bg-[#F3F4F5] hover:bg-[#1F1F1F] flex items-center justify-center hover:text-white text-[#1F1F1F] transition-colors duration-300 shadow-2xs cursor-pointer shrink-0"
                 title={t("host_add_photos")}
               >
                 <svg className="sm:w-5 w-4 sm:h-5 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
@@ -213,30 +301,28 @@ export function StepPhotoManagement({
             <div data-aos="fade-up" data-aos-delay="100" className="grid grid-cols-1 sm:grid-cols-12 sm:gap-6 gap-2 w-full mb-8">
               {/* Left Column: Cover Photo (Slot 0) */}
               <div className="sm:col-span-6">
-                <div className="w-full h-72 sm:h-111 sm:rounded-[20px] rounded-[10px] border border-[#727272] hover:border-[#727272] transition-all duration-300 bg-[#F3F4F5] flex items-center justify-center relative overflow-hidden shadow-xs group">
+                <div className="w-full h-72 sm:h-111 sm:rounded-[20px] rounded-[10px] border border-[#727272] hover:border-[#1F1F1F] transition-all duration-300 bg-[#F3F4F5] relative shadow-xs group">
                   {photos[0] ? (
                     <>
-                      <img src={photos[0]} alt="Cover Photo" className="h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-105" />
-                      <span className="absolute top-4 left-4 bg-zinc-900/80 backdrop-blur-xs text-white text-xs font-medium px-3.5 py-1.5 rounded-full shadow-xs">
+                      <div className="absolute inset-0 overflow-hidden sm:rounded-[20px] rounded-[10px]">
+                        <img
+                          src={photos[0]}
+                          alt="Cover Photo"
+                          className="h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
+                        />
+                      </div>
+                      <span className="absolute top-4 left-4 z-10 bg-zinc-900/80 backdrop-blur-xs text-white text-xs font-medium px-3.5 py-1.5 rounded-full shadow-xs pointer-events-none">
                         {t("host_cover_photo")}
                       </span>
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-between p-4">
-                        <button
-                          type="button"
-                          onClick={() => triggerReplace(0)}
-                          className="bg-white/90 text-[#1F1F1F] text-xs font-medium px-3 py-1.5 rounded-full hover:bg-white transition-colors cursor-pointer"
-                        >
-                          {t("host_replace")}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleRemovePhoto(0)}
-                          className="w-8 h-8 rounded-full bg-white/90 text-zinc-700 hover:bg-red-500 hover:text-white flex items-center justify-center text-xs font-medium transition-colors cursor-pointer"
-                          title="Remove photo"
-                        >
-                          ✕
-                        </button>
-                      </div>
+                      <PhotoDropdownMenu
+                        index={0}
+                        openMenuIdx={openMenuIdx}
+                        onToggle={(i) => setOpenMenuIdx(openMenuIdx === i ? null : i)}
+                        onEdit={triggerReplace}
+                        onMakeCover={handleSetCoverPhoto}
+                        onDelete={handleRemovePhoto}
+                        t={t}
+                      />
                     </>
                   ) : (
                     <button
@@ -258,37 +344,26 @@ export function StepPhotoManagement({
                   return (
                     <div
                       key={slotIdx}
-                      className="relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-[10px] border border-[#727272] bg-[#F3F4F5] shadow-xs group sm:rounded-2xl xl:h-[210px] xl:w-[234px] xl:aspect-auto"
+                      className="relative flex aspect-square w-full items-center justify-center rounded-[10px] sm:rounded-2xl border border-[#727272] hover:border-[#1F1F1F] bg-[#F3F4F5] shadow-xs group xl:h-[210px] xl:w-[234px] xl:aspect-auto"
                     >
                       {photoUrl ? (
                         <>
-                          <img src={photoUrl} alt={`Photo ${slotIdx + 1}`} className="h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-105" />
-                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-3">
-                            <div className="flex items-center justify-between w-full">
-                              <button
-                                type="button"
-                                onClick={() => handleSetCoverPhoto(slotIdx)}
-                                className="bg-white/90 text-[#1F1F1F] text-[10px] font-medium px-2 py-1 rounded-md hover:bg-white transition-colors cursor-pointer"
-                              >
-                                {t("host_make_cover_short", "Make cover")}
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleRemovePhoto(slotIdx)}
-                                className="w-6 h-6 rounded-full bg-white/90 text-zinc-700 hover:bg-red-500 hover:text-white flex items-center justify-center text-xs font-medium transition-colors cursor-pointer"
-                                title={t("host_remove_photo", "Remove photo")}
-                              >
-                                ✕
-                              </button>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => triggerReplace(slotIdx)}
-                              className="bg-white/90 text-[#1F1F1F] text-[11px] font-medium py-1 px-2 rounded-md hover:bg-white transition-colors cursor-pointer self-start"
-                            >
-                              {t("host_replace_photo", "Replace")}
-                            </button>
+                          <div className="absolute inset-0 overflow-hidden rounded-[10px] sm:rounded-2xl">
+                            <img
+                              src={photoUrl}
+                              alt={`Photo ${slotIdx + 1}`}
+                              className="h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
+                            />
                           </div>
+                          <PhotoDropdownMenu
+                            index={slotIdx}
+                            openMenuIdx={openMenuIdx}
+                            onToggle={(i) => setOpenMenuIdx(openMenuIdx === i ? null : i)}
+                            onEdit={triggerReplace}
+                            onMakeCover={handleSetCoverPhoto}
+                            onDelete={handleRemovePhoto}
+                            t={t}
+                          />
                         </>
                       ) : (
                         <button
@@ -308,42 +383,31 @@ export function StepPhotoManagement({
             {/* Additional Photos Section (If more than 5 photos uploaded) */}
             {extraPhotos.length > 0 && (
               <div className="w-full mt-4">
-                <h3 className="text-sm font-medium text-zinc-800 mb-3">{t("host_additional_photos", { count: extraPhotos.length }, `Additional photos (${extraPhotos.length})`)}</h3>
+                <h3 className="text-base font-medium text-[#1f1f1f] mb-3">{t("host_additional_photos", { count: extraPhotos.length }, `Additional photos (${extraPhotos.length})`)}</h3>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 w-full">
                   {extraPhotos.map((url, idx) => {
                     const actualIdx = idx + 5;
                     return (
                       <div
                         key={actualIdx}
-                        className="relative rounded-2xl overflow-hidden border border-zinc-200 aspect-square group bg-zinc-50"
+                        className="relative rounded-2xl border border-zinc-200 aspect-square group bg-zinc-50"
                       >
-                        <img src={url} alt={`Extra photo ${idx + 1}`} className="w-full h-full object-cover" />
-                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-2.5">
-                          <div className="flex items-center justify-between w-full">
-                            <button
-                              type="button"
-                              onClick={() => handleSetCoverPhoto(actualIdx)}
-                              className="bg-white/90 text-[#1F1F1F] text-[10px] font-medium px-2 py-0.5 rounded-md hover:bg-white cursor-pointer"
-                            >
-                              {t("host_make_cover_short", "Make cover")}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleRemovePhoto(actualIdx)}
-                              className="w-5 h-5 rounded-full bg-white/90 text-zinc-700 hover:bg-red-500 hover:text-white flex items-center justify-center text-xs font-medium cursor-pointer"
-                              title={t("host_remove_photo", "Remove photo")}
-                            >
-                              ✕
-                            </button>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => triggerReplace(actualIdx)}
-                            className="bg-white/90 text-[#1F1F1F] text-[10px] font-medium py-0.5 px-2 rounded-md hover:bg-white cursor-pointer self-start"
-                          >
-                            {t("host_replace_photo", "Replace")}
-                          </button>
+                        <div className="absolute inset-0 overflow-hidden rounded-2xl">
+                          <img
+                            src={url}
+                            alt={`Extra photo ${idx + 1}`}
+                            className="w-full h-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
+                          />
                         </div>
+                        <PhotoDropdownMenu
+                          index={actualIdx}
+                          openMenuIdx={openMenuIdx}
+                          onToggle={(i) => setOpenMenuIdx(openMenuIdx === i ? null : i)}
+                          onEdit={triggerReplace}
+                          onMakeCover={handleSetCoverPhoto}
+                          onDelete={handleRemovePhoto}
+                          t={t}
+                        />
                       </div>
                     );
                   })}
@@ -353,8 +417,16 @@ export function StepPhotoManagement({
                     onClick={() => fileInputRef.current?.click()}
                     className="rounded-2xl border-2 border-dashed border-zinc-300 bg-zinc-50 hover:bg-zinc-100/80 flex flex-col items-center justify-center aspect-square text-[#727272] cursor-pointer transition-colors"
                   >
-                    <span className="text-2xl font-medium mb-1">+</span>
-                    <span className="text-[11px] font-medium">{t("host_add_photo", "Add photo")}</span>
+                    <span className="text-2xl font-medium mb-1">
+                      <Image
+                        src="/images/icons/add-icon.svg"
+                        alt="Add"
+                        width={25}
+                        height={25}
+                        className="object-contain"
+                      />
+                    </span>
+                    <span className="text-base font-medium mt-2">{t("host_add_photo", "Add More")}</span>
                   </button>
                 </div>
               </div>
