@@ -1045,7 +1045,7 @@ export function GuidebooksManager({
       }
       setGuidebookToDelete(null);
       setModal(null);
-      toast.success("Guidebook deleted.");
+      toast.success(t("host_guidebook_deleted", "Guidebook deleted."));
     } else {
       toast.error(actionError(result, "Could not delete this guidebook."));
     }
@@ -1167,7 +1167,7 @@ export function GuidebooksManager({
                     <h2 className="text-xl font-semibold">{item.title}</h2>
                     <p className="mt-1 text-sm text-[#727272]">
                       {t("host_guidebooks_recs_count", "{count} recommendations").replace("{count}", String(item.itemsCount || 0))} ·{" "}
-                      {item.listings?.length || 0} listings
+                      {item.listings?.length || 0} {item.listings?.length === 1 ? t("host_listing_singular", "listing") : t("host_listings_plural", "listings")}
                     </p>
                     <div className="mt-5 flex items-center justify-between gap-3">
                       <button
@@ -1175,7 +1175,7 @@ export function GuidebooksManager({
                         onClick={() => void openGuidebook(item.id)}
                         className="rounded-xl bg-[#1f1f1f] px-5 py-2.5 text-sm font-medium text-white hover:text-[#1f1f1f] border border-[#1f1f1f] transition hover:bg-white"
                       >
-                        Edit
+                        {t("host_guidebook_edit_action", "Edit")}
                       </button>
                       <button
                         type="button"
@@ -1188,7 +1188,7 @@ export function GuidebooksManager({
                         }}
                         className="rounded-xl border border-rose-600 px-4 py-2.5 text-sm font-medium text-rose-600 transition hover:border-rose-200 hover:bg-rose-50"
                       >
-                        Delete
+                        {t("host_guidebook_delete_btn", "Delete")}
                       </button>
                     </div>
                   </div>
