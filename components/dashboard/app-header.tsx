@@ -446,7 +446,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
               {unreadCount !== null && unreadCount > 0 && (
                 <span
                   aria-label={`${unreadCount} unread notifications`}
-                  className="absolute -top-1 -right-1 flex h-4 min-w-4 min-h-4 items-center justify-center leading-tight rounded-full bg-rose-500 text-[10px] font-medium text-white shadow-xs"
+                  className="absolute -top-1 -right-1 flex h-4 min-w-4 min-h-5 items-center justify-center leading-tight rounded-full bg-rose-500 text-[10px] font-medium text-white shadow-xs px-1 pt-1"
                 >
                   {unreadCount > 99 ? "99+" : unreadCount}
                 </span>
