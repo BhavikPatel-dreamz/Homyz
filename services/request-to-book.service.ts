@@ -31,7 +31,7 @@ export function buildHostRequestNotification(input: {
     message: `${input.guestName} requested ${input.listingTitle} from ${start} to ${end} for ${input.guests} ${input.guests === 1 ? "guest" : "guests"}.`,
     entityId: input.bookingId,
     entityType: "host_booking",
-    link: "/host/bookings",
+    link: "/host/today?tab=pending",
     metadata: {
       bookingId: input.bookingId,
       listingId: input.listingId,

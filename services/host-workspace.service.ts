@@ -83,7 +83,6 @@ export function buildHostReservationQuery({
   const activePending: Prisma.BookingWhereInput = {
     status: BookingStatus.PENDING,
     createdAt: { gt: getExpiryThresholdDate(now) },
-    endDate: { gt: today },
   };
 
   if (tab === "today") {
@@ -94,10 +93,8 @@ export function buildHostReservationQuery({
     return {
       where: {
         ...listingScope,
-        OR: [
-          { status: BookingStatus.CONFIRMED, ...todayScope },
-          { AND: [activePending, todayScope] },
-        ],
+        status: BookingStatus.CONFIRMED,
+        ...todayScope,
       },
       orderBy: [{ startDate: "asc" }, { endDate: "asc" }, { id: "asc" }],
     };
@@ -108,10 +105,8 @@ export function buildHostReservationQuery({
     return {
       where: {
         ...listingScope,
-        OR: [
-          { status: BookingStatus.CONFIRMED, ...future },
-          { AND: [activePending, future] },
-        ],
+        status: BookingStatus.CONFIRMED,
+        ...future,
       },
       orderBy: [{ startDate: "asc" }, { createdAt: "asc" }, { id: "asc" }],
     };
@@ -143,7 +138,7 @@ export function buildHostReservationQuery({
   if (tab === "pending") {
     return {
       where: { ...listingScope, ...activePending },
-      orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     };
   }
 
@@ -158,10 +153,7 @@ export function buildHostReservationQuery({
     return {
       where: {
         ...listingScope,
-        OR: [
-          { status: { in: [BookingStatus.CONFIRMED, BookingStatus.CANCELLED] } },
-          activePending,
-        ],
+        status: { in: [BookingStatus.CONFIRMED, BookingStatus.CANCELLED] },
       },
       orderBy: [{ endDate: "desc" }, { id: "asc" }],
     };
@@ -172,7 +164,7 @@ export function buildHostReservationQuery({
     : [BookingStatus.CONFIRMED];
 
   return {
-    where: { ...listingScope, OR: [{ status: { in: statuses } }, activePending] },
+    where: { ...listingScope, status: { in: statuses } },
     orderBy: [{ startDate: "asc" }, { createdAt: "asc" }, { id: "asc" }],
   };
 }
@@ -202,6 +194,7 @@ export async function getHostWorkspace(
       items: [],
       total: 0,
       totalCount: 0,
+      pendingRequestCount: 0,
       page: safePage,
       totalPages: 0,
       hasMore: false,
@@ -289,7 +282,14 @@ export async function getHostWorkspace(
     },
   } satisfies Prisma.BookingSelect;
 
-  const [rows, totalCount] = await Promise.all([
+  const pendingWhere: Prisma.BookingWhereInput = {
+    ...(propertyId && listingIds.includes(propertyId)
+      ? { listingId: propertyId }
+      : { listingId: { in: listingIds } }),
+    status: BookingStatus.PENDING,
+    createdAt: { gt: getExpiryThresholdDate(now) },
+  };
+  const [rows, totalCount, pendingRequestCount] = await Promise.all([
     isPaginated
       ? prisma.booking.findMany({
           where,
@@ -300,6 +300,7 @@ export async function getHostWorkspace(
         })
       : prisma.booking.findMany({ where, select, orderBy }),
     prisma.booking.count({ where }),
+    prisma.booking.count({ where: pendingWhere }),
   ]);
 
   const bookings = (rows as unknown as WorkspaceBooking[]).map(mapBooking);
@@ -311,6 +312,7 @@ export async function getHostWorkspace(
     items: bookings,
     total: totalCount,
     totalCount,
+    pendingRequestCount,
     page: safePage,
     totalPages,
     hasMore: isPaginated ? safePage < totalPages : false,

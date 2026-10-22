@@ -118,6 +118,7 @@ export type HostWorkspaceProps = {
   bookings: HostReservation[];
   total?: number;
   totalCount?: number;
+  pendingRequestCount?: number;
   page?: number;
   totalPages?: number;
 };

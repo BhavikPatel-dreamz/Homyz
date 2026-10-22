@@ -9,7 +9,7 @@ import { toast } from "@/components/ui/toast";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { formatAddressCountry } from "@/lib/location/address-countries";
 import { getCurrencyForCountry } from "@/lib/currency";
-import { useLanguage, type TranslationKey } from "@/lib/i18n/language-context";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 import { PropertyCategory, PlaceTypeOption, LocationCoords, LocationDetails } from "./onboarding/types";
 import { StepOverview } from "./onboarding/step-overview";
@@ -28,13 +28,17 @@ import { StepTitle } from "./onboarding/step-title";
 import { StepHighlights } from "./onboarding/step-highlights";
 import { StepDescription } from "./onboarding/step-description";
 import { StepFinishIntro } from "./onboarding/step-finish-intro";
+import { StepBookingSettings } from "./onboarding/step-booking-settings";
 import { StepPrice } from "./onboarding/step-price";
 import { StepWeekendPrice } from "./onboarding/step-weekend-price";
 import { StepDiscounts } from "./onboarding/step-discounts";
 import { StepSafety } from "./onboarding/step-safety";
+import { StepLicenseApproval } from "./onboarding/step-license-approval";
 import { OnboardingHeader } from "./onboarding/onboarding-header";
 import { WIZARD_STEPS } from "./onboarding/wizard-steps";
+import type { BookingMode } from "@/lib/booking/booking-mode";
 import type { ListingDTO } from "@/services/mappers";
+import { submitListingFinalApprovalAction, verifySaudiLicenseAction } from "@/actions/host/listings";
 
 type HostingType = "HOME" | "EXPERIENCE" | "SERVICE";
 
@@ -56,20 +60,6 @@ function isDiscountEnabled(value: unknown): boolean {
   if (!value || typeof value !== "object" || Array.isArray(value)) return false;
   return (value as { enabled?: unknown }).enabled !== false;
 }
-
-const COMPLETION_REQUIREMENTS: Record<string, { key: TranslationKey; fallback: string; step: number }> = {
-  propertyType: { key: "wizard_req_property_type", fallback: "Choose the type of place you are hosting.", step: 2 },
-  listingType: { key: "wizard_req_listing_type", fallback: "Choose what guests will have.", step: 3 },
-  coordinates: { key: "wizard_req_coordinates", fallback: "Confirm your property location on the map.", step: 4 },
-  address: { key: "wizard_req_address", fallback: "Add your street address, city, and country.", step: 5 },
-  capacity: { key: "wizard_req_capacity", fallback: "Add valid guest and bed capacity details.", step: 6 },
-  photos: { key: "wizard_req_photos", fallback: "Upload at least five property photos.", step: 9 },
-  title: { key: "wizard_req_title", fallback: "Use a listing title between 3 and 50 characters.", step: 11 },
-  highlights: { key: "wizard_req_highlights", fallback: "Choose no more than three highlights.", step: 12 },
-  description: { key: "wizard_req_description", fallback: "Write a description of at least 10 characters.", step: 13 },
-  weekdayPrice: { key: "wizard_req_weekday_price", fallback: "Set a weekday price greater than zero.", step: 15 },
-  weekendPrice: { key: "wizard_req_weekend_price", fallback: "Set a weekend price greater than zero.", step: 16 },
-};
 
 const RESTORED_PROPERTY_TYPE_LABELS: Record<string, string> = {
   HOUSE: "House",
@@ -135,6 +125,8 @@ export function NewListingGetStarted({
   const [draftId, setDraftId] = useState<string | null>(initialDraftId || null);
   const draftIdRef = useRef<string | null>(draftId);
   const [isSavingStep, setIsSavingStep] = useState<boolean>(false);
+  const [isPublishing, setIsPublishing] = useState<boolean>(false);
+  const [isSavingAndExiting, setIsSavingAndExiting] = useState<boolean>(false);
   const [wizardError, setWizardError] = useState<WizardError | null>(null);
   const hydratedDraftRef = useRef(false);
   // A double-click or a slow network response must never create two listing
@@ -143,6 +135,8 @@ export function NewListingGetStarted({
   // PATCH operations are serialized so an older debounced save can never
   // overwrite a newer explicit Next/Finish save.
   const saveQueueRef = useRef<Promise<void>>(Promise.resolve());
+  // Prevent a delayed autosave from reverting a just-published listing.
+  const isFinalizingRef = useRef(false);
 
   // Selections & States
   const [selectedCategory, setSelectedCategory] = useState<string>("");
@@ -154,6 +148,7 @@ export function NewListingGetStarted({
   const [description, setDescription] = useState<string>("");
   const [price, setPrice] = useState<number>(0);
   const [weekendPrice, setWeekendPrice] = useState<number>(0);
+  const [bookingMode, setBookingMode] = useState<BookingMode>("REQUEST_TO_BOOK");
   const [selectedDiscounts, setSelectedDiscounts] = useState<string[]>(["new_listing"]);
   const [selectedSafety, setSelectedSafety] = useState<string[]>([]);
 
@@ -275,6 +270,8 @@ export function NewListingGetStarted({
     // The wizard displays whole currency units; the API persists minor units.
     price: Math.round(price * 100),
     weekendPrice: weekendPrice > 0 ? Math.round(weekendPrice * 100) : null,
+    bookingApprovalMode: bookingMode === "INSTANT_BOOK" ? "INSTANT" : "MANUAL",
+    instantBook: bookingMode === "INSTANT_BOOK",
     hostingType,
     propertyType: selectedCategory || null,
     listingType: selectedPlaceType || null,
@@ -320,6 +317,7 @@ export function NewListingGetStarted({
   }), [
     aptFloorBldg,
     bathrooms,
+    bookingMode,
     bedrooms,
     beds,
     city,
@@ -386,12 +384,14 @@ export function NewListingGetStarted({
       case 14:
         return null;
       case 15:
-        return price > 0 ? null : [t("wizard_req_weekday_price", "Set a weekday price greater than zero.")];
-      case 16:
-        return weekendPrice > 0 ? null : [t("wizard_req_weekend_price", "Set a weekend price greater than zero.")];
-      case 17:
         return null;
+      case 16:
+        return price > 0 ? null : [t("wizard_req_weekday_price", "Set a weekday price greater than zero.")];
+      case 17:
+        return weekendPrice > 0 ? null : [t("wizard_req_weekend_price", "Set a weekend price greater than zero.")];
       case 18:
+        return null;
+      case 19:
         // Safety disclosures are optional - no validation required
         return null;
       default:
@@ -496,45 +496,43 @@ export function NewListingGetStarted({
     setWizardError(null);
   };
 
-  // Final Draft Completion & Redirect to Host Listings
-  const handleFinalSaveAndFinish = async () => {
-    const savedDraftId = await saveDraftAndGoToStep(18);
-    if (!savedDraftId) return;
+  const handleVerifySaudiLicense = async (licenseNumber: string) => {
+    const activeDraftId = draftIdRef.current || draftId;
+    if (!activeDraftId) throw new Error("Save your listing before verifying a license.");
+    const result = await verifySaudiLicenseAction(activeDraftId, licenseNumber);
+    if (!result.ok) throw new Error(result.error || "We couldn't verify this license.");
+    return result.data;
+  };
 
+  const handleFinalLicenseSubmission = async (method: "automatic" | "manual") => {
+    const activeDraftId = draftIdRef.current || draftId;
+    if (!activeDraftId) {
+      setWizardError({ title: "Save your listing first", messages: ["Your listing draft is not available yet. Please try again."] });
+      return;
+    }
+    isFinalizingRef.current = true;
+    setIsPublishing(true);
     try {
-      const response = await fetch(`/api/v1/listings/${savedDraftId}/readiness`);
-      if (!response.ok) throw new Error(await readSaveError(response));
-      const body: unknown = await response.json();
-      const readiness = body && typeof body === "object" && "data" in body
-        ? (body as { data?: { publishable?: boolean; missing?: string[] } }).data
-        : undefined;
-      if (!readiness?.publishable) {
-        const requirements = (readiness?.missing ?? [])
-          .map((field) => COMPLETION_REQUIREMENTS[field])
-          .filter((requirement): requirement is { key: TranslationKey; fallback: string; step: number } => Boolean(requirement));
-        setWizardError({
-          title: t("wizard_error_complete_step", "Complete your listing"),
-          messages: requirements.length > 0
-            ? requirements.map((requirement) => t(requirement.key, requirement.fallback))
-            : [t("wizard_error_save_failed", "We couldn't confirm that all listing details are complete. Please review the form.")],
-          fixStep: requirements[0]?.step,
-        });
-        return;
-      }
-      toast.success(t("wizard_toast_draft_saved", "Draft listing saved successfully!"));
+      await saveQueueRef.current.catch(() => undefined);
+      const result = await submitListingFinalApprovalAction(activeDraftId, method);
+      if (!result.ok) throw new Error(result.error || "We couldn't submit your listing.");
+      toast.success(method === "automatic" ? "Listing approved and published." : "Listing submitted for review.");
       router.push("/host/listings");
     } catch (error: unknown) {
       setWizardError({
-        title: t("wizard_error_changes_not_saved", "We couldn't verify your listing"),
-        messages: [error instanceof Error ? error.message : t("wizard_error_save_failed", "Please try again.")],
+        title: "We couldn't submit your listing",
+        messages: [error instanceof Error ? error.message : "Please try again."],
       });
+    } finally {
+      isFinalizingRef.current = false;
+      setIsPublishing(false);
     }
   };
 
   // Unlike Next, saving and exiting intentionally allows incomplete drafts.
   // This lets a host leave the wizard at any point and resume later.
   const handleSaveAndExit = async () => {
-    if (isSavingStep) return;
+    if (isSavingStep || isSavingAndExiting) return;
 
     const activeDraftId = draftIdRef.current || draftId;
     // Before a category is picked the wizard has no meaningful draft data to
@@ -544,7 +542,7 @@ export function NewListingGetStarted({
       return;
     }
 
-    setIsSavingStep(true);
+    setIsSavingAndExiting(true);
     try {
       // Complete a pending autosave before the explicit save so it cannot
       // overwrite the final state after the host leaves the wizard.
@@ -590,7 +588,7 @@ export function NewListingGetStarted({
         messages: [message],
       });
     } finally {
-      setIsSavingStep(false);
+      setIsSavingAndExiting(false);
     }
   };
 
@@ -644,6 +642,7 @@ export function NewListingGetStarted({
         setDescription(listing.description ?? "");
         setPrice((listing.price ?? 0) / 100);
         setWeekendPrice((listing.weekendPrice ?? 0) / 100);
+        setBookingMode(listing.instantBook ? "INSTANT_BOOK" : "REQUEST_TO_BOOK");
         setSelectedDiscounts(restoredDiscounts);
         setSelectedSafety((listing.safetyDisclosures ?? []).filter((value) => value.includes(":")));
         setCountry(listing.country ?? "");
@@ -693,7 +692,7 @@ export function NewListingGetStarted({
   // first POST is deliberately reserved for the explicit Next action above so
   // abandoned category selections never create empty listings.
   useEffect(() => {
-    if (!hydratedDraftRef.current || isSavingStep) return;
+    if (!hydratedDraftRef.current || isSavingStep || isFinalizingRef.current || step === 20) return;
 
     // Do not auto-create draft on steps before category selection (step < 2 or no category chosen yet)
     if (!draftIdRef.current && (step < 2 || !selectedCategory)) return;
@@ -701,7 +700,7 @@ export function NewListingGetStarted({
     const timer = window.setTimeout(async () => {
       try {
         const activeId = draftIdRef.current || draftId;
-        if (activeId) {
+        if (activeId && !isFinalizingRef.current) {
           await queueDraftPatch(activeId, buildDraftPayload(step));
           return;
         }
@@ -914,7 +913,11 @@ export function NewListingGetStarted({
 
   return (
     <div className="flex min-h-screen flex-col bg-white pb-[calc(5.5rem+env(safe-area-inset-bottom))] [&>main]:!pt-0">
-      <OnboardingHeader onSaveAndExit={handleSaveAndExit} isSaving={isSavingStep} />
+      <OnboardingHeader
+        onSaveAndExit={handleSaveAndExit}
+        isSaving={isSavingAndExiting}
+        disabled={isSavingStep || isPublishing}
+      />
 
       {/* Step 0: Overview */}
       {step === 0 && (
@@ -1158,24 +1161,22 @@ export function NewListingGetStarted({
         />
       )}
 
-      {/* Step 15: Weekday base price */}
+      {/* Step 15: Booking settings */}
       {step === 15 && (
-        <StepPrice
-          price={price}
-          onChangePrice={setPrice}
-          currencySymbol={currencySymbol}
+        <StepBookingSettings
+          mode={bookingMode}
+          onChange={setBookingMode}
           onBack={() => goToStep(14)}
           onNext={() => saveDraftAndGoToStep(16)}
           isLoading={isSavingStep}
         />
       )}
 
-      {/* Step 16: Weekend price & premium */}
+      {/* Step 16: Weekday base price */}
       {step === 16 && (
-        <StepWeekendPrice
-          weekdayPrice={price}
-          weekendPrice={weekendPrice}
-          onChangeWeekendPrice={setWeekendPrice}
+        <StepPrice
+          price={price}
+          onChangePrice={setPrice}
           currencySymbol={currencySymbol}
           onBack={() => goToStep(15)}
           onNext={() => saveDraftAndGoToStep(17)}
@@ -1183,25 +1184,54 @@ export function NewListingGetStarted({
         />
       )}
 
-      {/* Step 17: Discounts */}
+      {/* Step 17: Weekend price & premium */}
       {step === 17 && (
-        <StepDiscounts
-          selectedDiscounts={selectedDiscounts}
-          onToggleDiscount={handleToggleDiscount}
+        <StepWeekendPrice
+          weekdayPrice={price}
+          weekendPrice={weekendPrice}
+          onChangeWeekendPrice={setWeekendPrice}
+          currencySymbol={currencySymbol}
           onBack={() => goToStep(16)}
           onNext={() => saveDraftAndGoToStep(18)}
           isLoading={isSavingStep}
         />
       )}
 
-      {/* Step 18: Safety disclosures & Final submission */}
+      {/* Step 18: Discounts */}
       {step === 18 && (
+        <StepDiscounts
+          selectedDiscounts={selectedDiscounts}
+          onToggleDiscount={handleToggleDiscount}
+          onBack={() => goToStep(17)}
+          onNext={() => saveDraftAndGoToStep(19)}
+          isLoading={isSavingStep}
+        />
+      )}
+
+      {/* Step 19: Safety disclosures */}
+      {step === 19 && (
         <StepSafety
           selectedSafety={selectedSafety}
           onAnswerSafety={handleAnswerSafety}
-          onBack={() => goToStep(17)}
-          onNext={handleFinalSaveAndFinish}
+          onBack={() => goToStep(18)}
+          onNext={() => saveDraftAndGoToStep(20)}
           isLoading={isSavingStep}
+        />
+      )}
+
+      {/* Step 20: Final preview, license verification and submission */}
+      {step === 20 && (
+        <StepLicenseApproval
+          draftId={draftId}
+          country={country}
+          title={title}
+          city={city}
+          price={price}
+          photos={photos}
+          onBack={() => goToStep(19)}
+          onVerify={handleVerifySaudiLicense}
+          onSubmit={handleFinalLicenseSubmission}
+          isPublishing={isPublishing}
         />
       )}
 

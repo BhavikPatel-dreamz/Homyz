@@ -114,7 +114,7 @@ export const WIZARD_STEPS: WizardStepDefinition[] = [
     title: 'Create your description',
   },
 
-  // Part 3: Finish up (14..18)
+  // Part 3: Finish up (14..20)
   {
     index: 14,
     slug: 'finish-intro',
@@ -125,35 +125,49 @@ export const WIZARD_STEPS: WizardStepDefinition[] = [
   },
   {
     index: 15,
+    slug: 'booking-settings',
+    part: 3,
+    partTitle: 'Finish up and publish',
+    title: 'Pick your booking settings',
+  },
+  {
+    index: 16,
     slug: 'price',
     part: 3,
     partTitle: 'Finish up and publish',
     title: 'Now, set your base price',
   },
   {
-    index: 16,
+    index: 17,
     slug: 'weekend-price',
     part: 3,
     partTitle: 'Finish up and publish',
     title: 'Set your weekend price',
   },
   {
-    index: 17,
+    index: 18,
     slug: 'discounts',
     part: 3,
     partTitle: 'Finish up and publish',
     title: 'Add discounts',
   },
   {
-    index: 18,
+    index: 19,
     slug: 'safety',
     part: 3,
     partTitle: 'Finish up and publish',
     title: 'Just a few final details',
   },
+  {
+    index: 20,
+    slug: 'license-approval',
+    part: 3,
+    partTitle: 'Finish up and publish',
+    title: 'License verification and listing approval',
+  },
 ];
 
-export const TOTAL_WIZARD_STEPS = WIZARD_STEPS.length; // 19 steps (0..18)
+export const TOTAL_WIZARD_STEPS = WIZARD_STEPS.length; // 21 steps (0..20)
 
 export function getStepByIndex(index: number): WizardStepDefinition {
   return WIZARD_STEPS[index] ?? WIZARD_STEPS[0];

@@ -5,6 +5,7 @@ import { PropertyPhoto } from "./host-workspace-shared";
 import type { OperationalEvent } from "@/lib/booking/host-reservation-events";
 import type { ListingDTO } from "@/services/mappers";
 import { useLanguage } from "@/lib/i18n/language-context";
+import { useCurrency } from "@/lib/currency-context";
 
 export function ReservationCard({
   event,
@@ -12,14 +13,21 @@ export function ReservationCard({
   isActive,
   priorityLabel,
   onSelect,
+  onAccept,
+  onDecline,
+  actionLoading = false,
 }: {
   event: OperationalEvent;
   selected: boolean;
   isActive: boolean;
   priorityLabel?: string;
   onSelect: () => void;
+  onAccept?: () => void;
+  onDecline?: () => void;
+  actionLoading?: boolean;
 }) {
   const { t } = useLanguage();
+  const { formatPrice } = useCurrency();
   const { booking, listing } = event;
   const guestName = booking.guestName || t("host_cal_res_guest_default", "Guest");
   const badgeLetter = booking.guestName && booking.guestName !== "(Name)"
@@ -154,6 +162,20 @@ export function ReservationCard({
               {[listing.district, listing.city].filter(Boolean).join(", ") || t("host_location_label", "Location")}
             </span>
           </div>
+
+          {event.eventType === "pending" && (
+            <div className="w-full border-t border-black/10 pt-3" onClick={(clickEvent) => clickEvent.stopPropagation()}>
+              <p className="mb-2 text-center text-xs text-[#727272]">
+                Requested {new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(booking.createdAt))}
+                {booking.totalPrice != null ? ` · ${formatPrice(booking.totalPrice, booking.currency || "SAR", 2)}` : ""}
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                <button type="button" disabled={actionLoading} onClick={onDecline} className="min-h-10 rounded-full border border-[#1F1F1F] px-3 text-xs font-medium hover:bg-zinc-100 disabled:opacity-50">Decline</button>
+                <button type="button" disabled={actionLoading} onClick={onAccept} className="min-h-10 rounded-full bg-[#1F1F1F] px-3 text-xs font-medium text-white hover:bg-zinc-700 disabled:opacity-50">{actionLoading ? "Saving…" : "Accept"}</button>
+              </div>
+              <button type="button" onClick={onSelect} className="mt-2 w-full text-xs font-medium underline underline-offset-2 hover:text-zinc-600">View details</button>
+            </div>
+          )}
 
           <div
             className={`flex items-center gap-1.5 font-sans text-[12px] leading-[18px] font-normal transition-colors duration-300 ease-in-out ${

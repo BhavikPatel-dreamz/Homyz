@@ -175,7 +175,7 @@ const ADMIN_EDITOR_SECTIONS = [
   { group: "Admin review", items: [["admin-review", "Review & controls"], ["audit-history", "Audit history"]] },
   { group: "Your space", items: [["title", "Listing title"], ["description", "Description"], ["propertyType", "Property type"], ["location", "Location"], ["guests", "Guest capacity"], ["sleeping-arrangements", "Rooms & beds"], ["photos", "Photos & photo tour"], ["amenities", "Amenities"], ["accessibility", "Accessibility"], ["about-host", "About host"], ["pricing", "Pricing"], ["availability", "Availability"], ["house-rules", "House rules"], ["guests-safety", "Guest safety"], ["cancellation-policy", "Cancellation"]] },
   { group: "Arrival guide", items: [["check-in-out", "Check-in & checkout"], ["directions", "Directions"], ["check-in-method", "Check-in method"], ["wifi-details", "Wi-Fi"], ["house-manual", "House manual"], ["parking", "Parking"], ["checkout-instructions", "Checkout instructions"], ["guidebooks", "Guidebooks"], ["interaction-preferences", "Interaction preferences"]] },
-  { group: "Preferences", items: [["listing-status", "Listing status"], ["language", "Languages"], ["guest-requirements", "Guest requirements"], ["local-laws", "Local laws"], ["regulations", "Regulations"], ["taxes", "Taxes"], ["homyz-org-stays", "Homyz.org stays"], ["custom-link", "Custom listing link"], ["remove-listing", "Remove listing"]] },
+  { group: "Preferences", items: [["listing-status", "Listing status"], ["language", "Languages"], ["guest-requirements", "Guest requirements"], ["local-laws", "Local laws"], ["regulations", "License & regulations"], ["taxes", "Taxes"], ["homyz-org-stays", "Homyz.org stays"], ["custom-link", "Custom listing link"], ["remove-listing", "Remove listing"]] },
 ] as const;
 
 function AdminEditorSidebar({
@@ -478,10 +478,22 @@ export function EditorSidebar({
       <div className={`flex w-full min-w-0 flex-col overflow-hidden ${mobileOpen ? "h-full max-h-none bg-white" : "max-h-[calc(100vh-2rem)] rounded-3xl border border-zinc-200 bg-zinc-50/80 p-5 shadow-xs"} lg:h-full lg:max-h-none lg:rounded-none lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none`}>
         {/* Header Title & Status Badge */}
         <div className="flex shrink-0 flex-col pb-5 lg:pb-9">
-          <div className="flex items-center justify-between">
-            <h2>
-              {editorTab === "preferences" ? t("host_edit_preferences") : t("host_listing_editor")}
-            </h2>
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-2.5">
+              <Link
+                href={routeBase || "/host/listings"}
+                aria-label="Back to listings"
+                title="Back to listings"
+                className="inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-zinc-300 bg-white text-[#1F1F1F] transition hover:border-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700"
+              >
+                <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="m15 18-6-6 6-6" />
+                </svg>
+              </Link>
+              <h2>
+                {editorTab === "preferences" ? t("host_edit_preferences") : t("host_listing_editor")}
+              </h2>
+            </div>
             {mobileOpen && (
               <button
                 type="button"
