@@ -384,7 +384,7 @@ function LanguageMultiSelect({
 
       {/* Dropdown panel */}
       {open && !disabled && (
-        <div className="absolute left-0 right-0 top-full mt-1.5 z-50 rounded-2xl bg-white border border-zinc-200 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-100">
+        <div className="absolute left-0 right-0 top-full mt-1.5 z-9999 rounded-2xl bg-white border border-zinc-200 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-100">
           {/* Header */}
           <div className="flex items-center justify-between px-3.5 py-2 border-b border-zinc-100 bg-zinc-50/70">
             <span className="text-xs font-medium text-[#727272] uppercase tracking-wider">
@@ -652,7 +652,7 @@ function InlineLocationSearch({
 
       {/* Dropdown with Suggestions */}
       {open && !disabled && (
-        <div className="absolute left-0 right-0 top-full mt-1.5 z-50 rounded-2xl bg-white border border-zinc-200 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-100">
+        <div className="absolute left-0 right-0 top-full mt-1.5 z-9999 rounded-2xl bg-white border border-zinc-200 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-100">
           <div className="flex items-center justify-between px-3.5 py-2 border-b border-zinc-100 bg-zinc-50/70">
             <span className="text-[11px] font-medium text-[#727272] uppercase tracking-wider">
               {query.trim().length >= 2 ? "Search Results" : "Popular Destinations"}
@@ -2009,7 +2009,7 @@ function MultiImageUploadModal({
   };
 
   return (
-    <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in">
+    <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in">
       <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl border border-zinc-200 text-[#1F1F1F] relative my-auto max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between border-b border-zinc-100 pb-3 mb-4">
           <div>
@@ -2220,7 +2220,7 @@ function EditTripPhotoModal({
   };
 
   return (
-    <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in">
+    <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in">
       <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl border border-zinc-200 text-[#1F1F1F] relative my-auto max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between border-b border-zinc-100 pb-3 mb-4">
           <h3 className="text-lg font-medium text-[#1F1F1F]">
@@ -2338,7 +2338,7 @@ function DeleteTripPhotoModal({
   };
 
   return (
-    <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in">
+    <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in">
       <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl border border-zinc-200 text-[#1F1F1F] relative my-auto">
         <h3 className="text-lg font-medium text-[#1F1F1F] mb-2">
           {t("trip_photos_delete_modal_title", "Delete Trip Photo")}
@@ -2391,7 +2391,7 @@ function LightboxModal({
   return (
     <ModalOverlay
       onClick={onClose}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-in fade-in cursor-pointer"
+      className="fixed inset-0 z-9999 flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-in fade-in cursor-pointer"
     >
       <div
         onClick={(e) => e.stopPropagation()}

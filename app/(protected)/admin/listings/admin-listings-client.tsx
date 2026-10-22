@@ -1082,7 +1082,7 @@ export function AdminListingsClient({
 
       {/* Admin Full Management Workspace Drawer / Modal */}
       {selectedListing && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto">
           <div className="w-full max-w-4xl max-h-[92vh] overflow-y-auto rounded-3xl bg-[var(--surface)] text-muted-foreground p-6 sm:p-8 shadow-2xl border border-[var(--border)] flex flex-col gap-5 animate-in fade-in zoom-in-95">
             
             {/* Header */}
@@ -1771,7 +1771,7 @@ export function AdminListingsClient({
 
       {/* Delete Listing Confirmation Modal */}
       {showDeleteModal && listingToDelete && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-in fade-in">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 p-4 animate-in fade-in">
           <div className="w-full max-w-md rounded-3xl bg-[var(--surface)] p-6 shadow-2xl space-y-4 border border-[var(--border)] animate-in zoom-in-95">
             <div className="flex items-center gap-3 text-rose-600">
               <div className="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-950/50 flex items-center justify-center font-semibold text-lg">
@@ -1814,7 +1814,7 @@ export function AdminListingsClient({
 
       {/* Bulk Delete Confirmation Modal */}
       {showBulkDeleteModal && selectedListingIds.length > 0 && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-in fade-in">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 p-4 animate-in fade-in">
           <div className="w-full max-w-lg rounded-3xl bg-[var(--surface)] p-6 shadow-2xl space-y-4 border border-[var(--border)] animate-in zoom-in-95 max-h-[90vh] flex flex-col">
             <div className="flex items-center gap-3 text-rose-600 shrink-0">
               <div className="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-950/50 flex items-center justify-center font-semibold text-lg">

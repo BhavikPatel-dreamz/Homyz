@@ -79,7 +79,7 @@ export function FileBookingDispute({ bookingId, variant = "guest" }: FileBooking
       </button>
 
       {open && (
-        <ModalOverlay className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 p-4">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/50 p-4">
           <div className="max-h-[calc(100dvh-2rem)] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-5 text-[#1F1F1F] shadow-2xl sm:p-6">
             <div className="flex items-start justify-between gap-4 border-b border-zinc-200 pb-3">
               <div>

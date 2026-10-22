@@ -26,7 +26,7 @@ export function OnboardingCounterRow({
           type="button"
           onClick={() => onChange(Math.max(minimum, value - 1))}
           disabled={value <= minimum}
-          className="w-8 h-8 rounded-full border border-zinc-300 flex items-center justify-center text-zinc-700 hover:border-zinc-900 hover:text-[#1F1F1F] disabled:opacity-30 disabled:hover:border-zinc-300 transition-colors text-base font-medium cursor-pointer"
+          className="w-8 h-8 rounded-full border border-[#727272] flex items-center justify-center text-zinc-700 hover:border-zinc-900 hover:text-[#1F1F1F] disabled:opacity-30 disabled:hover:border-zinc-300 transition-colors text-base font-medium cursor-pointer"
         >
           <Image src="/images/icons/minus-icon.svg" alt={`Decrease ${label}`} width={14} height={14} className="size-3.5 object-contain" />
         </button>
@@ -36,9 +36,9 @@ export function OnboardingCounterRow({
         <button
           type="button"
           onClick={() => onChange(value + 1)}
-          className="w-8 h-8 rounded-full border border-zinc-300 flex items-center justify-center text-zinc-700 hover:border-zinc-900 hover:text-[#1F1F1F] transition-colors text-base font-medium cursor-pointer"
+          className="w-8 h-8 rounded-full border border-[#727272] flex items-center justify-center text-zinc-700 hover:border-zinc-900 hover:text-[#1F1F1F] transition-colors text-base font-medium cursor-pointer"
         >
-          +
+          <Image src="/images/icons/Plus.svg" alt={`Decrease ${label}`} width={16} height={16} className="size-4 object-contain" />
         </button>
       </div>
     </div>

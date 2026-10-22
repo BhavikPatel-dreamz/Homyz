@@ -80,7 +80,7 @@ export function CancelBookingModal({
   };
 
   return (
-    <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+    <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
       <div
         role="dialog"
         aria-modal="true"
@@ -290,7 +290,7 @@ export function ReceiptModal({
   if (!isOpen) return null;
 
   return (
-    <ModalOverlay className="fixed inset-0 z-[110] flex items-end justify-center overflow-hidden bg-black/60 p-0 backdrop-blur-xs sm:items-center sm:p-4">
+    <ModalOverlay className="fixed inset-0 z-9999 flex items-end justify-center overflow-hidden bg-black/60 p-0 backdrop-blur-xs sm:items-center sm:p-4">
       <div
         role="dialog"
         aria-modal="true"
@@ -582,7 +582,7 @@ export function ContactHostModal({
   if (!isOpen || !booking) return null;
 
   return (
-    <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+    <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
       <div
         role="dialog"
         aria-modal="true"

@@ -1002,7 +1002,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
       {/* LANGUAGES & CURRENCY MODAL (Screen Centered Overlay)          */}
       {/* ------------------------------------------------------------- */}
       {langModalOpen && (
-        <ModalOverlay className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
           <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl border border-zinc-200 text-[#1F1F1F] relative animate-in zoom-in-95 my-auto mx-auto">
             <div className="flex items-center justify-between border-b border-zinc-100 pb-4 mb-5">
               <h3 className="text-lg font-semibold text-[#1F1F1F]">{t("header_languages_currency")}</h3>

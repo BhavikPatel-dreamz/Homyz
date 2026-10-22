@@ -404,7 +404,7 @@ export function AdminNotificationsClient({
 
       {/* Notification Details & Retry Modal */}
       {detailsModalOpen && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <div className="relative w-full max-w-2xl rounded-3xl border border-[var(--border)] bg-[var(--surface)] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95 duration-200">
             {/* Header */}
             <div className="p-5 border-b border-[var(--border)] flex items-center justify-between bg-[var(--surface-secondary)]/40">

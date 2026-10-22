@@ -409,7 +409,7 @@ export function GuestDetailsView({
 
       {/* EDIT GUEST MODAL */}
       {showEditModal && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
             <h3 className="text-lg font-semibold text-muted-foreground">Edit Guest Profile</h3>
             <form onSubmit={handleEditSubmit} className="space-y-3 text-xs">
@@ -470,7 +470,7 @@ export function GuestDetailsView({
 
       {/* SUSPEND / UNSUSPEND MODAL */}
       {showSuspendModal && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
             <h3 className="text-lg font-semibold text-muted-foreground">
               {guest.status === "SUSPENDED" ? "Unsuspend Guest Account" : "Suspend Guest Account"}
@@ -525,7 +525,7 @@ export function GuestDetailsView({
 
       {/* DELETE GUEST MODAL */}
       {showDeleteModal && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4 animate-in fade-in zoom-in-95">
             <h3 className="text-lg font-semibold text-rose-600">Delete Guest Account</h3>
             <div className="p-3 bg-rose-50 border border-rose-200 dark:bg-rose-950/40 dark:border-rose-900/50 rounded-xl text-xs text-rose-800 dark:text-rose-300">

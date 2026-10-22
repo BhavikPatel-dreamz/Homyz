@@ -391,7 +391,7 @@ export function HostBookingApprovals({ bookings: initialBookings }: { bookings: 
 
       {/* REQUEST DETAILS MODAL */}
       {selectedBookingId && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 p-4">
           <div
             role="dialog"
             aria-modal="true"
@@ -651,7 +651,7 @@ export function HostBookingApprovals({ bookings: initialBookings }: { bookings: 
 
       {/* REJECT CONFIRMATION MODAL */}
       {isRejectOpen && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 p-4">
           <div
             role="dialog"
             aria-modal="true"

@@ -1264,7 +1264,7 @@ export function HostRegistrationWorkspace({
 
       {/* PREVIEW DOCUMENT MODAL */}
       {previewDoc && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
           <div className="w-full max-w-3xl rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4 max-h-[90vh] flex flex-col">
             <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-3">
               <div>
@@ -1306,7 +1306,7 @@ export function HostRegistrationWorkspace({
 
       {/* REJECT DOCUMENT MODAL */}
       {rejectModalOpen && targetDoc && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4">
             <h3 className="text-lg font-semibold text-rose-600">Reject Document</h3>
             <p className="text-xs text-[var(--muted-foreground)]">
@@ -1367,7 +1367,7 @@ export function HostRegistrationWorkspace({
 
       {/* REQUEST RESUBMISSION MODAL */}
       {resubmitModalOpen && targetDoc && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4">
             <h3 className="text-lg font-semibold text-amber-600">Request Document Re-submission</h3>
             <p className="text-xs text-[var(--muted-foreground)]">
@@ -1427,7 +1427,7 @@ export function HostRegistrationWorkspace({
 
       {/* CREATE COMPLIANCE ISSUE MODAL */}
       {createIssueModalOpen && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4">
             <h3 className="text-lg font-semibold text-rose-600">Log Compliance Issue</h3>
 
@@ -1494,7 +1494,7 @@ export function HostRegistrationWorkspace({
 
       {/* REQUEST ADDITIONAL INFO MODAL */}
       {requestInfoModalOpen && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4">
             <h3 className="text-lg font-semibold text-amber-600">Request Additional Information from Host</h3>
 
@@ -1557,7 +1557,7 @@ export function HostRegistrationWorkspace({
 
       {/* APPLICATION APPROVAL MODAL */}
       {approvalModalOpen && eligibilityResult && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="w-full max-w-lg rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-5">
             <h3 className="text-xl font-black text-emerald-600">Final Application Approval Decision</h3>
 
@@ -1625,7 +1625,7 @@ export function HostRegistrationWorkspace({
 
       {/* APPLICATION REJECTION MODAL */}
       {appRejectModalOpen && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4">
             <h3 className="text-lg font-semibold text-rose-600">Reject Host Application</h3>
 
@@ -1680,7 +1680,7 @@ export function HostRegistrationWorkspace({
 
       {/* REOPEN APPLICATION MODAL */}
       {reopenModalOpen && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] text-muted-foreground p-6 shadow-2xl border border-[var(--border)] space-y-4">
             <h3 className="text-lg font-semibold text-indigo-600">Reopen Application</h3>
             <p className="text-xs text-[var(--muted-foreground)]">

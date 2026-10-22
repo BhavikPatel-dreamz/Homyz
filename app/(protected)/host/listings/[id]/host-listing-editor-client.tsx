@@ -2212,7 +2212,7 @@ export function HostListingEditorClient({
       {/* GLOBAL MODAL: TURN OFF INSTANT BOOK (Matches Figma Screenshot 1) */}
       {/* --------------------------------------------------------- */}
       {isTurnOffInstantBookModalOpen && (
-        <ModalOverlay className="fixed inset-0 z-50 bg-black/35 backdrop-blur-xs flex items-center justify-center p-4">
+        <ModalOverlay className="fixed inset-0 z-999 bg-black/35 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-xl p-8 max-w-md w-full space-y-6 shadow-2xl animate-in zoom-in-95 relative">
             {/* Top Close Button */}
             <button
@@ -2226,7 +2226,7 @@ export function HostListingEditorClient({
 
             {/* Modal Title & Subtitle */}
             <div className="space-y-1">
-              <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">
+              <h3 className="font-medium text-2xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">
                 {t("host_booking_turn_off_instant_title") || "Turn off Instant Book?"}
               </h3>
               <p className="text-sm text-[#727272] font-normal">
@@ -2318,7 +2318,7 @@ export function HostListingEditorClient({
       {/* GLOBAL MODAL: ADD A CUSTOM MESSAGE */}
       {/* --------------------------------------------------------- */}
       {isCustomMessageModalOpen && (
-        <ModalOverlay className="fixed inset-0 z-50 bg-black/35 backdrop-blur-xs flex items-center justify-center p-4">
+        <ModalOverlay className="fixed inset-0 z-999 bg-black/35 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-xl p-6 max-w-md w-full space-y-5 shadow-2xl animate-in zoom-in-95 relative">
             <button
               type="button"
@@ -2382,8 +2382,8 @@ export function HostListingEditorClient({
       {/* GLOBAL MODAL: EDIT ADDITIONAL HOUSE RULES */}
       {/* --------------------------------------------------------- */}
       {isEditingAdditionalRulesModalOpen && (
-        <ModalOverlay className="fixed inset-0 z-50 bg-black/35 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-zinc-900 rounded-xl sm:p-6 p-4 max-w-md w-full space-y-5 shadow-2xl animate-in zoom-in-95 relative dark:border-zinc-800">
+        <ModalOverlay className="fixed inset-0 z-999 bg-black/35 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-zinc-900 rounded-[28px] sm:p-6 p-4 max-w-md w-full space-y-5 shadow-2xl animate-in zoom-in-95 relative dark:border-zinc-800">
             <button
               type="button"
               onClick={() => setIsEditingAdditionalRulesModalOpen(false)}
@@ -2393,7 +2393,7 @@ export function HostListingEditorClient({
             </button>
 
             <div className="space-y-1">
-              <h3 className="font-medium text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">{t("host_additional_house_rules_modal_title")}</h3>
+              <h3 className="font-medium text-2xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">{t("host_additional_house_rules_modal_title")}</h3>
               <p className="text-sm text-[#727272] dark:text-[#727272] font-normal">
                 {t("host_additional_house_rules_modal_desc")}
               </p>
@@ -2411,7 +2411,7 @@ export function HostListingEditorClient({
               <button
                 type="button"
                 onClick={() => setIsEditingAdditionalRulesModalOpen(false)}
-                className="rounded-full border border-[#1f1f1f] hover:border-[#1f1f1f] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] font-medium hover:text-white text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
+                className="px-6.75 py-3 rounded-full border border-[#1F1F1F] hover:bg-[#1F1F1F] text-sm font-medium text-[#1F1F1F] hover:text-white  transition-colors delay-300 duration-300 cursor-pointer"
               >
                 {t("host_additional_house_rules_cancel")}
               </button>
@@ -2422,7 +2422,7 @@ export function HostListingEditorClient({
                   await handleSaveSection("house-rules");
                   setIsEditingAdditionalRulesModalOpen(false);
                 }}
-                className="rounded-full bg-[#FCDF9C] border border-[#FCDF9C] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
+                className="px-4 py-3 rounded-full text-sm hover:bg-[#1F1F1F] text-[#1F1F1F] hover:text-white font-medium shadow-xs transition-colors delay-300 duration-300 flex items-center justify-center gap-2 min-w-[100px] border border-transparent hover:border-[#1F1F1F] bg-[#FCDF9C] cursor-pointer"
               >
                 {isSaving ? t("host_saving") : t("host_additional_house_rules_save")}
               </button>

@@ -1236,7 +1236,7 @@ export function NewListingGetStarted({
       )}
 
       {wizardError && (
-        <ModalOverlay className="fixed inset-0 z-[70] flex items-center justify-center bg-black/45 p-4 backdrop-blur-xs">
+        <ModalOverlay className="fixed inset-0 z-99999 flex items-center justify-center bg-black/45 p-4 backdrop-blur-xs">
           <section
             role="alertdialog"
             aria-modal="true"
@@ -1264,7 +1264,7 @@ export function NewListingGetStarted({
               <button
                 type="button"
                 onClick={() => setWizardError(null)}
-                className="rounded-full border border-zinc-300 px-5 py-2.5 text-sm font-semibold text-[#727272] hover:text-white hover:bg-[#1f1f1f] duration-300"
+                className="px-6.75 py-3 rounded-full border border-[#1F1F1F] hover:bg-[#1F1F1F] text-sm font-medium text-[#1F1F1F] hover:text-white  transition-colors delay-300 duration-300 cursor-pointer"
               >
                 {t("wizard_btn_close", "Close")}
               </button>

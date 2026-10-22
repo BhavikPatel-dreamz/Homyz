@@ -1579,7 +1579,7 @@ export function ListingsResultsClient({
 
       {/* ── Mobile Map-Focused Mode (Phase 5: Section 7, 8, 9, 10, 11) ── */}
       {!isDesktop && mobileViewMode === "map" && (
-        <ModalOverlay className="lg:hidden fixed inset-0 z-40 bg-white flex flex-col pt-16 pb-6 animate-in fade-in modal-dialog-no-animate">
+        <ModalOverlay className="lg:hidden fixed inset-0 z-9999 bg-white flex flex-col pt-16 pb-6 animate-in fade-in modal-dialog-no-animate">
           {/* Map Header Bar */}
           <div className="p-3.5 border-b border-zinc-100 flex items-center justify-between bg-white shrink-0">
             <div className="flex items-center gap-2 min-w-0">
@@ -1708,7 +1708,7 @@ export function ListingsResultsClient({
       {/* ── Filter Panel Modal ───────────── */}
       {false && isFilterOpen && (
         <ModalOverlay
-          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 px-0 sm:px-4"
+          className="fixed inset-0 z-9999 flex items-end sm:items-center justify-center bg-black/50 px-0 sm:px-4"
           onClick={() => setIsFilterOpen(false)}
         >
           <div

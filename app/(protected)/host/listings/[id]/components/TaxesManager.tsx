@@ -536,7 +536,7 @@ export function TaxesManager({
       {/* MODAL: Add or edit a tax                                      */}
       {/* ============================================================ */}
       {isAddTaxModalOpen && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
           <section
             role="dialog"
             aria-modal="true"
@@ -885,7 +885,7 @@ export function TaxesManager({
       {/* MODAL 1: Educational "Learn More" Drawers (ModalOverlay)     */}
       {/* ============================================================ */}
       {learnMoreTopic !== null && (
-        <ModalOverlay className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <ModalOverlay className="fixed inset-0 z-9999 bg-black/50 flex items-center justify-center p-4 backdrop-blur-sm">
           <section role="dialog" aria-modal="true" aria-labelledby="tax-learn-more-title" className="flex max-h-[85vh] w-full max-w-lg flex-col overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-2xl animate-in fade-in zoom-in-95 dark:border-zinc-800 dark:bg-zinc-900">
             <div className="flex items-center justify-between border-b border-zinc-100 px-6 pb-4 pt-6 dark:border-zinc-800">
               <h3 id="tax-learn-more-title" className="text-lg font-semibold tracking-tight text-[#1F1F1F] dark:text-zinc-100">
@@ -956,7 +956,7 @@ export function TaxesManager({
       {/* MODAL 2: Delete Tax Confirmation Modal (ModalOverlay)        */}
       {/* ============================================================ */}
       {isDeleteModalOpen && (
-        <ModalOverlay className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <ModalOverlay className="fixed inset-0 z-9999 bg-black/50 flex items-center justify-center p-4 backdrop-blur-sm">
           <section role="dialog" aria-modal="true" aria-labelledby="delete-tax-title" className="w-full max-w-sm rounded-3xl border border-zinc-200 bg-white p-6 shadow-2xl animate-in fade-in zoom-in-95 dark:border-zinc-800 dark:bg-zinc-900 sm:p-7">
             <h3 id="delete-tax-title" className="text-lg font-semibold tracking-tight text-[#1F1F1F] dark:text-zinc-100">{t("host_taxes_delete_modal_title")}</h3>
             <p className="mt-2 text-sm leading-6 text-[#727272] dark:text-[#727272]">
@@ -989,7 +989,7 @@ export function TaxesManager({
       {/* MODAL 3: Registration Document Viewer (ModalOverlay)         */}
       {/* ============================================================ */}
       {viewingRegistration && (
-        <ModalOverlay className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <ModalOverlay className="fixed inset-0 z-9999 bg-black/50 flex items-center justify-center p-4 backdrop-blur-sm">
           <section role="dialog" aria-modal="true" aria-labelledby="registration-details-title" className="w-full max-w-md rounded-3xl border border-zinc-200 bg-white p-6 shadow-2xl dark:border-zinc-800 dark:bg-zinc-900 sm:p-7">
             <div className="flex items-center justify-between border-b border-zinc-100 pb-4 dark:border-zinc-800">
               <h3 id="registration-details-title" className="text-lg font-semibold tracking-tight text-[#1F1F1F] dark:text-zinc-100">{t("host_taxes_reg_details_title")}</h3>
@@ -1032,7 +1032,7 @@ export function TaxesManager({
       {/* MODAL 4: Tax Statement & Regulatory Info Modal (ModalOverlay)*/}
       {/* ============================================================ */}
       {viewingInvoiceModal && (
-        <ModalOverlay className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <ModalOverlay className="fixed inset-0 z-9999 bg-black/50 flex items-center justify-center p-4 backdrop-blur-sm">
           <section role="dialog" aria-modal="true" aria-labelledby="tax-statement-title" className="w-full max-w-md rounded-3xl border border-zinc-200 bg-white p-6 shadow-2xl dark:border-zinc-800 dark:bg-zinc-900 sm:p-7">
             <div className="flex items-center justify-between border-b border-zinc-100 pb-4 dark:border-zinc-800">
               <h3 id="tax-statement-title" className="text-lg font-semibold tracking-tight text-[#1F1F1F] dark:text-zinc-100">{t("host_taxes_statement_title")}</h3>

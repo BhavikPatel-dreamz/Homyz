@@ -966,7 +966,7 @@ function CoHostView(props: Props) {
         </>
       )}
       {open && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/25 p-4 sm:p-6">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/25 p-4 sm:p-6">
           <div
             role="dialog"
             aria-modal="true"

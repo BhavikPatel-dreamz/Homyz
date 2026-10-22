@@ -829,7 +829,7 @@ export function AdminCalendarClient({
           Reservation Details Modal (Uses ModalOverlay)
           ───────────────────────────────────────────────────────────────────────────── */}
       {previewBooking && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <div className="relative w-full max-w-lg rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xl animate-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto">
             {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-[var(--border)] pb-4">
@@ -977,7 +977,7 @@ export function AdminCalendarClient({
           Administrative Cancellation Confirmation Modal (Uses ModalOverlay)
           ───────────────────────────────────────────────────────────────────────────── */}
       {cancelModalBooking && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <div className="relative max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xl animate-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
               <div className="flex items-center gap-2">
@@ -1071,7 +1071,7 @@ export function AdminCalendarClient({
           Property Selector Modal (Uses ModalOverlay)
           ───────────────────────────────────────────────────────────────────────────── */}
       {selectorOpen && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <div className="relative w-full max-w-lg rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xl animate-in zoom-in-95 duration-150 max-h-[85vh] flex flex-col">
             <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
               <h3 className="text-base font-bold text-foreground">

@@ -966,12 +966,12 @@ export function HostAboutHostView({
       {/* MODAL 1: Edit Specific Prompt Modal                                 */}
       {/* ------------------------------------------------------------------- */}
       {modalType === "prompt" && editingPrompt && (
-        <ModalOverlay className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
           <div className="w-full max-w-lg rounded-3xl bg-white p-7 shadow-2xl dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 animate-in fade-in zoom-in-95">
-            <div className="flex items-center justify-between border-b border-zinc-100 pb-4 dark:border-zinc-800">
+            <div className="flex items-center justify-between border-b border-zinc-400 pb-4 dark:border-zinc-800">
               <div className="flex items-center gap-2.5">
                 <span className="text-2xl select-none">{editingPrompt.icon}</span>
-                <h3 className="text-lg font-medium text-[#1F1F1F] dark:text-white">
+                <h3 className="text-xl font-medium text-[#1F1F1F] dark:text-white">
                   {editingPrompt.label}
                 </h3>
               </div>
@@ -985,7 +985,7 @@ export function HostAboutHostView({
             </div>
 
             <div className="py-5">
-              <label className="block text-xs font-medium text-[#727272] uppercase tracking-wider mb-2">
+              <label className="block text-base font-normal text-[#1f1f1f] mb-2">
                 Your Answer
               </label>
               <input
@@ -994,18 +994,18 @@ export function HostAboutHostView({
                 value={promptDraft}
                 onChange={(e) => setPromptDraft(e.target.value)}
                 placeholder={editingPrompt.placeholder}
-                className="w-full rounded-2xl border border-zinc-300 bg-white px-4 py-3 text-sm sm:text-base text-[#1F1F1F] focus:border-[#1F1F1F] focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
+                className="w-full rounded-lg border border-[#727272] bg-white px-4 py-3 text-sm sm:text-base text-[#1F1F1F] focus:border-[#1F1F1F] focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
               />
               <p className="mt-2 text-xs text-[#727272]">
                 Visible to guests on your public listing and profile.
               </p>
             </div>
 
-            <div className="flex items-center justify-end gap-2 border-t border-zinc-100 pt-4 dark:border-zinc-800">
+            <div className="flex items-center justify-end gap-2 pt-4">
               <button
                 type="button"
                 onClick={() => setModalType(null)}
-                className="rounded-full border border-zinc-300 px-5 py-2 text-xs font-medium text-[#1F1F1F] hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                className="px-6.75 py-3 rounded-full border border-[#1F1F1F] hover:bg-[#1F1F1F] text-sm font-medium text-[#1F1F1F] hover:text-white  transition-colors delay-300 duration-300 cursor-pointer"
               >
                 Cancel
               </button>
@@ -1013,7 +1013,7 @@ export function HostAboutHostView({
                 type="button"
                 disabled={isSaving}
                 onClick={handleSavePrompt}
-                className="rounded-full bg-[#1F1F1F] px-6 py-2 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-amber-400 dark:text-zinc-950 transition-colors cursor-pointer disabled:opacity-50"
+                className="px-4 py-3 rounded-full text-sm hover:bg-[#1F1F1F] text-[#1F1F1F] hover:text-white font-medium shadow-xs transition-colors delay-300 duration-300 flex items-center justify-center gap-2 min-w-[100px] border border-transparent hover:border-[#1F1F1F] bg-[#FCDF9C] cursor-pointer"
               >
                 {isSaving ? "Saving…" : "Save"}
               </button>
@@ -1026,7 +1026,7 @@ export function HostAboutHostView({
       {/* MODAL 2: About you (Edit Intro Modal, exact Airbnb popup)           */}
       {/* ------------------------------------------------------------------- */}
       {modalType === "intro" && (
-        <ModalOverlay className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
           <div className="w-full max-w-[560px] rounded-[32px] bg-white p-7 sm:p-8 shadow-2xl dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 animate-in fade-in zoom-in-95 relative flex flex-col">
             {/* Header */}
             <div className="shrink-0">
@@ -1086,7 +1086,7 @@ export function HostAboutHostView({
       {/* MODAL 3: What are you into? (Interests Modal, Screenshot 5)          */}
       {/* ------------------------------------------------------------------- */}
       {modalType === "interests" && (
-        <ModalOverlay className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
           <div className="w-full max-w-lg rounded-3xl bg-white p-7 shadow-2xl dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 animate-in fade-in zoom-in-95 max-h-[85vh] flex flex-col">
             {/* Header */}
             <div className="pb-3 shrink-0">

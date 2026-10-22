@@ -1089,7 +1089,7 @@ export function GuidebooksManager({
   return (
     <div className="pb-16">
       {view === "list" && (
-        <div className="mr-auto max-w-[calc(100%-50px)] space-y-8">
+        <div className="mx-auto max-w-[770px] space-y-8">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="flex items-start gap-5">
               <BackButton

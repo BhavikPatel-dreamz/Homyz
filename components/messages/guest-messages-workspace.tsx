@@ -1288,7 +1288,7 @@ export function GuestMessagesWorkspace({
 
       {/* Image Lightbox Modal */}
       {lightboxAttachment && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-xs">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/85 p-4 backdrop-blur-xs">
           <div className="relative max-w-4xl w-full flex flex-col items-center">
             <div className="flex items-center justify-between w-full pb-3 text-white">
               <span className="text-sm font-medium truncate max-w-md">{lightboxAttachment.fileName}</span>

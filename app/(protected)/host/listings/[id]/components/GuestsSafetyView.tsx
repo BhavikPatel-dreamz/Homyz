@@ -401,12 +401,12 @@ export function GuestsSafetyView({
       {/* MODAL 1: SAFETY CONSIDERATIONS */}
       {/* ========================================================= */}
       {isConsiderationsOpen && (
-        <ModalOverlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+        <ModalOverlay className="fixed inset-0 z-9999 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white dark:bg-zinc-900 rounded-xl max-w-xl w-full max-h-[88vh] flex flex-col shadow-2xl animate-in zoom-in-95 overflow-hidden">
             {/* Modal Header */}
             <div className="p-6 border-b border-zinc-200/80 dark:border-zinc-800 flex items-start justify-between">
               <div className="space-y-1">
-                <h3 className="font-medium text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">{t("host_safety_considerations_modal_title")}</h3>
+                <h3 className="font-medium text-2xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">{t("host_safety_considerations_modal_title")}</h3>
                 <p className="text-sm text-[#727272] dark:text-[#727272] font-normal">
                   {t("host_safety_considerations_modal_desc")}
                 </p>
@@ -797,12 +797,12 @@ export function GuestsSafetyView({
       {/* MODAL 2: SAFETY DEVICES */}
       {/* ========================================================= */}
       {isDevicesOpen && (
-        <ModalOverlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+        <ModalOverlay className="fixed inset-0 z-9999 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white dark:bg-zinc-900 rounded-xl max-w-xl w-full max-h-[88vh] flex flex-col shadow-2xl animate-in zoom-in-95 dark:border-zinc-800 overflow-hidden">
             {/* Modal Header */}
             <div className="p-6 border-b border-zinc-200/80 dark:border-zinc-800 flex items-start justify-between">
               <div className="space-y-1">
-                <h3 className="font-medium text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">{t("host_safety_devices_modal_title")}</h3>
+                <h3 className="font-medium text-2xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">{t("host_safety_devices_modal_title")}</h3>
                 <p className="text-sm text-[#727272] dark:text-[#727272] font-normal">
                   {t("host_safety_devices_modal_desc")}
                 </p>
@@ -1065,12 +1065,12 @@ export function GuestsSafetyView({
       {/* MODAL 3: PROPERTY INFO */}
       {/* ========================================================= */}
       {isPropertyInfoOpen && (
-        <ModalOverlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+        <ModalOverlay className="fixed inset-0 z-9999 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white dark:bg-zinc-900 rounded-xl max-w-xl w-full max-h-[88vh] flex flex-col shadow-2xl animate-in zoom-in-95 dark:border-zinc-800 overflow-hidden">
             {/* Modal Header */}
             <div className="p-6 border-b border-zinc-200/80 dark:border-zinc-800 flex items-start justify-between">
               <div className="space-y-1">
-                <h3 className="font-medium text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">{t("host_property_info_modal_title")}</h3>
+                <h3 className="font-medium text-2xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">{t("host_property_info_modal_title")}</h3>
                 <p className="text-sm text-[#727272] dark:text-[#727272] font-normal">
                   {t("host_property_info_modal_desc")}
                 </p>
@@ -1508,7 +1508,7 @@ export function GuestsSafetyView({
       {/* LEARN MORE INFO MODAL */}
       {/* ========================================================= */}
       {learnMoreTopic && (
-        <ModalOverlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+        <ModalOverlay className="fixed inset-0 z-9999 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white dark:bg-zinc-900 rounded-[24px] p-6 sm:p-8 max-w-md w-full space-y-4 shadow-2xl animate-in zoom-in-95 relative border border-zinc-150 dark:border-zinc-800">
             <button
               type="button"

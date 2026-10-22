@@ -84,7 +84,7 @@ export function StepOverview({
                     className="pointer-events-none absolute inset-0 z-0 overflow-visible [filter:drop-shadow(0_3px_6px_rgb(0_0_0_/_20%))_drop-shadow(1px_0_3px_rgb(0_0_0_/_14%))]"
                   >
                     {/* Masked card surface */}
-                    <div className="size-full rounded-2xl bg-white [-webkit-mask-image:radial-gradient(circle_28px_at_50%_0,transparent_27px,#000_28px)] [-webkit-mask-position:center] [-webkit-mask-repeat:no-repeat] [-webkit-mask-size:100%_100%] [mask-image:radial-gradient(circle_28px_at_50%_0,transparent_27px,#000_28px)] [mask-position:center] [mask-repeat:no-repeat] [mask-size:100%_100%] sm:rounded-[18px] sm:[-webkit-mask-image:radial-gradient(circle_32px_at_50%_0,transparent_31px,#000_32px)] sm:[mask-image:radial-gradient(circle_32px_at_50%_0,transparent_31px,#000_32px)]" />
+                    <div className="size-full rounded-2xl bg-white [-webkit-mask-image:radial-gradient(circle_28px_at_50%_0,transparent_27px,#000_28px)] [-webkit-mask-position:center] [-webkit-mask-repeat:no-repeat] [-webkit-mask-size:100%_100%] [mask-image:radial-gradient(circle_28px_at_50%_0,transparent_27px,#000_28px)] [mask-position:center] [mask-repeat:no-repeat] [mask-size:100%_100%] sm:rounded-[30px] sm:[-webkit-mask-image:radial-gradient(circle_32px_at_50%_0,transparent_31px,#000_32px)] sm:[mask-image:radial-gradient(circle_32px_at_50%_0,transparent_31px,#000_32px)]" />
                   </div>
 
                   {/* Number badge */}
@@ -94,11 +94,11 @@ export function StepOverview({
 
                   {/* Card content */}
                   <div className="relative z-10 flex min-h-[159px] flex-col items-center justify-center px-5 pt-10 pb-6 text-center sm:min-h-[175px] sm:px-9 sm:pt-11 sm:pb-8 lg:items-start lg:px-9 lg:pt-10 lg:text-left">
-                    <h2 className="font-medium leading-tight tracking-tight text-[#1F1F1F] sm:text-xl text-[18px]  lg:font-semibold">
+                    <h2 className="font-medium leading-tight tracking-tight text-[#1F1F1F] sm:text-xl text-[18px]">
                       {step.title}
                     </h2>
 
-                    <p className="mt-3 max-w-[540px] font-normal leading-[1.5] text-[#7A7A7A] text-base lg:font-medium lg:leading-relaxed">
+                    <p className="mt-3 max-w-[540px] font-normal leading-[1.5] text-[#727272] text-base lg:leading-relaxed">
                       {step.description}
                     </p>
                   </div>

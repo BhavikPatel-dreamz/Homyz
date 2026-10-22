@@ -182,10 +182,10 @@ export function BecomeHostModal({
   const isTypeSupported = selectedType === "HOME";
 
   return (
-    <ModalOverlay className="fixed inset-0 z-[100] flex items-center justify-center sm:p-4">
+    <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center sm:p-4 backdrop-blur-xs">
       {/* Dark overlay backdrop */}
       <div
-        className={`fixed inset-0 bg-black/40 backdrop-blur-xs ${
+        className={`fixed inset-0 bg-black/60 backdrop-blur-xs ${
           isClosing ? "modal-backdrop-animate-out" : "modal-backdrop-animate-in"
         }`}
         onClick={handleClose}

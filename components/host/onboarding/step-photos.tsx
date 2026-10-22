@@ -215,7 +215,7 @@ export function StepPhotos({
 
           {/* Upload Modal */}
           {isModalOpen && (
-            <ModalOverlay className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+            <ModalOverlay className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-9999 p-4 animate-in fade-in duration-200">
               <div className="bg-white rounded-[20px] p-8 max-w-[340px] w-full shadow-2xl relative flex flex-col items-center text-center">
                 {/* Close Button (X) */}
                 <button

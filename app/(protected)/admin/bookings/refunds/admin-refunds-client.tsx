@@ -782,7 +782,7 @@ export function AdminRefundsClient({
           Create Refund Request Modal (Uses ModalOverlay)
           ───────────────────────────────────────────────────────────────────────────── */}
       {createModalOpen && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <div className="relative w-full max-w-lg rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xl animate-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
               <h3 className="text-base font-bold text-foreground">
@@ -947,7 +947,7 @@ export function AdminRefundsClient({
           Filters Drawer (Uses ModalOverlay)
           ───────────────────────────────────────────────────────────────────────────── */}
       {filterDrawerOpen && (
-        <ModalOverlay className="fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-xs">
+        <ModalOverlay className="fixed inset-0 z-9999 flex justify-end bg-black/60 backdrop-blur-xs">
           <div className="relative w-full max-w-sm bg-[var(--surface)] h-full p-6 shadow-2xl flex flex-col justify-between animate-in slide-in-from-right duration-200">
             <div>
               <div className="flex items-center justify-between border-b border-[var(--border)] pb-4">

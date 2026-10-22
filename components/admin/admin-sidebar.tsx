@@ -609,7 +609,7 @@ export function AdminSidebar({
 
         {/* Collapsed tooltip */}
         {collapsed && (
-          <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 z-50 hidden rounded-md bg-[var(--primary)] text-primary-foreground px-3 py-1 text-[11px] font-semibold shadow-xl group-hover/item:block whitespace-nowrap">
+          <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 z-9999 hidden rounded-md bg-[var(--primary)] text-primary-foreground px-3 py-1 text-[11px] font-semibold shadow-xl group-hover/item:block whitespace-nowrap">
             {item.label}
           </div>
         )}
@@ -635,7 +635,7 @@ export function AdminSidebar({
           >
             {item.icon}
           </Link>
-          <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 z-50 hidden rounded-md bg-[var(--primary)] text-primary-foreground px-3 py-1 text-[11px] font-semibold shadow-xl group-hover/item:block whitespace-nowrap">
+          <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-3 z-9999 hidden rounded-md bg-[var(--primary)] text-primary-foreground px-3 py-1 text-[11px] font-semibold shadow-xl group-hover/item:block whitespace-nowrap">
             Bookings
           </div>
         </div>
@@ -804,7 +804,7 @@ export function AdminSidebar({
 
       {/* Mobile Drawer */}
       {mobileOpen && (
-        <ModalOverlay className="fixed inset-0 z-50 flex md:hidden">
+        <ModalOverlay className="fixed inset-0 z-9999 flex md:hidden">
           <div
             className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
             onClick={() => setMobileOpen(false)}
