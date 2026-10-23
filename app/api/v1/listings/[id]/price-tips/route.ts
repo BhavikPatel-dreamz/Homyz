@@ -3,6 +3,7 @@ import { ok } from "@/lib/api/response";
 import { requireApiAuth } from "@/lib/permissions/guards";
 import { listingService } from "@/services/listing.service";
 import { prisma } from "@/lib/db/prisma";
+import { BookingStatus } from "@/generated/prisma/enums";
 import { calculatePriceTips } from "@/lib/pricing/price-tips";
 
 type Ctx = { params: Promise<{ id: string }> };
@@ -40,11 +41,7 @@ export const POST = apiHandler(async (req, ctx: Ctx) => {
   const bookings = await prisma.booking.findMany({
     where: {
       listingId: id,
-      OR: [
-        { status: "CONFIRMED" },
-        { status: "COMPLETED" },
-        { status: "PENDING" },
-      ],
+      status: { in: [BookingStatus.CONFIRMED, BookingStatus.PENDING] },
     },
     select: {
       id: true,
@@ -117,11 +114,7 @@ export const GET = apiHandler(async (req, ctx: Ctx) => {
   const bookings = await prisma.booking.findMany({
     where: {
       listingId: id,
-      OR: [
-        { status: "CONFIRMED" },
-        { status: "COMPLETED" },
-        { status: "PENDING" },
-      ],
+      status: { in: [BookingStatus.CONFIRMED, BookingStatus.PENDING] },
     },
     select: {
       id: true,

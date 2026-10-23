@@ -20,9 +20,9 @@ interface HostDisputeDetailsProps {
       severity: string;
       description: string | null;
       resolutionNotes: string | null;
-      createdAt: string;
-      updatedAt: string;
-      resolvedAt: string | null;
+      createdAt: string | Date;
+      updatedAt: string | Date;
+      resolvedAt: string | Date | null;
       responseRequired: boolean;
       reporterRole: string;
       isReporter: boolean;
@@ -81,8 +81,8 @@ interface HostDisputeDetailsProps {
     booking: {
       id: string;
       status: string;
-      startDate: string;
-      endDate: string;
+      startDate: string | Date;
+      endDate: string | Date;
       guests: number;
       totalPrice?: number | null;
       currency?: string;
@@ -104,7 +104,7 @@ interface HostDisputeDetailsProps {
 
 type TabType = "overview" | "conversation" | "notes" | "evidence" | "activity" | "resolution";
 
-function formatDate(val: string | null | undefined, includeTime = false) {
+function formatDate(val: string | Date | null | undefined, includeTime = false) {
   if (!val) return "—";
   try {
     return new Intl.DateTimeFormat("en-US", {

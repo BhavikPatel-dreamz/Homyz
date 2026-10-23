@@ -300,17 +300,21 @@ async function validateTarget(actor: AuthUser, input: CreateModerationReportInpu
       const isTargetUser = review.targetUserId === actor.id;
       const isListingHost = review.listing?.hostId === actor.id;
       if (!isTargetUser && !isListingHost) {
-        const booking = await prisma.booking.findUnique({
-          where: { id: review.bookingId },
-          select: { userId: true, listing: { select: { hostId: true } } },
-        });
-        const isBookingParticipant = booking && (booking.userId === actor.id || booking.listing.hostId === actor.id);
+        const booking = review.bookingId
+          ? await prisma.booking.findUnique({
+              where: { id: review.bookingId },
+              select: { userId: true, listing: { select: { hostId: true } } },
+            })
+          : null;
+        const isBookingParticipant = Boolean(
+          booking && (booking.userId === actor.id || booking.listing?.hostId === actor.id)
+        );
         if (!isBookingParticipant) {
           throw AppError.forbidden("You are not authorized to report this review.");
         }
       }
     }
-    return { listingId: review.listingId, ownerId: review.listing?.hostId };
+    return { listingId: review.listingId ?? undefined, ownerId: review.listing?.hostId ?? undefined };
   }
   if (input.targetType === "LISTING") {
     const listing = await prisma.listing.findUnique({ where: { id: input.targetId }, select: { id: true, hostId: true } });
@@ -1269,12 +1273,12 @@ async function getModerationTargetSummary(targetType: ModerationTargetType, targ
       select: {
         id: true,
         rating: true,
-        cleanliness: true,
-        accuracy: true,
-        communication: true,
-        location: true,
-        checkIn: true,
-        value: true,
+        cleanlinessRating: true,
+        accuracyRating: true,
+        communicationRating: true,
+        locationRating: true,
+        checkInRating: true,
+        valueRating: true,
         houseRulesRating: true,
         recommendGuest: true,
         comment: true,
@@ -2758,15 +2762,7 @@ export async function getModerationAppeal(actor: AuthUser, appealId: string) {
   if (appeal.evidenceIds && appeal.evidenceIds.length > 0) {
     evidenceList = await prisma.moderationEvidence.findMany({
       where: { id: { in: appeal.evidenceIds } },
-      select: {
-        id: true,
-        displayName: true,
-        evidenceType: true,
-        mimeType: true,
-        fileSize: true,
-        accessScope: true,
-        createdAt: true,
-      },
+      select: publicEvidenceSelect(),
     });
   }
 

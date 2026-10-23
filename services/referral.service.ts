@@ -199,7 +199,11 @@ async function listRewards(options: { skip?: number; take?: number; status?: Ref
     }),
     prisma.referralReward.count({ where }),
   ]);
-  return { items, total };
+  const mappedItems: ReferralRewardListItem[] = items.map((item) => ({
+    ...item,
+    reviewer: item.reviewedBy,
+  }));
+  return { items: mappedItems, total };
 }
 
 async function reviewReward(actor: AuthUser, rewardId: string, action: "APPROVE" | "REJECT", rejectionReason?: string) {

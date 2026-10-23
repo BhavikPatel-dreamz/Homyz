@@ -72,12 +72,12 @@ export function InsightsStatsTab({ data, periodLabel }: InsightsStatsTabProps) {
       <div className="mt-5 grid gap-x-8 sm:grid-cols-2 lg:grid-cols-3">{detailCards.map((card) => <DetailMetric key={card.title} {...card} href={withFilters(card.href)} />)}</div>
     </section>
 
-    <section className="rounded-3xl border border-zinc-200 bg-zinc-50 p-6 sm:p-8">
+    {/* <section className="rounded-3xl border border-zinc-200 bg-zinc-50 p-6 sm:p-8">
       <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">{"Impression & Funnel Tracking Notice"}</p>
       <h2 className="mt-1 text-xl font-bold tracking-tight text-zinc-950">Traffic telemetry is not instrumented yet</h2>
       <div className="mt-4 grid gap-3 text-sm text-zinc-700 sm:grid-cols-2"><p>Listing Page Views: {analyticsLimitations.pageViews.status === "DATA_UNAVAILABLE" ? "Not tracked" : "Available"}</p><p>Conversion Rate: {analyticsLimitations.conversionRate.status === "DATA_UNAVAILABLE" ? "Not tracked" : "Available"}</p></div>
       <Link href={withFilters(trackingRoutes.conversion.href)} className="mt-5 inline-flex text-xs font-semibold underline underline-offset-4">View conversion tracking details →</Link>
-    </section>
+    </section> */}
 
     {/* <section className="grid gap-5 lg:grid-cols-2">
       <div className="rounded-3xl bg-zinc-950 p-6 text-white sm:p-8"><p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Listing issues</p><h2 className="mt-1 text-2xl font-bold">{firstOpportunity ? firstOpportunity.title : "You’re all set for now!"}</h2><p className="mt-3 max-w-lg text-sm leading-relaxed text-zinc-300">{firstOpportunity ? firstOpportunity.description : "No active listing issues were found for the selected property scope."}</p><Link href={firstOpportunity ? firstOpportunity.actionHref : withFilters("/host/insights?tab=opportunities")} className="mt-6 inline-flex rounded-full bg-white px-4 py-2.5 text-xs font-semibold text-zinc-950">{firstOpportunity ? firstOpportunity.actionLabel : "View Opportunities"} →</Link></div>

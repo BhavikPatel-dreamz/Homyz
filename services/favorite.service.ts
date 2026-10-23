@@ -8,14 +8,14 @@ import {
   publicListingCardSelect,
   toPublicListingCardDTO,
   type PublicListingCardRecord,
-  type PublicListingDTO,
+  type PublicListingCardDTO,
 } from "./mappers";
 
 export type FavoriteCardItem = {
   id: string;
   listingId: string;
   createdAt: string;
-  listing: PublicListingDTO;
+  listing: PublicListingCardDTO;
 };
 
 async function invalidateFavoriteCache(userId: string): Promise<void> {

@@ -24,12 +24,19 @@ export const GET = apiHandler(async (req: NextRequest) => {
   const url = new URL(req.url);
   const filters = parseInsightsReportingFilters(url);
   const comparison = comparisonFilters(url);
+  const propertyLimitValue = url.searchParams.get("propertyLimit");
+  const propertyLimit = propertyLimitValue === "all"
+    ? null
+    : propertyLimitValue && /^\d+$/.test(propertyLimitValue)
+      ? Math.min(100, Number(propertyLimitValue))
+      : undefined;
   return ok(await hostBookingAnalyticsService.getOverview(actor, {
     listingId: filters.listingId,
     period: filters.period,
     startDate: filters.startDate,
     endDate: filters.endDate,
     ...comparison,
+    propertyLimit,
     currency: filters.currency || req.cookies.get("homyz_display_currency")?.value || "SAR",
   }));
 });

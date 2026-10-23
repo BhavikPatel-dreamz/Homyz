@@ -904,10 +904,11 @@ export async function getPayoutSummaryForAdmin(
   let payoutsRequiringReviewCount = 0;
 
   for (const b of bookings) {
+    const hostPersonalInfo = b.listing.host?.personalInfo as Record<string, any> | null | undefined;
     const hostPayoutMethods: HostPayoutMethod[] = Array.isArray(
-      b.listing.host?.personalInfo?.payoutMethods,
+      hostPersonalInfo?.payoutMethods,
     )
-      ? b.listing.host.personalInfo.payoutMethods
+      ? (hostPersonalInfo!.payoutMethods as HostPayoutMethod[])
       : [];
     const calc = calculateBookingPayout(b, { now, hostPayoutMethods });
 
@@ -1129,10 +1130,11 @@ export async function getHostPayoutDetailsForAdmin(
 
   if (!booking) throw AppError.notFound(`Booking ${bookingId} not found.`);
 
+  const hostPersonalInfo = booking.listing.host?.personalInfo as Record<string, any> | null | undefined;
   const hostMethods: HostPayoutMethod[] = Array.isArray(
-    booking.listing.host?.personalInfo?.payoutMethods,
+    hostPersonalInfo?.payoutMethods,
   )
-    ? booking.listing.host.personalInfo.payoutMethods
+    ? (hostPersonalInfo!.payoutMethods as HostPayoutMethod[])
     : [];
   const defaultMethod = hostMethods.find((m) => m.isDefault) || hostMethods[0];
 
@@ -1406,10 +1408,11 @@ export async function exportBatchSettlementCSV(
   const rows: string[][] = [];
 
   for (const b of bookings) {
+    const hostPersonalInfo = b.listing.host?.personalInfo as Record<string, any> | null | undefined;
     const hostMethods: HostPayoutMethod[] = Array.isArray(
-      b.listing.host?.personalInfo?.payoutMethods,
+      hostPersonalInfo?.payoutMethods,
     )
-      ? b.listing.host.personalInfo.payoutMethods
+      ? (hostPersonalInfo!.payoutMethods as HostPayoutMethod[])
       : [];
     const defaultMethod =
       hostMethods.find((m) => m.isDefault && m.status === "VERIFIED") ||

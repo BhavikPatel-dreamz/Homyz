@@ -27,7 +27,7 @@ export interface SuperhostHostInput {
   /** @deprecated Ignored for Superhost status; retained for source compatibility. */
   createdAt?: Date | string | null;
   /** @deprecated Ignored for Superhost status; retained for source compatibility. */
-  publicProfile?: Record<string, unknown> | null;
+  publicProfile?: unknown;
   /** @deprecated Ignored for Superhost status; retained for source compatibility. */
   bookings?: Array<{ status: string; priceBreakdown?: unknown }>;
   /** @deprecated Ignored for Superhost status; retained for source compatibility. */

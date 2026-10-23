@@ -22,8 +22,8 @@ async function runNotificationsIsolationTests() {
   }
 
   const timestamp = Date.now();
-  let userA: { id: string; email: string };
-  let userB: { id: string; email: string };
+  let userA: { id: string; email: string | null };
+  let userB: { id: string; email: string | null };
 
   try {
     userA = await prisma.user.create({
