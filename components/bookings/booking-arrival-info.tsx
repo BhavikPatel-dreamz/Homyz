@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useLanguage } from "@/lib/i18n/language-context";
 
 interface BookingArrivalInfoProps {
+  bookingId: string;
   isArrivalInfoReleased: boolean;
   arrivalReleaseDateTime: Date | string;
   checkInMethod: string | null;
@@ -63,6 +64,7 @@ function CopyBadge({ text, label }: { text: string; label: string }) {
 }
 
 export function BookingArrivalInfo({
+  bookingId,
   isArrivalInfoReleased,
   arrivalReleaseDateTime,
   checkInMethod,
@@ -91,6 +93,11 @@ export function BookingArrivalInfo({
   const directionsUrl = fullAddress
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fullAddress)}`
     : null;
+
+  useEffect(() => {
+    if (!isArrivalInfoReleased || !isConfirmedOrCurrent || !checkInInstructions) return;
+    void fetch(`/api/v1/bookings/${encodeURIComponent(bookingId)}/check-in-viewed`, { method: "POST" });
+  }, [bookingId, checkInInstructions, isArrivalInfoReleased, isConfirmedOrCurrent]);
 
   const methodLabel =
     checkInMethod === "SMART_LOCK"

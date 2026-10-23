@@ -13,7 +13,12 @@ if (!connectionString) {
   );
 }
 
-const createPrismaClient = () => {
+type PrismaRuntimeClient = PrismaClient & {
+  _baseDmmf?: { modelMap?: Record<string, { fields?: Array<{ name: string }> }> };
+  _dmmf?: { modelMap?: Record<string, { fields?: Array<{ name: string }> }> };
+};
+
+const createPrismaClient = (): PrismaClient => {
   if (process.env.NODE_ENV !== "production" && typeof require !== "undefined") {
     try {
       Object.keys(require.cache).forEach((key) => {
@@ -21,12 +26,15 @@ const createPrismaClient = () => {
           delete require.cache[key];
         }
       });
-      const FreshClient = require("@/generated/prisma/client").PrismaClient;
+      // eslint-disable-next-line @typescript-eslint/no-require-imports -- deliberately reload generated client in development
+      const FreshClient = (require("@/generated/prisma/client") as {
+        PrismaClient: typeof PrismaClient;
+      }).PrismaClient;
       return new FreshClient({
         adapter: new PrismaPg({ connectionString }),
         log: ["error", "warn"],
       });
-    } catch (e) {
+    } catch {
       // Fallback to static import if require fail
     }
   }
@@ -42,16 +50,16 @@ const createPrismaClient = () => {
 
 // Reuse a single client across hot-reloads in dev to avoid exhausting connections.
 const globalForPrisma = globalThis as unknown as {
-  prisma: ReturnType<typeof createPrismaClient> | undefined;
+  prisma: PrismaClient | undefined;
 };
 
-function getPrismaClient() {
-  const existing = globalForPrisma.prisma as any;
-  const dmmfModels = existing?._baseDmmf?.modelMap || existing?._dmmf?.modelMap || {};
-  const listingFields: any[] = dmmfModels?.Listing?.fields || [];
-  const hasHostingTypeField = listingFields.some((f: any) => f.name === "hostingType");
-  const hasStatusField = listingFields.some((f: any) => f.name === "status");
-  const hasIsFeaturedField = listingFields.some((f: any) => f.name === "isFeatured");
+function getPrismaClient(): PrismaClient {
+  const existing = globalForPrisma.prisma as PrismaRuntimeClient | undefined;
+  const dmmfModels = existing?._baseDmmf?.modelMap ?? existing?._dmmf?.modelMap ?? {};
+  const listingFields = dmmfModels.Listing?.fields ?? [];
+  const hasHostingTypeField = listingFields.some((field) => field.name === "hostingType");
+  const hasStatusField = listingFields.some((field) => field.name === "status");
+  const hasIsFeaturedField = listingFields.some((field) => field.name === "isFeatured");
 
   if (
     existing &&

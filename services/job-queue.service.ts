@@ -18,6 +18,7 @@ export type BackgroundJobType =
   | "ACCOUNT_RESTRICTION_EXPIRY"
   | "MODERATION_NOTIFICATION_DELIVERY"
   | "AUDIT_LOG_ARCHIVE"
+  | "HOST_EARNINGS_RECONCILIATION"
   | "SYSTEM_MAINTENANCE";
 
 export interface BackgroundJobDTO {
@@ -835,7 +836,25 @@ registerJobHandler("MODERATION_NOTIFICATION_DELIVERY", async (job) => {
   return { notificationId: notif.id, deliveredTo: p.userId };
 });
 
-// 4. AUDIT_LOG_ARCHIVE / SYSTEM_MAINTENANCE
+// 4. HOST_EARNINGS_RECONCILIATION
+registerJobHandler("HOST_EARNINGS_RECONCILIATION", async (job) => {
+  const { runHostEarningsReconciliationJob } = await import(
+    "@/services/host-earnings-lifecycle.service"
+  );
+  const result = await runHostEarningsReconciliationJob({
+    hostId: job.payload?.hostId,
+    bookingId: job.payload?.bookingId,
+    dryRun: Boolean(job.payload?.dryRun),
+  });
+  return {
+    reconciled: true,
+    examined: result.totalBookingsExamined,
+    recovered: result.recordsUpdated,
+    eligible: result.eligibleToRecoverCount,
+  };
+});
+
+// 5. AUDIT_LOG_ARCHIVE / SYSTEM_MAINTENANCE
 registerJobHandler("SYSTEM_MAINTENANCE", async (job) => {
   // Clean up completed jobs older than 14 days
   const cutoff = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
@@ -861,7 +880,20 @@ registerJobHandler("SYSTEM_MAINTENANCE", async (job) => {
       }
     }
   }
-  return { purgedJobsCount: deletedCount };
+
+  // Run routine Host Earnings reconciliation
+  let earningsReconciled = 0;
+  try {
+    const { runHostEarningsReconciliationJob } = await import(
+      "@/services/host-earnings-lifecycle.service"
+    );
+    const recResult = await runHostEarningsReconciliationJob({ dryRun: false });
+    earningsReconciled = recResult.recordsUpdated;
+  } catch (recErr) {
+    console.warn("[job-queue.service] Maintenance earnings reconciliation notice:", recErr);
+  }
+
+  return { purgedJobsCount: deletedCount, earningsReconciled };
 });
 
 export const jobQueueService = {

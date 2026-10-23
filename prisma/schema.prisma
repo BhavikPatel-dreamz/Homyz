@@ -778,6 +778,7 @@ model Listing {
   specialOffers            SpecialOffer[]
   guestFavoriteEvaluations GuestFavoriteEvaluation[]
   qualityIncidents         ListingQualityIncident[]
+  searchRankingObservations ListingSearchRankingObservation[]
   propertyLicenseLink      PropertyLicenseLink?
   licenseVerificationHistory LicenseVerificationHistory[]
 
@@ -792,6 +793,30 @@ model Listing {
   @@index([status, published, isPaused, deletedAt])
   @@index([isGuestFavorite])
   @@index([licenseEligibilityStatus])
+}
+
+// A host-visible snapshot of a listing's position in a real Homyz public
+// search. The complete context is retained because positions are only
+// meaningful for the exact dates, guest count, location, filters and sort
+// used to produce them.
+model ListingSearchRankingObservation {
+  id             String   @id @default(cuid())
+  listingId      String
+  hostId         String
+  city           String
+  checkIn        String
+  checkOut       String
+  guests         Int
+  filters        Json?
+  sortBy         String
+  resultPosition Int?
+  resultCount    Int
+  observedAt     DateTime @default(now())
+
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@index([listingId, observedAt])
+  @@index([hostId, observedAt])
 }
 
 model PropertyLicense {
@@ -961,6 +986,9 @@ model Booking {
   priceBreakdown     Json? // Structured snapshot of nights, rates, discounts
   cancellationPolicy String? // Applicable listing policy snapshot at booking time
   isNonRefundable    Boolean       @default(false) // Immutable guest-selected booking term
+  // First verified guest access to the listing's check-in instructions. This is an
+  // analytics event, not a source of truth for arrival access itself.
+  checkInInstructionsViewedAt DateTime?
   createdAt          DateTime      @default(now())
   updatedAt          DateTime      @updatedAt
 
@@ -981,6 +1009,7 @@ model Booking {
   @@index([status])
   @@index([status, createdAt])
   @@index([createdAt])
+  @@index([listingId, checkInInstructionsViewedAt])
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

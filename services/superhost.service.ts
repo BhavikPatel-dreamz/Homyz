@@ -306,27 +306,19 @@ export async function evaluateHostAtQuarterlyCheckpoint(hostId: string, evaluati
   if (!previous) throw new Error("Host not found");
 
   const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-    const history = await tx.superhostEvaluation.upsert({
+    // Quarterly evaluations are financial-style historical records: reruns must
+    // be idempotent and must never rewrite the previously finalized result.
+    const existing = await tx.superhostEvaluation.findUnique({
       where: { hostId_evaluationDate: { hostId, evaluationDate: checkpoint } },
-      create: {
+    });
+    if (existing) return { history: existing, finalized: false };
+
+    const history = await tx.superhostEvaluation.create({
+      data: {
         hostId,
         evaluationDate: checkpoint,
         windowStart: progress.windowStart,
         windowEnd: progress.windowEnd,
-        completedReservations: progress.completedReservationsCount,
-        completedNights: progress.completedNightsCount,
-        overallRating: progress.overallRating,
-        publishedReviewCount: progress.publishedReviewCount,
-        responseRatePercentage: progress.responseRatePercentage,
-        totalGuestInquiries: progress.totalGuestInquiries,
-        hostCancellationRatePercentage: progress.hostCancellationRatePercentage,
-        hostCancellationCount: progress.hostCancellationCount,
-        cancellationDenominator: progress.cancellationDenominator,
-        accountGoodStanding: progress.accountGoodStanding,
-        qualified: progress.eligibleNow,
-        failureReasons: progress.failureReasons,
-      },
-      update: {
         completedReservations: progress.completedReservationsCount,
         completedNights: progress.completedNightsCount,
         overallRating: progress.overallRating,
@@ -350,10 +342,10 @@ export async function evaluateHostAtQuarterlyCheckpoint(hostId: string, evaluati
         superhostNextEvaluationAt: getNextQuarterlyEvaluationDate(checkpoint),
       },
     });
-    return history;
+    return { history, finalized: true };
   });
 
-  const statusChanged = previous.isSuperhost !== progress.eligibleNow;
+  const statusChanged = result.finalized && previous.isSuperhost !== progress.eligibleNow;
   if (statusChanged) {
     // Public listing and discovery cards read the persisted badge, so invalidate
     // their versioned cache only when an official quarterly status changes.
@@ -368,14 +360,23 @@ export async function evaluateHostAtQuarterlyCheckpoint(hostId: string, evaluati
       message: progress.eligibleNow
         ? "Your official Superhost status is active for this evaluation period."
         : "Your official Superhost status is no longer active for this evaluation period.",
-      entityId: result.id,
+      entityId: result.history.id,
       entityType: "superhost_evaluation",
       link: "/host/dashboard",
       metadata: { evaluationDate: checkpoint.toISOString(), qualified: progress.eligibleNow },
     });
   }
 
-  return { history: result, progress, statusChanged };
+  return { history: result.history, progress, statusChanged };
+}
+
+/** Returns immutable, host-owned quarterly assessment records for the history view. */
+export async function getSuperhostAssessmentHistory(hostId: string) {
+  return prisma.superhostEvaluation.findMany({
+    where: { hostId },
+    orderBy: { evaluationDate: "desc" },
+    take: 50,
+  });
 }
 
 export async function runQuarterlySuperhostEvaluation(evaluationDate = new Date()) {
