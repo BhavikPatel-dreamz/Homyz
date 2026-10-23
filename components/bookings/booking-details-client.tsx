@@ -204,6 +204,7 @@ export function BookingDetailsClient({ data }: BookingDetailsClientProps) {
 
           {/* 2. Arrival Information (Time-gated) */}
           <BookingArrivalInfo
+            bookingId={booking.id}
             isArrivalInfoReleased={actions.isArrivalInfoReleased}
             arrivalReleaseDateTime={actions.arrivalReleaseDateTime}
             checkInMethod={listing.checkInMethod}

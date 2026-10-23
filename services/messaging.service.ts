@@ -1707,17 +1707,26 @@ export interface HostResponseMetrics {
   averageResponseTimeMinutes: number | null;
 }
 
+export interface HostResponseTrendPoint {
+  monthKey: string;
+  label: string;
+  totalGuestInquiries: number;
+  respondedWithin24hCount: number;
+  responseRatePercentage: number | null;
+}
+
 /**
  * Calculates authoritative host response metrics for guest inquiries over a rolling window.
  * Evaluates whether the host replied within the 24-hour SLA required for Superhost.
  */
 async function calculateHostResponseMetrics(
   hostId: string,
-  window: { windowStart: Date; windowEndExclusive: Date },
+  window: { windowStart: Date; windowEndExclusive: Date; listingId?: string },
 ): Promise<HostResponseMetrics> {
   const conversations = await prisma.conversation.findMany({
     where: {
       hostId,
+      ...(window.listingId ? { listingId: window.listingId } : {}),
       // The Superhost evaluator supplies its single canonical 12-month
       // period. This avoids a separate rolling-month boundary for messaging.
       createdAt: { gte: window.windowStart, lt: window.windowEndExclusive },
@@ -1793,6 +1802,64 @@ async function calculateHostResponseMetrics(
   };
 }
 
+/**
+ * Produces a real monthly response-rate series from the same guest-inquiry
+ * definition used by the response-rate metric. Empty months are preserved as
+ * null rather than represented as a fabricated zero-percent result.
+ */
+async function getHostResponseRateTrend(
+  hostId: string,
+  input: { endingAt: Date; listingId?: string },
+): Promise<HostResponseTrendPoint[]> {
+  const endingAt = input.endingAt > new Date() ? new Date() : input.endingAt;
+  const firstMonth = new Date(Date.UTC(endingAt.getUTCFullYear(), endingAt.getUTCMonth() - 11, 1));
+  const endExclusive = new Date(Date.UTC(endingAt.getUTCFullYear(), endingAt.getUTCMonth(), endingAt.getUTCDate() + 1));
+  const conversations = await prisma.conversation.findMany({
+    where: {
+      hostId,
+      ...(input.listingId ? { listingId: input.listingId } : {}),
+      createdAt: { gte: firstMonth, lt: endExclusive },
+    },
+    include: {
+      messages: {
+        orderBy: { createdAt: "asc" },
+        select: { senderId: true, type: true, createdAt: true },
+      },
+    },
+  });
+  const buckets = new Map<string, { total: number; within24: number }>();
+  const dayMs = 24 * 60 * 60 * 1000;
+  for (const conversation of conversations) {
+    const firstGuestMessage = conversation.messages.find(
+      (message) => message.senderId === conversation.guestId && message.type !== "SYSTEM",
+    );
+    if (!firstGuestMessage) continue;
+    const monthKey = `${firstGuestMessage.createdAt.getUTCFullYear()}-${String(firstGuestMessage.createdAt.getUTCMonth() + 1).padStart(2, "0")}`;
+    const bucket = buckets.get(monthKey) ?? { total: 0, within24: 0 };
+    bucket.total++;
+    const firstHostReply = conversation.messages.find(
+      (message) => message.senderId === hostId && message.createdAt > firstGuestMessage.createdAt,
+    );
+    if (firstHostReply && firstHostReply.createdAt.getTime() - firstGuestMessage.createdAt.getTime() <= dayMs) {
+      bucket.within24++;
+    }
+    buckets.set(monthKey, bucket);
+  }
+
+  return Array.from({ length: 12 }, (_, index) => {
+    const month = new Date(Date.UTC(firstMonth.getUTCFullYear(), firstMonth.getUTCMonth() + index, 1));
+    const monthKey = `${month.getUTCFullYear()}-${String(month.getUTCMonth() + 1).padStart(2, "0")}`;
+    const bucket = buckets.get(monthKey) ?? { total: 0, within24: 0 };
+    return {
+      monthKey,
+      label: new Intl.DateTimeFormat("en-US", { month: "short", year: "numeric", timeZone: "UTC" }).format(month),
+      totalGuestInquiries: bucket.total,
+      respondedWithin24hCount: bucket.within24,
+      responseRatePercentage: bucket.total > 0 ? Math.round((bucket.within24 / bucket.total) * 100) : null,
+    };
+  });
+}
+
 export const messagingService = {
   listConversationsForUser,
   getConversationById,
@@ -1810,4 +1877,5 @@ export const messagingService = {
   acceptSpecialOffer,
   declineInquiry,
   calculateHostResponseMetrics,
+  getHostResponseRateTrend,
 };

@@ -7,8 +7,17 @@ import { authorize } from "@/lib/permissions/authorize";
 import { assertHostPermission } from "@/lib/permissions/host-permissions-server";
 import { listingService } from "@/services/listing.service";
 import { getLiveSuperhostStatus, getNextQuarterlyEvaluationDate } from "@/services/superhost.service";
+import { messagingService } from "@/services/messaging.service";
 import { evaluateGuestFavoriteRequirements } from "@/lib/guest-favorite/rules";
-import { bookingDateKey, differenceInBookingNights, parseBookingDate, shiftBookingDateKey } from "@/lib/booking/booking-date";
+import { bookingDateKey, differenceInBookingNights, shiftBookingDateKey } from "@/lib/booking/booking-date";
+import {
+  calculateDashboardInventory as calculateSharedDashboardInventory,
+  calculateDashboardInventoryByDate as calculateSharedDashboardInventoryByDate,
+  type DashboardInventoryBooking,
+  type DashboardInventoryDatePoint,
+  type DashboardInventoryListing,
+} from "@/lib/dashboard/host-inventory";
+export type { DashboardInventoryBooking, DashboardInventoryDatePoint, DashboardInventoryListing } from "@/lib/dashboard/host-inventory";
 import { computeBookingStatus } from "@/lib/booking/booking-status";
 import {
   extractRecordedCancellationRefund,
@@ -21,13 +30,51 @@ import {
   buildHostDashboardRecommendations,
   type HostDashboardRecommendation,
 } from "@/lib/dashboard/host-recommendations";
+import {
+  resolvePropertyCurrency,
+  normalizeCurrencyCode,
+  DEFAULT_CURRENCY,
+} from "@/lib/currency";
+import {
+  resolveReportingPeriod,
+  type DateRangePreset,
+  type ResolvedReportingPeriod,
+} from "@/lib/dashboard/reporting-filter";
+
+type JsonRecord = Record<string, unknown>;
+
+function asJsonRecord(value: unknown): JsonRecord | null {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+    ? value as JsonRecord
+    : null;
+}
+
+function readNonEmptyString(value: unknown): string | null {
+  return typeof value === "string" && value.trim() ? value : null;
+}
+
+export interface HostDashboardCurrencyBreakdownItem {
+  currency: string;
+  monthlyEarningsCents: number;
+  ytdEarningsCents: number;
+  upcomingPayoutsCents: number;
+  completedPayoutsCents: number;
+  grossVolumeCents: number;
+  netPayoutCents: number;
+  bookingCount: number;
+}
 
 export interface HostDashboardEarnings {
   monthlyEarningsCents: number;
   ytdEarningsCents: number;
   upcomingPayoutsCents: number;
   completedPayoutsCents: number;
+  grossEarningsCents: number;
+  deductionsCents: number;
+  netEarningsCents: number;
   currency: string;
+  hasMixedCurrencies: boolean;
+  currencyBreakdown: HostDashboardCurrencyBreakdownItem[];
   refunds: {
     amountCents: number;
     count: number;
@@ -49,6 +96,17 @@ export interface HostDashboardEarnings {
     taxesCollectedForHostCents: number;
     netHostPayoutCents: number;
   };
+}
+
+export interface HostDashboardThisMonthSnapshot {
+  periodLabel: string;
+  bookingsCount: number;
+  previousMonthBookingsCount: number;
+  bookingsChangePercentage: number | null;
+  cancellationsCount: number;
+  cancellationRatePercentage: number;
+  averageStayNights: number;
+  previousMonthAverageStayNights: number;
 }
 
 export interface HostDashboardReviews {
@@ -80,7 +138,7 @@ export interface HostDashboardGuestAnalytics {
   returningGuestsCount: number;
   returningGuestsPercentage: number;
   guestOriginCountries: Array<{ country: string; guestCount: number; sharePercentage: number }>;
-  guestOrigins: Array<{ country: string; city: string | null; stayCount: number; sharePercentage: number }>;
+  guestOrigins: Array<{ country: string; city: string | null; guestCount: number; sharePercentage: number }>;
   staysWithoutRecordedOriginCount: number;
   checkInInstructionsViewed: {
     status: "DATA_UNAVAILABLE";
@@ -89,11 +147,9 @@ export interface HostDashboardGuestAnalytics {
 }
 
 export interface HostDashboardSuperhostEvaluation {
-  /** Stored official badge state; it changes only during a quarterly run. */
   officialStatus: boolean;
   lastEvaluatedAt: string | null;
   nextEvaluationAt: string;
-  /** Live 12-month progress. It never awards or removes the official badge. */
   currentProgress: {
     completedReservationsCount: number;
     completedNightsCount: number;
@@ -113,7 +169,6 @@ export interface HostDashboardSuperhostEvaluation {
     accountStandingMet: boolean;
     eligibleNow: boolean;
   };
-  /** @deprecated Use currentProgress. Kept for compatibility with the prior dashboard DTO. */
   isQualified: boolean;
   evaluatedWindowMonths: 12;
   windowStart: string;
@@ -228,6 +283,9 @@ export interface HostDashboardKPIs {
     nextEligibleStayStartDate: string | null;
     nextPayoutListingTitle: string | null;
     nextPayoutGuestName: string | null;
+    nextPayoutStatus?: string | null;
+    nextPayoutExpectedArrival?: string | null;
+    nextPayoutMethodMasked?: string | null;
     count: number;
     excludedForPaymentStatusCount: number;
     periodLabel: string;
@@ -282,6 +340,22 @@ export interface HostDashboardKPIs {
     currency: string;
     status: string;
   } | null;
+  upcomingReservations?: Array<{
+    id: string;
+    guestName: string;
+    guestImage: string | null;
+    listingId: string;
+    listingTitle: string;
+    startDate: string;
+    endDate: string;
+    checkInTime: string;
+    nights: number;
+    guests: number;
+    hostPayoutCents: number;
+    isPayoutEligible: boolean;
+    currency: string;
+    status: string;
+  }>;
 }
 
 export interface HostDashboardData {
@@ -291,6 +365,21 @@ export interface HostDashboardData {
   accountStatus: UserStatus;
   isAccountInGoodStanding: boolean;
   filterListingId?: string | null;
+  /** Listings accessible within the current dashboard scope. */
+  listings: Array<{ id: string; title: string }>;
+  /** Financial figures are always native to this selected currency. */
+  filterCurrency: string;
+  availableCurrencies: string[];
+  reportingPeriod: {
+    preset: DateRangePreset;
+    label: string;
+    startDateKey: string;
+    endDateKey: string;
+    comparisonStartDateKey: string;
+    comparisonEndDateKey: string;
+    comparisonLabel: string;
+  };
+  thisMonthSnapshot: HostDashboardThisMonthSnapshot;
   reservationSummary: {
     totalBookings: number;
     upcomingCount: number;
@@ -302,6 +391,12 @@ export interface HostDashboardData {
     hostCancelledCount: number;
     excludedHostCancelledCount: number;
   };
+  reportingActivity: {
+    confirmedBookingsCount: number;
+    completedStaysCount: number;
+    completedNightsCount: number;
+    cancelledBookingsCount: number;
+  };
   kpis: HostDashboardKPIs;
   earnings: HostDashboardEarnings;
   reviews: HostDashboardReviews;
@@ -309,6 +404,7 @@ export interface HostDashboardData {
     responseRatePercentage: number | null;
     averageResponseTimeMinutes: number | null;
     totalGuestInquiries: number;
+    respondedCount: number;
     respondedWithin24hCount: number;
   };
   guestAnalytics: HostDashboardGuestAnalytics;
@@ -316,8 +412,30 @@ export interface HostDashboardData {
   listingHealth: HostDashboardListingHealth;
   superhostEvaluation: HostDashboardSuperhostEvaluation;
   guestFavoriteSummary: HostDashboardGuestFavoriteListingItem[];
-  /** Deterministic, source-grounded recommendations. No external AI call is made. */
   recommendations: HostDashboardRecommendation[];
+}
+
+export interface HostDashboardFilterOptions {
+  listingId?: string;
+  period?: DateRangePreset | string;
+  startDate?: string;
+  endDate?: string;
+  currency?: string;
+  actorRole?: Role;
+}
+
+// Bounded in-memory TTL caching to optimize performance for hosts with large histories
+const dashboardCache = new Map<string, { data: HostDashboardData; expiresAt: number }>();
+const CACHE_TTL_MS = 20_000; // 20 seconds TTL
+
+export function clearHostDashboardCache(hostId?: string) {
+  if (hostId) {
+    for (const key of dashboardCache.keys()) {
+      if (key.startsWith(`${hostId}:`)) dashboardCache.delete(key);
+    }
+  } else {
+    dashboardCache.clear();
+  }
 }
 
 /**
@@ -327,42 +445,76 @@ export interface HostDashboardData {
  */
 export async function getHostDashboardData(
   actor: AuthUser,
-  opts?: { listingId?: string },
+  opts?: HostDashboardFilterOptions,
 ): Promise<HostDashboardData> {
   authorize(actor, [Role.HOST, Role.ADMIN]);
   if (actor.role === Role.HOST) {
     await assertHostPermission(actor.id, "listing.view");
   }
 
+  const cacheKey = `${actor.id}:${opts?.listingId ?? "all"}:${opts?.period ?? "this_month"}:${opts?.startDate ?? ""}:${opts?.endDate ?? ""}:${opts?.currency ?? ""}`;
+  const cached = dashboardCache.get(cacheKey);
+  const nowMs = Date.now();
+  // Reject cache entries created by earlier dashboard DTO versions during a
+  // hot-reload/deployment, rather than returning an incomplete payload.
+  if (cached && cached.expiresAt > nowMs && Array.isArray(cached.data.listings)) {
+    return cached.data;
+  }
+  if (cached) dashboardCache.delete(cacheKey);
+
   const now = new Date();
   const todayKey = bookingDateKey(now);
   const sixMonthsAgo = new Date(now);
   sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
-  // 1. Host user profile and status
-  const hostUser = await prisma.user.findUnique({
-    where: { id: actor.id },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      status: true,
-      createdAt: true,
+  // Derive unified reporting period
+  const reportingPeriod = resolveReportingPeriod(
+    {
+      period: opts?.period as DateRangePreset,
+      startDate: opts?.startDate,
+      endDate: opts?.endDate,
     },
-  });
+    now,
+  );
+
+  // The profile and authorized listing lookup do not depend on one another.
+  // Start them together so dashboard latency is governed by the slower query,
+  // rather than the sum of both queries.
+  const [hostUser, hostListings] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: actor.id },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        status: true,
+        personalInfo: true,
+        createdAt: true,
+      },
+    }),
+    listingService.listForHost(actor, { take: null }),
+  ]);
 
   const accountStatus = hostUser?.status ?? UserStatus.ACTIVE;
   const isAccountInGoodStanding = accountStatus === UserStatus.ACTIVE;
+  const hostInfo = asJsonRecord(hostUser?.personalInfo) ?? {};
+  const hostPayoutMethods = Array.isArray(hostInfo.payoutMethods)
+    ? hostInfo.payoutMethods.map(asJsonRecord).filter((method): method is JsonRecord => method !== null)
+    : [];
+  const defaultPayoutMethod = hostPayoutMethods.find((method) => method.isDefault === true) ?? hostPayoutMethods[0] ?? null;
+  const defaultPayoutCurrency = readNonEmptyString(defaultPayoutMethod?.currency) ?? DEFAULT_CURRENCY;
+  const maskedPayoutMethod = defaultPayoutMethod
+    ? `${readNonEmptyString(defaultPayoutMethod.bankName) ?? "Bank account"} ••••${readNonEmptyString(defaultPayoutMethod.ibanLast4) ?? readNonEmptyString(defaultPayoutMethod.ibanMasked)?.slice(-4) ?? "••••"}`
+    : null;
 
-  // 2. Fetch all host listings (owned or accepted co-host)
-  // Dashboard aggregates must include every listing the host can access. A
-  // paginated first page silently undercounted hosts with more than 100
-  // properties, causing incorrect earnings, occupancy, and qualification data.
-  const { items: listings } = await listingService.listForHost(actor, { take: null });
+  // 2. Use the owned or accepted co-host listings fetched above.
+  const { items: listings } = hostListings;
   const allListingIds = listings.map((l) => l.id);
 
   if (allListingIds.length === 0) {
-    return createEmptyHostDashboard(actor, hostUser, isAccountInGoodStanding, opts?.listingId);
+    const emptyData = createEmptyHostDashboard(actor, hostUser, isAccountInGoodStanding, opts?.listingId, reportingPeriod);
+    dashboardCache.set(cacheKey, { data: emptyData, expiresAt: nowMs + CACHE_TTL_MS });
+    return emptyData;
   }
 
   // Apply listing scope filter if provided
@@ -378,16 +530,37 @@ export async function getHostDashboardData(
     scopedListingIds = [matching.id];
   }
 
+  // Determine authoritative primary currency for reporting
+  const distinctCurrencies = new Set<string>();
+  for (const l of scopedListings) {
+    distinctCurrencies.add(resolvePropertyCurrency(l));
+  }
+  const availableCurrencies = Array.from(distinctCurrencies).sort();
+  const hasMixedCurrencies = availableCurrencies.length > 1;
+  const requestedCurrency = opts?.currency ? normalizeCurrencyCode(opts.currency) : null;
+  // Financial records are never added across currencies. For a mixed portfolio
+  // the dashboard selects one native settlement currency (or a host's default)
+  // and exposes every native total in `currencyBreakdown`.
+  const primaryCurrency = opts?.listingId
+    ? resolvePropertyCurrency(scopedListings[0])
+    : requestedCurrency && availableCurrencies.includes(requestedCurrency)
+      ? requestedCurrency
+      : requestedCurrency === "SAR" || availableCurrencies.includes("SAR")
+        ? "SAR"
+        : availableCurrencies.includes(normalizeCurrencyCode(defaultPayoutCurrency))
+          ? normalizeCurrencyCode(defaultPayoutCurrency)
+          : requestedCurrency || availableCurrencies[0] || "SAR";
+
   // 3. Rolling 12-month window bounds for Superhost & Historical calculations
   const twelveMonthsAgo = new Date(now);
   twelveMonthsAgo.setFullYear(twelveMonthsAgo.getFullYear() - 1);
 
   // Calendar Month and Year bounds for Earnings
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
-  const startOfPreviousMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const endOfPreviousMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
-  const startOfYear = new Date(now.getFullYear(), 0, 1);
+  const startOfMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+  const endOfMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0, 23, 59, 59, 999));
+  const startOfPreviousMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1));
+  const endOfPreviousMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 0, 23, 59, 59, 999));
+  const startOfYear = new Date(Date.UTC(now.getUTCFullYear(), 0, 1));
 
   // 4. Fetch all bookings across scoped listings
   const allBookings = await prisma.booking.findMany({
@@ -410,14 +583,27 @@ export async function getHostDashboardData(
           checkInStart: true,
           checkOutTime: true,
           blockedDates: true,
+          country: true,
+        },
+      },
+      payments: {
+        select: {
+          id: true,
+          status: true,
+          capturedAmount: true,
+        },
+      },
+      refunds: {
+        select: {
+          id: true,
+          status: true,
+          amount: true,
         },
       },
     },
-    orderBy: { startDate: "asc" },
   });
 
-  // Only the six-month completed-stay analytics need residential origin. Do
-  // not join private profile JSON onto every historical or future booking.
+  // Six-month completed-stay analytics need residential origin
   const guestIdsNeedingOrigin = [...new Set(
     allBookings
       .filter((booking: (typeof allBookings)[number]) => (
@@ -442,14 +628,22 @@ export async function getHostDashboardData(
   let todayCount = 0;
   let currentStayCount = 0;
   let completedCount = 0;
-  let completedNightsCount = 0;
   let pendingApprovalCount = 0;
   let guestCancelledCount = 0;
   let hostCancelledCount = 0;
   let excludedHostCancelledCount = 0;
   let totalCancelledCount = 0;
 
-  // Financial Earnings Accumulators (in minor units / cents)
+  // This Month Snapshot accumulators
+  let thisMonthBookingsCount = 0;
+  let previousMonthBookingsCount = 0;
+  let thisMonthCancellationsCount = 0;
+  let thisMonthCompletedCount = 0;
+  let thisMonthCompletedNights = 0;
+  let prevMonthCompletedCount = 0;
+  let prevMonthCompletedNights = 0;
+
+  // Financial Earnings Accumulators (converted into primaryCurrency)
   let monthlyEarningsCents = 0;
   let previousMonthEarningsCents = 0;
   let ytdEarningsCents = 0;
@@ -460,20 +654,57 @@ export async function getHostDashboardData(
   let totalHostServiceFeeCents = 0;
   let totalTaxesCollectedForHostCents = 0;
   let totalNetHostPayoutCents = 0;
-  let totalCompletedGuestCents = 0;
   let totalExtraGuestFeeCents = 0;
   let totalPetFeeCents = 0;
   let totalRefundedCents = 0;
   let totalRefundedCount = 0;
   let bookingsWithoutPayoutSnapshotCount = 0;
   let bookingsExcludedForPaymentStatusCount = 0;
-  let completedPayoutEligibleCount = 0;
+  let reportingCompletedPayoutEligibleCount = 0;
+  let reportingCompletedStaysCount = 0;
+  let reportingCompletedNightsCount = 0;
+  let reportingCompletedGuestTotalCents = 0;
+
+  // Currency breakdown map to prevent silent currency mixing
+  const currencyBuckets = new Map<
+    string,
+    {
+      currency: string;
+      monthlyEarningsCents: number;
+      previousMonthEarningsCents: number;
+      ytdEarningsCents: number;
+      upcomingPayoutsCents: number;
+      completedPayoutsCents: number;
+      grossVolumeCents: number;
+      netPayoutCents: number;
+      bookingCount: number;
+    }
+  >();
+
+  const getOrCreateBucket = (curr: string) => {
+    let b = currencyBuckets.get(curr);
+    if (!b) {
+      b = {
+        currency: curr,
+        monthlyEarningsCents: 0,
+        previousMonthEarningsCents: 0,
+        ytdEarningsCents: 0,
+        upcomingPayoutsCents: 0,
+        completedPayoutsCents: 0,
+        grossVolumeCents: 0,
+        netPayoutCents: 0,
+        bookingCount: 0,
+      };
+      currencyBuckets.set(curr, b);
+    }
+    return b;
+  };
 
   // Guest Analytics tracking
   const guestBookingCounts = new Map<string, number>();
-  const guestOriginMap = new Map<string, { country: string; city: string | null; stayCount: number }>();
+  const guestOriginMap = new Map<string, { country: string; city: string | null; guestIds: Set<string> }>();
   let completedGuestStaysCount = 0;
-  let staysWithoutRecordedOriginCount = 0;
+  const guestsWithoutRecordedOrigin = new Set<string>();
 
   // Per-listing booking aggregations for Guest Favorite
   const listingBookingStats = new Map<
@@ -489,6 +720,10 @@ export async function getHostDashboardData(
     const endKey = bookingDateKey(b.endDate);
     const nights = differenceInBookingNights(b.startDate, b.endDate);
     const payout = extractStoredHostPayout(b);
+    const bCurrency = normalizeCurrencyCode(b.currency || resolvePropertyCurrency(b.listing));
+    const belongsToReportingCurrency = bCurrency === primaryCurrency;
+    const currBucket = getOrCreateBucket(bCurrency);
+    currBucket.bookingCount++;
 
     const stats = listingBookingStats.get(b.listingId) || {
       totalBookings: 0,
@@ -497,6 +732,20 @@ export async function getHostDashboardData(
       reliabilityBookings: 0,
     };
     stats.totalBookings++;
+
+    // Track monthly snapshot booking activity
+    if (b.startDate >= startOfMonth && b.startDate <= endOfMonth) {
+      if (b.status === BookingStatus.CONFIRMED) {
+        thisMonthBookingsCount++;
+      } else if (b.status === BookingStatus.CANCELLED) {
+        thisMonthCancellationsCount++;
+      }
+    }
+    if (b.startDate >= startOfPreviousMonth && b.startDate <= endOfPreviousMonth) {
+      if (b.status === BookingStatus.CONFIRMED) {
+        previousMonthBookingsCount++;
+      }
+    }
 
     if (b.status === BookingStatus.CANCELLED) {
       totalCancelledCount++;
@@ -509,15 +758,13 @@ export async function getHostDashboardData(
         hostCancelledCount++;
         stats.hostCancellations++;
       } else if (cancelledBy === "HOST") {
-        // Keep documented operational exclusions out of host performance and
-        // qualification signals, matching the Superhost/Guest Favorite rules.
         excludedHostCancelledCount++;
       } else {
         guestCancelledCount++;
       }
 
       const refundAmount = extractRecordedCancellationRefund(b);
-      if (refundAmount !== null && refundAmount > 0) {
+      if (belongsToReportingCurrency && refundAmount !== null && refundAmount > 0) {
         totalRefundedCents += refundAmount;
         totalRefundedCount++;
       }
@@ -532,7 +779,7 @@ export async function getHostDashboardData(
 
     if (b.status === BookingStatus.CONFIRMED) {
       const payoutEligible = payout !== null && isStoredBookingPayoutEligible(b);
-      if (!payoutEligible && payout !== null) {
+      if (belongsToReportingCurrency && !payoutEligible && payout !== null) {
         bookingsExcludedForPaymentStatusCount++;
       }
 
@@ -548,13 +795,24 @@ export async function getHostDashboardData(
 
       if (statusDetail.status === "COMPLETED") {
         completedCount++;
-        completedNightsCount += nights;
+        if (b.endDate >= reportingPeriod.startDate && b.endDate <= reportingPeriod.endDate) {
+          reportingCompletedStaysCount++;
+          reportingCompletedNightsCount += nights;
+        }
         stats.completedStays++;
         stats.reliabilityBookings++;
 
-        // Guest analytics intentionally use completed stays in the latest six
-        // months only. This keeps origins and repeat-guest activity current,
-        // while excluding pending, cancelled, and future reservations.
+        // Monthly snapshot stay length
+        if (b.endDate >= startOfMonth && b.endDate <= endOfMonth) {
+          thisMonthCompletedCount++;
+          thisMonthCompletedNights += nights;
+        }
+        if (b.endDate >= startOfPreviousMonth && b.endDate <= endOfPreviousMonth) {
+          prevMonthCompletedCount++;
+          prevMonthCompletedNights += nights;
+        }
+
+        // Guest analytics (last 6 months)
         if (b.endDate >= sixMonthsAgo && b.endDate <= now) {
           completedGuestStaysCount++;
           guestBookingCounts.set(b.userId, (guestBookingCounts.get(b.userId) ?? 0) + 1);
@@ -567,53 +825,69 @@ export async function getHostDashboardData(
             const key = `${country.toLocaleLowerCase()}\u0000${city.toLocaleLowerCase()}`;
             const existingOrigin = guestOriginMap.get(key);
             if (existingOrigin) {
-              existingOrigin.stayCount++;
+              existingOrigin.guestIds.add(b.userId);
             } else {
-              guestOriginMap.set(key, { country, city: city || null, stayCount: 1 });
+              guestOriginMap.set(key, { country, city: city || null, guestIds: new Set([b.userId]) });
             }
           } else {
-            staysWithoutRecordedOriginCount++;
+            guestsWithoutRecordedOrigin.add(b.userId);
           }
         }
 
-        if (payout === null) {
+        if (belongsToReportingCurrency && payout === null) {
           bookingsWithoutPayoutSnapshotCount++;
         }
 
-        // Completed-stay earnings are paid/settled snapshot payouts only. A
-        // confirmed reservation with PAYMENT_PENDING remains operationally
-        // valid but cannot be presented as earned money.
         if (payoutEligible && payout) {
-          completedPayoutEligibleCount++;
-          completedPayoutsCents += payout.netHostPayout;
-          totalAccommodationSubtotalCents += payout.accommodationSubtotal;
-          totalCleaningFeeCents += payout.cleaningFee;
-          totalHostServiceFeeCents += payout.hostServiceFee;
-          totalTaxesCollectedForHostCents += payout.taxesCollectedForHost;
-          totalNetHostPayoutCents += payout.netHostPayout;
-          totalCompletedGuestCents += extractStoredGuestTotal(b) ?? 0;
-          totalExtraGuestFeeCents += payout.extraGuestFee;
-          totalPetFeeCents += payout.petFee;
 
-          // Earnings use checkout date consistently for current month, prior
-          // month comparison, and YTD.
-          if (b.endDate >= startOfMonth && b.endDate <= endOfMonth) {
-            monthlyEarningsCents += payout.netHostPayout;
+          // Currency-specific bucket accumulation (never combined)
+          currBucket.completedPayoutsCents += payout.netHostPayout;
+          currBucket.netPayoutCents += payout.netHostPayout;
+          currBucket.grossVolumeCents +=
+            payout.accommodationSubtotal + payout.cleaningFee + payout.extraGuestFee + payout.petFee;
+
+          if (belongsToReportingCurrency) {
+            completedPayoutsCents += payout.netHostPayout;
+            totalAccommodationSubtotalCents += payout.accommodationSubtotal;
+            totalCleaningFeeCents += payout.cleaningFee;
+            totalHostServiceFeeCents += payout.hostServiceFee;
+            totalTaxesCollectedForHostCents += payout.taxesCollectedForHost;
+            totalNetHostPayoutCents += payout.netHostPayout;
+            totalExtraGuestFeeCents += payout.extraGuestFee;
+            totalPetFeeCents += payout.petFee;
+
+            // The reporting filter controls the headline earnings period and
+            // comparison; YTD remains a separately labelled calendar-year KPI.
+            if (b.endDate >= reportingPeriod.startDate && b.endDate <= reportingPeriod.endDate) {
+              monthlyEarningsCents += payout.netHostPayout;
+              reportingCompletedPayoutEligibleCount++;
+              reportingCompletedGuestTotalCents += extractStoredGuestTotal(b) ?? 0;
+            }
+            if (b.endDate >= reportingPeriod.comparisonStartDate && b.endDate <= reportingPeriod.comparisonEndDate) {
+              previousMonthEarningsCents += payout.netHostPayout;
+            }
+            if (b.endDate >= startOfYear && b.endDate <= now) {
+              ytdEarningsCents += payout.netHostPayout;
+            }
           }
-          if (b.endDate >= startOfPreviousMonth && b.endDate <= endOfPreviousMonth) {
-            previousMonthEarningsCents += payout.netHostPayout;
+          if (b.endDate >= reportingPeriod.startDate && b.endDate <= reportingPeriod.endDate) {
+            currBucket.monthlyEarningsCents += payout.netHostPayout;
+          }
+          if (b.endDate >= reportingPeriod.comparisonStartDate && b.endDate <= reportingPeriod.comparisonEndDate) {
+            currBucket.previousMonthEarningsCents += payout.netHostPayout;
           }
           if (b.endDate >= startOfYear && b.endDate <= now) {
-            ytdEarningsCents += payout.netHostPayout;
+            currBucket.ytdEarningsCents += payout.netHostPayout;
           }
         }
+      } else if (statusDetail.status === "CURRENT_STAY" || statusDetail.status === "CONFIRMED") {
+        if (statusDetail.status === "CURRENT_STAY") currentStayCount++;
+        else upcomingCount++;
 
-      } else if (statusDetail.status === "CURRENT_STAY") {
-        currentStayCount++;
-        if (payoutEligible && payout) upcomingPayoutsCents += payout.netHostPayout;
-      } else if (statusDetail.status === "CONFIRMED") {
-        upcomingCount++;
-        if (payoutEligible && payout) upcomingPayoutsCents += payout.netHostPayout;
+        if (payoutEligible && payout) {
+          if (belongsToReportingCurrency) upcomingPayoutsCents += payout.netHostPayout;
+          currBucket.upcomingPayoutsCents += payout.netHostPayout;
+        }
       }
 
       if (startKey === todayKey || endKey === todayKey) {
@@ -628,12 +902,13 @@ export async function getHostDashboardData(
       ? Math.round(((monthlyEarningsCents - previousMonthEarningsCents) / previousMonthEarningsCents) * 100)
       : null;
 
-  // 6. Next Upcoming Reservation
+  // 6. Next Upcoming Reservation & Upcoming List
   const futureConfirmedBookings = allBookings
     .filter((b: (typeof allBookings)[number]) => b.status === BookingStatus.CONFIRMED && bookingDateKey(b.startDate) >= todayKey)
     .sort((a: (typeof allBookings)[number], b: (typeof allBookings)[number]) => a.startDate.getTime() - b.startDate.getTime());
   const futureEligiblePayoutBookings = futureConfirmedBookings.filter((b: (typeof allBookings)[number]) =>
-    extractStoredHostPayout(b) !== null && isStoredBookingPayoutEligible(b),
+    normalizeCurrencyCode(b.currency || resolvePropertyCurrency(b.listing)) === primaryCurrency
+    && extractStoredHostPayout(b) !== null && isStoredBookingPayoutEligible(b),
   );
 
   const nextBooking = futureConfirmedBookings[0] || null;
@@ -645,11 +920,12 @@ export async function getHostDashboardData(
   const nextEligiblePayout = nextEligiblePayoutBooking
     ? extractStoredHostPayout(nextEligiblePayoutBooking)
     : null;
+
   const nextUpcomingReservation = nextBooking
     ? {
         id: nextBooking.id,
         guestName: nextBooking.user?.name || "Guest",
-        guestImage: (nextBooking.user as any)?.image || null,
+        guestImage: nextBooking.user?.image ?? null,
         listingId: nextBooking.listingId,
         listingTitle: nextBooking.listing.title,
         startDate: bookingDateKey(nextBooking.startDate),
@@ -659,25 +935,48 @@ export async function getHostDashboardData(
         guests: nextBooking.guests,
         hostPayoutCents: nextPayout ? nextPayout.netHostPayout : 0,
         isPayoutEligible: nextPayoutEligible,
-        currency: nextBooking.currency || "SAR",
+        currency: nextBooking.currency || resolvePropertyCurrency(nextBooking.listing),
         status: "CONFIRMED",
       }
     : null;
 
-  // 7. Authoritative inventory calculations. Both the historical occupancy
-  // card and recommendation signals reuse the same booking/blocked-date source
-  // as the host calendar. Only currently active, published, unpaused listings
-  // contribute bookable inventory; activation history is not stored, so past
-  // availability cannot be reconstructed for listings that are no longer live.
+  const upcomingReservations = futureConfirmedBookings.slice(0, 5).map((b: (typeof allBookings)[number]) => {
+    const p = extractStoredHostPayout(b);
+    return {
+      id: b.id,
+      guestName: b.user?.name || "Guest",
+      guestImage: b.user?.image ?? null,
+      listingId: b.listingId,
+      listingTitle: b.listing.title,
+      startDate: bookingDateKey(b.startDate),
+      endDate: bookingDateKey(b.endDate),
+      checkInTime: b.listing.checkInStart || "15:00",
+      nights: differenceInBookingNights(b.startDate, b.endDate),
+      guests: b.guests,
+      hostPayoutCents: p ? p.netHostPayout : 0,
+      isPayoutEligible: p !== null && isStoredBookingPayoutEligible(b),
+      currency: b.currency || resolvePropertyCurrency(b.listing),
+      status: "CONFIRMED",
+    };
+  });
+
+  // Next Payout Status and Arrival info
+  const nextPayoutStatus = nextEligiblePayoutBooking
+    ? (nextEligiblePayoutBooking.startDate.getTime() <= now.getTime() ? "ELIGIBLE_SETTLEMENT" : "SCHEDULED")
+    : null;
+  const nextPayoutExpectedArrival = nextEligiblePayoutBooking
+    ? `24h after check-in (${bookingDateKey(new Date(nextEligiblePayoutBooking.startDate.getTime() + 24 * 60 * 60 * 1000))})`
+    : null;
+
+  // 7. Authoritative inventory calculations
   const inventoryListings = scopedListings.filter(
     (listing) => listing.published && listing.status === "ACTIVE" && !listing.isPaused,
   );
-  const thirtyDaysAgoKey = shiftBookingDateKey(todayKey, -30);
   const occupancyInventory = calculateDashboardInventory({
     listings: inventoryListings,
     bookings: allBookings,
-    startDateKey: thirtyDaysAgoKey,
-    endDateKeyExclusive: todayKey,
+    startDateKey: reportingPeriod.startDateKey,
+    endDateKeyExclusive: shiftBookingDateKey(reportingPeriod.endDateKey, 1),
   });
   const futureInventoryWindowDays = 14;
   const futureInventory = calculateDashboardInventory({
@@ -695,32 +994,30 @@ export async function getHostDashboardData(
   };
   const [reviews, recentReviews] = await Promise.all([
     prisma.review.findMany({
-    where: {
-      ...reviewScope,
-    },
-    select: {
-      id: true,
-      rating: true,
-      cleanlinessRating: true,
-      accuracyRating: true,
-      checkInRating: true,
-      communicationRating: true,
-      locationRating: true,
-      valueRating: true,
-      createdAt: true,
-      listingId: true,
-    },
+      where: { ...reviewScope },
+      select: {
+        id: true,
+        rating: true,
+        cleanlinessRating: true,
+        accuracyRating: true,
+        checkInRating: true,
+        communicationRating: true,
+        locationRating: true,
+        valueRating: true,
+        createdAt: true,
+        listingId: true,
+      },
     }),
     prisma.review.findMany({
-      where: reviewScope,
-      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      where: { ...reviewScope },
       take: 5,
+      orderBy: { createdAt: "desc" },
       select: {
         id: true,
         rating: true,
         comment: true,
         createdAt: true,
-        author: { select: { name: true } },
+        author: { select: { name: true, image: true } },
         listing: { select: { title: true } },
       },
     }),
@@ -736,7 +1033,6 @@ export async function getHostDashboardData(
   let valueSum = 0, valueCount = 0;
 
   const reviewTrendMap = new Map<string, { sum: number; count: number }>();
-
   const listingReviewMap = new Map<
     string,
     { count: number; sum: number; subratings: Record<string, { sum: number; count: number }> }
@@ -776,7 +1072,7 @@ export async function getHostDashboardData(
       reviewTrendMap.set(month, trendEntry);
     }
 
-    const listingReview = listingReviewMap.get(r.listingId);
+    const listingReview = r.listingId ? listingReviewMap.get(r.listingId) : undefined;
     if (listingReview) {
       listingReview.count++;
       listingReview.sum += r.rating;
@@ -790,8 +1086,6 @@ export async function getHostDashboardData(
   }
 
   const overallRating = reviews.length > 0 ? Math.round((ratingSum / reviews.length) * 100) / 100 : null;
-  // Keep all twelve month buckets so the UI can represent quiet months
-  // honestly rather than connecting unrelated review periods.
   const reviewTrend = Array.from({ length: 12 }, (_, index) => {
     const monthDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 11 + index, 1));
     const month = `${monthDate.getUTCFullYear()}-${String(monthDate.getUTCMonth() + 1).padStart(2, "0")}`;
@@ -803,22 +1097,25 @@ export async function getHostDashboardData(
     };
   });
 
-  // 9. The Superhost service is the single owner-level source for the rolling
-  // 12-month messaging metric and live qualification progress. This remains
-  // intentionally independent from an optional single-listing dashboard filter.
-  const superhostStatus = await getLiveSuperhostStatus(actor.id, now);
-  const messagingMetrics = superhostStatus;
+  // 9. Superhost remains an owner-level rolling program calculation. Dashboard
+  // response metrics, however, follow the selected Insights reporting scope.
+  const [superhostStatus, messagingMetrics] = await Promise.all([
+    getLiveSuperhostStatus(actor.id, now),
+    messagingService.calculateHostResponseMetrics(actor.id, {
+      windowStart: reportingPeriod.startDate,
+      windowEndExclusive: new Date(reportingPeriod.endDate.getTime() + 1),
+      listingId: opts?.listingId,
+    }),
+  ]);
 
-  // 10. Superhost progress comes only from the authoritative owner-level service.
   const meetsReservationOrNightsThreshold = superhostStatus.hostingVolume.met;
   const meetsRatingThreshold = superhostStatus.ratingMet;
   const meetsResponseRateThreshold = superhostStatus.responseRateMet;
-  const hostCancellationRatePercentage = superhostStatus.hostCancellationRatePercentage;
   const meetsCancellationThreshold = superhostStatus.cancellationMet;
   const gaps = superhostStatus.failureReasons;
   const isSuperhostQualified = superhostStatus.eligibleNow;
 
-  // 11. Guest Analytics
+  // 10. Guest Analytics
   const uniqueGuestsCount = guestBookingCounts.size;
   let returningGuestsCount = 0;
   for (const count of guestBookingCounts.values()) {
@@ -827,32 +1124,38 @@ export async function getHostDashboardData(
   const returningGuestsPercentage =
     uniqueGuestsCount > 0 ? Math.round((returningGuestsCount / uniqueGuestsCount) * 100) : 0;
 
+  const totalGuestsWithKnownOrigin = Array.from(guestOriginMap.values()).reduce(
+    (sum, origin) => sum + origin.guestIds.size,
+    0,
+  );
   const guestOrigins = Array.from(guestOriginMap.values())
     .map((origin) => ({
-      ...origin,
-      sharePercentage: completedGuestStaysCount > 0
-        ? Math.round((origin.stayCount / completedGuestStaysCount) * 1000) / 10
+      country: origin.country,
+      city: origin.city,
+      guestCount: origin.guestIds.size,
+      sharePercentage: totalGuestsWithKnownOrigin > 0
+        ? Math.round((origin.guestIds.size / totalGuestsWithKnownOrigin) * 1000) / 10
         : 0,
     }))
-    .sort((a, b) => b.stayCount - a.stayCount || a.country.localeCompare(b.country));
+    .sort((a, b) => b.guestCount - a.guestCount || a.country.localeCompare(b.country));
   const guestOriginCountryMap = new Map<string, number>();
   for (const origin of guestOrigins) {
     guestOriginCountryMap.set(
       origin.country,
-      (guestOriginCountryMap.get(origin.country) ?? 0) + origin.stayCount,
+      (guestOriginCountryMap.get(origin.country) ?? 0) + origin.guestCount,
     );
   }
   const guestOriginCountries = Array.from(guestOriginCountryMap.entries())
     .map(([country, guestCount]) => ({
       country,
       guestCount,
-      sharePercentage: completedGuestStaysCount > 0
-        ? Math.round((guestCount / completedGuestStaysCount) * 1000) / 10
+      sharePercentage: totalGuestsWithKnownOrigin > 0
+        ? Math.round((guestCount / totalGuestsWithKnownOrigin) * 1000) / 10
         : 0,
     }))
     .sort((a, b) => b.guestCount - a.guestCount || a.country.localeCompare(b.country));
 
-  // 12. Listing Performance Counts
+  // 11. Listing Performance Counts
   const activeListings = scopedListings.filter((l) => l.published && l.status === "ACTIVE" && !l.isPaused).length;
   const draftListings = scopedListings.filter((l) => l.status === "DRAFT" || l.status === "IN_PROGRESS").length;
   const pausedListings = scopedListings.filter((l) => Boolean(l.isPaused)).length;
@@ -890,7 +1193,7 @@ export async function getHostDashboardData(
     }),
   };
 
-  // 13. Cancellation Rates
+  // 12. Cancellation Rates
   const totalBookingsCount = allBookings.length;
   const overallCancellationRatePercentage =
     totalBookingsCount > 0
@@ -903,21 +1206,22 @@ export async function getHostDashboardData(
       ? Math.round((hostCancelledCount / totalConfirmedOrCompleted) * 1000) / 10
       : 0;
 
-  // 14. Average Booking Value & Stay Length
+  // 13. Average Booking Value & Stay Length
   const averageBookingValue = {
-    hostPayoutCents: completedPayoutEligibleCount > 0 ? Math.round(completedPayoutsCents / completedPayoutEligibleCount) : 0,
-    guestTotalCents: completedPayoutEligibleCount > 0 ? Math.round(totalCompletedGuestCents / completedPayoutEligibleCount) : 0,
-    currency: "SAR",
-    completedBookingsCount: completedPayoutEligibleCount,
-    periodLabel: "Eligible Completed Stays",
+    hostPayoutCents: reportingCompletedPayoutEligibleCount > 0 ? Math.round(monthlyEarningsCents / reportingCompletedPayoutEligibleCount) : null,
+    guestTotalCents: reportingCompletedPayoutEligibleCount > 0 ? Math.round(reportingCompletedGuestTotalCents / reportingCompletedPayoutEligibleCount) : 0,
+    currency: primaryCurrency,
+    completedBookingsCount: reportingCompletedPayoutEligibleCount,
+    periodLabel: `${reportingPeriod.label} eligible completed stays`,
   };
 
   const averageStayLength = {
-    nights: completedCount > 0 ? Math.round((completedNightsCount / completedCount) * 10) / 10 : 0,
-    completedStaysCount: completedCount,
-    periodLabel: "Completed Stays",
+    nights: reportingCompletedStaysCount > 0 ? Math.round((reportingCompletedNightsCount / reportingCompletedStaysCount) * 10) / 10 : 0,
+    completedStaysCount: reportingCompletedStaysCount,
+    periodLabel: `${reportingPeriod.label} completed stays`,
   };
 
+  // Recommendations
   const recommendations = buildHostDashboardRecommendations({
     hostCancellationRatePercentage: hostRate,
     responseRatePercentage: messagingMetrics.responseRatePercentage,
@@ -932,14 +1236,22 @@ export async function getHostDashboardData(
     })),
   });
 
-  // 15. Guest Favorite Per-Listing Summary
+  // 14. Guest Favorite Per-Listing Summary
+  const emptyReviewSubratings = () => ({
+    cleanliness: { sum: 0, count: 0 },
+    accuracy: { sum: 0, count: 0 },
+    checkIn: { sum: 0, count: 0 },
+    communication: { sum: 0, count: 0 },
+    location: { sum: 0, count: 0 },
+    value: { sum: 0, count: 0 },
+  });
   const guestFavoriteSummary: HostDashboardGuestFavoriteListingItem[] = scopedListings.map((l) => {
     const bStats = listingBookingStats.get(l.id) || { totalBookings: 0, completedStays: 0, hostCancellations: 0, reliabilityBookings: 0 };
-    const rStats = listingReviewMap.get(l.id) || { count: 0, sum: 0, subratings: {} as any };
+    const rStats = listingReviewMap.get(l.id) ?? { count: 0, sum: 0, subratings: emptyReviewSubratings() };
 
     const listingRating = rStats.count > 0 ? Math.round((rStats.sum / rStats.count) * 100) / 100 : null;
-    const sub = (key: string) => {
-      const entry = (rStats.subratings as any)?.[key];
+    const sub = (key: keyof typeof rStats.subratings) => {
+      const entry = rStats.subratings[key];
       return entry && entry.count > 0 ? Math.round((entry.sum / entry.count) * 10) / 10 : null;
     };
     const categoryRatings = {
@@ -950,12 +1262,14 @@ export async function getHostDashboardData(
       location: { average: sub("location"), reviewCount: rStats.subratings.location.count },
       value: { average: sub("value"), reviewCount: rStats.subratings.value.count },
     };
+
     const guestFavoriteProgress = evaluateGuestFavoriteRequirements({
       publishedReviewCount: rStats.count,
       overallRating: listingRating,
       categoryRatings,
-      totalBookings: bStats.reliabilityBookings,
+      totalBookings: bStats.totalBookings,
       hostCancellationCount: bStats.hostCancellations,
+      qualityIncidentCount: null,
     });
 
     return {
@@ -964,8 +1278,8 @@ export async function getHostDashboardData(
       status: l.status,
       published: Boolean(l.published),
       officialStatus: Boolean(l.isGuestFavorite),
-      guestFavoriteSince: l.guestFavoriteSince ? new Date(l.guestFavoriteSince).toISOString() : null,
-      lastEvaluatedAt: l.guestFavoriteLastEvaluatedAt ? new Date(l.guestFavoriteLastEvaluatedAt).toISOString() : null,
+      guestFavoriteSince: l.guestFavoriteSince?.toISOString() ?? null,
+      lastEvaluatedAt: (l as { guestFavoriteLastEvaluatedAt?: Date | null }).guestFavoriteLastEvaluatedAt?.toISOString() ?? null,
       totalBookings: bStats.totalBookings,
       completedStays: bStats.completedStays,
       reviewsCount: rStats.count,
@@ -995,29 +1309,32 @@ export async function getHostDashboardData(
 
   // Construct structured main KPIs object
   const kpis: HostDashboardKPIs = {
-    periodLabel: "Last 30 Days",
+    periodLabel: reportingPeriod.label,
     monthlyEarnings: {
       amountCents: monthlyEarningsCents,
-      currency: "SAR",
-      periodLabel: "Current Month",
+      currency: primaryCurrency,
+      periodLabel: reportingPeriod.label,
       previousMonthAmountCents: previousMonthEarningsCents,
       changePercentage: earningsMoMChangePercentage,
     },
     ytdEarnings: {
       amountCents: ytdEarningsCents,
-      currency: "SAR",
+      currency: primaryCurrency,
       periodLabel: "Current Year",
     },
     upcomingPayout: {
       totalUpcomingAmountCents: upcomingPayoutsCents,
-      currency: "SAR",
+      currency: primaryCurrency,
       nextPayoutAmountCents: nextEligiblePayout ? nextEligiblePayout.netHostPayout : null,
       nextEligibleStayStartDate: nextEligiblePayoutBooking ? bookingDateKey(nextEligiblePayoutBooking.startDate) : null,
       nextPayoutListingTitle: nextEligiblePayoutBooking ? nextEligiblePayoutBooking.listing.title : null,
       nextPayoutGuestName: nextEligiblePayoutBooking ? nextEligiblePayoutBooking.user?.name || "Guest" : null,
+      nextPayoutStatus,
+      nextPayoutExpectedArrival,
+      nextPayoutMethodMasked: maskedPayoutMethod,
       count: futureEligiblePayoutBookings.length,
-      excludedForPaymentStatusCount: futureConfirmedBookings.length - futureEligiblePayoutBookings.length,
-      periodLabel: "Eligible Upcoming Stays (not a payout schedule)",
+      excludedForPaymentStatusCount: futureConfirmedBookings.filter((booking: { currency: string; listing: { country: string | null } }) => normalizeCurrencyCode(booking.currency || resolvePropertyCurrency(booking.listing)) === primaryCurrency).length - futureEligiblePayoutBookings.length,
+      periodLabel: "Eligible Upcoming Stays",
     },
     occupancy: {
       ratePercentage: occupancyInventory.ratePercentage,
@@ -1025,7 +1342,7 @@ export async function getHostDashboardData(
       availableNights: occupancyInventory.availableNights,
       totalBookableNights: occupancyInventory.bookableNights,
       blockedNights: occupancyInventory.blockedNights,
-      periodLabel: "Last 30 Days",
+      periodLabel: reportingPeriod.label,
     },
     averageBookingValue,
     averageStayLength,
@@ -1044,15 +1361,57 @@ export async function getHostDashboardData(
       periodLabel: "All Time",
     },
     nextUpcomingReservation,
+    upcomingReservations,
   };
 
-  return {
+  // This Month Snapshot
+  const thisMonthTotalActivity = thisMonthBookingsCount + thisMonthCancellationsCount;
+  const thisMonthCancellationRate = thisMonthTotalActivity > 0
+    ? Math.round((thisMonthCancellationsCount / thisMonthTotalActivity) * 1000) / 10
+    : 0;
+  const thisMonthMoMChange = previousMonthBookingsCount > 0
+    ? Math.round(((thisMonthBookingsCount - previousMonthBookingsCount) / previousMonthBookingsCount) * 100)
+    : null;
+  const thisMonthAvgStay = thisMonthCompletedCount > 0
+    ? Math.round((thisMonthCompletedNights / thisMonthCompletedCount) * 10) / 10
+    : 0;
+  const prevMonthAvgStay = prevMonthCompletedCount > 0
+    ? Math.round((prevMonthCompletedNights / prevMonthCompletedCount) * 10) / 10
+    : 0;
+
+  const thisMonthSnapshot: HostDashboardThisMonthSnapshot = {
+    periodLabel: startOfMonth.toLocaleDateString("en-US", { month: "long", year: "numeric" }),
+    bookingsCount: thisMonthBookingsCount,
+    previousMonthBookingsCount,
+    bookingsChangePercentage: thisMonthMoMChange,
+    cancellationsCount: thisMonthCancellationsCount,
+    cancellationRatePercentage: thisMonthCancellationRate,
+    averageStayNights: thisMonthAvgStay,
+    previousMonthAverageStayNights: prevMonthAvgStay,
+  };
+
+  const currencyBreakdown = Array.from(currencyBuckets.values()).sort((a, b) => b.completedPayoutsCents - a.completedPayoutsCents);
+
+  const result: HostDashboardData = {
     hostId: actor.id,
     hostName: hostUser?.name || null,
     hostEmail: hostUser?.email || null,
     accountStatus,
     isAccountInGoodStanding,
     filterListingId: opts?.listingId || null,
+    listings: scopedListings.map((listing) => ({ id: listing.id, title: listing.title })),
+    filterCurrency: primaryCurrency,
+    availableCurrencies,
+    reportingPeriod: {
+      preset: reportingPeriod.preset,
+      label: reportingPeriod.label,
+      startDateKey: reportingPeriod.startDateKey,
+      endDateKey: reportingPeriod.endDateKey,
+      comparisonStartDateKey: reportingPeriod.comparisonStartDateKey,
+      comparisonEndDateKey: reportingPeriod.comparisonEndDateKey,
+      comparisonLabel: reportingPeriod.comparisonLabel,
+    },
+    thisMonthSnapshot,
     reservationSummary: {
       totalBookings: allBookings.length,
       upcomingCount,
@@ -1064,13 +1423,24 @@ export async function getHostDashboardData(
       hostCancelledCount,
       excludedHostCancelledCount,
     },
+    reportingActivity: {
+      confirmedBookingsCount: allBookings.filter((booking: { status: BookingStatus; startDate: Date }) => booking.status === BookingStatus.CONFIRMED && booking.startDate >= reportingPeriod.startDate && booking.startDate <= reportingPeriod.endDate).length,
+      completedStaysCount: reportingCompletedStaysCount,
+      completedNightsCount: reportingCompletedNightsCount,
+      cancelledBookingsCount: allBookings.filter((booking: { status: BookingStatus; startDate: Date }) => booking.status === BookingStatus.CANCELLED && booking.startDate >= reportingPeriod.startDate && booking.startDate <= reportingPeriod.endDate).length,
+    },
     kpis,
     earnings: {
       monthlyEarningsCents,
       ytdEarningsCents,
       upcomingPayoutsCents,
       completedPayoutsCents,
-      currency: "SAR",
+      grossEarningsCents: totalAccommodationSubtotalCents + totalCleaningFeeCents + totalExtraGuestFeeCents + totalPetFeeCents,
+      deductionsCents: totalHostServiceFeeCents,
+      netEarningsCents: totalNetHostPayoutCents,
+      currency: primaryCurrency,
+      hasMixedCurrencies,
+      currencyBreakdown,
       refunds: {
         amountCents: totalRefundedCents,
         count: totalRefundedCount,
@@ -1109,7 +1479,7 @@ export async function getHostDashboardData(
       recentReviews: recentReviews.map((review: (typeof recentReviews)[number]) => ({
         id: review.id,
         guestName: review.author.name || "Guest",
-        listingTitle: review.listing.title,
+        listingTitle: review.listing?.title ?? "Property",
         rating: review.rating,
         comment: review.comment,
         createdAt: review.createdAt.toISOString(),
@@ -1119,6 +1489,7 @@ export async function getHostDashboardData(
       responseRatePercentage: messagingMetrics.responseRatePercentage,
       averageResponseTimeMinutes: messagingMetrics.averageResponseTimeMinutes,
       totalGuestInquiries: messagingMetrics.totalGuestInquiries,
+      respondedCount: messagingMetrics.respondedCount,
       respondedWithin24hCount: messagingMetrics.respondedWithin24hCount,
     },
     guestAnalytics: {
@@ -1128,7 +1499,7 @@ export async function getHostDashboardData(
       returningGuestsPercentage,
       guestOriginCountries,
       guestOrigins,
-      staysWithoutRecordedOriginCount,
+      staysWithoutRecordedOriginCount: guestsWithoutRecordedOrigin.size,
       checkInInstructionsViewed: {
         status: "DATA_UNAVAILABLE",
         message: "Check-in instructions viewed tracking is not currently instrumented in the event database.",
@@ -1198,90 +1569,29 @@ export async function getHostDashboardData(
     guestFavoriteSummary,
     recommendations,
   };
+
+  dashboardCache.set(cacheKey, { data: result, expiresAt: nowMs + CACHE_TTL_MS });
+  return result;
 }
 
-type DashboardInventoryListing = {
-  id: string;
-  blockedDates: string[];
-};
-
-type DashboardInventoryBooking = {
-  listingId: string;
-  status: BookingStatus;
-  startDate: Date;
-  endDate: Date;
-};
-
-/**
- * A dashboard adapter over the shared booking-calendar data. It stores no
- * availability state: confirmed reservation nights take precedence over manual
- * blocks, and remaining active inventory is available.
- */
-function calculateDashboardInventory({
-  listings,
-  bookings,
-  startDateKey,
-  endDateKeyExclusive,
-}: {
+/** Backward-compatible Dashboard export backed by the database-free shared policy. */
+export function calculateDashboardInventory(input: {
   listings: DashboardInventoryListing[];
   bookings: DashboardInventoryBooking[];
   startDateKey: string;
   endDateKeyExclusive: string;
 }) {
-  const dateKeys: string[] = [];
-  for (
-    let cursor = parseBookingDate(startDateKey);
-    bookingDateKey(cursor) < endDateKeyExclusive;
-    cursor.setUTCDate(cursor.getUTCDate() + 1)
-  ) {
-    dateKeys.push(bookingDateKey(cursor));
-  }
+  return calculateSharedDashboardInventory(input);
+}
 
-  const listingIds = new Set(listings.map((listing) => listing.id));
-  const booked = new Set<string>();
-  const blocked = new Set<string>();
-  for (const listing of listings) {
-    for (const dateKey of listing.blockedDates || []) {
-      if (dateKey >= startDateKey && dateKey < endDateKeyExclusive) {
-        blocked.add(`${listing.id}_${dateKey}`);
-      }
-    }
-  }
-  for (const booking of bookings) {
-    if (booking.status !== BookingStatus.CONFIRMED || !listingIds.has(booking.listingId)) continue;
-    for (
-      let cursor = parseBookingDate(booking.startDate);
-      bookingDateKey(cursor) < bookingDateKey(booking.endDate);
-      cursor.setUTCDate(cursor.getUTCDate() + 1)
-    ) {
-      const dateKey = bookingDateKey(cursor);
-      if (dateKey >= startDateKey && dateKey < endDateKeyExclusive) {
-        booked.add(`${booking.listingId}_${dateKey}`);
-      }
-    }
-  }
-
-  const totalCalendarNights = listings.length * dateKeys.length;
-  let blockedNights = 0;
-  let bookedNights = 0;
-  for (const listing of listings) {
-    for (const dateKey of dateKeys) {
-      const key = `${listing.id}_${dateKey}`;
-      if (booked.has(key)) bookedNights++;
-      else if (blocked.has(key)) blockedNights++;
-    }
-  }
-  const bookableNights = Math.max(0, totalCalendarNights - blockedNights);
-  const availableNights = Math.max(0, bookableNights - bookedNights);
-  return {
-    blockedNights,
-    bookedNights,
-    bookableNights,
-    availableNights,
-    ratePercentage: bookableNights > 0
-      ? Math.min(100, Math.round((bookedNights / bookableNights) * 1000) / 10)
-      : 0,
-  };
+/** Date-level Dashboard inventory export for consumers that need a heatmap. */
+export function calculateDashboardInventoryByDate(input: {
+  listings: DashboardInventoryListing[];
+  bookings: DashboardInventoryBooking[];
+  startDateKey: string;
+  endDateKeyExclusive: string;
+}): DashboardInventoryDatePoint[] {
+  return calculateSharedDashboardInventoryByDate(input);
 }
 
 function createEmptyHostDashboard(
@@ -1289,10 +1599,12 @@ function createEmptyHostDashboard(
   hostUser: { id: string; name: string | null; email: string | null; status: UserStatus } | null,
   isAccountInGoodStanding: boolean,
   filterListingId?: string | null,
+  period?: ResolvedReportingPeriod,
 ): HostDashboardData {
   const now = new Date();
   const twelveMonthsAgo = new Date(now);
   twelveMonthsAgo.setFullYear(twelveMonthsAgo.getFullYear() - 1);
+  const repPeriod = period ?? resolveReportingPeriod({ period: "this_month" }, now);
 
   return {
     hostId: actor.id,
@@ -1301,6 +1613,28 @@ function createEmptyHostDashboard(
     accountStatus: hostUser?.status ?? UserStatus.ACTIVE,
     isAccountInGoodStanding,
     filterListingId: filterListingId || null,
+    listings: [],
+    filterCurrency: DEFAULT_CURRENCY,
+    availableCurrencies: [],
+    reportingPeriod: {
+      preset: repPeriod.preset,
+      label: repPeriod.label,
+      startDateKey: repPeriod.startDateKey,
+      endDateKey: repPeriod.endDateKey,
+      comparisonStartDateKey: repPeriod.comparisonStartDateKey,
+      comparisonEndDateKey: repPeriod.comparisonEndDateKey,
+      comparisonLabel: repPeriod.comparisonLabel,
+    },
+    thisMonthSnapshot: {
+      periodLabel: repPeriod.label,
+      bookingsCount: 0,
+      previousMonthBookingsCount: 0,
+      bookingsChangePercentage: null,
+      cancellationsCount: 0,
+      cancellationRatePercentage: 0,
+      averageStayNights: 0,
+      previousMonthAverageStayNights: 0,
+    },
     reservationSummary: {
       totalBookings: 0,
       upcomingCount: 0,
@@ -1312,30 +1646,39 @@ function createEmptyHostDashboard(
       hostCancelledCount: 0,
       excludedHostCancelledCount: 0,
     },
+    reportingActivity: {
+      confirmedBookingsCount: 0,
+      completedStaysCount: 0,
+      completedNightsCount: 0,
+      cancelledBookingsCount: 0,
+    },
     kpis: {
-      periodLabel: "Last 30 Days",
+      periodLabel: repPeriod.label,
       monthlyEarnings: {
         amountCents: 0,
-        currency: "SAR",
+        currency: DEFAULT_CURRENCY,
         periodLabel: "Current Month",
         previousMonthAmountCents: 0,
         changePercentage: null,
       },
       ytdEarnings: {
         amountCents: 0,
-        currency: "SAR",
+        currency: DEFAULT_CURRENCY,
         periodLabel: "Current Year",
       },
       upcomingPayout: {
         totalUpcomingAmountCents: 0,
-        currency: "SAR",
+        currency: DEFAULT_CURRENCY,
         nextPayoutAmountCents: null,
         nextEligibleStayStartDate: null,
         nextPayoutListingTitle: null,
         nextPayoutGuestName: null,
+        nextPayoutStatus: null,
+        nextPayoutExpectedArrival: null,
+        nextPayoutMethodMasked: null,
         count: 0,
         excludedForPaymentStatusCount: 0,
-        periodLabel: "Eligible Upcoming Stays (not a payout schedule)",
+        periodLabel: "Eligible Upcoming Stays",
       },
       occupancy: {
         ratePercentage: 0,
@@ -1343,12 +1686,12 @@ function createEmptyHostDashboard(
         availableNights: 0,
         totalBookableNights: 0,
         blockedNights: 0,
-        periodLabel: "Last 30 Days",
+        periodLabel: repPeriod.label,
       },
       averageBookingValue: {
         hostPayoutCents: 0,
         guestTotalCents: 0,
-        currency: "SAR",
+        currency: DEFAULT_CURRENCY,
         completedBookingsCount: 0,
         periodLabel: "Completed Stays",
       },
@@ -1372,13 +1715,19 @@ function createEmptyHostDashboard(
         periodLabel: "All Time",
       },
       nextUpcomingReservation: null,
+      upcomingReservations: [],
     },
     earnings: {
       monthlyEarningsCents: 0,
       ytdEarningsCents: 0,
       upcomingPayoutsCents: 0,
       completedPayoutsCents: 0,
-      currency: "SAR",
+      grossEarningsCents: 0,
+      deductionsCents: 0,
+      netEarningsCents: 0,
+      currency: DEFAULT_CURRENCY,
+      hasMixedCurrencies: false,
+      currencyBreakdown: [],
       refunds: {
         amountCents: 0,
         count: 0,
@@ -1420,6 +1769,7 @@ function createEmptyHostDashboard(
       responseRatePercentage: null,
       averageResponseTimeMinutes: null,
       totalGuestInquiries: 0,
+      respondedCount: 0,
       respondedWithin24hCount: 0,
     },
     guestAnalytics: {

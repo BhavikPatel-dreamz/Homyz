@@ -132,6 +132,12 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
         isActive: pathname === "/host/today" || pathname?.startsWith("/host/today/"),
       },
       {
+        id: "dashboard",
+        label: t("header_nav_dashboard") || "Dashboard",
+        href: "/host/dashboard",
+        isActive: pathname === "/host/dashboard" || pathname?.startsWith("/host/dashboard/"),
+      },
+      {
         id: "calendar",
         label: t("host_nav_calendar") || "Calendar",
         href: "/host/calendar",
@@ -148,6 +154,18 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
         label: t("host_nav_messages") || "Messages",
         href: "/host/messages",
         isActive: pathname === "/host/messages" || pathname?.startsWith("/host/messages/"),
+      },
+      {
+        id: "earnings",
+        label: t("host_nav_earnings", "Earnings"),
+        href: "/host/earnings",
+        isActive: pathname === "/host/earnings" || pathname?.startsWith("/host/earnings/"),
+      },
+      {
+        id: "insights",
+        label: t("host_nav_insights", "Insights"),
+        href: "/host/insights",
+        isActive: pathname === "/host/insights" || pathname?.startsWith("/host/insights/"),
       },
     ],
     [pathname, t],
@@ -303,6 +321,20 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
               >
                 {hostNavTabs.map((tab, index) => {
                   const isActive = tab.isActive;
+                  if ((tab as any).disabled) {
+                    return (
+                      <span
+                        key={tab.id}
+                        title={(t as any)("host_nav_insights_soon", "Coming soon in next phase")}
+                        className="relative z-10 mx-2 py-1.5 md:mx-2.5 md:py-2 lg:mx-3 text-xs md:text-sm font-medium text-[#A0A0A0] cursor-not-allowed select-none rounded-lg inline-flex items-center gap-1 opacity-70"
+                      >
+                        {tab.label}
+                        <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[9px] font-semibold text-zinc-500 uppercase tracking-wide">
+                          Soon
+                        </span>
+                      </span>
+                    );
+                  }
                   return (
                     <Link
                       key={tab.id}
@@ -324,7 +356,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                           });
                         }
                       }}
-                      className={`relative z-10 mx-2.5 py-1.5 md:mx-3 md:py-2 lg:mx-3.5 text-xs md:text-sm font-medium transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 rounded-lg ${
+                      className={`relative z-10 mx-2 py-1.5 md:mx-2.5 md:py-2 lg:mx-3 text-xs md:text-sm font-medium transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 rounded-lg ${
                         isActive
                           ? "font-medium text-[#1F1F1F] dark:text-zinc-100"
                           : "text-[#717171] hover:text-[#1F1F1F] dark:text-zinc-400 dark:hover:text-zinc-100"
@@ -626,6 +658,40 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                               <Image src="/images/icons/listing-edit-icon.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
                             </span>
                             <span>{t("header_your_listings") || "Your listings"}</span>
+                          </Link>
+
+                          {/* Earnings */}
+                          <Link
+                            href="/host/earnings"
+                            onClick={() => setMenuOpen(false)}
+                            className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${
+                              pathname?.startsWith("/host/earnings") ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
+                            }`}
+                          >
+                            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs text-[#1F1F1F]">
+                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                                <rect width="20" height="14" x="2" y="5" rx="2" />
+                                <line x1="2" x2="22" y1="10" y2="10" />
+                              </svg>
+                            </span>
+                            <span>{t("host_nav_earnings", "Earnings")}</span>
+                          </Link>
+
+                          {/* Insights */}
+                          <Link
+                            href="/host/insights"
+                            onClick={() => setMenuOpen(false)}
+                            className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${
+                              pathname?.startsWith("/host/insights") ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
+                            }`}
+                          >
+                            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
+                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                                <path d="M3 3v18h18" />
+                                <path d="m19 9-5 5-4-4-3 3" />
+                              </svg>
+                            </span>
+                            <span>{t("host_nav_insights", "Insights")}</span>
                           </Link>
 
                           <Link

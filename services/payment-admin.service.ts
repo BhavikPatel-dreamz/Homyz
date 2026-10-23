@@ -401,6 +401,7 @@ export async function getPaymentDetailsForAdmin(
       listing: sanitizeListing(payment.booking.listing),
       storedHostPayout: hostPayout,
     },
+    refunds: payment.refunds ?? payment.booking?.refunds ?? [],
     auditLogs: auditLogs.map((l: any) => ({
       id: l.id,
       action: l.action,

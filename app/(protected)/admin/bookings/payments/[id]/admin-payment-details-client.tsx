@@ -110,6 +110,7 @@ export function AdminPaymentDetailsClient({ initialData }: PaymentDetailsProps) 
 
   const payment = data.payment;
   const booking = data.booking;
+  const refunds = data.refunds || [];
 
   const capturedMajor = (payment.capturedAmount || 0) / 100;
   const refundedMajor = (payment.refundedAmount || 0) / 100;
@@ -364,9 +365,9 @@ export function AdminPaymentDetailsClient({ initialData }: PaymentDetailsProps) 
               Associated Refund Transactions
             </h2>
 
-            {data.refunds.length > 0 ? (
-              <div className="divide-y divide-[var(--border)] border border-[var(--border)] rounded-xl overflow-hidden text-xs">
-                {data.refunds.map((r: any) => (
+            {refunds.length > 0 ? (
+              <div className="divide-y divide-[var(--border)] rounded-xl border border-[var(--border)] overflow-hidden">
+                {refunds.map((r: any) => (
                   <div key={r.id} className="p-3 flex items-center justify-between hover:bg-[var(--surface-secondary)]/40">
                     <div>
                       <span className="font-mono font-semibold text-foreground block">
