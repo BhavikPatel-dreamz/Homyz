@@ -6,11 +6,13 @@ import { Role } from "@/generated/prisma/enums";
 import { hostEarningsAnalyticsService } from "@/services/host-earnings-analytics.service";
 import { parseInsightsReportingFilters } from "@/lib/dashboard/insights-query";
 import { AppError } from "@/lib/api/errors";
+import { requireHostDashboardFeature } from "@/lib/entitlements/host-dashboard";
 
 export const dynamic = "force-dynamic";
 
 export const GET = apiHandler(async (req: NextRequest) => {
   const actor = await requireApiRole(req, [Role.HOST, Role.ADMIN]);
+  await requireHostDashboardFeature(actor, "ADVANCED_EARNINGS");
   const filters = parseInsightsReportingFilters(new URL(req.url));
   const url = new URL(req.url);
   const comparisonStartDate = url.searchParams.get("comparisonStartDate") || undefined;
@@ -20,7 +22,7 @@ export const GET = apiHandler(async (req: NextRequest) => {
     throw AppError.badRequest("A comparison period requires a valid start and end date.");
   }
   const currency = filters.currency || req.cookies.get("homyz_display_currency")?.value || "SAR";
-  return ok(await hostEarningsAnalyticsService.getOverview(actor, {
+  const response = ok(await hostEarningsAnalyticsService.getOverview(actor, {
     listingId: filters.listingId,
     period: filters.period,
     startDate: filters.startDate,
@@ -29,4 +31,6 @@ export const GET = apiHandler(async (req: NextRequest) => {
     comparisonEndDate,
     currency,
   }));
+  response.headers.set("Cache-Control", "private, no-store");
+  return response;
 });

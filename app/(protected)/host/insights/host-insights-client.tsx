@@ -45,7 +45,7 @@ export function HostInsightsClient({ initialData }: HostInsightsClientProps) {
     setError(null);
     setIsLoading(true);
     try {
-      const res = await fetch(`/api/v1/host/insights?${params.toString()}`, { signal: controller.signal });
+      const res = await fetch(`/api/v1/host/insights?${params.toString()}`, { signal: controller.signal, cache: "no-store" });
       const payload = await res.json();
       if (!res.ok) throw new Error(payload?.error?.message || "Failed to load insights data.");
       if (payload.data && requestId === requestSequence.current) {
@@ -168,6 +168,7 @@ export function HostInsightsClient({ initialData }: HostInsightsClientProps) {
         {activeTab === "stats" && (
           <InsightsStatsTab
             data={data.stats}
+            entitlements={data.entitlements}
             periodLabel={data.reportingPeriod.label}
             reviews={data.reviews}
             opportunities={data.opportunities}

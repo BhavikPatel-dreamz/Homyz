@@ -64,7 +64,7 @@ export function HostEarningsAnalyticsClient({ initialData }: { initialData: Host
     setError(null);
     void (async () => {
       try {
-        const response = await fetch(`/api/v1/host/earnings/analytics?${queryKey}`, { signal: controller.signal });
+        const response = await fetch(`/api/v1/host/earnings/analytics?${queryKey}`, { signal: controller.signal, cache: "no-store" });
         const payload = await response.json();
         if (!response.ok) throw new Error(payload?.error?.message || "Unable to load advanced earnings analytics.");
         setData(payload.data ?? payload);

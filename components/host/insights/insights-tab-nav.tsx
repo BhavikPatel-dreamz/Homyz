@@ -14,7 +14,7 @@ const TABS: Array<{ id: InsightsTab; label: string }> = [
   { id: "reviews", label: "Reviews" },
   { id: "stats", label: "Stats" },
   { id: "opportunities", label: "Opportunities" },
-  // { id: "superhost", label: "Superhost" },
+  { id: "superhost", label: "Superhost" },
 ];
 
 export function InsightsTabNav({
@@ -26,17 +26,19 @@ export function InsightsTabNav({
   return (
     <nav
       aria-label="Insights tabs"
-      className="scrollbar-none flex border-b border-zinc-200 overflow-x-auto whitespace-nowrap"
+      className="scrollbar-none flex overflow-x-auto border-b border-zinc-200 whitespace-nowrap"
     >
-      <div className="flex gap-8">
+      <div className="flex min-w-max gap-6 sm:gap-8" role="tablist">
         {TABS.map((tab) => {
           const isActive = activeTab === tab.id;
           return (
             <button
               key={tab.id}
               type="button"
+              role="tab"
+              aria-selected={isActive}
               onClick={() => onTabChange(tab.id)}
-              className={`group relative flex items-center gap-2 pb-4 pt-2 text-sm font-semibold transition-colors focus:outline-none ${
+              className={`group relative flex items-center gap-2 rounded-t-md px-1 pb-4 pt-2 text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950 ${
                 isActive ? "text-zinc-950" : "text-zinc-500 hover:text-zinc-800"
               }`}
             >

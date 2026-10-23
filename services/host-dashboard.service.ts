@@ -23,8 +23,12 @@ import {
   extractRecordedCancellationRefund,
   extractStoredGuestTotal,
   extractStoredHostPayout,
-  isStoredBookingPayoutEligible,
 } from "@/lib/booking/booking-financials";
+import {
+  calculateBookingPayout,
+  type BookingPayoutCalculation,
+  type HostPayoutMethod,
+} from "@/services/payout.service";
 import { AppError } from "@/lib/api/errors";
 import {
   buildHostDashboardRecommendations,
@@ -519,6 +523,7 @@ export async function getHostDashboardData(
   const hostPayoutMethods = Array.isArray(hostInfo.payoutMethods)
     ? hostInfo.payoutMethods.map(asJsonRecord).filter((method): method is JsonRecord => method !== null)
     : [];
+  const typedHostPayoutMethods = hostPayoutMethods as unknown as HostPayoutMethod[];
   const defaultPayoutMethod = hostPayoutMethods.find((method) => method.isDefault === true) ?? hostPayoutMethods[0] ?? null;
   const defaultPayoutCurrency = readNonEmptyString(defaultPayoutMethod?.currency) ?? DEFAULT_CURRENCY;
   const maskedPayoutMethod = defaultPayoutMethod
@@ -607,6 +612,9 @@ export async function getHostDashboardData(
       cleaningFee: true,
       priceBreakdown: true,
       checkInInstructionsViewedAt: true,
+      payments: { select: { status: true, capturedAmount: true } },
+      refunds: { select: { status: true, amount: true } },
+      qualityIncidents: { select: { status: true } },
       user: {
         select: {
           id: true,
@@ -743,6 +751,7 @@ export async function getHostDashboardData(
   for (const id of scopedListingIds) {
     listingBookingStats.set(id, { totalBookings: 0, completedStays: 0, hostCancellations: 0, reliabilityBookings: 0 });
   }
+  const payoutStates = new Map<string, BookingPayoutCalculation>();
 
   for (const b of allBookings) {
     const startKey = bookingDateKey(b.startDate);
@@ -808,7 +817,22 @@ export async function getHostDashboardData(
     }
 
     if (b.status === BookingStatus.CONFIRMED) {
-      const payoutEligible = payout !== null && isStoredBookingPayoutEligible(b);
+      // This is the same payout-state classifier used by the Earnings pages.
+      // A payout snapshot alone is not proof that the money is realized or paid.
+      const payoutState = calculateBookingPayout(b, {
+        now,
+        hostPayoutMethods: typedHostPayoutMethods,
+      });
+      payoutStates.set(b.id, payoutState);
+      const payoutEligible = payoutState.hasStoredSnapshot;
+      const isRealizedPayout = payoutEligible && (
+        payoutState.status === "PAID" || payoutState.status === "ELIGIBLE_SETTLEMENT"
+      );
+      const isOutstandingPayout = payoutEligible && (
+        payoutState.status === "SCHEDULED"
+        || payoutState.status === "ELIGIBLE_SETTLEMENT"
+        || payoutState.status === "PROCESSING"
+      );
       if (belongsToReportingCurrency && !payoutEligible && payout !== null) {
         bookingsExcludedForPaymentStatusCount++;
       }
@@ -871,16 +895,21 @@ export async function getHostDashboardData(
           bookingsWithoutPayoutSnapshotCount++;
         }
 
-        if (payoutEligible && payout) {
+        if (isRealizedPayout && payout) {
 
           // Currency-specific bucket accumulation (never combined)
-          currBucket.completedPayoutsCents += payout.netHostPayout;
           currBucket.netPayoutCents += payout.netHostPayout;
           currBucket.grossVolumeCents +=
             payout.accommodationSubtotal + payout.cleaningFee + payout.extraGuestFee + payout.petFee;
 
+          if (payoutState.status === "PAID") {
+            currBucket.completedPayoutsCents += payout.netHostPayout;
+          }
+
           if (belongsToReportingCurrency) {
-            completedPayoutsCents += payout.netHostPayout;
+            if (payoutState.status === "PAID") {
+              completedPayoutsCents += payout.netHostPayout;
+            }
             totalAccommodationSubtotalCents += payout.accommodationSubtotal;
             totalCleaningFeeCents += payout.cleaningFee;
             totalHostServiceFeeCents += payout.hostServiceFee;
@@ -916,11 +945,11 @@ export async function getHostDashboardData(
       } else if (statusDetail.status === "CURRENT_STAY" || statusDetail.status === "CONFIRMED") {
         if (statusDetail.status === "CURRENT_STAY") currentStayCount++;
         else upcomingCount++;
+      }
 
-        if (payoutEligible && payout) {
-          if (belongsToReportingCurrency) upcomingPayoutsCents += payout.netHostPayout;
-          currBucket.upcomingPayoutsCents += payout.netHostPayout;
-        }
+      if (isOutstandingPayout && payout) {
+        if (belongsToReportingCurrency) upcomingPayoutsCents += payout.netHostPayout;
+        currBucket.upcomingPayoutsCents += payout.netHostPayout;
       }
 
       if (startKey === todayKey || endKey === todayKey) {
@@ -937,21 +966,42 @@ export async function getHostDashboardData(
 
   // 6. Next Upcoming Reservation & Upcoming List
   const futureConfirmedBookings = allBookings
-    .filter((b: (typeof allBookings)[number]) => b.status === BookingStatus.CONFIRMED && bookingDateKey(b.startDate) >= todayKey)
+    .filter((b: (typeof allBookings)[number]) => {
+      if (b.status !== BookingStatus.CONFIRMED) return false;
+      return computeBookingStatus({
+        dbStatus: b.status,
+        startDate: b.startDate,
+        endDate: b.endDate,
+        checkInStart: b.listing.checkInStart,
+        checkOutTime: b.listing.checkOutTime,
+        now,
+      }).status === "CONFIRMED";
+    })
     .sort((a: (typeof allBookings)[number], b: (typeof allBookings)[number]) => a.startDate.getTime() - b.startDate.getTime());
-  const futureEligiblePayoutBookings = futureConfirmedBookings.filter((b: (typeof allBookings)[number]) =>
-    normalizeCurrencyCode(b.currency || resolvePropertyCurrency(b.listing)) === primaryCurrency
-    && extractStoredHostPayout(b) !== null && isStoredBookingPayoutEligible(b),
-  );
+  // Outstanding payouts intentionally use the same state scope as Earnings:
+  // scheduled, ready for settlement, or processing. This includes a ready
+  // payout whose stay has already started, instead of silently reporting zero.
+  const outstandingPayoutBookings = allBookings
+    .filter((b: (typeof allBookings)[number]) => {
+      const payoutState = payoutStates.get(b.id);
+      return b.status === BookingStatus.CONFIRMED
+        && normalizeCurrencyCode(b.currency || resolvePropertyCurrency(b.listing)) === primaryCurrency
+        && Boolean(payoutState?.hasStoredSnapshot)
+        && Boolean(payoutState && ["SCHEDULED", "ELIGIBLE_SETTLEMENT", "PROCESSING"].includes(payoutState.status));
+    })
+    .sort((a: (typeof allBookings)[number], b: (typeof allBookings)[number]) => {
+      const aDate = payoutStates.get(a.id)?.scheduledPayoutDate.getTime() ?? a.startDate.getTime();
+      const bDate = payoutStates.get(b.id)?.scheduledPayoutDate.getTime() ?? b.startDate.getTime();
+      return aDate - bDate;
+    });
 
   const nextBooking = futureConfirmedBookings[0] || null;
   const nextPayout = nextBooking ? extractStoredHostPayout(nextBooking) : null;
-  const nextPayoutEligible = nextBooking !== null
-    && nextPayout !== null
-    && isStoredBookingPayoutEligible(nextBooking);
-  const nextEligiblePayoutBooking = futureEligiblePayoutBookings[0] || null;
-  const nextEligiblePayout = nextEligiblePayoutBooking
-    ? extractStoredHostPayout(nextEligiblePayoutBooking)
+  const nextPayoutEligible = nextBooking !== null && Boolean(payoutStates.get(nextBooking.id)?.hasStoredSnapshot);
+  const nextEligiblePayoutBooking = outstandingPayoutBookings[0] || null;
+  const nextEligiblePayout = nextEligiblePayoutBooking ? extractStoredHostPayout(nextEligiblePayoutBooking) : null;
+  const nextEligiblePayoutState = nextEligiblePayoutBooking
+    ? payoutStates.get(nextEligiblePayoutBooking.id) ?? null
     : null;
 
   const nextUpcomingReservation = nextBooking
@@ -987,18 +1037,22 @@ export async function getHostDashboardData(
       nights: differenceInBookingNights(b.startDate, b.endDate),
       guests: b.guests,
       hostPayoutCents: p ? p.netHostPayout : 0,
-      isPayoutEligible: p !== null && isStoredBookingPayoutEligible(b),
+      isPayoutEligible: Boolean(payoutStates.get(b.id)?.hasStoredSnapshot),
       currency: b.currency || resolvePropertyCurrency(b.listing),
       status: "CONFIRMED",
     };
   });
 
   // Next Payout Status and Arrival info
-  const nextPayoutStatus = nextEligiblePayoutBooking
-    ? (nextEligiblePayoutBooking.startDate.getTime() <= now.getTime() ? "ELIGIBLE_SETTLEMENT" : "SCHEDULED")
-    : null;
-  const nextPayoutExpectedArrival = nextEligiblePayoutBooking
-    ? `24h after check-in (${bookingDateKey(new Date(nextEligiblePayoutBooking.startDate.getTime() + 24 * 60 * 60 * 1000))})`
+  const nextPayoutStatus = nextEligiblePayoutState?.status ?? null;
+  // The documented check-in + 24-hour rule is an eligibility rule, not a
+  // promise that a bank transfer was initiated or will arrive on that date.
+  const nextPayoutExpectedArrival = nextEligiblePayoutState
+    ? nextEligiblePayoutState.status === "SCHEDULED"
+      ? `Eligible for settlement after ${bookingDateKey(nextEligiblePayoutState.scheduledPayoutDate)}.`
+      : nextEligiblePayoutState.status === "ELIGIBLE_SETTLEMENT"
+        ? "Ready for administrator settlement."
+        : "Settlement processing."
     : null;
 
   // 7. Authoritative inventory calculations
@@ -1397,9 +1451,9 @@ export async function getHostDashboardData(
       nextPayoutStatus,
       nextPayoutExpectedArrival,
       nextPayoutMethodMasked: maskedPayoutMethod,
-      count: futureEligiblePayoutBookings.length,
-      excludedForPaymentStatusCount: futureConfirmedBookings.filter((booking: { currency: string; listing: { country: string | null } }) => normalizeCurrencyCode(booking.currency || resolvePropertyCurrency(booking.listing)) === primaryCurrency).length - futureEligiblePayoutBookings.length,
-      periodLabel: "Eligible Upcoming Stays",
+      count: outstandingPayoutBookings.length,
+      excludedForPaymentStatusCount: allBookings.filter((booking: { status: BookingStatus; currency: string; listing: { country: string | null } }) => booking.status === BookingStatus.CONFIRMED && normalizeCurrencyCode(booking.currency || resolvePropertyCurrency(booking.listing)) === primaryCurrency).length - outstandingPayoutBookings.length,
+      periodLabel: "Scheduled, ready, or processing payouts",
     },
     occupancy: {
       ratePercentage: occupancyInventory.ratePercentage,
@@ -1758,7 +1812,7 @@ function createEmptyHostDashboard(
         periodLabel: repPeriod.label,
       },
       averageBookingValue: {
-        hostPayoutCents: 0,
+        hostPayoutCents: null,
         guestTotalCents: 0,
         currency: DEFAULT_CURRENCY,
         completedBookingsCount: 0,

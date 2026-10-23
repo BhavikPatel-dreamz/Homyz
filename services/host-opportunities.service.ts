@@ -5,6 +5,7 @@ import type { AuthUser } from "@/lib/auth/types";
 import { prisma } from "@/lib/db/prisma";
 import type { Prisma } from "@/generated/prisma/client";
 import { hostListingPerformanceService } from "@/services/host-listing-performance.service";
+import { accessibleHostListingWhere } from "@/lib/permissions/host-listing-access";
 
 export type OpportunityCategory = "ALL" | "PRICING_AVAILABILITY" | "LISTING_QUALITY" | "REVIEWS_GUEST_EXPERIENCE" | "SEARCH_CONVERSION" | "COMPETITOR_UPDATES";
 export type OpportunityPriority = "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
@@ -75,7 +76,7 @@ export const hostOpportunitiesService = {
   /** Rule evaluation is deterministic and read-only; lifecycle rows are only changed by explicit host actions. */
   async getOpportunitiesOverview(actor: AuthUser, options: OpportunityQueryOptions = {}): Promise<HostOpportunitiesOverviewData> {
     const listings = await prisma.listing.findMany({
-      where: { hostId: actor.id, deletedAt: null },
+      where: accessibleHostListingWhere(actor),
       select: { id: true, title: true, description: true, address: true, city: true, country: true, photos: true, amenities: true, price: true, weekdayBasePrice: true, published: true, status: true, checkInInstructions: true, updatedAt: true },
       orderBy: { title: "asc" },
     });

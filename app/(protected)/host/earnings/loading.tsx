@@ -1,12 +1,13 @@
 import { HostHeader } from "@/components/host/host-header";
 import { Container } from "@/components/ui";
+import { HOST_REPORTING_CONTAINER_CLASS, HOST_REPORTING_MAIN_CLASS } from "@/components/host/dashboard/host-reporting-layout";
 
 export default function HostEarningsLoading() {
   return (
     <div className="flex min-h-screen flex-col bg-white pb-[calc(110px+env(safe-area-inset-bottom))] font-sans text-[#1F1F1F] selection:bg-[#FCDF9C] sm:pb-0">
       <HostHeader />
-      <main className="w-full min-w-0 flex-1 pb-12 pt-8 sm:pb-24 sm:pt-10">
-        <Container className="px-4 sm:px-6">
+      <main className={HOST_REPORTING_MAIN_CLASS}>
+        <Container className={HOST_REPORTING_CONTAINER_CLASS}>
           <div className="animate-pulse space-y-6">
             <div className="h-8 w-48 rounded-lg bg-gray-200" />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

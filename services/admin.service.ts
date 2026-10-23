@@ -20,6 +20,13 @@ import type {
 import { invitationService } from "./invitation.service";
 import { hostRegistrationService } from "./host-registration.service";
 import { toPublicUser, type PublicUser } from "./mappers";
+import {
+  resolveHostDashboardEntitlements,
+  type DashboardAccessStatus,
+  type HostDashboardEntitlements,
+  type HostDashboardGrantDetails,
+} from "@/lib/entitlements/host-dashboard";
+import { hostEntitlementService } from "./host-entitlement.service";
 
 export type PersonalIdentityStatus = "NOT_STARTED" | "PENDING" | "VERIFIED" | "REJECTED";
 
@@ -795,6 +802,7 @@ export interface UnifiedHostItem {
   lastActive: Date;
   isRestricted: boolean;
   status: string; // backwards compatibility alias for accountStatus
+  dashboardAccess: DashboardAccessStatus;
 }
 
 export interface UnifiedHostAnalytics {
@@ -876,6 +884,8 @@ export interface HostDetailsData {
     totalStepsCount: number;
   };
   personalInfo: AdminPersonalInfoData | null;
+  entitlements?: HostDashboardEntitlements;
+  grantHistory?: HostDashboardGrantDetails[];
   registrationRequest: {
     id: string;
     applicationId: string;
@@ -1180,6 +1190,28 @@ async function listUnifiedHosts(input: ListUnifiedHostsInput = {}): Promise<Unif
     prisma.booking.count(),
   ]);
 
+  const userIds = users.map((u) => u.id);
+  const grants = await prisma.hostEntitlementGrant.findMany({
+    where: {
+      hostId: { in: userIds },
+      featureKey: "DASHBOARD_PLUS",
+    },
+    include: {
+      grantedBy: { select: { id: true, name: true, email: true } },
+      revokedBy: { select: { id: true, name: true, email: true } },
+    },
+    orderBy: { createdAt: "desc" },
+  }).catch(() => []);
+
+  const grantsByHostId = new Map<string, typeof grants>();
+  for (const g of grants) {
+    const list = grantsByHostId.get(g.hostId) || [];
+    list.push(g);
+    grantsByHostId.set(g.hostId, list);
+  }
+
+  const now = new Date();
+
   const rawList: UnifiedHostItem[] = [];
   const processedEmails = new Set<string>();
 
@@ -1224,6 +1256,22 @@ async function listUnifiedHosts(input: ListUnifiedHostsInput = {}): Promise<Unif
     const listingsCount = allUserListings.length;
     const bookingsCount = allUserListings.reduce((acc: any, l: any) => acc + (l.bookings?.length || 0), 0);
 
+    const hostGrants = grantsByHostId.get(user.id) || [];
+    const activeGrant = hostGrants.find((g: any) => g.status === "ACTIVE") || null;
+    const latestGrant = hostGrants[0] || null;
+
+    const ent = resolveHostDashboardEntitlements(
+      user.personalInfo,
+      user.role,
+      now,
+      {
+        userStatus: user.status,
+        adminGrant: activeGrant,
+        latestGrant,
+        globalPlusEnabled: true,
+      },
+    );
+
     rawList.push({
       id: user.id,
       applicationId: primaryReq?.applicationId || user.id,
@@ -1243,6 +1291,7 @@ async function listUnifiedHosts(input: ListUnifiedHostsInput = {}): Promise<Unif
       lastActive: user.lastLoginAt || user.createdAt,
       isRestricted: accStatus === "SUSPENDED",
       status: accStatus,
+      dashboardAccess: ent.accessStatus,
     });
   }
 
@@ -1292,6 +1341,7 @@ async function listUnifiedHosts(input: ListUnifiedHostsInput = {}): Promise<Unif
       lastActive: req.updatedAt,
       isRestricted: false,
       status: accStatus,
+      dashboardAccess: "Standard",
     });
   }
 
@@ -1299,7 +1349,6 @@ async function listUnifiedHosts(input: ListUnifiedHostsInput = {}): Promise<Unif
   const totalHosts = rawList.length;
   const activeHosts = rawList.filter((h) => h.accountStatus === "ACTIVE").length;
   const suspendedHosts = rawList.filter((h) => h.accountStatus === "SUSPENDED").length;
-  const now = new Date();
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
   const newHosts = rawList.filter((h) => new Date(h.createdAt) >= thirtyDaysAgo).length;
   const pendingOnboarding = rawList.filter((h) => h.onboardingStage !== "ONBOARDING_COMPLETE" && h.accountStatus !== "REJECTED").length;
@@ -1801,6 +1850,10 @@ async function getHostDetails(hostId: string): Promise<HostDetailsData> {
   const totalChecksCount = refetchedChecks.length;
   const openIssuesCount = refetchedIssues.filter((i: any) => i.status === "OPEN" || i.status === "UNDER_REVIEW").length;
 
+  const entitlementSummary = targetUserId
+    ? await hostEntitlementService.getHostEntitlementSummary(targetUserId).catch(() => null)
+    : null;
+
   return {
     host: {
       id: targetId,
@@ -1988,6 +2041,8 @@ async function getHostDetails(hostId: string): Promise<HostDetailsData> {
       amount: b.amount,
     })),
     activity: formattedActivityLogs,
+    entitlements: entitlementSummary?.entitlements,
+    grantHistory: entitlementSummary?.grantHistory,
   };
 }
 

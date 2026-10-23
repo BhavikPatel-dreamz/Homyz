@@ -8,6 +8,10 @@ import {
 } from "@/services/host-dashboard.service";
 import { hostReviewsInsightsService, type HostReviewsOverviewData } from "@/services/host-reviews-insights.service";
 import type { DateRangePreset } from "@/lib/dashboard/reporting-filter";
+import {
+  getHostDashboardEntitlements,
+  type HostDashboardEntitlements,
+} from "@/lib/entitlements/host-dashboard";
 
 export type InsightsTab = "reviews" | "stats" | "opportunities" | "superhost";
 
@@ -45,6 +49,7 @@ export interface HostInsightsSuperhostCriterion {
 
 export interface HostInsightsData {
   activeTab: InsightsTab;
+  entitlements: HostDashboardEntitlements;
   reportingPeriod: HostDashboardData["reportingPeriod"];
   selectedListingId: string | null;
   listings: Array<{ id: string; title: string }>;
@@ -157,16 +162,17 @@ export const hostInsightsService = {
     // or Superhost navigation while preserving the dashboard review summary everywhere.
     // const dashboardData = await getHostDashboardData(actor, filterOptions);
     // The dashboard aggregate and the Reviews-only supplemental aggregate are independent.
-    const [dashboardData, reviewsOverview] = await Promise.all([
+    const [dashboardData, reviewsOverview, entitlements] = await Promise.all([
       getHostDashboardData(actor, filterOptions),
       activeTab === "reviews"
-        ? hostReviewsInsightsService.getReviewsOverview(actor.id, {
+        ? hostReviewsInsightsService.getReviewsOverview(actor, {
             listingId: query.listingId,
             period: query.period,
             startDate: query.startDate,
             endDate: query.endDate,
           })
         : Promise.resolve(null),
+      getHostDashboardEntitlements(actor),
     ]);
 
     // A comparison dashboard is needed only for the Stats charts. Other tabs should
@@ -354,6 +360,7 @@ export const hostInsightsService = {
 
     return {
       activeTab,
+      entitlements,
       reportingPeriod: dashboardData.reportingPeriod,
       selectedListingId: dashboardData.filterListingId ?? null,
       listings: dashboardData.listings.map((l) => ({ id: l.id, title: l.title })),

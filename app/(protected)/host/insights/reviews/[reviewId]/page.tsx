@@ -25,7 +25,7 @@ export default async function HostReviewDetailsPage({
 
   let review;
   try {
-    review = await hostReviewsInsightsService.getHostReviewDetails(actor.id, reviewId);
+    review = await hostReviewsInsightsService.getHostReviewDetails(actor, reviewId);
   } catch {
     notFound();
   }

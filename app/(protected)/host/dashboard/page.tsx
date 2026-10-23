@@ -4,6 +4,7 @@ import { HostKpiOverview } from "@/components/host/dashboard/host-kpi-overview";
 import { Container } from "@/components/ui";
 import { requirePageRole } from "@/lib/permissions/page-guards";
 import { getHostDashboardData } from "@/services/host-dashboard.service";
+import { HOST_REPORTING_CONTAINER_CLASS, HOST_REPORTING_MAIN_CLASS } from "@/components/host/dashboard/host-reporting-layout";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -17,8 +18,8 @@ export default async function HostDashboardPage() {
   return (
     <div className="flex min-h-screen flex-col bg-white pb-0 font-sans text-[#1F1F1F] selection:bg-[#FCDF9C]">
       <HostHeader />
-      <main className="w-full min-w-0 pb-5 pt-4 sm:flex-1 sm:pt-10 xl:pb-24">
-        <Container className="px-4 sm:px-6">
+      <main className={HOST_REPORTING_MAIN_CLASS}>
+        <Container className={HOST_REPORTING_CONTAINER_CLASS}>
           <HostKpiOverview initialData={dashboardData} />
         </Container>
       </main>

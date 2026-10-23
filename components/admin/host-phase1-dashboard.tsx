@@ -30,6 +30,30 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
+export function DashboardAccessBadge({ access }: { access?: string }) {
+  const value = access || "Standard";
+  let colorClass = "bg-zinc-100 text-zinc-700 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700";
+
+  if (value === "Plus — Paid") {
+    colorClass = "bg-sky-100 text-sky-800 border-sky-300 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-800/60";
+  } else if (value === "Plus — Admin Granted") {
+    colorClass = "bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/60";
+  } else if (value === "Plus — Temporary") {
+    colorClass = "bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800/60";
+  } else if (value === "Plus — Expired") {
+    colorClass = "bg-rose-100 text-rose-800 border-rose-300 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800/60";
+  }
+
+  return (
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold border shadow-2xs whitespace-nowrap ${colorClass}`}>
+      <span className={`h-1.5 w-1.5 rounded-full ${
+        value.startsWith("Plus") ? (value.includes("Expired") ? "bg-rose-500" : "bg-amber-500") : "bg-zinc-400"
+      }`} />
+      {value}
+    </span>
+  );
+}
+
 export function HostPhase1Dashboard({
   analytics,
   initialHosts,
@@ -47,6 +71,7 @@ export function HostPhase1Dashboard({
   // Read URL search params with fallback to server-rendered props
   const urlSearch = searchParams?.get("search") ?? initialSearch;
   const urlStatus = (searchParams?.get("status") ?? initialStatus).toUpperCase();
+  const urlAccess = searchParams?.get("access") ?? "ALL";
   const rawSort = searchParams?.get("sort") ?? initialSortBy;
   const urlSort = ["createdAt", "name", "listingsCount", "bookingsCount"].includes(rawSort)
     ? (rawSort as "createdAt" | "name" | "listingsCount" | "bookingsCount")
@@ -57,6 +82,7 @@ export function HostPhase1Dashboard({
 
   const [search, setSearch] = useState(urlSearch);
   const [statusFilter, setStatusFilter] = useState(urlStatus);
+  const [dashboardAccessFilter, setDashboardAccessFilter] = useState(urlAccess);
   const [sortBy, setSortBy] = useState<"createdAt" | "name" | "listingsCount" | "bookingsCount">(urlSort);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">(urlOrder);
   const [currentPage, setCurrentPage] = useState(urlPage);
@@ -67,10 +93,11 @@ export function HostPhase1Dashboard({
   const searchDebounceRef = useRef<NodeJS.Timeout | null>(null);
 
   const syncUrl = useCallback(
-    (newSearch: string, newStatus: string, newSort: string, newOrder: string, newPage: number, newPageSize: number) => {
+    (newSearch: string, newStatus: string, newAccess: string, newSort: string, newOrder: string, newPage: number, newPageSize: number) => {
       const params = new URLSearchParams();
       if (newSearch.trim()) params.set("search", newSearch.trim());
       if (newStatus && newStatus !== "ALL") params.set("status", newStatus);
+      if (newAccess && newAccess !== "ALL") params.set("access", newAccess);
       if (newSort && newSort !== "createdAt") params.set("sort", newSort);
       if (newOrder && newOrder !== "desc") params.set("order", newOrder);
       if (newPage > 1) params.set("page", String(newPage));
@@ -91,6 +118,7 @@ export function HostPhase1Dashboard({
     }
     const s = searchParams?.get("search") ?? "";
     const st = (searchParams?.get("status") ?? "ALL").toUpperCase();
+    const acc = searchParams?.get("access") ?? "ALL";
     const rawSo = searchParams?.get("sort") ?? "createdAt";
     const so = ["createdAt", "name", "listingsCount", "bookingsCount"].includes(rawSo)
       ? (rawSo as "createdAt" | "name" | "listingsCount" | "bookingsCount")
@@ -101,6 +129,7 @@ export function HostPhase1Dashboard({
 
     setSearch((prev) => (prev !== s ? s : prev));
     setStatusFilter((prev) => (prev !== st ? st : prev));
+    setDashboardAccessFilter((prev) => (prev !== acc ? acc : prev));
     setSortBy((prev) => (prev !== so ? so : prev));
     setSortOrder((prev) => (prev !== ord ? ord : prev));
     setCurrentPage((prev) => (prev !== p ? p : prev));
@@ -113,7 +142,7 @@ export function HostPhase1Dashboard({
     setCurrentPage(1);
     if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
     searchDebounceRef.current = setTimeout(() => {
-      syncUrl(val, statusFilter, sortBy, sortOrder, 1, pageSize);
+      syncUrl(val, statusFilter, dashboardAccessFilter, sortBy, sortOrder, 1, pageSize);
     }, 250);
   };
 
@@ -121,37 +150,44 @@ export function HostPhase1Dashboard({
     setSearch("");
     setCurrentPage(1);
     if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
-    syncUrl("", statusFilter, sortBy, sortOrder, 1, pageSize);
+    syncUrl("", statusFilter, dashboardAccessFilter, sortBy, sortOrder, 1, pageSize);
   };
 
   const handleStatusFilterChange = (newStatus: string) => {
     setStatusFilter(newStatus);
     setCurrentPage(1);
     if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
-    syncUrl(search, newStatus, sortBy, sortOrder, 1, pageSize);
+    syncUrl(search, newStatus, dashboardAccessFilter, sortBy, sortOrder, 1, pageSize);
+  };
+
+  const handleDashboardAccessFilterChange = (newAccess: string) => {
+    setDashboardAccessFilter(newAccess);
+    setCurrentPage(1);
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    syncUrl(search, statusFilter, newAccess, sortBy, sortOrder, 1, pageSize);
   };
 
   const handleSortChange = (newSort: "createdAt" | "name" | "listingsCount" | "bookingsCount") => {
     setSortBy(newSort);
     setCurrentPage(1);
-    syncUrl(search, statusFilter, newSort, sortOrder, 1, pageSize);
+    syncUrl(search, statusFilter, dashboardAccessFilter, newSort, sortOrder, 1, pageSize);
   };
 
   const handleSortOrderToggle = () => {
     const nextOrder = sortOrder === "asc" ? "desc" : "asc";
     setSortOrder(nextOrder);
-    syncUrl(search, statusFilter, sortBy, nextOrder, currentPage, pageSize);
+    syncUrl(search, statusFilter, dashboardAccessFilter, sortBy, nextOrder, currentPage, pageSize);
   };
 
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
-    syncUrl(search, statusFilter, sortBy, sortOrder, newPage, pageSize);
+    syncUrl(search, statusFilter, dashboardAccessFilter, sortBy, sortOrder, newPage, pageSize);
   };
 
   const handlePageSizeChange = (newSize: number) => {
     setPageSize(newSize);
     setCurrentPage(1);
-    syncUrl(search, statusFilter, sortBy, sortOrder, 1, newSize);
+    syncUrl(search, statusFilter, dashboardAccessFilter, sortBy, sortOrder, 1, newSize);
   };
 
   // Derived KPI metrics
@@ -198,6 +234,10 @@ export function HostPhase1Dashboard({
           }
         }
 
+        if (dashboardAccessFilter !== "ALL") {
+          if (host.dashboardAccess !== dashboardAccessFilter) return false;
+        }
+
         return true;
       })
       .sort((a, b) => {
@@ -217,7 +257,7 @@ export function HostPhase1Dashboard({
         const valB = Number(b[sortBy] ?? 0);
         return sortOrder === "asc" ? valA - valB : valB - valA;
       });
-  }, [initialHosts, search, statusFilter, sortBy, sortOrder]);
+  }, [initialHosts, search, statusFilter, dashboardAccessFilter, sortBy, sortOrder]);
 
   const totalPages = Math.max(1, Math.ceil(filteredHosts.length / pageSize));
   const activePage = Math.min(currentPage, totalPages);
@@ -229,13 +269,14 @@ export function HostPhase1Dashboard({
   // Export CSV
   const exportCSV = () => {
     if (filteredHosts.length === 0) return;
-    const headers = ["ID", "Name", "Email", "Phone", "Status", "Listings", "Bookings", "Joined Date"];
+    const headers = ["ID", "Name", "Email", "Phone", "Status", "Dashboard Access", "Listings", "Bookings", "Joined Date"];
     const rows = filteredHosts.map((h) => [
       h.id,
       `"${(h.name || "Unnamed Host").replace(/"/g, '""')}"`,
       `"${(h.email || "").replace(/"/g, '""')}"`,
       `"${(h.phone || "").replace(/"/g, '""')}"`,
       h.accountStatus,
+      h.dashboardAccess || "Standard",
       h.listingsCount,
       h.bookingsCount,
       new Date(h.createdAt).toISOString().split("T")[0],
@@ -418,6 +459,20 @@ export function HostPhase1Dashboard({
             <option value="SUSPENDED">Suspended ({hostMetrics.suspendedHosts})</option>
             <option value="NEW_30D">New Hosts (30d) ({hostMetrics.newHosts})</option>
           </select>
+
+          {/* Dashboard Access Filter */}
+          <select
+            value={dashboardAccessFilter}
+            onChange={(e) => handleDashboardAccessFilterChange(e.target.value)}
+            className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2 text-xs text-muted-foreground outline-none shadow-2xs cursor-pointer"
+          >
+            <option value="ALL">All Dashboard Access</option>
+            <option value="Standard">Standard</option>
+            <option value="Plus — Paid">Paid Plus</option>
+            <option value="Plus — Admin Granted">Admin Granted Plus</option>
+            <option value="Plus — Temporary">Temporary Plus</option>
+            <option value="Plus — Expired">Expired Complimentary Access</option>
+          </select>
         </div>
 
         {/* Sort Controls */}
@@ -454,6 +509,7 @@ export function HostPhase1Dashboard({
                 <th className="py-3.5 px-4">Email</th>
                 <th className="py-3.5 px-4">Phone</th>
                 <th className="py-3.5 px-4">Status</th>
+                <th className="py-3.5 px-4">Dashboard Access</th>
                 <th className="py-3.5 px-4 text-center">Listings</th>
                 <th className="py-3.5 px-4 text-center">Bookings</th>
                 <th className="py-3.5 px-4">Joined Date</th>
@@ -463,16 +519,17 @@ export function HostPhase1Dashboard({
             <tbody className="divide-y divide-[var(--border-subtle)]">
               {paginatedHosts.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-[var(--muted-foreground)]">
+                  <td colSpan={9} className="py-12 text-center text-[var(--muted-foreground)]">
                     <p className="text-sm font-semibold text-muted-foreground">No hosts found matching your criteria.</p>
-                    {(search || statusFilter !== "ALL") && (
+                    {(search || statusFilter !== "ALL" || dashboardAccessFilter !== "ALL") && (
                       <button
                         type="button"
                         onClick={() => {
                           setSearch("");
                           setStatusFilter("ALL");
+                          setDashboardAccessFilter("ALL");
                           setCurrentPage(1);
-                          syncUrl("", "ALL", sortBy, sortOrder, 1, pageSize);
+                          syncUrl("", "ALL", "ALL", sortBy, sortOrder, 1, pageSize);
                         }}
                         className="mt-3 rounded-full bg-amber-500 hover:bg-amber-400 text-zinc-950 px-4 py-1.5 text-xs font-semibold transition-all cursor-pointer"
                       >
@@ -518,6 +575,11 @@ export function HostPhase1Dashboard({
                       <StatusBadge status={host.accountStatus} />
                     </td>
 
+                    {/* Dashboard Access */}
+                    <td className="py-3.5 px-4">
+                      <DashboardAccessBadge access={host.dashboardAccess} />
+                    </td>
+
                     {/* Listings Count */}
                     <td className="py-3.5 px-4 text-center font-semibold text-muted-foreground">
                       {host.listingsCount}
@@ -535,13 +597,22 @@ export function HostPhase1Dashboard({
 
                     {/* Actions */}
                     <td className="py-3.5 px-4 text-right">
-                      <Link
-                        href={`/admin/hosts/${host.id}`}
-                        onClick={(e) => e.stopPropagation()}
-                        className="rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] px-3.5 py-1.5 text-xs text-muted-foreground font-semibold transition-all inline-block shadow-2xs hover:border-amber-500/50"
-                      >
-                        View Details →
-                      </Link>
+                      <div className="flex items-center justify-end gap-2">
+                        <Link
+                          href={`/admin/hosts/${host.id}?tab=permissions`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="rounded-full border border-amber-300 dark:border-amber-700/60 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/40 px-3 py-1.5 text-xs text-amber-900 dark:text-amber-200 font-semibold transition-all inline-block shadow-2xs"
+                        >
+                          Manage Access
+                        </Link>
+                        <Link
+                          href={`/admin/hosts/${host.id}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="rounded-full border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-secondary)] px-3.5 py-1.5 text-xs text-muted-foreground font-semibold transition-all inline-block shadow-2xs hover:border-amber-500/50"
+                        >
+                          View Details →
+                        </Link>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -556,14 +627,15 @@ export function HostPhase1Dashboard({
         {paginatedHosts.length === 0 ? (
           <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-8 text-center text-xs text-[var(--muted-foreground)]">
             <p className="font-semibold text-muted-foreground">No hosts found matching your criteria.</p>
-            {(search || statusFilter !== "ALL") && (
+            {(search || statusFilter !== "ALL" || dashboardAccessFilter !== "ALL") && (
               <button
                 type="button"
                 onClick={() => {
                   setSearch("");
                   setStatusFilter("ALL");
+                  setDashboardAccessFilter("ALL");
                   setCurrentPage(1);
-                  syncUrl("", "ALL", sortBy, sortOrder, 1, pageSize);
+                  syncUrl("", "ALL", "ALL", sortBy, sortOrder, 1, pageSize);
                 }}
                 className="mt-3 rounded-full bg-amber-500 hover:bg-amber-400 text-zinc-950 px-4 py-1.5 text-xs font-semibold transition-all cursor-pointer"
               >
@@ -592,7 +664,10 @@ export function HostPhase1Dashboard({
                     </p>
                   </div>
                 </div>
-                <StatusBadge status={host.accountStatus} />
+                <div className="flex items-center gap-1.5">
+                  <DashboardAccessBadge access={host.dashboardAccess} />
+                  <StatusBadge status={host.accountStatus} />
+                </div>
               </div>
 
               <div className="grid grid-cols-3 gap-2 border-t border-[var(--border-subtle)] pt-2 text-xs">
@@ -610,6 +685,12 @@ export function HostPhase1Dashboard({
                     {new Date(host.createdAt).toLocaleDateString("en-US")}
                   </span>
                 </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 border-t border-[var(--border-subtle)] pt-2">
+                <span className="text-[11px] font-semibold text-amber-600 dark:text-amber-400">
+                  Manage Access & Permissions →
+                </span>
               </div>
             </Link>
           ))

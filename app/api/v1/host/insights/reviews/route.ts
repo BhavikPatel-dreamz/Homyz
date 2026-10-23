@@ -43,13 +43,13 @@ export const GET = apiHandler(async (req: NextRequest) => {
       tab: "reviews",
       ...filters,
     }),
-    hostReviewsInsightsService.getReviewsOverview(actor.id, {
+    hostReviewsInsightsService.getReviewsOverview(actor, {
       listingId: filters.listingId,
       period: filters.period,
       startDate: filters.startDate,
       endDate: filters.endDate,
     }),
-    hostReviewsInsightsService.listHostReviews(actor.id, {
+    hostReviewsInsightsService.listHostReviews(actor, {
       listingId: filters.listingId,
       period: filters.period,
       startDate: filters.startDate,

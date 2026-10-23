@@ -1,12 +1,13 @@
 import { HostHeader } from "@/components/host/host-header";
 import { Container } from "@/components/ui";
+import { HOST_REPORTING_CONTAINER_CLASS, HOST_REPORTING_MAIN_CLASS } from "@/components/host/dashboard/host-reporting-layout";
 
 export default function HostInsightsLoading() {
   return (
     <div className="flex min-h-screen flex-col bg-white pb-[calc(110px+env(safe-area-inset-bottom))] font-sans text-[#1F1F1F] selection:bg-[#FCDF9C] sm:pb-0">
       <HostHeader />
-      <main aria-busy="true" aria-label="Loading insights" className="w-full min-w-0 flex-1 pb-16 pt-8 sm:pb-24 sm:pt-10">
-        <Container className="max-w-6xl px-4 sm:px-6">
+      <main aria-busy="true" aria-label="Loading insights" className={HOST_REPORTING_MAIN_CLASS}>
+        <Container className={HOST_REPORTING_CONTAINER_CLASS}>
           <div className="animate-pulse space-y-8">
             <div className="flex flex-col gap-5 rounded-3xl border border-zinc-200 bg-white p-6 sm:flex-row sm:items-end sm:justify-between sm:p-8">
               <div className="space-y-3">

@@ -15,6 +15,7 @@ import {
 } from "@/services/host-dashboard.service";
 import { resolveReportingPeriod, type DateRangePreset } from "@/lib/dashboard/reporting-filter";
 import { AppError } from "@/lib/api/errors";
+import { accessibleHostListingWhere } from "@/lib/permissions/host-listing-access";
 
 export interface HostEarningsAnalyticsQuery {
   listingId?: string;
@@ -126,7 +127,7 @@ export const hostEarningsAnalyticsService = {
       })
       : null;
     const listings = await prisma.listing.findMany({
-      where: { hostId: actor.id, deletedAt: null },
+      where: accessibleHostListingWhere(actor),
       select: { id: true, title: true, published: true, status: true, isPaused: true, blockedDates: true },
       orderBy: { title: "asc" },
     });
@@ -245,7 +246,6 @@ export const hostEarningsAnalyticsService = {
 
     const expenses = listingIds.length ? await prisma.operatingExpense.findMany({
       where: {
-        hostId: actor.id,
         listingId: { in: listingIds },
         status: OperatingExpenseStatus.ACTIVE,
         expenseDate: { gte: reportingPeriod.startDate, lte: reportingPeriod.endDate },

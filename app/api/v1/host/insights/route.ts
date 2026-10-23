@@ -25,5 +25,8 @@ export const GET = apiHandler(async (req: NextRequest) => {
     currency: preferredCurrency,
   });
 
-  return NextResponse.json({ success: true, data });
+  return NextResponse.json(
+    { success: true, data },
+    { headers: { "Cache-Control": "private, no-store" } },
+  );
 });

@@ -2,15 +2,17 @@
 
 import React, { useState, useTransition } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { toast } from "@/components/ui/toast";
 import { AdminPersonalInformationPanel } from "@/components/admin/personal-information-panel";
+import { DashboardPlusAccessPanel } from "@/components/admin/dashboard-plus-access-panel";
+import { HostPermissionsTab } from "@/components/admin/host-permissions-tab";
 import type { HostDetailsData } from "@/services/admin.service";
 import { useCurrency } from "@/lib/currency-context";
 
 export type HostDetailsDTO = HostDetailsData;
-type HostTab = "overview" | "listings" | "bookings" | "earnings" | "activity";
+type HostTab = "overview" | "listings" | "bookings" | "earnings" | "permissions" | "activity";
 
 function StatusBadge({ status }: { status: string }) {
   const classes = status === "ACTIVE"
@@ -91,8 +93,10 @@ export function HostDetailsView({
 }) {
   const { formatPrice } = useCurrency();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const initialTab = searchParams?.get("tab") === "permissions" ? "permissions" : "overview";
   const [data, setData] = useState(initialData);
-  const [activeTab, setActiveTab] = useState<HostTab>("overview");
+  const [activeTab, setActiveTab] = useState<HostTab>(initialTab);
   const [modal, setModal] = useState<"suspend" | "delete" | null>(null);
   const [pending, startTransition] = useTransition();
   const { host, metrics } = data;
@@ -122,7 +126,14 @@ export function HostDetailsView({
     });
   }
 
-  const tabs: { id: HostTab; label: string }[] = [{ id: "overview", label: "Overview" }, { id: "listings", label: "Listings" }, { id: "bookings", label: "Bookings" }, { id: "earnings", label: "Earnings" }, { id: "activity", label: "Activity" }];
+  const tabs: { id: HostTab; label: string }[] = [
+    { id: "overview", label: "Overview" },
+    { id: "listings", label: "Listings" },
+    { id: "bookings", label: "Bookings" },
+    { id: "earnings", label: "Earnings" },
+    { id: "permissions", label: "Permissions / Dashboard Access" },
+    { id: "activity", label: "Activity" },
+  ];
 
   return <div className="flex flex-col gap-6 font-sans text-muted-foreground">
     <div className="flex flex-col justify-between gap-4 border-b border-[var(--border-subtle)] pb-5 md:flex-row md:items-center"><div className="flex items-center gap-4"><div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--accent)] text-xl font-semibold text-[var(--accent-foreground)]">{(host.name?.[0] || host.email?.[0] || "H").toUpperCase()}</div><div><div className="flex flex-wrap items-center gap-3"><h1>{host.name || "Unnamed Host"}</h1><StatusBadge status={status} /></div><p className="mt-1 font-mono text-xs text-[var(--muted-foreground)]">{host.email || "No email"} · ID: {host.id}</p></div></div><div className="flex flex-wrap items-center gap-2"><button type="button" onClick={() => setModal("suspend")} className={`rounded-full border px-4 py-2 text-xs font-semibold shadow-2xs ${status === "SUSPENDED" ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300" : "border-rose-200 bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300"}`}>{status === "SUSPENDED" ? "Restore Account" : "Suspend Account"}</button><button type="button" onClick={() => setModal("delete")} className="rounded-full bg-rose-600 px-4 py-2 text-xs font-semibold text-white shadow-2xs hover:bg-rose-700">Delete Host</button></div></div>
@@ -311,6 +322,42 @@ export function HostDetailsView({
     {activeTab === "bookings" && <section className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-2xs"><div className="overflow-x-auto"><table className="w-full text-left text-xs"><thead className="border-b border-[var(--border-subtle)] bg-[var(--surface-secondary)] uppercase tracking-wider text-[var(--muted-foreground)]"><tr><th className="px-4 py-3.5">Guest</th><th className="px-4 py-3.5">Listing</th><th className="px-4 py-3.5">Dates</th><th className="px-4 py-3.5">Status</th><th className="px-4 py-3.5 text-right">Amount</th></tr></thead><tbody className="divide-y divide-[var(--border-subtle)]">{data.bookings.length === 0 ? <tr><td colSpan={5} className="px-4 py-10 text-center text-[var(--muted-foreground)]">This host has no bookings yet.</td></tr> : data.bookings.map((booking) => <tr key={booking.id}><td className="px-4 py-3.5"><p className="font-semibold">{booking.guestName || "Guest"}</p><p className="font-mono text-[11px] text-[var(--muted-foreground)]">{booking.guestEmail || "—"}</p></td><td className="px-4 py-3.5">{booking.listingTitle}</td><td className="px-4 py-3.5" suppressHydrationWarning>{new Date(booking.startDate).toLocaleDateString("en-US")} – {new Date(booking.endDate).toLocaleDateString("en-US")}</td><td className="px-4 py-3.5"><span className="rounded-full border border-[var(--border)] px-2 py-0.5 text-[10px] font-semibold">{booking.status}</span></td><td className="px-4 py-3.5 text-right font-semibold">{formatPrice(booking.amount, "SAR", 2)}</td></tr>)}</tbody></table></div></section>}
 
     {activeTab === "earnings" && <div className="grid grid-cols-1 gap-4 sm:grid-cols-3"><MetricCard label="Confirmed earnings" value={formatPrice(metrics.totalEarnings, "SAR", 2)} subtitle="From confirmed bookings" /><MetricCard label="Total bookings" value={metrics.totalBookings} subtitle="All reservation records" /><MetricCard label="Average booking value" value={formatPrice(metrics.totalBookings ? Math.round(metrics.totalEarnings / metrics.totalBookings) : 0, "SAR", 2)} subtitle="Confirmed earnings per booking" /></div>}
+
+    {activeTab === "permissions" && (
+      <div className="flex flex-col gap-8">
+        <DashboardPlusAccessPanel
+          hostId={host.id}
+          hostName={host.name}
+          hostEmail={host.email}
+          hostStatus={String(host.accountStatus || host.status)}
+          initialEntitlements={data.entitlements}
+          initialGrantHistory={data.grantHistory}
+          onEntitlementsUpdated={(newEntitlements) => {
+            setData((current) => ({
+              ...current,
+              entitlements: newEntitlements,
+            }));
+          }}
+        />
+
+        {/* <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xs">
+          <div className="border-b border-[var(--border-subtle)] pb-4 mb-5">
+            <h3 className="text-sm font-semibold text-muted-foreground">
+              General Host Permission Matrix
+            </h3>
+            <p className="mt-1 text-xs text-[var(--muted-foreground)]">
+              Fine-grained access control overrides across publishing, payouts, messaging, and reservation actions.
+            </p>
+          </div>
+          <HostPermissionsTab
+            hostId={host.id}
+            hostName={host.name}
+            hostEmail={host.email}
+            hostStatus={String(host.accountStatus || host.status)}
+          />
+        </div> */}
+      </div>
+    )}
 
     {activeTab === "activity" && <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-2xs"><h2 className="text-sm font-semibold text-muted-foreground">Account Activity</h2>{data.activity.length === 0 ? <p className="py-10 text-center text-xs text-[var(--muted-foreground)]">No account activity found.</p> : <div className="mt-4 space-y-4">{data.activity.map((item) => <div key={item.id} className="flex flex-col justify-between gap-2 border-b border-[var(--border-subtle)] pb-4 text-sm last:border-0 sm:flex-row"><div><p className="font-semibold">{item.description || item.action}</p><p className="mt-1 font-mono text-xs text-[var(--muted-foreground)]">{item.actorEmail || "System"}</p></div><time className="shrink-0 text-xs text-[var(--muted-foreground)]" suppressHydrationWarning>{new Date(item.createdAt).toLocaleString("en-US")}</time></div>)}</div>}</section>}
 

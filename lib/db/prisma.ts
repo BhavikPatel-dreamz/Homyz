@@ -73,6 +73,7 @@ function getPrismaClient(): PrismaClient {
     typeof existing.listingCoHost !== "undefined" &&
     typeof existing.appSettings !== "undefined" &&
     typeof existing.backgroundJob !== "undefined" &&
+    typeof existing.hostEntitlementGrant !== "undefined" &&
     typeof existing.listing !== "undefined"
   ) {
     return existing;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import type { HostDashboardData } from "@/services/host-dashboard.service";
@@ -22,8 +22,6 @@ const secondaryKpiGridClass =
 const cardClass =
   "flex flex-col justify-between rounded-[12px] border border-white bg-[#F3F4F5] shadow-[0_2px_4px_0px_#00000040]";
 const insetSurfaceClass = "rounded-[10px] bg-white";
-const dashboardDataCache = new Map<string, HostDashboardData>();
-
 function dashboardScopeKey(
   listingId: string | null | undefined,
   period: string = "this_month",
@@ -41,10 +39,9 @@ function formatCurrency(cents: number, currency = "SAR") {
   })}`;
 }
 
-function formatResponseTime(
-  minutes: number | null,
-  t: (key: any, fallback?: string) => string,
-) {
+type DashboardTranslation = (key: string, fallback?: string) => string;
+
+function formatResponseTime(minutes: number | null, t: DashboardTranslation) {
   if (minutes === null) return t("host_dash_no_inquiries", "No inquiries yet");
   if (minutes < 60) return `${minutes} ${t("host_dash_time_min", "min")}`;
   const hours = Math.floor(minutes / 60);
@@ -69,8 +66,7 @@ export function HostKpiOverview({
   onSelectBookingId,
 }: HostKpiOverviewProps) {
   const { t: rawT } = useLanguage();
-  const t = (key: any, fallback?: string): string => (rawT as any)(key, fallback) || fallback || "";
-  const [, startTransition] = useTransition();
+  const t: DashboardTranslation = (key, fallback) => rawT(key as TranslationKey, fallback) || fallback || "";
 
   const [data, setData] = useState<HostDashboardData | null>(initialData || null);
   const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(
@@ -119,15 +115,14 @@ export function HostKpiOverview({
     const urlEnd = search.get("endDate");
     const urlCurrency = search.get("currency");
 
-    if (urlPropertyId && urlPropertyId !== selectedPropertyId) {
-      setSelectedPropertyId(urlPropertyId);
-    }
-    if (urlPeriod && urlPeriod !== selectedPeriod) {
-      setSelectedPeriod(urlPeriod);
-    }
-    if (urlStart) setCustomStartDate(urlStart);
-    if (urlEnd) setCustomEndDate(urlEnd);
-    if (urlCurrency && urlCurrency !== selectedCurrency) setSelectedCurrency(urlCurrency);
+    const timer = window.setTimeout(() => {
+      if (urlPropertyId) setSelectedPropertyId((current) => current === urlPropertyId ? current : urlPropertyId);
+      if (urlPeriod) setSelectedPeriod((current) => current === urlPeriod ? current : urlPeriod);
+      if (urlStart) setCustomStartDate(urlStart);
+      if (urlEnd) setCustomEndDate(urlEnd);
+      if (urlCurrency) setSelectedCurrency((current) => current === urlCurrency ? current : urlCurrency);
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   // Update browser URL query params without reloading
@@ -174,20 +169,11 @@ export function HostKpiOverview({
     if (isInitialMount.current) {
       isInitialMount.current = false;
       if (initialData) {
-        dashboardDataCache.set(scopeKey, initialData);
         return;
       }
     }
 
     abortControllerRef.current?.abort();
-    const cachedData = dashboardDataCache.get(scopeKey);
-    if (cachedData) {
-      setData(cachedData);
-      setDataScopeKey(scopeKey);
-      setLoading(false);
-      return;
-    }
-
     const controller = new AbortController();
     abortControllerRef.current = controller;
     const requestId = ++requestIdRef.current;
@@ -222,7 +208,6 @@ export function HostKpiOverview({
       })
       .then((payload) => {
         if (requestId !== requestIdRef.current || !payload?.success || !payload?.data) return;
-        dashboardDataCache.set(scopeKey, payload.data);
         setData(payload.data);
         if (payload.data.filterCurrency && payload.data.filterCurrency !== selectedCurrency) {
           setSelectedCurrency(payload.data.filterCurrency);
@@ -242,6 +227,9 @@ export function HostKpiOverview({
       });
 
     return () => controller.abort();
+    // `initialData` is deliberately only used to avoid the first duplicate request;
+    // filter changes (rather than incoming server props) are the refresh contract.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedPropertyId, selectedPeriod, customStartDate, customEndDate, selectedCurrency, reloadVersion]);
 
   const kpis = data?.kpis;
@@ -312,7 +300,6 @@ export function HostKpiOverview({
   };
 
   const retryPropertyAnalytics = () => {
-    dashboardDataCache.delete(selectedScopeKey);
     setReloadVersion((prev) => prev + 1);
   };
 
@@ -570,34 +557,7 @@ export function HostKpiOverview({
         </div>
       </header>
 
-      {/* Multi-currency notice if properties use mixed currencies */}
-      {earnings.hasMixedCurrencies && (
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-900">
-          <div className="flex items-center gap-2">
-            <span className="font-semibold">{t("host_dash_multi_currency_note", "Multi-currency portfolio:")}</span>
-            <span>
-              {t("host_dash_currency_native_msg", "Financial cards show native")} {" "}
-              <strong>{earnings.currency}</strong>. {t("host_dash_currency_separate_msg", "Other currencies remain separate below.")}
-            </span>
-          </div>
-          <div className="flex flex-wrap items-center gap-1.5">
-            {earnings.currencyBreakdown.map((item) => (
-              <span
-                key={item.currency}
-                className="rounded-md bg-white/80 px-2 py-0.5 text-[11px] font-medium text-amber-950 border border-amber-200"
-              >
-                {item.currency}: {formatCurrency(item.completedPayoutsCents, item.currency)} ({item.bookingCount})
-              </span>
-            ))}
-            <Link
-              href="/host/earnings"
-              className="ml-1 rounded-md border border-amber-300 bg-white px-2 py-0.5 text-[11px] font-semibold text-amber-950 hover:bg-amber-100"
-            >
-              {t("host_dash_view_all_earnings", "View all earnings")}
-            </Link>
-          </div>
-        </div>
-      )}
+
 
       {error && dataScopeKey !== selectedScopeKey && (
         <div
@@ -673,28 +633,34 @@ export function HostKpiOverview({
           refreshing={isRefreshing}
           label={t("host_dash_kpi_booked_vs_available", "Booked vs available")}
           value={`${kpis.occupancy.bookedNights} / ${kpis.occupancy.availableNights}`}
-          detail={t("host_dash_kpi_last_30_days", "Last 30 days")}
+          detail={`${kpis.occupancy.blockedNights} ${t("host_dash_blocked_nights", "blocked nights")} · ${kpis.occupancy.periodLabel}`}
           href="/host/calendar"
         />
         <SecondaryKpi
           refreshing={isRefreshing}
           label={t("host_dash_kpi_avg_booking_val", "Avg booking value")}
-          value={formatCurrency(kpis.averageBookingValue.hostPayoutCents ?? 0, kpis.averageBookingValue.currency)}
-          detail={t("host_dash_kpi_net_payout_stay", "Net payout per stay")}
+          value={kpis.averageBookingValue.hostPayoutCents === null ? "—" : formatCurrency(kpis.averageBookingValue.hostPayoutCents, kpis.averageBookingValue.currency)}
+          detail={kpis.averageBookingValue.completedBookingsCount > 0
+            ? t("host_dash_kpi_net_payout_stay", "Net payout per stay")
+            : t("host_dash_no_eligible_completed_stays", "No eligible completed stays")}
           href={earningsHref}
         />
         <SecondaryKpi
           refreshing={isRefreshing}
           label={t("host_dash_kpi_avg_stay", "Avg stay")}
-          value={`${kpis.averageStayLength.nights} ${kpis.averageStayLength.nights === 1 ? t("host_dash_night_singular", "night") : t("host_dash_night_plural", "nights")}`}
-          detail={t("host_dash_kpi_completed_stays", "Completed stays")}
+          value={kpis.averageStayLength.completedStaysCount > 0
+            ? `${kpis.averageStayLength.nights} ${kpis.averageStayLength.nights === 1 ? t("host_dash_night_singular", "night") : t("host_dash_night_plural", "nights")}`
+            : "—"}
+          detail={kpis.averageStayLength.completedStaysCount > 0
+            ? t("host_dash_kpi_completed_stays", "Completed stays")
+            : t("host_dash_no_completed_stays", "No completed stays")}
           href="/host/today"
         />
         <SecondaryKpi
           refreshing={isRefreshing}
           label={t("host_dash_kpi_cancel_rate", "Cancellation rate")}
           value={`${kpis.cancellationRate.overallPercentage}%`}
-          detail={`${t("host_dash_kpi_host_prefix", "Host:")} ${kpis.cancellationRate.hostPercentage}%`}
+          detail={`${t("host_dash_kpi_host_prefix", "Host:")} ${kpis.cancellationRate.hostPercentage}% · ${kpis.cancellationRate.periodLabel}`}
           href="/host/resolution-center"
         />
         <SecondaryKpi
@@ -787,9 +753,9 @@ export function HostKpiOverview({
               </div>
             </div>
             <div className={`${insetSurfaceClass} p-4 border border-zinc-100 shadow-2xs`}>
-              <p className="text-xs text-[#727272]">{t("host_dash_expected_arrival", "Expected arrival")}</p>
+              <p className="text-xs text-[#727272]">{t("host_dash_settlement_status", "Settlement status")}</p>
               <p className="mt-1.5 text-sm font-semibold text-[#1F1F1F]">
-                {kpis.upcomingPayout.nextPayoutExpectedArrival || "24h after guest check-in"}
+                {kpis.upcomingPayout.nextPayoutExpectedArrival || "Settlement timing pending confirmation"}
               </p>
               <p className="mt-1 text-xs text-[#727272]">
                 {kpis.upcomingPayout.nextEligibleStayStartDate
@@ -800,7 +766,7 @@ export function HostKpiOverview({
             <div className={`${insetSurfaceClass} p-4 border border-zinc-100 shadow-2xs`}>
               <p className="text-xs text-[#727272]">{t("host_dash_payment_method", "Payout method")}</p>
               <p className="mt-1.5 text-sm font-semibold text-[#1F1F1F]">
-                {kpis.upcomingPayout.nextPayoutMethodMasked || t("host_dash_default_payout_account", "Configured payout account")}
+                {kpis.upcomingPayout.nextPayoutMethodMasked || t("host_dash_no_payout_method", "No payout method configured")}
               </p>
               <p className="mt-1 text-xs text-[#727272] truncate">
                 {kpis.upcomingPayout.nextPayoutListingTitle
@@ -814,7 +780,7 @@ export function HostKpiOverview({
             <p>
               {t(
                 "host_dash_no_upcoming_payout_desc",
-                "No upcoming payouts scheduled at this time. Payouts are initiated 24 hours after a guest checks into a confirmed reservation.",
+                "No outstanding payouts are scheduled at this time. Settlement timing is confirmed by the payout provider.",
               )}
             </p>
           </div>

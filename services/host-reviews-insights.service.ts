@@ -4,6 +4,8 @@ import { prisma } from "@/lib/db/prisma";
 import { ReviewDirection, ReviewStatus } from "@/generated/prisma/enums";
 import type { Prisma } from "@/generated/prisma/client";
 import { AppError } from "@/lib/api/errors";
+import type { AuthUser } from "@/lib/auth/types";
+import { accessibleHostListingWhere } from "@/lib/permissions/host-listing-access";
 import { reviewService } from "@/services/review.service";
 import { resolveReportingPeriod, type DateRangePreset } from "@/lib/dashboard/reporting-filter";
 
@@ -92,11 +94,11 @@ export const hostReviewsInsightsService = {
    * Calculates authoritative reviews overview, distributions, categories, and trends.
    */
   async getReviewsOverview(
-    hostId: string,
+    actor: AuthUser,
     options: Pick<HostReviewsFilterOptions, "listingId" | "period" | "startDate" | "endDate"> = {},
   ): Promise<HostReviewsOverviewData> {
     const listings = await prisma.listing.findMany({
-      where: { hostId },
+      where: accessibleHostListingWhere(actor),
       select: { id: true },
     });
     const hostListingIds = listings.map((l) => l.id);
@@ -284,7 +286,7 @@ export const hostReviewsInsightsService = {
    * Retrieves paginated, sorted, and filtered review records for authorized host listings.
    */
   async listHostReviews(
-    hostId: string,
+    actor: AuthUser,
     options: HostReviewsFilterOptions = {},
   ): Promise<{
     reviews: HostReviewItemDTO[];
@@ -295,7 +297,7 @@ export const hostReviewsInsightsService = {
     const skip = (page - 1) * limit;
 
     const listings = await prisma.listing.findMany({
-      where: { hostId },
+      where: accessibleHostListingWhere(actor),
       select: { id: true, title: true },
     });
     const hostListingIds = listings.map((l) => l.id);
@@ -441,12 +443,12 @@ export const hostReviewsInsightsService = {
   /**
    * Retrieves single review details with host authorization validation.
    */
-  async getHostReviewDetails(hostId: string, reviewId: string): Promise<HostReviewItemDTO> {
+  async getHostReviewDetails(actor: AuthUser, reviewId: string): Promise<HostReviewItemDTO> {
     const review = await prisma.review.findUnique({
       where: { id: reviewId },
       include: {
         author: { select: { id: true, name: true, image: true } },
-        listing: { select: { id: true, title: true, hostId: true } },
+        listing: { select: { id: true, title: true } },
         booking: { select: { id: true, startDate: true, endDate: true, guests: true } },
         response: {
           include: {
@@ -457,7 +459,13 @@ export const hostReviewsInsightsService = {
     });
 
     if (!review) throw AppError.notFound("Review not found");
-    if (review.listing?.hostId !== hostId) {
+    const authorizedListing = review.listingId
+      ? await prisma.listing.findFirst({
+          where: accessibleHostListingWhere(actor, { id: review.listingId }),
+          select: { id: true },
+        })
+      : null;
+    if (!authorizedListing) {
       throw AppError.forbidden("You do not have permission to view this review.");
     }
 
@@ -509,15 +517,15 @@ export const hostReviewsInsightsService = {
   /**
    * Submits a host public response to a guest review.
    */
-  async replyToReview(hostId: string, reviewId: string, comment: string) {
-    const detail = await this.getHostReviewDetails(hostId, reviewId);
+  async replyToReview(actor: AuthUser, reviewId: string, comment: string) {
+    const detail = await this.getHostReviewDetails(actor, reviewId);
     if (detail.response) {
       throw AppError.conflict("A response has already been submitted for this review.");
     }
 
     return reviewService.createReviewResponse({
       reviewId,
-      authorId: hostId,
+      authorId: actor.id,
       comment,
     });
   },

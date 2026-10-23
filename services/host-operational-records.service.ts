@@ -5,25 +5,26 @@ import { AppError } from "@/lib/api/errors";
 import type { AuthUser } from "@/lib/auth/types";
 import { normalizeCurrencyCode } from "@/lib/currency";
 import { prisma } from "@/lib/db/prisma";
+import { accessibleHostListingWhere } from "@/lib/permissions/host-listing-access";
 
 type TaskInput = { listingId: string; bookingId?: string | null; title: string; scheduledFor?: Date | null; notes?: string | null; actualExpenseCents?: number | null; currency?: string; idempotencyKey?: string | null };
 type MaintenanceInput = Omit<TaskInput, "bookingId" | "idempotencyKey" | "scheduledFor"> & { serviceDate?: Date | null; nextServiceDate?: Date | null; equipmentReference?: string | null; usageReading?: number | null; usageUnit?: string | null };
 
 async function assertListing(actor: AuthUser, listingId: string) {
-  const listing = await prisma.listing.findFirst({ where: { id: listingId, hostId: actor.id, deletedAt: null }, select: { id: true } });
+  const listing = await prisma.listing.findFirst({ where: accessibleHostListingWhere(actor, { id: listingId }), select: { id: true } });
   if (!listing) throw AppError.forbidden("Listing not found or access denied.");
 }
 function positiveOrNull(value: number | null | undefined, field: string) { if (value !== undefined && value !== null && (!Number.isInteger(value) || value < 0)) throw AppError.badRequest(`${field} must be a non-negative whole number.`); }
 
 export const hostOperationalRecordsService = {
   async overview(actor: AuthUser, listingId?: string) {
-    const listingWhere = { hostId: actor.id, deletedAt: null, ...(listingId ? { id: listingId } : {}) };
+    const listingWhere = accessibleHostListingWhere(actor, listingId ? { id: listingId } : {});
     if (listingId) await assertListing(actor, listingId);
     const listings = await prisma.listing.findMany({ where: listingWhere, select: { id: true, title: true }, orderBy: { title: "asc" } });
     const ids = listings.map((listing) => listing.id);
     const [cleaning, maintenance] = await Promise.all([
-      prisma.cleaningTask.findMany({ where: { hostId: actor.id, listingId: { in: ids } }, orderBy: { scheduledFor: "asc" }, take: 50, include: { listing: { select: { title: true } } } }),
-      prisma.maintenanceRecord.findMany({ where: { hostId: actor.id, listingId: { in: ids } }, orderBy: { serviceDate: "desc" }, take: 50, include: { listing: { select: { title: true } } } }),
+      prisma.cleaningTask.findMany({ where: { listingId: { in: ids } }, orderBy: { scheduledFor: "asc" }, take: 50, include: { listing: { select: { title: true } } } }),
+      prisma.maintenanceRecord.findMany({ where: { listingId: { in: ids } }, orderBy: { serviceDate: "desc" }, take: 50, include: { listing: { select: { title: true } } } }),
     ]);
     const completed = cleaning.filter((task) => task.status === OperationalTaskStatus.COMPLETED);
     const pending = cleaning.filter((task) => task.status === OperationalTaskStatus.PENDING || task.status === OperationalTaskStatus.SCHEDULED || task.status === OperationalTaskStatus.IN_PROGRESS);
@@ -51,7 +52,8 @@ export const hostOperationalRecordsService = {
     return task;
   },
   async updateCleaningStatus(actor: AuthUser, id: string, status: OperationalTaskStatus) {
-    const task = await prisma.cleaningTask.findFirst({ where: { id, hostId: actor.id } }); if (!task) throw AppError.notFound("Cleaning task not found.");
+    const task = await prisma.cleaningTask.findFirst({ where: { id }, select: { id: true, listingId: true, completedAt: true } }); if (!task) throw AppError.notFound("Cleaning task not found.");
+    await assertListing(actor, task.listingId);
     return prisma.cleaningTask.update({ where: { id }, data: { status, completedAt: status === OperationalTaskStatus.COMPLETED ? new Date() : task.completedAt } });
   },
   async createMaintenanceRecord(actor: AuthUser, input: MaintenanceInput) {

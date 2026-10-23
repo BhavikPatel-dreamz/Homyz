@@ -23,55 +23,39 @@ test("Host Opportunities Service evaluates deterministic, non-AI listing health 
 
   // Health and completeness checks
   assert.match(service, /getOpportunitiesOverview\(/);
-  assert.match(service, /dismissOpportunity\(/);
-  assert.match(service, /Listing title/);
-  assert.match(service, /Property description/);
-  assert.match(service, /Address & location/);
-  assert.match(service, /Photo gallery \(at least 5\)/);
-  assert.match(service, /Cover photo set/);
-  assert.match(service, /Nightly rate configured/);
-  assert.match(service, /Arrival & check-in guide/);
+  assert.match(service, /updateLifecycle\(/);
+  assert.match(service, /listing\.description\.missing/);
+  assert.match(service, /listing\.location\.incomplete/);
+  assert.match(service, /listing\.photos\.insufficient/);
+  assert.match(service, /listing\.pricing\.missing/);
+  assert.match(service, /listing\.checkin\.instructions_missing/);
 
   // Categories
-  assert.match(service, /"PHOTOS"/);
-  assert.match(service, /"AMENITIES"/);
-  assert.match(service, /"FAMILY"/);
-  assert.match(service, /"WORKSPACE"/);
-  assert.match(service, /"SETTINGS"/);
-  assert.match(service, /"PRICING"/);
-  assert.match(service, /"CALENDAR"/);
+  assert.match(service, /"LISTING_QUALITY"/);
+  assert.match(service, /"PRICING_AVAILABILITY"/);
+  assert.match(service, /"REVIEWS_GUEST_EXPERIENCE"/);
 
   // Direct editor action routes
   assert.match(service, /\/host\/listings\/\$\{listing\.id\}\/photos/);
   assert.match(service, /\/host\/listings\/\$\{listing\.id\}\/amenities/);
-  assert.match(service, /\/host\/listings\/\$\{listing\.id\}\/booking-settings/);
+  assert.match(service, /\/host\/listings\/\$\{listing\.id\}\/check-in-out/);
   assert.match(service, /\/host\/listings\/\$\{listing\.id\}\/pricing/);
-  assert.match(service, /\/host\/calendar/);
 });
 
-test("Opportunities Tab UI renders Listing Health section, category filters, opportunity cards, and detail modal", () => {
+test("Opportunities Tab UI renders filters, actionable opportunity cards, and lifecycle controls", () => {
   const tab = read("components/host/insights/insights-opportunities-tab.tsx");
 
-  // Listing health and readiness
-  assert.match(tab, /Listing Health & Completeness/);
-  assert.match(tab, /Overall profile readiness/);
-  assert.match(tab, /checks completed/);
-
   // Category navigation
-  assert.match(tab, /Hosting opportunities/);
-  assert.match(tab, /Actionable listing recommendations/);
-  assert.match(tab, /"PHOTOS"/);
-  assert.match(tab, /"AMENITIES"/);
-  assert.match(tab, /"FAMILY"/);
-  assert.match(tab, /"WORKSPACE"/);
-  assert.match(tab, /"SETTINGS"/);
-  assert.match(tab, /"PRICING"/);
-  assert.match(tab, /"CALENDAR"/);
+  assert.match(tab, /Opportunity category/);
+  assert.match(tab, /actionable items/);
+  assert.match(tab, /"PRICING_AVAILABILITY"/);
+  assert.match(tab, /"LISTING_QUALITY"/);
+  assert.match(tab, /"REVIEWS_GUEST_EXPERIENCE"/);
 
   // Action & Dismissal
-  assert.match(tab, /opp\.actionLabel/);
-  assert.match(tab, /handleDismiss/);
-  assert.match(tab, /setActiveModalItem/);
+  assert.match(tab, /item\.actionLabel/);
+  assert.match(tab, /updateLifecycle/);
+  assert.match(tab, /Snooze 7 days/);
 });
 
 test("Opportunities APIs enforce authentication and Role authorization", () => {
@@ -81,7 +65,7 @@ test("Opportunities APIs enforce authentication and Role authorization", () => {
 
   const dismissApi = read("app/api/v1/host/insights/opportunities/dismiss/route.ts");
   assert.match(dismissApi, /requireApiRole\(req, \[Role\.HOST, Role\.ADMIN\]\)/);
-  assert.match(dismissApi, /hostOpportunitiesService\.dismissOpportunity/);
+  assert.match(dismissApi, /hostOpportunitiesService\.updateLifecycle/);
 
   const listingOppApi = read("app/api/v1/host/insights/opportunities/[listingId]/route.ts");
   assert.match(listingOppApi, /requireApiRole\(req, \[Role\.HOST, Role\.ADMIN\]\)/);
@@ -91,7 +75,7 @@ test("Opportunities APIs enforce authentication and Role authorization", () => {
 test("Opportunities reject cross-host filters and server-side mandatory dismissals", () => {
   const service = read("services/host-opportunities.service.ts");
   assert.match(service, /You do not have access to this listing/);
-  assert.match(service, /This required opportunity cannot be dismissed/);
+  assert.match(service, /This required opportunity cannot be changed/);
   assert.match(service, /opportunity\.dismissible/);
   assert.doesNotMatch(service, /most searched amenity|significantly more guest interest/);
 });

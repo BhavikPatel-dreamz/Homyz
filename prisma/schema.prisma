@@ -414,6 +414,9 @@ model User {
   auditLogs                       AuditLog[]
   hostPermissionOverrides         HostPermissionOverride[]   @relation("HostOverrides")
   createdHostOverrides            HostPermissionOverride[]   @relation("HostOverridesCreated")
+  hostEntitlementGrants           HostEntitlementGrant[]     @relation("HostEntitlementGrants")
+  grantedHostEntitlements         HostEntitlementGrant[]     @relation("GrantedHostEntitlements")
+  revokedHostEntitlements         HostEntitlementGrant[]     @relation("RevokedHostEntitlements")
   adminPermissionOverrides        AdminPermissionOverride[]  @relation("AdminOverrides")
   createdAdminOverrides           AdminPermissionOverride[]  @relation("AdminOverridesCreated")
   sentInvitations                 AdminInvitation[]          @relation("InvitedByAdmins")
@@ -1591,6 +1594,33 @@ model HostPermissionOverride {
 
   @@unique([hostId, permission])
   @@index([hostId])
+}
+
+model HostEntitlementGrant {
+  id          String    @id @default(cuid())
+  hostId      String
+  featureKey  String    @default("DASHBOARD_PLUS")
+  source      String    @default("ADMIN")
+  status      String    @default("ACTIVE") // ACTIVE, REVOKED
+  startsAt    DateTime  @default(now())
+  expiresAt   DateTime?
+  grantedById String?
+  revokedById String?
+  revokedAt   DateTime?
+  reason      String?
+  notes       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  host      User  @relation("HostEntitlementGrants", fields: [hostId], references: [id], onDelete: Cascade)
+  grantedBy User? @relation("GrantedHostEntitlements", fields: [grantedById], references: [id], onDelete: SetNull)
+  revokedBy User? @relation("RevokedHostEntitlements", fields: [revokedById], references: [id], onDelete: SetNull)
+
+  @@index([hostId])
+  @@index([hostId, featureKey, status])
+  @@index([status])
+  @@index([expiresAt])
+  @@index([createdAt])
 }
 
 model AdminPermissionOverride {

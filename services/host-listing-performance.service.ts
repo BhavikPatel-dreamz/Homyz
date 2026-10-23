@@ -11,6 +11,7 @@ import { listingService } from "@/services/listing.service";
 import { notificationService } from "@/services/notification.service";
 import { NotificationType } from "@/generated/prisma/enums";
 import { getListingAnalyticsSummary } from "@/services/listing-analytics.service";
+import { accessibleHostListingWhere } from "@/lib/permissions/host-listing-access";
 
 const MIN_COMPARABLES = 3;
 const MAX_SEARCH_RESULTS_CHECKED = 100;
@@ -62,6 +63,10 @@ export type ListingPerformanceData = {
     observedAt: string;
     message: string;
   };
+  advancedComparison: {
+    status: "AVAILABLE" | "LOCKED";
+    message: string;
+  };
   comparisonBenchmarks: {
     ratingCategories: Partial<Record<RatingCategory, { yourRating: number; comparableAverage: number; comparableCount: number }>>;
     missingCommonAmenities: Array<{ amenity: string; comparableSharePercentage: number; comparableCount: number }>;
@@ -96,7 +101,14 @@ export type ListingPerformanceData = {
   quickFixes: ListingPerformanceQuickFix[];
 };
 
-type PerformanceOptions = { listingId?: string | null; checkIn?: string; checkOut?: string; guests?: number };
+type PerformanceOptions = {
+  listingId?: string | null;
+  checkIn?: string;
+  checkOut?: string;
+  guests?: number;
+  /** Server-resolved entitlement; never accepted from a browser query string. */
+  includeAdvancedComparisons?: boolean;
+};
 
 function average(values: number[]) {
   return values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : null;
@@ -125,9 +137,9 @@ function validContext(checkIn: string, checkOut: string) {
   return !Number.isNaN(start.getTime()) && !Number.isNaN(end.getTime()) && end > start && differenceInBookingNights(start, end) >= 1;
 }
 
-async function getOwnedListing(actor: AuthUser, listingId?: string | null) {
+async function getAccessibleListing(actor: AuthUser, listingId?: string | null) {
   const owned = await prisma.listing.findMany({
-    where: { hostId: actor.id, deletedAt: null },
+    where: accessibleHostListingWhere(actor),
     select: {
       id: true, title: true, photos: true, city: true, district: true, country: true, propertyType: true,
       guests: true, bedrooms: true, amenities: true, price: true, weekdayBasePrice: true, weekendPrice: true,
@@ -143,7 +155,7 @@ async function getOwnedListing(actor: AuthUser, listingId?: string | null) {
 }
 
 async function selectComparables(
-  listing: NonNullable<Awaited<ReturnType<typeof getOwnedListing>>>,
+  listing: NonNullable<Awaited<ReturnType<typeof getAccessibleListing>>>,
   context: { checkIn: string; checkOut: string; guests: number },
 ) {
   if (!listing.city?.trim() || !listing.propertyType?.trim()) return [];
@@ -255,7 +267,7 @@ async function getPricingObservations(listing: { id: string; blockedDates: strin
 
 export const hostListingPerformanceService = {
   async getListingPerformance(actor: AuthUser, options: PerformanceOptions = {}): Promise<ListingPerformanceData | null> {
-    const listing = await getOwnedListing(actor, options.listingId);
+    const listing = await getAccessibleListing(actor, options.listingId);
     if (!listing) return null;
 
     const fallback = defaultContext(listing);
@@ -413,6 +425,38 @@ export const hostListingPerformanceService = {
       getListingAnalyticsSummary({ listingIds: [listing.id], startDate: new Date(Date.now() - 30 * 86_400_000), endDate: new Date() }),
     ]);
     const searchPerformance = { status: listingAnalytics.status, message: listingAnalytics.message, trackingStartedAt: listingAnalytics.trackingStartedAt, impressions: listingAnalytics.searchImpressions, listingViews: listingAnalytics.listingViews, clickThroughRatePercentage: listingAnalytics.searchImpressions > 0 ? Math.round((listingAnalytics.listingViews / listingAnalytics.searchImpressions) * 10_000) / 100 : null, attributedBookingConversionPercentage: listingAnalytics.conversionRatePercentage };
-    return { ...base, searchRanking, priceComparison, comparisonBenchmarks: { ratingCategories, missingCommonAmenities }, comparableListings, cancellationComparison: { yourPolicy: listing.cancellationPolicy, comparablePolicies: Array.from(policyCounts.entries()).map(([policy, count]) => ({ policy, count })).sort((left, right) => right.count - left.count), message: "Cancellation terms are shown as configured by published similar Homyz listings; no policy is scored as better." }, pricingObservations, searchPerformance, quickFixes };
+    const hasAdvancedComparisons = options.includeAdvancedComparisons === true;
+    const advancedComparison = hasAdvancedComparisons
+      ? { status: "AVAILABLE" as const, message: "Detailed comparison uses similar Homyz listings for the selected stay context." }
+      : { status: "LOCKED" as const, message: "Detailed comparable listings, peer benchmarks, and booking lead-time analysis require Dashboard Plus." };
+    const basicSearchRanking = hasAdvancedComparisons
+      ? searchRanking
+      : { ...searchRanking, history: [] };
+    const basicPricingObservations = hasAdvancedComparisons
+      ? pricingObservations
+      : {
+          ...pricingObservations,
+          leadTime: {
+            sampleSize: 0,
+            medianDays: null,
+            typicalRange: null,
+            message: "Advanced booking lead-time analysis requires Dashboard Plus.",
+          },
+        };
+
+    return {
+      ...base,
+      searchRanking: basicSearchRanking,
+      priceComparison,
+      advancedComparison,
+      comparisonBenchmarks: hasAdvancedComparisons ? { ratingCategories, missingCommonAmenities } : { ratingCategories: {}, missingCommonAmenities: [] },
+      comparableListings: hasAdvancedComparisons ? comparableListings : [],
+      cancellationComparison: hasAdvancedComparisons
+        ? { yourPolicy: listing.cancellationPolicy, comparablePolicies: Array.from(policyCounts.entries()).map(([policy, count]) => ({ policy, count })).sort((left, right) => right.count - left.count), message: "Cancellation terms are shown as configured by published similar Homyz listings; no policy is scored as better." }
+        : { yourPolicy: listing.cancellationPolicy, comparablePolicies: [], message: "Comparable cancellation-policy benchmarking requires Dashboard Plus." },
+      pricingObservations: basicPricingObservations,
+      searchPerformance,
+      quickFixes: hasAdvancedComparisons ? quickFixes : quickFixes.filter((fix) => fix.category === "PRICING"),
+    };
   },
 };

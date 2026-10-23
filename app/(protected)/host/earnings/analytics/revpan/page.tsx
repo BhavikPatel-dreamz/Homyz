@@ -5,6 +5,8 @@ import { Role } from "@/generated/prisma/enums";
 import { HostHeader } from "@/components/host/host-header";
 import { Container } from "@/components/ui";
 import { requirePageRole } from "@/lib/permissions/page-guards";
+import { getHostDashboardEntitlements } from "@/lib/entitlements/host-dashboard";
+import { forbidden } from "next/navigation";
 import type { DateRangePreset } from "@/lib/dashboard/reporting-filter";
 import { hostEarningsAnalyticsService } from "@/services/host-earnings-analytics.service";
 
@@ -15,6 +17,7 @@ const money = (cents: number | null, currency: string) => cents === null ? "—"
 
 export default async function RevpanDetailPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const actor = await requirePageRole([Role.HOST, Role.ADMIN]);
+  if (!(await getHostDashboardEntitlements(actor)).features.REVPAN) forbidden();
   const params = await searchParams;
   const single = (value: string | string[] | undefined) => Array.isArray(value) ? value[0] : value;
   const displayCurrency = (await cookies()).get("homyz_display_currency")?.value || "SAR";

@@ -11,6 +11,7 @@ import { calculateBookingLeadTimeDays, isLastMinuteBooking, LAST_MINUTE_LEAD_DAY
 import { extractStoredHostPayout, isStoredBookingPayoutEligible } from "@/lib/booking/booking-financials";
 import { normalizeCurrencyCode } from "@/lib/currency";
 import { resolveReportingPeriod, type DateRangePreset } from "@/lib/dashboard/reporting-filter";
+import { accessibleHostListingWhere } from "@/lib/permissions/host-listing-access";
 import {
   calculateDashboardInventory,
   calculateDashboardInventoryByDate,
@@ -108,7 +109,7 @@ export interface HostBookingAnalyticsData {
     realizedBookingCount: number;
     trend: Array<{ monthKey: string; averageNightlyRateCents: number | null; completedStaysCount: number }>;
   };
-  properties: Array<{ listingId: string; title: string; confirmedBookingsCount: number; completedStaysCount: number; occupancyRatePercentage: number | null; bookedNights: number; averageStayNights: number | null; averageLeadTimeDays: number | null; lastMinuteBookingPercentage: number | null; realizedNightlyRateCents: number | null }>;
+  properties: Array<{ listingId: string; title: string; confirmedBookingsCount: number; completedStaysCount: number; occupancyRatePercentage: number | null; bookedNights: number; averageStayNights: number | null; averageLeadTimeDays: number | null; lastMinuteBookingPercentage: number | null; realizedNightlyRateCents: number | null; eligibleAccommodationRevenueCents: number; averageBookingValueCents: number | null; cancellationRatePercentage: number | null; guestRating: number | null; responseRatePercentage: null; responseRateStatus: "DATA_UNAVAILABLE" }>;
   propertiesTotal: number;
 }
 
@@ -149,7 +150,7 @@ export const hostBookingAnalyticsService = {
       : null;
     const comparisonStart = comparison?.startDate ?? period.comparisonStartDate;
     const listings = await prisma.listing.findMany({
-      where: { hostId: actor.id, deletedAt: null },
+      where: accessibleHostListingWhere(actor),
       select: { id: true, title: true, published: true, status: true, isPaused: true, blockedDates: true },
       orderBy: { title: "asc" },
     });
@@ -159,7 +160,8 @@ export const hostBookingAnalyticsService = {
     const eventStart = comparisonStart < period.startDate ? comparisonStart : period.startDate;
     const stayStart = comparisonStart < period.startDate ? comparisonStart : period.startDate;
     const now = new Date();
-    const bookings = allListingIds.length ? await prisma.booking.findMany({
+    const [bookings, cancelledBookings, ratingRows] = allListingIds.length ? await Promise.all([
+      prisma.booking.findMany({
       where: {
         listingId: { in: allListingIds },
         status: BookingStatus.CONFIRMED,
@@ -169,7 +171,17 @@ export const hostBookingAnalyticsService = {
         ],
       },
       select: { id: true, listingId: true, status: true, startDate: true, endDate: true, createdAt: true, priceBreakdown: true, currency: true, totalPrice: true, cleaningFee: true },
-    }) as BookingRecord[] : [];
+      }) as Promise<BookingRecord[]>,
+      prisma.booking.findMany({
+        where: { listingId: { in: allListingIds }, status: BookingStatus.CANCELLED, createdAt: { gte: period.startDate, lte: period.endDate } },
+        select: { listingId: true },
+      }),
+      prisma.review.groupBy({
+        by: ["listingId"],
+        where: { listingId: { in: allListingIds }, direction: "GUEST_TO_PROPERTY", status: "PUBLISHED" },
+        _avg: { rating: true },
+      }),
+    ]) : [[], [], [] as Array<{ listingId: string | null; _avg: { rating: number | null } }>];
 
     const activeListings = scopedListings.filter((listing) => listing.published && listing.status === "ACTIVE" && !listing.isPaused);
     const inventoryBookings = bookings as DashboardInventoryBooking[];
@@ -220,7 +232,7 @@ export const hostBookingAnalyticsService = {
 
     const selectedCurrency = normalizeCurrencyCode(query.currency ?? "SAR");
     const rateMonths = new Map<string, { amount: number; nights: number; stays: number }>();
-    const propertyRates = new Map(scopedListings.map((listing) => [listing.id, { amount: 0, nights: 0, stays: 0 }]));
+    const propertyRates = new Map(scopedListings.map((listing) => [listing.id, { amount: 0, net: 0, nights: 0, stays: 0 }]));
     let excludedFinancialSnapshotCount = 0;
     for (const booking of completedStays) {
       const payout = extractStoredHostPayout(booking);
@@ -233,8 +245,12 @@ export const hostBookingAnalyticsService = {
       month.amount += payout.accommodationSubtotal; month.nights += nights; month.stays++;
       rateMonths.set(monthKey, month);
       const property = propertyRates.get(booking.listingId);
-      if (property) { property.amount += payout.accommodationSubtotal; property.nights += nights; property.stays++; }
+      if (property) { property.amount += payout.accommodationSubtotal; property.net += payout.netHostPayout; property.nights += nights; property.stays++; }
     }
+
+    const cancelledByListing = new Map<string, number>();
+    for (const booking of cancelledBookings) cancelledByListing.set(booking.listingId, (cancelledByListing.get(booking.listingId) ?? 0) + 1);
+    const ratingByListing = new Map(ratingRows.filter((row) => row.listingId).map((row) => [row.listingId!, row._avg.rating === null ? null : Math.round(row._avg.rating * 100) / 100]));
 
     const propertyMetrics = scopedListings.map((listing) => {
       const listingInventory = calculateDashboardInventory({ listings: activeListings.filter((item) => item.id === listing.id), bookings: inventoryBookings, startDateKey: period.startDateKey, endDateKeyExclusive: shiftBookingDateKey(period.endDateKey, 1) });
@@ -243,6 +259,8 @@ export const hostBookingAnalyticsService = {
       const listingStays = completedStays.filter((booking) => booking.listingId === listing.id);
       const completedNights = listingStays.map((booking) => differenceInBookingNights(booking.startDate, booking.endDate)).filter(Boolean);
       const rate = propertyRates.get(listing.id)!;
+      const cancelledCount = cancelledByListing.get(listing.id) ?? 0;
+      const cancellationDenominator = listingEvents.length + cancelledCount;
       return {
         listingId: listing.id,
         title: listing.title,
@@ -254,6 +272,13 @@ export const hostBookingAnalyticsService = {
         averageLeadTimeDays: average(listingLeadTimes),
         lastMinuteBookingPercentage: listingEvents.length ? Math.round((listingLeadTimes.filter(isLastMinuteBooking).length / listingEvents.length) * 1000) / 10 : null,
         realizedNightlyRateCents: rate.nights ? Math.round(rate.amount / rate.nights) : null,
+        eligibleAccommodationRevenueCents: rate.amount,
+        averageBookingValueCents: rate.stays ? Math.round(rate.net / rate.stays) : null,
+        cancellationRatePercentage: cancellationDenominator ? Math.round((cancelledCount / cancellationDenominator) * 1000) / 10 : null,
+        guestRating: ratingByListing.get(listing.id) ?? null,
+        // Messaging only has a host-level response metric; never allocate it to a listing.
+        responseRatePercentage: null,
+        responseRateStatus: "DATA_UNAVAILABLE" as const,
       };
     });
 

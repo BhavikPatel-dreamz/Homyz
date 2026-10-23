@@ -3,6 +3,7 @@ import { Role } from "@/generated/prisma/enums";
 import { HostHeader } from "@/components/host/host-header";
 import { Container } from "@/components/ui";
 import { requirePageRole } from "@/lib/permissions/page-guards";
+import { getHostDashboardEntitlements } from "@/lib/entitlements/host-dashboard";
 import { hostListingPerformanceService } from "@/services/host-listing-performance.service";
 import { HostListingPerformanceClient } from "./host-listing-performance-client";
 
@@ -15,6 +16,7 @@ export default async function HostListingPerformancePage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const actor = await requirePageRole([Role.HOST, Role.ADMIN]);
+  const entitlements = await getHostDashboardEntitlements(actor);
   const params = await searchParams;
   const single = (value: string | string[] | undefined) => Array.isArray(value) ? value[0] : value;
   const data = await hostListingPerformanceService.getListingPerformance(actor, {
@@ -22,6 +24,7 @@ export default async function HostListingPerformancePage({
     checkIn: single(params.checkIn),
     checkOut: single(params.checkOut),
     guests: Number(single(params.guests)) || undefined,
+    includeAdvancedComparisons: entitlements.features.ADVANCED_PROPERTY_COMPARISON,
   });
 
   return (

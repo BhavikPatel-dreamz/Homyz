@@ -13,7 +13,7 @@ export const GET = apiHandler(async (req: NextRequest) => {
 
   const filters = parseInsightsReportingFilters(url);
 
-  const overview = await hostReviewsInsightsService.getReviewsOverview(actor.id, {
+  const overview = await hostReviewsInsightsService.getReviewsOverview(actor, {
     listingId: filters.listingId,
     period: filters.period,
     startDate: filters.startDate,

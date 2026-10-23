@@ -13,6 +13,11 @@ export function HostListingPerformanceClient({ initialData }: { initialData: Lis
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const statsHref = (() => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("tab", "stats");
+    return `/host/insights?${params.toString()}`;
+  })();
   const formatMoney = (value: number | null) => value === null ? "—" : new Intl.NumberFormat("en-US", { style: "currency", currency: data.priceComparison.currency, maximumFractionDigits: 0 }).format(value / 100);
 
   const refresh = (changes: Record<string, string>) => {
@@ -22,7 +27,7 @@ export function HostListingPerformanceClient({ initialData }: { initialData: Lis
       setError(null);
       router.replace(`${pathname}?${next.toString()}`, { scroll: false });
       try {
-        const response = await fetch(`/api/v1/host/insights/listing-performance?${next.toString()}`);
+        const response = await fetch(`/api/v1/host/insights/listing-performance?${next.toString()}`, { cache: "no-store" });
         const payload = await response.json();
         if (!response.ok) throw new Error(payload?.error?.message || "Could not refresh listing performance.");
         setData(payload.data);
@@ -38,7 +43,7 @@ export function HostListingPerformanceClient({ initialData }: { initialData: Lis
   return (
     <div className={`space-y-8 transition-opacity ${isPending ? "opacity-60" : "opacity-100"}`}>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <Link href="/host/insights?tab=stats" className="text-sm font-semibold text-zinc-600 hover:text-zinc-950">← Back to Stats</Link>
+        <Link href={statsHref} className="text-sm font-semibold text-zinc-600 transition-colors hover:text-zinc-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-950">← Insights · Stats</Link>
         <div className="flex flex-wrap gap-2">
           <input aria-label="Search check-in date" type="date" defaultValue={data.context.checkIn} onBlur={(event) => event.target.value && refresh({ checkIn: event.target.value })} className="rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs" />
           <input aria-label="Search check-out date" type="date" defaultValue={data.context.checkOut} onBlur={(event) => event.target.value && refresh({ checkOut: event.target.value })} className="rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs" />
@@ -77,7 +82,7 @@ export function HostListingPerformanceClient({ initialData }: { initialData: Lis
 
       <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-xs sm:p-8">
         <div className="flex flex-col gap-2 border-b border-zinc-100 pb-5 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-xs font-bold uppercase tracking-wider text-zinc-400">Comparable coverage</p><h2 className="mt-1 text-xl font-bold text-zinc-950">Similar listings</h2><p className="mt-1 text-xs text-zinc-500">Up to 10 qualifying published Homyz listings for this exact stay context.</p></div><Link href={`/host/listings/${data.listing.id}/pricing`} className="text-xs font-semibold underline underline-offset-4">Review pricing</Link></div>
-        {data.comparableListings.length ? <div className="mt-5 grid gap-3 sm:grid-cols-2">{data.comparableListings.map((listing) => <article key={listing.id} className="flex items-center gap-3 rounded-2xl border border-zinc-100 p-3"><div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-zinc-100">{listing.photo && <Image src={listing.photo} alt="" width={48} height={48} className="h-full w-full object-cover" />}</div><div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold text-zinc-950">{listing.title}</p><p className="mt-1 text-[11px] text-zinc-500">{listing.amenities.length} amenities · {listing.cancellationPolicy || "Policy not specified"}</p></div><p className="text-sm font-bold text-zinc-950">{formatMoney(listing.nightlyPriceCents)}</p></article>)}</div> : <p className="mt-5 text-sm text-zinc-600">No eligible comparable listings were observed for this stay.</p>}
+        {data.comparableListings.length ? <div className="mt-5 grid gap-3 sm:grid-cols-2">{data.comparableListings.map((listing) => <article key={listing.id} className="flex items-center gap-3 rounded-2xl border border-zinc-100 p-3"><div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-zinc-100">{listing.photo && <Image src={listing.photo} alt="" width={48} height={48} className="h-full w-full object-cover" />}</div><div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold text-zinc-950">{listing.title}</p><p className="mt-1 text-[11px] text-zinc-500">{listing.amenities.length} amenities · {listing.cancellationPolicy || "Policy not specified"}</p></div><p className="text-sm font-bold text-zinc-950">{formatMoney(listing.nightlyPriceCents)}</p></article>)}</div> : <p className="mt-5 text-sm text-zinc-600">{data.advancedComparison.status === "LOCKED" ? data.advancedComparison.message : "No eligible comparable listings were observed for this stay."}</p>}
         <div className="mt-5 rounded-2xl bg-zinc-50 p-4"><p className="text-xs font-semibold text-zinc-900">Cancellation terms</p><p className="mt-1 text-xs text-zinc-600">Your policy: {data.cancellationComparison.yourPolicy || "Not specified"}. {data.cancellationComparison.message}</p>{data.cancellationComparison.comparablePolicies.length > 0 && <p className="mt-2 text-xs text-zinc-600">Similar listings: {data.cancellationComparison.comparablePolicies.map((item) => `${item.policy} (${item.count})`).join(" · ")}</p>}</div>
       </section>
     </div>

@@ -6,6 +6,7 @@ import { requireApiRole } from "@/lib/permissions/guards";
 import { Role } from "@/generated/prisma/enums";
 import { parseInsightsReportingFilters } from "@/lib/dashboard/insights-query";
 import { hostBookingAnalyticsService } from "@/services/host-booking-analytics.service";
+import { requireHostDashboardFeature } from "@/lib/entitlements/host-dashboard";
 
 export const dynamic = "force-dynamic";
 
@@ -21,6 +22,7 @@ function comparisonFilters(url: URL) {
 
 export const GET = apiHandler(async (req: NextRequest) => {
   const actor = await requireApiRole(req, [Role.HOST, Role.ADMIN]);
+  await requireHostDashboardFeature(actor, "BOOKING_BEHAVIOR");
   const url = new URL(req.url);
   const filters = parseInsightsReportingFilters(url);
   const comparison = comparisonFilters(url);
@@ -30,7 +32,7 @@ export const GET = apiHandler(async (req: NextRequest) => {
     : propertyLimitValue && /^\d+$/.test(propertyLimitValue)
       ? Math.min(100, Number(propertyLimitValue))
       : undefined;
-  return ok(await hostBookingAnalyticsService.getOverview(actor, {
+  const response = ok(await hostBookingAnalyticsService.getOverview(actor, {
     listingId: filters.listingId,
     period: filters.period,
     startDate: filters.startDate,
@@ -39,4 +41,6 @@ export const GET = apiHandler(async (req: NextRequest) => {
     propertyLimit,
     currency: filters.currency || req.cookies.get("homyz_display_currency")?.value || "SAR",
   }));
+  response.headers.set("Cache-Control", "private, no-store");
+  return response;
 });

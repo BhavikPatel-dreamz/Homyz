@@ -11,7 +11,7 @@ export const GET = apiHandler(
     const actor = await requireApiRole(req, [Role.HOST, Role.ADMIN]);
     const { reviewId } = await ctx.params;
 
-    const review = await hostReviewsInsightsService.getHostReviewDetails(actor.id, reviewId);
+    const review = await hostReviewsInsightsService.getHostReviewDetails(actor, reviewId);
 
     return NextResponse.json({
       success: true,
@@ -19,4 +19,3 @@ export const GET = apiHandler(
     });
   },
 );
-

@@ -12,6 +12,7 @@ import { BookingStatus } from "@/generated/prisma/enums";
 import { parseBookingDate } from "@/lib/booking/booking-date";
 import { extractStoredHostPayout, isStoredBookingPayoutEligible } from "@/lib/booking/booking-financials";
 import { normalizeCurrencyCode } from "@/lib/currency";
+import { accessibleHostListingWhere } from "@/lib/permissions/host-listing-access";
 
 export interface GuestOriginCityItem {
   city: string;
@@ -210,7 +211,7 @@ export const hostGuestInsightsService = {
     const scopedListings = dashboardData.listings;
     const scopedListingIds = query.propertyId ? [query.propertyId] : scopedListings.map((l) => l.id);
     const hostListingIds = (await prisma.listing.findMany({
-      where: { hostId: actor.id, deletedAt: null }, select: { id: true },
+      where: accessibleHostListingWhere(actor), select: { id: true },
     })).map((listing) => listing.id);
     const asOf = new Date();
     const reportingStartDate = parseBookingDate(dashboardData.reportingPeriod.startDateKey);

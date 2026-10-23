@@ -22,5 +22,7 @@ export const GET = apiHandler(async (request) => {
     endDate,
     currency,
   });
-  return ok(dashboardData);
+  const response = ok(dashboardData);
+  response.headers.set("Cache-Control", "private, no-store");
+  return response;
 });

@@ -3,6 +3,7 @@
 import React from "react";
 import type { DateRangePreset } from "@/lib/dashboard/reporting-filter";
 import type { InsightsTab } from "@/services/host-insights.service";
+import { PropertySelector } from "@/components/host/reporting/property-selector";
 
 interface InsightsHeaderProps {
   activeTab: InsightsTab;
@@ -56,30 +57,22 @@ export function InsightsHeader({
       <div className="flex flex-wrap items-center gap-3">
         {/* Listing Selector (Not applicable to host-level Superhost) */}
         {!isSuperhostTab && (
-          <div className="flex items-center gap-1.5 rounded-xl border border-zinc-300 bg-white px-3 py-1.5 text-sm font-semibold text-zinc-900 shadow-2xs">
-            <span className="text-xs text-zinc-500">Property:</span>
-            <select
-              value={selectedListingId || ""}
-              onChange={(e) => onListingChange(e.target.value || null)}
-              className="max-w-[170px] truncate bg-transparent font-semibold focus:outline-none"
-            >
-              <option value="">All listings</option>
-              {listings.map((l) => (
-                <option key={l.id} value={l.id}>
-                  {l.title}
-                </option>
-              ))}
-            </select>
-          </div>
+          <PropertySelector
+            listings={listings}
+            selectedListingId={selectedListingId}
+            onSelect={onListingChange}
+            className="w-full sm:w-auto"
+          />
         )}
 
         {/* Reporting Period Filter */}
         {!isSuperhostTab ? (
-          <div className="flex items-center gap-1.5 rounded-xl border border-zinc-300 bg-white px-3 py-1.5 text-sm font-semibold text-zinc-900 shadow-2xs">
+          <div className="flex items-center gap-1.5 rounded-2xl border border-zinc-200 bg-white px-3 py-2 text-sm font-semibold text-zinc-900 shadow-2xs focus-within:border-zinc-950 focus-within:ring-2 focus-within:ring-zinc-950/10">
             <span className="text-xs text-zinc-500">Period:</span>
             <select
               value={selectedPeriod}
               onChange={(e) => onPeriodChange(e.target.value as DateRangePreset)}
+              aria-label="Insights reporting period"
               className="bg-transparent font-semibold focus:outline-none"
             >
               {PERIOD_OPTIONS.map((opt) => (

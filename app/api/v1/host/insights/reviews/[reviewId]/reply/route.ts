@@ -21,7 +21,7 @@ export const POST = apiHandler(
     const { reviewId } = await ctx.params;
     const body = replySchema.parse(await req.json());
 
-    const result = await hostReviewsInsightsService.replyToReview(actor.id, reviewId, body.comment);
+    const result = await hostReviewsInsightsService.replyToReview(actor, reviewId, body.comment);
 
     return NextResponse.json({
       success: true,
@@ -29,4 +29,3 @@ export const POST = apiHandler(
     });
   },
 );
-

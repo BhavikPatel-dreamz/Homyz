@@ -11,6 +11,7 @@ import { DatePeriodPicker, type DatePeriodPickerState } from "@/components/host/
 import { PeriodComparisonModal, type ComparisonPeriodConfig } from "@/components/host/reporting/period-comparison-modal";
 import { EarningsInteractiveChart } from "@/components/host/reporting/earnings-interactive-chart";
 import type { TimeframeGranularity } from "@/lib/dashboard/reporting-filter";
+import type { HostDashboardEntitlements } from "@/lib/entitlements/host-dashboard";
 import type {
   HostEarningsDetails,
   HostEarningsPayoutPreview,
@@ -19,6 +20,7 @@ import type {
 
 interface HostEarningsClientProps {
   initialData: HostEarningsDetails;
+  entitlements: HostDashboardEntitlements;
 }
 
 const fmt = (amount: number, currency: string) =>
@@ -56,7 +58,7 @@ const payoutStatusStyle = (value: string) =>
       ? "bg-violet-50 text-violet-700 border border-violet-200"
       : "bg-sky-50 text-sky-700 border border-sky-200";
 
-export function HostEarningsClient({ initialData }: HostEarningsClientProps) {
+export function HostEarningsClient({ initialData, entitlements }: HostEarningsClientProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -299,7 +301,7 @@ export function HostEarningsClient({ initialData }: HostEarningsClientProps) {
     );
 
   return (
-    <div className="mx-auto max-w-5xl space-y-8 pb-12">
+    <div className="space-y-8 pb-12">
       {/* ── Section A: Header & Compact Unified Toolbar ── */}
       <header className="space-y-4">
         <div>
@@ -307,7 +309,32 @@ export function HostEarningsClient({ initialData }: HostEarningsClientProps) {
           <h1 className="mt-0.5 text-3xl font-bold tracking-tight text-zinc-950 sm:text-4xl">
             Earnings
           </h1>
+          <p className="mt-1 max-w-2xl text-sm text-zinc-600">Review realized payouts, reporting periods, and property performance from verified financial records.</p>
         </div>
+
+        <section className="rounded-2xl border border-zinc-200 bg-zinc-950 p-4 text-white sm:flex sm:items-center sm:justify-between sm:gap-5">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+              Dashboard Plus
+              {entitlements.hasDashboardPlus
+                ? ` · ${
+                    entitlements.status === "ADMIN_GRANTED"
+                      ? (entitlements.expiresAt ? "Complimentary (Temporary)" : "Complimentary")
+                      : entitlements.status === "TRIAL"
+                      ? "Trial active"
+                      : "Active"
+                  }`
+                : ""}
+            </p>
+            <p className="mt-1 text-sm font-semibold">Advanced Earnings Analytics and RevPAN</p>
+            <p className="mt-1 text-xs leading-relaxed text-zinc-300">Explore property financial comparisons, recorded costs, profitability, and revenue per available night.</p>
+          </div>
+          {entitlements.features.ADVANCED_EARNINGS ? (
+            <Link href={scopedHref("/host/earnings/analytics")} className="mt-3 inline-flex shrink-0 rounded-full bg-white px-4 py-2.5 text-xs font-semibold text-zinc-950 sm:mt-0">Open advanced analytics →</Link>
+          ) : (
+            <p className="mt-3 shrink-0 text-xs leading-relaxed text-zinc-300 sm:mt-0 sm:max-w-48">Available with Dashboard Plus. Checkout is not configured in this deployment.</p>
+          )}
+        </section>
 
         {/* Compact Unified Toolbar */}
         <div className="flex flex-col gap-3 rounded-2xl border border-zinc-200 bg-white p-2.5 shadow-2xs sm:flex-row sm:items-center sm:justify-between sm:p-3">

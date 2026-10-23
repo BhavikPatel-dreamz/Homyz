@@ -7,6 +7,7 @@ import type { HostInsightsData } from "@/services/host-insights.service";
 
 interface InsightsStatsTabProps {
   data: HostInsightsData["stats"];
+  entitlements: HostInsightsData["entitlements"];
   periodLabel: string;
   reviews: HostInsightsData["reviews"];
   opportunities: HostInsightsData["opportunities"];
@@ -16,7 +17,7 @@ const formatCurrency = (cents: number | null, currency = "SAR") => cents === nul
   ? "—"
   : new Intl.NumberFormat("en-US", { style: "currency", currency, maximumFractionDigits: 0 }).format(cents / 100);
 
-export function InsightsStatsTab({ data, periodLabel }: InsightsStatsTabProps) {
+export function InsightsStatsTab({ data, entitlements, periodLabel }: InsightsStatsTabProps) {
   const { performance, quality, analyticsLimitations, quickStats, chartComparison, earnings } = data;
   const searchParams = useSearchParams();
   const withFilters = (href: string) => {
@@ -75,10 +76,28 @@ export function InsightsStatsTab({ data, periodLabel }: InsightsStatsTabProps) {
     </section>
 
     <section className="rounded-3xl bg-zinc-950 p-6 text-white sm:p-8">
-      <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Dashboard Plus</p>
-      <h2 className="mt-1 text-2xl font-bold tracking-tight">Advanced booking analytics</h2>
+      <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+        Dashboard Plus
+        {entitlements.hasDashboardPlus
+          ? ` · ${
+              entitlements.status === "ADMIN_GRANTED"
+                ? (entitlements.expiresAt ? "Complimentary (Temporary)" : "Complimentary")
+                : entitlements.status === "TRIAL"
+                ? "Trial active"
+                : "Active"
+            }`
+          : ""}
+      </p>
+      <h2 className="mt-1 text-2xl text-white font-bold tracking-tight">Advanced booking analytics</h2>
       <p className="mt-3 max-w-2xl text-sm leading-relaxed text-zinc-300">Explore observed occupancy, booking creation times, booking windows, stay length, and completed-stay realized rates.</p>
-      <Link href={withFilters("/host/insights/stats/booking-analytics")} className="mt-6 inline-flex rounded-full bg-white px-4 py-2.5 text-xs font-semibold text-zinc-950">Open booking analytics →</Link>
+      {entitlements.features.BOOKING_BEHAVIOR ? (
+        <Link href={withFilters("/host/insights/stats/booking-analytics")} className="mt-6 inline-flex rounded-full bg-white px-4 py-2.5 text-xs font-semibold text-zinc-950">Open booking analytics →</Link>
+      ) : (
+        <div className="mt-6 rounded-2xl border border-white/15 bg-white/10 p-4 text-sm text-zinc-200">
+          <p className="font-semibold text-white">Dashboard Plus feature</p>
+          <p className="mt-1 text-xs leading-relaxed text-zinc-300">Advanced booking behavior is available with Dashboard Plus. Subscription checkout is not configured in this deployment, so no purchase is simulated.</p>
+        </div>
+      )}
     </section>
 
     <section>

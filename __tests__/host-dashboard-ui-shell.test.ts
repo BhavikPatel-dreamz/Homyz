@@ -13,7 +13,7 @@ test("host dashboard, Today, Calendar, and Listings omit the shortcut workspace 
 
   assert.doesNotMatch(dashboardPage, /HostSubNav/);
   assert.match(dashboardPage, /<HostHeader\s*\/>/);
-  assert.match(dashboardPage, /pb-5 pt-4 sm:flex-1 sm:pt-10 xl:pb-24/);
+  assert.match(dashboardPage, /HOST_REPORTING_MAIN_CLASS/);
   assert.doesNotMatch(todayWorkspace, /HostSubNav/);
   assert.doesNotMatch(calendarWorkspace, /HostSubNav/);
 });
@@ -25,8 +25,8 @@ test("dashboard loading shell mirrors the route and uses the shared dashboard ge
 
   assert.match(loadingPage, /HostDashboardOverviewSkeleton/);
   assert.doesNotMatch(loadingPage, /HostSubNav/);
-  assert.match(loadingPage, /pb-5 pt-4 sm:flex-1 sm:pt-10 xl:pb-24/);
-  assert.match(dashboardPage, /pb-5 pt-4 sm:flex-1 sm:pt-10 xl:pb-24/);
+  assert.match(loadingPage, /HOST_REPORTING_MAIN_CLASS/);
+  assert.match(dashboardPage, /HOST_REPORTING_MAIN_CLASS/);
   assert.match(overview, /primaryKpiGridClass/);
   assert.match(overview, /secondaryKpiGridClass/);
   assert.match(overview, /export function HostDashboardOverviewSkeleton/);

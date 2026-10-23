@@ -2388,10 +2388,11 @@ export async function getHostEarningsOverview(
     hasComparison ? compBounds.endDate.getTime() : ytdEnd.getTime()
   ));
 
-  // Reporting only loads the relevant date window (plus two small independent previews)
-  // instead of materialising a host's entire booking history.
-  const payoutPreviewTake = query.includeAllPayouts ? undefined : 60;
-  const [reportingBookings, upcomingBookings, recentBookings] =
+  // Reporting loads only the requested realized-revenue period. Outstanding
+  // payout totals must scan every confirmed booking, however: truncating this
+  // query would silently understate money due to the host. The UI preview is
+  // sliced only after the complete total has been computed.
+  const [reportingBookings, payoutCandidateBookings] =
     await Promise.all([
       prisma.booking.findMany({
         where: { ...bookingScope, endDate: { gte: minQueryStart, lte: maxQueryEnd } },
@@ -2402,29 +2403,15 @@ export async function getHostEarningsOverview(
         where: {
           ...bookingScope,
           status: BookingStatus.CONFIRMED,
-          ...(query.includeAllPayouts
-            ? {}
-            : {
-                startDate: {
-                  gte: new Date(now.getTime() - 31 * 24 * 60 * 60 * 1000),
-                },
-              }),
         },
         select: earningsBookingSelect,
         orderBy: { startDate: "asc" },
-        take: payoutPreviewTake,
-      }),
-      prisma.booking.findMany({
-        where: {
-          ...bookingScope,
-          status: BookingStatus.CONFIRMED,
-          endDate: { lte: now },
-        },
-        select: earningsBookingSelect,
-        orderBy: { endDate: "desc" },
-        take: payoutPreviewTake,
       }),
     ]);
+  // The full candidate set feeds both outstanding and paid preview buckets;
+  // reuse it instead of issuing a second unbounded booking query.
+  const upcomingBookings = payoutCandidateBookings;
+  const recentBookings = payoutCandidateBookings;
 
   let totalPaidVolume = 0;
   let totalPaidCount = 0;
@@ -2733,6 +2720,11 @@ export async function getHostEarningsOverview(
     if (reportingCurrency && calc.currency !== reportingCurrency) continue;
     completedPayouts.push(toPayoutPreview(b, calc));
   }
+  completedPayouts.sort((left, right) => {
+    const leftDate = new Date(left.executionDetails?.executedAt || left.endDate).getTime();
+    const rightDate = new Date(right.executionDetails?.executedAt || right.endDate).getTime();
+    return rightDate - leftDate || right.bookingId.localeCompare(left.bookingId);
+  });
 
   // Calculate pending deductions
   const pendingDeductionsVolume = adjustments
@@ -2922,7 +2914,7 @@ export async function getHostEarningsOverview(
       totalGrossVolume,
       totalPlatformCommission,
       pendingDeductionsVolume,
-      currency: "SAR",
+      currency: chartCurrency,
     },
     payoutMethods,
     upcomingPayouts: query.includeAllPayouts
