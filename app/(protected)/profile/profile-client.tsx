@@ -324,277 +324,276 @@ export function ProfileClient({
 
   return (
     <div className="flex min-h-[85vh] w-full flex-col bg-white pb-14 sm:pt-5 font-sans lg:pb-12">
-        <div className="mb-5 flex items-center justify-between lg:hidden">
-          <BackButton
-            onClick={() => {
-              if (activeTab !== "about_me") {
-                handleSelectTab("about_me");
-              } else {
-                history.back();
-              }
-            }}
-            aria-label="Go back"
-            className="back-btn flex h-8 w-8 items-center justify-center rounded-full border border-[#D7D7D7] text-[#727272]"
-          />
-          
-        </div>
+      <div className="mb-5 flex items-center justify-between lg:hidden">
+        <BackButton
+          onClick={() => {
+            if (activeTab !== "about_me") {
+              handleSelectTab("about_me");
+            } else {
+              history.back();
+            }
+          }}
+          aria-label="Go back"
+          className="back-btn flex h-8 w-8 items-center justify-center rounded-full border border-[#D7D7D7] text-[#727272]"
+        />
+
+      </div>
 
       <div className="grid grid-cols-1 sm:gap-8 gap-3 lg:grid-cols-[300px_minmax(0,1fr)] lg:gap-12 xl:grid-cols-[452px_minmax(0,1fr)]">
 
-          <GuestDashboardSidebar
-            activeId={currentTab}
-            onSelectTab={handleSelectTab}
-            avatarUrl={currentUser.image}
-          />
+        <GuestDashboardSidebar
+          activeId={currentTab}
+          onSelectTab={handleSelectTab}
+          avatarUrl={currentUser.image}
+        />
 
-          <main className="order-1 flex w-full min-w-0 flex-col lg:order-2 lg:pt-0">
-            {isPendingTransition ? (
-              renderPendingSkeleton(currentTab)
-            ) : (
-              <>
-            {activeTab === "about_me" && (
-              <div className="flex flex-col animate-in fade-in">
-                {/* 1. Header with Title & Yellow Edit Button */}
-                <div className="mb-3 flex items-center gap-[19px] lg:mb-8 xl:mb-10">
-                  <h2 className="text-[22px] leading-[30px] font-medium tracking-[-0.02em] text-[#1F1F1F] sm:text-[28px] sm:leading-[36px] lg:text-[32px] lg:leading-[40px] xl:text-[36px] xl:leading-[44px]">
-                    <span className="lg:hidden text-[20px] leading-7">{t("profile_nav_my_profile", "My profile")}</span>
-                    <span className="hidden lg:inline">{t("profile_about_me", "About me")}</span>
-                  </h2>
-                  {isOwner && (
-                    <button
-                      type="button"
-                      onClick={() => handleSelectTab("profile_management")}
-                      className="hidden h-12 items-center justify-center rounded-full bg-[#FCDF9C] px-5 text-base font-normal text-[#1F1F1F] transition-colors hover:bg-[#F7D37D] lg:flex cursor-pointer"
-                    >
-                      {t("profile_edit_btn", "Edit")}
-                    </button>
-                  )}
-                </div>
-
-                {/* 2. Profile Overview Card */}
-                <div className="mb-0 flex flex-row items-start gap-6 lg:mb-[30px]">
-                  {/* Rounded rectangular profile image */}
-                  <div className="relative h-[124px] w-[124px] shrink-0 overflow-hidden rounded-xl border border-[#1F1F1F] bg-zinc-100 sm:h-[151px] sm:w-[233px] sm:rounded-2xl sm:border-2">
-                    {currentUser.image && currentUser.image !== failedProfileImageUrl ? (
-                      <Image
-                        src={currentUser.image}
-                        alt={currentUser.name || "User profile image"}
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 639px) 124px, 233px"
-                        priority
-                        onError={() => setFailedProfileImageUrl(currentUser.image)}
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center bg-zinc-100 text-[#727272]">
-                        <svg className="h-16 w-16" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                          <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                        </svg>
-                      </div>
+        <main className="order-1 flex w-full min-w-0 flex-col lg:order-2 lg:pt-0">
+          {isPendingTransition ? (
+            renderPendingSkeleton(currentTab)
+          ) : (
+            <>
+              {activeTab === "about_me" && (
+                <div className="flex flex-col animate-in fade-in">
+                  {/* 1. Header with Title & Yellow Edit Button */}
+                  <div className="mb-3 flex items-center gap-[19px] lg:mb-8 xl:mb-10">
+                    <h2 className="text-[22px] leading-[30px] font-medium tracking-[-0.02em] text-[#1F1F1F] sm:text-[28px] sm:leading-[36px] lg:text-[32px] lg:leading-[40px] xl:text-[36px] xl:leading-[44px]">
+                      <span className="lg:hidden text-[20px] leading-7">{t("profile_nav_my_profile", "My profile")}</span>
+                      <span className="hidden lg:inline">{t("profile_about_me", "About me")}</span>
+                    </h2>
+                    {isOwner && (
+                      <button
+                        type="button"
+                        onClick={() => handleSelectTab("profile_management")}
+                        className="hidden h-12 items-center justify-center rounded-full bg-[#FCDF9C] px-5 text-base font-normal text-[#1F1F1F] transition-colors hover:bg-[#F7D37D] lg:flex cursor-pointer"
+                      >
+                        {t("profile_edit_btn", "Edit")}
+                      </button>
                     )}
                   </div>
 
-                  {/* Name, Location & 3 Circular Stats */}
-                  <div className="flex min-h-[124px] min-w-0 flex-1 flex-col justify-center gap-3 sm:min-h-[151px] sm:w-[195px] sm:flex-none sm:gap-4">
-                    <div className="flex flex-col gap-1 sm:gap-2">
-                      <h3 className="truncate text-sm leading-5 font-semibold text-[#1F1F1F] sm:text-base sm:leading-6">
-                        {currentUser.name || "Name"}
-                      </h3>
-                      <p className="truncate text-xs leading-[18px] font-normal text-[#727272] sm:text-sm sm:leading-[21px]">
-                        {pub.whereILive || (isOwner ? t("profile_add_location", "Add your location") : "")}
-                      </p>
+                  {/* 2. Profile Overview Card */}
+                  <div className="mb-0 flex flex-row items-start gap-6 lg:mb-[30px]">
+                    {/* Rounded rectangular profile image */}
+                    <div className="relative h-[124px] w-[124px] shrink-0 overflow-hidden rounded-xl border border-[#1F1F1F] bg-zinc-100 sm:h-[151px] sm:w-[233px] sm:rounded-2xl sm:border-2">
+                      {currentUser.image && currentUser.image !== failedProfileImageUrl ? (
+                        <Image
+                          src={currentUser.image}
+                          alt={currentUser.name || "User profile image"}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 639px) 124px, 233px"
+                          priority
+                          onError={() => setFailedProfileImageUrl(currentUser.image)}
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center bg-zinc-100 text-[#727272]">
+                          <svg className="h-16 w-16" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                          </svg>
+                        </div>
+                      )}
                     </div>
 
-                    {/* 3 Circular Stats */}
-                    <div className="flex items-start justify-between gap-2 border-t border-[#727272] pt-2 sm:gap-6 sm:pt-4">
-                      <div className="flex flex-col items-center">
-                        <div className="flex h-6 w-6 items-center justify-center rounded-full border border-[#1F1F1F] bg-white text-[10px] font-normal text-[#1F1F1F] sm:h-[37px] sm:w-[37px] sm:text-sm">
-                          {initialStats.trips ?? 0}
-                        </div>
-                        <span className="mt-1 text-[10px] leading-4 font-normal text-[#727272] sm:mt-1.5 sm:text-xs sm:leading-[18px]">{t("profile_stat_trips", "Trips")}</span>
+                    {/* Name, Location & 3 Circular Stats */}
+                    <div className="flex min-h-[124px] min-w-0 flex-1 flex-col justify-center gap-3 sm:min-h-[151px] sm:w-[195px] sm:flex-none sm:gap-4">
+                      <div className="flex flex-col gap-1 sm:gap-2">
+                        <h3 className="truncate text-sm leading-5 font-semibold text-[#1F1F1F] sm:text-base sm:leading-6">
+                          {currentUser.name || "Name"}
+                        </h3>
+                        <p className="truncate text-xs leading-[18px] font-normal text-[#727272] sm:text-sm sm:leading-[21px]">
+                          {pub.whereILive || (isOwner ? t("profile_add_location", "Add your location") : "")}
+                        </p>
                       </div>
 
-                      <div className="flex flex-col items-center">
-                        <div className="flex h-6 w-6 items-center justify-center rounded-full border border-[#1F1F1F] bg-white text-[10px] font-normal text-[#1F1F1F] sm:h-[37px] sm:w-[37px] sm:text-sm">
-                          {initialStats.reviews ?? 0}
+                      {/* 3 Circular Stats */}
+                      <div className="flex items-start justify-between gap-2 border-t border-[#727272] pt-2 sm:gap-6 sm:pt-4">
+                        <div className="flex flex-col items-center">
+                          <div className="flex h-6 w-6 items-center justify-center rounded-full border border-[#1F1F1F] bg-white text-[10px] font-normal text-[#1F1F1F] sm:h-[37px] sm:w-[37px] sm:text-sm">
+                            {initialStats.trips ?? 0}
+                          </div>
+                          <span className="mt-1 text-[10px] leading-4 font-normal text-[#727272] sm:mt-1.5 sm:text-xs sm:leading-[18px]">{t("profile_stat_trips", "Trips")}</span>
                         </div>
-                        <span className="mt-1 text-[10px] leading-4 font-normal text-[#727272] sm:mt-1.5 sm:text-xs sm:leading-[18px]">{t("profile_stat_reviews", "Reviews")}</span>
-                      </div>
 
-                      <div className="flex flex-col items-center">
-                        <div className="flex h-6 w-6 items-center justify-center rounded-full border border-[#1F1F1F] bg-white text-[10px] font-normal text-[#1F1F1F] sm:h-[37px] sm:w-[37px] sm:text-sm">
-                          {years}
+                        <div className="flex flex-col items-center">
+                          <div className="flex h-6 w-6 items-center justify-center rounded-full border border-[#1F1F1F] bg-white text-[10px] font-normal text-[#1F1F1F] sm:h-[37px] sm:w-[37px] sm:text-sm">
+                            {initialStats.reviews ?? 0}
+                          </div>
+                          <span className="mt-1 text-[10px] leading-4 font-normal text-[#727272] sm:mt-1.5 sm:text-xs sm:leading-[18px]">{t("profile_stat_reviews", "Reviews")}</span>
                         </div>
-                        <span className="mt-1 text-center text-[9px] leading-3 font-normal text-[#727272] sm:mt-1.5 sm:text-xs sm:leading-[18px]">
-                          {t("profile_stat_years_on_homyz", "Years on Homyz")}
-                        </span>
+
+                        <div className="flex flex-col items-center">
+                          <div className="flex h-6 w-6 items-center justify-center rounded-full border border-[#1F1F1F] bg-white text-[10px] font-normal text-[#1F1F1F] sm:h-[37px] sm:w-[37px] sm:text-sm">
+                            {years}
+                          </div>
+                          <span className="mt-1 text-center text-[9px] leading-3 font-normal text-[#727272] sm:mt-1.5 sm:text-xs sm:leading-[18px]">
+                            {t("profile_stat_years_on_homyz", "Years on Homyz")}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Languages Row */}
-                {pub.languages && (Array.isArray(pub.languages) ? pub.languages.length > 0 : Boolean(pub.languages)) ? (
-                  <div className="hidden items-center gap-4 border-b border-[#727272] pb-6 text-base leading-6 font-normal text-[#1F1F1F] lg:flex">
-                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F3F4F5]">
-                      <IconTranslate />
-                    </span>
-                    <span>{t("profile_speaks_languages", { languages: Array.isArray(pub.languages) ? getLanguageDisplayNames(pub.languages).join(", ") : pub.languages })}</span>
-                  </div>
-                ) : null}
-
-                {hasHostProfileDetails && (
-                  <section className="mt-6 space-y-4 border-b border-zinc-200/80 pb-6">
-                    <h3 className="text-xl font-semibold text-[#1F1F1F]">{t("profile_about_me", "About me")}</h3>
-                    {pub.bio && <p className="text-sm leading-6 text-zinc-700">{pub.bio}</p>}
-                    <div className="space-y-3 text-sm text-zinc-700">
-                      {hostPrompts.homeUnique && <p><span className="font-semibold">{t("profile_prompt_home_unique", "What makes my home unique")}: </span>{hostPrompts.homeUnique}</p>}
-                      {hostPrompts.guestsShouldKnow && <p><span className="font-semibold">{t("profile_prompt_guests_should_know", "What guests should know")}: </span>{hostPrompts.guestsShouldKnow}</p>}
-                      {hostPrompts.education && <p><span className="font-semibold">{t("profile_prompt_education", "Education / background")}: </span>{hostPrompts.education}</p>}
-                      {hostPrompts.perfectGuest && <p><span className="font-semibold">{t("profile_prompt_perfect_guest", "Perfect guest")}: </span>{hostPrompts.perfectGuest}</p>}
+                  {/* Languages Row */}
+                  {pub.languages && (Array.isArray(pub.languages) ? pub.languages.length > 0 : Boolean(pub.languages)) ? (
+                    <div className="hidden items-center gap-4 border-b border-[#727272] pb-6 text-base leading-6 font-normal text-[#1F1F1F] lg:flex">
+                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#F3F4F5]">
+                        <IconTranslate />
+                      </span>
+                      <span>{t("profile_speaks_languages", { languages: Array.isArray(pub.languages) ? getLanguageDisplayNames(pub.languages).join(", ") : pub.languages })}</span>
                     </div>
-                    {hostHobbies.length > 0 && <div><p className="mb-2 text-sm font-semibold text-zinc-700">{t("profile_hobbies", "Hobbies")}</p><div className="flex flex-wrap gap-2">{hostHobbies.map((hobby) => <span key={hobby} className="rounded-full bg-zinc-100 px-3 py-1 text-xs text-zinc-700">{hobby}</span>)}</div></div>}
-                    {hostInterests.length > 0 && <div><p className="mb-2 text-sm font-semibold text-zinc-700">{t("profile_my_interests", "My interests")}</p><div className="flex flex-wrap gap-2">{hostInterests.map((interest) => <span key={interest} className="rounded-full bg-zinc-100 px-3 py-1 text-xs text-zinc-700">{interest}</span>)}</div></div>}
-                  </section>
-                )}
+                  ) : null}
 
-                {/* 3. My Reviews Section (Real Authenticated Guest Reviews) */}
-                <div className="mt-8 w-full border-t border-zinc-200/80 pt-6">
-                  <MyReviewsSection reviews={initialReviews} />
+                  {hasHostProfileDetails && (
+                    <section className="mt-6 space-y-4 border-b border-zinc-200/80 pb-6">
+                      <h3 className="text-xl font-semibold text-[#1F1F1F]">{t("profile_about_me", "About me")}</h3>
+                      {pub.bio && <p className="text-sm leading-6 text-zinc-700">{pub.bio}</p>}
+                      <div className="space-y-3 text-sm text-zinc-700">
+                        {hostPrompts.homeUnique && <p><span className="font-semibold">{t("profile_prompt_home_unique", "What makes my home unique")}: </span>{hostPrompts.homeUnique}</p>}
+                        {hostPrompts.guestsShouldKnow && <p><span className="font-semibold">{t("profile_prompt_guests_should_know", "What guests should know")}: </span>{hostPrompts.guestsShouldKnow}</p>}
+                        {hostPrompts.education && <p><span className="font-semibold">{t("profile_prompt_education", "Education / background")}: </span>{hostPrompts.education}</p>}
+                        {hostPrompts.perfectGuest && <p><span className="font-semibold">{t("profile_prompt_perfect_guest", "Perfect guest")}: </span>{hostPrompts.perfectGuest}</p>}
+                      </div>
+                      {hostHobbies.length > 0 && <div><p className="mb-2 text-sm font-semibold text-zinc-700">{t("profile_hobbies", "Hobbies")}</p><div className="flex flex-wrap gap-2">{hostHobbies.map((hobby) => <span key={hobby} className="rounded-full bg-zinc-100 px-3 py-1 text-xs text-zinc-700">{hobby}</span>)}</div></div>}
+                      {hostInterests.length > 0 && <div><p className="mb-2 text-sm font-semibold text-zinc-700">{t("profile_my_interests", "My interests")}</p><div className="flex flex-wrap gap-2">{hostInterests.map((interest) => <span key={interest} className="rounded-full bg-zinc-100 px-3 py-1 text-xs text-zinc-700">{interest}</span>)}</div></div>}
+                    </section>
+                  )}
+
+                  {/* 3. My Reviews Section (Real Authenticated Guest Reviews) */}
+                  <div className="mt-8 w-full border-t border-zinc-200/80 pt-6">
+                    <MyReviewsSection reviews={initialReviews} />
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {(activeTab === "upcoming_trips" || activeTab === "upcoming") && (
-              <div className="flex flex-col animate-in fade-in">
-                <ReservationDashboard
-                  key={searchParams.get("bookingView") === "all" ? "upcoming-all" : "upcoming"}
-                  initialReservations={initialReservations}
-                  initialTab="upcoming"
-                  reviews={initialReviews}
-                  onTabChange={(filterTab) => {
-                    if (filterTab === "past") handleSelectTab("past_bookings");
-                    else if (filterTab === "upcoming") handleSelectTab("upcoming_trips");
-                    else if (filterTab === "all") router.push("/profile/tab/upcoming?bookingView=all", { scroll: false });
-                  }}
+              {(activeTab === "upcoming_trips" || activeTab === "upcoming") && (
+                <div className="flex flex-col animate-in fade-in">
+                  <ReservationDashboard
+                    key={searchParams.get("bookingView") === "all" ? "upcoming-all" : "upcoming"}
+                    initialReservations={initialReservations}
+                    initialTab="upcoming"
+                    reviews={initialReviews}
+                    onTabChange={(filterTab) => {
+                      if (filterTab === "past") handleSelectTab("past_bookings");
+                      else if (filterTab === "upcoming") handleSelectTab("upcoming_trips");
+                      else if (filterTab === "all") router.push("/profile/tab/upcoming?bookingView=all", { scroll: false });
+                    }}
+                  />
+                </div>
+              )}
+
+              {(activeTab === "past_bookings" || activeTab === "past") && (
+                <div className="flex flex-col animate-in fade-in">
+                  <ReservationDashboard
+                    initialReservations={initialReservations}
+                    initialTab="past"
+                    reviews={initialReviews}
+                    onTabChange={(filterTab) => {
+                      if (filterTab === "upcoming") handleSelectTab("upcoming_trips");
+                      else if (filterTab === "past") handleSelectTab("past_bookings");
+                    }}
+                  />
+                </div>
+              )}
+
+              {activeTab === "loyalty" && (
+                <LoyaltyWalletView />
+              )}
+
+              {activeTab === "invite" && (
+                <InviteEarnView />
+              )}
+
+              {activeTab === "saved" && (
+                <SavedListingsView
+                  initialFavorites={initialFavorites}
+                  initialTotal={initialFavoritesTotal}
                 />
-              </div>
-            )}
+              )}
 
-            {(activeTab === "past_bookings" || activeTab === "past") && (
-              <div className="flex flex-col animate-in fade-in">
-                <ReservationDashboard
-                  initialReservations={initialReservations}
-                  initialTab="past"
-                  reviews={initialReviews}
-                  onTabChange={(filterTab) => {
-                    if (filterTab === "upcoming") handleSelectTab("upcoming_trips");
-                    else if (filterTab === "past") handleSelectTab("past_bookings");
+              {activeTab === "profile_management" && (
+                <ProfileManagementClient
+                  key={`trip-photos-${initialTripPhotosLoaded ? "loaded" : "deferred"}`}
+                  initial={currentUser}
+                  onProfileUpdated={(updated) => setCurrentUser(updated)}
+                  initialTripPhotos={initialTripPhotos as any}
+                  initialTripPhotosLoaded={initialTripPhotosLoaded}
+                  initialStats={initialStats}
+                  isOwner={isOwner}
+                  embedded={true}
+                  initialSubTab={activeSubTab}
+                  onSubTabChange={(sub) => {
+                    const href = getProfileTabHref("profile_management", sub);
+                    router.push(href, { scroll: false });
                   }}
+                  onCancel={() => handleSelectTab("about_me")}
                 />
-              </div>
-            )}
+              )}
 
-            {activeTab === "loyalty" && (
-              <LoyaltyWalletView />
-            )}
+              {activeTab === "support" && (
+                <SupportChatView user={initial} />
+              )}
 
-            {activeTab === "invite" && (
-              <InviteEarnView />
-            )}
+              {activeTab === "notifications" && (
+                <NotificationsView initialData={initialNotifications} />
+              )}
 
-            {activeTab === "saved" && (
-              <SavedListingsView
-                initialFavorites={initialFavorites}
-                initialTotal={initialFavoritesTotal}
-              />
-            )}
+              {activeTab === "account_settings" && (
+                <div className="flex flex-col animate-in fade-in amenities-list-scrollbar lg:h-[calc(100dvh-10rem)] lg:overflow-y-auto lg:overscroll-contain lg:pr-5">
+                  <PersonalInfoView initialData={initialPersonalInfo} />
+                </div>
+              )}
+            </>
+          )}
+        </main>
+      </div>
 
-            {activeTab === "profile_management" && (
-              <ProfileManagementClient
-                key={`trip-photos-${initialTripPhotosLoaded ? "loaded" : "deferred"}`}
-                initial={currentUser}
-                onProfileUpdated={(updated) => setCurrentUser(updated)}
-                initialTripPhotos={initialTripPhotos as any}
-                initialTripPhotosLoaded={initialTripPhotosLoaded}
-                initialStats={initialStats}
-                isOwner={isOwner}
-                embedded={true}
-                initialSubTab={activeSubTab}
-                onSubTabChange={(sub) => {
-                  const href = getProfileTabHref("profile_management", sub);
-                  router.push(href, { scroll: false });
-                }}
-                onCancel={() => handleSelectTab("about_me")}
-              />
-            )}
-
-            {activeTab === "support" && (
-              <SupportChatView user={initial} />
-            )}
-
-            {activeTab === "notifications" && (
-              <NotificationsView initialData={initialNotifications} />
-            )}
-
-            {activeTab === "account_settings" && (
-            <div className="flex flex-col animate-in fade-in amenities-list-scrollbar lg:h-[calc(100dvh-10rem)] lg:overflow-y-auto lg:overscroll-contain lg:pr-5">
-                <PersonalInfoView initialData={initialPersonalInfo} />
-              </div>
-            )}
-              </>
-            )}
-          </main>
+      <div className="mt-8 lg:hidden">
+        <div className="profile-tabs-navitems border-b border-[#D7D7D7] pb-3">
+          {[
+            [t("profile_mobile_account_setting", "Account setting"), "profile_management", "settings"],
+            [t("profile_mobile_help_centre", "Help centre"), "/help", "help"],
+            [t("profile_mobile_refer_a_host", "Refer a Host"), "/host/refer", "refer"],
+            [t("profile_mobile_find_cohost", "Find a co-Host"), "/host/co-host", "cohost"],
+            [t("profile_mobile_gift_cards", "Gift Cards"), "/gift-cards", "gift"],
+          ].map(([label, target, icon], index) => {
+            const isTab = target.startsWith("profile_management") || target === "account_settings";
+            return isTab ? (
+              <button
+                key={label}
+                type="button"
+                onClick={() => handleSelectTab(target)}
+                className="flex w-full items-center gap-3 py-1.5 text-sm text-[#3F3F3F]"
+              >
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5]">
+                  <MobileAccountIcon type={icon} />
+                </span>
+                <span>{label}</span>
+                <svg className="ml-auto h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="m9 18 6-6-6-6" />
+                </svg>
+              </button>
+            ) : (
+              <Link
+                key={label}
+                href={target}
+                className={`flex items-center gap-3 py-1.5 text-sm text-[#3F3F3F] ${index === 1 ? "mb-1.5 border-b border-[#D7D7D7]" : ""
+                  }`}
+              >
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5]">
+                  <MobileAccountIcon type={icon} />
+                </span>
+                <span>{label}</span>
+                <svg className="ml-auto h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="m9 18 6-6-6-6" />
+                </svg>
+              </Link>
+            );
+          })}
         </div>
-
-        <div className="mt-8 lg:hidden">
-          <div>
-            {[
-              [t("profile_mobile_account_setting", "Account setting"), "profile_management", "settings"],
-              [t("profile_mobile_help_centre", "Help centre"), "/help", "help"],
-              [t("profile_mobile_refer_a_host", "Refer a Host"), "/host/refer", "refer"],
-              [t("profile_mobile_find_cohost", "Find a co-Host"), "/host/co-host", "cohost"],
-              [t("profile_mobile_gift_cards", "Gift Cards"), "/gift-cards", "gift"],
-            ].map(([label, target, icon], index) => {
-              const isTab = target.startsWith("profile_management") || target === "account_settings";
-              return isTab ? (
-                <button
-                  key={label}
-                  type="button"
-                  onClick={() => handleSelectTab(target)}
-                  className="flex w-full items-center gap-3 py-1.5 text-sm text-[#3F3F3F]"
-                >
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5]">
-                    <MobileAccountIcon type={icon} />
-                  </span>
-                  <span>{label}</span>
-                  <svg className="ml-auto h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <path d="m9 18 6-6-6-6" />
-                  </svg>
-                </button>
-              ) : (
-                <Link
-                  key={label}
-                  href={target}
-                  className={`flex items-center gap-3 py-1.5 text-sm text-[#3F3F3F] ${
-                    index === 1 ? "mb-1.5 border-b border-[#D7D7D7]" : ""
-                  } ${index === 4 ? "border-b border-[#D7D7D7]" : ""}`}
-                >
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F3F4F5]">
-                    <MobileAccountIcon type={icon} />
-                  </span>
-                  <span>{label}</span>
-                  <svg className="ml-auto h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <path d="m9 18 6-6-6-6" />
-                  </svg>
-                </Link>
-              );
-            })}
-          </div>
-          <LogoutButton callbackUrl="/login?logged_out=true" className="mt-3 !rounded-none !border-0 !p-0 text-sm! !font-medium text-[#1F1F1F]! underline! underline-offset-3!">
-            {t("profile_mobile_log_out", "Log out")}
-          </LogoutButton>
-        </div>
+        <LogoutButton callbackUrl="/login?logged_out=true" className="mt-3 !rounded-none !border-0 !p-0 text-sm! !font-medium text-[#1F1F1F]! underline! underline-offset-3!">
+          {t("profile_mobile_log_out", "Log out")}
+        </LogoutButton>
+      </div>
     </div>
   );
 }

@@ -79,7 +79,7 @@ export function FilterBar({
             placeholder={t("dashboard_search_placeholder", "Search by property, guest name, or location...")}
             value={filters.search}
             onChange={(e) => onChange({ search: e.target.value })}
-            className={`w-full rounded-[30px] border border-[#727272] bg-[white] pl-10 ${
+            className={`w-full rounded-[30px] border border-[#ddd] bg-[white] pl-10 ${
               filters.search ? "pr-10" : "pr-4"
             } py-2 text-sm font-normal text-[#1f1f1f] placeholder:text-[#727272] outline-none focus:border-[#1f1f1f] transition-colors min-h-[46px]`}
           />
@@ -88,7 +88,7 @@ export function FilterBar({
               type="button"
               onClick={() => onChange({ search: "" })}
               aria-label={t("dashboard_search_clear" as any, "Clear search")}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 flex h-5 w-5 items-center justify-center rounded-full bg-zinc-200 hover:bg-zinc-300 text-zinc-600 dark:bg-zinc-700 dark:hover:bg-zinc-600 dark:text-zinc-200 transition-colors cursor-pointer"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 flex h-5 w-5 items-center justify-center rounded-full bg-zinc-200 hover:bg-zinc-300 text-zinc-600 dark:bg-zinc-700 dark:hover:bg-zinc-600 dark:text-zinc-200 transition-colors cursor-pointer border border-[#ddd]"
             >
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -102,7 +102,7 @@ export function FilterBar({
           <select
             value={filters.status}
             onChange={(e) => onChange({ status: e.target.value })}
-            className="w-full sm:w-auto appearance-none rounded-[30px] border border-[#727272] bg-white pl-4 pr-9 py-2 text-sm font-normal text-[#1f1f1f] outline-none focus:border-[#727272] transition-colors cursor-pointer min-h-[46px]"
+            className="w-full sm:w-auto appearance-none rounded-[30px] border border-[#ddd] bg-white pl-4 pr-9 py-2 text-sm font-normal text-[#1f1f1f] outline-none focus:border-[#727272] transition-colors cursor-pointer min-h-[46px]"
           >
             <option value="ALL">{t("dashboard_status_all", "All Statuses")}</option>
             <option value="CONFIRMED">{t("dashboard_status_confirmed", "Confirmed")}</option>

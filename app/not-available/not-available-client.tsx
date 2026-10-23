@@ -93,19 +93,19 @@ export function NotAvailableClient() {
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <Link
                 href="/"
-                className="rounded-full bg-[#1F1F1F] px-6 py-3 text-sm font-medium text-white hover:bg-[#1f1f1f] hover:text-white transition-colors shadow-2xs"
+                className="rounded-full bg-white hover:bg-[#1f1f1f] border border-[#727272] text-[#1f1f1f] hover:text-white px-6 py-3 text-sm font-medium transition-colors duration-300"
               >
                 {t("page_not_available_back_home", "Back to Home")}
               </Link>
               <Link
                 href="/listings"
-                className="rounded-full border border-zinc-300 bg-white px-6 py-3 text-sm font-medium text-[#1F1F1F] hover:bg-[#1f1f1f] hover:text-white transition-colors shadow-2xs"
+                className="rounded-full bg-white hover:bg-[#1f1f1f] border border-[#727272] text-[#1f1f1f] hover:text-white px-6 py-3 text-sm font-medium transition-colors duration-300"
               >
                 {t("page_not_available_explore_stays", "Explore Stays")}
               </Link>
               <Link
                 href="/help"
-                className="rounded-full border border-zinc-300 bg-white px-6 py-3 text-sm font-medium text-[#1F1F1F] hover:bg-[#1f1f1f] hover:text-white transition-colors shadow-2xs"
+                className="rounded-full bg-white hover:bg-[#1f1f1f] border border-[#727272] text-[#1f1f1f] hover:text-white px-6 py-3 text-sm font-medium transition-colors duration-300"
               >
                 {t("page_not_available_help_center", "Help Centre")}
               </Link>
