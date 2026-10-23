@@ -130,35 +130,35 @@ export function InsightsOpportunitiesTab({
   return (
     <div className="space-y-8">
       {/* Listing Health & Completeness Section */}
-      <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-xs sm:p-8">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between border-b border-zinc-100 pb-5">
+      <section className="rounded-3xl border border-[#E5E5E5] bg-white p-6 shadow-sm sm:p-8">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between border-b border-[#EDEDED] pb-5">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-zinc-400">Quality Benchmark</p>
-            <h2 className="mt-1 text-xl font-bold text-zinc-950">Listing Health & Completeness</h2>
-            <p className="mt-0.5 text-xs text-zinc-500">
+            <p className="text-xs font-bold uppercase tracking-wider text-[#727272]">Quality Benchmark</p>
+            <h2 className="mt-1 text-xl font-bold text-[#1F1F1F]">Listing Health & Completeness</h2>
+            <p className="mt-0.5 text-xs text-[#727272]">
               Evaluated across 14 core listing readiness checks including photos, amenities, rules, and booking settings
             </p>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-bold tracking-tight text-zinc-950 font-mono sm:text-4xl">
+            <span className="text-3xl font-bold tracking-tight text-[#1F1F1F] font-mono sm:text-4xl">
               {completenessPct}%
             </span>
-            <span className="text-xs font-semibold text-zinc-500">Completeness</span>
+            <span className="text-xs font-semibold text-[#727272]">Completeness</span>
           </div>
         </div>
 
         {/* Progress Bar */}
         <div className="mt-6">
-          <div className="flex items-center justify-between text-xs font-semibold text-zinc-700 mb-2">
+          <div className="flex items-center justify-between text-xs font-semibold text-[#1F1F1F] mb-2">
             <span>Overall profile readiness</span>
-            <span className="font-mono text-zinc-500">
+            <span className="font-mono text-[#727272]">
               {completedChecks} of {totalChecks} checks completed
             </span>
           </div>
-          <div className="h-2.5 w-full rounded-full bg-zinc-100 overflow-hidden">
+          <div className="h-2.5 w-full rounded-full bg-[#F3F4F5] overflow-hidden">
             <div
               className={`h-full rounded-full transition-all duration-500 ${
-                completenessPct >= 90 ? "bg-emerald-600" : completenessPct >= 70 ? "bg-zinc-900" : "bg-amber-600"
+                completenessPct >= 90 ? "bg-emerald-600" : completenessPct >= 70 ? "bg-[#1F1F1F]" : "bg-amber-600"
               }`}
               style={{ width: `${Math.min(100, completenessPct)}%` }}
             />
@@ -167,12 +167,12 @@ export function InsightsOpportunitiesTab({
 
         {/* Detailed Property Health Checklist if single listing */}
         {healthData?.listingsHealth && healthData.listingsHealth.length > 0 && (
-          <div className="mt-6 divide-y divide-zinc-100 border-t border-zinc-100 pt-4">
+          <div className="mt-6 divide-y divide-[#EDEDED] border-t border-[#EDEDED] pt-4">
             {healthData.listingsHealth.map((prop) => (
               <div key={prop.listingId} className="py-3 first:pt-0 last:pb-0">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-zinc-900">{prop.title}</span>
-                  <span className="text-xs font-mono font-bold text-zinc-700">
+                  <span className="text-xs font-bold text-[#1F1F1F]">{prop.title}</span>
+                  <span className="text-xs font-mono font-bold text-[#727272]">
                     {prop.completenessPercentage}% ({prop.completedChecksCount}/{prop.totalChecksCount})
                   </span>
                 </div>
@@ -185,7 +185,7 @@ export function InsightsOpportunitiesTab({
                         <Link
                           key={c.id}
                           href={c.actionHref}
-                          className="rounded-md bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-800 hover:bg-amber-100 ring-1 ring-inset ring-amber-600/20"
+                          className="rounded-full bg-amber-50 px-2.5 py-0.5 text-[11px] font-medium text-amber-900 border border-amber-200 hover:bg-amber-100"
                         >
                           + Add {c.label}
                         </Link>
@@ -199,10 +199,10 @@ export function InsightsOpportunitiesTab({
       </section>
 
       {/* Category Filter Pills & Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-zinc-200 pb-4">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#E5E5E5] pb-4">
         <div>
-          <h2 className="text-xl font-bold text-zinc-950">Hosting opportunities</h2>
-          <p className="mt-0.5 text-xs text-zinc-500">
+          <h2 className="text-xl font-bold text-[#1F1F1F]">Hosting opportunities</h2>
+          <p className="mt-0.5 text-xs text-[#727272]">
             Actionable listing recommendations to increase booking appeal and guest satisfaction
           </p>
         </div>
@@ -213,10 +213,10 @@ export function InsightsOpportunitiesTab({
               key={cat.id}
               type="button"
               onClick={() => setSelectedCategory(cat.id)}
-              className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
+              className={`cursor-pointer rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors ${
                 selectedCategory === cat.id
-                  ? "bg-zinc-950 text-white"
-                  : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200"
+                  ? "bg-[#1F1F1F] text-white"
+                  : "bg-[#F3F4F5] text-[#1F1F1F] border border-[#EDEDED] hover:bg-[#E5E5E5]"
               }`}
             >
               {cat.label}
@@ -231,7 +231,7 @@ export function InsightsOpportunitiesTab({
           {filteredItems.map((opp) => (
             <div
               key={opp.id}
-              className="flex flex-col justify-between rounded-3xl border border-zinc-200 bg-white p-6 shadow-xs transition-shadow hover:shadow-sm"
+              className="flex flex-col justify-between rounded-3xl border border-[#E5E5E5] bg-white p-6 shadow-sm transition hover:border-[#1F1F1F]"
             >
               <div>
                 <div className="flex items-center justify-between gap-2">
@@ -243,30 +243,30 @@ export function InsightsOpportunitiesTab({
                     >
                       {opp.priority}
                     </span>
-                    <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-semibold uppercase text-zinc-600">
+                    <span className="rounded-full bg-[#F3F4F5] px-2.5 py-0.5 text-[10px] font-semibold uppercase text-[#727272]">
                       {opp.category}
                     </span>
                   </div>
                   {opp.listingTitle && (
-                    <span className="max-w-[160px] truncate text-xs font-medium text-zinc-500">
+                    <span className="max-w-[160px] truncate text-xs font-medium text-[#727272]">
                       {opp.listingTitle}
                     </span>
                   )}
                 </div>
 
-                <h3 className="mt-3 text-base font-bold text-zinc-950">{opp.title}</h3>
-                <p className="mt-2 text-xs leading-relaxed text-zinc-600">{opp.description}</p>
+                <h3 className="mt-3 text-base font-bold text-[#1F1F1F]">{opp.title}</h3>
+                <p className="mt-2 text-xs leading-relaxed text-[#727272]">{opp.description}</p>
               </div>
 
-              <div className="mt-6 flex items-center justify-between border-t border-zinc-100 pt-4">
+              <div className="mt-6 flex items-center justify-between border-t border-[#EDEDED] pt-4">
                 <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-medium text-zinc-400">Impact: {opp.impact}</span>
+                  <span className="text-[11px] font-medium text-[#727272]">Impact: {opp.impact}</span>
                   {opp.dismissible && (
                     <button
                       type="button"
                       disabled={isDismissing === opp.id}
                       onClick={(e) => void handleDismiss(e, opp)}
-                      className="text-[11px] font-medium text-zinc-400 underline hover:text-zinc-700 disabled:opacity-50"
+                      className="text-[11px] font-medium text-[#727272] underline hover:text-[#1F1F1F] disabled:opacity-50 cursor-pointer"
                     >
                       {isDismissing === opp.id ? "Dismissing..." : "Dismiss"}
                     </button>
@@ -277,13 +277,13 @@ export function InsightsOpportunitiesTab({
                   <button
                     type="button"
                     onClick={() => setActiveModalItem(opp)}
-                    className="rounded-full border border-zinc-200 px-3 py-1.5 text-xs font-semibold text-zinc-800 hover:bg-zinc-50"
+                    className="cursor-pointer rounded-full border border-[#D7D7D7] bg-white px-3.5 py-1.5 text-xs font-semibold text-[#1F1F1F] shadow-2xs transition hover:border-[#1F1F1F] hover:bg-[#F3F4F5]"
                   >
                     Details
                   </button>
                   <Link
                     href={opp.actionHref}
-                    className="rounded-full bg-zinc-950 px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-zinc-800"
+                    className="rounded-full bg-[#1F1F1F] px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-[#FCDF9C] hover:text-[#1F1F1F]"
                   >
                     {opp.actionLabel} →
                   </Link>
@@ -293,18 +293,18 @@ export function InsightsOpportunitiesTab({
           ))}
         </div>
       ) : (
-        <div className="rounded-3xl border border-zinc-200 bg-white p-12 text-center shadow-xs">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 text-2xl text-emerald-600">
+        <div className="rounded-3xl border border-[#E5E5E5] bg-white p-12 text-center shadow-sm">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 text-2xl text-emerald-600 border border-emerald-200">
             ✓
           </div>
-          <h3 className="mt-4 text-xl font-bold text-zinc-950">No opportunities at this time</h3>
-          <p className="mx-auto mt-2 max-w-md text-sm text-zinc-600">
+          <h3 className="mt-4 text-xl font-bold text-[#1F1F1F]">No opportunities at this time</h3>
+          <p className="mx-auto mt-2 max-w-md text-sm text-[#727272]">
             Great job! Your listings meet our core quality benchmarks with complete photos, amenities, and accurate
             details.
           </p>
           <Link
             href="/host/listings"
-            className="mt-6 inline-flex rounded-full bg-zinc-950 px-5 py-2.5 text-xs font-semibold text-white shadow-xs hover:bg-zinc-800"
+            className="mt-6 inline-flex rounded-full bg-[#1F1F1F] px-6 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-[#FCDF9C] hover:text-[#1F1F1F]"
           >
             Manage all listings
           </Link>
@@ -314,73 +314,73 @@ export function InsightsOpportunitiesTab({
       {/* Opportunity Detail Modal */}
       {activeModalItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
-          <div className="w-full max-w-lg rounded-3xl border border-zinc-200 bg-white p-6 shadow-xl sm:p-8">
-            <div className="flex items-center justify-between border-b border-zinc-100 pb-4">
+          <div className="w-full max-w-lg rounded-3xl border border-[#E5E5E5] bg-white p-6 shadow-xl sm:p-8">
+            <div className="flex items-center justify-between border-b border-[#EDEDED] pb-4">
               <div>
-                <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-semibold uppercase text-zinc-600">
+                <span className="rounded-full bg-[#F3F4F5] px-2.5 py-0.5 text-[10px] font-semibold uppercase text-[#727272]">
                   {activeModalItem.category}
                 </span>
-                <h3 className="mt-1 text-lg font-bold text-zinc-950">{activeModalItem.title}</h3>
-                <p className="text-xs text-zinc-500">{activeModalItem.listingTitle}</p>
+                <h3 className="mt-1 text-lg font-bold text-[#1F1F1F]">{activeModalItem.title}</h3>
+                <p className="text-xs text-[#727272]">{activeModalItem.listingTitle}</p>
               </div>
               <button
                 type="button"
                 onClick={() => setActiveModalItem(null)}
-                className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700"
+                className="flex h-8 w-8 items-center justify-center rounded-full text-[#727272] hover:bg-[#F3F4F5] hover:text-[#1F1F1F] cursor-pointer"
               >
                 ✕
               </button>
             </div>
 
             <div className="mt-4 space-y-4 text-xs">
-              <p className="leading-relaxed text-zinc-700">{activeModalItem.description}</p>
+              <p className="leading-relaxed text-[#1F1F1F]">{activeModalItem.description}</p>
 
               {activeModalItem.currentValueDescription && (
-                <div className="rounded-xl border border-zinc-100 bg-zinc-50 p-3">
-                  <p className="font-semibold text-zinc-900">Current setting</p>
-                  <p className="mt-0.5 text-zinc-600">{activeModalItem.currentValueDescription}</p>
+                <div className="rounded-2xl border border-[#EDEDED] bg-[#F9F9F9] p-3.5">
+                  <p className="font-semibold text-[#1F1F1F]">Current setting</p>
+                  <p className="mt-0.5 text-[#727272]">{activeModalItem.currentValueDescription}</p>
                 </div>
               )}
 
               {activeModalItem.recommendedChangeDescription && (
-                <div className="rounded-xl border border-emerald-100 bg-emerald-50/60 p-3">
+                <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-3.5">
                   <p className="font-semibold text-emerald-950">Recommended enhancement</p>
                   <p className="mt-0.5 text-emerald-800">{activeModalItem.recommendedChangeDescription}</p>
                 </div>
               )}
 
-              <div className="rounded-xl border border-zinc-100 bg-zinc-50/50 p-3 text-[11px] text-zinc-500">
+              <div className="rounded-2xl border border-[#EDEDED] bg-[#F9F9F9] p-3 text-[11px] text-[#727272]">
                 <span>Deterministic rule · Estimated impact: </span>
-                <span className="font-semibold text-zinc-800">{activeModalItem.impact}</span>
+                <span className="font-semibold text-[#1F1F1F]">{activeModalItem.impact}</span>
               </div>
             </div>
 
-            <div className="mt-6 flex items-center justify-between border-t border-zinc-100 pt-4">
+            <div className="mt-6 flex items-center justify-between border-t border-[#EDEDED] pt-4">
               {activeModalItem.dismissible ? (
                 <button
                   type="button"
                   disabled={isDismissing === activeModalItem.id}
                   onClick={(e) => void handleDismiss(e, activeModalItem)}
-                  className="text-xs font-semibold text-zinc-500 underline hover:text-zinc-800 disabled:opacity-50"
+                  className="text-xs font-semibold text-[#727272] underline hover:text-[#1F1F1F] disabled:opacity-50 cursor-pointer"
                 >
                   {isDismissing === activeModalItem.id ? "Dismissing..." : "Dismiss recommendation"}
                 </button>
               ) : (
-                <span className="text-[11px] text-zinc-400">Mandatory requirement</span>
+                <span className="text-[11px] text-[#727272]">Mandatory requirement</span>
               )}
 
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={() => setActiveModalItem(null)}
-                  className="rounded-full border border-zinc-200 px-4 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50"
+                  className="cursor-pointer rounded-full border border-[#D7D7D7] bg-white px-4 py-2 text-xs font-semibold text-[#1F1F1F] hover:bg-[#F3F4F5]"
                 >
                   Close
                 </button>
                 <Link
                   href={activeModalItem.actionHref}
                   onClick={() => setActiveModalItem(null)}
-                  className="rounded-full bg-zinc-950 px-5 py-2 text-xs font-semibold text-white hover:bg-zinc-800"
+                  className="rounded-full bg-[#1F1F1F] px-5 py-2 text-xs font-semibold text-white transition hover:bg-[#FCDF9C] hover:text-[#1F1F1F]"
                 >
                   {activeModalItem.actionLabel} →
                 </Link>

@@ -26,7 +26,7 @@ export function InsightsTabNav({
   return (
     <nav
       aria-label="Insights tabs"
-      className="scrollbar-none flex border-b border-zinc-200 overflow-x-auto whitespace-nowrap"
+      className="scrollbar-none flex border-b border-[#E5E5E5] overflow-x-auto whitespace-nowrap"
     >
       <div className="flex gap-8">
         {TABS.map((tab) => {
@@ -36,26 +36,26 @@ export function InsightsTabNav({
               key={tab.id}
               type="button"
               onClick={() => onTabChange(tab.id)}
-              className={`group relative flex items-center gap-2 pb-4 pt-2 text-sm font-semibold transition-colors focus:outline-none ${
-                isActive ? "text-zinc-950" : "text-zinc-500 hover:text-zinc-800"
+              className={`group relative flex items-center gap-2 pb-4 pt-2 text-sm font-semibold transition-colors focus:outline-none cursor-pointer ${
+                isActive ? "text-[#1F1F1F]" : "text-[#727272] hover:text-[#1F1F1F]"
               }`}
             >
               <span>{tab.label}</span>
               {tab.id === "reviews" && reviewCount !== undefined && reviewCount > 0 && (
-                <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-600 font-medium">
+                <span className="rounded-full bg-[#F3F4F5] px-2 py-0.5 text-xs text-[#1F1F1F] font-medium">
                   {reviewCount}
                 </span>
               )}
               {tab.id === "opportunities" &&
                 opportunitiesCount !== undefined &&
                 opportunitiesCount > 0 && (
-                  <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-900 font-semibold">
+                  <span className="rounded-full bg-[#FEF9EE] border border-[#FCDF9C] px-2 py-0.5 text-xs text-[#D97706] font-semibold">
                     {opportunitiesCount}
                   </span>
                 )}
               {/* Active Underline */}
               {isActive && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-zinc-950 transition-all" />
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#1F1F1F] transition-all" />
               )}
             </button>
           );
