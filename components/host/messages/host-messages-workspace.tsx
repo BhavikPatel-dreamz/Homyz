@@ -2145,7 +2145,7 @@ export function HostMessagesWorkspace({
       {/* MODAL: SPECIAL OFFER                                                      */}
       {/* ========================================================================= */}
       {specialOfferModalOpen && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
           <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl space-y-5">
             <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
               <h3 className="text-lg font-bold text-[#1F1F1F]">{t("messages_so_modal_title", "Send a Special Offer")}</h3>
@@ -2254,7 +2254,7 @@ export function HostMessagesWorkspace({
       {/* MODAL: PRE-APPROVE                                                        */}
       {/* ========================================================================= */}
       {preApproveModalOpen && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
           <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl space-y-4">
             <h3 className="text-lg font-bold text-[#1F1F1F]">{t("messages_preapprove_modal_title", "Pre-approve Guest Inquiry")}</h3>
             <p className="text-xs text-zinc-600 leading-relaxed">
@@ -2297,7 +2297,7 @@ export function HostMessagesWorkspace({
       {/* MODAL: DECLINE                                                            */}
       {/* ========================================================================= */}
       {declineModalOpen && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
           <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl space-y-4">
             <h3 className="text-lg font-bold text-[#1F1F1F]">{t("messages_decline_modal_title", "Decline Inquiry")}</h3>
             <div>
@@ -2348,7 +2348,7 @@ export function HostMessagesWorkspace({
 
       {/* Image Lightbox Modal */}
       {lightboxAttachment && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-xs">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/85 p-4 backdrop-blur-xs">
           <div className="relative max-w-4xl w-full flex flex-col items-center">
             <div className="flex items-center justify-between w-full pb-3 text-white">
               <span className="text-sm font-medium truncate max-w-md">{lightboxAttachment.fileName}</span>

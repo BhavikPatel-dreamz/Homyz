@@ -587,7 +587,7 @@ export function AdminPaymentsClient({
 
       {/* Filter Drawer with ModalOverlay */}
       {filterDrawerOpen && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-end bg-black/60 backdrop-blur-xs">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-end bg-black/60 backdrop-blur-xs">
           <div className="w-full max-w-md h-full bg-[var(--surface)] border-l border-[var(--border)] p-6 flex flex-col justify-between overflow-y-auto">
             <div>
               <div className="flex items-center justify-between border-b border-[var(--border)] pb-4 mb-5">

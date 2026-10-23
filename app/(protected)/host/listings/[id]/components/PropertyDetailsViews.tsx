@@ -436,7 +436,7 @@ export function PropertyDetailsViews({
       {/* VIEW 1: DESCRIPTION */}
       {/* --------------------------------------------------------- */}
       {activeSection === "description" && (
-        <div className="w-full max-w-full space-y-6 animate-in fade-in sm:pb-10 font-sans lg:max-w-[calc(100%-75px)]">
+        <div className="w-full max-w-full space-y-6 animate-in fade-in sm:pb-10 font-sans lg:max-w-[calc(100%-75px)] mx-auto">
           {/* Header & Back Button */}
           <div className="sm:space-y-1.5 space-y-3">
             <div className="flex items-start gap-6">
@@ -680,7 +680,7 @@ export function PropertyDetailsViews({
       {/* VIEW 4: TITLE */}
       {/* --------------------------------------------------------- */}
       {activeSection === "title" && (
-        <div className="w-full max-w-xl space-y-6 animate-in fade-in pb-10">
+        <div className="w-full max-w-xl space-y-6 animate-in fade-in pb-10 mx-auto">
           <div className="flex min-w-0 items-center gap-4 sm:gap-6">
             <BackButton onClick={() => setActiveSection("description")} />
             <h1 className="min-w-0">{t("host_listing_title")}</h1>
@@ -784,7 +784,7 @@ export function PropertyDetailsViews({
                       </svg>
                     </div>
                   </div>
-                  <p className="text-xs text-[#727272] dark:text-[#727272] font-normal pt-0.5">
+                  <p className="text-sm text-[#727272] dark:text-[#727272] font-normal pt-0.5">
                     {t("host_apartment_desc")}
                   </p>
                 </div>
@@ -808,7 +808,7 @@ export function PropertyDetailsViews({
                       </svg>
                     </div>
                   </div>
-                  <p className="text-xs text-[#727272] dark:text-[#727272] font-normal pt-0.5 leading-relaxed">
+                  <p className="text-sm text-[#727272] dark:text-[#727272] font-normal pt-0.5 leading-relaxed">
                     {t("host_entire_place_desc")}
                   </p>
                 </div>
@@ -818,14 +818,14 @@ export function PropertyDetailsViews({
                   <>
                     {/* 4. How many floors are in the building */}
                     <div className="flex sm:flex-row flex-col sm:items-center items-start justify-between gap-5">
-                      <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">{t("host_how_many_floors")}</label>
+                      <label className="text-base font-normal text-[#1f1f1f] dark:text-zinc-200">{t("host_how_many_floors")}</label>
                       <div className="flex items-center sm:gap-3 gap-1 min-w-[86px]">
                         <button
                           type="button"
                           onClick={() => setBuildingFloors?.(Math.max(1, (buildingFloors || 1) - 1))}
                           className="group w-8 h-8 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-xl font-normal text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer transition-all duration-300"
                         >
-                          <Image src="/images/icons/minus-icon.svg" alt="Decrease floors" width={14} height={14} className="size-3.5 object-contain dark:invert group-hover:invert" />
+                          <Image src="/images/icons/minus-icon.svg" alt="Decrease floors" width={14} height={14} className="size-4 object-contain dark:invert group-hover:invert" />
                         </button>
                         <span className="w-5 text-center text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100">{buildingFloors || 1}</span>
                         <button
@@ -833,21 +833,21 @@ export function PropertyDetailsViews({
                           onClick={() => setBuildingFloors?.((buildingFloors || 1) + 1)}
                           className="group w-8 h-8 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-xl font-normal text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer transition-all duration-300"
                         >
-                          <Image src="/images/icons/Plus.svg" alt="Increase floors" width={14} height={14} className="size-3.5 object-contain dark:invert group-hover:invert" />
+                          <Image src="/images/icons/Plus.svg" alt="Increase floors" width={14} height={14} className="size-4 object-contain dark:invert group-hover:invert" />
                         </button>
                       </div>
                     </div>
 
                     {/* 5. Which floor is the listing on? */}
                     <div className="flex sm:flex-row flex-col sm:items-center items-start justify-between gap-5">
-                      <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">{t("host_which_floor")}</label>
+                      <label className="text-base font-normal text-[#1f1f1f] dark:text-zinc-200">{t("host_which_floor")}</label>
                       <div className="flex items-center sm:gap-3 gap-1 min-w-[86px]">
                         <button
                           type="button"
                           onClick={() => setListingFloor?.(Math.max(0, (listingFloor || 1) - 1))}
                           className="group w-8 h-8 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-xl font-normal text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer transition-all duration-300"
                         >
-                          <Image src="/images/icons/minus-icon.svg" alt="Decrease floor" width={14} height={14} className="size-3.5 object-contain dark:invert group-hover:invert" />
+                          <Image src="/images/icons/minus-icon.svg" alt="Decrease floor" width={14} height={14} className="size-4 object-contain dark:invert group-hover:invert" />
                         </button>
                         <span className="w-5 text-center text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100">{listingFloor ?? 1}</span>
                         <button
@@ -855,7 +855,7 @@ export function PropertyDetailsViews({
                           onClick={() => setListingFloor?.((listingFloor || 0) + 1)}
                           className="group w-8 h-8 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-xl font-normal text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer transition-all duration-300"
                         >
-                          <Image src="/images/icons/Plus.svg" alt="Increase floor" width={14} height={14} className="size-3.5 object-contain dark:invert group-hover:invert" />
+                          <Image src="/images/icons/Plus.svg" alt="Increase floor" width={14} height={14} className="size-4 object-contain dark:invert group-hover:invert" />
                         </button>
                       </div>
                     </div>
@@ -863,29 +863,45 @@ export function PropertyDetailsViews({
                     {/* Elevator Available */}
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
-                        <label className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">{t("host_elevator_available")}</label>
+                        <label className="text-base font-normal text-[#1f1f1f] dark:text-zinc-200">{t("host_elevator_available")}</label>
                         <p className="text-base text-[#727272] dark:text-[#727272] font-normal">{t("host_elevator_desc")}</p>
                       </div>
                       <div className="flex items-center gap-1.5">
                         <button
                           type="button"
                           onClick={() => setElevatorAvailable?.(false)}
-                          className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold cursor-pointer transition-all ${elevatorAvailable === false
-                            ? "bg-[#FCDF9C] dark:bg-amber-400 border-amber-300 dark:border-amber-400 text-zinc-950 shadow-2xs"
-                            : "bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
+                          aria-label="No"
+                          className={`group w-8 h-8 rounded-full border flex items-center justify-center cursor-pointer transition-all duration-300 ${elevatorAvailable === false
+                            ? "bg-[#FCDF9C] dark:bg-amber-400 border-[#FCDF9C] dark:border-amber-400 hover:bg-[#1f1f1f] hover:border-[#1f1f1f] dark:hover:bg-[#1f1f1f] dark:hover:border-[#1f1f1f]"
+                            : "bg-white dark:bg-zinc-800 border-[#1F1F1F] dark:border-zinc-700 hover:bg-[#1f1f1f] hover:border-[#1f1f1f] dark:hover:bg-[#1f1f1f] dark:hover:border-[#1f1f1f]"
                             }`}
                         >
-                          ✕
+                          <Image
+                            src="/images/icons/close-icon.svg"
+                            alt="No"
+                            width={12}
+                            height={12}
+                            className={`size-3 object-contain transition-all duration-300 group-hover:brightness-0 group-hover:invert ${elevatorAvailable === false ? "" : "dark:invert"
+                              }`}
+                          />
                         </button>
                         <button
                           type="button"
                           onClick={() => setElevatorAvailable?.(true)}
-                          className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-semibold cursor-pointer transition-all ${elevatorAvailable === true
-                            ? "bg-[#FCDF9C] dark:bg-amber-400 border-amber-300 dark:border-amber-400 text-zinc-950 shadow-2xs"
-                            : "bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700"
+                          aria-label="Yes"
+                          className={`group w-8 h-8 rounded-full border flex items-center justify-center cursor-pointer transition-all duration-300 ${elevatorAvailable === true
+                            ? "bg-[#FCDF9C] dark:bg-amber-400 border-[#FCDF9C] dark:border-amber-400 hover:bg-[#1f1f1f] hover:border-[#1f1f1f] dark:hover:bg-[#1f1f1f] dark:hover:border-[#1f1f1f]"
+                            : "bg-white dark:bg-zinc-800 border-[#1F1F1F] dark:border-zinc-700 hover:bg-[#1f1f1f] hover:border-[#1f1f1f] dark:hover:bg-[#1f1f1f] dark:hover:border-[#1f1f1f]"
                             }`}
                         >
-                          ✓
+                          <Image
+                            src="/images/icons/right-mark.svg"
+                            alt="Yes"
+                            width={12}
+                            height={12}
+                            className={`size-3 object-contain transition-all duration-300 group-hover:brightness-0 group-hover:invert ${elevatorAvailable === true ? "" : "dark:invert"
+                              }`}
+                          />
                         </button>
                       </div>
                     </div>
@@ -903,7 +919,7 @@ export function PropertyDetailsViews({
                           onClick={() => setBuildingFloors?.(Math.max(1, (buildingFloors || 1) - 1))}
                           className="group w-8 h-8 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-xl font-normal text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer transition-all duration-300"
                         >
-                          <Image src="/images/icons/minus-icon.svg" alt="Decrease floors" width={14} height={14} className="size-3.5 object-contain dark:invert group-hover:invert" />
+                          <Image src="/images/icons/minus-icon.svg" alt="Decrease floors" width={14} height={14} className="size-4 object-contain dark:invert group-hover:invert" />
                         </button>
                         <span className="w-5 text-center text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100">{buildingFloors || 1}</span>
                         <button
@@ -911,7 +927,7 @@ export function PropertyDetailsViews({
                           onClick={() => setBuildingFloors?.((buildingFloors || 1) + 1)}
                           className="group w-8 h-8 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-xl font-normal text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer transition-all duration-300"
                         >
-                          <Image src="/images/icons/Plus.svg" alt="Increase floors" width={14} height={14} className="size-3.5 object-contain dark:invert group-hover:invert" />
+                          <Image src="/images/icons/Plus.svg" alt="Increase floors" width={14} height={14} className="size-4 object-contain dark:invert group-hover:invert" />
                         </button>
                       </div>
                     </div>
@@ -924,22 +940,38 @@ export function PropertyDetailsViews({
                         <button
                           type="button"
                           onClick={() => setPrivateEntrance?.(false)}
-                          className={`w-8 h-8 rounded-full border flex items-center justify-center text-lg font-normal cursor-pointer transition-all ${privateEntrance === false
-                            ? "bg-[#FCDF9C] dark:bg-amber-400 border-[#FCDF9C] dark:border-amber-400 text-[#1F1F1F] dark:text-zinc-950"
-                            : "bg-white dark:bg-zinc-800 border-[#1F1F1F] dark:border-zinc-700 text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] dark:hover:bg-zinc-700 hover:text-white"
+                          aria-label="No"
+                          className={`group w-8 h-8 rounded-full border flex items-center justify-center cursor-pointer transition-all duration-300 ${privateEntrance === false
+                            ? "bg-[#FCDF9C] dark:bg-amber-400 border-[#FCDF9C] dark:border-amber-400 hover:bg-[#1f1f1f] hover:border-[#1f1f1f] dark:hover:bg-[#1f1f1f] dark:hover:border-[#1f1f1f]"
+                            : "bg-white dark:bg-zinc-800 border-[#1F1F1F] dark:border-zinc-700 hover:bg-[#1f1f1f] hover:border-[#1f1f1f] dark:hover:bg-[#1f1f1f] dark:hover:border-[#1f1f1f]"
                             }`}
                         >
-                          ✕
+                          <Image
+                            src="/images/icons/close-icon.svg"
+                            alt="No"
+                            width={12}
+                            height={12}
+                            className={`size-3 object-contain transition-all duration-300 group-hover:brightness-0 group-hover:invert ${privateEntrance === false ? "" : "dark:invert"
+                              }`}
+                          />
                         </button>
                         <button
                           type="button"
                           onClick={() => setPrivateEntrance?.(true)}
-                          className={`w-8 h-8 rounded-full border flex items-center justify-center text-lg font-normal cursor-pointer transition-all ${privateEntrance === true
-                            ? "bg-[#FCDF9C] dark:bg-amber-400 border-[#FCDF9C] dark:border-amber-400 text-[#1F1F1F] dark:text-zinc-950"
-                            : "bg-white dark:bg-zinc-800 border-[#1F1F1F] dark:border-zinc-700 text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] dark:hover:bg-zinc-700 hover:text-white"
+                          aria-label="Yes"
+                          className={`group w-8 h-8 rounded-full border flex items-center justify-center cursor-pointer transition-all duration-300 ${privateEntrance === true
+                            ? "bg-[#FCDF9C] dark:bg-amber-400 border-[#FCDF9C] dark:border-amber-400 hover:bg-[#1f1f1f] hover:border-[#1f1f1f] dark:hover:bg-[#1f1f1f] dark:hover:border-[#1f1f1f]"
+                            : "bg-white dark:bg-zinc-800 border-[#1F1F1F] dark:border-zinc-700 hover:bg-[#1f1f1f] hover:border-[#1f1f1f] dark:hover:bg-[#1f1f1f] dark:hover:border-[#1f1f1f]"
                             }`}
                         >
-                          ✓
+                          <Image
+                            src="/images/icons/right-mark.svg"
+                            alt="Yes"
+                            width={12}
+                            height={12}
+                            className={`size-3 object-contain transition-all duration-300 group-hover:brightness-0 group-hover:invert ${privateEntrance === true ? "" : "dark:invert"
+                              }`}
+                          />
                         </button>
                       </div>
                     </div>
@@ -947,22 +979,40 @@ export function PropertyDetailsViews({
                 )}
 
                 {/* 6. Year built */}
-                <div className="w-full space-y-2 sm:w-[13.5rem]">
-                  <label className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">{t("host_year_built")}</label>
-                  <div className="relative">
+                <div className="w-full space-y-2">
+                  <label className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">
+                    {t("host_year_built")}
+                  </label>
+                  <div className="relative group">
                     <select
                       value={yearBuilt}
                       onChange={(e) => setYearBuilt?.(e.target.value)}
-                        className="appearance-none rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 py-3.5 pr-10 text-base text-[#727272] dark:text-zinc-100 font-normal outline-none focus:border-[#1F1F1F] dark:focus:border-zinc-500 transition-colors cursor-pointer min-h-[56px]"
+                      className={`w-full min-h-[56px] appearance-none rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 py-3.5 pr-11 text-base outline-none transition-all shadow-2xs cursor-pointer hover:border-[#1F1F1F] dark:hover:border-zinc-500 focus:border-[#1F1F1F] dark:focus:border-zinc-400 focus:ring-1 focus:ring-[#1F1F1F]/20 dark:focus:ring-zinc-600 ${yearBuilt
+                        ? "text-[#1F1F1F] dark:text-zinc-100 font-medium"
+                        : "text-[#727272] dark:text-zinc-400 font-normal"
+                        }`}
                     >
-                      <option value="">{t("host_select_year_optional")}</option>
+                      <option value="" className="text-[#727272] dark:text-zinc-400 bg-white dark:bg-zinc-800">
+                        {t("host_select_year_optional")}
+                      </option>
                       {["2026", "2025", "2024", "2023", "2022", "2021", "2020", "2018", "2015", "2010", "2005", "2000", "1995", "1990", "1980"].map((yr) => (
-                        <option key={yr} value={yr}>{yr}</option>
+                        <option key={yr} value={yr} className="text-[#1F1F1F] dark:text-zinc-100 bg-white dark:bg-zinc-800">
+                          {yr}
+                        </option>
                       ))}
                     </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-[#727272] dark:text-zinc-300">
-                      <svg width="14" height="8" viewBox="0 0 16 9" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M15 1L8 8L1 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-[#727272] dark:text-zinc-400 transition-colors group-hover:text-[#1F1F1F] dark:group-hover:text-zinc-200">
+                      <svg
+                        className="h-6 w-6"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <polyline points="6 9 12 15 18 9" />
                       </svg>
                     </div>
                   </div>
@@ -980,7 +1030,7 @@ export function PropertyDetailsViews({
                         placeholder="e.g. 120"
                         min={1}
                         max={50000}
-                          className="min-h-[56px] w-full rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 text-base font-normal text-[#727272] dark:text-zinc-100 placeholder:text-[#727272] dark:placeholder:text-[#727272] outline-none transition-colors shadow-2xs focus:border-[#1F1F1F] dark:focus:border-zinc-500 sm:h-11 sm:px-3"
+                        className="min-h-[56px] w-full rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 text-base font-normal text-[#727272] dark:text-zinc-100 placeholder:text-[#727272] dark:placeholder:text-[#727272] outline-none transition-colors shadow-2xs focus:border-[#1F1F1F] dark:focus:border-zinc-500 sm:h-11 sm:px-3"
                       />
                     </div>
                     <div className="space-y-2">
@@ -989,7 +1039,7 @@ export function PropertyDetailsViews({
                         <select
                           value={propertySizeUnit}
                           onChange={(e) => setPropertySizeUnit?.(e.target.value)}
-                            className="min-h-[56px] w-full appearance-none rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 pr-10 text-base font-normal text-[#727272] dark:text-zinc-100 outline-none transition-colors shadow-2xs focus:border-[#1F1F1F] dark:focus:border-zinc-500 sm:h-11 sm:px-3 sm:pr-8"
+                          className="min-h-[56px] w-full appearance-none rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 px-4 pr-10 text-base font-normal text-[#727272] dark:text-zinc-100 outline-none transition-colors shadow-2xs focus:border-[#1F1F1F] dark:focus:border-zinc-500 sm:h-11 sm:px-3 sm:pr-8"
                         >
                           <option value="SQM">SQM (m²)</option>
                           <option value="SQFT">SQFT (sq ft)</option>
@@ -1045,7 +1095,7 @@ export function PropertyDetailsViews({
         <div className={activeSection === "guests" ? "w-full max-w-none animate-in fade-in pb-6 font-sans" : "w-full animate-in fade-in pb-10 font-sans"}>
           {/* Header */}
           <div className={activeSection === "guests" ? "hidden" : "space-y-1"}>
-            <div className="flex items-start gap-6 max-w-[491px]">
+            <div className="flex items-start gap-6 max-w-[491px] mx-auto">
               <BackButton onClick={() => setActiveSection("propertyType")} className="mt-2" />
               <div className="space-y-1.5">
                 <h1>{activeSection === "guests" ? t("host_number_of_guests") : t("host_sleeping_arrangements_title")}</h1>
@@ -1063,9 +1113,9 @@ export function PropertyDetailsViews({
               <GuestsSkeleton />
             )
           ) : (
-            <div className="space-y-6 pt-12">
+            <div className="space-y-6 pt-12 max-w-[491px] mx-auto">
               {/* Section 1: Guest Capacity Counter */}
-              <div className={`Guest-Capacity-Counter max-w-[491px] ${activeSection === "guests" ? "mx-auto" : ""}`}>
+              <div className={`Guest-Capacity-Counter  ${activeSection === "guests" ? "" : ""}`}>
                 <div className={`${activeSection === "guests" ? "flex min-h-[500px] flex-col items-center justify-center gap-9 pb-14" : "space-y-4 rounded-md border border-[#DDDDDE] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4"}`}>
                   {activeSection === "guests" && (
                     <p className="max-w-[320px] text-center text-xl font-normal leading-7 text-[#727272] dark:text-zinc-300">
@@ -1086,7 +1136,7 @@ export function PropertyDetailsViews({
                         className={`group ${activeSection === "guests" ? "size-14 sm:size-16" : "size-8"} rounded-full border border-[#1f1f1f] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-[#1f1f1f] dark:text-zinc-100 hover:text-white hover:bg-[#1f1f1f] dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer transition-all shrink-0`}
                         aria-label="Decrease guests"
                       >
-                        <Image src="/images/icons/minus-icon.svg" alt="Decrease guests" width={14} height={14} className="size-3.5 object-contain dark:invert group-hover:invert" />
+                        <Image src="/images/icons/minus-icon.svg" alt="Decrease guests" width={14} height={14} className="size-4 object-contain dark:invert group-hover:invert" />
                       </button>
                       <span className={`${activeSection === "guests" ? "flex w-[97px] min-h-[110px] items-center justify-center rounded-full bg-[#FCDF9C] dark:bg-amber-400 text-[#1F1F1F] dark:text-zinc-950 text-[42px]" : "w-5 text-center text-base text-[#1F1F1F] dark:text-zinc-100"} font-normal`}>{editGuests}</span>
                       <button
@@ -1095,7 +1145,7 @@ export function PropertyDetailsViews({
                         className={`group ${activeSection === "guests" ? "size-14 sm:size-16" : "size-8"} rounded-full border border-[#1f1f1f] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-[#1f1f1f] dark:text-zinc-100 hover:text-white hover:bg-[#1f1f1f] dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer transition-all shrink-0`}
                         aria-label="Increase guests"
                       >
-                        <Image src="/images/icons/Plus.svg" alt="Increase guests" width={14} height={14} className="size-3.5 object-contain dark:invert group-hover:invert" />
+                        <Image src="/images/icons/Plus.svg" alt="Increase guests" width={14} height={14} className="size-4 object-contain dark:invert group-hover:invert" />
                       </button>
                     </div>
                   </div>
@@ -1113,7 +1163,7 @@ export function PropertyDetailsViews({
                           onClick={() => setEditBedrooms(Math.max(0, editBedrooms - 1))}
                           className="group size-8 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-base font-normal text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer"
                         >
-                          <Image src="/images/icons/minus-icon.svg" alt="Decrease bedrooms" width={14} height={14} className="size-3.5 object-contain dark:invert group-hover:invert" />
+                          <Image src="/images/icons/minus-icon.svg" alt="Decrease bedrooms" width={14} height={14} className="size-4 object-contain dark:invert group-hover:invert" />
                         </button>
                         <span className="w-5 text-center text-base font-normal text-[#1F1F1F] dark:text-zinc-100">{editBedrooms}</span>
                         <button
@@ -1121,7 +1171,7 @@ export function PropertyDetailsViews({
                           onClick={() => setEditBedrooms(Math.min(30, editBedrooms + 1))}
                           className="group size-8 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-base font-normal text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer"
                         >
-                          <Image src="/images/icons/Plus.svg" alt="Increase bedrooms" width={14} height={14} className="size-3.5 object-contain dark:invert group-hover:invert" />
+                          <Image src="/images/icons/Plus.svg" alt="Increase bedrooms" width={14} height={14} className="size-4 object-contain dark:invert group-hover:invert" />
                         </button>
                       </div>
                     </div>
@@ -1137,7 +1187,7 @@ export function PropertyDetailsViews({
                           onClick={() => setEditBeds(Math.max(1, editBeds - 1))}
                           className="group size-8 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-base font-normal text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer"
                         >
-                          <Image src="/images/icons/minus-icon.svg" alt="Decrease beds" width={14} height={14} className="size-3.5 object-contain dark:invert group-hover:invert" />
+                          <Image src="/images/icons/minus-icon.svg" alt="Decrease beds" width={14} height={14} className="size-4 object-contain dark:invert group-hover:invert" />
                         </button>
                         <span className="w-5 text-center text-base font-normal text-[#1F1F1F] dark:text-zinc-100">{editBeds}</span>
                         <button
@@ -1145,7 +1195,7 @@ export function PropertyDetailsViews({
                           onClick={() => setEditBeds(Math.min(50, editBeds + 1))}
                           className="group size-8 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-base font-normal text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer"
                         >
-                          <Image src="/images/icons/Plus.svg" alt="Increase beds" width={14} height={14} className="size-3.5 object-contain dark:invert group-hover:invert" />
+                          <Image src="/images/icons/Plus.svg" alt="Increase beds" width={14} height={14} className="size-4 object-contain dark:invert group-hover:invert" />
                         </button>
                       </div>
                     </div>
@@ -1154,7 +1204,7 @@ export function PropertyDetailsViews({
               </div>
 
               {/* Section 2: Room-Level Sleeping Arrangements */}
-              {activeSection !== "guests" && <div className="max-w-[491px] space-y-4">
+              {activeSection !== "guests" && <div className="space-y-4">
                 <div className="flex sm:flex-row flex-col sm:items-center items-start justify-between gap-6">
                   <div>
                     <h3 className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">{t("host_room_by_room_arrangements")}</h3>
@@ -1262,7 +1312,7 @@ export function PropertyDetailsViews({
                                   }}
                                   className="group size-7 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-base text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer"
                                 >
-                                  <Image src="/images/icons/minus-icon.svg" alt="Decrease bed count" width={14} height={14} className="size-3.5 object-contain dark:invert group-hover:invert" />
+                                  <Image src="/images/icons/minus-icon.svg" alt="Decrease bed count" width={14} height={14} className="size-4 object-contain dark:invert group-hover:invert" />
                                 </button>
                                 <span className="w-5 text-center font-normal text-[#1F1F1F] dark:text-zinc-100">{bed.count}</span>
                                 <button
@@ -1276,7 +1326,7 @@ export function PropertyDetailsViews({
                                   }}
                                   className="group size-7 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-base text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer"
                                 >
-                                  <Image src="/images/icons/Plus.svg" alt="Increase bed count" width={14} height={14} className="size-3.5 object-contain dark:invert group-hover:invert" />
+                                  <Image src="/images/icons/Plus.svg" alt="Increase bed count" width={14} height={14} className="size-4 object-contain dark:invert group-hover:invert" />
                                 </button>
                               </div>
                             </div>
@@ -1323,7 +1373,7 @@ export function PropertyDetailsViews({
               </div>}
 
               {/* Section 3: Bathroom Breakdown */}
-              {activeSection !== "guests" && <div className="max-w-[491px] rounded-md border border-[#DDDDDE] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4 space-y-4">
+              {activeSection !== "guests" && <div className="rounded-md border border-[#DDDDDE] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-4 space-y-4">
                 <div>
                   <h3 className="text-base font-medium text-[#1F1F1F] dark:text-zinc-100">{t("host_bathroom_breakdown")}</h3>
                   <p className="text-[14px] font-normal text-[#727272] dark:text-[#727272]">{t("host_bathroom_breakdown_desc")}</p>
@@ -1345,7 +1395,7 @@ export function PropertyDetailsViews({
                         }}
                         className="group size-7 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-base text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer"
                       >
-                        <Image src="/images/icons/minus-icon.svg" alt="Decrease full bathrooms" width={14} height={14} className="size-3.5 object-contain dark:invert group-hover:invert" />
+                        <Image src="/images/icons/minus-icon.svg" alt="Decrease full bathrooms" width={14} height={14} className="size-4 object-contain dark:invert group-hover:invert" />
                       </button>
                       <span className="w-4 text-center text-base font-medium text-[#1f1f1f] dark:text-zinc-100">{fullBathrooms ?? 1}</span>
                       <button
@@ -1357,7 +1407,7 @@ export function PropertyDetailsViews({
                         }}
                         className="group size-7 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-base text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer"
                       >
-                        <Image src="/images/icons/Plus.svg" alt="Increase full bathrooms" width={14} height={14} className="size-3.5 object-contain dark:invert group-hover:invert" />
+                        <Image src="/images/icons/Plus.svg" alt="Increase full bathrooms" width={14} height={14} className="size-4 object-contain dark:invert group-hover:invert" />
                       </button>
                     </div>
                   </div>
@@ -1377,7 +1427,7 @@ export function PropertyDetailsViews({
                         }}
                         className="group size-7 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-base text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer"
                       >
-                        <Image src="/images/icons/minus-icon.svg" alt="Decrease half bathrooms" width={14} height={14} className="size-3.5 object-contain dark:invert group-hover:invert" />
+                        <Image src="/images/icons/minus-icon.svg" alt="Decrease half bathrooms" width={14} height={14} className="size-4 object-contain dark:invert group-hover:invert" />
                       </button>
                       <span className="w-4 text-center text-base font-medium text-[#1f1f1f] dark:text-zinc-100">{halfBathrooms ?? 0}</span>
                       <button
@@ -1389,7 +1439,7 @@ export function PropertyDetailsViews({
                         }}
                         className="group size-7 rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-base text-[#1F1F1F] dark:text-zinc-100 hover:bg-[#1F1F1F] hover:text-white dark:hover:bg-zinc-700 dark:hover:border-zinc-600 cursor-pointer"
                       >
-                        <Image src="/images/icons/Plus.svg" alt="Increase half bathrooms" width={14} height={14} className="size-3.5 object-contain dark:invert group-hover:invert" />
+                        <Image src="/images/icons/Plus.svg" alt="Increase half bathrooms" width={14} height={14} className="size-4 object-contain dark:invert group-hover:invert" />
                       </button>
                     </div>
                   </div>
@@ -1432,12 +1482,12 @@ export function PropertyDetailsViews({
               </div>}
 
               {/* Save Button */}
-              <div className={`${activeSection === "guests" ? "pt-2 text-center" : "pt-2"}`}>
+              <div className={`${activeSection === "guests" ? "pt-2 text-center " : "pt-2"}`}>
                 <button
                   type="button"
                   disabled={isSaving}
                   onClick={() => handleSaveSection("guests")}
-                  className={`${activeSection === "guests" ? "w-full sm:w-auto sm:min-w-[136px]" : ""} rounded-full bg-[#FCDF9C] dark:bg-amber-400 hover:bg-[#1F1F1F] dark:hover:bg-zinc-700 text-[#1F1F1F] dark:text-zinc-950 hover:text-white dark:hover:text-white font-medium text-sm px-8 py-3.5 shadow-2xs transition-all duration-300 cursor-pointer`}
+                  className={`${activeSection === "guests" ? "w-full sm:w-auto sm:min-w-[136px]" : ""} rounded-full bg-[#FCDF9C] dark:bg-amber-400 hover:bg-[#1F1F1F] dark:hover:bg-zinc-700 text-[#1F1F1F] dark:text-zinc-950 hover:text-white dark:hover:text-white font-medium text-sm px-8 py-3.5 shadow-2xs transition-all duration-300 cursor-pointer ml-auto`}
                 >
                   {isSaving ? t("host_saving") : t("host_save")}
                 </button>
@@ -1531,7 +1581,7 @@ export function PropertyDetailsViews({
         };
 
         return (
-          <div className="w-full sm:max-w-[calc(100%-75px)] space-y-5 animate-in fade-in font-sans">
+          <div className="w-full sm:max-w-[calc(100%-75px)] mx-auto space-y-5 animate-in fade-in font-sans">
             {/* Header */}
             <div className="flex sm:flex-row flex-col sm:gap-0 gap-5 sm:items-center items-start justify-between">
               <div className="space-y-1">
@@ -1723,7 +1773,7 @@ export function PropertyDetailsViews({
                       onScroll={updateMainAmenitiesScrollThumb}
                       className={`custom-scrollbar overflow-x-hidden pr-1 lg:pr-[85px] ${presentation === "admin" ? "" : "lg:h-[1850px] overflow-y-auto"}`}
                     >
-                            <div className="max-w-[716px] divide-y divide-[#DDDDDE] dark:divide-zinc-800">
+                      <div className="max-w-[716px] divide-y divide-[#DDDDDE] dark:divide-zinc-800">
                         {editAmenities.map((am) => {
                           const meta = getAmenityMeta(am);
                           const localizedLabel = getAmenityLabel(meta.id, meta.label);
@@ -1736,7 +1786,7 @@ export function PropertyDetailsViews({
                                   className="group mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-full border border-[#B9B9BA] dark:border-zinc-700 bg-white dark:bg-zinc-800 text-base font-normal text-[#727272] dark:text-zinc-300 hover:border-[#1F1F1F] dark:hover:border-zinc-500 hover:bg-[#1F1F1F] dark:hover:bg-zinc-700 cursor-pointer transition-colors"
                                   aria-label={t("host_remove_amenity", { name: localizedLabel })}
                                 >
-                                  <Image src="/images/icons/minus-icon.svg" alt={t("host_remove_amenity", { name: localizedLabel })} width={14} height={14} className="size-3.5 object-contain dark:invert group-hover:invert" />
+                                  <Image src="/images/icons/minus-icon.svg" alt={t("host_remove_amenity", { name: localizedLabel })} width={14} height={14} className="size-4 object-contain dark:invert group-hover:invert" />
                                 </button>
                               ) : (
                                 <div className="size-10 rounded-full border border-[#B9B9BA] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-sm shrink-0">
@@ -1786,7 +1836,7 @@ export function PropertyDetailsViews({
       {/* VIEW 2: ACCESSIBILITY FEATURES */}
       {/* --------------------------------------------------------- */}
       {activeSection === "accessibility" && (
-        <div className="w-full max-w-full space-y-6 animate-in fade-in sm:pb-10 font-sans lg:max-w-[calc(100%-75px)]">
+        <div className="w-full max-w-full space-y-6 animate-in fade-in sm:pb-10 font-sans lg:max-w-[calc(100%-75px)] mx-auto">
           {/* Header */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-6">
@@ -1903,7 +1953,7 @@ export function PropertyDetailsViews({
                               }}
                               className="group w-8 h-8 rounded-full border border-[#1f1f1f] dark:border-zinc-700 bg-white dark:bg-zinc-800 flex items-center justify-center text-zinc-700 dark:text-zinc-300 hover:bg-[#1F1F1F] dark:hover:bg-zinc-700 text-xs font-semibold shrink-0 shadow-2xs transition-all cursor-pointer"
                             >
-                              <Image src="/images/icons/minus-icon.svg" alt={t("host_acc_collapse_alt")} width={14} height={14} className="size-3.5 object-contain dark:invert group-hover:invert" />
+                              <Image src="/images/icons/minus-icon.svg" alt={t("host_acc_collapse_alt")} width={14} height={14} className="size-4 object-contain dark:invert group-hover:invert" />
                             </button>
                           </div>
 
@@ -1944,7 +1994,7 @@ export function PropertyDetailsViews({
                                 }`}>
                                 {!isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white dark:bg-zinc-950" />}
                               </div>
-                              <span className={`${!isSelected ? "font-semibold" : "font-medium"} text-base text-[#1F1F1F] dark:text-zinc-100`}>{t("host_acc_dont_have_feature")}</span>
+                              <span className={`${!isSelected ? "font-medium" : "font-medium"} text-base text-[#1F1F1F] dark:text-zinc-100`}>{t("host_acc_dont_have_feature")}</span>
                             </div>
 
                             {/* Option 2: I have this feature */}
@@ -1967,7 +2017,7 @@ export function PropertyDetailsViews({
                                 }`}>
                                 {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white dark:bg-zinc-950" />}
                               </div>
-                              <span className={`${isSelected ? "font-semibold" : "font-medium"} text-base text-[#1F1F1F] dark:text-zinc-100`}>{t("host_acc_have_feature")}</span>
+                              <span className={`${isSelected ? "font-medium" : "font-medium"} text-base text-[#1F1F1F] dark:text-zinc-100`}>{t("host_acc_have_feature")}</span>
                             </div>
                           </div>
 

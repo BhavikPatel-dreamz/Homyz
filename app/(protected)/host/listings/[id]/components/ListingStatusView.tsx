@@ -594,7 +594,7 @@ export function ListingStatusView({
                 {t("host_listing_is_live")}
               </h2>
             </div>
-            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-200 dark:bg-emerald-900/60 text-[#1f1f1f] dark:text-emerald-200">
+            <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-emerald-200 dark:bg-emerald-900/60 text-[#1f1f1f] dark:text-emerald-200">
               {t("host_live_on_marketplace")}
             </span>
           </div>
@@ -647,7 +647,7 @@ export function ListingStatusView({
           }`}
         >
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-base text-[#1F1F1F] dark:text-zinc-100">{t("host_listed_title")}</h3>
+            <h3 className="font-medium text-base text-[#1F1F1F] dark:text-zinc-100">{t("host_listed_title")}</h3>
             {!isApproved ? (
               <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 flex items-center gap-1">
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -687,7 +687,7 @@ export function ListingStatusView({
           }`}
         >
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-base text-[#1F1F1F] dark:text-zinc-100">{t("host_unlisted_title")}</h3>
+            <h3 className="font-medium text-base text-[#1F1F1F] dark:text-zinc-100">{t("host_unlisted_title")}</h3>
             {effectiveStatus === "unlisted" && (
               <span className="text-xs font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-amber-500" />

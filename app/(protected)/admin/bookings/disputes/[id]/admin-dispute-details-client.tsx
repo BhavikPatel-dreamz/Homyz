@@ -620,7 +620,7 @@ export function AdminDisputeDetailsClient({ initialData }: DisputeDetailsProps) 
 
       {/* MODAL 1: ASSIGN CASE */}
       {assignModalOpen && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] border border-[var(--border)] p-6 shadow-xl space-y-4">
             <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
               <h3 className="text-base font-bold text-foreground">Assign Dispute Case</h3>
@@ -664,7 +664,7 @@ export function AdminDisputeDetailsClient({ initialData }: DisputeDetailsProps) 
 
       {/* MODAL 2: ADD INTERNAL NOTE */}
       {noteModalOpen && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] border border-[var(--border)] p-6 shadow-xl space-y-4">
             <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
               <h3 className="text-base font-bold text-foreground">Add Internal Investigation Note</h3>
@@ -710,7 +710,7 @@ export function AdminDisputeDetailsClient({ initialData }: DisputeDetailsProps) 
 
       {/* MODAL 3: REQUEST INFORMATION */}
       {infoModalOpen && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] border border-[var(--border)] p-6 shadow-xl space-y-4">
             <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
               <h3 className="text-base font-bold text-foreground">
@@ -773,7 +773,7 @@ export function AdminDisputeDetailsClient({ initialData }: DisputeDetailsProps) 
 
       {/* MODAL 4: RESOLVE DISPUTE */}
       {resolveModalOpen && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <div className="w-full max-w-lg rounded-2xl bg-[var(--surface)] border border-[var(--border)] p-6 shadow-xl space-y-4">
             <div className="flex items-center justify-between border-b border-[var(--border)] pb-3">
               <h3 className="text-base font-bold text-foreground">Resolve Dispute Case</h3>

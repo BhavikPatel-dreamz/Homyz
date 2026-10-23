@@ -743,7 +743,7 @@ export function HostTodayWorkspace({
               <span className="mb-4 flex size-14 items-center justify-center rounded-full bg-[#FDE29B] text-2xl shadow-xs">
                 ☼
               </span>
-              <p className="text-lg font-semibold text-[#1F1F1F]">
+              <p className="text-lg font-medium text-[#1F1F1F]">
                 {appliedPropertyId
                   ? t("host_today_empty_property", "No reservations found for this property")
                   : tab === "today"
@@ -803,15 +803,15 @@ export function HostTodayWorkspace({
           {totalPages > 1 && (
             <div className="mt-8 flex flex-col items-center justify-between gap-4 border-t border-zinc-200 pt-6 sm:flex-row">
               <p className="text-sm text-[#727272]">
-                {t("host_today_pagination_page", "Page")} <span className="font-semibold text-[#1F1F1F]">{page}</span> {t("host_today_pagination_of", "of")}{" "}
-                <span className="font-semibold text-[#1F1F1F]">{totalPages}</span>
+                {t("host_today_pagination_page", "Page")} <span className="font-medium text-[#1F1F1F]">{page}</span> {t("host_today_pagination_of", "of")}{" "}
+                <span className="font-medium text-[#1F1F1F]">{totalPages}</span>
               </p>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
                   disabled={page <= 1 || loading}
                   onClick={() => handlePageChange(page - 1)}
-                  className="rounded-full border border-[#727272] bg-white px-5 py-2 text-xs font-semibold text-[#1F1F1F] transition-colors hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
+                  className="rounded-full border border-[#727272] bg-[#1f1f1f] px-5 py-2 text-sm font-medium text-white hover:text-[#1f1f1f] transition-colors hover:bg-[#FCDF9C] disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
                   aria-label={t("host_today_pagination_prev_aria", "Previous page")}
                 >
                   {t("host_today_pagination_prev", "Previous")}
@@ -820,7 +820,7 @@ export function HostTodayWorkspace({
                   type="button"
                   disabled={page >= totalPages || loading}
                   onClick={() => handlePageChange(page + 1)}
-                  className="rounded-full border border-[#727272] bg-white px-5 py-2 text-xs font-semibold text-[#1F1F1F] transition-colors hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
+                  className="rounded-full border border-[#727272] bg-[#FCDF9C] px-5 py-2 text-sm font-medium text-[#1f1f1f] hover:text-white transition-colors hover:bg-[#1f1f1f] disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
                   aria-label={t("host_today_pagination_next_aria", "Next page")}
                 >
                   {t("host_today_pagination_next", "Next")}
@@ -838,7 +838,7 @@ export function HostTodayWorkspace({
               variant="listing-filter"
             >
               <section className="border-b border-[#D7D7D7] pb-5">
-                <h3 className="text-sm font-semibold text-[#1F1F1F]">
+                <h3 className="text-sm font-medium text-[#1F1F1F]">
                   {t("host_today_filter_period", "Reservation status")}
                 </h3>
                 <div className="mt-3 flex flex-wrap gap-2" role="tablist" aria-label={t("host_today_filter_period", "Reservation status")}>
@@ -877,7 +877,7 @@ export function HostTodayWorkspace({
                 </div>
               </section>
 
-              <p className="mb-3 mt-5 text-sm font-semibold text-[#1F1F1F]">
+              <p className="mb-3 mt-5 text-sm font-medium text-[#1F1F1F]">
                 {t("host_today_filter_listing", "Listing")}
               </p>
               <div className="max-h-[calc(100dvh-190px)] space-y-1.5 overflow-y-auto overscroll-contain pr-1 sm:max-h-[50dvh] sm:space-y-2 sm:py-1">

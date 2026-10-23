@@ -131,7 +131,7 @@ export function ReferralRewardsTable({ initialItems, initialTotal, canReview }: 
       <div className="mt-5"><AdminPagination currentPage={page} totalPages={Math.max(1, Math.ceil(total / 20))} totalItems={total} pageSize={20} itemLabel="credits" onPageChange={(nextPage) => void load(nextPage)} /></div>
 
       {rejecting ? (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-labelledby="reject-referral-title" onMouseDown={() => !busyId && setRejecting(null)}>
+        <ModalOverlay className="fixed inset-0 z-999 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs animate-in fade-in" role="dialog" aria-modal="true" aria-labelledby="reject-referral-title" onMouseDown={() => !busyId && setRejecting(null)}>
           <div className="w-full max-w-md rounded-2xl bg-[var(--surface)] p-6 shadow-xl" onMouseDown={(event) => event.stopPropagation()}>
             <h2 id="reject-referral-title" className="text-lg font-semibold text-muted-foreground">Reject referral credit</h2>
             <p className="mt-2 text-sm text-[#727272]">Give a short, auditable reason. This decision cannot be changed from this screen.</p>

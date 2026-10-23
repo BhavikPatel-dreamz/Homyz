@@ -42,7 +42,7 @@ function ExpandControl({
     >
       <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 transition-colors dark:hover:bg-zinc-800/70 [&::-webkit-details-marker]:hidden">
         <div className="min-w-0 flex-1">
-          <span className="block text-sm font-medium text-[#1f1f1f] dark:text-zinc-100">
+          <span className="block text-base font-normal text-[#1f1f1f] dark:text-zinc-100">
             {title}
           </span>
           {subtitle && (
@@ -548,7 +548,7 @@ export function CalendarSettingsPanel({
                   id="advanceNoticeSelect"
                   name="advanceNotice"
                   defaultValue={listing.advanceNotice || "Same day"}
-                  className="w-full appearance-none bg-transparent px-3.5 py-2.5 text-sm font-medium text-zinc-900 dark:text-zinc-100 outline-none cursor-pointer pr-9 border border-[#727272] sm:min-h-[56px] min-h-[45px] focus-within:outline-0 focus-within:shadow-none focus-visible:outline-0 focus-visible:shadow-none rounded-lg"
+                  className="w-full appearance-none bg-transparent px-3.5 py-2.5 text-sm font-medium text-zinc-900 dark:text-zinc-100 outline-none cursor-pointer pr-10 border border-[#727272] sm:min-h-[56px] min-h-[45px] focus-within:outline-0 focus-within:shadow-none focus-visible:outline-0 focus-visible:shadow-none rounded-lg hover:border-zinc-400 dark:border-zinc-700 dark:hover:border-zinc-600 transition-colors [&>option]:bg-white dark:[&>option]:bg-zinc-800 [&>option]:text-zinc-900 dark:[&>option]:text-zinc-100"
                 >
                   <option value="Same day">{t("host_notice_same_day", "Same day")}</option>
                   <option value="At least 1 day">{t("host_notice_at_least_1_day", "At least 1 day")}</option>
@@ -556,9 +556,20 @@ export function CalendarSettingsPanel({
                   <option value="At least 3 days">{t("host_notice_at_least_3_days", "At least 3 days")}</option>
                   <option value="At least 7 days">{t("host_notice_at_least_7_days", "At least 7 days")}</option>
                 </select>
-                <span className="pointer-events-none absolute right-3.5 text-xs text-zinc-400">
-                  ▾
-                </span>
+                <div className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center text-[#727272] dark:text-zinc-400">
+                  <svg
+                    className="size-4"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="m6 9 6 6 6-6" />
+                  </svg>
+                </div>
               </div>
               <p className="text-xs text-[#727272] dark:text-zinc-400">
                 {t("host_notice_required_before", "Required lead time before a guest can check in.")}
@@ -572,12 +583,12 @@ export function CalendarSettingsPanel({
               >
                 {t("host_calendar_same_day_cutoff_label", "Same-day booking cutoff")}
               </label>
-              <div className="w-full appearance-none bg-transparent px-3.5 py-2.5 text-sm font-medium text-zinc-900 dark:text-zinc-100 outline-none cursor-pointer pr-9 border border-[#727272] sm:min-h-[56px] min-h-[45px] focus-within:outline-0 focus-within:shadow-none focus-visible:outline-0 focus-visible:shadow-none rounded-lg">
+              <div className="relative flex items-center">
                 <select
                   id="sameDayCutoffSelect"
                   name="sameDayCutoff"
                   defaultValue={listing.sameDayCutoff || "12:00 AM"}
-                  className="w-full appearance-none bg-transparent px-3.5 py-2.5 text-sm font-medium text-zinc-900 dark:text-zinc-100 outline-none cursor-pointer pr-9"
+                  className="w-full appearance-none bg-transparent px-3.5 py-2.5 text-sm font-medium text-zinc-900 dark:text-zinc-100 outline-none cursor-pointer pr-10 border border-[#727272] sm:min-h-[56px] min-h-[45px] focus-within:outline-0 focus-within:shadow-none focus-visible:outline-0 focus-visible:shadow-none rounded-lg hover:border-zinc-400 dark:border-zinc-700 dark:hover:border-zinc-600 transition-colors [&>option]:bg-white dark:[&>option]:bg-zinc-800 [&>option]:text-zinc-900 dark:[&>option]:text-zinc-100"
                 >
                   <option value="12:00 AM">{t("host_calendar_cutoff_midnight", "12:00 AM (Midnight)")}</option>
                   <option value="6:00 AM">6:00 AM</option>
@@ -586,16 +597,27 @@ export function CalendarSettingsPanel({
                   <option value="6:00 PM">6:00 PM</option>
                   <option value="9:00 PM">9:00 PM</option>
                 </select>
-                <span className="pointer-events-none absolute right-3.5 text-xs text-zinc-400">
-                  ▾
-                </span>
+                <div className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center text-[#727272] dark:text-zinc-400">
+                  <svg
+                    className="size-4"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="m6 9 6 6 6-6" />
+                  </svg>
+                </div>
               </div>
               <p className="text-xs text-[#727272] dark:text-zinc-400">
                 {t("host_calendar_same_day_cutoff_helper", "Time after which guests cannot book a same-day reservation.")}
               </p>
             </div>
 
-            <label className="flex items-center justify-between gap-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50/70 dark:bg-zinc-800/40 p-3.5 hover:bg-zinc-100/70 dark:hover:bg-zinc-800/80 transition-colors cursor-pointer">
+              <label className="flex items-center justify-between gap-3 rounded-[12px] border border-white bg-[#F3F4F5] px-5 py-4 shadow-[0_2px_4px_0px_#00000040] dark:border-zinc-700/80 dark:bg-zinc-800/70 hover:bg-zinc-100/70 dark:hover:bg-zinc-800/80 transition-colors cursor-pointer">
               <div className="min-w-0 flex-1">
                 <span className="block text-sm font-medium text-[#1f1f1f] dark:text-zinc-200">
                   {t("host_calendar_allow_same_day_title", "Allow same-day booking requests")}
@@ -633,16 +655,16 @@ export function CalendarSettingsPanel({
                 type="button"
                 onClick={handleDiscard}
                 disabled={saving}
-                className="flex-1 rounded-lg border border-zinc-300 dark:border-[#1f1f1f] bg-white dark:bg-[#1f1f1f] hover:bg-zinc-100 dark:hover:bg-[#1f1f1f] text-[#1f1f1f] hover:text-white dark:text-zinc-300 font-medium py-2.5 text-sm transition-colors cursor-pointer disabled:opacity-50"
+                className="flex-1 rounded-full border border-[#727272] hover:border-[#1f1f1f] dark:border-[#1f1f1f] bg-white dark:bg-[#1f1f1f] hover:bg-[#1f1f1f] dark:hover:bg-[#1f1f1f] text-[#1f1f1f] hover:text-white dark:text-zinc-300 font-medium py-2.5 text-sm transition-colors cursor-pointer disabled:opacity-50"
               >
                 {t("host_calendar_discard", "Discard")}
               </button>
               <button
                 type="submit"
                 disabled={saving}
-                className="flex-1 rounded-lg bg-[#FCDF9C] hover:bg-amber-300 text-[#1f1f1f] hover:text-white font-medium py-2.5 text-sm transition-colors cursor-pointer disabled:opacity-50 shadow-xs"
+                className="flex-1 rounded-full text-sm hover:bg-[#1F1F1F] text-[#1F1F1F] hover:text-white hover:border-[#1F1F1F] bg-[#FCDF9C] font-medium py-2.5 transition-colors cursor-pointer disabled:opacity-50 shadow-xs"
               >
-                {saving ? t("host_calendar_saving", "Saving…") : t("host_calendar_save_avail", "Save availability")}
+                {saving ? t("host_calendar_saving", "Saving…") : t("host_calendar_save_avail", "Save")}
               </button>
             </div>
           )}

@@ -675,7 +675,7 @@ export function GuestMessagesWorkspace({
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-1 mb-0.5">
-                        <span className={`text-sm truncate ${hasUnread ? "font-bold text-[#1F1F1F]" : "font-medium text-zinc-800"}`}>
+                        <span className={`text-sm truncate ${hasUnread ? "font-semibold text-[#1F1F1F]" : "font-medium text-zinc-800"}`}>
                           {conv.host.name || t("messages_guest_default_host_name")}
                         </span>
                         <span className="text-xs text-[#727272] shrink-0">
@@ -1288,7 +1288,7 @@ export function GuestMessagesWorkspace({
 
       {/* Image Lightbox Modal */}
       {lightboxAttachment && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-xs">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/85 p-4 backdrop-blur-xs">
           <div className="relative max-w-4xl w-full flex flex-col items-center">
             <div className="flex items-center justify-between w-full pb-3 text-white">
               <span className="text-sm font-medium truncate max-w-md">{lightboxAttachment.fileName}</span>

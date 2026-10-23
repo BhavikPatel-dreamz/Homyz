@@ -302,7 +302,7 @@ export function ListingFilterModal({ open, onClose, onApply, initialFilters, ava
   };
 
   return (
-    <ModalOverlay className="fixed inset-0 z-50 flex items-end justify-center bg-black/45 sm:items-center sm:px-4" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+    <ModalOverlay className="fixed inset-0 z-9999 flex items-end justify-center bg-black/45 sm:items-center sm:px-4" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
       <section ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="listing-filter-title" className="flex max-h-[100dvh] w-full max-w-2xl flex-col overflow-hidden rounded-t-[28px] bg-white shadow-2xl sm:max-h-[88dvh] sm:rounded-[28px]">
         <header className="flex shrink-0 items-center justify-between border-b border-zinc-200 px-5 py-4 sm:px-6">
           <h2 id="listing-filter-title" className="md:text-2xl text-xl font-medium text-[#1f1f1f]">{t("listings_filters", "Filters")}</h2>

@@ -56,7 +56,7 @@ export function StepSafety({
             <OnboardingStepHeading
               title={t("host_safety_title")}
               description={t("host_safety_subtitle")}
-              titleClassName="sm:mb-5 mb-3"
+              titleClassName="mb-2"
               descriptionClassName="sm:mb-10 mb-6"
             />
 
@@ -94,7 +94,7 @@ export function StepSafety({
             </div>
 
             {/* Paragraph Notice */}
-            <p className="sm:mt-12 mt-6">
+            <p className="sm:mt-12 mt-6 text-sm">
               {t("host_safety_notice")}
             </p>
           </div>

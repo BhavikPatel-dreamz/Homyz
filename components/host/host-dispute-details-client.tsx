@@ -1180,7 +1180,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
       {/* MODAL 1: ADD / EDIT PRIVATE NOTE                        */}
       {/* ======================================================== */}
       {noteModalOpen && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <div className="w-full max-w-lg rounded-[20px] bg-white border border-zinc-200 p-6 sm:p-7 shadow-2xl space-y-5">
             <div className="flex items-center justify-between border-b border-zinc-300 pb-3.5">
               <div>
@@ -1235,7 +1235,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
       {/* MODAL 2: PROPOSE RESOLUTION OUTCOME                      */}
       {/* ======================================================== */}
       {proposeModalOpen && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <div className="w-full max-w-xl rounded-[20px] bg-white border border-zinc-200 p-6 sm:p-7 shadow-2xl space-y-5">
             <div className="flex items-center justify-between border-b border-zinc-300 pb-3.5">
               <div>
@@ -1372,7 +1372,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
       {/* ======================================================== */}
       {
         resolveOwnModalOpen && (
-          <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+          <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
             <div className="w-full max-w-lg rounded-[20px] bg-white border border-zinc-200 p-6 sm:p-7 shadow-2xl space-y-5">
               <div className="flex items-center justify-between border-b border-zinc-300 pb-3.5">
                 <div>

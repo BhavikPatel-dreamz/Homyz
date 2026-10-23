@@ -302,7 +302,7 @@ export function HouseRulesAndArrivalViews({
       {/* VIEW: HOUSE RULES (Professional Airbnb-Style Structured) */}
       {/* --------------------------------------------------------- */}
       {activeSection === "house-rules" && (
-        <div className="max-w-3xl space-y-6 pb-10 font-sans animate-in fade-in">
+        <div className="max-w-3xl mx-auto space-y-6 pb-10 font-sans animate-in fade-in">
           {/* Header & Subtitle */}
           <div className="space-y-2">
             <div className="flex items-center gap-6">
@@ -614,8 +614,8 @@ export function HouseRulesAndArrivalViews({
 
           {/* Check-in and checkout times Modal */}
           {isCheckInOutModalOpen && (
-            <ModalOverlay className="fixed inset-0 z-50 bg-black/35 backdrop-blur-xs flex items-center justify-center p-4">
-              <div className="bg-white dark:bg-zinc-900 rounded-xl sm:p-5 p-4 max-w-lg w-full space-y-6 shadow-2xl animate-in zoom-in-95 relative">
+            <ModalOverlay className="fixed inset-0 z-999 bg-black/35 backdrop-blur-xs flex items-center justify-center p-4">
+              <div className="bg-white dark:bg-zinc-900 rounded-[28px] sm:p-6 p-4 max-w-lg w-full space-y-6 shadow-2xl animate-in zoom-in-95 relative">
                 <button
                   type="button"
                   disabled={isSaving}
@@ -626,7 +626,7 @@ export function HouseRulesAndArrivalViews({
                 </button>
 
                 <div className="space-y-1">
-                  <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">
+                  <h3 className="font-medium text-2xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">
                     {t("host_check_in_out_times_title") || "Check-in and checkout times"}
                   </h3>
                   <p className="text-sm text-[#727272] dark:text-[#727272] font-normal">
@@ -636,7 +636,7 @@ export function HouseRulesAndArrivalViews({
 
                 <div className="space-y-4">
                   {/* Check-in window */}
-                  <div className="rounded-lg border border-[#727272] dark:border-zinc-700 bg-zinc-50/60 dark:bg-zinc-800/60 p-4 space-y-3">
+                  <div className="rounded-lg border border-white shadow-[0_2px_4px_rgba(0,0,0,0.25)] bg-zinc-50/60 dark:bg-zinc-800/60 p-4 space-y-3">
                     <label className="text-base font-medium text-[#1f1f1f] dark:text-zinc-100 block">{t("host_check_in_window_label") || "Check-in window"}</label>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
@@ -645,7 +645,7 @@ export function HouseRulesAndArrivalViews({
                           <select
                             value={formatTimeDisplay(checkInStart, "3:00 pm")}
                             onChange={(e) => setCheckInStart(e.target.value)}
-                            className="w-full appearance-none rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-2.5 pr-9 text-sm font-normal text-[#1F1F1F] dark:text-zinc-100 outline-none cursor-pointer focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs transition-colors"
+                            className="w-full appearance-none rounded-lg border  border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-2.5 pr-9 text-sm font-normal text-[#1F1F1F] dark:text-zinc-100 outline-none cursor-pointer focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs transition-colors"
                           >
                             {ALL_HOURS_OPTIONS.map((t) => (
                               <option key={t} value={t}>{t}</option>
@@ -662,7 +662,7 @@ export function HouseRulesAndArrivalViews({
                           <select
                             value={checkInEnd && !/flexible/i.test(checkInEnd) ? formatTimeDisplay(checkInEnd) : "Flexible"}
                             onChange={(e) => setCheckInEnd(e.target.value)}
-                            className="w-full appearance-none rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-2.5 pr-9 text-sm font-normal text-[#1F1F1F] dark:text-zinc-100 outline-none cursor-pointer focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs transition-colors"
+                            className="w-full appearance-none rounded-lg border  border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-2.5 pr-9 text-sm font-normal text-[#1F1F1F] dark:text-zinc-100 outline-none cursor-pointer focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs transition-colors"
                           >
                             <option value="Flexible">{t("host_flexible") || "Flexible"}</option>
                             {ALL_HOURS_OPTIONS.map((t) => (
@@ -678,7 +678,7 @@ export function HouseRulesAndArrivalViews({
                   </div>
 
                   {/* Checkout time */}
-                  <div className="rounded-lg border border-[#727272] dark:border-zinc-700 bg-zinc-50/60 dark:bg-zinc-800/60 p-4 space-y-2">
+                  <div className="rounded-lg border border-white shadow-[0_2px_4px_rgba(0,0,0,0.25)] bg-zinc-50/60 dark:bg-zinc-800/60 p-4 space-y-2">
                     <label className="text-base font-medium text-[#1f1f1f] dark:text-zinc-100 block">{t("host_checkout_time_label") || "Checkout time"}</label>
                     <div>
                       <span className="text-sm font-normal text-[#1f1f1f] dark:text-[#727272] block mb-1">{t("host_guests_must_leave_before") || "Guests must leave before"}</span>
@@ -686,7 +686,7 @@ export function HouseRulesAndArrivalViews({
                         <select
                           value={formatTimeDisplay(checkOutTime, "11:00 am")}
                           onChange={(e) => setCheckOutTime(e.target.value)}
-                          className="w-full appearance-none rounded-lg border border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-800 p-2.5 pr-9 text-sm font-normal text-[#1F1F1F] dark:text-zinc-100 outline-none cursor-pointer focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs transition-colors"
+                          className="w-full appearance-none rounded-lg border  border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-2.5 pr-9 text-sm font-normal text-[#1F1F1F] dark:text-zinc-100 outline-none cursor-pointer focus:border-zinc-900 dark:focus:border-zinc-100 shadow-2xs transition-colors"
                         >
                           {ALL_HOURS_OPTIONS.map((t) => (
                             <option key={t} value={t}>{t}</option>
@@ -705,7 +705,7 @@ export function HouseRulesAndArrivalViews({
                     type="button"
                     disabled={isSaving}
                     onClick={() => setIsCheckInOutModalOpen(false)}
-                    className="rounded-full border border-[#1f1f1f] hover:border-[#1f1f1f] bg-white hover:bg-[#1f1f1f] text-[#1f1f1f] font-medium hover:text-white text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
+                    className="px-6.75 py-3 rounded-full border border-[#1F1F1F] hover:bg-[#1F1F1F] text-sm font-medium text-[#1F1F1F] hover:text-white  transition-colors delay-300 duration-300 cursor-pointer"
                   >
                     {t("host_house_rules_cancel") || "Cancel"}
                   </button>
@@ -716,7 +716,7 @@ export function HouseRulesAndArrivalViews({
                       await handleSaveSection("house-rules");
                       setIsCheckInOutModalOpen(false);
                     }}
-                    className="rounded-full bg-[#FCDF9C] border border-[#FCDF9C] hover:border-[#1f1f1f] text-[#1F1F1F]  hover:bg-[#1f1f1f] hover:text-white font-medium text-sm px-7 py-2.5 transition-all duration-300 cursor-pointer disabled:cursor-wait disabled:opacity-60"
+                    className="px-4 py-3 rounded-full text-sm hover:bg-[#1F1F1F] text-[#1F1F1F] hover:text-white font-medium shadow-xs transition-colors delay-300 duration-300 flex items-center justify-center gap-2 min-w-[100px] border border-transparent hover:border-[#1F1F1F] bg-[#FCDF9C] cursor-pointer"
                   >
                     {isSaving ? (t("host_saving") || "Saving...") : (t("host_save_times") || "Save Times")}
                   </button>
@@ -731,7 +731,7 @@ export function HouseRulesAndArrivalViews({
       {/* VIEW: PARKING INSTRUCTIONS & CONFIGURATION */}
       {/* --------------------------------------------------------- */}
       {activeSection === "parking" && (
-        <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
+        <div className="space-y-6 animate-in fade-in w-full max-w-xl pb-10 font-sans mx-auto">
           <div className="flex items-start gap-6">
             <BackButton onClick={() => setActiveSection("arrival-guide")} className="mt-2" />
             <div>
@@ -977,7 +977,7 @@ export function HouseRulesAndArrivalViews({
       {/* VIEW: WIFI DETAILS (Matches Figma Screenshot 100%) */}
       {/* --------------------------------------------------------- */}
       {activeSection === "wifi-details" && (
-        <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
+        <div className="space-y-6 animate-in fade-in w-full max-w-xl pb-10 font-sans mx-auto">
           <div className="flex items-center gap-6">
             <BackButton onClick={() => setActiveSection("check-in-out")} />
             <h1>{t("host_wifi_details") || "Wifi details"}</h1>
@@ -1024,7 +1024,7 @@ export function HouseRulesAndArrivalViews({
       {/* VIEW: HOUSE MANUAL */}
       {/* --------------------------------------------------------- */}
       {activeSection === "house-manual" && (
-        <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
+        <div className="space-y-6 animate-in fade-in w-full max-w-xl pb-10 font-sans mx-auto">
           <div className="flex items-start gap-6">
             <BackButton onClick={() => setActiveSection("check-in-out")} className="mt-2" />
             <div>
@@ -1263,7 +1263,7 @@ function CheckOutInstructionsView({
   const formattedCheckOut = formatTimeDisplay(checkOutTime, "11:00 AM");
 
   return (
-    <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
+    <div className="space-y-6 animate-in fade-in w-full max-w-xl pb-10 font-sans mx-auto">
       {/* Header & Back Button */}
       <div className="flex items-start gap-6">
         <BackButton onClick={() => setActiveSection("arrival-guide")} className="mt-2" />
@@ -1409,7 +1409,7 @@ function CheckOutInstructionsView({
       {/* MODAL: Add / Edit Check-out Instructions */}
       {/* ===================================== */}
       {isModalOpen && (
-        <ModalOverlay className="fixed inset-0 z-50 bg-black/35 backdrop-blur-xs flex items-center justify-center p-4">
+        <ModalOverlay className="fixed inset-0 z-999 bg-black/35 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white dark:bg-zinc-900 rounded-xl p-4 sm:p-8 max-w-lg w-full shadow-2xl animate-in zoom-in-95 relative dark:border-zinc-800 max-h-[90vh] overflow-y-auto">
             <button
               type="button"
@@ -1423,7 +1423,7 @@ function CheckOutInstructionsView({
             </button>
 
             <div className="mb-5 space-y-1">
-              <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">
+              <h3 className="font-medium text-2xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">
                 {checkOutInstructions ? (t("host_edit_checkout_instructions_title") || "Edit check-out instructions") : (t("host_add_checkout_instructions_title") || "Add check-out instructions")}
               </h3>
               <p className="text-sm text-[#727272] dark:text-[#727272] font-normal leading-relaxed">
@@ -1520,7 +1520,7 @@ function GuidebooksView({
   ]);
 
   return (
-    <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
+    <div className="space-y-6 animate-in fade-in w-full max-w-xl pb-10 font-sans mx-auto">
       {/* Header & Back Button & Plus Circle Icon (Matches Figma Screenshot 100%) */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-6">
@@ -1657,7 +1657,7 @@ function InteractionPreferencesView({
   const selectedOption = options.indexOf(value || "No preferences");
 
   return (
-    <div className="max-w-2xl space-y-6 pb-16 font-sans animate-in fade-in">
+    <div className="max-w-2xl mx-auto space-y-6 pb-16 font-sans animate-in fade-in">
       {/* Header & Back Button */}
       <div className="flex items-start gap-6">
         <BackButton onClick={() => setActiveSection("arrival-guide")} className="mt-2" />
@@ -1766,7 +1766,7 @@ function LanguagesView({
   );
 
   return (
-    <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
+    <div className="space-y-6 animate-in fade-in w-full max-w-xl pb-10 font-sans mx-auto">
       {/* Header & Back Button */}
       <div className="flex items-center gap-6">
         <BackButton onClick={() => setActiveSection("arrival-guide")} />
@@ -2059,7 +2059,7 @@ function CheckInCheckOutView({
   const timesList = [...ALL_HOURS_OPTIONS, "Flexible"];
 
   return (
-    <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
+    <div className="space-y-6 animate-in fade-in w-full max-w-xl pb-10 font-sans mx-auto">
       {/* Header & Back Button */}
       <div className="flex items-center gap-6">
         <BackButton onClick={() => setActiveSection("house-rules")} />
@@ -2225,7 +2225,7 @@ function DirectionsView({
   const { t } = useLanguage();
 
   return (
-    <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
+    <div className="space-y-6 animate-in fade-in w-full max-w-xl pb-10 font-sans mx-auto">
       {/* Header & Back Button */}
       <div className="space-y-1">
         <div className="flex items-start gap-6">
@@ -2554,7 +2554,7 @@ function CheckInMethodView({
   const selectedDetailMethod = checkInMethodsData.find((m) => m.id === selectedMethodId);
 
   return (
-    <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
+    <div className="space-y-6 animate-in fade-in w-full max-w-xl pb-10 font-sans mx-auto">
       {/* Header & Back Button */}
       <div className="flex items-center gap-6">
         <BackButton onClick={() => setActiveSection("check-in-out")} />
@@ -2649,7 +2649,7 @@ function CheckInMethodView({
       {/* MODAL: Select a check-in method       */}
       {/* ===================================== */}
       {isSelectModalOpen && (
-        <ModalOverlay className="fixed inset-0 z-50 bg-black/35 backdrop-blur-xs flex items-center justify-center p-4">
+        <ModalOverlay className="fixed inset-0 z-999 bg-black/35 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white dark:bg-zinc-900 rounded-xl p-4 sm:p-8 max-w-lg w-full shadow-2xl animate-in zoom-in-95 relative max-h-[90vh] overflow-y-auto">
             <button
               type="button"
@@ -2661,7 +2661,7 @@ function CheckInMethodView({
               </svg>
             </button>
             <div className="mb-6">
-              <h3 className="font-medium text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">{t("host_select_checkin_method_title") || "Select a check-in method"}</h3>
+              <h3 className="font-medium text-2xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">{t("host_select_checkin_method_title") || "Select a check-in method"}</h3>
             </div>
             <div className="space-y-3">
               {checkInMethodsData.map((method) => {
@@ -2693,8 +2693,8 @@ function CheckInMethodView({
       {/* MODAL: Add / Edit code details        */}
       {/* ===================================== */}
       {isDetailModalOpen && selectedDetailMethod && (
-        <ModalOverlay className="fixed inset-0 z-50 bg-black/35 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-zinc-900 rounded-[28px] p-4 sm:p-8 max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl animate-in zoom-in-95 relative border border-zinc-150 dark:border-zinc-800">
+        <ModalOverlay className="fixed inset-0 z-999 bg-black/35 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-zinc-900 rounded-[28px] p-4 sm:p-8 max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl animate-in zoom-in-95 relative">
             <button
               type="button"
               disabled={isSaving}
@@ -2710,7 +2710,7 @@ function CheckInMethodView({
                 <CheckInMethodIcon id={selectedDetailMethod.id} />
               </div>
               <div>
-                <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">{selectedDetailMethod.label}</h3>
+                <h3 className="font-medium text-2xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">{selectedDetailMethod.label}</h3>
                 <p className="text-xs text-[#727272] dark:text-[#727272] font-normal mt-0.5">{selectedDetailMethod.description}</p>
               </div>
             </div>
@@ -2758,7 +2758,7 @@ function CheckInMethodView({
       {/* MODAL: Add / Edit instructions        */}
       {/* ===================================== */}
       {isInstructionModalOpen && (
-        <ModalOverlay className="fixed inset-0 z-50 bg-black/35 backdrop-blur-xs flex items-center justify-center p-4">
+        <ModalOverlay className="fixed inset-0 z-999 bg-black/35 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white dark:bg-zinc-900 rounded-xl p-4 sm:p-8 max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl animate-in zoom-in-95 relative">
             <button
               type="button"
@@ -2771,7 +2771,7 @@ function CheckInMethodView({
               </svg>
             </button>
             <div className="mb-6 space-y-1">
-              <h3 className="font-semibold text-xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">{t("host_checkin_instructions_heading") || "Check-in instructions"}</h3>
+              <h3 className="font-medium text-2xl tracking-tight text-[#1F1F1F] dark:text-zinc-100">{t("host_checkin_instructions_heading") || "Check-in instructions"}</h3>
               <p className="text-sm text-[#727272] dark:text-[#727272] font-normal leading-relaxed">
                 {t("host_checkin_instructions_modal_desc") || "Help guests have a smooth arrival. Share step-by-step tips to get inside."}
               </p>
@@ -2798,7 +2798,7 @@ function CheckInMethodView({
                 type="button"
                 disabled={isSaving}
                 onClick={() => setIsInstructionModalOpen(false)}
-                className="rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-[#1f1f1f] hover:text-white dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 font-medium text-sm px-7 py-2.5 transition-all cursor-pointer disabled:opacity-50"
+                className="px-6.75 py-3 rounded-full border border-[#1F1F1F] hover:bg-[#1F1F1F] text-sm font-medium text-[#1F1F1F] hover:text-white  transition-colors delay-300 duration-300 cursor-pointer"
               >
                 {t("host_cancel") || "Cancel"}
               </button>
@@ -3020,7 +3020,7 @@ function RegulationsView({
   }
 
   return (
-    <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
+    <div className="space-y-6 animate-in fade-in w-full max-w-xl pb-10 font-sans mx-auto">
       {/* Header & Back Button */}
       <div className="flex items-center gap-6">
         <BackButton onClick={() => setActiveSection("description")} />
@@ -3069,7 +3069,7 @@ function TaxesView({
   const [isSaved, setIsSaved] = React.useState(false);
 
   return (
-    <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
+    <div className="space-y-6 animate-in fade-in w-full max-w-xl pb-10 font-sans mx-auto">
       <div className="flex items-center gap-6">
         <BackButton onClick={() => setActiveSection("description")} />
         <h1>Taxes</h1>
@@ -3127,7 +3127,7 @@ function HomyzStaysView({
   const [isSaved, setIsSaved] = React.useState(false);
 
   return (
-    <div className="space-y-6 animate-in fade-in max-w-xl pb-10 font-sans">
+    <div className="space-y-6 animate-in fade-in w-full max-w-xl pb-10 font-sans mx-auto">
       <div className="flex items-center gap-6">
         <BackButton onClick={() => setActiveSection("description")} />
         <h1>Homyz.com stays</h1>

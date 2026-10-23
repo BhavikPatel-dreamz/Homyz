@@ -510,7 +510,7 @@ function ListingAvailabilityCalendar({
                   role="gridcell"
                   aria-label={`${date.toLocaleDateString("en", { dateStyle: "full" })}, ${state}`}
                   aria-selected={isStart || isEnd}
-                  className={`relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f] sm:h-8 sm:w-8 ${isStart || isEnd
+                  className={`relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1f1f1f] sm:h-7 sm:w-7 ${isStart || isEnd
                     ? "bg-[#FCDF9C] font-medium text-[#1f1f1f] shadow-sm"
                     : isInRange
                       ? "bg-[#FCDF9C] text-[#1f1f1f] hover:bg-[#F6CF7B]"
@@ -2663,7 +2663,7 @@ export function PublicListingDetailClient({
                         </div>
                       ))}
                     </div>
-                    <button type="button" onClick={() => setOpenThingsCard("rules")} className="mt-auto pt-6 text-left text-base text-[#727272] underline underline-offset-2">{t("listing_detail_show_more", "Show more")}</button>
+                    <button type="button" onClick={() => setOpenThingsCard("rules")} className="mt-auto pt-6 text-left text-base text-[#727272] hover:text-[#1f1f1f] underline underline-offset-2 w-max">{t("listing_detail_show_more", "Show more")}</button>
                   </div>
 
                   {(cancellationLabel || longTermCancellationLabel) && <div className="order-3 flex min-h-[294px] flex-col sm:rounded-[30px] rounded-[10px] border border-[#dedede] bg-white py-8 px-5 shadow-[0_2px_5px_rgba(0,0,0,0.14)]" aria-labelledby="cancellation-heading">
@@ -2673,7 +2673,7 @@ export function PublicListingDetailClient({
                         <p key={`${item}-${index}`} className="text-base leading-6 text-[#1f1f1f]">{item}</p>
                       ))}
                     </div>
-                    <button type="button" onClick={() => setOpenThingsCard("cancellation")} className="mt-auto pt-6 text-left text-base text-[#727272] underline underline-offset-2">{t("listing_detail_show_more", "Show more")}</button>
+                    <button type="button" onClick={() => setOpenThingsCard("cancellation")} className="mt-auto pt-6 text-left text-base text-[#727272] hover:text-[#1f1f1f] underline underline-offset-2 w-max">{t("listing_detail_show_more", "Show more")}</button>
                   </div>}
 
                   {/* Safety Disclosures */}
@@ -2685,7 +2685,7 @@ export function PublicListingDetailClient({
                       ))}
                       {safetyItems.length === 0 && <p>{t("listing_detail_no_safety_reported", "No safety equipment or property hazards have been reported.")}</p>}
                     </div>
-                    <button type="button" onClick={() => setOpenThingsCard("safety")} className="mt-auto pt-6 text-left text-base text-[#727272] underline underline-offset-2">{t("listing_detail_show_more", "Show more")}</button>
+                    <button type="button" onClick={() => setOpenThingsCard("safety")} className="mt-auto pt-6 text-left text-base text-[#727272] hover:text-[#1f1f1f] underline underline-offset-2 w-max">{t("listing_detail_show_more", "Show more")}</button>
                   </div>
                 </div>
               </section>

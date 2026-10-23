@@ -421,8 +421,8 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
               <path d="M13.73 21a2 2 0 0 1-3.46 0" />
             </svg>
           </div>
-          <p className="text-sm font-semibold text-[#1F1F1F]">{t("profile_notif_empty_title", "No notifications found")}</p>
-          <p className="mt-1 text-xs text-[#727272]">
+          <p className="text-base font-medium text-[#1F1F1F]">{t("profile_notif_empty_title", "No notifications found")}</p>
+          <p className="mt-1 text-sm text-[#727272]">
             {filter === "UNREAD"
               ? t("profile_notif_empty_unread", "You have read all of your notifications.")
               : t("profile_notif_empty_all", "You are all caught up! When updates arrive, they will appear here.")}
@@ -512,7 +512,7 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
                 type="button"
                 onClick={() => void loadMore()}
                 disabled={loadingMore}
-                className="rounded-full border border-[#D7D7D7] bg-white px-5 py-2 text-xs font-semibold text-[#1F1F1F] transition-colors hover:bg-zinc-50 disabled:cursor-wait disabled:opacity-60"
+                  className="rounded-full border border-[#1F1F1F] hover:border-[#FCDF9C] hover:bg-[#FCDF9C] bg-[#1f1f1f] px-5 py-2 text-sm font-medium hover:text-[#1F1F1F] text-white transition-colors duration-300 disabled:cursor-wait disabled:opacity-60"
               >
                 {loadingMore ? "Loading..." : "Load more"}
               </button>

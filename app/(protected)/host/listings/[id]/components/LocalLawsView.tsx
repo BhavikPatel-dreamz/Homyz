@@ -254,7 +254,7 @@ export function LocalLawsView({
       {/* Follows AGENTS.md rule: ModalOverlay outer overlay, locks scroll  */}
       {/* ================================================================= */}
       {showResourceDrawer && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs transition-opacity animate-in fade-in duration-200">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs transition-opacity animate-in fade-in duration-200">
           {/* Backdrop Click Dismiss */}
           <div
             className="absolute inset-0"

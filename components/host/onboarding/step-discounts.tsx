@@ -77,7 +77,7 @@ export function StepDiscounts({
           <div className="max-w-[491px] mx-auto w-full flex flex-col items-start my-auto">
             {/* Main Title & Tip Subtitle */}
             <div className="title-section">
-              <h1 data-aos="fade-up" className="sm:mb-5 mb-3">
+              <h1 data-aos="fade-up" className="mb-2">
                 {t("host_discounts_title")}
               </h1>
               <p data-aos="fade-up" data-aos-delay="100" className="sm:mb-10 mb-6">
@@ -93,15 +93,15 @@ export function StepDiscounts({
                   <div
                     key={discount.id}
                     onClick={() => onToggleDiscount(discount.id)}
-                    className={`w-full border sm:rounded-2xl rounded-[6px] sm:p-4 p-3 bg-white transition-all flex items-end justify-between shadow-2xs cursor-pointer select-none ${isEnabled ? "border-[#727272]" : "border-[#727272] hover:border-[#1f1f1f]"
+                    className={`w-full border sm:rounded-2xl rounded-[6px] sm:p-4 p-3 bg-[#F3F4F5] transition-all flex items-end justify-between cursor-pointer select-none ${isEnabled ? "border-[#727272]" : "border-[#ddd]"
                       }`}
                   >
                     {/* Left Side Info */}
                     <div className="flex flex-col items-start pr-4">
-                      <span className="text-xs font-normal text-[#1f1f1f] mb-1.5">
+                      <span className="text-base font-normal text-[#1f1f1f] mb-1.5">
                         {discount.title}
                       </span>
-                      <span className="text-xs text-[#727272] font-normal mb-2 leading-relaxed">
+                      <span className="text-sm text-[#727272] font-normal mb-2 leading-relaxed">
                         {discount.description}
                       </span>
                       <span className="text-2xl font-medium text-[#1F1F1F]">
@@ -126,7 +126,7 @@ export function StepDiscounts({
 
             {/* Footnote Notice & Read more Toggle */}
             <div className="mt-4 w-full">
-              <p>
+              <p className="text-xs text-[#727272] font-normal">
                 {t("host_discount_footnote")}{" "}
                 <button
                   type="button"

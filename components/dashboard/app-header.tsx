@@ -478,7 +478,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
               {unreadCount !== null && unreadCount > 0 && (
                 <span
                   aria-label={`${unreadCount} unread notifications`}
-                  className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white shadow-xs"
+                  className="absolute -top-1 -right-1 flex h-4 min-w-4 min-h-5 items-center justify-center leading-tight rounded-full bg-rose-500 text-[10px] font-medium text-white shadow-xs px-1 pt-1"
                 >
                   {unreadCount > 99 ? "99+" : unreadCount}
                 </span>
@@ -755,7 +755,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                             {unreadCount !== null && unreadCount > 0 && (
                               <span
                                 aria-label={`${unreadCount} unread notifications`}
-                                className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1.5 text-[10px] font-bold text-white shadow-xs"
+                                className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1.5 text-[10px] font-medium text-white shadow-xs"
                               >
                                 {unreadCount > 99 ? "99+" : unreadCount}
                               </span>
@@ -937,7 +937,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                             {unreadCount !== null && unreadCount > 0 && (
                               <span
                                 aria-label={`${unreadCount} unread notifications`}
-                                className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1.5 text-[10px] font-bold text-white shadow-xs"
+                                    className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1.5 text-[10px] font-medium text-white shadow-xs"
                               >
                                 {unreadCount > 99 ? "99+" : unreadCount}
                               </span>
@@ -1068,7 +1068,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
       {/* LANGUAGES & CURRENCY MODAL (Screen Centered Overlay)          */}
       {/* ------------------------------------------------------------- */}
       {langModalOpen && (
-        <ModalOverlay className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
           <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl border border-zinc-200 text-[#1F1F1F] relative animate-in zoom-in-95 my-auto mx-auto">
             <div className="flex items-center justify-between border-b border-zinc-100 pb-4 mb-5">
               <h3 className="text-lg font-semibold text-[#1F1F1F]">{t("header_languages_currency")}</h3>

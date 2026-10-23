@@ -56,7 +56,7 @@ export function StepPrice({
 
             <div className="max-w-[530px] mx-auto">
               {/* Main Title & Tip Subtitle */}
-              <h1 data-aos="fade-up" className="sm:mb-5 mb-3">
+              <h1 data-aos="fade-up" className="mb-2">
                 {t("host_price_price_title")}
               </h1>
               <p data-aos="fade-up" data-aos-delay="100" className="sm:mb-10 mb-6">

@@ -839,7 +839,7 @@ export default function CmsMediaLibraryPage() {
       {/* MODAL 1: VIEW FULL IMAGE LIGHTBOX */}
       {/* ───────────────────────────────────────────────────────────────────────────── */}
       {viewAsset && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-xs">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/75 p-4 backdrop-blur-xs">
           <div className="bg-white rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col shadow-2xl border border-zinc-200">
             <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100">
               <div className="truncate mr-4">
@@ -898,7 +898,7 @@ export default function CmsMediaLibraryPage() {
       {/* MODAL 2: EDIT METADATA & MULTILINGUAL ALT TEXT */}
       {/* ───────────────────────────────────────────────────────────────────────────── */}
       {editAsset && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 p-4">
           <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-zinc-200 space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
               <div>
@@ -998,7 +998,7 @@ export default function CmsMediaLibraryPage() {
       {/* MODAL 3: VIEW USAGE DETAILS */}
       {/* ───────────────────────────────────────────────────────────────────────────── */}
       {usageAsset && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 p-4">
           <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-zinc-200 space-y-4 max-h-[85vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
               <div>
@@ -1106,7 +1106,7 @@ export default function CmsMediaLibraryPage() {
       {/* MODAL 4: REPLACE MEDIA ASSET */}
       {/* ───────────────────────────────────────────────────────────────────────────── */}
       {replaceAsset && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 p-4">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-zinc-200 space-y-4">
             <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
               <div>
@@ -1191,7 +1191,7 @@ export default function CmsMediaLibraryPage() {
       {/* MODAL 5: DELETE CONFIRMATION & SAFETY GUARD */}
       {/* ───────────────────────────────────────────────────────────────────────────── */}
       {deleteAsset && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 p-4">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-zinc-200 space-y-4">
             <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
               <div>
@@ -1303,7 +1303,7 @@ export default function CmsMediaLibraryPage() {
       {/* MODAL 6: BULK DELETE CONFIRMATION */}
       {/* ───────────────────────────────────────────────────────────────────────────── */}
       {showBulkDeleteModal && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 p-4">
           <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-zinc-200 space-y-4 max-h-[85vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
               <div>

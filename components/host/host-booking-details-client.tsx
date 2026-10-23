@@ -432,7 +432,7 @@ export function HostBookingDetailsClient({ details, relatedCases = [] }: HostBoo
 
       {/* ACCEPT MODAL with ModalOverlay */}
       {isAcceptModalOpen && (
-        <ModalOverlay className="fixed inset-0 z-[60] flex items-center justify-center overflow-y-auto bg-black/40 p-4">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center overflow-y-auto bg-black/40 p-4">
           <div className="max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-3xl bg-white p-5 text-[#1F1F1F] shadow-2xl sm:p-8">
             <h3 className="text-xl font-bold text-zinc-900">{t("host_booking_details_accept_modal_title", "Accept booking request?")}</h3>
             <p className="mt-2 text-sm text-zinc-600 leading-relaxed">
@@ -472,7 +472,7 @@ export function HostBookingDetailsClient({ details, relatedCases = [] }: HostBoo
 
       {/* DECLINE MODAL with ModalOverlay */}
       {isDeclineModalOpen && (
-        <ModalOverlay className="fixed inset-0 z-[60] flex items-center justify-center overflow-y-auto bg-black/40 p-4">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center overflow-y-auto bg-black/40 p-4">
           <div className="w-full max-w-md rounded-3xl bg-white p-6 sm:p-8 shadow-2xl text-[#1F1F1F]">
             <h3 className="text-xl font-bold text-zinc-900">{t("host_booking_details_decline_modal_title", "Decline booking request?")}</h3>
             <p className="mt-2 text-sm text-zinc-600 leading-relaxed">

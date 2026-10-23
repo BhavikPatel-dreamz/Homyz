@@ -887,7 +887,7 @@ export function ListingHeaderSearch() {
       {/* 4. MOBILE INTERACTIVE SEARCH DRAWER / MODAL                   */}
       {/* ───────────────────────────────────────────────────────────── */}
       {isMobileDrawerOpen && (
-        <ModalOverlay className="fixed inset-0 z-[999] flex flex-col justify-end bg-black/60 backdrop-blur-sm sm:justify-center sm:p-4">
+        <ModalOverlay className="fixed inset-0 z-9999 flex flex-col justify-end bg-black/60 backdrop-blur-sm sm:justify-center sm:p-4">
           <div className="flex h-[92vh] sm:h-auto sm:max-h-[85vh] w-full flex-col rounded-t-[20px] sm:rounded-[20px] bg-[#D9D9D9] text-[#1F1F1F] shadow-2xl overflow-hidden animate-in slide-in-from-bottom-6 sm:zoom-in-95">
             {/* Header */}
             <div className="flex items-center justify-between border-b border-zinc-100 px-5 py-4">

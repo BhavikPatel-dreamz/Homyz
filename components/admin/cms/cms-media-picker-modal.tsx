@@ -125,7 +125,7 @@ export function CmsMediaPickerModal({
   if (!isOpen) return null;
 
   return (
-    <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+    <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 p-4">
       <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-zinc-200 overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-100">

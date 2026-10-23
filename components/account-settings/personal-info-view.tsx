@@ -551,7 +551,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
               <div className="flex items-start justify-between">
                 <div>
                   <h3 className="text-base font-medium text-[#1F1F1F]">{t("personal_info_legal_name", "Legal name")}</h3>
-                  <p className="text-xs text-zinc-500 mt-1">
+                  <p className="text-xs text-[#727272] mt-1">
                     {t("personal_info_legal_name_desc", "This is the name on your travel document, which could be a license or a passport.")}
                   </p>
                 </div>
@@ -566,12 +566,12 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
                 <div>
-                  <label className="block text-xs font-medium text-zinc-700 mb-1">{t("personal_info_first_name", "First name")}</label>
+                  <label className="block text-sm font-normal text-[#1f1f1f] mb-1">{t("personal_info_first_name", "First name")}</label>
                   <input
                     type="text"
                     value={legalFirst}
                     onChange={(e) => setLegalFirst(e.target.value)}
-                    className="w-full rounded-xl border border-zinc-300 px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:border-zinc-900 focus:outline-none transition-colors"
+                    className="w-full rounded-lg border border-[#727272] px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:border-zinc-900 focus:outline-none transition-colors"
                     placeholder={t("personal_info_first_name", "First name")}
                     required
                   />
@@ -580,12 +580,12 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                   )}
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-zinc-700 mb-1">{t("personal_info_last_name", "Last name")}</label>
+                  <label className="block text-sm font-normal text-[#1f1f1f] mb-1">{t("personal_info_last_name", "Last name")}</label>
                   <input
                     type="text"
                     value={legalLast}
                     onChange={(e) => setLegalLast(e.target.value)}
-                    className="w-full rounded-xl border border-zinc-300 px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:border-zinc-900 focus:outline-none transition-colors"
+                    className="w-full rounded-lg border border-[#727272] px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:border-zinc-900 focus:outline-none transition-colors"
                     placeholder={t("personal_info_last_name", "Last name")}
                     required
                   />
@@ -599,7 +599,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="rounded-xl bg-[#1F1F1F] px-5 py-2.5 text-sm font-medium text-white transition-all hover:bg-black disabled:opacity-50 cursor-pointer"
+                  className="rounded-full bg-[#1F1F1F] px-5 py-2.5 text-sm font-medium text-white hover:text-[#1f1f1f] transition-all hover:bg-[#FCDF9C] disabled:opacity-50 cursor-pointer duration-300"
                 >
                   {isSubmitting ? t("personal_info_saving", "Saving...") : t("personal_info_save", "Save")}
                 </button>
@@ -609,7 +609,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
                 <div className="text-base font-medium text-[#1F1F1F]">{t("personal_info_legal_name", "Legal name")}</div>
-                <div className="text-sm text-zinc-500 mt-0.5 truncate">
+                <div className="text-sm text-[#727272] mt-0.5 truncate">
                   {data.legalName || t("personal_info_not_provided", "Not provided")}
                 </div>
               </div>
@@ -633,7 +633,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
               <div className="flex items-start justify-between">
                 <div>
                   <h3 className="text-base font-medium text-[#1F1F1F]">{t("personal_info_preferred_name", "Preferred first name")}</h3>
-                  <p className="text-xs text-zinc-500 mt-1">
+                  <p className="text-xs text-[#727272] mt-1">
                     {t("personal_info_preferred_name_desc", "This is how your first name will appear to hosts and guests.")}
                   </p>
                 </div>
@@ -647,14 +647,14 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
               </div>
 
               <div className="pt-2">
-                <label className="block text-xs font-medium text-zinc-700 mb-1">
+                <label className="block text-sm font-normal text-[#1f1f1f] mb-1">
                   {t("personal_info_preferred_name", "Preferred first name")}
                 </label>
                 <input
                   type="text"
                   value={prefFirst}
                   onChange={(e) => setPrefFirst(e.target.value)}
-                  className="w-full sm:max-w-md rounded-xl border border-zinc-300 px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:border-zinc-900 focus:outline-none transition-colors"
+                  className="w-full sm:max-w-md rounded-lg border border-[#727272] px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:outline-none transition-colors"
                   placeholder={t("personal_info_preferred_name_ph", "e.g. Shihab")}
                 />
               </div>
@@ -663,7 +663,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="rounded-xl bg-[#1F1F1F] px-5 py-2.5 text-sm font-medium text-white transition-all hover:bg-black disabled:opacity-50 cursor-pointer"
+                  className="rounded-full bg-[#1F1F1F] px-5 py-2.5 text-sm font-medium text-white hover:text-[#1f1f1f] transition-all hover:bg-[#FCDF9C] disabled:opacity-50 cursor-pointer duration-300"
                 >
                   {isSubmitting ? t("personal_info_saving", "Saving...") : t("personal_info_save", "Save")}
                 </button>
@@ -673,7 +673,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
                 <div className="text-base font-medium text-[#1F1F1F]">{t("personal_info_preferred_name", "Preferred first name")}</div>
-                <div className="text-sm text-zinc-500 mt-0.5 truncate">
+                <div className="text-sm text-[#727272] mt-0.5 truncate">
                   {data.preferredFirstName || t("personal_info_not_provided", "Not provided")}
                 </div>
               </div>
@@ -697,7 +697,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
               <div className="flex items-start justify-between">
                 <div>
                   <h3 className="text-base font-medium text-[#1F1F1F]">{t("personal_info_email", "Email address")}</h3>
-                  <p className="text-xs text-zinc-500 mt-1">
+                  <p className="text-xs text-[#727272] mt-1">
                     {t("personal_info_email_desc", "Use an address you’ll always have access to.")}
                   </p>
                 </div>
@@ -711,12 +711,12 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
               </div>
 
               <div className="pt-2">
-                <label className="block text-xs font-medium text-zinc-700 mb-1">{t("personal_info_email", "Email address")}</label>
+                <label className="block text-sm font-normal text-[#1f1f1f] mb-1">{t("personal_info_email", "Email address")}</label>
                 <input
                   type="email"
                   value={emailVal}
                   onChange={(e) => setEmailVal(e.target.value)}
-                  className="w-full sm:max-w-md rounded-xl border border-zinc-300 px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:border-zinc-900 focus:outline-none transition-colors"
+                  className="w-full sm:max-w-md rounded-lg border border-[#727272] px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:outline-none transition-colors"
                   placeholder="name@example.com"
                   required
                 />
@@ -729,7 +729,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="rounded-xl bg-[#1F1F1F] px-5 py-2.5 text-sm font-medium text-white transition-all hover:bg-black disabled:opacity-50 cursor-pointer"
+                  className="rounded-full bg-[#1F1F1F] px-5 py-2.5 text-sm font-medium text-white hover:text-[#1f1f1f] transition-all hover:bg-[#FCDF9C] disabled:opacity-50 cursor-pointer duration-300"
                 >
                   {isSubmitting ? t("personal_info_saving", "Saving...") : t("personal_info_save", "Save")}
                 </button>
@@ -739,7 +739,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
                 <div className="text-base font-medium text-[#1F1F1F]">{t("personal_info_email", "Email address")}</div>
-                <div className="text-sm text-zinc-500 mt-0.5 truncate">
+                <div className="text-sm text-[#727272] mt-0.5 truncate">
                   {maskEmailLoc(data.email)}
                 </div>
               </div>
@@ -763,7 +763,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
               <div className="flex items-start justify-between">
                 <div>
                   <h3 className="text-base font-medium text-[#1F1F1F]">{t("personal_info_phone", "Phone number")}</h3>
-                  <p className="text-xs text-zinc-500 mt-1">
+                  <p className="text-xs text-[#727272] mt-1">
                     {t("personal_info_phone_desc", "For notifications, reminders, and help logging in.")}
                   </p>
                 </div>
@@ -778,26 +778,42 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
 
               <div className="pt-2 flex flex-col sm:flex-row gap-2 max-w-md">
                 <div className="w-full sm:w-44">
-                  <label className="block text-xs font-medium text-zinc-700 mb-1">{t("personal_info_country_code", "Country code")}</label>
-                  <select
-                    value={phoneCountry}
-                    onChange={(e) => setPhoneCountry(e.target.value)}
-                    className="w-full rounded-xl border border-zinc-300 bg-white px-3 py-2.5 text-sm text-[#1F1F1F] focus:border-zinc-900 focus:outline-none"
-                  >
-                    {COUNTRY_CODES.map((c, idx) => (
-                      <option key={`${c.iso2}-${idx}`} value={c.code}>
-                        {c.flag} {c.name} ({c.code})
-                      </option>
-                    ))}
-                  </select>
+                  <label className="block text-sm font-normal text-[#1f1f1f] mb-1">{t("personal_info_country_code", "Country code")}</label>
+                  <div className="relative">
+                    <select
+                      value={phoneCountry}
+                      onChange={(e) => setPhoneCountry(e.target.value)}
+                      className="w-full h-11 appearance-none rounded-lg border border-[#727272] bg-white pl-3 pr-9 py-2.5 text-sm text-[#1F1F1F] outline-none transition-colors focus:border-[#1F1F1F] cursor-pointer"
+                    >
+                      {COUNTRY_CODES.map((c, idx) => (
+                        <option key={`${c.iso2}-${idx}`} value={c.code}>
+                          {c.flag} {c.name} ({c.code})
+                        </option>
+                      ))}
+                    </select>
+                    <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#1F1F1F]">
+                      <svg
+                        className="h-4 w-4"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <polyline points="6 9 12 15 18 9" />
+                      </svg>
+                    </div>
+                  </div>
                 </div>
                 <div className="flex-1">
-                  <label className="block text-xs font-medium text-zinc-700 mb-1">{t("personal_info_phone", "Phone number")}</label>
+                  <label className="block text-sm font-normal text-[#1f1f1f] mb-1">{t("personal_info_phone", "Phone number")}</label>
                   <input
                     type="tel"
                     value={phoneNum}
                     onChange={(e) => setPhoneNum(e.target.value)}
-                    className="w-full rounded-xl border border-zinc-300 px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:border-zinc-900 focus:outline-none"
+                    className="w-full h-11 rounded-lg border border-[#727272] px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:outline-none"
                     placeholder="98765 43210"
                     required
                   />
@@ -811,7 +827,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="rounded-xl bg-[#1F1F1F] px-5 py-2.5 text-sm font-medium text-white transition-all hover:bg-black disabled:opacity-50 cursor-pointer"
+                  className="rounded-full bg-[#1F1F1F] px-5 py-2.5 text-sm font-medium text-white hover:text-[#1f1f1f] transition-all hover:bg-[#FCDF9C] disabled:opacity-50 cursor-pointer duration-300"
                 >
                   {isSubmitting ? t("personal_info_saving", "Saving...") : t("personal_info_save", "Save")}
                 </button>
@@ -821,10 +837,10 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
                 <div className="text-base font-medium text-[#1F1F1F]">{t("personal_info_phone", "Phone number")}</div>
-                <div className="text-sm text-zinc-500 mt-0.5">
+                <div className="text-sm text-[#727272] mt-0.5">
                   {maskPhoneLoc(data.phone)}
                 </div>
-                <div className="text-xs text-zinc-400 mt-1 leading-relaxed">
+                <div className="text-xs text-[#727272] mt-1 leading-relaxed">
                   {t("personal_info_phone_note", "Contact number (for confirmed guests and Homyz to get in touch). You can add other numbers and choose how they're used.")}
                 </div>
               </div>
@@ -860,7 +876,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                       {t("personal_info_status_verified", "Verified")}
                     </span>
                     {data.identityDocument?.fileName && (
-                      <p className="text-xs text-zinc-500">
+                      <p className="text-xs text-[#727272]">
                         {t("personal_info_official_id", "Official ID:")} <span className="font-medium text-zinc-700">{data.identityDocument.fileName}</span>
                       </p>
                     )}
@@ -875,14 +891,14 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                       {t("personal_info_status_pending", "Pending review")}
                     </span>
                     {data.identityDocument?.fileName && (
-                      <p className="text-xs text-zinc-500">
+                      <p className="text-xs text-[#727272]">
                         {t("personal_info_uploaded", "Uploaded:")} <span className="font-medium text-zinc-700">{data.identityDocument.fileName}</span>
                         <span className="text-zinc-400"> ({t("personal_info_under_review", "Under review")})</span>
                       </p>
                     )}
                   </div>
                 ) : (
-                  <span className="text-zinc-500">{t("personal_info_not_provided", "Not provided")}</span>
+                  <span className="text-[#727272]">{t("personal_info_not_provided", "Not provided")}</span>
                 )}
               </div>
             </div>
@@ -913,7 +929,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
               <div className="flex items-start justify-between">
                 <div>
                   <h3 className="text-base font-medium text-[#1F1F1F]">{t("personal_info_residential_address", "Residential address")}</h3>
-                  <p className="text-xs text-zinc-500 mt-1">
+                  <p className="text-xs text-[#727272] mt-1">
                     {t("personal_info_residential_address_desc", "Your residential address is kept private and not shared publicly.")}
                   </p>
                 </div>
@@ -928,65 +944,65 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
 
               <div className="space-y-3 pt-2">
                 <div>
-                  <label className="block text-xs font-medium text-zinc-700 mb-1">{t("personal_info_country", "Country / Region")}</label>
+                  <label className="block text-sm font-normal text-[#1f1f1f] mb-1">{t("personal_info_country", "Country / Region")}</label>
                   <input
                     type="text"
                     value={resCountry}
                     onChange={(e) => setResCountry(e.target.value)}
-                    className="w-full rounded-xl border border-zinc-300 px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:border-zinc-900 focus:outline-none"
+                    className="w-full rounded-lg border border-[#727272] px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:outline-none"
                     placeholder={t("personal_info_country", "Country / Region")}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-zinc-700 mb-1">{t("personal_info_street", "Street address")}</label>
+                  <label className="block text-sm font-normal text-[#1f1f1f] mb-1">{t("personal_info_street", "Street address")}</label>
                   <input
                     type="text"
                     value={resStreet}
                     onChange={(e) => setResStreet(e.target.value)}
-                    className="w-full rounded-xl border border-zinc-300 px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:border-zinc-900 focus:outline-none"
+                    className="w-full rounded-lg border border-[#727272] px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:outline-none"
                     placeholder={t("personal_info_street_ph", "House number and street name")}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-zinc-700 mb-1">
+                  <label className="block text-sm font-normal text-[#1f1f1f] mb-1">
                     {t("personal_info_apt", "Flat, suite, unit (optional)")}
                   </label>
                   <input
                     type="text"
                     value={resApt}
                     onChange={(e) => setResApt(e.target.value)}
-                    className="w-full rounded-xl border border-zinc-300 px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:border-zinc-900 focus:outline-none"
+                    className="w-full rounded-lg border border-[#727272] px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:outline-none"
                     placeholder={t("personal_info_apt_ph", "Apt, Suite, Bldg")}
                   />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
-                    <label className="block text-xs font-medium text-zinc-700 mb-1">{t("personal_info_city", "City")}</label>
+                    <label className="block text-sm font-normal text-[#1f1f1f] mb-1">{t("personal_info_city", "City")}</label>
                     <input
                       type="text"
                       value={resCity}
                       onChange={(e) => setResCity(e.target.value)}
-                      className="w-full rounded-xl border border-zinc-300 px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:border-zinc-900 focus:outline-none"
+                      className="w-full rounded-lg border border-[#727272] px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:outline-none"
                       placeholder={t("personal_info_city", "City")}
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-zinc-700 mb-1">{t("personal_info_state", "State / Province")}</label>
+                    <label className="block text-sm font-normal text-[#1f1f1f] mb-1">{t("personal_info_state", "State / Province")}</label>
                     <input
                       type="text"
                       value={resState}
                       onChange={(e) => setResState(e.target.value)}
-                      className="w-full rounded-xl border border-zinc-300 px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:border-zinc-900 focus:outline-none"
+                      className="w-full rounded-lg border border-[#727272] px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:outline-none"
                       placeholder={t("personal_info_state", "State / Province")}
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-zinc-700 mb-1">{t("personal_info_postal_code", "Postal code")}</label>
+                    <label className="block text-sm font-normal text-[#1f1f1f] mb-1">{t("personal_info_postal_code", "Postal code")}</label>
                     <input
                       type="text"
                       value={resPostal}
                       onChange={(e) => setResPostal(e.target.value)}
-                      className="w-full rounded-xl border border-zinc-300 px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:border-zinc-900 focus:outline-none"
+                      className="w-full rounded-lg border border-[#727272] px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:outline-none"
                       placeholder={t("personal_info_postal_code", "Postal code")}
                     />
                   </div>
@@ -997,7 +1013,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="rounded-xl bg-[#1F1F1F] px-5 py-2.5 text-sm font-medium text-white transition-all hover:bg-black disabled:opacity-50 cursor-pointer"
+                  className="rounded-full bg-[#1F1F1F] px-5 py-2.5 text-sm font-medium text-white hover:text-[#1f1f1f] transition-all hover:bg-[#FCDF9C] disabled:opacity-50 cursor-pointer duration-300"
                 >
                   {isSubmitting ? t("personal_info_saving", "Saving...") : t("personal_info_save", "Save")}
                 </button>
@@ -1007,7 +1023,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
                 <div className="text-base font-medium text-[#1F1F1F]">{t("personal_info_residential_address", "Residential address")}</div>
-                <div className="text-sm text-zinc-500 mt-0.5">
+                <div className="text-sm text-[#727272] mt-0.5">
                   {formatAddressPreviewLoc(data.residentialAddress)}
                 </div>
               </div>
@@ -1031,7 +1047,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
               <div className="flex items-start justify-between">
                 <div>
                   <h3 className="text-base font-medium text-[#1F1F1F]">{t("personal_info_postal_address", "Postal address")}</h3>
-                  <p className="text-xs text-zinc-500 mt-1">
+                  <p className="text-xs text-[#727272] mt-1">
                     {t("personal_info_postal_address_desc", "Where you receive physical correspondence.")}
                   </p>
                 </div>
@@ -1062,72 +1078,72 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
               {!sameAsRes ? (
                 <div className="space-y-3 pt-2">
                   <div>
-                    <label className="block text-xs font-medium text-zinc-700 mb-1">{t("personal_info_country", "Country / Region")}</label>
+                    <label className="block text-sm font-normal text-[#1f1f1f] mb-1">{t("personal_info_country", "Country / Region")}</label>
                     <input
                       type="text"
                       value={postCountry}
                       onChange={(e) => setPostCountry(e.target.value)}
-                      className="w-full rounded-xl border border-zinc-300 px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:border-zinc-900 focus:outline-none"
+                      className="w-full rounded-lg border border-[#727272] px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:outline-none"
                       placeholder={t("personal_info_country", "Country / Region")}
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-zinc-700 mb-1">{t("personal_info_street", "Street address")}</label>
+                    <label className="block text-sm font-normal text-[#1f1f1f] mb-1">{t("personal_info_street", "Street address")}</label>
                     <input
                       type="text"
                       value={postStreet}
                       onChange={(e) => setPostStreet(e.target.value)}
-                      className="w-full rounded-xl border border-zinc-300 px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:border-zinc-900 focus:outline-none"
+                      className="w-full rounded-lg border border-[#727272] px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:outline-none"
                       placeholder={t("personal_info_street", "Street address")}
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-zinc-700 mb-1">
+                    <label className="block text-sm font-normal text-[#1f1f1f] mb-1">
                       {t("personal_info_apt", "Flat, suite, unit (optional)")}
                     </label>
                     <input
                       type="text"
                       value={postApt}
                       onChange={(e) => setPostApt(e.target.value)}
-                      className="w-full rounded-xl border border-zinc-300 px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:border-zinc-900 focus:outline-none"
+                      className="w-full rounded-lg border border-[#727272] px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:outline-none"
                       placeholder={t("personal_info_apt_suite_ph", "Apt, Suite")}
                     />
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
-                      <label className="block text-xs font-medium text-zinc-700 mb-1">{t("personal_info_city", "City")}</label>
+                      <label className="block text-sm font-normal text-[#1f1f1f] mb-1">{t("personal_info_city", "City")}</label>
                       <input
                         type="text"
                         value={postCity}
                         onChange={(e) => setPostCity(e.target.value)}
-                        className="w-full rounded-xl border border-zinc-300 px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:border-zinc-900 focus:outline-none"
+                        className="w-full rounded-lg border border-[#727272] px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:outline-none"
                         placeholder={t("personal_info_city", "City")}
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-zinc-700 mb-1">{t("personal_info_state", "State / Province")}</label>
+                      <label className="block text-sm font-normal text-[#1f1f1f] mb-1">{t("personal_info_state", "State / Province")}</label>
                       <input
                         type="text"
                         value={postState}
                         onChange={(e) => setPostState(e.target.value)}
-                        className="w-full rounded-xl border border-zinc-300 px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:border-zinc-900 focus:outline-none"
+                        className="w-full rounded-lg border border-[#727272] px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:outline-none"
                         placeholder={t("personal_info_state", "State / Province")}
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-zinc-700 mb-1">{t("personal_info_postal_code", "Postal code")}</label>
+                      <label className="block text-sm font-normal text-[#1f1f1f] mb-1">{t("personal_info_postal_code", "Postal code")}</label>
                       <input
                         type="text"
                         value={postPostal}
                         onChange={(e) => setPostPostal(e.target.value)}
-                        className="w-full rounded-xl border border-zinc-300 px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:border-zinc-900 focus:outline-none"
+                        className="w-full rounded-lg border border-[#727272] px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:outline-none"
                         placeholder={t("personal_info_postal_code", "Postal code")}
                       />
                     </div>
                   </div>
                 </div>
               ) : (
-                <p className="text-xs text-zinc-500 italic bg-zinc-50 p-3 rounded-xl border border-zinc-200">
+                <p className="text-xs text-[#727272] italic bg-zinc-50 p-3 rounded-xl border border-zinc-200">
                   {t("personal_info_using_residential", "Using your residential address as your postal address.")}
                 </p>
               )}
@@ -1136,7 +1152,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="rounded-xl bg-[#1F1F1F] px-5 py-2.5 text-sm font-medium text-white transition-all hover:bg-black disabled:opacity-50 cursor-pointer"
+                  className="rounded-full bg-[#1F1F1F] px-5 py-2.5 text-sm font-medium text-white hover:text-[#1f1f1f] transition-all hover:bg-[#FCDF9C] disabled:opacity-50 cursor-pointer duration-300"
                 >
                   {isSubmitting ? t("personal_info_saving", "Saving...") : t("personal_info_save", "Save")}
                 </button>
@@ -1146,7 +1162,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
                 <div className="text-base font-medium text-[#1F1F1F]">{t("personal_info_postal_address", "Postal address")}</div>
-                <div className="text-sm text-zinc-500 mt-0.5">
+                <div className="text-sm text-[#727272] mt-0.5">
                   {data.sameAsResidential
                     ? t("personal_info_provided", "Provided")
                     : formatAddressPreviewLoc(data.postalAddress)}
@@ -1172,7 +1188,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
               <div className="flex items-start justify-between">
                 <div>
                   <h3 className="text-base font-medium text-[#1F1F1F]">{t("personal_info_emergency_contact", "Emergency contact")}</h3>
-                  <p className="text-xs text-zinc-500 mt-1">
+                  <p className="text-xs text-[#727272] mt-1">
                     {t("personal_info_emergency_contact_desc", "A trusted contact we can alert in an urgent situation.")}
                   </p>
                 </div>
@@ -1188,12 +1204,12 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
               <div className="space-y-3 pt-2">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-medium text-zinc-700 mb-1">{t("personal_info_contact_name", "Contact name")}</label>
+                    <label className="block text-sm font-normal text-[#1f1f1f] mb-1">{t("personal_info_contact_name", "Contact name")}</label>
                     <input
                       type="text"
                       value={emName}
                       onChange={(e) => setEmName(e.target.value)}
-                      className="w-full rounded-xl border border-zinc-300 px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:border-zinc-900 focus:outline-none"
+                      className="w-full rounded-lg border border-[#727272] px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:outline-none"
                       placeholder={t("personal_info_contact_name", "Contact name")}
                       required
                     />
@@ -1202,12 +1218,12 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                     )}
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-zinc-700 mb-1">{t("personal_info_relationship", "Relationship")}</label>
+                    <label className="block text-sm font-normal text-[#1f1f1f] mb-1">{t("personal_info_relationship", "Relationship")}</label>
                     <input
                       type="text"
                       value={emRelationship}
                       onChange={(e) => setEmRelationship(e.target.value)}
-                      className="w-full rounded-xl border border-zinc-300 px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:border-zinc-900 focus:outline-none"
+                      className="w-full rounded-lg border border-[#727272] px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:outline-none"
                       placeholder={t("personal_info_relationship_ph", "e.g. Spouse, Parent, Friend")}
                       required
                     />
@@ -1216,26 +1232,42 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
 
                 <div className="flex flex-col sm:flex-row gap-2">
                   <div className="w-full sm:w-44">
-                    <label className="block text-xs font-medium text-zinc-700 mb-1">{t("personal_info_country_code", "Country code")}</label>
-                    <select
-                      value={emCountryCode}
-                      onChange={(e) => setEmCountryCode(e.target.value)}
-                      className="w-full rounded-xl border border-zinc-300 bg-white px-3 py-2.5 text-sm text-[#1F1F1F] focus:border-zinc-900 focus:outline-none"
-                    >
-                      {COUNTRY_CODES.map((c, idx) => (
-                        <option key={`${c.iso2}-${idx}`} value={c.code}>
-                          {c.flag} {c.name} ({c.code})
-                        </option>
-                      ))}
-                    </select>
+                    <label className="block text-sm font-normal text-[#1f1f1f] mb-1">{t("personal_info_country_code", "Country code")}</label>
+                    <div className="relative">
+                      <select
+                        value={emCountryCode}
+                        onChange={(e) => setEmCountryCode(e.target.value)}
+                        className="w-full appearance-none rounded-lg border border-[#727272] bg-white pl-3 pr-9 py-2.5 text-sm text-[#1F1F1F] outline-none transition-colors focus:border-zinc-900 cursor-pointer"
+                      >
+                        {COUNTRY_CODES.map((c, idx) => (
+                          <option key={`${c.iso2}-${idx}`} value={c.code}>
+                            {c.flag} {c.name} ({c.code})
+                          </option>
+                        ))}
+                      </select>
+                      <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#1F1F1F]">
+                        <svg
+                          className="h-4 w-4"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden="true"
+                        >
+                          <polyline points="6 9 12 15 18 9" />
+                        </svg>
+                      </div>
+                    </div>
                   </div>
                   <div className="flex-1">
-                    <label className="block text-xs font-medium text-zinc-700 mb-1">{t("personal_info_phone", "Phone number")}</label>
+                    <label className="block text-sm font-normal text-[#1f1f1f] mb-1">{t("personal_info_phone", "Phone number")}</label>
                     <input
                       type="tel"
                       value={emPhone}
                       onChange={(e) => setEmPhone(e.target.value)}
-                      className="w-full rounded-xl border border-zinc-300 px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:border-zinc-900 focus:outline-none"
+                      className="w-full rounded-lg border border-[#727272] px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:outline-none"
                       placeholder={t("personal_info_phone", "Phone number")}
                       required
                     />
@@ -1247,26 +1279,26 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-medium text-zinc-700 mb-1">
+                    <label className="block text-sm font-normal text-[#1f1f1f] mb-1">
                       {t("personal_info_contact_email_opt", "Email address (optional)")}
                     </label>
                     <input
                       type="email"
                       value={emEmail}
                       onChange={(e) => setEmEmail(e.target.value)}
-                      className="w-full rounded-xl border border-zinc-300 px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:border-zinc-900 focus:outline-none"
+                      className="w-full rounded-lg border border-[#727272] px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:outline-none"
                       placeholder="contact@example.com"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-zinc-700 mb-1">
+                    <label className="block text-sm font-normal text-[#1f1f1f] mb-1">
                       {t("personal_info_contact_lang_opt", "Preferred language (optional)")}
                     </label>
                     <input
                       type="text"
                       value={emLang}
                       onChange={(e) => setEmLang(e.target.value)}
-                      className="w-full rounded-xl border border-zinc-300 px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:border-zinc-900 focus:outline-none"
+                      className="w-full rounded-lg border border-[#727272] px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:outline-none"
                       placeholder={t("personal_info_lang_ph", "e.g. English")}
                     />
                   </div>
@@ -1277,7 +1309,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="rounded-xl bg-[#1F1F1F] px-5 py-2.5 text-sm font-medium text-white transition-all hover:bg-black disabled:opacity-50 cursor-pointer"
+                  className="rounded-full bg-[#1F1F1F] px-5 py-2.5 text-sm font-medium text-white hover:text-[#1f1f1f] transition-all hover:bg-[#FCDF9C] disabled:opacity-50 cursor-pointer duration-300"
                 >
                   {isSubmitting ? t("personal_info_saving", "Saving...") : t("personal_info_save", "Save")}
                 </button>
@@ -1287,7 +1319,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
                 <div className="text-base font-medium text-[#1F1F1F]">{t("personal_info_emergency_contact", "Emergency contact")}</div>
-                <div className="text-sm text-zinc-500 mt-0.5 truncate">
+                <div className="text-sm text-[#727272] mt-0.5 truncate">
                   {data.emergencyContact
                     ? `${data.emergencyContact.name} (${data.emergencyContact.relationship})`
                     : t("personal_info_not_provided", "Not provided")}
@@ -1322,7 +1354,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
             <h4 className="text-sm font-medium text-[#1F1F1F]">
               {t("personal_info_card_why_title", "Why isn’t my info shown here?")}
             </h4>
-            <p className="text-xs text-zinc-500 mt-1 leading-relaxed">
+            <p className="text-xs text-[#727272] mt-1 leading-relaxed">
               {t("personal_info_card_why_desc", "We’re hiding some account details to protect your identity.")}
             </p>
           </div>
@@ -1342,7 +1374,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
             <h4 className="text-sm font-medium text-[#1F1F1F]">
               {t("personal_info_card_edit_title", "Which details can be edited?")}
             </h4>
-            <p className="text-xs text-zinc-500 mt-1 leading-relaxed">
+            <p className="text-xs text-[#727272] mt-1 leading-relaxed">
               {t("personal_info_card_edit_desc", "Contact info and personal details can be edited. If this info was used to verify your identity, you’ll need to get verified again the next time you book – or to continue hosting.")}
             </p>
           </div>
@@ -1363,7 +1395,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
             <h4 className="text-sm font-medium text-[#1F1F1F]">
               {t("personal_info_card_share_title", "What info is shared with others?")}
             </h4>
-            <p className="text-xs text-zinc-500 mt-1 leading-relaxed">
+            <p className="text-xs text-[#727272] mt-1 leading-relaxed">
               {t("personal_info_card_share_desc", "Homyz only releases contact information for Hosts and guests after a reservation is confirmed.")}
             </p>
           </div>
@@ -1378,15 +1410,15 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
           role="dialog"
           aria-modal="true"
           aria-labelledby="identity-modal-title"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs animate-in fade-in"
+          className="fixed inset-0 z-999 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs animate-in fade-in"
         >
           <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl space-y-5 animate-in zoom-in-95 max-h-[90vh] overflow-y-auto">
             <div className="flex items-start justify-between">
               <div>
-                <h3 id="identity-modal-title" className="text-lg font-medium text-[#1F1F1F]">
+                <h3 id="identity-modal-title" className="text-2xl font-medium text-[#1F1F1F]">
                   {t("personal_info_modal_id_title", "Identity Verification")}
                 </h3>
-                <p className="text-xs text-zinc-500 mt-1 leading-relaxed">
+                <p className="text-sm text-[#727272] mt-1 leading-relaxed">
                   {t("personal_info_modal_id_desc", "Upload an official government-issued ID to verify your identity. Your document will be securely stored and reviewed by our verification team.")}
                 </p>
               </div>
@@ -1397,7 +1429,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                   setSelectedDocFile(null);
                   setDocUploadError(null);
                 }}
-                className="rounded-full p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 transition-colors"
+                className="rounded-full p-1 text-[#727272] hover:bg-zinc-100 hover:text-[#1f1f1f] transition-colors"
                 aria-label={t("personal_info_close", "Close")}
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -1446,7 +1478,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
 
             {/* Document Selection */}
             <div className="space-y-2 pt-1">
-              <label className="block text-xs font-medium uppercase tracking-wider text-zinc-600">
+              <label className="block text-base font-medium text-[#1f1f1f]">
                 {t("personal_info_modal_choose_doc_type", "Choose ID Document Type")}
               </label>
               {[
@@ -1479,7 +1511,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
 
             {/* File Upload / Dropzone */}
             <div className="space-y-2">
-              <label className="block text-xs font-medium uppercase tracking-wider text-zinc-600">
+              <label className="block text-base font-medium text-[#1f1f1f]">
                 {t("personal_info_modal_upload_file", "Upload Document File")}
               </label>
 
@@ -1561,7 +1593,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
             </div>
 
             {/* Privacy & Review Notice */}
-            <div className="rounded-xl bg-zinc-50 border border-zinc-200/80 p-3.5 text-xs text-zinc-600 space-y-1.5">
+            <div className="rounded-xl bg-[#F3F4F5] border border-zinc-200/80 p-3.5 text-xs text-zinc-600 space-y-1.5">
               <div className="flex items-center gap-1.5 font-medium text-[#1F1F1F]">
                 <svg className="w-4 h-4 text-[#727272]" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
@@ -1582,7 +1614,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                   setSelectedDocFile(null);
                   setDocUploadError(null);
                 }}
-                className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-zinc-300 text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors cursor-pointer"
+                className="w-full sm:w-auto px-4 py-2.5 rounded-full border border-[#1f1f1f] hover:border-[#FCDF9C] text-sm font-medium text-[#1f1f1f] hover:bg-[#FCDF9C] transition-colors cursor-pointer"
               >
                 {data.identityStatus === "VERIFIED" ? t("personal_info_close", "Close") : t("personal_info_cancel", "Cancel")}
               </button>
@@ -1591,7 +1623,7 @@ export function PersonalInfoView({ initialData }: PersonalInfoViewProps) {
                 type="button"
                 disabled={!selectedDocFile || isUploadingDoc}
                 onClick={handleUploadDocument}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#1F1F1F] text-sm font-medium text-white hover:bg-black transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-full bg-[#1F1F1F] text-sm font-medium text-white hover:text-[#1f1f1f] hover:bg-[#FCDF9C] transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
               >
                 {isUploadingDoc ? (
                   <>

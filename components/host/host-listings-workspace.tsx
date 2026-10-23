@@ -1052,7 +1052,7 @@ export function HostListingsWorkspace({
 
       {/* Editor Modal (Create & Edit Multi-Tab Wizard) */}
       {showEditorModal && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs overflow-y-auto">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs overflow-y-auto">
           <div className="w-full max-w-3xl max-h-[92vh] rounded-3xl bg-[var(--surface)] p-6 sm:p-8 shadow-2xl space-y-6 overflow-y-auto border border-[var(--border)] font-sans">
             {/* Header */}
             <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-4">
@@ -1595,7 +1595,7 @@ export function HostListingsWorkspace({
 
       {/* Calendar / Availability Blocked Dates Modal */}
       {showAvailabilityModal && selectedListingForCal && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
           <div className="w-full max-w-md max-h-[90dvh] overflow-y-auto rounded-3xl bg-[var(--surface)] p-6 shadow-2xl space-y-4 border border-[var(--border)] font-sans">
             <h3 className="text-base font-medium text-muted-foreground">
               Calendar Availability: {selectedListingForCal.title}
@@ -1670,17 +1670,42 @@ export function HostListingsWorkspace({
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && listingToDelete && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <div className="w-full max-w-sm max-h-[90dvh] overflow-y-auto rounded-2xl bg-[var(--surface)] p-6 shadow-xl space-y-4 border border-[var(--border)] font-sans">
-            <h3 className="text-base font-medium text-rose-600">{t("host_listings_modal_delete_confirm", "Delete Property Listing?")}</h3>
-            <p className="text-xs text-[var(--muted-foreground)]">
-              {t("host_listings_delete_confirm_desc", { title: listingToDelete.title })}
-            </p>
-            <div className="flex flex-wrap items-center justify-end gap-2 pt-2">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
+          <div className="w-full max-w-[500px] rounded-3xl bg-white dark:bg-zinc-900 shadow-2xl border border-zinc-200/80 dark:border-zinc-800 font-sans overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            {/* Modal Header */}
+            <div className="relative flex items-center justify-center px-6 py-4 sm:py-5 border-b border-[#EBEBEB] dark:border-zinc-800">
+              <h3 className="text-xl font-medium text-[#1f1f1f] dark:text-zinc-100 text-center">
+                {t("host_listings_modal_delete_confirm", "Delete Property Listing?")}
+              </h3>
               <button
                 type="button"
                 onClick={() => setShowDeleteModal(false)}
-                className="rounded-full px-4 py-1.5 text-xs font-semibold border border-[var(--border)]"
+                className="absolute right-5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                aria-label="Close"
+              >
+                <Image
+                  src="/images/icons/close-icon.svg"
+                  alt="Close"
+                  width={12}
+                  height={12}
+                  className="size-3 object-contain dark:invert"
+                />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="px-6 py-6 sm:py-8 border-b border-[#EBEBEB] dark:border-zinc-800">
+              <p className="text-base text-[#222222] dark:text-zinc-300 font-normal leading-relaxed">
+                {t("host_listings_delete_confirm_desc", { title: listingToDelete.title })}
+              </p>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex items-center justify-between px-6 py-4 bg-white dark:bg-zinc-900">
+              <button
+                type="button"
+                onClick={() => setShowDeleteModal(false)}
+                className="text-sm font-medium text-[#1f1f1f] dark:text-zinc-200 hover:underline underline-offset-4 transition-colors cursor-pointer rounded-full"
               >
                 {t("host_cancel", "Cancel")}
               </button>
@@ -1688,9 +1713,9 @@ export function HostListingsWorkspace({
                 type="button"
                 onClick={handleDeleteListing}
                 disabled={pending}
-                className="rounded-full bg-rose-600 text-white px-4 py-1.5 text-xs font-semibold hover:bg-rose-700 disabled:opacity-50"
+                className="bg-[#1f1f1f] hover:bg-[#FCDF9C] hover:text-[#1f1f1f] dark:bg-zinc-100 dark:text-zinc-950 dark:hover:bg-white text-white text-sm font-medium px-6 py-3 rounded-full transition-colors cursor-pointer disabled:opacity-50"
               >
-                {t("host_listings_delete_permanent_btn", "Permanently Delete")}
+                {t("host_listings_delete_permanent_btn", "Delete it")}
               </button>
             </div>
           </div>

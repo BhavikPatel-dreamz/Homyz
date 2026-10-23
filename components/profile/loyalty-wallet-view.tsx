@@ -280,7 +280,7 @@ export function LoyaltyWalletView() {
 
       {/* Redemption Confirmation Modal */}
       {redeemingReward && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in">
           <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl animate-in zoom-in-95">
             <h3 className="text-lg font-semibold text-[#1F1F1F]">
               {t("profile_loyalty_confirm_modal_title", "Confirm Reward Redemption")}

@@ -1186,7 +1186,7 @@ export function AdminListingDetailClient({ listing: initialListing }: { listing:
 
       {/* Delete Listing Confirmation Modal */}
       {showDeleteModal && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in">
           <div className="w-full max-w-md rounded-3xl bg-[var(--surface)] p-6 shadow-2xl space-y-4 border border-[var(--border)] animate-in zoom-in-95">
             <div className="flex items-center gap-3 text-rose-600">
               <div className="w-10 h-10 rounded-full bg-rose-500/20 text-rose-600 flex items-center justify-center font-bold text-lg border border-rose-500/30 shrink-0">

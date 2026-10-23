@@ -140,7 +140,7 @@ export function ReportContentModal({
         }
       }}
     >
-      <div className="max-h-[calc(100vh-2rem)] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl transition-all">
+      <div className="max-h-[calc(100vh-2rem)] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl transition-all backdrop-blur-xs">
         {sessionStatus === "unauthenticated" ? (
           <div className="text-center py-6 space-y-4">
             <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-amber-100 text-amber-700">
@@ -149,10 +149,10 @@ export function ReportContentModal({
               </svg>
             </div>
             <div>
-              <h2 id="report-modal-title" className="text-xl font-bold text-slate-900">
+              <h2 id="report-modal-title" className="text-xl font-medium text-[#1f1f1f]">
                 Sign in to submit a report
               </h2>
-              <p className="mt-1.5 text-sm text-slate-500">
+              <p className="mt-1.5 text-sm text-[#727272]">
                 Please sign in or create an account to report this {targetType === "LISTING_PHOTO" ? "photo" : targetType === "LISTING" ? "listing" : targetType === "MESSAGE" ? "message" : targetType === "PROFILE" || targetType === "USER" ? "user" : "content"}.
               </p>
             </div>
@@ -193,7 +193,7 @@ export function ReportContentModal({
               <span className="font-semibold">Case Reference: </span>
               <code className="font-mono text-indigo-700">{successReference}</code>
             </div>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-[#727272]">
               Negative feedback alone does not qualify a review for removal. Genuine stays and honest opinions are protected under our marketplace policy.
             </p>
             <div className="pt-2">
@@ -233,7 +233,7 @@ export function ReportContentModal({
                   </svg>
                 </button>
               </div>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-sm text-[#727272]">
                 {targetTitle ? `Reporting: “${targetTitle}”` : "Submit a formal content violation report."}
               </p>
             </div>
@@ -251,7 +251,7 @@ export function ReportContentModal({
                 </div>
                 <div className="min-w-0 flex-1 text-xs">
                   <p className="font-semibold text-slate-800 truncate">{targetTitle || "Property Photo"}</p>
-                  <p className="text-slate-500 truncate mt-0.5">{targetId}</p>
+                  <p className="text-[#727272] truncate mt-0.5">{targetId}</p>
                 </div>
               </div>
             )}
@@ -263,7 +263,7 @@ export function ReportContentModal({
             )}
 
             <div>
-              <label htmlFor="report-reason" className="block text-xs font-semibold text-slate-700">
+              <label htmlFor="report-reason" className="block text-sm font-normal text-[#1f1f1f]">
                 Why are you reporting this {targetType === "LISTING_PHOTO" ? "photo" : targetType === "LISTING" ? "listing" : targetType === "PROFILE" || targetType === "USER" ? "user" : targetType === "MESSAGE" ? "message" : "content"}? <span className="text-red-500">*</span>
               </label>
               <select
@@ -284,7 +284,7 @@ export function ReportContentModal({
             </div>
 
             <div>
-              <label htmlFor="report-description" className="block text-xs font-semibold text-slate-700">
+              <label htmlFor="report-description" className="block text-sm font-normal text-[#1f1f1f]">
                 Detailed Explanation <span className="text-slate-400 font-normal">(optional)</span>
               </label>
               <textarea
@@ -300,7 +300,7 @@ export function ReportContentModal({
             </div>
 
             <div>
-              <label htmlFor="report-evidence" className="block text-xs font-semibold text-slate-700">
+              <label htmlFor="report-evidence" className="block text-sm font-normal text-[#1f1f1f]">
                 Supporting Evidence &amp; Documentation <span className="text-slate-400 font-normal">(optional)</span>
               </label>
               <textarea
@@ -322,7 +322,7 @@ export function ReportContentModal({
               </div>
             ) : (
               <div>
-                <label htmlFor="report-booking" className="block text-xs font-semibold text-slate-700">
+                <label htmlFor="report-booking" className="block text-sm font-normal text-[#1f1f1f]">
                   Related Reservation ID <span className="text-slate-400 font-normal">(if available)</span>
                 </label>
                 <input
@@ -347,14 +347,14 @@ export function ReportContentModal({
                 type="button"
                 onClick={handleClose}
                 disabled={isPending}
-                className="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50"
+                    className="px-6.75 py-3 rounded-full border border-[#1F1F1F] hover:bg-[#1F1F1F] text-sm font-medium text-[#1F1F1F] hover:text-white  transition-colors delay-300 duration-300 cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isPending || !reasonCode}
-                className="rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 transition-colors disabled:opacity-50"
+                    className="px-4 py-3 rounded-full text-sm hover:bg-[#1F1F1F] text-[#1F1F1F] hover:text-white hover:border-[#1F1F1F] bg-[#FCDF9C] font-medium shadow-xs transition-colors delay-300 duration-300 flex items-center justify-center gap-2 border border-transparent  cursor-pointer"
               >
                 {isPending ? "Submitting..." : "Submit Report"}
               </button>

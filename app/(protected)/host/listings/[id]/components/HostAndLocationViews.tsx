@@ -376,7 +376,7 @@ function LocationView(props: Props) {
   };
 
   return (
-    <div className="w-full max-w-[880px] space-y-3 pb-10 sm:space-y-5">
+    <div className="w-full max-w-[880px] mx-auto space-y-3 pb-10 sm:space-y-5">
       <div className="relative flex items-start gap-6 pt-1 sm:pt-0">
         <BackButton onClick={onBack} className="mt-1" />
         <h1>{t("host_location_title") || "Location"}</h1>
@@ -916,7 +916,7 @@ function CoHostView(props: Props) {
                 className="h-auto w-[190px] sm:w-[220px]"
                 priority
               />
-              <h1 id="co-host-empty-title" className="mt-8 text-3xl font-semibold tracking-tight text-[#1F1F1F] sm:text-4xl">
+              <h1 id="co-host-empty-title" className="mt-8 text-3xl font-medium tracking-tight text-[#1F1F1F] sm:text-4xl">
                 {t("host_cohost_empty_title") || "Invite a co-host"}
               </h1>
               <p className="mt-3 max-w-[440px] text-base leading-6 text-[#727272] sm:text-lg">
@@ -928,7 +928,7 @@ function CoHostView(props: Props) {
               <button
                 type="button"
                 onClick={openModal}
-                className="mt-12 rounded-full border border-[#1F1F1F] bg-[#FCDF9C] px-7 py-3 text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-[#1F1F1F] hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900"
+                  className="mt-12 rounded-full border border-[#FCDF9C] hover:border-[#1f1f1f] bg-[#FCDF9C] px-7 py-3 text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-[#1F1F1F] hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900"
               >
                 {t("host_cohost_get_started") || "Get started"}
               </button>
@@ -966,7 +966,7 @@ function CoHostView(props: Props) {
         </>
       )}
       {open && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/25 p-4 sm:p-6">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/25 p-4 sm:p-6">
           <div
             role="dialog"
             aria-modal="true"

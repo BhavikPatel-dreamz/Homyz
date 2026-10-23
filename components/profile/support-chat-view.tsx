@@ -214,7 +214,7 @@ export function SupportChatView({ user }: { user?: { name?: string | null } }) {
             >
               +1 (800) 555-HOMYZ
             </a>
-            <span className="mt-0.5 text-xs text-[#727272]">{t("profile_support_phone_availability", "Toll-free 24/7")}</span>
+            <span className="mt-1 text-xs text-[#727272]">{t("profile_support_phone_availability", "Toll-free 24/7")}</span>
           </div>
 
           <div className="border border-[#727272] bg-white p-4 sm:p-5 rounded-lg">
@@ -238,7 +238,7 @@ export function SupportChatView({ user }: { user?: { name?: string | null } }) {
             </p>
             <Link
               href="/help"
-              className="group mt-3.5 inline-flex items-center gap-1.5 text-sm font-semibold text-[#1F1F1F] transition-colors hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FCDF9C] rounded-sm"
+              className="group mt-3.5 inline-flex items-center gap-1.5 text-sm font-medium text-[#1F1F1F] transition-colors hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FCDF9C] rounded-sm"
             >
               <span className="underline decoration-[#727272]/40 underline-offset-4 transition-colors group-hover:decoration-[#1F1F1F]">
                 {t("profile_support_browse_help", "Browse Help Articles")}

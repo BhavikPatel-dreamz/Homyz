@@ -331,7 +331,7 @@ export function AdminAllPropertiesCalendar({
       </div>
 
       {preview && (
-        <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
           <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-2xl">
             <div className="flex items-start justify-between border-b border-[var(--border)] pb-4">
               <div><p className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted-foreground)]">{preview.propertyTitle}</p><h3 className="mt-1 text-lg font-bold text-foreground">Reservation preview</h3></div>

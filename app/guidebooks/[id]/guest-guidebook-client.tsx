@@ -125,7 +125,7 @@ export function GuestGuidebookClient({
     <div className="min-h-screen bg-zinc-50/50 pb-20 font-sans">
       {/* Toast Notification */}
       {copyToast && (
-        <div className="fixed bottom-6 right-6 z-50 rounded-2xl bg-zinc-900 text-white px-5 py-3 text-xs font-semibold shadow-xl border border-zinc-700 animate-in fade-in slide-in-from-bottom-2 flex items-center gap-2">
+        <div className="fixed bottom-6 right-6 z-9999 rounded-2xl bg-zinc-900 text-white px-5 py-3 text-xs font-semibold shadow-xl border border-zinc-700 animate-in fade-in slide-in-from-bottom-2 flex items-center gap-2">
           <span>✓</span>
           <span>{t("guidebook_link_copied", "Guidebook link copied to clipboard!")}</span>
         </div>
@@ -431,7 +431,7 @@ export function GuestGuidebookClient({
 
       {/* Mobile Fullscreen Map Drawer / Modal */}
       {isMobileMapOpen && (
-        <ModalOverlay className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex flex-col justify-end lg:hidden">
+        <ModalOverlay className="fixed inset-0 z-9999 bg-black/70 backdrop-blur-xs flex flex-col justify-end lg:hidden">
           <div className="bg-white rounded-t-3xl w-full h-[85vh] p-4 flex flex-col space-y-3 animate-in slide-in-from-bottom">
             <div className="flex items-center justify-between border-b border-zinc-200 pb-2">
               <span className="text-xs font-bold text-[#1F1F1F]">

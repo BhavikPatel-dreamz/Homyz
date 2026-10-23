@@ -207,7 +207,7 @@ export function PricingAndBookingViews({
       {/* VIEW: PRICING */}
       {/* --------------------------------------------------------- */}
       {activeSection === "pricing" && (
-        <div className="w-full max-w-[491px] space-y-5 animate-in fade-in pb-10 font-sans">
+        <div className="w-full max-w-[491px] mx-auto space-y-5 animate-in fade-in pb-10 font-sans">
           {/* Header & Back Button */}
           <div className="space-y-1">
             <div className="flex items-start gap-6">
@@ -311,7 +311,7 @@ export function PricingAndBookingViews({
                               onClick={() => setWeekendPremium?.((weekendPremium || 0) - 1)}
                               className="group flex size-8 items-center justify-center rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 text-lg font-normal text-[#1F1F1F] dark:text-zinc-100 hover:text-white hover:bg-[#1F1F1F] dark:hover:bg-zinc-700 dark:hover:border-zinc-600 transition-colors duration-300 cursor-pointer"
                             >
-                              <Image src="/images/icons/minus-icon.svg" alt="Decrease weekend premium" width={14} height={14} className="size-3.5 object-contain dark:invert group-hover:invert" />
+                              <Image src="/images/icons/minus-icon.svg" alt="Decrease weekend premium" width={14} height={14} className="size-4 object-contain dark:invert group-hover:invert" />
                             </button>
                             <button
                               type="button"
@@ -319,7 +319,7 @@ export function PricingAndBookingViews({
                               onClick={() => setWeekendPremium?.((weekendPremium || 0) + 1)}
                               className="group ml-auto flex size-8 items-center justify-center rounded-full border border-[#1F1F1F] dark:border-zinc-700 bg-white dark:bg-zinc-800 text-lg font-normal text-[#1F1F1F] dark:text-zinc-100 hover:text-white hover:bg-[#1F1F1F] dark:hover:bg-zinc-700 dark:hover:border-zinc-600 transition-colors duration-300 cursor-pointer"
                             >
-                              <Image src="/images/icons/Plus.svg" alt="Increase weekend premium" width={14} height={14} className="size-3.5 object-contain dark:invert group-hover:invert" />
+                              <Image src="/images/icons/Plus.svg" alt="Increase weekend premium" width={14} height={14} className="size-4 object-contain dark:invert group-hover:invert" />
                             </button>
                           </div>
                         </div>
@@ -366,7 +366,7 @@ export function PricingAndBookingViews({
                         </button>
                       </div>
                       <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-                        <div className={`flex items-center gap-1 rounded-lg border px-3 py-1.5 transition-all ${
+                          <div className={`flex items-center gap-1 rounded-lg border px-3 py-1.5 transition-all min-h-[42px] ${
                           weeklyEnabled
                             ? "border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-900 focus-within:border-[#1F1F1F] dark:focus-within:border-zinc-100 focus-within:ring-1 focus-within:ring-[#1F1F1F] dark:focus-within:ring-zinc-100"
                             : "border-zinc-200 dark:border-zinc-700/60 bg-zinc-50 dark:bg-zinc-800/60 opacity-60 cursor-not-allowed"
@@ -431,7 +431,7 @@ export function PricingAndBookingViews({
                         </button>
                       </div>
                       <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-                        <div className={`flex items-center gap-1 rounded-lg border px-3 py-1.5 transition-all ${
+                          <div className={`flex items-center gap-1 rounded-lg border px-3 py-1.5 transition-all min-h-[42px] ${
                           monthlyEnabled
                             ? "border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-900 focus-within:border-[#1F1F1F] dark:focus-within:border-zinc-100 focus-within:ring-1 focus-within:ring-[#1F1F1F] dark:focus-within:ring-zinc-100"
                             : "border-zinc-200 dark:border-zinc-700/60 bg-zinc-50 dark:bg-zinc-800/60 opacity-60 cursor-not-allowed"
@@ -604,9 +604,9 @@ export function PricingAndBookingViews({
                           </div>
 
                           {/* Days before arrival selector */}
-                          <div className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 transition-all ${
+                          <div className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 transition-all min-h-[42px] ${
                             lastMinuteEnabled
-                              ? "border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900"
+                              ? "border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-900"
                               : "border-zinc-200 dark:border-zinc-700/60 bg-zinc-50 dark:bg-zinc-800/60 opacity-60 cursor-not-allowed"
                           }`}>
                             <span className="text-xs text-[#727272] dark:text-zinc-400">{t("host_discount_within", "Within")}</span>
@@ -662,7 +662,7 @@ export function PricingAndBookingViews({
                       </div>
                       <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
                         <div className="flex items-center gap-2">
-                          <div className={`flex items-center gap-1 rounded-lg border px-3 py-1.5 transition-all ${
+                          <div className={`flex items-center gap-1 rounded-lg border px-3 py-1.5 transition-all min-h-[42px] ${
                             earlyBirdEnabled
                               ? "border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-900 focus-within:border-[#1F1F1F] dark:focus-within:border-zinc-100 focus-within:ring-1 focus-within:ring-[#1F1F1F] dark:focus-within:ring-zinc-100"
                               : "border-zinc-200 dark:border-zinc-700/60 bg-zinc-50 dark:bg-zinc-800/60 opacity-60 cursor-not-allowed"
@@ -694,9 +694,9 @@ export function PricingAndBookingViews({
                           </div>
 
                           {/* Days in advance selector */}
-                          <div className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 transition-all ${
+                            <div className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 transition-all min-h-[42px] ${
                             earlyBirdEnabled
-                              ? "border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900"
+                              ? "border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-900"
                               : "border-zinc-200 dark:border-zinc-700/60 bg-zinc-50 dark:bg-zinc-800/60 opacity-60 cursor-not-allowed"
                           }`}>
                             <span className="text-xs text-[#727272] dark:text-zinc-400">{t("host_discount_made", "Made")}</span>
@@ -751,7 +751,7 @@ export function PricingAndBookingViews({
                         </button>
                       </div>
                       <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-                        <div className={`flex items-center gap-1 rounded-lg border px-3 py-1.5 transition-all ${
+                        <div className={`flex items-center gap-1 rounded-lg border px-3 py-1.5 transition-all min-h-[42px] ${
                           customPromoEnabled
                             ? "border-[#727272] dark:border-zinc-700 bg-white dark:bg-zinc-900 focus-within:border-[#1F1F1F] dark:focus-within:border-zinc-100 focus-within:ring-1 focus-within:ring-[#1F1F1F] dark:focus-within:ring-zinc-100"
                             : "border-zinc-200 dark:border-zinc-700/60 bg-zinc-50 dark:bg-zinc-800/60 opacity-60 cursor-not-allowed"
@@ -834,7 +834,7 @@ export function PricingAndBookingViews({
               </div>
 
               {/* 5. Calendar notice card */}
-              <div className="rounded-md bg-[#F3F4F5] dark:bg-zinc-800/90 dark:border dark:border-zinc-700 px-6 py-2 flex items-center gap-4 transition-all cursor-pointer sm:min-h-22">
+                <div className="rounded-md bg-[#F3F4F5] dark:bg-zinc-800/90 dark:border dark:border-zinc-700 px-6 py-2 flex items-center gap-4 transition-all cursor-pointer duration-300 sm:min-h-22">
                 <Image src="/images/icons/calendar-date.svg" alt="calendar-date.svg" width={24} height={24} className="dark:invert" />
                 <span className="text-base text-[#1f1f1f] dark:text-zinc-100 font-normal">{t("host_calendar_notice")}</span>
               </div>
@@ -845,7 +845,7 @@ export function PricingAndBookingViews({
                   type="button"
                   disabled={isSaving}
                   onClick={() => handleSaveSection("pricing")}
-                  className="rounded-full bg-[#FCDF9C] dark:bg-amber-400 hover:bg-[#F3F4F5] dark:hover:bg-amber-300 text-[#1F1F1F] dark:text-zinc-950 font-medium text-base px-8 py-2.5 shadow-2xs transition-all cursor-pointer disabled:opacity-50"
+                  className="rounded-full bg-[#FCDF9C] dark:bg-amber-400 hover:bg-[#1f1f1f] dark:hover:bg-amber-300 text-[#1F1F1F] hover:text-white dark:text-zinc-950 font-medium text-base px-8 py-2.5 shadow-2xs transition-all duration-300 cursor-pointer disabled:opacity-50"
                 >
                   {isSaving ? t("host_saving") : t("host_save")}
                 </button>
@@ -854,7 +854,7 @@ export function PricingAndBookingViews({
                     type="button"
                     disabled={isSaving}
                     onClick={onDiscardPricing}
-                    className="rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-[#1F1F1F] dark:text-zinc-200 font-medium text-base px-6 py-2.5 transition-all cursor-pointer disabled:opacity-50"
+                      className="rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-[#1f1f1f] hover:text-white dark:hover:bg-zinc-700 text-[#1F1F1F] dark:text-zinc-200 font-medium text-base px-6 py-2.5 transition-all duration-300 cursor-pointer disabled:opacity-50"
                   >
                     Discard changes
                   </button>
@@ -869,7 +869,7 @@ export function PricingAndBookingViews({
       {/* VIEW: AVAILABILITY */}
       {/* --------------------------------------------------------- */}
       {activeSection === "availability" && (
-        <div className="w-full max-w-[491px] space-y-5 animate-in fade-in pb-10 font-sans">
+        <div className="w-full max-w-[491px] mx-auto space-y-5 animate-in fade-in pb-10 font-sans">
           {/* Header & Back Button */}
           <div className="space-y-1">
             <div className="flex items-start gap-6">
@@ -959,7 +959,7 @@ export function PricingAndBookingViews({
               <div className="space-y-2">
                 <div>
                   <h3 className="text-base font-normal text-[#1F1F1F] dark:text-zinc-100">{t("host_advance_notice")}</h3>
-                  <p className="mt-1 text-xs text-[#1F1F1F] dark:text-[#727272] opacity-50">
+                  <p className="mt-1 text-xs text-[#727272] dark:text-[#727272]">
                     {t("host_advance_notice_desc")}
                   </p>
                 </div>
@@ -977,10 +977,10 @@ export function PricingAndBookingViews({
 
               {allowSameDayRequests && (
                 <div className="space-y-1">
-                  <label htmlFor="same-day-cutoff" className="block text-sm font-medium text-[#1F1F1F] dark:text-zinc-100">
+                  <label htmlFor="same-day-cutoff" className="block text-base font-normal text-[#1F1F1F] dark:text-zinc-100">
                     {t("host_same_day_cutoff")}
                   </label>
-                  <p className="mt-1 text-xs text-[#1F1F1F] dark:text-[#727272] opacity-50">
+                  <p className="mt-1 text-xs text-[#727272] dark:text-[#727272]">
                     {t("host_same_day_cutoff_desc")}
                   </p>
                   <select
@@ -1009,7 +1009,7 @@ export function PricingAndBookingViews({
                     <h3 className="text-base font-normal text-[#1F1F1F] dark:text-zinc-100">
                       {t("host_allow_same_day_requests")}
                     </h3>
-                    <p className="mt-1 text-xs text-[#1F1F1F] dark:text-[#727272] opacity-50">
+                    <p className="mt-1 text-xs text-[#727272] dark:text-[#727272]">
                       {t("host_allow_same_day_requests_desc")}
                     </p>
                   </div>
@@ -1058,7 +1058,7 @@ export function PricingAndBookingViews({
                     setLocalAvailabilityError(null);
                     handleSaveSection("availability");
                   }}
-                  className="rounded-full bg-[#FCDF9C] hover:bg-[#EFCF76] text-[#1F1F1F] font-medium text-sm px-8 py-2.5 shadow-2xs transition-all cursor-pointer disabled:opacity-60"
+                  className="rounded-full bg-[#FCDF9C] hover:bg-[#1f1f1f] text-[#1F1F1F] hover:text-white font-medium text-sm px-8 py-2.5 shadow-2xs transition-all duration-300 cursor-pointer disabled:opacity-60"
                 >
                   {isSaving ? t("host_saving") : t("host_save")}
                 </button>
@@ -1075,7 +1075,7 @@ export function PricingAndBookingViews({
       {/* VIEW: BOOKING SETTINGS (Matches Figma Screenshots 100%) */}
       {/* --------------------------------------------------------- */}
       {activeSection === "booking-settings" && (
-        <div className="xl:max-w-[608px] md:max-w-[80%] space-y-4 pb-10 font-sans animate-in fade-in">
+        <div className="xl:max-w-[608px] md:max-w-[80%] mx-auto space-y-4 pb-10 font-sans animate-in fade-in">
           <div className="flex items-center gap-6">
             <BackButton onClick={() => handleBack("pricing")} />
             <h1>{t("host_booking_settings_title")}</h1>

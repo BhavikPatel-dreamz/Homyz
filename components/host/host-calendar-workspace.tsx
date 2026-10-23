@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any, react-hooks/set-state-in-effect, react-hooks/preserve-manual-memoization */
 
 import {
   Fragment,
@@ -584,7 +585,7 @@ function MonthGrid({
                     ? "size-1 shrink-0 max-sm:bg-zinc-500 text-xs sm:size-6 sm:border sm:border-zinc-300 dark:sm:border-zinc-600 sm:bg-white dark:sm:bg-zinc-700 sm:text-[#403C34] dark:sm:text-zinc-200 sm:text-[12px]"
                     : "size-6 text-xs sm:size-7 sm:text-xs"
                     } ${isToday
-                      ? "border border-[#EBA900] bg-[#FCDF9C] text-[#403C34] font-semibold shadow-xs sm:!border-[#EBA900] sm:!bg-[#FCDF9C] dark:border-[#EBA900] dark:bg-[#FCDF9C] dark:text-[#403C34]"
+                      ? "border border-[#EBA900] bg-[#FCDF9C] text-[#403C34] font-medium shadow-xs sm:!border-[#EBA900] sm:!bg-[#FCDF9C] dark:border-[#EBA900] dark:bg-[#FCDF9C] dark:text-[#403C34]"
                       : bookedCount > 0
                         ? "bg-zinc-800 text-white"
                         : "text-zinc-800 dark:text-zinc-200 bg-white dark:bg-zinc-700"
@@ -717,7 +718,7 @@ function MonthGrid({
                       ? "size-5 max-[360px]:text-[9px] text-xs sm:size-6 sm:border sm:border-zinc-300 dark:sm:border-zinc-600 sm:bg-white dark:sm:bg-zinc-700 sm:text-zinc-800 dark:sm:text-zinc-200 sm:text-[12px]"
                       : "size-6 text-xs sm:size-7 sm:text-xs"
                       } ${isToday
-                        ? "border border-[#EBA900] bg-[#FCDF9C] text-[#1F1F1F] font-bold shadow-xs sm:!border-[#EBA900] sm:!bg-[#FCDF9C] dark:border-[#EBA900] dark:bg-[#FCDF9C] dark:text-[#1F1F1F]"
+                        ? "border border-[#EBA900] bg-[#FCDF9C] text-[#1F1F1F] font-medium shadow-xs sm:!border-[#EBA900] sm:!bg-[#FCDF9C] dark:border-[#EBA900] dark:bg-[#FCDF9C] dark:text-[#1F1F1F]"
                         : "text-zinc-800 dark:text-zinc-200 bg-white dark:bg-zinc-700"
                       } ${blocked ? "line-through text-[#727272]" : ""} ${isSelected || primaryReservation ? "!text-xs" : ""}`}
                   >
@@ -760,7 +761,7 @@ function MonthGrid({
                             {promo.percentage}% promo
                           </span>
                           {customPrice !== null && (
-                            <span className="text-[9px] font-semibold text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/60 px-1 rounded">
+                            <span className="text-[9px] font-medium text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/60 px-1 rounded">
                               custom
                             </span>
                           )}
@@ -780,14 +781,14 @@ function MonthGrid({
                                 ? "text-amber-600 dark:text-amber-400"
                                 : "text-zinc-950 dark:text-amber-300"
                               : customPrice !== null
-                                ? "text-amber-600 dark:text-amber-400 font-bold"
+                                ? "text-amber-600 dark:text-amber-400 font-medium"
                                 : "text-[#1F1F1F] dark:text-zinc-100"
                           }`}
                       >
                         {formatMoney(rate, sourceCurrency, 2)}
                       </span>
                       {customPrice !== null && (
-                        <span className="text-[9px] font-semibold text-[#1f1f1f] dark:text-amber-300 bg-[#FCDF9C] dark:bg-amber-950/60 px-1.5 py-1 rounded mt-0.5 border border-[#EBA900] leading-tight capitalize">
+                        <span className="text-[9px] font-medium text-[#1f1f1f] dark:text-amber-300 bg-[#FCDF9C] dark:bg-amber-950/60 px-1.5 py-1 rounded mt-0.5 border border-[#EBA900] leading-tight capitalize">
                           custom
                         </span>
                       )}
@@ -947,7 +948,7 @@ function MultiPropertyCalendar({
     <div className="overflow-x-auto rounded-xl border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900">
       <div className="min-w-[920px]">
         <div className="sticky top-0 z-20 grid border-b border-zinc-200 bg-white text-center dark:border-zinc-700 dark:bg-zinc-900" style={gridStyle}>
-          <div className="sticky left-0 z-30 flex items-center border-r border-zinc-200 bg-white px-3 text-xs font-semibold text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
+          <div className="sticky left-0 z-30 flex items-center border-r border-zinc-200 bg-white px-3 text-xs font-medium text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
             Properties
           </div>
           {dateKeys.map((key) => {
@@ -985,7 +986,7 @@ function MultiPropertyCalendar({
                 <div className="relative size-11 shrink-0 overflow-hidden rounded-md bg-zinc-100">
                   <PropertyPhoto listing={listing} className="size-full object-cover" />
                   <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent px-1 pt-3">
-                    <p className="truncate text-[8px] font-semibold text-white" title={listing.title}>{listing.title || "Property"}</p>
+                    <p className="truncate text-[8px] font-medium text-white" title={listing.title}>{listing.title || "Property"}</p>
                   </div>
                 </div>
                 <p className="ml-2 truncate text-xs font-medium text-zinc-800 dark:text-zinc-100" title={listing.title}>{listing.title || "Property"}</p>
@@ -1216,7 +1217,7 @@ function ContextualManagementPanel({
       <div className="rounded-[12px] border border-white bg-[#F3F4F5] px-5 py-4 shadow-[0_2px_4px_rgb(31_31_31_/_0.16)] dark:border-zinc-700/80 dark:bg-zinc-800/70">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+            <p className="text-[11px] font-medium uppercase tracking-wider text-amber-600 dark:text-amber-400">
               {t("host_calendar_selected_range", "Selected Range")}
             </p>
             <h2 className="truncate text-[17px] font-medium leading-tight text-[#1F1F1F] dark:text-zinc-100">
@@ -1231,7 +1232,7 @@ function ContextualManagementPanel({
           <button
             type="button"
             onClick={handleClearWithConfirm}
-            className="rounded-full bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 p-1 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors cursor-pointer"
+            className="rounded-full bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 p-1 text-[#727272] hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors cursor-pointer"
             aria-label={t("host_calendar_clear_selection_aria", "Clear date selection")}
           >
             <svg
@@ -1252,7 +1253,7 @@ function ContextualManagementPanel({
             {stats.editableKeys.length} editable
           </span>
           {stats.bookedCount > 0 && (
-            <span className="rounded-full bg-zinc-900 dark:bg-zinc-700 px-2.5 py-0.5 font-semibold text-white">
+            <span className="rounded-full bg-zinc-900 dark:bg-zinc-700 px-2.5 py-0.5 font-medium text-white">
               {t("host_calendar_reserved_protected", { count: stats.bookedCount })}
             </span>
           )}
@@ -1267,7 +1268,7 @@ function ContextualManagementPanel({
       {/* Protected Reservations Notice */}
       {stats.bookedCount > 0 && stats.editableKeys.length > 0 && (
         <div className="rounded-xl bg-amber-50 dark:bg-amber-950/40 p-3 border border-amber-200/60 dark:border-amber-900/60 text-xs text-amber-900 dark:text-amber-300">
-          <p className="font-semibold mb-0.5">{t("host_calendar_protected_reservations_title", "Protected Reservations")}</p>
+          <p className="font-medium mb-0.5">{t("host_calendar_protected_reservations_title", "Protected Reservations")}</p>
           <p className="text-xs leading-relaxed">
             {t("host_calendar_protected_reservations_desc", { count: stats.bookedCount, editable: stats.editableKeys.length })}
           </p>
@@ -1276,7 +1277,7 @@ function ContextualManagementPanel({
 
       {stats.editableKeys.length === 0 && (
         <div className="rounded-xl bg-[#F3F4F5] dark:bg-zinc-800/80 p-3.5 border border-[#d7d7d7] dark:border-zinc-700 text-xs text-zinc-700 dark:text-zinc-300">
-          <p className="font-semibold text-zinc-900 dark:text-zinc-100 mb-1">
+          <p className="font-medium text-zinc-900 dark:text-zinc-100 mb-1">
             {t("host_calendar_confirmed_reservation_title", "Confirmed Reservation")}
           </p>
           <p className="text-[11px] leading-relaxed">
@@ -1352,13 +1353,13 @@ function ContextualManagementPanel({
           </div>
 
           {/* Current Effective Rate for Selection */}
-          <div className="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50/70 dark:bg-zinc-800/40 p-3.5">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+          <div className="rounded-[12px] border border-white bg-[#F3F4F5] px-5 py-4 shadow-[0_2px_4px_0px_#00000040] dark:border-zinc-700/80 dark:bg-zinc-800/70">
+            <p className="block text-[13px] font-normal text-[#727272] dark:text-zinc-400">
               {t("host_calendar_effective_rate", "Effective Selection Rate")}
             </p>
             {stats.isMixedPrice ? (
               <div className="mt-1">
-                <span className="inline-block rounded-md bg-amber-100 dark:bg-amber-950/60 px-2 py-0.5 text-xs font-bold text-amber-900 dark:text-amber-300">
+                <span className="inline-block rounded-md bg-amber-100 dark:bg-amber-950/60 px-2 py-0.5 text-xs font-medium text-amber-900 dark:text-amber-300">
                   {t("host_calendar_mixed_rates", "Mixed Rates")}
                 </span>
                 <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
@@ -1367,9 +1368,9 @@ function ContextualManagementPanel({
                 </p>
               </div>
             ) : (
-              <p className="mt-1 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+              <p className="mt-1 text-lg font-medium text-zinc-900 dark:text-zinc-100">
                 {formatMoney(stats.commonPrice ?? 0, sourceCurrency, 2)}{" "}
-                <span className="text-xs font-normal text-zinc-500 dark:text-zinc-400">{t("host_calendar_per_night", "/ night")}</span>
+                <span className="text-xs font-normal text-[#727272] dark:text-zinc-400">{t("host_calendar_per_night", "/ night")}</span>
               </p>
             )}
           </div>
@@ -1379,39 +1380,51 @@ function ContextualManagementPanel({
             <div className="space-y-3 rounded-[12px] bg-[#FEF3D7] border border-white p-4 shadow-[0_2px_4px_0px_#00000040] dark:border-amber-800 dark:bg-amber-950/40">
               <div className="flex items-start flex-col justify-between">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-base" aria-hidden="true">💡</span>
-                  <span className="text-xs font-bold text-amber-950 dark:text-amber-200">
+                  <svg
+                    className="size-4.5 text-amber-900 dark:text-amber-200 shrink-0"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+                    <polyline points="16 7 22 7 22 13" />
+                  </svg>
+                  <span className="text-sm font-medium text-amber-950 dark:text-amber-200">
                     {t("host_calendar_price_tip_recommendation", "Price Tip Recommendation")}
                   </span>
                 </div>
                 {priceTipsResult.overallAction === "INCREASE" ? (
-                  <span className="rounded-md bg-amber-200 dark:bg-amber-900/80 px-2 py-0.5 text-[10px] font-bold text-amber-950 dark:text-amber-200">
+                  <span className="rounded-md bg-amber-200 dark:bg-amber-900/80 px-2 py-1 text-xs mt-3 font-medium text-amber-950 dark:text-amber-200">
                     {t("host_calendar_demand_surge", "Demand Surge")}
                   </span>
                 ) : priceTipsResult.overallAction === "DECREASE" ? (
-                  <span className="rounded-md bg-blue-100 dark:bg-blue-950 px-2 py-0.5 text-[10px] font-bold text-blue-900 dark:text-blue-200">
+                    <span className="rounded-md bg-blue-100 dark:bg-blue-950 px-2 py-1 text-xs font-medium mt-3 text-blue-900 dark:text-blue-200">
                     {t("host_calendar_booking_incentive", "Booking Incentive")}
                   </span>
                 ) : priceTipsResult.overallAction === "NO_CHANGE" ? (
-                  <span className="rounded-md bg-emerald-100 dark:bg-emerald-950 px-2 py-0.5 text-[10px] font-bold text-emerald-900 dark:text-emerald-200">
+                  <span className="rounded-md bg-emerald-100 dark:bg-emerald-950 px-2 py-1 text-xs font-medium text-emerald-900 dark:text-emerald-200 mt-3">
                     {t("host_calendar_optimal", "Optimal")}
                   </span>
                 ) : (
-                  <span className="rounded-md bg-zinc-200 dark:bg-zinc-800 px-2 py-0.5 text-[10px] font-bold text-zinc-700 dark:text-zinc-300">
+                        <span className="rounded-md bg-zinc-200 dark:bg-zinc-800 px-2 py-1 text-xs mt-3 font-medium text-zinc-700 dark:text-zinc-300">
                     {t("host_calendar_advisory", "Advisory")}
                   </span>
                 )}
               </div>
 
               {/* Price comparison */}
-              <div className="flex items-baseline justify-between pt-0.5">
+              <div className="flex items-baseline justify-between pt-0.5 gap-2">
                 <div>
-                  <span className="text-[10px] text-zinc-500 dark:text-zinc-400 block font-medium">
+                  <span className="text-xs text-[#727272] dark:text-zinc-400 block font-normal">
                     {t("host_calendar_current_rate", "Current rate")}
                   </span>
                   <span className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-200">
                     {formatMoney(priceTipsResult.averageCurrentPrice, sourceCurrency, 2)}
-                    <span className="text-[10px] font-normal text-zinc-500"> {t("host_calendar_per_night", "/ night")}</span>
+                    <span className="text-[10px] font-normal text-[#727272]"> {t("host_calendar_per_night", "/ night")}</span>
                   </span>
                 </div>
                 {priceTipsResult.overallAction !== "NO_CHANGE" && priceTipsResult.overallAction !== "INSUFFICIENT_DATA" && (
@@ -1425,9 +1438,9 @@ function ContextualManagementPanel({
                         ? t("host_calendar_active_rate", "Active rate")
                         : t("host_calendar_suggested", "Suggested")}
                   </span>
-                  <span className="text-sm font-semibold text-[#1F1F1F] dark:text-zinc-100">
+                  <span className="text-sm font-medium text-[#1F1F1F] dark:text-zinc-100">
                     {formatMoney(priceTipsResult.averageSuggestedPrice, sourceCurrency, 2)}
-                    <span className="text-[10px] font-normal text-zinc-500"> {t("host_calendar_per_night", "/ night")}</span>
+                    <span className="text-[10px] font-normal text-[#727272]"> {t("host_calendar_per_night", "/ night")}</span>
                   </span>
                 </div>
               </div>
@@ -1436,7 +1449,7 @@ function ContextualManagementPanel({
               {priceTipsResult.applicableCount > 1 && (
                 <div className="flex items-center justify-between rounded-xl border border-[#F5D98C]/70 bg-white/70 p-2.5 text-[12px] text-[#5F5F5F] dark:border-amber-900/40 dark:bg-zinc-900/60 dark:text-zinc-300">
                   <span>{t("host_calendar_nights_selected", { count: priceTipsResult.applicableCount })}</span>
-                  <span className="font-semibold text-zinc-700 dark:text-zinc-200">
+                  <span className="font-medium text-zinc-700 dark:text-zinc-200">
                     {priceTipsResult.increaseCount > 0 ? `${priceTipsResult.increaseCount} ${t("host_calendar_price_tips_increase", "increase")} ` : ""}
                     {priceTipsResult.decreaseCount > 0 ? `${priceTipsResult.decreaseCount} ${t("host_calendar_price_tips_decrease", "decrease")} ` : ""}
                     {priceTipsResult.noChangeCount > 0 ? `${priceTipsResult.noChangeCount} ${t("host_calendar_price_tips_optimal_count", "optimal")}` : ""}
@@ -1448,14 +1461,14 @@ function ContextualManagementPanel({
               <div className="space-y-1.5 text-xs leading-normal text-[#5F5F5F] dark:text-zinc-300">
                 {priceTipsResult.reasons.map((r, idx) => (
                   <p key={idx} className="flex items-start gap-1.5 leading-5">
-                    <span className="text-[#727272] font-bold shrink-0">•</span> <span>{getLocalizedReason(r, t)}</span>
+                    <span className="text-[#727272] font-medium shrink-0">•</span> <span>{getLocalizedReason(r, t)}</span>
                   </p>
                 ))}
               </div>
 
               {/* Action bar with difference and Apply button */}
               <div className="flex items-center justify-between border-t border-[#d7d7d7] pt-3 dark:border-amber-900/60">
-                <span className="text-sm font-semibold text-[#f1f1f1f] dark:text-zinc-400">
+                <span className="text-sm font-medium text-[#f1f1f1f] dark:text-zinc-400">
                   {priceTipsResult.averageDifference !== 0
                     ? `${priceTipsResult.averageDifference > 0 ? "+" : ""}${formatMoney(priceTipsResult.averageDifference, sourceCurrency, 2)} (${priceTipsResult.averagePercentChange > 0 ? "+" : ""}${priceTipsResult.averagePercentChange}%)`
                     : priceTipsResult.overallAction === "INSUFFICIENT_DATA"
@@ -1479,7 +1492,7 @@ function ContextualManagementPanel({
                       onPreviewPrice?.(null);
                       await onSave({ customPrices: nextCustom });
                     }}
-                    className="cursor-pointer rounded-full bg-[#FCDF9C] px-3.5 py-2 text-[12px] font-medium text-[#1F1F1F] hover:text-white transition-colors duration-300 hover:bg-[#1f1f1f] disabled:opacity-70"
+                    className="cursor-pointer rounded-full hover:bg-[#FCDF9C] px-3.5 py-2 text-[12px] font-medium hover:text-[#1F1F1F] text-white transition-colors duration-300 bg-[#1f1f1f] disabled:opacity-70"
                   >
                     {saving
                       ? t("host_calendar_saving", "Applying…")
@@ -1488,7 +1501,7 @@ function ContextualManagementPanel({
                         : t("host_calendar_apply_tip", "Apply tip")}
                   </button>
                 ) : (
-                  <span className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 italic">
+                  <span className="text-[11px] font-medium text-[#727272] dark:text-zinc-400 italic">
                     {priceTipsResult.overallAction === "NO_CHANGE"
                       ? t("host_calendar_already_optimal", "Already optimal")
                       : t("host_calendar_manual_active", "Manual rate active")}
@@ -1527,7 +1540,7 @@ function ContextualManagementPanel({
             <div className="rounded-[12px] border border-white bg-[#F3F4F5] px-5 py-4 shadow-[0_2px_4px_0px_#00000040] dark:border-zinc-700/80 dark:bg-zinc-800/70">
               <label
                 htmlFor="contextualCustomPrice"
-                className="block font-medium text-[#1F1F1F] dark:text-zinc-200 text-base mb-3"
+                className="block font-normal text-[#1F1F1F] dark:text-zinc-200 text-base mb-3"
               >
                 {t("host_calendar_set_custom_rate", "Set custom nightly rate")}
               </label>
@@ -1581,10 +1594,24 @@ function ContextualManagementPanel({
 
           {/* Selected-date promotion */}
           <div className="space-y-3 rounded-[12px] border border-emerald-200 bg-emerald-50/50 p-4 dark:border-emerald-800/60 dark:bg-emerald-950/30 shadow-[0_2px_4px_0px_#00000040]">
-            <div className="flex flex-col items-start justify-between gap-2">
-              <div className="flex items-center gap-1.5">
-                <span className="text-sm select-none" aria-hidden="true">🏷️</span>
-                <span className="text-[11px] font-semibold uppercase tracking-wider text-emerald-900 dark:text-emerald-200">
+            <div className="flex flex-col items-start justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <svg
+                  className="size-5 text-emerald-700 dark:text-emerald-300 shrink-0"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="m15 9-6 6" />
+                  <path d="M9 9h.01" />
+                  <path d="M15 15h.01" />
+                </svg>
+                <span className="font-medium text-base text-emerald-900 dark:text-emerald-200">
                   {t("host_calendar_special_days_discount", "Special days discount")}
                 </span>
               </div>
@@ -1602,7 +1629,7 @@ function ContextualManagementPanel({
                 <div className="space-y-2.5 text-xs">
                   <div className="flex justify-between items-center">
                     <span className="text-zinc-600 dark:text-zinc-400">{t("host_cal_promo_eligibility", "Promotion eligibility")}</span>
-                    <span className="font-bold text-amber-800 dark:text-amber-200 bg-amber-100 dark:bg-amber-950/70 px-2 py-0.5 rounded-full text-[10px]">
+                    <span className="font-medium text-amber-800 dark:text-amber-200 bg-amber-100 dark:bg-amber-950/70 px-2 py-0.5 rounded-full text-[10px]">
                       {t("host_calendar_promo_mixed", "Promotion: Mixed")}
                     </span>
                   </div>
@@ -1612,7 +1639,7 @@ function ContextualManagementPanel({
                       <span className="text-zinc-600 dark:text-zinc-400">
                         {t("host_calendar_promo_eligible", { count: stats.promoStats.eligibleCount })}
                       </span>
-                      <span className="font-bold text-emerald-700 dark:text-emerald-400">
+                      <span className="font-medium text-emerald-700 dark:text-emerald-400">
                         −{stats.promoStats.percentage}%
                       </span>
                     </div>
@@ -1625,7 +1652,7 @@ function ContextualManagementPanel({
                       </span>
                     </div>
                     {stats.promoStats.dateRangeText && (
-                      <div className="flex justify-between pt-1 border-t border-zinc-100 dark:border-zinc-800 text-[10px] text-zinc-500">
+                      <div className="flex justify-between pt-1 border-t border-zinc-100 dark:border-zinc-800 text-[10px] text-[#727272]">
                         <span>{t("host_calendar_eligible_window", "Eligible window:")}</span>
                         <span>{stats.promoStats.dateRangeText}</span>
                       </div>
@@ -1637,11 +1664,11 @@ function ContextualManagementPanel({
                       <span>{t("host_calendar_avg_nightly_rate", "Average nightly rate")}</span>
                       <span>{formatMoney(stats.promoStats.avgOriginalPrice, sourceCurrency, 2)}</span>
                     </div>
-                    <div className="flex justify-between font-bold text-zinc-900 dark:text-zinc-100">
+                    <div className="flex justify-between font-medium text-zinc-900 dark:text-zinc-100">
                       <span>{t("host_calendar_guest_price_after_promo", "Guest price after promotion")}</span>
                       <span className="text-emerald-700 dark:text-emerald-400">
                         {formatMoney(stats.promoStats.avgGuestPrice, sourceCurrency, 2)}{" "}
-                        <span className="text-[10px] font-normal text-zinc-500">avg {t("host_calendar_per_night", "/ night")}</span>
+                        <span className="text-[10px] font-normal text-[#727272]">avg {t("host_calendar_per_night", "/ night")}</span>
                       </span>
                     </div>
                   </div>
@@ -1651,23 +1678,23 @@ function ContextualManagementPanel({
                 <div className="space-y-2 text-xs">
                   <div className="flex justify-between text-zinc-600 dark:text-zinc-400">
                     <span>{t("host_calendar_base_nightly_price", "Nightly rate")}</span>
-                    <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+                    <span className="font-medium text-zinc-900 dark:text-zinc-100">
                       {stats.isMixedPrice
                         ? `${formatMoney(stats.minPrice ?? 0, sourceCurrency, 2)} – ${formatMoney(stats.maxPrice ?? 0, sourceCurrency, 2)}`
                         : formatMoney(stats.commonPrice ?? 0, sourceCurrency, 2)}
                     </span>
                   </div>
-                  <div className="flex justify-between text-emerald-700 dark:text-emerald-400 font-semibold">
+                  <div className="flex justify-between text-emerald-700 dark:text-emerald-400 font-medium">
                     <span>{t("host_calendar_special_days_discount", "Special days discount")}</span>
                     <span>−{stats.promoStats.percentage}%</span>
                   </div>
-                  <div className="flex justify-between border-t border-emerald-200/60 dark:border-emerald-900/40 pt-1.5 font-bold text-zinc-900 dark:text-zinc-100">
+                  <div className="flex justify-between border-t border-emerald-200/60 dark:border-emerald-900/40 pt-1.5 font-medium text-zinc-900 dark:text-zinc-100 gap-2">
                     <span>{t("host_calendar_guest_price_after_promo", "Guest price after promotion")}</span>
-                    <span className="text-emerald-700 dark:text-emerald-400">
+                      <span className="text-emerald-700 dark:text-emerald-400 text-right">
                       {stats.isMixedPrice
                         ? `${formatMoney(stats.promoStats.minGuestPrice ?? 0, sourceCurrency, 2)} – ${formatMoney(stats.promoStats.maxGuestPrice ?? 0, sourceCurrency, 2)}`
                         : formatMoney(stats.promoStats.commonGuestPrice ?? 0, sourceCurrency, 2)}{" "}
-                      <span className="text-[10px] font-normal text-zinc-500">{t("host_calendar_per_night", "/ night")}</span>
+                      <span className="text-[10px] font-normal text-[#727272]">{t("host_calendar_per_night", "/ night")}</span>
                     </span>
                   </div>
                 </div>
@@ -1678,11 +1705,11 @@ function ContextualManagementPanel({
                     {t("host_calendar_outside_promo_window", "Selected dates are outside active promotion window.")}
                   </p>
                   {stats.promoStats.dateRangeText && (
-                    <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                    <p className="text-[11px] text-[#727272] dark:text-zinc-400">
                       {t("host_calendar_eligible_window", "Promotion window:")} {stats.promoStats.dateRangeText}
                     </p>
                   )}
-                  <p className="text-[11px] text-zinc-500">
+                  <p className="text-[11px] text-[#727272]">
                     {t("host_calendar_guests_pay_regular", "Guests pay regular rate:")}{" "}
                     {stats.isMixedPrice
                       ? `${formatMoney(stats.minPrice ?? 0, sourceCurrency, 2)} – ${formatMoney(stats.maxPrice ?? 0, sourceCurrency, 2)}`
@@ -1693,14 +1720,14 @@ function ContextualManagementPanel({
               )
             ) : (
               <div className="space-y-2.5">
-                <p className="text-xs leading-normal text-[#5F5F5F] dark:text-zinc-400">
+                <p className="text-sm leading-normal text-[#727272] dark:text-zinc-400">
                   {stats.totalNights === 1
                     ? t("host_calendar_add_discount_selected_single", "Add a discount only to the selected date.")
                     : t("host_calendar_add_discount_selected_plural", "Add a discount only to the selected dates.")}
                 </p>
                 <div className="flex items-end gap-2">
                   <label className="min-w-0 flex-1">
-                    <span className="mb-1 block text-[11px] font-semibold text-zinc-700 dark:text-zinc-300">
+                    <span className="block text-sm mb-2 font-normal text-[#1f1f1f] dark:text-zinc-400">
                       {t("host_calendar_discount_pct_label", "Discount percentage")}
                     </span>
                     <span className="flex h-[42px] items-center rounded-lg border border-emerald-300 bg-white px-3 focus-within:border-emerald-600 focus-within:ring-2 focus-within:ring-emerald-100 dark:border-emerald-800 dark:bg-zinc-900 dark:focus-within:border-emerald-500">
@@ -1718,14 +1745,14 @@ function ContextualManagementPanel({
                         aria-label={t("host_calendar_aria_promo_discount", "Special days discount percentage")}
                         className="min-w-0 flex-1 bg-transparent text-sm font-medium text-[#1f1f1f] outline-none dark:text-zinc-100"
                       />
-                      <span className="text-sm font-semibold text-[#727272]">%</span>
+                      <span className="text-sm font-medium text-[#727272]">%</span>
                     </span>
                   </label>
                   <button
                     type="button"
                     disabled={saving}
                     onClick={saveSpecialDaysDiscount}
-                    className="h-[42px] shrink-0 rounded-full bg-emerald-600 px-4 text-[12px] font-medium text-white transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
+                    className="h-[40px] shrink-0 rounded-full bg-emerald-600 px-4 text-[12px] font-medium text-white transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
                   >
                     {saving ? t("host_calendar_saving", "Applying…") : t("host_calendar_apply", "Apply to dates")}
                   </button>
@@ -1742,7 +1769,7 @@ function ContextualManagementPanel({
             <div className="flex items-center justify-between border-t border-emerald-200/60 pt-2.5 text-sm dark:border-emerald-900/40">
               <span className="text-[#727272] dark:text-zinc-400 font-normal">
                 {t("host_calendar_applies_only_to", "Applies only to:")}{" "}
-                <strong className="text-[#1f1f1f] font-semibold dark:text-zinc-200">{formattedDateRange}</strong>
+                <strong className="text-[#1f1f1f] font-medium dark:text-zinc-200">{formattedDateRange}</strong>
               </span>
             </div>
 
@@ -1766,9 +1793,9 @@ function ContextualManagementPanel({
           </div>
 
           {/* Phase 9 & 10: Property Stay Discounts & Additional Charges (Collapsible) */}
-          <details className="group rounded-xl border border-zinc-200 dark:border-zinc-700/80 bg-zinc-50/60 dark:bg-zinc-800/40 overflow-hidden transition-colors">
+          <details className="group rounded-xl border border-zinc-200 dark:border-zinc-700/80 bg-[#F3F4F5] dark:bg-zinc-800/40 overflow-hidden transition-colors shadow-[0_2px_4px_rgba(0,0,0,0.25)]">
             <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-3.5 hover:bg-zinc-100/70 dark:hover:bg-zinc-800/70 transition-colors [&::-webkit-details-marker]:hidden">
-              <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+              <span className="text-base font-normal text-[#1f1f1f] dark:text-zinc-100">
                 {t("host_calendar_discounts_additional_charges", "Discounts & Additional Charges")}
               </span>
               <span className="relative size-4 shrink-0" aria-hidden="true">
@@ -1788,18 +1815,18 @@ function ContextualManagementPanel({
                 />
               </span>
             </summary>
-            <div className="border-t border-[#d7d7d7]/80 dark:border-zinc-700/80 p-3.5 space-y-2 bg-white/70 dark:bg-zinc-900/40 text-xs text-[#727272] dark:text-zinc-300">
+            <div className="border-t border-[#d7d7d7]/80 dark:border-zinc-700/80 p-3.5 space-y-2 bg-white/70 dark:bg-zinc-900/40 text-sm text-[#727272] dark:text-zinc-300">
               <div className="flex justify-between items-center">
                 <span>{t("host_calendar_weekly_discount_label", "Weekly discount (7+ nights)")}</span>
-                <span className="font-semibold text-zinc-800 dark:text-zinc-200">{weeklyPct}%</span>
+                <span className="font-medium text-zinc-800 dark:text-zinc-200">{weeklyPct}%</span>
               </div>
               <div className="flex justify-between items-center">
                 <span>{t("host_calendar_monthly_discount_label", "Monthly discount (28+ nights)")}</span>
-                <span className="font-semibold text-zinc-800 dark:text-zinc-200">{monthlyPct}%</span>
+                <span className="font-medium text-zinc-800 dark:text-zinc-200">{monthlyPct}%</span>
               </div>
               <div className="flex justify-between items-center pt-1 border-t border-zinc-200/60 dark:border-zinc-700/60">
                 <span>{t("host_calendar_extra_guest_fee_label", "Extra guest fee")}</span>
-                <span className="font-semibold text-zinc-800 dark:text-zinc-200">
+                <span className="font-medium text-zinc-800 dark:text-zinc-200">
                   {listing.extraGuestFee && listing.extraGuestFee > 0
                     ? `${formatMoney(listing.extraGuestFee, sourceCurrency, 2)} ${t("host_calendar_per_guest_per_night", "/ guest / night")}`
                     : t("host_calendar_none", "None")}
@@ -1807,7 +1834,7 @@ function ContextualManagementPanel({
               </div>
               <div className="flex justify-between items-center">
                 <span>{t("host_calendar_cleaning_fee_label", "Cleaning fee")}</span>
-                <span className="font-semibold text-zinc-800 dark:text-zinc-200">
+                <span className="font-medium text-zinc-800 dark:text-zinc-200">
                   {listing.cleaningFee && listing.cleaningFee > 0
                     ? formatMoney(listing.cleaningFee, sourceCurrency, 2)
                     : t("host_calendar_none", "None")}
@@ -1822,8 +1849,8 @@ function ContextualManagementPanel({
       {panelMode === "availability" && stats.editableKeys.length > 0 && (
         <div className="space-y-4">
           {/* Current Availability Card */}
-          <div className="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50/70 dark:bg-zinc-800/40 p-3.5">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+          <div className="rounded-[12px] border border-white bg-[#F3F4F5] px-5 py-4 shadow-[0_2px_4px_0px_#00000040] dark:border-zinc-700/80 dark:bg-zinc-800/70">
+            <p className="block text-[13px] font-normal text-[#727272] dark:text-zinc-400">
               {t("host_calendar_current_status", "Current Status")}
             </p>
             <div className="mt-1 flex items-center gap-2">
@@ -1950,17 +1977,17 @@ function ContextualManagementPanel({
           </div>
 
           {/* Phase 11: Selected-Date Minimum Stay Override */}
-          <div className="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50/70 dark:bg-zinc-800/40 p-3.5 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+          <div className="rounded-[12px] border border-white bg-[#F3F4F5] px-4 py-4 shadow-[0_2px_4px_0px_#00000040] dark:border-zinc-700/80 dark:bg-zinc-800/70 space-y-3">
+            <div className="flex flex-col items-start gap-3">
+              <span className="block text-base font-normal text-[#1f1f1f] dark:text-zinc-400">
                 {t("host_calendar_min_stay_override", "Minimum Stay Override")}
               </span>
               {stats.isMixedMinStay ? (
-                <span className="rounded-full bg-amber-100 dark:bg-amber-950/60 px-2 py-0.5 text-[10px] font-bold text-amber-800 dark:text-amber-300">
+                <span className="rounded-full bg-amber-100 dark:bg-amber-950/60 px-2 py-1.5 text-xs font-medium text-amber-800 dark:text-amber-300">
                   {t("host_calendar_mixed_stays", "Mixed stays")}
                 </span>
               ) : (
-                <span className="rounded-full bg-zinc-200 dark:bg-zinc-700 px-2 py-0.5 text-[10px] font-bold text-zinc-800 dark:text-zinc-200">
+                  <span className="rounded-full bg-zinc-200 dark:bg-zinc-700 px-2 py-1.5 text-xs font-medium text-zinc-800 dark:text-zinc-200">
                   {t("host_calendar_nights", { count: stats.commonMinStay ?? listing.minNights ?? 1 })}
                 </span>
               )}
@@ -2051,9 +2078,9 @@ function ContextualManagementPanel({
           </div>
 
           {/* Phase 11: Property Availability Rules (Collapsible) */}
-          <details className="group rounded-xl border border-zinc-200 dark:border-zinc-700/80 bg-zinc-50/60 dark:bg-zinc-800/40 overflow-hidden transition-colors">
+          <details className="group rounded-xl border border-zinc-200 dark:border-zinc-700/80 bg-[#F3F4F5] dark:bg-zinc-800/40 overflow-hidden transition-colors shadow-[0_2px_4px_rgba(0,0,0,0.25)]">
             <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-3.5 hover:bg-zinc-100/70 dark:hover:bg-zinc-800/70 transition-colors [&::-webkit-details-marker]:hidden">
-              <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+              <span className="text-base font-normal text-[#1f1f1f] dark:text-zinc-100">
                 {t("host_calendar_property_availability_rules", "Property Availability Rules")}
               </span>
               <span className="relative size-4 shrink-0" aria-hidden="true">
@@ -2076,25 +2103,25 @@ function ContextualManagementPanel({
             <div className="p-3.5 space-y-2 bg-white dark:bg-zinc-900/40 text-xs text-[#727272] dark:text-zinc-300">
               <div className="flex justify-between items-center">
                 <span>{t("host_calendar_default_min_stay", "Default minimum stay")}</span>
-                <span className="font-semibold text-zinc-800 dark:text-zinc-200">
+                <span className="font-medium text-zinc-800 dark:text-zinc-200 text-right">
                   {t("host_calendar_nights", { count: listing.minNights ?? 1 })}
                 </span>
               </div>
               <div className="flex justify-between items-center">
                 <span>{t("host_calendar_max_stay", "Maximum stay")}</span>
-                <span className="font-semibold text-zinc-800 dark:text-zinc-200">
+                <span className="font-medium text-zinc-800 dark:text-zinc-200 text-right">
                   {listing.maxNights ? t("host_calendar_nights", { count: listing.maxNights }) : t("host_calendar_no_limit", "No limit")}
                 </span>
               </div>
               <div className="flex justify-between items-center">
                 <span>{t("host_calendar_advance_notice", "Advance notice")}</span>
-                <span className="font-semibold text-zinc-800 dark:text-zinc-200">
+                <span className="font-medium text-zinc-800 dark:text-zinc-200 text-right">
                   {t("host_calendar_hours", { count: (listing as any).advanceNotice ?? 0 })}
                 </span>
               </div>
               <div className="flex justify-between items-center">
                 <span>{t("host_calendar_same_day_requests", "Same-day requests")}</span>
-                <span className="font-semibold text-zinc-800 dark:text-zinc-200">
+                <span className="font-medium text-zinc-800 dark:text-zinc-200 text-right">
                   {(listing as any).allowSameDayRequests
                     ? t("host_calendar_allowed_until", { time: (listing as any).sameDayCutoff ?? "18:00" })
                     : t("host_calendar_not_allowed", "Not allowed")}
@@ -2102,7 +2129,7 @@ function ContextualManagementPanel({
               </div>
               <div className="flex justify-between items-center pt-1 border-t border-zinc-200/60 dark:border-zinc-700/60">
                 <span>{t("host_calendar_guest_capacity", "Guest capacity")}</span>
-                <span className="font-semibold text-zinc-800 dark:text-zinc-200">
+                <span className="font-medium text-zinc-800 dark:text-zinc-200 text-right">
                   {t("host_calendar_guests_max", { count: listing.guests })}
                 </span>
               </div>
@@ -2171,16 +2198,16 @@ function AllListingsOverviewPanel({
 
       <div className="grid grid-cols-2 gap-3">
         <div className="rounded-xl bg-[#F3F4F5] dark:bg-zinc-800/80 p-3.5 border border-white dark:border-zinc-700">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-[#727272]">
+          <p className="text-[11px] font-medium uppercase tracking-wider text-[#727272]">
             {t("host_calendar_listings_stat", "Listings")}
           </p>
-          <p className="mt-1 text-2xl font-bold">{listings.length}</p>
+          <p className="mt-1 text-2xl font-medium">{listings.length}</p>
         </div>
         <div className="rounded-xl bg-[#F3F4F5] dark:bg-zinc-800/80 p-3.5 border border-white dark:border-zinc-700">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-[#727272]">
+          <p className="text-[11px] font-medium uppercase tracking-wider text-[#727272]">
             {t("host_calendar_active_stays_stat", "Active Stays")}
           </p>
-          <p className="mt-1 text-2xl font-bold">{activeBookingsCount}</p>
+          <p className="mt-1 text-2xl font-medium">{activeBookingsCount}</p>
         </div>
       </div>
 
@@ -2201,7 +2228,7 @@ function AllListingsOverviewPanel({
                 className="size-12 shrink-0 rounded-lg object-cover"
               />
               <div className="min-w-0 flex-1">
-                <p className="truncate text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100">
+                <p className="truncate text-xs font-medium text-[#1F1F1F] dark:text-zinc-100">
                   {l.title}
                 </p>
                 <p className="truncate text-xs text-[#727272]">
@@ -2931,7 +2958,7 @@ export function HostCalendarWorkspace({
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
             <Link
               href="/become-a-host"
-              className="rounded-full bg-[#1F1F1F] dark:bg-[#F3F4F5] px-6 py-3 text-sm font-semibold text-white dark:text-zinc-950 shadow-sm transition-all hover:bg-black dark:hover:bg-white"
+              className="rounded-full bg-[#1F1F1F] dark:bg-[#F3F4F5] px-6 py-3 text-sm font-medium text-white dark:text-zinc-950 shadow-sm transition-all hover:bg-black dark:hover:bg-white"
             >
               {t("host_calendar_create_listing", "Create a listing")}
             </Link>
@@ -3037,7 +3064,7 @@ export function HostCalendarWorkspace({
             <button
               type="button"
               onClick={() => setMobileSettingsOpen(true)}
-              className="rounded-full bg-[#1F1F1F] dark:bg-[#F3F4F5] px-3.5 py-1.5 text-xs font-semibold text-white dark:text-zinc-950"
+              className="rounded-full bg-[#1F1F1F] dark:bg-[#F3F4F5] px-3.5 py-1.5 text-xs font-medium text-white dark:text-zinc-950"
             >
               {normalizedSelectedRange
                 ? t("host_calendar_edit_selected", "Edit selected")
@@ -3054,7 +3081,7 @@ export function HostCalendarWorkspace({
           >
             <div className="flex items-center gap-2.5 min-w-0">
               {isAllListings ? (
-                <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-zinc-900 text-white font-bold text-xs">
+                <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-zinc-900 text-white font-medium text-xs">
                   ALL
                 </div>
               ) : selectedListing ? (
@@ -3064,7 +3091,7 @@ export function HostCalendarWorkspace({
                 />
               ) : null}
               <div className="text-left min-w-0">
-                <p className="truncate text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100">
+                <p className="truncate text-xs font-medium text-[#1F1F1F] dark:text-zinc-100">
                   {isAllListings ? t("host_calendar_all_listings", "All listings") : selectedListing?.title}
                 </p>
                 <p className="truncate text-[10px] text-[#727272]">
@@ -3104,7 +3131,7 @@ export function HostCalendarWorkspace({
                 aria-expanded={showMonthDropdown}
                 aria-haspopup="dialog"
                 aria-label="Select month and year"
-                className="flex items-center gap-2 rounded-xl px-2.5 py-1 text-xl sm:text-2xl font-semibold tracking-tight text-[#1F1F1F] dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors cursor-pointer"
+                className="flex items-center gap-2 rounded-xl px-2.5 py-1 text-xl sm:text-2xl font-medium tracking-tight text-[#1F1F1F] dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors cursor-pointer"
               >
                 <span className="capitalize">
                   {view === "year"
@@ -3189,7 +3216,7 @@ export function HostCalendarWorkspace({
                             if (view === "year") handleSelectView("month");
                           }}
                           className={`rounded-full py-2 text-xs font-medium transition-colors cursor-pointer ${isSelected
-                            ? "bg-[#FDE29B] dark:bg-amber-400 text-[#1F1F1F] dark:text-zinc-950 font-bold shadow-xs"
+                            ? "bg-[#FDE29B] dark:bg-amber-400 text-[#1F1F1F] dark:text-zinc-950 font-medium shadow-xs"
                             : "text-zinc-700 dark:text-zinc-300 hover:bg-[#F3F4F5] dark:hover:bg-zinc-800"
                             }`}
                         >
@@ -3339,7 +3366,7 @@ export function HostCalendarWorkspace({
                   <rect x="14" y="14" width="7" height="7" />
                   <rect x="3" y="14" width="7" height="7" />
                 </svg>
-                <span className="mt-1 text-[11px] font-bold">{t("host_calendar_all_listings", "All listings")}</span>
+                <span className="mt-1 text-[11px] font-medium">{t("host_calendar_all_listings", "All listings")}</span>
                 <span className="text-[9px] text-[#727272] dark:text-zinc-400">
                   {t("host_calendar_all_listings_stays", { count: listings.length })}
                 </span>
@@ -3367,7 +3394,7 @@ export function HostCalendarWorkspace({
                     className="h-full w-full object-cover"
                   />
                   <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-1 text-center">
-                    <p className="truncate text-[10px] font-semibold text-white" title={l.title}>
+                    <p className="truncate text-[10px] font-medium text-white" title={l.title}>
                       {l.title || l.city || "Property"}
                     </p>
                   </div>
@@ -3624,7 +3651,7 @@ export function HostCalendarWorkspace({
                 className="max-h-[85vh] w-full max-w-lg overflow-hidden rounded-t-3xl sm:rounded-3xl bg-white dark:bg-zinc-900 text-[#1F1F1F] dark:text-zinc-100 p-6 shadow-2xl flex flex-col"
               >
                 <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-4">
-                  <h2 className="text-lg font-bold">{t("host_calendar_select_property_modal_title", "Select property")}</h2>
+                  <h2 className="text-lg font-medium">{t("host_calendar_select_property_modal_title", "Select property")}</h2>
                   <CloseButton
                     onClick={() => setMobilePropertySelectorOpen(false)}
                   />
@@ -3663,21 +3690,21 @@ export function HostCalendarWorkspace({
                       type="button"
                       onClick={() => handleSelectProperty("all")}
                       className={`flex w-full items-center gap-3.5 rounded-2xl p-3 text-left transition-colors cursor-pointer ${isAllListings
-                        ? "bg-[#FDE29B] dark:bg-amber-400 text-zinc-950 font-bold"
+                        ? "bg-[#FDE29B] dark:bg-amber-400 text-zinc-950 font-medium"
                         : "hover:bg-[#F3F4F5] dark:hover:bg-zinc-800 border border-[#d7d7d7] dark:border-zinc-700"
                         }`}
                     >
-                      <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-zinc-900 text-white font-bold text-xs">
+                      <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-zinc-900 text-white font-medium text-xs">
                         ALL
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-bold">{t("host_calendar_all_listings", "All listings")}</p>
+                        <p className="text-sm font-medium">{t("host_calendar_all_listings", "All listings")}</p>
                         <p className="text-xs text-[#727272] dark:text-zinc-400">
                           {t("host_calendar_properties_portfolio", { count: listings.length })}
                         </p>
                       </div>
                       {isAllListings && (
-                        <span className="text-zinc-950 font-bold">✓</span>
+                        <span className="text-zinc-950 font-medium">✓</span>
                       )}
                     </button>
                   )}
@@ -3690,7 +3717,7 @@ export function HostCalendarWorkspace({
                         type="button"
                         onClick={() => handleSelectProperty(l.id)}
                         className={`flex w-full items-center gap-3.5 rounded-2xl p-3 text-left transition-colors cursor-pointer ${isSelected
-                          ? "bg-[#FDE29B] dark:bg-amber-400 text-zinc-950 font-semibold"
+                          ? "bg-[#FDE29B] dark:bg-amber-400 text-zinc-950 font-medium"
                           : "hover:bg-[#F3F4F5] dark:hover:bg-zinc-800 border border-[#d7d7d7] dark:border-zinc-700"
                           }`}
                       >
@@ -3699,7 +3726,7 @@ export function HostCalendarWorkspace({
                           className="size-12 shrink-0 rounded-xl object-cover"
                         />
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-semibold">
+                          <p className="truncate text-sm font-medium">
                             {l.title}
                           </p>
                           <p className="truncate text-xs text-[#727272]">
@@ -3708,7 +3735,7 @@ export function HostCalendarWorkspace({
                           </p>
                         </div>
                         {isSelected && (
-                          <span className="text-zinc-950 font-bold">✓</span>
+                          <span className="text-zinc-950 font-medium">✓</span>
                         )}
                       </button>
                     );
@@ -3738,7 +3765,7 @@ export function HostCalendarWorkspace({
               <div className="space-y-5 text-sm">
                 {/* Booked Listings on this date */}
                 <div>
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 mb-2">
+                  <h3 className="text-xs font-medium uppercase tracking-wider text-emerald-700 dark:text-emerald-400 mb-2">
                     {t("host_calendar_reserved_properties", {
                       count: allListingsDayBookings.bookings.length,
                     })}
@@ -3755,7 +3782,7 @@ export function HostCalendarWorkspace({
                           className="flex items-center justify-between rounded-xl border border-[#d7d7d7] dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 p-3"
                         >
                           <div className="min-w-0 flex-1">
-                            <p className="truncate font-semibold text-xs text-[#1F1F1F] dark:text-zinc-100">
+                            <p className="truncate font-medium text-xs text-[#1F1F1F] dark:text-zinc-100">
                               {b.listing?.title || t("host_cal_res_property_label", "Property")}
                             </p>
                             <p className="text-xs text-[#727272]">
@@ -3772,7 +3799,7 @@ export function HostCalendarWorkspace({
                               setAllListingsDayBookings(null);
                               setSelectedBooking(b);
                             }}
-                            className="ml-3 shrink-0 rounded-full bg-zinc-900 dark:bg-[#F3F4F5] px-3 py-1.5 text-xs font-semibold text-white dark:text-zinc-950 hover:bg-black dark:hover:bg-white cursor-pointer"
+                            className="ml-3 shrink-0 rounded-full bg-zinc-900 dark:bg-[#F3F4F5] px-3 py-1.5 text-xs font-medium text-white dark:text-zinc-950 hover:bg-black dark:hover:bg-white cursor-pointer"
                           >
                             {t("host_calendar_details_btn", "Details")}
                           </button>
@@ -3784,7 +3811,7 @@ export function HostCalendarWorkspace({
 
                 {/* Vacant Listings on this date */}
                 <div className="border-t border-zinc-100 dark:border-zinc-800 pt-4">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-2">
+                  <h3 className="text-xs font-medium uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-2">
                     {t("host_calendar_available_properties", {
                       count: Math.max(
                         0,
@@ -3816,7 +3843,7 @@ export function HostCalendarWorkspace({
                               setAllListingsDayBookings(null);
                               handleSelectProperty(l.id);
                             }}
-                            className="ml-3 text-xs font-semibold text-amber-600 dark:text-amber-400 hover:underline cursor-pointer"
+                            className="ml-3 text-xs font-medium text-amber-600 dark:text-amber-400 hover:underline cursor-pointer"
                           >
                             {t("host_calendar_view_calendar_btn", "View calendar →")}
                           </button>
@@ -3871,7 +3898,7 @@ export function HostCalendarWorkspace({
                   <div className="space-y-3">
                     <div className="rounded-xl bg-amber-50 dark:bg-amber-950/40 p-4 border border-amber-200/60 dark:border-amber-900/60 space-y-2.5">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold uppercase tracking-wider text-amber-900 dark:text-amber-200">
+                        <span className="text-sm font-medium text-amber-900 dark:text-amber-200">
                           {t("host_calendar_price_tips_rec", "Selected Dates Recommendation")}
                         </span>
                         <span className="text-xs text-[#727272] font-medium">
@@ -3888,23 +3915,23 @@ export function HostCalendarWorkspace({
                         return (
                           <div className="space-y-3">
                             <div className="flex items-center justify-between">
-                              <span className="text-sm text-[#727272] font-medium">
+                              <span className="text-sm text-[#727272] font-normal">
                                 {t("host_calendar_price_tips_status", "Recommendation Status")}
                               </span>
                               {rangeTips.overallAction === "INCREASE" ? (
-                                <span className="rounded-md bg-amber-200 dark:bg-amber-900/80 px-2 py-0.5 text-[10px] font-bold text-amber-950 dark:text-amber-200">
+                                <span className="rounded-md bg-amber-200 dark:bg-amber-900/80 px-2 py-1 text-xs font-medium text-amber-950 dark:text-amber-200 mt-3">
                                   {t("host_calendar_price_tips_surge", { pct: rangeTips.averagePercentChange })}
                                 </span>
                               ) : rangeTips.overallAction === "DECREASE" ? (
-                                <span className="rounded-md bg-blue-100 dark:bg-blue-950 px-2 py-0.5 text-[10px] font-bold text-blue-900 dark:text-blue-200">
+                                  <span className="rounded-md bg-blue-100 dark:bg-blue-950 px-2 py-1 text-xs font-medium text-blue-900 dark:text-blue-200 mt-3">
                                   {t("host_calendar_price_tips_incentive", { pct: rangeTips.averagePercentChange })}
                                 </span>
                               ) : rangeTips.overallAction === "NO_CHANGE" ? (
-                                <span className="rounded-md bg-emerald-100 dark:bg-emerald-950 px-2 py-0.5 text-[10px] font-bold text-emerald-900 dark:text-emerald-200">
+                                    <span className="rounded-md bg-emerald-100 dark:bg-emerald-950 px-2 py-1 text-xs font-medium text-emerald-900 dark:text-emerald-200 mt-3">
                                   {t("host_calendar_price_tips_optimal", "Optimal Rate")}
                                 </span>
                               ) : (
-                                <span className="rounded-md bg-zinc-200 dark:bg-zinc-800 px-2 py-0.5 text-[10px] font-bold text-zinc-700 dark:text-zinc-300">
+                                      <span className="rounded-md bg-zinc-200 dark:bg-zinc-800 px-2 py-1 text-xs font-medium text-zinc-700 dark:text-zinc-300 mt-3">
                                   {t("host_calendar_price_tips_advisory", "Advisory Only")}
                                 </span>
                               )}
@@ -3912,8 +3939,8 @@ export function HostCalendarWorkspace({
 
                             <div className="flex items-baseline justify-between pt-1">
                               <div>
-                                <span className="text-xs text-zinc-500 block">{t("host_calendar_price_tips_curr_avg", "Current avg")}</span>
-                                <span className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+                                <span className="text-xs text-[#727272] block">{t("host_calendar_price_tips_curr_avg", "Current avg")}</span>
+                                <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
                                   {formatMoney(rangeTips.averageCurrentPrice, sourceCurrency, 2)}
                                 </span>
                               </div>
@@ -3928,7 +3955,7 @@ export function HostCalendarWorkspace({
                                       ? t("host_calendar_price_tips_active_avg", "Active avg")
                                       : t("host_calendar_price_tips_sugg_avg", "Suggested avg")}
                                 </span>
-                                <span className="text-base font-bold text-amber-700 dark:text-amber-400">
+                                <span className="text-base font-medium text-amber-700 dark:text-amber-400">
                                   {formatMoney(rangeTips.averageSuggestedPrice, sourceCurrency, 2)}
                                 </span>
                               </div>
@@ -3937,7 +3964,7 @@ export function HostCalendarWorkspace({
                             {rangeTips.applicableCount > 1 && (
                               <div className="rounded-lg bg-white/60 dark:bg-zinc-900/60 p-2 text-[11px] text-zinc-600 dark:text-zinc-300 flex items-center justify-between border border-amber-200/50 dark:border-amber-900/40">
                                 <span>{t("host_calendar_price_tips_breakdown", "Breakdown")}</span>
-                                <span className="font-semibold text-zinc-700 dark:text-zinc-200">
+                                <span className="font-medium text-zinc-700 dark:text-zinc-200">
                                   {rangeTips.increaseCount > 0 ? `${rangeTips.increaseCount} ${t("host_calendar_price_tips_increase", "increase")} ` : ""}
                                   {rangeTips.decreaseCount > 0 ? `${rangeTips.decreaseCount} ${t("host_calendar_price_tips_decrease", "decrease")} ` : ""}
                                   {rangeTips.noChangeCount > 0 ? `${rangeTips.noChangeCount} ${t("host_calendar_price_tips_optimal_count", "optimal")}` : ""}
@@ -3948,7 +3975,7 @@ export function HostCalendarWorkspace({
                             <div className="border-t border-amber-200/50 dark:border-amber-900/50 pt-2 space-y-1">
                               {rangeTips.reasons.map((r, i) => (
                                 <p key={i} className="text-xs text-amber-900/80 dark:text-amber-300/80 flex items-center gap-1.5">
-                                  <span className="text-amber-500 font-bold">•</span> {getLocalizedReason(r, t)}
+                                  <span className="text-amber-700 font-medium">•</span> {getLocalizedReason(r, t)}
                                 </p>
                               ))}
                             </div>
@@ -3957,7 +3984,7 @@ export function HostCalendarWorkspace({
                               <button
                                 type="button"
                                 onClick={() => setTips(false)}
-                                className="rounded-full px-4 py-1.5 text-xs font-semibold text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors cursor-pointer"
+                                className="px-6 py-2 rounded-full border border-[#1F1F1F] hover:bg-[#1F1F1F] text-sm font-medium text-[#1F1F1F] hover:text-white  transition-colors delay-300 duration-300 cursor-pointer"
                               >
                                 {t("host_calendar_cancel", "Cancel")}
                               </button>
@@ -3977,12 +4004,12 @@ export function HostCalendarWorkspace({
                                     await save({ customPrices: nextCustom });
                                     setTips(false);
                                   }}
-                                  className="rounded-full bg-amber-400 hover:bg-amber-300 px-5 py-2 text-xs font-bold text-zinc-950 transition-colors cursor-pointer disabled:opacity-70"
+                                  className="px-4 py-2 rounded-full text-sm hover:bg-[#1F1F1F] text-[#1F1F1F] hover:text-white hover:border-[#1F1F1F] bg-[#FCDF9C] font-medium shadow-xs transition-colors delay-300 duration-300 flex items-center justify-center gap-2 min-w-[100px] border border-transparent  cursor-pointer"
                                 >
                                   {saving ? t("host_calendar_applying", "Applying…") : t("host_calendar_price_tips_apply_count", { count: rangeTips.increaseCount + rangeTips.decreaseCount })}
                                 </button>
                               ) : (
-                                <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 italic">
+                                <span className="text-xs font-medium text-[#727272] dark:text-zinc-400 italic">
                                   {rangeTips.overallAction === "NO_CHANGE" ? t("host_calendar_price_tips_optimal_active", "Optimal rate active") : t("host_calendar_price_tips_manual_active", "Manual rate active")}
                                 </span>
                               )}
@@ -3991,7 +4018,7 @@ export function HostCalendarWorkspace({
                         );
                       })()}
                     </div>
-                    <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-normal italic">
+                    <p className="text-xs text-[#727272] dark:text-zinc-400 leading-normal italic">
                       {t("host_calendar_price_tips_disclaimer", "External market competitor comparison is unavailable. Recommendations are calculated using your property's base prices, weekend adjustments, booking occupancy signals, and calendar seasonality.")}
                     </p>
                   </div>
@@ -4019,30 +4046,30 @@ export function HostCalendarWorkspace({
 
                     <div className="space-y-3">
                       <div className="flex items-start gap-3">
-                        <span className="mt-1 flex size-4 shrink-0 items-center justify-center rounded-full bg-[#DDDDDE] text-[9px] font-semibold text-[#6f4c00]">1</span>
+                        <span className="mt-1 flex size-4 shrink-0 items-center justify-center rounded-full bg-[#DDDDDE] text-[9px] font-medium text-[#6f4c00]">1</span>
                         <p className="text-sm leading-6 text-[#595959] dark:text-zinc-300">
-                          <strong className="font-semibold text-[#1F1F1F] dark:text-zinc-100">{t("host_calendar_price_tips_weekend_title", "Weekend Pricing:")}</strong>
+                          <strong className="font-medium text-[#1F1F1F] dark:text-zinc-100">{t("host_calendar_price_tips_weekend_title", "Weekend Pricing:")}</strong>
                           <span className="text-[#727272] dark:text-zinc-400"> {t("host_calendar_price_tips_weekend_desc", "Configure weekend rates to capture higher weekend demand (Thursday & Friday nights).")}</span>
                         </p>
                       </div>
                       <div className="flex items-start gap-3">
-                        <span className="mt-1 flex size-4 shrink-0 items-center justify-center rounded-full bg-[#DDDDDE] text-[9px] font-semibold text-[#6f4c00]">2</span>
+                        <span className="mt-1 flex size-4 shrink-0 items-center justify-center rounded-full bg-[#DDDDDE] text-[9px] font-medium text-[#6f4c00]">2</span>
                         <p className="text-sm leading-6 text-[#595959] dark:text-zinc-300">
-                          <strong className="font-semibold text-[#1F1F1F] dark:text-zinc-100">{t("host_calendar_price_tips_select_title", "Select Dates:")}</strong>
+                          <strong className="font-medium text-[#1F1F1F] dark:text-zinc-100">{t("host_calendar_price_tips_select_title", "Select Dates:")}</strong>
                           <span className="text-[#727272] dark:text-zinc-400"> {t("host_calendar_price_tips_select_desc", "Click or drag on the calendar to view tailored price recommendations for specific dates.")}</span>
                         </p>
                       </div>
                       <div className="flex items-start gap-3">
-                        <span className="mt-1 flex size-4 shrink-0 items-center justify-center rounded-full bg-[#DDDDDE] text-[9px] font-semibold text-[#6f4c00]">3</span>
+                        <span className="mt-1 flex size-4 shrink-0 items-center justify-center rounded-full bg-[#DDDDDE] text-[9px] font-medium text-[#6f4c00]">3</span>
                         <p className="text-sm leading-6 text-[#595959] dark:text-zinc-300">
-                          <strong className="font-semibold text-[#1F1F1F] dark:text-zinc-100">{t("host_calendar_price_tips_smart_title", "Smart Pricing Limits:")}</strong>
+                          <strong className="font-medium text-[#1F1F1F] dark:text-zinc-100">{t("host_calendar_price_tips_smart_title", "Smart Pricing Limits:")}</strong>
                           <span className="text-[#727272] dark:text-zinc-400"> {t("host_calendar_price_tips_smart_desc", "Set minimum and maximum price boundaries in your listing settings to safeguard profitability.")}</span>
                         </p>
                       </div>
                       <div className="flex items-start gap-3">
-                        <span className="mt-1 flex size-4 shrink-0 items-center justify-center rounded-full bg-[#DDDDDE] text-[9px] font-semibold text-[#6f4c00]">4</span>
+                        <span className="mt-1 flex size-4 shrink-0 items-center justify-center rounded-full bg-[#DDDDDE] text-[9px] font-medium text-[#6f4c00]">4</span>
                         <p className="text-sm leading-6 text-[#595959] dark:text-zinc-300">
-                          <strong className="font-semibold text-[#1F1F1F] dark:text-zinc-100">{t("host_calendar_price_tips_discounts_title", "Weekly & Monthly Discounts:")}</strong>
+                          <strong className="font-medium text-[#1F1F1F] dark:text-zinc-100">{t("host_calendar_price_tips_discounts_title", "Weekly & Monthly Discounts:")}</strong>
                           <span className="text-[#727272] dark:text-zinc-400"> {t("host_calendar_price_tips_discounts_desc", "Offer discounts to attract longer-stay guests and increase occupancy.")}</span>
                         </p>
                       </div>
@@ -4053,25 +4080,25 @@ export function HostCalendarWorkspace({
                       <p>{t("host_calendar_price_tips_disclaimer_bottom", "External market competitor data is currently unavailable. Suggestions are generated from your property's rules and calendar lead time.")}</p>
                     </div>
 
-                  <div className="flex items-start gap-2.5 rounded-xl border border-[#e7e7e7] bg-[#f7f7f7] p-3 text-sm leading-6 text-[#727272] dark:border-zinc-700 dark:bg-zinc-800/80 dark:text-zinc-400">
-                    <svg className="mt-0.5 size-4 shrink-0 text-[#727272]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 10v6M12 7h.01" strokeLinecap="round" /></svg>
-                    <p>External market competitor data is currently unavailable. Suggestions use your property&apos;s rules and calendar lead time.</p>
-                  </div>
+                    <div className="flex items-start gap-2.5 rounded-xl border border-[#e7e7e7] bg-[#f7f7f7] p-3 text-sm leading-6 text-[#727272] dark:border-zinc-700 dark:bg-zinc-800/80 dark:text-zinc-400">
+                      <svg className="mt-0.5 size-4 shrink-0 text-[#727272]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 10v6M12 7h.01" strokeLinecap="round" /></svg>
+                      <p>External market competitor data is currently unavailable. Suggestions use your property&apos;s rules and calendar lead time.</p>
+                    </div>
 
-                  <div className="flex justify-end border-t border-[#e7e7e7] pt-4 dark:border-zinc-800">
-                    <button
-                      type="button"
-                      onClick={() => setTips(false)}
+                    <div className="flex justify-end border-t border-[#e7e7e7] pt-4 dark:border-zinc-800">
+                      <button
+                        type="button"
+                        onClick={() => setTips(false)}
                         className="rounded-full bg-[#1F1F1F] px-6 py-2.5 text-base font-medium text-white hover:text-[#1f1f1f] transition-colors duration-300 hover:bg-[#FCDF9C] dark:bg-[#F3F4F5] dark:text-[#1F1F1F] dark:hover:bg-white cursor-pointer"
-                    >
-                      {t("host_calendar_got_it", "Got it")}
-                    </button>
+                      >
+                        {t("host_calendar_got_it", "Got it")}
+                      </button>
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
-          </WorkspaceDialog>
-        )}
+                )}
+              </div>
+            </WorkspaceDialog>
+          )}
       </main>
     </>
   );
