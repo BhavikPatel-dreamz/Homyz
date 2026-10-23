@@ -1,0 +1,197 @@
+import "server-only";
+
+import { createHash } from "node:crypto";
+import { prisma } from "@/lib/db/prisma";
+
+const ATTRIBUTION_WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
+const SESSION_COOKIE = "homyz_analytics_session";
+
+type StoredEventType =
+  | "LISTING_VIEW"
+  | "SEARCH_IMPRESSION"
+  | "BOOKING_INTENT"
+  | "CONFIRMED_BOOKING"
+  | "UNATTRIBUTED_CONFIRMED_BOOKING";
+
+const eventTypeForClientEvent: Record<string, StoredEventType | undefined> = {
+  listing_page_view: "LISTING_VIEW",
+  property_card_view: "SEARCH_IMPRESSION",
+  booking_flow_started: "BOOKING_INTENT",
+  reserve_clicked: "BOOKING_INTENT",
+};
+
+const hash = (value: string) =>
+  createHash("sha256")
+    .update(`${process.env.LISTING_ANALYTICS_HASH_SALT || "homyz-listing-analytics"}:${value}`)
+    .digest("hex");
+
+const dayKey = (date: Date) => date.toISOString().slice(0, 10);
+
+function validSessionId(value: string | null | undefined) {
+  return typeof value === "string" && /^[A-Za-z0-9_-]{16,160}$/.test(value)
+    ? value
+    : null;
+}
+
+function isObviousBot(userAgent: string | null) {
+  return /bot|crawler|spider|slurp|headless|lighthouse|preview/i.test(userAgent || "");
+}
+
+function safeMetadata(value: unknown) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return undefined;
+  const entries = Object.entries(value as Record<string, unknown>)
+    .filter(([key, item]) => /^[a-zA-Z][a-zA-Z0-9_]{0,40}$/.test(key)
+      && (typeof item === "string" || typeof item === "number" || typeof item === "boolean" || item === null))
+    .slice(0, 12)
+    .map(([key, item]) => [key, typeof item === "string" ? item.slice(0, 120) : item]);
+  return entries.length ? Object.fromEntries(entries) : undefined;
+}
+
+export function readAnalyticsSessionId(cookieHeader: string | null) {
+  const raw = cookieHeader?.match(new RegExp(`(?:^|;\\s*)${SESSION_COOKIE}=([^;]+)`))?.[1];
+  return validSessionId(raw ? decodeURIComponent(raw) : null);
+}
+
+export async function recordListingAnalyticsEvent(input: {
+  clientEventType: string;
+  listingId: string | null;
+  sessionId: string | null;
+  userAgent: string | null;
+  metadata?: unknown;
+}) {
+  const eventType = eventTypeForClientEvent[input.clientEventType];
+  const sessionId = validSessionId(input.sessionId);
+  if (!eventType || !input.listingId || !sessionId || isObviousBot(input.userAgent)) {
+    return { recorded: false };
+  }
+
+  const listing = await prisma.listing.findUnique({
+    where: { id: input.listingId },
+    select: { id: true, hostId: true, published: true, deletedAt: true },
+  });
+  if (!listing || !listing.published || listing.deletedAt) return { recorded: false };
+
+  const occurredAt = new Date();
+  const sessionHash = hash(sessionId);
+  const dedupeKey = hash(`${eventType}:${listing.id}:${sessionHash}:${dayKey(occurredAt)}`);
+  try {
+    await prisma.listingAnalyticsEvent.create({
+      data: {
+        eventType,
+        listingId: listing.id,
+        hostId: listing.hostId,
+        sessionHash,
+        dedupeKey,
+        metadata: safeMetadata(input.metadata),
+        occurredAt,
+      },
+    });
+    return { recorded: true };
+  } catch (error: unknown) {
+    // A unique dedupe collision is expected when a visitor revisits a listing.
+    if (typeof error === "object" && error && "code" in error && (error as { code?: string }).code === "P2002") {
+      return { recorded: false, deduplicated: true };
+    }
+    throw error;
+  }
+}
+
+export async function recordConfirmedBookingAnalyticsEvent(input: {
+  bookingId: string;
+  sessionId: string | null;
+}) {
+  const sessionId = validSessionId(input.sessionId);
+  if (!sessionId) return { recorded: false, attributed: false };
+  const booking = await prisma.booking.findUnique({
+    where: { id: input.bookingId },
+    select: { id: true, listingId: true, status: true, listing: { select: { hostId: true } } },
+  });
+  if (!booking || booking.status !== "CONFIRMED") return { recorded: false, attributed: false };
+
+  const sessionHash = hash(sessionId);
+  const viewed = await prisma.listingAnalyticsEvent.findFirst({
+    where: {
+      eventType: "LISTING_VIEW",
+      listingId: booking.listingId,
+      sessionHash,
+      occurredAt: { gte: new Date(Date.now() - ATTRIBUTION_WINDOW_MS) },
+    },
+    select: { id: true },
+  });
+  const eventType: StoredEventType = viewed ? "CONFIRMED_BOOKING" : "UNATTRIBUTED_CONFIRMED_BOOKING";
+  try {
+    await prisma.listingAnalyticsEvent.create({
+      data: {
+        eventType,
+        listingId: booking.listingId,
+        hostId: booking.listing.hostId,
+        sessionHash,
+        dedupeKey: hash(`booking:${booking.id}`),
+        metadata: { attributionWindowDays: 30 },
+      },
+    });
+    return { recorded: true, attributed: Boolean(viewed) };
+  } catch (error: unknown) {
+    if (typeof error === "object" && error && "code" in error && (error as { code?: string }).code === "P2002") {
+      return { recorded: false, attributed: Boolean(viewed) };
+    }
+    throw error;
+  }
+}
+
+export type ListingAnalyticsSummary = {
+  status: "ACTIVE" | "DATA_UNAVAILABLE";
+  message: string;
+  trackingStartedAt: string | null;
+  listingViews: number;
+  searchImpressions: number;
+  attributedConfirmedBookings: number;
+  conversionRatePercentage: number | null;
+};
+
+export async function getListingAnalyticsSummary(input: {
+  listingIds: string[];
+  startDate: Date;
+  endDate: Date;
+}): Promise<ListingAnalyticsSummary> {
+  if (!input.listingIds.length) {
+    return { status: "ACTIVE", message: "No listings are selected.", trackingStartedAt: null, listingViews: 0, searchImpressions: 0, attributedConfirmedBookings: 0, conversionRatePercentage: null };
+  }
+  try {
+    const [counts, firstEvent] = await Promise.all([
+      prisma.listingAnalyticsEvent.groupBy({
+        by: ["eventType"],
+        where: {
+          listingId: { in: input.listingIds },
+          isBot: false,
+          occurredAt: { gte: input.startDate, lte: input.endDate },
+        },
+        _count: { _all: true },
+      }),
+      prisma.listingAnalyticsEvent.findFirst({
+        where: { listingId: { in: input.listingIds }, isBot: false },
+        orderBy: { occurredAt: "asc" },
+        select: { occurredAt: true },
+      }),
+    ]);
+    const count = (eventType: StoredEventType) => counts.find((row) => row.eventType === eventType)?._count._all ?? 0;
+    const listingViews = count("LISTING_VIEW");
+    const attributedConfirmedBookings = count("CONFIRMED_BOOKING");
+    return {
+      status: "ACTIVE",
+      message: firstEvent
+        ? "Observed first-party listing traffic. Repeated views are deduplicated by listing, session, and day."
+        : "Tracking is active. Data will appear after eligible listing traffic is recorded.",
+      trackingStartedAt: firstEvent?.occurredAt.toISOString() ?? null,
+      listingViews,
+      searchImpressions: count("SEARCH_IMPRESSION"),
+      attributedConfirmedBookings,
+      conversionRatePercentage: listingViews > 0
+        ? Math.round((attributedConfirmedBookings / listingViews) * 10_000) / 100
+        : null,
+    };
+  } catch {
+    // Deployments that have not applied the additive telemetry migration remain usable.
+    return { status: "DATA_UNAVAILABLE", message: "Listing analytics storage is not available in this deployment yet.", trackingStartedAt: null, listingViews: 0, searchImpressions: 0, attributedConfirmedBookings: 0, conversionRatePercentage: null };
+  }
+}

@@ -701,6 +701,7 @@ async function create(
       } as unknown as Prisma.InputJsonValue,
       cancellationPolicy: quote.cancellationPolicy,
       isNonRefundable: quote.isNonRefundable,
+      tripPurpose: input.tripPurpose,
       status: automaticallyApprove ? BookingStatus.CONFIRMED : BookingStatus.PENDING,
     } });
 

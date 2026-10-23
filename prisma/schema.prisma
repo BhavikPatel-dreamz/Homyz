@@ -40,10 +40,54 @@ enum NotificationType {
   SYSTEM
 }
 
+// Lifecycle state for a host-controlled opportunity. Rule evaluation itself is
+// deterministic and read-only; these records retain only explicit host actions
+// and completed history.
+enum HostOpportunityStatus {
+  ACTIVE
+  SNOOZED
+  DISMISSED
+  RESOLVED
+  EXPIRED
+}
+
 enum BookingStatus {
   PENDING
   CONFIRMED
   CANCELLED
+}
+
+// Optional guest-supplied booking context. It is intentionally never inferred
+// from profile or stay data, so historic reservations remain UNKNOWN/null.
+enum TripPurpose {
+  BUSINESS
+  FAMILY
+  LEISURE
+  OTHER
+  PREFER_NOT_TO_SAY
+}
+
+enum OperationalTaskStatus {
+  PENDING
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum OperatingExpenseCategory {
+  CLEANING
+  MAINTENANCE
+  LAUNDRY
+  GUEST_SUPPLIES
+  UTILITIES
+  PROPERTY_MANAGEMENT
+  OTHER
+}
+
+enum OperatingExpenseStatus {
+  ACTIVE
+  VOIDED
 }
 
 enum PaymentStatus {
@@ -360,6 +404,9 @@ model User {
   sessions                        Session[]
   listings                        Listing[]
   bookings                        Booking[]
+  cleaningTasks                   CleaningTask[]           @relation("HostCleaningTasks")
+  maintenanceRecords              MaintenanceRecord[]      @relation("HostMaintenanceRecords")
+  operatingExpenses               OperatingExpense[]       @relation("HostOperatingExpenses")
   favoriteListings                ListingFavorite[]
   refreshTokens                   RefreshToken[]
   passwordResetTokens             PasswordResetToken[]
@@ -420,6 +467,7 @@ model User {
   licenseOwnerships               LicenseOwnership[]         @relation("LicenseOwnershipHost")
   verifiedLicenseOwnerships       LicenseOwnership[]         @relation("LicenseOwnershipVerifier")
   licenseVerificationHistory      LicenseVerificationHistory[] @relation("LicenseVerificationHost")
+  opportunityStates               HostOpportunity[]
 
   @@index([role])
   @@index([adminRoleId])
@@ -476,6 +524,34 @@ model Notification {
   @@index([userId, isRead, createdAt])
   @@index([userId, createdAt])
   @@index([userId, type, entityId, entityType])
+}
+
+model HostOpportunity {
+  id                 String                @id @default(cuid())
+  hostId             String
+  listingId          String
+  ruleKey            String
+  deduplicationKey   String
+  status             HostOpportunityStatus @default(ACTIVE)
+  evidenceFingerprint String
+  evidenceSnapshot   Json?
+  actionHref         String?
+  detectedAt         DateTime              @default(now())
+  lastEvaluatedAt    DateTime              @default(now())
+  snoozedUntil       DateTime?
+  dismissedAt        DateTime?
+  resolvedAt         DateTime?
+  expiresAt          DateTime?
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+
+  host    User    @relation(fields: [hostId], references: [id], onDelete: Cascade)
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@unique([hostId, deduplicationKey])
+  @@index([hostId, status, updatedAt])
+  @@index([hostId, listingId, status])
+  @@index([listingId, ruleKey])
 }
 
 model TripPhoto {
@@ -779,6 +855,13 @@ model Listing {
   guestFavoriteEvaluations GuestFavoriteEvaluation[]
   qualityIncidents         ListingQualityIncident[]
   searchRankingObservations ListingSearchRankingObservation[]
+  analyticsEvents          ListingAnalyticsEvent[]
+  cleaningTasks            CleaningTask[]
+  maintenanceRecords       MaintenanceRecord[]
+  operatingExpenses        OperatingExpense[]
+  comparableSourceObservations ComparablePriceObservation[] @relation("ComparableSourceListing")
+  comparableTargetObservations ComparablePriceObservation[] @relation("ComparableTargetListing")
+  opportunityStates       HostOpportunity[]
   propertyLicenseLink      PropertyLicenseLink?
   licenseVerificationHistory LicenseVerificationHistory[]
 
@@ -817,6 +900,29 @@ model ListingSearchRankingObservation {
 
   @@index([listingId, observedAt])
   @@index([hostId, observedAt])
+}
+
+// Durable, privacy-preserving listing funnel telemetry. Raw IP addresses and
+// session identifiers are never stored; only keyed hashes used for uniqueness.
+model ListingAnalyticsEvent {
+  id          String   @id @default(cuid())
+  eventType   String
+  listingId   String?
+  hostId      String?
+  visitorHash String?
+  sessionHash String?
+  isBot       Boolean  @default(false)
+  dedupeKey   String?  @unique
+  metadata    Json?
+  occurredAt  DateTime @default(now())
+  receivedAt  DateTime @default(now())
+
+  listing Listing? @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@index([listingId, eventType, occurredAt])
+  @@index([hostId, eventType, occurredAt])
+  @@index([eventType, occurredAt])
+  @@index([occurredAt])
 }
 
 model PropertyLicense {
@@ -986,6 +1092,8 @@ model Booking {
   priceBreakdown     Json? // Structured snapshot of nights, rates, discounts
   cancellationPolicy String? // Applicable listing policy snapshot at booking time
   isNonRefundable    Boolean       @default(false) // Immutable guest-selected booking term
+  // Guest-selected only; null represents historic/unknown purpose.
+  tripPurpose        TripPurpose?
   // First verified guest access to the listing's check-in instructions. This is an
   // analytics event, not a source of truth for arrival access itself.
   checkInInstructionsViewedAt DateTime?
@@ -1002,6 +1110,8 @@ model Booking {
   payments       BookingPayment[]
   refunds        BookingRefund[]
   moderationReports ModerationReport[]
+  cleaningTasks     CleaningTask[]
+  operatingExpenses OperatingExpense[]
 
   @@index([userId, createdAt])
   @@index([listingId])
@@ -1010,6 +1120,112 @@ model Booking {
   @@index([status, createdAt])
   @@index([createdAt])
   @@index([listingId, checkInInstructionsViewedAt])
+}
+
+// Minimal host-managed turnover workflow. Tasks are never marked completed by
+// a booking event; completion is an explicit operational action.
+model CleaningTask {
+  id                 String                @id @default(cuid())
+  hostId             String
+  listingId          String
+  bookingId          String?
+  status             OperationalTaskStatus @default(PENDING)
+  title              String
+  scheduledFor       DateTime?
+  completedAt        DateTime?
+  responsibleUserId  String?
+  actualExpenseCents Int?
+  currency           String                @default("SAR")
+  notes              String?               @db.Text
+  idempotencyKey     String?               @unique
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+
+  host    User     @relation("HostCleaningTasks", fields: [hostId], references: [id], onDelete: Restrict)
+  listing Listing  @relation(fields: [listingId], references: [id], onDelete: Restrict)
+  booking Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+
+  @@index([hostId, status, scheduledFor])
+  @@index([listingId, scheduledFor])
+  @@index([bookingId])
+}
+
+// Service records deliberately retain only manually recorded usage readings;
+// no runtime is derived from reservation nights.
+model MaintenanceRecord {
+  id                 String                @id @default(cuid())
+  hostId             String
+  listingId          String
+  status             OperationalTaskStatus @default(PENDING)
+  equipmentReference String?
+  title              String
+  serviceDate        DateTime?
+  completedAt        DateTime?
+  nextServiceDate    DateTime?
+  usageReading       Int?
+  usageUnit          String?
+  actualExpenseCents Int?
+  currency           String                @default("SAR")
+  notes              String?               @db.Text
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+
+  host    User    @relation("HostMaintenanceRecords", fields: [hostId], references: [id], onDelete: Restrict)
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Restrict)
+
+  @@index([hostId, status, serviceDate])
+  @@index([listingId, nextServiceDate])
+}
+
+// Amounts use the application's established integer minor-unit convention.
+// A void preserves audit history instead of deleting financial data.
+model OperatingExpense {
+  id                 String                   @id @default(cuid())
+  hostId             String
+  listingId          String
+  bookingId          String?
+  category           OperatingExpenseCategory
+  status             OperatingExpenseStatus   @default(ACTIVE)
+  amountCents        Int
+  currency           String                   @default("SAR")
+  expenseDate        DateTime                 @db.Date
+  description        String?                  @db.Text
+  sourceReference    String?
+  idempotencyKey     String?                  @unique
+  voidedAt           DateTime?
+  voidReason         String?                  @db.Text
+  createdAt          DateTime                 @default(now())
+  updatedAt          DateTime                 @updatedAt
+
+  host    User     @relation("HostOperatingExpenses", fields: [hostId], references: [id], onDelete: Restrict)
+  listing Listing  @relation(fields: [listingId], references: [id], onDelete: Restrict)
+  booking Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+
+  @@index([hostId, expenseDate, status])
+  @@index([listingId, expenseDate, category])
+  @@index([bookingId])
+}
+
+// An observation is scoped to the exact requested stay. This prevents a date
+// context change from being misreported as a comparable-listing price change.
+model ComparablePriceObservation {
+  id                  String   @id @default(cuid())
+  hostId              String
+  sourceListingId     String
+  comparableListingId String
+  checkIn             DateTime @db.Date
+  checkOut            DateTime @db.Date
+  currency            String
+  nightlyPriceCents   Int
+  pricingBasis        String   @default("AVERAGE_NIGHTLY_PRICE")
+  observationKey      String   @unique
+  observedAt          DateTime @default(now())
+
+  sourceListing     Listing @relation("ComparableSourceListing", fields: [sourceListingId], references: [id], onDelete: Cascade)
+  comparableListing Listing @relation("ComparableTargetListing", fields: [comparableListingId], references: [id], onDelete: Cascade)
+
+  @@index([hostId, sourceListingId, observedAt])
+  @@index([comparableListingId, checkIn, checkOut, observedAt])
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

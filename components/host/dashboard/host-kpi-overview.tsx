@@ -1115,7 +1115,6 @@ export function HostKpiOverview({
                   </span>
                 </Link>
 
-                {/* Explicit Data Unavailable State (per audit requirement) */}
                 <Link
                   href="/host/insights/stats/guests/check-in"
                   className="group flex items-start justify-between hover:opacity-80"
@@ -1125,11 +1124,15 @@ export function HostKpiOverview({
                       {t("host_dash_check_in_views", "Check-in instructions viewed")}
                     </p>
                     <p className="text-[11px] text-[#727272]">
-                      {guestAnalytics.checkInInstructionsViewed.message}
+                      {guestAnalytics.checkInInstructionsViewed.status === "ACTIVE"
+                        ? `${guestAnalytics.checkInInstructionsViewed.viewedCount} viewed · ${guestAnalytics.checkInInstructionsViewed.notViewedCount} not viewed`
+                        : guestAnalytics.checkInInstructionsViewed.message}
                     </p>
                   </div>
-                  <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-semibold text-zinc-500 uppercase tracking-wide">
-                    {t("host_dash_status_unavailable", "Unavailable")}
+                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${guestAnalytics.checkInInstructionsViewed.status === "ACTIVE" ? "bg-emerald-50 text-emerald-700" : "bg-zinc-100 text-zinc-500"}`}>
+                    {guestAnalytics.checkInInstructionsViewed.status === "ACTIVE"
+                      ? `${guestAnalytics.checkInInstructionsViewed.eligibleReservationsCount} eligible`
+                      : t("host_dash_status_unavailable", "Unavailable")}
                   </span>
                 </Link>
               </div>
@@ -1243,7 +1246,9 @@ export function HostKpiOverview({
               superhostEvaluation.currentProgress.overallRating === null
                 ? t("host_dash_no_published_rating", "No published rating")
                 : `★ ${superhostEvaluation.currentProgress.overallRating.toFixed(2)} rating (min 4.80)`,
-              `Response rate: ${superhostEvaluation.currentProgress.responseRatePercentage ?? 0}% (min 90%)`,
+              superhostEvaluation.currentProgress.responseRatePercentage === null
+                ? "Response rate: — (no qualifying inquiries)"
+                : `Response rate: ${superhostEvaluation.currentProgress.responseRatePercentage}% (min 90%)`,
               `${t("host_dash_next_eval_label", "Next evaluation:")} ${new Date(superhostEvaluation.nextEvaluationAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}`,
             ]}
           />

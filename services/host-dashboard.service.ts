@@ -40,6 +40,7 @@ import {
   type DateRangePreset,
   type ResolvedReportingPeriod,
 } from "@/lib/dashboard/reporting-filter";
+import { getListingAnalyticsSummary } from "@/services/listing-analytics.service";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -51,6 +52,13 @@ function asJsonRecord(value: unknown): JsonRecord | null {
 
 function readNonEmptyString(value: unknown): string | null {
   return typeof value === "string" && value.trim() ? value : null;
+}
+
+function getCheckInTrackingStartDate() {
+  const value = process.env.CHECKIN_INSTRUCTIONS_TRACKING_STARTED_AT;
+  if (!value) return null;
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
 export interface HostDashboardCurrencyBreakdownItem {
@@ -141,8 +149,12 @@ export interface HostDashboardGuestAnalytics {
   guestOrigins: Array<{ country: string; city: string | null; guestCount: number; sharePercentage: number }>;
   staysWithoutRecordedOriginCount: number;
   checkInInstructionsViewed: {
-    status: "DATA_UNAVAILABLE";
-    message: "Check-in instructions viewed tracking is not currently instrumented in the event database.";
+    status: "ACTIVE" | "DATA_UNAVAILABLE";
+    message: string;
+    viewedCount: number;
+    notViewedCount: number;
+    eligibleReservationsCount: number;
+    trackingStartedAt: string | null;
   };
 }
 
@@ -233,12 +245,18 @@ export interface HostDashboardListingPerformance {
   draftListings: number;
   pausedListings: number;
   pageViews: {
-    status: "DATA_UNAVAILABLE";
-    message: "Individual listing impression and page view logging is not currently instrumented in database.";
+    status: "ACTIVE" | "DATA_UNAVAILABLE";
+    message: string;
+    count: number;
+    trackingStartedAt: string | null;
   };
   conversionRate: {
-    status: "DATA_UNAVAILABLE";
-    message: "Search-to-booking funnel conversion event tracking is not currently instrumented in database.";
+    status: "ACTIVE" | "DATA_UNAVAILABLE";
+    message: string;
+    percentage: number | null;
+    attributedConfirmedBookings: number;
+    searchImpressions: number;
+    trackingStartedAt: string | null;
   };
 }
 
@@ -551,6 +569,14 @@ export async function getHostDashboardData(
           ? normalizeCurrencyCode(defaultPayoutCurrency)
           : requestedCurrency || availableCurrencies[0] || "SAR";
 
+  // Telemetry aggregation is bounded to the selected reporting period and
+  // runs alongside the heavier reservation aggregation below.
+  const listingAnalyticsPromise = getListingAnalyticsSummary({
+    listingIds: scopedListingIds,
+    startDate: reportingPeriod.startDate,
+    endDate: reportingPeriod.endDate,
+  });
+
   // 3. Rolling 12-month window bounds for Superhost & Historical calculations
   const twelveMonthsAgo = new Date(now);
   twelveMonthsAgo.setFullYear(twelveMonthsAgo.getFullYear() - 1);
@@ -565,7 +591,22 @@ export async function getHostDashboardData(
   // 4. Fetch all bookings across scoped listings
   const allBookings = await prisma.booking.findMany({
     where: { listingId: { in: scopedListingIds } },
-    include: {
+    // Keep the authoritative dashboard calculation in one pass, but avoid
+    // hydrating payment/refund relation arrays and unused booking columns.
+    select: {
+      id: true,
+      listingId: true,
+      userId: true,
+      status: true,
+      startDate: true,
+      endDate: true,
+      createdAt: true,
+      guests: true,
+      currency: true,
+      totalPrice: true,
+      cleaningFee: true,
+      priceBreakdown: true,
+      checkInInstructionsViewedAt: true,
       user: {
         select: {
           id: true,
@@ -584,20 +625,7 @@ export async function getHostDashboardData(
           checkOutTime: true,
           blockedDates: true,
           country: true,
-        },
-      },
-      payments: {
-        select: {
-          id: true,
-          status: true,
-          capturedAmount: true,
-        },
-      },
-      refunds: {
-        select: {
-          id: true,
-          status: true,
-          amount: true,
+          checkInInstructions: true,
         },
       },
     },
@@ -705,6 +733,7 @@ export async function getHostDashboardData(
   const guestOriginMap = new Map<string, { country: string; city: string | null; guestIds: Set<string> }>();
   let completedGuestStaysCount = 0;
   const guestsWithoutRecordedOrigin = new Set<string>();
+  let staysWithoutRecordedOriginCount = 0;
 
   // Per-listing booking aggregations for Guest Favorite
   const listingBookingStats = new Map<
@@ -733,15 +762,16 @@ export async function getHostDashboardData(
     };
     stats.totalBookings++;
 
-    // Track monthly snapshot booking activity
-    if (b.startDate >= startOfMonth && b.startDate <= endOfMonth) {
+    // Booking activity uses the reservation creation timestamp. Stay-based
+    // measures below intentionally use check-in/check-out dates instead.
+    if (b.createdAt >= startOfMonth && b.createdAt <= endOfMonth) {
       if (b.status === BookingStatus.CONFIRMED) {
         thisMonthBookingsCount++;
       } else if (b.status === BookingStatus.CANCELLED) {
         thisMonthCancellationsCount++;
       }
     }
-    if (b.startDate >= startOfPreviousMonth && b.startDate <= endOfPreviousMonth) {
+    if (b.createdAt >= startOfPreviousMonth && b.createdAt <= endOfPreviousMonth) {
       if (b.status === BookingStatus.CONFIRMED) {
         previousMonthBookingsCount++;
       }
@@ -830,7 +860,10 @@ export async function getHostDashboardData(
               guestOriginMap.set(key, { country, city: city || null, guestIds: new Set([b.userId]) });
             }
           } else {
-            guestsWithoutRecordedOrigin.add(b.userId);
+            if (!guestsWithoutRecordedOrigin.has(b.userId)) {
+              guestsWithoutRecordedOrigin.add(b.userId);
+              staysWithoutRecordedOriginCount++;
+            }
           }
         }
 
@@ -1155,6 +1188,38 @@ export async function getHostDashboardData(
     }))
     .sort((a, b) => b.guestCount - a.guestCount || a.country.localeCompare(b.country));
 
+  const checkInTrackingStart = getCheckInTrackingStartDate();
+  const checkInEligibleBookings = checkInTrackingStart
+    ? allBookings.filter((booking) =>
+        booking.status === BookingStatus.CONFIRMED
+        && booking.startDate <= now
+        && booking.endDate >= checkInTrackingStart
+        && booking.endDate >= reportingPeriod.startDate
+        && booking.endDate <= reportingPeriod.endDate
+        && Boolean(booking.listing.checkInInstructions?.trim()),
+      )
+    : [];
+  const checkInViewedCount = checkInEligibleBookings.filter(
+    (booking) => booking.checkInInstructionsViewedAt !== null,
+  ).length;
+  const checkInInstructionsViewed = checkInTrackingStart
+    ? {
+        status: "ACTIVE" as const,
+        message: "Guest instruction views are recorded from the configured tracking start date; future stays are excluded.",
+        viewedCount: checkInViewedCount,
+        notViewedCount: Math.max(0, checkInEligibleBookings.length - checkInViewedCount),
+        eligibleReservationsCount: checkInEligibleBookings.length,
+        trackingStartedAt: checkInTrackingStart.toISOString(),
+      }
+    : {
+        status: "DATA_UNAVAILABLE" as const,
+        message: "Check-in instruction engagement will be available after the tracking start date is configured for this deployment.",
+        viewedCount: 0,
+        notViewedCount: 0,
+        eligibleReservationsCount: 0,
+        trackingStartedAt: null,
+      };
+
   // 11. Listing Performance Counts
   const activeListings = scopedListings.filter((l) => l.published && l.status === "ACTIVE" && !l.isPaused).length;
   const draftListings = scopedListings.filter((l) => l.status === "DRAFT" || l.status === "IN_PROGRESS").length;
@@ -1391,6 +1456,7 @@ export async function getHostDashboardData(
   };
 
   const currencyBreakdown = Array.from(currencyBuckets.values()).sort((a, b) => b.completedPayoutsCents - a.completedPayoutsCents);
+  const listingAnalytics = await listingAnalyticsPromise;
 
   const result: HostDashboardData = {
     hostId: actor.id,
@@ -1424,10 +1490,10 @@ export async function getHostDashboardData(
       excludedHostCancelledCount,
     },
     reportingActivity: {
-      confirmedBookingsCount: allBookings.filter((booking: { status: BookingStatus; startDate: Date }) => booking.status === BookingStatus.CONFIRMED && booking.startDate >= reportingPeriod.startDate && booking.startDate <= reportingPeriod.endDate).length,
+      confirmedBookingsCount: allBookings.filter((booking: { status: BookingStatus; createdAt: Date }) => booking.status === BookingStatus.CONFIRMED && booking.createdAt >= reportingPeriod.startDate && booking.createdAt <= reportingPeriod.endDate).length,
       completedStaysCount: reportingCompletedStaysCount,
       completedNightsCount: reportingCompletedNightsCount,
-      cancelledBookingsCount: allBookings.filter((booking: { status: BookingStatus; startDate: Date }) => booking.status === BookingStatus.CANCELLED && booking.startDate >= reportingPeriod.startDate && booking.startDate <= reportingPeriod.endDate).length,
+      cancelledBookingsCount: allBookings.filter((booking: { status: BookingStatus; createdAt: Date }) => booking.status === BookingStatus.CANCELLED && booking.createdAt >= reportingPeriod.startDate && booking.createdAt <= reportingPeriod.endDate).length,
     },
     kpis,
     earnings: {
@@ -1499,11 +1565,8 @@ export async function getHostDashboardData(
       returningGuestsPercentage,
       guestOriginCountries,
       guestOrigins,
-      staysWithoutRecordedOriginCount: guestsWithoutRecordedOrigin.size,
-      checkInInstructionsViewed: {
-        status: "DATA_UNAVAILABLE",
-        message: "Check-in instructions viewed tracking is not currently instrumented in the event database.",
-      },
+      staysWithoutRecordedOriginCount,
+      checkInInstructionsViewed,
     },
     listingPerformance: {
       totalListings: scopedListings.length,
@@ -1511,12 +1574,18 @@ export async function getHostDashboardData(
       draftListings,
       pausedListings,
       pageViews: {
-        status: "DATA_UNAVAILABLE",
-        message: "Individual listing impression and page view logging is not currently instrumented in database.",
+        status: listingAnalytics.status,
+        message: listingAnalytics.message,
+        count: listingAnalytics.listingViews,
+        trackingStartedAt: listingAnalytics.trackingStartedAt,
       },
       conversionRate: {
-        status: "DATA_UNAVAILABLE",
-        message: "Search-to-booking funnel conversion event tracking is not currently instrumented in database.",
+        status: listingAnalytics.status,
+        message: listingAnalytics.message,
+        percentage: listingAnalytics.conversionRatePercentage,
+        attributedConfirmedBookings: listingAnalytics.attributedConfirmedBookings,
+        searchImpressions: listingAnalytics.searchImpressions,
+        trackingStartedAt: listingAnalytics.trackingStartedAt,
       },
     },
     listingHealth,
@@ -1782,7 +1851,11 @@ function createEmptyHostDashboard(
       staysWithoutRecordedOriginCount: 0,
       checkInInstructionsViewed: {
         status: "DATA_UNAVAILABLE",
-        message: "Check-in instructions viewed tracking is not currently instrumented in the event database.",
+        message: "Check-in instruction engagement will be available after the tracking start date is configured for this deployment.",
+        viewedCount: 0,
+        notViewedCount: 0,
+        eligibleReservationsCount: 0,
+        trackingStartedAt: null,
       },
     },
     listingPerformance: {
@@ -1792,11 +1865,17 @@ function createEmptyHostDashboard(
       pausedListings: 0,
       pageViews: {
         status: "DATA_UNAVAILABLE",
-        message: "Individual listing impression and page view logging is not currently instrumented in database.",
+        message: "Listing analytics storage is not available in this deployment yet.",
+        count: 0,
+        trackingStartedAt: null,
       },
       conversionRate: {
         status: "DATA_UNAVAILABLE",
-        message: "Search-to-booking funnel conversion event tracking is not currently instrumented in database.",
+        message: "Listing analytics storage is not available in this deployment yet.",
+        percentage: null,
+        attributedConfirmedBookings: 0,
+        searchImpressions: 0,
+        trackingStartedAt: null,
       },
     },
     listingHealth: {

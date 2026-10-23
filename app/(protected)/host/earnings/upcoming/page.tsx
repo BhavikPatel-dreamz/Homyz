@@ -1,4 +1,5 @@
 import { Role } from "@/generated/prisma/enums";
+import { cookies } from "next/headers";
 import { HostHeader } from "@/components/host/host-header";
 import { Container } from "@/components/ui";
 import { requirePageRole } from "@/lib/permissions/page-guards";
@@ -14,8 +15,10 @@ export default async function UpcomingTransactionsPage({
 }) {
   const actor = await requirePageRole([Role.HOST, Role.ADMIN]);
   const params = await searchParams;
+  const cookieStore = await cookies();
   const value = (key: string) =>
     Array.isArray(params[key]) ? params[key][0] : params[key];
+  const displayCurrency = value("currency") || cookieStore.get("homyz_display_currency")?.value || "SAR";
   const candidatePreset = value("datePreset");
   const datePreset = [
     "all",
@@ -62,7 +65,7 @@ export default async function UpcomingTransactionsPage({
       datePreset,
       startDate: value("startDate"),
       endDate: value("endDate"),
-      currency: value("currency"),
+      currency: displayCurrency,
       payoutStatus,
       sort,
       earningsType:
@@ -74,7 +77,11 @@ export default async function UpcomingTransactionsPage({
       <HostHeader />
       <main className="flex-1 py-8 sm:py-10">
         <Container className="px-4 sm:px-6">
-          <HostTransactionsClient kind="upcoming" initialData={initialData} />
+          <HostTransactionsClient
+            kind="upcoming"
+            initialData={initialData}
+            initialCurrency={displayCurrency}
+          />
         </Container>
       </main>
     </div>

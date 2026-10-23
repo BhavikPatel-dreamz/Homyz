@@ -62,12 +62,29 @@ export interface ListingAnalyticsPayload {
   metadata?: Record<string, unknown>;
 }
 
+const SESSION_COOKIE = "homyz_analytics_session";
+const SESSION_STORAGE_KEY = "homyz.analytics-session";
+
+function analyticsSessionId() {
+  try {
+    const existing = window.sessionStorage.getItem(SESSION_STORAGE_KEY);
+    if (existing) return existing;
+    const value = crypto.randomUUID().replaceAll("-", "");
+    window.sessionStorage.setItem(SESSION_STORAGE_KEY, value);
+    document.cookie = `${SESSION_COOKIE}=${value}; path=/; max-age=86400; SameSite=Lax`;
+    return value;
+  } catch {
+    return null;
+  }
+}
+
 export function trackListingEvent(payload: ListingAnalyticsPayload): void {
   if (typeof window === "undefined") return;
 
   const eventData = {
     ...payload,
     timestamp: new Date().toISOString(),
+    sessionId: analyticsSessionId(),
   };
 
   // 1. Dispatch custom DOM event for heatmap/session monitoring (Hotjar, clarity, etc.)
@@ -91,4 +108,3 @@ export function trackListingEvent(payload: ListingAnalyticsPayload): void {
     });
   } catch {}
 }
-

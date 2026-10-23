@@ -46,14 +46,17 @@ const statusStyle = (status: string) =>
 export function HostTransactionsClient({
   kind,
   initialData,
+  initialCurrency,
 }: {
   kind: HostEarningsTransactionKind;
   initialData: HostEarningsTransactionResult;
+  initialCurrency: string;
 }) {
   const pathname = usePathname(),
     router = useRouter(),
     searchParams = useSearchParams();
   const { currency: globalDisplayCurrency } = useCurrency();
+  const activeCurrency = (searchParams.get("currency") || initialCurrency).toUpperCase();
   const prevGlobalCurrency = useRef(globalDisplayCurrency);
   const [data, setData] = useState(initialData),
     [loading, setLoading] = useState(false),
@@ -68,6 +71,7 @@ export function HostTransactionsClient({
 
   const load = useCallback(
     async (params: URLSearchParams) => {
+      if (!params.get("currency")) params.set("currency", activeCurrency);
       const id = ++request.current;
       setLoading(true);
       setError(null);
@@ -93,7 +97,7 @@ export function HostTransactionsClient({
         if (id === request.current) setLoading(false);
       }
     },
-    [kind, pathname, router],
+    [activeCurrency, kind, pathname, router],
   );
 
   const update = useCallback(
@@ -102,10 +106,11 @@ export function HostTransactionsClient({
       Object.entries(values).forEach(([key, value]) =>
         value ? params.set(key, value) : params.delete(key),
       );
+      if (!params.get("currency")) params.set("currency", activeCurrency);
       if (!Object.hasOwn(values, "page")) params.delete("page");
       void load(params);
     },
-    [load, searchParams],
+    [activeCurrency, load, searchParams],
   );
 
   // Real-time synchronization: when the user changes main currency in the global "Languages & currency" modal
@@ -144,12 +149,12 @@ export function HostTransactionsClient({
 
   const isUpcoming = kind === "upcoming";
   const title = isUpcoming ? "Upcoming" : "Paid";
-  const total = data.totalsByCurrency.length
-    ? data.totalsByCurrency
-        .map((item) => money(item.amount, item.currency))
-        .join(" · ")
-    : "—";
+  const totalCurrency = data.totalsByCurrency[0]?.currency || activeCurrency;
+  const total = money(data.totalsByCurrency[0]?.amount || 0, totalCurrency);
   const datePreset = searchParams.get("datePreset") || "all";
+
+  const exportParams = new URLSearchParams(searchParams.toString());
+  exportParams.set("currency", activeCurrency);
 
   const openDateFilter = () => {
     setDraftDatePreset(datePreset);
@@ -179,34 +184,43 @@ export function HostTransactionsClient({
   const hasActiveFilters =
     searchParams.get("datePreset") ||
     searchParams.get("propertyId") ||
-    searchParams.get("currency") ||
     searchParams.get("earningsType") ||
     searchParams.get("payoutStatus") ||
     searchParams.get("sort") ||
     search;
 
   return (
-    <div className="mx-auto max-w-4xl space-y-8 pb-12">
+    <div className="mx-auto max-w-5xl space-y-6 pb-12">
       {/* Header */}
-      <header>
+      <header className="rounded-3xl bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-800 px-5 py-6 text-white shadow-sm sm:px-7 sm:py-8">
         <Link
           href="/host/earnings"
-          className="inline-flex items-center gap-1 text-sm font-semibold text-zinc-600 underline underline-offset-4 hover:text-zinc-950"
+          className="inline-flex items-center gap-1 text-sm font-semibold text-zinc-300 transition hover:text-white"
         >
-          ← Earnings
+          ← Back to earnings
         </Link>
-        <h1 className="mt-4 text-3xl font-bold tracking-tight text-zinc-950">
-          {title}
-        </h1>
-        <p className="mt-1 text-sm text-zinc-500">
-          {isUpcoming
-            ? "Scheduled, ready and processing payouts"
-            : "Verified payout executions"}
-        </p>
+        <div className="mt-8 flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-300">
+              Payout activity
+            </p>
+            <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
+              {title}
+            </h1>
+            <p className="mt-2 text-sm text-zinc-300">
+              {isUpcoming
+                ? "Scheduled, ready and processing payouts"
+                : "Verified payout executions"}
+            </p>
+          </div>
+          <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-semibold text-zinc-100">
+            {activeCurrency} settlement currency
+          </span>
+        </div>
       </header>
 
       {/* Filters */}
-      <div className="space-y-3 rounded-2xl border border-zinc-200 bg-white p-4">
+      <div className="space-y-3 rounded-3xl border border-zinc-200 bg-white p-4 shadow-sm sm:p-5">
         {/* Search */}
         <div className="relative">
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-base text-zinc-400">
@@ -216,7 +230,7 @@ export function HostTransactionsClient({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search reservation, property or guest…"
-            className="w-full rounded-xl border border-zinc-300 bg-zinc-50 py-2.5 pl-9 pr-10 text-sm focus:border-zinc-600 focus:bg-white focus:outline-none"
+            className="w-full rounded-xl border border-zinc-200 bg-zinc-50 py-3 pl-9 pr-10 text-sm outline-none transition focus:border-zinc-500 focus:bg-white focus:ring-4 focus:ring-zinc-100"
           />
           {search && (
             <button
@@ -322,20 +336,6 @@ export function HostTransactionsClient({
             <option value="amount_asc">Lowest amount</option>
           </select>
 
-          <select
-            aria-label="Currency filter"
-            value={searchParams.get("currency") || ""}
-            onChange={(e) => update({ currency: e.target.value || null })}
-            className="shrink-0 rounded-full border border-zinc-300 bg-white px-3 py-2 text-xs font-semibold"
-          >
-            <option value="">All currencies</option>
-            {data.totalsByCurrency.map((item) => (
-              <option key={item.currency} value={item.currency}>
-                {item.currency}
-              </option>
-            ))}
-          </select>
-
           {hasActiveFilters && (
             <button
               type="button"
@@ -344,7 +344,7 @@ export function HostTransactionsClient({
                 update({
                   datePreset: null,
                   propertyId: null,
-                  currency: null,
+                  currency: activeCurrency,
                   earningsType: null,
                   payoutStatus: null,
                   sort: null,
@@ -407,34 +407,50 @@ export function HostTransactionsClient({
       {/* Summary */}
       <section
         aria-busy={loading}
-        className={`flex items-baseline justify-between transition-opacity ${loading ? "opacity-50" : ""}`}
+        className={`flex flex-col justify-between gap-4 rounded-3xl border border-zinc-200 bg-gradient-to-br from-white to-zinc-50 p-5 shadow-sm sm:flex-row sm:items-center sm:p-6 transition-opacity ${loading ? "opacity-50" : ""}`}
       >
         <div>
-          <p className="text-xs font-medium text-zinc-500">
-            Total ({data.pagination.total} transaction
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500">
+            Total {isUpcoming ? "upcoming" : "paid"} payouts
+          </p>
+          <p className="mt-2 text-3xl font-bold tracking-tight text-zinc-950 sm:text-4xl">
+            {total}
+          </p>
+          <p className="mt-2 text-xs text-zinc-500">
+            {data.pagination.total} transaction
             {data.pagination.total === 1 ? "" : "s"} · based on{" "}
             {data.dateBasis === "EXECUTED_AT"
               ? "execution date"
               : "scheduled payout date"}
-            )
+            · {totalCurrency}
           </p>
-          <p className="mt-1 text-2xl font-bold text-zinc-950">{total}</p>
         </div>
 
         {/* Export */}
         <a
-          href={`/api/v1/host/earnings/export?status=${kind}&${searchParams.toString()}`}
-          className="shrink-0 rounded-full border border-zinc-300 px-4 py-2 text-xs font-semibold text-zinc-900 hover:border-zinc-900"
+          href={`/api/v1/host/earnings/export?status=${kind}&${exportParams.toString()}`}
+          className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full border border-zinc-300 bg-white px-4 py-2.5 text-xs font-semibold text-zinc-900 transition hover:border-zinc-950 hover:bg-zinc-950 hover:text-white"
         >
-          Export filtered CSV
+          <span aria-hidden="true">↓</span> Export filtered CSV
         </a>
       </section>
 
       {/* Transaction list */}
       <div
         aria-busy={loading}
-        className={`divide-y divide-zinc-100 rounded-2xl border border-zinc-200 bg-white transition-opacity ${loading ? "opacity-50" : ""}`}
+        className={`overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-sm transition-opacity ${loading ? "opacity-50" : ""}`}
       >
+        <div className="flex items-center justify-between border-b border-zinc-100 bg-zinc-50 px-5 py-3.5">
+          <div>
+            <h2 className="text-sm font-bold text-zinc-950">Payout details</h2>
+            <p className="mt-0.5 text-xs text-zinc-500">
+              Amounts shown in {totalCurrency}
+            </p>
+          </div>
+          <span className="text-xs font-medium text-zinc-500">
+            {data.pagination.total} total
+          </span>
+        </div>
         {data.transactions.length ? (
           data.transactions.map((item) => {
             const returnTo = encodeURIComponent(
@@ -444,10 +460,10 @@ export function HostTransactionsClient({
               <Link
                 key={item.bookingId}
                 href={`/host/earnings/transactions/${item.bookingId}?returnTo=${returnTo}`}
-                className="flex w-full items-center gap-3 px-4 py-4 text-left first:rounded-t-2xl last:rounded-b-2xl hover:bg-zinc-50"
+                className="flex w-full items-center gap-3 border-b border-zinc-100 px-4 py-4 text-left last:border-b-0 transition hover:bg-amber-50/40 sm:px-5"
               >
                 {/* Listing photo */}
-                <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-zinc-100 text-sm">
+                <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-zinc-100 text-sm ring-1 ring-zinc-200">
                   {item.listingPhoto ? (
                     <Image
                       src={item.listingPhoto}
@@ -466,11 +482,11 @@ export function HostTransactionsClient({
                   <p className="truncate text-sm font-semibold text-zinc-900">
                     {item.listingTitle}
                   </p>
-                  <p className="mt-0.5 truncate text-xs text-zinc-500">
+                  <p className="mt-1 truncate text-xs text-zinc-500">
                     {item.guestName} ·{" "}
                     {dt(item.startDate)} – {dt(item.endDate)}
                   </p>
-                  <p className="mt-0.5 text-xs text-zinc-400">
+                  <p className="mt-1 text-xs text-zinc-400">
                     Payout:{" "}
                     {dt(
                       isUpcoming
@@ -481,7 +497,7 @@ export function HostTransactionsClient({
                 </div>
 
                 <div className="shrink-0 text-right">
-                  <p className="text-sm font-bold text-zinc-950">
+                  <p className="text-sm font-bold tabular-nums text-zinc-950">
                     {money(item.netPayout, item.currency)}
                   </p>
                   <span

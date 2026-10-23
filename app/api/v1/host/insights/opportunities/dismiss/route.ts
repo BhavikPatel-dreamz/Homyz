@@ -16,15 +16,14 @@ export const POST = apiHandler(async (req: NextRequest) => {
   const actor = await requireApiRole(req, [Role.HOST, Role.ADMIN]);
   const body = dismissSchema.parse(await req.json());
 
-  const result = await hostOpportunitiesService.dismissOpportunity(
-    actor.id,
-    body.opportunityId,
-    body.listingId,
-  );
+  const result = await hostOpportunitiesService.updateLifecycle(actor, {
+    opportunityId: body.opportunityId,
+    listingId: body.listingId,
+    action: "DISMISS",
+  });
 
   return NextResponse.json({
     success: true,
     data: result,
   });
 });
-

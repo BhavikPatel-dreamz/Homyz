@@ -93,14 +93,8 @@ export interface HostInsightsData {
       pausedListings: number;
     };
     analyticsLimitations: {
-      pageViews: {
-        status: "DATA_UNAVAILABLE";
-        message: string;
-      };
-      conversionRate: {
-        status: "DATA_UNAVAILABLE";
-        message: string;
-      };
+      pageViews: HostDashboardData["listingPerformance"]["pageViews"];
+      conversionRate: HostDashboardData["listingPerformance"]["conversionRate"];
     };
     quickStats: {
       overallRating: number | null;
@@ -109,7 +103,7 @@ export interface HostInsightsData {
       responseInquiryCount: number;
       netEarningsCents: number;
       confirmedBookingsCount: number;
-      listingViews: null;
+      listingViews: number | null;
     };
     chartComparison: {
       label: string;
@@ -416,7 +410,9 @@ export const hostInsightsService = {
           responseInquiryCount: dashboardData.listingHealth.totalGuestInquiries,
           netEarningsCents: dashboardData.earnings.netEarningsCents,
           confirmedBookingsCount: dashboardData.reportingActivity.confirmedBookingsCount,
-          listingViews: null,
+          listingViews: dashboardData.listingPerformance.pageViews.status === "ACTIVE"
+            ? dashboardData.listingPerformance.pageViews.count
+            : null,
         },
         chartComparison: {
           label: dashboardData.reportingPeriod.label,

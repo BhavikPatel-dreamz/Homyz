@@ -170,6 +170,7 @@ async function createRequestToBook(actor: AuthUser, input: RequestToBookInput) {
     message: input.message,
     specialOfferId: input.specialOfferId,
     nonRefundable: input.nonRefundable,
+    tripPurpose: input.tripPurpose,
     paymentPlan: input.paymentPlan,
     requestSubmissionId: input.requestSubmissionId,
     expectedGuestTotal: input.expectedGuestTotal,

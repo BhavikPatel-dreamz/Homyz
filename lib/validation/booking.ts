@@ -9,6 +9,8 @@ export const createBookingSchema = z
     guests: z.number().int().min(1).max(50).optional().default(1),
     pets: z.number().int().min(0).max(20).optional(),
     nonRefundable: z.boolean().optional().default(false),
+    // Optional and self-reported. Missing data remains unknown for analytics.
+    tripPurpose: z.enum(["BUSINESS", "FAMILY", "LEISURE", "OTHER", "PREFER_NOT_TO_SAY"]).optional(),
     message: z.string().trim().min(1, "Please write a message to the host.").max(HOST_MESSAGE_MAX_LENGTH).optional(),
     // This is a payment-timing intent snapshot only. No option implies that a
     // payment was authorized, captured, or scheduled by a provider.
@@ -37,6 +39,7 @@ export const requestToBookSchema = z
     infants: z.number().int().min(0).max(5),
     pets: z.number().int().min(0).max(20).optional().default(0),
     nonRefundable: z.boolean().optional().default(false),
+    tripPurpose: z.enum(["BUSINESS", "FAMILY", "LEISURE", "OTHER", "PREFER_NOT_TO_SAY"]).optional(),
     message: z.string().trim().min(1).max(HOST_MESSAGE_MAX_LENGTH),
     paymentPlan: z.enum(["FULL", "SPLIT", "PAY_OVER_TIME"]),
     specialOfferId: z.string().optional(),

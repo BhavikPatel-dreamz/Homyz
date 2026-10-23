@@ -26,15 +26,21 @@ export function InsightsStatsTab({ data, periodLabel }: InsightsStatsTabProps) {
     return query ? `${href}?${query}` : href;
   };
   const reviewsHref = withFilters("/host/insights?tab=reviews");
-  const viewsTelemetry = { value: "Unavailable", badge: "Not tracked" };
-  const trackingRoutes = { conversion: { href: "/host/insights/stats/conversion" } };
+  const viewsTelemetry = quickStats.listingViews === null
+    ? { value: "—", detail: analyticsLimitations.pageViews.message }
+    : {
+        value: quickStats.listingViews.toLocaleString(),
+        detail: analyticsLimitations.pageViews.trackingStartedAt
+          ? `Observed since ${new Date(analyticsLimitations.pageViews.trackingStartedAt).toLocaleDateString()}`
+          : "Observed listing traffic",
+      };
   const quickStatsCards = [
     { label: "Overall rating", value: quickStats.overallRating === null ? "—" : `${quickStats.overallRating.toFixed(2)} ★`, detail: quickStats.totalReviewsCount ? "Eligible published guest rating" : "No eligible reviews yet", href: reviewsHref },
     { label: "Total reviews", value: `${quickStats.totalReviewsCount}`, detail: "Eligible published guest reviews", href: reviewsHref },
     { label: "Response rate", value: quickStats.responseRatePercentage === null ? "—" : `${quickStats.responseRatePercentage}%`, detail: quickStats.responseRatePercentage === null ? "No qualifying inquiries for this period" : `${quickStats.responseInquiryCount} qualifying inquiries`, href: "/host/insights/stats/response-rate" },
     { label: "Net earnings", value: formatCurrency(earnings.netEarningsCents, performance.currency), detail: `Realized in ${periodLabel}`, href: "/host/insights/stats/earnings" },
     { label: "Bookings", value: `${quickStats.confirmedBookingsCount}`, detail: `Confirmed stays starting in ${periodLabel}`, href: "/host/insights/stats/bookings" },
-    { label: "Listing views", value: viewsTelemetry.value, detail: viewsTelemetry.badge, href: "/host/insights/stats/views" },
+    { label: "Listing views", value: viewsTelemetry.value, detail: viewsTelemetry.detail, href: "/host/insights/listing-performance" },
   ];
   const detailCards = [
     { title: "Occupancy rate", value: `${performance.occupancyRatePercentage}%`, detail: `${performance.bookedNights} booked of ${performance.totalBookableNights} bookable nights`, href: "/host/insights/stats/occupancy" },
@@ -43,6 +49,14 @@ export function InsightsStatsTab({ data, periodLabel }: InsightsStatsTabProps) {
     { title: "Average stay length", value: performance.completedStaysCount ? `${performance.averageStayNights} nights` : "—", detail: performance.completedStaysCount ? `${performance.completedStaysCount} completed stays in period` : "No completed stays in this period", href: "/host/insights/stats/stay-length" },
     { title: "Cancellation rate", value: `${quality.hostCancellationRatePercentage}%`, detail: `${quality.totalCancelledCount} cancellations across host records`, href: "/host/insights/stats/cancellations" },
     { title: "Response time", value: quality.averageResponseTimeMinutes === null ? "—" : quality.averageResponseTimeMinutes < 60 ? `${quality.averageResponseTimeMinutes} min` : `${Math.round(quality.averageResponseTimeMinutes / 60)} hr`, detail: quality.averageResponseTimeMinutes === null ? "No qualifying inquiries for this period" : "First response to guest inquiries", href: "/host/insights/stats/response-rate" },
+    {
+      title: "Booking conversion",
+      value: analyticsLimitations.conversionRate.percentage === null ? "—" : `${analyticsLimitations.conversionRate.percentage}%`,
+      detail: analyticsLimitations.conversionRate.status === "ACTIVE"
+        ? `${analyticsLimitations.conversionRate.attributedConfirmedBookings} attributed confirmed booking${analyticsLimitations.conversionRate.attributedConfirmedBookings === 1 ? "" : "s"} from ${analyticsLimitations.pageViews.count} listing view${analyticsLimitations.pageViews.count === 1 ? "" : "s"}`
+        : analyticsLimitations.conversionRate.message,
+      href: "/host/insights/listing-performance",
+    },
   ];
 
   return <div className="space-y-10">
@@ -52,7 +66,7 @@ export function InsightsStatsTab({ data, periodLabel }: InsightsStatsTabProps) {
     </section>
 
     <section>
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Performance charts</p><h2 className="mt-1 text-2xl font-bold tracking-tight text-zinc-950">Current period compared with the last</h2><p className="mt-1 text-xs text-zinc-500">Each chart uses the selected property and reporting period. Select a chart to open its detailed metric.</p></div><span className="text-xs font-medium text-zinc-500">{chartComparison.comparisonLabel}</span></div>
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Performance charts</p><h2 className="mt-1 text-2xl font-bold tracking-tight text-zinc-950">Hosting Performance</h2><p className="mt-1 text-xs text-zinc-500">Current period compared with the last. Each chart uses the selected property and reporting period. Select a chart to open its detailed metric.</p></div><span className="text-xs font-medium text-zinc-500">{chartComparison.comparisonLabel}</span></div>
       <div className="mt-5 grid gap-5 lg:grid-cols-3">
         <ComparisonChart title="Occupancy" unit="%" current={chartComparison.occupancy.current} previous={chartComparison.occupancy.previous} detail={`${chartComparison.occupancy.bookedNights} booked · ${chartComparison.occupancy.availableNights} available nights`} href={withFilters("/host/insights/stats/occupancy")} />
         <ComparisonChart title="Bookings" current={chartComparison.bookings.current} previous={chartComparison.bookings.previous} detail={`${chartComparison.bookings.completedStays} completed · ${chartComparison.bookings.cancelledBookings} cancelled`} href={withFilters("/host/insights/stats/bookings")} />
@@ -68,7 +82,7 @@ export function InsightsStatsTab({ data, periodLabel }: InsightsStatsTabProps) {
     </section>
 
     <section>
-      <div className="flex items-end justify-between gap-4 border-b border-zinc-200 pb-4"><div><p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Detailed metrics</p><h2 className="mt-1 text-2xl font-bold tracking-tight text-zinc-950">Key hosting metrics</h2></div><Link href={withFilters("/host/insights/listing-performance")} className="text-xs font-semibold text-zinc-900 underline underline-offset-4">Listing performance →</Link></div>
+      <div className="flex items-end justify-between gap-4 border-b border-zinc-200 pb-4"><div><p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Detailed metrics</p><h2 className="mt-1 text-2xl font-bold tracking-tight text-zinc-950">Key hosting metrics</h2></div><Link href={withFilters("/host/insights/listing-performance")} className="text-xs font-semibold text-zinc-900 underline underline-offset-4">View Listing Performance →</Link></div>
       <div className="mt-5 grid gap-x-8 sm:grid-cols-2 lg:grid-cols-3">{detailCards.map((card) => <DetailMetric key={card.title} {...card} href={withFilters(card.href)} />)}</div>
     </section>
 

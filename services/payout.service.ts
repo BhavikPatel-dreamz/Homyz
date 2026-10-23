@@ -1703,7 +1703,28 @@ export interface HostEarningsReportingData {
   unavailableSnapshotCount: number;
 }
 
-const earningsBookingInclude = {
+// Keep this explicit while additive booking migrations are rolling out. Using
+// `include` selects every Booking scalar and makes stable earnings pages depend
+// on a column that may not yet exist in a deployment's database.
+const earningsBookingSelect = {
+  id: true,
+  submissionId: true,
+  userId: true,
+  listingId: true,
+  status: true,
+  startDate: true,
+  endDate: true,
+  guests: true,
+  totalPrice: true,
+  nightlyPrice: true,
+  cleaningFee: true,
+  currency: true,
+  priceBreakdown: true,
+  cancellationPolicy: true,
+  isNonRefundable: true,
+  checkInInstructionsViewedAt: true,
+  createdAt: true,
+  updatedAt: true,
   listing: { select: { id: true, title: true, photos: true } },
   payments: { select: { id: true, status: true, capturedAmount: true } },
   refunds: { select: { id: true, status: true, amount: true } },
@@ -1894,7 +1915,7 @@ export async function listHostEarningsTransactions(
   }
   const candidates = await prisma.booking.findMany({
     where: candidateWhere,
-    include: earningsBookingInclude,
+    select: earningsBookingSelect,
     orderBy:
       input.kind === "upcoming" ? { startDate: "asc" } : { endDate: "desc" },
   });
@@ -2374,7 +2395,7 @@ export async function getHostEarningsOverview(
     await Promise.all([
       prisma.booking.findMany({
         where: { ...bookingScope, endDate: { gte: minQueryStart, lte: maxQueryEnd } },
-        include: earningsBookingInclude,
+        select: earningsBookingSelect,
         orderBy: { endDate: "asc" },
       }),
       prisma.booking.findMany({
@@ -2389,7 +2410,7 @@ export async function getHostEarningsOverview(
                 },
               }),
         },
-        include: earningsBookingInclude,
+        select: earningsBookingSelect,
         orderBy: { startDate: "asc" },
         take: payoutPreviewTake,
       }),
@@ -2399,7 +2420,7 @@ export async function getHostEarningsOverview(
           status: BookingStatus.CONFIRMED,
           endDate: { lte: now },
         },
-        include: earningsBookingInclude,
+        select: earningsBookingSelect,
         orderBy: { endDate: "desc" },
         take: payoutPreviewTake,
       }),

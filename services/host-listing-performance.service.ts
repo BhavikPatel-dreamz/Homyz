@@ -8,6 +8,9 @@ import { resolvePropertyCurrency } from "@/lib/currency";
 import { prisma } from "@/lib/db/prisma";
 import { resolveNightlyPrice } from "@/lib/pricing/price-tips";
 import { listingService } from "@/services/listing.service";
+import { notificationService } from "@/services/notification.service";
+import { NotificationType } from "@/generated/prisma/enums";
+import { getListingAnalyticsSummary } from "@/services/listing-analytics.service";
 
 const MIN_COMPARABLES = 3;
 const MAX_SEARCH_RESULTS_CHECKED = 100;
@@ -50,6 +53,8 @@ export type ListingPerformanceData = {
     yourNightlyPriceCents: number | null;
     comparableAverageNightlyPriceCents: number | null;
     comparableMedianNightlyPriceCents: number | null;
+    comparableLowestNightlyPriceCents: number | null;
+    comparableHighestNightlyPriceCents: number | null;
     differenceCents: number | null;
     differencePercentage: number | null;
     comparableCount: number;
@@ -60,6 +65,33 @@ export type ListingPerformanceData = {
   comparisonBenchmarks: {
     ratingCategories: Partial<Record<RatingCategory, { yourRating: number; comparableAverage: number; comparableCount: number }>>;
     missingCommonAmenities: Array<{ amenity: string; comparableSharePercentage: number; comparableCount: number }>;
+  };
+  comparableListings: Array<{
+    id: string;
+    title: string;
+    photo: string | null;
+    nightlyPriceCents: number;
+    amenities: string[];
+    cancellationPolicy: string | null;
+  }>;
+  cancellationComparison: {
+    yourPolicy: string | null;
+    comparablePolicies: Array<{ policy: string; count: number }>;
+    message: string;
+  };
+  pricingObservations: {
+    extendedEmptyNights: { startDate: string; endDate: string; consecutiveNights: number } | null;
+    approachingAvailableWeekend: { startDate: string; endDate: string } | null;
+    leadTime: { sampleSize: number; typicalRange: string | null; medianDays: number | null; message: string };
+  };
+  searchPerformance: {
+    status: "ACTIVE" | "DATA_UNAVAILABLE";
+    message: string;
+    trackingStartedAt: string | null;
+    impressions: number;
+    listingViews: number;
+    clickThroughRatePercentage: number | null;
+    attributedBookingConversionPercentage: number | null;
   };
   quickFixes: ListingPerformanceQuickFix[];
 };
@@ -101,7 +133,7 @@ async function getOwnedListing(actor: AuthUser, listingId?: string | null) {
       guests: true, bedrooms: true, amenities: true, price: true, weekdayBasePrice: true, weekendPrice: true,
       weekendPremium: true, customPrices: true, published: true, status: true, isPaused: true, blockedDates: true,
       minNights: true, maxNights: true, advanceNotice: true, sameDayCutoff: true, allowSameDayRequests: true,
-      discounts: true,
+      discounts: true, cancellationPolicy: true,
     },
     orderBy: { createdAt: "desc" },
   });
@@ -140,6 +172,7 @@ async function selectComparables(
       id: true, country: true, amenities: true, price: true, weekdayBasePrice: true, weekendPrice: true,
       weekendPremium: true, customPrices: true, guests: true, minNights: true, maxNights: true,
       advanceNotice: true, sameDayCutoff: true, allowSameDayRequests: true, blockedDates: true, discounts: true,
+      title: true, photos: true, cancellationPolicy: true,
     },
     take: 100,
   });
@@ -148,6 +181,29 @@ async function selectComparables(
     if (resolvePropertyCurrency(candidate) !== currency) return false;
     return validateStayAvailability({ listing: candidate, ...context, now }).available;
   });
+}
+
+async function persistComparableObservations(input: {
+  hostId: string; sourceListingId: string; checkIn: string; checkOut: string; currency: string;
+  comparables: Array<{ id: string; nightlyPriceCents: number }>;
+}) {
+  const dayKey = new Date().toISOString().slice(0, 10);
+  await Promise.all(input.comparables.map(async (comparable) => {
+    const previous = await prisma.comparablePriceObservation.findFirst({
+      where: { sourceListingId: input.sourceListingId, comparableListingId: comparable.id, checkIn: parseBookingDate(input.checkIn), checkOut: parseBookingDate(input.checkOut), currency: input.currency },
+      orderBy: { observedAt: "desc" }, select: { nightlyPriceCents: true, observedAt: true },
+    });
+    await prisma.comparablePriceObservation.upsert({
+      where: { observationKey: `${input.sourceListingId}:${comparable.id}:${input.checkIn}:${input.checkOut}:${dayKey}` },
+      create: { hostId: input.hostId, sourceListingId: input.sourceListingId, comparableListingId: comparable.id, checkIn: parseBookingDate(input.checkIn), checkOut: parseBookingDate(input.checkOut), currency: input.currency, nightlyPriceCents: comparable.nightlyPriceCents, observationKey: `${input.sourceListingId}:${comparable.id}:${input.checkIn}:${input.checkOut}:${dayKey}` },
+      update: {},
+    });
+    // The first observation is a baseline. Later notices are bounded to one
+    // per comparable/stay context/day by the notification entity key.
+    if (previous && previous.nightlyPriceCents !== comparable.nightlyPriceCents) {
+      await notificationService.create({ userId: input.hostId, type: NotificationType.SYSTEM, title: "Comparable price changed", message: "A similar Homyz listing's observed price changed for your selected stay dates.", entityId: `comparable-price:${input.sourceListingId}:${comparable.id}:${input.checkIn}:${input.checkOut}:${dayKey}`, entityType: "comparable_price_change", link: `/host/insights/listing-performance?propertyId=${encodeURIComponent(input.sourceListingId)}&checkIn=${input.checkIn}&checkOut=${input.checkOut}`, metadata: { sourceListingId: input.sourceListingId, comparableListingId: comparable.id, checkIn: input.checkIn, checkOut: input.checkOut, previousNightlyPriceCents: previous.nightlyPriceCents, currentNightlyPriceCents: comparable.nightlyPriceCents, currency: input.currency } });
+    }
+  }));
 }
 
 function averageNightlyPrice(
@@ -162,6 +218,39 @@ function averageNightlyPrice(
     resolveNightlyPrice({ ...listing, customPrices }, shiftBookingDateKey(context.checkIn, index)).price,
   ).filter((price) => Number.isFinite(price) && price > 0);
   return prices.length === nights ? Math.round(prices.reduce((sum, price) => sum + price, 0) / prices.length) : null;
+}
+
+async function getPricingObservations(listing: { id: string; blockedDates: string[] }, actor: AuthUser) {
+  const today = bookingDateKey(new Date());
+  const windowEnd = shiftBookingDateKey(today, 90);
+  const bookings = await prisma.booking.findMany({
+    where: { listingId: listing.id, status: { in: [BookingStatus.CONFIRMED, BookingStatus.PENDING] }, endDate: { gt: parseBookingDate(today) }, startDate: { lt: parseBookingDate(windowEnd) } },
+    select: { startDate: true, endDate: true, createdAt: true, status: true }, take: 500,
+  });
+  const unavailable = new Set(listing.blockedDates || []);
+  for (const booking of bookings) for (let key = bookingDateKey(booking.startDate); key < bookingDateKey(booking.endDate); key = shiftBookingDateKey(key, 1)) unavailable.add(key);
+  let best: { startDate: string; endDate: string; consecutiveNights: number } | null = null;
+  let currentStart: string | null = null; let count = 0;
+  for (let key = today; key < windowEnd; key = shiftBookingDateKey(key, 1)) {
+    if (unavailable.has(key)) { if (count >= 7 && (!best || count > best.consecutiveNights)) best = { startDate: currentStart!, endDate: key, consecutiveNights: count }; currentStart = null; count = 0; }
+    else { if (!currentStart) currentStart = key; count++; }
+  }
+  if (count >= 7 && (!best || count > best.consecutiveNights)) best = { startDate: currentStart!, endDate: windowEnd, consecutiveNights: count };
+  let weekend: { startDate: string; endDate: string } | null = null;
+  for (let offset = 0; offset < 28; offset++) {
+    const key = shiftBookingDateKey(today, offset); const date = parseBookingDate(key);
+    if (date.getUTCDay() !== 5) continue;
+    const end = shiftBookingDateKey(key, 2);
+    if (![key, shiftBookingDateKey(key, 1)].some((night) => unavailable.has(night))) { weekend = { startDate: key, endDate: end }; break; }
+  }
+  const historical = await prisma.booking.findMany({ where: { listingId: listing.id, status: BookingStatus.CONFIRMED, startDate: { lte: new Date() } }, select: { createdAt: true, startDate: true }, orderBy: { createdAt: "desc" }, take: 100 });
+  const leadTimes = historical.map((booking) => Math.floor((booking.startDate.getTime() - booking.createdAt.getTime()) / 86_400_000)).filter((days) => days >= 0);
+  const leadMedian = median(leadTimes);
+  const leadTime = leadTimes.length >= 5 ? { sampleSize: leadTimes.length, medianDays: leadMedian, typicalRange: leadMedian === null ? null : leadMedian <= 7 ? "0–7 days before check-in" : leadMedian <= 14 ? "8–14 days before check-in" : leadMedian <= 30 ? "15–30 days before check-in" : "more than 30 days before check-in", message: "Based on confirmed bookings created for this listing." } : { sampleSize: leadTimes.length, medianDays: null, typicalRange: null, message: "Lead-time observations need at least five confirmed bookings." };
+  const dayKey = new Date().toISOString().slice(0, 10);
+  if (best) void notificationService.create({ userId: actor.id, type: NotificationType.SYSTEM, title: "Extended available nights", message: `Your listing has ${best.consecutiveNights} consecutive available nights from ${best.startDate}.`, entityId: `availability-gap:${listing.id}:${best.startDate}:${dayKey}`, entityType: "pricing_availability_alert", link: `/host/calendar?listingId=${encodeURIComponent(listing.id)}`, metadata: best }).catch(() => undefined);
+  if (weekend) void notificationService.create({ userId: actor.id, type: NotificationType.SYSTEM, title: "Upcoming available weekend", message: `Your listing is available for the weekend starting ${weekend.startDate}.`, entityId: `available-weekend:${listing.id}:${weekend.startDate}:${dayKey}`, entityType: "pricing_availability_alert", link: `/host/calendar?listingId=${encodeURIComponent(listing.id)}`, metadata: weekend }).catch(() => undefined);
+  return { extendedEmptyNights: best, approachingAvailableWeekend: weekend, leadTime };
 }
 
 export const hostListingPerformanceService = {
@@ -229,6 +318,8 @@ export const hostListingPerformanceService = {
       status: enoughComparables && yourNightlyPriceCents !== null ? "AVAILABLE" : "INSUFFICIENT_DATA",
       currency: resolvePropertyCurrency(listing), yourNightlyPriceCents, comparableAverageNightlyPriceCents: comparableAverage,
       comparableMedianNightlyPriceCents: comparableMedian, differenceCents,
+      comparableLowestNightlyPriceCents: enoughComparables ? Math.min(...comparablePrices) : null,
+      comparableHighestNightlyPriceCents: enoughComparables ? Math.max(...comparablePrices) : null,
       differencePercentage: differenceCents !== null && comparableAverage ? rounded((differenceCents / comparableAverage) * 100) : null,
       comparableCount: comparablePrices.length,
       criteria: ["Same city", "Same property type", "Within one bedroom", "Compatible guest capacity", "Available for selected stay", "Same listing currency"],
@@ -237,8 +328,23 @@ export const hostListingPerformanceService = {
         ? "Comparison uses available Similar Homyz Listings only; it is not a whole-market average."
         : "Not enough comparable listings available for this date range.",
     };
+    if (priceComparison.status === "AVAILABLE" && priceComparison.differencePercentage !== null && Math.abs(priceComparison.differencePercentage) >= 10) {
+      const todayKey = new Date().toISOString().slice(0, 10);
+      void notificationService.create({
+        userId: actor.id, type: NotificationType.SYSTEM, title: "Review your pricing", entityId: `comparable-price-difference:${listing.id}:${context.checkIn}:${context.checkOut}:${todayKey}`, entityType: "pricing_observation",
+        message: `Your observed nightly price is ${Math.abs(priceComparison.differencePercentage)}% ${priceComparison.differencePercentage > 0 ? "above" : "below"} the comparable average for these stay dates.`,
+        link: `/host/listings/${listing.id}/pricing`, metadata: { listingId: listing.id, checkIn: context.checkIn, checkOut: context.checkOut, differencePercentage: priceComparison.differencePercentage, comparableCount: priceComparison.comparableCount, currency: priceComparison.currency },
+      }).catch(() => undefined);
+    }
 
     const comparableIds = comparables.map((candidate) => candidate.id);
+    const comparableListings = comparables.map((candidate) => ({
+      id: candidate.id, title: candidate.title, photo: candidate.photos[0] || null,
+      nightlyPriceCents: averageNightlyPrice(candidate, context), amenities: candidate.amenities, cancellationPolicy: candidate.cancellationPolicy,
+    })).filter((candidate): candidate is { id: string; title: string; photo: string | null; nightlyPriceCents: number; amenities: string[]; cancellationPolicy: string | null } => candidate.nightlyPriceCents !== null).sort((left, right) => left.nightlyPriceCents - right.nightlyPriceCents).slice(0, 10);
+    // Observations are durable only when the optional additive table is present.
+    // A migration gap must not make listing performance unavailable.
+    void persistComparableObservations({ hostId: actor.id, sourceListingId: listing.id, checkIn: context.checkIn, checkOut: context.checkOut, currency: resolvePropertyCurrency(listing), comparables: comparableListings }).catch(() => undefined);
     const reviews = comparableIds.length ? await prisma.review.findMany({
       where: { listingId: { in: comparableIds }, direction: ReviewDirection.GUEST_TO_PROPERTY, status: ReviewStatus.PUBLISHED },
       select: { listingId: true, cleanlinessRating: true, accuracyRating: true, locationRating: true, valueRating: true },
@@ -297,6 +403,16 @@ export const hostListingPerformanceService = {
       });
     }
 
-    return { ...base, searchRanking, priceComparison, comparisonBenchmarks: { ratingCategories, missingCommonAmenities }, quickFixes };
+    const policyCounts = new Map<string, number>();
+    for (const comparable of comparableListings) {
+      const policy = comparable.cancellationPolicy || "Not specified";
+      policyCounts.set(policy, (policyCounts.get(policy) ?? 0) + 1);
+    }
+    const [pricingObservations, listingAnalytics] = await Promise.all([
+      getPricingObservations(listing, actor),
+      getListingAnalyticsSummary({ listingIds: [listing.id], startDate: new Date(Date.now() - 30 * 86_400_000), endDate: new Date() }),
+    ]);
+    const searchPerformance = { status: listingAnalytics.status, message: listingAnalytics.message, trackingStartedAt: listingAnalytics.trackingStartedAt, impressions: listingAnalytics.searchImpressions, listingViews: listingAnalytics.listingViews, clickThroughRatePercentage: listingAnalytics.searchImpressions > 0 ? Math.round((listingAnalytics.listingViews / listingAnalytics.searchImpressions) * 10_000) / 100 : null, attributedBookingConversionPercentage: listingAnalytics.conversionRatePercentage };
+    return { ...base, searchRanking, priceComparison, comparisonBenchmarks: { ratingCategories, missingCommonAmenities }, comparableListings, cancellationComparison: { yourPolicy: listing.cancellationPolicy, comparablePolicies: Array.from(policyCounts.entries()).map(([policy, count]) => ({ policy, count })).sort((left, right) => right.count - left.count), message: "Cancellation terms are shown as configured by published similar Homyz listings; no policy is scored as better." }, pricingObservations, searchPerformance, quickFixes };
   },
 };

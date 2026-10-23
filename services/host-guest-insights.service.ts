@@ -10,6 +10,8 @@ import type { DateRangePreset, ReportingFilterParams } from "@/lib/dashboard/rep
 import { prisma } from "@/lib/db/prisma";
 import { BookingStatus } from "@/generated/prisma/enums";
 import { parseBookingDate } from "@/lib/booking/booking-date";
+import { extractStoredHostPayout, isStoredBookingPayoutEligible } from "@/lib/booking/booking-financials";
+import { normalizeCurrencyCode } from "@/lib/currency";
 
 export interface GuestOriginCityItem {
   city: string;
@@ -29,6 +31,10 @@ export interface ReturningGuestCohortData {
   firstTimeGuests: number;
   returningGuests: number;
   returningPercentage: number;
+  repeatBookingCount: number;
+  realizedRepeatGuestRevenueCents: number;
+  averageRevenuePerReturningGuestCents: number | null;
+  currency: string;
   repeatStayBreakdown: Array<{
     category: string;
     guestCount: number;
@@ -41,6 +47,15 @@ export interface ReturningGuestCohortData {
     totalGuestsCount: number;
     returningPercentage: number;
   }>;
+}
+
+export interface TripPurposeInsight {
+  purpose: "BUSINESS" | "FAMILY" | "LEISURE" | "OTHER" | "PREFER_NOT_TO_SAY" | "UNKNOWN";
+  label: string;
+  bookingCount: number;
+  percentage: number;
+  averageStayNights: number | null;
+  eligibleRevenueCents: number;
 }
 
 export interface CheckInEngagementData {
@@ -82,6 +97,12 @@ export interface GuestInsightsOverviewData {
     totalGuestsWithKnownOrigin: number;
   };
   returning: ReturningGuestCohortData;
+  tripPurpose: {
+    currency: string;
+    items: TripPurposeInsight[];
+    trend: Array<{ monthKey: string; label: string; counts: Record<string, number> }>;
+    message: string;
+  };
   checkInEngagement: CheckInEngagementData;
   reviewEngagement: {
     overallRating: number | null;
@@ -183,9 +204,14 @@ export const hostGuestInsightsService = {
       })
       .sort((a, b) => b.guestCount - a.guestCount);
 
-    // Build returning cohorts from completed stays in the requested reporting period.
+    // Determine the current reporting cohort separately from the guest's
+    // authorized host history. A guest is not reclassified as new merely
+    // because their earlier completed stays happened before this period.
     const scopedListings = dashboardData.listings;
     const scopedListingIds = query.propertyId ? [query.propertyId] : scopedListings.map((l) => l.id);
+    const hostListingIds = (await prisma.listing.findMany({
+      where: { hostId: actor.id, deletedAt: null }, select: { id: true },
+    })).map((listing) => listing.id);
     const asOf = new Date();
     const reportingStartDate = parseBookingDate(dashboardData.reportingPeriod.startDateKey);
     const reportingEndDate = parseBookingDate(dashboardData.reportingPeriod.endDateKey);
@@ -198,17 +224,46 @@ export const hostGuestInsightsService = {
         status: BookingStatus.CONFIRMED,
         endDate: { gte: reportingStartDate, lte: completedPeriodEnd },
       },
-      select: { userId: true, endDate: true },
+      select: { id: true, userId: true, status: true, startDate: true, endDate: true, tripPurpose: true, currency: true, totalPrice: true, cleaningFee: true, priceBreakdown: true },
       orderBy: { endDate: "asc" },
     });
-    const guestStayCounts = new Map<string, number>();
-    for (const booking of completedGuestBookings) {
-      guestStayCounts.set(booking.userId, (guestStayCounts.get(booking.userId) ?? 0) + 1);
+    const cohortGuestIds = [...new Set(completedGuestBookings.map((booking) => booking.userId))];
+    const historicalBookings = cohortGuestIds.length && hostListingIds.length ? await prisma.booking.findMany({
+      where: {
+        listingId: { in: hostListingIds }, userId: { in: cohortGuestIds }, status: BookingStatus.CONFIRMED,
+        endDate: { lte: completedPeriodEnd },
+      },
+      select: { id: true, userId: true, endDate: true },
+      orderBy: [{ userId: "asc" }, { endDate: "asc" }],
+    }) : [];
+    const priorStayCountByGuest = new Map<string, number>();
+    const historicalCountByGuest = new Map<string, number>();
+    for (const booking of historicalBookings) historicalCountByGuest.set(booking.userId, (historicalCountByGuest.get(booking.userId) ?? 0) + 1);
+    // The first reporting-period stay decides the guest cohort. This avoids a
+    // second stay in the same period turning a first-time guest into a falsely
+    // historical returning guest.
+    for (const guestId of cohortGuestIds) {
+      const firstCohortStay = completedGuestBookings.find((booking) => booking.userId === guestId);
+      if (!firstCohortStay) continue;
+      priorStayCountByGuest.set(guestId, historicalBookings.filter((booking) => booking.userId === guestId && booking.endDate < firstCohortStay.endDate).length);
     }
+    const guestStayCounts = new Map<string, number>();
+    for (const booking of completedGuestBookings) guestStayCounts.set(booking.userId, (guestStayCounts.get(booking.userId) ?? 0) + 1);
     const totalGuests = guestStayCounts.size;
-    const returningGuests = Array.from(guestStayCounts.values()).filter((count) => count >= 2).length;
+    const returningGuestIds = new Set([...guestStayCounts.keys()].filter((guestId) => (priorStayCountByGuest.get(guestId) ?? 0) > 0));
+    const returningGuests = returningGuestIds.size;
     const firstTimeGuests = Math.max(0, totalGuests - returningGuests);
     const returningPercentage = totalGuests > 0 ? Math.round((returningGuests / totalGuests) * 100) : 0;
+    const selectedCurrency = normalizeCurrencyCode(query.currency || "SAR");
+    let realizedRepeatGuestRevenueCents = 0;
+    let repeatBookingCount = 0;
+    for (const booking of completedGuestBookings) {
+      if (!returningGuestIds.has(booking.userId)) continue;
+      const payout = extractStoredHostPayout(booking);
+      if (!payout || !isStoredBookingPayoutEligible(booking) || normalizeCurrencyCode(payout.currency ?? booking.currency ?? "SAR") !== selectedCurrency) continue;
+      realizedRepeatGuestRevenueCents += payout.netHostPayout;
+      repeatBookingCount++;
+    }
 
     // Multi-stay breakdown
     const repeatStayBreakdown = [
@@ -219,18 +274,17 @@ export const hostGuestInsightsService = {
       },
       {
         category: "2 stays (Repeat)",
-        guestCount: Array.from(guestStayCounts.values()).filter((count) => count === 2).length,
-        percentage: totalGuests > 0 ? Math.round((Array.from(guestStayCounts.values()).filter((count) => count === 2).length / totalGuests) * 100) : 0,
+        guestCount: [...guestStayCounts.keys()].filter((guestId) => (historicalCountByGuest.get(guestId) ?? 0) === 2).length,
+        percentage: totalGuests > 0 ? Math.round(([...guestStayCounts.keys()].filter((guestId) => (historicalCountByGuest.get(guestId) ?? 0) === 2).length / totalGuests) * 100) : 0,
       },
       {
         category: "3+ stays (Loyal)",
-        guestCount: Array.from(guestStayCounts.values()).filter((count) => count >= 3).length,
-        percentage: totalGuests > 0 ? Math.round((Array.from(guestStayCounts.values()).filter((count) => count >= 3).length / totalGuests) * 100) : 0,
+        guestCount: [...guestStayCounts.keys()].filter((guestId) => (historicalCountByGuest.get(guestId) ?? 0) >= 3).length,
+        percentage: totalGuests > 0 ? Math.round(([...guestStayCounts.keys()].filter((guestId) => (historicalCountByGuest.get(guestId) ?? 0) >= 3).length / totalGuests) * 100) : 0,
       },
     ];
 
-    // Build a real six-month activity trend. A guest is returning within a month
-    // only when that month's completed stay is their second-or-later stay in scope.
+    // Build a real six-month activity trend using the historical classification.
     const now = asOf;
     const trend: ReturningGuestCohortData["trend"] = [];
     for (let i = 5; i >= 0; i--) {
@@ -246,7 +300,7 @@ export const hostGuestInsightsService = {
         }
       }
       const totalInMonth = counts.size;
-      const returningInMonth = Array.from(counts.keys()).filter((guestId) => (guestStayCounts.get(guestId) ?? 0) >= 2).length;
+      const returningInMonth = Array.from(counts.keys()).filter((guestId) => returningGuestIds.has(guestId)).length;
       trend.push({
         monthKey: mKey,
         label,
@@ -255,6 +309,24 @@ export const hostGuestInsightsService = {
         returningPercentage: totalInMonth > 0 ? Math.round((returningInMonth / totalInMonth) * 100) : 0,
       });
     }
+
+    const purposeDefinitions: Array<[TripPurposeInsight["purpose"], string]> = [
+      ["BUSINESS", "Business"], ["FAMILY", "Family"], ["LEISURE", "Leisure"], ["OTHER", "Other"], ["PREFER_NOT_TO_SAY", "Prefer not to say"], ["UNKNOWN", "Unknown"],
+    ];
+    const purposeItems = purposeDefinitions.map(([purpose, label]) => {
+      const matching = completedGuestBookings.filter((booking) => (booking.tripPurpose ?? "UNKNOWN") === purpose);
+      const nights = matching.reduce((total, booking) => total + Math.max(0, Math.round((booking.endDate.getTime() - booking.startDate.getTime()) / 86_400_000)), 0);
+      const eligibleRevenueCents = matching.reduce((total, booking) => {
+        const payout = extractStoredHostPayout(booking);
+        return payout && isStoredBookingPayoutEligible(booking) && normalizeCurrencyCode(payout.currency ?? booking.currency ?? "SAR") === selectedCurrency ? total + payout.netHostPayout : total;
+      }, 0);
+      return { purpose, label, bookingCount: matching.length, percentage: completedGuestBookings.length ? Math.round((matching.length / completedGuestBookings.length) * 1000) / 10 : 0, averageStayNights: matching.length ? Math.round((nights / matching.length) * 10) / 10 : null, eligibleRevenueCents };
+    });
+    const tripTrend = trend.map((point) => {
+      const monthBookings = completedGuestBookings.filter((booking) => booking.endDate >= new Date(`${point.monthKey}-01T00:00:00.000Z`) && booking.endDate < new Date(Date.UTC(Number(point.monthKey.slice(0, 4)), Number(point.monthKey.slice(5, 7)), 1)));
+      const counts = Object.fromEntries(purposeDefinitions.map(([purpose]) => [purpose, monthBookings.filter((booking) => (booking.tripPurpose ?? "UNKNOWN") === purpose).length]));
+      return { monthKey: point.monthKey, label: point.label, counts };
+    });
 
     // Check-in Instruction Engagement Metrics
     // Fetch completed/confirmed bookings in period for scoped listings to inspect check-in engagement
@@ -322,8 +394,18 @@ export const hostGuestInsightsService = {
         firstTimeGuests,
         returningGuests,
         returningPercentage,
+        repeatBookingCount,
+        realizedRepeatGuestRevenueCents,
+        averageRevenuePerReturningGuestCents: returningGuests > 0 ? Math.round(realizedRepeatGuestRevenueCents / returningGuests) : null,
+        currency: selectedCurrency,
         repeatStayBreakdown,
         trend,
+      },
+      tripPurpose: {
+        currency: selectedCurrency,
+        items: purposeItems,
+        trend: tripTrend,
+        message: "Trip purpose is optional and self-reported for new bookings. Historic bookings without a response remain Unknown.",
       },
       checkInEngagement: {
         eligibleReservationsCount: eligibleCount,

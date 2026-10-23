@@ -13,7 +13,7 @@ interface InsightsTabNavProps {
 const TABS: Array<{ id: InsightsTab; label: string }> = [
   { id: "reviews", label: "Reviews" },
   { id: "stats", label: "Stats" },
-  // { id: "opportunities", label: "Opportunities" },
+  { id: "opportunities", label: "Opportunities" },
   // { id: "superhost", label: "Superhost" },
 ];
 

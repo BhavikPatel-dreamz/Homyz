@@ -8,6 +8,10 @@ import { moderationService } from "@/services/moderation.service";
 import { AppError } from "@/lib/api/errors";
 import { getAvailablePaymentMethods, PAYMENT_PROVIDER_UNAVAILABLE_MESSAGE } from "@/lib/booking/payment-method";
 import { getPaymentPolicy } from "@/lib/booking/payment-policy";
+import {
+  readAnalyticsSessionId,
+  recordConfirmedBookingAnalyticsEvent,
+} from "@/services/listing-analytics.service";
 
 // GET /api/v1/bookings — the caller's own bookings (paginated).
 export const GET = apiHandler(async (req) => {
@@ -32,5 +36,10 @@ export const POST = apiHandler(async (req) => {
   }
   const body = createBookingSchema.parse(await req.json());
   const booking = await bookingService.create(actor, body);
+  // Attribution is supplemental telemetry; booking success never depends on it.
+  void recordConfirmedBookingAnalyticsEvent({
+    bookingId: booking.id,
+    sessionId: readAnalyticsSessionId(req.headers.get("cookie")),
+  }).catch(() => undefined);
   return created(booking);
 });

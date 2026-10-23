@@ -26,14 +26,15 @@ test("Phase 13 RevPAN reuses the shared Host Dashboard inventory policy", () => 
   assert.match(dashboard, /export function calculateDashboardInventory/);
 });
 
-test("Phase 13 keeps unsupported costs and profit explicitly unavailable", () => {
+test("Dashboard Plus derives costs and estimated profit only from recorded operating expenses", () => {
   const service = read("services/host-earnings-analytics.service.ts");
   const client = read("app\/(protected)\/host\/earnings\/analytics\/host-earnings-analytics-client.tsx");
 
-  assert.match(service, /DATA_UNAVAILABLE/);
-  assert.match(service, /Operating expenses are not recorded in Homyz yet/);
-  assert.match(service, /Operating profit requires recorded operating expenses/);
-  assert.match(client, /Not available yet/);
+  assert.match(service, /OperatingExpenseStatus\.ACTIVE/);
+  assert.match(service, /No operating expenses have been recorded/);
+  assert.match(service, /Estimated Profit Based on Recorded Costs/);
+  assert.match(service, /expenseCoverage/);
+  assert.match(client, /Recorded costs are never assumed to be zero/);
 });
 
 test("Phase 13 provides protected analytics, filter persistence, comparisons, and RevPAN drill-down", () => {

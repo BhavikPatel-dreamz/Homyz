@@ -156,6 +156,7 @@ export function BookingCheckoutClient({
     return 0;
   });
   const [isNonRefundable] = useState<boolean>(initialNonRefundable);
+  const [tripPurpose, setTripPurpose] = useState<"BUSINESS" | "FAMILY" | "LEISURE" | "OTHER" | "PREFER_NOT_TO_SAY" | "">("");
   const guestsCount = adultsCount + childrenCount;
   const maximumGuests = Math.max(1, listing.guests || 1);
   const canAddCapacityGuest = guestsCount < maximumGuests;
@@ -721,6 +722,7 @@ export function BookingCheckoutClient({
             guests: guestsCount,
             pets: petsCount || 0,
             nonRefundable: isNonRefundable,
+            tripPurpose: tripPurpose || undefined,
             paymentPlan: getBookingApiPaymentPlan(selectedPaymentTiming),
             message: hostMessage.trim() || undefined,
             specialOfferId: specialOfferId || undefined,
@@ -738,6 +740,7 @@ export function BookingCheckoutClient({
             infants: infantsCount,
             pets: petsCount || 0,
             nonRefundable: isNonRefundable,
+            tripPurpose: tripPurpose || undefined,
             specialOfferId: specialOfferId || undefined,
             message: hostMessage.trim() || undefined,
             paymentPlan: getBookingApiPaymentPlan(selectedPaymentTiming),
@@ -1384,6 +1387,19 @@ export function BookingCheckoutClient({
                         <p id="checkout-host-message-count" className="mt-1 text-right text-xs text-zinc-500" aria-live="polite">
                           {hostMessage.length.toLocaleString("en-US")}/{HOST_MESSAGE_MAX_LENGTH.toLocaleString("en-US")}
                         </p>
+                      </div>
+
+                      <div className="mt-4 rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+                        <label htmlFor="checkout-trip-purpose" className="block text-sm font-medium text-[#1f1f1f]">What brings you here? <span className="font-normal text-zinc-500">Optional</span></label>
+                        <p className="mt-1 text-xs text-zinc-500">This is used only for aggregated host insights. You can leave it unknown.</p>
+                        <select id="checkout-trip-purpose" value={tripPurpose} onChange={(event) => setTripPurpose(event.target.value as typeof tripPurpose)} className="mt-3 w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-zinc-900 focus:outline-none">
+                          <option value="">Prefer not to say / Unknown</option>
+                          <option value="BUSINESS">Business</option>
+                          <option value="FAMILY">Family</option>
+                          <option value="LEISURE">Leisure</option>
+                          <option value="OTHER">Other</option>
+                          <option value="PREFER_NOT_TO_SAY">Prefer not to say</option>
+                        </select>
                       </div>
 
                       {hostMessageError && (

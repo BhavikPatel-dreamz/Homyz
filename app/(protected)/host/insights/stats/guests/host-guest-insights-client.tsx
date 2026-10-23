@@ -60,6 +60,7 @@ export function HostGuestInsightsClient({ initialData }: HostGuestInsightsClient
   };
 
   const { summary, origins, returning, checkInEngagement } = data;
+  const formatMoney = (cents: number | null, currency: string) => cents === null ? "—" : new Intl.NumberFormat("en-US", { style: "currency", currency, maximumFractionDigits: 0 }).format(cents / 100);
 
   return (
     <div className="space-y-8">
@@ -278,6 +279,10 @@ export function HostGuestInsightsClient({ initialData }: HostGuestInsightsClient
               </div>
             ))}
           </div>
+          <div className="mt-5 grid grid-cols-2 gap-3 border-t border-zinc-100 pt-5 text-xs">
+            <div className="rounded-xl bg-zinc-50 p-3"><p className="text-zinc-500">Repeat bookings</p><p className="mt-1 font-bold text-zinc-950">{returning.repeatBookingCount}</p></div>
+            <div className="rounded-xl bg-zinc-50 p-3"><p className="text-zinc-500">Observed repeat value</p><p className="mt-1 font-bold text-zinc-950">{formatMoney(returning.realizedRepeatGuestRevenueCents, returning.currency)}</p></div>
+          </div>
         </section>
 
         {/* Check-In Instruction Engagement Card */}
@@ -321,6 +326,13 @@ export function HostGuestInsightsClient({ initialData }: HostGuestInsightsClient
           </div>
         </section>
       </div>
+
+      <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-xs sm:p-8">
+        <div className="border-b border-zinc-100 pb-4"><h2 className="text-lg font-bold text-zinc-950">Trip purpose</h2><p className="mt-1 text-xs text-zinc-500">{data.tripPurpose.message}</p></div>
+        <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {data.tripPurpose.items.map((item) => <div key={item.purpose} className="rounded-2xl border border-zinc-100 bg-zinc-50/70 p-4"><div className="flex justify-between gap-3"><p className="text-sm font-semibold text-zinc-900">{item.label}</p><p className="text-sm font-bold text-zinc-950">{item.percentage}%</p></div><p className="mt-3 text-2xl font-bold tracking-tight text-zinc-950">{item.bookingCount}</p><p className="mt-1 text-[11px] text-zinc-500">{item.averageStayNights === null ? "No completed stays" : `${item.averageStayNights} avg. nights`} · {formatMoney(item.eligibleRevenueCents, data.tripPurpose.currency)} eligible revenue</p></div>)}
+        </div>
+      </section>
     </div>
   );
 }

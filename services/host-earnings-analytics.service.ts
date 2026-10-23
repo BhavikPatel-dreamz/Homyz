@@ -1,6 +1,6 @@
 import "server-only";
 
-import { BookingStatus, Role } from "@/generated/prisma/enums";
+import { BookingStatus, OperatingExpenseStatus, Role } from "@/generated/prisma/enums";
 import type { AuthUser } from "@/lib/auth/types";
 import { authorize } from "@/lib/permissions/authorize";
 import { assertHostPermission } from "@/lib/permissions/host-permissions-server";
@@ -54,17 +54,20 @@ export interface HostEarningsAnalyticsData {
     occupancyRatePercentage: number;
   };
   costs: {
-    status: "DATA_UNAVAILABLE";
+    status: "AVAILABLE" | "NO_EXPENSES_RECORDED";
     message: string;
-    totalRecordedOperatingCostsCents: null;
-    costPerCompletedStayCents: null;
-    costPerOccupiedNightCents: null;
+    totalRecordedOperatingCostsCents: number;
+    costPerCompletedStayCents: number | null;
+    costPerOccupiedNightCents: number | null;
+    categoryBreakdown: Array<{ category: string; amountCents: number }>;
+    expenseCoverage: "NO_EXPENSES_RECORDED" | "PARTIAL_RECORDED_COSTS" | "RECORDED_COSTS";
+    expenseHistory: Array<{ id: string; listingId: string; category: string; amountCents: number; currency: string; expenseDate: string; description: string | null }>;
   };
   profit: {
-    status: "DATA_UNAVAILABLE";
+    status: "AVAILABLE" | "NO_EXPENSES_RECORDED";
     message: string;
-    estimatedOperatingProfitCents: null;
-    profitMarginPercentage: null;
+    estimatedOperatingProfitCents: number | null;
+    profitMarginPercentage: number | null;
   };
   trend: Array<{
     dateKey: string;
@@ -84,12 +87,13 @@ export interface HostEarningsAnalyticsData {
   }>;
   dataQuality: {
     unavailableFinancialSnapshotCount: number;
-    costRecordingAvailable: false;
+    costRecordingAvailable: true;
   };
 }
 
 type AnalyticsListing = DashboardInventoryListing & { title: string };
 type AnalyticsBooking = DashboardInventoryBooking & {
+  id: string;
   priceBreakdown: unknown;
   currency: string | null;
   totalPrice: number | null;
@@ -148,6 +152,7 @@ export const hostEarningsAnalyticsService = {
       },
       select: {
         listingId: true,
+        id: true,
         status: true,
         startDate: true,
         endDate: true,
@@ -238,6 +243,25 @@ export const hostEarningsAnalyticsService = {
       };
     });
 
+    const expenses = listingIds.length ? await prisma.operatingExpense.findMany({
+      where: {
+        hostId: actor.id,
+        listingId: { in: listingIds },
+        status: OperatingExpenseStatus.ACTIVE,
+        expenseDate: { gte: reportingPeriod.startDate, lte: reportingPeriod.endDate },
+        currency: selectedCurrency,
+      },
+      select: { id: true, listingId: true, category: true, amountCents: true, currency: true, expenseDate: true, description: true, bookingId: true },
+      take: 1000,
+    }) : [];
+    const expenseTotal = expenses.reduce((sum, expense) => sum + expense.amountCents, 0);
+    const expenseByCategory = new Map<string, number>();
+    for (const expense of expenses) expenseByCategory.set(expense.category, (expenseByCategory.get(expense.category) ?? 0) + expense.amountCents);
+    const costsStatus = expenses.length ? "AVAILABLE" as const : "NO_EXPENSES_RECORDED" as const;
+    const qualifyingCompletedStays = current.bookings;
+    const costCoverage = expenses.length === 0 ? "NO_EXPENSES_RECORDED" as const : "PARTIAL_RECORDED_COSTS" as const;
+    const estimatedProfit = expenses.length ? current.net - expenseTotal : null;
+
     return {
       reportingPeriod: {
         label: reportingPeriod.label,
@@ -266,17 +290,24 @@ export const hostEarningsAnalyticsService = {
         occupancyRatePercentage: inventory.ratePercentage,
       },
       costs: {
-        status: "DATA_UNAVAILABLE",
-        message: "Operating expenses are not recorded in Homyz yet, so cost per stay cannot be calculated reliably.",
-        totalRecordedOperatingCostsCents: null,
-        costPerCompletedStayCents: null,
-        costPerOccupiedNightCents: null,
+        status: costsStatus,
+        message: expenses.length
+          ? "Recorded operating costs are shown by expense date. Costs without a booking link are not allocated across stays."
+          : "No operating expenses have been recorded for this period. This does not mean operating costs were zero.",
+        totalRecordedOperatingCostsCents: expenseTotal,
+        costPerCompletedStayCents: expenses.length ? moneyPer(expenseTotal, qualifyingCompletedStays) : null,
+        costPerOccupiedNightCents: expenses.length ? moneyPer(expenseTotal, current.nights) : null,
+        categoryBreakdown: Array.from(expenseByCategory.entries()).map(([category, amountCents]) => ({ category, amountCents })).sort((left, right) => right.amountCents - left.amountCents),
+        expenseCoverage: costCoverage,
+        expenseHistory: expenses.slice(0, 12).map((expense) => ({ id: expense.id, listingId: expense.listingId, category: expense.category, amountCents: expense.amountCents, currency: expense.currency, expenseDate: expense.expenseDate.toISOString(), description: expense.description })),
       },
       profit: {
-        status: "DATA_UNAVAILABLE",
-        message: "Operating profit requires recorded operating expenses and is not shown until that data source is available.",
-        estimatedOperatingProfitCents: null,
-        profitMarginPercentage: null,
+        status: costsStatus,
+        message: expenses.length
+          ? "Estimated Profit Based on Recorded Costs. It is not a complete accounting profit statement."
+          : "Estimated profit is unavailable until recorded operating costs exist for this period.",
+        estimatedOperatingProfitCents: estimatedProfit,
+        profitMarginPercentage: estimatedProfit !== null && current.net > 0 ? Math.round((estimatedProfit / current.net) * 1000) / 10 : null,
       },
       trend: Array.from(trendMap.entries()).map(([dateKey, point]) => ({
         dateKey,
@@ -286,7 +317,7 @@ export const hostEarningsAnalyticsService = {
         qualifyingBookingsCount: point.bookings,
       })),
       properties,
-      dataQuality: { unavailableFinancialSnapshotCount, costRecordingAvailable: false },
+      dataQuality: { unavailableFinancialSnapshotCount, costRecordingAvailable: true },
     };
   },
 };

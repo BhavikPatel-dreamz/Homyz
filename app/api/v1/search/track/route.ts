@@ -2,6 +2,7 @@ import { apiHandler } from "@/lib/api/handler";
 import { ok } from "@/lib/api/response";
 import { trackHomepageSearchEvent, saveUserRecentSearch } from "@/services/search-analytics.service";
 import { getSessionUser } from "@/lib/auth/session";
+import { recordListingAnalyticsEvent } from "@/services/listing-analytics.service";
 
 export const runtime = "nodejs";
 
@@ -31,7 +32,18 @@ export const POST = apiHandler(async (req) => {
     metadata: payload.metadata && typeof payload.metadata === "object" ? payload.metadata : null,
   };
 
-  await trackHomepageSearchEvent(safePayload);
+  // Search telemetry remains best-effort. Durable listing events are written only
+  // for vetted funnel steps and never make a public page interaction fail.
+  await Promise.allSettled([
+    trackHomepageSearchEvent(safePayload),
+    recordListingAnalyticsEvent({
+      clientEventType: safePayload.eventType,
+      listingId: safePayload.propertyId,
+      sessionId: typeof payload.sessionId === "string" ? payload.sessionId : null,
+      userAgent: req.headers.get("user-agent"),
+      metadata: safePayload.metadata,
+    }),
+  ]);
 
   // If user is authenticated, save search history to user account in Redis
   try {
