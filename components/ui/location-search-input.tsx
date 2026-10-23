@@ -76,7 +76,7 @@ export function LocationSearchInput({
 
   return (
     <div ref={containerRef} className="relative w-full">
-      <label htmlFor={inputId} className="block text-sm font-medium text-[#1F1F1F] mb-1.5">
+      <label htmlFor={inputId} className="block text-sm font-normal text-[#1F1F1F] mb-1.5">
         Location
       </label>
 
@@ -108,8 +108,8 @@ export function LocationSearchInput({
           onFocus={() => setIsOpen(true)}
           onKeyDown={handleKeyDown}
           placeholder="Search a place... (e.g. Paris, France)"
-          className={`w-full pl-9 pr-9 py-2.5 rounded-lg border bg-white text-sm text-[#1F1F1F] placeholder-zinc-400 transition-all shadow-2xs sm:min-h-[56px] min-h-[40px] ${
-            isOpen ? "border-amber-400 ring-2 ring-amber-400/20" : "border-zinc-200 hover:border-zinc-300"
+          className={`w-full pl-9 pr-9 py-2.5 rounded-lg border bg-white text-sm text-[#1F1F1F] placeholder-zinc-400 transition-all shadow-2xs min-h-[45px] outline-none ${
+            isOpen ? "border-[#1F1F1F]" : "border-zinc-200 hover:border-zinc-300"
           } ${disabled ? "opacity-60 cursor-not-allowed" : ""}`}
         />
 
