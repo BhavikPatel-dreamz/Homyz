@@ -1455,7 +1455,7 @@ function SecondaryKpi({
       aria-busy={refreshing}
       className={`${cardClass} group min-h-36 p-3.5 transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-[0_4px_10px_rgba(31,31,31,0.12)]`}
     >
-      <p className="text-xs font-medium text-[#727272] group-hover:text-[#1F1F1F] transition-colors">{label}</p>
+      <p className="text-sm font-normal text-[#727272]">{label}</p>
       {refreshing ? (
         <div className="mt-3 h-5 w-16 animate-pulse rounded bg-zinc-100" />
       ) : (

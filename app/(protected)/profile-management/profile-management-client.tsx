@@ -1044,7 +1044,7 @@ export function ProfileManagementClient({
         <div
           className={`profile-avtar-card relative md:mt-5 mt-0 aspect-square w-[220px] max-w-full shrink-0 self-center sm:mt-0 sm:h-66 sm:w-90.5 sm:max-w-[calc(100%-48px)] sm:self-auto ${isOwner ? "mb-10 sm:mb-0" : ""}`}
         >
-          <div className="relative h-full w-full overflow-hidden rounded-full border border-[#1F1F1F] bg-zinc-100 sm:rounded-3xl sm:shadow-2xs">
+          <div className="relative h-full w-full overflow-hidden rounded-full border border-[#d7d7d7] bg-zinc-100 sm:rounded-3xl sm:shadow-2xs">
             {imageUrl && imageUrl !== failedAvatarPreviewUrl ? (
               <Image
                 src={imageUrl}
@@ -1720,7 +1720,7 @@ export function ProfileManagementClient({
             </p>
           </div>
 
-          <div className="p-6 rounded-3xl border border-zinc-200/80 bg-white shadow-2xs space-y-6">
+          <div className="p-6 rounded-2xl border border-zinc-200/80 bg-white shadow-[0_2px_4px_rgba(0,0,0,0.25)] space-y-6">
             {/* Row 1: Public Profile Visibility */}
             <div className="flex items-center justify-between gap-4">
               <div>

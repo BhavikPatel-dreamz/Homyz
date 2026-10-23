@@ -413,7 +413,7 @@ export function NotificationsView({ initialData }: NotificationsViewProps) {
 
       {/* Notification Items List */}
       {filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-zinc-200 bg-zinc-50/50 py-16 text-center my-4">
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-[#D7D7D7] bg-[#FAFAFA] py-12 text-center my-4">
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100 text-[#727272] mb-3">
             <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />

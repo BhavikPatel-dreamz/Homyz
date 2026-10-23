@@ -299,26 +299,67 @@ export function HostEarningsClient({ initialData }: HostEarningsClientProps) {
     );
 
   return (
-    <div className="mx-auto max-w-5xl space-y-8 pb-12">
+    <div className="space-y-8 pb-12">
       {/* ── Section A: Header & Compact Unified Toolbar ── */}
-      <header className="space-y-4">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Hosting</p>
-          <h1 className="mt-0.5 text-3xl font-bold tracking-tight text-zinc-950 sm:text-4xl">
+      <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div className="min-w-0 flex-1 md:pr-4">
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center rounded-full bg-[#F3F4F5] px-2.5 py-0.5 text-xs font-medium text-[#1f1f1f] border border-[#ddd]">
+              Hosting
+            </span>
+          </div>
+          <h1 className="mt-2 text-2xl font-medium tracking-[-0.02em] text-[#1F1F1F] sm:text-3xl lg:text-[34px]">
             Earnings
           </h1>
+          <p className="mt-1 text-sm text-[#727272] max-w-xl">
+            Track realized payouts, completed stays, and financial performance.
+          </p>
         </div>
 
-        {/* Compact Unified Toolbar */}
-        <div className="flex flex-col gap-3 rounded-2xl border border-zinc-200 bg-white p-2.5 shadow-2xs sm:flex-row sm:items-center sm:justify-between sm:p-3">
-          {/* Left: Searchable Property Selector */}
+        {/* Top Actions: Payout Methods & Reports */}
+        <div className="flex items-center gap-2 sm:gap-2.5 shrink-0 flex-nowrap">
+          <button
+            type="button"
+            onClick={() => setShowMethods(true)}
+            className="inline-flex items-center justify-center gap-2 rounded-full border border-[#D7D7D7] bg-[#F3F4F5] px-4 py-2 text-xs sm:text-sm font-medium text-[#1F1F1F] hover:border-[#1F1F1F] hover:bg-zinc-50 transition-all cursor-pointer shadow-2xs whitespace-nowrap shrink-0"
+          >
+            <svg className="w-4 h-4 text-[#727272]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="2" y="5" width="20" height="14" rx="2" />
+              <line x1="2" y1="10" x2="22" y2="10" />
+            </svg>
+            <span>Payout methods</span>
+            {data.payoutMethods.length > 0 && (
+              <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1.5 text-[11px] font-medium text-[#1F1F1F]">
+                {data.payoutMethods.length}
+              </span>
+            )}
+          </button>
+          <Link
+            href={scopedHref("/host/earnings/reports")}
+            className="inline-flex items-center justify-center gap-2 rounded-full border border-[#D7D7D7] bg-[#F3F4F5] px-4 py-2 text-xs sm:text-sm font-medium text-[#1F1F1F] hover:border-[#1F1F1F] hover:bg-zinc-50 transition-all shadow-2xs whitespace-nowrap shrink-0"
+          >
+            <svg className="w-4 h-4 text-[#727272]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="16" y1="13" x2="8" y2="13" />
+              <line x1="16" y1="17" x2="8" y2="17" />
+              <polyline points="10 9 9 9 8 9" />
+            </svg>
+            <span>Statements</span>
+          </Link>
+        </div>
+      </header>
+
+      {/* ── Toolbar: Filter & Reporting Period Controls ── */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        {/* Left Filter Group: Property + Date Period Picker (Never breaks apart on tablet) */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:flex-nowrap gap-2.5 w-full md:w-auto">
           <PropertySelector
             listings={reporting.listings}
             selectedListingId={reporting.selectedListingId}
             onSelect={(id) => update({ propertyId: id })}
           />
 
-          {/* Center: Reporting Period / Date Range Picker */}
           <DatePeriodPicker
             value={{
               timeframe: activeTimeframe,
@@ -333,46 +374,54 @@ export function HostEarningsClient({ initialData }: HostEarningsClientProps) {
             onChange={handlePeriodChange}
             displayLabel={reporting.timeframeLabel || reporting.monthLabel}
           />
+        </div>
 
-          {/* Right: Compare Periods Action Button */}
-          <div className="flex items-center gap-2">
+        {/* Right Action Group: Compare Periods */}
+        <div className="flex items-center gap-2 w-full md:w-auto self-start md:self-auto shrink-0">
+          <button
+            type="button"
+            onClick={() => setShowCompareModal(true)}
+            className={`flex-1 md:flex-initial inline-flex h-11 sm:h-12 items-center justify-center gap-2 rounded-full border px-4 sm:px-5 text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0 transition-all cursor-pointer shadow-2xs ${
+              reporting.comparison?.enabled
+                ? "border-[#1F1F1F] bg-[#1F1F1F] text-white hover:bg-black"
+                : "border-[#1F1F1F] bg-[#1F1F1F] text-white hover:border-[#1F1F1F] hover:bg-white hover:text-[#1F1F1F]"
+            }`}
+          >
+            <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M16 3h5v5" />
+              <path d="M8 21H3v-5" />
+              <path d="M21 3l-7.5 7.5" />
+              <path d="M3 21l7.5-7.5" />
+            </svg>
+            <span className="whitespace-nowrap">{reporting.comparison?.enabled ? "Comparing periods" : "Compare periods"}</span>
+          </button>
+
+          {reporting.comparison?.enabled && (
             <button
               type="button"
-              onClick={() => setShowCompareModal(true)}
-              className={`inline-flex items-center gap-1.5 rounded-2xl border px-3.5 py-2 text-xs font-semibold transition-all ${
-                reporting.comparison?.enabled
-                  ? "border-zinc-950 bg-zinc-950 text-white shadow-xs"
-                  : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-400 hover:bg-zinc-50"
-              }`}
+              onClick={() => handleApplyComparison(null)}
+              title="Clear comparison"
+              className="flex h-11 sm:h-12 w-11 sm:w-12 shrink-0 items-center justify-center rounded-full border border-[#D7D7D7] bg-white text-[#727272] hover:border-[#1F1F1F] hover:text-[#1F1F1F] hover:bg-zinc-50 transition-colors shadow-2xs cursor-pointer"
             >
-              <span>⚖️</span>
-              <span>{reporting.comparison?.enabled ? "Comparing" : "Compare Periods"}</span>
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
             </button>
-
-            {reporting.comparison?.enabled && (
-              <button
-                type="button"
-                onClick={() => handleApplyComparison(null)}
-                title="Clear comparison"
-                className="rounded-full p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 text-xs"
-              >
-                ✕
-              </button>
-            )}
-          </div>
+          )}
         </div>
-      </header>
+      </div>
 
       {error && (
         <div
           role="alert"
-          className="flex justify-between rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800"
+          className="flex justify-between items-center rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800"
         >
           <span>{error}</span>
           <button
             type="button"
             onClick={() => void load(query)}
-            className="font-semibold underline"
+            className="font-medium underline cursor-pointer"
           >
             Retry
           </button>
@@ -380,21 +429,21 @@ export function HostEarningsClient({ initialData }: HostEarningsClientProps) {
       )}
 
       {/* ── Section B: Main Earnings Chart (Visual Chart FIRST) ── */}
-      <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-xs sm:p-8">
-        <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-zinc-100 pb-4">
+      <section className="rounded-2xl sm:rounded-3xl border border-[#E5E5E5] bg-white p-5 sm:p-7 shadow-xs">
+        <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-[#EDEDED] pb-4">
           <div>
-            <h2 className="text-xl font-bold tracking-tight text-zinc-950">Earnings performance</h2>
-            <p className="mt-1 text-xs text-zinc-500">
+            <h2 className="text-lg sm:text-xl font-medium tracking-tight text-[#1F1F1F]">Earnings performance</h2>
+            <p className="mt-1 text-xs sm:text-sm text-[#727272]">
               {reporting.chart.currency || "SAR"} realized net host payouts across {reporting.timeframeLabel || reporting.monthLabel}
             </p>
             {reporting.totalsByCurrency.length > 1 && (
-              <p className="mt-1 text-xs text-zinc-500">
+              <p className="mt-1 text-xs text-[#727272]">
                 Amounts stay separated by settlement currency.
               </p>
             )}
           </div>
           {reporting.totalsByCurrency.length > 1 && (
-            <span className="rounded-full border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-[11px] font-semibold text-zinc-600">
+            <span className="rounded-full border border-[#D7D7D7] bg-[#FAFAFA] px-3 py-1 text-xs font-medium text-[#1F1F1F]">
               Reporting in {reporting.chart.currency || "SAR"}
             </span>
           )}
@@ -416,20 +465,20 @@ export function HostEarningsClient({ initialData }: HostEarningsClientProps) {
       {/* ── Section C: Earnings Numerical KPI Cards (Numbers BELOW Chart) ── */}
       <section
         aria-busy={isLoadingOverview}
-        className={`rounded-3xl border border-zinc-200 bg-white p-6 shadow-xs sm:p-8 transition-opacity ${
+        className={`rounded-2xl sm:rounded-3xl border border-[#E5E5E5] bg-white p-5 sm:p-7 shadow-xs transition-opacity ${
           isLoadingOverview ? "opacity-50" : ""
         }`}
       >
         <div className="flex flex-col gap-4 sm:flex-row sm:items-baseline sm:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-zinc-400">Total Realized Net</p>
-            <div className="mt-2 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-              <span className="text-4xl font-extrabold tracking-tight text-zinc-950 sm:text-5xl">
+            <p className="text-xs font-medium text-[#727272]">Total Realized Net</p>
+            <div className="mt-1.5 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+              <span className="mt-2 text-2xl font-medium tracking-[-0.02em] text-[#1F1F1F] sm:text-3xl lg:text-[34px]">
                 {selectedTotals
                   ? fmt(selectedTotals.monthlyRecognized, selectedTotals.currency)
                   : "SAR 0.00"}
               </span>
-              <span className="text-sm font-semibold text-zinc-500">
+              <span className="text-sm font-normal text-[#727272]">
                 in {reporting.timeframeLabel || reporting.monthLabel}
               </span>
             </div>
@@ -437,51 +486,75 @@ export function HostEarningsClient({ initialData }: HostEarningsClientProps) {
 
           {/* Comparison Delta Callout */}
           {reporting.comparison && (
-            <div className="flex items-center gap-2 rounded-2xl border border-zinc-200 bg-zinc-50/80 px-4 py-2.5 text-xs">
+            <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 rounded-2xl sm:rounded-full border border-[#EDEDED] bg-[#FAFAFA] px-3.5 sm:px-4 py-2 text-xs">
               <span
-                className={`inline-flex items-center rounded-full px-2 py-0.5 font-bold ${
+                className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 font-medium ${
                   reporting.comparison.deltaDirection === "increase"
-                    ? "bg-emerald-100 text-emerald-800"
+                    ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
                     : reporting.comparison.deltaDirection === "decrease"
-                      ? "bg-rose-100 text-rose-800"
-                      : "bg-zinc-200 text-zinc-700"
+                      ? "bg-rose-50 text-rose-700 border border-rose-200"
+                      : "bg-zinc-100 text-[#727272] border border-zinc-200"
                 }`}
               >
-                {reporting.comparison.deltaDirection === "increase" ? "↑" : reporting.comparison.deltaDirection === "decrease" ? "↓" : "•"}
-                {reporting.comparison.deltaPercentage !== null
-                  ? ` ${Math.abs(reporting.comparison.deltaPercentage)}%`
-                  : ` ${fmt(Math.abs(reporting.comparison.deltaEarnings), selectedTotals?.currency || "SAR")}`}
+                {reporting.comparison.deltaDirection === "increase" ? (
+                  <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="18 15 12 9 6 15" />
+                  </svg>
+                ) : reporting.comparison.deltaDirection === "decrease" ? (
+                  <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                ) : null}
+                <span>
+                  {reporting.comparison.deltaPercentage !== null
+                    ? `${Math.abs(reporting.comparison.deltaPercentage)}%`
+                    : fmt(Math.abs(reporting.comparison.deltaEarnings), selectedTotals?.currency || "SAR")}
+                </span>
               </span>
-              <span className="font-medium text-zinc-600">
-                {reporting.comparison.periodLabel} ({fmt(reporting.comparison.netEarnings, selectedTotals?.currency || "SAR")})
+              <span className="text-[#727272] font-normal truncate">
+                vs {reporting.comparison.periodLabel} ({fmt(reporting.comparison.netEarnings, selectedTotals?.currency || "SAR")})
               </span>
             </div>
           )}
         </div>
 
         {/* 3-Card KPI Grid */}
-        <div className="mt-6 grid gap-4 sm:grid-cols-3 border-t border-zinc-100 pt-6">
-          <div className="rounded-2xl border border-zinc-100 bg-zinc-50/70 p-4">
-            <p className="text-xs font-medium text-zinc-500">Upcoming payout</p>
-            <p className="mt-1 text-2xl font-bold tracking-tight text-zinc-950">
+        <div className="mt-6 grid gap-4 grid-cols-1 md:grid-cols-3 border-t border-[#EDEDED] pt-6">
+          <div className="rounded-2xl border border-[#EDEDED] bg-[#F3F4F5] p-5 hover:bg-[#FEFDF9] hover:border-[#D7D7D7] transition-all shadow-[0_2px_4px_rgba(0,0,0,0.25)]">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-normal text-[#727272]">Upcoming payout</p>
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white border border-[#EDEDED] text-[#727272]">
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg>
+              </span>
+            </div>
+            <p className="mt-2 text-2xl sm:text-[26px] font-medium tracking-tight text-[#1F1F1F] break-words">
               {selectedTotals
                 ? fmt(selectedTotals.upcomingPayout, selectedTotals.currency)
                 : "—"}
             </p>
-            <p className="mt-1 text-[11px] text-zinc-500">Scheduled and ready for release</p>
+            <p className="mt-1 text-xs text-[#727272]">Scheduled and ready for release</p>
           </div>
 
           <button
             type="button"
             disabled={!selectedTotals}
             onClick={() => setShowYtd(true)}
-            className="rounded-2xl border border-zinc-100 bg-zinc-50/70 p-4 text-left transition-all hover:border-zinc-300 hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
+            className="group rounded-2xl border border-[#EDEDED] bg-[#F3F4F5] p-5 text-left transition-all hover:bg-[#FEFDF9] hover:border-[#D7D7D7] disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer shadow-[0_2px_4px_rgba(0,0,0,0.25)]"
           >
             <div className="flex items-center justify-between">
-              <p className="text-xs font-medium text-zinc-500 underline underline-offset-4">Year-to-date earnings</p>
-              <span className="text-xs text-zinc-400">ℹ</span>
+              <p className="text-sm font-normal text-[#727272]">Year-to-date earnings</p>
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white border border-[#EDEDED] text-[#727272] group-hover:text-[#1F1F1F] transition-all">
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="16" x2="12" y2="12" />
+                  <line x1="12" y1="8" x2="12.01" y2="8" />
+                </svg>
+              </span>
             </div>
-            <p className="mt-1 text-2xl font-bold tracking-tight text-zinc-950">
+            <p className="mt-2 text-2xl sm:text-[26px] font-medium tracking-tight text-[#1F1F1F] break-words">
               {selectedTotals
                 ? fmt(
                     selectedTotals.ytdNet + selectedTotals.ytdAdjustments,
@@ -489,15 +562,22 @@ export function HostEarningsClient({ initialData }: HostEarningsClientProps) {
                   )
                 : "—"}
             </p>
-            <p className="mt-1 text-[11px] text-zinc-500">Full {reporting.selectedYear} cumulative</p>
+            <p className="mt-1 text-xs text-[#727272]">Full {reporting.selectedYear} cumulative · Click for details</p>
           </button>
 
-          <div className="rounded-2xl border border-zinc-100 bg-zinc-50/70 p-4">
-            <p className="text-xs font-medium text-zinc-500">Settled payouts volume</p>
-            <p className="mt-1 text-2xl font-bold tracking-tight text-zinc-950">
+          <div className="rounded-2xl border border-[#EDEDED] bg-[#F3F4F5] p-5 hover:bg-[#FEFDF9] hover:border-[#D7D7D7] transition-all shadow-[0_2px_4px_rgba(0,0,0,0.25)]">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-normal text-[#727272]">Settled payouts volume</p>
+              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white border border-[#EDEDED] text-[#727272]">
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              </span>
+            </div>
+            <p className="mt-2 text-2xl sm:text-[26px] font-medium tracking-tight text-[#1F1F1F] break-words">
               {fmt(data.summary.totalPaidVolume, selectedTotals?.currency || "SAR")}
             </p>
-            <p className="mt-1 text-[11px] text-zinc-500">{data.summary.totalPaidCount} verified payout transfers</p>
+            <p className="mt-1 text-xs text-[#727272]">{data.summary.totalPaidCount} verified payout transfers</p>
           </div>
         </div>
 
@@ -513,7 +593,7 @@ export function HostEarningsClient({ initialData }: HostEarningsClientProps) {
       </section>
 
       {/* ── Upcoming & Paid payouts ── */}
-      <div className="grid gap-8 lg:grid-cols-2">
+      <div className="grid gap-6 sm:gap-8 lg:gap-10 lg:grid-cols-2">
         <PayoutsSection
           title="Upcoming"
           href={scopedHref("/host/earnings/upcoming")}
@@ -538,49 +618,61 @@ export function HostEarningsClient({ initialData }: HostEarningsClientProps) {
 
       {/* ── Monthly Reports ── */}
       <section>
-        <div className="flex items-baseline justify-between">
+        <div className="flex items-baseline justify-between mb-4">
           <div>
-            <h2 className="text-xl font-bold text-zinc-950">
+            <h2 className="text-lg sm:text-xl font-medium tracking-tight text-[#1F1F1F]">
               Earnings reports
             </h2>
-            <p className="mt-1 text-sm text-zinc-500">
+            <p className="mt-0.5 text-xs sm:text-sm text-[#727272]">
               Monthly and annual earnings statements
             </p>
           </div>
           <Link
             href={scopedHref("/host/earnings/reports")}
-            className="text-sm font-semibold underline underline-offset-4"
+            className="rounded-full border border-[#FCDF9C] bg-[#FCDF9C] px-3.5 py-2 text-sm font-medium text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white hover:border-[#1F1F1F] transition-all whitespace-nowrap"
           >
             View all
           </Link>
         </div>
 
         {reporting.reports.length ? (
-          <div className="mt-4 divide-y divide-zinc-100 rounded-2xl border border-zinc-200 bg-white">
+          <div className="divide-y divide-[#EDEDED] rounded-2xl border border-[#E5E5E5] bg-white overflow-hidden shadow-xs">
             {reporting.reports.map((report) => (
               <Link
                 key={`${report.year}-${report.month}`}
                 href={scopedHref(
                   `/host/earnings/reports/monthly/${report.year}/${report.month}`,
                 )}
-                className="flex items-center justify-between px-5 py-4 first:rounded-t-2xl last:rounded-b-2xl hover:bg-zinc-50"
+                className="group flex items-center justify-between px-5 py-4 transition-colors hover:bg-[#FAFAFA]"
               >
-                <span className="font-semibold text-zinc-900">
-                  {report.label}
-                </span>
                 <div className="flex items-center gap-3">
-                  <span className="font-bold text-zinc-950">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#F3F4F5] text-[#1F1F1F]">
+                    <svg className="w-4 h-4 text-[#727272]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                      <polyline points="14 2 14 8 20 8" />
+                    </svg>
+                  </div>
+                  <span className="font-medium text-sm text-[#1F1F1F]">
+                    {report.label}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="font-medium text-sm text-[#1F1F1F]">
                     {fmt(report.amount, report.currency)}
                   </span>
-                  <span className="text-lg text-zinc-400">›</span>
+                  <svg className="w-4 h-4 text-[#727272] transition-transform group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="9 18 15 12 9 6" />
+                  </svg>
                 </div>
               </Link>
             ))}
           </div>
         ) : (
-          <p className="mt-4 text-sm text-zinc-500">
-            No completed-stay earnings this year.
-          </p>
+          <div className="rounded-2xl border border-dashed border-[#D7D7D7] bg-[#FAFAFA] p-8 text-center">
+            <p className="text-sm text-[#727272]">
+              No completed-stay earnings this year.
+            </p>
+          </div>
         )}
       </section>
 
@@ -662,20 +754,20 @@ function PayoutsSection({
 }) {
   return (
     <section>
-      <div className="flex items-baseline justify-between">
+      <div className="flex items-baseline justify-between mb-4">
         <div>
-          <h2 className="text-xl font-bold text-zinc-950">{title}</h2>
-          <p className="mt-0.5 text-xs text-zinc-500">{description}</p>
+          <h2 className="text-lg sm:text-xl font-medium tracking-tight text-[#1F1F1F]">{title} payouts</h2>
+          <p className="mt-0.5 text-xs sm:text-sm text-[#727272]">{description}</p>
         </div>
         <Link
           href={href}
-          className="text-sm font-semibold underline underline-offset-4"
+          className="rounded-full border border-[#FCDF9C] bg-[#FCDF9C] px-3.5 py-2 text-sm font-medium text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white hover:border-[#1F1F1F] transition-all whitespace-nowrap"
         >
           View all
         </Link>
       </div>
 
-      <div className="mt-4 divide-y divide-zinc-100 rounded-2xl border border-zinc-200 bg-white">
+      <div className="divide-y divide-[#EDEDED] rounded-2xl border border-[#E5E5E5] bg-white overflow-hidden shadow-xs">
         {payouts.length ? (
           payouts.map((item) => (
             <Link
@@ -687,10 +779,10 @@ function PayoutsSection({
                 encodeURIComponent(returnTo)
               }
               onClick={() => onSelect(item)}
-              className="flex w-full items-center gap-3 px-4 py-4 text-left first:rounded-t-2xl last:rounded-b-2xl hover:bg-zinc-50"
+              className="group flex w-full items-center gap-3.5 px-4 py-3.5 sm:px-5 sm:py-4 text-left transition-colors hover:bg-[#FAFAFA]"
             >
               {/* Listing photo */}
-              <div className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-zinc-100 text-[10px] font-semibold text-zinc-400">
+              <div className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#F3F4F5] border border-[#EDEDED]">
                 {item.listingPhoto ? (
                   <Image
                     src={item.listingPhoto}
@@ -701,36 +793,43 @@ function PayoutsSection({
                     className="size-full object-cover"
                   />
                 ) : (
-                  "🏠"
+                  <svg className="w-5 h-5 text-[#727272]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                    <polyline points="9 22 9 12 15 12 15 22" />
+                  </svg>
                 )}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold text-zinc-900">
+                <p className="truncate text-sm font-medium text-[#1F1F1F]">
                   {fmtDate(
                     paid
                       ? item.executionDetails?.executedAt
                       : item.scheduledPayoutDate,
                   )}
                 </p>
-                <p className="mt-0.5 truncate text-xs text-zinc-500">
+                <p className="mt-0.5 truncate text-xs text-[#727272]">
                   {item.listingTitle}
                 </p>
               </div>
               <div className="shrink-0 text-right">
-                <p className="text-sm font-bold text-zinc-950">
+                <p className="text-sm font-medium text-[#1F1F1F]">
                   {fmt(item.netPayout, item.currency)}
                 </p>
                 <span
-                  className={`mt-0.5 inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold ${payoutStatusStyle(item.status)}`}
+                  className={`mt-1 inline-flex rounded-full px-2 py-1 text-[10px] leading-tight font-medium ${payoutStatusStyle(item.status)}`}
                 >
                   {payoutStatusLabel(item.status)}
                 </span>
               </div>
-              <span className="text-lg text-zinc-300">›</span>
+              <svg className="w-4 h-4 text-[#727272] transition-transform group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
             </Link>
           ))
         ) : (
-          <p className="px-5 py-6 text-sm text-zinc-500">{empty}</p>
+          <div className="py-8 px-5 text-center">
+            <p className="text-sm text-[#727272]">{empty}</p>
+          </div>
         )}
       </div>
     </section>
@@ -759,15 +858,15 @@ function YtdModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="ytd-title"
-      className="fixed inset-0 z-50 flex items-end bg-black/45 sm:items-center sm:justify-center sm:p-4"
+      className="fixed inset-0 z-9999 flex items-end bg-black/45 backdrop-blur-xs sm:items-center sm:justify-center sm:p-4"
     >
-      <div className="w-full rounded-t-3xl bg-white p-6 shadow-xl sm:max-w-md sm:rounded-3xl">
+      <div className="w-full max-h-[90vh] overflow-y-auto rounded-t-3xl bg-white p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] shadow-xl border border-[#E5E5E5] sm:max-w-md sm:rounded-3xl sm:p-7">
         <div className="flex items-start justify-between">
           <div>
-            <h2 id="ytd-title" className="text-xl font-bold text-zinc-950">
+            <h2 id="ytd-title" className="text-xl font-medium text-[#1F1F1F]">
               Year-to-date summary
             </h2>
-            <p className="mt-1 text-sm text-zinc-500">
+            <p className="mt-1 text-sm text-[#727272]">
               January 1 –{" "}
               {year === new Date().getUTCFullYear() ? "today" : "December 31"},{" "}
               {year}
@@ -777,29 +876,32 @@ function YtdModal({
             type="button"
             onClick={onClose}
             aria-label="Close summary"
-            className="rounded-full p-2 text-xl text-zinc-400 hover:bg-zinc-100"
+            className="rounded-full p-1.5 text-[#727272] hover:bg-zinc-100 hover:text-[#1F1F1F] transition-colors cursor-pointer"
           >
-            ×
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
           </button>
         </div>
-        <div className="mt-6 divide-y divide-zinc-100 rounded-2xl border border-zinc-200">
+        <div className="mt-6 divide-y divide-[#EDEDED] rounded-2xl border border-[#E5E5E5]">
           {rows.map(([rowLabel, amount]) => (
             <div key={rowLabel} className="flex justify-between px-4 py-3 text-sm">
-              <span className="text-zinc-600">{rowLabel}</span>
-              <span className={amount < 0 ? "text-rose-700" : "text-zinc-900"}>
+              <span className="text-[#727272]">{rowLabel}</span>
+              <span className={amount < 0 ? "text-rose-700 font-medium" : "text-[#1F1F1F] font-medium"}>
                 {amount < 0 ? "−" : ""}
                 {fmt(Math.abs(amount), totals.currency)}
               </span>
             </div>
           ))}
-          <div className="flex justify-between px-4 py-4 font-bold">
+          <div className="flex justify-between px-4 py-4 font-medium text-base text-[#1F1F1F] bg-[#FAFAFA] rounded-b-2xl">
             <span>Total ({totals.currency})</span>
             <span>
               {fmt(totals.ytdNet + totals.ytdAdjustments, totals.currency)}
             </span>
           </div>
         </div>
-        <p className="mt-4 text-xs leading-5 text-zinc-400">
+        <p className="mt-4 text-xs leading-5 text-[#727272]">
           Total is completed-stay host net payout plus recorded, deducted
           adjustments. Taxes shown only when a withholding record exists.
         </p>
@@ -821,15 +923,15 @@ function PayoutDetailModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="payout-title"
-      className="fixed inset-0 z-50 flex items-end bg-black/45 sm:items-center sm:justify-center sm:p-4"
+      className="fixed inset-0 z-9999 flex items-end bg-black/45 backdrop-blur-xs sm:items-center sm:justify-center sm:p-4"
     >
-      <div className="w-full rounded-t-3xl bg-white p-6 shadow-xl sm:max-w-md sm:rounded-3xl">
+      <div className="w-full max-h-[90vh] overflow-y-auto rounded-t-3xl bg-white p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] shadow-xl border border-[#E5E5E5] sm:max-w-md sm:rounded-3xl sm:p-7">
         <div className="flex items-start justify-between">
           <div>
-            <h2 id="payout-title" className="text-xl font-bold text-zinc-950">
+            <h2 id="payout-title" className="text-xl font-medium text-[#1F1F1F]">
               Payout details
             </h2>
-            <p className="mt-0.5 text-sm text-zinc-500">
+            <p className="mt-0.5 text-sm text-[#727272]">
               {payout.listingTitle}
             </p>
           </div>
@@ -837,69 +939,74 @@ function PayoutDetailModal({
             type="button"
             onClick={onClose}
             aria-label="Close payout details"
-            className="rounded-full p-2 text-xl text-zinc-400 hover:bg-zinc-100"
+            className="rounded-full p-1.5 text-[#727272] hover:bg-zinc-100 hover:text-[#1F1F1F] transition-colors cursor-pointer"
           >
-            ×
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
           </button>
         </div>
 
         <div className="mt-5">
-          <p className="text-3xl font-bold text-zinc-950">
+          <p className="text-3xl font-medium tracking-tight text-[#1F1F1F]">
             {fmt(payout.netPayout, payout.currency)}
           </p>
           <span
-            className={`mt-2 inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${payoutStatusStyle(payout.status)}`}
+            className={`mt-2 inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${payoutStatusStyle(payout.status)}`}
           >
             {payoutStatusLabel(payout.status)}
           </span>
         </div>
 
-        <div className="mt-6 divide-y divide-zinc-100 rounded-2xl border border-zinc-200 text-sm">
+        <div className="mt-6 divide-y divide-[#EDEDED] rounded-2xl border border-[#E5E5E5] text-sm">
           <div className="flex justify-between px-4 py-3">
-            <span className="text-zinc-600">Gross earnings</span>
-            <span className="font-semibold text-zinc-900">
+            <span className="text-[#727272]">Gross earnings</span>
+            <span className="font-medium text-[#1F1F1F]">
               {fmt(payout.grossEarnings, payout.currency)}
             </span>
           </div>
           <div className="flex justify-between px-4 py-3">
-            <span className="text-zinc-600">Host service fee</span>
-            <span className="text-rose-700">
+            <span className="text-[#727272]">Host service fee</span>
+            <span className="text-rose-700 font-medium">
               −{fmt(payout.platformFee, payout.currency)}
             </span>
           </div>
           {payout.deductions > 0 && (
             <div className="flex justify-between px-4 py-3">
-              <span className="text-zinc-600">Deductions</span>
-              <span className="text-rose-700">
+              <span className="text-[#727272]">Deductions</span>
+              <span className="text-rose-700 font-medium">
                 −{fmt(payout.deductions, payout.currency)}
               </span>
             </div>
           )}
-          <div className="flex justify-between px-4 py-4 font-bold">
+          <div className="flex justify-between px-4 py-3.5 font-medium bg-[#FAFAFA] rounded-b-2xl text-[#1F1F1F]">
             <span>Net payout</span>
             <span>{fmt(payout.netPayout, payout.currency)}</span>
           </div>
         </div>
 
-        <div className="mt-5 space-y-1.5 text-sm text-zinc-600">
-          <p>Guest: {payout.guestName}</p>
+        <div className="mt-5 space-y-1.5 text-sm text-[#727272]">
+          <p>Guest: <span className="text-[#1F1F1F] font-medium">{payout.guestName}</span></p>
           <p>
-            Stay: {fmtDate(payout.startDate)} – {fmtDate(payout.endDate)}
+            Stay: <span className="text-[#1F1F1F] font-medium">{fmtDate(payout.startDate)} – {fmtDate(payout.endDate)}</span>
           </p>
           <p>
             {payout.status === "PAID" && payout.executionDetails?.executedAt
               ? "Paid"
               : "Scheduled"}
             :{" "}
-            {fmtDate(
-              payout.executionDetails?.executedAt || payout.scheduledPayoutDate,
-            )}
+            <span className="text-[#1F1F1F] font-medium">
+              {fmtDate(
+                payout.executionDetails?.executedAt || payout.scheduledPayoutDate,
+              )}
+            </span>
           </p>
         </div>
 
         <Link
           href={`/host/earnings/transactions/${payout.bookingId}`}
-          className="mt-5 block text-center rounded-full bg-zinc-950 px-4 py-2.5 text-sm font-semibold text-white hover:bg-zinc-800"
+          className="mt-6 block text-center rounded-full bg-[#1F1F1F] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#FCDF9C] hover:text-[#1F1F1F] transition-all"
         >
           View full transaction details
         </Link>
@@ -929,25 +1036,33 @@ function MethodsModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="methods-title"
-      className="fixed inset-0 z-50 flex items-end bg-black/45 sm:items-center sm:justify-center sm:p-4"
+      className="fixed inset-0 z-9999 flex items-end bg-black/45 backdrop-blur-xs sm:items-center sm:justify-center sm:p-4"
     >
-      <div className="w-full max-h-[90vh] overflow-y-auto rounded-t-3xl bg-white p-6 shadow-xl sm:max-w-md sm:rounded-3xl">
+      <div className="w-full max-h-[90vh] overflow-y-auto rounded-t-3xl bg-white p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] shadow-xl border border-[#E5E5E5] sm:max-w-md sm:rounded-3xl sm:p-7">
         <div className="flex items-start justify-between">
-          <h2 id="methods-title" className="text-xl font-bold text-zinc-950">
-            Payout methods
-          </h2>
+          <div>
+            <h2 id="methods-title" className="text-xl font-medium text-[#1F1F1F]">
+              Payout methods
+            </h2>
+            <p className="mt-0.5 text-xs text-[#727272]">
+              Manage bank accounts for receiving host earnings
+            </p>
+          </div>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="rounded-full p-2 text-xl text-zinc-400 hover:bg-zinc-100"
+            className="rounded-full p-1.5 text-[#727272] hover:bg-zinc-100 hover:text-[#1F1F1F] transition-colors cursor-pointer"
           >
-            ×
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
           </button>
         </div>
 
         {error && (
-          <p className="mt-4 rounded-xl bg-rose-50 p-3 text-sm text-rose-700">
+          <p className="mt-4 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
             {error}
           </p>
         )}
@@ -957,32 +1072,32 @@ function MethodsModal({
             methods.map((method) => (
               <div
                 key={method.id}
-                className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4"
+                className="rounded-2xl border border-[#EDEDED] bg-[#FAFAFA] p-4 hover:border-[#D7D7D7] transition-colors"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="font-bold text-zinc-900">{method.bankName}</p>
-                    <p className="mt-0.5 font-mono text-sm text-zinc-600">
+                    <p className="font-medium text-[#1F1F1F]">{method.bankName}</p>
+                    <p className="mt-0.5 font-mono text-sm text-[#727272]">
                       {method.ibanMasked}
                     </p>
-                    <p className="mt-0.5 text-xs text-zinc-500">
+                    <p className="mt-0.5 text-xs text-[#727272]">
                       {method.accountHolderName} ·{" "}
                       {method.status.replaceAll("_", " ")}
                     </p>
                   </div>
                   {method.isDefault && (
-                    <span className="shrink-0 rounded-full bg-zinc-900 px-2.5 py-1 text-xs font-semibold text-white">
+                    <span className="shrink-0 rounded-full bg-[#1F1F1F] px-2.5 py-0.5 text-xs font-medium text-white">
                       Default
                     </span>
                   )}
                 </div>
-                <div className="mt-3 flex gap-4 text-sm font-semibold">
+                <div className="mt-3 flex gap-4 text-xs font-medium">
                   {!method.isDefault && (
                     <button
                       disabled={loading}
                       type="button"
                       onClick={() => onChange(method.id, "default")}
-                      className="text-zinc-900 underline disabled:opacity-50"
+                      className="text-[#1F1F1F] hover:underline disabled:opacity-50 cursor-pointer"
                     >
                       Make default
                     </button>
@@ -991,7 +1106,7 @@ function MethodsModal({
                     disabled={loading}
                     type="button"
                     onClick={() => onChange(method.id, "delete")}
-                    className="text-rose-700 underline disabled:opacity-50"
+                    className="text-rose-700 hover:underline disabled:opacity-50 cursor-pointer"
                   >
                     Remove
                   </button>
@@ -999,16 +1114,16 @@ function MethodsModal({
               </div>
             ))
           ) : (
-            <p className="rounded-2xl border border-dashed border-zinc-300 p-6 text-sm text-zinc-500">
+            <div className="rounded-2xl border border-dashed border-[#D7D7D7] bg-[#FAFAFA] p-6 text-center text-sm text-[#727272]">
               No payout methods added yet.
-            </p>
+            </div>
           )}
         </div>
 
         <button
           type="button"
           onClick={onAdd}
-          className="mt-5 w-full rounded-full bg-zinc-950 px-4 py-2.5 text-sm font-semibold text-white hover:bg-zinc-800"
+          className="mt-6 w-full rounded-full bg-[#1F1F1F] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#FCDF9C] hover:text-[#1F1F1F] transition-all cursor-pointer"
         >
           Add payout method
         </button>
@@ -1050,7 +1165,7 @@ function AddMethodModal({
     label: string,
     mono = false,
   ) => (
-    <label className="block text-sm font-semibold text-zinc-700">
+    <label className="block text-xs font-medium uppercase tracking-wider text-[#727272]">
       {label}
       <input
         required
@@ -1062,7 +1177,7 @@ function AddMethodModal({
               key === "iban" ? e.target.value.toUpperCase() : e.target.value,
           }))
         }
-        className={`mt-1.5 w-full rounded-xl border border-zinc-300 px-3 py-2.5 text-sm ${mono ? "font-mono" : ""}`}
+        className={`mt-1.5 w-full rounded-xl border border-[#D7D7D7] bg-white px-3.5 py-2.5 text-sm text-[#1F1F1F] focus:border-[#1F1F1F] outline-none transition-colors ${mono ? "font-mono" : ""}`}
       />
     </label>
   );
@@ -1072,27 +1187,33 @@ function AddMethodModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="add-method-title"
-      className="fixed inset-0 z-[60] flex items-end bg-black/45 sm:items-center sm:justify-center sm:p-4"
+      className="fixed inset-0 z-[60] flex items-end bg-black/45 backdrop-blur-xs sm:items-center sm:justify-center sm:p-4"
     >
       <form
         onSubmit={onSubmit}
-        className="w-full rounded-t-3xl bg-white p-6 shadow-xl sm:max-w-md sm:rounded-3xl"
+        className="w-full max-h-[90vh] overflow-y-auto rounded-t-3xl bg-white p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] shadow-xl border border-[#E5E5E5] sm:max-w-md sm:rounded-3xl sm:p-7"
       >
         <div className="flex items-start justify-between">
-          <h2 id="add-method-title" className="text-xl font-bold text-zinc-950">
-            Add payout method
-          </h2>
+          <div>
+            <h2 id="add-method-title" className="text-xl font-medium text-[#1F1F1F]">
+              Add payout method
+            </h2>
+            <p className="mt-0.5 text-xs text-[#727272]">Enter bank account details for settlement</p>
+          </div>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="rounded-full p-2 text-xl text-zinc-400 hover:bg-zinc-100"
+            className="rounded-full p-1.5 text-[#727272] hover:bg-zinc-100 hover:text-[#1F1F1F] transition-colors cursor-pointer"
           >
-            ×
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
           </button>
         </div>
         {error && (
-          <p className="mt-4 rounded-xl bg-rose-50 p-3 text-sm text-rose-700">
+          <p className="mt-4 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
             {error}
           </p>
         )}
@@ -1100,14 +1221,14 @@ function AddMethodModal({
           {field("accountHolderName", "Account holder name")}
           {field("bankName", "Bank name")}
           {field("iban", "Saudi IBAN", true)}
-          <label className="flex items-center gap-2 text-sm font-medium text-zinc-700">
+          <label className="flex items-center gap-2 text-sm font-medium text-[#1F1F1F] cursor-pointer">
             <input
               type="checkbox"
               checked={form.isDefault}
               onChange={(e) =>
                 setForm((old) => ({ ...old, isDefault: e.target.checked }))
               }
-              className="rounded"
+              className="rounded accent-[#1F1F1F]"
             />
             Set as default payout method
           </label>
@@ -1115,7 +1236,7 @@ function AddMethodModal({
         <button
           disabled={loading}
           type="submit"
-          className="mt-6 w-full rounded-full bg-zinc-950 px-4 py-2.5 text-sm font-semibold text-white hover:bg-zinc-800 disabled:opacity-50"
+          className="mt-6 w-full rounded-full bg-[#1F1F1F] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#FCDF9C] hover:text-[#1F1F1F] transition-all cursor-pointer disabled:opacity-50"
         >
           {loading ? "Saving…" : "Save payout method"}
         </button>

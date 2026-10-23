@@ -223,16 +223,25 @@ export function DatePeriodPicker({
   );
 
   return (
-    <div ref={containerRef} className={`relative inline-flex items-center gap-1 ${className}`}>
+    <div
+      ref={containerRef}
+      className={`relative inline-flex h-11 sm:h-12 w-full sm:w-auto shrink-0 items-center justify-between rounded-full border bg-white shadow-2xs transition-all ${
+        isOpen
+          ? "border-[#1F1F1F] ring-2 ring-[#1F1F1F]/5"
+          : "border-[#D7D7D7] hover:border-[#1F1F1F]"
+      } ${className}`}
+    >
       {/* Quick Step Left Chevron */}
       <button
         type="button"
         disabled={disabled}
         onClick={() => stepPeriod(-1)}
         title="Previous period"
-        className="flex h-9 w-8 items-center justify-center rounded-l-2xl border border-r-0 border-zinc-200 bg-white text-base font-bold text-zinc-600 transition-colors hover:bg-zinc-50 hover:text-zinc-950 focus:border-zinc-950 focus:outline-hidden disabled:opacity-50"
+        className="flex h-full w-9 sm:w-10 shrink-0 items-center justify-center rounded-l-full text-[#727272] transition-colors hover:bg-[#F3F4F5] hover:text-[#1F1F1F] focus:outline-hidden disabled:opacity-50 cursor-pointer"
       >
-        ‹
+        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
       </button>
 
       {/* Main Trigger Button */}
@@ -242,12 +251,17 @@ export function DatePeriodPicker({
         onClick={() => (isOpen ? setIsOpen(false) : openPicker())}
         aria-haspopup="dialog"
         aria-expanded={isOpen}
-        className="flex h-9 items-center gap-2 border-y border-zinc-200 bg-white px-3.5 text-xs font-semibold text-zinc-900 transition-colors hover:bg-zinc-50 focus:border-zinc-950 focus:outline-hidden disabled:opacity-50"
+        className="flex h-full flex-1 sm:flex-initial min-w-0 items-center justify-center gap-1.5 sm:gap-2 border-x border-[#EDEDED] px-2.5 sm:px-3.5 text-xs sm:text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-[#F7F7F8] focus:outline-hidden disabled:opacity-50 cursor-pointer"
       >
-        <span className="text-zinc-500">📅</span>
-        <span className="truncate max-w-[170px] sm:max-w-[240px]">{labelText}</span>
+        <svg className="w-4 h-4 shrink-0 text-[#727272]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+          <line x1="16" y1="2" x2="16" y2="6" />
+          <line x1="8" y1="2" x2="8" y2="6" />
+          <line x1="3" y1="10" x2="21" y2="10" />
+        </svg>
+        <span className="truncate max-w-[115px] sm:max-w-[135px] lg:max-w-[200px]">{labelText}</span>
         <svg
-          className={`h-3.5 w-3.5 text-zinc-400 transition-transform ${isOpen ? "rotate-180 text-zinc-900" : ""}`}
+          className={`h-4 w-4 shrink-0 text-[#727272] transition-transform duration-200 ${isOpen ? "rotate-180 text-[#1F1F1F]" : ""}`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -262,25 +276,27 @@ export function DatePeriodPicker({
         disabled={disabled}
         onClick={() => stepPeriod(1)}
         title="Next period"
-        className="flex h-9 w-8 items-center justify-center rounded-r-2xl border border-l-0 border-zinc-200 bg-white text-base font-bold text-zinc-600 transition-colors hover:bg-zinc-50 hover:text-zinc-950 focus:border-zinc-950 focus:outline-hidden disabled:opacity-50"
+        className="flex h-full w-9 sm:w-10 shrink-0 items-center justify-center rounded-r-full text-[#727272] transition-colors hover:bg-[#F3F4F5] hover:text-[#1F1F1F] focus:outline-hidden disabled:opacity-50 cursor-pointer"
       >
-        ›
+        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="9 18 15 12 9 6" />
+        </svg>
       </button>
 
       {/* Desktop Popover / Dialog */}
       {isOpen && (
-        <div className="absolute left-0 top-12 z-50 hidden w-[390px] rounded-3xl border border-zinc-200 bg-white p-5 shadow-2xl ring-1 ring-black/5 sm:block animate-in fade-in zoom-in-95">
+        <div className="absolute left-0 top-14 z-50 hidden w-[420px] max-w-[calc(100vw-32px)] rounded-3xl border border-[#E5E5E5] bg-white p-5 shadow-2xl shadow-black/10 sm:block animate-in fade-in-0 zoom-in-95 duration-150">
           {/* Timeframe Granularity Tabs */}
-          <div className="grid grid-cols-6 gap-1 rounded-2xl bg-zinc-100 p-1 text-[11px] font-semibold text-zinc-600">
+          <div className="grid grid-cols-6 gap-1 rounded-full bg-[#F3F4F5] p-1 text-[11px] font-medium text-[#727272]">
             {(["daily", "weekly", "monthly", "quarterly", "yearly", "custom"] as TimeframeGranularity[]).map((tf) => (
               <button
                 key={tf}
                 type="button"
                 onClick={() => setActiveTab(tf)}
-                className={`capitalize rounded-xl py-1.5 transition-all ${
+                className={`capitalize rounded-full transition-all cursor-pointer ${
                   activeTab === tf
-                    ? "bg-white font-bold text-zinc-950 shadow-2xs"
-                    : "hover:text-zinc-950"
+                    ? "bg-[#1F1F1F] font-medium text-white shadow-2xs"
+                    : "hover:text-[#1F1F1F]"
                 }`}
               >
                 {tf}
@@ -293,7 +309,7 @@ export function DatePeriodPicker({
             {(activeTab === "daily" || activeTab === "weekly") && (
               <div>
                 <div className="flex items-center justify-between pb-3">
-                  <div className="flex items-center gap-1 font-bold text-xs text-zinc-900">
+                  <div className="flex items-center gap-1 font-medium text-xs text-[#1F1F1F]">
                     <button
                       type="button"
                       onClick={() => {
@@ -304,9 +320,11 @@ export function DatePeriodPicker({
                           setCalendarViewMonth((m) => m - 1);
                         }
                       }}
-                      className="rounded-lg p-1 text-zinc-500 hover:bg-zinc-100"
+                      className="rounded-lg p-1 text-[#727272] hover:bg-zinc-100 cursor-pointer"
                     >
-                      ‹
+                      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="15 18 9 12 15 6" />
+                      </svg>
                     </button>
                     <span>
                       {MONTHS_FULL[calendarViewMonth]} {calendarViewYear}
@@ -321,9 +339,11 @@ export function DatePeriodPicker({
                           setCalendarViewMonth((m) => m + 1);
                         }
                       }}
-                      className="rounded-lg p-1 text-zinc-500 hover:bg-zinc-100"
+                      className="rounded-lg p-1 text-[#727272] hover:bg-zinc-100 cursor-pointer"
                     >
-                      ›
+                      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="9 18 15 12 9 6" />
+                      </svg>
                     </button>
                   </div>
                   <button
@@ -333,14 +353,14 @@ export function DatePeriodPicker({
                       setCalendarViewMonth(now.getUTCMonth());
                       setCalendarViewYear(now.getUTCFullYear());
                     }}
-                    className="text-[11px] font-semibold text-zinc-600 hover:text-zinc-950 underline"
+                    className="text-[11px] font-medium text-[#1F1F1F] hover:underline cursor-pointer"
                   >
                     Today
                   </button>
                 </div>
 
                 {/* Day headers */}
-                <div className="grid grid-cols-7 text-center text-[10px] font-semibold text-zinc-400">
+                <div className="grid grid-cols-7 text-center text-[10px] font-medium text-[#727272]">
                   <span>Mo</span>
                   <span>Tu</span>
                   <span>We</span>
@@ -360,13 +380,13 @@ export function DatePeriodPicker({
                         key={cell.dateStr}
                         type="button"
                         onClick={() => setSelectedDate(cell.dateStr)}
-                        className={`flex h-8 w-full items-center justify-center rounded-xl text-xs font-semibold transition-all ${
+                        className={`flex h-8 w-full items-center justify-center rounded-lg text-xs font-medium transition-all cursor-pointer ${
                           isSelected
-                            ? "bg-zinc-950 font-bold text-white shadow-xs"
+                            ? "bg-[#1F1F1F] text-white shadow-xs"
                             : isToday
-                              ? "border border-zinc-900 bg-zinc-50 text-zinc-950"
+                              ? "border border-[#1F1F1F] bg-zinc-50 text-[#1F1F1F]"
                               : cell.isCurrentMonth
-                                ? "text-zinc-900 hover:bg-zinc-100"
+                                ? "text-[#1F1F1F] hover:bg-zinc-100"
                                 : "text-zinc-300 hover:bg-zinc-50"
                         }`}
                       >
@@ -375,7 +395,7 @@ export function DatePeriodPicker({
                     );
                   })}
                 </div>
-                <p className="mt-3 text-[11px] text-zinc-500 text-center">
+                <p className="mt-3 text-[11px] text-[#727272] text-center">
                   {activeTab === "daily"
                     ? `Selected: ${selectedDate}`
                     : `Week containing: ${selectedDate}`}
@@ -387,22 +407,26 @@ export function DatePeriodPicker({
             {activeTab === "monthly" && (
               <div>
                 <div className="flex items-center justify-between pb-3">
-                  <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Select Month</span>
+                  <span className="text-sm font-medium text-[#1f1f1f]">Select Month</span>
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
                       onClick={() => setSelectedYear((y) => y - 1)}
-                      className="rounded-lg p-1 text-sm font-bold text-zinc-600 hover:bg-zinc-100"
+                      className="rounded-lg p-1 text-[#727272] hover:bg-zinc-100 cursor-pointer"
                     >
-                      ‹
+                      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="15 18 9 12 15 6" />
+                      </svg>
                     </button>
-                    <span className="text-xs font-bold text-zinc-950">{selectedYear}</span>
+                    <span className="text-xs font-medium text-[#1F1F1F]">{selectedYear}</span>
                     <button
                       type="button"
                       onClick={() => setSelectedYear((y) => y + 1)}
-                      className="rounded-lg p-1 text-sm font-bold text-zinc-600 hover:bg-zinc-100"
+                      className="rounded-lg p-1 text-[#727272] hover:bg-zinc-100 cursor-pointer"
                     >
-                      ›
+                      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="9 18 15 12 9 6" />
+                      </svg>
                     </button>
                   </div>
                 </div>
@@ -417,12 +441,12 @@ export function DatePeriodPicker({
                         key={mName}
                         type="button"
                         onClick={() => setSelectedMonth(mNum)}
-                        className={`rounded-2xl py-2.5 text-xs font-semibold transition-all ${
+                        className={`rounded-lg py-2 text-xs font-medium transition-all cursor-pointer ${
                           isSelected
-                            ? "bg-zinc-950 font-bold text-white shadow-xs"
+                            ? "bg-[#1F1F1F] text-white shadow-xs"
                             : isCurrent
-                              ? "border border-zinc-900 bg-zinc-50 text-zinc-950"
-                              : "border border-zinc-100 bg-zinc-50/70 text-zinc-800 hover:bg-zinc-100"
+                            ? "border border-[#FCDF9C] bg-[#FCDF9C] text-[#1F1F1F]"
+                            : "border border-[#EDEDED] bg-[#F3F4F5] hover:border-[#FCDF9C] text-[#3F3F3F] hover:bg-[#FCDF9C]"
                         }`}
                       >
                         {mName}
@@ -437,22 +461,26 @@ export function DatePeriodPicker({
             {activeTab === "quarterly" && (
               <div>
                 <div className="flex items-center justify-between pb-3">
-                  <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Select Quarter</span>
+                  <span className="text-xs font-medium text-[#727272] uppercase tracking-wider">Select Quarter</span>
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
                       onClick={() => setSelectedYear((y) => y - 1)}
-                      className="rounded-lg p-1 text-sm font-bold text-zinc-600 hover:bg-zinc-100"
+                      className="rounded-lg p-1 text-[#727272] hover:bg-zinc-100 cursor-pointer"
                     >
-                      ‹
+                      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="15 18 9 12 15 6" />
+                      </svg>
                     </button>
-                    <span className="text-xs font-bold text-zinc-950">{selectedYear}</span>
+                    <span className="text-xs font-medium text-[#1F1F1F]">{selectedYear}</span>
                     <button
                       type="button"
                       onClick={() => setSelectedYear((y) => y + 1)}
-                      className="rounded-lg p-1 text-sm font-bold text-zinc-600 hover:bg-zinc-100"
+                      className="rounded-lg p-1 text-[#727272] hover:bg-zinc-100 cursor-pointer"
                     >
-                      ›
+                      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="9 18 15 12 9 6" />
+                      </svg>
                     </button>
                   </div>
                 </div>
@@ -465,16 +493,16 @@ export function DatePeriodPicker({
                         key={q.q}
                         type="button"
                         onClick={() => setSelectedQuarter(q.q)}
-                        className={`rounded-2xl p-4 text-left transition-all ${
+                        className={`rounded-2xl p-4 text-left transition-all cursor-pointer ${
                           isSelected
-                            ? "bg-zinc-950 text-white shadow-xs"
-                            : "border border-zinc-200 bg-zinc-50/70 hover:bg-zinc-100"
+                            ? "bg-[#1F1F1F] text-white shadow-xs"
+                            : "border border-[#E5E5E5] bg-[#FAFAFA] hover:bg-zinc-100"
                         }`}
                       >
-                        <p className={`text-base font-bold ${isSelected ? "text-white" : "text-zinc-950"}`}>
+                        <p className={`text-base font-medium ${isSelected ? "text-white" : "text-[#1F1F1F]"}`}>
                           {q.label}
                         </p>
-                        <p className={`text-[11px] ${isSelected ? "text-zinc-300" : "text-zinc-500"}`}>
+                        <p className={`text-[11px] ${isSelected ? "text-zinc-300" : "text-[#727272]"}`}>
                           {q.range}
                         </p>
                       </button>
@@ -487,7 +515,7 @@ export function DatePeriodPicker({
             {/* 4. YEARLY VIEW */}
             {activeTab === "yearly" && (
               <div>
-                <p className="pb-3 text-xs font-bold text-zinc-500 uppercase tracking-wider">Select Year</p>
+                <p className="pb-3 text-xs font-medium text-[#727272] uppercase tracking-wider">Select Year</p>
                 <div className="grid grid-cols-3 gap-2.5">
                   {[curYear - 3, curYear - 2, curYear - 1, curYear, curYear + 1, curYear + 2].map((yr) => {
                     const isSelected = selectedYear === yr;
@@ -496,12 +524,12 @@ export function DatePeriodPicker({
                         key={yr}
                         type="button"
                         onClick={() => setSelectedYear(yr)}
-                        className={`rounded-2xl py-3 text-xs font-semibold transition-all ${
+                        className={`rounded-xl py-2.5 text-xs font-medium transition-all cursor-pointer ${
                           isSelected
-                            ? "bg-zinc-950 font-bold text-white shadow-xs"
+                            ? "bg-[#1F1F1F] text-white shadow-xs"
                             : yr === curYear
-                              ? "border border-zinc-900 bg-zinc-50 text-zinc-950"
-                              : "border border-zinc-100 bg-zinc-50/70 text-zinc-800 hover:bg-zinc-100"
+                              ? "border border-[#1F1F1F] bg-[#FEF9EE] text-[#1F1F1F]"
+                              : "border border-[#EDEDED] bg-[#FAFAFA] text-[#3F3F3F] hover:bg-zinc-100"
                         }`}
                       >
                         {yr}
@@ -515,10 +543,10 @@ export function DatePeriodPicker({
             {/* 5. CUSTOM RANGE VIEW */}
             {activeTab === "custom" && (
               <div className="space-y-3">
-                <p className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Custom Date Range</p>
+                <p className="text-xs font-medium text-[#727272] uppercase tracking-wider">Custom Date Range</p>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-[11px] font-semibold text-zinc-600">Start Date</label>
+                    <label className="text-[11px] font-medium text-[#727272]">Start Date</label>
                     <input
                       type="date"
                       value={customStart}
@@ -526,11 +554,11 @@ export function DatePeriodPicker({
                         setCustomStart(e.target.value);
                         setCustomError(null);
                       }}
-                      className="mt-1 w-full rounded-xl border border-zinc-200 bg-zinc-50/70 px-3 py-2 text-xs font-semibold text-zinc-900 focus:border-zinc-950 focus:bg-white focus:outline-hidden"
+                      className="mt-1 w-full rounded-xl border border-[#D7D7D7] bg-[#FAFAFA] px-3 py-2 text-xs font-medium text-[#1F1F1F] focus:border-[#1F1F1F] focus:bg-white focus:outline-hidden"
                     />
                   </div>
                   <div>
-                    <label className="text-[11px] font-semibold text-zinc-600">End Date</label>
+                    <label className="text-[11px] font-medium text-[#727272]">End Date</label>
                     <input
                       type="date"
                       value={customEnd}
@@ -538,13 +566,13 @@ export function DatePeriodPicker({
                         setCustomEnd(e.target.value);
                         setCustomError(null);
                       }}
-                      className="mt-1 w-full rounded-xl border border-zinc-200 bg-zinc-50/70 px-3 py-2 text-xs font-semibold text-zinc-900 focus:border-zinc-950 focus:bg-white focus:outline-hidden"
+                      className="mt-1 w-full rounded-xl border border-[#D7D7D7] bg-[#FAFAFA] px-3 py-2 text-xs font-medium text-[#1F1F1F] focus:border-[#1F1F1F] focus:bg-white focus:outline-hidden"
                     />
                   </div>
                 </div>
 
                 {customError && (
-                  <p className="rounded-xl border border-rose-200 bg-rose-50 p-2 text-[11px] font-semibold text-rose-700">
+                  <p className="rounded-xl border border-rose-200 bg-rose-50 p-2 text-[11px] font-medium text-rose-700">
                     {customError}
                   </p>
                 )}
@@ -553,18 +581,18 @@ export function DatePeriodPicker({
           </div>
 
           {/* Action buttons */}
-          <div className="mt-5 flex items-center justify-between border-t border-zinc-100 pt-4">
+          <div className="mt-5 flex items-center justify-between border-t border-[#EDEDED] pt-4">
             <button
               type="button"
               onClick={() => setIsOpen(false)}
-              className="text-xs font-semibold text-zinc-600 hover:text-zinc-950"
+              className="text-sm font-medium text-[#727272] hover:text-[#1F1F1F] cursor-pointer underline underline-offset-2"
             >
               Cancel
             </button>
             <button
               type="button"
               onClick={handleApply}
-              className="rounded-full bg-zinc-950 px-5 py-2 text-xs font-bold text-white shadow-xs hover:bg-zinc-800 transition-colors"
+              className="rounded-full bg-[#FCDF9C] px-5 py-2 text-sm font-medium hover:text-white hover:bg-[#1f1f1f] text-[#1F1F1F] transition-all cursor-pointer"
             >
               Apply Filter
             </button>
@@ -575,36 +603,38 @@ export function DatePeriodPicker({
       {/* Mobile Bottom Sheet for Date Picker */}
       {isOpen && (
         <ModalOverlay
-          className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:hidden"
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:hidden backdrop-blur-xs"
           onClick={() => setIsOpen(false)}
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="fixed inset-x-0 bottom-0 z-50 rounded-t-3xl border-t border-zinc-200 bg-white p-5 shadow-2xl animate-in slide-in-from-bottom max-h-[85vh] overflow-y-auto"
+            className="fixed inset-x-0 bottom-0 z-50 flex max-h-[85vh] flex-col rounded-t-3xl border-t border-[#E5E5E5] bg-white p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] shadow-2xl animate-in slide-in-from-bottom"
           >
-            <div className="mx-auto mb-4 h-1.5 w-12 rounded-full bg-zinc-300" />
             <div className="flex items-center justify-between pb-3">
-              <h3 className="text-base font-bold text-zinc-950">Reporting period</h3>
+              <h3 className="text-base font-medium text-[#1F1F1F]">Reporting period</h3>
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="rounded-full p-1 text-zinc-400 hover:text-zinc-700"
+                className="flex h-8 w-8 items-center justify-center rounded-full text-[#727272] hover:bg-[#F3F4F5] hover:text-[#1F1F1F] transition-colors cursor-pointer"
               >
-                ✕
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
               </button>
             </div>
 
             {/* Timeframe Granularity Tabs */}
-            <div className="grid grid-cols-3 gap-1.5 rounded-2xl bg-zinc-100 p-1 text-xs font-semibold text-zinc-600">
+            <div className="grid grid-cols-3 gap-1.5 rounded-2xl bg-[#F3F4F5] p-1.5 text-xs font-medium text-[#727272]">
               {(["daily", "weekly", "monthly", "quarterly", "yearly", "custom"] as TimeframeGranularity[]).map((tf) => (
                 <button
                   key={tf}
                   type="button"
                   onClick={() => setActiveTab(tf)}
-                  className={`capitalize rounded-xl py-2 transition-all ${
+                  className={`capitalize rounded-lg py-2 transition-all cursor-pointer ${
                     activeTab === tf
-                      ? "bg-white font-bold text-zinc-950 shadow-2xs"
-                      : "hover:text-zinc-950"
+                      ? "bg-[#1F1F1F] font-medium text-white shadow-2xs"
+                      : "hover:text-[#1F1F1F]"
                   }`}
                 >
                   {tf}
@@ -613,11 +643,11 @@ export function DatePeriodPicker({
             </div>
 
             {/* Sub-picker content */}
-            <div className="my-5">
+            <div className="my-4 flex-1 overflow-y-auto overscroll-contain">
               {(activeTab === "daily" || activeTab === "weekly") && (
                 <div>
                   <div className="flex items-center justify-between pb-3">
-                    <span className="text-sm font-bold text-zinc-900">
+                    <span className="text-sm font-medium text-[#1F1F1F]">
                       {MONTHS_FULL[calendarViewMonth]} {calendarViewYear}
                     </span>
                     <button
@@ -627,7 +657,7 @@ export function DatePeriodPicker({
                         setCalendarViewMonth(now.getUTCMonth());
                         setCalendarViewYear(now.getUTCFullYear());
                       }}
-                      className="text-xs font-semibold text-zinc-700 underline"
+                      className="text-xs font-medium text-[#1F1F1F] underline cursor-pointer"
                     >
                       Today
                     </button>
@@ -638,12 +668,12 @@ export function DatePeriodPicker({
                         key={cell.dateStr}
                         type="button"
                         onClick={() => setSelectedDate(cell.dateStr)}
-                        className={`h-9 w-full rounded-xl text-xs font-semibold ${
+                        className={`h-9 w-full rounded-xl text-xs font-medium transition-colors ${
                           selectedDate === cell.dateStr
-                            ? "bg-zinc-950 text-white font-bold"
+                            ? "bg-[#1F1F1F] text-white font-medium shadow-xs"
                             : cell.isCurrentMonth
-                              ? "text-zinc-900 hover:bg-zinc-100"
-                              : "text-zinc-300"
+                              ? "text-[#1F1F1F] hover:bg-[#F3F4F5]"
+                              : "text-[#C7C7C7]"
                         }`}
                       >
                         {cell.dayNum}
@@ -655,10 +685,26 @@ export function DatePeriodPicker({
 
               {activeTab === "monthly" && (
                 <div className="space-y-3">
-                  <div className="flex items-center justify-center gap-4 py-2 font-bold text-zinc-950 text-sm">
-                    <button type="button" onClick={() => setSelectedYear((y) => y - 1)}>‹</button>
-                    <span>{selectedYear}</span>
-                    <button type="button" onClick={() => setSelectedYear((y) => y + 1)}>›</button>
+                  <div className="flex items-center justify-center gap-4 py-2 font-medium text-[#1F1F1F] text-sm">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedYear((y) => y - 1)}
+                      className="flex h-7 w-7 items-center justify-center rounded-full hover:bg-[#F3F4F5] text-[#727272] hover:text-[#1F1F1F] cursor-pointer"
+                    >
+                      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="15 18 9 12 15 6" />
+                      </svg>
+                    </button>
+                    <span className="text-sm font-medium">{selectedYear}</span>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedYear((y) => y + 1)}
+                      className="flex h-7 w-7 items-center justify-center rounded-full hover:bg-[#F3F4F5] text-[#727272] hover:text-[#1F1F1F] cursor-pointer"
+                    >
+                      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="9 18 15 12 9 6" />
+                      </svg>
+                    </button>
                   </div>
                   <div className="grid grid-cols-3 gap-2">
                     {MONTHS_SHORT.map((mName, idx) => (
@@ -666,10 +712,10 @@ export function DatePeriodPicker({
                         key={mName}
                         type="button"
                         onClick={() => setSelectedMonth(idx + 1)}
-                        className={`rounded-2xl py-3 text-xs font-semibold ${
+                        className={`rounded-lg py-3 text-xs font-medium transition-all cursor-pointer ${
                           selectedMonth === idx + 1
-                            ? "bg-zinc-950 font-bold text-white"
-                            : "border border-zinc-200 bg-zinc-50 text-zinc-800"
+                            ? "bg-[#1F1F1F] text-white shadow-2xs"
+                            : "border border-[#EDEDED] bg-white text-[#1F1F1F] hover:border-[#1F1F1F]"
                         }`}
                       >
                         {mName}
@@ -686,13 +732,13 @@ export function DatePeriodPicker({
                       key={q.q}
                       type="button"
                       onClick={() => setSelectedQuarter(q.q)}
-                      className={`rounded-2xl p-4 text-left ${
+                      className={`rounded-2xl p-4 text-left transition-all cursor-pointer ${
                         selectedQuarter === q.q
-                          ? "bg-zinc-950 text-white"
-                          : "border border-zinc-200 bg-zinc-50"
+                          ? "bg-[#1F1F1F] text-white shadow-xs"
+                          : "border border-[#EDEDED] bg-white hover:border-[#1F1F1F]"
                       }`}
                     >
-                      <p className="text-base font-bold">{q.label}</p>
+                      <p className="text-base font-medium">{q.label}</p>
                       <p className="text-xs opacity-80">{q.range}</p>
                     </button>
                   ))}
@@ -706,10 +752,10 @@ export function DatePeriodPicker({
                       key={yr}
                       type="button"
                       onClick={() => setSelectedYear(yr)}
-                      className={`rounded-2xl py-3.5 text-xs font-semibold ${
+                      className={`rounded-2xl py-3.5 text-xs font-medium transition-all cursor-pointer ${
                         selectedYear === yr
-                          ? "bg-zinc-950 font-bold text-white"
-                          : "border border-zinc-200 bg-zinc-50 text-zinc-800"
+                          ? "bg-[#1F1F1F] text-white shadow-xs"
+                          : "border border-[#EDEDED] bg-white text-[#1F1F1F] hover:border-[#1F1F1F]"
                       }`}
                     >
                       {yr}
@@ -721,42 +767,42 @@ export function DatePeriodPicker({
               {activeTab === "custom" && (
                 <div className="space-y-3">
                   <div>
-                    <label className="text-xs font-semibold text-zinc-700">Start Date</label>
+                    <label className="text-xs font-medium text-[#727272]">Start Date</label>
                     <input
                       type="date"
                       value={customStart}
                       onChange={(e) => setCustomStart(e.target.value)}
-                      className="mt-1 w-full rounded-xl border border-zinc-300 p-2.5 text-xs font-semibold text-zinc-900"
+                      className="mt-1 w-full rounded-2xl border border-[#D7D7D7] bg-white p-2.5 text-xs font-medium text-[#1F1F1F] focus:border-[#1F1F1F] focus:outline-hidden"
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-semibold text-zinc-700">End Date</label>
+                    <label className="text-xs font-medium text-[#727272]">End Date</label>
                     <input
                       type="date"
                       value={customEnd}
                       onChange={(e) => setCustomEnd(e.target.value)}
-                      className="mt-1 w-full rounded-xl border border-zinc-300 p-2.5 text-xs font-semibold text-zinc-900"
+                      className="mt-1 w-full rounded-2xl border border-[#D7D7D7] bg-white p-2.5 text-xs font-medium text-[#1F1F1F] focus:border-[#1F1F1F] focus:outline-hidden"
                     />
                   </div>
                   {customError && (
-                    <p className="text-xs font-semibold text-rose-600">{customError}</p>
+                    <p className="text-xs font-medium text-rose-600">{customError}</p>
                   )}
                 </div>
               )}
             </div>
 
-            <div className="flex items-center justify-between border-t border-zinc-100 pt-4">
+            <div className="flex items-center justify-between border-t border-[#EDEDED] pt-4">
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="text-xs font-semibold text-zinc-600"
+                className="text-xs font-medium hover:text-[#727272] text-[#1F1F1F] cursor-pointer underline underline-offset-2"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={handleApply}
-                className="rounded-full bg-zinc-950 px-6 py-2.5 text-xs font-bold text-white"
+                className="rounded-full bg-[#1F1F1F] px-6 py-2.5 text-sm font-medium text-white hover:bg-[#FCDF9C] hover:text-[#1F1F1F] transition-all cursor-pointer"
               >
                 Apply
               </button>
