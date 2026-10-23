@@ -347,7 +347,6 @@ async function syncRealEventsForUser(userId: string): Promise<void> {
               select: {
                 id: true,
                 name: true,
-                firstName: true,
               },
             },
             listing: {
@@ -378,7 +377,7 @@ async function syncRealEventsForUser(userId: string): Promise<void> {
 
           if (!existingHostNotif) {
             const listingTitle = hb.listing?.title || "Property";
-            const guestName = hb.user?.name || hb.user?.firstName || "A guest";
+            const guestName = hb.user?.name || "A guest";
             const startStr = bookingDateKey(hb.startDate);
             const endStr = bookingDateKey(hb.endDate);
             const isConfirmed = hb.status === BookingStatus.CONFIRMED;

@@ -88,7 +88,7 @@ const DISPUTE_DECISION_CATEGORIES = new Set([
   "CLOSED_AFTER_REVIEW",
 ]);
 
-const OPEN_INCIDENT_STATUSES = [
+const OPEN_INCIDENT_STATUSES: QualityIncidentStatus[] = [
   QualityIncidentStatus.PENDING,
   QualityIncidentStatus.CONFIRMED,
 ];
@@ -867,7 +867,7 @@ export async function requestDisputeInfo(
 
   if (target === "HOST") {
     const host = incident.booking?.listing.host;
-    if (!host || host.id !== incident.booking.listing.hostId || host.role !== Role.HOST || host.status !== UserStatus.ACTIVE) {
+    if (!incident.booking || !host || host.id !== incident.booking.listing.hostId || host.role !== Role.HOST || host.status !== UserStatus.ACTIVE) {
       throw AppError.conflict("The booking does not have an eligible active host to request a response from.");
     }
     if (Array.isArray(meta.infoRequests) && meta.infoRequests.some(

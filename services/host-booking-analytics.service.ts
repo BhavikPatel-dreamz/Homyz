@@ -47,6 +47,8 @@ export interface HostBookingAnalyticsQuery {
   comparisonStartDate?: string;
   comparisonEndDate?: string;
   currency?: string;
+  /** Null intentionally requests the full portfolio for the dedicated comparison view. */
+  propertyLimit?: number | null;
 }
 
 export interface HostBookingAnalyticsData {
@@ -107,6 +109,7 @@ export interface HostBookingAnalyticsData {
     trend: Array<{ monthKey: string; averageNightlyRateCents: number | null; completedStaysCount: number }>;
   };
   properties: Array<{ listingId: string; title: string; confirmedBookingsCount: number; completedStaysCount: number; occupancyRatePercentage: number | null; bookedNights: number; averageStayNights: number | null; averageLeadTimeDays: number | null; lastMinuteBookingPercentage: number | null; realizedNightlyRateCents: number | null }>;
+  propertiesTotal: number;
 }
 
 type ListingRecord = DashboardInventoryListing & { title: string; published: boolean; status: string; isPaused: boolean };
@@ -255,6 +258,10 @@ export const hostBookingAnalyticsService = {
     });
 
     const isHistoricalWindow = period.endDateKey < bookingDateKey(now);
+    const propertyLimit = query.propertyLimit === undefined ? 10 : query.propertyLimit;
+    const visibleProperties = [...propertyMetrics]
+      .sort((left, right) => right.confirmedBookingsCount - left.confirmedBookingsCount || left.title.localeCompare(right.title))
+      .slice(0, propertyLimit === null ? undefined : Math.max(0, propertyLimit));
     return {
       reportingPeriod: { label: period.label, startDateKey: period.startDateKey, endDateKey: period.endDateKey, comparisonLabel: comparison ? `Compared with ${comparison.label}` : period.comparisonLabel },
       selectedListingId: query.listingId ?? null,
@@ -294,7 +301,8 @@ export const hostBookingAnalyticsService = {
       leadTime: { coverage: { qualifyingBookingsCount: eventBookings.length, excludedMissingTimestampCount: 0 }, shortestDays: leadTimes.length ? Math.min(...leadTimes) : null, longestDays: leadTimes.length ? Math.max(...leadTimes) : null, distribution: LEAD_TIME_BUCKETS.map((bucket) => { const bookingsCount = leadCounts.get(bucket.id) ?? 0; return { id: bucket.id, label: bucket.label, bookingsCount, percentage: eventBookings.length ? Math.round((bookingsCount / eventBookings.length) * 1000) / 10 : 0 }; }) },
       stayLength: { distribution: STAY_LENGTH_BUCKETS.map((bucket) => { const item = stayCounts.get(bucket.id)!; return { id: bucket.id, label: bucket.label, bookingsCount: item.bookings, bookedNights: item.nights, percentage: stayNights.length ? Math.round((item.bookings / stayNights.length) * 1000) / 10 : 0 }; }) },
       pricing: { status: !completedStays.length ? "DATA_UNAVAILABLE" : excludedFinancialSnapshotCount ? "PARTIAL" : "AVAILABLE", message: !completedStays.length ? "No completed stays fall within this reporting period." : excludedFinancialSnapshotCount ? `${excludedFinancialSnapshotCount} completed stay${excludedFinancialSnapshotCount === 1 ? "" : "s"} excluded because an eligible immutable financial snapshot was unavailable.` : null, realizedBookingCount: Array.from(propertyRates.values()).reduce((sum, item) => sum + item.stays, 0), trend: Array.from(rateMonths.entries()).map(([monthKey, item]) => ({ monthKey, averageNightlyRateCents: item.nights ? Math.round(item.amount / item.nights) : null, completedStaysCount: item.stays })) },
-      properties: propertyMetrics,
+      properties: visibleProperties,
+      propertiesTotal: propertyMetrics.length,
     };
   },
 };

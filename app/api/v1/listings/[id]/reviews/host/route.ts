@@ -20,11 +20,11 @@ export const GET = apiHandler(async (req, ctx: Ctx) => {
   // Verify the user owns this listing OR is an accepted co-host
   const listing = await prisma.listing.findFirst({
     where: { id },
-    select: { id: true, userId: true },
+    select: { id: true, hostId: true },
   });
   if (!listing) throw AppError.notFound("Listing not found");
 
-  const isOwner = listing.userId === actor.id;
+  const isOwner = listing.hostId === actor.id;
   const isCoHost = !isOwner
     ? await prisma.listingCoHost.findFirst({
         where: {

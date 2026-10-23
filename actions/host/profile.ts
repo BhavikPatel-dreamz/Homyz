@@ -44,7 +44,7 @@ export async function updateHostPublicProfileAction(input: unknown) {
 
       const isOwner = listing.hostId === actor.id;
       const isAdmin = actor.role === "ADMIN";
-      const isCoHost = listing.coHosts.some((ch: { userId: string }) => ch.userId === actor.id);
+      const isCoHost = listing.coHosts.some((ch: { userId: string | null }) => ch.userId === actor.id);
 
       if (!isOwner && !isAdmin && !isCoHost) {
         throw AppError.forbidden("You do not have permission to edit this listing's host profile");
@@ -89,7 +89,7 @@ export async function updateHostListingPhotoAction(input: { listingId: string; i
 
     const isOwner = listing.hostId === actor.id;
     const isAdmin = actor.role === "ADMIN";
-    const isCoHost = listing.coHosts.some((ch: { userId: string }) => ch.userId === actor.id);
+    const isCoHost = listing.coHosts.some((ch: { userId: string | null }) => ch.userId === actor.id);
 
     if (!isOwner && !isAdmin && !isCoHost) {
       throw AppError.forbidden("You do not have permission to edit this listing's host photo");

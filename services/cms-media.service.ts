@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db/prisma";
+import { Prisma } from "@/generated/prisma/client";
 import { AppError } from "@/lib/api/errors";
 import type { AuthUser } from "@/lib/auth/types";
 import {
@@ -398,7 +399,7 @@ class CmsMediaService {
       data: {
         title: data.title ?? asset.title,
         altText: data.altText ?? asset.altText,
-        metadata: updatedMeta,
+        metadata: updatedMeta as Prisma.InputJsonValue,
       },
     });
 

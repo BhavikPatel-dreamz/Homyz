@@ -194,6 +194,8 @@ export class AnalyticsAdminService {
           id: true,
           listingId: true,
           status: true,
+          totalPrice: true,
+          currency: true,
           endDate: true,
           createdAt: true,
           priceBreakdown: true,
@@ -490,7 +492,7 @@ export class AnalyticsAdminService {
         })
       : [];
     const bookingIds = bookings.map((booking) => booking.id);
-    const [payments, refunds]: [PaymentAnalyticsRecord[], RefundAnalyticsRecord[]] = bookingIds.length
+    const [payments, refunds] = bookingIds.length
       ? await Promise.all([
           prisma.bookingPayment.findMany({
             where: {

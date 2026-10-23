@@ -184,7 +184,7 @@ function roundRating(value: number | null): number | null {
 
 export async function getPublishedReviewSummaries(listingIds: string[]): Promise<Map<string, ListingReviewSummary>> {
   if (!listingIds.length) return new Map();
-  const summaries = await prisma.review.groupBy({
+  const summaries = (await (prisma.review as any).groupBy({
     by: ["listingId"],
     where: {
       listingId: { in: listingIds },
@@ -193,7 +193,7 @@ export async function getPublishedReviewSummaries(listingIds: string[]): Promise
     },
     _avg: { rating: true },
     _count: { _all: true },
-  }) as Array<{ listingId: string; _avg: { rating: number | null }; _count: { _all: number } }>;
+  })) as Array<{ listingId: string; _avg: { rating: number | null }; _count: { _all: number } }>;
   return new Map<string, ListingReviewSummary>(summaries.map((summary) => [summary.listingId, {
     averageRating: roundRating(summary._avg.rating),
     totalCount: summary._count._all,
@@ -1289,7 +1289,7 @@ async function getHostAboutProfileData(hostId: string): Promise<HostAboutProfile
     _count: { _all: number };
   };
   const summaries: ReviewSummary[] = listingIds.length
-    ? await prisma.review.groupBy({
+    ? ((await (prisma.review as any).groupBy({
         by: ["listingId"],
         where: {
           listingId: { in: listingIds },
@@ -1298,7 +1298,7 @@ async function getHostAboutProfileData(hostId: string): Promise<HostAboutProfile
         },
         _avg: { rating: true },
         _count: { _all: true },
-      })
+      })) as ReviewSummary[])
     : [];
   const summaryByListingId = new Map<string, ReviewSummary>(
     summaries.map((summary) => [summary.listingId, summary]),
@@ -1317,7 +1317,7 @@ async function getHostAboutProfileData(hostId: string): Promise<HostAboutProfile
       id: review.id,
       author: review.author,
       rating: review.rating,
-      comment: review.comment,
+      comment: review.comment ?? "",
       createdAt: review.createdAt.toISOString(),
     })),
     listings: hostListings.map((listing: {
@@ -1916,7 +1916,7 @@ async function submitForReview(actor: AuthUser, id: string): Promise<ListingDTO>
   if (!isCoHost && actor.role === Role.HOST) {
     await assertHostPermission(actor.id, "listing.edit");
   }
-  if (![ListingStatus.DRAFT, ListingStatus.IN_PROGRESS].includes(existing.status)) {
+  if (!([ListingStatus.DRAFT, ListingStatus.IN_PROGRESS] as ListingStatus[]).includes(existing.status)) {
     throw AppError.badRequest("This listing cannot be submitted in its current state. Edit a draft or resubmit a returned listing.");
   }
 
@@ -1963,7 +1963,7 @@ async function resubmitForReview(actor: AuthUser, id: string): Promise<ListingDT
   if (!isCoHost && actor.role === Role.HOST) {
     await assertHostPermission(actor.id, "listing.edit");
   }
-  if (![ListingStatus.CHANGES_REQUESTED, ListingStatus.REJECTED].includes(existing.status)) {
+  if (!([ListingStatus.CHANGES_REQUESTED, ListingStatus.REJECTED] as ListingStatus[]).includes(existing.status)) {
     throw AppError.badRequest("Only listings returned by Admin can be resubmitted.");
   }
 

@@ -400,7 +400,14 @@ async function getPublicHostProfile(userId: string, options: { reviewLimit?: num
         comment: { not: "" },
         listing: publicListingWhere,
       },
-      select: { id: true, rating: true, comment: true, createdAt: true, author: { select: { name: true, image: true } }, listing: { select: { title: true } } },
+      select: {
+        id: true,
+        rating: true,
+        comment: true,
+        createdAt: true,
+        author: { select: { name: true, image: true } },
+        listing: { select: { id: true, customSlug: true, title: true } },
+      },
       orderBy: { createdAt: "desc" },
       take: reviewLimit,
     }),
@@ -422,7 +429,10 @@ async function getPublicHostProfile(userId: string, options: { reviewLimit?: num
       averageRating: reviewSummary._avg.rating === null ? null : Math.round(reviewSummary._avg.rating * 100) / 100,
       listingCount: listings.length,
     },
-    reviews: latestReviews,
+    reviews: latestReviews.map((r) => ({
+      ...r,
+      listing: r.listing ?? { id: "", title: "", customSlug: null },
+    })),
     listings: (listings as Array<{
       id: string;
       customSlug: string | null;

@@ -64,6 +64,7 @@ async function verify() {
     }
 
     for (const locRecord of countryLocations) {
+      if (!locRecord.value) continue;
       const loc = JSON.parse(locRecord.value);
       if (slugs.has(loc.slug)) {
         throw new Error(`Duplicate slug detected: ${loc.slug}`);

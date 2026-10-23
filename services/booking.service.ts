@@ -2557,7 +2557,7 @@ async function listForAdmin(actor: AuthUser, opts: AdminBookingListOptions = {})
             },
           },
         },
-      }) as any[],
+      }),
       prisma.booking.count({ where }),
     ]);
   }
@@ -3796,7 +3796,7 @@ async function listCancellationsForAdmin(
             },
           },
         },
-      }) as any[],
+      }),
       prisma.booking.count({ where: fallbackWhere }),
     ]);
   }
@@ -4105,6 +4105,7 @@ async function getAdminCalendarData(
   return {
     listing: {
       ...listing,
+      customPrices: (listing.customPrices as Record<string, number> | null) ?? null,
       weekendBasePrice: listing.weekendPrice,
       photos: sanitizeListingSecrets(listing).photos || [],
     },
