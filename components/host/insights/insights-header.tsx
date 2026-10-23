@@ -45,8 +45,8 @@ export function InsightsHeader({
   return (
     <div className="flex flex-col gap-4 border-b border-[#E5E5E5] pb-6 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-wider text-[#727272]">Host Analytics</p>
-        <h1 className="mt-1 text-3xl font-bold tracking-tight text-[#1F1F1F] sm:text-4xl">Insights</h1>
+        <p className="text-sm font-medium text-[#727272]">Host Analytics</p>
+        <h1 className="mt-1">Insights</h1>
         <p className="mt-1 text-sm text-[#727272]">
           Track guest feedback, hosting performance {periodLabel}.
         </p>
@@ -133,7 +133,7 @@ export function InsightsHeader({
         </div>
 
         {!isSuperhostTab && selectedPeriod === "custom" && (
-          <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-[#1F1F1F] sm:justify-end">
+          <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-[#1F1F1F] sm:justify-end">
             <label className="flex items-center gap-1.5">
               <span className="text-[#727272]">From</span>
               <input
