@@ -1807,6 +1807,7 @@ model HostRegistrationDocument {
   @@index([status])
 }
 
+
 model HostRegistrationNote {
   id        String                  @id @default(cuid())
   requestId String
@@ -2231,6 +2232,7 @@ model Conversation {
   @@index([bookingId])
   @@index([status])
 }
+
 
 model Message {
   id             String      @id @default(cuid())
@@ -2713,4 +2715,3 @@ model HostTaxDocument {
   @@index([bookingId])
   @@index([status])
 }
-

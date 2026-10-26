@@ -215,9 +215,11 @@ test("Scenario 9: Suspended account enforces suspension restrictions across all 
 test("Scenario 10 & 11: Co-host data isolation and private owner financial isolation", () => {
   const payoutServiceSrc = read("services/payout.service.ts");
 
-  // Verified that personal payout methods & adjustments are loaded strictly from the authenticated actor
+  // Relational payout methods are scoped to the requested host, with the legacy
+  // fallback retaining the same host identity constraint during migration.
   assert.match(payoutServiceSrc, /where:\s*accessibleHostListingWhere\(actor\)/);
-  assert.match(payoutServiceSrc, /payoutMethods:\s*HostPayoutMethod\[\]\s*=\s*Array\.isArray\(info\.payoutMethods\)/);
+  assert.match(payoutServiceSrc, /prisma\.hostPayoutMethod\.findMany\(\{\s*where:\s*\{\s*hostId,/);
+  assert.match(payoutServiceSrc, /where:\s*\{\s*id:\s*hostId\s*\}/);
   assert.match(payoutServiceSrc, /adjustments:\s*PayoutAdjustmentRecord\[\]\s*=\s*Array\.isArray\(\s*info\.payoutAdjustments/);
 
   // In host-facing earnings overview, host identity is strictly the querying actor

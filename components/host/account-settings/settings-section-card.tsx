@@ -13,6 +13,7 @@ export interface SettingsSectionCardProps {
   external?: boolean;
   disabled?: boolean;
   footerNote?: string;
+  actionLabel?: string;
   className?: string;
 }
 
@@ -26,6 +27,7 @@ export function SettingsSectionCard({
   external = false,
   disabled = false,
   footerNote,
+  actionLabel,
   className = "",
 }: SettingsSectionCardProps) {
   const content = (
@@ -61,11 +63,12 @@ export function SettingsSectionCard({
           <span className="text-xs text-zinc-500">{footerNote}</span>
         ) : (
           <span className="text-xs font-medium text-zinc-600 group-hover:text-zinc-900">
-            Manage settings
+            {actionLabel || "Manage settings"}
           </span>
         )}
-        <div className="text-zinc-400 transition-all duration-150 group-hover:translate-x-1 group-hover:text-zinc-900">
-          {external ? <ExternalLinkIcon size={18} /> : <ChevronRightIcon size={20} />}
+        <div className="flex items-center gap-1 text-xs font-medium text-zinc-600 transition-all duration-150 group-hover:translate-x-0.5 group-hover:text-zinc-900">
+          {actionLabel && <span>{actionLabel}</span>}
+          {external ? <ExternalLinkIcon size={18} /> : <ChevronRightIcon size={18} />}
         </div>
       </div>
     </div>

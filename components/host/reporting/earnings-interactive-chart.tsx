@@ -50,7 +50,7 @@ interface FormattedChartItem {
   secondaryPlatformFee?: number;
 }
 
-const emptySubscribe = () => () => {};
+const emptySubscribe = () => () => { };
 
 const fmt = (cents: number, currency: string) =>
   new Intl.NumberFormat("en-US", {
@@ -235,66 +235,66 @@ export function EarningsInteractiveChart({
   return (
     <div className={`space-y-4 ${className}`}>
       {/* ── Chart Header Toolbar: Metric Selector, Quick Performance Stats & Legend ── */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-100 pb-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#EDEDED] pb-3">
         {/* Metric Selector Buttons */}
-        <div className="flex items-center gap-1 rounded-xl bg-zinc-100 p-1 text-xs font-semibold text-zinc-600">
+        <div className="flex items-center gap-1 rounded-full bg-[#F3F4F5] p-1 text-xs font-medium text-[#727272]">
           <button
             type="button"
             onClick={() => setActiveMetric("net")}
-            className={`rounded-lg px-3 py-1.5 transition-all ${
-              activeMetric === "net"
-                ? "bg-white text-zinc-950 shadow-2xs font-bold"
-                : "text-zinc-600 hover:text-zinc-950"
-            }`}
+            className={`rounded-full px-2.5 sm:px-4 py-1.5 text-[11px] sm:text-xs transition-all cursor-pointer ${activeMetric === "net"
+                ? "bg-[#1F1F1F] text-white shadow-2xs font-medium"
+                : "text-[#727272] hover:text-[#1F1F1F]"
+              }`}
           >
-            Net Earnings
+            <span>Net</span>
+            <span className="hidden sm:inline"> Earnings</span>
           </button>
           <button
             type="button"
             onClick={() => setActiveMetric("gross")}
-            className={`rounded-lg px-3 py-1.5 transition-all ${
-              activeMetric === "gross"
-                ? "bg-white text-zinc-950 shadow-2xs font-bold"
-                : "text-zinc-600 hover:text-zinc-950"
-            }`}
+            className={`rounded-full px-2.5 sm:px-4 py-1.5 text-[11px] sm:text-xs transition-all cursor-pointer ${activeMetric === "gross"
+                ? "bg-[#1F1F1F] text-white shadow-2xs font-medium"
+                : "text-[#727272] hover:text-[#1F1F1F]"
+              }`}
           >
-            Gross Earnings
+            <span>Gross</span>
+            <span className="hidden sm:inline"> Earnings</span>
           </button>
           <button
             type="button"
             onClick={() => setActiveMetric("fees")}
-            className={`rounded-lg px-3 py-1.5 transition-all ${
-              activeMetric === "fees"
-                ? "bg-white text-zinc-950 shadow-2xs font-bold"
-                : "text-zinc-600 hover:text-zinc-950"
-            }`}
+            className={`rounded-full px-2.5 sm:px-4 py-1.5 text-[11px] sm:text-xs transition-all cursor-pointer ${activeMetric === "fees"
+                ? "bg-[#1F1F1F] text-white shadow-2xs font-medium"
+                : "text-[#727272] hover:text-[#1F1F1F]"
+              }`}
           >
-            Service Fees
+            <span>Fees</span>
+            <span className="hidden sm:inline"> (Platform)</span>
           </button>
         </div>
 
         {/* Quick Period Summary Pills */}
-        <div className="hidden sm:flex items-center gap-3 text-xs text-zinc-500">
-          <div className="flex items-center gap-1.5 rounded-full bg-zinc-50 px-3 py-1 border border-zinc-200/60 shadow-2xs">
-            <span className="font-medium text-zinc-500">Peak Day:</span>
-            <span className="font-bold text-zinc-950">{fmt(periodStats.highestAmount, currency)}</span>
+        <div className="hidden md:flex items-center gap-3 text-xs text-[#727272]">
+          <div className="flex items-center gap-1.5 rounded-full bg-[#FAFAFA] px-3.5 py-1 border border-[#EDEDED] shadow-2xs">
+            <span className="font-normal text-[#727272]">Peak Day:</span>
+            <span className="font-medium text-[#1F1F1F]">{fmt(periodStats.highestAmount, currency)}</span>
           </div>
-          <div className="flex items-center gap-1.5 rounded-full bg-zinc-50 px-3 py-1 border border-zinc-200/60 shadow-2xs">
-            <span className="font-medium text-zinc-500">Active Days:</span>
-            <span className="font-bold text-zinc-950">{periodStats.activeDays}</span>
+          <div className="flex items-center gap-1.5 rounded-full bg-[#FAFAFA] px-3.5 py-1 border border-[#EDEDED] shadow-2xs">
+            <span className="font-normal text-[#727272]">Active Days:</span>
+            <span className="font-medium text-[#1F1F1F]">{periodStats.activeDays}</span>
           </div>
         </div>
 
         {/* Legend */}
-        <div className="flex items-center gap-4 text-xs font-semibold">
+        <div className="flex items-center gap-3 sm:gap-4 text-xs font-medium">
           <div className="flex items-center gap-1.5">
-            <span className="h-3 w-3 rounded-xs bg-zinc-950" />
-            <span className="text-zinc-800">{timeframeLabel}</span>
+            <span className="h-3 w-3 rounded-xs bg-[#1F1F1F]" />
+            <span className="text-[#1F1F1F] text-[11px] sm:text-xs">{timeframeLabel}</span>
           </div>
           {hasComparison && (
             <div className="flex items-center gap-1.5">
-              <span className="h-3 w-3 rounded-xs bg-zinc-300" />
-              <span className="text-zinc-500">{comparisonLabel}</span>
+              <span className="h-3 w-3 rounded-xs bg-[#D7D7D7]" />
+              <span className="text-[#727272] text-[11px] sm:text-xs">{comparisonLabel}</span>
             </div>
           )}
         </div>
@@ -303,7 +303,7 @@ export function EarningsInteractiveChart({
       {hasData ? (
         <div className="relative pt-2">
           {/* Recharts Container */}
-          <div className="h-[280px] w-full min-w-0">
+          <div className="h-[230px] sm:h-[280px] lg:h-[320px] w-full min-w-0">
             {isMounted ? (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
@@ -350,7 +350,7 @@ export function EarningsInteractiveChart({
                     tickLine={false}
                     tick={{ fill: "#71717a", fontSize: 11, fontWeight: 500 }}
                     dy={10}
-                    interval={chartData.length > 20 ? 2 : 0}
+                    interval={chartData.length > 25 ? 3 : chartData.length > 14 ? 1 : 0}
                   />
 
                   <YAxis
@@ -360,7 +360,7 @@ export function EarningsInteractiveChart({
                     tickFormatter={(val) => fmtCompact(val, currency)}
                     ticks={yTicks}
                     domain={[0, maxAmount]}
-                    width={55}
+                    width={48}
                   />
 
                   <Tooltip
@@ -417,20 +417,20 @@ export function EarningsInteractiveChart({
 
           {/* ── Section: Selected Bar / Period Details Panel (BELOW Chart) ── */}
           {selPoint && (
-            <div className="mt-6 rounded-2xl border border-zinc-200 bg-zinc-50/90 p-5 text-zinc-900 shadow-2xs transition-all">
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-200/80 pb-3">
+            <div className="mt-6 rounded-2xl border border-zinc-200 bg-zinc-50/90 p-4 sm:p-5 text-zinc-900 shadow-2xs transition-all">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-[#EDEDED] pb-3">
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#727272]">
                     Period Earnings Breakdown
                   </p>
-                  <h4 className="text-base font-bold text-zinc-950 sm:text-lg">
+                  <h4 className="text-base font-medium text-[#1F1F1F] sm:text-lg">
                     {selPoint.fullLabel}
                   </h4>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 w-full sm:w-auto">
                   <Link
                     href={`/host/earnings/paid?datePreset=custom&startDate=${selPoint.startDateKey}&endDate=${selPoint.endDateKey}&currency=${currency}${selectedListingId ? `&propertyId=${selectedListingId}` : ""}`}
-                    className="inline-flex items-center gap-1.5 rounded-xl bg-zinc-950 px-3 py-1.5 text-xs font-semibold text-white transition-all hover:bg-zinc-800"
+                    className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 rounded-full bg-[#1F1F1F] px-4 py-2 text-xs font-medium text-white transition-all hover:bg-[#FCDF9C] hover:text-[#1F1F1F]"
                   >
                     <span>View Transactions</span>
                     <span aria-hidden="true">&rarr;</span>
@@ -438,36 +438,36 @@ export function EarningsInteractiveChart({
                   <button
                     type="button"
                     onClick={() => onSelectPoint && onSelectPoint(null)}
-                    className="rounded-xl border border-zinc-200 bg-white px-2.5 py-1.5 text-xs font-medium text-zinc-600 hover:bg-zinc-100"
+                    className="rounded-full border border-[#D7D7D7] bg-white px-3.5 py-2 text-xs font-medium text-[#727272] hover:text-[#1F1F1F] hover:bg-zinc-100 transition-colors cursor-pointer"
                   >
-                    ✕ Close
+                    Close
                   </button>
                 </div>
               </div>
 
               {/* Financial KPI micro cards */}
-              <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                <div className="rounded-xl border border-zinc-200/70 bg-white p-3 shadow-2xs">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Net Earnings</p>
-                  <p className="mt-1 text-base font-extrabold text-zinc-950 sm:text-lg">
+              <div className="mt-4 grid grid-cols-2 gap-2.5 sm:grid-cols-4 sm:gap-3">
+                <div className="rounded-2xl border border-[#EDEDED] bg-white p-3.5 shadow-2xs">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#727272]">Net Earnings</p>
+                  <p className="mt-1 text-base font-medium text-[#1F1F1F] sm:text-lg">
                     {fmt(selPoint.netEarnings, currency)}
                   </p>
                 </div>
-                <div className="rounded-xl border border-zinc-200/70 bg-white p-3 shadow-2xs">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">{grossLabel}</p>
-                  <p className="mt-1 text-base font-extrabold text-zinc-950 sm:text-lg">
+                <div className="rounded-2xl border border-[#EDEDED] bg-white p-3.5 shadow-2xs">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#727272]">{grossLabel}</p>
+                  <p className="mt-1 text-base font-medium text-[#1F1F1F] sm:text-lg">
                     {fmt(selPoint.grossEarnings, currency)}
                   </p>
                 </div>
-                <div className="rounded-xl border border-zinc-200/70 bg-white p-3 shadow-2xs">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Host Service Fees</p>
-                  <p className="mt-1 text-base font-extrabold text-rose-600 sm:text-lg">
+                <div className="rounded-2xl border border-[#EDEDED] bg-white p-3.5 shadow-2xs">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#727272]">Host Service Fees</p>
+                  <p className="mt-1 text-base font-medium text-rose-700 sm:text-lg">
                     -{fmt(selPoint.platformFee, currency)}
                   </p>
                 </div>
-                <div className="rounded-xl border border-zinc-200/70 bg-white p-3 shadow-2xs">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Completed Stays</p>
-                  <p className="mt-1 text-base font-extrabold text-zinc-950 sm:text-lg">
+                <div className="rounded-2xl border border-[#EDEDED] bg-white p-3.5 shadow-2xs">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-[#727272]">Completed Stays</p>
+                  <p className="mt-1 text-base font-medium text-[#1F1F1F] sm:text-lg">
                     {selPoint.completedStaysCount}
                   </p>
                 </div>
@@ -475,19 +475,19 @@ export function EarningsInteractiveChart({
 
               {/* Property Breakdown (if present) */}
               {selPoint.propertyBreakdown && selPoint.propertyBreakdown.length > 0 && (
-                <div className="mt-4 border-t border-zinc-200/80 pt-3">
-                  <p className="text-xs font-bold text-zinc-800">Earnings by Property</p>
-                  <div className="mt-2 divide-y divide-zinc-200/70 rounded-xl border border-zinc-200/70 bg-white overflow-hidden text-xs">
+                <div className="mt-4 border-t border-[#EDEDED] pt-3">
+                  <p className="text-xs font-medium text-[#1F1F1F]">Earnings by Property</p>
+                  <div className="mt-2 divide-y divide-[#EDEDED] rounded-2xl border border-[#EDEDED] bg-white overflow-hidden text-xs">
                     {selPoint.propertyBreakdown.map((prop) => (
-                      <div key={prop.listingId} className="flex items-center justify-between p-2.5 hover:bg-zinc-50">
-                        <span className="font-semibold text-zinc-900 truncate max-w-[240px] sm:max-w-md">
+                      <div key={prop.listingId} className="flex items-center justify-between p-2.5 hover:bg-[#FAFAFA] transition-colors">
+                        <span className="font-medium text-[#1F1F1F] truncate max-w-[240px] sm:max-w-md">
                           {prop.title}
                         </span>
                         <div className="flex items-center gap-3">
-                          <span className="text-zinc-500">
+                          <span className="text-[#727272]">
                             {prop.count} stay{prop.count === 1 ? "" : "s"}
                           </span>
-                          <span className="font-bold text-zinc-950">
+                          <span className="font-medium text-[#1F1F1F]">
                             {fmt(prop.netEarnings || prop.amount, currency)}
                           </span>
                         </div>
@@ -501,7 +501,11 @@ export function EarningsInteractiveChart({
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-200 bg-zinc-50/70 py-12 text-center">
-          <span className="text-2xl">📊</span>
+          <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="20" x2="18" y2="10" />
+              <line x1="12" y1="20" x2="12" y2="4" />
+              <line x1="6" y1="20" x2="6" y2="14" />
+            </svg>
           <p className="mt-2 text-sm font-bold text-zinc-900">{emptyTitle}</p>
           <p className="mt-1 text-xs text-zinc-500 max-w-sm">
             {emptyMessage}

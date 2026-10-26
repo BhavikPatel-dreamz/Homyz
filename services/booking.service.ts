@@ -17,6 +17,7 @@ import { nanoid } from "nanoid";
 import { notificationService } from "./notification.service";
 import { messagingService } from "./messaging.service";
 import { auditService } from "./audit.service";
+import { recordConfirmedBookingAnalyticsEvent } from "./listing-analytics.service";
 
 import { Prisma } from "@/generated/prisma/client";
 import { calculateRefundEligibility } from "@/lib/refund/policy-engine";
@@ -1297,6 +1298,13 @@ async function acceptBookingRequest(
   });
 
   await invalidateBookingCache(confirmedBooking.id, confirmedBooking.userId, confirmedBooking.listing.hostId);
+  // A host-approved request does not have a browser session available here.
+  // The telemetry service still records the confirmed booking and, only when
+  // the same persisted conversation started as an inquiry, its conversion.
+  void recordConfirmedBookingAnalyticsEvent({
+    bookingId: confirmedBooking.id,
+    sessionId: null,
+  }).catch(() => undefined);
 
   try {
     await notificationService.create({
@@ -1520,6 +1528,9 @@ async function approveAllPendingForHost(actor: AuthUser): Promise<{ approved: nu
     data: { status: BookingStatus.CONFIRMED },
   });
   await Promise.all(pendingBookings.map((b: { id: string; userId: string }) => invalidateBookingCache(b.id, b.userId, actor.id)));
+  for (const booking of pendingBookings) {
+    void recordConfirmedBookingAnalyticsEvent({ bookingId: booking.id, sessionId: null }).catch(() => undefined);
+  }
 
   // Trigger targeted notification for each guest who owns that approved booking
   for (const b of pendingBookings) {

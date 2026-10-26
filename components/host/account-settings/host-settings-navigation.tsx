@@ -7,9 +7,6 @@ import {
   CreditCardIcon,
   ReceiptTaxIcon,
   BarChartReportsIcon,
-  PreferencesSlidersIcon,
-  PermissionsShieldIcon,
-  NotificationsBellIcon,
   ChevronRightIcon,
 } from "./icons";
 
@@ -44,27 +41,6 @@ export const HOST_SETTINGS_NAV_ITEMS: NavItemConfig[] = [
     icon: <BarChartReportsIcon size={18} />,
     description: "Monthly & annual statements",
   },
-  // {
-  //   id: "preferences",
-  //   label: "Hosting Preferences",
-  //   href: "/host/account-settings/hosting-preferences",
-  //   icon: <PreferencesSlidersIcon size={18} />,
-  //   description: "Payout thresholds & cadence",
-  // },
-  // {
-  //   id: "permissions",
-  //   label: "Financial Permissions",
-  //   href: "/host/account-settings/permissions",
-  //   icon: <PermissionsShieldIcon size={18} />,
-  //   description: "Co-host access & admin overrides",
-  // },
-  // {
-  //   id: "notifications",
-  //   label: "Notifications & Help",
-  //   href: "/host/account-settings/notifications",
-  //   icon: <NotificationsBellIcon size={18} />,
-  //   description: "Payout alerts & SAMA support",
-  // },
 ];
 
 export interface HostSettingsNavigationProps {

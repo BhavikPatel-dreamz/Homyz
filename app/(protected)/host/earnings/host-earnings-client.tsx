@@ -327,7 +327,6 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
           <p className="mt-1 max-w-2xl text-sm text-zinc-600">Review realized payouts, reporting periods, and property performance from verified financial records.</p>
         </div>
 
-      
 
         {/* Compact Unified Toolbar */}
         <div className="flex flex-col gap-3 rounded-2xl border border-zinc-200 bg-white p-2.5 shadow-2xs sm:flex-row sm:items-center sm:justify-between sm:p-3">
@@ -573,7 +572,8 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
         )}
       </section>
 
-        <section className="rounded-2xl border border-zinc-200 bg-zinc-950 p-4 text-white sm:flex sm:items-center sm:justify-between sm:gap-5">
+
+              <section className="rounded-2xl border border-zinc-200 bg-zinc-950 p-4 text-white sm:flex sm:items-center sm:justify-between sm:gap-5">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
               Dashboard Plus
@@ -596,7 +596,8 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
             <p className="mt-3 shrink-0 text-xs leading-relaxed text-zinc-300 sm:mt-0 sm:max-w-48">Available with Dashboard Plus. Contact support or an administrator to activate access.</p>
           )}
         </section>
-        
+
+
 
       {/* ── Upcoming & Paid payouts ── */}
       <div className="flex items-end justify-between gap-4">

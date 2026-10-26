@@ -27,17 +27,20 @@ test("advanced booking analytics reports last-minute payout values only from imm
   assert.match(client, /Eligible immutable snapshots/);
 });
 
-test("listing funnel records a real forward inquiry stage without inventing inquiry-to-booking attribution", () => {
+test("listing funnel records a durable inquiry-to-booking conversion only through its linked conversation", () => {
   const analytics = source("services/listing-analytics.service.ts");
   const messaging = source("services/messaging.service.ts");
   const performance = source("app/(protected)/host/insights/listing-performance/host-listing-performance-client.tsx");
 
   assert.match(analytics, /"INQUIRY"/);
   assert.match(analytics, /recordInquiryAnalyticsEvent/);
+  assert.match(analytics, /INQUIRY_TO_CONFIRMED_BOOKING/);
+  assert.match(analytics, /dedupeKey:\s*hash\(`inquiry:\$\{inquiryConversation\.id\}`\)/);
   assert.match(messaging, /createdInquiryConversation/);
   assert.match(messaging, /recordInquiryAnalyticsEvent/);
   assert.match(performance, /Guest inquiries/);
-  assert.match(performance, /Inquiry-to-booking conversion is unavailable/);
+  assert.match(performance, /Inquiry to booking/);
+  assert.match(performance, /same confirmed booking/);
 });
 
 test("Plus operations exposes authorized property filtering and maintenance record creation", () => {

@@ -119,20 +119,23 @@ assert.ok(
 console.log("✓ Server-side route guards strictly enforced");
 
 // -----------------------------------------------------------------------------
-// [5] Six Main Navigation Sections Verification
+// [5] Three Main Navigation Sections Verification (Only 3 Allowed)
 // -----------------------------------------------------------------------------
-console.log("\n--- [5] Six Main Navigation Sections on Landing Page ---");
+console.log("\n--- [5] Three Main Navigation Sections on Landing Page ---");
 
-const sections = [
+// Assert header description
+assert.ok(
+  mainPageSource.includes("Manage your payout methods, taxpayer information, Saudi VAT documents, and earnings reports."),
+  "Header description must match expected updated copy"
+);
+
+const visibleSections = [
   { title: "Payout Settings", href: "/host/account-settings/payouts" },
   { title: "Tax Information", href: "/host/account-settings/taxes" },
   { title: "Earnings Reports & Documents", href: "/host/account-settings/earnings-reports" },
-  { title: "Hosting Preferences", href: "/host/account-settings/hosting-preferences" },
-  { title: "Financial Permissions", href: "/host/account-settings/permissions" },
-  { title: "Notifications & Help", href: "/host/account-settings/notifications" },
 ];
 
-for (const section of sections) {
+for (const section of visibleSections) {
   assert.ok(
     mainPageSource.includes(section.title),
     `Main landing page must render section title: "${section.title}"`
@@ -142,7 +145,21 @@ for (const section of sections) {
     `Main landing page must link to section route: "${section.href}"`
   );
 }
-console.log("✓ All 6 required navigation sections verified on landing page");
+
+// Assert unwanted sections are removed from landing page
+const removedSections = [
+  "Hosting Preferences",
+  "Financial Permissions",
+  "Notifications & Help",
+];
+
+for (const title of removedSections) {
+  assert.ok(
+    !mainPageSource.includes(title),
+    `Main landing page must NOT render removed section: "${title}"`
+  );
+}
+console.log("✓ Exactly 3 required navigation sections verified on landing page; 3 unwanted sections verified removed");
 
 // -----------------------------------------------------------------------------
 // [6] Existing System Integrity & Non-Duplication Verification

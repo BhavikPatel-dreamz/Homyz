@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { ModalOverlay } from "@/components/ui/modal-overlay";
 import type { HostPayoutMethod } from "@/services/payout.service";
 import type {
   PayoutRoutingRuleDTO,
@@ -466,8 +467,16 @@ export function PayoutRoutingManager({
 
       {/* MODAL / DRAWER: CONFIGURE ROUTING RULE */}
       {activeListing && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/40 backdrop-blur-xs">
-          <div className="relative w-full max-w-xl rounded-3xl bg-white p-6 sm:p-8 shadow-xl max-h-[90vh] overflow-y-auto">
+        <ModalOverlay
+          className="fixed inset-0 z-9999 flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-xs"
+          onClose={closeConfigureDrawer}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            onClick={(e) => e.stopPropagation()}
+            className="relative flex flex-col w-full max-w-xl rounded-3xl bg-white shadow-2xl border border-zinc-100 max-h-[min(90vh,780px)] overflow-hidden"
+          >
             <div className="flex items-start justify-between gap-4 border-b border-zinc-200 pb-4">
               <div>
                 <h3 className="text-lg font-semibold text-zinc-950">
@@ -657,13 +666,21 @@ export function PayoutRoutingManager({
               </div>
             )}
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {/* CONFIRMATION MODAL: REVERT TO DEFAULT */}
       {revertingListing && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/40 backdrop-blur-xs">
-          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-xl">
+        <ModalOverlay
+          className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs"
+          onClose={() => setRevertingListing(null)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl border border-zinc-100"
+          >
             <h3 className="text-base font-semibold text-zinc-950">
               Revert to Default Payout Destination?
             </h3>
@@ -687,7 +704,7 @@ export function PayoutRoutingManager({
               </button>
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
     </div>
   );

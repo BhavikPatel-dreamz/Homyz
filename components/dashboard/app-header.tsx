@@ -132,12 +132,6 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
         isActive: pathname === "/host/today" || pathname?.startsWith("/host/today/"),
       },
       {
-        id: "dashboard",
-        label: t("header_nav_dashboard") || "Dashboard",
-        href: "/host/dashboard",
-        isActive: pathname === "/host/dashboard" || pathname?.startsWith("/host/dashboard/"),
-      },
-      {
         id: "calendar",
         label: t("host_nav_calendar") || "Calendar",
         href: "/host/calendar",
@@ -154,18 +148,6 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
         label: t("host_nav_messages") || "Messages",
         href: "/host/messages",
         isActive: pathname === "/host/messages" || pathname?.startsWith("/host/messages/"),
-      },
-      {
-        id: "earnings",
-        label: t("host_nav_earnings", "Earnings"),
-        href: "/host/earnings",
-        isActive: pathname === "/host/earnings" || pathname?.startsWith("/host/earnings/"),
-      },
-      {
-        id: "insights",
-        label: t("host_nav_insights", "Insights"),
-        href: "/host/insights",
-        isActive: pathname === "/host/insights" || pathname?.startsWith("/host/insights/"),
       },
     ],
     [pathname, t],
@@ -257,6 +239,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
               height={72}
               className="h-[49px] w-[57px] max-w-none"
               priority
+              unoptimized
             />
           </Link>
 
@@ -274,12 +257,13 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                   height={58}
                   className="h-auto w-[125px] md:w-[135px] lg:w-[145px]"
                   priority
+                  unoptimized
                 />
               </Link>
             </div>
           ) : (
             <Link href={logoHref} className="hidden shrink-0 transition-opacity hover:opacity-80 md:block focus-visible:outline-none" aria-label={logoAriaLabel}>
-              <Image src="/images/brand/homyz-logo-dark-v2.svg" alt="Stay like a homie." width={200} height={53} className="h-auto w-[145px] md:w-[150px] lg:w-[160px] xl:w-[185px] 2xl:w-[200px]" priority />
+              <Image src="/images/brand/homyz-logo-dark-v2.svg" alt="Stay like a homie." width={200} height={53} className="h-auto w-[145px] md:w-[150px] lg:w-[160px] xl:w-[185px] 2xl:w-[200px]" priority unoptimized />
             </Link>
           )}
 
@@ -310,6 +294,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                   height={53}
                   className="h-auto w-[149px] transition-transform"
                   priority
+                  unoptimized
                 />
               </Link>
 
@@ -395,12 +380,13 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                   height={53}
                   className="h-auto w-[149px] transition-transform"
                   priority
+                  unoptimized
                 />
               </Link>
 
               <Link href={logoHref} className="group absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 md:block" aria-label={logoAriaLabel}>
                 <span className="relative block aspect-[199/72] w-[125px] md:w-[135px] lg:w-[145px] xl:w-[170px] 2xl:w-[198px]">
-                  <Image src="/images/brand/homyz-logo-dark-v1.svg" alt="Homyz" fill sizes="(min-width: 1536px) 198px, (min-width: 1280px) 170px, (min-width: 1024px) 145px, (min-width: 768px) 135px, 125px" className="object-contain" priority />
+                  <Image src="/images/brand/homyz-logo-dark-v1.svg" alt="Homyz" fill sizes="(min-width: 1536px) 198px, (min-width: 1280px) 170px, (min-width: 1024px) 145px, (min-width: 768px) 135px, 125px" className="object-contain" priority unoptimized />
                 </span>
               </Link>
             </>
@@ -618,48 +604,6 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                             <span>{t("header_nav_dashboard") || "Dashboard"}</span>
                           </Link>
 
-                          {/* Today */}
-                          <Link
-                            href="/host/today"
-                            onClick={() => setMenuOpen(false)}
-                            className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${
-                              pathname === "/host/today" ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
-                            }`}
-                          >
-                            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
-                              <Image src="/images/icons/today-icon.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
-                            </span>
-                            <span>{t("header_today") || "Today"}</span>
-                          </Link>
-
-                          {/* Calendar */}
-                          <Link
-                            href="/host/calendar"
-                            onClick={() => setMenuOpen(false)}
-                            className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${
-                              pathname?.startsWith("/host/calendar") ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
-                            }`}
-                          >
-                            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
-                              <Image src="/images/icons/calendar-date.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
-                            </span>
-                            <span>{t("header_calendar") || "Calendar"}</span>
-                          </Link>
-
-                          {/* Your listings */}
-                          <Link
-                            href="/host/listings"
-                            onClick={() => setMenuOpen(false)}
-                            className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${
-                              pathname?.startsWith("/host/listings") ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
-                            }`}
-                          >
-                            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
-                              <Image src="/images/icons/listing-edit-icon.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
-                            </span>
-                            <span>{t("header_your_listings") || "Your listings"}</span>
-                          </Link>
-
                           {/* Earnings */}
                           <Link
                             href="/host/earnings"
@@ -707,19 +651,6 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                             <span>{t("host_nav_resolution") || "Resolution Center"}</span>
                           </Link>
 
-                          {/* Messages */}
-                          <Link
-                            href="/host/messages"
-                            onClick={() => setMenuOpen(false)}
-                            className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${
-                              pathname?.startsWith("/host/messages") ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
-                            }`}
-                          >
-                            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
-                              <Image src="/images/icons/messages.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
-                            </span>
-                            <span>{t("header_messages") || "Messages"}</span>
-                          </Link>
                         </div>
 
                         <div className="my-1 border-t border-zinc-200/80" />

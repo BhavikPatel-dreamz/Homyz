@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { ModalOverlay } from "@/components/ui/modal-overlay";
 import type { HostPayoutMethod } from "@/services/payout.service";
 import {
   SettingsStatusBadge,
@@ -382,8 +383,16 @@ export function PayoutMethodDetailClient({
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl border border-zinc-100">
+        <ModalOverlay
+          className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs animate-in fade-in duration-150"
+          onClose={() => setShowDeleteModal(false)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl border border-zinc-100"
+          >
             <div className="flex size-12 items-center justify-center rounded-2xl bg-rose-50 text-rose-600">
               <TrashIcon size={22} />
             </div>
@@ -417,7 +426,7 @@ export function PayoutMethodDetailClient({
               </button>
             </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
     </div>
   );

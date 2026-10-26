@@ -1044,7 +1044,7 @@ export function ProfileManagementClient({
         <div
           className={`profile-avtar-card relative md:mt-5 mt-0 aspect-square w-[220px] max-w-full shrink-0 self-center sm:mt-0 sm:h-66 sm:w-90.5 sm:max-w-[calc(100%-48px)] sm:self-auto ${isOwner ? "mb-10 sm:mb-0" : ""}`}
         >
-          <div className="relative h-full w-full overflow-hidden rounded-full border border-[#1F1F1F] bg-zinc-100 sm:rounded-3xl sm:shadow-2xs">
+          <div className="relative h-full w-full overflow-hidden rounded-full border border-[#d7d7d7] bg-zinc-100 sm:rounded-3xl sm:shadow-2xs">
             {imageUrl && imageUrl !== failedAvatarPreviewUrl ? (
               <Image
                 src={imageUrl}
@@ -1641,7 +1641,7 @@ export function ProfileManagementClient({
                   {failedTripPhotoIds.has(photo.id) ? (
                     <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-zinc-100 px-4 text-center text-[#727272]">
                       <IconCamera />
-                      <p className="text-xs font-medium">{t("trip_photos_unavailable", "Image unavailable")}</p>
+                      <p className="text-base font-normal">{t("trip_photos_unavailable", "Image unavailable")}</p>
                     </div>
                   ) : (
                     <Image
@@ -1720,7 +1720,7 @@ export function ProfileManagementClient({
             </p>
           </div>
 
-          <div className="p-6 rounded-3xl border border-zinc-200/80 bg-white shadow-2xs space-y-6">
+          <div className="p-6 rounded-2xl border border-zinc-200/80 bg-white shadow-[0_2px_4px_rgba(0,0,0,0.25)] space-y-6">
             {/* Row 1: Public Profile Visibility */}
             <div className="flex items-center justify-between gap-4">
               <div>
@@ -2142,7 +2142,7 @@ function MultiImageUploadModal({
               maxLength={300}
               onChange={(e) => setCaption(e.target.value)}
               placeholder={t("trip_photos_caption_ph", "Tell the story behind this trip...")}
-              className="w-full rounded-2xl border border-zinc-200 px-3.5 py-2.5 text-xs text-[#1F1F1F] placeholder-zinc-400 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 h-20 resize-none transition-all shadow-2xs"
+              className="w-full rounded-lg border border-[#ddd] px-3.5 py-2.5 text-sm text-[#1F1F1F] placeholder-[#727272] focus:outline-none focus:border-[#1f1f1f] h-20 resize-none transition-all"
             />
           </div>
 
@@ -2152,7 +2152,7 @@ function MultiImageUploadModal({
               type="button"
               onClick={onClose}
               disabled={uploading}
-              className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-medium text-xs px-7 py-2.5 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+              className="px-6.75 py-3 rounded-full border border-[#1F1F1F] hover:bg-[#1F1F1F] text-sm font-medium text-[#1F1F1F] hover:text-white  transition-colors delay-300 duration-300 cursor-pointer"
             >
               {t("trip_photos_cancel", "Cancel")}
             </button>
@@ -2262,7 +2262,7 @@ function EditTripPhotoModal({
 
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="block text-xs font-medium text-[#1F1F1F]">
+              <label className="block text-sm font-normal text-[#1F1F1F]">
                 {t("trip_photos_caption_label", "Caption")}
               </label>
               <span className="text-[11px] font-medium text-[#727272]">
@@ -2274,7 +2274,7 @@ function EditTripPhotoModal({
               maxLength={300}
               onChange={(e) => setCaption(e.target.value)}
               placeholder={t("trip_photos_caption_ph", "Tell the story behind this trip...")}
-              className="w-full rounded-2xl border border-zinc-200 px-3.5 py-2.5 text-xs text-[#1F1F1F] placeholder-zinc-400 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 h-20 resize-none transition-all shadow-2xs"
+              className="w-full rounded-lg border border-[#ddd] px-3.5 py-2.5 text-sm text-[#1F1F1F] placeholder-[#727272] focus:outline-none h-20 resize-none transition-all"
             />
           </div>
 
@@ -2282,7 +2282,7 @@ function EditTripPhotoModal({
             <button
               type="button"
               onClick={() => onDeleteTrigger(photo)}
-              className="text-xs font-medium text-rose-600 hover:underline cursor-pointer"
+              className="text-sm font-medium text-[#1f1f1f] hover:text-[#727272] hover:underline-offset-1 underline underline-offset-2 cursor-pointer transition-all duration-300"
             >
               {t("trip_photos_delete_photo_link", "Delete Photo")}
             </button>
@@ -2291,14 +2291,14 @@ function EditTripPhotoModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-full border border-zinc-300 bg-white hover:bg-zinc-50 text-zinc-800 font-medium text-xs px-7 py-2.5 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                className="px-5 py-3 rounded-full border border-[#1F1F1F] hover:bg-[#1F1F1F] text-sm font-medium text-[#1F1F1F] hover:text-white  transition-colors delay-300 duration-300 cursor-pointer"
               >
                 {t("trip_photos_cancel", "Cancel")}
               </button>
               <button
                 type="submit"
                 disabled={saving}
-                className="inline-flex min-w-32 items-center justify-center gap-2 rounded-full bg-[#FCDF9C] px-8 py-2.5 text-xs font-medium text-zinc-950 shadow-2xs transition-all hover:bg-[#FDE047] disabled:cursor-wait disabled:opacity-70"
+                className="px-4 py-3 rounded-full text-sm hover:bg-[#1F1F1F] text-[#1F1F1F] hover:text-white hover:border-[#1F1F1F] bg-[#FCDF9C] font-medium shadow-xs transition-colors delay-300 duration-300 flex items-center justify-center gap-2 min-w-[100px] border border-transparent cursor-pointer"
               >
                 {saving ? t("trip_photos_saving_details", "Saving...") : t("trip_photos_save_details", "Save Details")}
               </button>
@@ -2362,7 +2362,7 @@ function DeleteTripPhotoModal({
             type="button"
             onClick={onClose}
             disabled={deleting}
-            className="px-4 py-2 rounded-full text-xs font-medium text-zinc-600 hover:bg-zinc-100"
+            className="px-4 py-2 rounded-full text-sm font-medium border border-[#1f1f1f] text-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white transition-all duration-300"
           >
             {t("trip_photos_cancel", "Cancel")}
           </button>
@@ -2370,7 +2370,7 @@ function DeleteTripPhotoModal({
             type="button"
             onClick={handleDelete}
             disabled={deleting}
-            className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-medium px-6 py-2 rounded-full disabled:opacity-50"
+            className="bg-[#1f1f1f] hover:bg-[#FCDF9C] text-white hover:text-[#1f1f1f] text-sm font-medium px-6 py-2 rounded-full disabled:opacity-50 transition-all duration-300"
           >
             {deleting ? t("trip_photos_deleting", "Deleting...") : t("trip_photos_confirm_delete", "Confirm Delete")}
           </button>

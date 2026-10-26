@@ -39,9 +39,11 @@ export function SettingsResponsiveDrawer({
       role="dialog"
       aria-modal="true"
       aria-labelledby="drawer-title"
-      className="fixed inset-0 z-50 flex items-end sm:items-center sm:justify-center bg-black/50 backdrop-blur-2xs p-0 sm:p-4 animate-in fade-in duration-200"
+      onClose={onClose}
+      className="fixed inset-0 z-9999 flex items-end sm:items-center sm:justify-center bg-black/50 backdrop-blur-2xs p-0 sm:p-4 animate-in fade-in duration-200"
     >
       <div
+        onClick={(e) => e.stopPropagation()}
         className={`w-full max-h-[92vh] sm:max-h-[85vh] overflow-hidden flex flex-col rounded-t-3xl sm:rounded-3xl bg-white shadow-2xl border border-zinc-200/80 sm:max-w-lg animate-in slide-in-from-bottom sm:zoom-in-95 duration-200 ${className}`}
       >
         {/* Header */}

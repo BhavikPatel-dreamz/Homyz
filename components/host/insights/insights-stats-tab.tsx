@@ -60,11 +60,22 @@ export function InsightsStatsTab({ data, entitlements, periodLabel }: InsightsSt
     { title: "Response time", value: quality.averageResponseTimeMinutes === null ? "—" : quality.averageResponseTimeMinutes < 60 ? `${quality.averageResponseTimeMinutes} min` : `${Math.round(quality.averageResponseTimeMinutes / 60)} hr`, detail: quality.averageResponseTimeMinutes === null ? "No qualifying inquiries for this period" : "First response to guest inquiries", href: "/host/insights/stats/response-rate" },
   ];
 
-  return <div className="space-y-10">
-    <section>
-      <div className="flex items-end justify-between gap-4 border-b border-zinc-200 pb-4"><div><p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Performance overview</p><h2 className="mt-1 text-2xl font-bold tracking-tight text-zinc-950">Your hosting at a glance</h2></div><span className="hidden text-xs font-medium text-zinc-500 sm:block">{periodLabel}</span></div>
-      <div className="mt-2 grid grid-cols-2 divide-x divide-y divide-zinc-200 border-b border-zinc-200 sm:grid-cols-3 sm:divide-y-0">{quickStatsCards.map((card) => <QuickStat key={card.label} {...card} href={withFilters(card.href)} />)}</div>
-    </section>
+  return (
+    <div className="space-y-10">
+      <section>
+        <div className="flex items-end justify-between gap-4 border-b border-[#E5E5E5] pb-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-[#727272]">Performance overview</p>
+            <h2 className="mt-1 text-2xl font-bold tracking-tight text-[#1F1F1F]">Your hosting at a glance</h2>
+          </div>
+          <span className="hidden text-xs font-medium text-[#727272] sm:block">{periodLabel}</span>
+        </div>
+        <div className="mt-2 grid grid-cols-2 divide-x divide-y divide-[#E5E5E5] border-b border-[#E5E5E5] sm:grid-cols-3 sm:divide-y-0">
+          {quickStatsCards.map((card) => (
+            <QuickStat key={card.label} {...card} href={withFilters(card.href)} />
+          ))}
+        </div>
+      </section>
 
     <section>
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Performance charts</p><h2 className="mt-1 text-2xl font-bold tracking-tight text-zinc-950">Hosting Performance</h2><p className="mt-1 text-xs text-zinc-500">Current period compared with the last. Each chart uses the selected property and reporting period. Select a chart to open its detailed metric.</p></div><span className="text-xs font-medium text-zinc-500">{chartComparison.comparisonLabel}</span></div>
@@ -118,11 +129,21 @@ export function InsightsStatsTab({ data, entitlements, periodLabel }: InsightsSt
       <div className="rounded-3xl bg-zinc-950 p-6 text-white sm:p-8"><p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Listing issues</p><h2 className="mt-1 text-2xl font-bold">{firstOpportunity ? firstOpportunity.title : "You’re all set for now!"}</h2><p className="mt-3 max-w-lg text-sm leading-relaxed text-zinc-300">{firstOpportunity ? firstOpportunity.description : "No active listing issues were found for the selected property scope."}</p><Link href={firstOpportunity ? firstOpportunity.actionHref : withFilters("/host/insights?tab=opportunities")} className="mt-6 inline-flex rounded-full bg-white px-4 py-2.5 text-xs font-semibold text-zinc-950">{firstOpportunity ? firstOpportunity.actionLabel : "View Opportunities"} →</Link></div>
       <div className="rounded-3xl border border-zinc-200 bg-white p-6 sm:p-8"><p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Hosting tips</p><h2 className="mt-1 text-2xl font-bold tracking-tight text-zinc-950">Small, supported improvements</h2><ul className="mt-5 space-y-3 text-sm text-zinc-700"><li className="border-b border-zinc-100 pb-3">Review guest feedback and respond to published reviews.</li><li className="border-b border-zinc-100 pb-3">Keep calendar availability and nightly pricing current.</li><li>Confirm amenities and photos accurately reflect the space guests will use.</li></ul><Link href={withFilters("/host/insights?tab=opportunities")} className="mt-6 inline-flex text-xs font-semibold text-zinc-950 underline underline-offset-4">View all opportunities →</Link></div>
     </section> */}
-  </div>;
+  </div>
+  );
 }
 
 function QuickStat({ label, value, detail, href, muted = false }: { label: string; value: string; detail: string; href: string; muted?: boolean }) {
-  return <Link href={href} className="group min-h-36 p-4 transition-colors hover:bg-zinc-50 sm:p-5"><div className="flex items-start justify-between gap-2"><p className="text-xs font-medium text-zinc-600">{label}</p><span className="text-zinc-300 transition-transform group-hover:translate-x-0.5">›</span></div><p className={`mt-4 text-2xl font-bold tracking-tight sm:text-3xl ${muted ? "text-zinc-500" : "text-zinc-950"}`}>{value}</p><p className="mt-2 text-[11px] leading-relaxed text-zinc-500">{detail}</p></Link>;
+  return (
+    <Link href={href} className="group min-h-36 p-4 transition-colors hover:bg-[#F9F9F9] sm:p-5 rounded-2xl">
+      <div className="flex items-start justify-between gap-2">
+        <p className="text-xs font-medium text-[#727272]">{label}</p>
+        <span className="text-[#A0A0A0] transition-transform group-hover:translate-x-0.5 group-hover:text-[#1F1F1F]">›</span>
+      </div>
+      <p className={`mt-4 text-2xl font-bold tracking-tight sm:text-3xl ${muted ? "text-[#727272]" : "text-[#1F1F1F]"}`}>{value}</p>
+      <p className="mt-2 text-[11px] leading-relaxed text-[#727272]">{detail}</p>
+    </Link>
+  );
 }
 
 function ComparisonChart({ title, current, previous, detail, href, unit = "", prefix = "" }: { title: string; current: number; previous: number; detail: string; href: string; unit?: string; prefix?: string }) {
@@ -158,9 +179,26 @@ function ComparisonChart({ title, current, previous, detail, href, unit = "", pr
 
 function ChartBar({ label, value, max, subtle = false }: { label: string; value: number; max: number; subtle?: boolean }) {
   const height = Math.max(value > 0 ? 8 : 2, Math.round((Math.max(0, value) / max) * 100));
-  return <div className="flex flex-1 flex-col justify-end gap-2"><span className="text-center text-xs font-bold text-zinc-900">{Math.round(value).toLocaleString()}</span><div title={`${label}: ${value}`} className={subtle ? "rounded-t-lg bg-zinc-200" : "rounded-t-lg bg-amber-400"} style={{ height: `${height}%` }} /><span className="text-center text-[10px] text-zinc-500">{label}</span></div>;
+  return (
+    <div className="flex flex-1 flex-col justify-end gap-2">
+      <span className="text-center text-xs font-bold text-[#1F1F1F]">{Math.round(value).toLocaleString()}</span>
+      <div title={`${label}: ${value}`} className={subtle ? "rounded-t-lg bg-[#E5E5E5]" : "rounded-t-lg bg-[#1F1F1F]"} style={{ height: `${height}%` }} />
+      <span className="text-center text-[10px] text-[#727272]">{label}</span>
+    </div>
+  );
 }
 
 function DetailMetric({ title, value, detail, href }: { title: string; value: string; detail: string; href: string }) {
-  return <Link href={href} className="group border-b border-zinc-200 py-5 transition hover:bg-zinc-50 sm:px-2"><div className="flex items-start justify-between gap-3"><div><p className="text-sm font-semibold text-zinc-900">{title}</p><p className="mt-2 text-2xl font-bold tracking-tight text-zinc-950">{value}</p></div><span className="mt-2 text-zinc-300 group-hover:text-zinc-950">→</span></div><p className="mt-2 text-xs leading-relaxed text-zinc-500">{detail}</p></Link>;
+  return (
+    <Link href={href} className="group border-b border-[#E5E5E5] py-4 transition hover:bg-[#F9F9F9] sm:px-3 rounded-xl">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-sm font-semibold text-[#1F1F1F]">{title}</p>
+          <p className="mt-2 text-2xl font-bold tracking-tight text-[#1F1F1F]">{value}</p>
+        </div>
+        <span className="mt-2 text-[#727272] transition-colors group-hover:text-[#1F1F1F]">→</span>
+      </div>
+      <p className="mt-2 text-xs leading-relaxed text-[#727272]">{detail}</p>
+    </Link>
+  );
 }

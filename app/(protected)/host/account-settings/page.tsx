@@ -9,9 +9,6 @@ import {
   CreditCardIcon,
   ReceiptTaxIcon,
   BarChartReportsIcon,
-  PreferencesSlidersIcon,
-  PermissionsShieldIcon,
-  NotificationsBellIcon,
   ExternalLinkIcon,
 } from "@/components/host/account-settings";
 
@@ -35,7 +32,7 @@ export default async function HostAccountSettingsPage() {
             </span>
           </div>
           <p className="mt-1.5 text-sm text-[#727272] sm:text-base max-w-2xl">
-            Manage your payout methods, taxpayer records, annual earnings statements, hosting business preferences, and financial permissions.
+            Manage your payout methods, taxpayer information, Saudi VAT documents, and earnings reports.
           </p>
         </div>
 
@@ -50,73 +47,44 @@ export default async function HostAccountSettingsPage() {
         </div>
       </div>
 
-      {/* Main 6 Section Cards Grid */}
+      {/* Main 3 Section Cards Grid */}
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
         {/* 1. Payout Settings */}
         <SettingsSectionCard
           title="Payout Settings"
-          description="Configure your payout methods (Saudi IBAN), designate a default bank account, and establish payout routing rules."
+          description="Manage payout methods, bank accounts, and payout routing rules."
           href="/host/account-settings/payouts"
           icon={<CreditCardIcon size={24} className="text-zinc-900" />}
           badge="How You Get Paid"
           badgeVariant="success"
-          footerNote="Bank accounts & routing rules"
+          footerNote="Bank accounts & payout routing"
+          actionLabel="View settings"
         />
 
         {/* 2. Tax Information */}
         <SettingsSectionCard
           title="Tax Information"
-          description="Register legal taxpayer profiles (Individual or Business), manage VAT numbers, and access annual tax withholding documents."
+          description="Manage taxpayer profiles, Saudi VAT registration, and tax documents."
           href="/host/account-settings/taxes"
           icon={<ReceiptTaxIcon size={24} className="text-zinc-900" />}
           badge="ZATCA Taxpayers"
           badgeVariant="info"
-          footerNote="Taxpayer profiles & documents"
+          footerNote="Taxpayers & Saudi VAT documents"
+          actionLabel="View settings"
         />
 
         {/* 3. Earnings Reports & Documents */}
         <SettingsSectionCard
           title="Earnings Reports & Documents"
-          description="Access official monthly and yearly income statements, download reconciliation CSVs, and generate PDF earnings reports."
+          description="View monthly and annual earnings statements and download financial reports."
           href="/host/account-settings/earnings-reports"
           icon={<BarChartReportsIcon size={24} className="text-zinc-900" />}
           badge="Financial Ledger"
           badgeVariant="neutral"
-          footerNote="Monthly & annual PDF statements"
+          footerNote="Monthly & annual statements"
+          actionLabel="View reports"
         />
 
-        {/* 4. Hosting Preferences */}
-        <SettingsSectionCard
-          title="Hosting Preferences"
-          description="Define minimum payout release thresholds, automatic disbursement frequencies, and operational hosting policies."
-          href="/host/account-settings/hosting-preferences"
-          icon={<PreferencesSlidersIcon size={24} className="text-zinc-900" />}
-          badge="Business Rules"
-          badgeVariant="neutral"
-          footerNote="Payout thresholds & cadence"
-        />
-
-        {/* 5. Financial Permissions */}
-        <SettingsSectionCard
-          title="Financial Permissions"
-          description="Control financial visibility for co-hosts, manage revenue-sharing delegations, and review administrative override status."
-          href="/host/account-settings/permissions"
-          icon={<PermissionsShieldIcon size={24} className="text-zinc-900" />}
-          badge="Role Access"
-          badgeVariant="neutral"
-          footerNote="Co-host delegation & security"
-        />
-
-        {/* 6. Notifications & Help */}
-        <SettingsSectionCard
-          title="Notifications & Help"
-          description="Choose payout alert preferences via email or SMS, review SAMA banking regulations, and reach host support."
-          href="/host/account-settings/notifications"
-          icon={<NotificationsBellIcon size={24} className="text-zinc-900" />}
-          badge="Alerts & Support"
-          badgeVariant="neutral"
-          footerNote="Notification channels & help"
-        />
       </div>
 
       {/* Helpful Guidance Footer Card */}
@@ -134,4 +102,3 @@ export default async function HostAccountSettingsPage() {
     </Container>
   );
 }
-

@@ -96,6 +96,7 @@ export type ListingPerformanceData = {
     impressions: number;
     listingViews: number;
     inquiries: number;
+    attributedInquiryToBookingCount: number;
     clickThroughRatePercentage: number | null;
     viewToInquiryRatePercentage: number | null;
     attributedBookingConversionPercentage: number | null;
@@ -426,7 +427,7 @@ export const hostListingPerformanceService = {
       getPricingObservations(listing, actor),
       getListingAnalyticsSummary({ listingIds: [listing.id], startDate: new Date(Date.now() - 30 * 86_400_000), endDate: new Date() }),
     ]);
-    const searchPerformance = { status: listingAnalytics.status, message: listingAnalytics.message, trackingStartedAt: listingAnalytics.trackingStartedAt, impressions: listingAnalytics.searchImpressions, listingViews: listingAnalytics.listingViews, inquiries: listingAnalytics.inquiries, clickThroughRatePercentage: listingAnalytics.searchImpressions > 0 ? Math.round((listingAnalytics.listingViews / listingAnalytics.searchImpressions) * 10_000) / 100 : null, viewToInquiryRatePercentage: listingAnalytics.viewToInquiryRatePercentage, attributedBookingConversionPercentage: listingAnalytics.conversionRatePercentage };
+    const searchPerformance = { status: listingAnalytics.status, message: listingAnalytics.message, trackingStartedAt: listingAnalytics.trackingStartedAt, impressions: listingAnalytics.searchImpressions, listingViews: listingAnalytics.listingViews, inquiries: listingAnalytics.inquiries, attributedInquiryToBookingCount: listingAnalytics.attributedInquiryToBookingCount, clickThroughRatePercentage: listingAnalytics.searchImpressions > 0 ? Math.round((listingAnalytics.listingViews / listingAnalytics.searchImpressions) * 10_000) / 100 : null, viewToInquiryRatePercentage: listingAnalytics.viewToInquiryRatePercentage, attributedBookingConversionPercentage: listingAnalytics.conversionRatePercentage };
     const hasAdvancedComparisons = options.includeAdvancedComparisons === true;
     const advancedComparison = hasAdvancedComparisons
       ? { status: "AVAILABLE" as const, message: "Detailed comparison uses similar Homyz listings for the selected stay context." }

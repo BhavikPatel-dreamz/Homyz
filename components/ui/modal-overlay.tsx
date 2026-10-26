@@ -1,11 +1,13 @@
 "use client";
 
-import { useLayoutEffect, useRef, type ComponentPropsWithoutRef } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type ComponentPropsWithoutRef } from "react";
+import { createPortal } from "react-dom";
 import { lockBodyScroll } from "@/lib/ui/body-scroll-lock";
 
 export interface ModalOverlayProps extends ComponentPropsWithoutRef<"div"> {
   isOpen?: boolean;
   onClose?: () => void;
+  portal?: boolean;
 }
 
 /** Render only while open. Preserves the existing overlay markup and styling, and applies universal smooth modal transitions. */
@@ -15,9 +17,15 @@ export function ModalOverlay({
   isOpen,
   onClose,
   onClick,
+  portal = true,
   ...props
 }: ModalOverlayProps) {
   const ref = useRef<HTMLDivElement>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useLayoutEffect(() => {
     if (isOpen === false) return;
@@ -42,7 +50,18 @@ export function ModalOverlay({
       window.removeEventListener("resize", syncVisibility);
       release?.();
     };
-  }, [isOpen]);
+  }, [isOpen, mounted]);
+
+  useEffect(() => {
+    if (isOpen === false || !onClose) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
 
   if (isOpen === false) {
     return null;
@@ -62,7 +81,7 @@ export function ModalOverlay({
       ? className
       : `modal-backdrop-animate-in ${className}`.trim();
 
-  return (
+  const node = (
     <div
       {...props}
       ref={ref}
@@ -72,4 +91,13 @@ export function ModalOverlay({
       style={{ overscrollBehavior: "contain", ...style }}
     />
   );
+
+  if (portal) {
+    if (!mounted || typeof document === "undefined") {
+      return null;
+    }
+    return createPortal(node, document.body);
+  }
+
+  return node;
 }

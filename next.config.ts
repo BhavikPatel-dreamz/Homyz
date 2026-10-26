@@ -44,6 +44,9 @@ const nextConfig: NextConfig = {
   output: "standalone",
   allowedDevOrigins: actionOrigins,
   images: {
+    dangerouslyAllowSVG: true,
+    contentDispositionType: "attachment",
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     remotePatterns: [
       {
         protocol: "https",

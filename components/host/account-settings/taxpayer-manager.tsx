@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { ModalOverlay } from "@/components/ui/modal-overlay";
 import type {
   HostTaxpayerProfileDTO,
   HostVatRegistrationDTO,
@@ -432,11 +433,21 @@ export function TaxpayerManager({
 
       {/* DRAWER / MODAL: TAXPAYER FORM */}
       {activeDrawer === "TAXPAYER" && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/40 backdrop-blur-xs">
-          <div className="relative w-full max-w-lg rounded-3xl bg-white p-6 sm:p-8 shadow-xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-start justify-between gap-4 border-b border-zinc-200 pb-4">
+        <ModalOverlay
+          className="fixed inset-0 z-9999 flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-xs"
+          onClose={() => setActiveDrawer(null)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="taxpayer-modal-title"
+            onClick={(e) => e.stopPropagation()}
+            className="relative flex flex-col w-full max-w-lg max-h-[min(90vh,760px)] rounded-3xl bg-white shadow-2xl border border-zinc-100 overflow-hidden"
+          >
+            {/* Pinned Header */}
+            <div className="shrink-0 flex items-start justify-between gap-4 border-b border-zinc-200 px-6 py-5 sm:px-8 sm:py-6 bg-white">
               <div>
-                <h3 className="text-lg font-semibold text-zinc-950">
+                <h3 id="taxpayer-modal-title" className="text-lg font-semibold text-zinc-950">
                   {profile ? "Edit Taxpayer Information" : "Add Taxpayer Information"}
                 </h3>
                 <p className="mt-0.5 text-xs text-zinc-600">
@@ -444,14 +455,21 @@ export function TaxpayerManager({
                 </p>
               </div>
               <button
+                type="button"
                 onClick={() => setActiveDrawer(null)}
-                className="rounded-full p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 transition-colors"
+                aria-label="Close dialog"
+                className="rounded-full p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 transition-colors cursor-pointer"
               >
                 <XIcon size={18} />
               </button>
             </div>
 
-            <form onSubmit={handleSaveTaxpayerProfile} className="mt-6 space-y-5">
+            {/* Scrollable Form Body */}
+            <form
+              id="taxpayer-profile-form"
+              onSubmit={handleSaveTaxpayerProfile}
+              className="flex-1 overflow-y-auto min-h-0 p-6 sm:p-8 space-y-5"
+            >
               {/* Classification Toggle */}
               <div>
                 <label className="text-xs font-semibold text-zinc-900 block mb-2">
@@ -637,36 +655,48 @@ export function TaxpayerManager({
                   />
                 </div>
               </div>
-
-              {/* Submit Buttons */}
-              <div className="flex items-center justify-end gap-3 border-t border-zinc-200 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setActiveDrawer(null)}
-                  className="rounded-full px-4 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-100 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={!isTaxpayerFormValid || actionLoading}
-                  className="rounded-full bg-zinc-950 px-5 py-2 text-xs font-semibold text-white hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  {actionLoading ? "Saving..." : "Save Information"}
-                </button>
-              </div>
             </form>
+
+            {/* Pinned Footer */}
+            <div className="shrink-0 flex items-center justify-end gap-3 border-t border-zinc-200 px-6 py-4 sm:px-8 bg-zinc-50/80">
+              <button
+                type="button"
+                onClick={() => setActiveDrawer(null)}
+                disabled={actionLoading}
+                className="rounded-full px-5 py-2.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-200/70 transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                form="taxpayer-profile-form"
+                disabled={!isTaxpayerFormValid || actionLoading}
+                className="rounded-full bg-zinc-950 px-6 py-2.5 text-xs font-semibold text-white hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+              >
+                {actionLoading ? "Saving..." : "Save Information"}
+              </button>
+            </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
 
       {/* DRAWER / MODAL: VAT REGISTRATION FORM */}
       {activeDrawer === "VAT" && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/40 backdrop-blur-xs">
-          <div className="relative w-full max-w-lg rounded-3xl bg-white p-6 sm:p-8 shadow-xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-start justify-between gap-4 border-b border-zinc-200 pb-4">
+        <ModalOverlay
+          className="fixed inset-0 z-9999 flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-xs"
+          onClose={() => setActiveDrawer(null)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="vat-modal-title"
+            onClick={(e) => e.stopPropagation()}
+            className="relative flex flex-col w-full max-w-lg max-h-[min(90vh,760px)] rounded-3xl bg-white shadow-2xl border border-zinc-100 overflow-hidden"
+          >
+            {/* Pinned Header */}
+            <div className="shrink-0 flex items-start justify-between gap-4 border-b border-zinc-200 px-6 py-5 sm:px-8 sm:py-6 bg-white">
               <div>
-                <h3 className="text-lg font-semibold text-zinc-950">
+                <h3 id="vat-modal-title" className="text-lg font-semibold text-zinc-950">
                   VAT / GST Registration
                 </h3>
                 <p className="mt-0.5 text-xs text-zinc-600">
@@ -674,14 +704,21 @@ export function TaxpayerManager({
                 </p>
               </div>
               <button
+                type="button"
                 onClick={() => setActiveDrawer(null)}
-                className="rounded-full p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 transition-colors"
+                aria-label="Close dialog"
+                className="rounded-full p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 transition-colors cursor-pointer"
               >
                 <XIcon size={18} />
               </button>
             </div>
 
-            <form onSubmit={handleSaveVatRegistration} className="mt-6 space-y-5">
+            {/* Scrollable Form Body */}
+            <form
+              id="vat-registration-form"
+              onSubmit={handleSaveVatRegistration}
+              className="flex-1 overflow-y-auto min-h-0 p-6 sm:p-8 space-y-5"
+            >
               {/* Checkbox: Is VAT Registered */}
               <div className="rounded-2xl border border-zinc-200 bg-zinc-50/70 p-4">
                 <label className="flex items-start gap-3 cursor-pointer">
@@ -760,27 +797,29 @@ export function TaxpayerManager({
                   </div>
                 </>
               )}
-
-              {/* Submit Buttons */}
-              <div className="flex items-center justify-end gap-3 border-t border-zinc-200 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setActiveDrawer(null)}
-                  className="rounded-full px-4 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-100 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={!isVatFormValid || actionLoading}
-                  className="rounded-full bg-zinc-950 px-5 py-2 text-xs font-semibold text-white hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  {actionLoading ? "Saving..." : "Save VAT Registration"}
-                </button>
-              </div>
             </form>
+
+            {/* Pinned Footer */}
+            <div className="shrink-0 flex items-center justify-end gap-3 border-t border-zinc-200 px-6 py-4 sm:px-8 bg-zinc-50/80">
+              <button
+                type="button"
+                onClick={() => setActiveDrawer(null)}
+                disabled={actionLoading}
+                className="rounded-full px-5 py-2.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-200/70 transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                form="vat-registration-form"
+                disabled={!isVatFormValid || actionLoading}
+                className="rounded-full bg-zinc-950 px-6 py-2.5 text-xs font-semibold text-white hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+              >
+                {actionLoading ? "Saving..." : "Save VAT Registration"}
+              </button>
+            </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
     </div>
   );

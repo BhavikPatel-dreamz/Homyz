@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { ModalOverlay } from "@/components/ui/modal-overlay";
 import type { HostTaxDocumentDTO } from "@/services/host-tax.service";
 import {
   SettingsStatusBadge,
@@ -302,24 +303,36 @@ export function TaxDocumentsManager({
 
       {/* Generate Modal */}
       {isGenerateModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
-          <div className="w-full max-w-md rounded-3xl border border-zinc-200 bg-white p-6 shadow-xl sm:p-7">
-            <div className="flex items-center justify-between border-b border-zinc-100 pb-4">
-              <h3 className="text-base font-bold text-zinc-950">
+        <ModalOverlay
+          className="fixed inset-0 z-9999 flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-xs"
+          onClose={() => setIsGenerateModalOpen(false)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="generate-tax-modal-title"
+            onClick={(e) => e.stopPropagation()}
+            className="relative flex flex-col w-full max-w-md max-h-[min(90vh,600px)] rounded-3xl border border-zinc-200 bg-white shadow-2xl overflow-hidden"
+          >
+            {/* Pinned Header */}
+            <div className="shrink-0 flex items-center justify-between border-b border-zinc-100 px-6 py-5 bg-white">
+              <h3 id="generate-tax-modal-title" className="text-base font-bold text-zinc-950">
                 Generate Annual Tax Summary
               </h3>
               <button
                 type="button"
                 onClick={() => setIsGenerateModalOpen(false)}
-                className="rounded-full p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700"
+                aria-label="Close dialog"
+                className="rounded-full p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 transition cursor-pointer"
               >
                 <XIcon size={18} />
               </button>
             </div>
 
-            <form onSubmit={handleGenerateSummary} className="mt-5 space-y-4">
+            {/* Scrollable Form Body */}
+            <form id="generate-tax-summary-form" onSubmit={handleGenerateSummary} className="flex-1 overflow-y-auto min-h-0 px-6 py-5 space-y-4">
               <div>
-                <label className="block text-xs font-medium text-zinc-700">
+                <label className="block text-xs font-semibold text-zinc-800">
                   Select Tax Year
                 </label>
                 <select
@@ -344,27 +357,29 @@ export function TaxDocumentsManager({
                   The summary PDF will be compiled and immediately saved to your Tax Documents repository for download.
                 </p>
               </div>
-
-              <div className="flex items-center justify-end gap-3 pt-3">
-                <button
-                  type="button"
-                  onClick={() => setIsGenerateModalOpen(false)}
-                  disabled={actionLoading}
-                  className="rounded-full border border-zinc-200 bg-white px-4 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 transition"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={actionLoading}
-                  className="inline-flex items-center gap-1.5 rounded-full bg-zinc-950 px-5 py-2 text-xs font-semibold text-white hover:bg-zinc-800 transition disabled:opacity-50"
-                >
-                  {actionLoading ? "Generating..." : "Generate PDF Summary"}
-                </button>
-              </div>
             </form>
+
+            {/* Pinned Footer */}
+            <div className="shrink-0 flex items-center justify-end gap-3 border-t border-zinc-100 px-6 py-4 bg-zinc-50/80">
+              <button
+                type="button"
+                onClick={() => setIsGenerateModalOpen(false)}
+                disabled={actionLoading}
+                className="rounded-full border border-zinc-200 bg-white px-4 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-100 transition cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                form="generate-tax-summary-form"
+                disabled={actionLoading}
+                className="inline-flex items-center gap-1.5 rounded-full bg-zinc-950 px-5 py-2 text-xs font-semibold text-white hover:bg-zinc-800 transition disabled:opacity-50 cursor-pointer"
+              >
+                {actionLoading ? "Generating..." : "Generate PDF Summary"}
+              </button>
+            </div>
           </div>
-        </div>
+        </ModalOverlay>
       )}
     </div>
   );

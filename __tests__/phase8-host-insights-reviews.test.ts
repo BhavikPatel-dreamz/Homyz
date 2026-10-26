@@ -84,7 +84,8 @@ test("Review details screen renders reservation summary, category scores, and re
 
   const client = read("app/(protected)/host/insights/reviews/[reviewId]/host-review-details-client.tsx");
   assert.match(client, /Back to Reviews/);
-  assert.match(client, /href="\/host\/insights\?tab=reviews"/);
+  assert.match(client, /returnTo\s*=\s*"\/host\/insights\?tab=reviews"/);
+  assert.match(client, /<BackButton href=\{returnTo\}/);
   assert.match(client, /Reservation Details/);
   assert.match(client, /Category Subratings/);
   assert.match(client, /Host response/);

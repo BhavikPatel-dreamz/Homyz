@@ -115,7 +115,9 @@ export function PeriodComparisonModal({ isOpen, onClose, currentPeriodLabel, cur
     onClose();
   };
 
-  return <ModalOverlay className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs" onClick={onClose}>
+  // The host header uses z-99; this overlay must sit above it so the backdrop
+  // blocks every interactive surface while a reporting comparison is open.
+  return <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs" onClick={onClose}>
     <div role="dialog" aria-modal="true" aria-labelledby="earnings-comparison-title" onClick={(event) => event.stopPropagation()} className="relative mx-auto max-h-[calc(100vh-2rem)] w-full max-w-lg overflow-y-auto rounded-3xl border border-zinc-200 bg-white p-6 shadow-2xl animate-in fade-in zoom-in-95 sm:p-8">
       <div className="flex items-start justify-between border-b border-zinc-100 pb-4"><div><h2 id="earnings-comparison-title" className="text-xl font-bold tracking-tight text-zinc-950">Compare Reporting Periods</h2><p className="mt-1 text-xs text-zinc-500">Compare realised earnings using the same property and currency scope.</p></div><button type="button" aria-label="Close comparison" onClick={onClose} className="rounded-full p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700">✕</button></div>
       <div className="mt-5 rounded-2xl border border-zinc-200 bg-zinc-50/70 p-4"><p className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">Period A (Primary View)</p><p className="mt-1 text-sm font-bold text-zinc-950">{currentPeriodLabel}</p><p className="mt-1 text-xs text-zinc-500">{currentStartDate} to {currentEndDate}</p></div>

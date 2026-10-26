@@ -174,8 +174,8 @@ export function ReservationCard({
           )}
 
           <p className={isCompactVariant
-            ? "order-4 mt-1 text-[10px] font-medium tracking-[0.02em] text-[#727272]"
-            : "mt-2 text-[10px] font-medium tracking-[0.02em] text-[#727272]"}>
+            ? "order-4 mt-1 text-xs font-normal tracking-[0.02em] text-[#727272]"
+            : "mt-2 text-xs font-normal tracking-[0.02em] text-[#727272]"}>
             {t("booking_details_booking_ref_short", { code: data.id.slice(-8).toUpperCase() }, `Booking #${data.id.slice(-8).toUpperCase()}`)}
           </p>
 

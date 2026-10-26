@@ -10,6 +10,7 @@ type StoredEventType =
   | "LISTING_VIEW"
   | "SEARCH_IMPRESSION"
   | "INQUIRY"
+  | "INQUIRY_TO_CONFIRMED_BOOKING"
   | "BOOKING_INTENT"
   | "CONFIRMED_BOOKING"
   | "UNATTRIBUTED_CONFIRMED_BOOKING";
@@ -102,26 +103,50 @@ export async function recordConfirmedBookingAnalyticsEvent(input: {
   sessionId: string | null;
 }) {
   const sessionId = validSessionId(input.sessionId);
-  if (!sessionId) return { recorded: false, attributed: false };
   const booking = await prisma.booking.findUnique({
     where: { id: input.bookingId },
-    select: { id: true, listingId: true, status: true, listing: { select: { hostId: true } } },
+    select: {
+      id: true,
+      listingId: true,
+      userId: true,
+      status: true,
+      listing: { select: { hostId: true } },
+      conversations: {
+        select: { id: true, guestId: true, listingId: true },
+      },
+    },
   });
   if (!booking || booking.status !== "CONFIRMED") return { recorded: false, attributed: false };
 
-  const sessionHash = hash(sessionId);
-  const viewed = await prisma.listingAnalyticsEvent.findFirst({
-    where: {
-      eventType: "LISTING_VIEW",
-      listingId: booking.listingId,
-      sessionHash,
-      occurredAt: { gte: new Date(Date.now() - ATTRIBUTION_WINDOW_MS) },
-    },
-    select: { id: true },
-  });
+  const sessionHash = sessionId ? hash(sessionId) : null;
+  const viewed = sessionHash
+    ? await prisma.listingAnalyticsEvent.findFirst({
+        where: {
+          eventType: "LISTING_VIEW",
+          listingId: booking.listingId,
+          sessionHash,
+          occurredAt: { gte: new Date(Date.now() - ATTRIBUTION_WINDOW_MS) },
+        },
+        select: { id: true },
+      })
+    : null;
+  const inquiryConversation = booking.conversations.find(
+    (conversation) => conversation.guestId === booking.userId && conversation.listingId === booking.listingId,
+  );
+  const inquiryEvent = inquiryConversation
+    ? await prisma.listingAnalyticsEvent.findFirst({
+        where: {
+          eventType: "INQUIRY",
+          listingId: booking.listingId,
+          visitorHash: hash(`guest:${booking.userId}`),
+          dedupeKey: hash(`inquiry:${inquiryConversation.id}`),
+        },
+        select: { id: true },
+      })
+    : null;
   const eventType: StoredEventType = viewed ? "CONFIRMED_BOOKING" : "UNATTRIBUTED_CONFIRMED_BOOKING";
   try {
-    await prisma.listingAnalyticsEvent.create({
+    const created = await prisma.listingAnalyticsEvent.create({
       data: {
         eventType,
         listingId: booking.listingId,
@@ -131,10 +156,24 @@ export async function recordConfirmedBookingAnalyticsEvent(input: {
         metadata: { attributionWindowDays: 30 },
       },
     });
-    return { recorded: true, attributed: Boolean(viewed) };
+    if (inquiryEvent && inquiryConversation) {
+      await prisma.listingAnalyticsEvent.upsert({
+        where: { dedupeKey: hash(`inquiry-booking:${inquiryConversation.id}:${booking.id}`) },
+        update: {},
+        create: {
+          eventType: "INQUIRY_TO_CONFIRMED_BOOKING",
+          listingId: booking.listingId,
+          hostId: booking.listing.hostId,
+          visitorHash: hash(`guest:${booking.userId}`),
+          dedupeKey: hash(`inquiry-booking:${inquiryConversation.id}:${booking.id}`),
+          metadata: { attribution: "linked_inquiry_conversation" },
+        },
+      });
+    }
+    return { recorded: Boolean(created), attributed: Boolean(viewed), inquiryAttributed: Boolean(inquiryEvent) };
   } catch (error: unknown) {
     if (typeof error === "object" && error && "code" in error && (error as { code?: string }).code === "P2002") {
-      return { recorded: false, attributed: Boolean(viewed) };
+      return { recorded: false, attributed: Boolean(viewed), inquiryAttributed: Boolean(inquiryEvent) };
     }
     throw error;
   }
@@ -142,9 +181,10 @@ export async function recordConfirmedBookingAnalyticsEvent(input: {
 
 /**
  * Records a newly created guest inquiry as a durable host-side funnel stage.
- * The event intentionally has no session-to-booking attribution: an inquiry
- * can later turn into a booking through a different authenticated flow, and
- * this service must not claim that relationship without a persisted link.
+ * A later booking is attributed only when its booking-linked conversation has
+ * the existing durable INQUIRY event created for that exact conversation. No
+ * historic inference is attempted; raw guest identifiers and browser session
+ * IDs are never stored.
  */
 export async function recordInquiryAnalyticsEvent(input: {
   conversationId: string;
@@ -180,6 +220,7 @@ export type ListingAnalyticsSummary = {
   searchImpressions: number;
   attributedConfirmedBookings: number;
   inquiries: number;
+  attributedInquiryToBookingCount: number;
   conversionRatePercentage: number | null;
   viewToInquiryRatePercentage: number | null;
 };
@@ -190,7 +231,7 @@ export async function getListingAnalyticsSummary(input: {
   endDate: Date;
 }): Promise<ListingAnalyticsSummary> {
   if (!input.listingIds.length) {
-    return { status: "ACTIVE", message: "No listings are selected.", trackingStartedAt: null, listingViews: 0, searchImpressions: 0, attributedConfirmedBookings: 0, inquiries: 0, conversionRatePercentage: null, viewToInquiryRatePercentage: null };
+    return { status: "ACTIVE", message: "No listings are selected.", trackingStartedAt: null, listingViews: 0, searchImpressions: 0, attributedConfirmedBookings: 0, inquiries: 0, attributedInquiryToBookingCount: 0, conversionRatePercentage: null, viewToInquiryRatePercentage: null };
   }
   try {
     const [counts, firstEvent] = await Promise.all([
@@ -223,6 +264,7 @@ export async function getListingAnalyticsSummary(input: {
       searchImpressions: count("SEARCH_IMPRESSION"),
       attributedConfirmedBookings,
       inquiries,
+      attributedInquiryToBookingCount: count("INQUIRY_TO_CONFIRMED_BOOKING"),
       conversionRatePercentage: listingViews > 0
         ? Math.round((attributedConfirmedBookings / listingViews) * 10_000) / 100
         : null,
@@ -232,6 +274,6 @@ export async function getListingAnalyticsSummary(input: {
     };
   } catch {
     // Deployments that have not applied the additive telemetry migration remain usable.
-    return { status: "DATA_UNAVAILABLE", message: "Listing analytics storage is not available in this deployment yet.", trackingStartedAt: null, listingViews: 0, searchImpressions: 0, attributedConfirmedBookings: 0, inquiries: 0, conversionRatePercentage: null, viewToInquiryRatePercentage: null };
+    return { status: "DATA_UNAVAILABLE", message: "Listing analytics storage is not available in this deployment yet.", trackingStartedAt: null, listingViews: 0, searchImpressions: 0, attributedConfirmedBookings: 0, inquiries: 0, attributedInquiryToBookingCount: 0, conversionRatePercentage: null, viewToInquiryRatePercentage: null };
   }
 }

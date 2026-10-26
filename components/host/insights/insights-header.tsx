@@ -44,11 +44,11 @@ export function InsightsHeader({
   const isSuperhostTab = activeTab === "superhost";
 
   return (
-    <div className="flex flex-col gap-4 border-b border-zinc-200 pb-6 sm:flex-row sm:items-end sm:justify-between">
+    <div className="flex flex-col gap-4 border-b border-[#E5E5E5] pb-6 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Host Analytics</p>
-        <h1 className="mt-1 text-3xl font-bold tracking-tight text-zinc-950 sm:text-4xl">Insights</h1>
-        <p className="mt-1 text-sm text-zinc-600">
+        <p className="text-sm font-medium text-[#727272]">Host Analytics</p>
+        <h1 className="mt-1">Insights</h1>
+        <p className="mt-1 text-sm text-[#727272]">
           Track guest feedback, hosting performance {periodLabel}.
         </p>
       </div>
@@ -89,31 +89,6 @@ export function InsightsHeader({
           </div>
         )}
       </div>
-
-      {!isSuperhostTab && selectedPeriod === "custom" && (
-        <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-zinc-700 sm:justify-end">
-          <label className="flex items-center gap-1.5">
-            <span className="text-zinc-500">From</span>
-            <input
-              aria-label="Insights custom start date"
-              type="date"
-              value={startDate || ""}
-              onChange={(event) => onCustomDateChange(event.target.value, endDate || "")}
-              className="rounded-lg border border-zinc-300 bg-white px-2 py-1.5 focus:outline-none"
-            />
-          </label>
-          <label className="flex items-center gap-1.5">
-            <span className="text-zinc-500">To</span>
-            <input
-              aria-label="Insights custom end date"
-              type="date"
-              value={endDate || ""}
-              onChange={(event) => onCustomDateChange(startDate || "", event.target.value)}
-              className="rounded-lg border border-zinc-300 bg-white px-2 py-1.5 focus:outline-none"
-            />
-          </label>
-        </div>
-      )}
     </div>
   );
 }

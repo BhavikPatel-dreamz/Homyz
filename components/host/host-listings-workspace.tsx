@@ -957,7 +957,7 @@ export function HostListingsWorkspace({
 
                           {/* Below Card Information */}
                           <div className="px-0 pt-3 sm:px-3 lg:pt-6">
-                            <h3 className="truncate text-base font-medium leading-6 text-[#252525]">
+                            <h3 className="truncate text-base font-medium leading-6 text-[#1f1f1f]">
                               <Link
                                 href={`/host/listings/${item.id}`}
                                 className="after:absolute after:inset-0 after:rounded-[22px] focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:outline-offset-4"
@@ -965,11 +965,11 @@ export function HostListingsWorkspace({
                                 {item.title === "Draft Listing" ? t("host_untitled_draft") : item.title || t("host_untitled_listing")}
                               </Link>
                             </h3>
-                            <p className="mt-1 truncate text-sm leading-6 text-[#858585]">
+                            <p className="mt-1 truncate text-sm leading-6 text-[#727272]">
                               {item.city || item.country ? `${item.city || ""}${item.city && item.country ? ", " : ""}${item.country || ""}` : t("host_no_location_yet")}
                             </p>
                             {item.status === "PENDING_REVIEW" && (
-                              <p className="mt-1 text-xs font-medium text-[#349010]">
+                              <p className="mt-1 text-sm font-medium text-[#349010]">
                                 {isSaudiArabia(item.country) ? t("host_ready_to_publish") : t("host_submitted_for_admin_approval")}
                               </p>
                             )}
@@ -1695,7 +1695,7 @@ export function HostListingsWorkspace({
 
             {/* Modal Body */}
             <div className="px-6 py-6 sm:py-8 border-b border-[#EBEBEB] dark:border-zinc-800">
-              <p className="text-base text-[#222222] dark:text-zinc-300 font-normal leading-relaxed">
+              <p className="text-sm text-[#1f1f1f] dark:text-zinc-300 font-normal leading-relaxed">
                 {t("host_listings_delete_confirm_desc", { title: listingToDelete.title })}
               </p>
             </div>

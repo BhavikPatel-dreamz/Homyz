@@ -2,6 +2,7 @@
 
 import React, { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
+import { BackButton } from "@/components/ui/back-button";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { HostEarningsReportsLandingData } from "@/services/host-reporting.service";
 import { GenerateReportModal } from "@/components/host/earnings/generate-report-modal";
@@ -130,13 +131,10 @@ export function HostEarningsReportsClient({
       {/* Header */}
       <header className="border-b border-zinc-200 pb-6">
         <div className="flex items-center gap-3">
-          <Link
+          <BackButton
             href="/host/earnings"
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-zinc-200 text-zinc-600 transition-colors hover:border-zinc-900 hover:text-zinc-900"
             aria-label="Back to Earnings"
-          >
-            ←
-          </Link>
+          />
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
               Host Finances
@@ -151,12 +149,12 @@ export function HostEarningsReportsClient({
         <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-wrap items-center gap-3">
             {/* Year Selector */}
-            <div className="flex items-center gap-1.5 rounded-xl border border-zinc-300 bg-white px-3 py-1.5 text-sm font-semibold text-zinc-900">
-              <span className="text-xs text-zinc-500">Year:</span>
+            <div className="group relative inline-flex items-center rounded-xl border border-zinc-300 bg-white pl-3 pr-7 py-1.5 text-sm font-semibold text-zinc-900 transition hover:border-zinc-950">
+              <span className="text-xs text-zinc-500 mr-1.5">Year:</span>
               <select
                 value={data.selectedYear}
                 onChange={(e) => update({ year: e.target.value })}
-                className="bg-transparent font-semibold focus:outline-none"
+                className="appearance-none cursor-pointer bg-transparent font-semibold focus:outline-none"
               >
                 {availableYears.map((yr) => (
                   <option key={yr} value={yr}>
@@ -164,15 +162,20 @@ export function HostEarningsReportsClient({
                   </option>
                 ))}
               </select>
+              <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-500 transition-colors group-hover:text-zinc-900">
+                <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="m6 9 6 6 6-6" />
+                </svg>
+              </div>
             </div>
 
             {/* Listing Filter */}
-            <div className="flex items-center gap-1.5 rounded-xl border border-zinc-300 bg-white px-3 py-1.5 text-sm font-semibold text-zinc-900">
-              <span className="text-xs text-zinc-500">Listing:</span>
+            <div className="group relative inline-flex items-center rounded-xl border border-zinc-300 bg-white pl-3 pr-7 py-1.5 text-sm font-semibold text-zinc-900 transition hover:border-zinc-950">
+              <span className="text-xs text-zinc-500 mr-1.5">Listing:</span>
               <select
                 value={data?.selectedListingId || ""}
                 onChange={(e) => update({ propertyId: e.target.value || null })}
-                className="max-w-[180px] truncate bg-transparent font-semibold focus:outline-none"
+                className="max-w-[180px] truncate appearance-none cursor-pointer bg-transparent font-semibold focus:outline-none"
               >
                 <option value="">All listings</option>
                 {listings.map((item) => (
@@ -181,16 +184,21 @@ export function HostEarningsReportsClient({
                   </option>
                 ))}
               </select>
+              <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-500 transition-colors group-hover:text-zinc-900">
+                <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="m6 9 6 6 6-6" />
+                </svg>
+              </div>
             </div>
 
             {/* Currency Filter if multiple */}
             {currencies.length > 1 && (
-              <div className="flex items-center gap-1.5 rounded-xl border border-zinc-300 bg-white px-3 py-1.5 text-sm font-semibold text-zinc-900">
-                <span className="text-xs text-zinc-500">Currency:</span>
+              <div className="group relative inline-flex items-center rounded-xl border border-zinc-300 bg-white pl-3 pr-7 py-1.5 text-sm font-semibold text-zinc-900 transition hover:border-zinc-950">
+                <span className="text-xs text-zinc-500 mr-1.5">Currency:</span>
                 <select
                   value={currency}
                   onChange={(e) => update({ currency: e.target.value || null })}
-                  className="bg-transparent font-semibold focus:outline-none"
+                  className="appearance-none cursor-pointer bg-transparent font-semibold focus:outline-none"
                 >
                   {currencies.map((curr) => (
                     <option key={curr} value={curr}>
@@ -198,6 +206,11 @@ export function HostEarningsReportsClient({
                     </option>
                   ))}
                 </select>
+                <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-500 transition-colors group-hover:text-zinc-900">
+                  <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="m6 9 6 6 6-6" />
+                  </svg>
+                </div>
               </div>
             )}
           </div>

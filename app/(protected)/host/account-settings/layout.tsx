@@ -6,7 +6,7 @@ import { HostHeader } from "@/components/host/host-header";
 export const metadata: Metadata = {
   title: "Host Account Settings | Homyz",
   description:
-    "Manage host payout methods, tax documents, earnings reports, hosting preferences, and permissions on Homyz.",
+    "Manage host payout methods, tax documents, and earnings reports on Homyz.",
 };
 
 export const dynamic = "force-dynamic";

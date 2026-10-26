@@ -74,7 +74,7 @@ export default async function PayoutSettingsPage() {
               <ChevronRightIcon size={18} className="text-zinc-400 group-hover:text-zinc-900 group-hover:translate-x-0.5 transition-all" />
             </Link>
 
-            <Link
+            {/* <Link
               href="/host/account-settings/payouts/routing-rules"
               className="group flex items-center justify-between rounded-2xl border border-zinc-200 bg-zinc-50/60 p-4 transition-all hover:border-zinc-300 hover:bg-white hover:shadow-xs"
             >
@@ -88,7 +88,7 @@ export default async function PayoutSettingsPage() {
                 </div>
               </div>
               <ChevronRightIcon size={18} className="text-zinc-400 group-hover:text-zinc-900 group-hover:translate-x-0.5 transition-all" />
-            </Link>
+            </Link> */}
           </div>
 
           {/* Payout Methods List or Empty State */}

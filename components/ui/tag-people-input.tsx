@@ -108,7 +108,7 @@ export function TagPeopleInput({
 
   return (
     <div ref={containerRef} className="relative w-full">
-      <label htmlFor={inputId} className="block text-xs font-semibold text-[#1F1F1F] mb-1.5">
+      <label htmlFor={inputId} className="block text-sm font-normal text-[#1F1F1F] mb-1.5">
         Tag People
       </label>
 
@@ -120,22 +120,22 @@ export function TagPeopleInput({
             inputRef.current?.focus();
           }
         }}
-        className={`w-full min-h-[46px] p-2 rounded-2xl border bg-white flex flex-wrap items-center gap-1.5 transition-all shadow-2xs ${
-          isOpen ? "border-amber-400 ring-2 ring-amber-400/20" : "border-zinc-200 hover:border-zinc-300"
+        className={`w-full min-h-[46px] p-2 rounded-lg border bg-white flex flex-wrap items-center gap-1.5 transition-all ${
+          isOpen ? "border-[#1f1f1f]" : "border-[#d7d7d7] hover:border-zinc-300"
         } ${disabled ? "opacity-60 cursor-not-allowed" : "cursor-text"}`}
       >
         {/* Selected Chips */}
         {selectedUsers.map((user) => (
           <span
             key={user.id}
-            className="inline-flex items-center gap-1.5 pl-1.5 pr-2 py-1 rounded-full bg-zinc-100 border border-zinc-200 text-xs font-semibold text-zinc-800 shadow-2xs group animate-in fade-in"
+            className="inline-flex items-center gap-1.5 pl-1.5 pr-2 py-1 rounded-full bg-zinc-100 border border-[#d7d7d7] text-xs font-medium text-zinc-800 shadow-2xs group animate-in fade-in"
           >
             {user.image ? (
               <span className="relative w-4 h-4 rounded-full overflow-hidden shrink-0">
                 <Image src={user.image} alt={user.name || "User"} fill className="object-cover" sizes="16px" />
               </span>
             ) : (
-              <span className="w-4 h-4 rounded-full bg-amber-200 text-amber-900 text-[9px] font-semibold flex items-center justify-center shrink-0">
+              <span className="w-4 h-4 rounded-full bg-amber-200 text-amber-900 text-[9px] font-medium flex items-center justify-center shrink-0">
                 {(user.name || user.email || "U")[0].toUpperCase()}
               </span>
             )}
@@ -166,7 +166,7 @@ export function TagPeopleInput({
             onFocus={() => setIsOpen(true)}
             onKeyDown={handleKeyDown}
             placeholder={selectedUsers.length === 0 ? "Search people to tag..." : "Add more..."}
-            className="flex-1 min-w-[120px] bg-transparent text-xs text-[#1F1F1F] placeholder-zinc-400 focus:outline-none py-1"
+            className="flex-1 min-w-[120px] bg-transparent text-sm text-[#1F1F1F] placeholder-zinc-400 focus:outline-none py-1"
           />
         )}
       </div>
@@ -180,7 +180,7 @@ export function TagPeopleInput({
 
       {/* Suggestion Dropdown */}
       {isOpen && (
-        <div className="absolute left-0 right-0 top-full mt-1 z-50 max-h-60 overflow-y-auto rounded-2xl bg-white border border-zinc-200 shadow-xl py-1.5 animate-in fade-in">
+        <div className="absolute left-0 right-0 top-full mt-1 z-50 max-h-60 overflow-y-auto rounded-2xl bg-white border border-[#d7d7d7] shadow-xl py-1.5 animate-in fade-in">
           {loading ? (
             <div className="px-4 py-3 text-xs text-[#727272] flex items-center gap-2">
               <svg className="w-3.5 h-3.5 animate-spin text-[#727272]" viewBox="0 0 24 24" fill="none">
@@ -212,7 +212,7 @@ export function TagPeopleInput({
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     {user.image ? (
-                      <div className="relative w-7 h-7 rounded-full overflow-hidden shrink-0 border border-zinc-200">
+                      <div className="relative w-7 h-7 rounded-full overflow-hidden shrink-0 border border-[#d7d7d7]">
                         <Image src={user.image} alt={user.name || "User"} fill className="object-cover" sizes="28px" />
                       </div>
                     ) : (

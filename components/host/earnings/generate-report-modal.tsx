@@ -12,6 +12,18 @@ interface GenerateReportModalProps {
   defaultYear?: number;
 }
 
+type ReportingPeriod = "this_month" | "last_month" | "this_year" | "previous_year" | "custom";
+type EarningsType = "all" | "reservation" | "adjustments";
+type PayoutStatus = "all" | "paid" | "upcoming";
+
+const REPORTING_PERIODS: ReadonlyArray<{ id: ReportingPeriod; label: string }> = [
+  { id: "this_month", label: "This month" },
+  { id: "last_month", label: "Last month" },
+  { id: "this_year", label: "Year to date" },
+  { id: "previous_year", label: "Previous year" },
+  { id: "custom", label: "Custom range" },
+];
+
 const FIELD_GROUPS = [
   {
     title: "Reservation Information",
@@ -58,12 +70,12 @@ export function GenerateReportModal({
   listings,
   currencies,
 }: GenerateReportModalProps) {
-  const [period, setPeriod] = useState<"this_month" | "last_month" | "this_year" | "previous_year" | "custom">("this_month");
+  const [period, setPeriod] = useState<ReportingPeriod>("this_month");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [listingId, setListingId] = useState("");
-  const [earningsType, setEarningsType] = useState<"all" | "reservation" | "adjustments">("all");
-  const [payoutStatus, setPayoutStatus] = useState<"all" | "paid" | "upcoming">("all");
+  const [earningsType, setEarningsType] = useState<EarningsType>("all");
+  const [payoutStatus, setPayoutStatus] = useState<PayoutStatus>("all");
   const [currency, setCurrency] = useState(currencies[0] || "");
   const [format, setFormat] = useState<"csv" | "pdf">("csv");
   const [selectedFields, setSelectedFields] = useState<string[]>(defaultExportFields);
@@ -170,9 +182,11 @@ export function GenerateReportModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="report-modal-title"
-      className="fixed inset-0 z-50 flex items-end bg-black/50 backdrop-blur-xs sm:items-center sm:justify-center sm:p-4"
+      isOpen={isOpen}
+      onClose={onClose}
+      className="fixed inset-0 z-[10000] flex items-end bg-black/50 p-4 backdrop-blur-xs sm:items-center sm:justify-center"
     >
-      <div className="max-h-[92vh] w-full overflow-y-auto rounded-t-3xl bg-white p-6 shadow-2xl sm:max-w-2xl sm:rounded-3xl">
+      <div className="max-h-[calc(100dvh-2rem)] w-full overflow-y-auto rounded-t-3xl bg-white p-6 shadow-2xl sm:max-w-2xl sm:rounded-3xl">
         <div className="flex items-center justify-between border-b border-zinc-200 pb-4">
           <div>
             <h2 id="report-modal-title" className="text-xl font-bold tracking-tight text-zinc-950">
@@ -205,17 +219,11 @@ export function GenerateReportModal({
               Reporting period
             </label>
             <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-5">
-              {[
-                { id: "this_month", label: "This month" },
-                { id: "last_month", label: "Last month" },
-                { id: "this_year", label: "Year to date" },
-                { id: "previous_year", label: "Previous year" },
-                { id: "custom", label: "Custom range" },
-              ].map((item) => (
+              {REPORTING_PERIODS.map((item) => (
                 <button
                   key={item.id}
                   type="button"
-                  onClick={() => setPeriod(item.id as any)}
+                  onClick={() => setPeriod(item.id)}
                   className={`rounded-xl border px-3 py-2 text-xs font-semibold transition-colors ${
                     period === item.id
                       ? "border-zinc-950 bg-zinc-950 text-white"
@@ -299,7 +307,7 @@ export function GenerateReportModal({
               </label>
               <select
                 value={earningsType}
-                onChange={(e) => setEarningsType(e.target.value as any)}
+                onChange={(e) => setEarningsType(e.target.value as EarningsType)}
                 className="mt-1.5 block w-full rounded-xl border border-zinc-300 bg-white px-3 py-2.5 text-sm font-medium text-zinc-900"
               >
                 <option value="all">All earnings & adjustments</option>
@@ -314,7 +322,7 @@ export function GenerateReportModal({
               </label>
               <select
                 value={payoutStatus}
-                onChange={(e) => setPayoutStatus(e.target.value as any)}
+                onChange={(e) => setPayoutStatus(e.target.value as PayoutStatus)}
                 className="mt-1.5 block w-full rounded-xl border border-zinc-300 bg-white px-3 py-2.5 text-sm font-medium text-zinc-900"
               >
                 <option value="all">All statuses</option>
@@ -454,4 +462,3 @@ export function GenerateReportModal({
     </ModalOverlay>
   );
 }
-

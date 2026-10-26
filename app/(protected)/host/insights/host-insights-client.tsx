@@ -139,12 +139,12 @@ export function HostInsightsClient({ initialData }: HostInsightsClientProps) {
 
       {/* Error state */}
       {error && (
-        <div role="alert" className="flex items-center justify-between rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">
+        <div role="alert" className="flex items-center justify-between rounded-2xl border border-rose-200 bg-rose-50 p-4 text-xs font-medium text-rose-800">
           <span>{error}</span>
           <button
             type="button"
             onClick={() => void loadData(query)}
-            className="font-semibold underline hover:text-rose-950"
+            className="cursor-pointer rounded-full bg-[#1F1F1F] px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-[#FCDF9C] hover:text-[#1F1F1F]"
           >
             Retry
           </button>
@@ -194,14 +194,14 @@ export function HostInsightsClient({ initialData }: HostInsightsClientProps) {
 function InsightsContentSkeleton({ tab }: { tab: InsightsTab }) {
   if (tab === "stats") {
     return <div className="space-y-10 animate-pulse" aria-label="Loading statistics">
-      <section><div className="h-5 w-40 rounded bg-zinc-200" /><div className="mt-5 grid grid-cols-2 gap-px bg-zinc-200 sm:grid-cols-3">{Array.from({ length: 6 }, (_, index) => <div key={index} className="min-h-36 bg-white p-5"><div className="h-3 w-20 rounded bg-zinc-200" /><div className="mt-5 h-8 w-24 rounded bg-zinc-200" /><div className="mt-3 h-3 w-32 rounded bg-zinc-100" /></div>)}</div></section>
-      <section><div className="h-5 w-56 rounded bg-zinc-200" /><div className="mt-5 grid gap-5 lg:grid-cols-3">{Array.from({ length: 3 }, (_, index) => <div key={index} className="h-64 rounded-3xl border border-zinc-200 bg-white p-5"><div className="h-4 w-24 rounded bg-zinc-200" /><div className="mt-8 h-32 rounded bg-zinc-100" /></div>)}</div></section>
-      <section><div className="h-5 w-44 rounded bg-zinc-200" /><div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{Array.from({ length: 6 }, (_, index) => <div key={index} className="h-32 border-b border-zinc-200"><div className="h-3 w-24 rounded bg-zinc-200" /><div className="mt-4 h-7 w-20 rounded bg-zinc-200" /></div>)}</div></section>
+      <section><div className="h-5 w-40 rounded bg-[#F3F4F5]" /><div className="mt-5 grid grid-cols-2 gap-px bg-[#E5E5E5] sm:grid-cols-3">{Array.from({ length: 6 }, (_, index) => <div key={index} className="min-h-36 bg-white p-5"><div className="h-3 w-20 rounded bg-[#F3F4F5]" /><div className="mt-5 h-8 w-24 rounded bg-[#F3F4F5]" /><div className="mt-3 h-3 w-32 rounded bg-[#F9F9F9]" /></div>)}</div></section>
+      <section><div className="h-5 w-56 rounded bg-[#F3F4F5]" /><div className="mt-5 grid gap-5 lg:grid-cols-3">{Array.from({ length: 3 }, (_, index) => <div key={index} className="h-64 rounded-3xl border border-[#E5E5E5] bg-white p-5"><div className="h-4 w-24 rounded bg-[#F3F4F5]" /><div className="mt-8 h-32 rounded bg-[#F9F9F9]" /></div>)}</div></section>
+      <section><div className="h-5 w-44 rounded bg-[#F3F4F5]" /><div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{Array.from({ length: 6 }, (_, index) => <div key={index} className="h-32 border-b border-[#E5E5E5]"><div className="h-3 w-24 rounded bg-[#F3F4F5]" /><div className="mt-4 h-7 w-20 rounded bg-[#F3F4F5]" /></div>)}</div></section>
     </div>;
   }
 
   return <div className="space-y-5 animate-pulse" aria-label="Loading insights">
-    <div className="h-8 w-52 rounded bg-zinc-200" />
-    {Array.from({ length: 4 }, (_, index) => <div key={index} className="h-28 rounded-2xl border border-zinc-200 bg-zinc-50" />)}
+    <div className="h-8 w-52 rounded bg-[#F3F4F5]" />
+    {Array.from({ length: 4 }, (_, index) => <div key={index} className="h-28 rounded-2xl border border-[#E5E5E5] bg-[#F9F9F9]" />)}
   </div>;
 }
