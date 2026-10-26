@@ -265,6 +265,14 @@ export class SimplePdfDocument {
     this.y -= boxHeight + 10;
   }
 
+  public addNotes(notes: string[]) {
+    notes.forEach((note) => this.addCallout(note));
+  }
+
+  public buildPdf(): Buffer {
+    return this.toBuffer();
+  }
+
   private addText(
     text: string,
     x: number,

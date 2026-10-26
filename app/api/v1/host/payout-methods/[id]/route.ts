@@ -7,11 +7,46 @@ import { payoutService } from "@/services/payout.service";
 
 export const dynamic = "force-dynamic";
 
-export const DELETE = apiHandler(async (req: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
-  const actor = await requireApiRole(req, [Role.HOST, Role.ADMIN]);
-  const { id } = await params;
+export const GET = apiHandler(
+  async (
+    req: NextRequest,
+    { params }: { params: Promise<{ id: string }> },
+  ) => {
+    const actor = await requireApiRole(req, [Role.HOST, Role.ADMIN]);
+    const { id } = await params;
 
-  const methods = await payoutService.deleteHostPayoutMethod(actor.id, id);
-  return ok(methods);
-});
+    const method = await payoutService.getHostPayoutMethodById(actor.id, id);
+    return ok(method);
+  },
+);
 
+export const PATCH = apiHandler(
+  async (
+    req: NextRequest,
+    { params }: { params: Promise<{ id: string }> },
+  ) => {
+    const actor = await requireApiRole(req, [Role.HOST, Role.ADMIN]);
+    const { id } = await params;
+    const body = await req.json();
+
+    const updated = await payoutService.updateHostPayoutMethod(actor.id, id, {
+      accountHolderName: body.accountHolderName,
+      routingCode: body.routingCode,
+      metadata: body.metadata,
+    });
+    return ok(updated);
+  },
+);
+
+export const DELETE = apiHandler(
+  async (
+    req: NextRequest,
+    { params }: { params: Promise<{ id: string }> },
+  ) => {
+    const actor = await requireApiRole(req, [Role.HOST, Role.ADMIN]);
+    const { id } = await params;
+
+    const methods = await payoutService.deleteHostPayoutMethod(actor.id, id);
+    return ok(methods);
+  },
+);

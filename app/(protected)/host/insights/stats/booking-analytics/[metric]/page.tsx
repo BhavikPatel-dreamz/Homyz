@@ -26,7 +26,10 @@ export default async function BookingAnalyticsMetricPage({ params, searchParams 
     listingId: single(query.propertyId) || single(query.listingId), period: single(query.period) as DateRangePreset | undefined,
     startDate: single(query.startDate), endDate: single(query.endDate), comparisonStartDate: single(query.comparisonStartDate), comparisonEndDate: single(query.comparisonEndDate),
     currency: single(query.currency) || (await cookies()).get("homyz_display_currency")?.value || "SAR",
-    propertyLimit: metric === "property-comparison" ? null : undefined,
+    propertyPage: Number(single(query.propertyPage) || "1"),
+    propertyPageSize: Number(single(query.propertyPageSize) || "10"),
+    propertySearch: single(query.propertySearch),
+    propertySort: single(query.propertySort) as "bookings" | "occupancy" | "rate" | "revenue" | "cancellation" | undefined,
   });
   return <div className="flex min-h-screen flex-col bg-white pb-[calc(110px+env(safe-area-inset-bottom))] font-sans text-zinc-900 sm:pb-0"><HostHeader /><main className={HOST_REPORTING_MAIN_CLASS}><Container className={HOST_REPORTING_CONTAINER_CLASS}><HostBookingAnalyticsClient initialData={data} focus={metric} /></Container></main></div>;
 }

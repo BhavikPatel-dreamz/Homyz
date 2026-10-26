@@ -4,8 +4,8 @@ import fs from "node:fs";
 import path from "node:path";
 import {
   resolveTimeframeBounds,
+  resolveComparisonPeriod,
   calculateDelta,
-  type TimeframeFilterOptions,
 } from "@/lib/dashboard/reporting-filter";
 
 const read = (file: string) =>
@@ -57,10 +57,12 @@ test("2. Timeframe resolution correctly handles Daily, Weekly, Monthly, Quarterl
   const monthly = resolveTimeframeBounds({ timeframe: "monthly", month: 10, year: 2026 }, refDate);
   assert.equal(monthly.timeframe, "monthly");
   assert.equal(monthly.startDateKey, "2026-10-01");
-  assert.equal(monthly.endDateKey, "2026-10-31");
+  // The selected current month is comparable only through the configured as-of
+  // date; it must not silently use a complete prior month.
+  assert.equal(monthly.endDateKey, "2026-10-22");
   assert.equal(monthly.comparisonStartDateKey, "2026-09-01");
-  assert.equal(monthly.comparisonEndDateKey, "2026-09-30");
-  assert.equal(monthly.durationDays, 31);
+  assert.equal(monthly.comparisonEndDateKey, "2026-09-22");
+  assert.equal(monthly.durationDays, 22);
 
   // Quarterly (Q4 2026 -> Oct 1 to Dec 31)
   const quarterly = resolveTimeframeBounds({ timeframe: "quarterly", quarter: 4, year: 2026 }, refDate);
@@ -84,6 +86,33 @@ test("2. Timeframe resolution correctly handles Daily, Weekly, Monthly, Quarterl
   assert.equal(custom.startDateKey, "2026-10-05");
   assert.equal(custom.endDateKey, "2026-10-15");
   assert.equal(custom.durationDays, 11);
+});
+
+test("2b. Explicit Earnings comparison periods preserve UTC calendar boundaries", () => {
+  const refDate = new Date(Date.UTC(2026, 9, 26, 12, 0, 0));
+  const october = resolveTimeframeBounds({ timeframe: "monthly", month: 10, year: 2026 }, refDate);
+  const priorPeriod = resolveComparisonPeriod(october, "prior_period");
+  assert.deepEqual(priorPeriod, {
+    startDateKey: "2026-09-01",
+    endDateKey: "2026-09-26",
+    label: "Sep 1, 2026 – Sep 26, 2026",
+  });
+
+  const priorYear = resolveComparisonPeriod(october, "prior_year");
+  assert.equal(priorYear.startDateKey, "2025-10-01");
+  assert.equal(priorYear.endDateKey, "2025-10-26");
+
+  const custom = resolveTimeframeBounds({ timeframe: "custom", startDate: "2026-10-10", endDate: "2026-10-20" }, refDate);
+  assert.deepEqual(resolveComparisonPeriod(custom, "prior_period"), {
+    startDateKey: "2026-09-29",
+    endDateKey: "2026-10-09",
+    label: "Sep 29, 2026 – Oct 9, 2026",
+  });
+
+  const leapPrimary = resolveTimeframeBounds({ timeframe: "daily", date: "2024-02-29" }, refDate);
+  const leapPriorYear = resolveComparisonPeriod(leapPrimary, "prior_year");
+  assert.equal(leapPriorYear.startDateKey, "2023-02-28");
+  assert.equal(leapPriorYear.endDateKey, "2023-02-28");
 });
 
 test("3. Period comparison delta calculation is mathematically safe with zero baselines", () => {
@@ -221,7 +250,7 @@ test("10. Earnings interactive chart implements floating rich tooltip and clicka
 
   // Floating rich tooltip with all financial fields
   assert.match(chartCode, /Net Host Earnings:/);
-  assert.match(chartCode, /Gross Earnings:/);
+  assert.match(chartCode, /grossLabel/);
   assert.match(chartCode, /Host Service Fees:/);
   assert.match(chartCode, /Completed Stays:/);
 
@@ -231,5 +260,3 @@ test("10. Earnings interactive chart implements floating rich tooltip and clicka
   assert.match(chartCode, /host\/earnings\/paid\?datePreset=custom/);
   assert.match(chartCode, /Earnings by Property/);
 });
-
-

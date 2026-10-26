@@ -51,6 +51,40 @@ enum HostOpportunityStatus {
   EXPIRED
 }
 
+enum HostPayoutMethodStatus {
+  PENDING_VERIFICATION
+  VERIFIED
+  REJECTED
+  DISABLED
+}
+
+enum PayoutMethodType {
+  SAUDI_IBAN
+  INTERNATIONAL_SWIFT
+  PAYPAL
+}
+
+enum RoutingRuleStatus {
+  ACTIVE
+  DISABLED
+}
+
+enum RoutingRuleType {
+  LISTING_DEFAULT
+  PERCENTAGE_SPLIT
+}
+
+enum DistributionStatus {
+  SCHEDULED
+  ELIGIBLE_SETTLEMENT
+  ON_HOLD
+  PROCESSING
+  EXPORTED
+  PAID
+  FAILED
+  CANCELLED
+}
+
 enum BookingStatus {
   PENDING
   CONFIRMED
@@ -471,6 +505,12 @@ model User {
   verifiedLicenseOwnerships       LicenseOwnership[]         @relation("LicenseOwnershipVerifier")
   licenseVerificationHistory      LicenseVerificationHistory[] @relation("LicenseVerificationHost")
   opportunityStates               HostOpportunity[]
+  payoutMethods                   HostPayoutMethod[]         @relation("HostPayoutMethods")
+  hostRoutingRules                PayoutRoutingRule[]        @relation("HostRoutingRules")
+  recipientRoutingRules           PayoutRoutingRule[]        @relation("RecipientRoutingRules")
+  recipientDistributions          BookingPayoutDistribution[] @relation("RecipientDistributions")
+  taxpayerProfile                 HostTaxpayerProfile?        @relation("UserTaxpayerProfile")
+  taxDocuments                    HostTaxDocument[]           @relation("UserTaxDocuments")
 
   @@index([role])
   @@index([adminRoleId])
@@ -867,6 +907,8 @@ model Listing {
   opportunityStates       HostOpportunity[]
   propertyLicenseLink      PropertyLicenseLink?
   licenseVerificationHistory LicenseVerificationHistory[]
+  routingRules            PayoutRoutingRule[]          @relation("ListingRoutingRules")
+  bookingDistributions    BookingPayoutDistribution[]  @relation("ListingDistributions")
 
   @@index([hostId])
   @@index([published])
@@ -1115,6 +1157,8 @@ model Booking {
   moderationReports ModerationReport[]
   cleaningTasks     CleaningTask[]
   operatingExpenses OperatingExpense[]
+  payoutDistributions BookingPayoutDistribution[] @relation("BookingDistributions")
+  taxDocuments      HostTaxDocument[]           @relation("BookingTaxDocuments")
 
   @@index([userId, createdAt])
   @@index([listingId])
@@ -1989,6 +2033,7 @@ model TaxJurisdiction {
 
   rules         TaxRule[]
   registrations TaxRegistration[]
+  taxpayerProfiles HostTaxpayerProfile[]
 
   @@index([country])
   @@index([country, city])
@@ -2051,6 +2096,7 @@ model ListingTax {
 model TaxRegistration {
   id                 String                @id @default(cuid())
   hostId             String
+  taxpayerProfileId  String?
   jurisdictionId     String?
   taxType            String // "VAT_ID", "GST_NUMBER", "TOURIST_TAX_ID", "MUNICIPAL_LICENSE"
   registrationNumber String
@@ -2060,15 +2106,19 @@ model TaxRegistration {
   status             TaxRegistrationStatus @default(UNVERIFIED)
   verifiedAt         DateTime?
   verifiedById       String?
+  rejectionReason    String?               @db.Text
   notes              String?               @db.Text
   createdAt          DateTime              @default(now())
   updatedAt          DateTime              @updatedAt
 
-  host         User             @relation(fields: [hostId], references: [id], onDelete: Cascade)
-  jurisdiction TaxJurisdiction? @relation(fields: [jurisdictionId], references: [id], onDelete: SetNull)
+  host            User                 @relation(fields: [hostId], references: [id], onDelete: Cascade)
+  jurisdiction    TaxJurisdiction?     @relation(fields: [jurisdictionId], references: [id], onDelete: SetNull)
+  taxpayerProfile HostTaxpayerProfile? @relation("ProfileTaxRegistrations", fields: [taxpayerProfileId], references: [id], onDelete: SetNull)
+  taxDocuments    HostTaxDocument[]    @relation("RegistrationTaxDocuments")
 
   @@index([hostId])
   @@index([hostId, taxType])
+  @@index([taxpayerProfileId])
 }
 
 model ReservationTax {
@@ -2467,3 +2517,200 @@ model CmsScheduledAction {
   @@index([scheduledFor])
   @@index([createdById])
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Host Payout Methods (Phase 3 Relational Architecture)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model HostPayoutMethod {
+  id                        String                 @id @default(cuid())
+  hostId                    String
+  type                      PayoutMethodType       @default(SAUDI_IBAN)
+  accountHolderName         String
+  bankName                  String
+  bankCode                  String?
+  country                   String                 @default("SA")
+  currency                  String                 @default("SAR")
+  ibanMasked                String
+  ibanLast4                 String
+  encryptedAccountReference String?                @db.Text
+  accountFingerprint        String?
+  isDefault                 Boolean                @default(false)
+  status                    HostPayoutMethodStatus @default(PENDING_VERIFICATION)
+  verifiedAt                DateTime?
+  verifiedById              String?
+  rejectionReason           String?                @db.Text
+  metadata                  Json?
+  createdAt                 DateTime               @default(now())
+  updatedAt                 DateTime               @updatedAt
+  disabledAt                DateTime?
+
+  host                      User                   @relation("HostPayoutMethods", fields: [hostId], references: [id], onDelete: Cascade)
+  routingRules              PayoutRoutingRule[]    @relation("MethodRoutingRules")
+  bookingDistributions      BookingPayoutDistribution[] @relation("MethodDistributions")
+
+  @@unique([hostId, accountFingerprint])
+  @@index([hostId, isDefault])
+  @@index([status])
+  @@index([hostId, status])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Payout Routing Rules & Multi-Destination Split Engine (Phase 4)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model PayoutRoutingRule {
+  id                   String            @id @default(cuid())
+  hostId               String            // Primary host / owner
+  listingId            String            // Listing this rule governs
+  recipientUserId      String            // Primary host or co-host receiving the split
+  payoutMethodId       String            // The payout method of the recipient
+  ruleType             RoutingRuleType   @default(PERCENTAGE_SPLIT)
+  allocationPercentage Float             // e.g. 80.0 for 80% (must total 100% for the listing)
+  status               RoutingRuleStatus @default(ACTIVE)
+  effectiveFrom        DateTime          @default(now())
+  effectiveUntil       DateTime?
+  disabledAt           DateTime?
+  createdBy            String?
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+
+  host                 User              @relation("HostRoutingRules", fields: [hostId], references: [id], onDelete: Cascade)
+  listing              Listing           @relation("ListingRoutingRules", fields: [listingId], references: [id], onDelete: Cascade)
+  recipientUser        User              @relation("RecipientRoutingRules", fields: [recipientUserId], references: [id], onDelete: Cascade)
+  payoutMethod         HostPayoutMethod  @relation("MethodRoutingRules", fields: [payoutMethodId], references: [id], onDelete: Restrict)
+  bookingDistributions BookingPayoutDistribution[] @relation("RuleDistributions")
+
+  @@index([hostId, listingId])
+  @@index([listingId, status])
+  @@index([recipientUserId])
+  @@index([payoutMethodId])
+}
+
+model BookingPayoutDistribution {
+  id                   String             @id @default(cuid())
+  bookingId            String
+  listingId            String
+  recipientUserId      String
+  payoutMethodId       String
+  routingRuleId        String?
+  amountCents          Int                // Allocated amount in minor units (halalas)
+  currency             String             @default("SAR")
+  percentage           Float              // Snapshot percentage
+  status               DistributionStatus @default(SCHEDULED)
+  isHeld               Boolean            @default(false)
+  holdType             String?
+  holdReason           String?            @db.Text
+  heldAt               DateTime?
+  heldBy               String?
+  batchReference       String?            // Batch / SARIE settlement export reference
+  settlementReference  String?            // Bank reference
+  exportedAt           DateTime?
+  paidAt               DateTime?
+  failureReason        String?            @db.Text
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  booking              Booking            @relation("BookingDistributions", fields: [bookingId], references: [id], onDelete: Cascade)
+  listing              Listing            @relation("ListingDistributions", fields: [listingId], references: [id], onDelete: Cascade)
+  recipientUser        User               @relation("RecipientDistributions", fields: [recipientUserId], references: [id], onDelete: Cascade)
+  payoutMethod         HostPayoutMethod   @relation("MethodDistributions", fields: [payoutMethodId], references: [id], onDelete: Restrict)
+  routingRule          PayoutRoutingRule? @relation("RuleDistributions", fields: [routingRuleId], references: [id], onDelete: SetNull)
+
+  @@index([bookingId])
+  @@index([recipientUserId, status])
+  @@index([listingId])
+  @@index([batchReference])
+  @@index([status])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Phase 5 — Host Taxpayer Profiles & Tax Documents
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum TaxpayerType {
+  INDIVIDUAL
+  BUSINESS
+}
+
+enum TaxpayerVerificationStatus {
+  DRAFT
+  PENDING_VERIFICATION
+  VERIFIED
+  REJECTED
+}
+
+enum HostTaxDocumentType {
+  ANNUAL_TAX_SUMMARY
+  BOOKING_TAX_INVOICE
+  VAT_CERTIFICATE
+  TAX_REGISTRATION_RECORD
+}
+
+model HostTaxpayerProfile {
+  id                          String                     @id @default(cuid())
+  hostId                      String                     @unique
+  taxpayerType                TaxpayerType               @default(INDIVIDUAL)
+  legalName                   String
+  businessName                String?
+  businessRegistrationNumber  String?
+  countryCode                 String                     @default("SA")
+  taxIdentifierType           String                     @default("NIN") // "NIN", "IQAMA", "TIN", "CR", "OTHER"
+  encryptedTaxIdentifier      String                     @db.Text
+  maskedTaxIdentifier         String
+  taxIdentifierLast4          String
+  addressLine1                String?
+  addressLine2                String?
+  city                        String?
+  region                      String?
+  postalCode                  String?
+  jurisdictionId              String?
+  status                      TaxpayerVerificationStatus @default(PENDING_VERIFICATION)
+  verifiedAt                  DateTime?
+  verifiedById                String?
+  rejectionReason             String?                    @db.Text
+  notes                       String?                    @db.Text
+  createdAt                   DateTime                   @default(now())
+  updatedAt                   DateTime                   @updatedAt
+
+  host                        User                       @relation("UserTaxpayerProfile", fields: [hostId], references: [id], onDelete: Cascade)
+  jurisdiction                TaxJurisdiction?           @relation(fields: [jurisdictionId], references: [id], onDelete: SetNull)
+  taxRegistrations            TaxRegistration[]          @relation("ProfileTaxRegistrations")
+  taxDocuments                HostTaxDocument[]          @relation("ProfileTaxDocuments")
+
+  @@index([hostId])
+  @@index([status])
+  @@index([countryCode])
+}
+
+model HostTaxDocument {
+  id                  String              @id @default(cuid())
+  hostId              String
+  taxpayerProfileId   String?
+  taxRegistrationId   String?
+  bookingId           String?
+  documentType        HostTaxDocumentType
+  title               String
+  description         String?
+  taxYear             Int
+  taxPeriod           String?             @default("ANNUAL") // "ANNUAL", "Q1", "Q2", "Q3", "Q4", "MONTHLY"
+  fileFormat          String              @default("PDF")    // "PDF", "CSV"
+  fileSize            Int?
+  storageReference    String              @db.Text
+  status              String              @default("READY")  // "READY", "GENERATING", "FAILED"
+  documentVersion     Int                 @default(1)
+  generatedAt         DateTime            @default(now())
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  host                User                 @relation("UserTaxDocuments", fields: [hostId], references: [id], onDelete: Cascade)
+  taxpayerProfile     HostTaxpayerProfile? @relation("ProfileTaxDocuments", fields: [taxpayerProfileId], references: [id], onDelete: SetNull)
+  taxRegistration     TaxRegistration?     @relation("RegistrationTaxDocuments", fields: [taxRegistrationId], references: [id], onDelete: SetNull)
+  booking             Booking?             @relation("BookingTaxDocuments", fields: [bookingId], references: [id], onDelete: SetNull)
+
+  @@index([hostId, taxYear])
+  @@index([hostId, documentType])
+  @@index([bookingId])
+  @@index([status])
+}
+

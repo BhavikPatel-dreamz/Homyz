@@ -18,9 +18,12 @@ export const POST = apiHandler(async (req: NextRequest) => {
   const body = await req.json();
 
   const method = await payoutService.addHostPayoutMethod(actor.id, {
+    type: body.type,
     accountHolderName: body.accountHolderName,
     bankName: body.bankName,
     iban: body.iban,
+    paypalEmail: body.paypalEmail,
+    country: body.country,
     routingCode: body.routingCode,
     currency: body.currency,
     isDefault: body.isDefault,

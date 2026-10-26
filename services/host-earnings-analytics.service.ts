@@ -6,7 +6,7 @@ import { authorize } from "@/lib/permissions/authorize";
 import { assertHostPermission } from "@/lib/permissions/host-permissions-server";
 import { prisma } from "@/lib/db/prisma";
 import { bookingDateKey, shiftBookingDateKey } from "@/lib/booking/booking-date";
-import { extractStoredHostPayout, isStoredBookingPayoutEligible } from "@/lib/booking/booking-financials";
+import { extractStoredGuestTotal, extractStoredHostPayout, isStoredBookingPayoutEligible } from "@/lib/booking/booking-financials";
 import { normalizeCurrencyCode } from "@/lib/currency";
 import {
   calculateDashboardInventory,
@@ -25,6 +25,11 @@ export interface HostEarningsAnalyticsQuery {
   comparisonStartDate?: string;
   comparisonEndDate?: string;
   currency?: string;
+  propertyPage?: number;
+  propertyPageSize?: number;
+  propertySearch?: string;
+  propertySort?: "net" | "gross" | "revpan" | "occupancy" | "bookings" | "nightly_rate";
+  propertyStatus?: "all" | "with_earnings" | "without_earnings";
 }
 
 export interface HostEarningsAnalyticsData {
@@ -38,13 +43,21 @@ export interface HostEarningsAnalyticsData {
   currency: string | null;
   listings: Array<{ id: string; title: string }>;
   revenue: {
+    recordedGrossBookingRevenueCents: number | null;
     eligibleAccommodationRevenueCents: number;
     netHostEarningsCents: number;
+    hostServiceFeesCents: number;
+    extraGuestFeesCents: number;
+    petFeesCents: number;
+    cleaningFeesCents: number;
+    taxesCollectedForHostCents: number;
     qualifyingBookingsCount: number;
     completedNightsCount: number;
     revenuePerBookingCents: number | null;
     netPerBookingCents: number | null;
+    averageRealizedNightlyRateCents: number | null;
     previousNetHostEarningsCents: number;
+    previousAccommodationRevenueCents: number;
   };
   revpan: {
     valueCents: number | null;
@@ -75,8 +88,22 @@ export interface HostEarningsAnalyticsData {
     label: string;
     accommodationRevenueCents: number;
     netHostEarningsCents: number;
+    hostServiceFeesCents: number;
     qualifyingBookingsCount: number;
   }>;
+  payoutBreakdown: {
+    accommodationCents: number;
+    cleaningFeesCents: number;
+    hostServiceFeesCents: number;
+    taxesCollectedForHostCents: number;
+    netHostPayoutCents: number;
+    message: string;
+  };
+  bookingSources: {
+    status: "UNATTRIBUTED";
+    message: string;
+    sources: Array<{ source: "UNATTRIBUTED"; qualifyingBookingsCount: number; eligibleAccommodationRevenueCents: number; netHostEarningsCents: number; contributionPercentage: number | null }>;
+  };
   properties: Array<{
     listingId: string;
     title: string;
@@ -85,7 +112,16 @@ export interface HostEarningsAnalyticsData {
     revpanCents: number | null;
     qualifyingBookingsCount: number;
     bookableNights: number;
+    bookedNights: number;
+    occupancyRatePercentage: number;
+    averageRealizedNightlyRateCents: number | null;
   }>;
+  propertyPagination: { page: number; pageSize: number; total: number; totalPages: number };
+  propertySummary: {
+    eligibleListingsCount: number;
+    listingsWithEarningsCount: number;
+    highestEarningProperty: { title: string; netHostEarningsCents: number } | null;
+  };
   dataQuality: {
     unavailableFinancialSnapshotCount: number;
     costRecordingAvailable: true;
@@ -102,7 +138,7 @@ type AnalyticsBooking = DashboardInventoryBooking & {
 };
 
 function emptyTotals() {
-  return { accommodation: 0, net: 0, bookings: 0, nights: 0 };
+  return { accommodation: 0, net: 0, bookings: 0, nights: 0, gross: 0, grossCount: 0, hostServiceFees: 0, extraGuestFees: 0, petFees: 0, cleaningFees: 0, taxes: 0 };
 }
 
 function moneyPer(total: number, divisor: number) {
@@ -169,7 +205,7 @@ export const hostEarningsAnalyticsService = {
     const previous = emptyTotals();
     let unavailableFinancialSnapshotCount = 0;
     const propertyTotals = new Map(scopedListings.map((listing) => [listing.id, emptyTotals()]));
-    const trendMap = new Map<string, { accommodation: number; net: number; bookings: number }>();
+    const trendMap = new Map<string, { accommodation: number; net: number; fees: number; bookings: number }>();
 
     for (const booking of bookings as AnalyticsBooking[]) {
       if (booking.endDate > now) continue;
@@ -189,6 +225,16 @@ export const hostEarningsAnalyticsService = {
       const nights = Math.max(0, Math.round((booking.endDate.getTime() - booking.startDate.getTime()) / 86_400_000));
       target.accommodation += payout.accommodationSubtotal;
       target.net += payout.netHostPayout;
+      target.hostServiceFees += payout.hostServiceFee;
+      target.extraGuestFees += payout.extraGuestFee;
+      target.petFees += payout.petFee;
+      target.cleaningFees += payout.cleaningFee;
+      target.taxes += payout.taxesCollectedForHost;
+      const gross = extractStoredGuestTotal(booking);
+      if (gross !== null) {
+        target.gross += gross;
+        target.grossCount++;
+      }
       target.bookings++;
       target.nights += nights;
       if (target === current) {
@@ -200,9 +246,10 @@ export const hostEarningsAnalyticsService = {
           property.nights += nights;
         }
         const dateKey = bookingDateKey(booking.endDate);
-        const point = trendMap.get(dateKey) ?? { accommodation: 0, net: 0, bookings: 0 };
+        const point = trendMap.get(dateKey) ?? { accommodation: 0, net: 0, fees: 0, bookings: 0 };
         point.accommodation += payout.accommodationSubtotal;
         point.net += payout.netHostPayout;
+        point.fees += payout.hostServiceFee;
         point.bookings++;
         trendMap.set(dateKey, point);
       }
@@ -241,6 +288,9 @@ export const hostEarningsAnalyticsService = {
         revpanCents: moneyPer(totals.accommodation, listingInventory.bookableNights),
         qualifyingBookingsCount: totals.bookings,
         bookableNights: listingInventory.bookableNights,
+        bookedNights: listingInventory.bookedNights,
+        occupancyRatePercentage: listingInventory.ratePercentage,
+        averageRealizedNightlyRateCents: moneyPer(totals.accommodation, totals.nights),
       };
     });
 
@@ -261,6 +311,30 @@ export const hostEarningsAnalyticsService = {
     const qualifyingCompletedStays = current.bookings;
     const costCoverage = expenses.length === 0 ? "NO_EXPENSES_RECORDED" as const : "PARTIAL_RECORDED_COSTS" as const;
     const estimatedProfit = expenses.length ? current.net - expenseTotal : null;
+    const propertySearch = query.propertySearch?.trim().toLocaleLowerCase();
+    const propertyStatus = query.propertyStatus ?? "all";
+    const propertySort = query.propertySort ?? "net";
+    const filteredProperties = properties.filter((property) => {
+      if (propertySearch && !property.title.toLocaleLowerCase().includes(propertySearch)) return false;
+      if (propertyStatus === "with_earnings") return property.netHostEarningsCents !== 0;
+      if (propertyStatus === "without_earnings") return property.netHostEarningsCents === 0;
+      return true;
+    }).sort((left, right) => {
+      const metric = (property: typeof left) => {
+        if (propertySort === "gross") return property.eligibleAccommodationRevenueCents;
+        if (propertySort === "revpan") return property.revpanCents ?? -1;
+        if (propertySort === "occupancy") return property.occupancyRatePercentage;
+        if (propertySort === "bookings") return property.qualifyingBookingsCount;
+        if (propertySort === "nightly_rate") return property.averageRealizedNightlyRateCents ?? -1;
+        return property.netHostEarningsCents;
+      };
+      return metric(right) - metric(left) || left.title.localeCompare(right.title);
+    });
+    const propertyPageSize = Math.min(50, Math.max(10, query.propertyPageSize ?? 10));
+    const propertyPageCount = Math.max(1, Math.ceil(filteredProperties.length / propertyPageSize));
+    const propertyPage = Math.min(propertyPageCount, Math.max(1, query.propertyPage ?? 1));
+    const pagedProperties = filteredProperties.slice((propertyPage - 1) * propertyPageSize, propertyPage * propertyPageSize);
+    const highestEarningProperty = properties.reduce<typeof properties[number] | null>((highest, property) => !highest || property.netHostEarningsCents > highest.netHostEarningsCents ? property : highest, null);
 
     return {
       reportingPeriod: {
@@ -273,13 +347,21 @@ export const hostEarningsAnalyticsService = {
       currency: selectedCurrency,
       listings: listings.map((listing) => ({ id: listing.id, title: listing.title })),
       revenue: {
+        recordedGrossBookingRevenueCents: current.grossCount === current.bookings ? current.gross : null,
         eligibleAccommodationRevenueCents: current.accommodation,
         netHostEarningsCents: current.net,
+        hostServiceFeesCents: current.hostServiceFees,
+        extraGuestFeesCents: current.extraGuestFees,
+        petFeesCents: current.petFees,
+        cleaningFeesCents: current.cleaningFees,
+        taxesCollectedForHostCents: current.taxes,
         qualifyingBookingsCount: current.bookings,
         completedNightsCount: current.nights,
         revenuePerBookingCents: moneyPer(current.accommodation, current.bookings),
         netPerBookingCents: moneyPer(current.net, current.bookings),
+        averageRealizedNightlyRateCents: moneyPer(current.accommodation, current.nights),
         previousNetHostEarningsCents: previous.net,
+        previousAccommodationRevenueCents: previous.accommodation,
       },
       revpan: {
         valueCents: moneyPer(current.accommodation, inventory.bookableNights),
@@ -314,9 +396,31 @@ export const hostEarningsAnalyticsService = {
         label: new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", timeZone: "UTC" }).format(new Date(`${dateKey}T00:00:00.000Z`)),
         accommodationRevenueCents: point.accommodation,
         netHostEarningsCents: point.net,
+        hostServiceFeesCents: point.fees,
         qualifyingBookingsCount: point.bookings,
       })),
-      properties,
+      payoutBreakdown: {
+        accommodationCents: current.accommodation,
+        cleaningFeesCents: current.cleaningFees,
+        hostServiceFeesCents: current.hostServiceFees,
+        taxesCollectedForHostCents: current.taxes,
+        netHostPayoutCents: current.net,
+        message: "Amounts come from immutable eligible booking payout snapshots. They represent realized settlement eligibility, not payment-transfer status.",
+      },
+      bookingSources: {
+        status: "UNATTRIBUTED",
+        message: "Booking source attribution is not recorded on reservations in this workspace. The eligible completed-stay population is shown as unattributed rather than assigned to an invented channel.",
+        sources: [{ source: "UNATTRIBUTED", qualifyingBookingsCount: current.bookings, eligibleAccommodationRevenueCents: current.accommodation, netHostEarningsCents: current.net, contributionPercentage: current.accommodation > 0 ? 100 : null }],
+      },
+      properties: pagedProperties,
+      propertyPagination: { page: propertyPage, pageSize: propertyPageSize, total: filteredProperties.length, totalPages: propertyPageCount },
+      propertySummary: {
+        eligibleListingsCount: scopedListings.length,
+        listingsWithEarningsCount: properties.filter((property) => property.netHostEarningsCents !== 0).length,
+        highestEarningProperty: highestEarningProperty && highestEarningProperty.netHostEarningsCents !== 0
+          ? { title: highestEarningProperty.title, netHostEarningsCents: highestEarningProperty.netHostEarningsCents }
+          : null,
+      },
       dataQuality: { unavailableFinancialSnapshotCount, costRecordingAvailable: true },
     };
   },

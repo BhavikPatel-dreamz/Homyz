@@ -350,6 +350,15 @@ export class TaxService {
     return record;
   }
 
+  /** Lists only the authenticated host's tax registrations for account settings. */
+  async getTaxRegistrations(actor: AuthUser) {
+    return prisma.taxRegistration.findMany({
+      where: { hostId: actor.id },
+      include: { jurisdiction: true },
+      orderBy: { createdAt: "desc" },
+    });
+  }
+
   /**
    * Generates a tax calculation simulation/preview.
    */

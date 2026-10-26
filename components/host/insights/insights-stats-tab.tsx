@@ -36,28 +36,28 @@ export function InsightsStatsTab({ data, entitlements, periodLabel }: InsightsSt
           : "Observed listing traffic",
       };
   const quickStatsCards = [
-    { label: "Overall rating", value: quickStats.overallRating === null ? "—" : `${quickStats.overallRating.toFixed(2)} ★`, detail: quickStats.totalReviewsCount ? "Eligible published guest rating" : "No eligible reviews yet", href: reviewsHref },
-    { label: "Total reviews", value: `${quickStats.totalReviewsCount}`, detail: "Eligible published guest reviews", href: reviewsHref },
-    { label: "Response rate", value: quickStats.responseRatePercentage === null ? "—" : `${quickStats.responseRatePercentage}%`, detail: quickStats.responseRatePercentage === null ? "No qualifying inquiries for this period" : `${quickStats.responseInquiryCount} qualifying inquiries`, href: "/host/insights/stats/response-rate" },
-    { label: "Net earnings", value: formatCurrency(earnings.netEarningsCents, performance.currency), detail: `Realized in ${periodLabel}`, href: "/host/insights/stats/earnings" },
+    { label: "Occupancy", value: `${performance.occupancyRatePercentage}%`, detail: `${performance.bookedNights} booked of ${performance.totalBookableNights} bookable nights`, href: "/host/insights/stats/occupancy" },
     { label: "Bookings", value: `${quickStats.confirmedBookingsCount}`, detail: `Confirmed stays starting in ${periodLabel}`, href: "/host/insights/stats/bookings" },
+    { label: "Average stay", value: performance.completedStaysCount ? `${performance.averageStayNights} nights` : "—", detail: performance.completedStaysCount ? `${performance.completedStaysCount} completed stays in period` : "No completed stays in this period", href: "/host/insights/stats/stay-length" },
+    { label: "Response rate", value: quickStats.responseRatePercentage === null ? "—" : `${quickStats.responseRatePercentage}%`, detail: quickStats.responseRatePercentage === null ? "No qualifying inquiries for this period" : `${quickStats.responseInquiryCount} qualifying inquiries`, href: "/host/insights/stats/response-rate" },
     { label: "Listing views", value: viewsTelemetry.value, detail: viewsTelemetry.detail, href: "/host/insights/listing-performance" },
-  ];
-  const detailCards = [
-    { title: "Occupancy rate", value: `${performance.occupancyRatePercentage}%`, detail: `${performance.bookedNights} booked of ${performance.totalBookableNights} bookable nights`, href: "/host/insights/stats/occupancy" },
-    { title: "Average nightly rate", value: formatCurrency(performance.averageDailyRateCents, performance.currency), detail: `Net realized per booked night in ${periodLabel}`, href: "/host/insights/stats/rates" },
-    { title: "Average booking value", value: formatCurrency(performance.averageBookingValueCents, performance.currency), detail: "Net payout per eligible completed stay", href: "/host/insights/stats/rates" },
-    { title: "Average stay length", value: performance.completedStaysCount ? `${performance.averageStayNights} nights` : "—", detail: performance.completedStaysCount ? `${performance.completedStaysCount} completed stays in period` : "No completed stays in this period", href: "/host/insights/stats/stay-length" },
-    { title: "Cancellation rate", value: `${quality.hostCancellationRatePercentage}%`, detail: `${quality.totalCancelledCount} cancellations across host records`, href: "/host/insights/stats/cancellations" },
-    { title: "Response time", value: quality.averageResponseTimeMinutes === null ? "—" : quality.averageResponseTimeMinutes < 60 ? `${quality.averageResponseTimeMinutes} min` : `${Math.round(quality.averageResponseTimeMinutes / 60)} hr`, detail: quality.averageResponseTimeMinutes === null ? "No qualifying inquiries for this period" : "First response to guest inquiries", href: "/host/insights/stats/response-rate" },
     {
-      title: "Booking conversion",
+      label: "Booking conversion",
       value: analyticsLimitations.conversionRate.percentage === null ? "—" : `${analyticsLimitations.conversionRate.percentage}%`,
       detail: analyticsLimitations.conversionRate.status === "ACTIVE"
         ? `${analyticsLimitations.conversionRate.attributedConfirmedBookings} attributed confirmed booking${analyticsLimitations.conversionRate.attributedConfirmedBookings === 1 ? "" : "s"} from ${analyticsLimitations.pageViews.count} listing view${analyticsLimitations.pageViews.count === 1 ? "" : "s"}`
         : analyticsLimitations.conversionRate.message,
       href: "/host/insights/listing-performance",
     },
+  ];
+  const detailCards = [
+    { title: "Overall rating", value: quickStats.overallRating === null ? "—" : `${quickStats.overallRating.toFixed(2)} ★`, detail: quickStats.totalReviewsCount ? "Eligible published guest rating" : "No eligible reviews yet", href: reviewsHref },
+    { title: "Total reviews", value: `${quickStats.totalReviewsCount}`, detail: "Eligible published guest reviews", href: reviewsHref },
+    { title: "Net earnings", value: formatCurrency(earnings.netEarningsCents, performance.currency), detail: `Realized in ${periodLabel}`, href: "/host/insights/stats/earnings" },
+    { title: "Average nightly rate", value: formatCurrency(performance.averageDailyRateCents, performance.currency), detail: `Net realized per booked night in ${periodLabel}`, href: "/host/insights/stats/rates" },
+    { title: "Average booking value", value: formatCurrency(performance.averageBookingValueCents, performance.currency), detail: "Net payout per eligible completed stay", href: "/host/insights/stats/rates" },
+    { title: "Host cancellation rate", value: `${quality.hostCancellationRatePercentage}%`, detail: `${quality.totalCancelledCount} host cancellations across all-time records`, href: "/host/insights/stats/cancellations" },
+    { title: "Response time", value: quality.averageResponseTimeMinutes === null ? "—" : quality.averageResponseTimeMinutes < 60 ? `${quality.averageResponseTimeMinutes} min` : `${Math.round(quality.averageResponseTimeMinutes / 60)} hr`, detail: quality.averageResponseTimeMinutes === null ? "No qualifying inquiries for this period" : "First response to guest inquiries", href: "/host/insights/stats/response-rate" },
   ];
 
   return <div className="space-y-10">
@@ -95,7 +95,9 @@ export function InsightsStatsTab({ data, entitlements, periodLabel }: InsightsSt
       ) : (
         <div className="mt-6 rounded-2xl border border-white/15 bg-white/10 p-4 text-sm text-zinc-200">
           <p className="font-semibold text-white">Dashboard Plus feature</p>
-          <p className="mt-1 text-xs leading-relaxed text-zinc-300">Advanced booking behavior is available with Dashboard Plus. Subscription checkout is not configured in this deployment, so no purchase is simulated.</p>
+          <p className="mt-1 text-xs leading-relaxed text-zinc-300">
+            Unlock advanced booking intelligence, lead-time distributions, booking pacing heatmaps, and multi-property portfolio comparisons. Contact support or an administrator to activate Dashboard Plus.
+          </p>
         </div>
       )}
     </section>
@@ -126,7 +128,32 @@ function QuickStat({ label, value, detail, href, muted = false }: { label: strin
 function ComparisonChart({ title, current, previous, detail, href, unit = "", prefix = "" }: { title: string; current: number; previous: number; detail: string; href: string; unit?: string; prefix?: string }) {
   const maximum = Math.max(current, previous, 1);
   const value = (amount: number) => prefix ? `${prefix} ${Math.round(amount).toLocaleString()}` : `${amount.toLocaleString()}${unit}`;
-  return <Link href={href} className="group rounded-3xl border border-zinc-200 bg-white p-5 shadow-xs transition hover:border-zinc-300 hover:shadow-sm"><div className="flex items-center justify-between"><h3 className="text-sm font-bold text-zinc-950">{title}</h3><span className="text-zinc-300 group-hover:text-zinc-950">→</span></div><div className="mt-6 flex h-32 items-end gap-4 border-b border-zinc-200 pb-2"><ChartBar label="Current" value={current} max={maximum} /><ChartBar label="Previous" value={previous} max={maximum} subtle /></div><div className="mt-3 flex items-baseline justify-between gap-3"><p className="text-xl font-bold text-zinc-950">{value(current)}</p><p className="text-xs text-zinc-500">{value(previous)} previous</p></div><p className="mt-2 text-[11px] leading-relaxed text-zinc-500">{detail}</p></Link>;
+  const deltaPct = previous > 0
+    ? Math.round(((current - previous) / previous) * 100)
+    : null;
+
+  return <Link href={href} className="group rounded-3xl border border-zinc-200 bg-white p-5 shadow-xs transition hover:border-zinc-300 hover:shadow-sm">
+    <div className="flex items-center justify-between">
+      <h3 className="text-sm font-bold text-zinc-950">{title}</h3>
+      <span className="text-zinc-300 group-hover:text-zinc-950">→</span>
+    </div>
+    <div className="mt-6 flex h-32 items-end gap-4 border-b border-zinc-200 pb-2">
+      <ChartBar label="Current" value={current} max={maximum} />
+      <ChartBar label="Previous" value={previous} max={maximum} subtle />
+    </div>
+    <div className="mt-3 flex items-baseline justify-between gap-3">
+      <div className="flex items-baseline gap-2">
+        <p className="text-xl font-bold text-zinc-950">{value(current)}</p>
+        {deltaPct !== null && (
+          <span className={`text-xs font-semibold ${deltaPct >= 0 ? "text-emerald-700" : "text-rose-600"}`}>
+            {deltaPct >= 0 ? "↑" : "↓"} {Math.abs(deltaPct)}%
+          </span>
+        )}
+      </div>
+      <p className="text-xs text-zinc-500">{value(previous)} prior</p>
+    </div>
+    <p className="mt-2 text-[11px] leading-relaxed text-zinc-500">{detail}</p>
+  </Link>;
 }
 
 function ChartBar({ label, value, max, subtle = false }: { label: string; value: number; max: number; subtle?: boolean }) {

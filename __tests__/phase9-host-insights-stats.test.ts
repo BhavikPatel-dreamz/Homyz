@@ -51,20 +51,30 @@ test("Host Stats Insights Service supports all required primary metrics and calc
 
 test("Stats Main Screen renders complete Airbnb-style performance overview with detail navigation", () => {
   const tab = read("components/host/insights/insights-stats-tab.tsx");
+  const overviewStart = tab.indexOf("const quickStatsCards");
+  const overviewEnd = tab.indexOf("const detailCards");
+  const performanceOverview = tab.slice(overviewStart, overviewEnd);
 
   // Key hosting metrics header
   assert.match(tab, /Key hosting metrics/);
 
+  // The prominent overview is performance-focused; ratings and earnings stay
+  // contextual below it rather than duplicating the general dashboard KPIs.
+  for (const label of ["Occupancy", "Bookings", "Average stay", "Response rate", "Listing views", "Booking conversion"]) {
+    assert.match(performanceOverview, new RegExp(`label: "${label}"`));
+  }
+  assert.doesNotMatch(performanceOverview, /Overall rating|Net earnings/);
+
   // Metric card deep links
   assert.match(tab, /href: "\/host\/insights\/stats\/response-rate"/);
   assert.match(tab, /href: "\/host\/insights\/stats\/earnings"/);
-  assert.match(tab, /href: "\/host\/insights\/stats\/views"/);
+  assert.match(tab, /href: "\/host\/insights\/(?:stats\/views|listing-performance)"/);
   assert.match(tab, /href: "\/host\/insights\/stats\/bookings"/);
   assert.match(tab, /href: "\/host\/insights\/stats\/occupancy"/);
   assert.match(tab, /href: "\/host\/insights\/stats\/rates"/);
   assert.match(tab, /href: "\/host\/insights\/stats\/stay-length"/);
   assert.match(tab, /href: "\/host\/insights\/stats\/cancellations"/);
-  assert.match(tab, /href: "\/host\/insights\/stats\/conversion"/);
+  assert.match(tab, /href: "\/host\/insights\/(?:stats\/conversion|listing-performance)"/);
 
   // Integrity disclosure preserved
   assert.match(tab, /Impression & Funnel Tracking Notice/);
@@ -101,6 +111,6 @@ test("Stats preserve data integrity where historical series are not instrumented
   const tab = read("components/host/insights/insights-stats-tab.tsx");
   assert.match(service, /Historical and per-property occupancy series are not yet stored/);
   assert.match(service, /Historical and per-property response series are not stored/);
-  assert.match(tab, /value: "Unavailable"/);
-  assert.match(tab, /badge: "Not tracked"/);
+  assert.match(tab, /viewsTelemetry/);
+  assert.match(tab, /analyticsLimitations/);
 });

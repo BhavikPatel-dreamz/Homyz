@@ -9,7 +9,8 @@ test("Phase 5 provides a URL-backed owned transaction-detail API and page", () =
   assert.ok(fs.existsSync(path.join(process.cwd(), "app/api/v1/host/earnings/transactions/[transactionId]/route.ts")));
   assert.ok(fs.existsSync(path.join(process.cwd(), "app/(protected)/host/earnings/transactions/[transactionId]/page.tsx")));
   const service = read("services/payout.service.ts");
-  assert.match(service, /where: \{ id: transactionId, listing: \{ hostId \} \}/);
+  assert.match(service, /listing: accessibleHostListingWhere\(actor\)/);
+  assert.match(service, /assertHostPermission\(actorId, "earnings\.view"\)/);
   assert.match(service, /getHostEarningsTransactionDetails/);
   assert.match(service, /payoutMethodMasked/);
 });

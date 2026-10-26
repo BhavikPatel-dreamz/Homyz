@@ -74,6 +74,11 @@ function getPrismaClient(): PrismaClient {
     typeof existing.appSettings !== "undefined" &&
     typeof existing.backgroundJob !== "undefined" &&
     typeof existing.hostEntitlementGrant !== "undefined" &&
+    typeof existing.hostPayoutMethod !== "undefined" &&
+    typeof existing.payoutRoutingRule !== "undefined" &&
+    typeof existing.bookingPayoutDistribution !== "undefined" &&
+    typeof existing.hostTaxpayerProfile !== "undefined" &&
+    typeof existing.hostTaxDocument !== "undefined" &&
     typeof existing.listing !== "undefined"
   ) {
     return existing;

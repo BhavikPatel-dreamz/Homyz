@@ -25,6 +25,10 @@ export default async function BookingAnalyticsPage({ searchParams }: { searchPar
     startDate: single(params.startDate), endDate: single(params.endDate),
     comparisonStartDate: single(params.comparisonStartDate), comparisonEndDate: single(params.comparisonEndDate),
     currency: single(params.currency) || (await cookies()).get("homyz_display_currency")?.value || "SAR",
+    propertyPage: Number(single(params.propertyPage) || "1"),
+    propertyPageSize: Number(single(params.propertyPageSize) || "10"),
+    propertySearch: single(params.propertySearch),
+    propertySort: single(params.propertySort) as "bookings" | "occupancy" | "rate" | "revenue" | "cancellation" | undefined,
   });
   return <div className="flex min-h-screen flex-col bg-white pb-[calc(110px+env(safe-area-inset-bottom))] font-sans text-zinc-900 sm:pb-0"><HostHeader /><main className={HOST_REPORTING_MAIN_CLASS}><Container className={HOST_REPORTING_CONTAINER_CLASS}><HostBookingAnalyticsClient initialData={data} /></Container></main></div>;
 }

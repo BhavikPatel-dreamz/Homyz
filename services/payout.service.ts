@@ -4,13 +4,16 @@ import { prisma } from "@/lib/db/prisma";
 import { AppError } from "@/lib/api/errors";
 import {
   Role,
+  UserStatus,
   BookingStatus,
   PaymentStatus,
   RefundStatus,
   QualityIncidentStatus,
+  DistributionStatus,
 } from "@/generated/prisma/enums";
 import type { AuthUser } from "@/lib/auth/types";
 import { assertRole } from "@/lib/permissions/authorize";
+import { assertHostPermission } from "@/lib/permissions/host-permissions-server";
 import { auditService } from "@/services/audit.service";
 import { notificationService } from "@/services/notification.service";
 import {
@@ -23,9 +26,19 @@ import type { Prisma } from "@/generated/prisma/client";
 import { bookingDateKey } from "@/lib/booking/booking-date";
 import {
   resolveTimeframeBounds,
+  resolveComparisonPeriod,
   calculateDelta,
   type TimeframeGranularity,
 } from "@/lib/dashboard/reporting-filter";
+import { accessibleHostListingWhere } from "@/lib/permissions/host-listing-access";
+import {
+  encryptAccountIdentifier,
+  decryptAccountIdentifier,
+  generateAccountFingerprint,
+  maskEmail,
+} from "@/lib/security/payout-encryption";
+import { payoutRoutingService } from "@/services/payout-routing.service";
+import { paypalPayoutService } from "@/services/paypal-payout.service";
 
 // ============================================================================
 // Types & Interfaces
@@ -57,19 +70,33 @@ export interface HostPayoutMethod {
   ibanLast4: string;
   ibanFormatted?: string;
   routingCode?: string;
+  country?: string;
   currency: string;
   isDefault: boolean;
-  status: "VERIFIED" | "PENDING_VERIFICATION" | "REJECTED";
+  status: "VERIFIED" | "PENDING_VERIFICATION" | "REJECTED" | "DISABLED";
+  type?: "SAUDI_IBAN" | "INTERNATIONAL_SWIFT" | "PAYPAL";
   verifiedAt?: string;
+  verifiedById?: string;
   rejectionReason?: string;
+  accountFingerprint?: string;
   createdAt: string;
   updatedAt: string;
+  disabledAt?: string;
+}
+
+export interface UpdatePayoutMethodInput {
+  accountHolderName?: string;
+  routingCode?: string;
+  metadata?: Record<string, any>;
 }
 
 export interface AddPayoutMethodInput {
+  type?: "SAUDI_IBAN" | "INTERNATIONAL_SWIFT" | "PAYPAL";
   accountHolderName: string;
-  bankName: string;
-  iban: string;
+  bankName?: string;
+  iban?: string;
+  paypalEmail?: string;
+  country?: string;
   routingCode?: string;
   currency?: string;
   isDefault?: boolean;
@@ -306,15 +333,79 @@ function sanitizeListing(listing: any) {
 }
 
 // ============================================================================
-// Host Payout Methods Management (Phase 13)
+// Host Payout Methods Management (Phase 3 Relational Architecture)
 // ============================================================================
 
+function mapRelationalPayoutMethod(m: {
+  id: string;
+  accountHolderName: string;
+  bankName: string;
+  bankCode: string | null;
+  ibanMasked: string;
+  ibanLast4: string;
+  encryptedAccountReference: string | null;
+  accountFingerprint: string | null;
+  country: string;
+  currency: string;
+  isDefault: boolean;
+  status: string;
+  type: string;
+  verifiedAt: Date | null;
+  verifiedById: string | null;
+  rejectionReason: string | null;
+  metadata: any;
+  createdAt: Date;
+  updatedAt: Date;
+  disabledAt: Date | null;
+}): HostPayoutMethod {
+  return {
+    id: m.id,
+    accountHolderName: m.accountHolderName,
+    bankName: m.bankName,
+    bankCode: m.bankCode ?? undefined,
+    ibanMasked: m.ibanMasked,
+    ibanLast4: m.ibanLast4,
+    ibanFormatted: m.ibanMasked,
+    routingCode: (m.metadata as any)?.routingCode ?? undefined,
+    country: m.country,
+    currency: m.currency,
+    isDefault: m.isDefault,
+    status: m.status as HostPayoutMethod["status"],
+    type: m.type as HostPayoutMethod["type"],
+    verifiedAt: m.verifiedAt ? m.verifiedAt.toISOString() : undefined,
+    verifiedById: m.verifiedById ?? undefined,
+    rejectionReason: m.rejectionReason ?? undefined,
+    accountFingerprint: m.accountFingerprint ?? undefined,
+    createdAt: m.createdAt.toISOString(),
+    updatedAt: m.updatedAt.toISOString(),
+    disabledAt: m.disabledAt ? m.disabledAt.toISOString() : undefined,
+  };
+}
+
 /**
- * Retrieves all registered payout methods for a host.
+ * Retrieves all registered active payout methods for a host.
+ * Queries relational HostPayoutMethod first; falls back to legacy JSON array.
  */
 export async function getHostPayoutMethods(
   hostId: string,
 ): Promise<HostPayoutMethod[]> {
+  try {
+    const relational = await prisma.hostPayoutMethod.findMany({
+      where: {
+        hostId,
+        disabledAt: null,
+      },
+      orderBy: [{ isDefault: "desc" }, { createdAt: "desc" }],
+    });
+
+    if (relational.length > 0) {
+      return relational.map(mapRelationalPayoutMethod);
+    }
+  } catch (error) {
+    console.warn("Relational getHostPayoutMethods fallback:", error);
+  }
+
+  // Fallback to legacy personalInfo.payoutMethods
   const user = await prisma.user.findUnique({
     where: { id: hostId },
     select: { personalInfo: true },
@@ -326,13 +417,46 @@ export async function getHostPayoutMethods(
 
   const info = (user.personalInfo as Record<string, any>) || {};
   const methods: HostPayoutMethod[] = Array.isArray(info.payoutMethods)
-    ? info.payoutMethods
+    ? info.payoutMethods.filter((m) => m.status !== "DISABLED" && !m.disabledAt)
     : [];
   return methods;
 }
 
 /**
- * Adds a new Saudi IBAN payout method for a host.
+ * Retrieves a single active payout method by ID ensuring host ownership.
+ */
+export async function getHostPayoutMethodById(
+  hostId: string,
+  methodId: string,
+): Promise<HostPayoutMethod> {
+  try {
+    const relational = await prisma.hostPayoutMethod.findFirst({
+      where: {
+        id: methodId,
+        hostId,
+        disabledAt: null,
+      },
+    });
+
+    if (relational) {
+      return mapRelationalPayoutMethod(relational);
+    }
+  } catch (error) {
+    console.warn("Relational getHostPayoutMethodById fallback:", error);
+  }
+
+  const methods = await getHostPayoutMethods(hostId);
+  const found = methods.find((m) => m.id === methodId);
+  if (!found) {
+    throw AppError.notFound(`Payout method ${methodId} not found.`);
+  }
+  return found;
+}
+
+/**
+ * Adds a new payout method (Saudi IBAN or PayPal) for a host.
+ * Performs validation (MOD-97 for IBAN, RFC 5322 for PayPal), duplicate fingerprint check,
+ * AES-256-GCM encryption, atomic default update, and legacy dual-write synchronization.
  */
 export async function addHostPayoutMethod(
   hostId: string,
@@ -341,13 +465,61 @@ export async function addHostPayoutMethod(
   if (!input.accountHolderName?.trim()) {
     throw AppError.badRequest("Account holder name is required.");
   }
-  if (!input.bankName?.trim()) {
-    throw AppError.badRequest("Bank name is required.");
-  }
 
-  const validation = validateSaudiIban(input.iban);
-  if (!validation.valid || !validation.cleanIban) {
-    throw AppError.badRequest(validation.error || "Invalid Saudi IBAN.");
+  const isPayPal = input.type === "PAYPAL" || Boolean(input.paypalEmail && !input.iban);
+
+  let methodType: "SAUDI_IBAN" | "PAYPAL" = "SAUDI_IBAN";
+  let bankName = "";
+  let bankCode: string | undefined = undefined;
+  let masked = "";
+  let last4 = "";
+  let formatted = "";
+  let rawIdentifier = "";
+  let country = (input.country || "SA").trim().toUpperCase();
+  let currency = (input.currency || "SAR").trim().toUpperCase();
+
+  if (isPayPal) {
+    methodType = "PAYPAL";
+    bankName = "PayPal";
+    const rawEmail = input.paypalEmail || input.iban || "";
+    const emailCheck = paypalPayoutService.validatePayPalEmail(rawEmail);
+    if (!emailCheck.valid || !emailCheck.cleanEmail) {
+      throw AppError.badRequest(emailCheck.error || "A valid PayPal email address is required.");
+    }
+    rawIdentifier = emailCheck.cleanEmail;
+
+    // Recognize Saudi Arabia (SA) as a supported country
+    if (!paypalPayoutService.isCountrySupported(country)) {
+      throw AppError.badRequest(`Country ${country} is not supported by PayPal.`);
+    }
+
+    // Direct SAR is not supported in the PayPal Payouts API; enforce USD
+    if (input.currency?.toUpperCase() === "SAR") {
+      throw AppError.badRequest(
+        "PayPal Payouts does not support direct SAR disbursements. PayPal payouts for Saudi Arabia are processed in USD at the official SAMA exchange rate (1 USD = 3.75 SAR).",
+      );
+    }
+    currency = "USD";
+    masked = maskEmail(rawIdentifier);
+    last4 = rawIdentifier.slice(-4);
+    formatted = rawIdentifier;
+  } else {
+    methodType = "SAUDI_IBAN";
+    if (!input.bankName?.trim()) {
+      throw AppError.badRequest("Bank name is required.");
+    }
+    const validation = validateSaudiIban(input.iban || "");
+    if (!validation.valid || !validation.cleanIban) {
+      throw AppError.badRequest(validation.error || "Invalid Saudi IBAN.");
+    }
+    rawIdentifier = validation.cleanIban;
+    bankName = input.bankName.trim() || validation.bankName || "Commercial Bank";
+    bankCode = validation.bankCode;
+    masked = maskIban(validation.cleanIban);
+    last4 = validation.cleanIban.slice(-4);
+    formatted = validation.formatted || validation.cleanIban;
+    country = "SA";
+    currency = input.currency?.toUpperCase() || "SAR";
   }
 
   const user = await prisma.user.findUnique({
@@ -358,65 +530,212 @@ export async function addHostPayoutMethod(
   if (!user) throw AppError.notFound(`User ${hostId} not found.`);
 
   const info = (user.personalInfo as Record<string, any>) || {};
-  const existingMethods: HostPayoutMethod[] = Array.isArray(info.payoutMethods)
+  const existingLegacy: HostPayoutMethod[] = Array.isArray(info.payoutMethods)
     ? [...info.payoutMethods]
     : [];
 
-  const masked = maskIban(validation.cleanIban);
-  const last4 = validation.cleanIban.slice(-4);
+  const fingerprint = generateAccountFingerprint(rawIdentifier);
 
-  // Check if identical IBAN already registered
+  // Check duplicate in relational DB
+  const duplicate = await prisma.hostPayoutMethod.findFirst({
+    where: {
+      hostId,
+      accountFingerprint: fingerprint,
+      disabledAt: null,
+    },
+  });
+
+  if (duplicate) {
+    throw AppError.conflict("This payout account is already registered.");
+  }
+
+  // Check duplicate in legacy
   if (
-    existingMethods.some(
-      (m) => m.ibanLast4 === last4 && m.bankCode === validation.bankCode,
+    existingLegacy.some(
+      (m) =>
+        m.status !== "DISABLED" &&
+        ((m.ibanLast4 === last4 && m.bankCode === bankCode) ||
+          m.accountFingerprint === fingerprint),
     )
   ) {
     throw AppError.conflict("This payout account is already registered.");
   }
 
-  const isFirstMethod = existingMethods.length === 0;
-  const isDefault = input.isDefault ?? isFirstMethod;
-
-  if (isDefault) {
-    for (const m of existingMethods) {
-      m.isDefault = false;
-    }
-  }
-
-  const now = new Date().toISOString();
-  // If host identity is already verified, payout method is marked VERIFIED; otherwise PENDING_VERIFICATION
-  const isIdentityVerified = info.identityStatus === "VERIFIED";
-
-  const newMethod: HostPayoutMethod = {
-    id: `pm_${nanoid(12)}`,
-    accountHolderName: input.accountHolderName.trim(),
-    bankName: input.bankName.trim() || validation.bankName || "Commercial Bank",
-    bankCode: validation.bankCode,
-    ibanMasked: masked,
-    ibanLast4: last4,
-    ibanFormatted: validation.formatted,
-    routingCode: input.routingCode?.trim() || undefined,
-    currency: input.currency?.toUpperCase() || "SAR",
-    isDefault,
-    status: isIdentityVerified ? "VERIFIED" : "PENDING_VERIFICATION",
-    verifiedAt: isIdentityVerified ? now : undefined,
-    createdAt: now,
-    updatedAt: now,
-  };
-
-  existingMethods.push(newMethod);
-
-  await prisma.user.update({
-    where: { id: hostId },
-    data: {
-      personalInfo: {
-        ...info,
-        payoutMethods: existingMethods,
-      } as unknown as Prisma.InputJsonValue,
-    },
+  const existingCount = await prisma.hostPayoutMethod.count({
+    where: { hostId, disabledAt: null },
   });
 
-  return newMethod;
+  const isFirstMethod = existingCount === 0 && existingLegacy.length === 0;
+  const isDefault = input.isDefault ?? isFirstMethod;
+
+  const isIdentityVerified = info.identityStatus === "VERIFIED";
+  const status: "VERIFIED" | "PENDING_VERIFICATION" = isIdentityVerified
+    ? "VERIFIED"
+    : "PENDING_VERIFICATION";
+  const now = new Date();
+  const encryptedIdentifier = encryptAccountIdentifier(rawIdentifier);
+
+  const created = await prisma.$transaction(async (tx) => {
+    if (isDefault) {
+      await tx.hostPayoutMethod.updateMany({
+        where: { hostId, isDefault: true },
+        data: { isDefault: false },
+      });
+    }
+
+    const rec = await tx.hostPayoutMethod.create({
+      data: {
+        hostId,
+        type: methodType,
+        accountHolderName: input.accountHolderName.trim(),
+        bankName,
+        bankCode,
+        country,
+        currency,
+        ibanMasked: masked,
+        ibanLast4: last4,
+        encryptedAccountReference: encryptedIdentifier,
+        accountFingerprint: fingerprint,
+        isDefault,
+        status,
+        verifiedAt: isIdentityVerified ? now : null,
+        metadata: {
+          ...(input.routingCode ? { routingCode: input.routingCode.trim() } : {}),
+          ...(isPayPal
+            ? {
+                paypalEmail: rawIdentifier,
+                disbursementCurrency: "USD",
+                originalCurrency: "SAR",
+                provider: "PAYPAL_PAYOUTS",
+              }
+            : {}),
+        },
+      },
+    });
+
+    // Dual-write legacy mirror for compatibility
+    if (isDefault) {
+      for (const m of existingLegacy) {
+        m.isDefault = false;
+      }
+    }
+
+    const legacyNew: HostPayoutMethod = {
+      id: rec.id,
+      accountHolderName: rec.accountHolderName,
+      bankName: rec.bankName,
+      bankCode: rec.bankCode ?? undefined,
+      ibanMasked: rec.ibanMasked,
+      ibanLast4: rec.ibanLast4,
+      ibanFormatted: formatted,
+      routingCode: input.routingCode?.trim() || undefined,
+      country: rec.country,
+      currency: rec.currency,
+      isDefault: rec.isDefault,
+      status: rec.status as HostPayoutMethod["status"],
+      type: rec.type as HostPayoutMethod["type"],
+      verifiedAt: rec.verifiedAt?.toISOString(),
+      accountFingerprint: rec.accountFingerprint ?? undefined,
+      createdAt: rec.createdAt.toISOString(),
+      updatedAt: rec.updatedAt.toISOString(),
+    };
+    existingLegacy.push(legacyNew);
+
+    await tx.user.update({
+      where: { id: hostId },
+      data: {
+        personalInfo: {
+          ...info,
+          payoutMethods: existingLegacy,
+        } as unknown as Prisma.InputJsonValue,
+      },
+    });
+
+    return rec;
+  });
+
+  return mapRelationalPayoutMethod(created);
+}
+
+/**
+ * Updates permitted editable fields of a payout method (e.g. account holder name or routing reference).
+ * The IBAN and bank code remain strictly immutable for security.
+ */
+export async function updateHostPayoutMethod(
+  hostId: string,
+  methodId: string,
+  input: UpdatePayoutMethodInput,
+): Promise<HostPayoutMethod> {
+  const method = await prisma.hostPayoutMethod.findFirst({
+    where: { id: methodId, hostId, disabledAt: null },
+  });
+
+  if (!method) {
+    throw AppError.notFound(`Payout method ${methodId} not found.`);
+  }
+
+  const dataToUpdate: any = {};
+  if (input.accountHolderName !== undefined) {
+    if (!input.accountHolderName.trim()) {
+      throw AppError.badRequest("Account holder name cannot be empty.");
+    }
+    dataToUpdate.accountHolderName = input.accountHolderName.trim();
+  }
+  if (input.routingCode !== undefined || input.metadata !== undefined) {
+    const existingMeta = (method.metadata as Record<string, any>) || {};
+    dataToUpdate.metadata = {
+      ...existingMeta,
+      ...(input.metadata || {}),
+      ...(input.routingCode !== undefined
+        ? { routingCode: input.routingCode.trim() }
+        : {}),
+    };
+  }
+
+  const updated = await prisma.hostPayoutMethod.update({
+    where: { id: methodId },
+    data: dataToUpdate,
+  });
+
+  // Mirror to legacy if present
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: hostId },
+      select: { personalInfo: true },
+    });
+    if (user?.personalInfo) {
+      const info = user.personalInfo as Record<string, any>;
+      if (Array.isArray(info.payoutMethods)) {
+        const legacyMethods = info.payoutMethods.map((m: HostPayoutMethod) => {
+          if (m.id === methodId) {
+            return {
+              ...m,
+              accountHolderName: updated.accountHolderName,
+              routingCode:
+                input.routingCode !== undefined
+                  ? input.routingCode.trim()
+                  : m.routingCode,
+              updatedAt: updated.updatedAt.toISOString(),
+            };
+          }
+          return m;
+        });
+        await prisma.user.update({
+          where: { id: hostId },
+          data: {
+            personalInfo: {
+              ...info,
+              payoutMethods: legacyMethods,
+            } as unknown as Prisma.InputJsonValue,
+          },
+        });
+      }
+    }
+  } catch (error) {
+    console.warn("Legacy mirror update error:", error);
+  }
+
+  return mapRelationalPayoutMethod(updated);
 }
 
 /**
@@ -426,6 +745,55 @@ export async function setDefaultPayoutMethod(
   hostId: string,
   methodId: string,
 ): Promise<HostPayoutMethod[]> {
+  const target = await prisma.hostPayoutMethod.findFirst({
+    where: { id: methodId, hostId, disabledAt: null },
+  });
+
+  if (target) {
+    await prisma.$transaction(async (tx) => {
+      await tx.hostPayoutMethod.updateMany({
+        where: { hostId },
+        data: { isDefault: false },
+      });
+      await tx.hostPayoutMethod.update({
+        where: { id: methodId },
+        data: { isDefault: true },
+      });
+    });
+
+    // Mirror to legacy
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: hostId },
+        select: { personalInfo: true },
+      });
+      if (user?.personalInfo) {
+        const info = user.personalInfo as Record<string, any>;
+        if (Array.isArray(info.payoutMethods)) {
+          const updated = info.payoutMethods.map((m: HostPayoutMethod) => ({
+            ...m,
+            isDefault: m.id === methodId,
+            updatedAt: new Date().toISOString(),
+          }));
+          await prisma.user.update({
+            where: { id: hostId },
+            data: {
+              personalInfo: {
+                ...info,
+                payoutMethods: updated,
+              } as unknown as Prisma.InputJsonValue,
+            },
+          });
+        }
+      }
+    } catch (e) {
+      console.warn("Legacy mirror default error:", e);
+    }
+
+    return getHostPayoutMethods(hostId);
+  }
+
+  // Fallback to legacy if only in JSON
   const user = await prisma.user.findUnique({
     where: { id: hostId },
     select: { personalInfo: true },
@@ -438,8 +806,8 @@ export async function setDefaultPayoutMethod(
     ? [...info.payoutMethods]
     : [];
 
-  const target = existingMethods.find((m) => m.id === methodId);
-  if (!target) {
+  const legacyTarget = existingMethods.find((m) => m.id === methodId);
+  if (!legacyTarget) {
     throw AppError.notFound(`Payout method ${methodId} not found.`);
   }
 
@@ -463,12 +831,78 @@ export async function setDefaultPayoutMethod(
 }
 
 /**
- * Deletes a payout method from a host's account.
+ * Deletes / disables a payout method from a host's account.
  */
 export async function deleteHostPayoutMethod(
   hostId: string,
   methodId: string,
 ): Promise<HostPayoutMethod[]> {
+  const target = await prisma.hostPayoutMethod.findFirst({
+    where: { id: methodId, hostId, disabledAt: null },
+  });
+
+  if (target) {
+    await prisma.$transaction(async (tx) => {
+      await tx.hostPayoutMethod.update({
+        where: { id: methodId },
+        data: {
+          disabledAt: new Date(),
+          status: "DISABLED",
+          isDefault: false,
+        },
+      });
+
+      // If deleted was default, make the newest remaining active method default
+      const remaining = await tx.hostPayoutMethod.findMany({
+        where: { hostId, disabledAt: null },
+        orderBy: { createdAt: "desc" },
+      });
+
+      if (remaining.length > 0 && !remaining.some((m) => m.isDefault)) {
+        await tx.hostPayoutMethod.update({
+          where: { id: remaining[0].id },
+          data: { isDefault: true },
+        });
+      }
+    });
+
+    // Mirror to legacy
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: hostId },
+        select: { personalInfo: true },
+      });
+      if (user?.personalInfo) {
+        const info = user.personalInfo as Record<string, any>;
+        if (Array.isArray(info.payoutMethods)) {
+          const remainingLegacy = info.payoutMethods.filter(
+            (m: HostPayoutMethod) => m.id !== methodId,
+          );
+          if (
+            remainingLegacy.length > 0 &&
+            !remainingLegacy.some((m: HostPayoutMethod) => m.isDefault)
+          ) {
+            remainingLegacy[0].isDefault = true;
+          }
+          await prisma.user.update({
+            where: { id: hostId },
+            data: {
+              personalInfo: {
+                ...info,
+                payoutMethods: remainingLegacy,
+              } as unknown as Prisma.InputJsonValue,
+            },
+          });
+        }
+      }
+    } catch (e) {
+      console.warn("Legacy mirror delete error:", e);
+    }
+
+    return getHostPayoutMethods(hostId);
+  }
+
+  // Fallback to legacy
   const user = await prisma.user.findUnique({
     where: { id: hostId },
     select: { personalInfo: true },
@@ -486,7 +920,6 @@ export async function deleteHostPayoutMethod(
     throw AppError.notFound(`Payout method ${methodId} not found.`);
   }
 
-  // If deleted method was default, make the first remaining method default
   if (remaining.length > 0 && !remaining.some((m) => m.isDefault)) {
     remaining[0].isDefault = true;
   }
@@ -516,6 +949,87 @@ export async function verifyHostPayoutMethod(
 ): Promise<HostPayoutMethod> {
   assertRole(actor, [Role.ADMIN]);
 
+  const targetRelational = await prisma.hostPayoutMethod.findFirst({
+    where: { id: methodId, hostId, disabledAt: null },
+  });
+
+  const now = new Date();
+
+  if (targetRelational) {
+    const updated = await prisma.hostPayoutMethod.update({
+      where: { id: methodId },
+      data: {
+        status,
+        verifiedAt: status === "VERIFIED" ? now : null,
+        verifiedById: actor.id,
+        rejectionReason:
+          status === "REJECTED"
+            ? reason || "Account details could not be verified."
+            : null,
+      },
+    });
+
+    // Mirror to legacy
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: hostId },
+        select: { personalInfo: true, email: true },
+      });
+      if (user?.personalInfo) {
+        const info = user.personalInfo as Record<string, any>;
+        if (Array.isArray(info.payoutMethods)) {
+          const updatedLegacy = info.payoutMethods.map(
+            (m: HostPayoutMethod) => {
+              if (m.id === methodId) {
+                return {
+                  ...m,
+                  status,
+                  verifiedAt:
+                    status === "VERIFIED" ? now.toISOString() : undefined,
+                  rejectionReason:
+                    status === "REJECTED"
+                      ? reason || "Account details could not be verified."
+                      : undefined,
+                  updatedAt: now.toISOString(),
+                };
+              }
+              return m;
+            },
+          );
+          await prisma.user.update({
+            where: { id: hostId },
+            data: {
+              personalInfo: {
+                ...info,
+                payoutMethods: updatedLegacy,
+              } as unknown as Prisma.InputJsonValue,
+            },
+          });
+        }
+      }
+    } catch (e) {
+      console.warn("Legacy mirror verify error:", e);
+    }
+
+    await auditService.record({
+      actorId: actor.id,
+      actorEmail: actor.email,
+      action: "HOST_PAYOUT_METHOD_VERIFIED",
+      resourceType: "USER",
+      resourceId: hostId,
+      description: `Payout method ${methodId} (${updated.ibanMasked}) status updated to ${status} by admin.`,
+      status: "SUCCESS",
+      metadata: {
+        methodId,
+        status,
+        reason,
+      },
+    });
+
+    return mapRelationalPayoutMethod(updated);
+  }
+
+  // Fallback to legacy
   const user = await prisma.user.findUnique({
     where: { id: hostId },
     select: { id: true, email: true, personalInfo: true },
@@ -531,11 +1045,10 @@ export async function verifyHostPayoutMethod(
   const target = existingMethods.find((m) => m.id === methodId);
   if (!target) throw AppError.notFound(`Payout method ${methodId} not found.`);
 
-  const now = new Date().toISOString();
   target.status = status;
-  target.updatedAt = now;
+  target.updatedAt = now.toISOString();
   if (status === "VERIFIED") {
-    target.verifiedAt = now;
+    target.verifiedAt = now.toISOString();
     target.rejectionReason = undefined;
   } else {
     target.rejectionReason = reason || "Account details could not be verified.";
@@ -1235,6 +1748,26 @@ export async function holdPayout(
     },
   });
 
+  // Synchronize BookingPayoutDistribution records if present
+  try {
+    await prisma.bookingPayoutDistribution.updateMany({
+      where: {
+        bookingId,
+        status: { not: DistributionStatus.PAID },
+      },
+      data: {
+        isHeld: true,
+        holdType: input.holdType,
+        holdReason: input.reason.trim(),
+        heldAt: new Date(),
+        heldBy: actor.email || actor.id,
+        status: DistributionStatus.ON_HOLD,
+      },
+    });
+  } catch (err) {
+    console.warn(`Could not update distribution hold status for booking ${bookingId}:`, err);
+  }
+
   await auditService.record({
     actorId: actor.id,
     actorEmail: actor.email,
@@ -1321,6 +1854,28 @@ export async function releasePayout(
     },
   });
 
+  // Synchronize BookingPayoutDistribution records if present
+  try {
+    const isEligible = Date.now() >= new Date(booking.startDate).getTime() + 24 * 60 * 60 * 1000;
+    const newStatus = isEligible ? DistributionStatus.ELIGIBLE_SETTLEMENT : DistributionStatus.SCHEDULED;
+    await prisma.bookingPayoutDistribution.updateMany({
+      where: {
+        bookingId,
+        isHeld: true,
+      },
+      data: {
+        isHeld: false,
+        holdType: null,
+        holdReason: null,
+        heldAt: null,
+        heldBy: null,
+        status: newStatus,
+      },
+    });
+  } catch (err) {
+    console.warn(`Could not update distribution release status for booking ${bookingId}:`, err);
+  }
+
   await auditService.record({
     actorId: actor.id,
     actorEmail: actor.email,
@@ -1373,7 +1928,7 @@ export async function exportBatchSettlementCSV(
     status: BookingStatus.CONFIRMED,
   };
 
-  if (bookingIds && bookingIds.length > 0) {
+  if (bookingIds !== undefined) {
     where.id = { in: bookingIds };
   }
 
@@ -1403,36 +1958,142 @@ export async function exportBatchSettlementCSV(
     "Scheduled Date",
     "Property Title",
     "Status",
+    "Batch Reference",
   ];
 
   const rows: string[][] = [];
+  const exportedDistributionIds: string[] = [];
+  const batchReference = `SARIE_${new Date().toISOString().slice(0, 10).replace(/-/g, "")}_${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
   for (const b of bookings) {
-    const hostPersonalInfo = b.listing.host?.personalInfo as Record<string, any> | null | undefined;
-    const hostMethods: HostPayoutMethod[] = Array.isArray(
-      hostPersonalInfo?.payoutMethods,
-    )
-      ? (hostPersonalInfo!.payoutMethods as HostPayoutMethod[])
-      : [];
-    const defaultMethod =
-      hostMethods.find((m) => m.isDefault && m.status === "VERIFIED") ||
-      hostMethods[0];
-
-    const calc = calculateBookingPayout(b, { hostPayoutMethods: hostMethods });
+    const calc = calculateBookingPayout(b);
 
     if (calc.status === "ELIGIBLE_SETTLEMENT") {
-      rows.push([
-        `"${b.id}"`,
-        `"${defaultMethod?.accountHolderName || b.listing.host?.name || "Host"}"`,
-        `"${defaultMethod?.ibanFormatted || defaultMethod?.ibanMasked || "MISSING_IBAN"}"`,
-        `"${defaultMethod?.bankName || "Commercial Bank"}"`,
-        `"${(calc.netPayout / 100).toFixed(2)}"`,
-        `"${calc.currency}"`,
-        `"${calc.scheduledPayoutDate.toISOString().slice(0, 10)}"`,
-        `"${(b.listing.title || "").replace(/"/g, '""')}"`,
-        `"${calc.status}"`,
-      ]);
+      let distributions: any[] = [];
+      try {
+        distributions = await payoutRoutingService.createOrGetBookingDistributions(b.id);
+      } catch (err) {
+        console.warn(`Could not get distributions for booking ${b.id}:`, err);
+      }
+
+      if (distributions && distributions.length > 0) {
+        for (const dist of distributions) {
+          let beneficiaryIban = dist.payoutMethodMasked || "MISSING_IBAN";
+          if (dist.payoutMethodId) {
+            try {
+              const relRecord = await prisma.hostPayoutMethod.findUnique({
+                where: { id: dist.payoutMethodId },
+                select: { encryptedAccountReference: true, ibanMasked: true },
+              });
+              if (relRecord?.encryptedAccountReference) {
+                const decrypted = decryptAccountIdentifier(relRecord.encryptedAccountReference);
+                if (decrypted) {
+                  beneficiaryIban = decrypted.replace(/(.{4})/g, "$1 ").trim();
+                }
+              } else if (relRecord?.ibanMasked) {
+                beneficiaryIban = relRecord.ibanMasked;
+              }
+            } catch {
+              // fallback to dist.payoutMethodMasked
+            }
+          }
+
+          const reference = distributions.length > 1
+            ? `${b.id}-${dist.recipientUserId.slice(-4)}`
+            : b.id;
+
+          rows.push([
+            `"${reference}"`,
+            `"${dist.recipientName || "Recipient"}"`,
+            `"${beneficiaryIban}"`,
+            `"${dist.bankName || "Commercial Bank"}"`,
+            `"${(dist.amountCents / 100).toFixed(2)}"`,
+            `"${dist.currency || calc.currency}"`,
+            `"${calc.scheduledPayoutDate.toISOString().slice(0, 10)}"`,
+            `"${(b.listing.title || "").replace(/"/g, '""')}"`,
+            `"EXPORTED"`,
+            `"${batchReference}"`,
+          ]);
+
+          exportedDistributionIds.push(dist.id);
+        }
+      } else {
+        // Fallback for legacy or edge case without distributions
+        let hostMethods: HostPayoutMethod[] = [];
+        try {
+          if (b.listing.host?.id) {
+            hostMethods = await getHostPayoutMethods(b.listing.host.id);
+          }
+        } catch {
+          const hostPersonalInfo = b.listing.host?.personalInfo as Record<string, any> | null | undefined;
+          hostMethods = Array.isArray(hostPersonalInfo?.payoutMethods)
+            ? (hostPersonalInfo!.payoutMethods as HostPayoutMethod[])
+            : [];
+        }
+
+        const defaultMethod =
+          hostMethods.find((m) => m.isDefault && m.status === "VERIFIED") ||
+          hostMethods.find((m) => m.status === "VERIFIED") ||
+          hostMethods[0];
+
+        let beneficiaryIban = defaultMethod?.ibanFormatted || defaultMethod?.ibanMasked || "MISSING_IBAN";
+        if (defaultMethod?.id) {
+          try {
+            const relRecord = await prisma.hostPayoutMethod.findUnique({
+              where: { id: defaultMethod.id },
+              select: { encryptedAccountReference: true },
+            });
+            if (relRecord?.encryptedAccountReference) {
+              const decrypted = decryptAccountIdentifier(relRecord.encryptedAccountReference);
+              if (decrypted) {
+                beneficiaryIban = decrypted.replace(/(.{4})/g, "$1 ").trim();
+              }
+            }
+          } catch {
+            // fallback
+          }
+        }
+
+        rows.push([
+          `"${b.id}"`,
+          `"${defaultMethod?.accountHolderName || b.listing.host?.name || "Host"}"`,
+          `"${beneficiaryIban}"`,
+          `"${defaultMethod?.bankName || "Commercial Bank"}"`,
+          `"${(calc.netPayout / 100).toFixed(2)}"`,
+          `"${calc.currency}"`,
+          `"${calc.scheduledPayoutDate.toISOString().slice(0, 10)}"`,
+          `"${(b.listing.title || "").replace(/"/g, '""')}"`,
+          `"EXPORTED"`,
+          `"${batchReference}"`,
+        ]);
+      }
     }
+  }
+
+  // Update exported distributions
+  if (exportedDistributionIds.length > 0) {
+    await prisma.bookingPayoutDistribution.updateMany({
+      where: { id: { in: exportedDistributionIds } },
+      data: {
+        batchReference,
+        status: DistributionStatus.EXPORTED,
+        exportedAt: new Date(),
+      },
+    });
+
+    await auditService.record({
+      actorId: actor.id,
+      actorEmail: actor.email,
+      action: "BATCH_SETTLEMENT_EXPORTED",
+      resourceType: "PAYOUT_BATCH",
+      resourceId: batchReference,
+      description: `Exported ${exportedDistributionIds.length} payout distribution(s) in batch ${batchReference}.`,
+      status: "SUCCESS",
+      metadata: {
+        batchReference,
+        distributionCount: exportedDistributionIds.length,
+      },
+    });
   }
 
   return [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
@@ -1494,9 +2155,12 @@ export interface HostEarningsOverviewQuery {
   compareMonth?: number;
   compareYear?: number;
   compareQuarter?: number;
+  /** Presets are recalculated from Period A, never from a stale UI label. */
+  comparePreset?: "prior_period" | "prior_year";
 }
 
-export type HostEarningsTransactionKind = "upcoming" | "paid";
+/** `all` is the host's unified financial ledger: paid and payable reservations. */
+export type HostEarningsTransactionKind = "all" | "upcoming" | "paid";
 
 export interface HostEarningsTransactionQuery {
   kind: HostEarningsTransactionKind;
@@ -1532,8 +2196,21 @@ export interface HostEarningsTransactionResult {
     totalPages: number;
   };
   totalsByCurrency: Array<{ currency: string; amount: number }>;
+  /** Amounts remain separated by settlement currency; pending excludes paid payouts. */
+  statusTotalsByCurrency: Array<{
+    currency: string;
+    paidAmount: number;
+    pendingAmount: number;
+  }>;
   listings: Array<{ id: string; title: string }>;
-  dateBasis: "SCHEDULED_PAYOUT_DATE" | "EXECUTED_AT";
+  /**
+   * A unified ledger uses the executed date for paid records and the scheduled
+   * payout date for records that have not executed yet.
+   */
+  dateBasis:
+    | "SCHEDULED_PAYOUT_DATE"
+    | "EXECUTED_AT"
+    | "MIXED_FINANCIAL_DATE";
   filters: Required<Pick<HostEarningsTransactionQuery, "kind">> &
     Omit<HostEarningsTransactionQuery, "kind">;
 }
@@ -1636,6 +2313,7 @@ export interface EarningsComparisonData {
   endDateKey: string;
   netEarnings: number;
   grossEarnings: number;
+  platformFee: number;
   completedStaysCount: number;
   deltaEarnings: number;
   deltaPercentage: number | null;
@@ -1668,6 +2346,7 @@ export interface HostEarningsChartPoint {
   propertyBreakdown: HostEarningsChartPropertyItem[];
   secondaryAmount?: number;
   secondaryGrossEarnings?: number;
+  secondaryPlatformFee?: number;
   secondaryStaysCount?: number;
 }
 
@@ -1847,6 +2526,22 @@ function transactionDateRange(query: HostEarningsTransactionQuery, now: Date) {
 }
 
 /** Payout execution is immutable booking financial data: a confirmed booking is never classified as paid by inference. */
+async function resolveFinancialTransactionActor(actorId: string) {
+  const actor = await prisma.user.findUnique({
+    where: { id: actorId },
+    select: { id: true, role: true },
+  });
+  if (!actor) throw AppError.notFound(`Host ${actorId} not found.`);
+
+  // Co-hosts are scoped to accepted listing assignments below. A host-level
+  // earnings denial applies to their own financial view; administrators retain
+  // their existing support access.
+  if (actor.role === Role.HOST) {
+    await assertHostPermission(actorId, "earnings.view");
+  }
+  return actor;
+}
+
 export async function listHostEarningsTransactions(
   hostId: string,
   input: HostEarningsTransactionQuery,
@@ -1857,8 +2552,9 @@ export async function listHostEarningsTransactions(
     Math.max(10, Math.floor(Number(input.limit) || 20)),
   );
   const now = new Date();
+  const actor = await resolveFinancialTransactionActor(hostId);
   const listings = await prisma.listing.findMany({
-    where: { hostId },
+    where: accessibleHostListingWhere(actor),
     select: { id: true, title: true },
     orderBy: { title: "asc" },
   });
@@ -1903,7 +2599,7 @@ export async function listHostEarningsTransactions(
         }
       : {}),
   };
-  // This narrows upcoming scans with the indexed reservation date. The final
+  // This narrows payable scans with the indexed reservation date. The final
   // date test uses the authoritative scheduled/executed financial date.
   if (dateRange && input.kind === "upcoming") {
     candidateWhere.startDate = {
@@ -1937,9 +2633,13 @@ export async function listHostEarningsTransactions(
     .filter(({ calculation }: TransactionRow) =>
       input.kind === "paid"
         ? calculation.status === "PAID"
-        : ["SCHEDULED", "ELIGIBLE_SETTLEMENT", "PROCESSING"].includes(
-            calculation.status,
-          ),
+        : input.kind === "upcoming"
+          ? ["SCHEDULED", "ELIGIBLE_SETTLEMENT", "PROCESSING"].includes(
+              calculation.status,
+            )
+          : ["PAID", "SCHEDULED", "ELIGIBLE_SETTLEMENT", "PROCESSING"].includes(
+              calculation.status,
+            ),
     )
     .filter(
       ({ calculation }: TransactionRow) =>
@@ -1948,7 +2648,7 @@ export async function listHostEarningsTransactions(
     .filter(({ calculation }: TransactionRow) => {
       if (!dateRange) return true;
       const date =
-        input.kind === "paid"
+        calculation.status === "PAID"
           ? calculation.executionDetails?.executedAt
           : calculation.scheduledPayoutDate;
       return (
@@ -1959,11 +2659,11 @@ export async function listHostEarningsTransactions(
     })
     .sort((a: TransactionRow, b: TransactionRow) => {
       const aDate =
-        input.kind === "paid"
+        a.calculation.status === "PAID"
           ? a.calculation.executionDetails?.executedAt
           : a.calculation.scheduledPayoutDate;
       const bDate =
-        input.kind === "paid"
+        b.calculation.status === "PAID"
           ? b.calculation.executionDetails?.executedAt
           : b.calculation.scheduledPayoutDate;
       const difference =
@@ -1981,16 +2681,28 @@ export async function listHostEarningsTransactions(
       if (input.sort === "date_asc")
         return difference || a.booking.id.localeCompare(b.booking.id);
       return (
-        (input.kind === "paid" ? -difference : difference) ||
+        (input.kind === "upcoming" ? difference : -difference) ||
         a.booking.id.localeCompare(b.booking.id)
       );
     });
   const totalMap = new Map<string, number>();
-  for (const { calculation } of rows)
+  const statusTotalMap = new Map<
+    string,
+    { paidAmount: number; pendingAmount: number }
+  >();
+  for (const { calculation } of rows) {
     totalMap.set(
       calculation.currency,
       (totalMap.get(calculation.currency) || 0) + calculation.netPayout,
     );
+    const amounts = statusTotalMap.get(calculation.currency) || {
+      paidAmount: 0,
+      pendingAmount: 0,
+    };
+    if (calculation.status === "PAID") amounts.paidAmount += calculation.netPayout;
+    else amounts.pendingAmount += calculation.netPayout;
+    statusTotalMap.set(calculation.currency, amounts);
+  }
   const total = rows.length;
   return {
     transactions: (input.includeAll
@@ -2009,8 +2721,17 @@ export async function listHostEarningsTransactions(
       currency,
       amount,
     })).sort((a, b) => a.currency.localeCompare(b.currency)),
+    statusTotalsByCurrency: Array.from(statusTotalMap, ([currency, amounts]) => ({
+      currency,
+      ...amounts,
+    })).sort((a, b) => a.currency.localeCompare(b.currency)),
     listings,
-    dateBasis: input.kind === "paid" ? "EXECUTED_AT" : "SCHEDULED_PAYOUT_DATE",
+    dateBasis:
+      input.kind === "paid"
+        ? "EXECUTED_AT"
+        : input.kind === "upcoming"
+          ? "SCHEDULED_PAYOUT_DATE"
+          : "MIXED_FINANCIAL_DATE",
     filters: { ...input, kind: input.kind, page, limit },
   };
 }
@@ -2020,13 +2741,17 @@ export async function getHostEarningsTransactionDetails(
   hostId: string,
   transactionId: string,
 ): Promise<HostEarningsTransactionDetails> {
+  const actor = await resolveFinancialTransactionActor(hostId);
   const [host, booking] = await Promise.all([
     prisma.user.findUnique({
       where: { id: hostId },
       select: { personalInfo: true },
     }),
     prisma.booking.findFirst({
-      where: { id: transactionId, listing: { hostId } },
+      where: {
+        id: transactionId,
+        listing: accessibleHostListingWhere(actor),
+      },
       select: {
         id: true,
         listingId: true,
@@ -2263,15 +2988,19 @@ export async function getHostEarningsOverview(
 ): Promise<HostEarningsDetails> {
   const user = await prisma.user.findUnique({
     where: { id: hostId },
-    select: { personalInfo: true },
+    select: { personalInfo: true, status: true, role: true },
   });
 
   if (!user) throw AppError.notFound(`Host ${hostId} not found.`);
+  if (user.status === UserStatus.SUSPENDED) {
+    throw AppError.forbidden("Host account is suspended. Restricted actions are blocked.");
+  }
+  if (user.role === Role.HOST) {
+    await assertHostPermission(hostId, "earnings.view");
+  }
 
   const info = (user.personalInfo as Record<string, any>) || {};
-  const payoutMethods: HostPayoutMethod[] = Array.isArray(info.payoutMethods)
-    ? info.payoutMethods
-    : [];
+  const payoutMethods: HostPayoutMethod[] = await getHostPayoutMethods(hostId);
   const adjustments: PayoutAdjustmentRecord[] = Array.isArray(
     info.payoutAdjustments,
   )
@@ -2280,8 +3009,9 @@ export async function getHostEarningsOverview(
 
   // Validate the listing before applying it. This keeps the query scoped to the
   // authenticated host even when URL state is manually changed.
+  const actor = { id: hostId, role: Role.HOST };
   const listings = await prisma.listing.findMany({
-    where: { hostId },
+    where: accessibleHostListingWhere(actor),
     select: {
       id: true,
       title: true,
@@ -2346,19 +3076,26 @@ export async function getHostEarningsOverview(
     query.compareStartDate ||
     query.compareMonth ||
     query.compareQuarter ||
-    query.compareYear
+    query.compareYear ||
+    query.comparePreset
   );
 
+  const presetComparison = query.comparePreset === "prior_period" || query.comparePreset === "prior_year"
+    ? query.comparePreset
+    : null;
+  const presetRange = presetComparison
+    ? resolveComparisonPeriod(timeframeBounds, presetComparison)
+    : null;
   const compBounds = resolveTimeframeBounds({
     timeframe: query.compareTimeframe || timeframeBounds.timeframe,
-    startDate: query.compareStartDate,
-    endDate: query.compareEndDate,
+    startDate: presetRange?.startDateKey || query.compareStartDate,
+    endDate: presetRange?.endDateKey || query.compareEndDate,
     month: query.compareMonth,
     year: query.compareYear,
     quarter: query.compareQuarter,
   }, now);
 
-  if (!query.compareStartDate && !query.compareMonth && !query.compareQuarter && !query.compareYear) {
+  if (!presetRange && !query.compareStartDate && !query.compareMonth && !query.compareQuarter && !query.compareYear) {
     compBounds.startDate = timeframeBounds.comparisonStartDate;
     compBounds.endDate = timeframeBounds.comparisonEndDate;
     compBounds.startDateKey = timeframeBounds.comparisonStartDateKey;
@@ -2468,6 +3205,7 @@ export async function getHostEarningsOverview(
     propertyBreakdown: [],
     secondaryAmount: 0,
     secondaryGrossEarnings: 0,
+    secondaryPlatformFee: 0,
     secondaryStaysCount: 0,
   });
 
@@ -2634,6 +3372,7 @@ export async function getHostEarningsOverview(
   let unavailableSnapshotCount = 0;
   let compNetEarnings = 0;
   let compGrossEarnings = 0;
+  let compPlatformFee = 0;
   let compCompletedStaysCount = 0;
 
   const getTotals = (currency: string) => {
@@ -2774,6 +3513,7 @@ export async function getHostEarningsOverview(
     point.propertyBreakdown = [];
     point.secondaryAmount = 0;
     point.secondaryGrossEarnings = 0;
+    point.secondaryPlatformFee = 0;
     point.secondaryStaysCount = 0;
   }
 
@@ -2852,6 +3592,7 @@ export async function getHostEarningsOverview(
     ) {
       compNetEarnings += calc.netPayout;
       compGrossEarnings += calc.grossEarnings;
+      compPlatformFee += calc.platformFee;
       compCompletedStaysCount++;
 
       const compPt = findCompActivePoint(b.endDate);
@@ -2859,6 +3600,8 @@ export async function getHostEarningsOverview(
         compPt.secondaryAmount = (compPt.secondaryAmount || 0) + calc.netPayout;
         compPt.secondaryGrossEarnings =
           (compPt.secondaryGrossEarnings || 0) + calc.grossEarnings;
+        compPt.secondaryPlatformFee =
+          (compPt.secondaryPlatformFee || 0) + calc.platformFee;
         compPt.secondaryStaysCount = (compPt.secondaryStaysCount || 0) + 1;
       }
     }
@@ -2889,6 +3632,7 @@ export async function getHostEarningsOverview(
         endDateKey: compBounds.endDateKey,
         netEarnings: compNetEarnings,
         grossEarnings: compGrossEarnings,
+        platformFee: compPlatformFee,
         completedStaysCount: compCompletedStaysCount,
         deltaEarnings: primaryTimeframeNet - compNetEarnings,
         deltaPercentage: deltaInfo.deltaPercentage,
@@ -3016,7 +3760,9 @@ export const payoutService = {
   validateSaudiIban,
   maskIban,
   getHostPayoutMethods,
+  getHostPayoutMethodById,
   addHostPayoutMethod,
+  updateHostPayoutMethod,
   setDefaultPayoutMethod,
   deleteHostPayoutMethod,
   verifyHostPayoutMethod,
@@ -3032,4 +3778,7 @@ export const payoutService = {
   listHostEarningsTransactions,
   getHostEarningsTransactionDetails,
   recordPayoutAdjustment,
+  paypal: paypalPayoutService,
 };
+
+export { paypalPayoutService };

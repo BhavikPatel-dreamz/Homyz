@@ -3,6 +3,7 @@ import { BookingStatus } from "@/generated/prisma/enums";
 import { AppError } from "@/lib/api/errors";
 import {
   calculateBookingPayout,
+  payoutService,
   type HostPayoutMethod,
   type PayoutAdjustmentRecord,
   type HostEarningsPayoutPreview,
@@ -175,6 +176,19 @@ function positiveAdjustmentAmount(adjustment: PayoutAdjustmentRecord) {
     : -adjustment.amount;
 }
 
+async function resolveHostPayoutMethods(
+  hostId: string,
+  info: Record<string, any>,
+): Promise<HostPayoutMethod[]> {
+  try {
+    const relational = await payoutService.getHostPayoutMethods(hostId);
+    if (relational.length > 0) return relational;
+  } catch {
+    // Fall back to legacy personalInfo
+  }
+  return Array.isArray(info.payoutMethods) ? info.payoutMethods : [];
+}
+
 function resolveOwnedListingId(
   listings: Array<{ id: string }>,
   requestedListingId?: string,
@@ -242,9 +256,7 @@ export const hostReportingService = {
     if (!user) throw AppError.notFound(`Host ${hostId} not found.`);
 
     const info = (user.personalInfo as Record<string, any>) || {};
-    const payoutMethods: HostPayoutMethod[] = Array.isArray(info.payoutMethods)
-      ? info.payoutMethods
-      : [];
+    const payoutMethods: HostPayoutMethod[] = await resolveHostPayoutMethods(hostId, info);
     const allAdjustments: PayoutAdjustmentRecord[] = Array.isArray(
       info.payoutAdjustments,
     )
@@ -500,9 +512,7 @@ export const hostReportingService = {
     if (!user) throw AppError.notFound(`Host ${hostId} not found.`);
 
     const info = (user.personalInfo as Record<string, any>) || {};
-    const payoutMethods: HostPayoutMethod[] = Array.isArray(info.payoutMethods)
-      ? info.payoutMethods
-      : [];
+    const payoutMethods: HostPayoutMethod[] = await resolveHostPayoutMethods(hostId, info);
     const allAdjustments: PayoutAdjustmentRecord[] = Array.isArray(
       info.payoutAdjustments,
     )
@@ -771,9 +781,7 @@ export const hostReportingService = {
       select: { personalInfo: true },
     });
     const info = (user?.personalInfo as Record<string, any>) || {};
-    const payoutMethods: HostPayoutMethod[] = Array.isArray(info.payoutMethods)
-      ? info.payoutMethods
-      : [];
+    const payoutMethods: HostPayoutMethod[] = await resolveHostPayoutMethods(hostId, info);
     const scopedListingIds = landing.selectedListingId
       ? [landing.selectedListingId]
       : landing.listings.map((l) => l.id);
@@ -922,9 +930,7 @@ export const hostReportingService = {
     if (!user) throw AppError.notFound(`Host ${hostId} not found.`);
 
     const info = (user.personalInfo as Record<string, any>) || {};
-    const payoutMethods: HostPayoutMethod[] = Array.isArray(info.payoutMethods)
-      ? info.payoutMethods
-      : [];
+    const payoutMethods: HostPayoutMethod[] = await resolveHostPayoutMethods(hostId, info);
     const allAdjustments: PayoutAdjustmentRecord[] = Array.isArray(
       info.payoutAdjustments,
     )

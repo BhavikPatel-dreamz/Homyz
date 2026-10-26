@@ -92,6 +92,7 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
     (query.get("timeframe") as TimeframeGranularity) || reporting?.timeframe || "monthly";
 
   const handlePeriodChange = (next: DatePeriodPickerState) => {
+    const presetComparison = query.get("comparePreset");
     update({
       timeframe: next.timeframe,
       date: next.date || null,
@@ -101,6 +102,7 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
       quarter: next.quarter ? String(next.quarter) : null,
       startDate: next.startDate || null,
       endDate: next.endDate || null,
+      ...(presetComparison ? { compareStartDate: null, compareEndDate: null } : {}),
     });
   };
 
@@ -114,16 +116,18 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
         compareMonth: null,
         compareYear: null,
         compareQuarter: null,
+        comparePreset: null,
       });
     } else {
       update({
         compare: "true",
         compareTimeframe: config.timeframe,
-        compareStartDate: config.startDate || null,
-        compareEndDate: config.endDate || null,
-        compareMonth: config.month ? String(config.month) : null,
-        compareYear: config.year ? String(config.year) : null,
-        compareQuarter: config.quarter ? String(config.quarter) : null,
+        compareStartDate: config.startDate,
+        compareEndDate: config.endDate,
+        compareMonth: null,
+        compareYear: null,
+        compareQuarter: null,
+        comparePreset: config.preset === "prior_period" || config.preset === "prior_year" ? config.preset : null,
       });
     }
   };
@@ -175,6 +179,17 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
       propertyBreakdown: [],
     }));
   }, [reporting?.chart?.points, reporting?.chart?.daily]);
+
+  const periodFinancials = useMemo(
+    () => chartPoints.reduce(
+      (totals, point) => ({
+        gross: totals.gross + point.grossEarnings,
+        fees: totals.fees + point.platformFee,
+      }),
+      { gross: 0, fees: 0 },
+    ),
+    [chartPoints],
+  );
 
   const load = useCallback(
     async (params: URLSearchParams) => {
@@ -312,29 +327,7 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
           <p className="mt-1 max-w-2xl text-sm text-zinc-600">Review realized payouts, reporting periods, and property performance from verified financial records.</p>
         </div>
 
-        <section className="rounded-2xl border border-zinc-200 bg-zinc-950 p-4 text-white sm:flex sm:items-center sm:justify-between sm:gap-5">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
-              Dashboard Plus
-              {entitlements.hasDashboardPlus
-                ? ` · ${
-                    entitlements.status === "ADMIN_GRANTED"
-                      ? (entitlements.expiresAt ? "Complimentary (Temporary)" : "Complimentary")
-                      : entitlements.status === "TRIAL"
-                      ? "Trial active"
-                      : "Active"
-                  }`
-                : ""}
-            </p>
-            <p className="mt-1 text-sm font-semibold">Advanced Earnings Analytics and RevPAN</p>
-            <p className="mt-1 text-xs leading-relaxed text-zinc-300">Explore property financial comparisons, recorded costs, profitability, and revenue per available night.</p>
-          </div>
-          {entitlements.features.ADVANCED_EARNINGS ? (
-            <Link href={scopedHref("/host/earnings/analytics")} className="mt-3 inline-flex shrink-0 rounded-full bg-white px-4 py-2.5 text-xs font-semibold text-zinc-950 sm:mt-0">Open advanced analytics →</Link>
-          ) : (
-            <p className="mt-3 shrink-0 text-xs leading-relaxed text-zinc-300 sm:mt-0 sm:max-w-48">Available with Dashboard Plus. Checkout is not configured in this deployment.</p>
-          )}
-        </section>
+      
 
         {/* Compact Unified Toolbar */}
         <div className="flex flex-col gap-3 rounded-2xl border border-zinc-200 bg-white p-2.5 shadow-2xs sm:flex-row sm:items-center sm:justify-between sm:p-3">
@@ -389,6 +382,20 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
           </div>
         </div>
       </header>
+
+      {reporting.comparison?.enabled && (
+        <div className="flex flex-col gap-3 rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-zinc-700">
+            <span className="font-semibold text-zinc-950">{reporting.timeframeLabel || reporting.monthLabel}</span>
+            {" compared with "}
+            <span className="font-semibold text-zinc-950">{reporting.comparison.periodLabel}</span>
+          </p>
+          <div className="flex items-center gap-3 text-xs font-semibold">
+            <button type="button" onClick={() => setShowCompareModal(true)} className="underline underline-offset-4 hover:text-zinc-600">Change comparison</button>
+            <button type="button" onClick={() => handleApplyComparison(null)} className="text-rose-700 underline underline-offset-4 hover:text-rose-900">Disable comparison</button>
+          </div>
+        </div>
+      )}
 
       {error && (
         <div
@@ -477,13 +484,40 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
                 {reporting.comparison.deltaDirection === "increase" ? "↑" : reporting.comparison.deltaDirection === "decrease" ? "↓" : "•"}
                 {reporting.comparison.deltaPercentage !== null
                   ? ` ${Math.abs(reporting.comparison.deltaPercentage)}%`
-                  : ` ${fmt(Math.abs(reporting.comparison.deltaEarnings), selectedTotals?.currency || "SAR")}`}
+                  : reporting.comparison.netEarnings === 0 && (selectedTotals?.monthlyRecognized || 0) > 0
+                    ? " New activity"
+                    : " No comparable baseline"}
               </span>
               <span className="font-medium text-zinc-600">
                 {reporting.comparison.periodLabel} ({fmt(reporting.comparison.netEarnings, selectedTotals?.currency || "SAR")})
               </span>
             </div>
           )}
+        </div>
+
+        <div className="mt-6 grid gap-3 border-t border-zinc-100 pt-6 sm:grid-cols-3">
+          <PeriodFinancialMetric
+            label="Gross earnings"
+            value={periodFinancials.gross}
+            comparisonValue={reporting.comparison?.grossEarnings}
+            comparisonLabel={reporting.comparison?.periodLabel}
+            currency={reporting.chart.currency || selectedTotals?.currency || "SAR"}
+          />
+          <PeriodFinancialMetric
+            label="Realized net earnings"
+            value={selectedTotals?.monthlyRecognized || 0}
+            comparisonValue={reporting.comparison?.netEarnings}
+            comparisonLabel={reporting.comparison?.periodLabel}
+            currency={reporting.chart.currency || selectedTotals?.currency || "SAR"}
+          />
+          <PeriodFinancialMetric
+            label="Host service fees"
+            value={periodFinancials.fees}
+            comparisonValue={reporting.comparison?.platformFee}
+            comparisonLabel={reporting.comparison?.periodLabel}
+            currency={reporting.chart.currency || selectedTotals?.currency || "SAR"}
+            unfavorableIncrease
+          />
         </div>
 
         {/* 3-Card KPI Grid */}
@@ -539,7 +573,46 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
         )}
       </section>
 
+        <section className="rounded-2xl border border-zinc-200 bg-zinc-950 p-4 text-white sm:flex sm:items-center sm:justify-between sm:gap-5">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+              Dashboard Plus
+              {entitlements.hasDashboardPlus
+                ? ` · ${
+                    entitlements.status === "ADMIN_GRANTED"
+                      ? (entitlements.expiresAt ? "Complimentary (Temporary)" : "Complimentary")
+                      : entitlements.status === "TRIAL"
+                      ? "Trial active"
+                      : "Active"
+                  }`
+                : ""}
+            </p>
+            <p className="mt-1 text-sm font-semibold">Advanced Earnings Analytics and RevPAN</p>
+            <p className="mt-1 text-xs leading-relaxed text-zinc-300">Explore property financial comparisons, recorded costs, profitability, and revenue per available night.</p>
+          </div>
+          {entitlements.features.ADVANCED_EARNINGS ? (
+            <Link href={scopedHref("/host/earnings/analytics")} className="mt-3 inline-flex shrink-0 rounded-full bg-white px-4 py-2.5 text-xs font-semibold text-zinc-950 sm:mt-0">Open advanced analytics →</Link>
+          ) : (
+            <p className="mt-3 shrink-0 text-xs leading-relaxed text-zinc-300 sm:mt-0 sm:max-w-48">Available with Dashboard Plus. Contact support or an administrator to activate access.</p>
+          )}
+        </section>
+        
+
       {/* ── Upcoming & Paid payouts ── */}
+      <div className="flex items-end justify-between gap-4">
+        <div>
+          <h2 className="text-xl font-bold text-zinc-950">Payout activity</h2>
+          <p className="mt-1 text-sm text-zinc-500">
+            Completed and scheduled host transactions
+          </p>
+        </div>
+        <Link
+          href={scopedHref("/host/earnings/transactions")}
+          className="shrink-0 text-sm font-semibold underline underline-offset-4"
+        >
+          View all transactions
+        </Link>
+      </div>
       <div className="grid gap-8 lg:grid-cols-2">
         <PayoutsSection
           title="Upcoming"
@@ -617,8 +690,9 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
           isOpen={showCompareModal}
           onClose={() => setShowCompareModal(false)}
           currentPeriodLabel={reporting.timeframeLabel || reporting.monthLabel}
-          currentYear={reporting.selectedYear}
-          currentMonth={reporting.selectedMonth}
+          currentStartDate={reporting.startDateKey || ""}
+          currentEndDate={reporting.endDateKey || ""}
+          currentTimeframe={reporting.timeframe || "monthly"}
           onApplyComparison={handleApplyComparison}
           activeComparison={
             reporting.comparison
@@ -628,6 +702,7 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
                   startDate: reporting.comparison.startDateKey,
                   endDate: reporting.comparison.endDateKey,
                   label: reporting.comparison.periodLabel,
+                  preset: (query.get("comparePreset") as ComparisonPeriodConfig["preset"] | null) || "custom_range",
                 }
               : null
           }
@@ -665,6 +740,13 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
       )}
     </div>
   );
+}
+
+function PeriodFinancialMetric({ label, value, comparisonValue, comparisonLabel, currency, unfavorableIncrease = false }: { label: string; value: number; comparisonValue?: number; comparisonLabel?: string; currency: string; unfavorableIncrease?: boolean }) {
+  const delta = typeof comparisonValue === "number" ? value - comparisonValue : null;
+  const direction = delta === null || delta === 0 ? "No change" : delta > 0 ? (unfavorableIncrease ? "Higher" : "Higher") : (unfavorableIncrease ? "Lower" : "Lower");
+  const tone = delta === null || delta === 0 ? "text-zinc-500" : delta > 0 ? (unfavorableIncrease ? "text-rose-700" : "text-emerald-700") : (unfavorableIncrease ? "text-emerald-700" : "text-rose-700");
+  return <div className="rounded-2xl border border-zinc-100 bg-zinc-50/70 p-4"><p className="text-xs font-medium text-zinc-500">{label}</p><p className="mt-1 text-2xl font-bold tracking-tight text-zinc-950">{fmt(value, currency)}</p>{typeof comparisonValue === "number" ? <p className={`mt-2 text-[11px] font-semibold ${tone}`}>{direction} by {fmt(Math.abs(delta || 0), currency)} vs {comparisonLabel}</p> : <p className="mt-2 text-[11px] text-zinc-500">Completed-stay immutable snapshots</p>}</div>;
 }
 
 /* ─── Payouts Section ─────────────────────────────────────────────────────── */
@@ -1032,13 +1114,22 @@ function MethodsModal({
           )}
         </div>
 
-        <button
-          type="button"
-          onClick={onAdd}
-          className="mt-5 w-full rounded-full bg-zinc-950 px-4 py-2.5 text-sm font-semibold text-white hover:bg-zinc-800"
-        >
-          Add payout method
-        </button>
+        <div className="mt-5 flex flex-col gap-2">
+          <button
+            type="button"
+            onClick={onAdd}
+            className="w-full rounded-full bg-zinc-950 px-4 py-2.5 text-sm font-semibold text-white hover:bg-zinc-800"
+          >
+            Add payout method
+          </button>
+          <Link
+            href="/host/account-settings/payouts"
+            onClick={onClose}
+            className="w-full text-center rounded-full border border-zinc-200 px-4 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 transition-colors"
+          >
+            Open Dedicated Payout Settings →
+          </Link>
+        </div>
       </div>
     </ModalOverlay>
   );

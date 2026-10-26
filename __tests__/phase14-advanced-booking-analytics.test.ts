@@ -63,18 +63,19 @@ test("Phase 14 exposes host-authorized Stats drill-downs without adding an Insig
   assert.match(detail, /booking-times/);
 });
 
-test("Phase 14 redesign keeps the overview compact and loads the full portfolio only in its comparison view", () => {
+test("Phase 14 redesign keeps the overview compact and pages the dedicated portfolio comparison", () => {
   const service = read("services/host-booking-analytics.service.ts");
   const api = read("app/api/v1/host/insights/booking-analytics/route.ts");
   const client = read("app/(protected)/host/insights/stats/booking-analytics/host-booking-analytics-client.tsx");
   const detail = read("app/(protected)/host/insights/stats/booking-analytics/[metric]/page.tsx");
 
-  assert.match(service, /propertyLimit/);
+  assert.match(service, /propertyPageSize/);
+  assert.match(service, /propertyPagination/);
   assert.match(service, /propertiesTotal/);
-  assert.match(api, /propertyLimitValue/);
+  assert.match(api, /Property comparison pagination is invalid/);
   assert.match(client, /Booking analytics sections/);
   assert.match(client, /Selected date/);
   assert.match(client, /View all \{data\.propertiesTotal\} properties/);
-  assert.match(client, /propertyLimit/, "The dedicated page keeps its full-portfolio request through filter updates.");
+  assert.match(client, /Rows per page/);
   assert.match(detail, /property-comparison/);
 });

@@ -148,9 +148,13 @@ export function HostTransactionsClient({
   }, [search]);
 
   const isUpcoming = kind === "upcoming";
-  const title = isUpcoming ? "Upcoming" : "Paid";
+  const isAllTransactions = kind === "all";
+  const title = isAllTransactions ? "Transactions" : isUpcoming ? "Upcoming" : "Paid";
   const totalCurrency = data.totalsByCurrency[0]?.currency || activeCurrency;
   const total = money(data.totalsByCurrency[0]?.amount || 0, totalCurrency);
+  const statusTotals = data.statusTotalsByCurrency.find(
+    (item) => item.currency === totalCurrency,
+  );
   const datePreset = searchParams.get("datePreset") || "all";
 
   const exportParams = new URLSearchParams(searchParams.toString());
@@ -204,11 +208,13 @@ export function HostTransactionsClient({
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-300">
               Payout activity
             </p>
-            <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
+            <h1 className="mt-2 text-white text-3xl font-bold tracking-tight sm:text-4xl">
               {title}
             </h1>
             <p className="mt-2 text-sm text-zinc-300">
-              {isUpcoming
+              {isAllTransactions
+                ? "View and manage your hosting financial transaction history."
+                : isUpcoming
                 ? "Scheduled, ready and processing payouts"
                 : "Verified payout executions"}
             </p>
@@ -276,7 +282,7 @@ export function HostTransactionsClient({
             className="hidden shrink-0 rounded-full border border-zinc-300 bg-white px-3 py-2 text-xs font-semibold sm:block"
           >
             <option value="all">All dates</option>
-            {isUpcoming && (
+            {(isUpcoming || isAllTransactions) && (
               <>
                 <option value="next_30_days">Next 30 days</option>
                 <option value="next_60_days">Next 60 days</option>
@@ -311,7 +317,14 @@ export function HostTransactionsClient({
             className="shrink-0 rounded-full border border-zinc-300 bg-white px-3 py-2 text-xs font-semibold"
           >
             <option value="">All statuses</option>
-            {isUpcoming ? (
+            {isAllTransactions ? (
+              <>
+                <option value="PAID">Paid</option>
+                <option value="SCHEDULED">Scheduled</option>
+                <option value="ELIGIBLE_SETTLEMENT">Ready for settlement</option>
+                <option value="PROCESSING">Processing</option>
+              </>
+            ) : isUpcoming ? (
               <>
                 <option value="SCHEDULED">Scheduled</option>
                 <option value="ELIGIBLE_SETTLEMENT">Ready for settlement</option>
@@ -334,6 +347,18 @@ export function HostTransactionsClient({
             <option value="date_asc">Oldest first</option>
             <option value="amount_desc">Highest amount</option>
             <option value="amount_asc">Lowest amount</option>
+          </select>
+
+          <select
+            aria-label="Transactions per page"
+            value={searchParams.get("limit") || String(data.pagination.limit)}
+            onChange={(e) => update({ limit: e.target.value === "20" ? null : e.target.value })}
+            className="shrink-0 rounded-full border border-zinc-300 bg-white px-3 py-2 text-xs font-semibold"
+          >
+            <option value="10">10 per page</option>
+            <option value="20">20 per page</option>
+            <option value="25">25 per page</option>
+            <option value="50">50 per page</option>
           </select>
 
           {hasActiveFilters && (
@@ -411,7 +436,9 @@ export function HostTransactionsClient({
       >
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500">
-            Total {isUpcoming ? "upcoming" : "paid"} payouts
+            {isAllTransactions
+              ? "Total recorded host earnings"
+              : `Total ${isUpcoming ? "upcoming" : "paid"} payouts`}
           </p>
           <p className="mt-2 text-3xl font-bold tracking-tight text-zinc-950 sm:text-4xl">
             {total}
@@ -421,7 +448,9 @@ export function HostTransactionsClient({
             {data.pagination.total === 1 ? "" : "s"} · based on{" "}
             {data.dateBasis === "EXECUTED_AT"
               ? "execution date"
-              : "scheduled payout date"}
+              : data.dateBasis === "SCHEDULED_PAYOUT_DATE"
+                ? "scheduled payout date"
+                : "executed date when paid; scheduled payout date otherwise"}
             · {totalCurrency}
           </p>
         </div>
@@ -435,6 +464,29 @@ export function HostTransactionsClient({
         </a>
       </section>
 
+      {isAllTransactions && (
+        <section className="grid gap-3 sm:grid-cols-2" aria-label="Transaction status totals">
+          <div className="rounded-2xl border border-emerald-100 bg-emerald-50/60 p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-emerald-800">
+              Completed payouts
+            </p>
+            <p className="mt-1 text-xl font-bold tabular-nums text-emerald-950">
+              {money(statusTotals?.paidAmount || 0, totalCurrency)}
+            </p>
+            <p className="mt-1 text-xs text-emerald-800">Executed host payout transfers only</p>
+          </div>
+          <div className="rounded-2xl border border-sky-100 bg-sky-50/60 p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-sky-800">
+              Pending payouts
+            </p>
+            <p className="mt-1 text-xl font-bold tabular-nums text-sky-950">
+              {money(statusTotals?.pendingAmount || 0, totalCurrency)}
+            </p>
+            <p className="mt-1 text-xs text-sky-800">Scheduled, ready, or processing host earnings</p>
+          </div>
+        </section>
+      )}
+
       {/* Transaction list */}
       <div
         aria-busy={loading}
@@ -442,7 +494,9 @@ export function HostTransactionsClient({
       >
         <div className="flex items-center justify-between border-b border-zinc-100 bg-zinc-50 px-5 py-3.5">
           <div>
-            <h2 className="text-sm font-bold text-zinc-950">Payout details</h2>
+            <h2 className="text-sm font-bold text-zinc-950">
+              {isAllTransactions ? "Financial transaction details" : "Payout details"}
+            </h2>
             <p className="mt-0.5 text-xs text-zinc-500">
               Amounts shown in {totalCurrency}
             </p>
@@ -487,11 +541,11 @@ export function HostTransactionsClient({
                     {dt(item.startDate)} – {dt(item.endDate)}
                   </p>
                   <p className="mt-1 text-xs text-zinc-400">
-                    Payout:{" "}
+                    Host payout · {item.bookingId.slice(0, 12)} ·{" "}
                     {dt(
-                      isUpcoming
-                        ? item.scheduledPayoutDate
-                        : item.executionDetails?.executedAt || item.scheduledPayoutDate,
+                      item.status === "PAID"
+                        ? item.executionDetails?.executedAt || item.scheduledPayoutDate
+                        : item.scheduledPayoutDate,
                     )}
                   </p>
                 </div>
@@ -592,7 +646,19 @@ function MobileDateFilterSheet({
   onApply: () => void;
 }) {
   const options =
-    kind === "upcoming"
+    kind === "all"
+      ? [
+          ["all", "All dates"],
+          ["next_30_days", "Next 30 days"],
+          ["next_60_days", "Next 60 days"],
+          ["next_90_days", "Next 90 days"],
+          ["this_month", "This month"],
+          ["last_month", "Last month"],
+          ["last_30_days", "Last 30 days"],
+          ["this_year", "This year"],
+          ["custom", "Custom dates"],
+        ]
+      : kind === "upcoming"
       ? [
           ["all", "All dates"],
           ["next_30_days", "Next 30 days"],

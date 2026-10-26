@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db/prisma";
 import { AppError } from "@/lib/api/errors";
 import { auditService } from "@/services/audit.service";
 import { invalidateUserCache } from "@/lib/redis/invalidation";
+import { clearHostDashboardCache } from "@/services/host-dashboard.service";
 import {
   getHostDashboardEntitlementsForHost,
   type HostDashboardEntitlements,
@@ -160,6 +161,7 @@ export class HostEntitlementService {
 
     // Invalidate cached permissions and profile
     await invalidateUserCache(input.hostId);
+    clearHostDashboardCache(input.hostId);
 
     const updatedSummary = await this.getHostEntitlementSummary(input.hostId);
 
@@ -222,6 +224,7 @@ export class HostEntitlementService {
 
     // Invalidate caches
     await invalidateUserCache(input.hostId);
+    clearHostDashboardCache(input.hostId);
 
     const updatedSummary = await this.getHostEntitlementSummary(input.hostId);
 
@@ -294,6 +297,7 @@ export class HostEntitlementService {
     });
 
     await invalidateUserCache(input.hostId);
+    clearHostDashboardCache(input.hostId);
 
     const updatedSummary = await this.getHostEntitlementSummary(input.hostId);
 
@@ -322,4 +326,3 @@ export class HostEntitlementService {
 }
 
 export const hostEntitlementService = new HostEntitlementService();
-

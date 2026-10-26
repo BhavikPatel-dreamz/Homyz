@@ -762,13 +762,13 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                             )}
                           </Link>
 
-                          {/* Account settings */}
+                          {/* Host Account Settings */}
                           <Link
-                            href="/profile/tab/account_settings"
+                            href="/host/account-settings"
                             prefetch={false}
                             onClick={() => setMenuOpen(false)}
                             className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${
-                              pathname?.includes("account_settings") || pathname?.startsWith("/account-settings") || pathname === "/profile-management" ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
+                              pathname?.startsWith("/host/account-settings") ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
                             }`}
                           >
                             <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
@@ -949,7 +949,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                             prefetch={false}
                             onClick={() => setMenuOpen(false)}
                             className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${
-                              pathname?.includes("account_settings") || pathname?.startsWith("/account-settings") || pathname === "/profile-management" ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
+                              ((pathname?.includes("account_settings") && !pathname?.startsWith("/host/account-settings")) || pathname === "/account-settings" || pathname === "/profile-management") ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
                             }`}
                           >
                             <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">

@@ -27,7 +27,7 @@ test("Phase 3 earnings uses completed-stay net payout and does not mix chart cur
 test("Phase 3 preserves payout method and bounded-preview behavior", () => {
   const service = source("services/payout.service.ts");
   const page = source("app/(protected)/host/earnings/host-earnings-client.tsx");
-  assert.match(service, /take: payoutPreviewTake/);
+  assert.match(service, /upcomingPayouts\.slice\(0,\s*4\)/);
   assert.match(service, /includeAllPayouts/);
   assert.match(page, /Payout methods/);
   assert.match(page, /Add payout method/);

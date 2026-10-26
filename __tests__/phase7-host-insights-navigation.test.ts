@@ -43,13 +43,13 @@ test("Dashboard Overview integrates deep navigation into Insights tabs", () => {
   const kpiOverview = read("components/host/dashboard/host-kpi-overview.tsx");
 
   // Occupancy connects to Insights Stats tab
-  assert.match(kpiOverview, /href="\/host\/insights\?tab=stats"/);
+  assert.match(kpiOverview, /buildInsightsHref\("stats"\)|buildStatMetricHref\("occupancy"\)/);
 
   // Guest rating connects to Insights Reviews tab
-  assert.match(kpiOverview, /href="\/host\/insights\?tab=reviews"/);
+  assert.match(kpiOverview, /buildInsightsHref\("reviews"\)/);
 
   // Superhost progress connects to Insights Superhost tab
-  assert.match(kpiOverview, /actionHref="\/host\/insights\?tab=superhost"/);
+  assert.match(kpiOverview, /buildInsightsHref\("superhost"\)/);
 
   // Listing completeness / opportunities connects to Insights Opportunities tab
   assert.match(kpiOverview, /actionHref=\{selectedHealthListing \? `\/host\/insights\?tab=opportunities/);
@@ -94,8 +94,8 @@ test("Opportunities module uses non-AI, deterministic listing health checks", ()
   assert.match(service, /cancellationRate\.hostPercentage > 1/);
 
   const oppTab = read("components/host/insights/insights-opportunities-tab.tsx");
-  assert.match(oppTab, /Hosting opportunities/);
-  assert.match(oppTab, /Actionable listing recommendations/);
+  assert.match(oppTab, /Opportunities/);
+  assert.match(oppTab, /Discover practical ways to improve your listings/);
 });
 
 test("Superhost tab displays host-wide platform criteria and real Homyz benefits", () => {

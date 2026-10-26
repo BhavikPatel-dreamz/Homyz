@@ -45,7 +45,7 @@ test("Host Reviews Insights Service provides authoritative calculations and tren
 
   // Detail query and authorization
   assert.match(service, /getHostReviewDetails\(/);
-  assert.match(service, /review\.listing\?\.hostId !== hostId/);
+  assert.match(service, /accessibleHostListingWhere/);
 });
 
 test("Host Reviews Insights Service integrates with existing ReviewResponse system", () => {

@@ -28,6 +28,11 @@ export default async function HostEarningsAnalyticsPage({ searchParams }: { sear
     comparisonStartDate: single(params.comparisonStartDate),
     comparisonEndDate: single(params.comparisonEndDate),
     currency: single(params.currency) || displayCurrency,
+    propertyPage: Number(single(params.propertyPage) || "1"),
+    propertyPageSize: Number(single(params.propertyPageSize) || "10"),
+    propertySearch: single(params.propertySearch),
+    propertySort: single(params.propertySort) as "net" | "gross" | "revpan" | "occupancy" | "bookings" | "nightly_rate" | undefined,
+    propertyStatus: single(params.propertyStatus) as "all" | "with_earnings" | "without_earnings" | undefined,
   });
 
   return <div className="flex min-h-screen flex-col bg-white pb-[calc(110px+env(safe-area-inset-bottom))] font-sans text-zinc-900 sm:pb-0">

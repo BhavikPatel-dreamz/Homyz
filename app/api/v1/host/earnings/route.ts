@@ -5,6 +5,7 @@ import { requireApiRole } from "@/lib/permissions/guards";
 import { Role } from "@/generated/prisma/enums";
 import { payoutService } from "@/services/payout.service";
 import type { TimeframeGranularity } from "@/lib/dashboard/reporting-filter";
+import { AppError } from "@/lib/api/errors";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +18,22 @@ export const GET = apiHandler(async (req: NextRequest) => {
   const compareMonth = Number(url.searchParams.get("compareMonth"));
   const compareYear = Number(url.searchParams.get("compareYear"));
   const compareQuarter = Number(url.searchParams.get("compareQuarter"));
+  const dateKey = (value: string | null) => {
+    if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+    const [year, month, day] = value.split("-").map(Number);
+    const date = new Date(Date.UTC(year, month - 1, day));
+    return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
+  };
+  const startDate = url.searchParams.get("startDate");
+  const endDate = url.searchParams.get("endDate");
+  const compareStartDate = url.searchParams.get("compareStartDate");
+  const compareEndDate = url.searchParams.get("compareEndDate");
+  if ((startDate || endDate) && (!dateKey(startDate) || !dateKey(endDate) || startDate! > endDate!)) {
+    throw AppError.badRequest("The reporting period requires valid start and end dates.");
+  }
+  if ((compareStartDate || compareEndDate) && (!dateKey(compareStartDate) || !dateKey(compareEndDate) || compareStartDate! > compareEndDate!)) {
+    throw AppError.badRequest("The comparison period requires valid start and end dates.");
+  }
 
   const overview = await payoutService.getHostEarningsOverview(actor.id, {
     listingId: url.searchParams.get("propertyId") || url.searchParams.get("listingId") || undefined,
@@ -27,15 +44,20 @@ export const GET = apiHandler(async (req: NextRequest) => {
     date: url.searchParams.get("date") || undefined,
     weekStart: url.searchParams.get("weekStart") || undefined,
     quarter: Number.isInteger(quarter) ? quarter : undefined,
-    startDate: url.searchParams.get("startDate") || undefined,
-    endDate: url.searchParams.get("endDate") || undefined,
+    startDate: startDate || undefined,
+    endDate: endDate || undefined,
     compareEnabled: url.searchParams.get("compare") === "true",
     compareTimeframe: (url.searchParams.get("compareTimeframe") as TimeframeGranularity) || undefined,
-    compareStartDate: url.searchParams.get("compareStartDate") || undefined,
-    compareEndDate: url.searchParams.get("compareEndDate") || undefined,
+    compareStartDate: compareStartDate || undefined,
+    compareEndDate: compareEndDate || undefined,
     compareMonth: Number.isInteger(compareMonth) ? compareMonth : undefined,
     compareYear: Number.isInteger(compareYear) ? compareYear : undefined,
     compareQuarter: Number.isInteger(compareQuarter) ? compareQuarter : undefined,
+    comparePreset: url.searchParams.get("comparePreset") === "prior_period" || url.searchParams.get("comparePreset") === "prior_year"
+      ? url.searchParams.get("comparePreset") as "prior_period" | "prior_year"
+      : undefined,
   });
-  return ok(overview);
+  const response = ok(overview);
+  response.headers.set("Cache-Control", "private, no-store");
+  return response;
 });

@@ -45,6 +45,11 @@ import {
   type ResolvedReportingPeriod,
 } from "@/lib/dashboard/reporting-filter";
 import { getListingAnalyticsSummary } from "@/services/listing-analytics.service";
+import {
+  getHostDashboardEntitlements,
+  resolveHostDashboardEntitlements,
+  type HostDashboardEntitlements,
+} from "@/lib/entitlements/host-dashboard";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -435,6 +440,7 @@ export interface HostDashboardData {
   superhostEvaluation: HostDashboardSuperhostEvaluation;
   guestFavoriteSummary: HostDashboardGuestFavoriteListingItem[];
   recommendations: HostDashboardRecommendation[];
+  entitlements: HostDashboardEntitlements;
 }
 
 export interface HostDashboardFilterOptions {
@@ -502,7 +508,7 @@ export async function getHostDashboardData(
   // The profile and authorized listing lookup do not depend on one another.
   // Start them together so dashboard latency is governed by the slower query,
   // rather than the sum of both queries.
-  const [hostUser, hostListings] = await Promise.all([
+  const [hostUser, hostListings, entitlements] = await Promise.all([
     prisma.user.findUnique({
       where: { id: actor.id },
       select: {
@@ -515,6 +521,7 @@ export async function getHostDashboardData(
       },
     }),
     listingService.listForHost(actor, { take: null }),
+    getHostDashboardEntitlements(actor),
   ]);
 
   const accountStatus = hostUser?.status ?? UserStatus.ACTIVE;
@@ -535,7 +542,7 @@ export async function getHostDashboardData(
   const allListingIds = listings.map((l) => l.id);
 
   if (allListingIds.length === 0) {
-    const emptyData = createEmptyHostDashboard(actor, hostUser, isAccountInGoodStanding, opts?.listingId, reportingPeriod);
+    const emptyData = createEmptyHostDashboard(actor, hostUser, isAccountInGoodStanding, opts?.listingId, reportingPeriod, entitlements);
     dashboardCache.set(cacheKey, { data: emptyData, expiresAt: nowMs + CACHE_TTL_MS });
     return emptyData;
   }
@@ -1691,6 +1698,7 @@ export async function getHostDashboardData(
     },
     guestFavoriteSummary,
     recommendations,
+    entitlements,
   };
 
   dashboardCache.set(cacheKey, { data: result, expiresAt: nowMs + CACHE_TTL_MS });
@@ -1723,6 +1731,7 @@ function createEmptyHostDashboard(
   isAccountInGoodStanding: boolean,
   filterListingId?: string | null,
   period?: ResolvedReportingPeriod,
+  entitlements?: HostDashboardEntitlements,
 ): HostDashboardData {
   const now = new Date();
   const twelveMonthsAgo = new Date(now);
@@ -1990,5 +1999,6 @@ function createEmptyHostDashboard(
     },
     guestFavoriteSummary: [],
     recommendations: [],
+    entitlements: entitlements ?? resolveHostDashboardEntitlements(null, actor.role),
   };
 }

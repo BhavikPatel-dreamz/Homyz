@@ -55,7 +55,7 @@ export const GET = apiHandler(async (req: NextRequest) => {
       },
     });
   }
-  if (status === "upcoming" || status === "paid") {
+  if (status === "all" || status === "upcoming" || status === "paid") {
     const datePreset = url.searchParams.get("datePreset");
     const transactions = await payoutService.listHostEarningsTransactions(
       actor.id,
@@ -75,6 +75,9 @@ export const GET = apiHandler(async (req: NextRequest) => {
           "this_month",
           "last_month",
           "last_30_days",
+          "next_30_days",
+          "next_60_days",
+          "next_90_days",
           "this_year",
           "custom",
         ].includes(datePreset || "")
@@ -83,6 +86,9 @@ export const GET = apiHandler(async (req: NextRequest) => {
               | "this_month"
               | "last_month"
               | "last_30_days"
+              | "next_30_days"
+              | "next_60_days"
+              | "next_90_days"
               | "this_year"
               | "custom")
           : "all",
@@ -126,10 +132,12 @@ export const GET = apiHandler(async (req: NextRequest) => {
       return `"${safe.replace(/"/g, '""')}"`;
     };
     const headers = [
-      "Booking Reference",
+      "Transaction ID",
+      "Reservation ID",
+      "Transaction Type",
       "Property Title",
       "Guest Name",
-      "Payout Date",
+      "Financial Date",
       "Gross Earnings",
       "Platform Fee",
       "Net Payout",
@@ -137,11 +145,13 @@ export const GET = apiHandler(async (req: NextRequest) => {
       "Status",
     ];
     const rows = transactions.transactions.map((transaction) => [
+      cell(transaction.executionDetails?.settlementReference || transaction.bookingId),
       cell(transaction.bookingId),
+      cell("HOST_PAYOUT"),
       cell(transaction.listingTitle),
       cell(transaction.guestName),
       cell(
-        status === "paid"
+        transaction.status === "PAID"
           ? transaction.executionDetails?.executedAt
           : transaction.scheduledPayoutDate,
       ),

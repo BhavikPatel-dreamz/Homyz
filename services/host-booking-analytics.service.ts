@@ -50,6 +50,10 @@ export interface HostBookingAnalyticsQuery {
   currency?: string;
   /** Null intentionally requests the full portfolio for the dedicated comparison view. */
   propertyLimit?: number | null;
+  propertyPage?: number;
+  propertyPageSize?: number;
+  propertySearch?: string;
+  propertySort?: "bookings" | "occupancy" | "rate" | "revenue" | "cancellation";
 }
 
 export interface HostBookingAnalyticsData {
@@ -78,6 +82,8 @@ export interface HostBookingAnalyticsData {
     averageStayNights: number | null;
     lastMinuteBookingsCount: number;
     lastMinuteBookingsPercentage: number | null;
+    /** Confirmed last-minute booking value from eligible immutable payout snapshots. */
+    lastMinuteRecordedNetHostPayoutCents: number | null;
     realizedNightlyRateCents: number | null;
   };
   occupancy: {
@@ -109,8 +115,9 @@ export interface HostBookingAnalyticsData {
     realizedBookingCount: number;
     trend: Array<{ monthKey: string; averageNightlyRateCents: number | null; completedStaysCount: number }>;
   };
-  properties: Array<{ listingId: string; title: string; confirmedBookingsCount: number; completedStaysCount: number; occupancyRatePercentage: number | null; bookedNights: number; averageStayNights: number | null; averageLeadTimeDays: number | null; lastMinuteBookingPercentage: number | null; realizedNightlyRateCents: number | null; eligibleAccommodationRevenueCents: number; averageBookingValueCents: number | null; cancellationRatePercentage: number | null; guestRating: number | null; responseRatePercentage: null; responseRateStatus: "DATA_UNAVAILABLE" }>;
+  properties: Array<{ listingId: string; title: string; confirmedBookingsCount: number; completedStaysCount: number; occupancyRatePercentage: number | null; bookedNights: number; averageStayNights: number | null; averageLeadTimeDays: number | null; lastMinuteBookingPercentage: number | null; lastMinuteRecordedNetHostPayoutCents: number | null; realizedNightlyRateCents: number | null; eligibleAccommodationRevenueCents: number; averageBookingValueCents: number | null; cancellationRatePercentage: number | null; guestRating: number | null; responseRatePercentage: null; responseRateStatus: "DATA_UNAVAILABLE" }>;
   propertiesTotal: number;
+  propertyPagination: { page: number; pageSize: number; total: number; totalPages: number };
 }
 
 type ListingRecord = DashboardInventoryListing & { title: string; published: boolean; status: string; isPaused: boolean };
@@ -231,6 +238,23 @@ export const hostBookingAnalyticsService = {
     }
 
     const selectedCurrency = normalizeCurrencyCode(query.currency ?? "SAR");
+    const lastMinutePayoutByListing = new Map(scopedListings.map((listing) => [listing.id, { amount: 0, qualifyingBookings: 0 }]));
+    let lastMinuteRecordedNetHostPayoutCents = 0;
+    let lastMinutePayoutQualifyingBookings = 0;
+    for (const booking of eventBookings) {
+      const leadTime = calculateBookingLeadTimeDays(booking.createdAt, booking.startDate);
+      if (!isLastMinuteBooking(leadTime)) continue;
+      const payout = extractStoredHostPayout(booking);
+      if (!payout || !isStoredBookingPayoutEligible(booking)) continue;
+      if (normalizeCurrencyCode(payout.currency ?? booking.currency ?? "SAR") !== selectedCurrency) continue;
+      lastMinuteRecordedNetHostPayoutCents += payout.netHostPayout;
+      lastMinutePayoutQualifyingBookings++;
+      const listingTotal = lastMinutePayoutByListing.get(booking.listingId);
+      if (listingTotal) {
+        listingTotal.amount += payout.netHostPayout;
+        listingTotal.qualifyingBookings++;
+      }
+    }
     const rateMonths = new Map<string, { amount: number; nights: number; stays: number }>();
     const propertyRates = new Map(scopedListings.map((listing) => [listing.id, { amount: 0, net: 0, nights: 0, stays: 0 }]));
     let excludedFinancialSnapshotCount = 0;
@@ -259,6 +283,7 @@ export const hostBookingAnalyticsService = {
       const listingStays = completedStays.filter((booking) => booking.listingId === listing.id);
       const completedNights = listingStays.map((booking) => differenceInBookingNights(booking.startDate, booking.endDate)).filter(Boolean);
       const rate = propertyRates.get(listing.id)!;
+      const lastMinutePayout = lastMinutePayoutByListing.get(listing.id)!;
       const cancelledCount = cancelledByListing.get(listing.id) ?? 0;
       const cancellationDenominator = listingEvents.length + cancelledCount;
       return {
@@ -271,6 +296,7 @@ export const hostBookingAnalyticsService = {
         averageStayNights: average(completedNights),
         averageLeadTimeDays: average(listingLeadTimes),
         lastMinuteBookingPercentage: listingEvents.length ? Math.round((listingLeadTimes.filter(isLastMinuteBooking).length / listingEvents.length) * 1000) / 10 : null,
+        lastMinuteRecordedNetHostPayoutCents: lastMinutePayout.qualifyingBookings ? lastMinutePayout.amount : null,
         realizedNightlyRateCents: rate.nights ? Math.round(rate.amount / rate.nights) : null,
         eligibleAccommodationRevenueCents: rate.amount,
         averageBookingValueCents: rate.stays ? Math.round(rate.net / rate.stays) : null,
@@ -283,10 +309,24 @@ export const hostBookingAnalyticsService = {
     });
 
     const isHistoricalWindow = period.endDateKey < bookingDateKey(now);
-    const propertyLimit = query.propertyLimit === undefined ? 10 : query.propertyLimit;
-    const visibleProperties = [...propertyMetrics]
-      .sort((left, right) => right.confirmedBookingsCount - left.confirmedBookingsCount || left.title.localeCompare(right.title))
-      .slice(0, propertyLimit === null ? undefined : Math.max(0, propertyLimit));
+    const propertySearch = query.propertySearch?.trim().toLocaleLowerCase();
+    const propertySort = query.propertySort ?? "bookings";
+    const filteredProperties = propertyMetrics
+      .filter((property) => !propertySearch || property.title.toLocaleLowerCase().includes(propertySearch))
+      .sort((left, right) => {
+        const metric = (property: typeof left) => {
+          if (propertySort === "occupancy") return property.occupancyRatePercentage ?? -1;
+          if (propertySort === "rate") return property.realizedNightlyRateCents ?? -1;
+          if (propertySort === "revenue") return property.eligibleAccommodationRevenueCents;
+          if (propertySort === "cancellation") return property.cancellationRatePercentage ?? -1;
+          return property.confirmedBookingsCount;
+        };
+        return metric(right) - metric(left) || left.title.localeCompare(right.title);
+      });
+    const propertyPageSize = Math.min(50, Math.max(10, query.propertyPageSize ?? (query.propertyLimit && query.propertyLimit > 10 ? query.propertyLimit : 10)));
+    const propertyPageCount = Math.max(1, Math.ceil(filteredProperties.length / propertyPageSize));
+    const propertyPage = Math.min(propertyPageCount, Math.max(1, query.propertyPage ?? 1));
+    const visibleProperties = filteredProperties.slice((propertyPage - 1) * propertyPageSize, propertyPage * propertyPageSize);
     return {
       reportingPeriod: { label: period.label, startDateKey: period.startDateKey, endDateKey: period.endDateKey, comparisonLabel: comparison ? `Compared with ${comparison.label}` : period.comparisonLabel },
       selectedListingId: query.listingId ?? null,
@@ -313,6 +353,7 @@ export const hostBookingAnalyticsService = {
         averageStayNights: average(stayNights),
         lastMinuteBookingsCount: leadTimes.filter(isLastMinuteBooking).length,
         lastMinuteBookingsPercentage: eventBookings.length ? Math.round((leadTimes.filter(isLastMinuteBooking).length / eventBookings.length) * 1000) / 10 : null,
+        lastMinuteRecordedNetHostPayoutCents: lastMinutePayoutQualifyingBookings ? lastMinuteRecordedNetHostPayoutCents : null,
         realizedNightlyRateCents: Array.from(propertyRates.values()).reduce((sum, item) => sum + item.nights, 0) ? Math.round(Array.from(propertyRates.values()).reduce((sum, item) => sum + item.amount, 0) / Array.from(propertyRates.values()).reduce((sum, item) => sum + item.nights, 0)) : null,
       },
       occupancy: {
@@ -327,7 +368,8 @@ export const hostBookingAnalyticsService = {
       stayLength: { distribution: STAY_LENGTH_BUCKETS.map((bucket) => { const item = stayCounts.get(bucket.id)!; return { id: bucket.id, label: bucket.label, bookingsCount: item.bookings, bookedNights: item.nights, percentage: stayNights.length ? Math.round((item.bookings / stayNights.length) * 1000) / 10 : 0 }; }) },
       pricing: { status: !completedStays.length ? "DATA_UNAVAILABLE" : excludedFinancialSnapshotCount ? "PARTIAL" : "AVAILABLE", message: !completedStays.length ? "No completed stays fall within this reporting period." : excludedFinancialSnapshotCount ? `${excludedFinancialSnapshotCount} completed stay${excludedFinancialSnapshotCount === 1 ? "" : "s"} excluded because an eligible immutable financial snapshot was unavailable.` : null, realizedBookingCount: Array.from(propertyRates.values()).reduce((sum, item) => sum + item.stays, 0), trend: Array.from(rateMonths.entries()).map(([monthKey, item]) => ({ monthKey, averageNightlyRateCents: item.nights ? Math.round(item.amount / item.nights) : null, completedStaysCount: item.stays })) },
       properties: visibleProperties,
-      propertiesTotal: propertyMetrics.length,
+      propertiesTotal: filteredProperties.length,
+      propertyPagination: { page: propertyPage, pageSize: propertyPageSize, total: filteredProperties.length, totalPages: propertyPageCount },
     };
   },
 };

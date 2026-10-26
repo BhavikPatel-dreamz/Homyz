@@ -359,13 +359,77 @@ export function HostKpiOverview({
   const officialGuestFavorites = guestFavoriteSummary.filter((listing) => listing.officialStatus).length;
 
   const activePeriodConfig = DATE_PRESETS.find((p) => p.id === selectedPeriod) || DATE_PRESETS[0];
-  const earningsHref = (() => {
+
+  const buildEarningsHref = (tab?: string) => {
+    const params = new URLSearchParams();
+    if (selectedPropertyId) params.set("propertyId", selectedPropertyId);
+    if (selectedCurrency) params.set("currency", selectedCurrency);
+    if (selectedPeriod && selectedPeriod !== "this_month") params.set("period", selectedPeriod);
+    if (selectedPeriod === "custom") {
+      if (customStartDate) params.set("startDate", customStartDate);
+      if (customEndDate) params.set("endDate", customEndDate);
+    }
+    if (tab) params.set("tab", tab);
+    const query = params.toString();
+    return `/host/earnings${query ? `?${query}` : ""}`;
+  };
+
+  const buildUpcomingPayoutsHref = () => {
     const params = new URLSearchParams();
     if (selectedPropertyId) params.set("propertyId", selectedPropertyId);
     if (selectedCurrency) params.set("currency", selectedCurrency);
     const query = params.toString();
-    return `/host/earnings${query ? `?${query}` : ""}`;
-  })();
+    return `/host/earnings/upcoming${query ? `?${query}` : ""}`;
+  };
+
+  const buildCalendarHref = () => {
+    const params = new URLSearchParams();
+    if (selectedPropertyId) params.set("propertyId", selectedPropertyId);
+    const query = params.toString();
+    return `/host/calendar${query ? `?${query}` : ""}`;
+  };
+
+  const buildInsightsHref = (tab: "stats" | "reviews" | "opportunities" | "superhost" = "stats") => {
+    const params = new URLSearchParams();
+    params.set("tab", tab);
+    if (selectedPropertyId) params.set("propertyId", selectedPropertyId);
+    if (selectedPeriod && selectedPeriod !== "this_month") params.set("period", selectedPeriod);
+    if (selectedPeriod === "custom") {
+      if (customStartDate) params.set("startDate", customStartDate);
+      if (customEndDate) params.set("endDate", customEndDate);
+    }
+    if (selectedCurrency) params.set("currency", selectedCurrency);
+    const query = params.toString();
+    return `/host/insights?${query}`;
+  };
+
+  const buildStatMetricHref = (metric: string) => {
+    const params = new URLSearchParams();
+    if (selectedPropertyId) params.set("propertyId", selectedPropertyId);
+    if (selectedPeriod && selectedPeriod !== "this_month") params.set("period", selectedPeriod);
+    if (selectedPeriod === "custom") {
+      if (customStartDate) params.set("startDate", customStartDate);
+      if (customEndDate) params.set("endDate", customEndDate);
+    }
+    if (selectedCurrency) params.set("currency", selectedCurrency);
+    const query = params.toString();
+    return `/host/insights/stats/${metric}${query ? `?${query}` : ""}`;
+  };
+
+  const buildPlusHref = (basePath: string) => {
+    const params = new URLSearchParams();
+    if (selectedPropertyId) params.set("propertyId", selectedPropertyId);
+    if (selectedPeriod && selectedPeriod !== "this_month") params.set("period", selectedPeriod);
+    if (selectedPeriod === "custom") {
+      if (customStartDate) params.set("startDate", customStartDate);
+      if (customEndDate) params.set("endDate", customEndDate);
+    }
+    if (selectedCurrency) params.set("currency", selectedCurrency);
+    const query = params.toString();
+    return `${basePath}${query ? `?${query}` : ""}`;
+  };
+
+  const earningsHref = buildEarningsHref();
 
   return (
     <section
@@ -614,7 +678,7 @@ export function HostKpiOverview({
               ? t("host_dash_no_upcoming_payout", "No eligible upcoming payout")
               : `${t("host_dash_next_label", "Next:")} ${formatCurrency(kpis.upcomingPayout.nextPayoutAmountCents, kpis.upcomingPayout.currency)}`
           }
-          href={earningsHref}
+          href={buildUpcomingPayoutsHref()}
         />
         <PrimaryKpi
           refreshing={isRefreshing}
@@ -623,7 +687,7 @@ export function HostKpiOverview({
           value={`${kpis.occupancy.ratePercentage}%`}
           detail={`${kpis.occupancy.bookedNights} ${t("host_dash_booked_of", "booked of")} ${kpis.occupancy.totalBookableNights} ${t("host_dash_nights", "nights")}`}
           progress={kpis.occupancy.ratePercentage}
-          href="/host/insights?tab=stats"
+          href={buildStatMetricHref("occupancy")}
         />
       </div>
 
@@ -634,7 +698,7 @@ export function HostKpiOverview({
           label={t("host_dash_kpi_booked_vs_available", "Booked vs available")}
           value={`${kpis.occupancy.bookedNights} / ${kpis.occupancy.availableNights}`}
           detail={`${kpis.occupancy.blockedNights} ${t("host_dash_blocked_nights", "blocked nights")} · ${kpis.occupancy.periodLabel}`}
-          href="/host/calendar"
+          href={buildCalendarHref()}
         />
         <SecondaryKpi
           refreshing={isRefreshing}
@@ -643,7 +707,7 @@ export function HostKpiOverview({
           detail={kpis.averageBookingValue.completedBookingsCount > 0
             ? t("host_dash_kpi_net_payout_stay", "Net payout per stay")
             : t("host_dash_no_eligible_completed_stays", "No eligible completed stays")}
-          href={earningsHref}
+          href={buildStatMetricHref("rates")}
         />
         <SecondaryKpi
           refreshing={isRefreshing}
@@ -654,23 +718,113 @@ export function HostKpiOverview({
           detail={kpis.averageStayLength.completedStaysCount > 0
             ? t("host_dash_kpi_completed_stays", "Completed stays")
             : t("host_dash_no_completed_stays", "No completed stays")}
-          href="/host/today"
+          href={buildStatMetricHref("stay-length")}
         />
         <SecondaryKpi
           refreshing={isRefreshing}
-          label={t("host_dash_kpi_cancel_rate", "Cancellation rate")}
+          label={t("host_dash_kpi_cancel_rate", "Cancellation rate (All-time)")}
           value={`${kpis.cancellationRate.overallPercentage}%`}
           detail={`${t("host_dash_kpi_host_prefix", "Host:")} ${kpis.cancellationRate.hostPercentage}% · ${kpis.cancellationRate.periodLabel}`}
-          href="/host/resolution-center"
+          href={buildStatMetricHref("cancellations")}
         />
         <SecondaryKpi
           refreshing={isRefreshing}
           label={t("host_dash_kpi_guest_rating", "Guest rating")}
           value={kpis.averageRating.overallRating === null ? "—" : `★ ${kpis.averageRating.overallRating.toFixed(2)}`}
           detail={`${kpis.averageRating.totalReviewsCount} ${kpis.averageRating.totalReviewsCount === 1 ? t("host_dash_review_singular", "review") : t("host_dash_review_plural", "reviews")}`}
-          href="/host/insights?tab=reviews"
+          href={buildInsightsHref("reviews")}
         />
       </div>
+
+      {/* Dashboard Tier & Plus Quick-Access Toolbar */}
+      {data.entitlements?.hasDashboardPlus ? (
+        <section
+          aria-labelledby="dashboard-plus-tools-heading"
+          className="mt-4 rounded-[12px] border border-white bg-zinc-950 p-4 text-white shadow-[0_2px_4px_0px_#00000040] sm:p-5"
+        >
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="rounded-full bg-amber-400/20 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-amber-300">
+                  Dashboard Plus
+                </span>
+                <span className="text-xs text-zinc-400">
+                  {data.entitlements.status === "ADMIN_GRANTED"
+                    ? data.entitlements.expiresAt
+                      ? "Complimentary (Temporary)"
+                      : "Complimentary"
+                    : data.entitlements.status === "TRIAL"
+                    ? "Trial active"
+                    : "Active"}
+                </span>
+              </div>
+              <h2 id="dashboard-plus-tools-heading" className="mt-1 text-base font-semibold text-white">
+                Dashboard Plus host tools
+              </h2>
+              <p className="mt-0.5 text-xs text-zinc-300">
+                Direct access to unlocked portfolio intelligence, lead-time pacing, RevPAN, and operational management.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Link
+                href={buildPlusHref("/host/insights/stats/booking-analytics")}
+                className="inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-1.5 text-xs font-semibold text-zinc-950 transition hover:bg-zinc-100"
+              >
+                <span>Booking Analytics</span>
+                <span aria-hidden="true">→</span>
+              </Link>
+              <Link
+                href={buildPlusHref("/host/earnings/analytics/revpan")}
+                className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3.5 py-1.5 text-xs font-semibold text-white transition hover:bg-white/20"
+              >
+                <span>RevPAN</span>
+                <span aria-hidden="true">→</span>
+              </Link>
+              <Link
+                href={buildPlusHref("/host/operations")}
+                className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3.5 py-1.5 text-xs font-semibold text-white transition hover:bg-white/20"
+              >
+                <span>Operations</span>
+                <span aria-hidden="true">→</span>
+              </Link>
+              <Link
+                href={buildPlusHref("/host/insights/listing-performance")}
+                className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3.5 py-1.5 text-xs font-semibold text-white transition hover:bg-white/20"
+              >
+                <span>Comparisons</span>
+                <span aria-hidden="true">→</span>
+              </Link>
+            </div>
+          </div>
+        </section>
+      ) : (
+        <section
+          aria-labelledby="dashboard-tier-heading"
+          className="mt-4 rounded-[12px] border border-white bg-[#F3F4F5] p-4 shadow-[0_2px_4px_0px_#00000040] sm:p-5"
+        >
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="rounded-full bg-zinc-200 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-700">
+                  Standard Dashboard
+                </span>
+                <span className="text-xs text-[#727272]">Included with hosting</span>
+              </div>
+              <h2 id="dashboard-tier-heading" className="mt-1 text-sm font-semibold text-[#1F1F1F]">
+                Standard Hosting Tools Active
+              </h2>
+              <p className="mt-0.5 text-xs text-[#727272]">
+                Your overview includes all core earnings, reservations, calendar, reviews, and Superhost progress. Advanced analytics (RevPAN, booking pacing, expense tracking) require Dashboard Plus.
+              </p>
+            </div>
+            <div className="shrink-0">
+              <span className="inline-flex items-center rounded-full bg-white border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-600 shadow-2xs">
+                Plus available via admin grant or subscription
+              </span>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* This Month Snapshot Section (Phase 2 Section 3) */}
       <section className={`mt-4 ${cardClass} p-4 sm:p-5`} aria-labelledby="this-month-snapshot-heading">
@@ -699,10 +853,10 @@ export function HostKpiOverview({
             </p>
           </div>
           <div className={`${insetSurfaceClass} p-4 border border-zinc-100 shadow-2xs`}>
-            <p className="text-xs font-medium text-[#727272]">{t("host_dash_cancellations_this_month", "Cancellations")}</p>
+            <p className="text-xs font-medium text-[#727272]">{t("host_dash_cancellations_this_month", "This month cancellations")}</p>
             <p className="mt-2 text-2xl font-semibold text-[#1F1F1F]">{thisMonthSnapshot.cancellationsCount}</p>
             <p className="mt-1 text-xs text-[#727272]">
-              {thisMonthSnapshot.cancellationRatePercentage}% {t("host_dash_monthly_cancel_rate", "cancellation rate")}
+              {thisMonthSnapshot.cancellationRatePercentage}% {t("host_dash_monthly_cancel_rate", "month cohort rate")}
             </p>
           </div>
           <div className={`${insetSurfaceClass} p-4 border border-zinc-100 shadow-2xs`}>
@@ -731,10 +885,10 @@ export function HostKpiOverview({
             </p>
           </div>
           <Link
-            href={earningsHref}
+            href={buildUpcomingPayoutsHref()}
             className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-[#1F1F1F] px-4 py-2 text-xs font-medium text-white transition hover:bg-black"
           >
-            <span>{t("host_dash_view_payouts_ledger", "View earnings ledger")}</span>
+            <span>{t("host_dash_view_payouts_ledger", "View upcoming payouts")}</span>
             <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
           </Link>
         </div>
@@ -1120,7 +1274,7 @@ export function HostKpiOverview({
           </div>
           <div className="flex items-center gap-3">
             <Link
-              href="/host/reviews"
+              href={buildInsightsHref("reviews")}
               className="rounded-full bg-white px-3 py-1.5 text-xs font-medium text-[#1F1F1F] border border-zinc-200 hover:border-zinc-400 shadow-2xs"
             >
               {t("host_dash_all_reviews_link", "Manage reviews")}
@@ -1205,7 +1359,7 @@ export function HostKpiOverview({
                   : t("host_dash_not_yet_eligible", "In progress")
             }
             tone={superhostEvaluation.officialStatus ? "positive" : "neutral"}
-            actionHref="/host/insights?tab=superhost"
+            actionHref={buildInsightsHref("superhost")}
             actionLabel={t("host_dash_view_superhost_details", "View details")}
             details={[
               `${superhostEvaluation.currentProgress.completedReservationsCount} of 10 ${t("host_dash_completed_res_suffix", "completed reservations")}`,

@@ -25,6 +25,10 @@ export interface EarningsInteractiveChartProps {
   onSelectPoint?: (index: number | null) => void;
   selectedPointIndex?: number | null;
   selectedListingId?: string | null;
+  /** The financial numerator represented by `grossEarnings`; defaults to the settlement chart's gross definition. */
+  grossLabel?: string;
+  emptyTitle?: string;
+  emptyMessage?: string;
   className?: string;
 }
 
@@ -43,6 +47,7 @@ interface FormattedChartItem {
   completedStaysCount: number;
   propertyBreakdown: HostEarningsChartPoint["propertyBreakdown"];
   secondaryAmount?: number;
+  secondaryPlatformFee?: number;
 }
 
 const emptySubscribe = () => () => {};
@@ -74,20 +79,16 @@ export function EarningsInteractiveChart({
   onSelectPoint,
   selectedPointIndex = null,
   selectedListingId = null,
+  grossLabel = "Gross Earnings",
+  emptyTitle = "No earnings recorded for this timeframe",
+  emptyMessage = "Try adjusting the property filter or selecting a different reporting period.",
   className = "",
 }: EarningsInteractiveChartProps) {
   const [activeMetric, setActiveMetric] = useState<ChartMetric>("net");
   const isMounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
-  const hasComparison = Boolean(
-    comparisonLabel &&
-      points.some(
-        (p) =>
-          typeof p.secondaryAmount === "number" &&
-          (p.secondaryAmount > 0 || (p.secondaryGrossEarnings || 0) > 0),
-      ),
-  );
+  const hasComparison = Boolean(comparisonLabel);
 
   // Format data specifically for Recharts
   const chartData: FormattedChartItem[] = useMemo(() => {
@@ -104,7 +105,7 @@ export function EarningsInteractiveChart({
           ? p.secondaryAmount || 0
           : activeMetric === "gross"
             ? p.secondaryGrossEarnings || 0
-            : 0;
+            : p.secondaryPlatformFee || 0;
 
       return {
         index,
@@ -188,7 +189,7 @@ export function EarningsInteractiveChart({
         </div>
         <div className="mt-1.5 space-y-1 text-[11px] text-zinc-600">
           <div className="flex justify-between gap-4">
-            <span>Gross Earnings:</span>
+            <span>{grossLabel}:</span>
             <span className="font-semibold text-zinc-900">{fmt(data.grossEarnings, currency)}</span>
           </div>
           <div className="flex justify-between gap-4">
@@ -453,7 +454,7 @@ export function EarningsInteractiveChart({
                   </p>
                 </div>
                 <div className="rounded-xl border border-zinc-200/70 bg-white p-3 shadow-2xs">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Gross Earnings</p>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">{grossLabel}</p>
                   <p className="mt-1 text-base font-extrabold text-zinc-950 sm:text-lg">
                     {fmt(selPoint.grossEarnings, currency)}
                   </p>
@@ -501,9 +502,9 @@ export function EarningsInteractiveChart({
       ) : (
         <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-200 bg-zinc-50/70 py-12 text-center">
           <span className="text-2xl">📊</span>
-          <p className="mt-2 text-sm font-bold text-zinc-900">No earnings recorded for this timeframe</p>
+          <p className="mt-2 text-sm font-bold text-zinc-900">{emptyTitle}</p>
           <p className="mt-1 text-xs text-zinc-500 max-w-sm">
-            Try adjusting the property filter or selecting a different reporting period.
+            {emptyMessage}
           </p>
         </div>
       )}

@@ -272,6 +272,80 @@ export interface ResolvedTimeframePeriod {
   durationDays: number;
 }
 
+export type EarningsComparisonPreset = "prior_period" | "prior_year";
+
+export interface ExplicitComparisonPeriod {
+  startDateKey: string;
+  endDateKey: string;
+  label: string;
+}
+
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+function calendarDateKey(date: Date) {
+  return bookingDateKey(date);
+}
+
+function formatCalendarRange(startDate: Date, endDate: Date) {
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+  return `${formatter.format(startDate)} – ${formatter.format(endDate)}`;
+}
+
+function previousYearDate(date: Date) {
+  const year = date.getUTCFullYear() - 1;
+  const month = date.getUTCMonth();
+  const day = Math.min(
+    date.getUTCDate(),
+    new Date(Date.UTC(year, month + 1, 0)).getUTCDate(),
+  );
+  return new Date(Date.UTC(year, month, day));
+}
+
+/**
+ * Produces a concrete Period B from the already resolved primary reporting
+ * period. Both UI and service callers therefore share UTC calendar-day rules
+ * rather than reconstructing dates from a display label.
+ */
+export function resolveComparisonPeriod(
+  primary: Pick<ResolvedTimeframePeriod, "timeframe" | "startDate" | "endDate" | "durationDays">,
+  preset: EarningsComparisonPreset,
+): ExplicitComparisonPeriod {
+  const start = new Date(Date.UTC(
+    primary.startDate.getUTCFullYear(),
+    primary.startDate.getUTCMonth(),
+    primary.startDate.getUTCDate(),
+  ));
+  const end = new Date(Date.UTC(
+    primary.endDate.getUTCFullYear(),
+    primary.endDate.getUTCMonth(),
+    primary.endDate.getUTCDate(),
+  ));
+
+  const priorMonthStart = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth() - 1, 1));
+  const priorMonthLastDay = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), 0)).getUTCDate();
+  const comparisonEnd = preset === "prior_period"
+    ? primary.timeframe === "monthly"
+      ? new Date(Date.UTC(priorMonthStart.getUTCFullYear(), priorMonthStart.getUTCMonth(), Math.min(end.getUTCDate(), priorMonthLastDay)))
+      : new Date(start.getTime() - MS_PER_DAY)
+    : previousYearDate(end);
+  const comparisonStart = preset === "prior_period"
+    ? primary.timeframe === "monthly"
+      ? priorMonthStart
+      : new Date(comparisonEnd.getTime() - (primary.durationDays - 1) * MS_PER_DAY)
+    : previousYearDate(start);
+
+  return {
+    startDateKey: calendarDateKey(comparisonStart),
+    endDateKey: calendarDateKey(comparisonEnd),
+    label: formatCalendarRange(comparisonStart, comparisonEnd),
+  };
+}
+
 /**
  * Resolves exact start/end dates and comparison boundaries for Daily, Weekly, Monthly,
  * Quarterly, Yearly, and Custom timeframes.
@@ -479,18 +553,38 @@ export function resolveTimeframeBounds(
     : curMonth;
 
   const startDate = new Date(Date.UTC(year, month, 1, 0, 0, 0, 0));
-  const endDate = new Date(Date.UTC(year, month + 1, 0, 23, 59, 59, 999));
+  const isCurrentMonth = year === curYear && month === curMonth;
+  const endDay = isCurrentMonth
+    ? curDate
+    : new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+  const endDate = new Date(Date.UTC(year, month, endDay, 23, 59, 59, 999));
 
-  // Comparison: prior month
+  // A current month is a month-to-date reporting period. Comparing it with a
+  // full prior month would understate/overstate change depending on the day.
+  // Historical month selections remain complete calendar months.
   const compStart = new Date(Date.UTC(year, month - 1, 1, 0, 0, 0, 0));
-  const compEnd = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999));
+  const previousMonthLastDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  const compEnd = new Date(Date.UTC(
+    year,
+    month - 1,
+    isCurrentMonth ? Math.min(endDay, previousMonthLastDay) : previousMonthLastDay,
+    23,
+    59,
+    59,
+    999,
+  ));
 
   const monthLabel = startDate.toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
-  const compMonthLabel = compStart.toLocaleDateString("en-US", { month: "short", timeZone: "UTC" });
+  const timeframeLabel = isCurrentMonth
+    ? `${monthLabel} 1–${endDay} (month to date)`
+    : monthLabel;
+  const compMonthLabel = isCurrentMonth
+    ? `${compStart.toLocaleDateString("en-US", { month: "short", timeZone: "UTC" })} 1–${compEnd.getUTCDate()}`
+    : compStart.toLocaleDateString("en-US", { month: "short", timeZone: "UTC" });
 
   return {
     timeframe: "monthly",
-    label: monthLabel,
+    label: timeframeLabel,
     startDate,
     endDate,
     startDateKey: bookingDateKey(startDate),
@@ -500,7 +594,7 @@ export function resolveTimeframeBounds(
     comparisonStartDateKey: bookingDateKey(compStart),
     comparisonEndDateKey: bookingDateKey(compEnd),
     comparisonLabel: `vs ${compMonthLabel}`,
-    durationDays: Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)),
+    durationDays: Math.floor((endDate.getTime() - startDate.getTime()) / MS_PER_DAY) + 1,
   };
 }
 
@@ -537,4 +631,3 @@ export function calculateDelta(
     deltaDirection,
   };
 }
-

@@ -18,6 +18,7 @@ import { savePrivateMedia, readPrivateMedia, deletePrivateMedia } from "@/lib/st
 import { HOST_MESSAGE_MAX_LENGTH } from "@/lib/booking/host-message";
 import { bookingDateKey, parseBookingDate } from "@/lib/booking/booking-date";
 import { moderationService } from "./moderation.service";
+import { recordInquiryAnalyticsEvent } from "./listing-analytics.service";
 
 export type MessageAttachmentDTO = {
   id: string;
@@ -1165,6 +1166,7 @@ async function createInquiryConversation(
       bookingId: null,
     },
   });
+  let createdInquiryConversation = false;
 
   if (!conversation) {
     conversation = await prisma.conversation.create({
@@ -1177,6 +1179,7 @@ async function createInquiryConversation(
         lastMessageAt: now,
       },
     });
+    createdInquiryConversation = true;
   } else {
     await prisma.conversation.update({
       where: { id: conversation.id },
@@ -1215,6 +1218,15 @@ async function createInquiryConversation(
     });
   } catch (err) {
     console.error("Failed to notify host for new inquiry:", err);
+  }
+
+  if (createdInquiryConversation) {
+    void recordInquiryAnalyticsEvent({
+      conversationId: conversation.id,
+      listingId: listing.id,
+      hostId: listing.hostId,
+      guestId: actor.id,
+    }).catch(() => undefined);
   }
 
   const fullConversation = await getConversationById(actor, conversation.id);

@@ -9,6 +9,7 @@ const SESSION_COOKIE = "homyz_analytics_session";
 type StoredEventType =
   | "LISTING_VIEW"
   | "SEARCH_IMPRESSION"
+  | "INQUIRY"
   | "BOOKING_INTENT"
   | "CONFIRMED_BOOKING"
   | "UNATTRIBUTED_CONFIRMED_BOOKING";
@@ -139,6 +140,38 @@ export async function recordConfirmedBookingAnalyticsEvent(input: {
   }
 }
 
+/**
+ * Records a newly created guest inquiry as a durable host-side funnel stage.
+ * The event intentionally has no session-to-booking attribution: an inquiry
+ * can later turn into a booking through a different authenticated flow, and
+ * this service must not claim that relationship without a persisted link.
+ */
+export async function recordInquiryAnalyticsEvent(input: {
+  conversationId: string;
+  listingId: string;
+  hostId: string;
+  guestId: string;
+}) {
+  try {
+    await prisma.listingAnalyticsEvent.create({
+      data: {
+        eventType: "INQUIRY",
+        listingId: input.listingId,
+        hostId: input.hostId,
+        visitorHash: hash(`guest:${input.guestId}`),
+        dedupeKey: hash(`inquiry:${input.conversationId}`),
+        metadata: { source: "guest_inquiry" },
+      },
+    });
+    return { recorded: true };
+  } catch (error: unknown) {
+    if (typeof error === "object" && error && "code" in error && (error as { code?: string }).code === "P2002") {
+      return { recorded: false, deduplicated: true };
+    }
+    throw error;
+  }
+}
+
 export type ListingAnalyticsSummary = {
   status: "ACTIVE" | "DATA_UNAVAILABLE";
   message: string;
@@ -146,7 +179,9 @@ export type ListingAnalyticsSummary = {
   listingViews: number;
   searchImpressions: number;
   attributedConfirmedBookings: number;
+  inquiries: number;
   conversionRatePercentage: number | null;
+  viewToInquiryRatePercentage: number | null;
 };
 
 export async function getListingAnalyticsSummary(input: {
@@ -155,7 +190,7 @@ export async function getListingAnalyticsSummary(input: {
   endDate: Date;
 }): Promise<ListingAnalyticsSummary> {
   if (!input.listingIds.length) {
-    return { status: "ACTIVE", message: "No listings are selected.", trackingStartedAt: null, listingViews: 0, searchImpressions: 0, attributedConfirmedBookings: 0, conversionRatePercentage: null };
+    return { status: "ACTIVE", message: "No listings are selected.", trackingStartedAt: null, listingViews: 0, searchImpressions: 0, attributedConfirmedBookings: 0, inquiries: 0, conversionRatePercentage: null, viewToInquiryRatePercentage: null };
   }
   try {
     const [counts, firstEvent] = await Promise.all([
@@ -177,6 +212,7 @@ export async function getListingAnalyticsSummary(input: {
     const count = (eventType: StoredEventType) => counts.find((row) => row.eventType === eventType)?._count._all ?? 0;
     const listingViews = count("LISTING_VIEW");
     const attributedConfirmedBookings = count("CONFIRMED_BOOKING");
+    const inquiries = count("INQUIRY");
     return {
       status: "ACTIVE",
       message: firstEvent
@@ -186,12 +222,16 @@ export async function getListingAnalyticsSummary(input: {
       listingViews,
       searchImpressions: count("SEARCH_IMPRESSION"),
       attributedConfirmedBookings,
+      inquiries,
       conversionRatePercentage: listingViews > 0
         ? Math.round((attributedConfirmedBookings / listingViews) * 10_000) / 100
+        : null,
+      viewToInquiryRatePercentage: listingViews > 0
+        ? Math.round((inquiries / listingViews) * 10_000) / 100
         : null,
     };
   } catch {
     // Deployments that have not applied the additive telemetry migration remain usable.
-    return { status: "DATA_UNAVAILABLE", message: "Listing analytics storage is not available in this deployment yet.", trackingStartedAt: null, listingViews: 0, searchImpressions: 0, attributedConfirmedBookings: 0, conversionRatePercentage: null };
+    return { status: "DATA_UNAVAILABLE", message: "Listing analytics storage is not available in this deployment yet.", trackingStartedAt: null, listingViews: 0, searchImpressions: 0, attributedConfirmedBookings: 0, inquiries: 0, conversionRatePercentage: null, viewToInquiryRatePercentage: null };
   }
 }

@@ -26,19 +26,25 @@ export const GET = apiHandler(async (req: NextRequest) => {
   const url = new URL(req.url);
   const filters = parseInsightsReportingFilters(url);
   const comparison = comparisonFilters(url);
-  const propertyLimitValue = url.searchParams.get("propertyLimit");
-  const propertyLimit = propertyLimitValue === "all"
-    ? null
-    : propertyLimitValue && /^\d+$/.test(propertyLimitValue)
-      ? Math.min(100, Number(propertyLimitValue))
-      : undefined;
+  const propertyPage = Number(url.searchParams.get("propertyPage") || "1");
+  const propertyPageSize = Number(url.searchParams.get("propertyPageSize") || "10");
+  const propertySort = url.searchParams.get("propertySort");
+  if (!Number.isInteger(propertyPage) || propertyPage < 1 || !Number.isInteger(propertyPageSize) || ![10, 25, 50].includes(propertyPageSize)) {
+    throw AppError.badRequest("Property comparison pagination is invalid.");
+  }
+  if (propertySort && !["bookings", "occupancy", "rate", "revenue", "cancellation"].includes(propertySort)) {
+    throw AppError.badRequest("Property comparison sort is invalid.");
+  }
   const response = ok(await hostBookingAnalyticsService.getOverview(actor, {
     listingId: filters.listingId,
     period: filters.period,
     startDate: filters.startDate,
     endDate: filters.endDate,
     ...comparison,
-    propertyLimit,
+    propertyPage,
+    propertyPageSize,
+    propertySearch: url.searchParams.get("propertySearch") || undefined,
+    propertySort: (propertySort ?? undefined) as "bookings" | "occupancy" | "rate" | "revenue" | "cancellation" | undefined,
     currency: filters.currency || req.cookies.get("homyz_display_currency")?.value || "SAR",
   }));
   response.headers.set("Cache-Control", "private, no-store");

@@ -39,7 +39,7 @@ export const GET = apiHandler(async (request: NextRequest) => {
   const actor = await requireApiRole(request, [Role.HOST, Role.ADMIN]);
   const url = new URL(request.url);
   const kind = url.searchParams.get("status");
-  if (kind !== "upcoming" && kind !== "paid") {
+  if (kind !== "all" && kind !== "upcoming" && kind !== "paid") {
     throw AppError.badRequest("A valid transaction status is required.");
   }
   const datePreset = url.searchParams.get("datePreset") || "all";
@@ -57,13 +57,17 @@ export const GET = apiHandler(async (request: NextRequest) => {
       "Payout status is not valid for this transaction view.",
     );
   }
+  const requestedLimit = Number(url.searchParams.get("limit")) || 20;
+  if (![10, 20, 25, 50].includes(requestedLimit)) {
+    throw AppError.badRequest("Unsupported transaction page size.");
+  }
   if (sort && !transactionSorts.has(sort)) {
     throw AppError.badRequest("Unsupported transaction sort.");
   }
   const result = await payoutService.listHostEarningsTransactions(actor.id, {
     kind: kind as HostEarningsTransactionKind,
     page: Number(url.searchParams.get("page")) || 1,
-    limit: Number(url.searchParams.get("limit")) || 20,
+    limit: requestedLimit,
     listingId:
       url.searchParams.get("propertyId") ||
       url.searchParams.get("listingId") ||
