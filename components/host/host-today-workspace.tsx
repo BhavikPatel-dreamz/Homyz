@@ -566,9 +566,9 @@ export function HostTodayWorkspace({
                   role="tab"
                   aria-selected={tab === filterTab.id}
                   onClick={() => handleTabChange(filterTab.id as ReservationPeriod)}
-                  className={`rounded-full px-4 py-2 text-sm sm:px-4.5 sm:py-2.5 font-medium transition-all duration-200 shrink-0 font-sans cursor-pointer ${tab === filterTab.id
+                  className={`rounded-full px-4 py-2 text-sm sm:px-4.5 sm:py-2.5 font-medium transition-all duration-300 shrink-0 cursor-pointer ${tab === filterTab.id
                     ? "bg-[#1F1F1F] text-white shadow-xs"
-                    : "bg-[#F3F4F5] text-[#1F1F1F] hover:bg-zinc-200"
+                    : "bg-[#F3F4F5] text-[#1F1F1F] hover:bg-[#1f1f1f] hover:text-white"
                     }`}
                 >
                   <span>{filterTab.label}</span>
@@ -582,10 +582,10 @@ export function HostTodayWorkspace({
               aria-label={t("host_today_filters", "Filters")}
               aria-expanded={filtersOpen}
               onClick={openFilters}
-              className={`col-start-3 justify-self-end inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-full px-4 text-sm font-medium transition-colors duration-200 cursor-pointer border ${
+              className={`col-start-3 justify-self-end inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-full px-4 text-sm font-medium transition-colors duration-300 cursor-pointer border ${
                 appliedPropertyId
                   ? "bg-[#1F1F1F] text-white border-[#1F1F1F]"
-                  : "bg-white text-[#1F1F1F] border-zinc-300 hover:bg-zinc-50 shadow-2xs"
+                  : "bg-white hover:bg-[#1f1f1f] hover:text-white text-[#1F1F1F] border-zinc-300"
               }`}
             >
               <svg

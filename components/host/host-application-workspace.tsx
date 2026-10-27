@@ -159,8 +159,8 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
     Boolean(formData.location.trim() && formData.propertyCount >= 1),
     Boolean(
       application.documents &&
-        application.documents.some((d) => d.documentType === "GOVERNMENT_ID") &&
-        application.documents.some((d) => d.documentType === "PROOF_OF_ADDRESS")
+      application.documents.some((d) => d.documentType === "GOVERNMENT_ID") &&
+      application.documents.some((d) => d.documentType === "PROOF_OF_ADDRESS")
     ),
     true, // Notes (Optional)
     accountState !== "DRAFT", // Application Submitted
@@ -528,7 +528,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
   return (
     <div className="mx-auto max-w-5xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
       {/* Header Banner */}
-      <div className="relative overflow-hidden rounded-3xl border border-[var(--border)] bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent p-6 sm:p-8 backdrop-blur-md">
+      <div className="relative overflow-hidden rounded-2xl border border-white bg-[#F3F4F5] shadow-[0_2px_4px_0px_#00000040] p-6 sm:p-8 backdrop-blur-md">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="flex flex-wrap items-center gap-3">
@@ -596,7 +596,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
       </div>
 
       {/* Onboarding Stage Tracker (Visible on all states) */}
-      <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-xs">
+      <div className="rounded-2xl border border-white bg-[#F3F4F5] shadow-[0_2px_4px_0px_#00000040] p-6">
         <div className="flex items-center justify-between">
           <h2 className="text-base font-medium text-[#1f1f1f]">
             {t("host_app_workflow_title", "Onboarding Workflow Progress")}
@@ -606,7 +606,7 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
           </span>
         </div>
 
-        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
+        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
           {onboardingStepsTimeline.map((st, idx) => {
             const status = getTimelineStatus(st.key);
 
@@ -619,58 +619,55 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                   else if (st.key === "DOCUMENTS" || st.key === "COMPLIANCE") setActiveStep(4);
                   else setActiveStep(6);
                 }}
-                className={`relative flex flex-col gap-2 items-center justify-between min-h-[115px] rounded-lg border p-3 text-center transition-all cursor-pointer select-none hover:shadow-md ${
-                  status === "completed"
-                    ? "border-emerald-500/30 bg-emerald-500/5"
-                    : status === "action_required"
-                    ? "border-rose-500/50 bg-rose-500/10 animate-pulse"
+                className={`relative flex flex-col gap-2 items-center justify-between min-h-[115px] rounded-lg border p-3 text-center transition-all cursor-pointer select-none hover:shadow-md ${status === "completed"
+                  ? "border-emerald-500/30 hover:border-emerald-800/50 bg-emerald-500/5"
+                  : status === "action_required"
+                    ? "border-rose-500/50 hover:border-rose-500/70 bg-rose-500/10 animate-pulse"
                     : status === "in_progress"
-                    ? "border-amber-500/40 bg-amber-500/10"
-                    : status === "failed"
-                    ? "border-rose-500/50 bg-rose-500/10"
-                    : "border-[var(--border)] bg-[var(--surface-secondary)]/50"
-                }`}
+                      ? "border-amber-500/40 hover:border-amber-500/60 bg-amber-500/10"
+                      : status === "failed"
+                        ? "border-rose-500/50 hover:border-rose-500/80 bg-rose-500/10"
+                        : "border-[var(--border)] bg-[var(--surface-secondary)]/50"
+                  }`}
               >
                 <div
-                  className={`flex h-7 w-7 items-center justify-center rounded-full text-sm font-medium border shadow-2xs ${
-                    status === "completed"
-                      ? "bg-emerald-500 text-white border-emerald-600"
-                      : status === "action_required"
+                  className={`flex h-7 w-7 items-center justify-center rounded-full text-sm font-medium border shadow-2xs ${status === "completed"
+                    ? "bg-emerald-500 text-white border-emerald-600"
+                    : status === "action_required"
                       ? "bg-rose-500 text-white border-rose-600"
                       : status === "in_progress"
-                      ? "bg-amber-500 text-white border-amber-600"
-                      : "bg-[var(--surface)] text-[#727272] border-[var(--border)]"
-                  }`}
+                        ? "bg-amber-500 text-white border-amber-600"
+                        : "bg-[var(--surface)] text-[#727272] border-[var(--border)]"
+                    }`}
                 >
                   {status === "completed" ? "✓" : status === "action_required" ? "!" : status === "in_progress" ? "●" : idx + 1}
                 </div>
 
-                <span className="mt-1.5 text-sm font-medium leading-tight text-muted-foreground">
+                <span className="mt-1.5 text-sm font-normal leading-tight text-[#727272]">
                   {st.label}
                 </span>
 
                 <span
-                  className={`mt-1.5 rounded-full px-3 py-1.5 text-sm font-medium  ${
-                    status === "completed"
-                      ? "bg-emerald-500/20 text-emerald-800 dark:text-emerald-300"
-                      : status === "action_required"
+                  className={`mt-1.5 rounded-full px-3 py-1 text-sm font-medium  ${status === "completed"
+                    ? "bg-emerald-500/20 text-emerald-800 dark:text-emerald-300"
+                    : status === "action_required"
                       ? "bg-rose-500/20 text-rose-800 dark:text-rose-300 font-black"
                       : status === "in_progress"
-                      ? "bg-amber-500/20 text-amber-800 dark:text-amber-300"
-                      : status === "failed"
-                      ? "bg-rose-500/20 text-rose-800 dark:text-rose-300"
-                      : "bg-[var(--muted)] text-[#727272]"
-                  }`}
+                        ? "bg-amber-500/20 text-amber-800 dark:text-amber-300"
+                        : status === "failed"
+                          ? "bg-rose-500/20 text-rose-800 dark:text-rose-300"
+                          : "bg-[var(--muted)] text-[#727272]"
+                    }`}
                 >
                   {status === "completed"
                     ? t("host_app_badge_done", "Done")
                     : status === "action_required"
-                    ? t("host_app_badge_action_needed", "Action Needed")
-                    : status === "in_progress"
-                    ? t("host_app_status_submitted", "In Review")
-                    : status === "failed"
-                    ? t("host_app_badge_rejected", "Rejected")
-                    : t("host_app_badge_pending", "Pending")}
+                      ? t("host_app_badge_action_needed", "Action Needed")
+                      : status === "in_progress"
+                        ? t("host_app_status_submitted", "In Review")
+                        : status === "failed"
+                          ? t("host_app_badge_rejected", "Rejected")
+                          : t("host_app_badge_pending", "Pending")}
                 </span>
               </div>
             );
@@ -831,11 +828,10 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                 key={st.num}
                 type="button"
                 onClick={() => setActiveStep(st.num)}
-                className={`rounded-full px-4 py-2 text-xs font-medium transition-all ${
-                  activeStep === st.num
-                    ? "bg-[#FCDF9C] text-[#291E05] shadow-xs dark:bg-amber-500 dark:text-zinc-950"
-                    : "text-[#727272] hover:bg-[var(--muted)]"
-                }`}
+                className={`rounded-full px-4 py-2 text-xs font-medium transition-all ${activeStep === st.num
+                  ? "bg-[#FCDF9C] text-[#291E05] shadow-xs dark:bg-amber-500 dark:text-zinc-950"
+                  : "text-[#727272] hover:bg-[var(--muted)]"
+                  }`}
               >
                 {st.title}
               </button>
@@ -1074,13 +1070,12 @@ export function HostApplicationWorkspace({ initialData }: HostApplicationWorkspa
                         <div className="flex items-center gap-2">
                           <span className="font-medium text-xs text-muted-foreground">{getDocTypeLabel(doc.documentType)}</span>
                           <span
-                            className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
-                              doc.status === "VERIFIED"
-                                ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400"
-                                : doc.status === "REJECTED"
+                            className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${doc.status === "VERIFIED"
+                              ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400"
+                              : doc.status === "REJECTED"
                                 ? "bg-rose-500/20 text-rose-600 dark:text-rose-400"
                                 : "bg-amber-500/20 text-amber-600 dark:text-amber-400"
-                            }`}
+                              }`}
                           >
                             {doc.status}
                           </span>
