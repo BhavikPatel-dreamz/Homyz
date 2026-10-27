@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db/prisma";
 import { AppError } from "@/lib/api/errors";
+import { deleteManagedMediaUrl, parseManagedMediaUrl } from "@/lib/storage/media";
 import {
   Prisma,
   TravelEvidenceSource,
@@ -466,6 +467,7 @@ function toUserTravelStampDTO(record: {
     ruleThreshold: number;
     isActive?: boolean;
     displayOrder?: number;
+    isCustom?: boolean;
   };
 }): UserTravelStampDTO {
   const evidence = readStampEvidence(record.evidenceMetadata);
@@ -488,6 +490,7 @@ function toUserTravelStampDTO(record: {
       ruleThreshold: record.stamp.ruleThreshold,
       isActive: record.stamp.isActive,
       displayOrder: record.stamp.displayOrder,
+      isCustom: record.stamp.isCustom,
     },
     awardedAt: record.awardedAt,
     isPinned: record.isPinned,
@@ -760,6 +763,7 @@ export async function getTravelStampPickerItems(
     prisma.travelStamp.findMany({
       where: {
         isActive: true,
+        OR: [{ isCustom: false }, { ownerId: userId }],
       },
       orderBy: [{ displayOrder: "asc" }, { displayName: "asc" }],
     }),
@@ -803,6 +807,7 @@ export async function getTravelStampPickerItems(
     category: stamp.category,
     isAlreadyCollected: collectedStampIds.has(stamp.id),
     isVerifiedSuggestion: false,
+    isCustom: stamp.isCustom,
   }));
 }
 
@@ -826,7 +831,10 @@ export async function getTravelStampPickerPage(
   const limit = Math.min(24, Math.max(1, Math.floor(options.limit || 9)));
   const search = options.search?.trim() || "";
   const country = options.country?.trim() || "";
-  const where: Prisma.TravelStampWhereInput = { isActive: true };
+  const where: Prisma.TravelStampWhereInput = {
+    isActive: true,
+    OR: [{ isCustom: false }, { ownerId: userId }],
+  };
   const conditions: Prisma.TravelStampWhereInput[] = [];
 
   if (country && country.toLowerCase() !== "all") {
@@ -913,6 +921,7 @@ export async function getTravelStampPickerPage(
       category: stamp.category,
       isAlreadyCollected: collectedIds.has(stamp.id),
       isVerifiedSuggestion: false,
+      isCustom: stamp.isCustom,
     })),
     page: Math.min(page, totalPages),
     limit,
@@ -923,11 +932,15 @@ export async function getTravelStampPickerPage(
 }
 
 /** Database-driven country options, without loading the stamp catalog into the client. */
-export async function getTravelStampPickerCountries(): Promise<string[]> {
+export async function getTravelStampPickerCountries(userId: string): Promise<string[]> {
   await ensureStampCatalog();
   const [catalogCountries, destinationCountries] = await Promise.all([
     prisma.travelStamp.findMany({
-      where: { isActive: true, country: { not: null } },
+      where: {
+        isActive: true,
+        country: { not: null },
+        OR: [{ isCustom: false }, { ownerId: userId }],
+      },
       select: { country: true },
       distinct: ["country"],
       orderBy: { country: "asc" },
@@ -971,6 +984,7 @@ export async function addTravelStampSelections(
     where: {
       id: { in: requestedIds },
       isActive: true,
+      OR: [{ isCustom: false }, { ownerId: userId }],
     },
   });
 
@@ -1010,6 +1024,160 @@ export async function addTravelStampSelections(
   });
 
   return getTravelerStamps(userId);
+}
+
+function customStampSlug(userId: string, displayName: string): string {
+  const name = displayName
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "stamp";
+  return `custom-${userId.slice(-8)}-${Date.now()}-${name}`;
+}
+
+async function resolveCustomStampArtwork(userId: string, input: {
+  artworkUrl?: string | null;
+  sourcePhotoId?: string | null;
+}): Promise<string> {
+  if (input.sourcePhotoId) {
+    const photo = await prisma.travelPhoto.findFirst({
+      where: { id: input.sourcePhotoId, userId },
+      select: { url: true, mediumUrl: true },
+    });
+    if (!photo) throw AppError.forbidden("You can only use one of your own travel photos.");
+    return photo.mediumUrl || photo.url;
+  }
+
+  const artworkUrl = input.artworkUrl?.trim() || "";
+  const parsed = parseManagedMediaUrl(artworkUrl);
+  const fileName = parsed?.fileName.split("/").at(-1) || "";
+  if (
+    !artworkUrl ||
+    parsed?.kind !== "stamp-icons" ||
+    parsed.visibility !== "public" ||
+    !fileName.startsWith(`custom_stamp_${userId}_`)
+  ) {
+    throw AppError.badRequest("Upload custom stamp artwork before saving it.");
+  }
+  return artworkUrl;
+}
+
+export async function createCustomTravelStamp(
+  userId: string,
+  input: {
+    displayName: string;
+    country?: string | null;
+    city?: string | null;
+    artworkUrl?: string | null;
+    sourcePhotoId?: string | null;
+    isPublic?: boolean;
+  },
+): Promise<UserTravelStampDTO> {
+  const displayName = input.displayName.trim().slice(0, 60);
+  if (!displayName) throw AppError.badRequest("Custom stamp name is required.");
+  const iconUrl = await resolveCustomStampArtwork(userId, input);
+
+  const existing = await prisma.travelStamp.findFirst({
+    where: { ownerId: userId, isCustom: true, displayName, iconUrl },
+    include: { userStamps: { where: { userId }, include: { stamp: true } } },
+  });
+  if (existing?.userStamps[0]) return toUserTravelStampDTO(existing.userStamps[0]);
+
+  const displayOrder = await prisma.userTravelStamp.count({ where: { userId } });
+  const created = await prisma.$transaction(async (tx) => {
+    const stamp = await tx.travelStamp.upsert({
+      where: {
+        ownerId_displayName_iconUrl: { ownerId: userId, displayName, iconUrl },
+      },
+      update: {},
+      create: {
+        slug: customStampSlug(userId, displayName),
+        ownerId: userId,
+        isCustom: true,
+        displayName,
+        title: displayName,
+        country: input.country?.trim().slice(0, 80) || null,
+        city: input.city?.trim().slice(0, 80) || null,
+        description: "Personal travel stamp.",
+        // Keep the value compatible with the legacy enum-backed database;
+        // ownership is represented by isCustom/ownerId, not category.
+        category: "THEME",
+        eligibilityRule: "USER_CUSTOM",
+        ruleThreshold: 0,
+        iconUrl,
+        isActive: true,
+      },
+    });
+    return tx.userTravelStamp.upsert({
+      where: { userId_stampId: { userId, stampId: stamp.id } },
+      update: {},
+      create: {
+        userId,
+        stampId: stamp.id,
+        displayOrder,
+        evidenceMetadata: {
+          source: "USER_CUSTOM",
+          isPublic: input.isPublic !== false,
+        },
+      },
+      include: { stamp: true },
+    });
+  });
+  return toUserTravelStampDTO(created);
+}
+
+export async function updateCustomTravelStamp(
+  userId: string,
+  stampId: string,
+  input: {
+    displayName?: string | null;
+    country?: string | null;
+    city?: string | null;
+    artworkUrl?: string | null;
+    sourcePhotoId?: string | null;
+  },
+): Promise<UserTravelStampDTO> {
+  const current = await prisma.userTravelStamp.findFirst({
+    where: { userId, stampId, stamp: { is: { isCustom: true, ownerId: userId } } },
+    include: { stamp: true },
+  });
+  if (!current) throw AppError.notFound("Custom stamp not found.");
+  const nextArtwork = input.artworkUrl || input.sourcePhotoId
+    ? await resolveCustomStampArtwork(userId, input)
+    : current.stamp.iconUrl || current.stamp.imageUrl;
+  if (!nextArtwork) throw AppError.badRequest("Custom stamp artwork is required.");
+  const updated = await prisma.travelStamp.update({
+    where: { id: stampId },
+    data: {
+      ...(input.displayName !== undefined ? { displayName: input.displayName?.trim().slice(0, 60) || current.stamp.displayName, title: input.displayName?.trim().slice(0, 60) || current.stamp.title } : {}),
+      ...(input.country !== undefined ? { country: input.country?.trim().slice(0, 80) || null } : {}),
+      ...(input.city !== undefined ? { city: input.city?.trim().slice(0, 80) || null } : {}),
+      ...(nextArtwork !== (current.stamp.iconUrl || current.stamp.imageUrl) ? { iconUrl: nextArtwork } : {}),
+    },
+  });
+  const userStamp = await prisma.userTravelStamp.findUnique({ where: { id: current.id }, include: { stamp: true } });
+  if (!userStamp) throw AppError.notFound("Custom stamp not found.");
+  if (updated.iconUrl !== current.stamp.iconUrl && isOwnedCustomArtwork(current.stamp.iconUrl, userId)) {
+    await deleteManagedMediaUrl(current.stamp.iconUrl).catch(() => {});
+  }
+  return toUserTravelStampDTO(userStamp);
+}
+
+export async function deleteCustomTravelStamp(userId: string, stampId: string): Promise<void> {
+  const stamp = await prisma.travelStamp.findFirst({ where: { id: stampId, ownerId: userId, isCustom: true } });
+  if (!stamp) throw AppError.notFound("Custom stamp not found.");
+  await prisma.travelStamp.delete({ where: { id: stamp.id } });
+  if (isOwnedCustomArtwork(stamp.iconUrl, userId)) {
+    await deleteManagedMediaUrl(stamp.iconUrl).catch(() => {});
+  }
+}
+
+function isOwnedCustomArtwork(url: string | null | undefined, userId: string) {
+  const parsed = parseManagedMediaUrl(url);
+  return (
+    parsed?.kind === "stamp-icons" &&
+    parsed.visibility === "public" &&
+    (parsed.fileName.split("/").at(-1) || "").startsWith(`custom_stamp_${userId}_`)
+  );
 }
 
 export async function createManualTravelStamp(

@@ -132,6 +132,8 @@ export interface TravelStampDTO {
   ruleThreshold: number;
   isActive?: boolean;
   displayOrder?: number;
+  /** Personal artwork is visible only to its owner in the picker and never awards verification. */
+  isCustom?: boolean;
 }
 
 export interface AdminTravelStampDTO {
@@ -180,6 +182,7 @@ export interface TravelStampPickerItemDTO {
   category: string;
   isAlreadyCollected: boolean;
   isVerifiedSuggestion: boolean;
+  isCustom?: boolean;
 }
 
 export interface TravelStampPickerPageDTO {

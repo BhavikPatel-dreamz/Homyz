@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     return NextResponse.json({
-      countries: await getTravelStampPickerCountries(),
+      countries: await getTravelStampPickerCountries(actor.id),
     });
   } catch (error: unknown) {
     if (error instanceof AppError) {

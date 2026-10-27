@@ -518,6 +518,7 @@ model User {
   travelPhotos                    TravelPhoto[]              @relation("UserTravelPhotos")
   userDestinations                UserDestination[]          @relation("UserDestinations")
   userTravelStamps                UserTravelStamp[]          @relation("UserTravelStamps")
+  customTravelStamps              TravelStamp[]              @relation("CustomTravelStamps")
   userTravelAchievements          UserTravelAchievement[]    @relation("UserTravelAchievements")
   travelFollowers                 TravelFollow[]             @relation("TravelFollowers")
   travelFollowing                 TravelFollow[]             @relation("TravelFollowing")
@@ -2928,6 +2929,8 @@ model TravelStamp {
   description     String?           @db.Text
   countryCode     String?
   destinationId   String?
+  ownerId         String?
+  isCustom        Boolean           @default(false)
   iconUrl         String?
   imageUrl        String?
   category        String            @default("DESTINATION")
@@ -2939,12 +2942,15 @@ model TravelStamp {
   updatedAt       DateTime          @updatedAt
 
   destination Destination?      @relation(fields: [destinationId], references: [id], onDelete: SetNull)
+  owner       User?             @relation("CustomTravelStamps", fields: [ownerId], references: [id], onDelete: Cascade)
   userStamps  UserTravelStamp[]
 
   @@index([slug])
   @@index([category])
   @@index([countryCode])
   @@index([destinationId])
+  @@index([ownerId, isCustom])
+  @@unique([ownerId, displayName, iconUrl])
   @@index([displayOrder])
 }
 
@@ -3044,6 +3050,5 @@ model UserBlock {
   @@index([blockerId])
   @@index([blockedId])
 }
-
 
 

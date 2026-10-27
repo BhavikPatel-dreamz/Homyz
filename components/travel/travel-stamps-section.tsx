@@ -37,6 +37,8 @@ export function TravelStampsSection({
   const [isTogglingVisibility, setIsTogglingVisibility] = useState(false);
   const [isPinning, setIsPinning] = useState(false);
   const [isManagerOpen, setIsManagerOpen] = useState(false);
+  const [customStampToEdit, setCustomStampToEdit] =
+    useState<UserTravelStampDTO | null>(null);
   const [stampPendingRemoval, setStampPendingRemoval] =
     useState<UserTravelStampDTO | null>(null);
   const [isRemoving, setIsRemoving] = useState(false);
@@ -257,15 +259,36 @@ export function TravelStampsSection({
                       </span>
                     </button>
                     {isOwner && (
-                      <button
-                        type="button"
-                        onClick={() => setStampPendingRemoval(userStamp)}
-                        aria-label={`Remove ${stamp.displayName} from your travel profile`}
-                        title={`Remove ${stamp.displayName}`}
-                        className="absolute right-0 top-0 flex size-8 items-center justify-center rounded-full border border-white bg-zinc-900 text-base leading-none text-white shadow-sm transition hover:bg-rose-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100"
-                      >
-                        ×
-                      </button>
+                      <div className="absolute right-0 top-0 flex gap-1 sm:opacity-0 sm:transition sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
+                        {stamp.isCustom && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setCustomStampToEdit(userStamp);
+                              setIsManagerOpen(true);
+                            }}
+                            aria-label={`Edit ${stamp.displayName}`}
+                            title={`Edit ${stamp.displayName}`}
+                            className="flex size-8 items-center justify-center rounded-full border border-white bg-white text-xs text-zinc-800 shadow-sm transition hover:bg-amber-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600"
+                          >
+                            ✎
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => setStampPendingRemoval(userStamp)}
+                          aria-label={`Remove ${stamp.displayName} from your travel profile`}
+                          title={`Remove ${stamp.displayName}`}
+                          className="flex size-8 items-center justify-center rounded-full border border-white bg-zinc-900 text-base leading-none text-white shadow-sm transition hover:bg-rose-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    )}
+                    {stamp.isCustom && (
+                      <span className="mt-1 rounded-full bg-amber-100 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-amber-800">
+                        Personal
+                      </span>
                     )}
                   </div>
                 );
@@ -332,8 +355,14 @@ export function TravelStampsSection({
       {/* Stamp Selection / Manager Modal */}
       {isOwner && (
         <TravelStampManagerModal
+          key={customStampToEdit?.id || "catalog-picker"}
           isOpen={isManagerOpen}
-          onClose={() => setIsManagerOpen(false)}
+          stamps={localStamps}
+          initialCustomStamp={customStampToEdit}
+          onClose={() => {
+            setIsManagerOpen(false);
+            setCustomStampToEdit(null);
+          }}
           onStampsChange={(updated) => {
             setLocalStamps(updated);
             setCollectionCount(updated.length);

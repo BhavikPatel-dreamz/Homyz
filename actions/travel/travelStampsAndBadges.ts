@@ -6,6 +6,8 @@ import { AppError } from "@/lib/api/errors";
 import {
   addTravelStampSelections,
   createManualTravelStamp,
+  createCustomTravelStamp,
+  deleteCustomTravelStamp,
   getTravelerStamps,
   getTravelStampPickerItems,
   removeTravelStamp,
@@ -14,6 +16,7 @@ import {
   toggleStampPinned,
   setStampsSectionVisibility,
   updateManualTravelStamp,
+  updateCustomTravelStamp,
   TravelStampPickerItemDTO,
   UserTravelStampDTO,
 } from "@/services/travel-stamp.service";
@@ -69,6 +72,32 @@ export async function addTravelStampSelectionsAction(input: { catalogStampIds?: 
   revalidatePath("/travel-profile");
   revalidatePath("/travelers/[handle]", "page");
   return result;
+}
+
+export async function createCustomTravelStampAction(input: { displayName: string; country?: string | null; city?: string | null; artworkUrl?: string | null; sourcePhotoId?: string | null; isPublic?: boolean }): Promise<UserTravelStampDTO> {
+  const user = await getSessionUser();
+  if (!user?.id) throw AppError.unauthorized("Authentication required");
+  const result = await createCustomTravelStamp(user.id, input);
+  revalidatePath("/travel-profile");
+  revalidatePath("/travelers/[handle]", "page");
+  return result;
+}
+
+export async function updateCustomTravelStampAction(stampId: string, input: { displayName?: string | null; country?: string | null; city?: string | null; artworkUrl?: string | null; sourcePhotoId?: string | null }): Promise<UserTravelStampDTO> {
+  const user = await getSessionUser();
+  if (!user?.id) throw AppError.unauthorized("Authentication required");
+  const result = await updateCustomTravelStamp(user.id, stampId, input);
+  revalidatePath("/travel-profile");
+  revalidatePath("/travelers/[handle]", "page");
+  return result;
+}
+
+export async function deleteCustomTravelStampAction(stampId: string): Promise<void> {
+  const user = await getSessionUser();
+  if (!user?.id) throw AppError.unauthorized("Authentication required");
+  await deleteCustomTravelStamp(user.id, stampId);
+  revalidatePath("/travel-profile");
+  revalidatePath("/travelers/[handle]", "page");
 }
 
 export async function createManualTravelStampAction(input: { country: string; city?: string | null; visitDate?: string | null; description?: string | null }): Promise<UserTravelStampDTO> {
