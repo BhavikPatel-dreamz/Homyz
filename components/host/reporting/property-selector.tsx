@@ -175,7 +175,7 @@ export function PropertySelector({
           )}
 
           <div className="min-w-0 flex-1 truncate">
-            <p className="truncate text-sm font-medium text-[#1F1F1F] lg:max-w-[170px]">
+            <p className="truncate text-sm font-normal text-[#1F1F1F] lg:max-w-[170px]">
               {selectedListing ? selectedListing.title : "All listings"}
             </p>
             <p className="truncate text-xs font-normal text-[#727272] lg:max-w-[170px]">

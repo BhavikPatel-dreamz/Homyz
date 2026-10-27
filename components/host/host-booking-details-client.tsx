@@ -241,14 +241,10 @@ export function HostBookingDetailsClient({ details, relatedCases = [] }: HostBoo
                 <div className="order-last xl:order-first flex justify-center xl:justify-start">
                   <FileBookingDispute bookingId={details.id} variant="host" />
                 </div>
-                {details.conversationId && (
-                  <Link
-                    href={`/host/messages?id=${details.conversationId}`}
-                    className="order-1 sm:order-2 inline-flex min-h-10 w-full sm:w-auto items-center justify-center rounded-full border border-transparent bg-[#FCDF9C] px-5 py-2 text-center text-sm font-medium whitespace-nowrap text-[#1f1f1f] transition-colors duration-300 hover:bg-[#1f1f1f] hover:text-white"
-                  >
-                    {t("host_booking_details_message_guest", "Message guest")}
-                  </Link>
-                )}
+
+
+              </div>
+              <div className="flex flex-col gap-x-3">
                 {relatedCases.length === 1 && (
                   <Link
                     href={`/host/resolution-center/${relatedCases[0].id}`}
@@ -265,14 +261,22 @@ export function HostBookingDetailsClient({ details, relatedCases = [] }: HostBoo
                     View {relatedCases.length} disputes
                   </Link>
                 )}
+                {details.conversationId && (
+                  <Link
+                    href={`/host/messages?id=${details.conversationId}`}
+                    className="order-1 sm:order-2 inline-flex min-h-10 w-full sm:w-auto items-center justify-center rounded-full border border-transparent bg-[#FCDF9C] px-5 py-2 text-center text-sm font-medium whitespace-nowrap text-[#1f1f1f] transition-colors duration-300 hover:bg-[#1f1f1f] hover:text-white"
+                  >
+                    {t("host_booking_details_message_guest", "Message guest")}
+                  </Link>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setIsReportGuestOpen(true)}
+                  className="w-full rounded-full border border-zinc-200 bg-white px-4 py-2 text-center text-sm font-medium text-[#727272] transition-colors hover:border-red-300 hover:text-red-600 sm:w-auto whitespace-nowrap"
+                >
+                  Report guest
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => setIsReportGuestOpen(true)}
-                className="w-full rounded-full border border-zinc-200 bg-white px-4 py-2 text-center text-sm font-medium text-[#727272] transition-colors hover:border-red-300 hover:text-red-600 sm:w-auto whitespace-nowrap"
-              >
-                Report guest
-              </button>
             </div>
 
             {/* Guest Initial Message */}

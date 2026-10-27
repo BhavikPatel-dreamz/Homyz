@@ -334,7 +334,7 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
         <div className="flex flex-col gap-2.5 rounded-2xl border border-zinc-200 bg-white p-2.5 shadow-2xs sm:p-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:flex-wrap lg:flex-nowrap flex-1 min-w-0">
             {/* Left: Searchable Property Selector */}
-            <div className="w-full sm:w-auto sm:min-w-[200px] lg:max-w-xs flex-1">
+            <div className="w-full sm:w-auto sm:min-w-[200px] lg:max-w-xs">
               <PropertySelector
                 listings={reporting.listings}
                 selectedListingId={reporting.selectedListingId}
@@ -345,7 +345,7 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
             </div>
 
             {/* Center: Reporting Period / Date Range Picker */}
-            <div className="w-full sm:w-auto sm:min-w-[200px] lg:max-w-xs flex-1">
+            <div className="w-full sm:w-auto sm:min-w-[200px] lg:max-w-xs">
               <DatePeriodPicker
                 value={{
                   timeframe: activeTimeframe,
@@ -370,12 +370,26 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
             <button
               type="button"
               onClick={() => setShowCompareModal(true)}
-              className={`inline-flex w-full sm:w-auto items-center justify-center gap-1.5 rounded-full min-h-[44px] sm:min-h-[48px] border px-4 py-2 text-sm font-medium transition-all cursor-pointer ${reporting.comparison?.enabled
-                  ? "border-zinc-950 bg-zinc-950 text-white shadow-xs"
-                  : "border-zinc-300 bg-white text-zinc-800 hover:border-zinc-400 hover:bg-zinc-50"
+              className={`group inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-full min-h-[44px] sm:min-h-[48px] border px-4 py-2 text-sm font-normal transition-all duration-300 cursor-pointer ${reporting.comparison?.enabled
+                ? " bg-[#1f1f1f] text-white border border-[#1f1f1f] hover:border-[#FCDF9C] hover:bg-[#FCDF9C] hover:text-[#1f1f1f]"
+                : "border-zinc-300 bg-white text-zinc-800 hover:border-zinc-400 hover:bg-zinc-50"
                 }`}
             >
-              <span>⚖️</span>
+              <svg
+                className="size-4 shrink-0 transition-transform group-hover:scale-105"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="m16 3 4 4-4 4" />
+                <path d="M20 7H4" />
+                <path d="m8 21-4-4 4-4" />
+                <path d="M4 17h16" />
+              </svg>
               <span>{reporting.comparison?.enabled ? "Comparing" : "Compare Periods"}</span>
             </button>
 
@@ -384,9 +398,12 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
                 type="button"
                 onClick={() => handleApplyComparison(null)}
                 title="Clear comparison"
-                className="rounded-full p-2 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 text-xs cursor-pointer"
+                className="flex size-8 items-center justify-center rounded-full text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 transition-colors cursor-pointer"
               >
-                ✕
+                <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
               </button>
             )}
           </div>
@@ -394,15 +411,59 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
       </header>
 
       {reporting.comparison?.enabled && (
-        <div className="flex flex-col gap-2.5 rounded-2xl border border-zinc-200 bg-zinc-50 px-3.5 py-3 text-xs sm:text-sm sm:flex-row sm:items-center sm:justify-between sm:px-4">
-          <p className="text-zinc-700">
-            <span className="font-medium text-[#1f1f1f]">{reporting.timeframeLabel || reporting.monthLabel}</span>
-            {" compared with "}
-            <span className="font-medium text-[#1f1f1f]">{reporting.comparison.periodLabel}</span>
-          </p>
-          <div className="flex items-center gap-3 text-xs font-medium shrink-0">
-            <button type="button" onClick={() => setShowCompareModal(true)} className="underline underline-offset-4 hover:text-[#727272]">Change comparison</button>
-            <button type="button" onClick={() => handleApplyComparison(null)} className="text-rose-700 underline underline-offset-4 hover:text-rose-900">Disable comparison</button>
+        <div className="flex flex-col gap-3 rounded-2xl border border-white bg-[#F3F4F5] p-3.5 sm:px-5 sm:py-3.5 shadow-[0_2px_4px_0px_#00000040] w-full min-w-0 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex min-w-0 items-start sm:items-center gap-3">
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-xl border border-[#EDEDED] bg-white text-[#1F1F1F] shadow-2xs">
+              <svg className="size-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="m16 3 4 4-4 4" />
+                <path d="M20 7H4" />
+                <path d="m8 21-4-4 4-4" />
+                <path d="M4 17h16" />
+              </svg>
+            </div>
+
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300/60 bg-[#FCDF9C]/25 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#1F1F1F]">
+                  <span className="size-1.5 rounded-full bg-amber-500 animate-pulse" aria-hidden="true" />
+                  Period Comparison
+                </span>
+                <span className="text-xs text-[#727272]">
+                  Active baseline analysis
+                </span>
+              </div>
+              <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs sm:text-sm font-medium text-[#1F1F1F]">
+                <span className="truncate rounded-md bg-white px-2 py-0.5 border border-[#EDEDED] font-medium text-[#1F1F1F] shadow-2xs">
+                  {reporting.timeframeLabel || reporting.monthLabel}
+                </span>
+                <span className="text-[#727272] text-xs font-normal">compared with</span>
+                <span className="truncate rounded-md bg-white px-2 py-0.5 border border-[#EDEDED] font-medium text-[#1F1F1F] shadow-2xs">
+                  {reporting.comparison.periodLabel}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0 pt-1 sm:pt-0 self-end sm:self-auto">
+            <button
+              type="button"
+              onClick={() => setShowCompareModal(true)}
+              className="inline-flex items-center gap-1.5 rounded-full border border-zinc-300 bg-white px-3.5 py-1.5 text-xs font-medium text-[#1F1F1F] shadow-2xs transition-all hover:border-[#1F1F1F] hover:bg-zinc-50 cursor-pointer"
+            >
+              <span>Change</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleApplyComparison(null)}
+              title="Disable comparison"
+              className="inline-flex items-center gap-1.5 rounded-full border border-rose-200 bg-rose-50/80 px-3 py-1.5 text-xs font-medium text-rose-700 shadow-2xs transition-all hover:border-rose-300 hover:bg-rose-100 cursor-pointer"
+            >
+              <svg className="size-3 text-rose-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+              <span>Disable</span>
+            </button>
           </div>
         </div>
       )}
@@ -483,10 +544,10 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
             <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-zinc-200 bg-zinc-50/80 p-2.5 sm:px-4 sm:py-2 text-xs">
               <span
                 className={`inline-flex items-center rounded-full px-2 py-0.5 font-medium ${reporting.comparison.deltaDirection === "increase"
-                    ? "bg-emerald-100 text-emerald-800"
-                    : reporting.comparison.deltaDirection === "decrease"
-                      ? "bg-rose-100 text-rose-800"
-                      : "bg-zinc-200 text-zinc-700"
+                  ? "bg-emerald-100 text-emerald-800"
+                  : reporting.comparison.deltaDirection === "decrease"
+                    ? "bg-rose-100 text-rose-800"
+                    : "bg-zinc-200 text-zinc-700"
                   }`}
               >
                 {reporting.comparison.deltaDirection === "increase" ? "↑" : reporting.comparison.deltaDirection === "decrease" ? "↓" : "•"}
@@ -533,7 +594,7 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
         {/* 3-Card KPI Grid */}
         <div className="mt-6 grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 lg:grid-cols-3">
           <div className="rounded-xl bg-[#F3F4F5] shadow-[0_2px_4px_0px_#00000040] border border-white p-4">
-            <p className="text-sm font-normal text-[#727272]">Upcoming payout</p>
+            <p className="text-xs sm:text-sm font-normal text-[#727272]">Upcoming payout</p>
             <p className="mt-1 text-xl min-[480px]:text-2xl font-medium tracking-tight text-[#1f1f1f] truncate">
               {selectedTotals
                 ? fmt(selectedTotals.upcomingPayout, selectedTotals.currency)
@@ -549,7 +610,7 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
             className="rounded-xl bg-[#F3F4F5] shadow-[0_2px_4px_0px_#00000040] border border-white p-4 text-left transition-all hover:border-zinc-300 hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
           >
             <div className="flex items-center justify-between">
-              <p className="text-sm font-normal text-[#727272] underline underline-offset-4">Year-to-date earnings</p>
+              <p className="text-xs sm:text-sm font-normal text-[#727272]">Year-to-date earnings</p>
               <span className="size-5 rounded-full text-sm border border-[#727272] text-[#727272] flex justify-center items-center shrink-0">ℹ</span>
             </div>
             <p className="mt-1 text-xl min-[480px]:text-2xl font-medium tracking-tight text-[#1f1f1f] truncate">
@@ -564,7 +625,7 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
           </button>
 
           <div className="rounded-xl bg-[#F3F4F5] shadow-[0_2px_4px_0px_#00000040] border border-white p-4 min-[480px]:col-span-2 lg:col-span-1">
-            <p className="text-sm font-normal text-[#727272]">Settled payouts volume</p>
+            <p className="text-xs sm:text-sm font-normal text-[#727272]">Settled payouts volume</p>
             <p className="mt-1 text-xl min-[480px]:text-2xl font-medium tracking-tight text-[#1f1f1f] truncate">
               {fmt(data.summary.totalPaidVolume, selectedTotals?.currency || "SAR")}
             </p>

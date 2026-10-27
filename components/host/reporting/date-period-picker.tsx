@@ -254,7 +254,7 @@ export function DatePeriodPicker({
         onClick={() => (isOpen ? setIsOpen(false) : openPicker())}
         aria-haspopup="dialog"
         aria-expanded={isOpen}
-        className="flex h-full flex-1 sm:flex-initial min-w-0 items-center justify-center gap-1.5 sm:gap-2 border-x border-[#EDEDED] px-2.5 sm:px-3.5 text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-[#F7F7F8] focus:outline-hidden disabled:opacity-50 cursor-pointer"
+        className="flex h-full flex-1 sm:flex-initial min-w-0 items-center justify-center gap-1.5 sm:gap-2 border-x border-[#EDEDED] px-2.5 sm:px-3.5 text-sm font-normal text-[#1F1F1F] transition-colors hover:bg-[#F7F7F8] focus:outline-hidden disabled:opacity-50 cursor-pointer"
       >
         <svg className="w-4 h-4 shrink-0 text-[#727272]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />

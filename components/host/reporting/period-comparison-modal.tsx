@@ -156,12 +156,12 @@ export function PeriodComparisonModal({ isOpen, onClose, currentPeriodLabel, cur
         {/* Period A Card */}
         <div className="mt-5 rounded-2xl border border-white bg-[#F3F4F5] p-4 shadow-[0_2px_4px_0px_#00000040]">
           <div className="flex items-center justify-between">
-            <span className="inline-flex items-center rounded-full border border-zinc-200/80 bg-white px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#727272] shadow-2xs">
+            <span className="inline-flex items-center rounded-full border border-zinc-200/80 bg-white px-2.5 py-1.5 text-xs font-medium text-[#727272]">
               Period A · Primary
             </span>
-            <span className="text-[11px] font-medium text-[#727272]">Active Baseline</span>
+            <span className="text-xs font-medium text-[#727272]">Active Baseline</span>
           </div>
-          <p className="mt-2 text-base font-semibold text-[#1F1F1F]">
+          <p className="mt-2 text-base font-medium text-[#1F1F1F]">
             {currentPeriodLabel}
           </p>
           <p className="mt-0.5 text-xs text-[#727272]">
@@ -171,7 +171,7 @@ export function PeriodComparisonModal({ isOpen, onClose, currentPeriodLabel, cur
 
         {/* Period B Options */}
         <div className="mt-6 space-y-4">
-          <p className="text-xs font-semibold uppercase tracking-wider text-[#727272]">
+          <p className="text-xs font-medium uppercase tracking-wider text-[#727272]">
             Choose Period B (Comparison)
           </p>
           <div className="grid gap-2.5 sm:grid-cols-3">
@@ -197,13 +197,13 @@ export function PeriodComparisonModal({ isOpen, onClose, currentPeriodLabel, cur
 
           {(selection === "custom_month" || selection === "custom_range") && (
             <div className="space-y-4 rounded-2xl border border-white bg-[#F3F4F5] p-4 shadow-[0_2px_4px_0px_#00000040]">
-              <div className="grid grid-cols-2 rounded-xl border border-zinc-200/80 bg-white p-1 text-xs font-medium shadow-2xs">
+              <div className="grid grid-cols-2 rounded-xl border border-zinc-200/80 bg-white p-1 text-sm font-medium shadow-2xs">
                 <button
                   type="button"
                   onClick={() => select("custom_month")}
                   className={`rounded-lg py-2 transition-all cursor-pointer ${
                     selection === "custom_month"
-                      ? "bg-[#1F1F1F] text-white shadow-2xs font-semibold"
+                      ? "bg-[#1F1F1F] text-white shadow-2xs font-medium"
                       : "text-[#727272] hover:text-[#1F1F1F]"
                   }`}
                 >
@@ -214,7 +214,7 @@ export function PeriodComparisonModal({ isOpen, onClose, currentPeriodLabel, cur
                   onClick={() => select("custom_range")}
                   className={`rounded-lg py-2 transition-all cursor-pointer ${
                     selection === "custom_range"
-                      ? "bg-[#1F1F1F] text-white shadow-2xs font-semibold"
+                      ? "bg-[#1F1F1F] text-white shadow-2xs font-medium"
                       : "text-[#727272] hover:text-[#1F1F1F]"
                   }`}
                 >
@@ -225,7 +225,7 @@ export function PeriodComparisonModal({ isOpen, onClose, currentPeriodLabel, cur
               {selection === "custom_month" ? (
                 <div>
                   <div className="flex items-center justify-between pb-2.5">
-                    <span className="text-xs font-semibold text-[#1F1F1F]">
+                    <span className="text-xs font-medium text-[#1F1F1F]">
                       Select Month & Year
                     </span>
                     <div className="flex items-center gap-2">
@@ -233,11 +233,11 @@ export function PeriodComparisonModal({ isOpen, onClose, currentPeriodLabel, cur
                         type="button"
                         aria-label="Previous comparison year"
                         onClick={() => setCompareYear((year) => year - 1)}
-                        className="flex size-7 items-center justify-center rounded-full border border-zinc-200 bg-white text-xs font-semibold text-[#1F1F1F] shadow-2xs transition-colors hover:bg-zinc-100 hover:border-zinc-300 cursor-pointer"
+                        className="flex size-7 items-center justify-center rounded-full border border-zinc-200 bg-white text-xs font-medium text-[#1F1F1F] shadow-2xs transition-colors hover:bg-zinc-100 hover:border-zinc-300 cursor-pointer"
                       >
                         <ChevronLeftIcon size={14} />
                       </button>
-                      <span className="min-w-10 text-center text-xs font-semibold text-[#1F1F1F]">
+                      <span className="min-w-10 text-center text-xs font-medium text-[#1F1F1F]">
                         {compareYear}
                       </span>
                       <button
@@ -245,7 +245,7 @@ export function PeriodComparisonModal({ isOpen, onClose, currentPeriodLabel, cur
                         aria-label="Next comparison year"
                         disabled={compareYear >= currentYear}
                         onClick={() => setCompareYear((year) => year + 1)}
-                        className="flex size-7 items-center justify-center rounded-full border border-zinc-200 bg-white text-xs font-semibold text-[#1F1F1F] shadow-2xs transition-colors hover:bg-zinc-100 hover:border-zinc-300 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
+                        className="flex size-7 items-center justify-center rounded-full border border-zinc-200 bg-white text-xs font-medium text-[#1F1F1F] shadow-2xs transition-colors hover:bg-zinc-100 hover:border-zinc-300 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
                       >
                         <ChevronRightIcon size={14} />
                       </button>
@@ -269,7 +269,7 @@ export function PeriodComparisonModal({ isOpen, onClose, currentPeriodLabel, cur
                           }}
                           className={`rounded-xl py-2 text-xs font-medium transition-all cursor-pointer ${
                             isSelected
-                              ? "bg-[#1F1F1F] text-white shadow-xs font-semibold"
+                              ? "bg-[#1F1F1F] text-white shadow-xs font-medium"
                               : "border border-zinc-200 bg-white text-[#1F1F1F] hover:border-zinc-300 hover:bg-zinc-50"
                           } disabled:cursor-not-allowed disabled:opacity-35`}
                         >
@@ -289,7 +289,7 @@ export function PeriodComparisonModal({ isOpen, onClose, currentPeriodLabel, cur
                 </div>
               ) : (
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  <label className="text-[11px] font-semibold text-[#727272]">
+                  <label className="text-[11px] font-medium text-[#727272]">
                     Start date
                     <input
                       type="date"
@@ -302,7 +302,7 @@ export function PeriodComparisonModal({ isOpen, onClose, currentPeriodLabel, cur
                       className="mt-1 block w-full rounded-xl border border-zinc-200 bg-white p-2.5 text-xs font-medium text-[#1F1F1F] shadow-2xs focus:border-[#1F1F1F] focus:outline-hidden"
                     />
                   </label>
-                  <label className="text-[11px] font-semibold text-[#727272]">
+                  <label className="text-[11px] font-medium text-[#727272]">
                     End date
                     <input
                       type="date"
@@ -339,7 +339,7 @@ export function PeriodComparisonModal({ isOpen, onClose, currentPeriodLabel, cur
                 onApplyComparison(null);
                 onClose();
               }}
-              className="text-xs font-semibold text-rose-600 hover:text-rose-800 underline underline-offset-4 cursor-pointer text-center sm:text-left py-1"
+              className="text-sm font-medium text-rose-600 hover:text-rose-800 underline underline-offset-4 cursor-pointer text-center sm:text-left py-1"
             >
               Disable Comparison
             </button>
