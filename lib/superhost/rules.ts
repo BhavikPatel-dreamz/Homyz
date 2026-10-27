@@ -9,7 +9,43 @@ export interface SuperhostRequirementInput {
   hostCancellationCount: number;
   cancellationDenominator: number;
   accountGoodStanding: boolean;
+  /**
+   * The canonical account lifecycle state, when the evaluator has it.  The
+   * boolean remains for backwards-compatible callers of the shared helper.
+   */
+  accountStatus?: string | null;
+  /**
+   * An excluded host cancellation can only be ignored when its exception has
+   * an approved, auditable source.  No such workflow exists yet, so the
+   * service passes UNVERIFIED whenever it encounters legacy excluded data.
+   */
+  cancellationExceptionVerificationState?: "VERIFIED" | "UNVERIFIED";
+  assessmentPeriod?: SuperhostAssessmentPeriod;
   isListingOwner?: boolean;
+}
+
+export type SuperhostCriterionStatus = "PASS" | "FAIL" | "BLOCKED";
+export type SuperhostEligibilityStatus = "ELIGIBLE" | "NOT_ELIGIBLE" | "CANNOT_DETERMINE";
+
+export interface SuperhostAssessmentPeriod {
+  windowStart: Date;
+  windowEnd: Date;
+}
+
+export interface SuperhostQualificationCriterion {
+  id: "LISTING_OWNERSHIP" | "HOSTING_VOLUME" | "RATING" | "RESPONSE_RATE" | "CANCELLATION_RATE" | "GOOD_STANDING";
+  actualValue: boolean | number | string | null | Record<string, number | boolean>;
+  requiredThreshold: string;
+  status: SuperhostCriterionStatus;
+  explanation: string;
+}
+
+export interface SuperhostQualificationResult {
+  assessmentPeriod: SuperhostAssessmentPeriod | null;
+  criteria: SuperhostQualificationCriterion[];
+  eligibilityStatus: SuperhostEligibilityStatus;
+  missingInformation: string[];
+  unresolvedPolicyDependencies: string[];
 }
 
 export const SUPERHOST_ASSESSMENT_WINDOW_DAYS = 7;
@@ -127,6 +163,65 @@ export function isNonExcludedHostCancellation(priceBreakdown: unknown): boolean 
   return details.cancelledBy === "HOST" && details.isExcluded !== true;
 }
 
+/**
+ * Exclusion itself is not proof of an approved Superhost exception.  This
+ * helper lets the centralized engine stop safely until a policy-owned,
+ * auditable exception workflow exists.
+ */
+export function isExcludedHostCancellation(priceBreakdown: unknown): boolean {
+  if (!priceBreakdown || typeof priceBreakdown !== "object" || Array.isArray(priceBreakdown)) return false;
+  const cancellation = (priceBreakdown as Record<string, unknown>).cancellation;
+  if (!cancellation || typeof cancellation !== "object" || Array.isArray(cancellation)) return false;
+  const details = cancellation as Record<string, unknown>;
+  return details.cancelledBy === "HOST" && details.isExcluded === true;
+}
+
+export function evaluateHostGoodStanding(
+  accountStatus: string | null | undefined,
+  fallbackGoodStanding: boolean,
+): Pick<SuperhostQualificationCriterion, "status" | "explanation"> & { accountGoodStanding: boolean } {
+  if (accountStatus === undefined) {
+    return fallbackGoodStanding
+      ? {
+          accountGoodStanding: true,
+          status: "PASS",
+          explanation: "Host account is active and eligible to host.",
+        }
+      : {
+          accountGoodStanding: false,
+          status: "FAIL",
+          explanation: "Host account is not in active standing.",
+        };
+  }
+
+  switch (accountStatus) {
+    case "ACTIVE":
+      return {
+        accountGoodStanding: true,
+        status: "PASS",
+        explanation: "Host account is active and eligible to host.",
+      };
+    case "SUSPENDED":
+      return {
+        accountGoodStanding: false,
+        status: "FAIL",
+        explanation: "Host account is suspended and cannot qualify for Superhost.",
+      };
+    case "INVITATION_PENDING":
+      return {
+        accountGoodStanding: false,
+        status: "FAIL",
+        explanation: "Host account activation is incomplete and cannot qualify for Superhost.",
+      };
+    default:
+      return {
+        accountGoodStanding: false,
+        status: "BLOCKED",
+        explanation: "Host account standing cannot be verified from the authoritative account status.",
+      };
+  }
+}
+
 export function evaluateSuperhostRequirements(input: SuperhostRequirementInput) {
   const isListingOwner = input.isListingOwner ?? true;
   const reservationPathMet = input.completedReservationsCount >= 10;
@@ -140,10 +235,84 @@ export function evaluateSuperhostRequirements(input: SuperhostRequirementInput) 
     // rate slightly above 1% must never be rounded down to a passing value.
     ? (input.hostCancellationCount / input.cancellationDenominator) * 100
     : 0;
-  const cancellationMet = rawHostCancellationRatePercentage < 1;
+  const cancellationExceptionVerificationState = input.cancellationExceptionVerificationState ?? "VERIFIED";
+  const cancellationMet = cancellationExceptionVerificationState === "VERIFIED" && rawHostCancellationRatePercentage < 1;
   // Keep the existing persisted/display metric stable; the raw value above is
   // deliberately used only for the qualification boundary.
   const hostCancellationRatePercentage = Math.round(rawHostCancellationRatePercentage * 100) / 100;
+  const goodStanding = evaluateHostGoodStanding(input.accountStatus, input.accountGoodStanding);
+  const criteria: SuperhostQualificationCriterion[] = [
+    {
+      id: "LISTING_OWNERSHIP",
+      actualValue: isListingOwner,
+      requiredThreshold: "At least one eligible owned HOME listing",
+      status: isListingOwner ? "PASS" : "FAIL",
+      explanation: isListingOwner
+        ? "Host owns at least one eligible HOME listing."
+        : "Host must be a listing owner to qualify for Superhost.",
+    },
+    {
+      id: "HOSTING_VOLUME",
+      actualValue: { completedReservationsCount: input.completedReservationsCount, completedNightsCount: input.completedNightsCount },
+      requiredThreshold: "At least 10 completed reservations, or 3 completed reservations and 100 completed nights",
+      status: hostingVolumeMet ? "PASS" : "FAIL",
+      explanation: hostingVolumeMet
+        ? "Hosting volume requirement is met."
+        : "Hosting volume requirement is not met.",
+    },
+    {
+      id: "RATING",
+      actualValue: input.overallRating,
+      requiredThreshold: "Published review average of at least 4.80",
+      status: ratingMet ? "PASS" : "FAIL",
+      explanation: ratingMet
+        ? "Published review average meets the 4.80 requirement."
+        : "A published review average of at least 4.80 is required.",
+    },
+    {
+      id: "RESPONSE_RATE",
+      actualValue: input.responseRatePercentage,
+      requiredThreshold: "At least 90% of qualifying guest inquiries answered within 24 hours",
+      status: responseRateMet ? "PASS" : "FAIL",
+      explanation: responseRateMet
+        ? "Response rate meets the 90% requirement."
+        : input.responseRatePercentage === null
+          ? "Response rate is unavailable until there is a qualifying guest inquiry."
+          : "Response rate must be at least 90%.",
+    },
+    {
+      id: "CANCELLATION_RATE",
+      actualValue: hostCancellationRatePercentage,
+      requiredThreshold: "Host cancellation rate below 1%",
+      status: cancellationExceptionVerificationState === "UNVERIFIED"
+        ? "BLOCKED"
+        : cancellationMet ? "PASS" : "FAIL",
+      explanation: cancellationExceptionVerificationState === "UNVERIFIED"
+        ? "A host cancellation is marked excluded, but no approved Superhost exception source can verify that exclusion."
+        : cancellationMet
+          ? "Host cancellation rate remains below 1%."
+          : "Host cancellation rate must remain below 1%.",
+    },
+    {
+      id: "GOOD_STANDING",
+      actualValue: input.accountStatus ?? input.accountGoodStanding,
+      requiredThreshold: "Active Homyz host account",
+      status: goodStanding.status,
+      explanation: goodStanding.explanation,
+    },
+  ];
+
+  const missingInformation: string[] = [];
+  const unresolvedPolicyDependencies: string[] = [];
+  if (cancellationExceptionVerificationState === "UNVERIFIED") {
+    const dependency = "Approved Superhost cancellation-exception provenance is not available for an excluded host cancellation.";
+    missingInformation.push(dependency);
+    unresolvedPolicyDependencies.push(dependency);
+  }
+  if (goodStanding.status === "BLOCKED") {
+    missingInformation.push("Authoritative host account status is unavailable or unrecognized.");
+  }
+
   const failureReasons: string[] = [];
   if (!isListingOwner) failureReasons.push("Host must be a listing owner to qualify for Superhost.");
   if (!hostingVolumeMet) failureReasons.push("Hosting volume requirement is not met.");
@@ -153,8 +322,13 @@ export function evaluateSuperhostRequirements(input: SuperhostRequirementInput) 
       ? "Response rate is unavailable until there is a qualifying guest inquiry."
       : "Response rate must be at least 90%.",
   );
-  if (!cancellationMet) failureReasons.push("Host cancellation rate must remain below 1%.");
-  if (!input.accountGoodStanding) failureReasons.push("Host account is not in active standing.");
+  if (cancellationExceptionVerificationState === "UNVERIFIED") {
+    failureReasons.push("Host cancellation exception cannot be verified.");
+  } else if (!cancellationMet) failureReasons.push("Host cancellation rate must remain below 1%.");
+  if (goodStanding.status === "FAIL") failureReasons.push(goodStanding.explanation);
+  if (goodStanding.status === "BLOCKED") failureReasons.push("Host account standing cannot be verified.");
+  const hasBlockedCriterion = criteria.some((criterion) => criterion.status === "BLOCKED");
+  const eligibleNow = !hasBlockedCriterion && criteria.every((criterion) => criterion.status === "PASS");
   return {
     isListingOwner,
     isListingOwnerMet: isListingOwner,
@@ -165,9 +339,16 @@ export function evaluateSuperhostRequirements(input: SuperhostRequirementInput) 
     responseRateMet,
     hostCancellationRatePercentage,
     cancellationMet,
-    accountGoodStanding: input.accountGoodStanding,
-    accountStandingMet: input.accountGoodStanding,
-    eligibleNow: isListingOwner && hostingVolumeMet && ratingMet && responseRateMet && cancellationMet && input.accountGoodStanding,
+    accountGoodStanding: goodStanding.accountGoodStanding,
+    accountStandingMet: goodStanding.status === "PASS",
+    eligibleNow,
     failureReasons,
+    qualification: {
+      assessmentPeriod: input.assessmentPeriod ?? null,
+      criteria,
+      eligibilityStatus: hasBlockedCriterion ? "CANNOT_DETERMINE" : eligibleNow ? "ELIGIBLE" : "NOT_ELIGIBLE",
+      missingInformation,
+      unresolvedPolicyDependencies,
+    } satisfies SuperhostQualificationResult,
   };
 }

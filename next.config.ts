@@ -45,6 +45,7 @@ const nextConfig: NextConfig = {
   allowedDevOrigins: actionOrigins,
   images: {
     dangerouslyAllowSVG: true,
+    dangerouslyAllowLocalIP: true,
     contentDispositionType: "attachment",
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     remotePatterns: [

@@ -48,6 +48,7 @@ const ROUTE_NAV_KEY: Array<{ prefix: string; key: string; exact?: boolean }> = [
   { prefix: "/admin/hosts",                  key: "hosts" },
   { prefix: "/admin/guests",                 key: "guests" },
   { prefix: "/admin/referrals",              key: "referrals" },
+  { prefix: "/admin/travel-stamps",          key: "travel-stamps" },
   { prefix: "/admin/admins",                 key: "admins" },
   { prefix: "/admin/activity-logs",          key: "audit-logs" },
   { prefix: "/admin/settings",              key: "settings" },
@@ -319,6 +320,17 @@ export function AdminSidebar({
           icon: (
             <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a4 4 0 00-4-4h-1M9 20H2v-2a4 4 0 014-4h3m6-10a4 4 0 110 8 4 4 0 010-8zM7.5 4a3.5 3.5 0 110 7 3.5 3.5 0 010-7z" />
+            </svg>
+          ),
+        },
+        {
+          key: "travel-stamps",
+          label: "Travel Stamps",
+          href: "/admin/travel-stamps",
+          requiredPermission: PERMISSIONS.DASHBOARD_VIEW,
+          icon: (
+            <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           ),
         },

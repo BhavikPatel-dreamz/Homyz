@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240" fill="none">
+  <defs>
+    <path id="curve-text-rome" d="M 30,105 A 70,70 0 0,1 170,105" fill="none" />
+  </defs>
+  <circle cx="100" cy="110" r="60" fill="#FFF3E0" stroke="#E0E0E0" stroke-width="1.5" stroke-dasharray="3 3" />
+  <circle cx="100" cy="110" r="54" fill="#FFE0B2" opacity="0.4" />
+  <text font-family="'Caveat', cursive, sans-serif" font-size="14" fill="#1F1F1F" letter-spacing="1">
+    <textPath href="#curve-text-rome" startOffset="50%" text-anchor="middle">
+      stay like a homie.
+    </textPath>
+  </text>
+  <g stroke="#1F1F1F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <ellipse cx="100" cy="120" rx="36" ry="18" />
+    <path d="M64 120 L64 145 C64 155 136 155 136 145 L136 120" />
+    <line x1="76" y1="125" x2="76" y2="148" />
+    <line x1="88" y1="128" x2="88" y2="151" />
+    <line x1="100" y1="129" x2="100" y2="152" />
+    <line x1="112" y1="128" x2="112" y2="151" />
+    <line x1="124" y1="125" x2="124" y2="148" />
+  </g>
+  <text x="100" y="195" text-anchor="middle" font-family="'Caveat', cursive, sans-serif" font-size="22" font-weight="600" fill="#1F1F1F">
+    Rome
+  </text>
+</svg>
+

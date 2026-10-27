@@ -511,6 +511,18 @@ model User {
   recipientDistributions          BookingPayoutDistribution[] @relation("RecipientDistributions")
   taxpayerProfile                 HostTaxpayerProfile?        @relation("UserTaxpayerProfile")
   taxDocuments                    HostTaxDocument[]           @relation("UserTaxDocuments")
+  travelProfile                   TravelProfile?
+  profileLikesGiven               ProfileLike[]              @relation("ProfileLikesGiven")
+  profileLikesReceived            ProfileLike[]              @relation("ProfileLikesReceived")
+  travelTrips                     TravelTrip[]               @relation("UserTravelTrips")
+  travelPhotos                    TravelPhoto[]              @relation("UserTravelPhotos")
+  userDestinations                UserDestination[]          @relation("UserDestinations")
+  userTravelStamps                UserTravelStamp[]          @relation("UserTravelStamps")
+  userTravelAchievements          UserTravelAchievement[]    @relation("UserTravelAchievements")
+  travelFollowers                 TravelFollow[]             @relation("TravelFollowers")
+  travelFollowing                 TravelFollow[]             @relation("TravelFollowing")
+  blockedUsers                    UserBlock[]                @relation("UserBlockedUsers")
+  blockedByUsers                  UserBlock[]                @relation("UserBlockedByUsers")
 
   @@index([role])
   @@index([adminRoleId])
@@ -1159,6 +1171,7 @@ model Booking {
   operatingExpenses OperatingExpense[]
   payoutDistributions BookingPayoutDistribution[] @relation("BookingDistributions")
   taxDocuments      HostTaxDocument[]           @relation("BookingTaxDocuments")
+  userDestinations  UserDestination[]
 
   @@index([userId, createdAt])
   @@index([listingId])
@@ -2715,3 +2728,322 @@ model HostTaxDocument {
   @@index([bookingId])
   @@index([status])
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Phase 1 — Travel Profile & Social Identity Foundation
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum TravelProfileVisibility {
+  PUBLIC
+  PRIVATE
+  FOLLOWERS_ONLY
+}
+
+model TravelProfile {
+  id            String                  @id @default(cuid())
+  userId        String                  @unique
+  handle        String?                 @unique
+  displayName   String?
+  bio           String?                 @db.Text
+  homeLocation  String?
+  coverUrl      String?
+  coverMediaId  String?
+  visibility    TravelProfileVisibility @default(PUBLIC)
+  showStamps    Boolean                 @default(true)
+  createdAt     DateTime                @default(now())
+  updatedAt     DateTime                @updatedAt
+
+  user          User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([handle])
+  @@index([visibility])
+}
+
+model ProfileLike {
+  id           String   @id @default(cuid())
+  actorId      String
+  targetUserId String
+  createdAt    DateTime @default(now())
+
+  actor        User     @relation("ProfileLikesGiven", fields: [actorId], references: [id], onDelete: Cascade)
+  targetUser   User     @relation("ProfileLikesReceived", fields: [targetUserId], references: [id], onDelete: Cascade)
+
+  @@unique([actorId, targetUserId])
+  @@index([targetUserId])
+  @@index([actorId])
+}
+
+enum TravelTripStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model TravelTrip {
+  id            String                  @id @default(cuid())
+  userId        String
+  title         String
+  destinationId String?
+  startDate     DateTime?
+  endDate       DateTime?
+  coverPhotoId  String?
+  status        TravelTripStatus        @default(PUBLISHED)
+  visibility    TravelProfileVisibility @default(PUBLIC)
+  createdAt     DateTime                @default(now())
+  updatedAt     DateTime                @updatedAt
+
+  user          User                    @relation("UserTravelTrips", fields: [userId], references: [id], onDelete: Cascade)
+  photos        TravelPhoto[]
+
+  @@index([userId, status])
+  @@index([createdAt])
+}
+
+model TravelPhoto {
+  id            String                  @id @default(cuid())
+  userId        String
+  tripId        String?
+  url           String
+  thumbnailUrl  String?
+  mediumUrl     String?
+  caption       String?                 @db.Text
+  location      String?
+  destinationId String?
+  visibility    TravelProfileVisibility @default(PUBLIC)
+  order         Int                     @default(0)
+  createdAt     DateTime                @default(now())
+  updatedAt     DateTime                @updatedAt
+
+  user          User                    @relation("UserTravelPhotos", fields: [userId], references: [id], onDelete: Cascade)
+  trip          TravelTrip?             @relation(fields: [tripId], references: [id], onDelete: SetNull)
+  likes         TravelPhotoLike[]
+
+  @@index([userId, createdAt])
+  @@index([tripId])
+}
+
+model TravelPhotoLike {
+  id        String      @id @default(cuid())
+  actorId   String
+  photoId   String
+  createdAt DateTime    @default(now())
+
+  photo     TravelPhoto @relation(fields: [photoId], references: [id], onDelete: Cascade)
+
+  @@unique([actorId, photoId])
+  @@index([photoId])
+  @@index([actorId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Phase 4: Travel Destinations, Stamps & Achievements
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum TravelEvidenceSource {
+  VERIFIED_BOOKING
+  MANUAL_DECLARATION
+}
+
+enum TravelVerificationStatus {
+  VERIFIED
+  UNVERIFIED
+}
+
+enum TravelStampCategory {
+  COUNTRY
+  CITY
+  DESTINATION
+  LIFESTYLE
+  THEME
+  MILESTONE
+}
+
+enum TravelAchievementCategory {
+  STAYS
+  CITIES
+  COUNTRIES
+  STAMPS
+  EXPLORER
+}
+
+enum TravelAchievementStatus {
+  LOCKED
+  IN_PROGRESS
+  UNLOCKED
+}
+
+model Destination {
+  id              String      @id @default(cuid())
+  countryName     String
+  countryCode     String      // ISO-3166-1 alpha-2 uppercase, e.g. "FR", "US", "SA"
+  cityName        String?
+  slug            String      @unique // e.g. "country-fr" or "city-fr-paris"
+  latitude        Float?
+  longitude       Float?
+  parentCountryId String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  parentCountry    Destination?      @relation("CountryCities", fields: [parentCountryId], references: [id], onDelete: SetNull)
+  cities           Destination[]     @relation("CountryCities")
+  userDestinations UserDestination[]
+  stamps           TravelStamp[]
+
+  @@index([countryCode])
+  @@index([countryName])
+  @@index([cityName])
+  @@index([parentCountryId])
+}
+
+model UserDestination {
+  id                        String                   @id @default(cuid())
+  userId                    String
+  destinationId             String
+  evidenceSource            TravelEvidenceSource     @default(VERIFIED_BOOKING)
+  verificationStatus        TravelVerificationStatus @default(VERIFIED)
+  firstQualifyingVisitDate  DateTime?
+  latestQualifyingVisitDate DateTime?
+  qualifyingBookingId       String?
+  visitCount                Int                      @default(1)
+  createdAt                 DateTime                 @default(now())
+  updatedAt                 DateTime                 @updatedAt
+
+  user              User        @relation("UserDestinations", fields: [userId], references: [id], onDelete: Cascade)
+  destination       Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+  qualifyingBooking Booking?    @relation(fields: [qualifyingBookingId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, destinationId, evidenceSource])
+  @@index([userId, verificationStatus])
+  @@index([destinationId])
+  @@index([qualifyingBookingId])
+}
+
+model TravelStamp {
+  id              String            @id @default(cuid())
+  slug            String            @unique
+  displayName     String
+  title           String?
+  city            String?
+  country         String?
+  description     String?           @db.Text
+  countryCode     String?
+  destinationId   String?
+  iconUrl         String?
+  imageUrl        String?
+  category        String            @default("DESTINATION")
+  eligibilityRule String            @default("COMPLETED_STAYS")
+  ruleThreshold   Int               @default(1)
+  isActive        Boolean           @default(true)
+  displayOrder    Int               @default(0)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  destination Destination?      @relation(fields: [destinationId], references: [id], onDelete: SetNull)
+  userStamps  UserTravelStamp[]
+
+  @@index([slug])
+  @@index([category])
+  @@index([countryCode])
+  @@index([destinationId])
+  @@index([displayOrder])
+}
+
+model UserTravelStamp {
+  id               String   @id @default(cuid())
+  userId           String
+  stampId          String
+  awardedAt        DateTime @default(now())
+  isPinned         Boolean  @default(false)
+  displayOrder     Int      @default(0)
+  evidenceMetadata Json?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user  User        @relation("UserTravelStamps", fields: [userId], references: [id], onDelete: Cascade)
+  stamp TravelStamp @relation(fields: [stampId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, stampId])
+  @@index([userId, isPinned])
+  @@index([stampId])
+}
+
+model TravelAchievement {
+  id              String                    @id @default(cuid())
+  key             String                    @unique // e.g. "FIRST_JOURNEY", "CITY_EXPLORER", "WORLD_TRAVELER", "STAMP_COLLECTOR"
+  name            String
+  description     String                    @db.Text
+  icon            String?
+  category        TravelAchievementCategory @default(STAYS)
+  eligibilityRule String                    // e.g. "COMPLETED_STAYS", "VERIFIED_CITIES", "VERIFIED_COUNTRIES", "EARNED_STAMPS"
+  threshold       Int                       @default(1)
+  isActive        Boolean                   @default(true)
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @updatedAt
+
+  userAchievements UserTravelAchievement[]
+
+  @@index([key])
+  @@index([category])
+}
+
+model UserTravelAchievement {
+  id            String                  @id @default(cuid())
+  userId        String
+  achievementId String
+  awardedAt     DateTime?
+  progress      Int                     @default(0)
+  status        TravelAchievementStatus @default(IN_PROGRESS)
+  auditMetadata Json?
+  createdAt     DateTime                @default(now())
+  updatedAt     DateTime                @updatedAt
+
+  user        User              @relation("UserTravelAchievements", fields: [userId], references: [id], onDelete: Cascade)
+  achievement TravelAchievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, achievementId])
+  @@index([userId, status])
+  @@index([achievementId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Phase 5: Privacy, Follower Controls & User Blocking
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum TravelFollowStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+model TravelFollow {
+  id          String             @id @default(cuid())
+  followerId  String
+  followingId String
+  status      TravelFollowStatus @default(ACCEPTED)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  follower  User @relation("TravelFollowing", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("TravelFollowers", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followerId, status])
+  @@index([followingId, status])
+}
+
+model UserBlock {
+  id        String   @id @default(cuid())
+  blockerId String
+  blockedId String
+  createdAt DateTime @default(now())
+
+  blocker User @relation("UserBlockedUsers", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked User @relation("UserBlockedByUsers", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  @@unique([blockerId, blockedId])
+  @@index([blockerId])
+  @@index([blockedId])
+}
+
+
+

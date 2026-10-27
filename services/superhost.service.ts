@@ -1,6 +1,6 @@
 import "server-only";
 
-import { BookingStatus, ReviewDirection, UserStatus } from "@/generated/prisma/enums";
+import { BookingStatus, ReviewDirection, ReviewStatus, UserStatus } from "@/generated/prisma/enums";
 import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import { differenceInBookingNights } from "@/lib/booking/booking-date";
@@ -8,17 +8,19 @@ import { computeBookingStatus } from "@/lib/booking/booking-status";
 import { incrCounter } from "@/lib/redis/cache";
 import { invalidateUserCache } from "@/lib/redis/invalidation";
 import { keys } from "@/lib/redis/keys";
+import { resolveSuperhostLifecycleTransition } from "@/lib/superhost/lifecycle";
 import {
   evaluateSuperhostRequirements,
   getLiveSuperhostWindow,
   getNextQuarterlyEvaluationDate,
   getQuarterlyCheckpointForDate,
   getQuarterlySuperhostWindow,
-  getSuperhostReviewWindowExpiryCutoff,
+  isExcludedHostCancellation,
   isNonExcludedHostCancellation,
   isQuarterlyAssessmentWindow,
   isQuarterlyEvaluationCheckpoint,
   startOfUtcDay,
+  type SuperhostQualificationResult,
 } from "@/lib/superhost/rules";
 import { messagingService } from "@/services/messaging.service";
 import { notificationService } from "@/services/notification.service";
@@ -33,6 +35,7 @@ export {
   getQuarterlySuperhostWindow,
   getSuperhostEvaluationWindow,
   getSuperhostReviewWindowExpiryCutoff,
+  isExcludedHostCancellation,
   isNonExcludedHostCancellation,
   isQuarterlyAssessmentWindow,
   isQuarterlyEvaluationCheckpoint,
@@ -65,6 +68,8 @@ export interface SuperhostProgress {
   cancellationMet: boolean;
   accountGoodStanding: boolean;
   accountStandingMet: boolean;
+  /** A complete, explainable eligibility decision for this assessment window. */
+  qualification: SuperhostQualificationResult;
   eligibleNow: boolean;
   failureReasons: string[];
 }
@@ -102,12 +107,11 @@ async function calculateSuperhostProgress(
   );
 
   if (listingIds.length === 0) {
-    return emptyProgress(window, host.status === UserStatus.ACTIVE, false);
+    return emptyProgress(window, host.status, false);
   }
 
   const reviewWindowEndExclusive = new Date(window.windowEnd);
   reviewWindowEndExclusive.setUTCDate(reviewWindowEndExclusive.getUTCDate() + 1);
-  const reviewWindowExpiryCutoff = getSuperhostReviewWindowExpiryCutoff(asOf);
   const [bookings, reviewSummary, messagingMetrics] = await Promise.all([
     prisma.booking.findMany({
       where: {
@@ -132,15 +136,18 @@ async function calculateSuperhostProgress(
     prisma.review.aggregate({
       where: {
         listingId: { in: listingIds },
-        status: "PUBLISHED",
+        status: ReviewStatus.PUBLISHED,
         direction: ReviewDirection.GUEST_TO_PROPERTY,
         createdAt: { gte: window.windowStart, lt: reviewWindowEndExclusive },
-        // Only guest-to-property reviews are valid inputs to host quality
-        // calculations; reciprocal host-to-guest reviews are never included.
+        // ReviewService is the sole authority for final review publication. It
+        // marks a review PUBLISHED when both parties have submitted, or when
+        // the stored 14-day review deadline has elapsed. Requiring checkout
+        // age here would incorrectly omit a reciprocally published review
+        // before day 14 and would duplicate the review publication policy.
         booking: {
           is: {
             status: BookingStatus.CONFIRMED,
-            endDate: { lte: reviewWindowExpiryCutoff },
+            endDate: { gte: window.windowStart, lte: window.windowEnd },
           },
         },
       },
@@ -156,9 +163,11 @@ async function calculateSuperhostProgress(
   let completedReservationsCount = 0;
   let completedNightsCount = 0;
   let hostCancellationCount = 0;
+  let unverifiedExcludedHostCancellationCount = 0;
   for (const booking of bookings) {
     if (booking.status === BookingStatus.CANCELLED) {
       if (isNonExcludedHostCancellation(booking.priceBreakdown)) hostCancellationCount++;
+      if (isExcludedHostCancellation(booking.priceBreakdown)) unverifiedExcludedHostCancellationCount++;
       continue;
     }
     const listing = listingSchedule.get(booking.listingId);
@@ -184,7 +193,6 @@ async function calculateSuperhostProgress(
   // program: completed stays plus non-excluded host cancellations. Guest
   // cancellations do not penalize the host.
   const cancellationDenominator = completedReservationsCount + hostCancellationCount;
-  const accountGoodStanding = host.status === UserStatus.ACTIVE;
   const requirements = evaluateSuperhostRequirements({
     completedReservationsCount,
     completedNightsCount,
@@ -192,7 +200,10 @@ async function calculateSuperhostProgress(
     responseRatePercentage: messagingMetrics.responseRatePercentage,
     hostCancellationCount,
     cancellationDenominator,
-    accountGoodStanding,
+    accountGoodStanding: host.status === UserStatus.ACTIVE,
+    accountStatus: host.status,
+    cancellationExceptionVerificationState: unverifiedExcludedHostCancellationCount > 0 ? "UNVERIFIED" : "VERIFIED",
+    assessmentPeriod: window,
     isListingOwner: true,
   });
 
@@ -220,8 +231,9 @@ async function calculateSuperhostProgress(
     hostCancellationCount,
     cancellationDenominator,
     cancellationMet: requirements.cancellationMet,
-    accountGoodStanding,
-    accountStandingMet: accountGoodStanding,
+    accountGoodStanding: requirements.accountGoodStanding,
+    accountStandingMet: requirements.accountStandingMet,
+    qualification: requirements.qualification,
     eligibleNow: requirements.eligibleNow,
     failureReasons: requirements.failureReasons,
   };
@@ -229,38 +241,50 @@ async function calculateSuperhostProgress(
 
 function emptyProgress(
   window: { windowStart: Date; windowEnd: Date },
-  accountGoodStanding: boolean,
+  accountStatus: UserStatus,
   isListingOwner = false,
 ): SuperhostProgress {
+  const requirements = evaluateSuperhostRequirements({
+    completedReservationsCount: 0,
+    completedNightsCount: 0,
+    overallRating: null,
+    responseRatePercentage: null,
+    hostCancellationCount: 0,
+    cancellationDenominator: 0,
+    accountGoodStanding: accountStatus === UserStatus.ACTIVE,
+    accountStatus,
+    assessmentPeriod: window,
+    isListingOwner,
+  });
   return {
     windowStart: window.windowStart,
     windowEnd: window.windowEnd,
     isListingOwner,
-    isListingOwnerMet: isListingOwner,
+    isListingOwnerMet: requirements.isListingOwnerMet,
     completedReservationsCount: 0,
     completedNightsCount: 0,
-    hostingVolume: { reservationPathMet: false, longStayPathMet: false, met: false },
+    hostingVolume: {
+      reservationPathMet: requirements.reservationPathMet,
+      longStayPathMet: requirements.longStayPathMet,
+      met: requirements.hostingVolumeMet,
+    },
     overallRating: null,
     publishedReviewCount: 0,
-    ratingMet: false,
+    ratingMet: requirements.ratingMet,
     responseRatePercentage: null,
     totalGuestInquiries: 0,
     respondedWithin24hCount: 0,
     averageResponseTimeMinutes: null,
-    responseRateMet: false,
-    hostCancellationRatePercentage: 0,
+    responseRateMet: requirements.responseRateMet,
+    hostCancellationRatePercentage: requirements.hostCancellationRatePercentage,
     hostCancellationCount: 0,
     cancellationDenominator: 0,
-    cancellationMet: true,
-    accountGoodStanding,
-    accountStandingMet: accountGoodStanding,
-    eligibleNow: false,
-    failureReasons: [
-      ...(!isListingOwner ? ["Host must be a listing owner to qualify for Superhost."] : []),
-      "Hosting volume requirement is not met.",
-      "A published review average of at least 4.80 is required.",
-      "Response rate is unavailable until there is a qualifying guest inquiry.",
-    ],
+    cancellationMet: requirements.cancellationMet,
+    accountGoodStanding: requirements.accountGoodStanding,
+    accountStandingMet: requirements.accountStandingMet,
+    qualification: requirements.qualification,
+    eligibleNow: requirements.eligibleNow,
+    failureReasons: requirements.failureReasons,
   };
 }
 
@@ -305,65 +329,115 @@ export async function evaluateHostAtQuarterlyCheckpoint(hostId: string, evaluati
   });
   if (!previous) throw new Error("Host not found");
 
-  const result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-    // Quarterly evaluations are financial-style historical records: reruns must
-    // be idempotent and must never rewrite the previously finalized result.
-    const existing = await tx.superhostEvaluation.findUnique({
-      where: { hostId_evaluationDate: { hostId, evaluationDate: checkpoint } },
-    });
-    if (existing) return { history: existing, finalized: false };
-
-    const history = await tx.superhostEvaluation.create({
-      data: {
-        hostId,
-        evaluationDate: checkpoint,
-        windowStart: progress.windowStart,
-        windowEnd: progress.windowEnd,
-        completedReservations: progress.completedReservationsCount,
-        completedNights: progress.completedNightsCount,
-        overallRating: progress.overallRating,
-        publishedReviewCount: progress.publishedReviewCount,
-        responseRatePercentage: progress.responseRatePercentage,
-        totalGuestInquiries: progress.totalGuestInquiries,
-        hostCancellationRatePercentage: progress.hostCancellationRatePercentage,
-        hostCancellationCount: progress.hostCancellationCount,
-        cancellationDenominator: progress.cancellationDenominator,
-        accountGoodStanding: progress.accountGoodStanding,
-        qualified: progress.eligibleNow,
-        failureReasons: progress.failureReasons,
-      },
-    });
-    await tx.user.update({
-      where: { id: hostId },
-      data: {
-        isSuperhost: progress.eligibleNow,
-        superhostQualifiedAt: progress.eligibleNow ? previous.superhostQualifiedAt ?? checkpoint : null,
-        superhostLastEvaluatedAt: checkpoint,
-        superhostNextEvaluationAt: getNextQuarterlyEvaluationDate(checkpoint),
-      },
-    });
-    return { history, finalized: true };
+  const transition = resolveSuperhostLifecycleTransition({
+    previousOfficialStatus: previous.isSuperhost,
+    previousQualifiedAt: previous.superhostQualifiedAt,
+    eligibilityStatus: progress.qualification.eligibilityStatus,
+    eligibleNow: progress.eligibleNow,
+    checkpoint,
   });
 
-  const statusChanged = result.finalized && previous.isSuperhost !== progress.eligibleNow;
+  let result: { history: Awaited<ReturnType<typeof prisma.superhostEvaluation.findUnique>>; finalized: boolean };
+  try {
+    result = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      // Quarterly assessments are immutable. The unique key is the final
+      // concurrency guard; the preliminary read makes normal retries cheap,
+      // while the P2002 fallback below handles simultaneous runners.
+      const existing = await tx.superhostEvaluation.findUnique({
+        where: { hostId_evaluationDate: { hostId, evaluationDate: checkpoint } },
+      });
+      if (existing) return { history: existing, finalized: false };
+
+      const history = await tx.superhostEvaluation.create({
+        data: {
+          hostId,
+          evaluationDate: checkpoint,
+          windowStart: progress.windowStart,
+          windowEnd: progress.windowEnd,
+          completedReservations: progress.completedReservationsCount,
+          completedNights: progress.completedNightsCount,
+          overallRating: progress.overallRating,
+          publishedReviewCount: progress.publishedReviewCount,
+          responseRatePercentage: progress.responseRatePercentage,
+          totalGuestInquiries: progress.totalGuestInquiries,
+          hostCancellationRatePercentage: progress.hostCancellationRatePercentage,
+          hostCancellationCount: progress.hostCancellationCount,
+          cancellationDenominator: progress.cancellationDenominator,
+          accountGoodStanding: progress.accountGoodStanding,
+          // Blocked assessments are recorded as non-qualifying for review, but
+          // transition does not revoke an already-earned official badge.
+          qualified: progress.eligibleNow,
+          failureReasons: progress.failureReasons,
+        },
+      });
+      await tx.user.update({
+        where: { id: hostId },
+        data: {
+          isSuperhost: transition.officialStatus,
+          superhostQualifiedAt: transition.qualifiedAt,
+          superhostLastEvaluatedAt: checkpoint,
+          superhostNextEvaluationAt: getNextQuarterlyEvaluationDate(checkpoint),
+        },
+      });
+      return { history, finalized: true };
+    });
+  } catch (error) {
+    // A second worker can cross the preliminary read and race on the unique
+    // history key. Treat that as an idempotent success after the winning
+    // transaction commits; do not create a duplicate badge update or history.
+    const code = typeof error === "object" && error !== null && "code" in error
+      ? (error as { code?: unknown }).code
+      : undefined;
+    if (code !== "P2002") throw error;
+    const existing = await prisma.superhostEvaluation.findUnique({
+      where: { hostId_evaluationDate: { hostId, evaluationDate: checkpoint } },
+    });
+    if (!existing) throw error;
+    result = { history: existing, finalized: false };
+  }
+
+  if (!result.history) throw new Error("Superhost evaluation history could not be loaded");
+
+  const statusChanged = result.finalized && transition.appliesOfficialStatus && previous.isSuperhost !== transition.officialStatus;
+  const renewed = result.finalized && transition.appliesOfficialStatus && previous.isSuperhost && transition.officialStatus;
   if (statusChanged) {
     // Public listing and discovery cards read the persisted badge, so invalidate
     // their versioned cache only when an official quarterly status changes.
-    await Promise.all([
+    // These post-commit side effects must not make an already-persisted
+    // assessment look failed or cause an unsafe lifecycle retry.
+    const cacheEffects = await Promise.allSettled([
       incrCounter(keys.listingsPublicVersion()),
       invalidateUserCache(hostId),
     ]);
+    for (const effect of cacheEffects) {
+      if (effect.status === "rejected") {
+        console.warn("[superhost.service] Post-evaluation cache invalidation failed", effect.reason);
+      }
+    }
+  }
+  // A finalized assessment has a unique history record, so these lifecycle
+  // notifications cannot be duplicated by scheduler/admin retries. Blocked
+  // assessments intentionally do not announce a qualification outcome.
+  if (statusChanged || renewed) {
     await notificationService.create({
       userId: hostId,
       type: "SYSTEM",
-      title: progress.eligibleNow ? "You are now a Superhost" : "Your Superhost status changed",
-      message: progress.eligibleNow
+      title: renewed ? "Your Superhost status was renewed" : transition.officialStatus ? "You are now a Superhost" : "Your Superhost status changed",
+      message: renewed
+        ? "Your official Superhost status was renewed for this evaluation period."
+        : transition.officialStatus
         ? "Your official Superhost status is active for this evaluation period."
         : "Your official Superhost status is no longer active for this evaluation period.",
       entityId: result.history.id,
       entityType: "superhost_evaluation",
       link: "/host/dashboard",
-      metadata: { evaluationDate: checkpoint.toISOString(), qualified: progress.eligibleNow },
+      metadata: {
+        evaluationDate: checkpoint.toISOString(),
+        qualified: progress.eligibleNow,
+        eligibilityStatus: progress.qualification.eligibilityStatus,
+      },
+    }).catch((error) => {
+      console.warn("[superhost.service] Post-evaluation notification failed", error);
     });
   }
 
@@ -419,6 +493,14 @@ export async function runQuarterlySuperhostEvaluation(evaluationDate = new Date(
   const successfulHosts = results.filter((r) => r.success).length;
   const failedHosts = results.filter((r) => !r.success).length;
   const statusChanges = results.filter((r) => r.success && r.statusChanged).length;
+
+  console.info("[superhost.service] Quarterly evaluation completed", {
+    evaluationDate: checkpoint.toISOString(),
+    evaluatedHosts: results.length,
+    successfulHosts,
+    failedHosts,
+    statusChanges,
+  });
 
   return {
     evaluationDate: checkpoint,

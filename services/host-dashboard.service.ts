@@ -188,6 +188,18 @@ export interface HostDashboardSuperhostEvaluation {
     cancellationMet: boolean;
     accountGoodStanding: boolean;
     accountStandingMet: boolean;
+    qualification: {
+      eligibilityStatus: "ELIGIBLE" | "NOT_ELIGIBLE" | "CANNOT_DETERMINE";
+      criteria: Array<{
+        id: string;
+        actualValue: boolean | number | string | null | Record<string, number | boolean>;
+        requiredThreshold: string;
+        status: "PASS" | "FAIL" | "BLOCKED";
+        explanation: string;
+      }>;
+      missingInformation: string[];
+      unresolvedPolicyDependencies: string[];
+    };
     eligibleNow: boolean;
   };
   isQualified: boolean;
@@ -1671,6 +1683,12 @@ export async function getHostDashboardData(
         cancellationMet: superhostStatus.cancellationMet,
         accountGoodStanding: superhostStatus.accountGoodStanding,
         accountStandingMet: superhostStatus.accountStandingMet,
+        qualification: {
+          eligibilityStatus: superhostStatus.qualification.eligibilityStatus,
+          criteria: superhostStatus.qualification.criteria,
+          missingInformation: superhostStatus.qualification.missingInformation,
+          unresolvedPolicyDependencies: superhostStatus.qualification.unresolvedPolicyDependencies,
+        },
         eligibleNow: superhostStatus.eligibleNow,
       },
       isQualified: isSuperhostQualified,
@@ -1966,9 +1984,15 @@ function createEmptyHostDashboard(
         hostCancellationCount: 0,
         cancellationDenominator: 0,
         cancellationMet: true,
-        accountGoodStanding: isAccountInGoodStanding,
-        accountStandingMet: isAccountInGoodStanding,
-        eligibleNow: false,
+            accountGoodStanding: isAccountInGoodStanding,
+            accountStandingMet: isAccountInGoodStanding,
+            qualification: {
+              eligibilityStatus: "CANNOT_DETERMINE",
+              criteria: [],
+              missingInformation: ["Superhost qualification data is unavailable for this dashboard state."],
+              unresolvedPolicyDependencies: [],
+            },
+            eligibleNow: false,
       },
       isQualified: false,
       evaluatedWindowMonths: 12,

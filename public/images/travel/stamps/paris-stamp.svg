@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240" fill="none">
+  <!-- Circular background badge with pastel pink fill -->
+  <defs>
+    <path id="curve-text-paris" d="M 30,105 A 70,70 0 0,1 170,105" fill="none" />
+  </defs>
+  
+  <!-- Subtle circular stamp background -->
+  <circle cx="100" cy="110" r="60" fill="#FCE4EC" stroke="#E0E0E0" stroke-width="1.5" stroke-dasharray="3 3" />
+  <circle cx="100" cy="110" r="54" fill="#F8BBD0" opacity="0.4" />
+
+  <!-- "stay like a homie." curved along top -->
+  <text font-family="'Caveat', 'Comic Sans MS', cursive, sans-serif" font-size="14" fill="#1F1F1F" letter-spacing="1">
+    <textPath href="#curve-text-paris" startOffset="50%" text-anchor="middle">
+      stay like a homie.
+    </textPath>
+  </text>
+
+  <!-- Eiffel Tower Sketch -->
+  <g stroke="#1F1F1F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <!-- Spire -->
+    <line x1="100" y1="42" x2="100" y2="60" stroke-width="2.5" />
+    <circle cx="100" cy="40" r="2" fill="#1F1F1F" />
+    
+    <!-- Top dome & first platform -->
+    <path d="M96 60 Q100 58 104 60" />
+    <line x1="94" y1="68" x2="106" y2="68" />
+    
+    <!-- Top tower body lattice -->
+    <line x1="96" y1="68" x2="93" y2="105" />
+    <line x1="104" y1="68" x2="107" y2="105" />
+    <line x1="95" y1="80" x2="105" y2="80" />
+    <line x1="94" y1="92" x2="106" y2="92" />
+    <!-- Lattice crosses -->
+    <line x1="96" y1="68" x2="105" y2="80" stroke-width="1.2" />
+    <line x1="104" y1="68" x2="95" y2="80" stroke-width="1.2" />
+    <line x1="95" y1="80" x2="106" y2="92" stroke-width="1.2" />
+    <line x1="105" y1="80" x2="94" y2="92" stroke-width="1.2" />
+    
+    <!-- Middle platform / balcony -->
+    <rect x="90" y="105" width="20" height="6" rx="1.5" fill="#FFFFFF" />
+    
+    <!-- Lower legs and main arch -->
+    <path d="M90 111 L74 165" />
+    <path d="M110 111 L126 165" />
+    <!-- Inner leg contours -->
+    <path d="M93 111 L86 165" />
+    <path d="M107 111 L114 165" />
+    <!-- Center arch -->
+    <path d="M86 165 Q100 135 114 165" />
+    
+    <!-- Horizontal beams on legs -->
+    <line x1="88" y1="125" x2="112" y2="125" />
+    <line x1="82" y1="145" x2="118" y2="145" />
+    
+    <!-- Base feet -->
+    <line x1="70" y1="165" x2="88" y2="165" stroke-width="3" />
+    <line x1="112" y1="165" x2="130" y2="165" stroke-width="3" />
+  </g>
+
+  <!-- Hand-drawn style "Paris" underneath -->
+  <text x="100" y="200" text-anchor="middle" font-family="'Caveat', cursive, sans-serif" font-size="22" font-weight="600" fill="#1F1F1F">
+    Paris
+  </text>
+</svg>
+

@@ -17,7 +17,9 @@ export type PublicMediaKind =
   | "cms-media"
   | "stamp-icons"
   | "avatars"
-  | "reviews";
+  | "reviews"
+  | "travel-covers"
+  | "travel-photos";
 
 export type PrivateMediaKind =
   | "host-documents"
@@ -34,6 +36,8 @@ export const PUBLIC_KINDS = new Set<string>([
   "stamp-icons",
   "avatars",
   "reviews",
+  "travel-covers",
+  "travel-photos",
 ]);
 export const PRIVATE_KINDS = new Set<string>([
   "host-documents",
