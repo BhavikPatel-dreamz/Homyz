@@ -21,6 +21,7 @@ interface DatePeriodPickerProps {
   displayLabel?: string;
   disabled?: boolean;
   className?: string;
+  align?: "left" | "right";
 }
 
 const MONTHS_FULL = [
@@ -46,9 +47,11 @@ export function DatePeriodPicker({
   displayLabel,
   disabled = false,
   className = "",
+  align = "right",
 }: DatePeriodPickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const popoverAlignClass = align === "left" ? "left-0 sm:left-0 sm:right-auto" : "right-0 sm:right-0 sm:left-auto";
 
   const now = useMemo(() => new Date(), []);
   const curYear = now.getUTCFullYear();
@@ -251,7 +254,7 @@ export function DatePeriodPicker({
         onClick={() => (isOpen ? setIsOpen(false) : openPicker())}
         aria-haspopup="dialog"
         aria-expanded={isOpen}
-        className="flex h-full flex-1 sm:flex-initial min-w-0 items-center justify-center gap-1.5 sm:gap-2 border-x border-[#EDEDED] px-2.5 sm:px-3.5 text-xs sm:text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-[#F7F7F8] focus:outline-hidden disabled:opacity-50 cursor-pointer"
+        className="flex h-full flex-1 sm:flex-initial min-w-0 items-center justify-center gap-1.5 sm:gap-2 border-x border-[#EDEDED] px-2.5 sm:px-3.5 text-sm font-medium text-[#1F1F1F] transition-colors hover:bg-[#F7F7F8] focus:outline-hidden disabled:opacity-50 cursor-pointer"
       >
         <svg className="w-4 h-4 shrink-0 text-[#727272]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
@@ -259,7 +262,7 @@ export function DatePeriodPicker({
           <line x1="8" y1="2" x2="8" y2="6" />
           <line x1="3" y1="10" x2="21" y2="10" />
         </svg>
-        <span className="truncate max-w-[115px] sm:max-w-[135px] lg:max-w-[200px]">{labelText}</span>
+        <span className="truncate max-w-[200px]">{labelText}</span>
         <svg
           className={`h-4 w-4 shrink-0 text-[#727272] transition-transform duration-200 ${isOpen ? "rotate-180 text-[#1F1F1F]" : ""}`}
           fill="none"
@@ -285,7 +288,9 @@ export function DatePeriodPicker({
 
       {/* Desktop Popover / Dialog */}
       {isOpen && (
-        <div className="absolute left-0 top-14 z-50 hidden w-[420px] max-w-[calc(100vw-32px)] rounded-3xl border border-[#E5E5E5] bg-white p-5 shadow-2xl shadow-black/10 sm:block animate-in fade-in-0 zoom-in-95 duration-150">
+        <div
+          className={`absolute top-14 z-50 hidden w-[min(420px,calc(100vw-32px))] rounded-3xl border border-[#E5E5E5] bg-white p-5 shadow-2xl shadow-black/10 sm:block animate-in fade-in-0 zoom-in-95 duration-150 ${popoverAlignClass}`}
+        >
           {/* Timeframe Granularity Tabs */}
           <div className="grid grid-cols-6 gap-1 rounded-full bg-[#F3F4F5] p-1 text-[11px] font-medium text-[#727272]">
             {(["daily", "weekly", "monthly", "quarterly", "yearly", "custom"] as TimeframeGranularity[]).map((tf) => (

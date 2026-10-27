@@ -12,6 +12,7 @@ import { PeriodComparisonModal, type ComparisonPeriodConfig } from "@/components
 import { EarningsInteractiveChart } from "@/components/host/reporting/earnings-interactive-chart";
 import type { TimeframeGranularity } from "@/lib/dashboard/reporting-filter";
 import type { HostDashboardEntitlements } from "@/lib/entitlements/host-dashboard";
+import { ChevronRightIcon } from "@/components/host/account-settings/icons";
 import type {
   HostEarningsDetails,
   HostEarningsPayoutPreview,
@@ -316,51 +317,62 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
     );
 
   return (
-    <div className="space-y-8 pb-12">
+    <div className="space-y-6 sm:space-y-8 pb-12 w-full min-w-0">
       {/* ── Section A: Header & Compact Unified Toolbar ── */}
       <header className="space-y-4">
         <div>
-          <p className="text-base font-medium text-[#727272]">Hosting</p>
-          <h1 className="mt-1.5 text-3xl font-medium tracking-tight text-[#1f1f1f] sm:text-4xl">
+          <p className="text-sm sm:text-base font-medium text-[#727272]">Hosting</p>
+          <h1 className="mt-1 text-2xl min-[480px]:text-3xl sm:text-4xl font-medium tracking-tight text-[#1f1f1f]">
             Earnings
           </h1>
-          <p className="mt-1.5 max-w-2xl text-sm text-[#727272]">Review realized payouts, reporting periods, and property performance from verified financial records.</p>
+          <p className="mt-1.5 max-w-2xl text-xs sm:text-sm text-[#727272] leading-relaxed">
+            Review realized payouts, reporting periods, and property performance from verified financial records.
+          </p>
         </div>
 
-
         {/* Compact Unified Toolbar */}
-        <div className="flex flex-col gap-3 rounded-2xl border border-zinc-200 bg-white p-2.5 shadow-2xs sm:flex-row sm:items-center sm:justify-between sm:p-3">
-          {/* Left: Searchable Property Selector */}
-          <PropertySelector
-            listings={reporting.listings}
-            selectedListingId={reporting.selectedListingId}
-            onSelect={(id) => update({ propertyId: id })}
-          />
+        <div className="flex flex-col gap-2.5 rounded-2xl border border-zinc-200 bg-white p-2.5 shadow-2xs sm:p-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:flex-wrap lg:flex-nowrap flex-1 min-w-0">
+            {/* Left: Searchable Property Selector */}
+            <div className="w-full sm:w-auto sm:min-w-[200px] lg:max-w-xs flex-1">
+              <PropertySelector
+                listings={reporting.listings}
+                selectedListingId={reporting.selectedListingId}
+                onSelect={(id) => update({ propertyId: id })}
+                className="w-full"
+                align="left"
+              />
+            </div>
 
-          {/* Center: Reporting Period / Date Range Picker */}
-          <DatePeriodPicker
-            value={{
-              timeframe: activeTimeframe,
-              date: query.get("date") || undefined,
-              weekStart: query.get("weekStart") || undefined,
-              month: Number(query.get("month")) || reporting.selectedMonth,
-              year: Number(query.get("year")) || reporting.selectedYear,
-              quarter: Number(query.get("quarter")) || undefined,
-              startDate: query.get("startDate") || undefined,
-              endDate: query.get("endDate") || undefined,
-            }}
-            onChange={handlePeriodChange}
-            displayLabel={reporting.timeframeLabel || reporting.monthLabel}
-          />
+            {/* Center: Reporting Period / Date Range Picker */}
+            <div className="w-full sm:w-auto sm:min-w-[200px] lg:max-w-xs flex-1">
+              <DatePeriodPicker
+                value={{
+                  timeframe: activeTimeframe,
+                  date: query.get("date") || undefined,
+                  weekStart: query.get("weekStart") || undefined,
+                  month: Number(query.get("month")) || reporting.selectedMonth,
+                  year: Number(query.get("year")) || reporting.selectedYear,
+                  quarter: Number(query.get("quarter")) || undefined,
+                  startDate: query.get("startDate") || undefined,
+                  endDate: query.get("endDate") || undefined,
+                }}
+                onChange={handlePeriodChange}
+                displayLabel={reporting.timeframeLabel || reporting.monthLabel}
+                className="w-full"
+                align="right"
+              />
+            </div>
+          </div>
 
           {/* Right: Compare Periods Action Button */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
             <button
               type="button"
               onClick={() => setShowCompareModal(true)}
-              className={`inline-flex items-center gap-1.5 rounded-full min-h-[48px] border px-3.5 py-2 text-sm font-medium transition-all ${reporting.comparison?.enabled
+              className={`inline-flex w-full sm:w-auto items-center justify-center gap-1.5 rounded-full min-h-[44px] sm:min-h-[48px] border px-4 py-2 text-sm font-medium transition-all cursor-pointer ${reporting.comparison?.enabled
                   ? "border-zinc-950 bg-zinc-950 text-white shadow-xs"
-                  : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-400 hover:bg-zinc-50"
+                  : "border-zinc-300 bg-white text-zinc-800 hover:border-zinc-400 hover:bg-zinc-50"
                 }`}
             >
               <span>⚖️</span>
@@ -372,7 +384,7 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
                 type="button"
                 onClick={() => handleApplyComparison(null)}
                 title="Clear comparison"
-                className="rounded-full p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 text-xs"
+                className="rounded-full p-2 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 text-xs cursor-pointer"
               >
                 ✕
               </button>
@@ -382,13 +394,13 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
       </header>
 
       {reporting.comparison?.enabled && (
-        <div className="flex flex-col gap-3 rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-2.5 rounded-2xl border border-zinc-200 bg-zinc-50 px-3.5 py-3 text-xs sm:text-sm sm:flex-row sm:items-center sm:justify-between sm:px-4">
           <p className="text-zinc-700">
-            <span className="font-semibold text-[#1f1f1f]">{reporting.timeframeLabel || reporting.monthLabel}</span>
+            <span className="font-medium text-[#1f1f1f]">{reporting.timeframeLabel || reporting.monthLabel}</span>
             {" compared with "}
-            <span className="font-semibold text-[#1f1f1f]">{reporting.comparison.periodLabel}</span>
+            <span className="font-medium text-[#1f1f1f]">{reporting.comparison.periodLabel}</span>
           </p>
-          <div className="flex items-center gap-3 text-xs font-semibold">
+          <div className="flex items-center gap-3 text-xs font-medium shrink-0">
             <button type="button" onClick={() => setShowCompareModal(true)} className="underline underline-offset-4 hover:text-[#727272]">Change comparison</button>
             <button type="button" onClick={() => handleApplyComparison(null)} className="text-rose-700 underline underline-offset-4 hover:text-rose-900">Disable comparison</button>
           </div>
@@ -404,7 +416,7 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
           <button
             type="button"
             onClick={() => void load(query)}
-            className="font-semibold underline"
+            className="font-medium underline"
           >
             Retry
           </button>
@@ -412,27 +424,27 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
       )}
 
       {/* ── Section B: Main Earnings Chart (Visual Chart FIRST) ── */}
-      <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-xs sm:p-8">
+      <section className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-xs sm:p-6 sm:rounded-3xl lg:p-8">
         <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-zinc-100 pb-4">
           <div>
-            <h2 className="text-xl font-medium tracking-tight text-[#1f1f1f]">Earnings performance</h2>
-            <p className="mt-1 text-sm text-[#727272]">
+            <h2 className="text-lg min-[480px]:text-xl font-medium tracking-tight text-[#1f1f1f]">Earnings performance</h2>
+            <p className="mt-1 text-xs sm:text-sm text-[#727272]">
               {reporting.chart.currency || "SAR"} realized net host payouts across {reporting.timeframeLabel || reporting.monthLabel}
             </p>
             {reporting.totalsByCurrency.length > 1 && (
-              <p className="mt-1 text-sm text-[#727272]">
+              <p className="mt-1 text-xs sm:text-sm text-[#727272]">
                 Amounts stay separated by settlement currency.
               </p>
             )}
           </div>
           {reporting.totalsByCurrency.length > 1 && (
-            <span className="rounded-full border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-[11px] font-semibold text-[#727272]">
+            <span className="rounded-full border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-[11px] font-medium text-[#727272]">
               Reporting in {reporting.chart.currency || "SAR"}
             </span>
           )}
         </div>
 
-        <div className="mt-4">
+        <div className="mt-4 overflow-x-auto">
           <EarningsInteractiveChart
             points={chartPoints}
             currency={reporting.chart.currency || "SAR"}
@@ -448,19 +460,19 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
       {/* ── Section C: Earnings Numerical KPI Cards (Numbers BELOW Chart) ── */}
       <section
         aria-busy={isLoadingOverview}
-        className={`rounded-3xl border border-zinc-200 bg-white p-6 shadow-xs sm:p-8 transition-opacity ${isLoadingOverview ? "opacity-50" : ""
+        className={`rounded-2xl border border-zinc-200 bg-white p-4 shadow-xs sm:p-6 sm:rounded-3xl lg:p-8 transition-opacity ${isLoadingOverview ? "opacity-50" : ""
           }`}
       >
         <div className="flex flex-col gap-4 sm:flex-row sm:items-baseline sm:justify-between">
           <div>
-            <p className="text-base font-medium text-[#727272]">Total Realized Net</p>
-            <div className="mt-2 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-              <span className="text-4xl font-medium tracking-tight text-[#1f1f1f] sm:text-5xl">
+            <p className="text-sm sm:text-base font-medium text-[#727272]">Total Realized Net</p>
+            <div className="mt-1.5 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+              <span className="text-2xl min-[480px]:text-3xl sm:text-4xl font-medium tracking-tight text-[#1f1f1f]">
                 {selectedTotals
                   ? fmt(selectedTotals.monthlyRecognized, selectedTotals.currency)
                   : "SAR 0.00"}
               </span>
-              <span className="text-sm font-normal text-[#727272]">
+              <span className="text-xs sm:text-sm font-normal text-[#727272]">
                 in {reporting.timeframeLabel || reporting.monthLabel}
               </span>
             </div>
@@ -468,7 +480,7 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
 
           {/* Comparison Delta Callout */}
           {reporting.comparison && (
-            <div className="flex items-center gap-2 rounded-2xl border border-zinc-200 bg-zinc-50/80 px-4 py-2.5 text-xs">
+            <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-zinc-200 bg-zinc-50/80 p-2.5 sm:px-4 sm:py-2 text-xs">
               <span
                 className={`inline-flex items-center rounded-full px-2 py-0.5 font-medium ${reporting.comparison.deltaDirection === "increase"
                     ? "bg-emerald-100 text-emerald-800"
@@ -491,7 +503,7 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
           )}
         </div>
 
-        <div className="mt-6 grid gap-3 border-t border-zinc-100 pt-6 sm:grid-cols-3">
+        <div className="sm:mt-6 mt-3 grid grid-cols-1 gap-3 border-t border-zinc-100 sm:pt-6 pt-3 min-[480px]:grid-cols-2 lg:grid-cols-3">
           <PeriodFinancialMetric
             label="Gross earnings"
             value={periodFinancials.gross}
@@ -506,26 +518,28 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
             comparisonLabel={reporting.comparison?.periodLabel}
             currency={reporting.chart.currency || selectedTotals?.currency || "SAR"}
           />
-          <PeriodFinancialMetric
-            label="Host service fees"
-            value={periodFinancials.fees}
-            comparisonValue={reporting.comparison?.platformFee}
-            comparisonLabel={reporting.comparison?.periodLabel}
-            currency={reporting.chart.currency || selectedTotals?.currency || "SAR"}
-            unfavorableIncrease
-          />
+          <div className="min-[480px]:col-span-2 lg:col-span-1">
+            <PeriodFinancialMetric
+              label="Host service fees"
+              value={periodFinancials.fees}
+              comparisonValue={reporting.comparison?.platformFee}
+              comparisonLabel={reporting.comparison?.periodLabel}
+              currency={reporting.chart.currency || selectedTotals?.currency || "SAR"}
+              unfavorableIncrease
+            />
+          </div>
         </div>
 
         {/* 3-Card KPI Grid */}
-        <div className="mt-6 grid gap-4 sm:grid-cols-3">
+        <div className="mt-6 grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 lg:grid-cols-3">
           <div className="rounded-xl bg-[#F3F4F5] shadow-[0_2px_4px_0px_#00000040] border border-white p-4">
             <p className="text-sm font-normal text-[#727272]">Upcoming payout</p>
-            <p className="mt-1 text-2xl font-medium tracking-tight text-[#1f1f1f]">
+            <p className="mt-1 text-xl min-[480px]:text-2xl font-medium tracking-tight text-[#1f1f1f] truncate">
               {selectedTotals
                 ? fmt(selectedTotals.upcomingPayout, selectedTotals.currency)
                 : "—"}
             </p>
-            <p className="mt-1 text-xs text-[#727272]">Scheduled and ready for release</p>
+            <p className="mt-6 pt-3 border-t border-zinc-200 text-xs text-[#727272]">Scheduled and ready for release</p>
           </div>
 
           <button
@@ -536,9 +550,9 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
           >
             <div className="flex items-center justify-between">
               <p className="text-sm font-normal text-[#727272] underline underline-offset-4">Year-to-date earnings</p>
-              <span className="text-xs text-zinc-400">ℹ</span>
+              <span className="size-5 rounded-full text-sm border border-[#727272] text-[#727272] flex justify-center items-center shrink-0">ℹ</span>
             </div>
-            <p className="mt-1 text-2xl font-medium tracking-tight text-[#1f1f1f]">
+            <p className="mt-1 text-xl min-[480px]:text-2xl font-medium tracking-tight text-[#1f1f1f] truncate">
               {selectedTotals
                 ? fmt(
                   selectedTotals.ytdNet + selectedTotals.ytdAdjustments,
@@ -546,20 +560,20 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
                 )
                 : "—"}
             </p>
-            <p className="mt-1 text-[11px] text-[#727272]">Full {reporting.selectedYear} cumulative</p>
+            <p className="mt-6 pt-3 border-t border-zinc-200 text-xs text-[#727272]">Full {reporting.selectedYear} cumulative</p>
           </button>
 
-          <div className="rounded-xl bg-[#F3F4F5] shadow-[0_2px_4px_0px_#00000040] border border-white p-4">
+          <div className="rounded-xl bg-[#F3F4F5] shadow-[0_2px_4px_0px_#00000040] border border-white p-4 min-[480px]:col-span-2 lg:col-span-1">
             <p className="text-sm font-normal text-[#727272]">Settled payouts volume</p>
-            <p className="mt-1 text-2xl font-medium tracking-tight text-[#1f1f1f]">
+            <p className="mt-1 text-xl min-[480px]:text-2xl font-medium tracking-tight text-[#1f1f1f] truncate">
               {fmt(data.summary.totalPaidVolume, selectedTotals?.currency || "SAR")}
             </p>
-            <p className="mt-1 text-[11px] text-[#727272]">{data.summary.totalPaidCount} verified payout transfers</p>
+            <p className="mt-6 pt-3 border-t border-zinc-200 text-xs text-[#727272]">{data.summary.totalPaidCount} verified payout transfers</p>
           </div>
         </div>
 
         {reporting.unavailableSnapshotCount > 0 && (
-          <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-xs text-amber-800">
+          <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-xs text-amber-800 leading-relaxed">
             {reporting.unavailableSnapshotCount} completed booking
             {reporting.unavailableSnapshotCount === 1 ? "" : "s"} without an
             immutable payout snapshot{" "}
@@ -569,14 +583,13 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
         )}
       </section>
 
-
       <section
         aria-labelledby="dashboard-plus-analytics-heading"
-        className="rounded-2xl border border-white bg-[#1F1F1F] p-5 text-white shadow-[0_2px_4px_0px_#00000040] transition-all sm:flex sm:items-center sm:justify-between sm:gap-6 sm:p-6"
+        className="flex flex-col gap-4 rounded-2xl border border-white bg-[#1F1F1F] p-3.5 sm:p-5 md:p-6 text-white shadow-[0_2px_4px_0px_#00000040] transition-all w-full min-w-0 overflow-hidden lg:flex-row lg:items-center lg:justify-between lg:gap-6"
       >
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center rounded-full bg-[#FCDF9C]/20 border border-[#FCDF9C]/30 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#FCDF9C]">
+            <span className="inline-flex items-center rounded-full border border-[#FCDF9C]/30 bg-[#FCDF9C]/20 px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-[#FCDF9C]">
               Dashboard Plus
             </span>
             {entitlements.hasDashboardPlus && (
@@ -603,17 +616,19 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
         </div>
 
         {entitlements.features.ADVANCED_EARNINGS ? (
-          <Link
-            href={scopedHref("/host/earnings/analytics")}
-            className="group mt-4 inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-[#FCDF9C] px-5 py-2.5 text-xs font-semibold text-[#1F1F1F] transition-all duration-300 hover:bg-white hover:text-[#1F1F1F] hover:shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FCDF9C] sm:mt-0 cursor-pointer"
-          >
-            <span>Open advanced analytics</span>
-            <span aria-hidden="true" className="transition-transform duration-200 group-hover:translate-x-0.5">
-              →
-            </span>
-          </Link>
+          <div className="w-full shrink-0 sm:w-auto">
+            <Link
+              href={scopedHref("/host/earnings/analytics")}
+              className="group inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#FCDF9C] px-5 py-3 text-xs font-medium text-[#1F1F1F] transition-all duration-300 hover:bg-white hover:text-[#1F1F1F] hover:shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FCDF9C] sm:w-auto sm:py-2.5 cursor-pointer"
+            >
+              <span>Open advanced analytics</span>
+              <span aria-hidden="true" className="transition-transform duration-200 group-hover:translate-x-0.5">
+                →
+              </span>
+            </Link>
+          </div>
         ) : (
-          <div className="mt-4 shrink-0 rounded-xl border border-white/10 bg-white/5 px-3.5 py-2 text-xs leading-relaxed text-zinc-300 backdrop-blur-xs sm:mt-0 sm:max-w-100">
+          <div className="w-full shrink-0 rounded-xl border border-white/10 bg-white/5 p-3 text-xs leading-relaxed text-zinc-300 backdrop-blur-xs sm:w-auto sm:py-2.5 sm:px-3.5 lg:max-w-sm">
             <p>
               Available with <span className="font-medium text-white">Dashboard Plus</span>. Contact support or an administrator to activate access.
             </p>
@@ -621,25 +636,23 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
         )}
       </section>
 
-
-
       {/* ── Upcoming & Paid payouts ── */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div className="flex flex-col gap-2.5 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h2 className="text-xl font-medium text-[#1f1f1f]">Payout activity</h2>
-          <p className="mt-1 text-sm text-[#727272]">
+          <h2 className="text-lg min-[480px]:text-xl font-medium text-[#1f1f1f]">Payout activity</h2>
+          <p className="mt-0.5 text-xs sm:text-sm text-[#727272]">
             Completed and scheduled host transactions
           </p>
         </div>
         <Link
           href={scopedHref("/host/earnings/transactions")}
-          className="group inline-flex shrink-0 items-center gap-1.5 self-start rounded-full border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-[#1F1F1F] transition-all duration-200 hover:border-[#1F1F1F] hover:bg-zinc-50 sm:self-auto cursor-pointer"
+          className="group inline-flex shrink-0 items-center gap-1.5 self-start rounded-full border border-zinc-300 bg-white px-3.5 py-1.5 text-xs sm:text-sm font-medium text-[#1F1F1F] transition-all duration-200 hover:border-[#1F1F1F] hover:bg-zinc-50 sm:self-auto sm:px-4 sm:py-2 cursor-pointer"
         >
           <span>View all transactions</span>
         </Link>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 w-full min-w-0 lg:grid-cols-2">
         <PayoutsSection
           title="Upcoming"
           href={scopedHref("/host/earnings/upcoming")}
@@ -665,20 +678,20 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
       {/* ── Monthly Reports ── */}
       <section
         aria-labelledby="earnings-reports-heading"
-        className="rounded-2xl border border-white bg-[#F3F4F5] p-5 shadow-[0_2px_4px_0px_#00000040] sm:p-6"
+        className="rounded-2xl border border-white bg-[#F3F4F5] p-3.5 sm:p-6 shadow-[0_2px_4px_0px_#00000040] w-full min-w-0 overflow-hidden"
       >
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
+        <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0 flex-1">
             <h2 id="earnings-reports-heading" className="text-base font-medium text-[#1F1F1F] sm:text-lg">
               Earnings reports
             </h2>
-            <p className="mt-0.5 text-sm text-[#727272] sm:text-sm">
+            <p className="mt-0.5 text-xs text-[#727272] sm:text-sm">
               Monthly and annual earnings statements
             </p>
           </div>
           <Link
             href={scopedHref("/host/earnings/reports")}
-            className="group inline-flex shrink-0 items-center gap-1.5 self-start rounded-full border border-zinc-300 bg-white px-3.5 py-1.5 text-sm font-medium text-[#1F1F1F] shadow-2xs transition-all hover:border-[#1F1F1F] hover:bg-zinc-50 sm:self-auto cursor-pointer"
+            className="group inline-flex shrink-0 items-center gap-1.5 self-start rounded-full border border-zinc-300 bg-white px-3.5 py-1.5 text-xs sm:text-sm font-medium text-[#1F1F1F] shadow-2xs transition-all hover:border-[#1F1F1F] hover:bg-zinc-50 sm:self-auto cursor-pointer"
           >
             <span>View all reports</span>
           </Link>
@@ -693,23 +706,24 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
                   href={scopedHref(
                     `/host/earnings/reports/monthly/${report.year}/${report.month}`,
                   )}
-                  className="group flex items-center justify-between px-5 py-3.5 transition-colors hover:bg-zinc-50 sm:px-6 sm:py-4"
+                  className="group flex items-center justify-between p-2.5 sm:px-6 sm:py-4 transition-colors hover:bg-zinc-50"
                 >
-                  <div className="flex items-center gap-3">
-                    <span className="flex size-8 items-center justify-center rounded-lg bg-zinc-100 text-sm text-[#727272] transition-colors group-hover:bg-[#FCDF9C]/30 group-hover:text-[#1F1F1F]">
+                  <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
+                    <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-zinc-200 text-xs sm:text-sm text-[#727272] transition-colors group-hover:bg-[#FCDF9C]/30 group-hover:text-[#1F1F1F] sm:size-8">
                       📄
                     </span>
-                    <span className="text-sm font-medium text-[#1F1F1F] group-hover:text-black">
+                    <span className="truncate text-xs sm:text-sm font-medium text-[#1F1F1F] group-hover:text-black">
                       {report.label}
                     </span>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm font-semibold text-[#1F1F1F]">
+                  <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+                    <span className="text-xs sm:text-sm font-medium text-[#1F1F1F]">
                       {fmt(report.amount, report.currency)}
                     </span>
-                    <span className="text-base text-zinc-400 transition-transform duration-200 group-hover:translate-x-0.5">
-                      ›
-                    </span>
+                    <ChevronRightIcon
+                      size={16}
+                      className="shrink-0 text-[#727272] transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-[#1F1F1F]"
+                    />
                   </div>
                 </Link>
               ))}
@@ -792,7 +806,23 @@ function PeriodFinancialMetric({ label, value, comparisonValue, comparisonLabel,
   const delta = typeof comparisonValue === "number" ? value - comparisonValue : null;
   const direction = delta === null || delta === 0 ? "No change" : delta > 0 ? (unfavorableIncrease ? "Higher" : "Higher") : (unfavorableIncrease ? "Lower" : "Lower");
   const tone = delta === null || delta === 0 ? "text-[#727272]" : delta > 0 ? (unfavorableIncrease ? "text-rose-700" : "text-emerald-700") : (unfavorableIncrease ? "text-emerald-700" : "text-rose-700");
-  return <div className="rounded-xl bg-[#F3F4F5] shadow-[0_2px_4px_0px_#00000040] border border-white p-4"><p className="text-sm font-normal text-[#727272]">{label}</p><p className="mt-1 text-2xl font-medium tracking-tight text-[#1f1f1f]">{fmt(value, currency)}</p>{typeof comparisonValue === "number" ? <p className={`mt-2 text-[11px] font-semibold ${tone}`}>{direction} by {fmt(Math.abs(delta || 0), currency)} vs {comparisonLabel}</p> : <p className="mt-2 pt-3 border-t border-zinc-200 text-xs text-[#727272]">Completed-stay immutable snapshots</p>}</div>;
+  return (
+    <div className="rounded-xl bg-[#F3F4F5] shadow-[0_2px_4px_0px_#00000040] border border-white p-4">
+      <p className="text-xs sm:text-sm font-normal text-[#727272]">{label}</p>
+      <p className="mt-1 truncate text-xl min-[480px]:text-2xl font-medium tracking-tight text-[#1f1f1f]">
+        {fmt(value, currency)}
+      </p>
+      {typeof comparisonValue === "number" ? (
+        <p className={`mt-2 truncate text-[11px] font-medium ${tone}`}>
+          {direction} by {fmt(Math.abs(delta || 0), currency)} vs {comparisonLabel}
+        </p>
+      ) : (
+        <p className="mt-6 pt-3 border-t border-zinc-200 text-xs text-[#727272]">
+          Completed-stay immutable snapshots
+        </p>
+      )}
+    </div>
+  );
 }
 
 /* ─── Payouts Section ─────────────────────────────────────────────────────── */
@@ -816,24 +846,24 @@ function PayoutsSection({
   empty: string;
 }) {
   return (
-    <section className="flex flex-col justify-between rounded-2xl border border-white bg-[#F3F4F5] p-5 shadow-[0_2px_4px_0px_#00000040]">
-      <div>
-        <div className="flex items-center justify-between gap-3">
-          <div>
+    <section className="flex flex-col justify-between rounded-2xl border border-white bg-[#F3F4F5] p-3.5 sm:p-5 shadow-[0_2px_4px_0px_#00000040] w-full min-w-0 overflow-hidden">
+      <div className="w-full min-w-0">
+        <div className="flex items-center justify-between gap-2 sm:gap-3">
+          <div className="min-w-0 flex-1">
             <h3 className="text-base font-medium text-[#1F1F1F] sm:text-lg">{title}</h3>
-            <p className="mt-0.5 text-sm text-[#727272]">{description}</p>
+            <p className="mt-0.5 truncate text-xs text-[#727272] sm:text-sm">{description}</p>
           </div>
           <Link
             href={href}
-            className="group inline-flex shrink-0 items-center gap-1 rounded-full border border-zinc-300 bg-white px-3 py-1.5 text-sm font-medium text-[#1F1F1F] transition-all hover:border-[#1F1F1F] hover:bg-zinc-50 cursor-pointer"
+            className="group inline-flex shrink-0 items-center gap-1 rounded-full border border-zinc-300 bg-white px-2.5 py-1 text-xs sm:px-3 sm:py-1.5 sm:text-sm font-medium text-[#1F1F1F] transition-all hover:border-[#1F1F1F] hover:bg-zinc-50 cursor-pointer"
           >
             <span>View all</span>
           </Link>
         </div>
 
-        <div className="mt-4">
+        <div className="mt-3.5 sm:mt-4">
           {payouts.length ? (
-            <div className="divide-y divide-zinc-100 overflow-hidden rounded-xl border border-zinc-100 bg-white shadow-2xs">
+            <div className="divide-y divide-zinc-100 overflow-hidden rounded-xl border border-zinc-100 bg-white shadow-2xs w-full min-w-0">
               {payouts.map((item) => (
                 <Link
                   key={item.bookingId}
@@ -844,10 +874,10 @@ function PayoutsSection({
                     encodeURIComponent(returnTo)
                   }
                   onClick={() => onSelect(item)}
-                  className="group flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-zinc-50"
+                  className="group flex w-full items-center gap-2 sm:gap-3 p-2.5 sm:px-4 sm:py-3.5 text-left transition-colors hover:bg-zinc-50"
                 >
                   {/* Listing photo */}
-                  <div className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-zinc-100 text-[10px] font-semibold text-zinc-400">
+                  <div className="flex size-9 sm:size-11 shrink-0 items-center justify-center overflow-hidden rounded-lg sm:rounded-xl bg-zinc-100 text-[10px] font-medium text-zinc-400">
                     {item.listingPhoto ? (
                       <Image
                         src={item.listingPhoto}
@@ -862,30 +892,31 @@ function PayoutsSection({
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold text-[#1F1F1F] group-hover:text-black">
+                    <p className="truncate text-xs sm:text-sm font-medium text-[#1F1F1F] group-hover:text-black">
                       {fmtDate(
                         paid
                           ? item.executionDetails?.executedAt
                           : item.scheduledPayoutDate,
                       )}
                     </p>
-                    <p className="mt-0.5 truncate text-xs text-[#727272]">
+                    <p className="mt-0.5 truncate text-[11px] sm:text-xs text-[#727272]">
                       {item.listingTitle}
                     </p>
                   </div>
                   <div className="shrink-0 text-right">
-                    <p className="text-sm font-medium text-[#1F1F1F]">
+                    <p className="text-xs sm:text-sm font-medium text-[#1F1F1F]">
                       {fmt(item.netPayout, item.currency)}
                     </p>
                     <span
-                      className={`mt-0.5 inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold ${payoutStatusStyle(item.status)}`}
+                      className={`mt-0.5 inline-flex rounded-full px-2 py-0.5 text-[10px] sm:text-xs leading-tight font-normal ${payoutStatusStyle(item.status)}`}
                     >
                       {payoutStatusLabel(item.status)}
                     </span>
                   </div>
-                  <span className="text-base text-zinc-300 transition-transform duration-200 group-hover:translate-x-0.5">
-                    ›
-                  </span>
+                  <ChevronRightIcon
+                    size={16}
+                    className="shrink-0 text-[#727272] transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-[#1F1F1F]"
+                  />
                 </Link>
               ))}
             </div>
@@ -932,9 +963,9 @@ function YtdModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="ytd-title"
-      className="fixed inset-0 z-50 flex items-end bg-black/45 sm:items-center sm:justify-center sm:p-4"
+      className="fixed inset-0 z-9999 flex items-end bg-black/45 sm:items-center sm:justify-center sm:p-4 backdrop-blur-xs"
     >
-      <div className="w-full rounded-t-3xl bg-white p-6 shadow-xl sm:max-w-md sm:rounded-3xl">
+      <div className="w-full max-h-[85vh] overflow-y-auto rounded-t-3xl bg-white p-5 pb-[calc(1.5rem+env(safe-area-inset-bottom))] shadow-xl sm:max-h-[90vh] sm:max-w-md sm:rounded-3xl sm:p-6 sm:pb-6">
         <div className="flex items-start justify-between">
           <div>
             <h2 id="ytd-title" className="text-xl font-medium text-[#1f1f1f]">
@@ -950,7 +981,7 @@ function YtdModal({
             type="button"
             onClick={onClose}
             aria-label="Close summary"
-            className="rounded-full p-2 text-xl text-zinc-400 hover:bg-zinc-100"
+            className="rounded-full size-8 text-xl text-[#727272] hover:bg-zinc-200 transition-all duration-300"
           >
             ×
           </button>
@@ -965,14 +996,14 @@ function YtdModal({
               </span>
             </div>
           ))}
-          <div className="flex justify-between px-4 py-4 font-medium">
+          <div className="flex justify-between px-4 py-4 font-medium text-[#1f1f1f]">
             <span>Total ({totals.currency})</span>
             <span>
               {fmt(totals.ytdNet + totals.ytdAdjustments, totals.currency)}
             </span>
           </div>
         </div>
-        <p className="mt-4 text-xs leading-5 text-zinc-400">
+        <p className="mt-4 text-xs leading-5 text-[#727272]">
           Total is completed-stay host net payout plus recorded, deducted
           adjustments. Taxes shown only when a withholding record exists.
         </p>
@@ -994,9 +1025,9 @@ function PayoutDetailModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="payout-title"
-      className="fixed inset-0 z-50 flex items-end bg-black/45 sm:items-center sm:justify-center sm:p-4"
+      className="fixed inset-0 z-50 flex items-end bg-black/45 sm:items-center sm:justify-center sm:p-4 backdrop-blur-xs"
     >
-      <div className="w-full rounded-t-3xl bg-white p-6 shadow-xl sm:max-w-md sm:rounded-3xl">
+      <div className="w-full max-h-[85vh] overflow-y-auto rounded-t-3xl bg-white p-5 pb-[calc(1.5rem+env(safe-area-inset-bottom))] shadow-xl sm:max-h-[90vh] sm:max-w-md sm:rounded-3xl sm:p-6 sm:pb-6">
         <div className="flex items-start justify-between">
           <div>
             <h2 id="payout-title" className="text-xl font-medium text-[#1f1f1f]">
@@ -1021,7 +1052,7 @@ function PayoutDetailModal({
             {fmt(payout.netPayout, payout.currency)}
           </p>
           <span
-            className={`mt-2 inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${payoutStatusStyle(payout.status)}`}
+            className={`mt-2 inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${payoutStatusStyle(payout.status)}`}
           >
             {payoutStatusLabel(payout.status)}
           </span>
@@ -1030,7 +1061,7 @@ function PayoutDetailModal({
         <div className="mt-6 divide-y divide-zinc-100 rounded-2xl border border-zinc-200 text-sm">
           <div className="flex justify-between px-4 py-3">
             <span className="text-[#727272]">Gross earnings</span>
-            <span className="font-semibold text-zinc-900">
+            <span className="font-medium text-zinc-900">
               {fmt(payout.grossEarnings, payout.currency)}
             </span>
           </div>
@@ -1072,7 +1103,7 @@ function PayoutDetailModal({
 
         <Link
           href={`/host/earnings/transactions/${payout.bookingId}`}
-          className="mt-5 block text-center rounded-full bg-zinc-950 px-4 py-2.5 text-sm font-semibold text-white hover:bg-zinc-800"
+          className="mt-5 block text-center rounded-full bg-zinc-950 px-4 py-2.5 text-sm font-medium text-white hover:bg-zinc-800"
         >
           View full transaction details
         </Link>
@@ -1102,9 +1133,9 @@ function MethodsModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="methods-title"
-      className="fixed inset-0 z-50 flex items-end bg-black/45 sm:items-center sm:justify-center sm:p-4"
+      className="fixed inset-0 z-50 flex items-end bg-black/45 sm:items-center sm:justify-center sm:p-4 backdrop-blur-xs"
     >
-      <div className="w-full max-h-[90vh] overflow-y-auto rounded-t-3xl bg-white p-6 shadow-xl sm:max-w-md sm:rounded-3xl">
+      <div className="w-full max-h-[85vh] overflow-y-auto rounded-t-3xl bg-white p-5 pb-[calc(1.5rem+env(safe-area-inset-bottom))] shadow-xl sm:max-h-[90vh] sm:max-w-md sm:rounded-3xl sm:p-6 sm:pb-6">
         <div className="flex items-start justify-between">
           <h2 id="methods-title" className="text-xl font-medium text-[#1f1f1f]">
             Payout methods
@@ -1144,12 +1175,12 @@ function MethodsModal({
                     </p>
                   </div>
                   {method.isDefault && (
-                    <span className="shrink-0 rounded-full bg-zinc-900 px-2.5 py-1 text-xs font-semibold text-white">
+                    <span className="shrink-0 rounded-full bg-zinc-900 px-2.5 py-1 text-xs font-medium text-white">
                       Default
                     </span>
                   )}
                 </div>
-                <div className="mt-3 flex gap-4 text-sm font-semibold">
+                <div className="mt-3 flex gap-4 text-sm font-medium">
                   {!method.isDefault && (
                     <button
                       disabled={loading}
@@ -1182,14 +1213,14 @@ function MethodsModal({
           <button
             type="button"
             onClick={onAdd}
-            className="w-full rounded-full bg-zinc-950 px-4 py-2.5 text-sm font-semibold text-white hover:bg-zinc-800"
+            className="w-full rounded-full bg-zinc-950 px-4 py-2.5 text-sm font-medium text-white hover:bg-zinc-800"
           >
             Add payout method
           </button>
           <Link
             href="/host/account-settings/payouts"
             onClick={onClose}
-            className="w-full text-center rounded-full border border-zinc-200 px-4 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 transition-colors"
+            className="w-full text-center rounded-full border border-zinc-200 px-4 py-2 text-xs font-medium text-zinc-700 hover:bg-zinc-50 transition-colors"
           >
             Open Dedicated Payout Settings →
           </Link>
@@ -1232,7 +1263,7 @@ function AddMethodModal({
     label: string,
     mono = false,
   ) => (
-    <label className="block text-sm font-semibold text-zinc-700">
+    <label className="block text-sm font-medium text-zinc-700">
       {label}
       <input
         required
@@ -1254,11 +1285,11 @@ function AddMethodModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="add-method-title"
-      className="fixed inset-0 z-[60] flex items-end bg-black/45 sm:items-center sm:justify-center sm:p-4"
+      className="fixed inset-0 z-[60] flex items-end bg-black/45 sm:items-center sm:justify-center sm:p-4 backdrop-blur-xs"
     >
       <form
         onSubmit={onSubmit}
-        className="w-full rounded-t-3xl bg-white p-6 shadow-xl sm:max-w-md sm:rounded-3xl"
+        className="w-full max-h-[85vh] overflow-y-auto rounded-t-3xl bg-white p-5 pb-[calc(1.5rem+env(safe-area-inset-bottom))] shadow-xl sm:max-h-[90vh] sm:max-w-md sm:rounded-3xl sm:p-6 sm:pb-6"
       >
         <div className="flex items-start justify-between">
           <h2 id="add-method-title" className="text-xl font-medium text-[#1f1f1f]">
@@ -1297,7 +1328,7 @@ function AddMethodModal({
         <button
           disabled={loading}
           type="submit"
-          className="mt-6 w-full rounded-full bg-zinc-950 px-4 py-2.5 text-sm font-semibold text-white hover:bg-zinc-800 disabled:opacity-50"
+          className="mt-6 w-full rounded-full bg-zinc-950 px-4 py-2.5 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50"
         >
           {loading ? "Saving…" : "Save payout method"}
         </button>

@@ -19,6 +19,7 @@ interface PropertySelectorProps {
   onSelect: (listingId: string | null) => void;
   disabled?: boolean;
   className?: string;
+  align?: "left" | "right";
 }
 
 /* ─── Robust Thumbnail with Graceful SVG Fallback ────────────────────────── */
@@ -78,11 +79,13 @@ export function PropertySelector({
   onSelect,
   disabled = false,
   className = "",
+  align = "left",
 }: PropertySelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState("");
   const containerRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const popoverAlignClass = align === "right" ? "right-0 sm:right-0 sm:left-auto" : "left-0 sm:left-0 sm:right-auto";
 
   const selectedListing = useMemo(
     () => listings.find((l) => l.id === selectedListingId) || null,
@@ -140,7 +143,7 @@ export function PropertySelector({
         onClick={() => setIsOpen((prev) => !prev)}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
-        className={`group flex h-11 sm:h-12 w-full sm:w-auto sm:min-w-[190px] sm:max-w-[250px] lg:min-w-[220px] lg:max-w-[300px] shrink-0 items-center justify-between gap-2.5 sm:gap-3 rounded-full border bg-white px-3 sm:px-3.5 text-left text-xs sm:text-sm font-medium transition-all shadow-2xs cursor-pointer ${isOpen
+        className={`group flex h-11 sm:h-12 w-full sm:w-auto sm:min-w-[190px] lg:min-w-[220px] lg:max-w-[300px] shrink-0 items-center justify-between gap-2.5 sm:gap-3 rounded-full border bg-white px-3 sm:px-3.5 text-left text-xs sm:text-sm font-medium transition-all shadow-2xs cursor-pointer ${isOpen
             ? "border-[#1F1F1F] ring-2 ring-[#1F1F1F]/5"
             : "border-[#D7D7D7] hover:border-[#1F1F1F]"
           } disabled:cursor-not-allowed disabled:opacity-50`}
@@ -172,10 +175,10 @@ export function PropertySelector({
           )}
 
           <div className="min-w-0 flex-1 truncate">
-            <p className="truncate text-xs sm:text-sm font-medium text-[#1F1F1F] lg:max-w-[170px]">
+            <p className="truncate text-sm font-medium text-[#1F1F1F] lg:max-w-[170px]">
               {selectedListing ? selectedListing.title : "All listings"}
             </p>
-            <p className="truncate text-xs text-[#727272] lg:max-w-[170px]">
+            <p className="truncate text-xs font-normal text-[#727272] lg:max-w-[170px]">
               {selectedListing
                 ? [selectedListing.city, selectedListing.country].filter(Boolean).join(", ") || "Selected property"
                 : `${listings.length} ${listings.length === 1 ? "property" : "properties"} total`}
@@ -197,7 +200,9 @@ export function PropertySelector({
 
       {/* Popover Menu (Desktop) */}
       {isOpen && (
-        <div className="absolute left-0 z-50 mt-2.5 hidden w-[420px] max-w-[calc(100vw-32px)] rounded-3xl border border-[#E5E5E5] bg-white p-3.5 shadow-2xl shadow-black/10 sm:block animate-in fade-in-0 zoom-in-95 duration-150">
+        <div
+          className={`absolute z-50 mt-2.5 hidden w-[min(420px,calc(100vw-32px))] rounded-3xl border border-[#E5E5E5] bg-white p-3.5 shadow-2xl shadow-black/10 sm:block animate-in fade-in-0 zoom-in-95 duration-150 ${popoverAlignClass}`}
+        >
           {/* Search Header */}
           <div className="relative mb-3">
             <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[#727272]">

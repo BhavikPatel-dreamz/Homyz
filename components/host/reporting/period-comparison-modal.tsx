@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { resolveComparisonPeriod, type EarningsComparisonPreset, type TimeframeGranularity } from "@/lib/dashboard/reporting-filter";
+import { ChevronLeftIcon, ChevronRightIcon } from "@/components/host/account-settings/icons";
 
 export type ComparisonSelection = EarningsComparisonPreset | "custom_month" | "custom_range";
 
@@ -119,7 +120,7 @@ export function PeriodComparisonModal({ isOpen, onClose, currentPeriodLabel, cur
   // blocks every interactive surface while a reporting comparison is open.
   return (
     <ModalOverlay
-      className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs"
+      className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 p-3 sm:p-4 backdrop-blur-xs"
       onClick={onClose}
     >
       <div
@@ -127,7 +128,7 @@ export function PeriodComparisonModal({ isOpen, onClose, currentPeriodLabel, cur
         aria-modal="true"
         aria-labelledby="earnings-comparison-title"
         onClick={(event) => event.stopPropagation()}
-        className="relative mx-auto max-h-[calc(100vh-2rem)] w-full max-w-lg overflow-y-auto rounded-3xl border border-zinc-200 bg-white p-6 shadow-2xl animate-in fade-in zoom-in-95 sm:p-8"
+        className="relative mx-auto max-h-[calc(100vh-2rem)] w-full max-w-lg overflow-y-auto rounded-3xl border border-zinc-200 bg-white p-5 sm:p-8 shadow-2xl animate-in fade-in zoom-in-95"
       >
         {/* Header */}
         <div className="flex items-start justify-between border-b border-zinc-100 pb-4">
@@ -234,7 +235,7 @@ export function PeriodComparisonModal({ isOpen, onClose, currentPeriodLabel, cur
                         onClick={() => setCompareYear((year) => year - 1)}
                         className="flex size-7 items-center justify-center rounded-full border border-zinc-200 bg-white text-xs font-semibold text-[#1F1F1F] shadow-2xs transition-colors hover:bg-zinc-100 hover:border-zinc-300 cursor-pointer"
                       >
-                        ‹
+                        <ChevronLeftIcon size={14} />
                       </button>
                       <span className="min-w-10 text-center text-xs font-semibold text-[#1F1F1F]">
                         {compareYear}
@@ -246,7 +247,7 @@ export function PeriodComparisonModal({ isOpen, onClose, currentPeriodLabel, cur
                         onClick={() => setCompareYear((year) => year + 1)}
                         className="flex size-7 items-center justify-center rounded-full border border-zinc-200 bg-white text-xs font-semibold text-[#1F1F1F] shadow-2xs transition-colors hover:bg-zinc-100 hover:border-zinc-300 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
                       >
-                        ›
+                        <ChevronRightIcon size={14} />
                       </button>
                     </div>
                   </div>
@@ -330,7 +331,7 @@ export function PeriodComparisonModal({ isOpen, onClose, currentPeriodLabel, cur
         </div>
 
         {/* Footer */}
-        <div className="mt-8 flex items-center justify-between border-t border-zinc-300 pt-5">
+        <div className="mt-8 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3 border-t border-zinc-300 pt-5">
           {activeComparison?.enabled ? (
             <button
               type="button"
@@ -338,7 +339,7 @@ export function PeriodComparisonModal({ isOpen, onClose, currentPeriodLabel, cur
                 onApplyComparison(null);
                 onClose();
               }}
-              className="text-xs font-semibold text-rose-600 hover:text-rose-800 underline underline-offset-4 cursor-pointer"
+              className="text-xs font-semibold text-rose-600 hover:text-rose-800 underline underline-offset-4 cursor-pointer text-center sm:text-left py-1"
             >
               Disable Comparison
             </button>
@@ -346,7 +347,7 @@ export function PeriodComparisonModal({ isOpen, onClose, currentPeriodLabel, cur
             <button
               type="button"
               onClick={onClose}
-              className="rounded-full border border-[#727272] bg-white px-5 py-2.5 text-sm font-medium text-[#1F1F1F] hover:bg-[#1f1f1f] hover:border-[#1f1f1f] hover:text-white transition-colors cursor-pointer"
+              className="w-full sm:w-auto rounded-full border border-[#727272] bg-white px-5 py-2.5 text-sm font-medium text-[#1F1F1F] hover:bg-[#1f1f1f] hover:border-[#1f1f1f] hover:text-white transition-colors cursor-pointer"
             >
               Cancel
             </button>
@@ -355,7 +356,7 @@ export function PeriodComparisonModal({ isOpen, onClose, currentPeriodLabel, cur
             type="button"
             disabled={applyDisabled}
             onClick={handleApply}
-            className="rounded-full hover:bg-[#1F1F1F] bg-[#FCDF9C] text-[#1f1f1f] hover:text-white px-6 py-2.5 text-sm font-medium transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
+            className="w-full sm:w-auto rounded-full hover:bg-[#1F1F1F] bg-[#FCDF9C] text-[#1f1f1f] hover:text-white px-6 py-2.5 text-sm font-medium transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
           >
             Apply Comparison
           </button>
@@ -387,13 +388,13 @@ function Choice({
       }`}
     >
       <div className="flex items-center justify-between">
-        <p className="font-medium">{title}</p>
+        <p className="text-sm font-medium">{title}</p>
         {selected && (
           <span className="size-2 rounded-full bg-[#FCDF9C]" />
         )}
       </div>
       <p
-        className={`mt-1 text-[11px] leading-tight ${
+        className={`mt-1 text-xs leading-tight ${
           selected ? "text-zinc-300" : "text-[#727272]"
         }`}
       >

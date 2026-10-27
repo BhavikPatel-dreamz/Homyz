@@ -194,10 +194,10 @@ export function EarningsReportsManager({
       <div className="rounded-3xl border border-zinc-200/90 bg-white p-5 shadow-xs sm:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-lg font-bold text-zinc-950">
+            <h2 className="text-lg font-bold text-[#1f1f1f]">
               Filter Reporting Scope
             </h2>
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-[#727272]">
               View historical earnings statements or isolate performance by property and year.
             </p>
           </div>
@@ -205,12 +205,12 @@ export function EarningsReportsManager({
           <div className="flex flex-wrap items-center gap-3">
             {/* Year Selector */}
             <div className="flex items-center gap-1.5">
-              <span className="text-xs font-medium text-zinc-500">Year:</span>
+              <span className="text-xs font-medium text-[#727272]">Year:</span>
               <select
                 value={data.selectedYear}
                 onChange={(e) => handleFilterChange({ year: e.target.value })}
                 disabled={isPending}
-                className="rounded-xl border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-900 shadow-2xs focus:border-zinc-900 focus:outline-none disabled:opacity-50"
+                className="rounded-xl border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-[#1f1f1f] shadow-2xs focus:border-zinc-900 focus:outline-none disabled:opacity-50"
               >
                 {data.availableYears.map((yr) => (
                   <option key={yr} value={yr}>
@@ -223,14 +223,14 @@ export function EarningsReportsManager({
             {/* Property Selector */}
             {data.listings.length > 0 && (
               <div className="flex items-center gap-1.5">
-                <span className="text-xs font-medium text-zinc-500">Property:</span>
+                <span className="text-xs font-medium text-[#727272]">Property:</span>
                 <select
                   value={data.selectedListingId || ""}
                   onChange={(e) =>
                     handleFilterChange({ propertyId: e.target.value || null })
                   }
                   disabled={isPending}
-                  className="max-w-[180px] truncate rounded-xl border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-900 shadow-2xs focus:border-zinc-900 focus:outline-none disabled:opacity-50"
+                  className="max-w-[180px] truncate rounded-xl border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-[#1f1f1f] shadow-2xs focus:border-zinc-900 focus:outline-none disabled:opacity-50"
                 >
                   <option value="">All Properties ({data.listings.length})</option>
                   {data.listings.map((l) => (
@@ -245,12 +245,12 @@ export function EarningsReportsManager({
             {/* Currency Selector */}
             {data.currencies.length > 1 && (
               <div className="flex items-center gap-1.5">
-                <span className="text-xs font-medium text-zinc-500">Currency:</span>
+                <span className="text-xs font-medium text-[#727272]">Currency:</span>
                 <select
                   value={activeCurrency}
                   onChange={(e) => handleFilterChange({ currency: e.target.value })}
                   disabled={isPending}
-                  className="rounded-xl border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-900 shadow-2xs focus:border-zinc-900 focus:outline-none disabled:opacity-50"
+                  className="rounded-xl border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-[#1f1f1f] shadow-2xs focus:border-zinc-900 focus:outline-none disabled:opacity-50"
                 >
                   {data.currencies.map((c) => (
                     <option key={c} value={c}>
@@ -265,9 +265,9 @@ export function EarningsReportsManager({
             <button
               type="button"
               onClick={() => setShowGenerateModal(true)}
-              className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-zinc-800 shadow-2xs transition hover:border-zinc-300 hover:bg-zinc-50"
+              className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-3.5 py-1.5 text-xs font-medium text-[#1f1f1f] shadow-2xs transition hover:border-zinc-300 hover:bg-zinc-50"
             >
-              <CalendarIcon size={14} className="text-zinc-600" />
+              <CalendarIcon size={14} className="text-[#727272]" />
               <span>Custom Date Report</span>
             </button>
           </div>
@@ -286,7 +286,7 @@ export function EarningsReportsManager({
                 {activeCurrency}
               </span>
             </div>
-            <p className="mt-1 text-xs text-zinc-500">
+            <p className="mt-1 text-xs text-[#727272]">
               Aggregated across {data.yearlySummary.transactionCount} completed reservation{data.yearlySummary.transactionCount === 1 ? "" : "s"} in {data.selectedYear}.
             </p>
           </div>
@@ -301,7 +301,7 @@ export function EarningsReportsManager({
                 })
               }
               disabled={downloadingFormat === "annual-pdf"}
-              className="inline-flex items-center gap-1.5 rounded-full bg-zinc-950 px-4 py-2 text-xs font-semibold text-white shadow-2xs transition hover:bg-zinc-800 disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded-full bg-zinc-950 px-4 py-2 text-xs font-medium text-white shadow-2xs transition hover:bg-zinc-800 disabled:opacity-50"
             >
               <DownloadIcon size={14} />
               <span>
@@ -320,9 +320,9 @@ export function EarningsReportsManager({
                 })
               }
               disabled={downloadingFormat === "annual-csv"}
-              className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-3.5 py-2 text-xs font-semibold text-zinc-800 shadow-2xs transition hover:border-zinc-300 hover:bg-zinc-50 disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-3.5 py-2 text-xs font-medium text-[#1f1f1f] shadow-2xs transition hover:border-zinc-300 hover:bg-zinc-50 disabled:opacity-50"
             >
-              <FileSpreadsheetIcon size={14} className="text-zinc-600" />
+              <FileSpreadsheetIcon size={14} className="text-[#727272]" />
               <span>
                 {downloadingFormat === "annual-csv" ? "Exporting..." : "Annual CSV"}
               </span>
@@ -334,40 +334,40 @@ export function EarningsReportsManager({
         <div className="mt-6 grid grid-cols-2 gap-3.5 sm:grid-cols-3 lg:grid-cols-6">
           {/* 1. Gross Earnings */}
           <div className="rounded-2xl border border-zinc-200/90 bg-zinc-50/60 p-4">
-            <span className="text-[11px] font-medium text-zinc-500 block">
+            <span className="text-[11px] font-medium text-[#727272] block">
               Gross Earnings
             </span>
-            <p className="mt-1 font-mono text-sm sm:text-base font-bold text-zinc-900 truncate">
+            <p className="mt-1 font-mono text-sm sm:text-base font-bold text-[#1f1f1f] truncate">
               {formatNative(data.yearlySummary.grossEarnings, activeCurrency)}
             </p>
-            <span className="mt-1 text-[10px] text-zinc-400 block">
+            <span className="mt-1 text-[10px] text-[#727272] block">
               Accommodation & fees
             </span>
           </div>
 
           {/* 2. Platform Service Fee */}
           <div className="rounded-2xl border border-zinc-200/90 bg-zinc-50/60 p-4">
-            <span className="text-[11px] font-medium text-zinc-500 block">
+            <span className="text-[11px] font-medium text-[#727272] block">
               Service Fees
             </span>
             <p className="mt-1 font-mono text-sm sm:text-base font-bold text-rose-700 truncate">
               -{formatNative(data.yearlySummary.platformFee, activeCurrency)}
             </p>
-            <span className="mt-1 text-[10px] text-zinc-400 block">
+            <span className="mt-1 text-[10px] text-[#727272] block">
               Platform commission
             </span>
           </div>
 
           {/* 3. Adjustments */}
           <div className="rounded-2xl border border-zinc-200/90 bg-zinc-50/60 p-4">
-            <span className="text-[11px] font-medium text-zinc-500 block">
+            <span className="text-[11px] font-medium text-[#727272] block">
               Adjustments
             </span>
-            <p className="mt-1 font-mono text-sm sm:text-base font-bold text-zinc-900 truncate">
+            <p className="mt-1 font-mono text-sm sm:text-base font-bold text-[#1f1f1f] truncate">
               {data.yearlySummary.adjustments >= 0 ? "+" : ""}
               {formatNative(data.yearlySummary.adjustments, activeCurrency)}
             </p>
-            <span className="mt-1 text-[10px] text-zinc-400 block">
+            <span className="mt-1 text-[10px] text-[#727272] block">
               Credits & claims
             </span>
           </div>
@@ -380,7 +380,7 @@ export function EarningsReportsManager({
             <p className="mt-1 font-mono text-sm sm:text-base font-bold text-white truncate">
               {formatNative(data.yearlySummary.netEarnings, activeCurrency)}
             </p>
-            <span className="mt-1 text-[10px] text-zinc-400 block">
+            <span className="mt-1 text-[10px] text-[#727272] block">
               Payable to host
             </span>
           </div>
@@ -413,15 +413,15 @@ export function EarningsReportsManager({
         </div>
 
         {/* Reconciliation Formula Callout */}
-        <div className="mt-5 rounded-2xl border border-zinc-200/80 bg-zinc-50/50 p-3.5 text-xs text-zinc-600">
+        <div className="mt-5 rounded-2xl border border-zinc-200/80 bg-zinc-50/50 p-3.5 text-xs text-[#727272]">
           <div className="flex items-center gap-2">
-            <InfoIcon size={16} className="text-zinc-500 shrink-0" />
+            <InfoIcon size={16} className="text-[#727272] shrink-0" />
             <p className="font-mono text-[11px] sm:text-xs">
-              <span className="font-semibold text-zinc-900">Reconciliation:</span>{" "}
+              <span className="font-medium text-[#1f1f1f]">Reconciliation:</span>{" "}
               Gross ({formatNative(data.yearlySummary.grossEarnings, activeCurrency)}) -
               Fees ({formatNative(data.yearlySummary.platformFee, activeCurrency)}) +
               Adjustments ({formatNative(data.yearlySummary.adjustments, activeCurrency)}) ={" "}
-              <span className="font-bold text-zinc-950">
+              <span className="font-bold text-[#1f1f1f]">
                 Net Earnings ({formatNative(data.yearlySummary.netEarnings, activeCurrency)})
               </span>
             </p>
@@ -433,14 +433,14 @@ export function EarningsReportsManager({
       <div className="rounded-3xl border border-zinc-200/90 bg-white p-6 shadow-xs sm:p-8">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-zinc-100 pb-4">
           <div>
-            <h3 className="text-lg font-bold text-zinc-950">
+            <h3 className="text-lg font-bold text-[#1f1f1f]">
               Monthly Earnings Statements
             </h3>
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-[#727272]">
               Select a month to inspect transaction details or download official statements.
             </p>
           </div>
-          <span className="text-xs text-zinc-400">
+          <span className="text-xs text-[#727272]">
             12 months in {data.selectedYear}
           </span>
         </div>
@@ -448,7 +448,7 @@ export function EarningsReportsManager({
         <div className="mt-4 overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-zinc-100 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
+              <tr className="border-b border-zinc-100 text-[11px] font-medium text-[#727272] uppercase tracking-wider">
                 <th className="py-3 px-3">Month</th>
                 <th className="py-3 px-3">Status</th>
                 <th className="py-3 px-3 text-right">Gross</th>
@@ -473,11 +473,11 @@ export function EarningsReportsManager({
                       <div>
                         <Link
                           href={`/host/earnings/reports/monthly/${month.year}/${month.month}`}
-                          className="font-bold text-zinc-950 hover:underline"
+                          className="font-bold text-[#1f1f1f] hover:underline"
                         >
                           {month.monthName}
                         </Link>
-                        <p className="text-[11px] text-zinc-400">
+                        <p className="text-[11px] text-[#727272]">
                           {month.dateRange.start.slice(5)} to {month.dateRange.end.slice(5)}
                           {month.transactionCount > 0 && ` • ${month.transactionCount} stays`}
                         </p>
@@ -496,7 +496,7 @@ export function EarningsReportsManager({
                       {month.platformFee > 0 ? `-${formatNative(month.platformFee, month.currency)}` : "—"}
                     </td>
 
-                    <td className="py-3.5 px-3 text-right font-mono font-bold text-zinc-950">
+                    <td className="py-3.5 px-3 text-right font-mono font-bold text-[#1f1f1f]">
                       {formatNative(month.netEarnings, month.currency)}
                     </td>
 
@@ -508,7 +508,7 @@ export function EarningsReportsManager({
                       <div className="flex items-center justify-end gap-1.5">
                         <Link
                           href={`/host/earnings/reports/monthly/${month.year}/${month.month}`}
-                          className="rounded-lg px-2 py-1 text-[11px] font-semibold text-zinc-700 hover:bg-zinc-100 transition"
+                          className="rounded-lg px-2 py-1 text-[11px] font-medium text-zinc-700 hover:bg-zinc-100 transition"
                         >
                           Details
                         </Link>
@@ -525,7 +525,7 @@ export function EarningsReportsManager({
                             })
                           }
                           disabled={isDownloadingThisPdf}
-                          className="rounded-lg p-1.5 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 transition disabled:opacity-40"
+                          className="rounded-lg p-1.5 text-[#727272] hover:bg-zinc-100 hover:text-[#1f1f1f] transition disabled:opacity-40"
                         >
                           <DownloadIcon size={14} />
                         </button>
@@ -542,7 +542,7 @@ export function EarningsReportsManager({
                             })
                           }
                           disabled={isDownloadingThisCsv}
-                          className="rounded-lg p-1.5 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 transition disabled:opacity-40"
+                          className="rounded-lg p-1.5 text-[#727272] hover:bg-zinc-100 hover:text-[#1f1f1f] transition disabled:opacity-40"
                         >
                           <FileSpreadsheetIcon size={14} />
                         </button>
@@ -563,10 +563,10 @@ export function EarningsReportsManager({
             <FileTextIcon size={24} />
           </div>
           <div className="min-w-0 flex-1">
-            <h3 className="text-lg font-bold text-zinc-950">
+            <h3 className="text-lg font-bold text-[#1f1f1f]">
               Annual Financial Documents & Accounting Exports
             </h3>
-            <p className="mt-1 text-sm text-zinc-600 leading-relaxed">
+            <p className="mt-1 text-sm text-[#727272] leading-relaxed">
               Consolidated yearly accounting statements aggregate all completed reservations, host service fees, and bank disbursements for corporate accounting and filing records.
             </p>
 
@@ -580,7 +580,7 @@ export function EarningsReportsManager({
                   })
                 }
                 disabled={downloadingFormat === "annual-pdf"}
-                className="inline-flex items-center gap-1.5 rounded-full bg-zinc-950 px-5 py-2.5 text-xs font-semibold text-white shadow-xs transition hover:bg-zinc-800 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 rounded-full bg-zinc-950 px-5 py-2.5 text-xs font-medium text-white shadow-xs transition hover:bg-zinc-800 disabled:opacity-50"
               >
                 <DownloadIcon size={15} />
                 <span>Download {data.selectedYear} Statement (PDF)</span>
@@ -595,15 +595,15 @@ export function EarningsReportsManager({
                   })
                 }
                 disabled={downloadingFormat === "annual-csv"}
-                className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-4 py-2.5 text-xs font-semibold text-zinc-800 shadow-2xs transition hover:border-zinc-300 hover:bg-zinc-50 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-4 py-2.5 text-xs font-medium text-[#1f1f1f] shadow-2xs transition hover:border-zinc-300 hover:bg-zinc-50 disabled:opacity-50"
               >
-                <FileSpreadsheetIcon size={15} className="text-zinc-600" />
+                <FileSpreadsheetIcon size={15} className="text-[#727272]" />
                 <span>Export Transaction Ledger (CSV)</span>
               </button>
 
               <Link
                 href={`/host/earnings/reports/yearly/${data.selectedYear}`}
-                className="inline-flex items-center gap-1 text-xs font-semibold text-zinc-900 hover:underline px-3 py-2"
+                className="inline-flex items-center gap-1 text-xs font-medium text-[#1f1f1f] hover:underline px-3 py-2"
               >
                 <span>Full Annual Breakdown</span>
                 <ChevronRightIcon size={15} />
@@ -620,17 +620,17 @@ export function EarningsReportsManager({
           className="group flex flex-col justify-between rounded-2xl border border-zinc-200 bg-zinc-50/60 p-4 transition hover:border-zinc-300 hover:bg-white hover:shadow-xs"
         >
           <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-white border border-zinc-200 text-zinc-900 shadow-2xs group-hover:bg-[#FCDF9C]/50 transition-colors">
+            <div className="flex size-10 items-center justify-center rounded-xl bg-white border border-zinc-200 text-[#1f1f1f] shadow-2xs group-hover:bg-[#FCDF9C]/50 transition-colors">
               <BarChartReportsIcon size={20} />
             </div>
             <div>
-              <p className="text-sm font-semibold text-zinc-950">Earnings Dashboard</p>
-              <p className="text-xs text-zinc-500">Live metrics & payouts</p>
+              <p className="text-sm font-medium text-[#1f1f1f]">Earnings Dashboard</p>
+              <p className="text-xs text-[#727272]">Live metrics & payouts</p>
             </div>
           </div>
-          <div className="mt-4 flex items-center justify-between text-xs font-semibold text-zinc-800">
+          <div className="mt-4 flex items-center justify-between text-xs font-medium text-[#1f1f1f]">
             <span>Open dashboard</span>
-            <ExternalLinkIcon size={14} className="text-zinc-400 group-hover:text-zinc-900" />
+            <ExternalLinkIcon size={14} className="text-[#727272] group-hover:text-[#1f1f1f]" />
           </div>
         </Link>
 
@@ -639,17 +639,17 @@ export function EarningsReportsManager({
           className="group flex flex-col justify-between rounded-2xl border border-zinc-200 bg-zinc-50/60 p-4 transition hover:border-zinc-300 hover:bg-white hover:shadow-xs"
         >
           <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-white border border-zinc-200 text-zinc-900 shadow-2xs group-hover:bg-[#FCDF9C]/50 transition-colors">
+            <div className="flex size-10 items-center justify-center rounded-xl bg-white border border-zinc-200 text-[#1f1f1f] shadow-2xs group-hover:bg-[#FCDF9C]/50 transition-colors">
               <BuildingBankIcon size={20} />
             </div>
             <div>
-              <p className="text-sm font-semibold text-zinc-950">Transaction History</p>
-              <p className="text-xs text-zinc-500">Per-booking ledger</p>
+              <p className="text-sm font-medium text-[#1f1f1f]">Transaction History</p>
+              <p className="text-xs text-[#727272]">Per-booking ledger</p>
             </div>
           </div>
-          <div className="mt-4 flex items-center justify-between text-xs font-semibold text-zinc-800">
+          <div className="mt-4 flex items-center justify-between text-xs font-medium text-[#1f1f1f]">
             <span>View transactions</span>
-            <ExternalLinkIcon size={14} className="text-zinc-400 group-hover:text-zinc-900" />
+            <ExternalLinkIcon size={14} className="text-[#727272] group-hover:text-[#1f1f1f]" />
           </div>
         </Link>
 
@@ -658,17 +658,17 @@ export function EarningsReportsManager({
           className="group flex flex-col justify-between rounded-2xl border border-zinc-200 bg-zinc-50/60 p-4 transition hover:border-zinc-300 hover:bg-white hover:shadow-xs"
         >
           <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-white border border-zinc-200 text-zinc-900 shadow-2xs group-hover:bg-[#FCDF9C]/50 transition-colors">
+            <div className="flex size-10 items-center justify-center rounded-xl bg-white border border-zinc-200 text-[#1f1f1f] shadow-2xs group-hover:bg-[#FCDF9C]/50 transition-colors">
               <BuildingBankIcon size={20} />
             </div>
             <div>
-              <p className="text-sm font-semibold text-zinc-950">Payout Settings</p>
-              <p className="text-xs text-zinc-500">IBAN & routing rules</p>
+              <p className="text-sm font-medium text-[#1f1f1f]">Payout Settings</p>
+              <p className="text-xs text-[#727272]">IBAN & routing rules</p>
             </div>
           </div>
-          <div className="mt-4 flex items-center justify-between text-xs font-semibold text-zinc-800">
+          <div className="mt-4 flex items-center justify-between text-xs font-medium text-[#1f1f1f]">
             <span>Manage accounts</span>
-            <ChevronRightIcon size={14} className="text-zinc-400 group-hover:text-zinc-900" />
+            <ChevronRightIcon size={14} className="text-[#727272] group-hover:text-[#1f1f1f]" />
           </div>
         </Link>
 
@@ -677,34 +677,34 @@ export function EarningsReportsManager({
           className="group flex flex-col justify-between rounded-2xl border border-zinc-200 bg-zinc-50/60 p-4 transition hover:border-zinc-300 hover:bg-white hover:shadow-xs"
         >
           <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-white border border-zinc-200 text-zinc-900 shadow-2xs group-hover:bg-[#FCDF9C]/50 transition-colors">
+            <div className="flex size-10 items-center justify-center rounded-xl bg-white border border-zinc-200 text-[#1f1f1f] shadow-2xs group-hover:bg-[#FCDF9C]/50 transition-colors">
               <ReceiptTaxIcon size={20} />
             </div>
             <div>
-              <p className="text-sm font-semibold text-zinc-950">Tax Documents</p>
-              <p className="text-xs text-zinc-500">ZATCA VAT & invoices</p>
+              <p className="text-sm font-medium text-[#1f1f1f]">Tax Documents</p>
+              <p className="text-xs text-[#727272]">ZATCA VAT & invoices</p>
             </div>
           </div>
-          <div className="mt-4 flex items-center justify-between text-xs font-semibold text-zinc-800">
+          <div className="mt-4 flex items-center justify-between text-xs font-medium text-[#1f1f1f]">
             <span>View tax forms</span>
-            <ChevronRightIcon size={14} className="text-zinc-400 group-hover:text-zinc-900" />
+            <ChevronRightIcon size={14} className="text-[#727272] group-hover:text-[#1f1f1f]" />
           </div>
         </Link>
       </div>
 
       {/* Section E: Informational Compliance & Attribution Notice */}
-      <div className="rounded-2xl border border-zinc-200/80 bg-zinc-50/50 p-5 text-xs text-zinc-600">
+      <div className="rounded-2xl border border-zinc-200/80 bg-zinc-50/50 p-5 text-xs text-[#727272]">
         <div className="flex items-start gap-3">
-          <InfoIcon size={18} className="mt-0.5 shrink-0 text-zinc-500" />
+          <InfoIcon size={18} className="mt-0.5 shrink-0 text-[#727272]" />
           <div className="space-y-1">
-            <p className="font-semibold text-zinc-800">
+            <p className="font-medium text-[#1f1f1f]">
               Financial Reporting Scope & Attribution Policy
             </p>
             <p className="leading-relaxed">
               Earnings figures follow standard short-term rental revenue recognition, attributed upon stay completion (check-out date). Net host earnings reflect gross reservation receipts less host service fees and verified adjustments. These financial statements are designed for management accounting. For official government VAT invoices and taxpayer profiles, consult the{" "}
               <Link
                 href="/host/account-settings/taxes"
-                className="font-semibold text-zinc-900 underline hover:text-black"
+                className="font-medium text-[#1f1f1f] underline hover:text-black"
               >
                 Tax Information
               </Link>{" "}

@@ -589,15 +589,15 @@ export function HostTransactionsClient({
       >
         <div className="flex items-center justify-between border-b border-zinc-100 bg-zinc-50 px-5 py-3.5">
           <div>
-            <h2 className="text-sm font-medium text-zinc-950">
+            <h2 className="text-xl font-medium text-[#1f1f1f]">
               {isAllTransactions ? "Financial transaction details" : "Payout details"}
             </h2>
-            <p className="mt-0.5 text-xs text-zinc-500">
+            <p className="mt-0.5 text-sm text-[#727272]">
               Amounts shown in {totalCurrency}
             </p>
           </div>
-          <span className="text-xs font-medium text-zinc-500">
-            {data.pagination.total} total
+          <span className="text-base font-medium text-[#1f1f1f]">
+            {data.pagination.total} Total
           </span>
         </div>
         {data.transactions.length ? (
@@ -612,7 +612,7 @@ export function HostTransactionsClient({
                 className="flex w-full items-center gap-3 border-b border-zinc-100 px-4 py-4 text-left last:border-b-0 transition hover:bg-amber-50/40 sm:px-5"
               >
                 {/* Listing photo */}
-                <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-zinc-100 text-sm ring-1 ring-zinc-200">
+                <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-zinc-100 text-sm ring-1 ring-zinc-200">
                   {item.listingPhoto ? (
                     <Image
                       src={item.listingPhoto}
@@ -638,7 +638,7 @@ export function HostTransactionsClient({
                     {item.guestName} ·{" "}
                     {dt(item.startDate)} – {dt(item.endDate)}
                   </p>
-                  <p className="mt-1 text-xs text-zinc-400">
+                  <p className="mt-1 text-xs text-[#727272]">
                     Host payout · {item.bookingId.slice(0, 12)} ·{" "}
                     {dt(
                       item.status === "PAID"
@@ -649,7 +649,7 @@ export function HostTransactionsClient({
                 </div>
 
                 <div className="shrink-0 text-right">
-                  <p className="text-sm font-medium tabular-nums text-zinc-950">
+                  <p className="text-sm font-medium tabular-nums text-[#1f1f1f]">
                     {money(item.netPayout, item.currency)}
                   </p>
                   <span
@@ -658,7 +658,7 @@ export function HostTransactionsClient({
                     {statusLabel(item.status)}
                   </span>
                 </div>
-                <svg className="h-4 w-4 shrink-0 text-[#C7C7C7] transition group-hover:translate-x-0.5 group-hover:text-[#1F1F1F]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <svg className="h-4 w-4 shrink-0 text-[#727272] transition group-hover:translate-x-0.5 group-hover:text-[#1F1F1F]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d="m9 18 6-6-6-6" />
                 </svg>
               </Link>
