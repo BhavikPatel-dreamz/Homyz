@@ -241,9 +241,9 @@ export function EarningsInteractiveChart({
           <button
             type="button"
             onClick={() => setActiveMetric("net")}
-            className={`rounded-full px-2.5 sm:px-4 py-1.5 text-[11px] sm:text-xs transition-all cursor-pointer ${activeMetric === "net"
-                ? "bg-[#1F1F1F] text-white shadow-2xs font-medium"
-                : "text-[#727272] hover:text-[#1F1F1F]"
+            className={`rounded-full px-2.5 sm:px-4 py-1.5 sm:text-sm text-xs transition-all cursor-pointer ${activeMetric === "net"
+              ? "bg-[#1F1F1F] text-white shadow-2xs font-medium"
+              : "text-[#727272] hover:text-[#1F1F1F]"
               }`}
           >
             <span>Net</span>
@@ -252,9 +252,9 @@ export function EarningsInteractiveChart({
           <button
             type="button"
             onClick={() => setActiveMetric("gross")}
-            className={`rounded-full px-2.5 sm:px-4 py-1.5 text-[11px] sm:text-xs transition-all cursor-pointer ${activeMetric === "gross"
-                ? "bg-[#1F1F1F] text-white shadow-2xs font-medium"
-                : "text-[#727272] hover:text-[#1F1F1F]"
+            className={`rounded-full px-2.5 sm:px-4 py-1.5 sm:text-sm text-xs transition-all cursor-pointer ${activeMetric === "gross"
+              ? "bg-[#1F1F1F] text-white shadow-2xs font-medium"
+              : "text-[#727272] hover:text-[#1F1F1F]"
               }`}
           >
             <span>Gross</span>
@@ -263,9 +263,9 @@ export function EarningsInteractiveChart({
           <button
             type="button"
             onClick={() => setActiveMetric("fees")}
-            className={`rounded-full px-2.5 sm:px-4 py-1.5 text-[11px] sm:text-xs transition-all cursor-pointer ${activeMetric === "fees"
-                ? "bg-[#1F1F1F] text-white shadow-2xs font-medium"
-                : "text-[#727272] hover:text-[#1F1F1F]"
+            className={`rounded-full px-2.5 sm:px-4 py-1.5 sm:text-sm text-xs transition-all cursor-pointer ${activeMetric === "fees"
+              ? "bg-[#1F1F1F] text-white shadow-2xs font-medium"
+              : "text-[#727272] hover:text-[#1F1F1F]"
               }`}
           >
             <span>Fees</span>
@@ -274,7 +274,7 @@ export function EarningsInteractiveChart({
         </div>
 
         {/* Quick Period Summary Pills */}
-        <div className="hidden md:flex items-center gap-3 text-xs text-[#727272]">
+        <div className="hidden md:flex items-center gap-3 text-sm text-[#727272]">
           <div className="flex items-center gap-1.5 rounded-full bg-[#FAFAFA] px-3.5 py-1 border border-[#EDEDED] shadow-2xs">
             <span className="font-normal text-[#727272]">Peak Day:</span>
             <span className="font-medium text-[#1F1F1F]">{fmt(periodStats.highestAmount, currency)}</span>
@@ -289,12 +289,12 @@ export function EarningsInteractiveChart({
         <div className="flex items-center gap-3 sm:gap-4 text-xs font-medium">
           <div className="flex items-center gap-1.5">
             <span className="h-3 w-3 rounded-xs bg-[#1F1F1F]" />
-            <span className="text-[#1F1F1F] text-[11px] sm:text-xs">{timeframeLabel}</span>
+            <span className="text-[#1F1F1F] sm:text-sm text-xs">{timeframeLabel}</span>
           </div>
           {hasComparison && (
             <div className="flex items-center gap-1.5">
               <span className="h-3 w-3 rounded-xs bg-[#D7D7D7]" />
-              <span className="text-[#727272] text-[11px] sm:text-xs">{comparisonLabel}</span>
+              <span className="text-[#727272] sm:text-sm text-xs">{comparisonLabel}</span>
             </div>
           )}
         </div>
@@ -501,13 +501,15 @@ export function EarningsInteractiveChart({
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-200 bg-zinc-50/70 py-12 text-center">
-          <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <span className="size-10 rounded-full bg-[#D9D9D9] flex justify-center items-center">
+            <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <line x1="18" y1="20" x2="18" y2="10" />
               <line x1="12" y1="20" x2="12" y2="4" />
               <line x1="6" y1="20" x2="6" y2="14" />
             </svg>
-          <p className="mt-2 text-sm font-bold text-zinc-900">{emptyTitle}</p>
-          <p className="mt-1 text-xs text-zinc-500 max-w-sm">
+          </span>
+          <p className="mt-2 text-base font-medium text-[#1f1f1f]">{emptyTitle}</p>
+          <p className="mt-1 text-sm text-[#727272] max-w-xl">
             {emptyMessage}
           </p>
         </div>

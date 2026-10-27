@@ -33,7 +33,7 @@ export function SettingsEmptyState({
       <div className="flex size-14 items-center justify-center rounded-2xl bg-white border border-zinc-200 text-zinc-700 shadow-2xs">
         {icon || <InfoIcon size={28} />}
       </div>
-      <h3 className="mt-4 text-base font-semibold text-[#1F1F1F] sm:text-lg">
+      <h3 className="mt-4 text-base font-medium text-[#1F1F1F] sm:text-lg">
         {title}
       </h3>
       <p className="mt-1.5 max-w-md text-xs sm:text-sm text-[#727272] leading-relaxed">

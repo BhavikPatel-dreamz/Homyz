@@ -320,11 +320,11 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
       {/* ── Section A: Header & Compact Unified Toolbar ── */}
       <header className="space-y-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Hosting</p>
-          <h1 className="mt-0.5 text-3xl font-bold tracking-tight text-zinc-950 sm:text-4xl">
+          <p className="text-base font-medium text-[#727272]">Hosting</p>
+          <h1 className="mt-1.5 text-3xl font-medium tracking-tight text-[#1f1f1f] sm:text-4xl">
             Earnings
           </h1>
-          <p className="mt-1 max-w-2xl text-sm text-zinc-600">Review realized payouts, reporting periods, and property performance from verified financial records.</p>
+          <p className="mt-1.5 max-w-2xl text-sm text-[#727272]">Review realized payouts, reporting periods, and property performance from verified financial records.</p>
         </div>
 
 
@@ -358,11 +358,10 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
             <button
               type="button"
               onClick={() => setShowCompareModal(true)}
-              className={`inline-flex items-center gap-1.5 rounded-2xl border px-3.5 py-2 text-xs font-semibold transition-all ${
-                reporting.comparison?.enabled
+              className={`inline-flex items-center gap-1.5 rounded-full min-h-[48px] border px-3.5 py-2 text-sm font-medium transition-all ${reporting.comparison?.enabled
                   ? "border-zinc-950 bg-zinc-950 text-white shadow-xs"
                   : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-400 hover:bg-zinc-50"
-              }`}
+                }`}
             >
               <span>⚖️</span>
               <span>{reporting.comparison?.enabled ? "Comparing" : "Compare Periods"}</span>
@@ -385,12 +384,12 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
       {reporting.comparison?.enabled && (
         <div className="flex flex-col gap-3 rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between">
           <p className="text-zinc-700">
-            <span className="font-semibold text-zinc-950">{reporting.timeframeLabel || reporting.monthLabel}</span>
+            <span className="font-semibold text-[#1f1f1f]">{reporting.timeframeLabel || reporting.monthLabel}</span>
             {" compared with "}
-            <span className="font-semibold text-zinc-950">{reporting.comparison.periodLabel}</span>
+            <span className="font-semibold text-[#1f1f1f]">{reporting.comparison.periodLabel}</span>
           </p>
           <div className="flex items-center gap-3 text-xs font-semibold">
-            <button type="button" onClick={() => setShowCompareModal(true)} className="underline underline-offset-4 hover:text-zinc-600">Change comparison</button>
+            <button type="button" onClick={() => setShowCompareModal(true)} className="underline underline-offset-4 hover:text-[#727272]">Change comparison</button>
             <button type="button" onClick={() => handleApplyComparison(null)} className="text-rose-700 underline underline-offset-4 hover:text-rose-900">Disable comparison</button>
           </div>
         </div>
@@ -416,18 +415,18 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
       <section className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-xs sm:p-8">
         <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-zinc-100 pb-4">
           <div>
-            <h2 className="text-xl font-bold tracking-tight text-zinc-950">Earnings performance</h2>
-            <p className="mt-1 text-xs text-zinc-500">
+            <h2 className="text-xl font-medium tracking-tight text-[#1f1f1f]">Earnings performance</h2>
+            <p className="mt-1 text-sm text-[#727272]">
               {reporting.chart.currency || "SAR"} realized net host payouts across {reporting.timeframeLabel || reporting.monthLabel}
             </p>
             {reporting.totalsByCurrency.length > 1 && (
-              <p className="mt-1 text-xs text-zinc-500">
+              <p className="mt-1 text-sm text-[#727272]">
                 Amounts stay separated by settlement currency.
               </p>
             )}
           </div>
           {reporting.totalsByCurrency.length > 1 && (
-            <span className="rounded-full border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-[11px] font-semibold text-zinc-600">
+            <span className="rounded-full border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-[11px] font-semibold text-[#727272]">
               Reporting in {reporting.chart.currency || "SAR"}
             </span>
           )}
@@ -449,20 +448,19 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
       {/* ── Section C: Earnings Numerical KPI Cards (Numbers BELOW Chart) ── */}
       <section
         aria-busy={isLoadingOverview}
-        className={`rounded-3xl border border-zinc-200 bg-white p-6 shadow-xs sm:p-8 transition-opacity ${
-          isLoadingOverview ? "opacity-50" : ""
-        }`}
+        className={`rounded-3xl border border-zinc-200 bg-white p-6 shadow-xs sm:p-8 transition-opacity ${isLoadingOverview ? "opacity-50" : ""
+          }`}
       >
         <div className="flex flex-col gap-4 sm:flex-row sm:items-baseline sm:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-zinc-400">Total Realized Net</p>
+            <p className="text-base font-medium text-[#727272]">Total Realized Net</p>
             <div className="mt-2 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-              <span className="text-4xl font-extrabold tracking-tight text-zinc-950 sm:text-5xl">
+              <span className="text-4xl font-medium tracking-tight text-[#1f1f1f] sm:text-5xl">
                 {selectedTotals
                   ? fmt(selectedTotals.monthlyRecognized, selectedTotals.currency)
                   : "SAR 0.00"}
               </span>
-              <span className="text-sm font-semibold text-zinc-500">
+              <span className="text-sm font-normal text-[#727272]">
                 in {reporting.timeframeLabel || reporting.monthLabel}
               </span>
             </div>
@@ -472,13 +470,12 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
           {reporting.comparison && (
             <div className="flex items-center gap-2 rounded-2xl border border-zinc-200 bg-zinc-50/80 px-4 py-2.5 text-xs">
               <span
-                className={`inline-flex items-center rounded-full px-2 py-0.5 font-bold ${
-                  reporting.comparison.deltaDirection === "increase"
+                className={`inline-flex items-center rounded-full px-2 py-0.5 font-medium ${reporting.comparison.deltaDirection === "increase"
                     ? "bg-emerald-100 text-emerald-800"
                     : reporting.comparison.deltaDirection === "decrease"
                       ? "bg-rose-100 text-rose-800"
                       : "bg-zinc-200 text-zinc-700"
-                }`}
+                  }`}
               >
                 {reporting.comparison.deltaDirection === "increase" ? "↑" : reporting.comparison.deltaDirection === "decrease" ? "↓" : "•"}
                 {reporting.comparison.deltaPercentage !== null
@@ -487,7 +484,7 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
                     ? " New activity"
                     : " No comparable baseline"}
               </span>
-              <span className="font-medium text-zinc-600">
+              <span className="font-medium text-[#727272]">
                 {reporting.comparison.periodLabel} ({fmt(reporting.comparison.netEarnings, selectedTotals?.currency || "SAR")})
               </span>
             </div>
@@ -520,44 +517,44 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
         </div>
 
         {/* 3-Card KPI Grid */}
-        <div className="mt-6 grid gap-4 sm:grid-cols-3 border-t border-zinc-100 pt-6">
-          <div className="rounded-2xl border border-zinc-100 bg-zinc-50/70 p-4">
-            <p className="text-xs font-medium text-zinc-500">Upcoming payout</p>
-            <p className="mt-1 text-2xl font-bold tracking-tight text-zinc-950">
+        <div className="mt-6 grid gap-4 sm:grid-cols-3">
+          <div className="rounded-xl bg-[#F3F4F5] shadow-[0_2px_4px_0px_#00000040] border border-white p-4">
+            <p className="text-sm font-normal text-[#727272]">Upcoming payout</p>
+            <p className="mt-1 text-2xl font-medium tracking-tight text-[#1f1f1f]">
               {selectedTotals
                 ? fmt(selectedTotals.upcomingPayout, selectedTotals.currency)
                 : "—"}
             </p>
-            <p className="mt-1 text-[11px] text-zinc-500">Scheduled and ready for release</p>
+            <p className="mt-1 text-xs text-[#727272]">Scheduled and ready for release</p>
           </div>
 
           <button
             type="button"
             disabled={!selectedTotals}
             onClick={() => setShowYtd(true)}
-            className="rounded-2xl border border-zinc-100 bg-zinc-50/70 p-4 text-left transition-all hover:border-zinc-300 hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded-xl bg-[#F3F4F5] shadow-[0_2px_4px_0px_#00000040] border border-white p-4 text-left transition-all hover:border-zinc-300 hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
           >
             <div className="flex items-center justify-between">
-              <p className="text-xs font-medium text-zinc-500 underline underline-offset-4">Year-to-date earnings</p>
+              <p className="text-sm font-normal text-[#727272] underline underline-offset-4">Year-to-date earnings</p>
               <span className="text-xs text-zinc-400">ℹ</span>
             </div>
-            <p className="mt-1 text-2xl font-bold tracking-tight text-zinc-950">
+            <p className="mt-1 text-2xl font-medium tracking-tight text-[#1f1f1f]">
               {selectedTotals
                 ? fmt(
-                    selectedTotals.ytdNet + selectedTotals.ytdAdjustments,
-                    selectedTotals.currency,
-                  )
+                  selectedTotals.ytdNet + selectedTotals.ytdAdjustments,
+                  selectedTotals.currency,
+                )
                 : "—"}
             </p>
-            <p className="mt-1 text-[11px] text-zinc-500">Full {reporting.selectedYear} cumulative</p>
+            <p className="mt-1 text-[11px] text-[#727272]">Full {reporting.selectedYear} cumulative</p>
           </button>
 
-          <div className="rounded-2xl border border-zinc-100 bg-zinc-50/70 p-4">
-            <p className="text-xs font-medium text-zinc-500">Settled payouts volume</p>
-            <p className="mt-1 text-2xl font-bold tracking-tight text-zinc-950">
+          <div className="rounded-xl bg-[#F3F4F5] shadow-[0_2px_4px_0px_#00000040] border border-white p-4">
+            <p className="text-sm font-normal text-[#727272]">Settled payouts volume</p>
+            <p className="mt-1 text-2xl font-medium tracking-tight text-[#1f1f1f]">
               {fmt(data.summary.totalPaidVolume, selectedTotals?.currency || "SAR")}
             </p>
-            <p className="mt-1 text-[11px] text-zinc-500">{data.summary.totalPaidCount} verified payout transfers</p>
+            <p className="mt-1 text-[11px] text-[#727272]">{data.summary.totalPaidCount} verified payout transfers</p>
           </div>
         </div>
 
@@ -573,48 +570,76 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
       </section>
 
 
-              <section className="rounded-2xl border border-zinc-200 bg-zinc-950 p-4 text-white sm:flex sm:items-center sm:justify-between sm:gap-5">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+      <section
+        aria-labelledby="dashboard-plus-analytics-heading"
+        className="rounded-2xl border border-white bg-[#1F1F1F] p-5 text-white shadow-[0_2px_4px_0px_#00000040] transition-all sm:flex sm:items-center sm:justify-between sm:gap-6 sm:p-6"
+      >
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center rounded-full bg-[#FCDF9C]/20 border border-[#FCDF9C]/30 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#FCDF9C]">
               Dashboard Plus
-              {entitlements.hasDashboardPlus
-                ? ` · ${
-                    entitlements.status === "ADMIN_GRANTED"
-                      ? (entitlements.expiresAt ? "Complimentary (Temporary)" : "Complimentary")
-                      : entitlements.status === "TRIAL"
-                      ? "Trial active"
-                      : "Active"
-                  }`
-                : ""}
-            </p>
-            <p className="mt-1 text-sm font-semibold">Advanced Earnings Analytics and RevPAN</p>
-            <p className="mt-1 text-xs leading-relaxed text-zinc-300">Explore property financial comparisons, recorded costs, profitability, and revenue per available night.</p>
+            </span>
+            {entitlements.hasDashboardPlus && (
+              <span className="text-xs font-normal text-zinc-400">
+                {entitlements.status === "ADMIN_GRANTED"
+                  ? entitlements.expiresAt
+                    ? "Complimentary (Temporary)"
+                    : "Complimentary"
+                  : entitlements.status === "TRIAL"
+                    ? "Trial active"
+                    : "Active"}
+              </span>
+            )}
           </div>
-          {entitlements.features.ADVANCED_EARNINGS ? (
-            <Link href={scopedHref("/host/earnings/analytics")} className="mt-3 inline-flex shrink-0 rounded-full bg-white px-4 py-2.5 text-xs font-semibold text-zinc-950 sm:mt-0">Open advanced analytics →</Link>
-          ) : (
-            <p className="mt-3 shrink-0 text-xs leading-relaxed text-zinc-300 sm:mt-0 sm:max-w-48">Available with Dashboard Plus. Contact support or an administrator to activate access.</p>
-          )}
-        </section>
+          <h2
+            id="dashboard-plus-analytics-heading"
+            className="mt-2 text-base font-medium tracking-tight text-white sm:text-lg"
+          >
+            Advanced Earnings Analytics and RevPAN
+          </h2>
+          <p className="mt-1 text-xs font-normal leading-relaxed text-zinc-300 sm:text-sm">
+            Explore property financial comparisons, recorded costs, profitability, and revenue per available night.
+          </p>
+        </div>
+
+        {entitlements.features.ADVANCED_EARNINGS ? (
+          <Link
+            href={scopedHref("/host/earnings/analytics")}
+            className="group mt-4 inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-[#FCDF9C] px-5 py-2.5 text-xs font-semibold text-[#1F1F1F] transition-all duration-300 hover:bg-white hover:text-[#1F1F1F] hover:shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FCDF9C] sm:mt-0 cursor-pointer"
+          >
+            <span>Open advanced analytics</span>
+            <span aria-hidden="true" className="transition-transform duration-200 group-hover:translate-x-0.5">
+              →
+            </span>
+          </Link>
+        ) : (
+          <div className="mt-4 shrink-0 rounded-xl border border-white/10 bg-white/5 px-3.5 py-2 text-xs leading-relaxed text-zinc-300 backdrop-blur-xs sm:mt-0 sm:max-w-100">
+            <p>
+              Available with <span className="font-medium text-white">Dashboard Plus</span>. Contact support or an administrator to activate access.
+            </p>
+          </div>
+        )}
+      </section>
 
 
 
       {/* ── Upcoming & Paid payouts ── */}
-      <div className="flex items-end justify-between gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h2 className="text-xl font-bold text-zinc-950">Payout activity</h2>
-          <p className="mt-1 text-sm text-zinc-500">
+          <h2 className="text-xl font-medium text-[#1f1f1f]">Payout activity</h2>
+          <p className="mt-1 text-sm text-[#727272]">
             Completed and scheduled host transactions
           </p>
         </div>
         <Link
           href={scopedHref("/host/earnings/transactions")}
-          className="shrink-0 text-sm font-semibold underline underline-offset-4"
+          className="group inline-flex shrink-0 items-center gap-1.5 self-start rounded-full border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-[#1F1F1F] transition-all duration-200 hover:border-[#1F1F1F] hover:bg-zinc-50 sm:self-auto cursor-pointer"
         >
-          View all transactions
+          <span>View all transactions</span>
         </Link>
       </div>
-      <div className="grid gap-8 lg:grid-cols-2">
+
+      <div className="grid gap-6 lg:grid-cols-2">
         <PayoutsSection
           title="Upcoming"
           href={scopedHref("/host/earnings/upcoming")}
@@ -638,51 +663,71 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
       </div>
 
       {/* ── Monthly Reports ── */}
-      <section>
-        <div className="flex items-baseline justify-between">
+      <section
+        aria-labelledby="earnings-reports-heading"
+        className="rounded-2xl border border-white bg-[#F3F4F5] p-5 shadow-[0_2px_4px_0px_#00000040] sm:p-6"
+      >
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-xl font-bold text-zinc-950">
+            <h2 id="earnings-reports-heading" className="text-base font-medium text-[#1F1F1F] sm:text-lg">
               Earnings reports
             </h2>
-            <p className="mt-1 text-sm text-zinc-500">
+            <p className="mt-0.5 text-sm text-[#727272] sm:text-sm">
               Monthly and annual earnings statements
             </p>
           </div>
           <Link
             href={scopedHref("/host/earnings/reports")}
-            className="text-sm font-semibold underline underline-offset-4"
+            className="group inline-flex shrink-0 items-center gap-1.5 self-start rounded-full border border-zinc-300 bg-white px-3.5 py-1.5 text-sm font-medium text-[#1F1F1F] shadow-2xs transition-all hover:border-[#1F1F1F] hover:bg-zinc-50 sm:self-auto cursor-pointer"
           >
-            View all
+            <span>View all reports</span>
           </Link>
         </div>
 
-        {reporting.reports.length ? (
-          <div className="mt-4 divide-y divide-zinc-100 rounded-2xl border border-zinc-200 bg-white">
-            {reporting.reports.map((report) => (
-              <Link
-                key={`${report.year}-${report.month}`}
-                href={scopedHref(
-                  `/host/earnings/reports/monthly/${report.year}/${report.month}`,
-                )}
-                className="flex items-center justify-between px-5 py-4 first:rounded-t-2xl last:rounded-b-2xl hover:bg-zinc-50"
-              >
-                <span className="font-semibold text-zinc-900">
-                  {report.label}
-                </span>
-                <div className="flex items-center gap-3">
-                  <span className="font-bold text-zinc-950">
-                    {fmt(report.amount, report.currency)}
-                  </span>
-                  <span className="text-lg text-zinc-400">›</span>
-                </div>
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <p className="mt-4 text-sm text-zinc-500">
-            No completed-stay earnings this year.
-          </p>
-        )}
+        <div className="mt-4">
+          {reporting.reports.length ? (
+            <div className="divide-y divide-zinc-100 overflow-hidden rounded-xl border border-zinc-100 bg-white shadow-2xs">
+              {reporting.reports.map((report) => (
+                <Link
+                  key={`${report.year}-${report.month}`}
+                  href={scopedHref(
+                    `/host/earnings/reports/monthly/${report.year}/${report.month}`,
+                  )}
+                  className="group flex items-center justify-between px-5 py-3.5 transition-colors hover:bg-zinc-50 sm:px-6 sm:py-4"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="flex size-8 items-center justify-center rounded-lg bg-zinc-100 text-sm text-[#727272] transition-colors group-hover:bg-[#FCDF9C]/30 group-hover:text-[#1F1F1F]">
+                      📄
+                    </span>
+                    <span className="text-sm font-medium text-[#1F1F1F] group-hover:text-black">
+                      {report.label}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm font-semibold text-[#1F1F1F]">
+                      {fmt(report.amount, report.currency)}
+                    </span>
+                    <span className="text-base text-zinc-400 transition-transform duration-200 group-hover:translate-x-0.5">
+                      ›
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="flex min-h-[110px] flex-col items-center justify-center rounded-xl border border-zinc-100/80 bg-white px-4 py-6 text-center shadow-2xs">
+              <span className="flex size-9 items-center justify-center rounded-full bg-[#F3F4F5] text-base text-[#727272]" aria-hidden="true">
+                📄
+              </span>
+              <p className="mt-2 text-xs font-medium text-[#1F1F1F] sm:text-sm">
+                No completed-stay earnings this year.
+              </p>
+              <p className="mt-0.5 text-xs text-[#727272]">
+                Monthly and annual statements will automatically generate when stays conclude.
+              </p>
+            </div>
+          )}
+        </div>
       </section>
 
       {/* ── Modals ── */}
@@ -698,13 +743,13 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
           activeComparison={
             reporting.comparison
               ? {
-                  enabled: reporting.comparison.enabled,
-                  timeframe: reporting.comparison.timeframe as TimeframeGranularity,
-                  startDate: reporting.comparison.startDateKey,
-                  endDate: reporting.comparison.endDateKey,
-                  label: reporting.comparison.periodLabel,
-                  preset: (query.get("comparePreset") as ComparisonPeriodConfig["preset"] | null) || "custom_range",
-                }
+                enabled: reporting.comparison.enabled,
+                timeframe: reporting.comparison.timeframe as TimeframeGranularity,
+                startDate: reporting.comparison.startDateKey,
+                endDate: reporting.comparison.endDateKey,
+                label: reporting.comparison.periodLabel,
+                preset: (query.get("comparePreset") as ComparisonPeriodConfig["preset"] | null) || "custom_range",
+              }
               : null
           }
         />
@@ -746,8 +791,8 @@ export function HostEarningsClient({ initialData, entitlements }: HostEarningsCl
 function PeriodFinancialMetric({ label, value, comparisonValue, comparisonLabel, currency, unfavorableIncrease = false }: { label: string; value: number; comparisonValue?: number; comparisonLabel?: string; currency: string; unfavorableIncrease?: boolean }) {
   const delta = typeof comparisonValue === "number" ? value - comparisonValue : null;
   const direction = delta === null || delta === 0 ? "No change" : delta > 0 ? (unfavorableIncrease ? "Higher" : "Higher") : (unfavorableIncrease ? "Lower" : "Lower");
-  const tone = delta === null || delta === 0 ? "text-zinc-500" : delta > 0 ? (unfavorableIncrease ? "text-rose-700" : "text-emerald-700") : (unfavorableIncrease ? "text-emerald-700" : "text-rose-700");
-  return <div className="rounded-2xl border border-zinc-100 bg-zinc-50/70 p-4"><p className="text-xs font-medium text-zinc-500">{label}</p><p className="mt-1 text-2xl font-bold tracking-tight text-zinc-950">{fmt(value, currency)}</p>{typeof comparisonValue === "number" ? <p className={`mt-2 text-[11px] font-semibold ${tone}`}>{direction} by {fmt(Math.abs(delta || 0), currency)} vs {comparisonLabel}</p> : <p className="mt-2 text-[11px] text-zinc-500">Completed-stay immutable snapshots</p>}</div>;
+  const tone = delta === null || delta === 0 ? "text-[#727272]" : delta > 0 ? (unfavorableIncrease ? "text-rose-700" : "text-emerald-700") : (unfavorableIncrease ? "text-emerald-700" : "text-rose-700");
+  return <div className="rounded-xl bg-[#F3F4F5] shadow-[0_2px_4px_0px_#00000040] border border-white p-4"><p className="text-sm font-normal text-[#727272]">{label}</p><p className="mt-1 text-2xl font-medium tracking-tight text-[#1f1f1f]">{fmt(value, currency)}</p>{typeof comparisonValue === "number" ? <p className={`mt-2 text-[11px] font-semibold ${tone}`}>{direction} by {fmt(Math.abs(delta || 0), currency)} vs {comparisonLabel}</p> : <p className="mt-2 pt-3 border-t border-zinc-200 text-xs text-[#727272]">Completed-stay immutable snapshots</p>}</div>;
 }
 
 /* ─── Payouts Section ─────────────────────────────────────────────────────── */
@@ -771,77 +816,95 @@ function PayoutsSection({
   empty: string;
 }) {
   return (
-    <section>
-      <div className="flex items-baseline justify-between">
-        <div>
-          <h2 className="text-xl font-bold text-zinc-950">{title}</h2>
-          <p className="mt-0.5 text-xs text-zinc-500">{description}</p>
+    <section className="flex flex-col justify-between rounded-2xl border border-white bg-[#F3F4F5] p-5 shadow-[0_2px_4px_0px_#00000040]">
+      <div>
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <h3 className="text-base font-medium text-[#1F1F1F] sm:text-lg">{title}</h3>
+            <p className="mt-0.5 text-sm text-[#727272]">{description}</p>
+          </div>
+          <Link
+            href={href}
+            className="group inline-flex shrink-0 items-center gap-1 rounded-full border border-zinc-300 bg-white px-3 py-1.5 text-sm font-medium text-[#1F1F1F] transition-all hover:border-[#1F1F1F] hover:bg-zinc-50 cursor-pointer"
+          >
+            <span>View all</span>
+          </Link>
         </div>
-        <Link
-          href={href}
-          className="text-sm font-semibold underline underline-offset-4"
-        >
-          View all
-        </Link>
-      </div>
 
-      <div className="mt-4 divide-y divide-zinc-100 rounded-2xl border border-zinc-200 bg-white">
-        {payouts.length ? (
-          payouts.map((item) => (
-            <Link
-              key={item.bookingId}
-              href={
-                "/host/earnings/transactions/" +
-                item.bookingId +
-                "?returnTo=" +
-                encodeURIComponent(returnTo)
-              }
-              onClick={() => onSelect(item)}
-              className="flex w-full items-center gap-3 px-4 py-4 text-left first:rounded-t-2xl last:rounded-b-2xl hover:bg-zinc-50"
-            >
-              {/* Listing photo */}
-              <div className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-zinc-100 text-[10px] font-semibold text-zinc-400">
-                {item.listingPhoto ? (
-                  <Image
-                    src={item.listingPhoto}
-                    alt=""
-                    width={44}
-                    height={44}
-                    unoptimized
-                    className="size-full object-cover"
-                  />
-                ) : (
-                  "🏠"
-                )}
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold text-zinc-900">
-                  {fmtDate(
-                    paid
-                      ? item.executionDetails?.executedAt
-                      : item.scheduledPayoutDate,
-                  )}
-                </p>
-                <p className="mt-0.5 truncate text-xs text-zinc-500">
-                  {item.listingTitle}
-                </p>
-              </div>
-              <div className="shrink-0 text-right">
-                <p className="text-sm font-bold text-zinc-950">
-                  {fmt(item.netPayout, item.currency)}
-                </p>
-                <span
-                  className={`mt-0.5 inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold ${payoutStatusStyle(item.status)}`}
+        <div className="mt-4">
+          {payouts.length ? (
+            <div className="divide-y divide-zinc-100 overflow-hidden rounded-xl border border-zinc-100 bg-white shadow-2xs">
+              {payouts.map((item) => (
+                <Link
+                  key={item.bookingId}
+                  href={
+                    "/host/earnings/transactions/" +
+                    item.bookingId +
+                    "?returnTo=" +
+                    encodeURIComponent(returnTo)
+                  }
+                  onClick={() => onSelect(item)}
+                  className="group flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-zinc-50"
                 >
-                  {payoutStatusLabel(item.status)}
-                </span>
-              </div>
-              <span className="text-lg text-zinc-300">›</span>
-            </Link>
-          ))
-        ) : (
-          <p className="px-5 py-6 text-sm text-zinc-500">{empty}</p>
-        )}
+                  {/* Listing photo */}
+                  <div className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-zinc-100 text-[10px] font-semibold text-zinc-400">
+                    {item.listingPhoto ? (
+                      <Image
+                        src={item.listingPhoto}
+                        alt=""
+                        width={44}
+                        height={44}
+                        unoptimized
+                        className="size-full object-cover transition-transform duration-200 group-hover:scale-105"
+                      />
+                    ) : (
+                      "🏠"
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-[#1F1F1F] group-hover:text-black">
+                      {fmtDate(
+                        paid
+                          ? item.executionDetails?.executedAt
+                          : item.scheduledPayoutDate,
+                      )}
+                    </p>
+                    <p className="mt-0.5 truncate text-xs text-[#727272]">
+                      {item.listingTitle}
+                    </p>
+                  </div>
+                  <div className="shrink-0 text-right">
+                    <p className="text-sm font-medium text-[#1F1F1F]">
+                      {fmt(item.netPayout, item.currency)}
+                    </p>
+                    <span
+                      className={`mt-0.5 inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold ${payoutStatusStyle(item.status)}`}
+                    >
+                      {payoutStatusLabel(item.status)}
+                    </span>
+                  </div>
+                  <span className="text-base text-zinc-300 transition-transform duration-200 group-hover:translate-x-0.5">
+                    ›
+                  </span>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="flex min-h-[110px] flex-col items-center justify-center rounded-xl border border-zinc-100/80 bg-white px-4 py-6 text-center shadow-2xs">
+              <span className="flex size-9 items-center justify-center rounded-full bg-[#F3F4F5] text-base text-[#727272]" aria-hidden="true">
+                {paid ? "💳" : "⏳"}
+              </span>
+              <p className="mt-2 text-xs font-medium text-[#1F1F1F] sm:text-sm">
+                {empty}
+              </p>
+              <p className="mt-0.5 text-xs text-[#727272]">
+                {paid
+                  ? "Completed payout transfers will be recorded here."
+                  : "Upcoming payouts will appear once stays begin."}
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </section>
   );
@@ -874,10 +937,10 @@ function YtdModal({
       <div className="w-full rounded-t-3xl bg-white p-6 shadow-xl sm:max-w-md sm:rounded-3xl">
         <div className="flex items-start justify-between">
           <div>
-            <h2 id="ytd-title" className="text-xl font-bold text-zinc-950">
+            <h2 id="ytd-title" className="text-xl font-medium text-[#1f1f1f]">
               Year-to-date summary
             </h2>
-            <p className="mt-1 text-sm text-zinc-500">
+            <p className="mt-1 text-sm text-[#727272]">
               January 1 –{" "}
               {year === new Date().getUTCFullYear() ? "today" : "December 31"},{" "}
               {year}
@@ -895,14 +958,14 @@ function YtdModal({
         <div className="mt-6 divide-y divide-zinc-100 rounded-2xl border border-zinc-200">
           {rows.map(([rowLabel, amount]) => (
             <div key={rowLabel} className="flex justify-between px-4 py-3 text-sm">
-              <span className="text-zinc-600">{rowLabel}</span>
+              <span className="text-[#727272]">{rowLabel}</span>
               <span className={amount < 0 ? "text-rose-700" : "text-zinc-900"}>
                 {amount < 0 ? "−" : ""}
                 {fmt(Math.abs(amount), totals.currency)}
               </span>
             </div>
           ))}
-          <div className="flex justify-between px-4 py-4 font-bold">
+          <div className="flex justify-between px-4 py-4 font-medium">
             <span>Total ({totals.currency})</span>
             <span>
               {fmt(totals.ytdNet + totals.ytdAdjustments, totals.currency)}
@@ -936,10 +999,10 @@ function PayoutDetailModal({
       <div className="w-full rounded-t-3xl bg-white p-6 shadow-xl sm:max-w-md sm:rounded-3xl">
         <div className="flex items-start justify-between">
           <div>
-            <h2 id="payout-title" className="text-xl font-bold text-zinc-950">
+            <h2 id="payout-title" className="text-xl font-medium text-[#1f1f1f]">
               Payout details
             </h2>
-            <p className="mt-0.5 text-sm text-zinc-500">
+            <p className="mt-0.5 text-sm text-[#727272]">
               {payout.listingTitle}
             </p>
           </div>
@@ -954,7 +1017,7 @@ function PayoutDetailModal({
         </div>
 
         <div className="mt-5">
-          <p className="text-3xl font-bold text-zinc-950">
+          <p className="text-3xl font-medium text-[#1f1f1f]">
             {fmt(payout.netPayout, payout.currency)}
           </p>
           <span
@@ -966,32 +1029,32 @@ function PayoutDetailModal({
 
         <div className="mt-6 divide-y divide-zinc-100 rounded-2xl border border-zinc-200 text-sm">
           <div className="flex justify-between px-4 py-3">
-            <span className="text-zinc-600">Gross earnings</span>
+            <span className="text-[#727272]">Gross earnings</span>
             <span className="font-semibold text-zinc-900">
               {fmt(payout.grossEarnings, payout.currency)}
             </span>
           </div>
           <div className="flex justify-between px-4 py-3">
-            <span className="text-zinc-600">Host service fee</span>
+            <span className="text-[#727272]">Host service fee</span>
             <span className="text-rose-700">
               −{fmt(payout.platformFee, payout.currency)}
             </span>
           </div>
           {payout.deductions > 0 && (
             <div className="flex justify-between px-4 py-3">
-              <span className="text-zinc-600">Deductions</span>
+              <span className="text-[#727272]">Deductions</span>
               <span className="text-rose-700">
                 −{fmt(payout.deductions, payout.currency)}
               </span>
             </div>
           )}
-          <div className="flex justify-between px-4 py-4 font-bold">
+          <div className="flex justify-between px-4 py-4 font-medium">
             <span>Net payout</span>
             <span>{fmt(payout.netPayout, payout.currency)}</span>
           </div>
         </div>
 
-        <div className="mt-5 space-y-1.5 text-sm text-zinc-600">
+        <div className="mt-5 space-y-1.5 text-sm text-[#727272]">
           <p>Guest: {payout.guestName}</p>
           <p>
             Stay: {fmtDate(payout.startDate)} – {fmtDate(payout.endDate)}
@@ -1043,7 +1106,7 @@ function MethodsModal({
     >
       <div className="w-full max-h-[90vh] overflow-y-auto rounded-t-3xl bg-white p-6 shadow-xl sm:max-w-md sm:rounded-3xl">
         <div className="flex items-start justify-between">
-          <h2 id="methods-title" className="text-xl font-bold text-zinc-950">
+          <h2 id="methods-title" className="text-xl font-medium text-[#1f1f1f]">
             Payout methods
           </h2>
           <button
@@ -1071,11 +1134,11 @@ function MethodsModal({
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="font-bold text-zinc-900">{method.bankName}</p>
-                    <p className="mt-0.5 font-mono text-sm text-zinc-600">
+                    <p className="font-medium text-zinc-900">{method.bankName}</p>
+                    <p className="mt-0.5 font-mono text-sm text-[#727272]">
                       {method.ibanMasked}
                     </p>
-                    <p className="mt-0.5 text-xs text-zinc-500">
+                    <p className="mt-0.5 text-sm text-[#727272]">
                       {method.accountHolderName} ·{" "}
                       {method.status.replaceAll("_", " ")}
                     </p>
@@ -1109,7 +1172,7 @@ function MethodsModal({
               </div>
             ))
           ) : (
-            <p className="rounded-2xl border border-dashed border-zinc-300 p-6 text-sm text-zinc-500">
+            <p className="rounded-2xl border border-dashed border-zinc-300 p-6 text-sm text-[#727272]">
               No payout methods added yet.
             </p>
           )}
@@ -1198,7 +1261,7 @@ function AddMethodModal({
         className="w-full rounded-t-3xl bg-white p-6 shadow-xl sm:max-w-md sm:rounded-3xl"
       >
         <div className="flex items-start justify-between">
-          <h2 id="add-method-title" className="text-xl font-bold text-zinc-950">
+          <h2 id="add-method-title" className="text-xl font-medium text-[#1f1f1f]">
             Add payout method
           </h2>
           <button

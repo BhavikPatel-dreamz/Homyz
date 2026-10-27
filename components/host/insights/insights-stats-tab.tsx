@@ -120,7 +120,7 @@ export function InsightsStatsTab({ data, entitlements, periodLabel }: InsightsSt
 
     {/* <section className="rounded-3xl border border-zinc-200 bg-zinc-50 p-6 sm:p-8">
       <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">{"Impression & Funnel Tracking Notice"}</p>
-      <h2 className="mt-1 text-xl font-bold tracking-tight text-zinc-950">Traffic telemetry is not instrumented yet</h2>
+      <h2 className="mt-1 text-xl font-medium tracking-tight text-[#1f1f1f]">Traffic telemetry is not instrumented yet</h2>
       <div className="mt-4 grid gap-3 text-sm text-zinc-700 sm:grid-cols-2"><p>Listing Page Views: {analyticsLimitations.pageViews.status === "DATA_UNAVAILABLE" ? "Not tracked" : "Available"}</p><p>Conversion Rate: {analyticsLimitations.conversionRate.status === "DATA_UNAVAILABLE" ? "Not tracked" : "Available"}</p></div>
       <Link href={withFilters(trackingRoutes.conversion.href)} className="mt-5 inline-flex text-xs font-semibold underline underline-offset-4">View conversion tracking details →</Link>
     </section> */}

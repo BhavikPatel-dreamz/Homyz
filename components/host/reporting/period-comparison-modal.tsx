@@ -117,20 +117,288 @@ export function PeriodComparisonModal({ isOpen, onClose, currentPeriodLabel, cur
 
   // The host header uses z-99; this overlay must sit above it so the backdrop
   // blocks every interactive surface while a reporting comparison is open.
-  return <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs" onClick={onClose}>
-    <div role="dialog" aria-modal="true" aria-labelledby="earnings-comparison-title" onClick={(event) => event.stopPropagation()} className="relative mx-auto max-h-[calc(100vh-2rem)] w-full max-w-lg overflow-y-auto rounded-3xl border border-zinc-200 bg-white p-6 shadow-2xl animate-in fade-in zoom-in-95 sm:p-8">
-      <div className="flex items-start justify-between border-b border-zinc-100 pb-4"><div><h2 id="earnings-comparison-title" className="text-xl font-bold tracking-tight text-zinc-950">Compare Reporting Periods</h2><p className="mt-1 text-xs text-zinc-500">Compare realised earnings using the same property and currency scope.</p></div><button type="button" aria-label="Close comparison" onClick={onClose} className="rounded-full p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700">✕</button></div>
-      <div className="mt-5 rounded-2xl border border-zinc-200 bg-zinc-50/70 p-4"><p className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">Period A (Primary View)</p><p className="mt-1 text-sm font-bold text-zinc-950">{currentPeriodLabel}</p><p className="mt-1 text-xs text-zinc-500">{currentStartDate} to {currentEndDate}</p></div>
-      <div className="mt-6 space-y-4"><p className="text-xs font-bold uppercase tracking-wider text-zinc-900">Choose Period B (Comparison)</p><div className="grid gap-2.5 sm:grid-cols-3"><Choice selected={selection === "prior_period"} title="Prior Period" detail="Equivalent preceding days" onClick={() => select("prior_period")} /><Choice selected={selection === "prior_year"} title="Prior Year" detail="Matching calendar dates" onClick={() => select("prior_year")} /><Choice selected={selection === "custom_month" || selection === "custom_range"} title="Custom" detail="Choose a month or dates" onClick={() => select("custom_month")} /></div>
-        {(selection === "custom_month" || selection === "custom_range") && <div className="space-y-4 rounded-2xl border border-zinc-200 bg-zinc-50/50 p-4"><div className="grid grid-cols-2 rounded-xl bg-zinc-100 p-1 text-xs font-semibold"><button type="button" onClick={() => select("custom_month")} className={`rounded-lg px-3 py-2 ${selection === "custom_month" ? "bg-white text-zinc-950 shadow-2xs" : "text-zinc-600"}`}>Month & year</button><button type="button" onClick={() => select("custom_range")} className={`rounded-lg px-3 py-2 ${selection === "custom_range" ? "bg-white text-zinc-950 shadow-2xs" : "text-zinc-600"}`}>Specific dates</button></div>
-          {selection === "custom_month" ? <div><div className="flex items-center justify-between pb-2"><span className="text-xs font-semibold text-zinc-700">Select Month & Year</span><div className="flex items-center gap-2"><button type="button" aria-label="Previous comparison year" onClick={() => setCompareYear((year) => year - 1)} className="rounded-lg p-1 text-sm font-bold text-zinc-600 hover:bg-zinc-200">‹</button><span className="text-xs font-bold text-zinc-950">{compareYear}</span><button type="button" aria-label="Next comparison year" disabled={compareYear >= currentYear} onClick={() => setCompareYear((year) => year + 1)} className="rounded-lg p-1 text-sm font-bold text-zinc-600 hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-40">›</button></div></div><div className="grid grid-cols-4 gap-1.5">{MONTHS_SHORT.map((month, index) => { const monthNumber = index + 1; const unavailable = compareYear > currentYear || (compareYear === currentYear && monthNumber > currentMonth); return <button key={month} type="button" disabled={unavailable} onClick={() => { setCompareMonth(monthNumber); setErrorMessage(null); }} className={`rounded-xl py-1.5 text-xs font-semibold transition-all ${compareMonth === monthNumber ? "bg-zinc-950 text-white" : "border border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-100"} disabled:cursor-not-allowed disabled:opacity-35`}>{month}</button>; })}</div><p className="mt-2 text-[11px] text-zinc-500">{selectedMonthIsFuture ? "Future months cannot be compared." : `Period B: ${labelForRange(monthRange(compareYear, compareMonth).startDate, monthRange(compareYear, compareMonth).endDate)}`}</p></div> : <div className="grid grid-cols-1 gap-3 sm:grid-cols-2"><label className="text-[11px] font-semibold text-zinc-600">Start date<input type="date" max={todayKey()} value={customStartDate} onChange={(event) => { setCustomStartDate(event.target.value); setErrorMessage(null); }} className="mt-1 block w-full rounded-xl border border-zinc-200 bg-white p-2 text-xs font-semibold text-zinc-900 focus:border-zinc-950 focus:outline-hidden" /></label><label className="text-[11px] font-semibold text-zinc-600">End date<input type="date" max={todayKey()} value={customEndDate} onChange={(event) => { setCustomEndDate(event.target.value); setErrorMessage(null); }} className="mt-1 block w-full rounded-xl border border-zinc-200 bg-white p-2 text-xs font-semibold text-zinc-900 focus:border-zinc-950 focus:outline-hidden" /></label></div>}</div>}
-        {errorMessage && <p role="alert" className="rounded-xl border border-rose-200 bg-rose-50 p-2.5 text-xs font-semibold text-rose-700">{errorMessage}</p>}
+  return (
+    <ModalOverlay
+      className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs"
+      onClick={onClose}
+    >
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="earnings-comparison-title"
+        onClick={(event) => event.stopPropagation()}
+        className="relative mx-auto max-h-[calc(100vh-2rem)] w-full max-w-lg overflow-y-auto rounded-3xl border border-zinc-200 bg-white p-6 shadow-2xl animate-in fade-in zoom-in-95 sm:p-8"
+      >
+        {/* Header */}
+        <div className="flex items-start justify-between border-b border-zinc-100 pb-4">
+          <div>
+            <h2
+              id="earnings-comparison-title"
+              className="text-xl font-medium tracking-tight text-[#1F1F1F]"
+            >
+              Compare Reporting Periods
+            </h2>
+            <p className="mt-1 text-xs text-[#727272]">
+              Compare realised earnings using the same property and currency scope.
+            </p>
+          </div>
+          <button
+            type="button"
+            aria-label="Close comparison"
+            onClick={onClose}
+            className="flex size-8 items-center justify-center rounded-full text-[#727272] hover:bg-zinc-100 hover:text-[#1F1F1F] transition-colors cursor-pointer"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Period A Card */}
+        <div className="mt-5 rounded-2xl border border-white bg-[#F3F4F5] p-4 shadow-[0_2px_4px_0px_#00000040]">
+          <div className="flex items-center justify-between">
+            <span className="inline-flex items-center rounded-full border border-zinc-200/80 bg-white px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#727272] shadow-2xs">
+              Period A · Primary
+            </span>
+            <span className="text-[11px] font-medium text-[#727272]">Active Baseline</span>
+          </div>
+          <p className="mt-2 text-base font-semibold text-[#1F1F1F]">
+            {currentPeriodLabel}
+          </p>
+          <p className="mt-0.5 text-xs text-[#727272]">
+            {currentStartDate} to {currentEndDate}
+          </p>
+        </div>
+
+        {/* Period B Options */}
+        <div className="mt-6 space-y-4">
+          <p className="text-xs font-semibold uppercase tracking-wider text-[#727272]">
+            Choose Period B (Comparison)
+          </p>
+          <div className="grid gap-2.5 sm:grid-cols-3">
+            <Choice
+              selected={selection === "prior_period"}
+              title="Prior Period"
+              detail="Equivalent preceding days"
+              onClick={() => select("prior_period")}
+            />
+            <Choice
+              selected={selection === "prior_year"}
+              title="Prior Year"
+              detail="Matching calendar dates"
+              onClick={() => select("prior_year")}
+            />
+            <Choice
+              selected={selection === "custom_month" || selection === "custom_range"}
+              title="Custom"
+              detail="Choose a month or dates"
+              onClick={() => select("custom_month")}
+            />
+          </div>
+
+          {(selection === "custom_month" || selection === "custom_range") && (
+            <div className="space-y-4 rounded-2xl border border-white bg-[#F3F4F5] p-4 shadow-[0_2px_4px_0px_#00000040]">
+              <div className="grid grid-cols-2 rounded-xl border border-zinc-200/80 bg-white p-1 text-xs font-medium shadow-2xs">
+                <button
+                  type="button"
+                  onClick={() => select("custom_month")}
+                  className={`rounded-lg py-2 transition-all cursor-pointer ${
+                    selection === "custom_month"
+                      ? "bg-[#1F1F1F] text-white shadow-2xs font-semibold"
+                      : "text-[#727272] hover:text-[#1F1F1F]"
+                  }`}
+                >
+                  Month & year
+                </button>
+                <button
+                  type="button"
+                  onClick={() => select("custom_range")}
+                  className={`rounded-lg py-2 transition-all cursor-pointer ${
+                    selection === "custom_range"
+                      ? "bg-[#1F1F1F] text-white shadow-2xs font-semibold"
+                      : "text-[#727272] hover:text-[#1F1F1F]"
+                  }`}
+                >
+                  Specific dates
+                </button>
+              </div>
+
+              {selection === "custom_month" ? (
+                <div>
+                  <div className="flex items-center justify-between pb-2.5">
+                    <span className="text-xs font-semibold text-[#1F1F1F]">
+                      Select Month & Year
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        aria-label="Previous comparison year"
+                        onClick={() => setCompareYear((year) => year - 1)}
+                        className="flex size-7 items-center justify-center rounded-full border border-zinc-200 bg-white text-xs font-semibold text-[#1F1F1F] shadow-2xs transition-colors hover:bg-zinc-100 hover:border-zinc-300 cursor-pointer"
+                      >
+                        ‹
+                      </button>
+                      <span className="min-w-10 text-center text-xs font-semibold text-[#1F1F1F]">
+                        {compareYear}
+                      </span>
+                      <button
+                        type="button"
+                        aria-label="Next comparison year"
+                        disabled={compareYear >= currentYear}
+                        onClick={() => setCompareYear((year) => year + 1)}
+                        className="flex size-7 items-center justify-center rounded-full border border-zinc-200 bg-white text-xs font-semibold text-[#1F1F1F] shadow-2xs transition-colors hover:bg-zinc-100 hover:border-zinc-300 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
+                      >
+                        ›
+                      </button>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-4 gap-2">
+                    {MONTHS_SHORT.map((month, index) => {
+                      const monthNumber = index + 1;
+                      const unavailable =
+                        compareYear > currentYear ||
+                        (compareYear === currentYear && monthNumber > currentMonth);
+                      const isSelected = compareMonth === monthNumber;
+                      return (
+                        <button
+                          key={month}
+                          type="button"
+                          disabled={unavailable}
+                          onClick={() => {
+                            setCompareMonth(monthNumber);
+                            setErrorMessage(null);
+                          }}
+                          className={`rounded-xl py-2 text-xs font-medium transition-all cursor-pointer ${
+                            isSelected
+                              ? "bg-[#1F1F1F] text-white shadow-xs font-semibold"
+                              : "border border-zinc-200 bg-white text-[#1F1F1F] hover:border-zinc-300 hover:bg-zinc-50"
+                          } disabled:cursor-not-allowed disabled:opacity-35`}
+                        >
+                          {month}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <p className="mt-2.5 text-[11px] text-[#727272]">
+                    {selectedMonthIsFuture
+                      ? "Future months cannot be compared."
+                      : `Period B: ${labelForRange(
+                          monthRange(compareYear, compareMonth).startDate,
+                          monthRange(compareYear, compareMonth).endDate,
+                        )}`}
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <label className="text-[11px] font-semibold text-[#727272]">
+                    Start date
+                    <input
+                      type="date"
+                      max={todayKey()}
+                      value={customStartDate}
+                      onChange={(event) => {
+                        setCustomStartDate(event.target.value);
+                        setErrorMessage(null);
+                      }}
+                      className="mt-1 block w-full rounded-xl border border-zinc-200 bg-white p-2.5 text-xs font-medium text-[#1F1F1F] shadow-2xs focus:border-[#1F1F1F] focus:outline-hidden"
+                    />
+                  </label>
+                  <label className="text-[11px] font-semibold text-[#727272]">
+                    End date
+                    <input
+                      type="date"
+                      max={todayKey()}
+                      value={customEndDate}
+                      onChange={(event) => {
+                        setCustomEndDate(event.target.value);
+                        setErrorMessage(null);
+                      }}
+                      className="mt-1 block w-full rounded-xl border border-zinc-200 bg-white p-2.5 text-xs font-medium text-[#1F1F1F] shadow-2xs focus:border-[#1F1F1F] focus:outline-hidden"
+                    />
+                  </label>
+                </div>
+              )}
+            </div>
+          )}
+
+          {errorMessage && (
+            <p
+              role="alert"
+              className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs font-medium text-rose-700"
+            >
+              {errorMessage}
+            </p>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="mt-8 flex items-center justify-between border-t border-zinc-300 pt-5">
+          {activeComparison?.enabled ? (
+            <button
+              type="button"
+              onClick={() => {
+                onApplyComparison(null);
+                onClose();
+              }}
+              className="text-xs font-semibold text-rose-600 hover:text-rose-800 underline underline-offset-4 cursor-pointer"
+            >
+              Disable Comparison
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-full border border-[#727272] bg-white px-5 py-2.5 text-sm font-medium text-[#1F1F1F] hover:bg-[#1f1f1f] hover:border-[#1f1f1f] hover:text-white transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
+          )}
+          <button
+            type="button"
+            disabled={applyDisabled}
+            onClick={handleApply}
+            className="rounded-full hover:bg-[#1F1F1F] bg-[#FCDF9C] text-[#1f1f1f] hover:text-white px-6 py-2.5 text-sm font-medium transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
+          >
+            Apply Comparison
+          </button>
+        </div>
       </div>
-      <div className="mt-8 flex items-center justify-between border-t border-zinc-100 pt-5">{activeComparison?.enabled ? <button type="button" onClick={() => { onApplyComparison(null); onClose(); }} className="text-xs font-semibold text-rose-600 hover:text-rose-800">Disable Comparison</button> : <button type="button" onClick={onClose} className="text-xs font-semibold text-zinc-600 hover:text-zinc-950">Cancel</button>}<button type="button" disabled={applyDisabled} onClick={handleApply} className="rounded-full bg-zinc-950 px-6 py-2.5 text-xs font-bold text-white shadow-xs transition-colors hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-40">Apply Comparison</button></div>
-    </div>
-  </ModalOverlay>;
+    </ModalOverlay>
+  );
 }
 
-function Choice({ selected, title, detail, onClick }: { selected: boolean; title: string; detail: string; onClick: () => void }) {
-  return <button type="button" onClick={onClick} className={`rounded-2xl border p-3.5 text-left text-xs transition-all ${selected ? "border-zinc-950 bg-zinc-950 text-white font-semibold shadow-xs" : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-400"}`}><p className="font-bold">{title}</p><p className={`mt-0.5 text-[11px] ${selected ? "text-zinc-300" : "text-zinc-500"}`}>{detail}</p></button>;
+function Choice({
+  selected,
+  title,
+  detail,
+  onClick,
+}: {
+  selected: boolean;
+  title: string;
+  detail: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`relative rounded-lg border p-3.5 text-left text-xs transition-all duration-200 cursor-pointer ${
+        selected
+          ? "border-[#1F1F1F] bg-[#1F1F1F] text-white shadow-xs"
+          : "border-zinc-300 bg-white text-[#1F1F1F] hover:border-zinc-400 hover:bg-zinc-50/70"
+      }`}
+    >
+      <div className="flex items-center justify-between">
+        <p className="font-medium">{title}</p>
+        {selected && (
+          <span className="size-2 rounded-full bg-[#FCDF9C]" />
+        )}
+      </div>
+      <p
+        className={`mt-1 text-[11px] leading-tight ${
+          selected ? "text-zinc-300" : "text-[#727272]"
+        }`}
+      >
+        {detail}
+      </p>
+    </button>
+  );
 }

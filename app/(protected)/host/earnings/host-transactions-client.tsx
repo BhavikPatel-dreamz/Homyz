@@ -200,19 +200,19 @@ export function HostTransactionsClient({
       <header className="rounded-3xl bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-800 px-5 py-6 text-white shadow-sm sm:px-7 sm:py-8">
         <Link
           href="/host/earnings"
-          className="inline-flex items-center gap-1 text-sm font-semibold text-zinc-300 transition hover:text-white"
+          className="inline-flex items-center gap-1 text-sm font-medium text-white transition hover:text-[#FCDF9C]"
         >
           ← Back to earnings
         </Link>
         <div className="mt-8 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-300">
+            <p className="text-xs font-medium uppercase tracking-[0.18em] text-[#FCDF9C]">
               Payout activity
             </p>
-            <h1 className="mt-2 text-white text-3xl font-bold tracking-tight sm:text-4xl">
+            <h1 className="mt-2 text-white text-3xl font-medium tracking-tight sm:text-4xl">
               {title}
             </h1>
-            <p className="mt-2 text-sm text-zinc-300">
+            <p className="mt-2 text-sm text-white">
               {isAllTransactions
                 ? "View and manage your hosting financial transaction history."
                 : isUpcoming
@@ -220,7 +220,7 @@ export function HostTransactionsClient({
                 : "Verified payout executions"}
             </p>
           </div>
-          <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-semibold text-zinc-100">
+          <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-medium text-zinc-100">
             {activeCurrency} settlement currency
           </span>
         </div>
@@ -483,7 +483,7 @@ export function HostTransactionsClient({
         {/* Custom date pickers (desktop) */}
         {datePreset === "custom" && (
           <div className="grid grid-cols-2 gap-3 pt-1 border-t border-[#EDEDED]">
-            <label className="text-xs font-semibold text-[#727272]">
+            <label className="text-xs font-medium text-[#727272]">
               From
               <input
                 type="date"
@@ -492,7 +492,7 @@ export function HostTransactionsClient({
                 className="mt-1 block w-full rounded-2xl border border-[#D7D7D7] px-3.5 py-2 text-sm text-[#1F1F1F] focus:border-[#1F1F1F] focus:outline-none"
               />
             </label>
-            <label className="text-xs font-semibold text-[#727272]">
+            <label className="text-xs font-medium text-[#727272]">
               To
               <input
                 type="date"
@@ -517,7 +517,7 @@ export function HostTransactionsClient({
             onClick={() =>
               void load(new URLSearchParams(searchParams.toString()))
             }
-            className="font-semibold underline hover:text-rose-950"
+            className="font-medium underline hover:text-rose-950"
           >
             Retry
           </button>
@@ -530,15 +530,15 @@ export function HostTransactionsClient({
         className={`flex flex-col justify-between gap-4 rounded-3xl border border-zinc-200 bg-gradient-to-br from-white to-zinc-50 p-5 shadow-sm sm:flex-row sm:items-center sm:p-6 transition-opacity ${loading ? "opacity-50" : ""}`}
       >
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-zinc-500">
+          <p className="text-sm font-medium text-[#727272]">
             {isAllTransactions
               ? "Total recorded host earnings"
               : `Total ${isUpcoming ? "upcoming" : "paid"} payouts`}
           </p>
-          <p className="mt-2 text-3xl font-bold tracking-tight text-zinc-950 sm:text-4xl">
+          <p className="mt-2 text-3xl font-medium tracking-tight text-[#1f1f1f] sm:text-4xl">
             {total}
           </p>
-          <p className="mt-2 text-xs text-zinc-500">
+          <p className="mt-2 text-sm text-[#727272]">
             {data.pagination.total} transaction
             {data.pagination.total === 1 ? "" : "s"} · based on{" "}
             {data.dateBasis === "EXECUTED_AT"
@@ -553,7 +553,7 @@ export function HostTransactionsClient({
         {/* Export */}
         <a
           href={`/api/v1/host/earnings/export?status=${kind}&${exportParams.toString()}`}
-          className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full border border-zinc-300 bg-white px-4 py-2.5 text-xs font-semibold text-zinc-900 transition hover:border-zinc-950 hover:bg-zinc-950 hover:text-white"
+          className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full border border-zinc-300 bg-white px-4 py-2.5 text-sm font-medium text-[#1f1f1f] transition hover:border-zinc-950 hover:bg-zinc-950 hover:text-white"
         >
           <span aria-hidden="true">↓</span> Export filtered CSV
         </a>
@@ -562,22 +562,22 @@ export function HostTransactionsClient({
       {isAllTransactions && (
         <section className="grid gap-3 sm:grid-cols-2" aria-label="Transaction status totals">
           <div className="rounded-2xl border border-emerald-100 bg-emerald-50/60 p-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-emerald-800">
+            <p className="text-sm font-medium text-emerald-800">
               Completed payouts
             </p>
-            <p className="mt-1 text-xl font-bold tabular-nums text-emerald-950">
+            <p className="mt-1 text-2xl font-medium tabular-nums text-emerald-950">
               {money(statusTotals?.paidAmount || 0, totalCurrency)}
             </p>
-            <p className="mt-1 text-xs text-emerald-800">Executed host payout transfers only</p>
+            <p className="mt-7 text-xs text-emerald-800">Executed host payout transfers only</p>
           </div>
           <div className="rounded-2xl border border-sky-100 bg-sky-50/60 p-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-sky-800">
+            <p className="text-sm font-medium text-sky-800">
               Pending payouts
             </p>
-            <p className="mt-1 text-xl font-bold tabular-nums text-sky-950">
+            <p className="mt-1 text-2xl font-medium tabular-nums text-sky-950">
               {money(statusTotals?.pendingAmount || 0, totalCurrency)}
             </p>
-            <p className="mt-1 text-xs text-sky-800">Scheduled, ready, or processing host earnings</p>
+            <p className="mt-7 text-xs text-sky-800">Scheduled, ready, or processing host earnings</p>
           </div>
         </section>
       )}
@@ -589,7 +589,7 @@ export function HostTransactionsClient({
       >
         <div className="flex items-center justify-between border-b border-zinc-100 bg-zinc-50 px-5 py-3.5">
           <div>
-            <h2 className="text-sm font-bold text-zinc-950">
+            <h2 className="text-sm font-medium text-zinc-950">
               {isAllTransactions ? "Financial transaction details" : "Payout details"}
             </h2>
             <p className="mt-0.5 text-xs text-zinc-500">
@@ -631,7 +631,7 @@ export function HostTransactionsClient({
                 </div>
 
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold text-[#1F1F1F]">
+                  <p className="truncate text-sm font-medium text-[#1F1F1F]">
                     {item.listingTitle}
                   </p>
                   <p className="mt-1 truncate text-xs text-zinc-500">
@@ -649,11 +649,11 @@ export function HostTransactionsClient({
                 </div>
 
                 <div className="shrink-0 text-right">
-                  <p className="text-sm font-bold tabular-nums text-zinc-950">
+                  <p className="text-sm font-medium tabular-nums text-zinc-950">
                     {money(item.netPayout, item.currency)}
                   </p>
                   <span
-                    className={`mt-0.5 inline-flex rounded-full px-2.5 py-0.5 text-[10px] font-semibold tracking-wide ${statusStyle(item.status)}`}
+                    className={`mt-0.5 inline-flex rounded-full px-2.5 py-0.5 text-[10px] font-medium tracking-wide ${statusStyle(item.status)}`}
                   >
                     {statusLabel(item.status)}
                   </span>
@@ -672,7 +672,7 @@ export function HostTransactionsClient({
                 <line x1="8" y1="12" x2="16" y2="12" />
               </svg>
             </div>
-            <p className="mt-3 font-semibold text-[#1F1F1F]">No transactions found</p>
+            <p className="mt-3 font-medium text-[#1F1F1F]">No transactions found</p>
             <p className="mt-1 text-xs text-[#727272]">
               Try adjusting your filters or date range.
             </p>
@@ -687,7 +687,7 @@ export function HostTransactionsClient({
             type="button"
             disabled={data.pagination.page <= 1 || loading}
             onClick={() => update({ page: String(data.pagination.page - 1) })}
-            className="rounded-full border border-[#D7D7D7] bg-white px-4 py-2 text-xs font-semibold text-[#1F1F1F] transition hover:border-[#1F1F1F] disabled:cursor-not-allowed disabled:opacity-40"
+            className="rounded-full border border-[#D7D7D7] bg-white px-4 py-2 text-xs font-medium text-[#1F1F1F] transition hover:border-[#1F1F1F] disabled:cursor-not-allowed disabled:opacity-40"
           >
             Previous
           </button>
@@ -698,7 +698,7 @@ export function HostTransactionsClient({
             type="button"
             disabled={data.pagination.page >= data.pagination.totalPages || loading}
             onClick={() => update({ page: String(data.pagination.page + 1) })}
-            className="rounded-full border border-[#D7D7D7] bg-white px-4 py-2 text-xs font-semibold text-[#1F1F1F] transition hover:border-[#1F1F1F] disabled:cursor-not-allowed disabled:opacity-40"
+            className="rounded-full border border-[#D7D7D7] bg-white px-4 py-2 text-xs font-medium text-[#1F1F1F] transition hover:border-[#1F1F1F] disabled:cursor-not-allowed disabled:opacity-40"
           >
             Next
           </button>
@@ -793,7 +793,7 @@ function MobileDateFilterSheet({
         <div className="flex items-center justify-between">
           <h2
             id="date-filter-title"
-            className="text-lg font-bold text-[#1F1F1F]"
+            className="text-lg font-medium text-[#1F1F1F]"
           >
             Date filter
           </h2>
@@ -828,7 +828,7 @@ function MobileDateFilterSheet({
         </div>
         {preset === "custom" && (
           <div className="mt-4 grid grid-cols-2 gap-3 pt-3 border-t border-[#EDEDED]">
-            <label className="text-xs font-semibold text-[#727272]">
+            <label className="text-xs font-medium text-[#727272]">
               From
               <input
                 type="date"
@@ -837,7 +837,7 @@ function MobileDateFilterSheet({
                 className="mt-1 block w-full rounded-2xl border border-[#D7D7D7] px-3.5 py-2 text-sm text-[#1F1F1F] focus:border-[#1F1F1F] focus:outline-none"
               />
             </label>
-            <label className="text-xs font-semibold text-[#727272]">
+            <label className="text-xs font-medium text-[#727272]">
               To
               <input
                 type="date"
@@ -849,14 +849,14 @@ function MobileDateFilterSheet({
           </div>
         )}
         {error && (
-          <p role="alert" className="mt-4 text-xs font-semibold text-rose-600">
+          <p role="alert" className="mt-4 text-xs font-medium text-rose-600">
             {error}
           </p>
         )}
         <button
           type="button"
           onClick={onApply}
-          className="mt-6 w-full rounded-full bg-[#1F1F1F] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#FCDF9C] hover:text-[#1F1F1F]"
+          className="mt-6 w-full rounded-full bg-[#1F1F1F] px-4 py-3 text-sm font-medium text-white transition hover:bg-[#FCDF9C] hover:text-[#1F1F1F]"
         >
           Apply
         </button>

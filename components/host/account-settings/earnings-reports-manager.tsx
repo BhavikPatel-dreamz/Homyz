@@ -279,7 +279,7 @@ export function EarningsReportsManager({
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-zinc-100 pb-5">
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="text-xl font-bold tracking-tight text-zinc-950">
+              <h3 className="text-xl font-medium tracking-tight text-[#1f1f1f]">
                 {data.selectedYear} Financial Summary
               </h3>
               <span className="rounded-full bg-zinc-100 px-2.5 py-0.5 font-mono text-xs font-medium text-zinc-700">
