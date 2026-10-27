@@ -6,11 +6,8 @@ import path from "node:path";
 import {
   validatePublicImageUpload,
   hasExpectedImageSignature,
-  MAX_PUBLIC_IMAGE_SIZE,
 } from "@/lib/media/public-image-validation";
-import {
-  MAX_PHOTOS_PER_TRIP,
-} from "@/services/travel-photo.service";
+import { MAX_PHOTOS_PER_TRIP } from "@/services/travel-photo.service";
 
 const read = (file: string) => fs.readFileSync(path.join(process.cwd(), file), "utf8");
 
@@ -187,7 +184,8 @@ test("Dedicated Travel Media API: Routes exist and enforce authentication & rate
   assert.match(uploadRoute, /status:\s*401/);
 
   const photosRoute = read("app/api/v1/travel-media/photos/route.ts");
-  assert.match(photosRoute, /getTravelPhotos/);
+  assert.match(photosRoute, /getPaginatedTravelPhotos/);
+  assert.match(photosRoute, /canViewTravelProfile/);
 
   const photoDetailRoute = read("app/api/v1/travel-media/photos/[id]/route.ts");
   assert.match(photoDetailRoute, /updateTravelPhotoMetadata/);
@@ -195,7 +193,8 @@ test("Dedicated Travel Media API: Routes exist and enforce authentication & rate
 
   const tripsRoute = read("app/api/v1/travel-media/trips/route.ts");
   assert.match(tripsRoute, /getUserTrips/);
-  assert.match(tripsRoute, /getOrCreateTrip/);
+  assert.match(tripsRoute, /createTrip/);
+  assert.match(tripsRoute, /getOrCreateDestination/);
 });
 
 test("Media Storage: Uses dedicated travel-photos kind without listing-photo endpoint", () => {
@@ -302,4 +301,3 @@ test("Profile Integration: Travel Profile header Upload button opens the upload 
   assert.match(headerCode, /isUploadModalOpen/);
   assert.match(headerCode, /setIsUploadModalOpen\(true\)/);
 });
-

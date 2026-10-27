@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAuthContext } from "@/lib/auth/context";
 import { prisma } from "@/lib/db/prisma";
 import { canAccessTravelPhoto } from "@/services/travel-privacy.service";
-import fs from "node:fs";
-import path from "node:path";
 
 export async function GET(
   req: NextRequest,
@@ -53,39 +51,13 @@ export async function GET(
       });
     }
 
-    // If local file path under public/ or uploads/
-    const cleanPath = targetUrl.replace(/^\/+/, "");
-    const localFilePath = path.join(process.cwd(), "public", cleanPath);
-
-    if (fs.existsSync(localFilePath)) {
-      const fileBuffer = fs.readFileSync(localFilePath);
-      const ext = path.extname(localFilePath).toLowerCase();
-      const contentType =
-        ext === ".webp"
-          ? "image/webp"
-          : ext === ".png"
-            ? "image/png"
-            : ext === ".avif"
-              ? "image/avif"
-              : "image/jpeg";
-
-      return new NextResponse(fileBuffer, {
-        headers: {
-          "Content-Type": contentType,
-          "Cache-Control": "private, no-cache, no-store, must-revalidate",
-          "X-Content-Type-Options": "nosniff",
-        },
-      });
-    }
-
     return NextResponse.redirect(targetUrl, {
       headers: {
         "Cache-Control": "private, max-age=3600",
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[travel-media] media authorization failed:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
-

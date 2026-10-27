@@ -15,10 +15,6 @@ const EXTENSION_BY_MIME_TYPE: Record<string, string> = {
   "image/avif": ".avif",
 };
 
-function isUnsupportedAvatarKind(error: unknown): boolean {
-  return error instanceof Error && /Media server upload failed \(404\)/.test(error.message);
-}
-
 /** Upload one public profile image. Persisting it on the user happens separately. */
 export async function POST(req: NextRequest) {
   try {
@@ -58,27 +54,12 @@ export async function POST(req: NextRequest) {
 
     const extension = EXTENSION_BY_MIME_TYPE[file.type];
     const fileName = `avatar_${actor.id}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}${extension}`;
-    let saved: Awaited<ReturnType<typeof savePublicMedia>>;
-    try {
-      saved = await savePublicMedia({
-        kind: "avatars",
-        fileName,
-        body: buffer,
-        contentType: file.type,
-      });
-    } catch (error) {
-      // Older deployed media services only know listing-photos. This remains a
-      // media-server write (never an app-disk fallback) and can be removed
-      // once every media deployment includes the avatars kind.
-      if (!isUnsupportedAvatarKind(error)) throw error;
-      console.warn("[upload] media service does not yet support avatars; using compatible public storage");
-      saved = await savePublicMedia({
-        kind: "listing-photos",
-        fileName,
-        body: buffer,
-        contentType: file.type,
-      });
-    }
+    const saved = await savePublicMedia({
+      kind: "avatars",
+      fileName,
+      body: buffer,
+      contentType: file.type,
+    });
 
     return NextResponse.json({ success: true, url: saved.url, fileName: saved.fileName });
   } catch (err) {

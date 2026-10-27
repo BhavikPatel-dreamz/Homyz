@@ -51,37 +51,17 @@ export async function POST(req: NextRequest) {
     const ext = EXTENSION_BY_MIME[file.type] || ".png";
     const filename = `stamp_${Date.now()}_${Math.random().toString(36).slice(2, 8)}${ext}`;
 
-    try {
-      const saved = await savePublicMedia({
-        kind: "stamp-icons",
-        fileName: filename,
-        body: buffer,
-        contentType: file.type,
-      });
+    const saved = await savePublicMedia({
+      kind: "stamp-icons",
+      fileName: filename,
+      body: buffer,
+      contentType: file.type,
+    });
 
-      return NextResponse.json({
-        url: saved.url,
-        filename: saved.fileName,
-      });
-    } catch (e) {
-      // Fallback to local disk if remote media server unreachable
-      const path = await import("path");
-      const { mkdir, writeFile } = await import("fs/promises");
-      const os = await import("os");
-      const datePrefix = () => {
-        const d = new Date();
-        const m = String(d.getUTCMonth() + 1).padStart(2, "0");
-        return `${d.getUTCFullYear()}/${m}`;
-      };
-      const key = `stamp-icons/${datePrefix()}/${path.basename(filename)}`;
-      const dest = path.join(process.cwd(), "public", "uploads", key);
-      await mkdir(path.dirname(dest), { recursive: true });
-      await writeFile(dest, buffer);
-      return NextResponse.json({
-        url: `/uploads/${key}`,
-        filename: path.basename(filename),
-      });
-    }
+    return NextResponse.json({
+      url: saved.url,
+      filename: saved.fileName,
+    });
   } catch (err: unknown) {
     console.error("[admin-travel-stamps] Upload error:", err);
     return NextResponse.json(
@@ -90,4 +70,3 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-

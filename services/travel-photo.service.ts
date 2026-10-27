@@ -3,6 +3,10 @@ import { AppError } from "@/lib/api/errors";
 import { type AuthUser } from "@/lib/auth/types";
 import { validatePublicImageUpload } from "@/lib/media/public-image-validation";
 import { savePublicMedia, deleteManagedMediaUrl } from "@/lib/storage/media";
+import {
+  canAccessTravelPhoto,
+  canViewTravelProfile,
+} from "@/services/travel-privacy.service";
 import path from "node:path";
 import { nanoid } from "nanoid";
 
@@ -14,18 +18,16 @@ import type {
 
 export const MAX_PHOTOS_PER_TRIP = 5;
 
-export type {
-  TravelPhotoDTO,
-  TravelTripDTO,
-  CountryHighlightDTO,
-};
+export type { TravelPhotoDTO, TravelTripDTO, CountryHighlightDTO };
 
 /**
  * Legacy TripPhoto records can coexist temporarily with TravelPhoto during the
  * compatibility window. Prefer the new record when both reference the same
  * stored object so a migrated upload is never rendered twice.
  */
-function dedupePhotoEntries<T extends { userId: string; url: string }>(photos: T[]): T[] {
+function dedupePhotoEntries<T extends { userId: string; url: string }>(
+  photos: T[],
+): T[] {
   const seen = new Set<string>();
   return photos.filter((photo) => {
     const key = `${photo.userId}:${photo.url}`;
@@ -64,13 +66,18 @@ export interface UploadPhotoInput {
 /**
  * Extracts a normalized country name from a location string (e.g. "Paris, France" -> "France").
  */
-export function extractCountryFromLocation(location?: string | null): string | null {
+export function extractCountryFromLocation(
+  location?: string | null,
+): string | null {
   if (!location) return null;
   const trimmed = location.trim();
   if (!trimmed) return null;
 
   if (trimmed.includes(",")) {
-    const parts = trimmed.split(",").map((p) => p.trim()).filter(Boolean);
+    const parts = trimmed
+      .split(",")
+      .map((p) => p.trim())
+      .filter(Boolean);
     const last = parts[parts.length - 1];
     if (last && last.length >= 2) {
       return last;
@@ -83,12 +90,31 @@ export function extractCountryFromLocation(location?: string | null): string | n
   return null;
 }
 
+async function findDestinationIdsForCountry(
+  country: string,
+): Promise<string[]> {
+  const normalized = country.trim();
+  if (!normalized) return [];
+
+  const destinations = await prisma.destination.findMany({
+    where: {
+      OR: [
+        { countryName: { equals: normalized, mode: "insensitive" } },
+        { countryCode: normalized.toUpperCase() },
+      ],
+    },
+    select: { id: true },
+  });
+
+  return destinations.map((destination) => destination.id);
+}
+
 /**
  * Resolves or creates a minimal trip container for photo association.
  */
 export async function getOrCreateTrip(
   userId: string,
-  params: { tripId?: string | null; title?: string | null }
+  params: { tripId?: string | null; title?: string | null },
 ): Promise<TravelTripDTO> {
   if (params.tripId) {
     const existing = await prisma.travelTrip.findUnique({
@@ -131,13 +157,61 @@ export async function getOrCreateTrip(
       coverUrl,
       status: existing.status,
       photoCount: existing._count.photos,
-      remainingCapacity: Math.max(0, MAX_PHOTOS_PER_TRIP - existing._count.photos),
+      remainingCapacity: Math.max(
+        0,
+        MAX_PHOTOS_PER_TRIP - existing._count.photos,
+      ),
       createdAt: existing.createdAt,
       updatedAt: existing.updatedAt,
     };
   }
 
   const title = (params.title || "").trim() || "My Travel Adventure";
+
+  // Prevent accidental duplicate trips: look for an existing trip with the same title
+  // created recently (within last 5 minutes) for this user
+  const recentDuplicate = await prisma.travelTrip.findFirst({
+    where: {
+      userId,
+      title,
+      createdAt: { gte: new Date(Date.now() - 5 * 60 * 1000) },
+    },
+    orderBy: { createdAt: "desc" },
+    include: {
+      _count: { select: { photos: true } },
+    },
+  });
+
+  if (recentDuplicate) {
+    // Return existing recent trip instead of creating a duplicate
+    let coverUrl: string | null = null;
+    if (recentDuplicate.coverPhotoId) {
+      const coverPhoto = await prisma.travelPhoto.findUnique({
+        where: { id: recentDuplicate.coverPhotoId },
+        select: { mediumUrl: true, url: true },
+      });
+      coverUrl = coverPhoto?.mediumUrl || coverPhoto?.url || null;
+    }
+    return {
+      id: recentDuplicate.id,
+      userId: recentDuplicate.userId,
+      title: recentDuplicate.title,
+      destinationId: recentDuplicate.destinationId,
+      startDate: recentDuplicate.startDate,
+      endDate: recentDuplicate.endDate,
+      coverPhotoId: recentDuplicate.coverPhotoId,
+      coverUrl,
+      status: recentDuplicate.status,
+      photoCount: recentDuplicate._count.photos,
+      remainingCapacity: Math.max(
+        0,
+        MAX_PHOTOS_PER_TRIP - recentDuplicate._count.photos,
+      ),
+      createdAt: recentDuplicate.createdAt,
+      updatedAt: recentDuplicate.updatedAt,
+    };
+  }
+
   const created = await prisma.travelTrip.create({
     data: {
       userId,
@@ -173,7 +247,7 @@ export async function getOrCreateTrip(
 export async function assertTripCapacity(
   tripId: string,
   additionalCount: number,
-  excludePhotoId?: string | null
+  excludePhotoId?: string | null,
 ): Promise<{ currentCount: number; remaining: number }> {
   const currentCount = await prisma.travelPhoto.count({
     where: {
@@ -184,13 +258,16 @@ export async function assertTripCapacity(
 
   if (currentCount + additionalCount > MAX_PHOTOS_PER_TRIP) {
     throw AppError.badRequest(
-      `Trip capacity exceeded. Each trip can contain a maximum of ${MAX_PHOTOS_PER_TRIP} photos. Current: ${currentCount}, attempting to add: ${additionalCount}.`
+      `Trip capacity exceeded. Each trip can contain a maximum of ${MAX_PHOTOS_PER_TRIP} photos. Current: ${currentCount}, attempting to add: ${additionalCount}.`,
     );
   }
 
   return {
     currentCount,
-    remaining: Math.max(0, MAX_PHOTOS_PER_TRIP - (currentCount + additionalCount)),
+    remaining: Math.max(
+      0,
+      MAX_PHOTOS_PER_TRIP - (currentCount + additionalCount),
+    ),
   };
 }
 
@@ -268,7 +345,7 @@ export async function createTrip(
     destinationId?: string | null;
     startDate?: Date | string | null;
     endDate?: Date | string | null;
-  }
+  },
 ): Promise<TravelTripDTO> {
   const title = input.title.trim();
   if (!title) {
@@ -317,7 +394,7 @@ export async function updateTrip(
     startDate?: Date | string | null;
     endDate?: Date | string | null;
     coverPhotoId?: string | null;
-  }
+  },
 ): Promise<TravelTripDTO> {
   const trip = await prisma.travelTrip.findUnique({
     where: { id: tripId },
@@ -340,15 +417,21 @@ export async function updateTrip(
   const updated = await prisma.travelTrip.update({
     where: { id: tripId },
     data: {
-      ...(input.title !== undefined && { title: input.title?.trim() || trip.title }),
-      ...(input.destinationId !== undefined && { destinationId: input.destinationId }),
+      ...(input.title !== undefined && {
+        title: input.title?.trim() || trip.title,
+      }),
+      ...(input.destinationId !== undefined && {
+        destinationId: input.destinationId,
+      }),
       ...(input.startDate !== undefined && {
         startDate: input.startDate ? new Date(input.startDate) : null,
       }),
       ...(input.endDate !== undefined && {
         endDate: input.endDate ? new Date(input.endDate) : null,
       }),
-      ...(input.coverPhotoId !== undefined && { coverPhotoId: input.coverPhotoId }),
+      ...(input.coverPhotoId !== undefined && {
+        coverPhotoId: input.coverPhotoId,
+      }),
     },
     include: {
       _count: { select: { photos: true } },
@@ -377,8 +460,12 @@ export async function updateTrip(
 export async function deleteTrip(
   userId: string,
   tripId: string,
-  policy: "UNLINK_PHOTOS" | "DELETE_PHOTOS" = "UNLINK_PHOTOS"
-): Promise<{ success: boolean; unlinkedCount?: number; deletedCount?: number }> {
+  policy: "UNLINK_PHOTOS" | "DELETE_PHOTOS" = "UNLINK_PHOTOS",
+): Promise<{
+  success: boolean;
+  unlinkedCount?: number;
+  deletedCount?: number;
+}> {
   const trip = await prisma.travelTrip.findUnique({
     where: { id: tripId },
     include: { photos: true },
@@ -413,7 +500,7 @@ export async function deleteTrip(
 export async function setTripCoverPhoto(
   userId: string,
   tripId: string,
-  photoId: string
+  photoId: string,
 ): Promise<{ success: boolean; coverPhotoId: string }> {
   const [trip, photo] = await Promise.all([
     prisma.travelTrip.findUnique({ where: { id: tripId } }),
@@ -441,9 +528,17 @@ export async function setTripCoverPhoto(
  */
 export async function uploadTravelPhoto(
   actor: AuthUser,
-  input: UploadPhotoInput
+  input: UploadPhotoInput,
 ): Promise<TravelPhotoDTO> {
-  const { file, tripId, tripTitle, caption, location, order = 0, replacePhotoId } = input;
+  const {
+    file,
+    tripId,
+    tripTitle,
+    caption,
+    location,
+    order = 0,
+    replacePhotoId,
+  } = input;
 
   // 1. Validate file format, magic bytes, and size
   const validation = validatePublicImageUpload({
@@ -460,6 +555,7 @@ export async function uploadTravelPhoto(
   // 2. Resolve or create trip association if provided
   let resolvedTripId: string | null = null;
   let resolvedTripTitle: string | null = null;
+  let resolvedDestinationId: string | null = null;
 
   if (tripId || tripTitle) {
     const trip = await getOrCreateTrip(actor.id, {
@@ -468,6 +564,7 @@ export async function uploadTravelPhoto(
     });
     resolvedTripId = trip.id;
     resolvedTripTitle = trip.title;
+    resolvedDestinationId = trip.destinationId;
 
     // Check 5-photo limit inside transaction logic
     await assertTripCapacity(trip.id, replacePhotoId ? 0 : 1, replacePhotoId);
@@ -488,7 +585,8 @@ export async function uploadTravelPhoto(
       if (legacy.userId !== actor.id) throw AppError.forbidden("Access denied");
       existingPhotoToReplace = { id: legacy.id, url: legacy.url };
     } else {
-      if (existing.userId !== actor.id) throw AppError.forbidden("Access denied");
+      if (existing.userId !== actor.id)
+        throw AppError.forbidden("Access denied");
       existingPhotoToReplace = { id: existing.id, url: existing.url };
       if (!resolvedTripId && existing.tripId) {
         resolvedTripId = existing.tripId;
@@ -503,30 +601,16 @@ export async function uploadTravelPhoto(
     "image/webp": ".webp",
     "image/avif": ".avif",
   };
-  const ext = extMap[file.type] || path.extname(file.name).toLowerCase() || ".jpg";
+  const ext =
+    extMap[file.type] || path.extname(file.name).toLowerCase() || ".jpg";
   const uniqueName = `travel_photo_${Date.now()}_${nanoid(8)}${ext}`;
 
-  let saved: Awaited<ReturnType<typeof savePublicMedia>>;
-  try {
-    saved = await savePublicMedia({
-      kind: "travel-photos",
-      fileName: uniqueName,
-      body: file.buffer,
-      contentType: file.type,
-    });
-  } catch (error) {
-    if (error instanceof Error && /Media server upload failed \(404\)/.test(error.message)) {
-      console.warn("[upload] media service does not yet support travel-photos; using compatible public storage");
-      saved = await savePublicMedia({
-        kind: "listing-photos",
-        fileName: uniqueName,
-        body: file.buffer,
-        contentType: file.type,
-      });
-    } else {
-      throw error;
-    }
-  }
+  const saved = await savePublicMedia({
+    kind: "travel-photos",
+    fileName: uniqueName,
+    body: file.buffer,
+    contentType: file.type,
+  });
 
   // Responsive variant identifiers
   const thumbnailUrl = `${saved.url}?w=320&q=75`;
@@ -540,14 +624,16 @@ export async function uploadTravelPhoto(
       });
       if (activeCount >= MAX_PHOTOS_PER_TRIP) {
         throw AppError.badRequest(
-          `Cannot add photo: trip already contains maximum ${MAX_PHOTOS_PER_TRIP} photos.`
+          `Cannot add photo: trip already contains maximum ${MAX_PHOTOS_PER_TRIP} photos.`,
         );
       }
     }
 
     if (replacePhotoId) {
       // Check if updating an existing TravelPhoto
-      const travelPhoto = await tx.travelPhoto.findUnique({ where: { id: replacePhotoId } });
+      const travelPhoto = await tx.travelPhoto.findUnique({
+        where: { id: replacePhotoId },
+      });
       if (travelPhoto) {
         return tx.travelPhoto.update({
           where: { id: replacePhotoId },
@@ -555,27 +641,47 @@ export async function uploadTravelPhoto(
             url: saved.url,
             thumbnailUrl,
             mediumUrl,
-            ...(caption !== undefined && { caption: caption ? caption.trim() : null }),
-            ...(location !== undefined && { location: location ? location.trim() : null }),
+            ...(caption !== undefined && {
+              caption: caption ? caption.trim() : null,
+            }),
+            ...(location !== undefined && {
+              location: location ? location.trim() : null,
+            }),
             ...(resolvedTripId && { tripId: resolvedTripId }),
+            ...(resolvedDestinationId && {
+              destinationId: resolvedDestinationId,
+            }),
           },
           include: { trip: true },
         });
       }
 
       // Or converting a legacy TripPhoto into a TravelPhoto
-      const legacyPhoto = await tx.tripPhoto.findUnique({ where: { id: replacePhotoId } });
+      const legacyPhoto = await tx.tripPhoto.findUnique({
+        where: { id: replacePhotoId },
+      });
       if (legacyPhoto) {
         await tx.tripPhoto.delete({ where: { id: replacePhotoId } });
         return tx.travelPhoto.create({
           data: {
             userId: actor.id,
             tripId: resolvedTripId,
+            destinationId: resolvedDestinationId,
             url: saved.url,
             thumbnailUrl,
             mediumUrl,
-            caption: caption !== undefined ? (caption ? caption.trim() : null) : legacyPhoto.caption,
-            location: location !== undefined ? (location ? location.trim() : null) : legacyPhoto.location,
+            caption:
+              caption !== undefined
+                ? caption
+                  ? caption.trim()
+                  : null
+                : legacyPhoto.caption,
+            location:
+              location !== undefined
+                ? location
+                  ? location.trim()
+                  : null
+                : legacyPhoto.location,
             order,
           },
           include: { trip: true },
@@ -588,6 +694,7 @@ export async function uploadTravelPhoto(
       data: {
         userId: actor.id,
         tripId: resolvedTripId,
+        destinationId: resolvedDestinationId,
         url: saved.url,
         thumbnailUrl,
         mediumUrl,
@@ -646,11 +753,41 @@ export async function getPaginatedTravelPhotos(opts: {
     ...(opts.tripId ? { tripId: opts.tripId } : {}),
   };
 
+  if (opts.actorId !== opts.userId) {
+    const profileAccess = await canViewTravelProfile(opts.actorId, opts.userId);
+    if (!profileAccess.canView) {
+      throw AppError.forbidden("Access to this travel profile is forbidden.");
+    }
+
+    const allowedVisibilities = profileAccess.isFollowing
+      ? ["PUBLIC", "FOLLOWERS_ONLY"]
+      : ["PUBLIC"];
+    whereClause.AND = [
+      { visibility: { in: allowedVisibilities } },
+      {
+        OR: [
+          { tripId: null },
+          { trip: { is: { visibility: { in: allowedVisibilities } } } },
+        ],
+      },
+    ];
+  }
+
   if (opts.country) {
-    whereClause.location = {
-      contains: opts.country,
-      mode: "insensitive",
+    const destinationIds = await findDestinationIdsForCountry(opts.country);
+    const locationFilter = {
+      location: {
+        contains: opts.country,
+        mode: "insensitive" as const,
+      },
     };
+    whereClause.OR = destinationIds.length
+      ? [
+          locationFilter,
+          { destinationId: { in: destinationIds } },
+          { trip: { is: { destinationId: { in: destinationIds } } } },
+        ]
+      : [locationFilter];
   }
 
   const [rawPhotos, totalCount] = await Promise.all([
@@ -704,7 +841,12 @@ export async function getPaginatedTravelPhotos(opts: {
   }));
 
   // If no trip or country filter, also seamlessly append unassociated legacy photos on first page
-  if (!opts.cursor && !opts.tripId && !opts.country) {
+  if (
+    !opts.cursor &&
+    !opts.tripId &&
+    !opts.country &&
+    opts.actorId === opts.userId
+  ) {
     const legacy = await prisma.tripPhoto.findMany({
       where: { userId: opts.userId },
       orderBy: { createdAt: "desc" },
@@ -748,7 +890,11 @@ export async function getPaginatedTravelPhotos(opts: {
  */
 export async function getTravelPhotos(
   userId: string,
-  opts?: { tripId?: string | null; includeLegacy?: boolean; actorId?: string | null }
+  opts?: {
+    tripId?: string | null;
+    includeLegacy?: boolean;
+    actorId?: string | null;
+  },
 ): Promise<TravelPhotoDTO[]> {
   const res = await getPaginatedTravelPhotos({
     userId,
@@ -764,7 +910,7 @@ export async function getTravelPhotos(
  */
 export async function getPhotoDetails(
   photoId: string,
-  actorId?: string | null
+  actorId?: string | null,
 ): Promise<TravelPhotoDTO> {
   const photo = await prisma.travelPhoto.findUnique({
     where: { id: photoId },
@@ -791,6 +937,9 @@ export async function getPhotoDetails(
     });
 
     if (!legacy) throw AppError.notFound("Travel photo not found");
+    const legacyAccess = await canViewTravelProfile(actorId, legacy.userId);
+    if (!legacyAccess.canView)
+      throw AppError.forbidden("Access to this travel photo is forbidden.");
 
     return {
       id: legacy.id,
@@ -810,6 +959,11 @@ export async function getPhotoDetails(
       updatedAt: legacy.updatedAt,
       isLegacy: true,
     };
+  }
+
+  const access = await canAccessTravelPhoto(actorId, photo.id);
+  if (!access.canAccess) {
+    throw AppError.forbidden("Access to this travel photo is forbidden.");
   }
 
   // Find previous and next photo IDs for lightbox navigation
@@ -861,7 +1015,7 @@ export async function getPhotoDetails(
  */
 export async function togglePhotoLike(
   actorId: string,
-  photoId: string
+  photoId: string,
 ): Promise<{ liked: boolean; count: number }> {
   const photo = await prisma.travelPhoto.findUnique({
     where: { id: photoId },
@@ -870,6 +1024,11 @@ export async function togglePhotoLike(
 
   if (!photo) {
     throw AppError.notFound("Travel photo not found");
+  }
+
+  const access = await canAccessTravelPhoto(actorId, photoId);
+  if (!access.canAccess) {
+    throw AppError.forbidden("You cannot like a photo you cannot access.");
   }
 
   // Social rule: user cannot like their own travel photo
@@ -886,32 +1045,47 @@ export async function togglePhotoLike(
     },
   });
 
-  if (existing) {
-    await prisma.travelPhotoLike.delete({
-      where: {
-        actorId_photoId: {
+  try {
+    if (existing) {
+      await prisma.travelPhotoLike.delete({
+        where: {
+          actorId_photoId: {
+            actorId,
+            photoId,
+          },
+        },
+      });
+    } else {
+      await prisma.travelPhotoLike.create({
+        data: {
           actorId,
           photoId,
         },
-      },
-    });
-  } else {
-    await prisma.travelPhotoLike.create({
-      data: {
-        actorId,
-        photoId,
-      },
-    });
+      });
+    }
+  } catch (error: unknown) {
+    // Two rapid clicks can race on the unique relation. Preserve the single
+    // persisted relation and return its authoritative state instead of 500.
+    if (!(
+      error &&
+      typeof error === "object" &&
+      "code" in error &&
+      (error.code === "P2002" || error.code === "P2025")
+    )) {
+      throw error;
+    }
   }
 
   const count = await prisma.travelPhotoLike.count({
     where: { photoId },
   });
 
-  return {
-    liked: !existing,
-    count,
-  };
+  const persisted = await prisma.travelPhotoLike.findUnique({
+    where: { actorId_photoId: { actorId, photoId } },
+    select: { id: true },
+  });
+
+  return { liked: Boolean(persisted), count };
 }
 
 /**
@@ -919,8 +1093,13 @@ export async function togglePhotoLike(
  */
 export async function getPhotoLikeStatus(
   actorId: string | null | undefined,
-  photoId: string
+  photoId: string,
 ): Promise<{ liked: boolean; count: number }> {
+  const access = await canAccessTravelPhoto(actorId, photoId);
+  if (!access.canAccess) {
+    throw AppError.forbidden("You cannot access this travel photo.");
+  }
+
   const [count, liked] = await Promise.all([
     prisma.travelPhotoLike.count({ where: { photoId } }),
     actorId
@@ -945,8 +1124,12 @@ export async function getPhotoLikeStatus(
  */
 export async function getLikedPhotos(
   actorId: string,
-  opts?: { limit?: number; cursor?: string | null }
-): Promise<{ items: TravelPhotoDTO[]; nextCursor: string | null; totalCount: number }> {
+  opts?: { limit?: number; cursor?: string | null },
+): Promise<{
+  items: TravelPhotoDTO[];
+  nextCursor: string | null;
+  totalCount: number;
+}> {
   const limit = Math.min(Math.max(opts?.limit ?? 20, 1), 50);
 
   const [likes, totalCount] = await Promise.all([
@@ -975,26 +1158,36 @@ export async function getLikedPhotos(
     nextCursor = nextItem ? nextItem.id : null;
   }
 
-  const items: TravelPhotoDTO[] = rawItems
-    .filter((l) => Boolean(l.photo))
-    .map((l) => ({
-      id: l.photo.id,
-      userId: l.photo.userId,
-      tripId: l.photo.tripId,
-      tripTitle: l.photo.trip?.title || null,
-      url: l.photo.url,
-      thumbnailUrl: l.photo.thumbnailUrl || l.photo.url,
-      mediumUrl: l.photo.mediumUrl || l.photo.url,
-      caption: l.photo.caption,
-      location: l.photo.location,
-      order: l.photo.order,
-      likesCount: l.photo._count.likes,
-      isLiked: true,
-      author: l.photo.user,
-      createdAt: l.photo.createdAt,
-      updatedAt: l.photo.updatedAt,
-      isLegacy: false,
-    }));
+  const visibleLikes = (
+    await Promise.all(
+      rawItems
+        .filter((like) => Boolean(like.photo))
+        .map(async (like) => ({
+          like,
+          canAccess: (await canAccessTravelPhoto(actorId, like.photo.id))
+            .canAccess,
+        })),
+    )
+  ).filter(({ canAccess }) => canAccess);
+
+  const items: TravelPhotoDTO[] = visibleLikes.map(({ like: l }) => ({
+    id: l.photo.id,
+    userId: l.photo.userId,
+    tripId: l.photo.tripId,
+    tripTitle: l.photo.trip?.title || null,
+    url: l.photo.url,
+    thumbnailUrl: l.photo.thumbnailUrl || l.photo.url,
+    mediumUrl: l.photo.mediumUrl || l.photo.url,
+    caption: l.photo.caption,
+    location: l.photo.location,
+    order: l.photo.order,
+    likesCount: l.photo._count.likes,
+    isLiked: true,
+    author: l.photo.user,
+    createdAt: l.photo.createdAt,
+    updatedAt: l.photo.updatedAt,
+    isLegacy: false,
+  }));
 
   return { items, nextCursor, totalCount };
 }
@@ -1002,9 +1195,18 @@ export async function getLikedPhotos(
 /**
  * Aggregate Country Highlights from stored travel memories.
  */
-export async function getCountryHighlights(userId: string): Promise<CountryHighlightDTO[]> {
+export async function getCountryHighlights(
+  userId: string,
+): Promise<CountryHighlightDTO[]> {
   const photos = await prisma.travelPhoto.findMany({
-    where: { userId, location: { not: null } },
+    where: {
+      userId,
+      OR: [
+        { location: { not: null } },
+        { destinationId: { not: null } },
+        { trip: { is: { destinationId: { not: null } } } },
+      ],
+    },
     orderBy: { createdAt: "desc" },
     select: {
       id: true,
@@ -1012,17 +1214,52 @@ export async function getCountryHighlights(userId: string): Promise<CountryHighl
       thumbnailUrl: true,
       mediumUrl: true,
       location: true,
+      destinationId: true,
+      trip: { select: { destinationId: true } },
     },
   });
 
-  const countryMap = new Map<string, { photoCount: number; coverUrl: string | null; sampleLocation?: string }>();
+  const destinationIds = [
+    ...new Set(
+      photos
+        .map((photo) => photo.destinationId || photo.trip?.destinationId)
+        .filter((id): id is string => Boolean(id)),
+    ),
+  ];
+  const destinations = destinationIds.length
+    ? await prisma.destination.findMany({
+        where: { id: { in: destinationIds } },
+        select: { id: true, countryName: true, countryCode: true },
+      })
+    : [];
+  const destinationById = new Map(
+    destinations.map((destination) => [destination.id, destination]),
+  );
+  const countryMap = new Map<
+    string,
+    {
+      country: string;
+      countryCode: string | null;
+      photoCount: number;
+      coverUrl: string | null;
+      sampleLocation?: string;
+    }
+  >();
 
   for (const photo of photos) {
-    const country = extractCountryFromLocation(photo.location);
+    const destinationId = photo.destinationId || photo.trip?.destinationId;
+    const normalizedDestination = destinationId
+      ? destinationById.get(destinationId)
+      : null;
+    const country =
+      normalizedDestination?.countryName ||
+      extractCountryFromLocation(photo.location);
     if (!country) continue;
-    const normalizedKey = country.trim();
+    const normalizedKey = country.trim().toLocaleLowerCase();
     if (!countryMap.has(normalizedKey)) {
       countryMap.set(normalizedKey, {
+        country,
+        countryCode: normalizedDestination?.countryCode || null,
         photoCount: 1,
         coverUrl: photo.mediumUrl || photo.url,
         sampleLocation: photo.location || undefined,
@@ -1057,8 +1294,11 @@ export async function getCountryHighlights(userId: string): Promise<CountryHighl
   for (const ud of verifiedUserDests) {
     if (!ud.destination || ud.destination.cityName) continue;
     const name = ud.destination.countryName;
-    if (!countryMap.has(name)) {
-      countryMap.set(name, {
+    const normalizedKey = name.toLocaleLowerCase();
+    if (!countryMap.has(normalizedKey)) {
+      countryMap.set(normalizedKey, {
+        country: name,
+        countryCode: ud.destination.countryCode,
         photoCount: 0,
         // A verified stay is real data even when the guest has not uploaded a
         // memory. Leave the cover empty so the UI can show a neutral place
@@ -1069,14 +1309,18 @@ export async function getCountryHighlights(userId: string): Promise<CountryHighl
     }
   }
 
-  return Array.from(countryMap.entries()).map(([country, data]) => ({
-    country,
+  return Array.from(countryMap.values()).map((data) => ({
+    country: data.country,
+    countryCode: data.countryCode,
     photoCount: data.photoCount,
     coverUrl: data.coverUrl,
     sampleLocation: data.sampleLocation,
     isVerified:
-      verifiedCountryNames.has(country.toLowerCase()) ||
-      verifiedCountryCodes.has(country.toUpperCase()),
+      verifiedCountryNames.has(data.country.toLowerCase()) ||
+      Boolean(
+        data.countryCode &&
+        verifiedCountryCodes.has(data.countryCode.toUpperCase()),
+      ),
   }));
 }
 
@@ -1091,7 +1335,7 @@ export async function updateTravelPhotoMetadata(
     location?: string | null;
     tripId?: string | null;
     order?: number;
-  }
+  },
 ): Promise<TravelPhotoDTO> {
   const photo = await prisma.travelPhoto.findUnique({
     where: { id: photoId },
@@ -1100,7 +1344,9 @@ export async function updateTravelPhotoMetadata(
 
   if (!photo) {
     // Check legacy photo
-    const legacy = await prisma.tripPhoto.findUnique({ where: { id: photoId } });
+    const legacy = await prisma.tripPhoto.findUnique({
+      where: { id: photoId },
+    });
     if (!legacy) throw AppError.notFound("Photo not found");
     if (legacy.userId !== userId) throw AppError.forbidden("Access denied");
 
@@ -1116,8 +1362,18 @@ export async function updateTravelPhotoMetadata(
             url: legacy.url,
             thumbnailUrl: legacy.url,
             mediumUrl: legacy.url,
-            caption: input.caption !== undefined ? (input.caption ? input.caption.trim() : null) : legacy.caption,
-            location: input.location !== undefined ? (input.location ? input.location.trim() : null) : legacy.location,
+            caption:
+              input.caption !== undefined
+                ? input.caption
+                  ? input.caption.trim()
+                  : null
+                : legacy.caption,
+            location:
+              input.location !== undefined
+                ? input.location
+                  ? input.location.trim()
+                  : null
+                : legacy.location,
             order: input.order ?? 0,
           },
           include: { trip: true },
@@ -1144,8 +1400,12 @@ export async function updateTravelPhotoMetadata(
     const updatedLegacy = await prisma.tripPhoto.update({
       where: { id: photoId },
       data: {
-        ...(input.caption !== undefined && { caption: input.caption ? input.caption.trim() : null }),
-        ...(input.location !== undefined && { location: input.location ? input.location.trim() : null }),
+        ...(input.caption !== undefined && {
+          caption: input.caption ? input.caption.trim() : null,
+        }),
+        ...(input.location !== undefined && {
+          location: input.location ? input.location.trim() : null,
+        }),
       },
     });
 
@@ -1180,8 +1440,12 @@ export async function updateTravelPhotoMetadata(
   const updated = await prisma.travelPhoto.update({
     where: { id: photoId },
     data: {
-      ...(input.caption !== undefined && { caption: input.caption ? input.caption.trim() : null }),
-      ...(input.location !== undefined && { location: input.location ? input.location.trim() : null }),
+      ...(input.caption !== undefined && {
+        caption: input.caption ? input.caption.trim() : null,
+      }),
+      ...(input.location !== undefined && {
+        location: input.location ? input.location.trim() : null,
+      }),
       ...(input.tripId !== undefined && { tripId: input.tripId }),
       ...(input.order !== undefined && { order: input.order }),
     },
@@ -1209,13 +1473,15 @@ export async function updateTravelPhotoMetadata(
  */
 export async function deleteTravelPhoto(
   userId: string,
-  photoId: string
+  photoId: string,
 ): Promise<{ success: boolean; deletedId: string }> {
   const photo = await prisma.travelPhoto.findUnique({ where: { id: photoId } });
 
   if (photo) {
     if (photo.userId !== userId) {
-      throw AppError.forbidden("You do not have permission to delete this photo");
+      throw AppError.forbidden(
+        "You do not have permission to delete this photo",
+      );
     }
     await prisma.travelPhoto.delete({ where: { id: photoId } });
     await deleteTravelMediaIfUnreferenced(photo.url);

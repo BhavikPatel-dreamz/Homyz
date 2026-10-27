@@ -9,6 +9,8 @@ import {
   archiveAdminTravelStamp,
   deleteAdminTravelStamp,
   getTravelerStamps,
+  getPaginatedTravelerStamps,
+  getTravelStampPickerPage,
   getTravelStampPickerItems,
   addTravelStampSelections,
   removeTravelStamp,
@@ -107,6 +109,16 @@ test("Admin-Managed Travel Stamp & Badge Collection System — Comprehensive E2E
     assert.ok(item, "Guest A should see the active admin stamp in the picker");
     assert.equal(item.isAlreadyCollected, false, "Should not be collected yet");
     assert.equal(item.displayName, "Paris Explorer Deluxe");
+
+    const page = await getTravelStampPickerPage(userA.id, {
+      search: stampName,
+      page: 1,
+      limit: 9,
+    });
+    assert.equal(page.items.length, 1, "Catalog search returns only the requested page");
+    assert.equal(page.totalCount, 1, "Catalog page includes an accurate matching count");
+    assert.equal(page.totalPages, 1);
+    assert.equal(page.items[0]?.id, createdStampId);
   });
 
   await t.test("5. Guest A selects the stamp and it appears under 'Where I've Been'", async () => {
@@ -124,6 +136,11 @@ test("Admin-Managed Travel Stamp & Badge Collection System — Comprehensive E2E
       guestStamps.some((s) => s.stampId === createdStampId),
       "getTravelerStamps should return the collected stamp"
     );
+
+    const paginated = await getPaginatedTravelerStamps(userA.id, { limit: 1 });
+    assert.equal(paginated.items.length, 1, "The profile collection can load a bounded page");
+    assert.equal(paginated.totalCount, 1);
+    assert.equal(paginated.nextCursor, null);
   });
 
   await t.test("6. Duplicate prevention: Guest A cannot select the same stamp twice", async () => {

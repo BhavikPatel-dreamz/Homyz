@@ -14,8 +14,20 @@ import {
   normalizeCountry,
 } from "./travel-destination.service";
 
-import type { AdminTravelStampDTO, TravelStampDTO, TravelStampPickerItemDTO, UserTravelStampDTO } from "@/types/travel";
-export type { AdminTravelStampDTO, TravelStampDTO, TravelStampPickerItemDTO, UserTravelStampDTO };
+import type {
+  AdminTravelStampDTO,
+  TravelStampDTO,
+  TravelStampPickerItemDTO,
+  TravelStampPickerPageDTO,
+  UserTravelStampDTO,
+} from "@/types/travel";
+export type {
+  AdminTravelStampDTO,
+  TravelStampDTO,
+  TravelStampPickerItemDTO,
+  TravelStampPickerPageDTO,
+  UserTravelStampDTO,
+};
 
 export interface StampCatalogDefinition {
   slug: string;
@@ -46,7 +58,8 @@ export const DEFAULT_STAMP_CATALOG: StampCatalogDefinition[] = [
     city: "Paris",
     country: "France",
     countryCode: "FR",
-    description: "Awarded for discovering Paris, Eiffel Tower views, and authentic French bistros.",
+    description:
+      "Awarded for discovering Paris, Eiffel Tower views, and authentic French bistros.",
     qualifyingCities: ["Paris"],
     category: TravelStampCategory.CITY,
     eligibilityRule: "VISIT_CITY",
@@ -61,7 +74,8 @@ export const DEFAULT_STAMP_CATALOG: StampCatalogDefinition[] = [
     city: null,
     country: null,
     countryCode: null,
-    description: "Awarded for discovering local artisan coffee cultures and cozy neighborhood cafes on your travels.",
+    description:
+      "Awarded for discovering local artisan coffee cultures and cozy neighborhood cafes on your travels.",
     category: TravelStampCategory.THEME,
     eligibilityRule: "COMPLETED_STAYS",
     ruleThreshold: 1,
@@ -75,7 +89,8 @@ export const DEFAULT_STAMP_CATALOG: StampCatalogDefinition[] = [
     city: "Riyadh",
     country: "Saudi Arabia",
     countryCode: "SA",
-    description: "Awarded for memories made in Riyadh, Kingdom Centre, and the golden Arabian dunes.",
+    description:
+      "Awarded for memories made in Riyadh, Kingdom Centre, and the golden Arabian dunes.",
     qualifyingCities: ["Riyadh"],
     qualifyingCountryCodes: ["SA"],
     category: TravelStampCategory.CITY,
@@ -91,12 +106,14 @@ export const DEFAULT_STAMP_CATALOG: StampCatalogDefinition[] = [
     city: "London",
     country: "United Kingdom",
     countryCode: "GB",
-    description: "Awarded for a journey across London, Big Ben, and the Thames.",
+    description:
+      "Awarded for a journey across London, Big Ben, and the Thames.",
     qualifyingCities: ["London"],
     category: TravelStampCategory.CITY,
     eligibilityRule: "VISIT_CITY",
     ruleThreshold: 1,
-    iconUrl: "/images/icons/streamline-freehand/office-stamp-document--Streamline-Freehand.svg",
+    iconUrl:
+      "/images/icons/streamline-freehand/office-stamp-document--Streamline-Freehand.svg",
     displayOrder: 4,
   },
   {
@@ -106,12 +123,14 @@ export const DEFAULT_STAMP_CATALOG: StampCatalogDefinition[] = [
     city: "Dubai",
     country: "United Arab Emirates",
     countryCode: "AE",
-    description: "A passport stamp for memories made in Dubai and modern architectural wonders.",
+    description:
+      "A passport stamp for memories made in Dubai and modern architectural wonders.",
     qualifyingCities: ["Dubai"],
     category: TravelStampCategory.CITY,
     eligibilityRule: "VISIT_CITY",
     ruleThreshold: 1,
-    iconUrl: "/images/icons/streamline-freehand/office-stamp-document--Streamline-Freehand.svg",
+    iconUrl:
+      "/images/icons/streamline-freehand/office-stamp-document--Streamline-Freehand.svg",
     displayOrder: 5,
   },
   {
@@ -121,12 +140,14 @@ export const DEFAULT_STAMP_CATALOG: StampCatalogDefinition[] = [
     city: "Istanbul",
     country: "Türkiye",
     countryCode: "TR",
-    description: "A passport stamp for memories made in Istanbul, bridging two continents.",
+    description:
+      "A passport stamp for memories made in Istanbul, bridging two continents.",
     qualifyingCities: ["Istanbul"],
     category: TravelStampCategory.CITY,
     eligibilityRule: "VISIT_CITY",
     ruleThreshold: 1,
-    iconUrl: "/images/icons/streamline-freehand/office-stamp-document--Streamline-Freehand.svg",
+    iconUrl:
+      "/images/icons/streamline-freehand/office-stamp-document--Streamline-Freehand.svg",
     displayOrder: 6,
   },
   {
@@ -136,12 +157,14 @@ export const DEFAULT_STAMP_CATALOG: StampCatalogDefinition[] = [
     city: "Tokyo",
     country: "Japan",
     countryCode: "JP",
-    description: "Awarded for exploring Tokyo's neon streets, Shibuya crossing, and tranquil shrines.",
+    description:
+      "Awarded for exploring Tokyo's neon streets, Shibuya crossing, and tranquil shrines.",
     qualifyingCities: ["Tokyo"],
     category: TravelStampCategory.CITY,
     eligibilityRule: "VISIT_CITY",
     ruleThreshold: 1,
-    iconUrl: "/images/icons/streamline-freehand/office-stamp-document--Streamline-Freehand.svg",
+    iconUrl:
+      "/images/icons/streamline-freehand/office-stamp-document--Streamline-Freehand.svg",
     displayOrder: 6,
   },
   {
@@ -151,24 +174,28 @@ export const DEFAULT_STAMP_CATALOG: StampCatalogDefinition[] = [
     city: "Mumbai",
     country: "India",
     countryCode: "IN",
-    description: "A passport stamp for vibrant memories made in Mumbai by the Arabian Sea.",
+    description:
+      "A passport stamp for vibrant memories made in Mumbai by the Arabian Sea.",
     qualifyingCities: ["Mumbai"],
     category: TravelStampCategory.CITY,
     eligibilityRule: "VISIT_CITY",
     ruleThreshold: 1,
-    iconUrl: "/images/icons/streamline-freehand/office-stamp-document--Streamline-Freehand.svg",
+    iconUrl:
+      "/images/icons/streamline-freehand/office-stamp-document--Streamline-Freehand.svg",
     displayOrder: 7,
   },
   {
     slug: "stamp-statue-seeker",
     displayName: "Statue Seeker",
-    description: "Awarded for a verified completed stay in New York, United States.",
+    description:
+      "Awarded for a verified completed stay in New York, United States.",
     countryCode: "US",
     qualifyingCities: ["New York"],
     category: TravelStampCategory.CITY,
     eligibilityRule: "VISIT_CITY",
     ruleThreshold: 1,
-    iconUrl: "/images/icons/streamline-freehand/office-stamp-document--Streamline-Freehand.svg",
+    iconUrl:
+      "/images/icons/streamline-freehand/office-stamp-document--Streamline-Freehand.svg",
   },
   {
     slug: "stamp-tokyo-lights",
@@ -179,29 +206,34 @@ export const DEFAULT_STAMP_CATALOG: StampCatalogDefinition[] = [
     category: TravelStampCategory.CITY,
     eligibilityRule: "VISIT_CITY",
     ruleThreshold: 1,
-    iconUrl: "/images/icons/streamline-freehand/office-stamp-document--Streamline-Freehand.svg",
+    iconUrl:
+      "/images/icons/streamline-freehand/office-stamp-document--Streamline-Freehand.svg",
   },
   {
     slug: "stamp-miami-heat",
     displayName: "Miami Heat",
-    description: "Awarded for a verified completed stay in Miami, United States.",
+    description:
+      "Awarded for a verified completed stay in Miami, United States.",
     countryCode: "US",
     qualifyingCities: ["Miami"],
     category: TravelStampCategory.CITY,
     eligibilityRule: "VISIT_CITY",
     ruleThreshold: 1,
-    iconUrl: "/images/icons/streamline-freehand/office-stamp-document--Streamline-Freehand.svg",
+    iconUrl:
+      "/images/icons/streamline-freehand/office-stamp-document--Streamline-Freehand.svg",
   },
   {
     slug: "stamp-golden-view",
     displayName: "Golden View",
-    description: "Awarded for a verified completed stay in San Francisco, United States.",
+    description:
+      "Awarded for a verified completed stay in San Francisco, United States.",
     countryCode: "US",
     qualifyingCities: ["San Francisco"],
     category: TravelStampCategory.CITY,
     eligibilityRule: "VISIT_CITY",
     ruleThreshold: 1,
-    iconUrl: "/images/icons/streamline-freehand/office-stamp-document--Streamline-Freehand.svg",
+    iconUrl:
+      "/images/icons/streamline-freehand/office-stamp-document--Streamline-Freehand.svg",
   },
   {
     slug: "stamp-venezia-vibes",
@@ -212,7 +244,8 @@ export const DEFAULT_STAMP_CATALOG: StampCatalogDefinition[] = [
     category: TravelStampCategory.CITY,
     eligibilityRule: "VISIT_CITY",
     ruleThreshold: 1,
-    iconUrl: "/images/icons/streamline-freehand/office-stamp-document--Streamline-Freehand.svg",
+    iconUrl:
+      "/images/icons/streamline-freehand/office-stamp-document--Streamline-Freehand.svg",
   },
   {
     slug: "stamp-france",
@@ -222,47 +255,56 @@ export const DEFAULT_STAMP_CATALOG: StampCatalogDefinition[] = [
     category: TravelStampCategory.COUNTRY,
     eligibilityRule: "VISIT_COUNTRY",
     ruleThreshold: 1,
-    iconUrl: "/images/icons/streamline-freehand/office-stamp-document--Streamline-Freehand.svg",
+    iconUrl:
+      "/images/icons/streamline-freehand/office-stamp-document--Streamline-Freehand.svg",
   },
   {
     slug: "stamp-saudi-arabia",
     displayName: "Saudi Arabia",
-    description: "Awarded for completing a verified journey across the Kingdom of Saudi Arabia.",
+    description:
+      "Awarded for completing a verified journey across the Kingdom of Saudi Arabia.",
     countryCode: "SA",
     category: TravelStampCategory.COUNTRY,
     eligibilityRule: "VISIT_COUNTRY",
     ruleThreshold: 1,
-    iconUrl: "/images/icons/streamline-freehand/office-stamp-document--Streamline-Freehand.svg",
+    iconUrl:
+      "/images/icons/streamline-freehand/office-stamp-document--Streamline-Freehand.svg",
   },
   {
     slug: "stamp-usa",
     displayName: "United States",
-    description: "Awarded for completing a verified journey across the United States.",
+    description:
+      "Awarded for completing a verified journey across the United States.",
     countryCode: "US",
     category: TravelStampCategory.COUNTRY,
     eligibilityRule: "VISIT_COUNTRY",
     ruleThreshold: 1,
-    iconUrl: "/images/icons/streamline-freehand/office-stamp-document--Streamline-Freehand.svg",
+    iconUrl:
+      "/images/icons/streamline-freehand/office-stamp-document--Streamline-Freehand.svg",
   },
   {
     slug: "stamp-japan",
     displayName: "Japan",
-    description: "Awarded for exploring Japan's serene temples, bustling metropolises, and vibrant culture.",
+    description:
+      "Awarded for exploring Japan's serene temples, bustling metropolises, and vibrant culture.",
     countryCode: "JP",
     category: TravelStampCategory.COUNTRY,
     eligibilityRule: "VISIT_COUNTRY",
     ruleThreshold: 1,
-    iconUrl: "/images/icons/streamline-freehand/office-stamp-document--Streamline-Freehand.svg",
+    iconUrl:
+      "/images/icons/streamline-freehand/office-stamp-document--Streamline-Freehand.svg",
   },
   {
     slug: "stamp-first-stay",
     displayName: "First Stamp",
-    description: "Welcome to Homyz travels! Awarded upon completing your first verified stay.",
+    description:
+      "Welcome to Homyz travels! Awarded upon completing your first verified stay.",
     countryCode: null,
     category: TravelStampCategory.MILESTONE,
     eligibilityRule: "COMPLETED_STAYS",
     ruleThreshold: 1,
-    iconUrl: "/images/icons/streamline-freehand/stamps-portrait--Streamline-Freehand.svg",
+    iconUrl:
+      "/images/icons/streamline-freehand/stamps-portrait--Streamline-Freehand.svg",
   },
 ];
 
@@ -285,18 +327,22 @@ export async function evaluateAndAwardStamps(userId: string): Promise<{
   await ensureStampCatalog();
 
   // Gather verified evidence for this traveler
-  const [stats, visitedCountries, allStamps, existingUserStamps] = await Promise.all([
-    getTravelerDestinationStats(userId),
-    getTravelerVisitedDestinations(userId),
-    prisma.travelStamp.findMany({ where: { isActive: true } }),
-    prisma.userTravelStamp.findMany({ where: { userId } }),
-  ]);
+  const [stats, visitedCountries, allStamps, existingUserStamps] =
+    await Promise.all([
+      getTravelerDestinationStats(userId),
+      getTravelerVisitedDestinations(userId),
+      prisma.travelStamp.findMany({ where: { isActive: true } }),
+      prisma.userTravelStamp.findMany({ where: { userId } }),
+    ]);
 
   const existingStampIds = new Set(existingUserStamps.map((us) => us.stampId));
-  const visitedCountryCodes = new Set(visitedCountries.map((c) => c.countryCode.toUpperCase()));
+  const visitedCountryCodes = new Set(
+    visitedCountries.map((c) => c.countryCode.toUpperCase()),
+  );
   const visitedCities = new Map<string, Set<string>>();
   for (const c of visitedCountries) {
-    const cities = visitedCities.get(c.countryCode.toUpperCase()) ?? new Set<string>();
+    const cities =
+      visitedCities.get(c.countryCode.toUpperCase()) ?? new Set<string>();
     for (const city of c.cities) {
       cities.add(city.toLowerCase());
     }
@@ -324,12 +370,21 @@ export async function evaluateAndAwardStamps(userId: string): Promise<{
       case "VISIT_CITY":
         // City labels such as “Parisian Pulse” are marketing names. Match only
         // the curated normalized city/country pair, never a photo caption.
-        const definition = DEFAULT_STAMP_CATALOG.find((candidate) => candidate.slug === stamp.slug);
-        const allowedCountries = definition?.qualifyingCountryCodes ?? (stamp.countryCode ? [stamp.countryCode] : []);
-        const allowedCities = definition?.qualifyingCities ?? [stamp.displayName];
+        const definition = DEFAULT_STAMP_CATALOG.find(
+          (candidate) => candidate.slug === stamp.slug,
+        );
+        const allowedCountries =
+          definition?.qualifyingCountryCodes ??
+          (stamp.countryCode ? [stamp.countryCode] : []);
+        const allowedCities = definition?.qualifyingCities ?? [
+          stamp.displayName,
+        ];
         qualifies = allowedCountries.some((countryCode) => {
           const cities = visitedCities.get(countryCode.toUpperCase());
-          return Boolean(cities && allowedCities.some((city) => cities.has(city.toLowerCase())));
+          return Boolean(
+            cities &&
+            allowedCities.some((city) => cities.has(city.toLowerCase())),
+          );
         });
         break;
 
@@ -383,7 +438,7 @@ type StampEvidence = {
 
 function readStampEvidence(value: Prisma.JsonValue | null): StampEvidence {
   return value && typeof value === "object" && !Array.isArray(value)
-    ? value as StampEvidence
+    ? (value as StampEvidence)
     : {};
 }
 
@@ -461,12 +516,51 @@ export async function getTravelerStamps(
   });
 
   const stamps = records.map(toUserTravelStampDTO);
-  return options?.publicOnly ? stamps.filter((stamp) => stamp.isPublic) : stamps;
+  return options?.publicOnly
+    ? stamps.filter((stamp) => stamp.isPublic)
+    : stamps;
+}
+
+export async function getPaginatedTravelerStamps(
+  userId: string,
+  options: { limit?: number; cursor?: string } = {},
+): Promise<{
+  items: UserTravelStampDTO[];
+  nextCursor: string | null;
+  totalCount: number;
+}> {
+  const limit = Math.min(48, Math.max(1, Math.floor(options.limit || 12)));
+  const [totalCount, records] = await Promise.all([
+    prisma.userTravelStamp.count({ where: { userId } }),
+    prisma.userTravelStamp.findMany({
+      where: { userId },
+      include: { stamp: true },
+      orderBy: [
+        { isPinned: "desc" },
+        { displayOrder: "asc" },
+        { awardedAt: "desc" },
+        { id: "asc" },
+      ],
+      cursor: options.cursor ? { id: options.cursor } : undefined,
+      skip: options.cursor ? 1 : 0,
+      take: limit + 1,
+    }),
+  ]);
+  const hasMore = records.length > limit;
+  const items = records.slice(0, limit).map(toUserTravelStampDTO);
+  return {
+    items,
+    nextCursor: hasMore ? items.at(-1)?.id || null : null,
+    totalCount,
+  };
 }
 
 export const MAX_PINNED_STAMPS = 6;
 
-export async function toggleStampPinned(userId: string, userStampId: string): Promise<UserTravelStampDTO> {
+export async function toggleStampPinned(
+  userId: string,
+  userStampId: string,
+): Promise<UserTravelStampDTO> {
   const userStamp = await prisma.userTravelStamp.findUnique({
     where: { id: userStampId },
     include: { stamp: true },
@@ -483,7 +577,9 @@ export async function toggleStampPinned(userId: string, userStampId: string): Pr
       where: { userId, isPinned: true },
     });
     if (currentPinnedCount >= MAX_PINNED_STAMPS) {
-      throw AppError.badRequest(`You can pin a maximum of ${MAX_PINNED_STAMPS} featured stamps on your profile.`);
+      throw AppError.badRequest(
+        `You can pin a maximum of ${MAX_PINNED_STAMPS} featured stamps on your profile.`,
+      );
     }
   }
 
@@ -496,7 +592,10 @@ export async function toggleStampPinned(userId: string, userStampId: string): Pr
   return toUserTravelStampDTO(updated);
 }
 
-export async function setStampsSectionVisibility(userId: string, showStamps: boolean): Promise<boolean> {
+export async function setStampsSectionVisibility(
+  userId: string,
+  showStamps: boolean,
+): Promise<boolean> {
   await prisma.travelProfile.upsert({
     where: { userId },
     update: { showStamps },
@@ -533,14 +632,20 @@ async function getOrCreateDestinationStamp(destination: {
   const displayName = destination.cityName || destination.countryName;
   return prisma.travelStamp.upsert({
     where: { slug: destinationStampSlug(destination.slug) },
-    update: { displayName, countryCode: destination.countryCode, destinationId: destination.id },
+    update: {
+      displayName,
+      countryCode: destination.countryCode,
+      destinationId: destination.id,
+    },
     create: {
       slug: destinationStampSlug(destination.slug),
       displayName,
       description: `A personal travel memory from ${destination.cityName ? `${destination.cityName}, ` : ""}${destination.countryName}.`,
       countryCode: destination.countryCode,
       destinationId: destination.id,
-      category: destination.cityName ? TravelStampCategory.CITY : TravelStampCategory.COUNTRY,
+      category: destination.cityName
+        ? TravelStampCategory.CITY
+        : TravelStampCategory.COUNTRY,
       eligibilityRule: "MANUAL_DECLARATION",
       ruleThreshold: 1,
       // These records are intentionally outside the automatic award catalog.
@@ -550,16 +655,36 @@ async function getOrCreateDestinationStamp(destination: {
 }
 
 function stampMatchesDestination(
-  stamp: { destinationId: string | null; countryCode: string | null; slug: string; category: TravelStampCategory },
+  stamp: {
+    destinationId: string | null;
+    countryCode: string | null;
+    slug: string;
+    category: string;
+  },
   destination: { id: string; countryCode: string; cityName: string | null },
 ): boolean {
   if (stamp.destinationId === destination.id) return true;
-  const definition = DEFAULT_STAMP_CATALOG.find((item) => item.slug === stamp.slug);
+  const definition = DEFAULT_STAMP_CATALOG.find(
+    (item) => item.slug === stamp.slug,
+  );
   if (definition) {
-    const allowedCountries = definition.qualifyingCountryCodes ?? (definition.countryCode ? [definition.countryCode] : []);
-    if (!allowedCountries.some((countryCode) => countryCode.toUpperCase() === destination.countryCode.toUpperCase())) return false;
-    if (!destination.cityName) return definition.category === TravelStampCategory.COUNTRY;
-    return Boolean(definition.qualifyingCities?.some((city) => city.toLowerCase() === destination.cityName?.toLowerCase()));
+    const allowedCountries =
+      definition.qualifyingCountryCodes ??
+      (definition.countryCode ? [definition.countryCode] : []);
+    if (
+      !allowedCountries.some(
+        (countryCode) =>
+          countryCode.toUpperCase() === destination.countryCode.toUpperCase(),
+      )
+    )
+      return false;
+    if (!destination.cityName)
+      return definition.category === TravelStampCategory.COUNTRY;
+    return Boolean(
+      definition.qualifyingCities?.some(
+        (city) => city.toLowerCase() === destination.cityName?.toLowerCase(),
+      ),
+    );
   }
   return Boolean(
     stamp.countryCode &&
@@ -569,13 +694,35 @@ function stampMatchesDestination(
   );
 }
 
-async function assertDestinationNotCollected(userId: string, destination: { id: string; countryCode: string; cityName: string | null }, exceptUserStampId?: string) {
+async function assertDestinationNotCollected(
+  userId: string,
+  destination: { id: string; countryCode: string; cityName: string | null },
+  exceptUserStampId?: string,
+) {
   const existing = await prisma.userTravelStamp.findMany({
-    where: { userId, ...(exceptUserStampId ? { id: { not: exceptUserStampId } } : {}) },
-    include: { stamp: { select: { destinationId: true, countryCode: true, slug: true, category: true } } },
+    where: {
+      userId,
+      ...(exceptUserStampId ? { id: { not: exceptUserStampId } } : {}),
+    },
+    include: {
+      stamp: {
+        select: {
+          destinationId: true,
+          countryCode: true,
+          slug: true,
+          category: true,
+        },
+      },
+    },
   });
-  if (existing.some((userStamp) => stampMatchesDestination(userStamp.stamp, destination))) {
-    throw AppError.conflict("You already collected a stamp for this destination.");
+  if (
+    existing.some((userStamp) =>
+      stampMatchesDestination(userStamp.stamp, destination),
+    )
+  ) {
+    throw AppError.conflict(
+      "You already collected a stamp for this destination.",
+    );
   }
 }
 
@@ -595,14 +742,15 @@ function manualEvidence(input: {
     countryCode: input.countryCode,
     cityName: input.cityName,
     visitDate: input.visitDate?.toISOString() || null,
-    personalDescription: input.personalDescription?.trim().slice(0, 280) || null,
+    personalDescription:
+      input.personalDescription?.trim().slice(0, 280) || null,
   };
 }
 
 export async function getTravelStampPickerItems(
   userId: string,
   search = "",
-  country = ""
+  country = "",
 ): Promise<TravelStampPickerItemDTO[]> {
   await ensureStampCatalog();
   const needle = search.trim().toLowerCase();
@@ -649,7 +797,8 @@ export async function getTravelStampPickerItems(
     displayName: stamp.title || stamp.displayName,
     description: stamp.description,
     countryName: stamp.country || stamp.countryCode,
-    cityName: stamp.city || (stamp.category === "CITY" ? stamp.displayName : null),
+    cityName:
+      stamp.city || (stamp.category === "CITY" ? stamp.displayName : null),
     iconUrl: stamp.iconUrl || stamp.imageUrl,
     category: stamp.category,
     isAlreadyCollected: collectedStampIds.has(stamp.id),
@@ -657,12 +806,162 @@ export async function getTravelStampPickerItems(
   }));
 }
 
+/**
+ * Loads a single catalog page.  Keeping filtering in Prisma is important here:
+ * the picker can contain thousands of admin-curated stamps, while the modal only
+ * renders the nine cards visible to the traveller.
+ */
+export async function getTravelStampPickerPage(
+  userId: string,
+  options: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    country?: string;
+  } = {},
+): Promise<TravelStampPickerPageDTO> {
+  await ensureStampCatalog();
+
+  const page = Math.max(1, Math.floor(options.page || 1));
+  const limit = Math.min(24, Math.max(1, Math.floor(options.limit || 9)));
+  const search = options.search?.trim() || "";
+  const country = options.country?.trim() || "";
+  const where: Prisma.TravelStampWhereInput = { isActive: true };
+  const conditions: Prisma.TravelStampWhereInput[] = [];
+
+  if (country && country.toLowerCase() !== "all") {
+    conditions.push({
+      OR: [
+        { country: { equals: country, mode: "insensitive" } },
+        { countryCode: { equals: country, mode: "insensitive" } },
+        {
+          destination: {
+            is: { countryName: { equals: country, mode: "insensitive" } },
+          },
+        },
+        {
+          destination: {
+            is: { countryCode: { equals: country, mode: "insensitive" } },
+          },
+        },
+      ],
+    });
+  }
+
+  if (search) {
+    conditions.push({
+      OR: [
+        { displayName: { contains: search, mode: "insensitive" } },
+        { title: { contains: search, mode: "insensitive" } },
+        { city: { contains: search, mode: "insensitive" } },
+        { country: { contains: search, mode: "insensitive" } },
+        {
+          destination: {
+            is: { countryName: { contains: search, mode: "insensitive" } },
+          },
+        },
+        {
+          destination: {
+            is: { cityName: { contains: search, mode: "insensitive" } },
+          },
+        },
+      ],
+    });
+  }
+  if (conditions.length) where.AND = conditions;
+
+  const [totalCount, stamps] = await Promise.all([
+    prisma.travelStamp.count({ where }),
+    prisma.travelStamp.findMany({
+      where,
+      orderBy: [{ displayOrder: "asc" }, { displayName: "asc" }, { id: "asc" }],
+      skip: (page - 1) * limit,
+      take: limit,
+      include: {
+        destination: {
+          select: { countryName: true, countryCode: true, cityName: true },
+        },
+      },
+    }),
+  ]);
+  const collected = stamps.length
+    ? await prisma.userTravelStamp.findMany({
+        where: { userId, stampId: { in: stamps.map((stamp) => stamp.id) } },
+        select: { stampId: true },
+      })
+    : [];
+  const collectedIds = new Set(collected.map((stamp) => stamp.stampId));
+  const totalPages = Math.max(1, Math.ceil(totalCount / limit));
+
+  return {
+    items: stamps.map((stamp) => ({
+      id: stamp.id,
+      kind: "CATALOG",
+      displayName: stamp.title || stamp.displayName,
+      description: stamp.description,
+      countryName:
+        stamp.country ||
+        stamp.destination?.countryName ||
+        stamp.countryCode ||
+        stamp.destination?.countryCode ||
+        null,
+      cityName:
+        stamp.city ||
+        stamp.destination?.cityName ||
+        (stamp.category === "CITY" ? stamp.displayName : null),
+      iconUrl: stamp.iconUrl || stamp.imageUrl,
+      category: stamp.category,
+      isAlreadyCollected: collectedIds.has(stamp.id),
+      isVerifiedSuggestion: false,
+    })),
+    page: Math.min(page, totalPages),
+    limit,
+    totalCount,
+    totalPages,
+    hasMore: page < totalPages,
+  };
+}
+
+/** Database-driven country options, without loading the stamp catalog into the client. */
+export async function getTravelStampPickerCountries(): Promise<string[]> {
+  await ensureStampCatalog();
+  const [catalogCountries, destinationCountries] = await Promise.all([
+    prisma.travelStamp.findMany({
+      where: { isActive: true, country: { not: null } },
+      select: { country: true },
+      distinct: ["country"],
+      orderBy: { country: "asc" },
+    }),
+    prisma.destination.findMany({
+      where: { stamps: { some: { isActive: true } } },
+      select: { countryName: true },
+      distinct: ["countryName"],
+      orderBy: { countryName: "asc" },
+    }),
+  ]);
+  return [
+    ...new Set([
+      ...catalogCountries
+        .map((stamp) => stamp.country)
+        .filter((country): country is string => Boolean(country)),
+      ...destinationCountries.map((destination) => destination.countryName),
+    ]),
+  ].sort((left, right) => left.localeCompare(right));
+}
+
 export async function addTravelStampSelections(
   userId: string,
-  input: { catalogStampIds?: string[]; stampIds?: string[]; destinationIds?: string[] }
+  input: {
+    catalogStampIds?: string[];
+    stampIds?: string[];
+    destinationIds?: string[];
+  },
 ): Promise<UserTravelStampDTO[]> {
   const ids = input.catalogStampIds || input.stampIds || [];
-  const requestedIds = [...new Set(ids)].slice(0, MAX_STAMP_MUTATIONS_PER_REQUEST);
+  const requestedIds = [...new Set(ids)].slice(
+    0,
+    MAX_STAMP_MUTATIONS_PER_REQUEST,
+  );
   if (!requestedIds.length) {
     throw AppError.badRequest("Select at least one travel stamp.");
   }
@@ -676,7 +975,9 @@ export async function addTravelStampSelections(
   });
 
   if (validStamps.length === 0) {
-    throw AppError.badRequest("Selected destination stamps are unavailable or inactive.");
+    throw AppError.badRequest(
+      "Selected destination stamps are unavailable or inactive.",
+    );
   }
 
   const existing = await prisma.userTravelStamp.findMany({
@@ -685,7 +986,9 @@ export async function addTravelStampSelections(
   });
   const existingStampIds = new Set(existing.map((item) => item.stampId));
 
-  const currentCount = await prisma.userTravelStamp.count({ where: { userId } });
+  const currentCount = await prisma.userTravelStamp.count({
+    where: { userId },
+  });
   let order = currentCount;
 
   await prisma.$transaction(async (tx) => {
@@ -709,7 +1012,15 @@ export async function addTravelStampSelections(
   return getTravelerStamps(userId);
 }
 
-export async function createManualTravelStamp(userId: string, input: { country: string; city?: string | null; visitDate?: string | null; description?: string | null }): Promise<UserTravelStampDTO> {
+export async function createManualTravelStamp(
+  userId: string,
+  input: {
+    country: string;
+    city?: string | null;
+    visitDate?: string | null;
+    description?: string | null;
+  },
+): Promise<UserTravelStampDTO> {
   const country = normalizeCountry(input.country);
   if (!country) throw AppError.badRequest("Choose a valid country.");
   const cityName = normalizeCityName(input.city);
@@ -719,22 +1030,66 @@ export async function createManualTravelStamp(userId: string, input: { country: 
   await assertDestinationNotCollected(userId, destination);
   const stamp = await getOrCreateDestinationStamp(destination);
   await prisma.userDestination.upsert({
-    where: { userId_destinationId_evidenceSource: { userId, destinationId: destination.id, evidenceSource: TravelEvidenceSource.MANUAL_DECLARATION } },
-    update: { verificationStatus: TravelVerificationStatus.UNVERIFIED, latestQualifyingVisitDate: visitDate || undefined, ...(visitDate ? { firstQualifyingVisitDate: visitDate } : {}) },
-    create: { userId, destinationId: destination.id, evidenceSource: TravelEvidenceSource.MANUAL_DECLARATION, verificationStatus: TravelVerificationStatus.UNVERIFIED, firstQualifyingVisitDate: visitDate, latestQualifyingVisitDate: visitDate },
+    where: {
+      userId_destinationId_evidenceSource: {
+        userId,
+        destinationId: destination.id,
+        evidenceSource: TravelEvidenceSource.MANUAL_DECLARATION,
+      },
+    },
+    update: {
+      verificationStatus: TravelVerificationStatus.UNVERIFIED,
+      latestQualifyingVisitDate: visitDate || undefined,
+      ...(visitDate ? { firstQualifyingVisitDate: visitDate } : {}),
+    },
+    create: {
+      userId,
+      destinationId: destination.id,
+      evidenceSource: TravelEvidenceSource.MANUAL_DECLARATION,
+      verificationStatus: TravelVerificationStatus.UNVERIFIED,
+      firstQualifyingVisitDate: visitDate,
+      latestQualifyingVisitDate: visitDate,
+    },
   });
-  const displayOrder = await prisma.userTravelStamp.count({ where: { userId } });
+  const displayOrder = await prisma.userTravelStamp.count({
+    where: { userId },
+  });
   const created = await prisma.userTravelStamp.create({
-    data: { userId, stampId: stamp.id, displayOrder, evidenceMetadata: manualEvidence({ ...country, cityName, visitDate, personalDescription: description }) },
+    data: {
+      userId,
+      stampId: stamp.id,
+      displayOrder,
+      evidenceMetadata: manualEvidence({
+        ...country,
+        cityName,
+        visitDate,
+        personalDescription: description,
+      }),
+    },
     include: { stamp: true },
   });
   return toUserTravelStampDTO(created);
 }
 
-export async function updateManualTravelStamp(userId: string, userStampId: string, input: { country: string; city?: string | null; visitDate?: string | null; description?: string | null }): Promise<UserTravelStampDTO> {
-  const current = await prisma.userTravelStamp.findFirst({ where: { id: userStampId, userId }, include: { stamp: true } });
+export async function updateManualTravelStamp(
+  userId: string,
+  userStampId: string,
+  input: {
+    country: string;
+    city?: string | null;
+    visitDate?: string | null;
+    description?: string | null;
+  },
+): Promise<UserTravelStampDTO> {
+  const current = await prisma.userTravelStamp.findFirst({
+    where: { id: userStampId, userId },
+    include: { stamp: true },
+  });
   if (!current) throw AppError.notFound("Travel stamp not found.");
-  if (readStampEvidence(current.evidenceMetadata).source !== "MANUAL_DECLARATION") throw AppError.badRequest("Only manually added stamps can be edited.");
+  if (
+    readStampEvidence(current.evidenceMetadata).source !== "MANUAL_DECLARATION"
+  )
+    throw AppError.badRequest("Only manually added stamps can be edited.");
   const country = normalizeCountry(input.country);
   if (!country) throw AppError.badRequest("Choose a valid country.");
   const cityName = normalizeCityName(input.city);
@@ -745,35 +1100,74 @@ export async function updateManualTravelStamp(userId: string, userStampId: strin
   const stamp = await getOrCreateDestinationStamp(destination);
   const updated = await prisma.userTravelStamp.update({
     where: { id: userStampId },
-    data: { stampId: stamp.id, evidenceMetadata: manualEvidence({ ...country, cityName, visitDate, personalDescription: description, isPublic: readStampEvidence(current.evidenceMetadata).isPublic }) },
+    data: {
+      stampId: stamp.id,
+      evidenceMetadata: manualEvidence({
+        ...country,
+        cityName,
+        visitDate,
+        personalDescription: description,
+        isPublic: readStampEvidence(current.evidenceMetadata).isPublic,
+      }),
+    },
     include: { stamp: true },
   });
   return toUserTravelStampDTO(updated);
 }
 
-export async function removeTravelStamp(userId: string, userStampId: string): Promise<void> {
-  const result = await prisma.userTravelStamp.deleteMany({ where: { id: userStampId, userId } });
+export async function removeTravelStamp(
+  userId: string,
+  userStampId: string,
+): Promise<void> {
+  const result = await prisma.userTravelStamp.deleteMany({
+    where: { id: userStampId, userId },
+  });
   if (!result.count) throw AppError.notFound("Travel stamp not found.");
 }
 
-export async function setStampPublic(userId: string, userStampId: string, isPublic: boolean): Promise<UserTravelStampDTO> {
-  const current = await prisma.userTravelStamp.findFirst({ where: { id: userStampId, userId }, include: { stamp: true } });
+export async function setStampPublic(
+  userId: string,
+  userStampId: string,
+  isPublic: boolean,
+): Promise<UserTravelStampDTO> {
+  const current = await prisma.userTravelStamp.findFirst({
+    where: { id: userStampId, userId },
+    include: { stamp: true },
+  });
   if (!current) throw AppError.notFound("Travel stamp not found.");
   const updated = await prisma.userTravelStamp.update({
     where: { id: userStampId },
-    data: { evidenceMetadata: { ...readStampEvidence(current.evidenceMetadata), isPublic } },
+    data: {
+      evidenceMetadata: {
+        ...readStampEvidence(current.evidenceMetadata),
+        isPublic,
+      },
+    },
     include: { stamp: true },
   });
   return toUserTravelStampDTO(updated);
 }
 
-export async function reorderTravelStamps(userId: string, userStampIds: string[]): Promise<UserTravelStampDTO[]> {
+export async function reorderTravelStamps(
+  userId: string,
+  userStampIds: string[],
+): Promise<UserTravelStampDTO[]> {
   const uniqueIds = [...new Set(userStampIds)];
-  const owned = await prisma.userTravelStamp.findMany({ where: { userId }, select: { id: true } });
-  if (uniqueIds.length !== owned.length || uniqueIds.some((id) => !owned.some((stamp) => stamp.id === id))) {
+  const owned = await prisma.userTravelStamp.findMany({
+    where: { userId },
+    select: { id: true },
+  });
+  if (
+    uniqueIds.length !== owned.length ||
+    uniqueIds.some((id) => !owned.some((stamp) => stamp.id === id))
+  ) {
     throw AppError.badRequest("Stamp order does not match your collection.");
   }
-  await prisma.$transaction(uniqueIds.map((id, displayOrder) => prisma.userTravelStamp.update({ where: { id }, data: { displayOrder } })));
+  await prisma.$transaction(
+    uniqueIds.map((id, displayOrder) =>
+      prisma.userTravelStamp.update({ where: { id }, data: { displayOrder } }),
+    ),
+  );
   return getTravelerStamps(userId);
 }
 
@@ -793,7 +1187,11 @@ export async function listAdminTravelStamps(filters: {
 
   const stamps = await prisma.travelStamp.findMany({
     where: {
-      ...(status === "ACTIVE" ? { isActive: true } : status === "INACTIVE" ? { isActive: false } : {}),
+      ...(status === "ACTIVE"
+        ? { isActive: true }
+        : status === "INACTIVE"
+          ? { isActive: false }
+          : {}),
       ...(country && country !== "all"
         ? {
             OR: [
@@ -857,9 +1255,15 @@ export async function createAdminTravelStamp(input: {
 }): Promise<TravelStampDTO> {
   const name = input.displayName.trim();
   if (!name) throw AppError.badRequest("Stamp name is required.");
-  if (!input.iconUrl?.trim()) throw AppError.badRequest("Stamp image/design is required.");
+  if (!input.iconUrl?.trim())
+    throw AppError.badRequest("Stamp image/design is required.");
 
-  const baseSlug = "stamp-" + name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  const baseSlug =
+    "stamp-" +
+    name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
   let slug = baseSlug;
   let counter = 1;
   while (await prisma.travelStamp.findUnique({ where: { slug } })) {
@@ -913,7 +1317,7 @@ export async function updateAdminTravelStamp(
     iconUrl?: string;
     displayOrder?: number;
     isActive?: boolean;
-  }
+  },
 ): Promise<TravelStampDTO> {
   const existing = await prisma.travelStamp.findUnique({ where: { id } });
   if (!existing) throw AppError.notFound("Travel stamp not found.");
@@ -922,14 +1326,24 @@ export async function updateAdminTravelStamp(
     where: { id },
     data: {
       ...(input.displayName ? { displayName: input.displayName.trim() } : {}),
-      ...(input.title !== undefined ? { title: input.title?.trim() || null } : {}),
-      ...(input.country !== undefined ? { country: input.country?.trim() || null } : {}),
-      ...(input.countryCode !== undefined ? { countryCode: input.countryCode?.trim() || null } : {}),
+      ...(input.title !== undefined
+        ? { title: input.title?.trim() || null }
+        : {}),
+      ...(input.country !== undefined
+        ? { country: input.country?.trim() || null }
+        : {}),
+      ...(input.countryCode !== undefined
+        ? { countryCode: input.countryCode?.trim() || null }
+        : {}),
       ...(input.city !== undefined ? { city: input.city?.trim() || null } : {}),
-      ...(input.description !== undefined ? { description: input.description?.trim() || null } : {}),
+      ...(input.description !== undefined
+        ? { description: input.description?.trim() || null }
+        : {}),
       ...(input.category ? { category: input.category.trim() } : {}),
       ...(input.iconUrl ? { iconUrl: input.iconUrl.trim() } : {}),
-      ...(input.displayOrder !== undefined ? { displayOrder: input.displayOrder } : {}),
+      ...(input.displayOrder !== undefined
+        ? { displayOrder: input.displayOrder }
+        : {}),
       ...(input.isActive !== undefined ? { isActive: input.isActive } : {}),
     },
   });
@@ -952,7 +1366,9 @@ export async function updateAdminTravelStamp(
   };
 }
 
-export async function toggleAdminTravelStampActive(id: string): Promise<TravelStampDTO> {
+export async function toggleAdminTravelStampActive(
+  id: string,
+): Promise<TravelStampDTO> {
   const existing = await prisma.travelStamp.findUnique({ where: { id } });
   if (!existing) throw AppError.notFound("Travel stamp not found.");
 
@@ -989,7 +1405,9 @@ export async function archiveAdminTravelStamp(id: string): Promise<void> {
   });
 }
 
-export async function deleteAdminTravelStamp(id: string): Promise<{ archived: boolean }> {
+export async function deleteAdminTravelStamp(
+  id: string,
+): Promise<{ archived: boolean }> {
   const existing = await prisma.travelStamp.findUnique({
     where: { id },
     include: { _count: { select: { userStamps: true } } },

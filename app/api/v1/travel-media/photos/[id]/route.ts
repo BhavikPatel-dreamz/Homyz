@@ -6,6 +6,7 @@ import {
   updateTravelPhotoMetadata,
   deleteTravelPhoto,
 } from "@/services/travel-photo.service";
+import { canAccessTravelPhoto, canViewTravelProfile } from "@/services/travel-privacy.service";
 import { AppError } from "@/lib/api/errors";
 
 export async function GET(
@@ -16,6 +17,14 @@ export async function GET(
     const actor = await getAuthContext(req);
     const { id } = await ctx.params;
     const photo = await getPhotoDetails(id, actor?.id);
+
+    const canAccess = photo.isLegacy
+      ? (await canViewTravelProfile(actor?.id, photo.userId)).canView
+      : (await canAccessTravelPhoto(actor?.id, id)).canAccess;
+    if (!canAccess) {
+      return NextResponse.json({ error: "Access to this travel photo is forbidden" }, { status: 403 });
+    }
+
     return NextResponse.json({ photo });
   } catch (err: unknown) {
     if (err instanceof AppError) {

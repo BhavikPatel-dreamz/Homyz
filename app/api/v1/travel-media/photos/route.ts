@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getAuthContext } from "@/lib/auth/context";
-import { getPaginatedTravelPhotos, getTravelPhotos } from "@/services/travel-photo.service";
+import { getPaginatedTravelPhotos } from "@/services/travel-photo.service";
+import { canViewTravelProfile } from "@/services/travel-privacy.service";
 import { AppError } from "@/lib/api/errors";
 
 export async function GET(req: NextRequest) {
@@ -16,6 +17,14 @@ export async function GET(req: NextRequest) {
 
     if (!requestedUserId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const access = await canViewTravelProfile(actor?.id, requestedUserId);
+    if (!access.canView) {
+      return NextResponse.json(
+        { error: "Access to this travel profile is forbidden", reason: access.restrictionReason },
+        { status: 403 },
+      );
     }
 
     const result = await getPaginatedTravelPhotos({

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { toast } from "@/components/ui/toast";
@@ -27,6 +27,7 @@ interface TravelPhotoUploadModalProps {
   onSuccess: (newPhotos: TravelPhotoDTO[]) => void;
   existingTrips?: TravelTripDTO[];
   initialTripId?: string | null;
+  initialDestinationCountry?: string | null;
   replaceTargetPhoto?: TravelPhotoDTO | null;
 }
 
@@ -35,14 +36,25 @@ export function TravelPhotoUploadModal({
   onSuccess,
   existingTrips = [],
   initialTripId = null,
+  initialDestinationCountry = null,
   replaceTargetPhoto = null,
 }: TravelPhotoUploadModalProps) {
   // Step: "dropzone" (Screenshot 3), "preview" (Screenshot 4), "curate" (Screenshot 5), "progress" (Screenshot 2)
-  const [step, setStep] = useState<"dropzone" | "preview" | "curate" | "progress">("dropzone");
-  const [selectedTripId, setSelectedTripId] = useState<string>(initialTripId || "");
+  const [step, setStep] = useState<
+    "dropzone" | "preview" | "curate" | "progress"
+  >("dropzone");
+  const [selectedTripId, setSelectedTripId] = useState<string>(
+    initialTripId || (initialDestinationCountry ? "__NEW__" : ""),
+  );
   const [newTripTitle, setNewTripTitle] = useState<string>("");
+  const [newTripCountry, setNewTripCountry] = useState(
+    initialDestinationCountry || "",
+  );
+  const [newTripCity, setNewTripCity] = useState("");
+  const [newTripStartDate, setNewTripStartDate] = useState("");
+  const [newTripEndDate, setNewTripEndDate] = useState("");
+  const [creatingTrip, setCreatingTrip] = useState(false);
   const [trips, setTrips] = useState<TravelTripDTO[]>(existingTrips);
-  const [loadingTrips, setLoadingTrips] = useState(false);
 
   const [items, setItems] = useState<SelectedPhotoItem[]>([]);
   const [isDragging, setIsDragging] = useState(false);
@@ -57,21 +69,23 @@ export function TravelPhotoUploadModal({
   // Fetch user trips on mount if not provided
   useEffect(() => {
     if (trips.length === 0) {
-      setLoadingTrips(true);
       fetch("/api/v1/travel-media/trips")
         .then((res) => res.json())
         .then((data) => {
           if (data.trips) {
             setTrips(data.trips);
-            if (!selectedTripId && data.trips.length > 0) {
+            if (
+              !selectedTripId &&
+              !initialDestinationCountry &&
+              data.trips.length > 0
+            ) {
               setSelectedTripId(data.trips[0].id);
             }
           }
         })
-        .catch(() => {})
-        .finally(() => setLoadingTrips(false));
+        .catch(() => {});
     }
-  }, [trips.length, selectedTripId]);
+  }, [initialDestinationCountry, trips.length, selectedTripId]);
 
   // Cleanup object URLs on unmount
   useEffect(() => {
@@ -82,8 +96,43 @@ export function TravelPhotoUploadModal({
     };
   }, [items]);
 
+  const createNewTrip = async () => {
+    if (!newTripTitle.trim()) return;
+    setCreatingTrip(true);
+    try {
+      const res = await fetch("/api/v1/travel-media/trips", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: newTripTitle.trim(),
+          country: newTripCountry.trim() || undefined,
+          city: newTripCity.trim() || undefined,
+          startDate: newTripStartDate || undefined,
+          endDate: newTripEndDate || undefined,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to create trip");
+      const newTrip = data.trip;
+      setTrips((prev) => [newTrip, ...prev]);
+      setSelectedTripId(newTrip.id);
+      setNewTripTitle("");
+      setNewTripCity("");
+      setNewTripStartDate("");
+      setNewTripEndDate("");
+      toast.success(`Created trip "${newTrip.title}"`);
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Failed to create trip");
+    } finally {
+      setCreatingTrip(false);
+    }
+  };
+
   // Determine current trip and capacity
-  const selectedTrip = trips.find((t) => t.id === selectedTripId);
+  const selectedTrip =
+    selectedTripId && selectedTripId !== "__NEW__"
+      ? trips.find((t) => t.id === selectedTripId)
+      : null;
   const currentTripPhotoCount = selectedTrip ? selectedTrip.photoCount : 0;
   // If replacing a photo, capacity doesn't decrease
   const allowedSlots = replaceTargetPhoto
@@ -121,7 +170,9 @@ export function TravelPhotoUploadModal({
     for (const file of rawFiles) {
       const ext = file.name.slice(file.name.lastIndexOf(".")).toLowerCase();
       if (!validExtensions.includes(ext)) {
-        toast.error(`"${file.name}" is not supported. Use JPG, PNG, WebP, or AVIF.`);
+        toast.error(
+          `"${file.name}" is not supported. Use JPG, PNG, WebP, or AVIF.`,
+        );
         continue;
       }
       if (file.size > maxSizeBytes) {
@@ -141,14 +192,16 @@ export function TravelPhotoUploadModal({
       toast.error(
         replaceTargetPhoto
           ? "You can only select 1 photo to replace."
-          : `Trip capacity reached. Maximum ${MAX_PHOTOS_PER_TRIP} photos per trip.`
+          : `Trip capacity reached. Maximum ${MAX_PHOTOS_PER_TRIP} photos per trip.`,
       );
       return;
     }
 
     const filesToAdd = validFiles.slice(0, remainingSlots);
     if (validFiles.length > remainingSlots) {
-      toast.info(`Added ${remainingSlots} photos (capacity limit is 5 photos per trip).`);
+      toast.info(
+        `Added ${remainingSlots} photos (capacity limit is 5 photos per trip).`,
+      );
     }
 
     const newItems: SelectedPhotoItem[] = filesToAdd.map((file) => ({
@@ -156,7 +209,7 @@ export function TravelPhotoUploadModal({
       file,
       previewUrl: URL.createObjectURL(file),
       caption: "",
-      location: "",
+      location: initialDestinationCountry || "",
       status: "pending",
       progressPercent: 0,
     }));
@@ -194,38 +247,17 @@ export function TravelPhotoUploadModal({
     });
   };
 
-  const handleReplaceItemFile = (id: string, newFile: File) => {
-    const ext = newFile.name.slice(newFile.name.lastIndexOf(".")).toLowerCase();
-    if (![".jpg", ".jpeg", ".png", ".webp", ".avif"].includes(ext)) {
-      toast.error("Unsupported format. Use JPG, PNG, WebP, or AVIF.");
-      return;
-    }
-    if (newFile.size > 10 * 1024 * 1024) {
-      toast.error("File exceeds 10 MB limit.");
-      return;
-    }
-
-    setItems((prev) =>
-      prev.map((item) => {
-        if (item.id === id) {
-          URL.revokeObjectURL(item.previewUrl);
-          return {
-            ...item,
-            file: newFile,
-            previewUrl: URL.createObjectURL(newFile),
-            status: "pending",
-            progressPercent: 0,
-            errorMessage: undefined,
-          };
-        }
-        return item;
-      })
-    );
-  };
-
   // Perform genuine byte-level upload using XMLHttpRequest
   const startUpload = async () => {
     if (!items.length) return;
+    const targetTripId =
+      selectedTripId && selectedTripId !== "__NEW__" ? selectedTripId : null;
+    if (!targetTripId && !replaceTargetPhoto) {
+      toast.error(
+        "Select an existing trip or create a new trip before uploading photos.",
+      );
+      return;
+    }
     setStep("progress");
     setIsAborted(false);
     setHasFailures(false);
@@ -249,79 +281,93 @@ export function TravelPhotoUploadModal({
       if (isAborted) break;
 
       setItems((prev) =>
-        prev.map((it) => (it.id === item.id ? { ...it, status: "uploading", progressPercent: 0 } : it))
+        prev.map((it) =>
+          it.id === item.id
+            ? { ...it, status: "uploading", progressPercent: 0 }
+            : it,
+        ),
       );
       setStatusMessage(`Uploading photo ${i + 1} of ${items.length}...`);
 
       try {
-        const uploadedPhoto = await new Promise<TravelPhotoDTO>((resolve, reject) => {
-          const xhr = new XMLHttpRequest();
-          activeXhrRef.current = xhr;
+        const uploadedPhoto = await new Promise<TravelPhotoDTO>(
+          (resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            activeXhrRef.current = xhr;
 
-          xhr.upload.onprogress = (event) => {
-            if (event.lengthComputable) {
-              const filePercent = Math.round((event.loaded / event.total) * 100);
-              const totalLoadedSoFar = cumulativeUploadedBytes + event.loaded;
-              const batchPercent = Math.min(
-                99,
-                Math.round((totalLoadedSoFar / (totalBytes || 1)) * 100)
-              );
+            xhr.upload.onprogress = (event) => {
+              if (event.lengthComputable) {
+                const filePercent = Math.round(
+                  (event.loaded / event.total) * 100,
+                );
+                const totalLoadedSoFar = cumulativeUploadedBytes + event.loaded;
+                const batchPercent = Math.min(
+                  99,
+                  Math.round((totalLoadedSoFar / (totalBytes || 1)) * 100),
+                );
 
-              setOverallPercent(batchPercent);
-              setItems((prev) =>
-                prev.map((it) =>
-                  it.id === item.id ? { ...it, progressPercent: filePercent } : it
-                )
-              );
-            }
-          };
-
-          xhr.onload = () => {
-            activeXhrRef.current = null;
-            if (xhr.status >= 200 && xhr.status < 300) {
-              try {
-                const res = JSON.parse(xhr.responseText);
-                if (res.photo) {
-                  resolve(res.photo);
-                } else {
-                  reject(new Error("Upload response missing photo data"));
-                }
-              } catch {
-                reject(new Error("Invalid server response"));
+                setOverallPercent(batchPercent);
+                setItems((prev) =>
+                  prev.map((it) =>
+                    it.id === item.id
+                      ? { ...it, progressPercent: filePercent }
+                      : it,
+                  ),
+                );
               }
-            } else {
-              let errMsg = "Upload failed";
-              try {
-                const errJson = JSON.parse(xhr.responseText);
-                if (errJson.error) errMsg = errJson.error;
-              } catch {}
-              reject(new Error(errMsg));
+            };
+
+            xhr.onload = () => {
+              activeXhrRef.current = null;
+              if (xhr.status >= 200 && xhr.status < 300) {
+                try {
+                  const res = JSON.parse(xhr.responseText);
+                  if (res.photo) {
+                    resolve(res.photo);
+                  } else {
+                    reject(new Error("Upload response missing photo data"));
+                  }
+                } catch {
+                  reject(new Error("Invalid server response"));
+                }
+              } else {
+                let errMsg = "Upload failed";
+                try {
+                  const errJson = JSON.parse(xhr.responseText);
+                  if (errJson.error) errMsg = errJson.error;
+                } catch {}
+                reject(new Error(errMsg));
+              }
+            };
+
+            xhr.onerror = () => {
+              activeXhrRef.current = null;
+              reject(new Error("Network error during file upload"));
+            };
+
+            xhr.onabort = () => {
+              activeXhrRef.current = null;
+              reject(new Error("Upload cancelled by user"));
+            };
+
+            const formData = new FormData();
+            formData.append("file", item.file);
+            if (targetTripId) {
+              formData.append("tripId", targetTripId);
+            } else if (newTripTitle.trim()) {
+              formData.append("tripTitle", newTripTitle.trim());
             }
-          };
+            if (item.caption.trim())
+              formData.append("caption", item.caption.trim());
+            if (item.location.trim())
+              formData.append("location", item.location.trim());
+            if (replaceTargetPhoto)
+              formData.append("replacePhotoId", replaceTargetPhoto.id);
 
-          xhr.onerror = () => {
-            activeXhrRef.current = null;
-            reject(new Error("Network error during file upload"));
-          };
-
-          xhr.onabort = () => {
-            activeXhrRef.current = null;
-            reject(new Error("Upload cancelled by user"));
-          };
-
-          const formData = new FormData();
-          formData.append("file", item.file);
-          if (selectedTripId) formData.append("tripId", selectedTripId);
-          if (!selectedTripId && newTripTitle.trim()) {
-            formData.append("tripTitle", newTripTitle.trim());
-          }
-          if (item.caption.trim()) formData.append("caption", item.caption.trim());
-          if (item.location.trim()) formData.append("location", item.location.trim());
-          if (replaceTargetPhoto) formData.append("replacePhotoId", replaceTargetPhoto.id);
-
-          xhr.open("POST", "/api/v1/travel-media/uploads", true);
-          xhr.send(formData);
-        });
+            xhr.open("POST", "/api/v1/travel-media/uploads", true);
+            xhr.send(formData);
+          },
+        );
 
         cumulativeUploadedBytes += item.file.size;
         completedPhotos.push(uploadedPhoto);
@@ -329,9 +375,14 @@ export function TravelPhotoUploadModal({
         setItems((prev) =>
           prev.map((it) =>
             it.id === item.id
-              ? { ...it, status: "completed", progressPercent: 100, uploadedPhoto }
-              : it
-          )
+              ? {
+                  ...it,
+                  status: "completed",
+                  progressPercent: 100,
+                  uploadedPhoto,
+                }
+              : it,
+          ),
         );
       } catch (err: unknown) {
         if (isAborted) break;
@@ -339,8 +390,10 @@ export function TravelPhotoUploadModal({
         const message = err instanceof Error ? err.message : "Upload error";
         setItems((prev) =>
           prev.map((it) =>
-            it.id === item.id ? { ...it, status: "failed", errorMessage: message } : it
-          )
+            it.id === item.id
+              ? { ...it, status: "failed", errorMessage: message }
+              : it,
+          ),
         );
       }
     }
@@ -349,7 +402,9 @@ export function TravelPhotoUploadModal({
       setOverallPercent(100);
       setStatusMessage("Photos saved successfully!");
       toast.success(
-        replaceTargetPhoto ? "Photo replaced successfully!" : "Travel photos uploaded successfully!"
+        replaceTargetPhoto
+          ? "Photo replaced successfully!"
+          : "Travel photos uploaded successfully!",
       );
       setTimeout(() => {
         onSuccess(completedPhotos);
@@ -357,7 +412,9 @@ export function TravelPhotoUploadModal({
       }, 600);
     } else {
       setHasFailures(true);
-      setStatusMessage("Some uploads failed. You can retry failed files below.");
+      setStatusMessage(
+        "Some uploads failed. You can retry failed files below.",
+      );
     }
   };
 
@@ -368,7 +425,9 @@ export function TravelPhotoUploadModal({
       activeXhrRef.current = null;
     }
     setStep("curate");
-    toast.info("Upload paused. Successful photos and metadata have been preserved.");
+    toast.info(
+      "Upload paused. Successful photos and metadata have been preserved.",
+    );
   };
 
   const handleRetryFailed = () => {
@@ -391,7 +450,9 @@ export function TravelPhotoUploadModal({
         {/* Modal Heading (Matching Screenshots 2–4) */}
         <div className="text-center mb-6">
           <h2 className="text-xl sm:text-2xl font-bold text-zinc-900 tracking-tight">
-            You can upload <span className="font-extrabold text-zinc-950">best 5 images</span> of your trip
+            You can upload{" "}
+            <span className="font-extrabold text-zinc-950">best 5 images</span>{" "}
+            of your trip
           </h2>
           <p className="text-xs sm:text-sm text-zinc-500 mt-1">
             {replaceTargetPhoto
@@ -404,7 +465,10 @@ export function TravelPhotoUploadModal({
         {!replaceTargetPhoto && step !== "progress" && (
           <div className="mb-5 p-3.5 rounded-2xl bg-zinc-50 border border-zinc-200">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
-              <label htmlFor="tripSelect" className="text-xs font-semibold text-zinc-700">
+              <label
+                htmlFor="tripSelect"
+                className="text-xs font-semibold text-zinc-700"
+              >
                 Select Trip Association
               </label>
               <span className="text-[11px] font-medium text-amber-700 bg-amber-100/80 px-2 py-0.5 rounded-full">
@@ -423,7 +487,7 @@ export function TravelPhotoUploadModal({
                 }}
                 className="w-full text-xs sm:text-sm rounded-xl border border-zinc-300 bg-white px-3 py-2 text-zinc-800 focus:outline-none focus:ring-2 focus:ring-amber-400"
               >
-                <option value="">+ Create a new trip</option>
+                <option value="__NEW__">+ Create new trip</option>
                 {trips.map((t) => (
                   <option key={t.id} value={t.id}>
                     {t.title} ({t.photoCount}/5 photos)
@@ -431,15 +495,69 @@ export function TravelPhotoUploadModal({
                 ))}
               </select>
 
-              {!selectedTripId && (
-                <input
-                  type="text"
-                  placeholder="Enter trip name (e.g. Paris 2026)"
-                  value={newTripTitle}
-                  onChange={(e) => setNewTripTitle(e.target.value)}
-                  maxLength={50}
-                  className="w-full text-xs sm:text-sm rounded-xl border border-zinc-300 bg-white px-3 py-2 text-zinc-800 focus:outline-none focus:ring-2 focus:ring-amber-400"
-                />
+              {selectedTripId === "__NEW__" ? (
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Trip name (required)"
+                      value={newTripTitle}
+                      onChange={(e) => setNewTripTitle(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && createNewTrip()}
+                      maxLength={50}
+                      className="min-w-0 flex-1 rounded-xl border border-zinc-300 bg-white px-3 py-2 text-xs text-zinc-800 focus:outline-none focus:ring-2 focus:ring-amber-400 sm:text-sm"
+                    />
+                    <button
+                      type="button"
+                      onClick={createNewTrip}
+                      disabled={creatingTrip || !newTripTitle.trim()}
+                      className="shrink-0 rounded-xl bg-amber-500 px-4 py-2 text-xs font-semibold text-white transition hover:bg-amber-600 disabled:opacity-50"
+                    >
+                      {creatingTrip ? "Creating..." : "Create"}
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="text"
+                      placeholder="Country"
+                      value={newTripCountry}
+                      onChange={(e) => setNewTripCountry(e.target.value)}
+                      className="min-w-0 rounded-xl border border-zinc-300 bg-white px-3 py-2 text-xs text-zinc-800 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                    />
+                    <input
+                      type="text"
+                      placeholder="City (optional)"
+                      value={newTripCity}
+                      onChange={(e) => setNewTripCity(e.target.value)}
+                      className="min-w-0 rounded-xl border border-zinc-300 bg-white px-3 py-2 text-xs text-zinc-800 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                    />
+                    <input
+                      type="date"
+                      aria-label="Trip start date"
+                      value={newTripStartDate}
+                      onChange={(e) => setNewTripStartDate(e.target.value)}
+                      className="min-w-0 rounded-xl border border-zinc-300 bg-white px-3 py-2 text-xs text-zinc-800 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                    />
+                    <input
+                      type="date"
+                      aria-label="Trip end date"
+                      value={newTripEndDate}
+                      onChange={(e) => setNewTripEndDate(e.target.value)}
+                      className="min-w-0 rounded-xl border border-zinc-300 bg-white px-3 py-2 text-xs text-zinc-800 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                    />
+                  </div>
+                </div>
+              ) : (
+                !selectedTripId && (
+                  <input
+                    type="text"
+                    placeholder="Enter trip name (e.g. Paris 2026)"
+                    value={newTripTitle}
+                    onChange={(e) => setNewTripTitle(e.target.value)}
+                    maxLength={50}
+                    className="w-full text-xs sm:text-sm rounded-xl border border-zinc-300 bg-white px-3 py-2 text-zinc-800 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                  />
+                )
               )}
             </div>
           </div>
@@ -474,9 +592,23 @@ export function TravelPhotoUploadModal({
             >
               {/* Golden circular upload icon (Figma Screenshot 3) */}
               <div className="w-16 h-16 rounded-full bg-[#FCDF9C] text-zinc-900 flex items-center justify-center mb-3 shadow-2xs">
-                <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                  <path d="M12 16V4m0 0l-4 4m4-4l4 4" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M4 14v4a2 2 0 002 2h12a2 2 0 002-2v-4" strokeLinecap="round" strokeLinejoin="round" />
+                <svg
+                  className="w-7 h-7"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    d="M12 16V4m0 0l-4 4m4-4l4 4"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M4 14v4a2 2 0 002 2h12a2 2 0 002-2v-4"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
               </div>
 
@@ -611,7 +743,9 @@ export function TravelPhotoUploadModal({
                       onChange={(e) => {
                         const val = e.target.value;
                         setItems((prev) =>
-                          prev.map((it) => (it.id === item.id ? { ...it, location: val } : it))
+                          prev.map((it) =>
+                            it.id === item.id ? { ...it, location: val } : it,
+                          ),
                         );
                       }}
                       className="w-full text-xs sm:text-sm rounded-xl border border-zinc-300 bg-white px-3 py-1.5 text-zinc-800 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-400"
@@ -624,14 +758,18 @@ export function TravelPhotoUploadModal({
                       onChange={(e) => {
                         const val = e.target.value;
                         setItems((prev) =>
-                          prev.map((it) => (it.id === item.id ? { ...it, caption: val } : it))
+                          prev.map((it) =>
+                            it.id === item.id ? { ...it, caption: val } : it,
+                          ),
                         );
                       }}
                       className="w-full text-xs sm:text-sm rounded-xl border border-zinc-300 bg-white px-3 py-1.5 text-zinc-800 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none"
                     />
 
                     {item.errorMessage && (
-                      <p className="text-xs text-red-600 font-medium">{item.errorMessage}</p>
+                      <p className="text-xs text-red-600 font-medium">
+                        {item.errorMessage}
+                      </p>
                     )}
                   </div>
 
@@ -642,8 +780,18 @@ export function TravelPhotoUploadModal({
                       onClick={() => handleRemoveItem(item.id)}
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-zinc-300 bg-white hover:bg-zinc-100 text-xs font-semibold text-zinc-700 transition cursor-pointer"
                     >
-                      <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                        <path d="M3 6h18m-2 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" strokeLinecap="round" strokeLinejoin="round" />
+                      <svg
+                        className="size-3.5"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      >
+                        <path
+                          d="M3 6h18m-2 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
                       </svg>
                       Remove Image
                     </button>
@@ -660,7 +808,8 @@ export function TravelPhotoUploadModal({
                   onClick={() => fileInputRef.current?.click()}
                   className="inline-flex items-center gap-2 text-xs font-semibold text-zinc-700 hover:text-zinc-950 transition cursor-pointer py-1.5 px-4 rounded-full border border-dashed border-zinc-300 hover:border-zinc-400"
                 >
-                  + Add another photo ({allowedSlots - items.length} slots remaining)
+                  + Add another photo ({allowedSlots - items.length} slots
+                  remaining)
                 </button>
               </div>
             )}

@@ -5,10 +5,10 @@ import fs from "node:fs";
 import path from "node:path";
 import {
   extractCountryFromLocation,
-  MAX_PHOTOS_PER_TRIP,
 } from "@/services/travel-photo.service";
 
-const read = (file: string) => fs.readFileSync(path.join(process.cwd(), file), "utf8");
+const read = (file: string) =>
+  fs.readFileSync(path.join(process.cwd(), file), "utf8");
 
 // ============================================================================
 // 1. COUNTRY HIGHLIGHTS NORMALIZATION & AGGREGATION
@@ -17,7 +17,10 @@ const read = (file: string) => fs.readFileSync(path.join(process.cwd(), file), "
 test("Country Highlights: extractCountryFromLocation correctly parses countries and deduplicates", () => {
   // Comma-separated locations
   assert.equal(extractCountryFromLocation("Paris, France"), "France");
-  assert.equal(extractCountryFromLocation("Eiffel Tower, Paris, France"), "France");
+  assert.equal(
+    extractCountryFromLocation("Eiffel Tower, Paris, France"),
+    "France",
+  );
   assert.equal(extractCountryFromLocation("Colosseum, Rome, Italy"), "Italy");
   assert.equal(extractCountryFromLocation("Shibuya, Tokyo, Japan"), "Japan");
   assert.equal(extractCountryFromLocation("Barcelona, Spain"), "Spain");
@@ -33,8 +36,12 @@ test("Country Highlights: extractCountryFromLocation correctly parses countries 
   assert.equal(extractCountryFromLocation("   "), null);
 });
 
-test("Country Highlights Carousel: Renders gradient rings, scroll arrows, and country filter", () => {
+test("Country Highlights Carousel: Renders gradient rings, scroll arrows, and opens a story without filtering the gallery", () => {
   const carouselCode = read("components/travel/travel-country-carousel.tsx");
+  const profileCode = read("components/travel/travel-profile-view.tsx");
+  const storyCode = read(
+    "components/travel/travel-destination-story-modal.tsx",
+  );
 
   // Gradient ring border matching Screenshot 1
   assert.match(carouselCode, /from-yellow-400 via-rose-500 to-red-500/);
@@ -43,20 +50,26 @@ test("Country Highlights Carousel: Renders gradient rings, scroll arrows, and co
   // Scroll navigation buttons
   assert.match(carouselCode, /scroll\("left"\)/);
   assert.match(carouselCode, /scroll\("right"\)/);
-  // Interactive country filter selection
+  // Interactive story selection, separate from main gallery state
   assert.match(carouselCode, /onSelectCountry/);
-  assert.match(carouselCode, /Showing memories in/);
-  assert.match(carouselCode, /Show All/);
+  assert.match(carouselCode, /Open \$\{item\.country\} travel story/);
+  assert.doesNotMatch(carouselCode, /Showing memories in/);
+  assert.doesNotMatch(profileCode, /No photos found for \$\{selectedCountry\}/);
+  assert.match(profileCode, /setStoryCountry\(country\)/);
+  assert.match(storyCode, /No travel photos yet/);
+  assert.match(storyCode, /onUploadPhotos/);
+  assert.match(storyCode, /onManageTrips/);
+  assert.match(storyCode, /onTouchEnd/);
 });
 
 // ============================================================================
-// 2. SINGLE TRIP PHOTO GALLERY
+// 2. TRIP PHOTO GALLERY & TABS
 // ============================================================================
 
-test("Gallery: presents one focused trip-photo gallery without redundant trip and likes tabs", () => {
+test("Gallery: presents trip-photo gallery with tabs and photo grid", () => {
   const viewCode = read("components/travel/travel-profile-view.tsx");
   assert.match(viewCode, /Trip photo gallery/);
-  assert.doesNotMatch(viewCode, /TravelGalleryTabs|activeTab/);
+  assert.match(viewCode, /Photos/);
 });
 
 // ============================================================================
@@ -67,14 +80,15 @@ test("Photo Grid: Implements 5-column responsive layout matching Figma Screensho
   const viewCode = read("components/travel/travel-profile-view.tsx");
 
   // Responsive column breakpoints: 2 cols on mobile -> 5 cols on large desktop
-  assert.match(viewCode, /grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5/);
+  assert.match(
+    viewCode,
+    /grid-cols-2 gap-1 sm:grid-cols-3 sm:gap-1 md:grid-cols-4 lg:grid-cols-5/,
+  );
 
   // Square aspect ratio
   assert.match(viewCode, /aspect-square/);
 
   // Hover overlay with heart likes counter and trip badge
-  assert.match(viewCode, /group-hover:opacity-100/);
-  assert.match(viewCode, /photo\.likesCount/);
   assert.match(viewCode, /photo\.thumbnailUrl/);
 
   // Opens detail lightbox modal on click
@@ -201,6 +215,17 @@ test("API Routes: Dedicated travel endpoints for photos, likes, trips, and highl
   assert.match(tripDetailRoute, /deleteTrip/);
 });
 
+test("Travel media access: gallery, details, and likes enforce the established privacy policy", () => {
+  const photoRoute = read("app/api/v1/travel-media/photos/route.ts");
+  const detailRoute = read("app/api/v1/travel-media/photos/[id]/route.ts");
+  const photoService = read("services/travel-photo.service.ts");
+
+  assert.match(photoRoute, /canViewTravelProfile/);
+  assert.match(detailRoute, /canAccessTravelPhoto/);
+  assert.match(photoService, /You cannot like a photo you cannot access/);
+  assert.match(photoService, /destinationId: \{ in: destinationIds \}/);
+});
+
 test("Regression Protection: Travel Profile server page loads Phase 1, 2, and 3 data in parallel", () => {
   const pageCode = read("app/(protected)/travel-profile/page.tsx");
 
@@ -208,5 +233,5 @@ test("Regression Protection: Travel Profile server page loads Phase 1, 2, and 3 
   assert.match(pageCode, /getTravelProfileStats/);
   assert.match(pageCode, /getPaginatedTravelPhotos/);
   assert.match(pageCode, /getCountryHighlights/);
-  assert.doesNotMatch(pageCode, /getUserTrips|getLikedPhotos/);
+  assert.match(pageCode, /getUserTrips/);
 });

@@ -35,15 +35,23 @@ test("stamp picker supports curated suggestions and personal, unverified destina
   assert.match(service, /isActive: false/);
 });
 
-test("stamp manager UI exposes search, selection, add, edit, removal and ordering", () => {
+test("stamp manager is a compact catalog picker with server pagination and no collection management", () => {
   const manager = read("components/travel/travel-stamp-manager-modal.tsx");
   const section = read("components/travel/travel-stamps-section.tsx");
-  assert.match(manager, /Search country or city/);
-  assert.match(manager, /Add personal stamp/);
-  assert.match(manager, /Save changes/);
-  assert.match(manager, /Remove/);
-  assert.match(manager, /Move stamp left/);
+  const service = read("services/travel-stamp.service.ts");
+  const catalogRoute = read("app/api/v1/travel-media/stamps/catalog/route.ts");
+  assert.match(manager, /Search city, country or stamp/);
+  assert.match(manager, /PAGE_SIZE = 9/);
+  assert.match(manager, /catalog\?/);
+  assert.match(manager, /onTouchStart/);
+  assert.doesNotMatch(manager, /Your Collected Stamps/);
+  assert.doesNotMatch(manager, /Move stamp left/);
+  assert.match(service, /getTravelStampPickerPage/);
+  assert.match(service, /skip: \(page - 1\) \* limit/);
+  assert.match(catalogRoute, /getTravelStampPickerPage/);
   assert.match(section, /Add travel stamp/);
+  assert.match(section, /Remove Travel Stamp\?/);
+  assert.match(section, /aria-label=\{`Remove/);
   assert.match(section, /role="switch"/);
   assert.match(section, /TravelStampManagerModal/);
 });

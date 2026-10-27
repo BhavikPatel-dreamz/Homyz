@@ -1,11 +1,12 @@
-import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 /**
  * Media storage backends, in order:
  *   1. S3_BUCKET          — AWS S3 / compatible (direct)
  *   2. MEDIA_SERVER_URL   — dedicated Homyz media service (local disk today, S3 later)
- *   3. upload             — local fallback for `next dev` without the media process
+ *
+ * The Next.js application never writes uploaded files to its own filesystem.
+ * Uploads must reach one of the configured remote media backends or fail.
  *
  * Public kinds return a browser URL (`/uploads/{kind}/{file}` unless S3 is on).
  * Private documents stay behind their authenticated document APIs.
@@ -136,9 +137,13 @@ function mediaPublicBaseUrl(): string {
 
 function publicMediaUrl(key: string, fallback?: string | null): string {
   const base = mediaPublicBaseUrl();
+  // If fallback is an internal Docker URL, replace with public base URL
+  let url = fallback || `/uploads/${key}`;
+  if (base && url.startsWith("http://127.0.0.1:4001")) {
+    url = `${base}/uploads/${key}`;
+  }
   if (base) return `${base}/uploads/${key}`;
-  if (fallback) return fallback;
-  return `/uploads/${key}`;
+  return url;
 }
 
 async function getS3(): Promise<import("@aws-sdk/client-s3").S3Client> {
@@ -156,18 +161,6 @@ async function getS3(): Promise<import("@aws-sdk/client-s3").S3Client> {
   const client = await s3ClientPromise;
   if (!client) throw new Error("Failed to initialize S3 client");
   return client;
-}
-
-function localFile(key: string): string {
-  return path.join(process.cwd(), "upload", ...key.split("/"));
-}
-
-function warnLocalDisk(): void {
-  if (process.env.NODE_ENV === "production") {
-    console.warn(
-      "[storage] Neither S3_BUCKET nor MEDIA_SERVER_URL is set; writing media to local disk",
-    );
-  }
 }
 
 async function putS3(params: {
@@ -253,15 +246,6 @@ async function deleteMediaServer(key: string): Promise<void> {
   const res = await mediaServerFetch(`/v1/objects/${key}`, { method: "DELETE" });
   if (!res.ok && res.status !== 404) {
     throw new Error(`Media server delete failed (${res.status})`);
-  }
-}
-
-async function deleteLocal(key: string): Promise<void> {
-  try {
-    await unlink(localFile(key));
-  } catch (err) {
-    const code = err && typeof err === "object" && "code" in err ? String(err.code) : "";
-    if (code !== "ENOENT") throw err;
   }
 }
 
@@ -379,9 +363,6 @@ async function writeObject(options: {
   }
 
   if (isMediaServerEnabled()) {
-    // Once a media server is configured, it is the source of truth. Falling back
-    // to the app container makes an upload appear successful even though the
-    // browser URL is served by the media server and the file is not there.
     const saved = await putMediaServer({
       key,
       body: options.body,
@@ -394,11 +375,9 @@ async function writeObject(options: {
     };
   }
 
-  warnLocalDisk();
-  const dest = localFile(key);
-  await mkdir(path.dirname(dest), { recursive: true });
-  await writeFile(dest, options.body);
-  return { url: `/uploads/${key}`, fileName, key };
+  throw new Error(
+    "No media storage backend is configured. Set MEDIA_SERVER_URL and MEDIA_SERVER_SECRET.",
+  );
 }
 
 async function removeObject(kind: MediaKind, fileName: string): Promise<void> {
@@ -409,13 +388,13 @@ async function removeObject(kind: MediaKind, fileName: string): Promise<void> {
     return;
   }
   if (isMediaServerEnabled()) {
-    try {
-      await deleteMediaServer(key);
-    } catch {
-      // ignore
-    }
+    await deleteMediaServer(key);
+    return;
   }
-  await deleteLocal(key);
+
+  throw new Error(
+    "No media storage backend is configured. Set MEDIA_SERVER_URL and MEDIA_SERVER_SECRET.",
+  );
 }
 
 /**
@@ -465,20 +444,12 @@ export async function readPrivateMedia(
   }
 
   if (isMediaServerEnabled()) {
-    try {
-      return await getMediaServer(key);
-    } catch {
-      // Fallback to local disk if not on media server
-    }
+    return getMediaServer(key);
   }
 
-  try {
-    return await readFile(localFile(key));
-  } catch {
-    throw Object.assign(new Error("Requested document file not found."), {
-      code: "NOT_FOUND",
-    });
-  }
+  throw new Error(
+    "No media storage backend is configured. Set MEDIA_SERVER_URL and MEDIA_SERVER_SECRET.",
+  );
 }
 
 export async function deletePublicMedia(options: {
@@ -538,8 +509,9 @@ export async function readPublicMediaFile(
         contentType: res.headers.get("content-type") || contentTypeFromName(safe),
       };
     }
-    const body = await readFile(localFile(key));
-    return { body, contentType: contentTypeFromName(safe) };
+    throw new Error(
+      "No media storage backend is configured. Set MEDIA_SERVER_URL and MEDIA_SERVER_SECRET.",
+    );
   } catch (err) {
     const code = err && typeof err === "object" && "code" in err ? String(err.code) : "";
     if (code === "ENOENT" || code === "NOT_FOUND") return null;

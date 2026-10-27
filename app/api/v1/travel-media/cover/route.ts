@@ -54,31 +54,12 @@ export async function POST(req: NextRequest) {
 
     const extension = EXTENSION_BY_MIME_TYPE[file.type] || ".jpg";
     const fileName = `cover_${actor.id}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}${extension}`;
-    let saved: Awaited<ReturnType<typeof savePublicMedia>>;
-    try {
-      saved = await savePublicMedia({
-        kind: "travel-covers",
-        fileName,
-        body: buffer,
-        contentType: file.type,
-      });
-    } catch {
-      try {
-        saved = await savePublicMedia({
-          kind: "travel-photos",
-          fileName,
-          body: buffer,
-          contentType: file.type,
-        });
-      } catch {
-        saved = await savePublicMedia({
-          kind: "listing-photos",
-          fileName,
-          body: buffer,
-          contentType: file.type,
-        });
-      }
-    }
+    const saved = await savePublicMedia({
+      kind: "travel-covers",
+      fileName,
+      body: buffer,
+      contentType: file.type,
+    });
 
     const updatedProfile = await updateTravelProfile(actor.id, {
       coverUrl: saved.url,
@@ -94,4 +75,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Failed to upload cover banner." }, { status: 500 });
   }
 }
-

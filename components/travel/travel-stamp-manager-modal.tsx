@@ -1,142 +1,192 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import type { TravelStampPickerItemDTO, UserTravelStampDTO } from "@/types/travel";
-import {
-  addTravelStampSelectionsAction,
-  getTravelStampPickerItemsAction,
-  removeTravelStampAction,
-  reorderTravelStampsAction,
-} from "@/actions/travel/travelStampsAndBadges";
+import type {
+  TravelStampPickerPageDTO,
+  UserTravelStampDTO,
+} from "@/types/travel";
+import { addTravelStampSelectionsAction } from "@/actions/travel/travelStampsAndBadges";
 import { toast } from "@/components/ui/toast";
 
 interface TravelStampManagerModalProps {
   isOpen: boolean;
-  stamps: UserTravelStampDTO[];
   onClose: () => void;
   onStampsChange: (stamps: UserTravelStampDTO[]) => void;
 }
 
+const PAGE_SIZE = 9;
+
+function pageCacheKey(page: number, search: string, country: string) {
+  return `${page}:${search.toLocaleLowerCase()}:${country.toLocaleLowerCase()}`;
+}
+
 export function TravelStampManagerModal({
   isOpen,
-  stamps,
   onClose,
   onStampsChange,
 }: TravelStampManagerModalProps) {
-  const [items, setItems] = useState<TravelStampPickerItemDTO[]>([]);
   const [search, setSearch] = useState("");
-  const [selectedCountry, setSelectedCountry] = useState("all");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [country, setCountry] = useState("all");
+  const [countries, setCountries] = useState<string[]>([]);
+  const [page, setPage] = useState(1);
+  const [result, setResult] = useState<TravelStampPickerPageDTO | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const cacheRef = useRef(new Map<string, TravelStampPickerPageDTO>());
+  const requestIdRef = useRef(0);
+  const touchStartXRef = useRef<number | null>(null);
 
-  const sortedStamps = useMemo(
-    () => [...stamps].sort((a, b) => a.displayOrder - b.displayOrder),
-    [stamps]
+  const fetchPage = useCallback(
+    async (
+      nextPage: number,
+      nextSearch: string,
+      nextCountry: string,
+      options: { prefetch?: boolean; force?: boolean } = {},
+    ) => {
+      const key = pageCacheKey(nextPage, nextSearch, nextCountry);
+      if (!options.force) {
+        const cached = cacheRef.current.get(key);
+        if (cached) {
+          if (!options.prefetch) setResult(cached);
+          return cached;
+        }
+      }
+      const requestId = ++requestIdRef.current;
+      if (!options.prefetch) {
+        setIsLoading(true);
+        setError(null);
+      }
+      try {
+        const params = new URLSearchParams({
+          page: String(nextPage),
+          limit: String(PAGE_SIZE),
+        });
+        if (nextSearch) params.set("search", nextSearch);
+        if (nextCountry !== "all") params.set("country", nextCountry);
+        const response = await fetch(
+          `/api/v1/travel-media/stamps/catalog?${params}`,
+        );
+        const data = (await response.json()) as TravelStampPickerPageDTO & {
+          error?: string;
+        };
+        if (!response.ok)
+          throw new Error(data.error || "Unable to load destination stamps.");
+        cacheRef.current.set(key, data);
+        if (!options.prefetch && requestId === requestIdRef.current)
+          setResult(data);
+        return data;
+      } catch (err) {
+        if (!options.prefetch && requestId === requestIdRef.current)
+          setError(
+            err instanceof Error
+              ? err.message
+              : "Unable to load destination stamps.",
+          );
+        return null;
+      } finally {
+        if (!options.prefetch && requestId === requestIdRef.current)
+          setIsLoading(false);
+      }
+    },
+    [],
   );
 
-  // Derive unique countries from picker items
-  const countries = useMemo(() => {
-    const set = new Set<string>();
-    items.forEach((item) => {
-      if (item.countryName) set.add(item.countryName);
-    });
-    return Array.from(set).sort();
-  }, [items]);
-
-  const loadItems = async (term = "", country = "all") => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const data = await getTravelStampPickerItemsAction(term, country);
-      setItems(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to load destination stamps.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  useEffect(() => {
+    const timer = window.setTimeout(
+      () => setDebouncedSearch(search.trim()),
+      300,
+    );
+    return () => window.clearTimeout(timer);
+  }, [search]);
 
   useEffect(() => {
     if (!isOpen) return;
-    setSearch("");
-    setSelectedCountry("all");
-    setSelectedIds(new Set());
-    setError(null);
-    void loadItems("", "all");
-  }, [isOpen]);
+    void fetchPage(page, debouncedSearch, country).then((data) => {
+      if (data?.hasMore)
+        void fetchPage(page + 1, debouncedSearch, country, { prefetch: true });
+    });
+  }, [country, debouncedSearch, fetchPage, isOpen, page]);
+
+  useEffect(() => {
+    if (!isOpen || countries.length) return;
+    let cancelled = false;
+    void fetch("/api/v1/travel-media/stamps/catalog/countries")
+      .then(async (response) => {
+        const data = (await response.json()) as {
+          countries?: string[];
+          error?: string;
+        };
+        if (!response.ok)
+          throw new Error(data.error || "Unable to load countries.");
+        if (!cancelled) setCountries(data.countries || []);
+      })
+      .catch((err: unknown) => {
+        if (!cancelled)
+          setError(
+            err instanceof Error ? err.message : "Unable to load countries.",
+          );
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [countries.length, isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target?.tagName === "INPUT" || target?.tagName === "SELECT") return;
+      if (event.key === "Escape") onClose();
+      if (event.key === "ArrowLeft" && page > 1) setPage((value) => value - 1);
+      if (event.key === "ArrowRight" && result && page < result.totalPages)
+        setPage((value) => value + 1);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose, page, result]);
 
   if (!isOpen) return null;
 
-  const toggleSelect = (item: TravelStampPickerItemDTO) => {
-    if (item.isAlreadyCollected) return;
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(item.id)) {
-        next.delete(item.id);
-      } else {
-        next.add(item.id);
-      }
+  const totalPages = result?.totalPages || 1;
+  const goNext = () => {
+    if (page < totalPages) setPage((value) => value + 1);
+  };
+  const goPrevious = () => {
+    if (page > 1) setPage((value) => value - 1);
+  };
+  const toggleSelection = (id: string, isAlreadyCollected: boolean) => {
+    if (isAlreadyCollected || isSaving) return;
+    setSelectedIds((current) => {
+      const next = new Set(current);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
   };
-
-  const handleSaveSelection = async () => {
-    if (!selectedIds.size) return;
+  const handleSave = async () => {
+    if (!selectedIds.size || isSaving) return;
     setIsSaving(true);
     setError(null);
     try {
       const updated = await addTravelStampSelectionsAction({
-        catalogStampIds: Array.from(selectedIds),
+        catalogStampIds: [...selectedIds],
       });
       onStampsChange(updated);
       setSelectedIds(new Set());
-      toast.success("Stamps added to your passport!");
-      await loadItems(search, selectedCountry);
+      cacheRef.current.clear();
+      await fetchPage(page, debouncedSearch, country, { force: true });
+      toast.success("Stamps added to your travel profile.");
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Failed to add destination stamps.";
-      setError(msg);
-      toast.error(msg);
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleRemoveStamp = async (userStamp: UserTravelStampDTO) => {
-    if (!window.confirm(`Remove ${userStamp.stamp.displayName} from your passport stamps?`)) {
-      return;
-    }
-    setIsSaving(true);
-    try {
-      await removeTravelStampAction(userStamp.id);
-      const next = stamps.filter((s) => s.id !== userStamp.id);
-      onStampsChange(next);
-      toast.success(`Removed ${userStamp.stamp.displayName}.`);
-      await loadItems(search, selectedCountry);
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Failed to remove stamp.";
-      setError(msg);
-      toast.error(msg);
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleMoveStamp = async (index: number, direction: -1 | 1) => {
-    const next = [...sortedStamps];
-    const target = index + direction;
-    if (target < 0 || target >= next.length) return;
-    [next[index], next[target]] = [next[target], next[index]];
-
-    setIsSaving(true);
-    try {
-      const updated = await reorderTravelStampsAction(next.map((s) => s.id));
-      onStampsChange(updated);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to reorder stamps.");
-      onStampsChange(stamps);
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Failed to add destination stamps.";
+      setError(message);
+      toast.error(message);
     } finally {
       setIsSaving(false);
     }
@@ -146,289 +196,242 @@ export function TravelStampManagerModal({
     <div className="fixed inset-0 z-[70] flex items-end justify-center bg-black/60 p-0 backdrop-blur-xs sm:items-center sm:p-5">
       <button
         type="button"
-        aria-label="Close stamp manager"
+        aria-label="Close stamp picker"
         onClick={onClose}
         className="absolute inset-0 cursor-default"
       />
-
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="stamp-manager-title"
-        className="relative z-10 flex h-[100dvh] w-full flex-col overflow-hidden bg-white shadow-2xl sm:h-auto sm:max-h-[85vh] sm:w-full sm:max-w-[780px] sm:rounded-3xl"
+        className="relative z-10 flex max-h-[100dvh] w-full flex-col overflow-hidden bg-white shadow-2xl sm:max-h-[85vh] sm:max-w-[820px] sm:rounded-3xl"
       >
-        {/* Modal Header */}
-        <div className="sticky top-0 z-10 flex items-start justify-between border-b border-zinc-100 bg-white px-4 py-3 sm:px-6 sm:py-4">
+        <header className="flex shrink-0 items-start justify-between border-b border-zinc-100 bg-white px-4 py-3 sm:px-6 sm:py-4">
           <div>
-            <h2 id="stamp-manager-title" className="text-lg font-bold tracking-tight text-zinc-900 sm:text-xl">
+            <h2
+              id="stamp-manager-title"
+              className="text-lg font-bold tracking-tight text-zinc-900 sm:text-xl"
+            >
               My Travel Stamps
             </h2>
             <p className="mt-1 text-xs text-zinc-500 sm:text-sm">
-              Collect stamps from places you've visited and share your travel story.
+              Collect destination stamps from places you&apos;ve visited.
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="flex size-9 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-zinc-500 hover:bg-zinc-200 transition"
             aria-label="Close"
+            className="flex size-10 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-zinc-500 transition hover:bg-zinc-200 hover:text-zinc-800"
           >
             ✕
           </button>
-        </div>
-
-        {/* Modal Body */}
-        <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-6 sm:py-5 space-y-6">
+        </header>
+        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4 sm:px-6 sm:py-5">
           {error && (
-            <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-xs text-rose-700">
+            <div
+              role="alert"
+              className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-xs text-rose-700"
+            >
               {error}
             </div>
           )}
-
-          {/* Search & Country Filter Bar */}
-          <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
-            <div className="relative flex-1">
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <div className="relative min-w-0 flex-1">
               <input
-                type="text"
                 value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  void loadItems(e.target.value, selectedCountry);
+                onChange={(event) => {
+                  setSearch(event.target.value);
+                  setPage(1);
                 }}
-                placeholder="Search country or city (e.g. Paris, London, Dubai...)"
-                aria-label="Search country or city"
-                className="w-full rounded-xl border border-zinc-200 px-3.5 py-2 text-sm outline-none focus:border-amber-400"
+                placeholder="Search city, country or stamp..."
+                aria-label="Search city, country or stamp"
+                className="w-full rounded-xl border border-zinc-200 px-3.5 py-2.5 pr-14 text-sm outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
               />
               {search && (
                 <button
                   type="button"
                   onClick={() => {
                     setSearch("");
-                    void loadItems("", selectedCountry);
+                    setPage(1);
                   }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-zinc-400 hover:text-zinc-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-zinc-500 hover:text-zinc-900"
                 >
                   Clear
                 </button>
               )}
             </div>
-
             <select
-              value={selectedCountry}
-              onChange={(e) => {
-                setSelectedCountry(e.target.value);
-                void loadItems(search, e.target.value);
+              value={country}
+              onChange={(event) => {
+                setCountry(event.target.value);
+                setPage(1);
               }}
-              className="rounded-xl border border-zinc-200 px-3.5 py-2 text-sm text-zinc-700 outline-none focus:border-amber-400"
+              aria-label="Filter stamps by country"
+              className="rounded-xl border border-zinc-200 bg-white px-3.5 py-2.5 text-sm text-zinc-700 outline-none focus:border-amber-400"
             >
               <option value="all">All Countries</option>
-              {countries.map((c) => (
-                <option key={c} value={c}>
-                  {c}
+              {countries.map((item) => (
+                <option key={item} value={item}>
+                  {item}
                 </option>
               ))}
             </select>
           </div>
-
-          {/* Stamp Catalog Grid */}
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-bold text-zinc-900">Available Destination Stamps</h3>
+          <div className="mt-5">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div>
+                <h3 className="text-sm font-bold text-zinc-900">
+                  Explore Destination Stamps
+                </h3>
+                <p className="mt-0.5 text-xs text-zinc-500">
+                  {result
+                    ? `${result.totalCount} matching stamp${result.totalCount === 1 ? "" : "s"}`
+                    : "Loading catalog…"}
+                </p>
+              </div>
               {selectedIds.size > 0 && (
-                <span className="text-xs font-semibold text-amber-700">
-                  {selectedIds.size} stamp{selectedIds.size === 1 ? "" : "s"} selected
+                <span className="shrink-0 text-xs font-semibold text-amber-700">
+                  {selectedIds.size} selected
                 </span>
               )}
             </div>
-
-            {isLoading ? (
-              <div className="rounded-2xl border border-zinc-100 bg-zinc-50 p-8 text-center text-xs text-zinc-500">
-                Loading destination stamps...
+            {isLoading && !result ? (
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+                {Array.from({ length: PAGE_SIZE }, (_, index) => (
+                  <div
+                    key={index}
+                    className="h-36 animate-pulse rounded-2xl bg-zinc-100"
+                  />
+                ))}
               </div>
-            ) : items.length > 0 ? (
-              <div className="flex gap-2 overflow-x-auto pb-2 snap-x snap-mandatory sm:grid sm:grid-cols-2 sm:gap-3 md:grid-cols-3 sm:overflow-visible">
-                {items.map((item) => {
-                  const isSelected = selectedIds.has(item.id);
+            ) : result?.items.length ? (
+              <div
+                onTouchStart={(event) => {
+                  touchStartXRef.current =
+                    event.changedTouches[0]?.clientX ?? null;
+                }}
+                onTouchEnd={(event) => {
+                  const start = touchStartXRef.current;
+                  const end = event.changedTouches[0]?.clientX;
+                  touchStartXRef.current = null;
+                  if (
+                    start !== null &&
+                    end !== undefined &&
+                    Math.abs(end - start) > 48
+                  ) {
+                    if (end < start) goNext();
+                    else goPrevious();
+                  }
+                }}
+                className="grid grid-cols-2 gap-3 md:grid-cols-3"
+                aria-live="polite"
+              >
+                {result.items.map((item) => {
+                  const selected = selectedIds.has(item.id);
+                  const disabled = item.isAlreadyCollected || isSaving;
                   return (
                     <button
                       key={item.id}
                       type="button"
-                      disabled={item.isAlreadyCollected || isSaving}
-                      onClick={() => toggleSelect(item)}
-                      className={`group relative flex w-[48%] shrink-0 items-center gap-2.5 rounded-2xl border p-2.5 text-left transition snap-start sm:w-auto ${
-                        item.isAlreadyCollected
-                          ? "cursor-not-allowed border-zinc-100 bg-zinc-50/70 opacity-60"
-                          : isSelected
-                          ? "border-amber-400 bg-amber-50/80 ring-1 ring-amber-300"
-                          : "border-zinc-200 bg-white hover:border-amber-300 hover:bg-amber-50/30 cursor-pointer"
-                      }`}
+                      disabled={disabled}
+                      aria-pressed={selected}
+                      onClick={() =>
+                        toggleSelection(item.id, item.isAlreadyCollected)
+                      }
+                      className={`group relative min-h-36 rounded-2xl border p-3 text-left transition ${item.isAlreadyCollected ? "cursor-not-allowed border-zinc-100 bg-zinc-50 opacity-70" : selected ? "border-amber-400 bg-amber-50 ring-1 ring-amber-300" : "border-zinc-200 bg-white hover:border-amber-300 hover:bg-amber-50/30"}`}
                     >
-                      {/* Stamp Art Graphic */}
-                      <div className="relative size-12 shrink-0 rounded-full border border-dashed border-zinc-300 p-0.5 flex items-center justify-center bg-white shadow-2xs group-hover:border-amber-400 sm:size-14">
+                      <div className="relative mx-auto flex size-16 items-center justify-center overflow-hidden rounded-full border border-dashed border-zinc-300 bg-zinc-50 p-1.5 sm:size-[72px]">
                         {item.iconUrl ? (
                           <Image
                             src={item.iconUrl}
                             alt={item.displayName}
-                            width={46}
-                            height={46}
-                            unoptimized={Boolean(item.iconUrl.endsWith(".svg"))}
-                            className="object-contain"
+                            fill
+                            loading="lazy"
+                            sizes="72px"
+                            unoptimized={item.iconUrl.endsWith(".svg")}
+                            className="object-contain p-1"
                           />
                         ) : (
-                          <span className="text-lg sm:text-xl">✈️</span>
+                          <span className="text-2xl">✈️</span>
                         )}
                       </div>
-
-                      {/* Info */}
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center justify-between gap-1">
-                          <p className="truncate text-sm font-bold text-zinc-900">
-                            {item.displayName}
-                          </p>
-                          {isSelected && <span className="text-amber-700 font-bold text-xs">✓</span>}
-                        </div>
-                        <p className="text-[11px] text-zinc-500 truncate">
-                          {[item.cityName, item.countryName].filter(Boolean).join(", ") || item.category}
-                        </p>
-                        <div className="mt-1">
-                          {item.isAlreadyCollected ? (
-                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700">
-                              <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M8.333 2.5L3.75 7.08333L1.667 5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                              Added
-                            </span>
-                          ) : isSelected ? (
-                            <span className="text-[10px] font-semibold text-amber-700">Selected</span>
-                          ) : (
-                            <span className="text-[10px] font-semibold text-zinc-700">+ Add</span>
-                          )}
-                        </div>
-                      </div>
+                      <p className="mt-2 truncate text-center text-sm font-bold text-zinc-900">
+                        {item.displayName}
+                      </p>
+                      <p className="mt-0.5 truncate text-center text-[11px] text-zinc-500">
+                        {[item.cityName, item.countryName]
+                          .filter(Boolean)
+                          .join(", ") || item.category}
+                      </p>
+                      <span
+                        className={`mt-2 block text-center text-[11px] font-semibold ${item.isAlreadyCollected ? "text-emerald-700" : selected ? "text-amber-700" : "text-zinc-700"}`}
+                      >
+                        {item.isAlreadyCollected
+                          ? "✓ Added"
+                          : selected
+                            ? "✓ Selected"
+                            : "+ Add"}
+                      </span>
                     </button>
                   );
                 })}
               </div>
-            ) : (
-              <div className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50 p-8 text-center text-xs text-zinc-500">
-                No destination stamps found matching your search.
-              </div>
-            )}
-
-            {/* Add Selected Button */}
-            {selectedIds.size > 0 && (
-              <div className="mt-4 flex items-center justify-between rounded-2xl border border-zinc-200 bg-zinc-50/80 px-3 py-2.5 sm:px-4">
-                <p className="text-sm font-semibold text-zinc-900">{selectedIds.size} stamp{selectedIds.size === 1 ? "" : "s"} selected</p>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setSelectedIds(new Set())}
-                    disabled={isSaving}
-                    className="rounded-full px-3 py-1.5 text-xs font-semibold text-zinc-700 hover:bg-white transition"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="button"
-                    disabled={!selectedIds.size || isSaving}
-                    onClick={handleSaveSelection}
-                    className="rounded-full bg-zinc-900 px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-black disabled:cursor-not-allowed disabled:opacity-40"
-                  >
-                    {isSaving ? "Adding..." : `Add ${selectedIds.size} Stamp${selectedIds.size === 1 ? "" : "s"}`}
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Currently Collected Stamps in Passport */}
-          {sortedStamps.length > 0 && (
-            <div className="border-t border-zinc-100 pt-5">
-              <div className="mb-3">
-                <h3 className="text-sm font-bold text-zinc-900">Your Collected Stamps ({sortedStamps.length})</h3>
-                <p className="text-xs text-zinc-500 mt-0.5">
-                  Use the arrows to reorder stamps or remove stamps from your passport.
+            ) : !isLoading ? (
+              <div className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50 px-6 py-10 text-center">
+                <p className="text-sm font-semibold text-zinc-900">
+                  No destination stamps found
+                </p>
+                <p className="mt-1 text-xs text-zinc-500">
+                  Try a different city, country, or stamp name.
                 </p>
               </div>
-
-              <div className="space-y-2">
-                {sortedStamps.map((userStamp, index) => (
-                  <div
-                    key={userStamp.id}
-                    className="flex items-center gap-3 rounded-2xl border border-zinc-200 bg-white p-3 shadow-2xs"
-                  >
-                    <div className="relative size-12 shrink-0 rounded-full border border-dashed border-zinc-300 p-1 flex items-center justify-center bg-zinc-50">
-                      {userStamp.stamp.iconUrl ? (
-                        <Image
-                          src={userStamp.stamp.iconUrl}
-                          alt={userStamp.stamp.displayName}
-                          width={38}
-                          height={38}
-                          unoptimized={Boolean(userStamp.stamp.iconUrl.endsWith(".svg"))}
-                          className="object-contain"
-                        />
-                      ) : (
-                        <span className="text-base">✈️</span>
-                      )}
-                    </div>
-
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-bold text-zinc-900">
-                        {userStamp.stamp.title || userStamp.stamp.displayName}
-                      </p>
-                      <p className="text-[11px] text-zinc-500">
-                        {[userStamp.stamp.city, userStamp.stamp.country].filter(Boolean).join(", ") || userStamp.stamp.category}
-                      </p>
-                    </div>
-
-                    {/* Order Controls */}
-                    <div className="flex items-center gap-1">
-                      <button
-                        type="button"
-                        onClick={() => handleMoveStamp(index, -1)}
-                        disabled={index === 0 || isSaving}
-                        className="rounded-lg p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 disabled:opacity-30"
-                        title="Move left"
-                        aria-label="Move stamp left"
-                      >
-                        ←
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleMoveStamp(index, 1)}
-                        disabled={index === sortedStamps.length - 1 || isSaving}
-                        className="rounded-lg p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 disabled:opacity-30"
-                        title="Move right"
-                        aria-label="Move stamp right"
-                      >
-                        →
-                      </button>
-                    </div>
-
-                    {/* Note: Admin manages catalog; guests do not Add personal stamp or Save changes to stamp designs */}
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveStamp(userStamp)}
-                      disabled={isSaving}
-                      className="rounded-lg px-2.5 py-1 text-xs font-semibold text-rose-600 hover:bg-rose-50 transition"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                ))}
-              </div>
+            ) : null}
+            <div className="mt-5 flex items-center justify-between gap-3 border-t border-zinc-100 pt-4">
+              <button
+                type="button"
+                onClick={goPrevious}
+                disabled={page <= 1 || isLoading}
+                className="rounded-full border border-zinc-200 px-3.5 py-2 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                ← Previous
+              </button>
+              <span className="text-xs font-medium text-zinc-500">
+                Page {result?.page || page} of {totalPages}
+              </span>
+              <button
+                type="button"
+                onClick={goNext}
+                disabled={page >= totalPages || isLoading}
+                className="rounded-full border border-zinc-200 px-3.5 py-2 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Next →
+              </button>
             </div>
-          )}
+          </div>
         </div>
-
-        {/* Modal Footer */}
-        <div className="sticky bottom-0 z-10 flex justify-end border-t border-zinc-100 bg-white/95 px-4 py-3 backdrop-blur sm:px-6">
+        <footer className="flex shrink-0 items-center justify-between border-t border-zinc-100 bg-white px-4 py-3 sm:px-6">
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full border border-zinc-200 px-4 py-2 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 transition"
+            disabled={isSaving}
+            className="rounded-full border border-zinc-200 px-4 py-2 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-50 disabled:opacity-50"
           >
-            Done
+            Cancel
           </button>
-        </div>
+          <button
+            type="button"
+            onClick={selectedIds.size ? handleSave : onClose}
+            disabled={isSaving}
+            className="rounded-full bg-zinc-900 px-4 py-2 text-xs font-semibold text-white transition hover:bg-black disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {isSaving
+              ? "Adding…"
+              : selectedIds.size
+                ? `Add ${selectedIds.size} Stamp${selectedIds.size === 1 ? "" : "s"}`
+                : "Done"}
+          </button>
+        </footer>
       </div>
     </div>
   );

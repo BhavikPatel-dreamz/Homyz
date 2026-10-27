@@ -1,17 +1,21 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import type { UserTravelStampDTO } from "@/types/travel";
 import { TravelStampDetailModal } from "./travel-stamp-detail-modal";
 import { TravelStampManagerModal } from "./travel-stamp-manager-modal";
 import {
+  removeTravelStampAction,
   toggleStampPinnedAction,
   setStampsSectionVisibilityAction,
 } from "@/actions/travel/travelStampsAndBadges";
+import { toast } from "@/components/ui/toast";
 
 interface TravelStampsSectionProps {
   stamps: UserTravelStampDTO[];
+  initialNextCursor?: string | null;
+  totalCount?: number;
   showStamps?: boolean;
   isOwner?: boolean;
   onRefresh?: () => void;
@@ -19,24 +23,29 @@ interface TravelStampsSectionProps {
 
 export function TravelStampsSection({
   stamps,
+  initialNextCursor = null,
+  totalCount = stamps.length,
   showStamps = true,
   isOwner = true,
   onRefresh,
 }: TravelStampsSectionProps) {
   const [localStamps, setLocalStamps] = useState<UserTravelStampDTO[]>(stamps);
   const [isVisible, setIsVisible] = useState(showStamps);
-  const [selectedStamp, setSelectedStamp] = useState<UserTravelStampDTO | null>(null);
+  const [selectedStamp, setSelectedStamp] = useState<UserTravelStampDTO | null>(
+    null,
+  );
   const [isTogglingVisibility, setIsTogglingVisibility] = useState(false);
   const [isPinning, setIsPinning] = useState(false);
   const [isManagerOpen, setIsManagerOpen] = useState(false);
-
-  useEffect(() => {
-    setLocalStamps(stamps);
-  }, [stamps]);
-
-  useEffect(() => {
-    setIsVisible(showStamps);
-  }, [showStamps]);
+  const [stampPendingRemoval, setStampPendingRemoval] =
+    useState<UserTravelStampDTO | null>(null);
+  const [isRemoving, setIsRemoving] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [nextCursor, setNextCursor] = useState<string | null>(
+    initialNextCursor,
+  );
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [collectionCount, setCollectionCount] = useState(totalCount);
 
   const handleToggleVisibility = async () => {
     if (!isOwner || isTogglingVisibility) return;
@@ -59,16 +68,81 @@ export function TravelStampsSection({
     try {
       const updated = await toggleStampPinnedAction(userStampId);
       setLocalStamps((prev) =>
-        prev.map((s) => (s.id === userStampId ? { ...s, isPinned: updated.isPinned } : s))
+        prev.map((s) =>
+          s.id === userStampId ? { ...s, isPinned: updated.isPinned } : s,
+        ),
       );
       if (selectedStamp && selectedStamp.id === userStampId) {
-        setSelectedStamp((prev) => (prev ? { ...prev, isPinned: updated.isPinned } : null));
+        setSelectedStamp((prev) =>
+          prev ? { ...prev, isPinned: updated.isPinned } : null,
+        );
       }
       onRefresh?.();
     } catch (err) {
       console.error("Failed to toggle stamp pin", err);
     } finally {
       setIsPinning(false);
+    }
+  };
+
+  const handleRemoveStamp = async () => {
+    if (!stampPendingRemoval || isRemoving) return;
+    setIsRemoving(true);
+    try {
+      await removeTravelStampAction(stampPendingRemoval.id);
+      setLocalStamps((current) =>
+        current.filter((stamp) => stamp.id !== stampPendingRemoval.id),
+      );
+      setCollectionCount((count) => Math.max(0, count - 1));
+      setSelectedStamp((current) =>
+        current?.id === stampPendingRemoval.id ? null : current,
+      );
+      toast.success(
+        `${stampPendingRemoval.stamp.displayName} removed from your travel profile.`,
+      );
+      setStampPendingRemoval(null);
+      onRefresh?.();
+    } catch (err) {
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : "Unable to remove this travel stamp.",
+      );
+    } finally {
+      setIsRemoving(false);
+    }
+  };
+
+  const handleLoadMore = async () => {
+    if (!nextCursor || isLoadingMore) return;
+    setIsLoadingMore(true);
+    try {
+      const response = await fetch(
+        `/api/v1/travel-media/stamps?${new URLSearchParams({ limit: "12", cursor: nextCursor })}`,
+      );
+      const data = (await response.json()) as {
+        data?: UserTravelStampDTO[];
+        nextCursor?: string | null;
+        error?: string;
+      };
+      if (!response.ok)
+        throw new Error(data.error || "Unable to load more travel stamps.");
+      setLocalStamps((current) => {
+        const ids = new Set(current.map((stamp) => stamp.id));
+        return [
+          ...current,
+          ...(data.data || []).filter((stamp) => !ids.has(stamp.id)),
+        ];
+      });
+      setNextCursor(data.nextCursor || null);
+    } catch (err) {
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : "Unable to load more travel stamps.",
+      );
+    } finally {
+      setIsLoadingMore(false);
     }
   };
 
@@ -125,56 +199,103 @@ export function TravelStampsSection({
       {!isVisible && isOwner && (
         <div className="mb-6 p-3 rounded-2xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-500 flex items-center gap-2">
           <span className="size-2 rounded-full bg-amber-400 shrink-0" />
-          <span>This section is currently hidden from your public travel profile. Only you can see it.</span>
+          <span>
+            This section is currently hidden from your public travel profile.
+            Only you can see it.
+          </span>
         </div>
       )}
 
       {/* Stamp Collection Display (Matching Figma Screenshot 1 / Target Image 2) */}
       {localStamps.length > 0 ? (
-        <div className="flex flex-wrap items-center gap-8 sm:gap-12 py-3">
-          {localStamps.map((userStamp) => {
-            const stamp = userStamp.stamp;
-            return (
-              <button
-                key={userStamp.id}
-                type="button"
-                onClick={() => setSelectedStamp(userStamp)}
-                className="group flex flex-col items-center cursor-pointer focus:outline-none transition transform hover:scale-105"
-              >
-                {/* Circular Stamp Graphic (Passport Hand-drawn Stamp Style) */}
-                <div className="relative size-24 sm:size-28 rounded-full border border-dashed border-zinc-300 p-2 flex items-center justify-center bg-zinc-50/80 group-hover:bg-amber-50/50 group-hover:border-amber-400 transition shadow-2xs">
-                  {stamp.iconUrl ? (
-                    <Image
-                      src={stamp.iconUrl}
-                      alt={stamp.displayName}
-                      width={84}
-                      height={84}
-                      unoptimized={Boolean(stamp.iconUrl.endsWith(".svg"))}
-                      className="object-contain"
-                    />
-                  ) : (
-                    <span className="text-3xl">🏛️</span>
-                  )}
-
-                  {/* Pinned star badge */}
-                  {userStamp.isPinned && (
-                    <span
-                      title="Featured Stamp"
-                      className="absolute -top-1 -right-1 size-5 rounded-full bg-amber-400 text-white text-[10px] font-bold flex items-center justify-center shadow"
+        <>
+          <div className="flex flex-wrap items-start gap-6 sm:gap-8 py-3">
+            {(isExpanded ? localStamps : localStamps.slice(0, 12)).map(
+              (userStamp) => {
+                const stamp = userStamp.stamp;
+                return (
+                  <div
+                    key={userStamp.id}
+                    className="group relative flex w-24 flex-col items-center sm:w-28"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setSelectedStamp(userStamp)}
+                      className="flex flex-col items-center focus:outline-none transition-transform hover:scale-105 focus-visible:scale-105"
                     >
-                      ★
-                    </span>
-                  )}
-                </div>
+                      <div className="relative size-24 rounded-full border border-dashed border-zinc-300 bg-zinc-50/80 p-2 shadow-2xs transition group-hover:border-amber-400 group-hover:bg-amber-50/50 sm:size-28">
+                        {stamp.iconUrl ? (
+                          <Image
+                            src={stamp.iconUrl}
+                            alt={stamp.displayName}
+                            width={84}
+                            height={84}
+                            loading="lazy"
+                            unoptimized={Boolean(
+                              stamp.iconUrl.endsWith(".svg"),
+                            )}
+                            className="size-full object-contain"
+                          />
+                        ) : (
+                          <span className="flex size-full items-center justify-center text-3xl">
+                            🏛️
+                          </span>
+                        )}
 
-                {/* Stamp Caption (e.g. Paris, Coffee) */}
-                <span className="text-xs sm:text-sm text-zinc-800 font-medium text-center mt-2 group-hover:text-amber-900 transition">
-                  {stamp.displayName}
-                </span>
+                        {userStamp.isPinned && (
+                          <span
+                            title="Featured Stamp"
+                            className="absolute -top-1 -right-1 flex size-5 items-center justify-center rounded-full bg-amber-400 text-[10px] font-bold text-white shadow"
+                          >
+                            ★
+                          </span>
+                        )}
+                      </div>
+
+                      <span className="mt-2 line-clamp-2 text-center text-xs font-medium text-zinc-800 transition group-hover:text-amber-900 sm:text-sm">
+                        {stamp.displayName}
+                      </span>
+                    </button>
+                    {isOwner && (
+                      <button
+                        type="button"
+                        onClick={() => setStampPendingRemoval(userStamp)}
+                        aria-label={`Remove ${stamp.displayName} from your travel profile`}
+                        title={`Remove ${stamp.displayName}`}
+                        className="absolute right-0 top-0 flex size-8 items-center justify-center rounded-full border border-white bg-zinc-900 text-base leading-none text-white shadow-sm transition hover:bg-rose-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100"
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
+                );
+              },
+            )}
+          </div>
+          {(nextCursor || localStamps.length > 12) && (
+            <div className="mt-2 flex justify-center gap-3">
+              <button
+                type="button"
+                onClick={() => setIsExpanded((value) => !value)}
+                className="rounded-full border border-zinc-200 px-4 py-2 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-50"
+              >
+                {isExpanded
+                  ? "Show less"
+                  : `View all ${collectionCount} stamps`}
               </button>
-            );
-          })}
-        </div>
+              {isExpanded && nextCursor && (
+                <button
+                  type="button"
+                  onClick={handleLoadMore}
+                  disabled={isLoadingMore}
+                  className="rounded-full border border-zinc-200 px-4 py-2 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-50 disabled:opacity-50"
+                >
+                  {isLoadingMore ? "Loading…" : "Load more"}
+                </button>
+              )}
+            </div>
+          )}
+        </>
       ) : (
         /* Empty State (Exact copy specified in requirements) */
         <div className="py-10 px-6 text-center rounded-3xl bg-zinc-50/80 border border-dashed border-zinc-200">
@@ -212,13 +333,54 @@ export function TravelStampsSection({
       {isOwner && (
         <TravelStampManagerModal
           isOpen={isManagerOpen}
-          stamps={localStamps}
           onClose={() => setIsManagerOpen(false)}
           onStampsChange={(updated) => {
             setLocalStamps(updated);
+            setCollectionCount(updated.length);
+            setNextCursor(null);
             onRefresh?.();
           }}
         />
+      )}
+
+      {stampPendingRemoval && (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 p-4">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="remove-stamp-title"
+            className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl"
+          >
+            <h3
+              id="remove-stamp-title"
+              className="text-lg font-bold text-zinc-900"
+            >
+              Remove Travel Stamp?
+            </h3>
+            <p className="mt-2 text-sm leading-relaxed text-zinc-600">
+              Remove {stampPendingRemoval.stamp.displayName} from your travel
+              profile? You can add it again later.
+            </p>
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setStampPendingRemoval(null)}
+                disabled={isRemoving}
+                className="rounded-full border border-zinc-200 px-4 py-2 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleRemoveStamp}
+                disabled={isRemoving}
+                className="rounded-full bg-rose-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-rose-700 disabled:opacity-50"
+              >
+                {isRemoving ? "Removing…" : "Remove"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </section>
   );

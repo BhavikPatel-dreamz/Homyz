@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { toast } from "@/components/ui/toast";
@@ -33,6 +33,7 @@ export function TravelPhotoDetailModal({
   const [editLocation, setEditLocation] = useState("");
   const [isSavingEdit, setIsSavingEdit] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const touchStartXRef = useRef<number | null>(null);
 
   // Fetch photo details
   const loadPhoto = useCallback(async (id: string) => {
@@ -53,7 +54,8 @@ export function TravelPhotoDetailModal({
   }, [onClose]);
 
   useEffect(() => {
-    loadPhoto(photoId);
+    const timer = window.setTimeout(() => void loadPhoto(photoId), 0);
+    return () => window.clearTimeout(timer);
   }, [photoId, loadPhoto]);
 
   // Keyboard navigation: Escape to close, Left/Right arrows to navigate
@@ -62,9 +64,11 @@ export function TravelPhotoDetailModal({
       if (e.key === "Escape") {
         onClose();
       } else if (e.key === "ArrowLeft" && photo?.prevPhotoId) {
-        onNavigate ? onNavigate(photo.prevPhotoId) : loadPhoto(photo.prevPhotoId);
+        if (onNavigate) onNavigate(photo.prevPhotoId);
+        else void loadPhoto(photo.prevPhotoId);
       } else if (e.key === "ArrowRight" && photo?.nextPhotoId) {
-        onNavigate ? onNavigate(photo.nextPhotoId) : loadPhoto(photo.nextPhotoId);
+        if (onNavigate) onNavigate(photo.nextPhotoId);
+        else void loadPhoto(photo.nextPhotoId);
       }
     };
 
@@ -178,6 +182,28 @@ export function TravelPhotoDetailModal({
     }
   };
 
+  const navigatePrevious = () => {
+    if (!photo?.prevPhotoId) return;
+    if (onNavigate) onNavigate(photo.prevPhotoId);
+    else void loadPhoto(photo.prevPhotoId);
+  };
+
+  const navigateNext = () => {
+    if (!photo?.nextPhotoId) return;
+    if (onNavigate) onNavigate(photo.nextPhotoId);
+    else void loadPhoto(photo.nextPhotoId);
+  };
+
+  const handleImageTouchEnd = (event: React.TouchEvent) => {
+    const startX = touchStartXRef.current;
+    touchStartXRef.current = null;
+    if (startX === null) return;
+    const distance = event.changedTouches[0]?.clientX - startX;
+    if (Math.abs(distance) < 40) return;
+    if (distance > 0) navigatePrevious();
+    else navigateNext();
+  };
+
   return (
     <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/85 backdrop-blur-md p-2 sm:p-4 animate-in fade-in">
       <div className="relative w-full max-w-5xl bg-zinc-950 rounded-3xl overflow-hidden shadow-2xl border border-zinc-800 flex flex-col md:flex-row max-h-[92vh]">
@@ -195,9 +221,7 @@ export function TravelPhotoDetailModal({
         {photo?.prevPhotoId && (
           <button
             type="button"
-            onClick={() =>
-              onNavigate ? onNavigate(photo.prevPhotoId!) : loadPhoto(photo.prevPhotoId!)
-            }
+            onClick={navigatePrevious}
             aria-label="Previous photo"
             className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/60 hover:bg-black/90 text-white flex items-center justify-center transition cursor-pointer"
           >
@@ -209,9 +233,7 @@ export function TravelPhotoDetailModal({
         {photo?.nextPhotoId && (
           <button
             type="button"
-            onClick={() =>
-              onNavigate ? onNavigate(photo.nextPhotoId!) : loadPhoto(photo.nextPhotoId!)
-            }
+            onClick={navigateNext}
             aria-label="Next photo"
             className="absolute right-3 md:right-[340px] top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/60 hover:bg-black/90 text-white flex items-center justify-center transition cursor-pointer"
           >
@@ -224,7 +246,7 @@ export function TravelPhotoDetailModal({
           {loading ? (
             <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-amber-400" />
           ) : photo ? (
-            <div className="relative w-full h-full min-h-[300px] sm:min-h-[460px] md:min-h-[560px]">
+            <div className="relative w-full h-full min-h-[300px] sm:min-h-[460px] md:min-h-[560px]" onTouchStart={(event) => { touchStartXRef.current = event.touches[0]?.clientX ?? null; }} onTouchEnd={handleImageTouchEnd}>
               <Image
                 src={photo.url}
                 alt={photo.caption || "Travel memory"}
@@ -424,4 +446,3 @@ export function TravelPhotoDetailModal({
     </ModalOverlay>
   );
 }
-

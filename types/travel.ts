@@ -71,6 +71,8 @@ export interface TravelTripDTO {
 
 export interface CountryHighlightDTO {
   country: string;
+  /** ISO country code when this highlight is associated with a normalized Destination. */
+  countryCode?: string | null;
   photoCount: number;
   /** A stored travel photo when one exists; verified destinations may have no photo yet. */
   coverUrl: string | null;
@@ -178,6 +180,15 @@ export interface TravelStampPickerItemDTO {
   category: string;
   isAlreadyCollected: boolean;
   isVerifiedSuggestion: boolean;
+}
+
+export interface TravelStampPickerPageDTO {
+  items: TravelStampPickerItemDTO[];
+  page: number;
+  limit: number;
+  totalCount: number;
+  totalPages: number;
+  hasMore: boolean;
 }
 
 export interface TravelerDestinationStatsDTO {
