@@ -678,7 +678,6 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                             </span>
                             <span className="flex flex-1 items-center justify-between">
                               <span>Travel Profile</span>
-                              <span className="text-xs text-[#727272]">✈</span>
                             </span>
                           </Link>
 
@@ -866,7 +865,6 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                             </span>
                             <span className="flex flex-1 items-center justify-between">
                               <span>Travel Profile</span>
-                              <span className="text-xs text-[#727272]">✈</span>
                             </span>
                           </Link>
                         </div>

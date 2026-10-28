@@ -244,7 +244,7 @@ export function HostBookingDetailsClient({ details, relatedCases = [] }: HostBoo
 
 
               </div>
-              <div className="flex flex-col gap-x-3">
+              <div className="flex flex-col gap-y-3">
                 {relatedCases.length === 1 && (
                   <Link
                     href={`/host/resolution-center/${relatedCases[0].id}`}
