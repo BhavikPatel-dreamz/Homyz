@@ -21,7 +21,7 @@ The client platform's primary database (users, bookings, payments, properties), 
 * **AI Model Provider (Demo vs. Production)**:
   * **Demo / Preview Phase (Current)**: To enable a full working preview for client approval before they purchase API keys, the entire AI engine runs on **Google Gemini Free Tier via `langchain-google-genai`** at **$0 cost**:
     * **Embeddings**: Google **`text-embedding-004`** (**768 dimensions**).
-    * **Vision / LLM**: Google **`gemini-2.5-flash`** (multimodal vision, categorization, tips).
+    * **Vision / LLM**: Google **`gemini-3.5-flash`** (multimodal vision, categorization, tips).
     * **Vector Size**: Qdrant collection is configured with `VECTOR_SIZE = 768`.
   * **Production Phase (Post-Approval)**: Once the client approves the preview and provides their paid OpenAI API key, the engine transitions to **OpenAI**:
     * **Embeddings**: OpenAI **`text-embedding-3-small`** (**1536 dimensions**).
@@ -32,9 +32,9 @@ The client platform's primary database (users, bookings, payments, properties), 
 | Capability | Demo Model (Google Free Tier) | Production Model (OpenAI) |
 | :--- | :--- | :--- |
 | **Embeddings (Search & Sync)** | `text-embedding-004` (**768 dim**) | `text-embedding-3-small` (**1536 dim**) |
-| **Vision (Photo Categorization)** | `gemini-2.5-flash` | `gpt-4o-mini` |
-| **Moderation & Extraction** | `gemini-2.5-flash` | `omni-moderation-latest` + `gpt-4o-mini` |
-| **Guest Chatbot (RAG)** | `gemini-2.5-flash` | `gpt-4o-mini` |
+| **Vision (Photo Categorization)** | `gemini-3.5-flash` | `gpt-4o-mini` |
+| **Moderation & Extraction** | `gemini-3.5-flash` | `omni-moderation-latest` + `gpt-4o-mini` |
+| **Guest Chatbot (RAG)** | `gemini-3.5-flash` | `gpt-4o-mini` |
 | **Qdrant Vector Size** | `768` | `1536` |
 
 ---
@@ -57,7 +57,7 @@ The client platform's primary database (users, bookings, payments, properties), 
 │ Qdrant Vector Database        │ │ AI Model Provider            │
 │ - Listings & House Rules      │ │ - Demo (Google Free Tier):   │
 │ - Vector Size: 768 (Demo)     │ │   • text-embedding-004       │
-│                1536 (Prod)    │ │   • gemini-2.5-flash         │
+│                1536 (Prod)    │ │   • gemini-3.5-flash         │
 │ - Fast HNSW In-Memory Index   │ │ - Prod (OpenAI Paid Key):    │
 │                               │ │   • text-embedding-3-small   │
 │                               │ │   • gpt-4o-mini              │
@@ -76,7 +76,7 @@ The client platform's primary database (users, bookings, payments, properties), 
 * **Local Pre-Checks ($0 Cost, <5ms)**:
   * **Blur Detection**: Fast Fourier / Laplacian variance (`cv2.Laplacian`) detects motion-blurred or out-of-focus images.
   * **Duplicate Detection**: Perceptual hashing (`imagehash.phash`) detects duplicate or cropped photos within a batch.
-* **AI Vision Analysis (Google Gemini 2.5 Flash for Demo / `gpt-4o-mini` for Prod)**:
+* **AI Vision Analysis (Google Gemini 3.5 Flash for Demo / `gpt-4o-mini` for Prod)**:
   * **Room Categorization**: Automatically categorizes photos into `Living Room`, `Bedroom`, `Bathroom`, `Kitchen`, `Balcony/Patio`, `Dining Room`, `Exterior/Entrance`, `Amenities/Pool`.
   * **Quality & Lighting Scores**: Evaluates lighting (1–10) and composition (1–10).
   * **Smart Cover Photo**: Automatically nominates the single highest-scoring, well-lit living room or exterior photo as the recommended cover image.

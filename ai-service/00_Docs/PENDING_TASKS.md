@@ -30,13 +30,13 @@
 ---
 
 ## Phase 2: Module 2 — Photo Categorization & Quality Scoring
-- [ ] Define Pydantic schemas for photo inputs and analysis output in `app/models/photos.py`
-- [ ] Implement local blur detection using OpenCV Laplacian variance in `app/services/photo_service.py`
-- [ ] Implement local duplicate photo detection using `imagehash.phash`
-- [ ] Implement AI Vision structured analysis (Gemini 2.5 Flash for demo via `langchain-google-genai`; switchable to `gpt-4o-mini` for prod)
-- [ ] Implement automatic Cover Photo recommendation logic
-- [ ] Create thin route controller in `app/api/v1/photos.py`
-- [ ] Write unit/integration tests with sample images in `app/tests/test_photos.py`
+- [x] Define Pydantic schemas for photo inputs and analysis output in `app/models/photos.py`
+- [x] Implement local blur detection using OpenCV Laplacian variance in `app/services/photo_service.py`
+- [x] Implement local duplicate photo detection using `imagehash.phash`
+- [x] Implement AI Vision structured analysis (Gemini 3.5 Flash for demo via `langchain-google-genai`; switchable to `gpt-4o-mini` for prod)
+- [x] Implement automatic Cover Photo recommendation logic
+- [x] Create thin route controller in `app/api/v1/photos.py`
+- [x] Write unit/integration tests with sample images in `app/tests/test_photos.py`
 
 ---
 

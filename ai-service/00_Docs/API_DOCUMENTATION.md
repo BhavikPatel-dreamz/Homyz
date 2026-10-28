@@ -161,8 +161,6 @@ All error responses return standard JSON:
 ## 4. Photo Categorization & Quality Endpoints
 
 ### 4.1 Analyze Listing Photos
-
-### 3.1 Analyze Listing Photos
 * **Path**: `POST /photos/analyze`
 * **Description**: Evaluates image array for room categories, quality, lighting, blur, duplicates, and recommends cover photo.
 
@@ -201,6 +199,7 @@ All error responses return standard JSON:
         "is_blurry": false,
         "is_duplicate": false,
         "duplicate_of": null,
+        "is_non_property": false,
         "poor_quality": false
       },
       "feedback_tips": []
