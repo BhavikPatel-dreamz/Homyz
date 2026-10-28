@@ -827,7 +827,7 @@ export function PropertyDetailsViews({
                         >
                           <Image src="/images/icons/minus-icon.svg" alt="Decrease floors" width={14} height={14} className="size-4 object-contain dark:invert group-hover:invert" />
                         </button>
-                        <span className="w-5 text-center text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100">{buildingFloors || 1}</span>
+                        <span className="w-5 text-center text-base font-normal text-[#1F1F1F] dark:text-zinc-100">{buildingFloors || 1}</span>
                         <button
                           type="button"
                           onClick={() => setBuildingFloors?.((buildingFloors || 1) + 1)}
@@ -849,7 +849,7 @@ export function PropertyDetailsViews({
                         >
                           <Image src="/images/icons/minus-icon.svg" alt="Decrease floor" width={14} height={14} className="size-4 object-contain dark:invert group-hover:invert" />
                         </button>
-                        <span className="w-5 text-center text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100">{listingFloor ?? 1}</span>
+                          <span className="w-5 text-center text-base font-normal text-[#1F1F1F] dark:text-zinc-100">{listingFloor ?? 1}</span>
                         <button
                           type="button"
                           onClick={() => setListingFloor?.((listingFloor || 0) + 1)}
@@ -921,7 +921,7 @@ export function PropertyDetailsViews({
                         >
                           <Image src="/images/icons/minus-icon.svg" alt="Decrease floors" width={14} height={14} className="size-4 object-contain dark:invert group-hover:invert" />
                         </button>
-                        <span className="w-5 text-center text-xs font-semibold text-[#1F1F1F] dark:text-zinc-100">{buildingFloors || 1}</span>
+                            <span className="w-5 text-center text-base font-normal text-[#1F1F1F] dark:text-zinc-100">{buildingFloors || 1}</span>
                         <button
                           type="button"
                           onClick={() => setBuildingFloors?.((buildingFloors || 1) + 1)}

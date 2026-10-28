@@ -306,13 +306,13 @@ export function InsightsReviewsTab({
         {/* Filter Controls Row */}
         <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           {/* Search Box */}
-          <div className="relative">
-            <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[#727272]">
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <div className="relative flex items-center w-full">
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-[#727272]">
+              <svg className="size-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <circle cx="11" cy="11" r="8" />
                 <path d="m21 21-4.3-4.3" />
               </svg>
-            </span>
+            </div>
             <input
               type="text"
               placeholder="Search comments or guests..."
@@ -321,7 +321,7 @@ export function InsightsReviewsTab({
                 setSearchTerm(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full rounded-full border border-[#D7D7D7] bg-[#F9F9F9] pl-10 pr-4 py-2 text-xs text-[#1F1F1F] placeholder:text-[#A0A0A0] transition hover:border-[#1F1F1F] focus:border-[#1F1F1F] focus:bg-white focus:outline-none"
+              className="w-full rounded-full border border-[#D7D7D7] bg-[#F9F9F9] pl-10 pr-4 py-2 text-sm font-normal text-[#1F1F1F] placeholder:text-[#A0A0A0] transition hover:border-[#1F1F1F] focus:border-[#1F1F1F] focus:bg-white focus:outline-none"
             />
           </div>
 
@@ -492,19 +492,6 @@ export function InsightsReviewsTab({
                         className="group inline-flex items-center gap-1.5 rounded-full border border-[#D7D7D7] bg-white hover:bg-[#1f1f1f] px-3.5 py-1.5 text-sm font-medium text-[#1F1F1F] hover:text-white hover:border-[#1F1F1F] transition-all duration-200"
                       >
                         <span>View Details</span>
-                        <svg
-                          className="size-3.5 transition-transform duration-200 group-hover:translate-x-0.5"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          aria-hidden="true"
-                        >
-                          <path d="M5 12h14" />
-                          <path d="m12 5 7 7-7 7" />
-                        </svg>
                       </Link>
                     </div>
                   </div>
@@ -515,7 +502,7 @@ export function InsightsReviewsTab({
                   </p>
 
                   {/* Subrating chips */}
-                  <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-[#727272]">
+                  <div className="mt-3 flex flex-wrap gap-2 text-xs text-[#727272]">
                     {rev.cleanlinessRating && (
                       <span className="rounded-full bg-[#F3F4F5] border border-[#EDEDED] px-2.5 py-0.5 font-medium">
                         Cleanliness: {rev.cleanlinessRating} ★
@@ -553,8 +540,8 @@ export function InsightsReviewsTab({
                     {rev.response ? (
                       <div className="rounded-2xl border border-[#E5E5E5] bg-[#F9F9F9] p-4 text-xs">
                         <div className="flex items-center justify-between">
-                          <span className="font-medium text-[#1F1F1F]">Your response</span>
-                          <span className="text-[10px] text-[#727272]">
+                          <span className="font-medium text-[#1F1F1F] text-sm">Your response</span>
+                          <span className="text-xs text-[#727272]">
                             {new Date(rev.response.createdAt).toLocaleDateString("en-US", {
                               month: "short",
                               day: "numeric",

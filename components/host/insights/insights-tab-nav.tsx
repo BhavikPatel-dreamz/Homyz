@@ -44,7 +44,7 @@ export function InsightsTabNav({
             >
               <span>{tab.label}</span>
               {tab.id === "reviews" && reviewCount !== undefined && reviewCount > 0 && (
-                <span className="rounded-full bg-[#F3F4F5] px-2 py-0.5 text-xs text-[#1F1F1F] font-medium">
+                <span className="rounded-full bg-[#e1e1e1] px-2 py-0.5 text-xs text-[#1F1F1F] font-medium">
                   {reviewCount}
                 </span>
               )}
