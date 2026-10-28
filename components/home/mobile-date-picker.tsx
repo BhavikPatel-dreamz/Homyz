@@ -116,7 +116,7 @@ export function MobileDatePicker({
 
   return (
     <div className={desktop ? "mx-auto w-full max-w-[664px]" : ""}>
-      {/* <div
+      <div
         className={`mx-auto mb-5 flex w-full overflow-hidden rounded-full ${
           desktop ? "max-w-[346px] bg-white" : "bg-white"
         }`}
@@ -139,7 +139,7 @@ export function MobileDatePicker({
             {t(tabKeys[mode])}
           </button>
         ))}
-      </div> */}
+      </div>
       <div
         id={`${pickerId}-panel`}
         role="tabpanel"
@@ -220,7 +220,7 @@ export function MobileDatePicker({
               })}
             </div>
             <div className="no-scrollbar mt-6 flex gap-2 overflow-x-auto">
-              {[0, 1, 2, 3, 7].map((days) => (
+              {[0, 1, 2, 3, 7, 14].map((days) => (
                 <button
                   type="button"
                   key={days}
@@ -284,7 +284,7 @@ export function MobileDatePicker({
                 className="no-scrollbar flex min-w-0 flex-1 snap-x snap-mandatory gap-2 overflow-x-auto overscroll-x-contain py-1"
               >
                 {Array.from({ length: 12 }, (_, i) => {
-                  const month = new Date(today.getFullYear(), i, 1);
+                  const month = new Date(today.getFullYear(), today.getMonth() + i, 1);
                   const key = dateKey(month).slice(0, 7);
                   return (
                     <button

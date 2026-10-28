@@ -14,7 +14,7 @@ export default async function HostMessagesPage(props: {
   const initialConversationId = resolvedParams?.id;
   const initialData = await messagingService.listConversationsForUser(actor, {
     role: "host",
-    take: 50,
+    take: 25,
   });
   const initialRenderedAt = new Date().toISOString();
 
@@ -26,6 +26,7 @@ export default async function HostMessagesPage(props: {
         <HostMessagesWorkspace
           initialConversationId={initialConversationId}
           initialConversations={initialData.conversations}
+          initialConversationTotal={initialData.total}
           initialRenderedAt={initialRenderedAt}
         />
       </main>

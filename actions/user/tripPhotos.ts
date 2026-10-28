@@ -35,7 +35,7 @@ export async function getTripPhotosAction(targetUserId?: string) {
 }
 
 export async function uploadTripPhotosAction(
-  photos: Array<{ url: string; caption?: string; location?: string; tags?: string[] }>
+  photos: Array<{ url: string; caption?: string; location?: string; taggedUserIds?: string[] }>
 ) {
   return runAction(async () => {
     const actor = await getSessionUser();
@@ -56,35 +56,60 @@ export async function uploadTripPhotosAction(
           return updateTravelPhotoMetadata(actor.id, stored.id, {
             caption: photo.caption,
             location: photo.location,
+            taggedUserIds: photo.taggedUserIds,
           });
         }),
     );
     const unmatched = photos.filter((photo) => !existingUrls.has(photo.url));
-    const created = unmatched.length > 0
-      ? [...reused, ...(await userService.createTripPhotos(actor.id, unmatched))]
-      : reused;
+    const createdLegacy = unmatched.length
+      ? await userService.createTripPhotos(
+          actor.id,
+          unmatched.map((photo) => ({
+            url: photo.url,
+            caption: photo.caption,
+            location: photo.location,
+          })),
+        )
+      : [];
+    // Preserve the compatibility upload route without leaving metadata in the
+    // old string-tag shape. The first metadata save upgrades it to TravelPhoto.
+    const created = await Promise.all(
+      createdLegacy.map((photo) => {
+        const source = unmatched.find((item) => item.url === photo.url)!;
+        return updateTravelPhotoMetadata(actor.id, photo.id, {
+          caption: source.caption,
+          location: source.location,
+          taggedUserIds: source.taggedUserIds || [],
+        });
+      }),
+    );
+    const persisted = [...reused, ...created];
     revalidateTravelViews();
-    return created;
+    return persisted;
   });
 }
 
 export async function updateTripPhotoAction(
   photoId: string,
-  input: { caption?: string; location?: string; tags?: string[] }
+  input: {
+    caption?: string | null;
+    location?: string | null;
+    locationData?: {
+      city?: string | null;
+      country?: string | null;
+      countryCode?: string | null;
+      latitude?: number | null;
+      longitude?: number | null;
+    } | null;
+    taggedUserIds?: string[];
+  }
 ) {
   return runAction(async () => {
     const actor = await getSessionUser();
     if (!actor) throw AppError.unauthorized();
-    // Keep legacy tags in their original record, while using the shared travel
-    // metadata service for new TravelPhoto records. This makes the management
-    // and travel-profile editors operate on the same persisted photo.
-    const legacy = await prisma.tripPhoto.findUnique({
-      where: { id: photoId },
-      select: { id: true, userId: true },
-    });
-    const updated = legacy
-      ? await userService.updateTripPhoto(actor.id, photoId, input)
-      : await updateTravelPhotoMetadata(actor.id, photoId, input);
+    // The shared service upgrades edited legacy rows when necessary and keeps
+    // current photos, profile views, and discovery metadata in sync.
+    const updated = await updateTravelPhotoMetadata(actor.id, photoId, input);
     revalidateTravelViews();
     return updated;
   });

@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { toast } from "@/components/ui/toast";
+import { TravelPhotoComments } from "./travel-photo-comments";
 import type { TravelPhotoDTO } from "@/types/travel";
 
 interface TravelPhotoDetailModalProps {
@@ -14,6 +15,9 @@ interface TravelPhotoDetailModalProps {
   onPhotoDeleted?: (deletedId: string) => void;
   onRequestReplace?: (photo: TravelPhotoDTO) => void;
   onNavigate?: (newPhotoId: string) => void;
+  onToggleLike?: (photoId: string) => Promise<{ liked: boolean; count: number }>;
+  isPhotoLikePending?: (photoId: string) => boolean;
+  shareUrl?: string | null;
 }
 
 export function TravelPhotoDetailModal({
@@ -24,6 +28,9 @@ export function TravelPhotoDetailModal({
   onPhotoDeleted,
   onRequestReplace,
   onNavigate,
+  onToggleLike,
+  isPhotoLikePending,
+  shareUrl = null,
 }: TravelPhotoDetailModalProps) {
   const [photo, setPhoto] = useState<TravelPhotoDTO | null>(null);
   const [loading, setLoading] = useState(true);
@@ -34,6 +41,20 @@ export function TravelPhotoDetailModal({
   const [isSavingEdit, setIsSavingEdit] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const touchStartXRef = useRef<number | null>(null);
+  const photoRef = useRef<TravelPhotoDTO | null>(null);
+  const onCloseRef = useRef(onClose);
+  const onPhotoUpdatedRef = useRef(onPhotoUpdated);
+  const onNavigateRef = useRef(onNavigate);
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+    onPhotoUpdatedRef.current = onPhotoUpdated;
+    onNavigateRef.current = onNavigate;
+  }, [onClose, onNavigate, onPhotoUpdated]);
+
+  useEffect(() => {
+    photoRef.current = photo;
+  }, [photo]);
 
   // Fetch photo details
   const loadPhoto = useCallback(async (id: string) => {
@@ -42,16 +63,17 @@ export function TravelPhotoDetailModal({
       const res = await fetch(`/api/v1/travel-media/photos/${id}`);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to load photo details");
+      photoRef.current = data.photo;
       setPhoto(data.photo);
       setEditCaption(data.photo.caption || "");
       setEditLocation(data.photo.location || "");
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Error loading photo");
-      onClose();
+      onCloseRef.current();
     } finally {
       setLoading(false);
     }
-  }, [onClose]);
+  }, []);
 
   useEffect(() => {
     const timer = window.setTimeout(() => void loadPhoto(photoId), 0);
@@ -62,22 +84,31 @@ export function TravelPhotoDetailModal({
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        onClose();
+        onCloseRef.current();
       } else if (e.key === "ArrowLeft" && photo?.prevPhotoId) {
-        if (onNavigate) onNavigate(photo.prevPhotoId);
+        if (onNavigateRef.current) onNavigateRef.current(photo.prevPhotoId);
         else void loadPhoto(photo.prevPhotoId);
       } else if (e.key === "ArrowRight" && photo?.nextPhotoId) {
-        if (onNavigate) onNavigate(photo.nextPhotoId);
+        if (onNavigateRef.current) onNavigateRef.current(photo.nextPhotoId);
         else void loadPhoto(photo.nextPhotoId);
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [photo, onClose, onNavigate, loadPhoto]);
+  }, [photo, loadPhoto]);
+
+  const handleCommentsCountChange = useCallback((commentsCount: number) => {
+    const currentPhoto = photoRef.current;
+    if (!currentPhoto) return;
+    const updated = { ...currentPhoto, commentsCount };
+    photoRef.current = updated;
+    setPhoto(updated);
+    onPhotoUpdatedRef.current?.(updated);
+  }, []);
 
   const handleToggleLike = async () => {
-    if (!photo || isLiking) return;
+    if (!photo || isLiking || isPhotoLikePending?.(photo.id)) return;
     if (isOwner) {
       toast.info("You cannot like your own travel photo.");
       return;
@@ -90,20 +121,32 @@ export function TravelPhotoDetailModal({
     const nextLiked = !prevLiked;
     const nextCount = nextLiked ? prevCount + 1 : Math.max(0, prevCount - 1);
 
-    setPhoto((prev) => (prev ? { ...prev, isLiked: nextLiked, likesCount: nextCount } : null));
+    const optimisticPhoto = { ...photo, isLiked: nextLiked, likesCount: nextCount };
+    photoRef.current = optimisticPhoto;
+    setPhoto(optimisticPhoto);
+    onPhotoUpdatedRef.current?.(optimisticPhoto);
 
     try {
-      const res = await fetch(`/api/v1/travel-media/photos/${photo.id}/like`, {
-        method: "POST",
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to toggle like");
-
-      setPhoto((prev) => (prev ? { ...prev, isLiked: data.liked, likesCount: data.count } : null));
-      onPhotoUpdated?.({ ...photo, isLiked: data.liked, likesCount: data.count });
+      const data = onToggleLike
+        ? await onToggleLike(photo.id)
+        : await (async () => {
+            const res = await fetch(`/api/v1/travel-media/photos/${photo.id}/like`, {
+              method: "POST",
+            });
+            const payload = await res.json();
+            if (!res.ok) throw new Error(payload.error || "Failed to toggle like");
+            return payload as { liked: boolean; count: number };
+          })();
+      const reconciledPhoto = { ...photo, isLiked: data.liked, likesCount: data.count };
+      photoRef.current = reconciledPhoto;
+      setPhoto(reconciledPhoto);
+      onPhotoUpdatedRef.current?.(reconciledPhoto);
     } catch (err: unknown) {
       // Revert optimistic update
-      setPhoto((prev) => (prev ? { ...prev, isLiked: prevLiked, likesCount: prevCount } : null));
+      const revertedPhoto = { ...photo, isLiked: prevLiked, likesCount: prevCount };
+      photoRef.current = revertedPhoto;
+      setPhoto(revertedPhoto);
+      onPhotoUpdatedRef.current?.(revertedPhoto);
       toast.error(err instanceof Error ? err.message : "Error liking photo");
     } finally {
       setIsLiking(false);
@@ -184,13 +227,13 @@ export function TravelPhotoDetailModal({
 
   const navigatePrevious = () => {
     if (!photo?.prevPhotoId) return;
-    if (onNavigate) onNavigate(photo.prevPhotoId);
+    if (onNavigateRef.current) onNavigateRef.current(photo.prevPhotoId);
     else void loadPhoto(photo.prevPhotoId);
   };
 
   const navigateNext = () => {
     if (!photo?.nextPhotoId) return;
-    if (onNavigate) onNavigate(photo.nextPhotoId);
+    if (onNavigateRef.current) onNavigateRef.current(photo.nextPhotoId);
     else void loadPhoto(photo.nextPhotoId);
   };
 
@@ -202,6 +245,13 @@ export function TravelPhotoDetailModal({
     if (Math.abs(distance) < 40) return;
     if (distance > 0) navigatePrevious();
     else navigateNext();
+  };
+  const handleShare = async () => {
+    if (!shareUrl) return;
+    try {
+      if (navigator.share) await navigator.share({ title: photo?.caption || "Travel memory", text: "View this travel memory on Homyz", url: shareUrl });
+      else await navigator.clipboard.writeText(shareUrl);
+    } catch { /* user cancelled */ }
   };
 
   return (
@@ -352,6 +402,15 @@ export function TravelPhotoDetailModal({
                 ) : (
                   <p className="text-xs text-zinc-400 italic">No caption provided.</p>
                 )}
+                {photo?.taggedPeople && photo.taggedPeople.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 pt-1" aria-label="People tagged in this photo">
+                    {photo.taggedPeople.map((person) => (
+                      <span key={person.id} className="rounded-full bg-amber-50 px-2 py-1 text-[11px] font-medium text-amber-900">
+                        {person.name || person.handle || "Traveler"}
+                      </span>
+                    ))}
+                  </div>
+                )}
                 <span className="text-[10px] text-zinc-400 block pt-1">
                   Uploaded on {photo?.createdAt ? new Date(photo.createdAt).toLocaleDateString() : ""}
                 </span>
@@ -363,7 +422,7 @@ export function TravelPhotoDetailModal({
               <button
                 type="button"
                 onClick={handleToggleLike}
-                disabled={isLiking}
+                disabled={isLiking || Boolean(photo && isPhotoLikePending?.(photo.id))}
                 className="flex items-center gap-2 group cursor-pointer transition"
               >
                 <div
@@ -396,6 +455,8 @@ export function TravelPhotoDetailModal({
                 {photo?.isLiked ? "You liked this" : isOwner ? "Your photo" : "Click to like"}
               </span>
             </div>
+            {shareUrl && photo?.visibility === "PUBLIC" && <button type="button" onClick={() => void handleShare()} className="mb-3 rounded-full border border-zinc-200 px-3 py-1.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-50">Share photo</button>}
+            {photo && <TravelPhotoComments key={photo.id} photoId={photo.id} onCountChange={handleCommentsCountChange} />}
           </div>
 
           {/* Owner Management Actions */}

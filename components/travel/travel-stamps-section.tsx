@@ -326,10 +326,10 @@ export function TravelStampsSection({
             🛂
           </div>
           <h4 className="text-base font-bold text-zinc-900">
-            No travel stamps collected yet
+            Choose or Add Travel Stamps
           </h4>
           <p className="text-xs text-zinc-500 max-w-sm mx-auto mt-1">
-            Explore destinations and add stamps to your travel profile.
+            Collect travel stamps to showcase your journeys.
           </p>
           {isOwner && (
             <button
@@ -337,7 +337,7 @@ export function TravelStampsSection({
               onClick={() => setIsManagerOpen(true)}
               className="mt-4 rounded-full bg-zinc-900 px-5 py-2.5 text-xs font-semibold text-white shadow hover:bg-black transition cursor-pointer"
             >
-              Explore Travel Stamps
+              Choose or Add Travel Stamps
             </button>
           )}
         </div>

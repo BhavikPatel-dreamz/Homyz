@@ -4,7 +4,7 @@ import { ModalOverlay } from "@/components/ui/modal-overlay";
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { primaryButtonInteractionClass } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
@@ -14,6 +14,7 @@ import { DISPLAY_CURRENCIES, useCurrency } from "@/lib/currency-context";
 import { ListingHeaderSearch } from "@/components/listings/listing-header-search";
 import {
   invalidateUnreadNotificationCount,
+  resetUnreadNotificationCount,
   refreshUnreadNotificationCount,
   useUnreadNotificationCount,
 } from "@/lib/notifications/unread-count-store";
@@ -36,15 +37,13 @@ type AppHeaderProps = {
 
 export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }: AppHeaderProps = {}) {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const router = useRouter();
   const { data: session, status: sessionStatus, update } = useSession();
   const user = session?.user ?? initialUser ?? null;
   const hasUser = Boolean(user);
+  const notificationAccountKey = user?.email || null;
   const sessionLoading = sessionStatus === "loading" && !initialUser;
   const role = user?.role;
-  const isReservationsView =
-    pathname === "/host/today" && searchParams.get("tab") === "all";
   const [isConvertingRole, setIsConvertingRole] = useState(false);
   const [failedAvatarUrl, setFailedAvatarUrl] = useState<string | null>(null);
 
@@ -92,6 +91,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
   }, []);
 
   useEffect(() => {
+    resetUnreadNotificationCount();
     if (!hasUser) return;
 
     void refreshUnreadNotificationCount();
@@ -112,7 +112,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
       window.removeEventListener("homyz:notifications-updated", handleNotificationsUpdated);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [hasUser]);
+  }, [hasUser, notificationAccountKey]);
 
   const isHostRoute = pathname?.startsWith("/host") ?? false;
   const logoHref = isHostRoute ? "/host/today" : "/";
@@ -123,7 +123,13 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
   );
   const hasHeaderDivider = showBottomBorder ?? routeHasHeaderDivider;
 
-  const hostNavTabs = useMemo(
+  const hostNavTabs: Array<{
+    id: string;
+    label: string;
+    href: string;
+    isActive: boolean;
+    disabled?: boolean;
+  }> = useMemo(
     () => [
       {
         id: "today",
@@ -306,15 +312,15 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
               >
                 {hostNavTabs.map((tab, index) => {
                   const isActive = tab.isActive;
-                  if ((tab as any).disabled) {
+                  if (tab.disabled) {
                     return (
                       <span
                         key={tab.id}
-                        title={(t as any)("host_nav_insights_soon", "Coming soon in next phase")}
+                        title={t("host_nav_insights_soon" as TranslationKey) || "Coming soon in next phase"}
                         className="relative z-10 mx-2 py-1.5 md:mx-2.5 md:py-2 lg:mx-3 text-xs md:text-sm font-medium text-[#A0A0A0] cursor-not-allowed select-none rounded-lg inline-flex items-center gap-1 opacity-70"
                       >
                         {tab.label}
-                        <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[9px] font-semibold text-zinc-500 uppercase tracking-wide">
+                        <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[9px] font-medium text-zinc-500 uppercase tracking-wide">
                           Soon
                         </span>
                       </span>
@@ -663,22 +669,6 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                               <Image src="/images/icons/profile.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
                             </span>
                             <span>{t("header_profile") || "Profile"}</span>
-                          </Link>
-
-                          {/* Travel Profile */}
-                          <Link
-                            href="/travel-profile"
-                            onClick={() => setMenuOpen(false)}
-                            className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${
-                              pathname === "/travel-profile" ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
-                            }`}
-                          >
-                            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
-                              <Image src="/images/icons/trip.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
-                            </span>
-                            <span className="flex flex-1 items-center justify-between">
-                              <span>Travel Profile</span>
-                            </span>
                           </Link>
 
                           {/* Notifications */}

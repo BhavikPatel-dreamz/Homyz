@@ -773,6 +773,9 @@ async function create(
       messageContent: input.message,
       isConfirmed: automaticallyApprove,
       guestName: actor.name || "A guest",
+      startDate: createdBooking.startDate,
+      endDate: createdBooking.endDate,
+      guests: createdBooking.guests,
       db: tx,
     });
 
@@ -837,7 +840,7 @@ async function create(
           : `${guestName} requested to book ${listing.title} from ${input.startDate} to ${input.endDate}. Review request now.`,
         entityId: booking.id,
         entityType: "host_booking",
-        link: isAutoConfirmed ? "/host/today?tab=upcoming" : "/host/today?tab=pending",
+        link: `/host/bookings/${booking.id}`,
         metadata: {
           event: isAutoConfirmed ? "BOOKING_CONFIRMED" : "BOOKING_REQUEST_CREATED",
           bookingId: booking.id,
@@ -1817,7 +1820,7 @@ async function cancelNonRefundableByGuest(actor: AuthUser, id: string): Promise<
         message: `A guest cancelled their reservation for ${cancelled.listing.title}.`,
         entityId: cancelled.id,
         entityType: "host_booking",
-        link: "/host/today?tab=cancelled",
+        link: `/host/bookings/${cancelled.id}`,
         metadata: {
           bookingId: cancelled.id,
           listingId: cancelled.listingId,
@@ -2035,7 +2038,7 @@ async function cancelBookingByGuest(actor: AuthUser, id: string): Promise<Bookin
         message: `A guest cancelled their reservation for ${cancelled.listing.title}.`,
         entityId: cancelled.id,
         entityType: "host_booking",
-        link: "/host/today?tab=cancelled",
+        link: `/host/bookings/${cancelled.id}`,
         metadata: {
           bookingId: cancelled.id,
           listingId: cancelled.listingId,
@@ -3443,8 +3446,8 @@ async function cancelBookingByAdmin(
         title: `Reservation Cancelled by Admin: ${cancelled.listing.title}`,
         message: `A reservation for ${cancelled.listing.title} was cancelled by an administrator: "${reason.trim()}".`,
         entityId: cancelled.id,
-        entityType: "booking",
-        link: "/host/reservations",
+        entityType: "host_booking",
+        link: `/host/bookings/${cancelled.id}`,
         metadata: {
           bookingId: cancelled.id,
           listingId: cancelled.listingId,

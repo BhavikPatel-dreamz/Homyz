@@ -6,7 +6,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { ListingCard } from "@/components/listings/listing-card";
-import { getPrimaryListingBadge } from "@/lib/listings/card-badge";
+import { SuperhostBadge } from "@/components/badges/superhost-badge";
 import { ListingSearchBar } from "@/components/listings/listing-search-bar";
 import { ResultsSummaryBar } from "@/components/listings/results-summary-bar";
 import type { PublicListingCardDTO } from "@/services/mappers";
@@ -199,7 +199,8 @@ function SelectedPreviewCard({
     ?? listing.pricing?.baseDisplayPrice
     ?? listing.price;
   const formattedPrice = formatPrice(effectiveNightlyPrice * selectedStayNights, currency);
-  const primaryBadge = getPrimaryListingBadge(listing);
+  const showGuestFavorite = listing.isGuestFavorite === true;
+  const showSuperhost = listing.isSuperhost === true;
 
   return (
     <div className="relative flex items-center gap-3 bg-white/95 backdrop-blur-md rounded-2xl p-2.5 shadow-xl border border-zinc-200">
@@ -229,17 +230,20 @@ function SelectedPreviewCard({
           )}
         </div>
         <div className="min-w-0 flex-1">
-          {primaryBadge && (
+          {(showGuestFavorite || showSuperhost) && (
             <div className="flex flex-wrap items-center gap-1 mb-1">
-              {primaryBadge === "guest_favorite" && (
+              {showGuestFavorite && (
                 <span className="inline-flex items-center rounded-full bg-amber-50 border border-amber-200 px-1.5 py-0.2 text-[9px] font-semibold text-amber-950 leading-tight">
                   {t("listings_guest_favourite", "Guest favourite")}
                 </span>
               )}
-              {primaryBadge === "superhost" && (
-                <span className="inline-flex items-center rounded-full bg-zinc-900 px-1.5 py-0.2 text-[9px] font-medium text-white leading-tight">
-                  {t("listings_superhost", "Superhost")}
-                </span>
+              {showSuperhost && (
+                <SuperhostBadge
+                  active
+                  compact
+                  label={t("listings_superhost", "Superhost")}
+                  className="border-0 bg-zinc-900 px-1.5 py-0.5 text-[9px] font-medium leading-tight text-white"
+                />
               )}
             </div>
           )}

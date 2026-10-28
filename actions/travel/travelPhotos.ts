@@ -158,6 +158,14 @@ export async function updateTravelPhotoMetadataAction(
   input: {
     caption?: string | null;
     location?: string | null;
+    locationData?: {
+      city?: string | null;
+      country?: string | null;
+      countryCode?: string | null;
+      latitude?: number | null;
+      longitude?: number | null;
+    } | null;
+    taggedUserIds?: string[];
     tripId?: string | null;
     order?: number;
   }

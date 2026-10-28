@@ -14,7 +14,13 @@ import type { UpdateHostPublicProfileInput } from "@/lib/validation/host-profile
 import { deleteManagedMediaUrl } from "@/lib/storage/media";
 import { getTravelProfileStats } from "@/services/travel-profile.service";
 import type { Prisma } from "@/generated/prisma/client";
-import { ListingStatus, ReviewDirection, ReviewStatus } from "@/generated/prisma/enums";
+import {
+  ListingStatus,
+  ReviewDirection,
+  ReviewStatus,
+  TravelProfileVisibility,
+  UserStatus,
+} from "@/generated/prisma/enums";
 import { qualificationService } from "@/services/qualification.service";
 import { getMissingProfileFields, hasUsableProfileEmail } from "@/lib/auth/profile-completion";
 import { normalizeEmail, normalizePhone } from "@/lib/auth/normalization";
@@ -314,6 +320,8 @@ export type PublicHostProfile = {
     createdAt: Date;
     publicProfile: Record<string, unknown>;
     isSuperhost: boolean;
+    isHost: boolean;
+    publicTravelProfileId: string | null;
   };
   stats: { reviewCount: number; averageRating: number | null; listingCount: number };
   reviews: Array<{
@@ -331,6 +339,14 @@ export type PublicHostProfile = {
       country?: string | null;
     };
   }>;
+  guestStats: { reviewCount: number; averageRating: number | null };
+  guestReviews: Array<{
+    id: string;
+    rating: number;
+    comment: string;
+    createdAt: Date;
+    author: { name: string | null; image: string | null };
+  }>;
   listings: Array<{
     id: string;
     customSlug: string | null;
@@ -345,18 +361,89 @@ export type PublicHostProfile = {
   }>;
 };
 
-/** Public, privacy-safe data for the dedicated host profile page. */
+const PUBLIC_PROFILE_STRING_FIELDS = [
+  "bio",
+  "bioTitle",
+  "whereILive",
+  "myWork",
+  "school",
+  "spendTooMuchTime",
+  "pets",
+  "decadeBorn",
+  "uselessSkill",
+  "funFact",
+  "favoriteSong",
+  "obsessedWith",
+] as const;
+
+const PUBLIC_PROFILE_LIST_FIELDS = ["languages", "interests"] as const;
+const PUBLIC_PROMPT_FIELDS = ["homeUnique", "guestsShouldKnow", "education", "perfectGuest", "hobbies"] as const;
+
+function cleanPublicText(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  return trimmed ? trimmed : null;
+}
+
+/**
+ * Public profiles are JSON so they can contain fields introduced by old or
+ * future editors. Whitelist only the fields intentionally rendered on a
+ * public page instead of forwarding that blob to the browser.
+ */
+function toSafePublicProfile(value: Prisma.JsonValue | null): Record<string, unknown> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  const source = value as Record<string, unknown>;
+  const safe: Record<string, unknown> = {};
+
+  for (const field of PUBLIC_PROFILE_STRING_FIELDS) {
+    const text = cleanPublicText(source[field]);
+    if (text) safe[field] = text;
+  }
+
+  for (const field of PUBLIC_PROFILE_LIST_FIELDS) {
+    const values = Array.isArray(source[field])
+      ? source[field].map(cleanPublicText).filter((item): item is string => Boolean(item))
+      : [cleanPublicText(source[field])].filter((item): item is string => Boolean(item));
+    if (values.length > 0) safe[field] = Array.from(new Set(values)).slice(0, 20);
+  }
+
+  const rawPrompts = source.prompts;
+  if (rawPrompts && typeof rawPrompts === "object" && !Array.isArray(rawPrompts)) {
+    const prompts: Record<string, string> = {};
+    for (const field of PUBLIC_PROMPT_FIELDS) {
+      const text = cleanPublicText((rawPrompts as Record<string, unknown>)[field]);
+      if (text) prompts[field] = text;
+    }
+    if (Object.keys(prompts).length > 0) safe.prompts = prompts;
+  }
+
+  return safe;
+}
+
+/** Public, privacy-safe data for the dedicated user profile page. */
 async function getPublicHostProfile(userId: string, options: { reviewLimit?: number } = {}): Promise<PublicHostProfile> {
   const reviewLimit = Math.min(100, Math.max(1, options.reviewLimit ?? 3));
   const host = await prisma.user.findUnique({
     where: { id: userId },
-    select: { id: true, name: true, image: true, createdAt: true, publicProfile: true, isSuperhost: true },
+    select: {
+      id: true,
+      name: true,
+      image: true,
+      createdAt: true,
+      publicProfile: true,
+      isSuperhost: true,
+      role: true,
+      status: true,
+      travelProfile: { select: { publicId: true, visibility: true } },
+    },
   });
-  if (!host) throw AppError.notFound("Host not found");
+  if (!host || host.status !== UserStatus.ACTIVE) throw AppError.notFound("User not found");
 
-  const profile = host.publicProfile && typeof host.publicProfile === "object" && !Array.isArray(host.publicProfile)
+  const rawProfile = host.publicProfile && typeof host.publicProfile === "object" && !Array.isArray(host.publicProfile)
     ? (host.publicProfile as Record<string, unknown>)
     : {};
+  if (rawProfile.profileVisible === false) throw AppError.notFound("User profile is private");
+  const profile = toSafePublicProfile(host.publicProfile);
 
   const publicListingWhere = {
     hostId: host.id,
@@ -365,13 +452,14 @@ async function getPublicHostProfile(userId: string, options: { reviewLimit?: num
     isPaused: false,
     deletedAt: null,
   };
-  const [listings, reviewSummary, latestReviews] = await Promise.all([
+  const [listings, listingCount, reviewSummary, latestReviews, guestReviewSummary, guestReviews] = await Promise.all([
     prisma.listing.findMany({
       where: publicListingWhere,
       select: { id: true, customSlug: true, title: true, photos: true, city: true, country: true, listingType: true, price: true, isGuestFavorite: true },
       orderBy: { updatedAt: "desc" },
       take: 12,
     }),
+    prisma.listing.count({ where: publicListingWhere }),
     prisma.review.aggregate({
       where: {
         status: ReviewStatus.PUBLISHED,
@@ -399,9 +487,36 @@ async function getPublicHostProfile(userId: string, options: { reviewLimit?: num
       orderBy: { createdAt: "desc" },
       take: reviewLimit,
     }),
+    prisma.review.aggregate({
+      where: {
+        status: ReviewStatus.PUBLISHED,
+        direction: ReviewDirection.HOST_TO_GUEST,
+        targetUserId: host.id,
+      },
+      _avg: { rating: true },
+      _count: { _all: true },
+    }),
+    prisma.review.findMany({
+      where: {
+        status: ReviewStatus.PUBLISHED,
+        direction: ReviewDirection.HOST_TO_GUEST,
+        targetUserId: host.id,
+        comment: { not: "" },
+      },
+      select: {
+        id: true,
+        rating: true,
+        comment: true,
+        createdAt: true,
+        author: { select: { name: true, image: true } },
+      },
+      orderBy: { createdAt: "desc" },
+      take: reviewLimit,
+    }),
   ]);
 
-  const isSuperhost = qualificationService.isSuperhost(host);
+  const isHost = host.role === "HOST";
+  const isSuperhost = isHost && qualificationService.isSuperhost(host);
 
   return {
     host: {
@@ -411,16 +526,27 @@ async function getPublicHostProfile(userId: string, options: { reviewLimit?: num
       createdAt: host.createdAt,
       publicProfile: profile,
       isSuperhost,
+      isHost,
+      publicTravelProfileId: host.travelProfile?.visibility === TravelProfileVisibility.PUBLIC
+        ? host.travelProfile.publicId
+        : null,
     },
     stats: {
       reviewCount: reviewSummary._count._all,
       averageRating: reviewSummary._avg.rating === null ? null : Math.round(reviewSummary._avg.rating * 100) / 100,
-      listingCount: listings.length,
+      listingCount,
     },
     reviews: latestReviews.map((r) => ({
       ...r,
       listing: r.listing ?? { id: "", title: "", customSlug: null },
     })),
+    guestStats: {
+      reviewCount: guestReviewSummary._count._all,
+      averageRating: guestReviewSummary._avg.rating === null
+        ? null
+        : Math.round(guestReviewSummary._avg.rating * 100) / 100,
+    },
+    guestReviews,
     listings: (listings as Array<{
       id: string;
       customSlug: string | null;

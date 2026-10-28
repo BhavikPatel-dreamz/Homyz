@@ -15,7 +15,7 @@ import {
   toPropertyCardPricingViewModel,
   type PropertyCardPricingViewModel,
 } from "@/lib/booking/property-card-pricing";
-import { getPrimaryListingBadge } from "@/lib/listings/card-badge";
+import { SuperhostBadge } from "@/components/badges/superhost-badge";
 
 import { propertyTypeLabel } from "@/lib/constants/listing-enums";
 
@@ -265,13 +265,11 @@ export function ListingCard({
   // ── Badges (Guest Favourite / Superhost / Featured) ─────────────────────────
   // Qualification is evaluated strictly on the backend and persisted at the listing/host level.
   // The UI consumes only the persisted backend qualification state.
-  const primaryBadge = getPrimaryListingBadge({
-    isGuestFavorite: listing.isGuestFavorite,
-    isSuperhost:
-      listing.isSuperhost === true ||
-      (listing as { host?: { isSuperhost?: boolean | null } | null }).host?.isSuperhost === true,
-  });
-  const isFeat = primaryBadge === null && Boolean(listing.isFeatured);
+  const showGuestFavorite = listing.isGuestFavorite === true;
+  const showSuperhost =
+    listing.isSuperhost === true ||
+    (listing as { host?: { isSuperhost?: boolean | null } | null }).host?.isSuperhost === true;
+  const isFeat = !showGuestFavorite && !showSuperhost && Boolean(listing.isFeatured);
 
   // ── Headings & Subtitles ────────────────────────────────────────────────────
   const locationString = listing.city
@@ -517,17 +515,20 @@ export function ListingCard({
         )}
 
         {/* ── Badges (Top Left) ── */}
-        {(primaryBadge || isFeat) && (
+        {(showGuestFavorite || showSuperhost || isFeat) && (
           <div className="absolute left-3 top-3 z-20 flex flex-wrap items-center gap-1.5 max-w-[calc(100%-4.5rem)] pointer-events-none">
-            {primaryBadge === "guest_favorite" && (
+            {showGuestFavorite && (
               <span className="inline-flex items-center rounded-full bg-white px-2.5 py-1 text-[10px] sm:text-xs font-normal text-[#1F1F1F] shadow-md border border-black/5">
                 {t("listings_guest_favourite", "Guest favourite")}
               </span>
             )}
-            {primaryBadge === "superhost" && (
-              <span className="inline-flex items-center rounded-full bg-black/70 backdrop-blur-md px-2.5 py-1 text-[10px] sm:text-xs font-normal text-white shadow-md">
-                {t("listings_superhost", "Superhost")}
-              </span>
+            {showSuperhost && (
+              <SuperhostBadge
+                active
+                compact
+                label={t("listings_superhost", "Superhost")}
+                className="border-0 bg-black/70 px-2.5 py-1 text-[10px] font-normal text-white shadow-md backdrop-blur-md sm:text-xs"
+              />
             )}
             {isFeat && (
               <span className="inline-flex items-center rounded-full bg-white/90 backdrop-blur-md px-2.5 py-1 text-[10px] sm:text-xs font-normal text-[#1F1F1F] shadow-xs border border-white/60">

@@ -524,7 +524,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                           onClick={() => setActiveTab("conversation")}
                           className="rounded-full bg-amber-900 px-5 py-3 text-xs sm:text-sm font-medium text-white hover:bg-black transition-colors cursor-pointer"
                         >
-                          Go to Response Inquiry →
+                          Go to Response Inquiry
                         </button>
                       </div>
                     </div>
@@ -714,7 +714,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                       rows={5}
                       maxLength={4000}
                       placeholder={t("host_dispute_reply_placeholder", "Type your official message or response details...")}
-                      className="w-full rounded-lg border border-[#727272] p-4 text-sm sm:text-base outline-none focus:border-[#1F1F1F] min-h-[140px]"
+                      className="w-full rounded-lg border border-zinc-300 p-4 text-sm sm:text-base outline-none focus:border-[#1F1F1F] min-h-[140px]"
                     />
 
                     {/* Evidence Attachment */}
@@ -905,7 +905,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                   <ol className="mt-6 space-y-6 border-l-2 border-zinc-200 pl-5 ml-3">
                     {dispute.timeline.map((event) => (
                       <li key={event.id} className="relative pl-3">
-                        <span className="absolute -left-[31px] top-1.5 h-3.5 w-3.5 rounded-full border-2 border-white bg-[#1F1F1F]" />
+                        <span className="absolute -left-[28px] top-1.5 h-3.5 w-3.5 rounded-full border-2 border-white bg-[#1F1F1F]" />
                         <div className="space-y-1">
                           <div className="flex items-center justify-between">
                             <h4 className="text-sm sm:text-base font-medium text-[#1F1F1F]">{event.title}</h4>
@@ -1001,7 +1001,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                           <span className="text-sm sm:text-base font-medium text-[#1F1F1F]">
                             Proposal: {proposal.proposalType.replaceAll("_", " ")}
                           </span>
-                          <span className="rounded-full bg-blue-100 text-blue-800 px-3 py-0.5 text-xs font-semibold">
+                          <span className="rounded-full bg-blue-100 text-blue-800 px-3 py-0.5 text-xs font-medium">
                             {proposal.status}
                           </span>
                         </div>
@@ -1022,7 +1022,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
         <aside className="space-y-6 lg:sticky lg:top-8 lg:self-start">
           {/* Section 1: Case Summary */}
           <section className="rounded-[20px] rounded-[10px] border border-zinc-200 p-6 bg-[rgba(255,255,255,0.6)] shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)]">
-            <h3 className="text-base sm:text-lg font-medium text-[#1F1F1F] border-b border-[#727272] pb-3">
+            <h3 className="text-base sm:text-lg font-medium text-[#1F1F1F] border-b border-[#d7d7d7] pb-3">
               Case Summary
             </h3>
             <dl className="mt-4 divide-y divide-zinc-100 text-sm">
@@ -1068,7 +1068,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
 
           {/* Section 2: Reservation & Property Details */}
           <section className="rounded-[20px] rounded-[10px] border border-zinc-200 p-6 bg-[rgba(255,255,255,0.6)] shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)]">
-            <h3 className="text-base sm:text-lg font-medium text-[#1F1F1F] border-b border-[#727272] pb-3">
+            <h3 className="text-base sm:text-lg font-medium text-[#1F1F1F] border-b border-[#d7d7d7] pb-3">
               Reservation Details
             </h3>
 
@@ -1129,9 +1129,9 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
                 <div className="pt-2">
                   <Link
                     href={`/host/bookings/${booking.id}`}
-                    className="flex min-h-11 w-full items-center justify-center rounded-full border border-[#727272] bg-white px-4 py-3 text-base font-medium text-[#1F1F1F] hover:bg-[#1F1F1F] hover:text-white transition-colors"
+                    className="flex min-h-11 w-full items-center justify-center rounded-full border border-[#1F1F1F] bg-[#1F1F1F] hover:bg-white px-4 py-3 font-medium text-base hover:text-[#1F1F1F] text-white transition-colors duration-300"
                   >
-                    View Booking Details →
+                    View Booking Details
                   </Link>
                 </div>
               </div>
@@ -1141,7 +1141,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
           {/* Section 3: Guest Information */}
           {booking?.user && (
             <section className="rounded-[20px] rounded-[10px] border border-zinc-200 p-6 bg-[rgba(255,255,255,0.6)] shadow-[2px_0px_4px_rgba(0,0,0,0.25),0px_2px_4px_rgba(0,0,0,0.25)]">
-              <h3 className="text-base sm:text-lg font-medium text-[#1F1F1F] border-b border-[#727272] pb-3">
+              <h3 className="text-base sm:text-lg font-medium text-[#1F1F1F] border-b border-[#d7d7d7] pb-3">
                 Guest Information
               </h3>
               <div className="mt-4 flex items-center gap-3.5">
@@ -1239,8 +1239,8 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
           <div className="w-full max-w-xl rounded-[20px] bg-white border border-zinc-200 p-6 sm:p-7 shadow-2xl space-y-5">
             <div className="flex items-center justify-between border-b border-zinc-300 pb-3.5">
               <div>
-                <h3 className="text-base sm:text-lg font-bold text-[#1F1F1F]">{t("host_dispute_propose_title", "Propose Resolution Outcome")}</h3>
-                <p className="text-xs text-[#727272]">{t("host_dispute_propose_subtitle", "Submit a formal settlement proposal for Support review.")}</p>
+                <h3 className="text-base sm:text-xl font-medium text-[#1F1F1F]">{t("host_dispute_propose_title", "Propose Resolution Outcome")}</h3>
+                <p className="text-sm text-[#727272]">{t("host_dispute_propose_subtitle", "Submit a formal settlement proposal for Support review.")}</p>
               </div >
               <button
                 type="button"

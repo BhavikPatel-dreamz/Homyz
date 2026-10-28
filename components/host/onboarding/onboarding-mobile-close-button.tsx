@@ -2,6 +2,7 @@
 
 import { CloseIcon } from "@/components/ui/close-icon";
 import { useRouter } from "next/navigation";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 interface OnboardingMobileCloseButtonProps {
   disabled?: boolean;
@@ -12,6 +13,7 @@ export function OnboardingMobileCloseButton({
   disabled = false,
 }: OnboardingMobileCloseButtonProps) {
   const router = useRouter();
+  const { t } = useLanguage();
 
   return (
     <div className="mb-5 flex justify-end sm:mb-8 lg:hidden">
@@ -19,7 +21,7 @@ export function OnboardingMobileCloseButton({
         type="button"
         onClick={() => router.back()}
         disabled={disabled}
-        aria-label="Close"
+        aria-label={t("host_close", "Close")}
         className="inline-flex size-11 items-center justify-center rounded-full text-[#1F1F1F] transition-colors hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-50 dark:text-zinc-100 dark:hover:bg-zinc-800"
       >
         <CloseIcon />

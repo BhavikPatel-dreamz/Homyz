@@ -8,7 +8,7 @@ import { PublicHostProfileView } from "@/components/users/public-host-profile-vi
 export default async function PublicHostProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const profile = await userService.getPublicHostProfile(id).catch(() => notFound());
-  const { host, stats, reviews, listings } = profile;
+  const { host, stats, reviews, guestStats, guestReviews, listings } = profile;
 
   return (
     <div className="flex min-h-screen flex-col bg-white font-sans text-[#1f1f1f] antialiased">
@@ -19,6 +19,8 @@ export default async function PublicHostProfilePage({ params }: { params: Promis
             host={host}
             stats={stats}
             reviews={reviews}
+            guestStats={guestStats}
+            guestReviews={guestReviews}
             listings={listings}
           />
         </Container>
@@ -27,4 +29,3 @@ export default async function PublicHostProfilePage({ params }: { params: Promis
     </div>
   );
 }
-

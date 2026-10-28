@@ -12,7 +12,7 @@ export default async function GuestMessagesPage(props: {
   const initialConversationId = resolvedParams?.id;
   const initialData = await messagingService.listConversationsForUser(actor, {
     role: "guest",
-    take: 50,
+    take: 25,
   });
   const initialRenderedAt = new Date().toISOString();
 
@@ -20,6 +20,7 @@ export default async function GuestMessagesPage(props: {
     <GuestMessagesWorkspace
       initialConversationId={initialConversationId}
       initialConversations={initialData.conversations}
+      initialConversationTotal={initialData.total}
       initialRenderedAt={initialRenderedAt}
     />
   );

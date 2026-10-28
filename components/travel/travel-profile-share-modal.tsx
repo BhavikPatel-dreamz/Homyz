@@ -8,6 +8,7 @@ interface TravelProfileShareModalProps {
   isOpen: boolean;
   onClose: () => void;
   displayName: string;
+  publicProfileId: string;
   handle: string;
   avatarUrl?: string | null;
   visibility?: TravelProfileVisibility;
@@ -17,6 +18,7 @@ export function TravelProfileShareModal({
   isOpen,
   onClose,
   displayName,
+  publicProfileId,
   handle,
   avatarUrl,
   visibility = TravelProfileVisibility.PUBLIC,
@@ -27,17 +29,22 @@ export function TravelProfileShareModal({
   // Compute canonical URL in browser
   const canonicalUrl =
     typeof window !== "undefined"
-      ? `${window.location.origin}/travelers/${encodeURIComponent(handle)}`
-      : `https://homyz.co/travelers/${encodeURIComponent(handle)}`;
+      ? `${window.location.origin}/travelers/${encodeURIComponent(publicProfileId)}`
+      : `https://homyz.co/travelers/${encodeURIComponent(publicProfileId)}`;
 
   useEffect(() => {
     if (!isOpen) return;
-    setCanNativeShare(typeof navigator !== "undefined" && typeof navigator.share === "function");
+    const nativeShareTimer = window.setTimeout(() => {
+      setCanNativeShare(typeof navigator !== "undefined" && typeof navigator.share === "function");
+    }, 0);
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      window.clearTimeout(nativeShareTimer);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
@@ -57,8 +64,8 @@ export function TravelProfileShareModal({
       }
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
-    } catch (err) {
-      console.error("Failed to copy link", err);
+    } catch {
+      // Clipboard access can be unavailable in embedded browsers.
     }
   };
 
@@ -70,7 +77,7 @@ export function TravelProfileShareModal({
           text: `Check out ${displayName}'s travel memories, verified destinations, and travel stamps on Homyz!`,
           url: canonicalUrl,
         });
-      } catch (err) {
+      } catch {
         // User cancelled or share failed
       }
     } else {
@@ -230,4 +237,3 @@ export function TravelProfileShareModal({
     </div>
   );
 }
-

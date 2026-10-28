@@ -28,6 +28,7 @@ export function StepPhotos({
   onNext,
   isLoading = false,
 }: StepPhotosProps) {
+  const { t } = useLanguage();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [filePreviews, setFilePreviews] = useState<string[]>([]);
@@ -47,7 +48,7 @@ export function StepPhotos({
       (file) => ACCEPTED_IMAGE_TYPES.has(file.type) && file.size > 0 && file.size <= MAX_FILE_SIZE,
     );
     if (validFiles.length !== newFiles.length) {
-      setUploadError("Use JPEG, PNG, WebP, or AVIF photos up to 10 MB each.");
+      setUploadError(t("wizard_photos_err_invalid", "Use JPEG, PNG, WebP, or AVIF photos up to 10 MB each."));
     } else {
       setUploadError(null);
     }
@@ -88,7 +89,7 @@ export function StepPhotos({
             const message =
               result && typeof result === "object" && "error" in result
                 ? String((result as { error?: string }).error)
-                : "Upload failed.";
+                : t("wizard_photos_err_upload", "Failed to upload photo(s).");
             throw new Error(message);
           }
           return String((result as { url: string }).url);
@@ -107,7 +108,7 @@ export function StepPhotos({
       setFilePreviews([]);
       setIsModalOpen(false);
     } catch (error: unknown) {
-      setUploadError(error instanceof Error ? error.message : "Upload failed. Please retry.");
+      setUploadError(error instanceof Error ? error.message : t("wizard_photos_err_retry", "Upload failed. Please retry."));
     } finally {
       setIsUploading(false);
     }
@@ -123,8 +124,6 @@ export function StepPhotos({
     setFilePreviews((prev) => prev.filter((_, idx) => idx !== index));
     setSelectedFiles((prev) => prev.filter((_, idx) => idx !== index));
   };
-
-  const { t } = useLanguage();
 
   return (
     <main className="step-photos min-h-dvh bg-white pb-8 sm:py-12 lg:pt-25 lg:pb-16">
@@ -201,7 +200,7 @@ export function StepPhotos({
                       <button
                         type="button"
                         onClick={() => handleRemovePhoto(idx)}
-                        aria-label={`Remove upload ${idx + 1}`}
+                        aria-label={t("host_remove_photo_title", "Remove photo")}
                         className="absolute right-2 top-2 flex size-7 items-center justify-center rounded-full bg-white/90 text-xs font-semibold text-zinc-700 opacity-0 shadow-xs transition-colors group-hover:opacity-100 hover:bg-red-500 hover:text-white focus-visible:opacity-100"
                       >
                         ✕

@@ -333,7 +333,8 @@ export function TravelProfileHeader({
         isOpen={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}
         displayName={displayName}
-        handle={profile.handle || "traveler"}
+        publicProfileId={profile.publicProfileId}
+        handle={profile.handle || ""}
         avatarUrl={profile.user.image}
         visibility={profile.visibility}
       />

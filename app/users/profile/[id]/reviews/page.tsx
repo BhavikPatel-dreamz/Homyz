@@ -23,6 +23,7 @@ export async function generateMetadata({
 export default async function HostReviewsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const profile = await userService.getPublicHostProfile(id, { reviewLimit: 100 }).catch(() => notFound());
+  if (!profile.host.isHost) notFound();
   const { host, reviews, stats } = profile;
 
   return (

@@ -159,7 +159,7 @@ export function InsightsReviewsTab({
                       style={{ width: `${pct}%` }}
                     />
                   </div>
-                  <span className="w-10 text-right text-[#727272] font-mono">{count}</span>
+                  <span className="w-10 text-right text-[#727272]">{count}</span>
                 </button>
               );
             })}
@@ -187,7 +187,7 @@ export function InsightsReviewsTab({
                       style={{ width: `${cat.rating ? (cat.rating / 5) * 100 : 0}%` }}
                     />
                   </div>
-                  <span className="w-8 text-right text-sm font-medium text-[#1F1F1F] font-mono">
+                  <span className="w-8 text-right text-sm font-medium text-[#1F1F1F] ">
                     {cat.rating !== null ? cat.rating.toFixed(1) : "—"}
                   </span>
                 </div>
@@ -605,7 +605,7 @@ export function InsightsReviewsTab({
               </svg>
               <span>Previous</span>
             </button>
-            <span className="font-mono text-[#727272]">
+            <span className=" text-[#727272]">
               Page {pagination.page} of {pagination.totalPages}
             </span>
             <button

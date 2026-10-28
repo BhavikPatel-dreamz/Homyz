@@ -195,9 +195,9 @@ export function AdminTravelStampsClient({ initialStamps }: AdminTravelStampsClie
                 ? {
                     ...s,
                     displayName: updated.displayName,
-                    title: updated.title,
-                    city: updated.city,
-                    country: updated.country,
+                    title: updated.title ?? null,
+                    city: updated.city ?? null,
+                    country: updated.country ?? null,
                     countryCode: updated.countryCode,
                     category: updated.category,
                     description: updated.description,
@@ -229,9 +229,9 @@ export function AdminTravelStampsClient({ initialStamps }: AdminTravelStampsClie
               id: created.id,
               slug: created.slug,
               displayName: created.displayName,
-              title: created.title,
-              city: created.city,
-              country: created.country,
+              title: created.title ?? null,
+              city: created.city ?? null,
+              country: created.country ?? null,
               countryCode: created.countryCode,
               description: created.description,
               iconUrl: created.iconUrl,
@@ -825,4 +825,3 @@ export function AdminTravelStampsClient({ initialStamps }: AdminTravelStampsClie
     </div>
   );
 }
-

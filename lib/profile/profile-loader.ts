@@ -98,7 +98,9 @@ export async function loadProfilePageData(tab?: string, subTab?: string, booking
             url: photo.mediumUrl || photo.url,
             caption: photo.caption,
             location: photo.location,
+            destinationId: photo.destinationId || null,
             tags: photo.tags || [],
+            taggedPeople: photo.taggedPeople || [],
             createdAt: photo.createdAt,
           })))
           .catch(() => [])

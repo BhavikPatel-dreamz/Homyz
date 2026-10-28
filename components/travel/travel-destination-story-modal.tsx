@@ -202,15 +202,7 @@ export function TravelDestinationStoryModal({
                   Upload Photos
                 </button>
               )}
-              {onManageTrips && (
-                <button
-                  type="button"
-                  onClick={() => onManageTrips(country)}
-                  className="rounded-full border border-white/40 px-4 py-2 text-xs font-semibold text-white transition hover:bg-white/10"
-                >
-                  Manage Trips
-                </button>
-              )}
+              
             </div>
           )}
         </div>

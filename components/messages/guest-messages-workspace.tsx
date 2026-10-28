@@ -8,7 +8,7 @@ import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { bookingDateKey, formatBookingDateRange } from "@/lib/booking/booking-date";
 import { formatConversationListDate, formatMessageTime } from "@/lib/messages/message-date";
 import { useCurrency } from "@/lib/currency-context";
-import { useLanguage } from "@/lib/i18n/language-context";
+import { useLanguage, type TranslationKey } from "@/lib/i18n/language-context";
 import { ReportContentModal } from "@/components/moderation/report-content-modal";
 import type {
   ConversationDTO,
@@ -35,8 +35,21 @@ function formatFileSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function getMessagePreview(lastMessage: MessageDTO | null | undefined, t: (key: any) => string): string {
-  if (!lastMessage) return t("messages_no_messages_yet");
+function getMessagePreview(
+  lastMessage: MessageDTO | null | undefined,
+  t: (
+    key: TranslationKey,
+    valuesOrFallback?: Record<string, string | number | boolean> | string,
+    fallback?: string,
+  ) => string,
+  bookingStatus?: string,
+): string {
+  if (!lastMessage) {
+    if (bookingStatus === "PENDING") return t("messages_badge_booking_request", "Booking request");
+    if (bookingStatus === "CONFIRMED") return t("messages_badge_confirmed_stay", "Confirmed stay");
+    if (bookingStatus === "CANCELLED") return t("messages_badge_cancelled_reservation", "Cancelled reservation");
+    return t("messages_no_messages_yet");
+  }
   if (lastMessage.content && lastMessage.content.trim()) {
     return lastMessage.content;
   }
@@ -53,12 +66,14 @@ function getMessagePreview(lastMessage: MessageDTO | null | undefined, t: (key: 
 interface GuestMessagesWorkspaceProps {
   initialConversationId?: string;
   initialConversations: ConversationDTO[];
+  initialConversationTotal: number;
   initialRenderedAt: string;
 }
 
 export function GuestMessagesWorkspace({
   initialConversationId,
   initialConversations,
+  initialConversationTotal,
   initialRenderedAt,
 }: GuestMessagesWorkspaceProps) {
   const { formatPrice } = useCurrency();
@@ -69,10 +84,11 @@ export function GuestMessagesWorkspace({
 
   // Conversations state
   const [conversations, setConversations] = useState<ConversationDTO[]>(initialConversations);
+  const conversationsRef = useRef(initialConversations);
+  const [conversationTotal, setConversationTotal] = useState(initialConversationTotal);
+  const [loadingMoreConversations, setLoadingMoreConversations] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(() =>
-    activeIdFromQuery && initialConversations.some((conversation) => conversation.id === activeIdFromQuery)
-      ? activeIdFromQuery
-      : initialConversations[0]?.id ?? null,
+    activeIdFromQuery ?? initialConversations[0]?.id ?? null,
   );
   const [filter, setFilter] = useState<"all" | "unread">("all");
   const [search, setSearch] = useState("");
@@ -80,6 +96,9 @@ export function GuestMessagesWorkspace({
   // Messages state
   const [messages, setMessages] = useState<MessageDTO[]>([]);
   const [loadingMessages, setLoadingMessages] = useState(false);
+  const [loadingOlderMessages, setLoadingOlderMessages] = useState(false);
+  const [nextMessageCursor, setNextMessageCursor] = useState<string | null>(null);
+  const [hasMoreMessages, setHasMoreMessages] = useState(false);
   const [inputText, setInputText] = useState("");
   const [sending, setSending] = useState(false);
   const [acceptingOffer, setAcceptingOffer] = useState(false);
@@ -97,11 +116,16 @@ export function GuestMessagesWorkspace({
   const lastScrolledConvIdRef = useRef<string | null>(null);
   const didInitializeConversationRefreshRef = useRef(false);
   const conversationRequestIdRef = useRef(0);
+  const messageRequestIdRef = useRef(0);
+  const selectedIdRef = useRef<string | null>(selectedId);
+  const conversationDetailsRef = useRef(new Map<string, ConversationDTO>());
+  const [, setConversationDetailsVersion] = useState(0);
   const conversationCacheRef = useRef(
     new Map(initialConversations.map((conversation) => [conversation.id, conversation])),
   );
 
-  const selectedConversation = conversations.find((c) => c.id === selectedId)
+  const selectedConversation = (selectedId ? conversationDetailsRef.current.get(selectedId) : null)
+    ?? conversations.find((c) => c.id === selectedId)
     ?? (selectedId ? conversationCacheRef.current.get(selectedId) : null)
     ?? null;
 
@@ -125,6 +149,14 @@ export function GuestMessagesWorkspace({
 
   // Sync selectedId with query param
   useEffect(() => {
+    selectedIdRef.current = selectedId;
+  }, [selectedId]);
+
+  useEffect(() => {
+    conversationsRef.current = conversations;
+  }, [conversations]);
+
+  useEffect(() => {
     if (activeIdFromQuery && activeIdFromQuery !== selectedId) {
       setSelectedId(activeIdFromQuery);
       lastScrolledConvIdRef.current = null;
@@ -140,12 +172,14 @@ export function GuestMessagesWorkspace({
       if (filter === "unread") params.set("filter", "unread");
       if (search.trim()) params.set("search", search.trim());
 
+      params.set("take", "25");
       const res = await fetch(`/api/v1/messages/conversations?${params.toString()}`);
       if (!res.ok) throw new Error("Failed to fetch conversations");
       const json = await res.json();
       if (requestId !== conversationRequestIdRef.current) return;
       if (json.success && Array.isArray(json.data.conversations)) {
         const incomingConvs: ConversationDTO[] = json.data.conversations;
+        setConversationTotal(typeof json.data.total === "number" ? json.data.total : incomingConvs.length);
         incomingConvs.forEach((conversation) => {
           conversationCacheRef.current.set(conversation.id, conversation);
         });
@@ -178,54 +212,110 @@ export function GuestMessagesWorkspace({
     }
   }, [filter, search]);
 
-  // Fetch messages for selected conversation
-  const fetchMessages = useCallback(async (convId: string, isBackground = false) => {
+  const fetchConversationDetail = useCallback(async (convId: string) => {
     try {
-      if (!isBackground) setLoadingMessages(true);
-      const res = await fetch(`/api/v1/messages/conversations/${convId}/messages`);
+      const response = await fetch(`/api/v1/messages/conversations/${convId}`, { cache: "no-store" });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok || !payload?.success || !payload.data || selectedIdRef.current !== convId) return;
+      conversationDetailsRef.current.set(convId, payload.data as ConversationDTO);
+      conversationCacheRef.current.set(convId, payload.data as ConversationDTO);
+      setConversationDetailsVersion((version) => version + 1);
+    } catch (error) {
+      console.error("Error fetching conversation details:", error);
+    }
+  }, []);
+
+  const loadMoreConversations = useCallback(async () => {
+    if (loadingMoreConversations || conversationsRef.current.length >= conversationTotal) return;
+    setLoadingMoreConversations(true);
+    try {
+      const params = new URLSearchParams({ role: "guest", take: "25", skip: String(conversationsRef.current.length) });
+      if (filter === "unread") params.set("filter", "unread");
+      if (search.trim()) params.set("search", search.trim());
+      const response = await fetch(`/api/v1/messages/conversations?${params.toString()}`, { cache: "no-store" });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok || !payload?.success || !Array.isArray(payload.data?.conversations)) return;
+      const incoming = payload.data.conversations as ConversationDTO[];
+      incoming.forEach((conversation) => conversationCacheRef.current.set(conversation.id, conversation));
+      setConversationTotal(typeof payload.data.total === "number" ? payload.data.total : conversationTotal);
+      setConversations((previous) => {
+        const byId = new Map(previous.map((conversation) => [conversation.id, conversation]));
+        incoming.forEach((conversation) => byId.set(conversation.id, conversation));
+        return [...byId.values()];
+      });
+    } catch (error) {
+      console.error("Error loading more guest conversations:", error);
+    } finally {
+      setLoadingMoreConversations(false);
+    }
+  }, [conversationTotal, filter, loadingMoreConversations, search]);
+
+  // Reads only the newest page by default. Older pages are prepended on demand;
+  // a background refresh merges recent changes without discarding loaded history.
+  const fetchMessages = useCallback(async (
+    convId: string,
+    options: { background?: boolean; cursor?: string | null } = {},
+  ) => {
+    const isOlderPage = Boolean(options.cursor);
+    const requestId = ++messageRequestIdRef.current;
+    try {
+      if (isOlderPage) setLoadingOlderMessages(true);
+      else if (!options.background) setLoadingMessages(true);
+      const params = new URLSearchParams({ take: "40", includeTotal: "false" });
+      if (options.cursor) params.set("cursor", options.cursor);
+      const res = await fetch(`/api/v1/messages/conversations/${convId}/messages?${params.toString()}`, { cache: "no-store" });
       if (!res.ok) throw new Error("Failed to fetch messages");
       const json = await res.json();
+      if (requestId !== messageRequestIdRef.current || selectedIdRef.current !== convId) return;
       if (json.success && Array.isArray(json.data.messages)) {
         const incoming: MessageDTO[] = json.data.messages;
         setMessages((prev) => {
-          if (prev.length === incoming.length) {
-            let isSame = true;
-            for (let i = 0; i < prev.length; i++) {
-              const p = prev[i];
-              const n = incoming[i];
-              if (
-                p.id !== n.id ||
-                p.readAt !== n.readAt ||
-                p.content !== n.content ||
-                p.type !== n.type ||
-                p.createdAt !== n.createdAt ||
-                (p.attachments?.length || 0) !== (n.attachments?.length || 0)
-              ) {
-                isSame = false;
-                break;
-              }
-            }
-            if (isSame) return prev;
-          }
-          return incoming;
+          if (!options.background && !isOlderPage) return incoming;
+          const byId = new Map(prev.map((message) => [message.id, message]));
+          incoming.forEach((message) => byId.set(message.id, message));
+          return [...byId.values()].sort((left, right) =>
+            left.createdAt.localeCompare(right.createdAt) || left.id.localeCompare(right.id),
+          );
         });
+        if (!options.background) {
+          setNextMessageCursor(json.data.nextCursor || null);
+          setHasMoreMessages(Boolean(json.data.hasMore));
+        }
       }
 
-      // Mark read only when needed
-      if (!isBackground) {
+      // Avoid a write for conversations that are already fully read.
+      const conversation = conversationCacheRef.current.get(convId)
+        ?? conversationsRef.current.find((candidate) => candidate.id === convId);
+      if (!options.background && !isOlderPage && conversation?.unreadCount) {
         await fetch(`/api/v1/messages/conversations/${convId}/read`, { method: "POST" });
         setConversations((prev) => {
           const target = prev.find((c) => c.id === convId);
           if (!target || target.unreadCount === 0) return prev;
           return prev.map((c) => (c.id === convId ? { ...c, unreadCount: 0 } : c));
         });
+        const cached = conversationCacheRef.current.get(convId);
+        if (cached) conversationCacheRef.current.set(convId, { ...cached, unreadCount: 0 });
       }
     } catch (err) {
       console.error("Error fetching messages:", err);
     } finally {
-      if (!isBackground) setLoadingMessages(false);
+      if (requestId === messageRequestIdRef.current && selectedIdRef.current === convId) {
+        if (isOlderPage) setLoadingOlderMessages(false);
+        else if (!options.background) setLoadingMessages(false);
+      }
     }
   }, []);
+
+  const loadOlderMessages = useCallback(async () => {
+    const container = messagesContainerRef.current;
+    if (!selectedId || !nextMessageCursor || !hasMoreMessages || loadingOlderMessages) return;
+    const previousHeight = container?.scrollHeight ?? 0;
+    const previousTop = container?.scrollTop ?? 0;
+    await fetchMessages(selectedId, { cursor: nextMessageCursor });
+    requestAnimationFrame(() => {
+      if (container) container.scrollTop = container.scrollHeight - previousHeight + previousTop;
+    });
+  }, [fetchMessages, hasMoreMessages, loadingOlderMessages, nextMessageCursor, selectedId]);
 
   useEffect(() => {
     if (!didInitializeConversationRefreshRef.current) {
@@ -244,11 +334,12 @@ export function GuestMessagesWorkspace({
 
     if (selectedId) {
       lastScrolledConvIdRef.current = null;
+      void fetchConversationDetail(selectedId);
       fetchMessages(selectedId);
     } else {
       setMessages([]);
     }
-  }, [selectedId]);
+  }, [fetchConversationDetail, fetchMessages, selectedId]);
 
   // Smart container scroll effect:
   // - On initial conversation load: instantly scrolls to bottom
@@ -295,7 +386,7 @@ export function GuestMessagesWorkspace({
       if (document.visibilityState === "visible") {
         fetchConversations();
         if (selectedId) {
-          fetchMessages(selectedId, true);
+          fetchMessages(selectedId, { background: true });
         }
       }
     }, 4500);
@@ -639,7 +730,8 @@ export function GuestMessagesWorkspace({
                 <p className="text-xs">{t("messages_guest_empty_desc")}</p>
               </div>
             ) : (
-              conversations.map((conv) => {
+              <>
+              {conversations.map((conv) => {
                 const isSelected = conv.id === selectedId;
                 const hasUnread = conv.unreadCount > 0;
                 return (
@@ -689,14 +781,27 @@ export function GuestMessagesWorkspace({
 
                       <div className="flex items-center justify-between gap-2">
                         <p className={`text-xs truncate ${hasUnread ? "font-medium text-[#1F1F1F]" : "text-[#727272]"}`}>
-                          {getMessagePreview(conv.lastMessage, t)}
+                          {getMessagePreview(conv.lastMessage, t, conv.booking?.status)}
                         </p>
                         <span className="shrink-0">{getStatusBadge(conv.status, conv.activeSpecialOffer)}</span>
                       </div>
                     </div>
                   </button>
                 );
-              })
+              })}
+              {conversations.length < conversationTotal && (
+                <div className="p-3 text-center">
+                  <button
+                    type="button"
+                    onClick={() => void loadMoreConversations()}
+                    disabled={loadingMoreConversations}
+                    className="rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs text-zinc-600 hover:bg-zinc-50 disabled:opacity-50"
+                  >
+                    {loadingMoreConversations ? t("messages_loading", "Loading conversation...") : "Load more conversations"}
+                  </button>
+                </div>
+              )}
+              </>
             )}
           </div>
         </div>
@@ -793,17 +898,50 @@ export function GuestMessagesWorkspace({
               <div className="relative flex-1 min-h-0 flex flex-col">
                 <div
                   ref={messagesContainerRef}
-                  onScroll={handleContainerScroll}
+                  onScroll={() => {
+                    handleContainerScroll();
+                    if (messagesContainerRef.current && messagesContainerRef.current.scrollTop < 80) {
+                      void loadOlderMessages();
+                    }
+                  }}
                   className="flex-1 p-4 sm:p-6 overflow-y-auto space-y-4 bg-zinc-50/20"
                 >
+                {hasMoreMessages && !loadingMessages && (
+                  <div className="flex justify-center pb-2">
+                    <button
+                      type="button"
+                      onClick={() => void loadOlderMessages()}
+                      disabled={loadingOlderMessages}
+                      className="rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs text-zinc-600 transition-colors hover:bg-zinc-50 disabled:opacity-50"
+                    >
+                      {loadingOlderMessages ? t("messages_loading", "Loading conversation...") : "Load earlier messages"}
+                    </button>
+                  </div>
+                )}
                 {loadingMessages ? (
                   <div className="flex items-center justify-center h-full text-xs text-zinc-400">
                     {t("messages_loading")}
                   </div>
                 ) : messages.length === 0 ? (
                   <div className="text-center py-12 text-zinc-400 space-y-2">
-                    <p className="text-sm font-medium text-[#1F1F1F]">{t("messages_guest_thread_empty_title")}</p>
-                    <p className="text-xs">{t("messages_guest_thread_empty_desc")}</p>
+                    {selectedConversation.booking ? (
+                      <>
+                        <p className="text-sm font-medium text-[#1F1F1F]">
+                          {selectedConversation.booking.status === "PENDING"
+                            ? t("messages_badge_booking_request", "Booking request")
+                            : t("messages_badge_confirmed_stay", "Confirmed stay")}
+                        </p>
+                        <p className="text-xs">
+                          {formatBookingDateRange(selectedConversation.booking.startDate, selectedConversation.booking.endDate)} · {selectedConversation.booking.guests} {selectedConversation.booking.guests === 1 ? "guest" : "guests"}
+                        </p>
+                        <p className="text-xs">Reservation reference: {selectedConversation.booking.id}</p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-sm font-medium text-[#1F1F1F]">{t("messages_guest_thread_empty_title")}</p>
+                        <p className="text-xs">{t("messages_guest_thread_empty_desc")}</p>
+                      </>
+                    )}
                   </div>
                 ) : (
                   messages.map((m) => {

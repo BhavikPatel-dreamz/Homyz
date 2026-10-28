@@ -15,8 +15,15 @@ export const GET = apiHandler(async (req, { params }) => {
   const searchParams = req.nextUrl.searchParams;
   const skip = searchParams.get("skip") ? parseInt(searchParams.get("skip")!, 10) : undefined;
   const take = searchParams.get("take") ? parseInt(searchParams.get("take")!, 10) : undefined;
+  const cursor = searchParams.get("cursor") || undefined;
+  const includeTotal = searchParams.get("includeTotal") !== "false";
 
-  const result = await messagingService.getConversationMessages(actor, id, { skip, take });
+  const result = await messagingService.getConversationMessages(actor, id, {
+    cursor,
+    skip,
+    take,
+    includeTotal,
+  });
 
   const response = ok(result);
   response.headers.set("Cache-Control", "private, no-store, max-age=0");
@@ -43,4 +50,3 @@ export const POST = apiHandler(async (req, { params }) => {
 
   return created(message);
 });
-

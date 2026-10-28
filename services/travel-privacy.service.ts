@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/db/prisma";
 import { AppError } from "@/lib/api/errors";
 import { TravelProfileVisibility, TravelFollowStatus } from "@/generated/prisma/client";
+import type { TravelFollowListItemDTO } from "@/types/travel";
+import { notificationService } from "@/services/notification.service";
 
 export interface TravelAccessCheckResult {
   canView: boolean;
@@ -192,6 +194,43 @@ export async function canAccessTravelPhoto(
   return { canAccess: true };
 }
 
+/** Batch counterpart for feed/list views; avoids one privacy query per card. */
+export async function getAccessibleTravelPhotoIds(
+  viewerId: string | null | undefined,
+  photoIds: string[],
+): Promise<Set<string>> {
+  if (!photoIds.length) return new Set();
+  const photos = await prisma.travelPhoto.findMany({
+    where: { id: { in: photoIds } },
+    select: {
+      id: true, userId: true, visibility: true,
+      trip: { select: { visibility: true } },
+      user: {
+        select: {
+          travelProfile: { select: { visibility: true } },
+          travelFollowers: viewerId ? { where: { followerId: viewerId, status: TravelFollowStatus.ACCEPTED }, select: { id: true } } : false,
+        },
+      },
+    },
+  });
+  const ownerIds = [...new Set(photos.map((photo) => photo.userId))];
+  const blocks = viewerId ? await prisma.userBlock.findMany({
+    where: { OR: [{ blockerId: viewerId, blockedId: { in: ownerIds } }, { blockerId: { in: ownerIds }, blockedId: viewerId }] },
+    select: { blockerId: true, blockedId: true },
+  }) : [];
+  const blockedOwners = new Set(blocks.map((block) => block.blockerId === viewerId ? block.blockedId : block.blockerId));
+  return new Set(photos.filter((photo) => {
+    if (viewerId === photo.userId) return true;
+    if (blockedOwners.has(photo.userId)) return false;
+    const profileVisibility = photo.user.travelProfile?.visibility || TravelProfileVisibility.PUBLIC;
+    const following = Array.isArray(photo.user.travelFollowers) && photo.user.travelFollowers.length > 0;
+    if (profileVisibility === TravelProfileVisibility.PRIVATE || (profileVisibility === TravelProfileVisibility.FOLLOWERS_ONLY && !following)) return false;
+    if (photo.trip?.visibility === TravelProfileVisibility.PRIVATE || (photo.trip?.visibility === TravelProfileVisibility.FOLLOWERS_ONLY && !following)) return false;
+    if (photo.visibility === TravelProfileVisibility.PRIVATE || (photo.visibility === TravelProfileVisibility.FOLLOWERS_ONLY && !following)) return false;
+    return true;
+  }).map((photo) => photo.id));
+}
+
 /**
  * Checks whether a viewer is authorized to access a specific travel trip album.
  */
@@ -305,12 +344,7 @@ export async function followTraveler(
     throw AppError.forbidden("Unable to follow this user");
   }
 
-  const profile = await prisma.travelProfile.findUnique({
-    where: { userId: followingId },
-    select: { visibility: true },
-  });
-
-  // If profile is followers only, could require approval, or default to ACCEPTED for open follows
+  // The current product has no approval workflow, so every permitted follow is accepted.
   const targetStatus = TravelFollowStatus.ACCEPTED;
 
   const follow = await prisma.travelFollow.upsert({
@@ -325,6 +359,16 @@ export async function followTraveler(
     },
   });
 
+  void notificationService.create({
+    userId: followingId,
+    type: "SYSTEM",
+    title: "New follower",
+    message: "Someone started following your travel profile.",
+    entityId: follow.id,
+    entityType: "travel-follow",
+    link: "/travel-profile",
+  }).catch(() => {});
+
   return { status: follow.status };
 }
 
@@ -333,6 +377,59 @@ export async function unfollowTraveler(followerId: string, followingId: string):
     where: { followerId, followingId },
   });
   return true;
+}
+
+export async function getTravelFollowCounts(userId: string): Promise<{ followersCount: number; followingCount: number }> {
+  const [followersCount, followingCount] = await Promise.all([
+    prisma.travelFollow.count({ where: { followingId: userId, status: TravelFollowStatus.ACCEPTED } }),
+    prisma.travelFollow.count({ where: { followerId: userId, status: TravelFollowStatus.ACCEPTED } }),
+  ]);
+  return { followersCount, followingCount };
+}
+
+export async function getTravelFollowList(
+  actorId: string | null | undefined,
+  profileUserId: string,
+  kind: "followers" | "following",
+  options: { search?: string; cursor?: string; limit?: number } = {},
+): Promise<{ items: TravelFollowListItemDTO[]; nextCursor: string | null; totalCount: number }> {
+  const access = await canViewTravelProfile(actorId, profileUserId);
+  if (!access.isOwner && (!access.canView || access.effectiveVisibility !== TravelProfileVisibility.PUBLIC)) {
+    throw AppError.forbidden("This follower list is private.");
+  }
+  const limit = Math.min(50, Math.max(1, options.limit || 20));
+  const search = options.search?.trim();
+  const userWhere = search ? { OR: [
+    { name: { contains: search, mode: "insensitive" as const } },
+    { travelProfile: { is: { handle: { contains: search.toLowerCase(), mode: "insensitive" as const } } } },
+  ] } : undefined;
+  const where = kind === "followers"
+    ? { followingId: profileUserId, status: TravelFollowStatus.ACCEPTED, ...(userWhere ? { follower: userWhere } : {}) }
+    : { followerId: profileUserId, status: TravelFollowStatus.ACCEPTED, ...(userWhere ? { following: userWhere } : {}) };
+  const follows = await prisma.travelFollow.findMany({
+    where, orderBy: [{ createdAt: "desc" }, { id: "desc" }], take: limit + 1,
+    ...(options.cursor ? { cursor: { id: options.cursor }, skip: 1 } : {}),
+    include: {
+      follower: { select: { id: true, name: true, image: true, travelProfile: { select: { publicId: true, handle: true } } } },
+      following: { select: { id: true, name: true, image: true, travelProfile: { select: { publicId: true, handle: true } } } },
+    },
+  });
+  const page = follows.slice(0, limit);
+  return {
+    items: page.map((follow) => {
+      const user = kind === "followers" ? follow.follower : follow.following;
+      return {
+        id: user.id,
+        name: user.name,
+        image: user.image,
+        publicProfileId: user.travelProfile?.publicId || null,
+        handle: user.travelProfile?.handle || null,
+        followedAt: follow.createdAt,
+      };
+    }),
+    nextCursor: follows.length > limit ? page.at(-1)?.id || null : null,
+    totalCount: await prisma.travelFollow.count({ where }),
+  };
 }
 
 export async function updateProfileVisibility(
@@ -383,4 +480,3 @@ export async function updatePhotoVisibility(
   });
   return updated.visibility;
 }
-

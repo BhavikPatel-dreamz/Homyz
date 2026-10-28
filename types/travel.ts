@@ -35,11 +35,16 @@ export interface TravelPhotoDTO {
   mediumUrl: string | null;
   caption: string | null;
   location: string | null;
+  destinationId?: string | null;
   /** Present only for legacy TripPhoto compatibility records. */
   tags?: string[];
+  /** Privacy-safe people tags for current TravelPhoto records. */
+  taggedPeople?: TravelPhotoTaggedPersonDTO[];
   order: number;
   likesCount?: number;
   isLiked?: boolean;
+  commentsCount?: number;
+  visibility?: TravelProfileVisibility;
   author?: {
     id: string;
     name: string | null;
@@ -52,11 +57,20 @@ export interface TravelPhotoDTO {
   isLegacy?: boolean;
 }
 
+export interface TravelPhotoTaggedPersonDTO {
+  id: string;
+  name: string | null;
+  image: string | null;
+  handle: string | null;
+}
+
 export interface TravelTripDTO {
   id: string;
   userId: string;
   title: string;
   destinationId: string | null;
+  /** Resolved country data for display and editing. The database stores only the id. */
+  destination?: { countryName: string; countryCode: string } | null;
   startDate: Date | string | null;
   endDate: Date | string | null;
   coverPhotoId: string | null;
@@ -64,6 +78,9 @@ export interface TravelTripDTO {
   status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
   photoCount: number;
   remainingCapacity: number;
+  likesCount?: number;
+  isLiked?: boolean;
+  visibility?: TravelProfileVisibility;
   photos?: TravelPhotoDTO[];
   createdAt: Date | string;
   updatedAt: Date | string;
@@ -83,6 +100,8 @@ export interface CountryHighlightDTO {
 export interface TravelProfileDTO {
   id: string;
   userId: string;
+  /** Immutable, opaque identifier used for canonical public profile URLs. */
+  publicProfileId: string;
   handle: string | null;
   displayName?: string | null;
   bio: string | null;
@@ -114,6 +133,27 @@ export interface TravelProfileStatsDTO {
   trips: number;
   likes: number;
   reviews: number;
+}
+
+export interface TravelPhotoCommentDTO {
+  id: string;
+  photoId: string;
+  userId: string;
+  content: string;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+  author: { id: string; name: string | null; image: string | null; handle?: string | null };
+  canEdit: boolean;
+  canDelete: boolean;
+}
+
+export interface TravelFollowListItemDTO {
+  id: string;
+  name: string | null;
+  image: string | null;
+  publicProfileId: string | null;
+  handle: string | null;
+  followedAt: Date | string;
 }
 
 export interface TravelStampDTO {
@@ -230,6 +270,8 @@ export interface PublicTravelStampDTO {
 export interface PublicTravelProfileDTO {
   id: string;
   userId: string;
+  /** Immutable, opaque identifier used for canonical public profile URLs. */
+  publicProfileId: string;
   handle: string;
   displayName: string;
   name?: string | null;

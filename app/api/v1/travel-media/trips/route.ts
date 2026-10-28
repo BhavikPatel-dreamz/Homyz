@@ -4,7 +4,6 @@ import { getAuthContext } from "@/lib/auth/context";
 import { createTrip, getUserTrips } from "@/services/travel-photo.service";
 import {
   getOrCreateDestination,
-  normalizeCityName,
   normalizeCountry,
 } from "@/services/travel-destination.service";
 import { AppError } from "@/lib/api/errors";
@@ -38,20 +37,19 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json().catch(() => ({}));
-    let destinationId =
-      typeof body.destinationId === "string" ? body.destinationId : null;
-    if (!destinationId && typeof body.country === "string") {
-      const country = normalizeCountry(body.country);
-      if (!country)
-        throw AppError.badRequest("Choose a valid destination country.");
-      const destination = await getOrCreateDestination({
-        ...country,
-        cityName: normalizeCityName(
-          typeof body.city === "string" ? body.city : null,
-        ),
-      });
-      destinationId = destination.id;
+    const countryValue = typeof body.country === "string" ? body.country.trim() : "";
+    if (!countryValue) {
+      throw AppError.badRequest("Choose a destination country.");
     }
+    const country = normalizeCountry(countryValue);
+    if (!country) {
+      throw AppError.badRequest("Choose a valid destination country.");
+    }
+
+    const destinationId = (await getOrCreateDestination({
+      ...country,
+      cityName: null,
+    })).id;
     const trip = await createTrip(actor.id, {
       title: typeof body.title === "string" ? body.title : "",
       destinationId,

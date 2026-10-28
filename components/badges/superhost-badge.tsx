@@ -3,10 +3,11 @@ import type { HTMLAttributes } from "react";
 type SuperhostBadgeProps = HTMLAttributes<HTMLSpanElement> & {
   active: boolean | null | undefined;
   compact?: boolean;
+  label?: string;
 };
 
 /** Public badge: callers must pass the persisted host-level status only. */
-export function SuperhostBadge({ active, compact = false, className = "", ...props }: SuperhostBadgeProps) {
+export function SuperhostBadge({ active, compact = false, label = "Superhost", className = "", ...props }: SuperhostBadgeProps) {
   if (active !== true) return null;
   return (
     <span
@@ -16,7 +17,7 @@ export function SuperhostBadge({ active, compact = false, className = "", ...pro
       } ${className}`}
     >
       <span aria-hidden="true">★</span>
-      <span>Superhost</span>
+      <span>{label}</span>
     </span>
   );
 }

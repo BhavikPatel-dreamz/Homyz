@@ -3,6 +3,7 @@
 import { OnboardingStepHeading } from "./onboarding-step-heading";
 import { OnboardingStepLayout } from "./onboarding-step-layout";
 import { StepProgressFooter } from "./step-progress-footer";
+import { useLanguage } from "@/lib/i18n/language-context";
 import type { BookingMode } from "@/lib/booking/booking-mode";
 
 interface StepBookingSettingsProps {
@@ -14,9 +15,22 @@ interface StepBookingSettingsProps {
 }
 
 export function StepBookingSettings({ mode, onChange, onBack, onNext, isLoading = false }: StepBookingSettingsProps) {
+  const { t } = useLanguage();
+
   const options: Array<{ mode: BookingMode; title: string; description: string; recommended?: boolean; icon: string }> = [
-    { mode: "REQUEST_TO_BOOK", title: "Approve your first bookings", description: "Start by reviewing reservation requests. You can switch to Instant Book whenever you’re ready.", recommended: true, icon: "▣" },
-    { mode: "INSTANT_BOOK", title: "Use Instant Book", description: "Let guests who meet your requirements book automatically.", icon: "ϟ" },
+    {
+      mode: "REQUEST_TO_BOOK",
+      title: t("host_booking_mode_request_title", "Approve your first bookings"),
+      description: t("host_booking_mode_request_desc", "Start by reviewing reservation requests. You can switch to Instant Book whenever you’re ready."),
+      recommended: true,
+      icon: "▣",
+    },
+    {
+      mode: "INSTANT_BOOK",
+      title: t("host_booking_mode_instant_title", "Use Instant Book"),
+      description: t("host_booking_mode_instant_desc", "Let guests who meet your requirements book automatically."),
+      icon: "ϟ",
+    },
   ];
 
   return (

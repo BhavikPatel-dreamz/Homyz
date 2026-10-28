@@ -50,6 +50,12 @@ const nextConfig: NextConfig = {
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     localPatterns: [
       {
+        pathname: "/auth-divider.svg",
+      },
+      {
+        pathname: "/**/*.svg",
+      },
+      {
         pathname: "/images/**",
       },
       {

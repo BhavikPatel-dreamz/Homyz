@@ -33,7 +33,20 @@ export async function POST(req: NextRequest) {
     const tripTitle = (formData.get("tripTitle") as string) || undefined;
     const caption = (formData.get("caption") as string) || undefined;
     const location = (formData.get("location") as string) || undefined;
+    const taggedUserIdsRaw = formData.get("taggedUserIds");
     const replacePhotoId = (formData.get("replacePhotoId") as string) || undefined;
+    let taggedUserIds: string[] | undefined;
+    if (typeof taggedUserIdsRaw === "string" && taggedUserIdsRaw) {
+      try {
+        const parsed = JSON.parse(taggedUserIdsRaw);
+        if (!Array.isArray(parsed) || parsed.some((id) => typeof id !== "string")) {
+          return NextResponse.json({ error: "Invalid people tags." }, { status: 400 });
+        }
+        taggedUserIds = parsed;
+      } catch {
+        return NextResponse.json({ error: "Invalid people tags." }, { status: 400 });
+      }
+    }
 
     if (!file || typeof file === "string") {
       return NextResponse.json({ error: "No image file provided." }, { status: 400 });
@@ -53,6 +66,7 @@ export async function POST(req: NextRequest) {
       tripTitle,
       caption,
       location,
+      taggedUserIds,
       replacePhotoId,
     });
 

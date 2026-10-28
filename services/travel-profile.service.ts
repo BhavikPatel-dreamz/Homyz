@@ -52,23 +52,30 @@ export async function getTravelProfileByUserId(userId: string): Promise<TravelPr
   }
 
   const pub = (user.publicProfile as Record<string, unknown> | null) || {};
-  const tp = user.travelProfile;
+  // A profile is created lazily for legacy accounts. Its database default
+  // assigns the permanent public ID exactly once.
+  const tp = user.travelProfile ?? await prisma.travelProfile.upsert({
+    where: { userId },
+    update: {},
+    create: { userId },
+  });
 
   return {
-    id: tp?.id || `fallback-${user.id}`,
+    id: tp.id,
     userId: user.id,
-    handle: tp?.handle || null,
-    displayName: tp?.displayName || user.name || "Traveler",
-    bio: tp?.bio !== undefined && tp?.bio !== null ? tp.bio : (typeof pub.bio === "string" ? pub.bio : null),
+    publicProfileId: tp.publicId,
+    handle: tp.handle || null,
+    displayName: tp.displayName || user.name || "Traveler",
+    bio: tp.bio !== undefined && tp.bio !== null ? tp.bio : (typeof pub.bio === "string" ? pub.bio : null),
     homeLocation:
-      tp?.homeLocation !== undefined && tp?.homeLocation !== null
+      tp.homeLocation !== undefined && tp.homeLocation !== null
         ? tp.homeLocation
         : (typeof pub.whereILive === "string" ? pub.whereILive : null),
-    coverUrl: tp?.coverUrl || null,
-    visibility: (tp?.visibility as "PUBLIC" | "PRIVATE" | "FOLLOWERS_ONLY") || "PUBLIC",
-    showStamps: tp?.showStamps ?? true,
-    createdAt: tp?.createdAt || user.createdAt,
-    updatedAt: tp?.updatedAt || user.createdAt,
+    coverUrl: tp.coverUrl || null,
+    visibility: tp.visibility as "PUBLIC" | "PRIVATE" | "FOLLOWERS_ONLY",
+    showStamps: tp.showStamps,
+    createdAt: tp.createdAt,
+    updatedAt: tp.updatedAt,
     user: {
       id: user.id,
       name: user.name,
@@ -79,7 +86,7 @@ export async function getTravelProfileByUserId(userId: string): Promise<TravelPr
 }
 
 export async function getTravelProfileStats(userId: string): Promise<TravelProfileStatsDTO> {
-  const [confirmedBookings, likesCount, reviewsCount] = await Promise.all([
+  const [confirmedBookings, profileLikes, photoLikes, tripLikes, reviewsCount] = await Promise.all([
     prisma.booking.findMany({
       where: {
         userId,
@@ -95,6 +102,8 @@ export async function getTravelProfileStats(userId: string): Promise<TravelProfi
     prisma.profileLike.count({
       where: { targetUserId: userId },
     }),
+    prisma.travelPhotoLike.count({ where: { photo: { is: { userId } } } }),
+    prisma.travelTripLike.count({ where: { trip: { is: { userId } } } }),
     prisma.review.count({
       where: {
         authorId: userId,
@@ -113,7 +122,9 @@ export async function getTravelProfileStats(userId: string): Promise<TravelProfi
 
   return {
     trips: completedTrips,
-    likes: likesCount,
+    // “Likes” consistently means reactions received across this travel profile,
+    // its photos, and its trips — never likes the owner has given.
+    likes: profileLikes + photoLikes + tripLikes,
     reviews: reviewsCount,
   };
 }
