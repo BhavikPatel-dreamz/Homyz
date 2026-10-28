@@ -5,15 +5,15 @@
 ---
 
 ## Phase 0: Project Setup & Environment Scaffolding
-- [ ] Initialize application directory layout (`app/api/v1`, `app/core`, `app/services`, `app/models`, `app/utils`, `app/tests`)
-- [ ] Create `app/requirements.txt` with core dependencies (FastAPI, Uvicorn, LangChain, Qdrant Client, OpenCV, imagehash, Pydantic)
-- [ ] Create `app/.example.env` configured for Qdrant Cloud (Dev) and Local Qdrant (Deployment)
-- [ ] Setup `app/core/config.py` using Pydantic `BaseSettings`
-- [ ] Setup `app/core/security.py` for internal `X-API-Key` authentication
-- [ ] Setup unified domain exceptions and global handler in `app/core/exceptions.py`
-- [ ] Setup base `app/main.py` with CORS, security middleware, and `/healthz` endpoint
-- [ ] Verify Qdrant Cloud connection from the health check endpoint
-- [ ] Provide `docker-compose.yml` for future local/self-hosted deployment
+- [x] Initialize application directory layout (`app/api/v1`, `app/core`, `app/services`, `app/models`, `app/utils`, `app/tests`)
+- [x] Create `app/requirements.txt` with core dependencies (FastAPI, Uvicorn, LangChain, Qdrant Client, OpenCV, imagehash, Pydantic)
+- [x] Create `app/.example.env` configured for Qdrant Cloud (Dev) and Local Qdrant (Deployment)
+- [x] Setup `app/core/config.py` using Pydantic `BaseSettings`
+- [x] Setup `app/core/security.py` for internal `X-API-Key` authentication
+- [x] Setup unified domain exceptions and global handler in `app/core/exceptions.py`
+- [x] Setup base `app/main.py` with CORS, security middleware, and `/healthz` endpoint
+- [x] Verify Qdrant Cloud connection from the health check endpoint
+- [ ] Provide `docker-compose.yml` for future local/self-hosted deployment (Skipped per user preference)
 
 ---
 
