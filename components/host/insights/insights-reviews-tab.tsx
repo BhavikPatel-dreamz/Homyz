@@ -488,6 +488,7 @@ export function InsightsReviewsTab({
                       </div>
                       <Link
                         href={`/host/insights/reviews/${rev.id}?returnTo=${encodeURIComponent(`/host/insights?tab=reviews${selectedListingId ? `&propertyId=${selectedListingId}` : ""}${selectedPeriod ? `&period=${selectedPeriod}` : ""}${startDate ? `&startDate=${startDate}` : ""}${endDate ? `&endDate=${endDate}` : ""}`)}`}
+                        aria-label="View Details →"
                         className="group inline-flex items-center gap-1.5 rounded-full border border-[#D7D7D7] bg-white hover:bg-[#1f1f1f] px-3.5 py-1.5 text-sm font-medium text-[#1F1F1F] hover:text-white hover:border-[#1F1F1F] transition-all duration-200"
                       >
                         <span>View Details</span>
