@@ -59,8 +59,9 @@ test("Phase 6: official badge, idempotency, and ownership are wired to persisted
   assert.match(engine, /where: \{ hostId, deletedAt: null \}/, "co-host assignments are excluded from owner scope");
   assert.match(engine, /calculateHostResponseMetrics\(hostId, \{/, "checkpoint evaluations pin the messaging window");
   assert.match(engine, /windowEndExclusive: reviewWindowEndExclusive/, "messages share the evaluator's date boundary");
-  assert.doesNotMatch(engine, /hostGuestReview/, "the current Prisma schema has no reciprocal host-review relation");
-  assert.match(engine, /endDate: \{ lte: reviewWindowExpiryCutoff \}/, "guest ratings release after the existing 14-day review window");
+  assert.match(engine, /status: ReviewStatus\.PUBLISHED/, "only the authoritative, finalized guest review state is included");
+  assert.match(engine, /endDate: \{ gte: window\.windowStart, lte: window\.windowEnd \}/, "ratings belong to completed stays in the quarterly window");
+  assert.doesNotMatch(engine, /reviewWindowExpiryCutoff/, "Superhost does not reimplement review publication with a checkout-age cutoff");
   assert.match(engine, /hostId_evaluationDate/, "quarterly history upsert is idempotent");
   assert.match(engine, /isQuarterlyEvaluationCheckpoint/, "status changes are checkpoint guarded");
   assert.match(schema, /model SuperhostEvaluation/);

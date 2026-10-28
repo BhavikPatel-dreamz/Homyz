@@ -9,6 +9,8 @@ const PUBLIC_KINDS = new Set<PublicMediaKind>([
   "stamp-icons",
   "avatars",
   "reviews",
+  "travel-covers",
+  "travel-photos",
 ]);
 
 export async function GET(
@@ -42,7 +44,7 @@ export async function GET(
         "Cache-Control": "public, max-age=31536000, immutable",
       },
     });
-  } catch (err) {
+  } catch {
     console.error("[uploads] public media proxy failed");
     return NextResponse.json({ error: "Media unavailable." }, { status: 502 });
   }

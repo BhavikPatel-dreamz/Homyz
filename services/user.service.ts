@@ -3,8 +3,7 @@ import { hashPassword, verifyPassword } from "@/lib/auth/password";
 import { prisma } from "@/lib/db/prisma";
 import { deleteCache, getOrSetCache, incrCounter } from "@/lib/redis/cache";
 import { invalidateUserCache } from "@/lib/redis/invalidation";
-import { CACHE_KEYS, keys } from "@/lib/redis/keys";
-import { CACHE_TTL } from "@/lib/redis/ttl";
+import { keys } from "@/lib/redis/keys";
 import type {
   ChangePasswordInput,
   CompleteRegistrationProfileInput,
@@ -13,6 +12,7 @@ import type {
 import type { UpdateHostPublicProfileInput } from "@/lib/validation/host-profile";
 
 import { deleteManagedMediaUrl } from "@/lib/storage/media";
+import { getTravelProfileStats } from "@/services/travel-profile.service";
 import type { Prisma } from "@/generated/prisma/client";
 import { ListingStatus, ReviewDirection, ReviewStatus } from "@/generated/prisma/enums";
 import { qualificationService } from "@/services/qualification.service";
@@ -300,22 +300,10 @@ async function deleteTripPhoto(userId: string, photoId: string) {
 }
 
 async function getUserStats(userId: string) {
-  return getOrSetCache(
-    CACHE_KEYS.USER_STATS(userId),
-    async () => {
-      const [tripsCount, photosCount, reviewsCount] = await Promise.all([
-        prisma.booking.count({ where: { userId } }),
-        prisma.tripPhoto.count({ where: { userId } }),
-        prisma.review.count({ where: { authorId: userId, status: ReviewStatus.PUBLISHED } }),
-      ]);
-      return {
-        trips: Math.max(tripsCount, photosCount),
-        likes: 0,
-        reviews: reviewsCount,
-      };
-    },
-    { ttl: CACHE_TTL.DASHBOARD_STATS },
-  );
+  // Guest Profile and Travel Profile display the same concepts. Reuse the
+  // canonical aggregation so photo uploads and draft albums can never inflate
+  // completed stays, and likes are read from stored social reactions.
+  return getTravelProfileStats(userId);
 }
 
 export type PublicHostProfile = {

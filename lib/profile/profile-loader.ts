@@ -7,6 +7,7 @@ import { personalInfoService } from "@/services/personal-info.service";
 import { toReservationCardData } from "@/lib/profile/reservation-data";
 import type { PublicListingDTO } from "@/services/mappers";
 import { favoriteService } from "@/services/favorite.service";
+import { getTravelPhotos } from "@/services/travel-photo.service";
 
 export type FavoriteItem = {
   id: string;
@@ -90,7 +91,17 @@ export async function loadProfilePageData(tab?: string, subTab?: string, booking
       ? userService.getUserStats(actor.id)
       : Promise.resolve({ trips: 0, likes: 0, reviews: 0 }),
     needsTripPhotos
-      ? userService.getTripPhotos(actor.id).catch(() => [])
+      ? getTravelPhotos(actor.id, { actorId: actor.id })
+          .then((photos) => photos.map((photo) => ({
+            id: photo.id,
+            userId: photo.userId,
+            url: photo.mediumUrl || photo.url,
+            caption: photo.caption,
+            location: photo.location,
+            tags: photo.tags || [],
+            createdAt: photo.createdAt,
+          })))
+          .catch(() => [])
       : Promise.resolve([]),
     needsReservations
       ? bookingService

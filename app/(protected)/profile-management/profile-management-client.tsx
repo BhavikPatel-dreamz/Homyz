@@ -4,7 +4,7 @@ import { ModalOverlay } from "@/components/ui/modal-overlay";
 import React, { useState, useTransition, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { updateProfileAction } from "@/actions/user/updateProfile";
 import {
@@ -22,6 +22,9 @@ import {
   getMgmtSubTabSlug,
   ProfileMgmtSubTab,
 } from "@/lib/profile/tab-utils";
+import type { TravelTripDTO, TravelPhotoDTO } from "@/types/travel";
+import { TravelPhotoUploadModal } from "@/components/travel/travel-photo-upload-modal";
+import { TravelTripManageModal } from "@/components/travel/travel-trip-manage-modal";
 import {
   getLanguageDisplayNames,
   LANGUAGE_OPTIONS,
@@ -742,7 +745,7 @@ export function ProfileManagementClient({
   initial,
   initialTripPhotos = [],
   initialTripPhotosLoaded = false,
-  initialStats = { trips: 12, likes: 0, reviews: 10 },
+  initialStats = { trips: 0, likes: 0, reviews: 0 },
   isOwner = true,
   embedded = false,
   onCancel,
@@ -752,6 +755,13 @@ export function ProfileManagementClient({
 }: ProfileManagementClientProps) {
   const { t } = useLanguage();
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const rawTravelTab = searchParams ? searchParams.get("travelTab") : null;
+  // URL is the source of truth: direct links, refresh, and browser navigation
+  // all resolve the same tab without retaining stale local selection state.
+  const activeTravelTab: "photos" | "trips" = rawTravelTab === "trips" ? "trips" : "photos";
+
   const [activeMgmtTab, setActiveMgmtTab] = useState<ProfileMgmtSubTab>(() =>
     initialSubTab || extractSubTabFromQuery()
   );
@@ -780,13 +790,71 @@ export function ProfileManagementClient({
       onSubTabChange(tab);
     } else {
       const slug = getMgmtSubTabSlug(tab);
-      window.history.pushState(null, "", `/profile/tab/profile_management/${slug}`);
+      const query = tab === "photos" && activeTravelTab === "trips" ? "?travelTab=trips" : "";
+      window.history.pushState(null, "", `/profile/tab/profile_management/${slug}${query}`);
     }
+  };
+
+  const handleTravelTabChange = (tab: "photos" | "trips") => {
+    const params = new URLSearchParams(searchParams?.toString());
+    params.set("travelTab", tab);
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
   const [profileData, setProfileData] = useState<ProfileData>(initial);
   const [tripPhotos, setTripPhotos] =
     useState<TripPhotoItem[]>(initialTripPhotos);
+  const [trips, setTrips] = useState<TravelTripDTO[]>([]);
+  const [isTripsLoading, setIsTripsLoading] = useState(false);
+  const [managingTrip, setManagingTrip] = useState<TravelTripDTO | null>(null);
+  const [isCreatingTrip, setIsCreatingTrip] = useState(false);
+  const [travelUploadModalOpen, setTravelUploadModalOpen] = useState(false);
+  const [uploadForTripId, setUploadForTripId] = useState<string | null>(null);
+
+  const fetchTrips = React.useCallback(async () => {
+    setIsTripsLoading(true);
+    try {
+      const res = await fetch("/api/v1/travel-media/trips");
+      if (res.ok) {
+        const data = await res.json();
+        setTrips(data.trips || []);
+      }
+    } catch (err) {
+      console.error("Failed to load trips in profile management:", err);
+    } finally {
+      setIsTripsLoading(false);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    if (activeMgmtTab === "photos") {
+      fetchTrips();
+    }
+  }, [activeMgmtTab, fetchTrips]);
+
+  const handleTravelUploadSuccess = (newPhotos: TravelPhotoDTO[]) => {
+    setTripPhotos((prev) => {
+      const photosById = new Map(prev.map((photo) => [photo.id, photo]));
+      newPhotos.forEach((photo) => {
+        photosById.set(photo.id, {
+          id: photo.id,
+          userId: photo.userId,
+          url: photo.mediumUrl || photo.url,
+          caption: photo.caption,
+          location: photo.location,
+          tags: [],
+          createdAt: photo.createdAt,
+        });
+      });
+      return [...photosById.values()].sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      );
+    });
+    fetchTrips();
+    setTravelUploadModalOpen(false);
+    setUploadForTripId(null);
+  };
   const [failedTripPhotoIds, setFailedTripPhotoIds] = useState<Set<string>>(
     () => new Set(),
   );
@@ -1572,138 +1640,334 @@ export function ProfileManagementClient({
         </form>
       )}
 
-      {/* TAB 2: TRIP PHOTOS */}
+      {/* TAB 2: TRIP PHOTOS & TRIPS */}
       {activeMgmtTab === "photos" && (
         <div className="flex flex-col gap-6">
           <div className="flex sm:flex-nowrap flex-wrap sm:gap-0 gap-3 items-center sm:justify-between justify-center">
             <div>
               <h3 className="text-lg font-medium text-[#1F1F1F]">
-                {t("trip_photos_mgmt_title", "Trip Photos Management")}
+                {t("trip_photos_mgmt_title", "Trip Photos & Albums")}
               </h3>
               <p className="text-xs text-zinc-500">
-                {t("trip_photos_mgmt_subtitle", "Upload and curate your travel memories")}
+                {t("trip_photos_mgmt_subtitle", "Upload, curate your travel memories, and organize trips")}
               </p>
             </div>
             {isOwner && (
-              <button
-                type="button"
-                onClick={() => setUploadModalOpen(true)}
-                className="flex items-center gap-2 bg-[#FCDF9C] hover:bg-[#F3F4F5] text-[#1F1F1F] border border-transparent hover:border-[#1F1F1F] hover:text-[#1F1F1F] font-medium text-sm px-6 py-3 rounded-full transition-colors cursor-pointer shadow-2xs"
-              >
-                <IconCamera />
-                <span>{t("trip_photos_upload_btn", "Upload Photos")}</span>
-              </button>
+              <div className="flex items-center gap-2">
+                {activeTravelTab === "photos" ? (
+                  <button
+                    type="button"
+                    onClick={() => setTravelUploadModalOpen(true)}
+                    className="flex items-center gap-2 bg-[#FCDF9C] hover:bg-[#F3F4F5] text-[#1F1F1F] border border-transparent hover:border-[#1F1F1F] hover:text-[#1F1F1F] font-medium text-sm px-6 py-2.5 rounded-full transition-colors cursor-pointer shadow-2xs"
+                  >
+                    <IconCamera />
+                    <span>{t("trip_photos_upload_btn", "Upload Photos")}</span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setIsCreatingTrip(true)}
+                    className="flex items-center gap-2 bg-[#FCDF9C] hover:bg-[#F3F4F5] text-[#1F1F1F] border border-transparent hover:border-[#1F1F1F] hover:text-[#1F1F1F] font-medium text-sm px-6 py-2.5 rounded-full transition-colors cursor-pointer shadow-2xs"
+                  >
+                    <span>+ {(t as any)("travel_create_trip_btn", "Create Trip")}</span>
+                  </button>
+                )}
+              </div>
             )}
           </div>
 
-          {isTripPhotosLoading ? (
-            <div
-              aria-busy="true"
-              aria-live="polite"
-              className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3"
+          {/* Sub-tab pills for Photos vs Trips */}
+          <div className="flex items-center gap-2 border-b border-zinc-200 pb-3" role="tablist">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeTravelTab === "photos"}
+              onClick={() => handleTravelTabChange("photos")}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all cursor-pointer ${
+                activeTravelTab === "photos"
+                  ? "bg-zinc-900 text-white shadow-2xs"
+                  : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
+              }`}
             >
-              {[0, 1, 2].map((index) => (
+              {(t as any)("travel_photos_subtab", "Photos")} ({tripPhotos.length})
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeTravelTab === "trips"}
+              onClick={() => handleTravelTabChange("trips")}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all cursor-pointer ${
+                activeTravelTab === "trips"
+                  ? "bg-zinc-900 text-white shadow-2xs"
+                  : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
+              }`}
+            >
+              {(t as any)("travel_trips_subtab", "Trips")} ({trips.length})
+            </button>
+          </div>
+
+          {/* VIEW 1: PHOTOS */}
+          {activeTravelTab === "photos" && (
+            <>
+              {isTripPhotosLoading ? (
                 <div
-                  key={index}
-                  className="aspect-4/3 animate-pulse rounded-2xl border border-zinc-200 bg-zinc-100"
-                />
-              ))}
-              <p className="sr-only">{t("trip_photos_loading", "Loading trip photos")}</p>
-            </div>
-          ) : tripPhotos.length === 0 ? (
-            <div className="border-2 border-dashed border-zinc-200 rounded-3xl p-12 text-center flex flex-col items-center justify-center bg-zinc-50/50">
-              <div className="w-14 h-14 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center mb-3">
-                <IconCamera />
-              </div>
-              <p className="text-base font-medium text-[#1F1F1F]">
-                {t("trip_photos_empty_title", "You can upload best images of your trip")}
-              </p>
-              <p className="text-xs text-zinc-500 max-w-md mt-1 mb-6 leading-relaxed">
-                {t("trip_photos_empty_subtitle", "Select multiple photos, tag travel companions, add captions and locations.")}
-              </p>
-              {isOwner && (
-                <button
-                  type="button"
-                  onClick={() => setUploadModalOpen(true)}
-                  className="bg-[#FCDF9C] hover:bg-[#F3F4F5] text-[#1F1F1F] border border-transparent hover:border-[#1F1F1F] hover:text-[#1F1F1F] font-medium text-sm px-6 py-3 rounded-full transition-colors cursor-pointer shadow-2xs"
+                  aria-busy="true"
+                  aria-live="polite"
+                  className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3"
                 >
-                  {t("trip_photos_upload_btn", "Upload Photos")}
-                </button>
-              )}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {tripPhotos.map((photo) => (
-                <div
-                  key={photo.id}
-                  className="group relative aspect-4/3 rounded-2xl overflow-hidden bg-zinc-100 border border-zinc-200/80 shadow-2xs"
-                >
-                  {failedTripPhotoIds.has(photo.id) ? (
-                    <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-zinc-100 px-4 text-center text-[#727272]">
-                      <IconCamera />
-                      <p className="text-base font-normal">{t("trip_photos_unavailable", "Image unavailable")}</p>
-                    </div>
-                  ) : (
-                    <Image
-                      src={photo.url}
-                      alt={photo.caption || "Trip photo"}
-                      fill
-                      unoptimized
-                      className="object-cover transition-transform duration-300 group-hover:scale-105 cursor-pointer"
-                      sizes="(max-width: 640px) 100vw, 33vw"
-                      onClick={() => setLightboxPhoto(photo)}
-                      onError={() => {
-                        setFailedTripPhotoIds((previous) =>
-                          new Set(previous).add(photo.id),
-                        );
-                      }}
+                  {[0, 1, 2].map((index) => (
+                    <div
+                      key={index}
+                      className="aspect-4/3 animate-pulse rounded-2xl border border-zinc-200 bg-zinc-100"
                     />
-                  )}
-
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-3.5 flex flex-col justify-between pointer-events-none">
-                    {isOwner && (
-                      <div className="flex justify-end gap-1.5 pointer-events-auto">
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setEditPhotoModal(photo);
-                          }}
-                          className="w-8 h-8 rounded-full bg-white/95 hover:bg-white text-[#1F1F1F] flex items-center justify-center shadow-md transition-transform hover:scale-110 cursor-pointer"
-                          title={t("trip_photos_edit_title", "Edit photo")}
-                        >
-                          <IconPencil />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setDeletePhotoModal(photo);
-                          }}
-                          className="w-8 h-8 rounded-full bg-white/95 hover:bg-rose-500 hover:text-white text-rose-600 flex items-center justify-center shadow-md transition-transform hover:scale-110 cursor-pointer"
-                          title={t("trip_photos_delete_title", "Delete photo")}
-                        >
-                          <IconTrash />
-                        </button>
-                      </div>
-                    )}
-
-                    <div className="mt-auto">
-                      {photo.location && (
-                        <p className="text-xs font-medium text-white truncate">
-                          📍 {photo.location}
-                        </p>
-                      )}
-                      {photo.caption && (
-                        <p className="text-xs text-zinc-200 truncate mt-0.5">
-                          {photo.caption}
-                        </p>
-                      )}
-                    </div>
-                  </div>
+                  ))}
+                  <p className="sr-only">{t("trip_photos_loading", "Loading trip photos")}</p>
                 </div>
-              ))}
-            </div>
+              ) : tripPhotos.length === 0 ? (
+                <div className="border-2 border-dashed border-zinc-200 rounded-3xl p-12 text-center flex flex-col items-center justify-center bg-zinc-50/50">
+                  <div className="w-14 h-14 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center mb-3">
+                    <IconCamera />
+                  </div>
+                  <p className="text-base font-medium text-[#1F1F1F]">
+                    {t("trip_photos_empty_title", "You can upload best images of your trip")}
+                  </p>
+                  <p className="text-xs text-zinc-500 max-w-md mt-1 mb-6 leading-relaxed">
+                    {t("trip_photos_empty_subtitle", "Select multiple photos, tag travel companions, add captions and locations.")}
+                  </p>
+                  {isOwner && (
+                    <button
+                      type="button"
+                      onClick={() => setTravelUploadModalOpen(true)}
+                      className="bg-[#FCDF9C] hover:bg-[#F3F4F5] text-[#1F1F1F] border border-transparent hover:border-[#1F1F1F] hover:text-[#1F1F1F] font-medium text-sm px-6 py-3 rounded-full transition-colors cursor-pointer shadow-2xs"
+                    >
+                      {t("trip_photos_upload_btn", "Upload Photos")}
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                  {tripPhotos.map((photo) => (
+                    <div
+                      key={photo.id}
+                      className="group relative aspect-4/3 rounded-2xl overflow-hidden bg-zinc-100 border border-zinc-200/80 shadow-2xs"
+                    >
+                      {failedTripPhotoIds.has(photo.id) ? (
+                        <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-zinc-100 px-4 text-center text-[#727272]">
+                          <IconCamera />
+                          <p className="text-base font-normal">{t("trip_photos_unavailable", "Image unavailable")}</p>
+                        </div>
+                      ) : (
+                        <Image
+                          src={photo.url}
+                          alt={photo.caption || "Trip photo"}
+                          fill
+                          unoptimized
+                          className="object-cover transition-transform duration-300 group-hover:scale-105 cursor-pointer"
+                          sizes="(max-width: 640px) 100vw, 33vw"
+                          onClick={() => setLightboxPhoto(photo)}
+                          onError={() => {
+                            setFailedTripPhotoIds((previous) =>
+                              new Set(previous).add(photo.id),
+                            );
+                          }}
+                        />
+                      )}
+
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-3.5 flex flex-col justify-between pointer-events-none">
+                        {isOwner && (
+                          <div className="flex justify-end gap-1.5 pointer-events-auto">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditPhotoModal(photo);
+                              }}
+                              className="w-8 h-8 rounded-full bg-white/95 hover:bg-white text-[#1F1F1F] flex items-center justify-center shadow-md transition-transform hover:scale-110 cursor-pointer"
+                              title={t("trip_photos_edit_title", "Edit photo")}
+                            >
+                              <IconPencil />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setDeletePhotoModal(photo);
+                              }}
+                              className="w-8 h-8 rounded-full bg-white/95 hover:bg-rose-500 hover:text-white text-rose-600 flex items-center justify-center shadow-md transition-transform hover:scale-110 cursor-pointer"
+                              title={t("trip_photos_delete_title", "Delete photo")}
+                            >
+                              <IconTrash />
+                            </button>
+                          </div>
+                        )}
+
+                        <div className="mt-auto">
+                          {photo.location && (
+                            <p className="text-xs font-medium text-white truncate">
+                              📍 {photo.location}
+                            </p>
+                          )}
+                          {photo.caption && (
+                            <p className="text-xs text-zinc-200 truncate mt-0.5">
+                              {photo.caption}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+
+          {/* VIEW 2: TRIPS MANAGEMENT */}
+          {activeTravelTab === "trips" && (
+            <>
+              {isTripsLoading ? (
+                <div
+                  aria-busy="true"
+                  aria-live="polite"
+                  className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                >
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="rounded-2xl border border-zinc-200 bg-white p-4 animate-pulse">
+                      <div className="aspect-16/9 rounded-xl bg-zinc-200 mb-4" />
+                      <div className="h-5 bg-zinc-200 rounded w-2/3 mb-2" />
+                      <div className="h-4 bg-zinc-200 rounded w-1/3" />
+                    </div>
+                  ))}
+                  <p className="sr-only">{(t as any)("travel_trips_loading", "Loading trips")}</p>
+                </div>
+              ) : trips.length === 0 ? (
+                <div className="border-2 border-dashed border-zinc-200 rounded-3xl p-12 text-center flex flex-col items-center justify-center bg-zinc-50/50">
+                  <div className="w-14 h-14 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center mb-3">
+                    <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                    </svg>
+                  </div>
+                  <p className="text-base font-medium text-[#1F1F1F]">
+                    {(t as any)("travel_no_trips_title", "No trip albums yet")}
+                  </p>
+                  <p className="text-xs text-zinc-500 max-w-md mt-1 mb-6 leading-relaxed">
+                    {(t as any)("travel_no_trips_subtitle", "Create trip albums to organize your best photos (up to 5 per trip) and share your adventures.")}
+                  </p>
+                  {isOwner && (
+                    <button
+                      type="button"
+                      onClick={() => setIsCreatingTrip(true)}
+                      className="bg-[#FCDF9C] hover:bg-[#F3F4F5] text-[#1F1F1F] border border-transparent hover:border-[#1F1F1F] hover:text-[#1F1F1F] font-medium text-sm px-6 py-3 rounded-full transition-colors cursor-pointer shadow-2xs"
+                    >
+                      {(t as any)("travel_create_first_trip_btn", "Create First Trip")}
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {trips.map((trip) => {
+                    const tripPhotosList = trip.photos || [];
+                    const coverPhoto = tripPhotosList.find((p) => p.id === trip.coverPhotoId) || tripPhotosList[0];
+                    const isFull = tripPhotosList.length >= 5;
+
+                    return (
+                      <div
+                        key={trip.id}
+                        className="group relative rounded-2xl border border-zinc-200 bg-white overflow-hidden shadow-2xs hover:shadow-md transition-all flex flex-col"
+                      >
+                        <div className="relative aspect-16/9 bg-zinc-100 overflow-hidden">
+                          {coverPhoto ? (
+                            <Image
+                              src={coverPhoto.mediumUrl || coverPhoto.url}
+                              alt={trip.title}
+                              fill
+                              unoptimized
+                              className="object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex flex-col items-center justify-center text-zinc-400">
+                              <svg className="w-8 h-8 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                              </svg>
+                              <span className="text-xs">{(t as any)("no_photos_yet", "No photos yet")}</span>
+                            </div>
+                          )}
+
+                          {/* Photo Count Pill */}
+                          <div
+                            className={`absolute top-3 right-3 backdrop-blur-xs text-xs font-semibold px-2.5 py-1 rounded-full ${
+                              isFull
+                                ? "bg-amber-500/90 text-white"
+                                : "bg-black/70 text-white"
+                            }`}
+                          >
+                            {tripPhotosList.length}/5 photos
+                          </div>
+                        </div>
+
+                        <div className="p-4 flex-1 flex flex-col justify-between">
+                          <div>
+                            <h4 className="font-semibold text-base text-[#1F1F1F] truncate">{trip.title}</h4>
+                            {trip.destinationId && (
+                              <p className="text-xs text-zinc-500 flex items-center gap-1 mt-0.5">
+                                <span>📍</span> {trip.destinationId}
+                              </p>
+                            )}
+                            {(trip.startDate || trip.endDate) && (
+                              <p className="text-xs text-zinc-400 mt-1">
+                                {trip.startDate ? new Date(trip.startDate).toLocaleDateString() : ""}
+                                {trip.startDate && trip.endDate ? " – " : ""}
+                                {trip.endDate ? new Date(trip.endDate).toLocaleDateString() : ""}
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Thumbnails strip */}
+                          {tripPhotosList.length > 0 && (
+                            <div className="flex items-center gap-1.5 my-3 overflow-x-auto py-1">
+                              {tripPhotosList.map((p) => (
+                                <div
+                                  key={p.id}
+                                  className={`relative w-10 h-10 rounded-lg overflow-hidden shrink-0 border ${
+                                    p.id === trip.coverPhotoId ? "border-amber-500 ring-2 ring-amber-400/50" : "border-zinc-200"
+                                  }`}
+                                  title={p.id === trip.coverPhotoId ? "Cover Photo" : undefined}
+                                >
+                                  <Image src={p.thumbnailUrl || p.url} alt="thumbnail" fill unoptimized className="object-cover" />
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          <div className="mt-3 pt-3 border-t border-zinc-100 flex items-center justify-between gap-2">
+                            {isOwner && (
+                              <button
+                                type="button"
+                                onClick={() => setManagingTrip(trip)}
+                                className="flex-1 text-center py-2 px-3 text-xs font-medium rounded-xl border border-zinc-300 hover:bg-zinc-50 text-zinc-800 transition-colors cursor-pointer"
+                              >
+                                {(t as any)("manage_trip_btn", "Manage Trip")}
+                              </button>
+                            )}
+                            {isOwner && !isFull && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setUploadForTripId(trip.id);
+                                  setTravelUploadModalOpen(true);
+                                }}
+                                className="py-2 px-3 text-xs font-medium rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 transition-colors cursor-pointer whitespace-nowrap"
+                              >
+                                + {(t as any)("add_photos_btn", "Add Photo")}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </>
           )}
         </div>
       )}
@@ -1828,7 +2092,54 @@ export function ProfileManagementClient({
           onClose={() => setDeletePhotoModal(null)}
           onDeleted={(deletedId) => {
             setTripPhotos((prev) => prev.filter((p) => p.id !== deletedId));
+            fetchTrips();
             setDeletePhotoModal(null);
+          }}
+        />
+      )}
+
+      {travelUploadModalOpen && (
+        <TravelPhotoUploadModal
+          onClose={() => {
+            setTravelUploadModalOpen(false);
+            setUploadForTripId(null);
+          }}
+          onSuccess={handleTravelUploadSuccess}
+          existingTrips={trips}
+          initialTripId={uploadForTripId}
+        />
+      )}
+
+      {isCreatingTrip && (
+        <TravelTripManageModal
+          trip={null}
+          onClose={() => setIsCreatingTrip(false)}
+          onTripCreated={(newTrip) => {
+            setTrips((prev) => [newTrip, ...prev]);
+            setIsCreatingTrip(false);
+          }}
+          onAddPhotosClick={(tripId) => {
+            setUploadForTripId(tripId);
+            setTravelUploadModalOpen(true);
+          }}
+        />
+      )}
+
+      {managingTrip && (
+        <TravelTripManageModal
+          trip={managingTrip}
+          onClose={() => setManagingTrip(null)}
+          onTripUpdated={(updated) => {
+            setTrips((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
+            setManagingTrip(null);
+          }}
+          onTripDeleted={(id) => {
+            setTrips((prev) => prev.filter((t) => t.id !== id));
+            setManagingTrip(null);
+          }}
+          onAddPhotosClick={(tripId) => {
+            setUploadForTripId(tripId);
+            setTravelUploadModalOpen(true);
           }}
         />
       )}
@@ -1956,15 +2267,16 @@ function MultiImageUploadModal({
       const uploadFile = async (file: File, index: number) => {
         const fd = new FormData();
         fd.append("file", file);
-        const res = await fetch("/api/v1/upload/listing-photo", {
+        const res = await fetch("/api/v1/travel-media/uploads", {
           method: "POST",
           credentials: "include",
           body: fd,
         });
         const data = await res.json().catch(() => null);
         if (!res.ok) throw new Error(data?.error || "Upload failed");
-        if (!data?.url) throw new Error("Upload did not return an image URL");
-        uploadedUrls[index] = data.url;
+        const returnedUrl = data?.photo?.url || data?.url;
+        if (!returnedUrl) throw new Error("Upload did not return an image URL");
+        uploadedUrls[index] = returnedUrl;
         setUploadProgress((current) => ({
           ...current,
           completed: current.completed + 1,

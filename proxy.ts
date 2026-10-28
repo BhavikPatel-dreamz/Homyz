@@ -91,6 +91,8 @@ export const config = {
     "/host/:path*",
     "/dashboard/:path*",
     "/profile/:path*",
+    "/travel-profile",
+    "/travel-profile/:path*",
     "/bookings/:path*",
     "/favorites/:path*",
   ],

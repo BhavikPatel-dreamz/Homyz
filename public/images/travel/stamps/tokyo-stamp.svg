@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 240" fill="none">
+  <defs>
+    <path id="curve-text-tokyo" d="M 30,105 A 70,70 0 0,1 170,105" fill="none" />
+  </defs>
+  <circle cx="100" cy="110" r="60" fill="#E1F5FE" stroke="#E0E0E0" stroke-width="1.5" stroke-dasharray="3 3" />
+  <circle cx="100" cy="110" r="54" fill="#B3E5FC" opacity="0.4" />
+  <text font-family="'Caveat', cursive, sans-serif" font-size="14" fill="#1F1F1F" letter-spacing="1">
+    <textPath href="#curve-text-tokyo" startOffset="50%" text-anchor="middle">
+      stay like a homie.
+    </textPath>
+  </text>
+  <g stroke="#1F1F1F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M70 145 L90 95 L110 95 L130 145 Z" fill="#FFFFFF" />
+    <path d="M88 95 L100 115 L112 95" />
+    <circle cx="100" cy="75" r="8" fill="#E53935" stroke="none" />
+  </g>
+  <text x="100" y="195" text-anchor="middle" font-family="'Caveat', cursive, sans-serif" font-size="22" font-weight="600" fill="#1F1F1F">
+    Tokyo
+  </text>
+</svg>
+

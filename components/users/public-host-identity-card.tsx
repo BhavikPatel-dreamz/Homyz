@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useLanguage } from "@/lib/i18n/language-context";
+import { SuperhostBadge } from "@/components/badges/superhost-badge";
 
 type Props = {
   name: string;
@@ -37,9 +38,11 @@ export function PublicHostIdentityCard({ name, image, isSuperhost, reviewCount, 
           )}
           <div className="pt-4 text-center">
             <p className="break-words font-medium leading-tight capitalize text-[#1f1f1f] text-base">{name}</p>
-            <p className="mt-1 text-sm font-light text-[#1f1f1f] sm:mt-2">
-              {isSuperhost ? t("public_host_card_superhost", "Superhost") : t("public_host_card_host", "Host")}
-            </p>
+            {isSuperhost ? (
+              <SuperhostBadge active compact className="mt-2" aria-label={t("public_host_card_superhost", "Superhost")} />
+            ) : (
+              <p className="mt-1 text-sm font-light text-[#1f1f1f] sm:mt-2">{t("public_host_card_host", "Host")}</p>
+            )}
           </div>
         </div>
         <div className="min-w-0 divide-y divide-[#dedede]">

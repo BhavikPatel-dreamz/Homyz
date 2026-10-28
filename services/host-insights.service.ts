@@ -38,13 +38,14 @@ export interface HostInsightsOpportunityItem {
 }
 
 export interface HostInsightsSuperhostCriterion {
-  id: "STAYS" | "RATING" | "RESPONSE_RATE" | "CANCELLATION" | "GOOD_STANDING";
+  id: string;
   title: string;
   description: string;
   currentValue: string;
   targetValue: string;
-  progressPercentage: number;
+  progressPercentage: number | null;
   isMet: boolean;
+  status: "PASS" | "FAIL" | "BLOCKED";
 }
 
 export interface HostInsightsData {
@@ -130,6 +131,7 @@ export interface HostInsightsData {
     windowStart: string;
     windowEnd: string;
     nextEvaluationAt: string;
+    eligibilityStatus: "ELIGIBLE" | "NOT_ELIGIBLE" | "CANNOT_DETERMINE";
     criteria: HostInsightsSuperhostCriterion[];
     gaps: string[];
     benefits: Array<{ title: string; description: string; icon: string }>;
@@ -295,60 +297,35 @@ export const hostInsightsService = {
       });
     }
 
-    // Superhost criteria breakdown
+    // The qualification service is authoritative. Map its six structured
+    // criteria for display rather than recreating thresholds in the UI layer.
     const superhostProg = dashboardData.superhostEvaluation.currentProgress;
-
-    const superhostCriteria: HostInsightsSuperhostCriterion[] = [
-      {
-        id: "STAYS",
-        title: "Completed stays",
-        description: "Host at least 10 trips or 100 nights over the past 12 months.",
-        currentValue: `${superhostProg.completedReservationsCount} trips (${superhostProg.completedNightsCount} nights)`,
-        targetValue: "10 trips or 100 nights",
-        progressPercentage: Math.min(100, Math.round((superhostProg.completedReservationsCount / 10) * 100)),
-        isMet: superhostProg.hostingVolumeMet,
-      },
-      {
-        id: "RATING",
-        title: "Overall rating",
-        description: "Maintain an overall guest rating of 4.80 or higher.",
-        currentValue: superhostProg.overallRating !== null ? `${superhostProg.overallRating.toFixed(2)} ★` : "No rating yet",
-        targetValue: "4.80 ★",
-        progressPercentage:
-          superhostProg.overallRating !== null
-            ? Math.min(100, Math.round((superhostProg.overallRating / 4.8) * 100))
-            : 0,
-        isMet: superhostProg.ratingMet,
-      },
-      {
-        id: "RESPONSE_RATE",
-        title: "Response rate",
-        description: "Respond to at least 90% of new guest inquiries within 24 hours.",
-        currentValue:
-          superhostProg.responseRatePercentage !== null ? `${superhostProg.responseRatePercentage}%` : "No inquiries",
-        targetValue: "90%",
-        progressPercentage: superhostProg.responseRatePercentage ?? 0,
-        isMet: superhostProg.responseRateMet,
-      },
-      {
-        id: "CANCELLATION",
-        title: "Cancellation rate",
-        description: "Maintain a host cancellation rate below 1.0%.",
-        currentValue: `${superhostProg.hostCancellationRatePercentage}%`,
-        targetValue: "< 1.0%",
-        progressPercentage: superhostProg.cancellationMet ? 100 : Math.max(0, 100 - superhostProg.hostCancellationRatePercentage * 10),
-        isMet: superhostProg.cancellationMet,
-      },
-      {
-        id: "GOOD_STANDING",
-        title: "Account standing",
-        description: "Maintain an account in full compliance with Homyz hosting policies.",
-        currentValue: superhostProg.accountGoodStanding ? "In good standing" : "Requires attention",
-        targetValue: "Good standing",
-        progressPercentage: superhostProg.accountGoodStanding ? 100 : 0,
-        isMet: superhostProg.accountStandingMet,
-      },
-    ];
+    const criterionTitles: Record<string, string> = {
+      LISTING_OWNERSHIP: "Eligible owned home listing",
+      HOSTING_VOLUME: "Hosting activity",
+      RATING: "Published guest rating",
+      RESPONSE_RATE: "Response rate",
+      CANCELLATION_RATE: "Host cancellation rate",
+      GOOD_STANDING: "Account standing",
+    };
+    const formatActualValue = (value: typeof superhostProg.qualification.criteria[number]["actualValue"]) => {
+      if (value === null) return "Not available";
+      if (typeof value === "boolean") return value ? "Yes" : "No";
+      if (typeof value === "object") {
+        return Object.entries(value).map(([key, item]) => `${key.replace(/([A-Z])/g, " $1").toLowerCase()}: ${item}`).join(" · ");
+      }
+      return String(value);
+    };
+    const superhostCriteria: HostInsightsSuperhostCriterion[] = superhostProg.qualification.criteria.map((criterion) => ({
+      id: criterion.id,
+      title: criterionTitles[criterion.id] ?? criterion.id,
+      description: criterion.explanation,
+      currentValue: formatActualValue(criterion.actualValue),
+      targetValue: criterion.requiredThreshold,
+      progressPercentage: criterion.status === "PASS" ? 100 : criterion.status === "FAIL" ? 0 : null,
+      isMet: criterion.status === "PASS",
+      status: criterion.status,
+    }));
 
     const superhostBenefits = [
       {
@@ -455,6 +432,7 @@ export const hostInsightsService = {
         windowStart: dashboardData.superhostEvaluation.windowStart,
         windowEnd: dashboardData.superhostEvaluation.windowEnd,
         nextEvaluationAt: dashboardData.superhostEvaluation.nextEvaluationAt,
+        eligibilityStatus: superhostProg.qualification.eligibilityStatus,
         criteria: superhostCriteria,
         gaps: dashboardData.superhostEvaluation.gaps,
         benefits: superhostBenefits,

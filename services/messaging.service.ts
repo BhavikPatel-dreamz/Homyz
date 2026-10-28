@@ -2,6 +2,10 @@ import path from "node:path";
 import crypto from "node:crypto";
 import { prisma } from "@/lib/db/prisma";
 import {
+  calculateHostResponseMetricsFromConversations,
+  type HostResponseMetrics,
+} from "@/lib/messaging/response-metrics";
+import {
   ConversationType,
   ConversationStatus,
   MessageType,
@@ -1710,14 +1714,7 @@ async function declineInquiry(
   return getConversationById(actor, conversationId);
 }
 
-export interface HostResponseMetrics {
-  totalGuestInquiries: number;
-  respondedCount: number;
-  respondedWithin24hCount: number;
-  // A rate cannot be inferred until there has been at least one guest inquiry.
-  responseRatePercentage: number | null;
-  averageResponseTimeMinutes: number | null;
-}
+export type { HostResponseMetrics } from "@/lib/messaging/response-metrics";
 
 export interface HostResponseTrendPoint {
   monthKey: string;
@@ -1756,62 +1753,7 @@ async function calculateHostResponseMetrics(
     },
   });
 
-  let totalGuestInquiries = 0;
-  let respondedCount = 0;
-  let respondedWithin24hCount = 0;
-  let totalResponseTimeMinutes = 0;
-  const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
-
-  for (const conv of conversations) {
-    if (!conv.messages || conv.messages.length === 0) continue;
-
-    // Count the first actual guest-authored inquiry in the conversation,
-    // never a sender-less system event. The existing conversation model has
-    // no separate inquiry entity; subsequent guest messages before a reply
-    // remain part of this same inquiry rather than becoming duplicate SLA rows.
-    const firstGuestMsg = conv.messages.find(
-      (m: { id: string; senderId: string | null; type: string; createdAt: Date }) =>
-        m.senderId === conv.guestId && m.type !== "SYSTEM",
-    );
-    if (!firstGuestMsg) continue;
-
-    totalGuestInquiries++;
-
-    // Find the first host reply following the guest's message
-    const firstHostReply = conv.messages.find(
-      (m: { id: string; senderId: string | null; createdAt: Date }) =>
-        m.senderId === hostId && m.createdAt > firstGuestMsg.createdAt,
-    );
-
-    if (firstHostReply) {
-      respondedCount++;
-      const responseTimeMs = firstHostReply.createdAt.getTime() - firstGuestMsg.createdAt.getTime();
-      const responseTimeMinutes = Math.max(1, Math.round(responseTimeMs / (60 * 1000)));
-      totalResponseTimeMinutes += responseTimeMinutes;
-
-      if (responseTimeMs <= TWENTY_FOUR_HOURS_MS) {
-        respondedWithin24hCount++;
-      }
-    }
-  }
-
-  const responseRatePercentage =
-    totalGuestInquiries > 0
-      // Keep comparison precision intact for the >= 90% Superhost threshold.
-      // Formatting belongs at the presentation boundary, not the rules engine.
-      ? (respondedWithin24hCount / totalGuestInquiries) * 100
-      : null;
-
-  const averageResponseTimeMinutes =
-    respondedCount > 0 ? Math.round(totalResponseTimeMinutes / respondedCount) : null;
-
-  return {
-    totalGuestInquiries,
-    respondedCount,
-    respondedWithin24hCount,
-    responseRatePercentage,
-    averageResponseTimeMinutes,
-  };
+  return calculateHostResponseMetricsFromConversations(hostId, conversations);
 }
 
 /**

@@ -18,6 +18,8 @@ export const MEDIA_KINDS = Object.freeze([
   "reviews",
   "dispute-evidence",
   "moderation-evidence",
+  "travel-covers",
+  "travel-photos",
 ]);
 
 export const PUBLIC_MEDIA_KINDS = Object.freeze([
@@ -27,6 +29,8 @@ export const PUBLIC_MEDIA_KINDS = Object.freeze([
   "cms-media",
   "avatars",
   "reviews",
+  "travel-covers",
+  "travel-photos",
 ]);
 
 const KIND_SET = new Set(MEDIA_KINDS);

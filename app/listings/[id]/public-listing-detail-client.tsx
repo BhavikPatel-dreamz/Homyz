@@ -7,6 +7,7 @@ import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { AppHeader } from "@/components/dashboard/app-header";
+import { SuperhostBadge } from "@/components/badges/superhost-badge";
 import { Footer } from "@/components/dashboard/footer";
 import { Container } from "@/components/ui";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
@@ -1891,11 +1892,7 @@ export function PublicListingDetailClient({
                         <span aria-hidden="true">✦</span> {t("listing_detail_guest_favourite", "Guest favourite")}
                       </span>
                     )}
-                    {listing.host?.isSuperhost && (
-                      <span className="inline-flex items-center gap-1.5 rounded-full border border-sky-200 bg-sky-50 px-2.5 py-1 text-xs font-medium text-sky-950">
-                        <span aria-hidden="true">★</span> {t("home_superhost", "Superhost")}
-                      </span>
-                    )}
+                    <SuperhostBadge active={listing.host?.isSuperhost} />
                     {listing.isFeatured && (
                       <span className="inline-flex items-center rounded-full bg-zinc-100 px-3 py-2 text-xs font-medium text-[#1f1f1f]">
                         {t("home_featured", "Featured stay")}

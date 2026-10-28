@@ -665,6 +665,23 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                             <span>{t("header_profile") || "Profile"}</span>
                           </Link>
 
+                          {/* Travel Profile */}
+                          <Link
+                            href="/travel-profile"
+                            onClick={() => setMenuOpen(false)}
+                            className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${
+                              pathname === "/travel-profile" ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
+                            }`}
+                          >
+                            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
+                              <Image src="/images/icons/trip.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
+                            </span>
+                            <span className="flex flex-1 items-center justify-between">
+                              <span>Travel Profile</span>
+                              <span className="text-xs text-[#727272]">✈</span>
+                            </span>
+                          </Link>
+
                           {/* Notifications */}
                           <Link
                             href="/profile/tab/notifications"
@@ -834,6 +851,23 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                               <Image src="/images/icons/profile.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
                             </span>
                             <span>{t("header_profile") || "Profile"}</span>
+                          </Link>
+
+                          {/* Travel Profile */}
+                          <Link
+                            href="/travel-profile"
+                            onClick={() => setMenuOpen(false)}
+                            className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${
+                              pathname === "/travel-profile" ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
+                            }`}
+                          >
+                            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
+                              <Image src="/images/icons/trip.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
+                            </span>
+                            <span className="flex flex-1 items-center justify-between">
+                              <span>Travel Profile</span>
+                              <span className="text-xs text-[#727272]">✈</span>
+                            </span>
                           </Link>
                         </div>
 

@@ -45,8 +45,23 @@ const nextConfig: NextConfig = {
   allowedDevOrigins: actionOrigins,
   images: {
     dangerouslyAllowSVG: true,
+    dangerouslyAllowLocalIP: true,
     contentDispositionType: "attachment",
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    localPatterns: [
+      {
+        pathname: "/images/**",
+      },
+      {
+        pathname: "/images/icons/**",
+      },
+      {
+        pathname: "/images/**/*",
+      },
+      {
+        pathname: "/uploads/**",
+      },
+    ],
     remotePatterns: [
       {
         protocol: "https",

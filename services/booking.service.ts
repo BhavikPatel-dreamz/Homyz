@@ -2089,7 +2089,6 @@ async function cancelBookingByHost(
   actor: AuthUser,
   id: string,
   reason?: string,
-  isExcluded = false,
 ): Promise<BookingDTO> {
   const cancelled = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     const booking = await tx.booking.findUnique({
@@ -2136,7 +2135,11 @@ async function cancelBookingByHost(
         cancelledBy: "HOST",
         hostId: actor.id,
         reason: reason?.trim() || null,
-        isExcluded: Boolean(isExcluded),
+        // Superhost exclusions require an approved, authoritative exception
+        // record. There is no such cancellation exception workflow in this
+        // schema yet, so an ordinary host cancellation can never self-mark as
+        // excluded through this service argument.
+        isExcluded: false,
         guestRefundAmount: refundDue,
         hostPayoutRetained: 0,
       },
@@ -2231,7 +2234,7 @@ async function cancelBookingByHost(
         bookingId: cancelled.id,
         listingId: cancelled.listingId,
         reason: reason?.trim() || null,
-        isExcluded: Boolean(isExcluded),
+        isExcluded: false,
         previousStatus: BookingStatus.CONFIRMED,
         newStatus: BookingStatus.CANCELLED,
       },
