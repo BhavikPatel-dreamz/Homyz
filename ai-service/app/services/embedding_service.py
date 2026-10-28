@@ -25,7 +25,7 @@ class EmbeddingService:
             if not self.settings.OPENAI_API_KEY:
                 raise AIProviderError("OPENAI_API_KEY is not configured")
             self._embeddings = OpenAIEmbeddings(
-                model="text-embedding-3-small",
+                model=self.settings.OPENAI_EMBEDDING_MODEL,
                 openai_api_key=self.settings.OPENAI_API_KEY,
             )
         return self._embeddings

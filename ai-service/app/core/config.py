@@ -19,8 +19,12 @@ class Settings(BaseSettings):
     QDRANT_API_KEY: Optional[str] = None
     QDRANT_COLLECTION_LISTINGS: str = "listings"
 
-    # OpenAI Settings
+    # OpenAI Settings & Models
     OPENAI_API_KEY: str = ""
+    OPENAI_EMBEDDING_MODEL: str = "text-embedding-3-small"
+    OPENAI_CHAT_MODEL: str = "gpt-4o-mini"
+    OPENAI_VISION_MODEL: str = "gpt-4o-mini"
+    OPENAI_MODERATION_MODEL: str = "omni-moderation-latest"
 
     # Search Defaults
     DEFAULT_SEARCH_RADIUS_KM: float = 15.0
