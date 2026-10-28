@@ -183,8 +183,8 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
           : "Your reply was sent to Homyz Support.",
       );
       router.refresh();
-    } catch (err: any) {
-      setErrorMessage(err.message || "Failed to submit response.");
+    } catch (err: unknown) {
+      setErrorMessage(err instanceof Error ? err.message : "Failed to submit response.");
     } finally {
       setIsSubmittingReply(false);
     }
@@ -218,8 +218,8 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
       setNoteContent("");
       setSuccessMessage(wasEditing ? "Private note updated." : "Private note saved. Only you can view it.");
       router.refresh();
-    } catch (err: any) {
-      setErrorMessage(err.message || "Failed to save note.");
+    } catch (err: unknown) {
+      setErrorMessage(err instanceof Error ? err.message : "Failed to save note.");
     } finally {
       setIsSavingNote(false);
     }
@@ -241,8 +241,8 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
 
       setSuccessMessage("Private note deleted.");
       router.refresh();
-    } catch (err: any) {
-      setErrorMessage(err.message || "Failed to delete note.");
+    } catch (err: unknown) {
+      setErrorMessage(err instanceof Error ? err.message : "Failed to delete note.");
     }
   }
 
@@ -273,8 +273,8 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
       setProposalFiles([]);
       setSuccessMessage("Resolution proposal submitted for review by Homyz Support.");
       router.refresh();
-    } catch (err: any) {
-      setErrorMessage(err.message || "Failed to submit proposal.");
+    } catch (err: unknown) {
+      setErrorMessage(err instanceof Error ? err.message : "Failed to submit proposal.");
     } finally {
       setIsSubmittingProposal(false);
     }
@@ -307,8 +307,8 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
           : "Your dispute complaint has been successfully withdrawn.",
       );
       router.refresh();
-    } catch (err: any) {
-      setErrorMessage(err.message || "Failed to update case.");
+    } catch (err: unknown) {
+      setErrorMessage(err instanceof Error ? err.message : "Failed to update case.");
     } finally {
       setIsSubmittingResolveOwn(false);
     }
@@ -803,7 +803,7 @@ export function HostDisputeDetailsClient({ initialData }: HostDisputeDetailsProp
 
                 {dispute.privateNotes.length === 0 ? (
                   <div className="py-14 text-center text-sm text-[#727272] space-y-1">
-                    <p className="text-base">You haven't saved any private notes for this case.</p>
+                    <p className="text-base">You haven&apos;t saved any private notes for this case.</p>
                     <p className="text-sm">Keep personal reminders, inspection findings, or timeline notes for your records.</p>
                   </div>
                 ) : (
