@@ -219,10 +219,10 @@ function toConversationBookingDTO(booking: any): ConversationBookingDTO {
     startDate: bookingDateKey(booking.startDate),
     endDate: bookingDateKey(booking.endDate),
     guests: booking.guests,
-    totalPrice: booking.totalPrice,
-    nightlyPrice: booking.nightlyPrice,
-    currency: booking.currency,
-    cancellationPolicy: booking.cancellationPolicy,
+    totalPrice: booking.totalPrice ?? null,
+    nightlyPrice: booking.nightlyPrice ?? null,
+    currency: booking.currency ?? "SAR",
+    cancellationPolicy: booking.cancellationPolicy ?? null,
     isNonRefundable: Boolean(booking.isNonRefundable),
     priceBreakdown: booking.priceBreakdown ?? null,
     createdAt: booking.createdAt ? booking.createdAt.toISOString() : undefined,
@@ -295,7 +295,7 @@ function toConversationDTO(
       id: c.guest.id,
       name: c.guest.name,
       image: c.guest.image,
-      email: c.guest.email,
+      email: c.guest.email ?? null,
       createdAt: c.guest.createdAt ? c.guest.createdAt.toISOString() : new Date().toISOString(),
       phone: c.guest.phone || null,
       emailVerified: Boolean(c.guest.emailVerified),
@@ -308,7 +308,7 @@ function toConversationDTO(
       id: c.host.id,
       name: c.host.name,
       image: c.host.image,
-      email: c.host.email,
+      email: c.host.email ?? null,
       createdAt: c.host.createdAt ? c.host.createdAt.toISOString() : new Date().toISOString(),
     },
     listing: {
@@ -384,29 +384,26 @@ async function listConversationsForUser(
     AND: [userCondition, searchCondition, unreadCondition],
   };
 
+  const skip = Math.max(0, Math.trunc(params.skip ?? 0));
+  const take = Math.min(50, Math.max(1, Math.trunc(params.take ?? 25)));
+  const now = new Date();
+
   const [conversations, total] = await Promise.all([
     prisma.conversation.findMany({
       where,
-      orderBy: { lastMessageAt: "desc" },
-      skip: params.skip || 0,
-      take: params.take || 50,
+      orderBy: [{ lastMessageAt: "desc" }, { id: "desc" }],
+      skip,
+      take,
       include: {
-        guest: { select: { id: true, name: true, image: true, email: true, emailVerified: true, personalInfo: true, createdAt: true, phone: true } },
-        host: { select: { id: true, name: true, image: true, email: true, createdAt: true } },
+        // A list row needs identity, title, reservation state, and a preview only.
+        // The full participant/listing/offer payload remains available through the
+        // single-conversation endpoint when its detail pane is opened.
+        guest: { select: { id: true, name: true, image: true, createdAt: true } },
+        host: { select: { id: true, name: true, image: true, createdAt: true } },
         listing: {
           select: {
             id: true,
             title: true,
-            photos: true,
-            city: true,
-            district: true,
-            country: true,
-            price: true,
-            propertyType: true,
-            listingType: true,
-            checkInStart: true,
-            checkOutTime: true,
-            cancellationPolicy: true,
           },
         },
         booking: {
@@ -416,26 +413,42 @@ async function listConversationsForUser(
             startDate: true,
             endDate: true,
             guests: true,
-            totalPrice: true,
-            nightlyPrice: true,
-            currency: true,
-            cancellationPolicy: true,
-            isNonRefundable: true,
-            priceBreakdown: true,
-            createdAt: true,
           },
         },
         messages: {
           orderBy: { createdAt: "desc" },
           take: 1,
-          include: {
-            sender: { select: { id: true, name: true, image: true, role: true } },
-            attachments: true,
+          select: {
+            id: true,
+            conversationId: true,
+            senderId: true,
+            type: true,
+            content: true,
+            readAt: true,
+            metadata: true,
+            createdAt: true,
+            attachments: {
+              select: {
+                id: true,
+                conversationId: true,
+                messageId: true,
+                fileName: true,
+                fileType: true,
+                mimeType: true,
+                fileSize: true,
+                fileUrl: true,
+                createdAt: true,
+              },
+            },
           },
         },
         specialOffers: {
+          where: {
+            status: { in: [SpecialOfferStatus.PENDING, SpecialOfferStatus.ACCEPTED] },
+            OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
+          },
           orderBy: { createdAt: "desc" },
-          take: 10,
+          take: 1,
         },
       },
     }),
@@ -444,15 +457,18 @@ async function listConversationsForUser(
 
   // Compute unread counts per conversation in batch
   const conversationIds = conversations.map((c: any) => c.id);
-  const unreadCounts = await prisma.message.groupBy({
-    by: ["conversationId"],
-    where: {
-      conversationId: { in: conversationIds },
-      readAt: null,
-      senderId: { not: actor.id },
-    },
-    _count: { id: true },
-  });
+  const unreadCounts = conversationIds.length > 0
+    ? await prisma.message.groupBy({
+        by: ["conversationId"],
+        where: {
+          conversationId: { in: conversationIds },
+          readAt: null,
+          // Null senderIds are booking/system events, not participant messages.
+          senderId: { not: actor.id },
+        },
+        _count: { id: true },
+      })
+    : [];
 
   const unreadMap = new Map<string, number>();
   unreadCounts.forEach((u: any) => unreadMap.set(u.conversationId, u._count.id));
@@ -463,11 +479,14 @@ async function listConversationsForUser(
   const unlinkedConversationPairs = conversations
     .filter((conversation: any) => !conversation.bookingId)
     .map((conversation: any) => ({ userId: conversation.guestId, listingId: conversation.listingId }));
-  const contextBookings = unlinkedConversationPairs.length > 0
+  const uniqueUnlinkedConversationPairs = [...new Map(
+    unlinkedConversationPairs.map((pair) => [`${pair.userId}:${pair.listingId}`, pair]),
+  ).values()];
+  const contextBookings = uniqueUnlinkedConversationPairs.length > 0
     ? await prisma.booking.findMany({
         where: {
           status: BookingStatus.CONFIRMED,
-          OR: unlinkedConversationPairs,
+          OR: uniqueUnlinkedConversationPairs,
         },
         select: {
           id: true,
@@ -475,13 +494,6 @@ async function listConversationsForUser(
           startDate: true,
           endDate: true,
           guests: true,
-          totalPrice: true,
-          nightlyPrice: true,
-          currency: true,
-          cancellationPolicy: true,
-          isNonRefundable: true,
-          priceBreakdown: true,
-          createdAt: true,
           userId: true,
           listingId: true,
         },
@@ -645,8 +657,8 @@ async function getConversationById(
 async function getConversationMessages(
   actor: AuthUser,
   conversationId: string,
-  params: { skip?: number; take?: number } = {}
-): Promise<{ messages: MessageDTO[]; total: number }> {
+  params: { cursor?: string; skip?: number; take?: number; includeTotal?: boolean } = {}
+): Promise<{ messages: MessageDTO[]; total?: number; nextCursor: string | null; hasMore: boolean }> {
   const conversation = await prisma.conversation.findUnique({
     where: { id: conversationId },
     select: { id: true, guestId: true, hostId: true },
@@ -664,25 +676,72 @@ async function getConversationMessages(
     throw AppError.forbidden("You do not have permission to view messages in this conversation");
   }
 
-  const [messages, total] = await Promise.all([
-    prisma.message.findMany({
-      where: { conversationId },
-      orderBy: { createdAt: "asc" },
-      skip: params.skip,
-      take: params.take,
-      include: {
-        sender: {
-          select: { id: true, name: true, image: true, role: true },
-        },
-        attachments: true,
-      },
-    }),
-    prisma.message.count({ where: { conversationId } }),
+  const take = Math.min(100, Math.max(1, Math.trunc(params.take ?? 40)));
+  const include = {
+    sender: {
+      select: { id: true, name: true, image: true, role: true },
+    },
+    attachments: true,
+  } as const;
+
+  // `skip` is retained for existing API consumers. New clients receive the
+  // newest page first and use a stable timestamp/id cursor for older history.
+  if (params.skip !== undefined && !params.cursor) {
+    const [messages, total] = await Promise.all([
+      prisma.message.findMany({
+        where: { conversationId },
+        orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+        skip: Math.max(0, Math.trunc(params.skip)),
+        take,
+        include,
+      }),
+      prisma.message.count({ where: { conversationId } }),
+    ]);
+    return {
+      messages: messages.map((m: any) => toMessageDTO(m, actor.id)),
+      total,
+      nextCursor: null,
+      hasMore: false,
+    };
+  }
+
+  let cursorWhere: Prisma.MessageWhereInput = {};
+  if (params.cursor) {
+    const separator = params.cursor.indexOf("::");
+    const createdAt = separator > 0 ? new Date(params.cursor.slice(0, separator)) : null;
+    const id = separator > 0 ? params.cursor.slice(separator + 2) : "";
+    if (!createdAt || Number.isNaN(createdAt.getTime()) || !id) {
+      throw AppError.badRequest("Invalid message cursor");
+    }
+    cursorWhere = {
+      OR: [
+        { createdAt: { lt: createdAt } },
+        { createdAt, id: { lt: id } },
+      ],
+    };
+  }
+
+  const query = prisma.message.findMany({
+    where: { conversationId, ...cursorWhere },
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+    take: take + 1,
+    include,
+  });
+  const [newestFirst, total] = await Promise.all([
+    query,
+    params.includeTotal === false ? Promise.resolve(undefined) : prisma.message.count({ where: { conversationId } }),
   ]);
+  const hasMore = newestFirst.length > take;
+  const page = hasMore ? newestFirst.slice(0, take) : newestFirst;
+  const oldest = page[page.length - 1];
 
   return {
-    messages: messages.map((m: any) => toMessageDTO(m, actor.id)),
-    total,
+    // The database reads newest-first efficiently; the UI renders the returned
+    // page chronologically so its existing message layout remains unchanged.
+    messages: [...page].reverse().map((m: any) => toMessageDTO(m, actor.id)),
+    ...(total === undefined ? {} : { total }),
+    nextCursor: hasMore && oldest ? `${oldest.createdAt.toISOString()}::${oldest.id}` : null,
+    hasMore,
   };
 }
 
@@ -1251,6 +1310,9 @@ async function getOrCreateBookingConversation(params: {
   messageContent?: string;
   isConfirmed?: boolean;
   guestName?: string;
+  startDate?: Date | string;
+  endDate?: Date | string;
+  guests?: number;
   db?: Prisma.TransactionClient;
 }): Promise<{ conversationId: string; messageId?: string }> {
   const now = new Date();
@@ -1327,6 +1389,53 @@ async function getOrCreateBookingConversation(params: {
     });
   }
 
+  // A reservation conversation must be meaningful even when the guest did
+  // not write an optional checkout note. This is a system event, not a guest
+  // message, so it gives both participants booking context without affecting
+  // their unread-message counts.
+  const bookingEvent = params.isConfirmed
+    ? "BOOKING_CONFIRMED_ON_CREATE"
+    : "BOOKING_REQUEST_SUBMITTED";
+  const hasBookingEvent = await db.message.findFirst({
+    where: {
+      conversationId: conversation.id,
+      type: MessageType.BOOKING_STATUS,
+      AND: [
+        { metadata: { path: ["bookingId"], equals: params.bookingId } },
+        { metadata: { path: ["bookingEvent"], equals: bookingEvent } },
+      ],
+    },
+    select: { id: true },
+  });
+
+  if (!hasBookingEvent) {
+    await db.message.create({
+      data: {
+        conversationId: conversation.id,
+        senderId: null,
+        type: MessageType.BOOKING_STATUS,
+        content: params.isConfirmed
+          ? "Reservation confirmed."
+          : "Booking request submitted. Awaiting host approval.",
+        metadata: {
+          bookingId: params.bookingId,
+          bookingEvent,
+          status: params.isConfirmed ? BookingStatus.CONFIRMED : BookingStatus.PENDING,
+          checkIn: params.startDate ? bookingDateKey(params.startDate) : null,
+          checkOut: params.endDate ? bookingDateKey(params.endDate) : null,
+          guests: params.guests ?? null,
+          systemGenerated: true,
+        },
+        createdAt: now,
+      },
+    });
+
+    await db.conversation.update({
+      where: { id: conversation.id },
+      data: { lastMessageAt: now },
+    });
+  }
+
   return {
     conversationId: conversation.id,
     messageId: createdMessageId,
@@ -1349,25 +1458,42 @@ async function recordBookingStatusMessage(params: {
   if (!conversation) return;
 
   const now = new Date();
-  await prisma.message.create({
-    data: {
+  const existingStatusEvent = await prisma.message.findFirst({
+    where: {
       conversationId: conversation.id,
-      senderId: null, // System message
       type: MessageType.BOOKING_STATUS,
-      content: params.statusText,
-      metadata: {
-        bookingId: params.bookingId,
-        status: params.newBookingStatus,
-      },
-      createdAt: now,
+      AND: [
+        { metadata: { path: ["bookingId"], equals: params.bookingId } },
+        { metadata: { path: ["bookingEvent"], equals: "BOOKING_STATUS_CHANGED" } },
+        { metadata: { path: ["status"], equals: params.newBookingStatus } },
+      ],
     },
+    select: { id: true },
   });
+
+  if (!existingStatusEvent) {
+    await prisma.message.create({
+      data: {
+        conversationId: conversation.id,
+        senderId: null, // System message; intentionally excluded from unread counts.
+        type: MessageType.BOOKING_STATUS,
+        content: params.statusText,
+        metadata: {
+          bookingId: params.bookingId,
+          bookingEvent: "BOOKING_STATUS_CHANGED",
+          status: params.newBookingStatus,
+          systemGenerated: true,
+        },
+        createdAt: now,
+      },
+    });
+  }
 
   await prisma.conversation.update({
     where: { id: conversation.id },
     data: {
       status: params.conversationStatus || (params.newBookingStatus === BookingStatus.CONFIRMED ? ConversationStatus.CONFIRMED : params.newBookingStatus === BookingStatus.CANCELLED ? ConversationStatus.CANCELLED : ConversationStatus.ACTIVE),
-      lastMessageAt: now,
+      ...(existingStatusEvent ? {} : { lastMessageAt: now }),
     },
   });
 }

@@ -14,6 +14,7 @@ import { DISPLAY_CURRENCIES, useCurrency } from "@/lib/currency-context";
 import { ListingHeaderSearch } from "@/components/listings/listing-header-search";
 import {
   invalidateUnreadNotificationCount,
+  resetUnreadNotificationCount,
   refreshUnreadNotificationCount,
   useUnreadNotificationCount,
 } from "@/lib/notifications/unread-count-store";
@@ -41,6 +42,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
   const { data: session, status: sessionStatus, update } = useSession();
   const user = session?.user ?? initialUser ?? null;
   const hasUser = Boolean(user);
+  const notificationAccountKey = user?.email || null;
   const sessionLoading = sessionStatus === "loading" && !initialUser;
   const role = user?.role;
   const isReservationsView =
@@ -92,6 +94,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
   }, []);
 
   useEffect(() => {
+    resetUnreadNotificationCount();
     if (!hasUser) return;
 
     void refreshUnreadNotificationCount();
@@ -112,7 +115,7 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
       window.removeEventListener("homyz:notifications-updated", handleNotificationsUpdated);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [hasUser]);
+  }, [hasUser, notificationAccountKey]);
 
   const isHostRoute = pathname?.startsWith("/host") ?? false;
   const logoHref = isHostRoute ? "/host/today" : "/";
@@ -669,23 +672,6 @@ export function AppHeader({ showBottomBorder, showSearchBar, user: initialUser }
                               <Image src="/images/icons/profile.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
                             </span>
                             <span>{t("header_profile") || "Profile"}</span>
-                          </Link>
-
-                          {/* Travel Profile */}
-                          <Link
-                            href="/travel-profile"
-                            onClick={() => setMenuOpen(false)}
-                            className={`flex items-center gap-3.5 px-3 py-2 text-sm sm:text-[15px] font-normal rounded-2xl transition-colors ${
-                              pathname === "/travel-profile" ? "bg-amber-100 text-[#1F1F1F] font-medium" : "text-[#1F1F1F] hover:bg-white"
-                            }`}
-                          >
-                            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white border border-zinc-200/60 shadow-2xs">
-                              <Image src="/images/icons/trip.svg" alt="" width={18} height={18} className="size-[18px] object-contain" />
-                            </span>
-                            <span className="flex flex-1 items-center justify-between">
-                              <span>Travel Profile</span>
-                              <span className="text-xs text-[#727272]">✈</span>
-                            </span>
                           </Link>
 
                           {/* Notifications */}

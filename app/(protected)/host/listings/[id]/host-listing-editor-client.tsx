@@ -2329,12 +2329,12 @@ export function HostListingEditorClient({
               ✕
             </button>
 
-            <div className="space-y-1">
+            {/* <div className="space-y-1">
               <h3 className="font-medium text-xl tracking-tight text-[#1F1F1F] mb-1">{t("host_booking_custom_message_title") || "Add a custom message"}</h3>
               <p className="text-sm text-[#727272] font-normal">
                 {t("host_booking_custom_message_subtitle") || "This note appears to guests before they reserve. Do not include access codes or other private arrival information."}
               </p>
-            </div>
+            </div> */}
 
             <textarea
               rows={4}

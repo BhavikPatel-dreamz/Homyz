@@ -7,7 +7,8 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { useScrollbarDrag } from "@/components/ui/use-scrollbar-drag";
 import { BackButton } from "@/components/ui/back-button";
-import { useLanguage } from "@/lib/i18n/language-context";
+import { useLanguage, type TranslationKey } from "@/lib/i18n/language-context";
+import { formatConversationListDate, formatMessageTime } from "@/lib/messages/message-date";
 import {
   bookingDateKey,
   formatBookingDate,
@@ -52,8 +53,19 @@ function formatFileSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function getMessagePreview(lastMessage?: MessageDTO | null, t?: any): string {
-  if (!lastMessage) return t ? t("messages_no_messages_yet", "No messages yet") : "No messages yet";
+type Translator = (
+  key: TranslationKey,
+  valuesOrFallback?: Record<string, string | number | boolean> | string,
+  fallback?: string,
+) => string;
+
+function getMessagePreview(lastMessage?: MessageDTO | null, t?: Translator, bookingStatus?: string): string {
+  if (!lastMessage) {
+    if (bookingStatus === "PENDING") return t ? t("messages_badge_booking_request", "Booking request") : "Booking request";
+    if (bookingStatus === "CONFIRMED") return t ? t("messages_badge_confirmed_reservation", "Confirmed reservation") : "Confirmed reservation";
+    if (bookingStatus === "CANCELLED") return t ? t("messages_badge_cancelled_reservation", "Cancelled reservation") : "Cancelled reservation";
+    return t ? t("messages_no_messages_yet", "No messages yet") : "No messages yet";
+  }
   if (lastMessage.content && lastMessage.content.trim()) {
     return lastMessage.content;
   }
@@ -74,12 +86,14 @@ function getMessagePreview(lastMessage?: MessageDTO | null, t?: any): string {
 interface HostMessagesWorkspaceProps {
   initialConversationId?: string;
   initialConversations: ConversationDTO[];
+  initialConversationTotal: number;
   initialRenderedAt: string;
 }
 
 export function HostMessagesWorkspace({
   initialConversationId,
   initialConversations,
+  initialConversationTotal,
   initialRenderedAt,
 }: HostMessagesWorkspaceProps) {
   const searchParams = useSearchParams();
@@ -89,10 +103,10 @@ export function HostMessagesWorkspace({
 
   // Conversations state
   const [conversations, setConversations] = useState<ConversationDTO[]>(initialConversations);
+  const conversationsRef = useRef(initialConversations);
+  const [conversationTotal, setConversationTotal] = useState(initialConversationTotal);
   const [selectedId, setSelectedId] = useState<string | null>(() =>
-    activeIdFromQuery && initialConversations.some((conversation) => conversation.id === activeIdFromQuery)
-      ? activeIdFromQuery
-      : initialConversations[0]?.id ?? null,
+    activeIdFromQuery ?? initialConversations[0]?.id ?? null,
   );
   const [filter, setFilter] = useState<"all" | "unread">("all");
   const [filterMenuOpen, setFilterMenuOpen] = useState(false);
@@ -109,6 +123,9 @@ export function HostMessagesWorkspace({
   // Messages state
   const [messages, setMessages] = useState<MessageDTO[]>([]);
   const [loadingMessages, setLoadingMessages] = useState(false);
+  const [loadingOlderMessages, setLoadingOlderMessages] = useState(false);
+  const [nextMessageCursor, setNextMessageCursor] = useState<string | null>(null);
+  const [hasMoreMessages, setHasMoreMessages] = useState(false);
   const [inputText, setInputText] = useState("");
   const [sending, setSending] = useState(false);
 
@@ -158,6 +175,10 @@ export function HostMessagesWorkspace({
   const lastScrolledConvIdRef = useRef<string | null>(null);
   const didInitializeConversationRefreshRef = useRef(false);
   const conversationRequestIdRef = useRef(0);
+  const messageRequestIdRef = useRef(0);
+  const selectedIdRef = useRef<string | null>(selectedId);
+  const conversationDetailsRef = useRef(new Map<string, ConversationDTO>());
+  const [, setConversationDetailsVersion] = useState(0);
   const conversationCacheRef = useRef(
     new Map(initialConversations.map((conversation) => [conversation.id, conversation])),
   );
@@ -171,7 +192,11 @@ export function HostMessagesWorkspace({
   const { formatPrice } = useCurrency();
   const [showReservationDetails, setShowReservationDetails] = useState(false);
 
-  const selectedConversation = conversations.find((c) => c.id === selectedId) || null;
+  let selectedConversation = conversations.find((c) => c.id === selectedId) || null;
+  selectedConversation = (selectedId ? conversationDetailsRef.current.get(selectedId) : null)
+    ?? selectedConversation
+    ?? conversationCacheRef.current.get(selectedId || "")
+    ?? null;
   const visibleConversations = inboxView === "all" || inboxView === "hosting" ? conversations : [];
 
   const selectedReservation: HostReservation | null = useMemo(() => {
@@ -354,6 +379,14 @@ export function HostMessagesWorkspace({
 
   // Sync selectedId with query param
   useEffect(() => {
+    selectedIdRef.current = selectedId;
+  }, [selectedId]);
+
+  useEffect(() => {
+    conversationsRef.current = conversations;
+  }, [conversations]);
+
+  useEffect(() => {
     if (activeIdFromQuery && activeIdFromQuery !== selectedId) {
       setSelectedId(activeIdFromQuery);
       lastScrolledConvIdRef.current = null;
@@ -368,6 +401,7 @@ export function HostMessagesWorkspace({
       params.set("role", "host");
       if (filter === "unread") params.set("filter", "unread");
       if (search.trim()) params.set("search", search.trim());
+      params.set("take", "25");
 
       const res = await fetch(`/api/v1/messages/conversations?${params.toString()}`);
       if (!res.ok) throw new Error("Failed to fetch conversations");
@@ -375,6 +409,7 @@ export function HostMessagesWorkspace({
       if (requestId !== conversationRequestIdRef.current) return;
       if (json.success && Array.isArray(json.data.conversations)) {
         const incomingConvs: ConversationDTO[] = json.data.conversations;
+        setConversationTotal(typeof json.data.total === "number" ? json.data.total : incomingConvs.length);
         incomingConvs.forEach((conversation) => {
           conversationCacheRef.current.set(conversation.id, conversation);
         });
@@ -413,54 +448,110 @@ export function HostMessagesWorkspace({
     }
   }, [filter, search]);
 
-  // Fetch messages for selected conversation
-  const fetchMessages = useCallback(async (convId: string, isBackground = false) => {
+  const fetchConversationDetail = useCallback(async (convId: string) => {
     try {
-      if (!isBackground) setLoadingMessages(true);
-      const res = await fetch(`/api/v1/messages/conversations/${convId}/messages`);
+      const response = await fetch(`/api/v1/messages/conversations/${convId}`, { cache: "no-store" });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok || !payload?.success || !payload.data || selectedIdRef.current !== convId) return;
+      conversationDetailsRef.current.set(convId, payload.data as ConversationDTO);
+      conversationCacheRef.current.set(convId, payload.data as ConversationDTO);
+      setConversationDetailsVersion((version) => version + 1);
+    } catch (error) {
+      console.error("Error fetching conversation details:", error);
+    }
+  }, []);
+
+  const [loadingMoreConversations, setLoadingMoreConversations] = useState(false);
+  const loadMoreConversations = useCallback(async () => {
+    if (loadingMoreConversations || conversationsRef.current.length >= conversationTotal) return;
+    setLoadingMoreConversations(true);
+    try {
+      const params = new URLSearchParams({ role: "host", take: "25", skip: String(conversationsRef.current.length) });
+      if (filter === "unread") params.set("filter", "unread");
+      if (search.trim()) params.set("search", search.trim());
+      const response = await fetch(`/api/v1/messages/conversations?${params.toString()}`, { cache: "no-store" });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok || !payload?.success || !Array.isArray(payload.data?.conversations)) return;
+      const incoming = payload.data.conversations as ConversationDTO[];
+      incoming.forEach((conversation) => conversationCacheRef.current.set(conversation.id, conversation));
+      setConversationTotal(typeof payload.data.total === "number" ? payload.data.total : conversationTotal);
+      setConversations((previous) => {
+        const byId = new Map(previous.map((conversation) => [conversation.id, conversation]));
+        incoming.forEach((conversation) => byId.set(conversation.id, conversation));
+        return [...byId.values()];
+      });
+    } catch (error) {
+      console.error("Error loading more host conversations:", error);
+    } finally {
+      setLoadingMoreConversations(false);
+    }
+  }, [conversationTotal, filter, loadingMoreConversations, search]);
+
+  // The database returns a small newest-first page; existing rendering remains
+  // chronological and prepends older pages only when the reader reaches them.
+  const fetchMessages = useCallback(async (
+    convId: string,
+    options: { background?: boolean; cursor?: string | null } = {},
+  ) => {
+    const isOlderPage = Boolean(options.cursor);
+    const requestId = ++messageRequestIdRef.current;
+    try {
+      if (isOlderPage) setLoadingOlderMessages(true);
+      else if (!options.background) setLoadingMessages(true);
+      const params = new URLSearchParams({ take: "40", includeTotal: "false" });
+      if (options.cursor) params.set("cursor", options.cursor);
+      const res = await fetch(`/api/v1/messages/conversations/${convId}/messages?${params.toString()}`, { cache: "no-store" });
       if (!res.ok) throw new Error("Failed to fetch messages");
       const json = await res.json();
+      if (requestId !== messageRequestIdRef.current || selectedIdRef.current !== convId) return;
       if (json.success && Array.isArray(json.data.messages)) {
         const incoming: MessageDTO[] = json.data.messages;
         setMessages((prev) => {
-          if (prev.length === incoming.length) {
-            let isSame = true;
-            for (let i = 0; i < prev.length; i++) {
-              const p = prev[i];
-              const n = incoming[i];
-              if (
-                p.id !== n.id ||
-                p.readAt !== n.readAt ||
-                p.content !== n.content ||
-                p.type !== n.type ||
-                p.createdAt !== n.createdAt ||
-                (p.attachments?.length || 0) !== (n.attachments?.length || 0)
-              ) {
-                isSame = false;
-                break;
-              }
-            }
-            if (isSame) return prev;
-          }
-          return incoming;
+          if (!options.background && !isOlderPage) return incoming;
+          const byId = new Map(prev.map((message) => [message.id, message]));
+          incoming.forEach((message) => byId.set(message.id, message));
+          return [...byId.values()].sort((left, right) =>
+            left.createdAt.localeCompare(right.createdAt) || left.id.localeCompare(right.id),
+          );
         });
+        if (!options.background) {
+          setNextMessageCursor(json.data.nextCursor || null);
+          setHasMoreMessages(Boolean(json.data.hasMore));
+        }
       }
 
-      // Mark read only when needed
-      if (!isBackground) {
+      const conversation = conversationCacheRef.current.get(convId)
+        ?? conversationsRef.current.find((candidate) => candidate.id === convId);
+      if (!options.background && !isOlderPage && conversation?.unreadCount) {
         await fetch(`/api/v1/messages/conversations/${convId}/read`, { method: "POST" });
         setConversations((prev) => {
           const target = prev.find((c) => c.id === convId);
           if (!target || target.unreadCount === 0) return prev;
           return prev.map((c) => (c.id === convId ? { ...c, unreadCount: 0 } : c));
         });
+        const cached = conversationCacheRef.current.get(convId);
+        if (cached) conversationCacheRef.current.set(convId, { ...cached, unreadCount: 0 });
       }
     } catch (err) {
       console.error("Error fetching messages:", err);
     } finally {
-      if (!isBackground) setLoadingMessages(false);
+      if (requestId === messageRequestIdRef.current && selectedIdRef.current === convId) {
+        if (isOlderPage) setLoadingOlderMessages(false);
+        else if (!options.background) setLoadingMessages(false);
+      }
     }
   }, []);
+
+  const loadOlderMessages = useCallback(async () => {
+    const container = messagesContainerRef.current;
+    if (!selectedId || !nextMessageCursor || !hasMoreMessages || loadingOlderMessages) return;
+    const previousHeight = container?.scrollHeight ?? 0;
+    const previousTop = container?.scrollTop ?? 0;
+    await fetchMessages(selectedId, { cursor: nextMessageCursor });
+    requestAnimationFrame(() => {
+      if (container) container.scrollTop = container.scrollHeight - previousHeight + previousTop;
+    });
+  }, [fetchMessages, hasMoreMessages, loadingOlderMessages, nextMessageCursor, selectedId]);
 
   // Initial and reactive fetch for conversations
   useEffect(() => {
@@ -482,6 +573,7 @@ export function HostMessagesWorkspace({
 
     if (selectedId) {
       lastScrolledConvIdRef.current = null;
+      void fetchConversationDetail(selectedId);
       fetchMessages(selectedId);
       // Pre-populate modal dates if available from conversation
       const conv = conversations.find((c) => c.id === selectedId);
@@ -501,7 +593,7 @@ export function HostMessagesWorkspace({
     } else {
       setMessages([]);
     }
-  }, [selectedId]);
+  }, [fetchConversationDetail, fetchMessages, selectedId]);
 
   // Smart container scroll effect:
   // - On initial conversation load: instantly scrolls to bottom
@@ -548,7 +640,7 @@ export function HostMessagesWorkspace({
       if (document.visibilityState === "visible") {
         fetchConversations();
         if (selectedId) {
-          fetchMessages(selectedId, true);
+          fetchMessages(selectedId, { background: true });
         }
       }
     }, 4500);
@@ -839,20 +931,6 @@ export function HostMessagesWorkspace({
     }
   };
 
-  const formatMessageTime = (dateStr: string) => {
-    const d = new Date(dateStr);
-    return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
-  };
-
-  const formatListDate = (dateStr: string) => {
-    const d = new Date(dateStr);
-    const now = new Date();
-    if (d.toDateString() === now.toDateString()) {
-      return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
-    }
-    return d.toLocaleDateString([], { month: "short", day: "numeric" });
-  };
-
   const updateRightPanelScrollThumb = useCallback(() => {
     if (rightPanelScrollFrameRef.current !== null) cancelAnimationFrame(rightPanelScrollFrameRef.current);
     rightPanelScrollFrameRef.current = requestAnimationFrame(() => {
@@ -1101,7 +1179,8 @@ export function HostMessagesWorkspace({
                 <p className="text-sm">{t("messages_empty_desc", "Guest inquiries and booking messages will appear here.")}</p>
               </div>
             ) : (
-              visibleConversations.map((conv) => {
+              <>
+              {visibleConversations.map((conv) => {
                 const isSelected = conv.id === selectedId;
                 const hasUnread = conv.unreadCount > 0;
                 return (
@@ -1143,17 +1222,17 @@ export function HostMessagesWorkspace({
                           {conv.guest.name || "Guest"}
                         </span>
                         <span className="text-xs text-[#727272] shrink-0">
-                          {formatListDate(conv.lastMessageAt)}
+                          {formatConversationListDate(conv.lastMessageAt, initialRenderedAt)}
                         </span>
                       </div>
 
-                      <p className="hidden">
+                      <p className="truncate text-xs font-medium text-zinc-600">
                         {conv.listing.title}
                       </p>
 
                       <div className="flex items-center justify-between gap-2">
                         <p className={`truncate text-xs text-[#616161]`}>
-                          {getMessagePreview(conv.lastMessage, t)}
+                          {getMessagePreview(conv.lastMessage, t, conv.booking?.status)}
                         </p>
                         <span className="shrink-0">
                           {getReservationContextBadge(conv.reservationContext)}
@@ -1162,7 +1241,20 @@ export function HostMessagesWorkspace({
                     </div>
                   </button>
                 );
-              })
+              })}
+              {inboxView === "all" && conversations.length < conversationTotal && (
+                <div className="p-3 text-center">
+                  <button
+                    type="button"
+                    onClick={() => void loadMoreConversations()}
+                    disabled={loadingMoreConversations}
+                    className="rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs text-zinc-600 hover:bg-zinc-50 disabled:opacity-50"
+                  >
+                    {loadingMoreConversations ? t("messages_loading", "Loading conversation...") : "Load more conversations"}
+                  </button>
+                </div>
+              )}
+              </>
             )}
           </div>
         </div>
@@ -1261,17 +1353,50 @@ export function HostMessagesWorkspace({
               <div className="relative flex-1 min-h-0 flex flex-col">
                 <div
                   ref={messagesContainerRef}
-                  onScroll={handleContainerScroll}
+                  onScroll={() => {
+                    handleContainerScroll();
+                    if (messagesContainerRef.current && messagesContainerRef.current.scrollTop < 80) {
+                      void loadOlderMessages();
+                    }
+                  }}
                   className="flex-1 overflow-y-auto space-y-4 bg-white px-5 py-8 sm:px-12 sm:py-12"
                 >
+                  {hasMoreMessages && !loadingMessages && (
+                    <div className="flex justify-center pb-2">
+                      <button
+                        type="button"
+                        onClick={() => void loadOlderMessages()}
+                        disabled={loadingOlderMessages}
+                        className="rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs text-zinc-600 transition-colors hover:bg-zinc-50 disabled:opacity-50"
+                      >
+                        {loadingOlderMessages ? t("messages_loading", "Loading conversation...") : "Load earlier messages"}
+                      </button>
+                    </div>
+                  )}
                   {loadingMessages ? (
                     <div className="flex items-center justify-center h-full text-xs text-zinc-400">
                       {t("messages_loading", "Loading conversation...")}
                     </div>
                   ) : messages.length === 0 ? (
                     <div className="text-center py-12 text-zinc-400 space-y-2">
-                      <p className="text-sm font-medium text-zinc-600">{t("messages_thread_empty_title", "Start the conversation")}</p>
-                      <p className="text-xs">{t("messages_thread_empty_desc", "Send a welcome message or answer the guest's questions.")}</p>
+                      {selectedConversation.booking ? (
+                        <>
+                          <p className="text-sm font-medium text-zinc-600">
+                            {selectedConversation.booking.status === "PENDING"
+                              ? t("messages_badge_booking_request", "Booking request")
+                              : t("messages_badge_confirmed_reservation", "Confirmed reservation")}
+                          </p>
+                          <p className="text-xs">
+                            {formatBookingDateRange(selectedConversation.booking.startDate, selectedConversation.booking.endDate)} · {selectedConversation.booking.guests} {selectedConversation.booking.guests === 1 ? "guest" : "guests"}
+                          </p>
+                          <p className="text-xs">Reservation reference: {selectedConversation.booking.id}</p>
+                        </>
+                      ) : (
+                        <>
+                          <p className="text-sm font-medium text-zinc-600">{t("messages_thread_empty_title", "Start the conversation")}</p>
+                          <p className="text-xs">{t("messages_thread_empty_desc", "Send a welcome message or answer the guest's questions.")}</p>
+                        </>
+                      )}
                     </div>
                   ) : (
                     <>

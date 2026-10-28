@@ -7,7 +7,7 @@ import { LogoutButton } from "./logout-button";
 import { ThemeSwitcher } from "@/components/theme/theme-switcher";
 import { AdminBreadcrumb } from "./admin-breadcrumb";
 import { useLanguage } from "@/lib/i18n/language-context";
-import { refreshUnreadNotificationCount, useUnreadNotificationCount } from "@/lib/notifications/unread-count-store";
+import { refreshUnreadNotificationCount, resetUnreadNotificationCount, useUnreadNotificationCount } from "@/lib/notifications/unread-count-store";
 
 interface AdminHeaderProps {
   onToggleSidebar: () => void;
@@ -20,6 +20,7 @@ export function AdminHeader({
 }: AdminHeaderProps) {
   const { data: session } = useSession();
   const user = session?.user;
+  const hasUser = Boolean(user);
   const role = user?.role;
   const { t } = useLanguage();
   const unreadCount = useUnreadNotificationCount();
@@ -40,8 +41,9 @@ export function AdminHeader({
   }, []);
 
   useEffect(() => {
-    if (user) void refreshUnreadNotificationCount();
-  }, [user]);
+    resetUnreadNotificationCount();
+    if (hasUser) void refreshUnreadNotificationCount();
+  }, [hasUser, user?.email]);
 
   return (
     <header className="sticky top-0 z-30 w-full border-b border-[var(--border)] bg-[var(--surface)] backdrop-blur-md">

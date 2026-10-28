@@ -11,10 +11,21 @@ type Props = {
   reviewCount: number;
   averageRating: number | null;
   tenure: string;
+  roleLabel?: string;
+  tenureLabel?: string;
 };
 
-/** Matches the host summary card displayed on public listing pages. */
-export function PublicHostIdentityCard({ name, image, isSuperhost, reviewCount, averageRating, tenure }: Props) {
+/** A compact, privacy-safe identity card shared by public host and guest profiles. */
+export function PublicHostIdentityCard({
+  name,
+  image,
+  isSuperhost,
+  reviewCount,
+  averageRating,
+  tenure,
+  roleLabel = "Host",
+  tenureLabel = "time hosting",
+}: Props) {
   const { t } = useLanguage();
   const [imageFailed, setImageFailed] = useState(false);
   const initial = name.charAt(0).toUpperCase() || "H";
@@ -41,24 +52,24 @@ export function PublicHostIdentityCard({ name, image, isSuperhost, reviewCount, 
             {isSuperhost ? (
               <SuperhostBadge active compact className="mt-2" aria-label={t("public_host_card_superhost", "Superhost")} />
             ) : (
-              <p className="mt-1 text-sm font-light text-[#1f1f1f] sm:mt-2">{t("public_host_card_host", "Host")}</p>
+              <p className="mt-1 text-sm font-light text-[#1f1f1f] sm:mt-2">{roleLabel}</p>
             )}
           </div>
         </div>
         <div className="min-w-0 divide-y divide-[#dedede]">
           <div className="pb-4">
-            <p className="text-base font-normal leading-5 text-[#1f1f1f]">{reviewCount || "—"}</p>
+            <p className="text-base font-normal leading-5 text-[#1f1f1f]">{reviewCount > 0 ? reviewCount : "—"}</p>
             <p className="mt-1 text-xs font-normal text-[#727272]">{t("public_host_card_reviews_label", "Reviews")}</p>
           </div>
           <div className="py-4">
             <p className="flex items-center gap-1 text-base font-normal leading-5 text-[#1f1f1f]">
-              {averageRating?.toFixed(2) ?? "—"}<span className="text-[#e9a400]">★</span>
+              {averageRating === null ? "—" : <>{averageRating.toFixed(2)}<span className="text-[#e9a400]">★</span></>}
             </p>
             <p className="mt-2 text-xs font-normal text-[#727272]">{t("public_host_card_rating_label", "Rating")}</p>
           </div>
           <div className="pt-4">
             <p className="font-normal leading-5 text-[#1f1f1f] text-base">{tenure}</p>
-            <p className="mt-2 text-xs font-normal text-[#727272]">{t("public_host_card_tenure_label", "time hosting")}</p>
+            <p className="mt-2 text-xs font-normal text-[#727272]">{tenureLabel}</p>
           </div>
         </div>
       </div>

@@ -14,10 +14,24 @@ interface PublicHostProfileViewProps {
   host: PublicHostProfile["host"];
   stats: PublicHostProfile["stats"];
   reviews: PublicHostProfile["reviews"];
+  guestStats: PublicHostProfile["guestStats"];
+  guestReviews: PublicHostProfile["guestReviews"];
   listings: PublicHostProfile["listings"];
 }
 
-export function PublicHostProfileView({ host, stats, reviews, listings }: PublicHostProfileViewProps) {
+function publicText(profile: Record<string, unknown>, key: string): string {
+  const value = profile[key];
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function publicList(profile: Record<string, unknown>, key: string): string[] {
+  const value = profile[key];
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === "string" && Boolean(item.trim()))
+    : typeof value === "string" && value.trim() ? [value.trim()] : [];
+}
+
+export function PublicHostProfileView({ host, stats, reviews, guestStats, guestReviews, listings }: PublicHostProfileViewProps) {
   const { t } = useLanguage();
   const { data: session, status: sessionStatus } = useSession();
   const [mountedTime] = useState(() => Date.now());
@@ -25,15 +39,32 @@ export function PublicHostProfileView({ host, stats, reviews, listings }: Public
 
   const isAuthenticated = sessionStatus === "authenticated";
   const canReportHost = isAuthenticated && session?.user?.id !== host.id;
-  const hostName = host.name || t("public_host_default_name", "Homyz host");
+  const hostName = host.name || (host.isHost ? t("public_host_default_name", "Homyz host") : "Homyz traveler");
   const profileData = host.publicProfile || {};
-  const hostBio = typeof profileData.bio === "string" ? profileData.bio.trim() : "";
-  const work = typeof profileData.myWork === "string" ? profileData.myWork.trim() : "";
-  const languages = Array.isArray(profileData.languages)
-    ? profileData.languages.filter((value): value is string => typeof value === "string" && Boolean(value.trim()))
-    : typeof profileData.languages === "string" && profileData.languages.trim()
-      ? [profileData.languages.trim()]
-      : [];
+  const hostBio = publicText(profileData, "bio");
+  const bioTitle = publicText(profileData, "bioTitle");
+  const location = publicText(profileData, "whereILive");
+  const work = publicText(profileData, "myWork");
+  const school = publicText(profileData, "school");
+  const funFact = publicText(profileData, "funFact");
+  const pets = publicText(profileData, "pets");
+  const decadeBorn = publicText(profileData, "decadeBorn");
+  const uselessSkill = publicText(profileData, "uselessSkill");
+  const favoriteSong = publicText(profileData, "favoriteSong");
+  const obsessedWith = publicText(profileData, "obsessedWith");
+  const languages = publicList(profileData, "languages");
+  const interests = publicList(profileData, "interests");
+  const prompts = profileData.prompts && typeof profileData.prompts === "object" && !Array.isArray(profileData.prompts)
+    ? profileData.prompts as Record<string, unknown>
+    : {};
+  const hobbies = publicText(prompts, "hobbies") || publicText(profileData, "spendTooMuchTime");
+  const education = publicText(prompts, "education") || school;
+  const homeUnique = publicText(prompts, "homeUnique");
+  const guestsShouldKnow = publicText(prompts, "guestsShouldKnow");
+  const perfectGuest = publicText(prompts, "perfectGuest");
+  const hasPublicDetails = Boolean(hostBio || bioTitle || location || work || education || funFact || hobbies || pets || decadeBorn || uselessSkill || favoriteSong || obsessedWith || homeUnique || guestsShouldKnow || perfectGuest || languages.length || interests.length);
+  const hasOverviewDetails = hasPublicDetails || Boolean(host.publicTravelProfileId);
+  const shownReviewStats = host.isHost ? stats : guestStats;
 
   const nowYear = new Date(mountedTime).getFullYear();
   const nowMonth = new Date(mountedTime).getMonth();
@@ -64,23 +95,28 @@ export function PublicHostProfileView({ host, stats, reviews, listings }: Public
   return (
     <div className="mx-auto w-full max-w-[1262px]">
       <h1 className="sr-only">
-        {t("public_host_profile_sr_title", "{name}’s host profile").replace("{name}", hostName)}
+        {host.isHost
+          ? t("public_host_profile_sr_title", "{name}’s host profile").replace("{name}", hostName)
+          : `${hostName}'s profile`}
       </h1>
 
-      {/* Host identity & bio overview */}
+      {/* Public identity & optional public profile details */}
       <section
-        className="grid gap-8 border-b border-zinc-200/80 py-7.5 sm:py-12 md:grid-cols-[376px_minmax(0,1fr)] md:gap-16"
-        aria-labelledby="about-host-heading"
+        className={`grid gap-8 border-b border-zinc-200/80 py-7.5 sm:py-12 ${hasOverviewDetails ? "md:grid-cols-[376px_minmax(0,1fr)] md:gap-16" : "max-w-[376px]"}`}
+        aria-label="Profile overview"
       >
         <PublicHostIdentityCard
           name={hostName}
           image={host.image}
           isSuperhost={host.isSuperhost}
-          reviewCount={stats.reviewCount}
-          averageRating={stats.averageRating}
+          reviewCount={shownReviewStats.reviewCount}
+          averageRating={shownReviewStats.averageRating}
           tenure={formatTenure(host.createdAt)}
+          roleLabel={host.isHost ? "Host" : "Guest"}
+          tenureLabel={host.isHost ? "time hosting" : "on Homyz"}
         />
-        <div className="min-w-0 pt-1">
+        {hasOverviewDetails && <div className="min-w-0 pt-1">
+          {hasPublicDetails && <>
           <h2 id="about-host-heading" className="text-[20px] font-normal text-[#1f1f1f]">
             {t("public_host_about_heading", "About {name}").replace("{name}", hostName)}
           </h2>
@@ -94,21 +130,42 @@ export function PublicHostProfileView({ host, stats, reviews, listings }: Public
               {hostBio}
             </p>
           )}
-          {(work || languages.length > 0) && (
-            <div className="mt-7 space-y-4 text-base text-[#1f1f1f]">
-              {work && (
-                <p>
-                  {t("public_host_my_work", "My work: {work}").replace("{work}", work)}
-                </p>
-              )}
+          <div className="mt-6 grid max-w-2xl gap-3 text-sm text-[#1f1f1f] sm:grid-cols-2">
+            {bioTitle && <p><span className="font-medium">About:</span> {bioTitle}</p>}
+            {location && <p><span className="font-medium">Lives in:</span> {location}</p>}
+            {work && <p>{t("public_host_my_work", "My work: {work}").replace("{work}", work)}</p>}
+            {education && <p><span className="font-medium">Education:</span> {education}</p>}
+            {hobbies && <p><span className="font-medium">Interests:</span> {hobbies}</p>}
+            {funFact && <p><span className="font-medium">Fun fact:</span> {funFact}</p>}
+            {pets && <p><span className="font-medium">Pets:</span> {pets}</p>}
+            {decadeBorn && <p><span className="font-medium">Born in:</span> {decadeBorn}</p>}
+            {uselessSkill && <p><span className="font-medium">Hidden talent:</span> {uselessSkill}</p>}
+            {favoriteSong && <p><span className="font-medium">Favorite song:</span> {favoriteSong}</p>}
+            {obsessedWith && <p><span className="font-medium">Currently into:</span> {obsessedWith}</p>}
+            {homeUnique && <p><span className="font-medium">What makes my home special:</span> {homeUnique}</p>}
+            {guestsShouldKnow && <p><span className="font-medium">Good to know:</span> {guestsShouldKnow}</p>}
+            {perfectGuest && <p><span className="font-medium">A great guest:</span> {perfectGuest}</p>}
+          </div>
+          {(languages.length > 0 || interests.length > 0) && (
+            <div className="mt-5 space-y-3 text-base text-[#1f1f1f]">
               {languages.length > 0 && (
                 <p>
                   {t("public_host_speaks", "Speaks {languages}").replace("{languages}", languages.join(", "))}
                 </p>
               )}
+              {interests.length > 0 && <p><span className="font-medium">Enjoys:</span> {interests.join(", ")}</p>}
             </div>
           )}
-        </div>
+          </>}
+          {host.publicTravelProfileId && (
+            <Link
+              href={`/travelers/${encodeURIComponent(host.publicTravelProfileId)}`}
+              className={`${hasPublicDetails ? "mt-7" : "mt-1"} inline-flex min-h-10 items-center rounded-full border border-[#1f1f1f] px-4 text-sm font-medium text-[#1f1f1f] transition-colors hover:bg-[#1f1f1f] hover:text-white`}
+            >
+              View travel profile
+            </Link>
+          )}
+        </div>}
       </section>
 
       {canReportHost && (
@@ -126,8 +183,8 @@ export function PublicHostProfileView({ host, stats, reviews, listings }: Public
         </div>
       )}
 
-      {/* Host reviews */}
-      <section className="border-b border-zinc-200/80 py-8 sm:py-12" aria-labelledby="host-reviews-heading">
+      {/* Reviews received as a host are scoped to active public listings. */}
+      {host.isHost && <section className="border-b border-zinc-200/80 py-8 sm:py-12" aria-labelledby="host-reviews-heading">
         <h2 id="host-reviews-heading" className="text-[20px] font-normal text-[#1f1f1f]">
           {t("public_host_reviews_heading", "{name}’s reviews").replace("{name}", hostName)}
         </h2>
@@ -206,16 +263,35 @@ export function PublicHostProfileView({ host, stats, reviews, listings }: Public
             {t("public_host_no_reviews", "No published reviews yet.")}
           </p>
         )}
-      </section>
+      </section>}
 
-      {/* Host listings */}
-      {listings.length > 0 && (
+      {guestReviews.length > 0 && (
+        <section className="border-b border-zinc-200/80 py-8 sm:py-12" aria-labelledby="guest-reviews-heading">
+          <h2 id="guest-reviews-heading" className="text-[20px] font-normal text-[#1f1f1f]">Guest feedback</h2>
+          <div className="mt-8 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+            {guestReviews.map((review) => (
+              <article key={review.id} className="rounded-2xl border border-zinc-200 p-5">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-sm font-medium text-[#1f1f1f]">{review.author.name || "Host"}</p>
+                  <span className="text-sm text-[#1f1f1f]" aria-label={`${review.rating} out of 5 stars`}>{review.rating.toFixed(1)} <span className="text-[#e9a400]">★</span></span>
+                </div>
+                <p className="mt-1 text-xs text-[#727272]">{formatRelativeDate(review.createdAt)}</p>
+                <p className="mt-3 whitespace-pre-line text-sm leading-6 text-[#727272]">{review.comment}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Only active, public listings are returned by the server. */}
+      {host.isHost && (
         <section className="py-8 sm:py-12" aria-labelledby="host-listings-heading">
           <h2 id="host-listings-heading" className="text-[20px] font-normal text-[#1f1f1f]">
             {t("public_host_listings_heading", "{name}’s listings").replace("{name}", hostName)}
           </h2>
-          <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
-            {listings.map((listing, index) => (
+          {listings.length > 0 ? <>
+            <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
+              {listings.map((listing, index) => (
               <ListingCard
                 key={listing.id}
                 listing={listing}
@@ -223,8 +299,10 @@ export function PublicHostProfileView({ host, stats, reviews, listings }: Public
                 priority={index < 4}
                 variant="search-grid"
               />
-            ))}
-          </div>
+              ))}
+            </div>
+            {stats.listingCount > listings.length && <p className="mt-5 text-sm text-[#727272]">Showing the latest {listings.length} of {stats.listingCount} public listings.</p>}
+          </> : <p className="mt-3 text-sm text-[#727272]">No public listings currently.</p>}
         </section>
       )}
 

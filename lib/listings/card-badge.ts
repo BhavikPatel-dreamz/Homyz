@@ -1,9 +1,11 @@
 /**
- * Resolves the single qualification badge displayed on public property cards.
+ * Resolves the legacy single badge field included in public card payloads.
  *
- * Qualification itself is persisted and evaluated by the backend services.
- * This helper deliberately decides presentation only: Guest Favorite takes
- * precedence when a listing and its host both hold their respective statuses.
+ * Qualification itself is persisted and evaluated by backend services. Card
+ * components must render `isGuestFavorite` and `isSuperhost` independently:
+ * the two recognitions have different owners and one must never hide the
+ * other. This helper remains for surfaces that only support one badge value
+ * and for the featured fallback.
  */
 export type PrimaryListingBadge = "guest_favorite" | "superhost" | null;
 

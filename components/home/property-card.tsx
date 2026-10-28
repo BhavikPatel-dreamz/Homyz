@@ -9,7 +9,7 @@ import {
   toPropertyCardPricingViewModel,
   type PropertyCardPricingViewModel,
 } from "@/lib/booking/property-card-pricing";
-import { getPrimaryListingBadge } from "@/lib/listings/card-badge";
+import { SuperhostBadge } from "@/components/badges/superhost-badge";
 
 export interface PropertyCardData {
   id: string;
@@ -112,8 +112,12 @@ function PropertyCardComponent({
       : null;
   const resolvedReviews = reviewCount ?? reviewsCount ?? null;
 
-  const primaryBadge = getPrimaryListingBadge({ isGuestFavorite, isSuperhost });
-  const showFeatured = primaryBadge === null && badge === "featured";
+  // Guest Favorite belongs to the listing while Superhost belongs to its
+  // authoritative host. They are independent recognitions, so render both
+  // when both persisted flags are present.
+  const showGuestFavorite = isGuestFavorite === true;
+  const showSuperhost = isSuperhost === true;
+  const showFeatured = !showGuestFavorite && !showSuperhost && badge === "featured";
   const targetHref = href || `/listings/${slug || id}`;
 
   return (
@@ -142,18 +146,21 @@ function PropertyCardComponent({
         )}
 
         {/* Badges: Only rendered when qualified by backend formula */}
-        {(primaryBadge || showFeatured) && (
+        {(showGuestFavorite || showSuperhost || showFeatured) && (
           <div className="absolute left-2.5 top-2.5 sm:left-3 sm:top-3 z-20 flex flex-wrap items-center gap-1.5 max-w-[calc(100%-4.25rem)] pointer-events-none">
-            {primaryBadge === "guest_favorite" && (
+            {showGuestFavorite && (
               <span className="inline-flex items-center gap-1 rounded-full bg-[#ECA7B0] px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10.5px] sm:text-xs font-medium text-white shadow-xs backdrop-blur-md h-[26px]">
                 {t("home_guest_favorite") || "Guest favorite"}
               </span>
             )}
 
-            {primaryBadge === "superhost" && (
-              <span className="inline-flex items-center rounded-full bg-[#1F1F1F]/80 backdrop-blur-md px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10.5px] sm:text-xs font-medium text-white shadow-xs h-[26px]">
-                {t("home_superhost") || "Superhost"}
-              </span>
+            {showSuperhost && (
+              <SuperhostBadge
+                active
+                compact
+                label={t("home_superhost") || "Superhost"}
+                className="h-[26px] border-0 bg-[#1F1F1F]/80 px-2 py-0.5 text-[10.5px] font-medium text-white shadow-xs backdrop-blur-md sm:px-2.5 sm:py-1 sm:text-xs"
+              />
             )}
 
             {showFeatured && (

@@ -1931,7 +1931,24 @@ export function PublicListingDetailClient({
               />
             </div>
 
-            <h1 className="mb-4 lg:hidden">{listing.title}</h1>
+            <div className="mb-4 space-y-2 lg:hidden">
+              <h1>{listing.title}</h1>
+              {(listing.isGuestFavorite || listing.host?.isSuperhost || listing.isFeatured) && (
+                <div className="flex flex-wrap items-center gap-2" aria-label="Listing distinctions">
+                  {listing.isGuestFavorite && (
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-950">
+                      <span aria-hidden="true">✦</span> {t("listing_detail_guest_favourite", "Guest favourite")}
+                    </span>
+                  )}
+                  <SuperhostBadge active={listing.host?.isSuperhost} />
+                  {listing.isFeatured && (
+                    <span className="inline-flex items-center rounded-full bg-zinc-100 px-3 py-2 text-xs font-medium text-[#1f1f1f]">
+                      {t("home_featured", "Featured stay")}
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
 
             {/* Main Content Layout: Left Details (7 cols) + Right Booking Widget (5 cols) */}
             <div className="grid grid-cols-1 gap-9 lg:grid-cols-12 lg:gap-10">

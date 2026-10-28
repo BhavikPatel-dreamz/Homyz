@@ -76,6 +76,7 @@ export function TravelPhotoUploadModal({
   const [newTripEndDate, setNewTripEndDate] = useState("");
   const [tripTitleError, setTripTitleError] = useState<string | null>(null);
   const [countryError, setCountryError] = useState<string | null>(null);
+  const [dateError, setDateError] = useState<string | null>(null);
   const [countrySearch, setCountrySearch] = useState("");
   const [isCountryPickerOpen, setIsCountryPickerOpen] = useState(false);
   const [countryHighlightIndex, setCountryHighlightIndex] = useState(0);
@@ -85,10 +86,13 @@ export function TravelPhotoUploadModal({
   const [trips, setTrips] = useState<TravelTripDTO[]>(existingTrips);
 
   const [items, setItems] = useState<SelectedPhotoItem[]>([]);
+  const [activeItemId, setActiveItemId] = useState<string | null>(null);
+  const [coverItemId, setCoverItemId] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [overallPercent, setOverallPercent] = useState<number>(0);
   const [statusMessage, setStatusMessage] = useState<string>("Uploading...");
   const [hasFailures, setHasFailures] = useState(false);
+  const [isDiscardConfirmOpen, setIsDiscardConfirmOpen] = useState(false);
 
   const activeXhrRef = useRef<XMLHttpRequest | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -127,13 +131,13 @@ export function TravelPhotoUploadModal({
   }, [existingTrips.length, initialTripId, initialDestinationCountry]);
 
   useEffect(() => {
-    const closeCountryPicker = (event: MouseEvent) => {
+    const closePickers = (event: MouseEvent) => {
       if (!countryPickerRef.current?.contains(event.target as Node)) {
         setIsCountryPickerOpen(false);
       }
     };
-    document.addEventListener("mousedown", closeCountryPicker);
-    return () => document.removeEventListener("mousedown", closeCountryPicker);
+    document.addEventListener("mousedown", closePickers);
+    return () => document.removeEventListener("mousedown", closePickers);
   }, []);
 
   // Cleanup object URLs only when the modal unmounts. Depending on `items`
@@ -170,8 +174,14 @@ export function TravelPhotoUploadModal({
     } else {
       setCountryError(null);
     }
+    if (newTripStartDate && newTripEndDate && newTripEndDate < newTripStartDate) {
+      setDateError("End date cannot be before start date.");
+      valid = false;
+    } else {
+      setDateError(null);
+    }
     return valid;
-  }, [newTripTitle, selectedNewTripCountry]);
+  }, [newTripEndDate, newTripStartDate, newTripTitle, selectedNewTripCountry]);
 
   const selectCountry = (country: AddressCountry) => {
     setNewTripCountryCode(country.iso2);
@@ -268,6 +278,7 @@ export function TravelPhotoUploadModal({
       );
       let cumulativeUploadedBytes = 0;
       const completedPhotos: TravelPhotoDTO[] = [];
+      const completedPhotoByItemId = new Map<string, TravelPhotoDTO>();
       let failureCount = 0;
 
       for (let i = 0; i < candidateItems.length; i++) {
@@ -275,6 +286,7 @@ export function TravelPhotoUploadModal({
 
         if (item.status === "completed" && item.uploadedPhoto) {
           completedPhotos.push(item.uploadedPhoto);
+          completedPhotoByItemId.set(item.id, item.uploadedPhoto);
           continue;
         }
 
@@ -384,6 +396,7 @@ export function TravelPhotoUploadModal({
 
           cumulativeUploadedBytes += item.file.size;
           completedPhotos.push(uploadedPhoto);
+          completedPhotoByItemId.set(item.id, uploadedPhoto);
 
           setItems((prev) =>
             prev.map((it) =>
@@ -415,6 +428,19 @@ export function TravelPhotoUploadModal({
       isUploadingRef.current = false;
 
       if (failureCount === 0 && !isAbortedRef.current) {
+        const selectedCover = coverItemId ? completedPhotoByItemId.get(coverItemId) : null;
+        if (targetTripId && selectedCover && !replaceTargetPhoto) {
+          try {
+            const coverResponse = await fetch(`/api/v1/travel-media/trips/${targetTripId}`, {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ coverPhotoId: selectedCover.id }),
+            });
+            if (!coverResponse.ok) throw new Error("Could not set the cover photo");
+          } catch {
+            toast.error("Photos were saved, but the selected cover photo could not be set.");
+          }
+        }
         setOverallPercent(100);
         setStatusMessage("Photos saved successfully!");
         toast.success(
@@ -441,6 +467,7 @@ export function TravelPhotoUploadModal({
       selectedNewTripCountry,
       newTripStartDate,
       newTripEndDate,
+      coverItemId,
       validateNewTripDetails,
       onSuccess,
       onClose,
@@ -519,19 +546,9 @@ export function TravelPhotoUploadModal({
 
     const combined = [...items, ...newItems];
     setItems(combined);
-
-    // Automatic trigger: retain selected files and show inline field errors until
-    // the required new-trip details have been provided.
-    const isNewTrip = !selectedTripId || selectedTripId === "__NEW__";
-    if (isNewTrip && !sessionCreatedTripId && !replaceTargetPhoto) {
-      if (!validateNewTripDetails()) {
-        setStep("preview");
-        return;
-      }
-    }
-
-    // Required details are ready -> automatically create the trip and upload.
-    void executeUploadSequence(combined);
+    setActiveItemId((current) => current || newItems[0]?.id || null);
+    setCoverItemId((current) => current || newItems[0]?.id || null);
+    setStep("preview");
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -558,6 +575,8 @@ export function TravelPhotoUploadModal({
         previewUrlsRef.current.delete(target.previewUrl);
       }
       const filtered = prev.filter((i) => i.id !== id);
+      setActiveItemId((current) => current === id ? filtered[0]?.id || null : current);
+      setCoverItemId((current) => current === id ? filtered[0]?.id || null : current);
       if (filtered.length === 0) {
         setStep("dropzone");
       }
@@ -569,64 +588,61 @@ export function TravelPhotoUploadModal({
     void executeUploadSequence(items);
   };
 
-  useEffect(() => {
-    const isNewTrip = !selectedTripId || selectedTripId === "__NEW__";
-    if (
-      step === "preview" &&
-      items.length > 0 &&
-      (!isNewTrip || sessionCreatedTripId || replaceTargetPhoto ||
-        (newTripTitle.trim() && selectedNewTripCountry))
-    ) {
-      const uploadTimer = window.setTimeout(() => {
-        void executeUploadSequence(items);
-      }, 0);
-      return () => window.clearTimeout(uploadTimer);
+  const handlePublish = () => {
+    if (!items.length) return;
+    if (selectedTrip && items.length > allowedSlots) {
+      toast.error(`This trip has room for ${allowedSlots} more photo${allowedSlots === 1 ? "" : "s"}.`);
+      return;
     }
-  }, [
-    executeUploadSequence,
-    items,
-    newTripTitle,
-    replaceTargetPhoto,
-    selectedNewTripCountry,
-    selectedTripId,
-    sessionCreatedTripId,
-    step,
-  ]);
+    const isNewTrip = !selectedTripId || selectedTripId === "__NEW__";
+    if (isNewTrip && !sessionCreatedTripId && !replaceTargetPhoto && !validateNewTripDetails()) {
+      return;
+    }
+    void executeUploadSequence(items);
+  };
+
+  const activeItem = items.find((item) => item.id === activeItemId) ?? items[0] ?? null;
+  const requestClose = () => {
+    const hasUnsavedChanges = items.some((item) => item.status !== "completed");
+    if (hasUnsavedChanges) {
+      setIsDiscardConfirmOpen(true);
+      return;
+    }
+    onClose();
+  };
 
   return (
     <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in">
-      <div className="w-full max-w-lg md:max-w-2xl rounded-3xl bg-white p-6 sm:p-8 shadow-2xl border border-zinc-200 text-zinc-900 relative my-auto max-h-[90vh] overflow-y-auto no-scrollbar">
+      <div className="w-full max-w-lg md:max-w-4xl rounded-t-3xl sm:rounded-3xl bg-white shadow-2xl border border-zinc-200 text-zinc-900 relative my-auto max-h-[96dvh] sm:max-h-[90vh] overflow-y-auto no-scrollbar">
         {/* Close Button */}
         <button
           type="button"
-          onClick={onClose}
+          onClick={requestClose}
           aria-label="Close upload modal"
           disabled={step === "progress" && !hasFailures}
-          className="absolute top-5 right-5 size-8 rounded-full bg-zinc-100 text-zinc-600 flex items-center justify-center transition-colors z-10 hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-50"
+          className="absolute top-5 right-5 size-9 rounded-full bg-zinc-100 text-zinc-600 flex items-center justify-center transition-colors z-10 hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-50"
         >
           ✕
         </button>
 
         {/* Modal Heading */}
-        <div className="text-center mb-6">
-          <h2 className="text-xl sm:text-2xl font-bold text-zinc-900 tracking-tight">Add Trip Photos</h2>
-          <p className="text-xs sm:text-sm text-zinc-500 mt-1">
+        <div className="border-b border-zinc-100 px-5 pb-5 pt-6 sm:px-8">
+          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-amber-700">Travel diary</p>
+          <h2 className="mt-1 text-xl sm:text-2xl font-bold text-zinc-900 tracking-tight">Share Your Travel Moments</h2>
+          <p className="text-xs sm:text-sm text-zinc-500 mt-1 pr-9">
             {replaceTargetPhoto
-              ? `Replacing photo in "${replaceTargetPhoto.tripTitle || "Travel Trip"}"`
-              : "Create a trip and upload up to 5 photos."}
+              ? `Replacing a photo in “${replaceTargetPhoto.tripTitle || "Travel Trip"}”.`
+              : "Add up to 5 photos to capture your favorite memories."}
           </p>
         </div>
 
         {/* Trip Selector & Trip Details Container */}
-        {!replaceTargetPhoto && step !== "progress" && (
-          <div className="mb-5 rounded-2xl border border-zinc-200 bg-zinc-50 p-4">
+        {!replaceTargetPhoto && step !== "progress" && step !== "dropzone" && (
+          <div className="mx-5 mt-5 rounded-2xl border border-zinc-200 bg-zinc-50/70 p-4 sm:mx-8">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
-              <label
-                htmlFor="tripSelect"
-                className="text-xs font-semibold text-zinc-700"
-              >
+              <p className="text-xs font-semibold text-zinc-700">
                 Trip association
-              </label>
+              </p>
               <span className="text-[11px] font-medium text-amber-700 bg-amber-100/80 px-2 py-0.5 rounded-full">
                 {selectedTrip
                   ? `${selectedTrip.photoCount}/5 photos used (${allowedSlots} slots left)`
@@ -636,25 +652,20 @@ export function TravelPhotoUploadModal({
 
             <div className="space-y-3">
               {/* Trip selector dropdown */}
-              <div className="max-w-sm">
-                <select
-                  id="tripSelect"
-                  value={selectedTripId}
-                  onChange={(e) => {
-                    setSelectedTripId(e.target.value);
-                    setTripTitleError(null);
-                    setCountryError(null);
-                  }}
-                  className="w-full text-xs sm:text-sm rounded-xl border border-zinc-300 bg-white px-3 py-2 text-zinc-800 focus:outline-none focus:ring-2 focus:ring-amber-400"
-                >
-                  <option value="__NEW__">+ Create new trip</option>
-                  {trips.map((t) => (
-                    <option key={t.id} value={t.id}>
-                      {t.title} ({t.photoCount}/5 photos)
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <details className="group relative max-w-sm">
+                <summary id="tripSelect" className="flex cursor-pointer list-none items-center justify-between rounded-xl border border-zinc-300 bg-white px-3 py-2.5 text-xs font-medium text-zinc-800 shadow-sm outline-none transition hover:border-zinc-400 focus-visible:ring-2 focus-visible:ring-amber-400 sm:text-sm">
+                  <span className="truncate">{selectedTrip ? `${selectedTrip.title} · ${selectedTrip.photoCount}/${MAX_PHOTOS_PER_TRIP} photos` : "Create New Trip"}</span>
+                  <span aria-hidden="true" className="ml-3 text-zinc-400 transition group-open:rotate-180">⌄</span>
+                </summary>
+                <div role="listbox" aria-label="Trip association" className="absolute z-30 mt-2 max-h-60 w-full overflow-y-auto rounded-2xl border border-zinc-200 bg-white p-1.5 shadow-xl">
+                  <button type="button" role="option" aria-selected={selectedTripId === "__NEW__"} onClick={(event) => { setSelectedTripId("__NEW__"); setTripTitleError(null); setCountryError(null); event.currentTarget.closest("details")?.removeAttribute("open"); }} className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-xs sm:text-sm ${selectedTripId === "__NEW__" ? "bg-amber-50 text-zinc-950" : "hover:bg-zinc-50"}`}><span><span className="block font-semibold">Create New Trip</span><span className="text-[11px] text-zinc-500">Start a new travel album</span></span><span aria-hidden="true">＋</span></button>
+                  {trips.map((trip) => {
+                    const full = trip.remainingCapacity <= 0;
+                    const when = trip.startDate ? ` · ${new Date(trip.startDate).toLocaleDateString(undefined, { month: "short", year: "numeric" })}` : "";
+                    return <button key={trip.id} type="button" role="option" aria-selected={selectedTripId === trip.id} disabled={full && selectedTripId !== trip.id} onClick={(event) => { setSelectedTripId(trip.id); setTripTitleError(null); setCountryError(null); event.currentTarget.closest("details")?.removeAttribute("open"); }} className={`flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-left text-xs sm:text-sm ${selectedTripId === trip.id ? "bg-amber-50 text-zinc-950" : "hover:bg-zinc-50"} disabled:cursor-not-allowed disabled:opacity-50`}><span className="min-w-0"><span className="block truncate font-semibold">{trip.title}</span><span className="block truncate text-[11px] text-zinc-500">{trip.destination?.countryName || "No country"}{when} · {trip.photoCount}/{MAX_PHOTOS_PER_TRIP} photos</span></span><span className={`shrink-0 text-[11px] font-bold ${full ? "text-rose-600" : "text-amber-700"}`}>{full ? "Full" : `${trip.remainingCapacity} left`}</span></button>;
+                  })}
+                </div>
+              </details>
 
               {/* Trip details form or selected trip info */}
               {selectedTripId === "__NEW__" ? (
@@ -723,23 +734,28 @@ export function TravelPhotoUploadModal({
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 sm:col-span-2">
+                    <div>
+                    <label htmlFor="newTripStartDate" className="mb-1 block text-xs font-medium text-zinc-700">Start date</label>
                     <input
                       type="date"
                       id="newTripStartDate"
-                      aria-label="Trip start date"
                       value={newTripStartDate}
-                      onChange={(e) => setNewTripStartDate(e.target.value)}
-                      className="min-w-0 rounded-xl border border-zinc-300 bg-white px-3 py-2 text-xs text-zinc-800 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                      onChange={(e) => { setNewTripStartDate(e.target.value); setDateError(null); }}
+                      className="w-full min-w-0 rounded-xl border border-zinc-300 bg-white px-3 py-2 text-xs text-zinc-800 focus:outline-none focus:ring-2 focus:ring-amber-400"
                     />
+                    </div>
+                    <div>
+                    <label htmlFor="newTripEndDate" className="mb-1 block text-xs font-medium text-zinc-700">End date</label>
                     <input
                       type="date"
                       id="newTripEndDate"
-                      aria-label="Trip end date"
                       value={newTripEndDate}
-                      onChange={(e) => setNewTripEndDate(e.target.value)}
-                      className="min-w-0 rounded-xl border border-zinc-300 bg-white px-3 py-2 text-xs text-zinc-800 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                      onChange={(e) => { setNewTripEndDate(e.target.value); setDateError(null); }}
+                      className="w-full min-w-0 rounded-xl border border-zinc-300 bg-white px-3 py-2 text-xs text-zinc-800 focus:outline-none focus:ring-2 focus:ring-amber-400"
                     />
+                    </div>
                   </div>
+                  {dateError && <p className="sm:col-span-2 text-[11px] font-medium text-red-600">{dateError}</p>}
                 </div>
               ) : (
                 <div className="rounded-xl border border-zinc-200 bg-white p-2.5 flex flex-col justify-center">
@@ -771,14 +787,14 @@ export function TravelPhotoUploadModal({
             VIEW 1: INITIAL DRAG AND DROP ZONE
         ======================================================================== */}
         {step === "dropzone" && (
-          <div>
+          <div className="px-5 py-5 sm:px-8 sm:py-7">
             <div
               onDragEnter={handleDragEnter}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
               onClick={() => fileInputRef.current?.click()}
-              className={`w-full py-12 sm:py-16 rounded-3xl border-2 border-dashed flex flex-col items-center justify-center transition-all cursor-pointer ${
+              className={`w-full py-10 sm:py-12 rounded-3xl border-2 border-dashed flex flex-col items-center justify-center transition-all cursor-pointer ${
                 isDragging
                   ? "border-amber-500 bg-amber-50/70 scale-[0.99]"
                   : "border-zinc-300 hover:border-zinc-400 bg-zinc-50/50 hover:bg-zinc-50"
@@ -806,10 +822,11 @@ export function TravelPhotoUploadModal({
                 </svg>
               </div>
 
-              <span className="text-sm sm:text-base font-semibold text-zinc-800">Drag and drop your photos here</span>
+              <span className="text-sm sm:text-base font-semibold text-zinc-800">Drag photos here</span>
               <span className="text-xs text-zinc-500 mt-1">
-                Or browse from your device
+                Or choose from your device
               </span>
+              <button type="button" onClick={(event) => { event.stopPropagation(); fileInputRef.current?.click(); }} className="mt-4 rounded-full bg-zinc-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-black">Select Photos</button>
               <span className="text-[11px] text-zinc-400 mt-3">
                 JPG, PNG, WebP, AVIF up to 10 MB each • {allowedSlots} photo slot{allowedSlots === 1 ? "" : "s"} remaining
               </span>
@@ -818,7 +835,7 @@ export function TravelPhotoUploadModal({
             <div className="mt-6 flex justify-center">
               <button
                 type="button"
-                onClick={onClose}
+                onClick={requestClose}
                 className="w-full sm:w-48 py-2.5 rounded-full border border-zinc-300 text-zinc-700 text-sm font-semibold hover:bg-zinc-100 transition cursor-pointer"
               >
                 Cancel
@@ -831,12 +848,20 @@ export function TravelPhotoUploadModal({
             VIEW 2: PREVIEW GRID WITH THUMBNAILS & UPLOAD TRIGGER
         ======================================================================== */}
         {step === "preview" && (
-          <div>
+          <div className="px-5 py-5 sm:px-8 sm:py-7">
+            {activeItem && (
+              <div className="relative mx-auto mb-4 aspect-[4/3] max-w-xl overflow-hidden rounded-3xl bg-zinc-100 shadow-sm">
+                <Image src={activeItem.previewUrl} alt={activeItem.file.name} fill className="object-cover" sizes="(max-width: 640px) 100vw, 560px" />
+                <span className="absolute left-3 top-3 rounded-full bg-black/55 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm">{items.findIndex((item) => item.id === activeItem.id) + 1} of {items.length}</span>
+                {coverItemId === activeItem.id && <span className="absolute bottom-3 left-3 rounded-full bg-amber-300 px-3 py-1 text-xs font-bold text-zinc-900">Cover photo</span>}
+              </div>
+            )}
             <div className="grid grid-cols-3 gap-2.5 sm:gap-4 mb-3 max-w-sm mx-auto">
               {items.slice(0, 3).map((item) => (
                 <div
                   key={item.id}
-                  className="relative aspect-square rounded-2xl overflow-hidden bg-zinc-100 border border-zinc-200 shadow-2xs group"
+                  onClick={() => setActiveItemId(item.id)}
+                  className={`relative aspect-square cursor-pointer rounded-2xl overflow-hidden bg-zinc-100 border-2 shadow-2xs group ${activeItemId === item.id ? "border-amber-500 ring-2 ring-amber-200" : "border-transparent"}`}
                 >
                   <Image
                     src={item.previewUrl}
@@ -850,7 +875,7 @@ export function TravelPhotoUploadModal({
                       e.stopPropagation();
                       handleRemoveItem(item.id);
                     }}
-                    className="absolute top-1 right-1 size-5 rounded-full bg-black/60 hover:bg-black/80 text-white text-[10px] flex items-center justify-center transition opacity-0 group-hover:opacity-100 cursor-pointer"
+                    className="absolute top-1 right-1 size-5 rounded-full bg-black/60 hover:bg-black/80 text-white text-[10px] flex items-center justify-center transition opacity-100 sm:opacity-0 sm:group-hover:opacity-100 cursor-pointer"
                   >
                     ✕
                   </button>
@@ -863,7 +888,8 @@ export function TravelPhotoUploadModal({
                 {items.slice(3, 5).map((item) => (
                   <div
                     key={item.id}
-                    className="relative w-[30%] aspect-square rounded-2xl overflow-hidden bg-zinc-100 border border-zinc-200 shadow-2xs group"
+                    onClick={() => setActiveItemId(item.id)}
+                    className={`relative w-[30%] cursor-pointer aspect-square rounded-2xl overflow-hidden bg-zinc-100 border-2 shadow-2xs group ${activeItemId === item.id ? "border-amber-500 ring-2 ring-amber-200" : "border-transparent"}`}
                   >
                     <Image
                       src={item.previewUrl}
@@ -877,7 +903,7 @@ export function TravelPhotoUploadModal({
                         e.stopPropagation();
                         handleRemoveItem(item.id);
                       }}
-                      className="absolute top-1 right-1 size-5 rounded-full bg-black/60 hover:bg-black/80 text-white text-[10px] flex items-center justify-center transition opacity-0 group-hover:opacity-100 cursor-pointer"
+                    className="absolute top-1 right-1 size-5 rounded-full bg-black/60 hover:bg-black/80 text-white text-[10px] flex items-center justify-center transition opacity-100 sm:opacity-0 sm:group-hover:opacity-100 cursor-pointer"
                     >
                       ✕
                     </button>
@@ -899,6 +925,8 @@ export function TravelPhotoUploadModal({
               </div>
             )}
 
+            <p className="mb-4 text-center text-xs font-semibold text-zinc-600">{items.length}/{replaceTargetPhoto ? 1 : MAX_PHOTOS_PER_TRIP} Photos selected</p>
+
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-6">
               <button
                 type="button"
@@ -907,7 +935,7 @@ export function TravelPhotoUploadModal({
               >
                 Add Captions & Location →
               </button>
-              <p className="text-center text-xs text-zinc-500">Your photos will upload automatically when the required trip details are complete.</p>
+              <p className="text-center text-xs text-zinc-500">Add optional details, choose a cover, then share when you&apos;re ready.</p>
             </div>
           </div>
         )}
@@ -916,7 +944,7 @@ export function TravelPhotoUploadModal({
             VIEW 3: LIST CURATION (CAPTION, LOCATION, REMOVE IMAGE)
         ======================================================================== */}
         {step === "curate" && (
-          <div>
+          <div className="px-5 py-5 sm:px-8 sm:py-7">
             <div className="space-y-4 max-h-[50vh] overflow-y-auto pr-1">
               {items.map((item) => (
                 <div
@@ -985,7 +1013,14 @@ export function TravelPhotoUploadModal({
                   </div>
 
                   {/* Remove Button */}
-                  <div className="flex sm:flex-col justify-end shrink-0">
+                  <div className="flex flex-wrap gap-2 sm:flex-col justify-end shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setCoverItemId(item.id)}
+                      className={`inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-semibold transition cursor-pointer ${coverItemId === item.id ? "border-amber-400 bg-amber-100 text-amber-900" : "border-zinc-300 bg-white hover:bg-zinc-100 text-zinc-700"}`}
+                    >
+                      {coverItemId === item.id ? "Cover photo" : "Set as cover"}
+                    </button>
                     <button
                       type="button"
                       onClick={() => handleRemoveItem(item.id)}
@@ -1025,15 +1060,9 @@ export function TravelPhotoUploadModal({
               </div>
             )}
 
-            <div className="flex items-center justify-between gap-3 mt-6 pt-4 border-t border-zinc-100">
-              <p className="text-xs text-zinc-500">Changes save automatically when required trip details are complete.</p>
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-5 py-2.5 rounded-full border border-zinc-300 text-zinc-700 text-sm font-semibold hover:bg-zinc-100 transition cursor-pointer"
-              >
-                Cancel
-              </button>
+            <div className="sticky bottom-0 flex items-center justify-between gap-3 mt-6 -mx-5 border-t border-zinc-100 bg-white/95 px-5 pt-4 pb-1 backdrop-blur sm:-mx-8 sm:px-8">
+              <button type="button" onClick={() => setStep("preview")} className="px-4 py-2.5 rounded-full border border-zinc-300 text-zinc-700 text-sm font-semibold hover:bg-zinc-100 transition cursor-pointer">Back</button>
+              <button type="button" onClick={handlePublish} disabled={Boolean(selectedTrip && allowedSlots === 0)} className="px-5 py-2.5 rounded-full bg-zinc-900 text-white text-sm font-semibold transition hover:bg-black disabled:cursor-not-allowed disabled:opacity-45">{replaceTargetPhoto ? "Replace photo" : selectedTripId === "__NEW__" ? "Create trip & share" : "Share photos"}</button>
             </div>
           </div>
         )}
@@ -1042,7 +1071,7 @@ export function TravelPhotoUploadModal({
             VIEW 4: CIRCULAR PROGRESS RING & REAL-TIME PHOTO PREVIEW STATUS
         ======================================================================== */}
         {step === "progress" && (
-          <div className="py-6 sm:py-8 flex flex-col items-center justify-center">
+          <div className="px-5 py-8 sm:px-8 flex flex-col items-center justify-center">
             {/* Circular Progress Ring */}
             <div className="relative size-28 sm:size-32 flex items-center justify-center mb-4">
               <svg className="size-full -rotate-90" viewBox="0 0 100 100">
@@ -1133,6 +1162,15 @@ export function TravelPhotoUploadModal({
                   </button>
                 </>
               ) : <p className="text-xs text-zinc-500">Please keep this window open while your photos are saved.</p>}
+            </div>
+          </div>
+        )}
+        {isDiscardConfirmOpen && (
+          <div className="absolute inset-0 z-20 flex items-center justify-center bg-zinc-950/35 p-5 backdrop-blur-[1px]">
+            <div role="dialog" aria-modal="true" aria-labelledby="discard-upload-title" className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-2xl">
+              <h3 id="discard-upload-title" className="text-base font-bold text-zinc-900">Discard selected photos?</h3>
+              <p className="mt-2 text-sm leading-5 text-zinc-500">Your selected photos and unsaved trip details will be lost.</p>
+              <div className="mt-5 flex justify-end gap-3"><button type="button" onClick={() => setIsDiscardConfirmOpen(false)} className="rounded-full px-4 py-2 text-sm font-semibold text-zinc-700 hover:bg-zinc-100">Keep editing</button><button type="button" onClick={onClose} className="rounded-full bg-rose-600 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-700">Discard</button></div>
             </div>
           </div>
         )}

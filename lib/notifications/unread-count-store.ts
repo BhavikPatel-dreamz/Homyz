@@ -7,6 +7,7 @@ type Listener = () => void;
 let unreadCount: number | null = null;
 let fetchedAt = 0;
 let inFlight: Promise<number | null> | null = null;
+let requestGeneration = 0;
 const listeners = new Set<Listener>();
 const FRESH_FOR_MS = 60_000;
 
@@ -39,18 +40,29 @@ export function invalidateUnreadNotificationCount() {
   fetchedAt = 0;
 }
 
+/** Clear process-local state on logout or an account change. */
+export function resetUnreadNotificationCount() {
+  requestGeneration += 1;
+  unreadCount = null;
+  fetchedAt = 0;
+  inFlight = null;
+  emit();
+}
+
 export async function refreshUnreadNotificationCount(options?: { force?: boolean }) {
   if (!options?.force && unreadCount !== null && Date.now() - fetchedAt < FRESH_FOR_MS) {
     return unreadCount;
   }
   if (inFlight) return inFlight;
 
-  inFlight = fetch("/api/v1/notifications?countOnly=true", {
+  const generation = requestGeneration;
+  const request = fetch("/api/v1/notifications?countOnly=true", {
     cache: "no-store",
     headers: { Accept: "application/json" },
   })
     .then(async (response) => {
       const payload = await response.json().catch(() => null);
+      if (generation !== requestGeneration) return null;
       if (!response.ok || !payload?.success || typeof payload.data?.unreadCount !== "number") {
         return null;
       }
@@ -59,8 +71,9 @@ export async function refreshUnreadNotificationCount(options?: { force?: boolean
     })
     .catch(() => null)
     .finally(() => {
-      inFlight = null;
+      if (inFlight === request) inFlight = null;
     });
 
-  return inFlight;
+  inFlight = request;
+  return request;
 }
