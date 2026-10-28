@@ -34,7 +34,11 @@ All error responses return standard JSON:
 
 ### 2.1 Sync Listing
 * **Path**: `POST /listings/sync`
-* **Description**: Ingests listing details into vector space for semantic search and executes initial fraud audit.
+* **Description**: Ingests listing details into Qdrant for semantic search and initial risk auditing.
+* **Vector Document vs. Payload**:
+  * **Embedded in Vector**: High-signal search signals only (`title`, `property_type`, `listing_type`, `city`, `country`, `amenities`).
+  * **Payload Storage**: `description`, `price`, `location`, `guests`, `house_rules` are preserved in Qdrant's payload for filtering, scam audits (Module 5), and Guest Chatbot RAG (Module 4).
+* **`is_new_listing` Recommendation**: The caller should send `is_new_listing: listing.reviewsCount === 0 && listing.completedBookingsCount < 3`.
 
 #### Request Body
 ```json
@@ -96,7 +100,7 @@ All error responses return standard JSON:
 
 ### 2.2 Search Listings
 * **Path**: `POST /search`
-* **Description**: Executes semantic vector search with geo-radius and price filtering.
+* **Description**: Executes semantic vector search with geo-radius, price filtering, and user behavior personalization.
 
 #### Request Body
 ```json
@@ -109,7 +113,8 @@ All error responses return standard JSON:
   "min_price": 5000,
   "max_price": 25000,
   "guests": 2,
-  "session_id": "string",
+  "positive_listing_ids": ["listing_1", "listing_2"],
+  "negative_listing_ids": [],
   "page": 1,
   "page_size": 20
 }
@@ -131,29 +136,6 @@ All error responses return standard JSON:
       "is_new_listing_boost": false
     }
   ]
-}
-```
-
----
-
-### 2.3 Track In-Session Click
-* **Path**: `POST /sessions/track-click`
-* **Description**: Tracks clicks in active browsing session to enable real-time re-ranking.
-
-#### Request Body
-```json
-{
-  "session_id": "string",
-  "listing_id": "string"
-}
-```
-
-#### Response (`200 OK`)
-```json
-{
-  "status": "tracked",
-  "session_id": "string",
-  "active_history_count": 3
 }
 ```
 

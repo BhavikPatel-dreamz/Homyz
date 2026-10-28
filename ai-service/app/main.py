@@ -96,7 +96,7 @@ async def validation_exception_handler(
         for err in exc.errors()
     ]
     return JSONResponse(
-        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY if not hasattr(status, "HTTP_422_UNPROCESSABLE_CONTENT") else status.HTTP_422_UNPROCESSABLE_CONTENT,
         content={
             "code": "UNPROCESSABLE_ENTITY",
             "detail": "; ".join(error_messages),

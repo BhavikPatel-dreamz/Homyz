@@ -18,14 +18,14 @@
 ---
 
 ## Phase 1: Module 1 — Search & Ranking Engine
-- [ ] Define Pydantic request/response schemas for listing sync and search in `app/models/search.py`
-- [ ] Implement Qdrant collection setup (`listings`) with geo and price payload indexes in `app/services/qdrant_service.py`
-- [ ] Implement listing sync service (`sync_listing`) using OpenAI embeddings in `app/services/search_service.py`
-- [ ] Implement two-mode search service (geo-radius filtered search + open global search)
-- [ ] Implement in-session click tracking and personalization using Qdrant's `recommend` API
-- [ ] Implement "New Listing" boost slotting logic
-- [ ] Create thin route controllers in `app/api/v1/search.py`
-- [ ] Write unit/integration tests for search and sync in `app/tests/test_search.py`
+- [x] Define Pydantic request/response schemas for listing sync and search in `app/models/search.py`
+- [x] Implement Qdrant collection setup (`listings`) with geo, price, and capacity payload indexes in `app/services/qdrant_service.py`
+- [x] Implement listing sync service (`sync_listing`) using OpenAI embeddings in `app/services/search_service.py`
+- [x] Implement two-mode search service (geo-radius filtered search + open global search)
+- [x] Implement user behavior personalization (`positive_listing_ids` from clicked/booked listings) using Qdrant's `recommend` API
+- [x] Implement "New Listing" boost slotting logic
+- [x] Create thin route controllers in `app/api/v1/search.py`
+- [x] Write unit/integration tests for search and sync in `app/tests/test_search.py`
 
 ---
 

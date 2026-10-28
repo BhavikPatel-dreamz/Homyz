@@ -48,7 +48,7 @@ The client platform's primary database (users, bookings, payments, properties), 
 * **Semantic Vector Search**: Understands conversational intent (e.g., *"quiet cabin with mountain view and fast wifi"*) by comparing OpenAI `text-embedding-3-small` query vectors against listing vectors stored in Qdrant.
 * **Dual Search Modes**: Supports both specific location queries (geo-radius bounding) and global open searches ("Anywhere").
 * **Multi-Factor Ranking**: Ranks candidate listings using a composite formula combining vector similarity, price competitiveness, host response rate, and listing completeness.
-* **In-Session Personalization**: Utilizes Qdrant's native `recommend` API. As guests click listings during an active browsing session, subsequent search results dynamically adapt to prioritize listings with matching architectural styles and amenities.
+* **User Behavior Personalization**: Utilizes Qdrant's native `recommend` API. When the client platform passes `positive_listing_ids` (listings the guest previously clicked, booked, or favorited), search results dynamically adapt to prioritize listings with matching architectural styles and amenities.
 * **Fair Discovery Boost**: Injects high-quality newly published listings into Page 1 result slots (e.g., positions 4 and 9) to ensure new hosts secure initial bookings.
 
 ### 2.2 Module 2: Photo Categorization & Quality Scoring
