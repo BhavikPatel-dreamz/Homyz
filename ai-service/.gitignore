@@ -24,6 +24,7 @@ htmlcov/
 # Local Vector Storage & Temporary Data
 qdrant_storage/
 *.log
+test-data/
 
 # IDE & OS
 .vscode/

@@ -22,7 +22,7 @@ class Settings(BaseSettings):
 
     # Google Gemini Settings & Models
     GOOGLE_API_KEY: str = ""
-    GEMINI_MODEL: str = "gemini-2.5-flash"
+    GEMINI_MODEL: str = "gemini-3.5-flash"
     GEMINI_EMBEDDING_MODEL: str = "models/text-embedding-004"
 
     # Search Defaults
