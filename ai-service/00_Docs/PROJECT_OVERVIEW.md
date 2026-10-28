@@ -13,10 +13,29 @@ The client platform's primary database (users, bookings, payments, properties), 
 * The client platform receives the AI output and writes it directly to their existing database.
 * **No traditional database (Postgres, MySQL, Mongo) is required inside this microservice.** Qdrant functions as the unified vector store and listing metadata cache.
 
-### Vector Database Lifecycle: Qdrant Cloud (Dev) → Local / Self-Hosted (Prod)
-* **Development Phase**: We use **Qdrant Cloud (Free Tier)** for zero-friction setup without needing local Docker or managing local memory.
-* **Production Deployment Phase**: We shift to **Local / Self-Hosted Qdrant** (e.g. Docker container on the production VPS) for full data ownership and cost control.
-* **Zero Code Changes**: The transition is managed entirely via environment variables (`QDRANT_URL` and `QDRANT_API_KEY`).
+### Vector Database & AI Provider Lifecycle
+* **Vector Database**:
+  * **Development Phase**: We use **Qdrant Cloud (Free Tier)** for zero-friction setup without needing local Docker or managing local memory.
+  * **Production Deployment Phase**: We shift to **Local / Self-Hosted Qdrant** (e.g. Docker container on the production VPS) for full data ownership and cost control.
+  * **Zero Code Changes**: The transition is managed entirely via environment variables (`QDRANT_URL` and `QDRANT_API_KEY`).
+* **AI Model Provider (Demo vs. Production)**:
+  * **Demo / Preview Phase (Current)**: To enable a full working preview for client approval before they purchase API keys, the entire AI engine runs on **Google Gemini Free Tier via `langchain-google-genai`** at **$0 cost**:
+    * **Embeddings**: Google **`text-embedding-004`** (**768 dimensions**).
+    * **Vision / LLM**: Google **`gemini-2.5-flash`** (multimodal vision, categorization, tips).
+    * **Vector Size**: Qdrant collection is configured with `VECTOR_SIZE = 768`.
+  * **Production Phase (Post-Approval)**: Once the client approves the preview and provides their paid OpenAI API key, the engine transitions to **OpenAI**:
+    * **Embeddings**: OpenAI **`text-embedding-3-small`** (**1536 dimensions**).
+    * **Vision / LLM**: OpenAI **`gpt-4o-mini`**.
+    * **Vector Size**: `VECTOR_SIZE = 1536` (Qdrant collection is re-synced).
+  * **Unified Architecture**: LangChain provides identical interfaces (`GoogleGenerativeAIEmbeddings` $\leftrightarrow$ `OpenAIEmbeddings`, `ChatGoogleGenerativeAI` $\leftrightarrow$ `ChatOpenAI`), ensuring a clean transition with zero rewrite of business logic.
+
+| Capability | Demo Model (Google Free Tier) | Production Model (OpenAI) |
+| :--- | :--- | :--- |
+| **Embeddings (Search & Sync)** | `text-embedding-004` (**768 dim**) | `text-embedding-3-small` (**1536 dim**) |
+| **Vision (Photo Categorization)** | `gemini-2.5-flash` | `gpt-4o-mini` |
+| **Moderation & Extraction** | `gemini-2.5-flash` | `omni-moderation-latest` + `gpt-4o-mini` |
+| **Guest Chatbot (RAG)** | `gemini-2.5-flash` | `gpt-4o-mini` |
+| **Qdrant Vector Size** | `768` | `1536` |
 
 ---
 
@@ -34,18 +53,19 @@ The client platform's primary database (users, bookings, payments, properties), 
 └───────────────┬────────────────────────┬───────────────┘
                 │                        │
                 ▼                        ▼
-┌───────────────────────────────┐ ┌──────────────────────┐
-│ Qdrant Vector Database        │ │ 1 OpenAI API Key     │
-│ - Listings & House Rules      │ │ - text-embedding-3-  │
-│ - Help Center Articles        │ │   small              │
-│ - Fast HNSW In-Memory Index   │ │ - gpt-4o-mini        │
-│                               │ │ - omni-moderation-   │
-│                               │ │   latest (Free)      │
-└───────────────────────────────┘ └──────────────────────┘
+┌───────────────────────────────┐ ┌──────────────────────────────┐
+│ Qdrant Vector Database        │ │ AI Model Provider            │
+│ - Listings & House Rules      │ │ - Demo (Google Free Tier):   │
+│ - Vector Size: 768 (Demo)     │ │   • text-embedding-004       │
+│                1536 (Prod)    │ │   • gemini-2.5-flash         │
+│ - Fast HNSW In-Memory Index   │ │ - Prod (OpenAI Paid Key):    │
+│                               │ │   • text-embedding-3-small   │
+│                               │ │   • gpt-4o-mini              │
+└───────────────────────────────┘ └──────────────────────────────┘
 ```
 
 ### 2.1 Module 1: Search & Ranking Engine
-* **Semantic Vector Search**: Understands conversational intent (e.g., *"quiet cabin with mountain view and fast wifi"*) by comparing OpenAI `text-embedding-3-small` query vectors against listing vectors stored in Qdrant.
+* **Semantic Vector Search**: Understands conversational intent (e.g., *"quiet cabin with mountain view and fast wifi"*) by comparing query vectors against listing vectors stored in Qdrant (using Google `text-embedding-004` 768-dim in Demo; OpenAI `text-embedding-3-small` 1536-dim in Prod).
 * **Dual Search Modes**: Supports both specific location queries (geo-radius bounding) and global open searches ("Anywhere").
 * **Multi-Factor Ranking**: Ranks candidate listings using a composite formula combining vector similarity, price competitiveness, host response rate, and listing completeness.
 * **User Behavior Personalization**: Utilizes Qdrant's native `recommend` API. When the client platform passes `positive_listing_ids` (listings the guest previously clicked, booked, or favorited), search results dynamically adapt to prioritize listings with matching architectural styles and amenities.
@@ -56,7 +76,7 @@ The client platform's primary database (users, bookings, payments, properties), 
 * **Local Pre-Checks ($0 Cost, <5ms)**:
   * **Blur Detection**: Fast Fourier / Laplacian variance (`cv2.Laplacian`) detects motion-blurred or out-of-focus images.
   * **Duplicate Detection**: Perceptual hashing (`imagehash.phash`) detects duplicate or cropped photos within a batch.
-* **AI Vision Analysis (`gpt-4o-mini` Vision)**:
+* **AI Vision Analysis (Google Gemini 2.5 Flash for Demo / `gpt-4o-mini` for Prod)**:
   * **Room Categorization**: Automatically categorizes photos into `Living Room`, `Bedroom`, `Bathroom`, `Kitchen`, `Balcony/Patio`, `Dining Room`, `Exterior/Entrance`, `Amenities/Pool`.
   * **Quality & Lighting Scores**: Evaluates lighting (1–10) and composition (1–10).
   * **Smart Cover Photo**: Automatically nominates the single highest-scoring, well-lit living room or exterior photo as the recommended cover image.
@@ -94,7 +114,7 @@ The client platform's primary database (users, bookings, payments, properties), 
 | :--- | :--- | :--- |
 | **Language & Runtime** | Python 3.10+ | Core microservice runtime |
 | **Web Framework** | FastAPI + Uvicorn | Async ASGI REST API & SSE streaming |
-| **AI Orchestration** | LangChain (`langchain-openai`, `langchain-qdrant`) | Model interfaces, embeddings, and vector store operations |
+| **AI Orchestration** | LangChain (`langchain-google-genai`, `langchain-openai`, `langchain-qdrant`) | Model interfaces, embeddings, and vector store operations |
 | **Vector Database** | Qdrant (Rust-based) | In-memory HNSW vector search, payload filtering, recommend API |
 | **Vision & Image Processing** | OpenCV (`cv2`), `imagehash`, Pillow | Instant local blur check & duplicate hash checks |
 | **Data Validation** | Pydantic V2 (`BaseModel`, `Field`) | Strict request/response validation and structured LLM outputs |

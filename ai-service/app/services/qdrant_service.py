@@ -55,11 +55,15 @@ class QdrantService:
         try:
             exists = await self.client.collection_exists(collection_name)
             if not exists:
-                logger.info("Creating Qdrant collection '%s' (dim=1536, Cosine)", collection_name)
+                logger.info(
+                    "Creating Qdrant collection '%s' (dim=%d, Cosine)",
+                    collection_name,
+                    self.settings.VECTOR_SIZE,
+                )
                 await self.client.create_collection(
                     collection_name=collection_name,
                     vectors_config=models.VectorParams(
-                        size=1536,
+                        size=self.settings.VECTOR_SIZE,
                         distance=models.Distance.COSINE,
                     ),
                 )

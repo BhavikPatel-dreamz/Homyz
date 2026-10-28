@@ -1,37 +1,38 @@
 import unicodedata
-from typing import Optional
-from langchain_openai import OpenAIEmbeddings
+from typing import Any, Optional
 from core.config import Settings, get_settings
 from core.exceptions import AIProviderError
 from utils.logger import get_logger
 
 logger = get_logger(__name__)
 
-# Maximum safe character length for text-embedding-3-small (8191 tokens ≈ 30k chars)
+# Maximum safe character length for embedding inputs
 MAX_EMBEDDING_CHARS = 25000
 
 
 class EmbeddingService:
-    """Generates vector embeddings using OpenAI text-embedding-3-small."""
+    """Generates vector embeddings using Google text-embedding-004."""
 
     def __init__(self, settings: Optional[Settings] = None) -> None:
         self.settings = settings or get_settings()
-        self._embeddings: Optional[OpenAIEmbeddings] = None
+        self._embeddings: Any = None
 
     @property
-    def client(self) -> OpenAIEmbeddings:
-        """Lazily initializes and caches the OpenAI embeddings client."""
+    def client(self) -> Any:
+        """Lazily initializes and caches the Google Gemini embeddings client."""
         if self._embeddings is None:
-            if not self.settings.OPENAI_API_KEY:
-                raise AIProviderError("OPENAI_API_KEY is not configured")
-            self._embeddings = OpenAIEmbeddings(
-                model=self.settings.OPENAI_EMBEDDING_MODEL,
-                openai_api_key=self.settings.OPENAI_API_KEY,
+            if not self.settings.GOOGLE_API_KEY:
+                raise AIProviderError("GOOGLE_API_KEY is not configured")
+            from langchain_google_genai import GoogleGenerativeAIEmbeddings
+
+            self._embeddings = GoogleGenerativeAIEmbeddings(
+                model=self.settings.GEMINI_EMBEDDING_MODEL,
+                google_api_key=self.settings.GOOGLE_API_KEY,
             )
         return self._embeddings
 
     async def get_embedding(self, text: str) -> list[float]:
-        """Asynchronously computes 1536-dimensional embedding vector for input text."""
+        """Asynchronously computes 768-dimensional embedding vector for input text."""
         # 1. Unicode normalization (handles multilingual, Arabic ligatures/diacritics, and accents)
         clean_text = unicodedata.normalize("NFKC", text.strip())
 

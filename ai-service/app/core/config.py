@@ -18,13 +18,12 @@ class Settings(BaseSettings):
     QDRANT_URL: str = "http://localhost:6333"
     QDRANT_API_KEY: Optional[str] = None
     QDRANT_COLLECTION_LISTINGS: str = "listings"
+    VECTOR_SIZE: int = 768
 
-    # OpenAI Settings & Models
-    OPENAI_API_KEY: str = ""
-    OPENAI_EMBEDDING_MODEL: str = "text-embedding-3-small"
-    OPENAI_CHAT_MODEL: str = "gpt-4o-mini"
-    OPENAI_VISION_MODEL: str = "gpt-4o-mini"
-    OPENAI_MODERATION_MODEL: str = "omni-moderation-latest"
+    # Google Gemini Settings & Models
+    GOOGLE_API_KEY: str = ""
+    GEMINI_MODEL: str = "gemini-2.5-flash"
+    GEMINI_EMBEDDING_MODEL: str = "models/text-embedding-004"
 
     # Search Defaults
     DEFAULT_SEARCH_RADIUS_KM: float = 15.0
