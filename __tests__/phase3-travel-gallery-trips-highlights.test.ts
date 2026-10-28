@@ -124,6 +124,17 @@ test("Photo Lightbox: Supports keyboard navigation, arrows, and owner management
   assert.match(modalCode, /Delete Photo/);
 });
 
+test("Photo Lightbox: Keeps photo and comment requests stable after comment counts update", () => {
+  const modalCode = read("components/travel/travel-photo-detail-modal.tsx");
+  const commentsCode = read("components/travel/travel-photo-comments.tsx");
+
+  assert.match(modalCode, /onCloseRef/);
+  assert.match(modalCode, /handleCommentsCountChange/);
+  assert.match(modalCode, /key=\{photo\.id\}/);
+  assert.match(commentsCode, /onCountChangeRef/);
+  assert.match(commentsCode, /\}, \[photoId\]\);/);
+});
+
 // ============================================================================
 // 5. TRIPS & ALBUMS MANAGEMENT (STRICT 5-PHOTO LIMIT & EXPLICIT DELETION)
 // ============================================================================
@@ -169,7 +180,8 @@ test("Photo Likes: Prevents self-likes and provides accurate aggregate counters"
 
   // Likes tab service
   assert.match(serviceCode, /getLikedPhotos/);
-  assert.match(serviceCode, /prisma\.travelPhotoLike\.findMany/);
+  assert.match(serviceCode, /prisma\.travelPhoto\.findMany/);
+  assert.match(serviceCode, /likes:\s*\{\s*some:\s*\{\}\s*\}/);
 });
 
 // ============================================================================
@@ -226,12 +238,13 @@ test("Travel media access: gallery, details, and likes enforce the established p
   assert.match(photoService, /destinationId: \{ in: destinationIds \}/);
 });
 
-test("Regression Protection: Travel Profile server page loads Phase 1, 2, and 3 data in parallel", () => {
+test("Regression Protection: Travel Profile server page loads only the active Photos tab", () => {
   const pageCode = read("app/(protected)/travel-profile/page.tsx");
 
   assert.match(pageCode, /getTravelProfileByUserId/);
   assert.match(pageCode, /getTravelProfileStats/);
   assert.match(pageCode, /getPaginatedTravelPhotos/);
   assert.match(pageCode, /getCountryHighlights/);
-  assert.match(pageCode, /getUserTrips/);
+  assert.doesNotMatch(pageCode, /getUserTrips/);
+  assert.doesNotMatch(pageCode, /getLikedPhotos/);
 });

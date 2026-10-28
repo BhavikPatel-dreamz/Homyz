@@ -70,7 +70,9 @@ export type TripPhotoItem = {
   url: string;
   caption: string | null;
   location: string | null;
+  destinationId?: string | null;
   tags: string[];
+  taggedPeople?: TaggedUser[];
   createdAt: Date | string;
 };
 
@@ -842,7 +844,9 @@ export function ProfileManagementClient({
           url: photo.mediumUrl || photo.url,
           caption: photo.caption,
           location: photo.location,
+          destinationId: photo.destinationId || null,
           tags: [],
+          taggedPeople: photo.taggedPeople || [],
           createdAt: photo.createdAt,
         });
       });
@@ -1196,7 +1200,7 @@ export function ProfileManagementClient({
       )}
 
       {/* 2. DEDICATED PROFILE MANAGEMENT TABS */}
-      <div className="flex items-center gap-2 border-b border-zinc-200 pb-3 mb-8 overflow-x-auto">
+      {/* <div className="flex items-center gap-2 border-b border-zinc-200 pb-3 mb-8 overflow-x-auto">
         <Link
           href="/profile/tab/profile_management/profile_information"
           onClick={(e) => {
@@ -1241,7 +1245,7 @@ export function ProfileManagementClient({
         >
           {t("profile_mgmt_tab_privacy", "Privacy & Visibility")}
         </Link>
-      </div>
+      </div> */}
 
       {/* TAB 1: PROFILE INFORMATION */}
       {activeMgmtTab === "info" && (
@@ -2073,9 +2077,9 @@ export function ProfileManagementClient({
         <EditTripPhotoModal
           photo={editPhotoModal}
           onClose={() => setEditPhotoModal(null)}
-          onSaved={(updated) => {
+          onSaved={(updated, previousId) => {
             setTripPhotos((prev) =>
-              prev.map((p) => (p.id === updated.id ? updated : p)),
+              prev.map((p) => (p.id === previousId ? updated : p)),
             );
             setEditPhotoModal(null);
           }}
@@ -2148,6 +2152,15 @@ export function ProfileManagementClient({
         <LightboxModal
           photo={lightboxPhoto}
           onClose={() => setLightboxPhoto(null)}
+          isOwner={isOwner}
+          onEdit={() => {
+            setLightboxPhoto(null);
+            setEditPhotoModal(lightboxPhoto);
+          }}
+          onDelete={() => {
+            setLightboxPhoto(null);
+            setDeletePhotoModal(lightboxPhoto);
+          }}
         />
       )}
     </>
@@ -2298,13 +2311,11 @@ function MultiImageUploadModal({
       );
       setUploadProgress((current) => ({ ...current, phase: "saving" }));
 
-      const tags = taggedUsers.map((u) => u.name || u.email || u.id);
-
       const payload = uploadedUrls.map((url) => ({
         url,
         location: location.trim() || undefined,
         caption: caption.trim() || undefined,
-        tags,
+        taggedUserIds: taggedUsers.map((user) => user.id),
       }));
 
       const res = await uploadTripPhotosAction(payload);
@@ -2492,20 +2503,15 @@ function EditTripPhotoModal({
 }: {
   photo: TripPhotoItem;
   onClose: () => void;
-  onSaved: (updated: TripPhotoItem) => void;
+  onSaved: (updated: TripPhotoItem, previousId: string) => void;
   onDeleteTrigger: (p: TripPhotoItem) => void;
 }) {
   const { t } = useLanguage();
   const [location, setLocation] = useState(photo.location || "");
   const [caption, setCaption] = useState(photo.caption || "");
-  const [taggedUsers, setTaggedUsers] = useState<TaggedUser[]>(
-    (photo.tags || []).map((t) => ({
-      id: t,
-      name: t,
-      email: null,
-      image: null,
-    })),
-  );
+  const [taggedUsers, setTaggedUsers] = useState<TaggedUser[]>(photo.taggedPeople || []);
+  const [locationData, setLocationData] = useState<StructuredLocation | null>(null);
+  const [locationWasEdited, setLocationWasEdited] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const handleSave = async (e: React.FormEvent) => {
@@ -2513,16 +2519,25 @@ function EditTripPhotoModal({
     setSaving(true);
 
     try {
-      const tags = taggedUsers.map((u) => u.name || u.email || u.id);
-
       const res = await updateTripPhotoAction(photo.id, {
-        location: location.trim() || undefined,
-        caption: caption.trim() || undefined,
-        tags,
+        location: location.trim() || null,
+        locationData: locationData
+          ? {
+              city: locationData.city || null,
+              country: locationData.country || null,
+              countryCode: locationData.countryCode || null,
+              latitude: locationData.latitude ?? null,
+              longitude: locationData.longitude ?? null,
+            }
+          : locationWasEdited
+            ? null
+            : undefined,
+        caption: caption.trim() || null,
+        taggedUserIds: taggedUsers.map((user) => user.id),
       });
 
       if (!res.ok) throw new Error(res.error || "Update photo failed");
-      onSaved(res.data as TripPhotoItem);
+      onSaved(res.data as TripPhotoItem, photo.id);
       toast.success("Photo details updated successfully!");
       onClose();
     } catch (err: unknown) {
@@ -2561,7 +2576,11 @@ function EditTripPhotoModal({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <LocationSearchInput
               value={location}
-              onChange={(val) => setLocation(val)}
+              onChange={(val, selected) => {
+                setLocation(val);
+                setLocationData(selected || null);
+                setLocationWasEdited(true);
+              }}
               disabled={saving}
             />
 
@@ -2695,9 +2714,15 @@ function DeleteTripPhotoModal({
 function LightboxModal({
   photo,
   onClose,
+  isOwner,
+  onEdit,
+  onDelete,
 }: {
   photo: TripPhotoItem;
   onClose: () => void;
+  isOwner: boolean;
+  onEdit: () => void;
+  onDelete: () => void;
 }) {
   const { t } = useLanguage();
   return (
@@ -2725,6 +2750,31 @@ function LightboxModal({
             className="object-contain"
             priority
           />
+        </div>
+        <div className="mt-3 flex w-full flex-col gap-3 rounded-2xl bg-white p-4 text-[#1F1F1F] sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            {photo.location && <p className="truncate text-xs font-medium text-amber-800">📍 {photo.location}</p>}
+            {photo.caption && <p className="mt-1 text-sm text-zinc-700">{photo.caption}</p>}
+            {photo.taggedPeople && photo.taggedPeople.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-1.5" aria-label="People tagged in this photo">
+                {photo.taggedPeople.map((person) => (
+                  <span key={person.id} className="rounded-full bg-zinc-100 px-2 py-1 text-[11px] font-medium text-zinc-700">
+                    {person.name || person.handle || "Traveler"}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+          {isOwner && (
+            <div className="flex shrink-0 gap-2">
+              <button type="button" onClick={onEdit} className="rounded-full border border-zinc-300 px-4 py-2 text-sm font-semibold text-zinc-800 hover:bg-zinc-100">
+                Edit photo
+              </button>
+              <button type="button" onClick={onDelete} className="rounded-full border border-rose-200 px-4 py-2 text-sm font-semibold text-rose-600 hover:bg-rose-50">
+                Remove image
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </ModalOverlay>

@@ -4,12 +4,18 @@ import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import type { TravelTripDTO } from "@/types/travel";
+import { toast } from "@/components/ui/toast";
 
 interface TravelTripSliderModalProps {
   trip: TravelTripDTO;
   isOpen: boolean;
   onClose: () => void;
   onOpenPhotoDetail?: (photoId: string) => void;
+  onTripLikeUpdated?: (update: { tripId: string; liked: boolean; likesCount: number; profileLikes?: number | null }) => void;
+  shareUrl?: string | null;
+  canLike?: boolean;
+  isOwner?: boolean;
+  onManageTrip?: () => void;
 }
 
 export function TravelTripSliderModal({
@@ -17,9 +23,17 @@ export function TravelTripSliderModal({
   isOpen,
   onClose,
   onOpenPhotoDetail,
+  onTripLikeUpdated,
+  shareUrl = null,
+  canLike = false,
+  isOwner = false,
+  onManageTrip,
 }: TravelTripSliderModalProps) {
   const photos = trip.photos || [];
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [liked, setLiked] = useState(Boolean(trip.isLiked));
+  const [likesCount, setLikesCount] = useState(trip.likesCount || 0);
+  const [isLiking, setIsLiking] = useState(false);
   const touchStartXRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -58,6 +72,29 @@ export function TravelTripSliderModal({
       ? (index - 1 + photos.length) % photos.length
       : (index + 1) % photos.length);
   };
+  const toggleLike = async () => {
+    if (isLiking) return;
+    const previous = { liked, likesCount };
+    const nextLiked = !liked;
+    const nextCount = Math.max(0, likesCount + (liked ? -1 : 1));
+    setIsLiking(true); setLiked(nextLiked); setLikesCount(nextCount);
+    onTripLikeUpdated?.({ tripId: trip.id, liked: nextLiked, likesCount: nextCount });
+    try {
+      const response = await fetch(`/api/v1/travel-media/trips/${trip.id}/like`, { method: "POST" });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Unable to update trip like.");
+      setLiked(data.liked); setLikesCount(data.count);
+      onTripLikeUpdated?.({ tripId: trip.id, liked: data.liked, likesCount: data.count, profileLikes: data.profileLikes });
+    } catch (error) { setLiked(previous.liked); setLikesCount(previous.likesCount); onTripLikeUpdated?.({ tripId: trip.id, liked: previous.liked, likesCount: previous.likesCount }); toast.error(error instanceof Error ? error.message : "Unable to update trip like."); }
+    finally { setIsLiking(false); }
+  };
+  const shareTrip = async () => {
+    if (!shareUrl) return;
+    try {
+      if (navigator.share) await navigator.share({ title: trip.title, text: `Explore ${trip.title} on Homyz`, url: shareUrl });
+      else await navigator.clipboard.writeText(shareUrl);
+    } catch { /* cancellation is not an error */ }
+  };
 
   return (
     <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm animate-in fade-in">
@@ -73,7 +110,7 @@ export function TravelTripSliderModal({
             </h2>
             <p className="text-xs text-zinc-400 mt-0.5">
               {photos.length} photo{photos.length === 1 ? "" : "s"}
-              {trip.destinationId ? ` · ${trip.destinationId}` : ""}
+              {trip.destination?.countryName ? ` · ${trip.destination.countryName}` : ""}
             </p>
           </div>
           <button
@@ -84,6 +121,12 @@ export function TravelTripSliderModal({
           >
             ✕
           </button>
+        </div>
+
+        <div className="absolute right-16 top-4 z-10 flex gap-2">
+          {shareUrl && <button type="button" onClick={() => void shareTrip()} className="rounded-full bg-zinc-800 px-3 py-1.5 text-xs font-semibold text-zinc-100 hover:bg-zinc-700">Share</button>}
+          {canLike && <button type="button" onClick={() => void toggleLike()} disabled={isLiking} aria-pressed={liked} className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${liked ? "bg-rose-500 text-white" : "bg-zinc-800 text-zinc-100 hover:bg-zinc-700"}`}>♥ {likesCount}</button>}
+          {isOwner && onManageTrip && <button type="button" onClick={onManageTrip} className="rounded-full bg-zinc-800 px-3 py-1.5 text-xs font-semibold text-zinc-100 hover:bg-zinc-700">Manage</button>}
         </div>
 
         {/* Main Body */}

@@ -484,7 +484,7 @@ function toUserTravelStampDTO(record: {
       country: record.stamp.country,
       description: record.stamp.description,
       countryCode: record.stamp.countryCode,
-      iconUrl: record.stamp.iconUrl || record.stamp.imageUrl,
+      iconUrl: record.stamp.iconUrl || record.stamp.imageUrl || null,
       category: record.stamp.category,
       eligibilityRule: record.stamp.eligibilityRule,
       ruleThreshold: record.stamp.ruleThreshold,

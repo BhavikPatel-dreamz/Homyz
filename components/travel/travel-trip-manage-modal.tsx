@@ -5,6 +5,7 @@ import Image from "next/image";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { toast } from "@/components/ui/toast";
 import type { TravelTripDTO, TravelPhotoDTO } from "@/types/travel";
+import { ADDRESS_COUNTRIES } from "@/lib/location/address-countries";
 
 interface TravelTripManageModalProps {
   trip?: TravelTripDTO | null; // null if creating a new trip
@@ -13,6 +14,7 @@ interface TravelTripManageModalProps {
   onTripUpdated?: (updatedTrip: TravelTripDTO) => void;
   onTripDeleted?: (deletedTripId: string) => void;
   onAddPhotosClick?: (tripId: string) => void;
+  startWithDeleteConfirmation?: boolean;
 }
 
 export function TravelTripManageModal({
@@ -22,10 +24,11 @@ export function TravelTripManageModal({
   onTripUpdated,
   onTripDeleted,
   onAddPhotosClick,
+  startWithDeleteConfirmation = false,
 }: TravelTripManageModalProps) {
   const isEditing = Boolean(trip);
   const [title, setTitle] = useState(trip?.title || "");
-  const [destination, setDestination] = useState(trip?.destinationId || "");
+  const [countryCode, setCountryCode] = useState(trip?.destination?.countryCode || "");
   const [startDate, setStartDate] = useState(
     trip?.startDate ? new Date(trip.startDate).toISOString().split("T")[0] : ""
   );
@@ -38,12 +41,20 @@ export function TravelTripManageModal({
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deletePolicy, setDeletePolicy] = useState<"UNLINK_PHOTOS" | "DELETE_PHOTOS">("UNLINK_PHOTOS");
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(startWithDeleteConfirmation);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) {
       toast.error("Trip title is required");
+      return;
+    }
+    if (!countryCode) {
+      toast.error("Choose a destination country");
+      return;
+    }
+    if (startDate && endDate && endDate < startDate) {
+      toast.error("End date cannot be before start date");
       return;
     }
 
@@ -55,7 +66,7 @@ export function TravelTripManageModal({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             title: title.trim(),
-            destinationId: destination.trim() || null,
+            country: countryCode,
             startDate: startDate || null,
             endDate: endDate || null,
             coverPhotoId,
@@ -73,7 +84,7 @@ export function TravelTripManageModal({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             title: title.trim(),
-            destinationId: destination.trim() || null,
+            country: countryCode,
             startDate: startDate || null,
             endDate: endDate || null,
           }),
@@ -219,15 +230,20 @@ export function TravelTripManageModal({
 
             <div>
               <label className="block text-xs font-semibold text-zinc-700 mb-1">
-                Destination (Optional)
+                Destination country *
               </label>
-              <input
-                type="text"
-                placeholder="e.g. Greece, Mediterranean"
-                value={destination}
-                onChange={(e) => setDestination(e.target.value)}
+              <select
+                value={countryCode}
+                onChange={(e) => setCountryCode(e.target.value)}
+                required
                 className="w-full text-xs sm:text-sm rounded-xl border border-zinc-300 px-3 py-2 text-zinc-800 focus:outline-none focus:ring-2 focus:ring-amber-400"
-              />
+              >
+                <option value="">Choose a country</option>
+                {ADDRESS_COUNTRIES.map((country) => (
+                  <option key={country.iso2} value={country.iso2}>{country.name}</option>
+                ))}
+              </select>
+              <p className="mt-1 text-[11px] text-zinc-400">Trips use a country-level destination; no city is required.</p>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
@@ -352,4 +368,3 @@ export function TravelTripManageModal({
     </ModalOverlay>
   );
 }
-

@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { LoadingIcon } from "@/components/ui/loading-icon";
 import { Container } from "@/components/ui";
 
@@ -16,7 +17,11 @@ export function OnboardingHeader({ onSaveAndExit, isSaving = false, disabled = f
     <header className="header sticky top-0 lg:z-9999 z-40 w-full bg-white text-[#1F1F1F]">
       <Container>
         <div className="flex shrink-0 items-center justify-between">
-          <div className="relative block aspect-[199/72] w-[125px] md:w-[135px] lg:w-[145px] xl:w-[170px] 2xl:w-[198px]">
+          <Link
+            href="/"
+            aria-label="Go to Homyz home"
+            className="relative block aspect-[199/72] w-[125px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#1F1F1F] md:w-[135px] lg:w-[145px] xl:w-[170px] 2xl:w-[198px]"
+          >
             <Image
               src="/images/brand/homyz-logo-dark-v1.svg"
               alt="Homyz"
@@ -25,7 +30,7 @@ export function OnboardingHeader({ onSaveAndExit, isSaving = false, disabled = f
               priority
               className="object-contain"
             />
-          </div>
+          </Link>
           <div className="flex items-center gap-2 sm:gap-3">
             <a
               href="/help"

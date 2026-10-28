@@ -1,10 +1,10 @@
 import { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth/session";
 import { AppHeader } from "@/components/dashboard/app-header";
 import { Footer } from "@/components/dashboard/footer";
 import {
-  getPublicTravelProfileByHandle,
+  resolvePublicTravelProfile,
   getCanonicalProfileUrl,
 } from "@/services/public-travel-profile.service";
 import { PublicTravelProfileClient } from "@/components/travel/public-travel-profile-client";
@@ -17,7 +17,7 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { handle } = await params;
   try {
-    const profile = await getPublicTravelProfileByHandle(handle, null);
+    const { profile } = await resolvePublicTravelProfile(handle, null);
 
     // Private or followers-only profiles must not be indexed by search engines
     if (profile.visibility !== TravelProfileVisibility.PUBLIC || !profile.canViewContent) {
@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const description =
       profile.bio ||
       `Explore ${profile.displayName}'s shared travel diary, visited destinations, and travel stamps on Homyz.`;
-    const canonical = getCanonicalProfileUrl(profile.handle);
+    const canonical = getCanonicalProfileUrl(profile.publicProfileId);
     const ogImage = profile.coverUrl || profile.avatarUrl || "/images/auth-traveler-street.jpg";
 
     return {
@@ -66,7 +66,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         images: [ogImage],
       },
     };
-  } catch (err) {
+  } catch {
     return {
       title: "Traveler Profile — Homyz",
       robots: {
@@ -82,13 +82,28 @@ export default async function PublicTravelerPage({ params }: PageProps) {
   const viewer = await getSessionUser();
 
   let profile;
+  let shouldRedirectToCanonical = false;
   try {
-    profile = await getPublicTravelProfileByHandle(handle, viewer?.id);
-  } catch (err: any) {
-    if (err?.statusCode === 404 || err?.status === 404) {
+    const resolved = await resolvePublicTravelProfile(handle, viewer?.id);
+    profile = resolved.profile;
+    shouldRedirectToCanonical = resolved.shouldRedirectToCanonical;
+  } catch (error: unknown) {
+    const statusCode =
+      typeof error === "object" && error !== null && "statusCode" in error
+        ? (error as { statusCode?: unknown }).statusCode
+        : undefined;
+    const status =
+      typeof error === "object" && error !== null && "status" in error
+        ? (error as { status?: unknown }).status
+        : undefined;
+    if (statusCode === 404 || status === 404) {
       notFound();
     }
-    throw err;
+    throw error;
+  }
+
+  if (shouldRedirectToCanonical) {
+    redirect(`/travelers/${encodeURIComponent(profile.publicProfileId)}`);
   }
 
   return (
@@ -104,4 +119,3 @@ export default async function PublicTravelerPage({ params }: PageProps) {
     </div>
   );
 }
-

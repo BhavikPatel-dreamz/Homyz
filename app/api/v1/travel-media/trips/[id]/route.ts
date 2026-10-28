@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getAuthContext } from "@/lib/auth/context";
 import { updateTrip, deleteTrip, setTripCoverPhoto } from "@/services/travel-photo.service";
+import { getOrCreateDestination, normalizeCountry } from "@/services/travel-destination.service";
 import { AppError } from "@/lib/api/errors";
 
 export async function PATCH(
@@ -21,9 +22,16 @@ export async function PATCH(
       await setTripCoverPhoto(actor.id, id, body.coverPhotoId);
     }
 
+    let destinationId = body.destinationId;
+    if (typeof body.country === "string") {
+      const country = normalizeCountry(body.country.trim());
+      if (!country) throw AppError.badRequest("Choose a valid destination country.");
+      destinationId = (await getOrCreateDestination({ ...country, cityName: null })).id;
+    }
+
     const updated = await updateTrip(actor.id, id, {
       title: body.title,
-      destinationId: body.destinationId,
+      destinationId,
       startDate: body.startDate,
       endDate: body.endDate,
       coverPhotoId: body.coverPhotoId,
@@ -63,4 +71,3 @@ export async function DELETE(
     return NextResponse.json({ error: "Failed to delete trip" }, { status: 500 });
   }
 }
-

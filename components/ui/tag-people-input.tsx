@@ -6,8 +6,10 @@ import Image from "next/image";
 export type TaggedUser = {
   id: string;
   name: string | null;
-  email: string | null;
   image: string | null;
+  handle?: string | null;
+  /** Compatibility only; the travel-tag search endpoint never returns email. */
+  email?: string | null;
 };
 
 type TagPeopleInputProps = {
@@ -136,10 +138,10 @@ export function TagPeopleInput({
               </span>
             ) : (
               <span className="w-4 h-4 rounded-full bg-amber-200 text-amber-900 text-[9px] font-medium flex items-center justify-center shrink-0">
-                {(user.name || user.email || "U")[0].toUpperCase()}
+                {(user.name || user.handle || "U")[0].toUpperCase()}
               </span>
             )}
-            <span className="truncate max-w-[110px]">{user.name || user.email || "User"}</span>
+            <span className="truncate max-w-[110px]">{user.name || user.handle || "User"}</span>
             <button
               type="button"
               onClick={(e) => handleRemoveUser(user.id, e)}
@@ -217,14 +219,14 @@ export function TagPeopleInput({
                       </div>
                     ) : (
                         <div className="w-7 h-7 rounded-full bg-amber-100 text-amber-800 font-medium text-xs flex items-center justify-center shrink-0">
-                        {(user.name || user.email || "U")[0].toUpperCase()}
+                        {(user.name || user.handle || "U")[0].toUpperCase()}
                       </div>
                     )}
                     <div className="min-w-0">
                       <p className="font-medium text-[#1F1F1F] truncate">{user.name || "Guest Member"}</p>
-                      {user.email && (
+                      {user.handle && (
                         <p className="text-sm text-[#727272] truncate">
-                          @{user.email.split("@")[0]}
+                          @{user.handle}
                         </p>
                       )}
                     </div>

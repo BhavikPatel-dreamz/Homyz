@@ -216,7 +216,7 @@ test("Media Storage: Uses dedicated travel-photos kind without listing-photo end
 // 4. BYTE-LEVEL UPLOAD PROGRESS & CANCELLATION (FIGMA SCREENSHOTS 2–5)
 // ============================================================================
 
-test("Upload Modal: Implements genuine XMLHttpRequest byte-level progress and cancellation", () => {
+test("Upload Modal: Implements genuine XMLHttpRequest byte-level progress and protects in-flight uploads", () => {
   const modalCode = read("components/travel/travel-photo-upload-modal.tsx");
 
   // Real XHR upload onprogress
@@ -225,9 +225,9 @@ test("Upload Modal: Implements genuine XMLHttpRequest byte-level progress and ca
   assert.match(modalCode, /event\.loaded/);
   assert.match(modalCode, /event\.total/);
 
-  // Cancellation via XHR abort
-  assert.match(modalCode, /activeXhrRef\.current\.abort\(\)/);
-  assert.match(modalCode, /Upload cancelled by user/);
+  // Closing is disabled while a write is in flight so successful uploads are not interrupted.
+  assert.match(modalCode, /disabled=\{step === "progress" && !hasFailures\}/);
+  assert.match(modalCode, /Please keep this window open while your photos are saved/);
 
   // Circular progress ring matching Screenshot 2
   assert.match(modalCode, /stroke-\[#FCDF9C\]/);

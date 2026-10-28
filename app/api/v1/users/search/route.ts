@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth/session";
-import { userService } from "@/services/user.service";
+import { searchTaggableTravelUsers } from "@/services/travel-photo.service";
 
 export async function GET(request: Request) {
   try {
@@ -12,10 +12,12 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const query = searchParams.get("q")?.trim() || "";
 
-    const users = await userService.searchUsers(query);
+    // This endpoint is used by travel-photo tagging. Never return private or
+    // blocked accounts (including through a direct request).
+    const users = await searchTaggableTravelUsers(actor.id, query);
 
     return NextResponse.json({ users });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[USERS_SEARCH_GET_ERROR]", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }

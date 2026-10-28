@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getAuthContext } from "@/lib/auth/context";
 import { getCountryHighlights } from "@/services/travel-photo.service";
+import { canViewTravelProfile } from "@/services/travel-privacy.service";
 import { AppError } from "@/lib/api/errors";
 
 export async function GET(req: NextRequest) {
@@ -14,7 +15,12 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const highlights = await getCountryHighlights(requestedUserId);
+    const access = await canViewTravelProfile(actor?.id, requestedUserId);
+    if (!access.canView) {
+      return NextResponse.json({ error: "Access to this travel profile is forbidden" }, { status: 403 });
+    }
+
+    const highlights = await getCountryHighlights(requestedUserId, { actorId: actor?.id });
     return NextResponse.json({ highlights });
   } catch (err: unknown) {
     if (err instanceof AppError) {
@@ -24,4 +30,3 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Failed to retrieve highlights." }, { status: 500 });
   }
 }
-

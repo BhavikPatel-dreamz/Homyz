@@ -66,7 +66,11 @@ import { TravelProfileHeader } from "./travel-profile-header";
 import { TravelStampsSection } from "./travel-stamps-section";
 import { TravelDestinationStoryModal } from "./travel-destination-story-modal";
 import { TravelTripSliderModal } from "./travel-trip-slider-modal";
+import { TravelTripManageModal } from "./travel-trip-manage-modal";
 import { toast } from "@/components/ui/toast";
+
+const EMPTY_PHOTOS: TravelPhotoDTO[] = [];
+const EMPTY_TRIPS: TravelTripDTO[] = [];
 
 interface TravelProfileViewProps {
   initialProfile: TravelProfileDTO;
@@ -87,15 +91,15 @@ interface TravelProfileViewProps {
 export function TravelProfileView({
   initialProfile,
   initialStats,
-  initialPhotos = [],
+  initialPhotos = EMPTY_PHOTOS,
   initialPhotosNextCursor = null,
   initialHighlights = [],
   initialStamps = [],
   initialStampsNextCursor = null,
   initialStampsTotalCount = initialStamps.length,
   initialDestinationStats = null,
-  initialTrips = [],
-  initialLikedPhotos = [],
+  initialTrips = EMPTY_TRIPS,
+  initialLikedPhotos = EMPTY_PHOTOS,
   initialLikedPhotosNextCursor = null,
   isOwner = true,
 }: TravelProfileViewProps) {
@@ -106,19 +110,37 @@ export function TravelProfileView({
     initialPhotosNextCursor,
   );
   const [loadingMorePhotos, setLoadingMorePhotos] = useState(false);
+  const photosLoadMoreRef = React.useRef<HTMLDivElement | null>(null);
   const [highlights, setHighlights] =
     useState<CountryHighlightDTO[]>(initialHighlights);
   const [stamps] = useState<UserTravelStampDTO[]>(initialStamps);
   const [trips, setTrips] = useState<TravelTripDTO[]>(initialTrips);
+  const [tripsLoaded, setTripsLoaded] = useState(initialTrips.length > 0);
+  const [loadingTrips, setLoadingTrips] = useState(false);
+  const [tripsError, setTripsError] = useState<string | null>(null);
   const [likedPhotos, setLikedPhotos] =
     useState<TravelPhotoDTO[]>(initialLikedPhotos);
   const [likedPhotosNextCursor, setLikedPhotosNextCursor] = useState<
     string | null
   >(initialLikedPhotosNextCursor);
   const [loadingMoreLikes, setLoadingMoreLikes] = useState(false);
+  const [likesLoaded, setLikesLoaded] = useState(initialLikedPhotos.length > 0);
+  const [loadingLikes, setLoadingLikes] = useState(false);
+  const [likesError, setLikesError] = useState<string | null>(null);
+  const tripsLoadStateRef = React.useRef<"idle" | "loading" | "loaded">(
+    initialTrips.length > 0 ? "loaded" : "idle",
+  );
+  const likesLoadStateRef = React.useRef<"idle" | "loading" | "loaded">(
+    initialLikedPhotos.length > 0 ? "loaded" : "idle",
+  );
+  const likesLoadMoreRef = React.useRef<HTMLDivElement | null>(null);
   const [activePhotoId, setActivePhotoId] = useState<string | null>(null);
   const [activeTripSlider, setActiveTripSlider] =
     useState<TravelTripDTO | null>(null);
+  const [tripToManage, setTripToManage] = useState<TravelTripDTO | null>(null);
+  const [manageTripDelete, setManageTripDelete] = useState(false);
+  const [openTripMenuId, setOpenTripMenuId] = useState<string | null>(null);
+  const [uploadTripId, setUploadTripId] = useState<string | null>(null);
   const [replacingPhoto, setReplacingPhoto] = useState<TravelPhotoDTO | null>(
     null,
   );
@@ -132,13 +154,96 @@ export function TravelProfileView({
   >(null);
   const [storyReloadKey, setStoryReloadKey] = useState(0);
 
+  const loadTrips = useCallback(async () => {
+    if (tripsLoadStateRef.current !== "idle") return;
+    tripsLoadStateRef.current = "loading";
+    setLoadingTrips(true);
+    setTripsError(null);
+    try {
+      const response = await fetch("/api/v1/travel-media/trips");
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to load trips");
+      setTrips(Array.isArray(data.trips) ? data.trips : []);
+      setTripsLoaded(true);
+      tripsLoadStateRef.current = "loaded";
+    } catch (error) {
+      tripsLoadStateRef.current = "idle";
+      setTripsError(error instanceof Error ? error.message : "Failed to load trips");
+    } finally {
+      setLoadingTrips(false);
+    }
+  }, []);
+
+  const loadLikes = useCallback(async () => {
+    if (likesLoadStateRef.current !== "idle") return;
+    likesLoadStateRef.current = "loading";
+    setLoadingLikes(true);
+    setLikesError(null);
+    try {
+      const response = await fetch("/api/v1/travel-media/likes?limit=12");
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Failed to load liked photos");
+      setLikedPhotos(Array.isArray(data.photos) ? data.photos : []);
+      setLikedPhotosNextCursor(data.nextCursor || null);
+      setLikesLoaded(true);
+      likesLoadStateRef.current = "loaded";
+    } catch (error) {
+      likesLoadStateRef.current = "idle";
+      setLikesError(error instanceof Error ? error.message : "Failed to load liked photos");
+    } finally {
+      setLoadingLikes(false);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    const timer = window.setTimeout(() => {
+      if (activeTab === "trips") void loadTrips();
+      if (activeTab === "likes") void loadLikes();
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [activeTab, loadLikes, loadTrips]);
+
+  // Likes received in another session are re-read when this tab becomes active.
+  // This is deliberately focus-based rather than polling, so it cannot create
+  // a refresh loop or interrupt a gallery/modal the owner is using.
+  React.useEffect(() => {
+    const revalidateOnFocus = () => {
+      if (document.visibilityState === "visible") router.refresh();
+    };
+    window.addEventListener("focus", revalidateOnFocus);
+    document.addEventListener("visibilitychange", revalidateOnFocus);
+    return () => {
+      window.removeEventListener("focus", revalidateOnFocus);
+      document.removeEventListener("visibilitychange", revalidateOnFocus);
+    };
+  }, [router]);
+
+  // Keep the visible galleries in step with refreshed server data (including
+  // likes received in another browser) without changing the selected tab or
+  // closing an open photo modal.
+  React.useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setPhotos(initialPhotos);
+      setPhotosNextCursor(initialPhotosNextCursor);
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [initialPhotos, initialPhotosNextCursor]);
+
+  React.useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setLikedPhotos(initialLikedPhotos);
+      setLikedPhotosNextCursor(initialLikedPhotosNextCursor);
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [initialLikedPhotos, initialLikedPhotosNextCursor]);
+
   // Destination highlights are stories, not main-gallery filters. Keeping this
   // separate means closing a story always restores the exact tab and gallery state.
   const handleCountrySelection = useCallback((country: string) => {
     setStoryCountry(country);
   }, []);
 
-  const handleLoadMorePhotos = async () => {
+  const handleLoadMorePhotos = useCallback(async () => {
     const cursor = photosNextCursor;
     if (!cursor || loadingMorePhotos) return;
     setLoadingMorePhotos(true);
@@ -165,9 +270,9 @@ export function TravelProfileView({
     } finally {
       setLoadingMorePhotos(false);
     }
-  };
+  }, [loadingMorePhotos, photosNextCursor]);
 
-  const handleLoadMoreLikes = async () => {
+  const handleLoadMoreLikes = useCallback(async () => {
     if (!likedPhotosNextCursor || loadingMoreLikes) return;
     setLoadingMoreLikes(true);
     try {
@@ -194,7 +299,47 @@ export function TravelProfileView({
     } finally {
       setLoadingMoreLikes(false);
     }
-  };
+  }, [likedPhotosNextCursor, loadingMoreLikes]);
+
+  React.useEffect(() => {
+    const target = photosLoadMoreRef.current;
+    if (
+      activeTab !== "photos" ||
+      !target ||
+      !photosNextCursor ||
+      loadingMorePhotos
+    ) {
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) void handleLoadMorePhotos();
+      },
+      { rootMargin: "320px 0px" },
+    );
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [activeTab, handleLoadMorePhotos, loadingMorePhotos, photosNextCursor]);
+
+  React.useEffect(() => {
+    const target = likesLoadMoreRef.current;
+    if (
+      activeTab !== "likes" ||
+      !target ||
+      !likedPhotosNextCursor ||
+      loadingMoreLikes
+    ) {
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) void handleLoadMoreLikes();
+      },
+      { rootMargin: "320px 0px" },
+    );
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [activeTab, handleLoadMoreLikes, likedPhotosNextCursor, loadingMoreLikes]);
 
   const refreshTravelCollections = useCallback(async () => {
     const [tripsResponse, highlightsResponse] = await Promise.all([
@@ -224,11 +369,6 @@ export function TravelProfileView({
     setPhotos((current) =>
       current.map((photo) => (photo.id === updated.id ? updated : photo)),
     );
-    setCountryPhotos(
-      (current) =>
-        current?.map((photo) => (photo.id === updated.id ? updated : photo)) ||
-        null,
-    );
     setLikedPhotos((current) =>
       updated.isLiked === false
         ? current.filter((photo) => photo.id !== updated.id)
@@ -237,9 +377,6 @@ export function TravelProfileView({
   };
   const handlePhotoDeleted = (id: string) => {
     setPhotos((current) => current.filter((photo) => photo.id !== id));
-    setCountryPhotos(
-      (current) => current?.filter((photo) => photo.id !== id) || null,
-    );
     setLikedPhotos((current) => current.filter((photo) => photo.id !== id));
     if (activePhotoId === id) setActivePhotoId(null);
     void refreshTravelCollections().catch(() => {});
@@ -336,7 +473,7 @@ export function TravelProfileView({
                 ))}
               </div>
               {photosNextCursor && (
-                <div className="flex justify-center pt-2">
+                <div ref={photosLoadMoreRef} className="flex justify-center pt-2">
                   <button
                     type="button"
                     onClick={handleLoadMorePhotos}
@@ -387,15 +524,27 @@ export function TravelProfileView({
           <h2 id="trips-heading" className="sr-only">
             Your Trips
           </h2>
-          {trips.length > 0 ? (
+          {loadingTrips && !tripsLoaded ? (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-label="Loading trips">
+              {[0, 1, 2].map((index) => <div key={index} className="aspect-square animate-pulse rounded-2xl bg-zinc-100" />)}
+            </div>
+          ) : tripsError ? (
+            <div className="rounded-3xl border border-rose-100 bg-rose-50/50 p-8 text-center">
+              <p className="text-sm font-semibold text-zinc-900">Couldn&apos;t load trips</p>
+              <button type="button" onClick={() => void loadTrips()} className="mt-3 rounded-full border border-zinc-300 bg-white px-4 py-2 text-xs font-semibold text-zinc-800">Try again</button>
+            </div>
+          ) : trips.length > 0 ? (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {trips.map((trip) => (
-                <button
+                <div
                   key={trip.id}
-                  type="button"
-                  onClick={() => setActiveTripSlider(trip)}
                   className="group relative overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-2xs transition hover:shadow-md text-left"
                 >
+                  <button
+                    type="button"
+                    onClick={() => setActiveTripSlider(trip)}
+                    className="block w-full text-left"
+                  >
                   <div className="aspect-square relative overflow-hidden bg-zinc-100">
                     {trip.coverUrl ? (
                       <Image
@@ -419,7 +568,7 @@ export function TravelProfileView({
                     <p className="mt-1 text-xs text-zinc-500">
                       {trip.photoCount || 0} photo
                       {trip.photoCount === 1 ? "" : "s"} ·{" "}
-                      {trip.remainingCapacity || 5} slot
+                      {trip.remainingCapacity ?? 5} slot
                       {trip.remainingCapacity === 1 ? "" : "s"} left
                     </p>
                     {(trip.photos?.find((photo) => photo.location)?.location ||
@@ -437,7 +586,28 @@ export function TravelProfileView({
                       </p>
                     )}
                   </div>
-                </button>
+                  </button>
+                  {isOwner && (
+                    <div className="absolute right-3 top-3">
+                      <button
+                        type="button"
+                        aria-label={`Manage ${trip.title}`}
+                        aria-expanded={openTripMenuId === trip.id}
+                        onClick={() => setOpenTripMenuId((current) => current === trip.id ? null : trip.id)}
+                        className="flex size-8 items-center justify-center rounded-full bg-black/55 text-lg font-bold text-white shadow-sm backdrop-blur-sm transition hover:bg-black/75"
+                      >
+                        ⋯
+                      </button>
+                      {openTripMenuId === trip.id && (
+                        <div className="absolute right-0 top-10 z-20 w-40 rounded-xl border border-zinc-200 bg-white p-1.5 text-xs shadow-xl">
+                          <button type="button" onClick={() => { setOpenTripMenuId(null); setManageTripDelete(false); setTripToManage(trip); }} className="w-full rounded-lg px-3 py-2 text-left font-medium text-zinc-700 hover:bg-zinc-100">Edit trip</button>
+                          <button type="button" onClick={() => { setOpenTripMenuId(null); setManageTripDelete(false); setTripToManage(trip); }} className="w-full rounded-lg px-3 py-2 text-left font-medium text-zinc-700 hover:bg-zinc-100">Manage photos</button>
+                          <button type="button" onClick={() => { setOpenTripMenuId(null); setManageTripDelete(true); setTripToManage(trip); }} className="w-full rounded-lg px-3 py-2 text-left font-medium text-rose-600 hover:bg-rose-50">Delete trip</button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
           ) : (
@@ -465,9 +635,18 @@ export function TravelProfileView({
       {activeTab === "likes" && (
         <section className="mb-12" aria-labelledby="likes-heading">
           <h2 id="likes-heading" className="sr-only">
-            Your Likes
+            Photos that received likes
           </h2>
-          {likedPhotos.length > 0 ? (
+          {loadingLikes && !likesLoaded ? (
+            <div className="grid grid-cols-2 gap-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5" aria-label="Loading liked photos">
+              {Array.from({ length: 10 }, (_, index) => <div key={index} className="aspect-square animate-pulse bg-zinc-100" />)}
+            </div>
+          ) : likesError ? (
+            <div className="rounded-3xl border border-rose-100 bg-rose-50/50 p-8 text-center">
+              <p className="text-sm font-semibold text-zinc-900">Couldn&apos;t load liked photos</p>
+              <button type="button" onClick={() => void loadLikes()} className="mt-3 rounded-full border border-zinc-300 bg-white px-4 py-2 text-xs font-semibold text-zinc-800">Try again</button>
+            </div>
+          ) : likedPhotos.length > 0 ? (
             <>
               <div className="grid grid-cols-2 gap-1 sm:grid-cols-3 sm:gap-1 md:grid-cols-4 lg:grid-cols-5">
                 {likedPhotos.map((photo) => (
@@ -479,7 +658,7 @@ export function TravelProfileView({
                   >
                     <Image
                       src={photo.thumbnailUrl || photo.mediumUrl || photo.url}
-                      alt={photo.caption || "Liked photo"}
+                      alt={photo.caption || "Photo that received likes"}
                       fill
                       className="object-cover"
                       sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw"
@@ -488,7 +667,7 @@ export function TravelProfileView({
                 ))}
               </div>
               {likedPhotosNextCursor && (
-                <div className="mt-8 flex justify-center">
+                <div ref={likesLoadMoreRef} className="mt-8 flex justify-center">
                   <button
                     type="button"
                     onClick={handleLoadMoreLikes}
@@ -497,7 +676,7 @@ export function TravelProfileView({
                   >
                     {loadingMoreLikes
                       ? "Loading more likes..."
-                      : "Load more liked photos"}
+                      : "Load more photos with likes"}
                   </button>
                 </div>
               )}
@@ -505,10 +684,10 @@ export function TravelProfileView({
           ) : (
             <div className="rounded-3xl border border-dashed border-zinc-200 bg-zinc-50/70 p-10 text-center sm:p-14">
               <h3 className="text-base font-semibold text-zinc-900">
-                No liked photos yet
+                No likes on your photos yet
               </h3>
               <p className="mt-1 text-xs leading-relaxed text-zinc-500">
-                Photos you like will appear here.
+                Photos that people like will appear here.
               </p>
             </div>
           )}
@@ -534,6 +713,13 @@ export function TravelProfileView({
             setActiveTripSlider(null);
             setActivePhotoId(id);
           }}
+          isOwner={isOwner}
+          onManageTrip={() => {
+            setManageTripDelete(false);
+            setTripToManage(activeTripSlider);
+            setActiveTripSlider(null);
+          }}
+          shareUrl={initialProfile.visibility === "PUBLIC" && activeTripSlider.visibility === "PUBLIC" ? `${typeof window === "undefined" ? "" : window.location.origin}/travelers/${encodeURIComponent(initialProfile.publicProfileId)}?trip=${encodeURIComponent(activeTripSlider.id)}` : null}
         />
       )}
 
@@ -564,6 +750,7 @@ export function TravelProfileView({
           onPhotoUpdated={handlePhotoUpdated}
           onPhotoDeleted={handlePhotoDeleted}
           onRequestReplace={setReplacingPhoto}
+          shareUrl={initialProfile.visibility === "PUBLIC" ? `${typeof window === "undefined" ? "" : window.location.origin}/travelers/${encodeURIComponent(initialProfile.publicProfileId)}?photo=${encodeURIComponent(activePhotoId)}` : null}
         />
       )}
       {replacingPhoto && (
@@ -580,10 +767,12 @@ export function TravelProfileView({
       {isUploadModalOpen && (
         <TravelPhotoUploadModal
           existingTrips={trips}
+          initialTripId={uploadTripId}
           initialDestinationCountry={uploadDestinationCountry}
           onClose={() => {
             setIsUploadModalOpen(false);
             setUploadDestinationCountry(null);
+            setUploadTripId(null);
           }}
           onSuccess={(newPhotos) => {
             handlePhotosUploaded(newPhotos);
@@ -592,7 +781,32 @@ export function TravelProfileView({
               setStoryCountry(uploadDestinationCountry);
             }
             setUploadDestinationCountry(null);
+            setUploadTripId(null);
             setIsUploadModalOpen(false);
+          }}
+        />
+      )}
+      {tripToManage && (
+        <TravelTripManageModal
+          key={`${tripToManage.id}-${manageTripDelete ? "delete" : "edit"}`}
+          trip={tripToManage}
+          startWithDeleteConfirmation={manageTripDelete}
+          onClose={() => { setManageTripDelete(false); setTripToManage(null); }}
+          onTripUpdated={() => {
+            setManageTripDelete(false);
+            setTripToManage(null);
+            void refreshTravelCollections();
+          }}
+          onTripDeleted={() => {
+            setManageTripDelete(false);
+            setTripToManage(null);
+            void refreshTravelCollections();
+          }}
+          onAddPhotosClick={(tripId) => {
+            setManageTripDelete(false);
+            setTripToManage(null);
+            setUploadTripId(tripId);
+            setIsUploadModalOpen(true);
           }}
         />
       )}

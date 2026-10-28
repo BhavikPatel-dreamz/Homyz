@@ -11,10 +11,11 @@ const adapter = new PrismaPg({ connectionString });
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  // Update photos with 127.0.0.1 URLs to use fallback image
-  const fallbackUrl = "/images/auth-traveler-water.jpg";
-  const fallbackMedium = "/images/auth-traveler-water.jpg?w=768&q=80";
-  const fallbackThumb = "/images/auth-traveler-water.jpg?w=320&q=75";
+  const publicBase = process.env.MEDIA_PUBLIC_BASE_URL?.trim().replace(/\/$/, "");
+  const apply = process.argv.includes("--apply");
+  if (!publicBase || /^https?:\/\/(127\.0\.0\.1|localhost)(?::\d+)?$/i.test(publicBase)) {
+    throw new Error("Set MEDIA_PUBLIC_BASE_URL to the browser-reachable media origin before repairing URLs.");
+  }
   
   const photos = await prisma.travelPhoto.findMany({
     where: {
@@ -22,18 +23,17 @@ async function main() {
     }
   });
   
-  console.log(`Found ${photos.length} photos with broken URLs`);
+  console.log(`Found ${photos.length} travel photos using an internal media URL`);
   
   for (const photo of photos) {
-    await prisma.travelPhoto.update({
-      where: { id: photo.id },
-      data: {
-        url: fallbackUrl,
-        mediumUrl: fallbackMedium,
-        thumbnailUrl: fallbackThumb,
-      }
-    });
-    console.log(`Fixed photo ${photo.id}`);
+    const repairedUrl = photo.url.replace(/^http:\/\/127\.0\.0\.1:4001/i, publicBase);
+    console.log(`${apply ? "Repairing" : "Would repair"} photo ${photo.id}: ${repairedUrl}`);
+    if (apply) {
+      await prisma.travelPhoto.update({
+        where: { id: photo.id },
+        data: { url: repairedUrl, mediumUrl: repairedUrl, thumbnailUrl: repairedUrl },
+      });
+    }
   }
   
   // Also fix legacy tripPhoto records
@@ -43,19 +43,17 @@ async function main() {
     }
   });
   
-  console.log(`Found ${legacyPhotos.length} legacy photos with broken URLs`);
+  console.log(`Found ${legacyPhotos.length} legacy photos using an internal media URL`);
   
   for (const photo of legacyPhotos) {
-    await prisma.tripPhoto.update({
-      where: { id: photo.id },
-      data: {
-        url: fallbackUrl,
-      }
-    });
-    console.log(`Fixed legacy photo ${photo.id}`);
+    const repairedUrl = photo.url.replace(/^http:\/\/127\.0\.0\.1:4001/i, publicBase);
+    console.log(`${apply ? "Repairing" : "Would repair"} legacy photo ${photo.id}: ${repairedUrl}`);
+    if (apply) {
+      await prisma.tripPhoto.update({ where: { id: photo.id }, data: { url: repairedUrl } });
+    }
   }
   
-  console.log('\nAll photo URLs fixed!');
+  console.log(apply ? "\nMedia URL repair complete." : "\nAudit complete. Re-run with --apply after verifying the output.");
 }
 
 main().catch(console.error).finally(() => prisma.$disconnect());

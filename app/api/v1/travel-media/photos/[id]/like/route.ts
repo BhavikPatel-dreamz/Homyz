@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getAuthContext } from "@/lib/auth/context";
+import { prisma } from "@/lib/db/prisma";
 import { togglePhotoLike, getPhotoLikeStatus } from "@/services/travel-photo.service";
+import { getTravelProfileStats } from "@/services/travel-profile.service";
 import { AppError } from "@/lib/api/errors";
 
 export async function GET(
@@ -33,7 +35,19 @@ export async function POST(
 
     const { id } = await ctx.params;
     const result = await togglePhotoLike(actor.id, id);
-    return NextResponse.json({ success: true, ...result });
+    const photo = await prisma.travelPhoto.findUnique({
+      where: { id },
+      select: { userId: true },
+    });
+    const profileStats = photo
+      ? await getTravelProfileStats(photo.userId)
+      : null;
+    return NextResponse.json({
+      success: true,
+      liked: result.liked,
+      count: result.count,
+      profileLikes: profileStats?.likes ?? null,
+    });
   } catch (err: unknown) {
     if (err instanceof AppError) {
       return NextResponse.json({ error: err.message }, { status: err.status });
@@ -42,4 +56,3 @@ export async function POST(
     return NextResponse.json({ error: "Failed to toggle photo like" }, { status: 500 });
   }
 }
-

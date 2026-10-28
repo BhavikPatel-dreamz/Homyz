@@ -51,6 +51,8 @@ export async function PATCH(
     const updated = await updateTravelPhotoMetadata(actor.id, id, {
       caption: body.caption,
       location: body.location,
+      locationData: body.locationData,
+      taggedUserIds: body.taggedUserIds,
       tripId: body.tripId,
       order: body.order,
     });

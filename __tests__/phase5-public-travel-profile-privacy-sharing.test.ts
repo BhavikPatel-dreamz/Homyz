@@ -10,6 +10,7 @@ import {
 } from "@/services/travel-privacy.service";
 import {
   getCanonicalProfileUrl,
+  normalizePublicProfileId,
 } from "@/services/public-travel-profile.service";
 import { normalizeHandle, validateHandle } from "@/services/travel-profile.service";
 import { TravelProfileVisibility, TravelFollowStatus } from "@/generated/prisma/client";
@@ -20,7 +21,7 @@ const read = (file: string) => fs.readFileSync(path.join(process.cwd(), file), "
 // 1. UNIQUE HANDLE NORMALIZATION & CANONICAL URLS
 // ============================================================================
 
-test("Handle Normalization: Enforces lowercase and canonical URL generation", () => {
+test("Handle display names and canonical public IDs are independently stable", () => {
   assert.equal(normalizeHandle("  @John-Traveler  "), "john-traveler");
   assert.equal(normalizeHandle("SARAH_VOYAGER"), "sarah_voyager");
   assert.equal(normalizeHandle("@nomad.lens"), "nomad.lens");
@@ -32,8 +33,11 @@ test("Handle Normalization: Enforces lowercase and canonical URL generation", ()
   assert.throws(() => validateHandle("user with spaces!"), /lowercase letters, numbers/);
 
   // Canonical profile URL
-  const canonical = getCanonicalProfileUrl("john-traveler");
-  assert.match(canonical, /\/travelers\/john-traveler$/);
+  const publicProfileId = "trv_a8f29b7c1234abcd";
+  assert.equal(normalizePublicProfileId(publicProfileId.toUpperCase()), publicProfileId);
+  assert.equal(normalizePublicProfileId("traveler"), null);
+  const canonical = getCanonicalProfileUrl(publicProfileId);
+  assert.match(canonical, /\/travelers\/trv_a8f29b7c1234abcd$/);
 });
 
 // ============================================================================

@@ -8,10 +8,10 @@ import {
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ userId: string }> },
 ) {
   try {
-    const { id: targetUserId } = await params;
+    const { userId: targetUserId } = await params;
     const actor = await getAuthContext(req);
     const status = await getProfileLikeStatus(actor?.id, targetUserId);
 
@@ -24,10 +24,10 @@ export async function GET(
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ userId: string }> },
 ) {
   try {
-    const { id: targetUserId } = await params;
+    const { userId: targetUserId } = await params;
     const actor = await getAuthContext(req);
     if (!actor) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

@@ -20,6 +20,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       photos: result.items,
       nextCursor: result.nextCursor,
+      hasMore: Boolean(result.nextCursor),
       totalCount: result.totalCount,
     });
   } catch (err: unknown) {
@@ -30,4 +31,3 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Failed to retrieve liked photos." }, { status: 500 });
   }
 }
-
