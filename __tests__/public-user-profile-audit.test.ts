@@ -44,6 +44,7 @@ describe("Public user profile safeguards", () => {
     assert.match(view, /host\.publicTravelProfileId/);
     assert.match(view, /href=\{`\/travelers\/\$\{encodeURIComponent\(host\.publicTravelProfileId\)\}`\}/);
     assert.match(view, /guestReviews\.length > 0/);
+    assert.match(view, /has not added any public profile details yet/);
     assert.match(card, /roleLabel = "Host"/);
     assert.match(card, /averageRating === null \? "—"/);
   });

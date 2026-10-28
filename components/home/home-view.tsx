@@ -178,6 +178,12 @@ export function HomeView({
     checkIn: string;
     checkOut: string;
     guests: string;
+    datePreferences?: {
+      mode: "dates" | "months" | "flexible";
+      tolerance: number;
+      stay: "Weekend" | "Week" | "Month";
+      months: string[];
+    };
     guestDetails?: { adults: number; children: number; infants: number; pets: number };
     lat?: number;
     lng?: number;
@@ -216,9 +222,16 @@ export function HomeView({
     if (params.checkOut) {
       sp.set("checkOut", params.checkOut);
     }
+    if (params.datePreferences && params.datePreferences.mode !== "dates") {
+      sp.set("dateMode", params.datePreferences.mode);
+      sp.set("stay", params.datePreferences.stay.toLowerCase());
+      if (params.datePreferences.months.length) sp.set("months", params.datePreferences.months.join(","));
+    } else if (params.datePreferences?.tolerance) {
+      sp.set("dateFlex", String(params.datePreferences.tolerance));
+    }
 
     const normalizedGuestCount = Math.max(
-      1,
+      0,
       params.guestDetails
         ? (params.guestDetails.adults || 0) + (params.guestDetails.children || 0)
         : parseInt(params.guests || "0", 10) || 0,
@@ -227,16 +240,16 @@ export function HomeView({
     if (params.guestDetails) {
       const adults = params.guestDetails.adults > 0 ? params.guestDetails.adults : normalizedGuestCount > 0 ? 1 : 0;
       const children = params.guestDetails.children > 0 ? params.guestDetails.children : 0;
-      sp.set("guests", String(normalizedGuestCount));
+      if (normalizedGuestCount > 0) sp.set("guests", String(normalizedGuestCount));
       if (adults > 0) sp.set("adults", String(adults));
       if (children > 0) sp.set("children", String(children));
       if (params.guestDetails.infants > 0) sp.set("infants", String(params.guestDetails.infants));
       if (params.guestDetails.pets > 0) sp.set("pets", String(params.guestDetails.pets));
     } else if (params.guests) {
-      const n = Math.max(1, parseInt(params.guests, 10) || 1);
-      sp.set("guests", String(n));
+      const n = Math.max(0, parseInt(params.guests, 10) || 0);
+      if (n > 0) sp.set("guests", String(n));
     } else {
-      sp.set("guests", "1");
+      sp.delete("guests");
     }
 
     // Persist normalized search context (both localStorage and 30-day cookie for SSR)

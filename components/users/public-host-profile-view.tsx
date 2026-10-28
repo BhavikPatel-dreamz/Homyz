@@ -63,7 +63,6 @@ export function PublicHostProfileView({ host, stats, reviews, guestStats, guestR
   const guestsShouldKnow = publicText(prompts, "guestsShouldKnow");
   const perfectGuest = publicText(prompts, "perfectGuest");
   const hasPublicDetails = Boolean(hostBio || bioTitle || location || work || education || funFact || hobbies || pets || decadeBorn || uselessSkill || favoriteSong || obsessedWith || homeUnique || guestsShouldKnow || perfectGuest || languages.length || interests.length);
-  const hasOverviewDetails = hasPublicDetails || Boolean(host.publicTravelProfileId);
   const shownReviewStats = host.isHost ? stats : guestStats;
 
   const nowYear = new Date(mountedTime).getFullYear();
@@ -102,7 +101,7 @@ export function PublicHostProfileView({ host, stats, reviews, guestStats, guestR
 
       {/* Public identity & optional public profile details */}
       <section
-        className={`grid gap-8 border-b border-zinc-200/80 py-7.5 sm:py-12 ${hasOverviewDetails ? "md:grid-cols-[376px_minmax(0,1fr)] md:gap-16" : "max-w-[376px]"}`}
+        className="grid gap-8 border-b border-zinc-200/80 py-7.5 sm:py-12 md:grid-cols-[376px_minmax(0,1fr)] md:gap-16"
         aria-label="Profile overview"
       >
         <PublicHostIdentityCard
@@ -115,7 +114,7 @@ export function PublicHostProfileView({ host, stats, reviews, guestStats, guestR
           roleLabel={host.isHost ? "Host" : "Guest"}
           tenureLabel={host.isHost ? "time hosting" : "on Homyz"}
         />
-        {hasOverviewDetails && <div className="min-w-0 pt-1">
+        <div className="min-w-0 pt-1">
           {hasPublicDetails && <>
           <h2 id="about-host-heading" className="text-[20px] font-normal text-[#1f1f1f]">
             {t("public_host_about_heading", "About {name}").replace("{name}", hostName)}
@@ -157,6 +156,20 @@ export function PublicHostProfileView({ host, stats, reviews, guestStats, guestR
             </div>
           )}
           </>}
+          {!hasPublicDetails && (
+            <div className="flex min-h-[180px] max-w-xl flex-col justify-center rounded-2xl border border-dashed border-zinc-200 bg-zinc-50/70 px-6 py-7">
+              <span aria-hidden="true" className="flex size-10 items-center justify-center rounded-full bg-amber-100 text-amber-900">
+                <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
+                  <circle cx="12" cy="8" r="3.25" />
+                  <path d="M5.5 20c.7-3.25 3.18-5 6.5-5s5.8 1.75 6.5 5" strokeLinecap="round" />
+                </svg>
+              </span>
+              <h2 className="mt-4 text-lg font-medium text-[#1f1f1f]">Public profile</h2>
+              <p className="mt-1 max-w-md text-sm leading-6 text-[#727272]">
+                {hostName} has not added any public profile details yet.
+              </p>
+            </div>
+          )}
           {host.publicTravelProfileId && (
             <Link
               href={`/travelers/${encodeURIComponent(host.publicTravelProfileId)}`}
@@ -165,7 +178,7 @@ export function PublicHostProfileView({ host, stats, reviews, guestStats, guestR
               View travel profile
             </Link>
           )}
-        </div>}
+        </div>
       </section>
 
       {canReportHost && (
@@ -178,7 +191,7 @@ export function PublicHostProfileView({ host, stats, reviews, guestStats, guestR
             <svg className="size-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 3l1.664 9.526A2 2 0 006.644 14H17m0 0l1 5H6M17 14l1-7H7.5" />
             </svg>
-            Report this host
+            Report this profile
           </button>
         </div>
       )}
