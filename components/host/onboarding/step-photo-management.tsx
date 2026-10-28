@@ -128,7 +128,7 @@ export function StepPhotoManagement({
 
   const uploadFile = async (file: File): Promise<string> => {
     if (!ACCEPTED_IMAGE_TYPES.has(file.type) || file.size <= 0 || file.size > MAX_FILE_SIZE) {
-      throw new Error("Use JPEG, PNG, WebP, or AVIF photos up to 10 MB each.");
+      throw new Error(t("wizard_photos_err_invalid", "Use JPEG, PNG, WebP, or AVIF photos up to 10 MB each."));
     }
     const formData = new FormData();
     formData.append("file", file);
@@ -142,7 +142,7 @@ export function StepPhotoManagement({
       const message =
         result && typeof result === "object" && "error" in result
           ? String((result as { error?: string }).error)
-          : "Photo upload failed.";
+          : t("wizard_photos_err_upload", "Photo upload failed.");
       throw new Error(message);
     }
     return String((result as { url: string }).url);
@@ -159,7 +159,7 @@ export function StepPhotoManagement({
       const uploadedUrls = await Promise.all(newFiles.map(uploadFile));
       onUpdatePhotos([...photos, ...uploadedUrls]);
     } catch (err: unknown) {
-      setUploadError(err instanceof Error ? err.message : "Failed to upload photo(s).");
+      setUploadError(err instanceof Error ? err.message : t("wizard_photos_err_upload", "Failed to upload photo(s)."));
     } finally {
       setIsUploading(false);
     }
@@ -180,7 +180,7 @@ export function StepPhotoManagement({
       updated[targetIdx] = persistentUrl;
       onUpdatePhotos(updated);
     } catch (err: unknown) {
-      setUploadError(err instanceof Error ? err.message : "Failed to replace photo.");
+      setUploadError(err instanceof Error ? err.message : t("wizard_photos_err_replace", "Failed to replace photo."));
     } finally {
       setIsUploading(false);
     }
@@ -217,7 +217,7 @@ export function StepPhotoManagement({
         const uploadedUrls = await Promise.all(droppedFiles.map(uploadFile));
         onUpdatePhotos([...photos, ...uploadedUrls]);
       } catch (err: unknown) {
-        setUploadError(err instanceof Error ? err.message : "Failed to upload dropped photo(s).");
+        setUploadError(err instanceof Error ? err.message : t("wizard_photos_err_upload", "Failed to upload dropped photo(s)."));
       } finally {
         setIsUploading(false);
       }

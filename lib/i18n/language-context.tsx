@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
 import { NextIntlClientProvider, createTranslator } from "next-intl";
 
 import enMessages from "@/messages/en.json";
@@ -36,16 +36,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState<SupportedLanguage>("en");
   const [selectedLangLabel, setSelectedLangLabel] = useState<string>("English (US)");
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("homyz_selected_language");
-      if (saved) {
-        applyLanguage(saved);
-      }
-    }
-  }, []);
-
-  const applyLanguage = (langInput: SupportedLanguage | string) => {
+  const applyLanguage = useCallback((langInput: SupportedLanguage | string) => {
     let code: SupportedLanguage = "en";
     let label = "English (US)";
 
@@ -77,9 +68,21 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     if (typeof window !== "undefined") {
       localStorage.setItem("homyz_selected_language", label);
       document.documentElement.lang = code;
-      document.documentElement.dir = code === "ar" ? "rtl" : "ltr";
+      // Keep website layout LTR to prevent full site flipping on RTL languages
+      document.documentElement.dir = "ltr";
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      document.documentElement.dir = "ltr";
+      const saved = localStorage.getItem("homyz_selected_language");
+      if (saved) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        applyLanguage(saved);
+      }
+    }
+  }, [applyLanguage]);
 
   const messages = MESSAGES[language] || MESSAGES.en;
   const translator = createTranslator({
@@ -95,7 +98,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   ): string => {
     try {
       const res = typeof valuesOrFallback === "object" && valuesOrFallback !== null
-        ? translator(key, valuesOrFallback as any)
+        ? translator(key, valuesOrFallback as Parameters<typeof translator>[1])
         : translator(key);
       if (res && res !== key) {
         return res;
@@ -115,7 +118,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     return text;
   };
 
-  const dir = language === "ar" ? "rtl" : "ltr";
+  const dir = "ltr";
 
   return (
     <NextIntlClientProvider locale={language} messages={messages}>

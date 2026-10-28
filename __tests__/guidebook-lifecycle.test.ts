@@ -208,6 +208,8 @@ async function runGuidebookLifecycleTests() {
     assert(content.includes("Sightseeing"), "Recommendation forms must show the Sightseeing category");
     assert(content.includes("Choose listings"), "GuidebooksManager must support listing associations");
     assert(content.includes("Edit cover"), "GuidebooksManager must support cover editing");
+    assert(content.includes('t("host_guidebook_edit_action"'), "GuidebooksManager must translate the Edit button");
+    assert(content.includes('t("host_guidebook_delete_btn"'), "GuidebooksManager must translate the Delete button");
   });
 
   test("GuestGuidebookClient exists and contains zero host edit controls", () => {

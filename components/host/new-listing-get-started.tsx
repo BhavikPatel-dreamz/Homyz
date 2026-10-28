@@ -420,7 +420,7 @@ export function NewListingGetStarted({
   ): Promise<string | null> => {
     const validationErrors = validateCurrentStep(overrides?.photos);
     if (validationErrors) {
-      setWizardError({ title: "Complete this step", messages: validationErrors });
+      setWizardError({ title: t("wizard_error_complete_step", "Complete this step"), messages: validationErrors });
       return null;
     }
 
@@ -507,7 +507,10 @@ export function NewListingGetStarted({
   const handleFinalLicenseSubmission = async (method: "automatic" | "manual") => {
     const activeDraftId = draftIdRef.current || draftId;
     if (!activeDraftId) {
-      setWizardError({ title: "Save your listing first", messages: ["Your listing draft is not available yet. Please try again."] });
+      setWizardError({
+        title: t("wizard_error_save_first_title", "Save your listing first"),
+        messages: [t("wizard_error_save_first_desc", "Your listing draft is not available yet. Please try again.")],
+      });
       return;
     }
     isFinalizingRef.current = true;
@@ -515,13 +518,17 @@ export function NewListingGetStarted({
     try {
       await saveQueueRef.current.catch(() => undefined);
       const result = await submitListingFinalApprovalAction(activeDraftId, method);
-      if (!result.ok) throw new Error(result.error || "We couldn't submit your listing.");
-      toast.success(method === "automatic" ? "Listing approved and published." : "Listing submitted for review.");
+      if (!result.ok) throw new Error(result.error || t("wizard_error_submit_title", "We couldn't submit your listing."));
+      toast.success(
+        method === "automatic"
+          ? t("wizard_toast_approved_published", "Listing approved and published.")
+          : t("wizard_toast_submitted_review", "Listing submitted for review.")
+      );
       router.push("/host/listings");
     } catch (error: unknown) {
       setWizardError({
-        title: "We couldn't submit your listing",
-        messages: [error instanceof Error ? error.message : "Please try again."],
+        title: t("wizard_error_submit_title", "We couldn't submit your listing"),
+        messages: [error instanceof Error ? error.message : t("wizard_error_retry", "Please try again.")],
       });
     } finally {
       isFinalizingRef.current = false;
@@ -678,15 +685,15 @@ export function NewListingGetStarted({
       } catch (error: unknown) {
         if (error instanceof DOMException && error.name === "AbortError") return;
         setWizardError({
-          title: "We couldn't load your draft",
-          messages: [error instanceof Error ? error.message : "Please try again."],
+          title: t("wizard_error_load_draft_title", "We couldn't load your draft"),
+          messages: [error instanceof Error ? error.message : t("wizard_error_retry", "Please try again.")],
         });
       }
     };
 
     void loadDraft();
     return () => controller.abort();
-  }, [hostingType, initialAddressView, initialDraftId]);
+  }, [hostingType, initialAddressView, initialDraftId, t]);
 
   // Every editable value on an existing draft is write-through autosaved. The
   // first POST is deliberately reserved for the explicit Next action above so
@@ -709,14 +716,14 @@ export function NewListingGetStarted({
         return;
       } catch (err) {
         setWizardError({
-          title: "Your changes weren't saved",
-          messages: [err instanceof Error ? err.message : "Please check your connection and try again."],
+          title: t("wizard_error_changes_not_saved", "Your changes weren't saved"),
+          messages: [err instanceof Error ? err.message : t("wizard_error_check_connection", "Please check your connection and try again.")],
         });
       }
     }, 800);
 
     return () => window.clearTimeout(timer);
-  }, [buildDraftPayload, draftId, isSavingStep, queueDraftPatch, selectedCategory, step]);
+  }, [buildDraftPayload, draftId, isSavingStep, queueDraftPatch, selectedCategory, step, t]);
 
   const categories: PropertyCategory[] = [
     {
@@ -883,8 +890,8 @@ export function NewListingGetStarted({
   const handleToggleHighlight = (id: string) => {
     if (!selectedHighlights.includes(id) && selectedHighlights.length >= 3) {
       setWizardError({
-        title: "Maximum highlights selected",
-        messages: ["Choose up to three highlights. Remove one before adding another."],
+        title: t("wizard_error_max_highlights_title", "Maximum highlights selected"),
+        messages: [t("wizard_error_max_highlights_desc", "Choose up to three highlights. Remove one before adding another.")],
       });
       return;
     }
@@ -1005,11 +1012,11 @@ export function NewListingGetStarted({
           onBack={() => goToStep(4)}
           onNext={() => {
             const missing: string[] = [];
-            if (!streetAddress.trim()) missing.push("Enter a street address.");
-            if (!city.trim()) missing.push("Enter a city or town.");
-            if (!country.trim()) missing.push("Choose a country or region.");
+            if (!streetAddress.trim()) missing.push(t("wizard_req_street_address", "Enter a street address."));
+            if (!city.trim()) missing.push(t("wizard_req_city", "Enter a city or town."));
+            if (!country.trim()) missing.push(t("wizard_req_country", "Choose a country or region."));
             if (missing.length > 0) {
-              setWizardError({ title: "Complete your address", messages: missing });
+              setWizardError({ title: t("wizard_error_complete_address", "Complete your address"), messages: missing });
               return;
             }
             setWizardError(null);

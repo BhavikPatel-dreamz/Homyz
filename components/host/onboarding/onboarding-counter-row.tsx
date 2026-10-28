@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 interface OnboardingCounterRowProps {
   label: string;
@@ -18,6 +19,8 @@ export function OnboardingCounterRow({
   onChange,
   valueClassName = "font-normal",
 }: OnboardingCounterRowProps) {
+  const { t } = useLanguage();
+
   return (
     <div className="flex items-center justify-between sm:py-4.5 py-4">
       <span className="text-lg font-medium text-[#1F1F1F]">{label}</span>
@@ -26,9 +29,10 @@ export function OnboardingCounterRow({
           type="button"
           onClick={() => onChange(Math.max(minimum, value - 1))}
           disabled={value <= minimum}
-          className="w-8 h-8 rounded-full border border-[#727272] flex items-center justify-center text-zinc-700 hover:border-zinc-900 hover:text-[#1F1F1F] disabled:opacity-30 disabled:hover:border-zinc-300 transition-colors text-base font-medium cursor-pointer"
+          aria-label={t("host_decrease_field_aria", { label }, `Decrease ${label}`)}
+          className="w-8 h-8 rounded-full border border-zinc-300 flex items-center justify-center text-zinc-700 hover:border-zinc-900 hover:text-[#1F1F1F] disabled:opacity-30 disabled:hover:border-zinc-300 transition-colors text-base font-medium cursor-pointer"
         >
-          <Image src="/images/icons/minus-icon.svg" alt={`Decrease ${label}`} width={14} height={14} className="size-3.5 object-contain" />
+          <Image src="/images/icons/minus-icon.svg" alt="" aria-hidden="true" width={14} height={14} className="size-3.5 object-contain" />
         </button>
         <span className={`w-5 text-center text-lg ${valueClassName} text-[#1F1F1F] select-none`}>
           {value}
