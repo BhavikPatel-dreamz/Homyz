@@ -30,7 +30,7 @@ All error responses return standard JSON:
 
 ---
 
-## 2. Search & Ranking Endpoints
+## 2. Listing Sync & Management Endpoints
 
 ### 2.1 Sync Listing
 * **Path**: `POST /listings/sync`
@@ -98,7 +98,24 @@ All error responses return standard JSON:
 
 ---
 
-### 2.2 Search Listings
+### 2.2 Delete Listing
+* **Path**: `DELETE /listings/{listing_id}`
+* **Description**: Unindexes and deletes a listing from the Qdrant vector collection when unpublished or deleted on the main platform.
+
+#### Response (`200 OK`)
+```json
+{
+  "status": "deleted",
+  "listing_id": "string",
+  "deleted": true
+}
+```
+
+---
+
+## 3. Search & Discovery Endpoints
+
+### 3.1 Search Listings
 * **Path**: `POST /search`
 * **Description**: Executes semantic vector search with geo-radius, price filtering, and user behavior personalization.
 
@@ -141,7 +158,9 @@ All error responses return standard JSON:
 
 ---
 
-## 3. Photo Categorization & Quality Endpoints
+## 4. Photo Categorization & Quality Endpoints
+
+### 4.1 Analyze Listing Photos
 
 ### 3.1 Analyze Listing Photos
 * **Path**: `POST /photos/analyze`
@@ -212,9 +231,9 @@ All error responses return standard JSON:
 
 ---
 
-## 4. Review Filtering & Summarization Endpoints
+## 5. Review Filtering & Summarization Endpoints
 
-### 4.1 Moderate Review
+### 5.1 Moderate Review
 * **Path**: `POST /reviews/moderate`
 * **Description**: Scans review for abuse, hate speech, contact info solicitation, and extortion.
 
@@ -249,7 +268,7 @@ All error responses return standard JSON:
 
 ---
 
-### 4.2 Summarize Listing Reviews
+### 5.2 Summarize Listing Reviews
 * **Path**: `POST /reviews/summarize`
 * **Description**: Extracts 1–10 aspect ratings and generates a 3-sentence summary for a listing.
 
@@ -291,9 +310,9 @@ All error responses return standard JSON:
 
 ---
 
-## 5. Guest Support Chatbot Endpoint
+## 6. Guest Support Chatbot Endpoint
 
-### 5.1 Streaming Support Chatbot
+### 6.1 Streaming Support Chatbot
 * **Path**: `POST /chat`
 * **Description**: Support assistant for guests. If `listing_id` is provided, pulls property house rules from vector space; if omitted, answers general platform questions. Stateless: caller passes conversational history.
 * **Headers Required**:
@@ -329,9 +348,9 @@ data: {"done": true, "suggested_quick_replies": ["Where is the nearest grocery s
 
 ---
 
-## 6. Fake Listing & Risk Audit Endpoints
+## 7. Fake Listing & Risk Audit Endpoints
 
-### 6.1 Audit Listing for Fraud
+### 7.1 Audit Listing for Fraud
 * **Path**: `POST /risk/audit-listing`
 * **Description**: Scans listing pricing against neighborhood median and checks text for scam patterns.
 
