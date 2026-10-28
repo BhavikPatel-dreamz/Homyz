@@ -4,10 +4,10 @@ import { HostDisputeDetailsSkeleton } from "@/components/host/host-dispute-detai
 
 export default function HostDisputeDetailsLoading() {
   return (
-    <div className="flex min-h-screen flex-col bg-white pb-[calc(110px+env(safe-area-inset-bottom))] text-[#1F1F1F] sm:pb-0">
+    <div className="flex min-h-screen flex-col bg-white pb-[calc(110px+env(safe-area-inset-bottom))] text-[#1F1F1F] sm:pb-12">
       <HostHeader />
-      <main className="flex-1 py-8 sm:py-10" aria-busy="true">
-        <Container className="px-4 sm:px-6">
+      <main className="flex-1 py-6 sm:py-8 lg:py-10" aria-busy="true">
+        <Container className="px-4 sm:px-6 lg:px-8 max-w-[1440px]">
           <HostDisputeDetailsSkeleton />
         </Container>
       </main>
