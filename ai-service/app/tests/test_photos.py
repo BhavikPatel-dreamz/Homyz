@@ -136,6 +136,8 @@ async def test_duplicate_photo_short_circuits_llm() -> None:
         # Photo 2 was caught locally as duplicate of photo 1
         assert p2.flags.is_duplicate is True
         assert p2.flags.duplicate_of == "https://test.com/photo1.jpg"
+        assert p2.room_type is None
+        assert p2.scores is None
         assert any("duplicate" in tip.lower() for tip in p2.feedback_tips)
 
         # Vision LLM was called only once (for photo 1), saving $0 on photo 2
@@ -209,8 +211,12 @@ async def test_non_property_document_detection() -> None:
             result = response.photos[0]
             assert result.flags.is_non_property is True
             assert result.flags.poor_quality is True
-            assert result.room_type == "Other"
-            assert any("genuine accommodation" in tip.lower() for tip in result.feedback_tips)
+            assert result.room_type is None
+            assert result.scores is None
+            assert result.is_recommended_cover is False
+            assert response.recommended_cover_photo is None
+            assert "Other" not in response.room_assignments
+            assert any("accommodation" in tip.lower() for tip in result.feedback_tips)
 
 
 @pytest.mark.asyncio
@@ -288,14 +294,17 @@ async def test_download_failure_isolation() -> None:
         good_p = response.photos[1]
 
         assert bad_p.flags.poor_quality is True
+        assert bad_p.room_type is None
+        assert bad_p.scores is None
         assert any("404" in tip for tip in bad_p.feedback_tips)
         assert good_p.room_type == "Kitchen"
+        assert good_p.scores is not None
         assert response.recommended_cover_photo == "https://test.com/good.jpg"
 
 
 @pytest.mark.asyncio
-async def test_fallback_cover_selection_when_all_fail() -> None:
-    """Validates graceful cover photo fallback when every photo in the batch has defects."""
+async def test_no_cover_photo_when_all_fail_quality() -> None:
+    """Validates that recommended_cover_photo is None when all photos fail quality standards (cover photo is not mandatory)."""
     service = PhotoService()
 
     # Create two distinct blurry images (low variance < 1.0, but distinct pHash distance > 30)
@@ -336,6 +345,122 @@ async def test_fallback_cover_selection_when_all_fail() -> None:
             )
         )
 
-        # Both photos are blurry and poor quality, but recommended_cover_photo must guarantee population
-        assert response.recommended_cover_photo is not None
-        assert response.recommended_cover_photo == "https://test.com/p2.jpg"
+        # Both photos are blurry and poor quality; cover photo is not mandatory, so it is None
+        assert response.recommended_cover_photo is None
+        assert all(p.is_recommended_cover is False for p in response.photos)
+
+
+@pytest.mark.asyncio
+async def test_pitch_black_alone_returns_none_cover() -> None:
+    """Validates that a single pitch-black photo is rejected from being cover photo."""
+    service = PhotoService()
+    black_bytes = _create_synthetic_image(color=(0, 0, 0), pattern="blurry")
+
+    with patch.object(service, "_download_single_image", return_value=("https://test.com/black.jpg", black_bytes, None)):
+        response = await service.analyze_photos(
+            PhotoAnalysisRequest(listing_id="prop_black", photos=["https://test.com/black.jpg"])
+        )
+        assert response.recommended_cover_photo is None
+        assert response.photos[0].is_recommended_cover is False
+        assert response.photos[0].room_type is None
+        assert response.photos[0].scores is None
+
+
+@pytest.mark.asyncio
+async def test_corrupt_alone_returns_none_cover() -> None:
+    """Validates that a corrupt or 404 image URL is rejected from being cover photo."""
+    service = PhotoService()
+
+    with patch.object(service, "_download_single_image", return_value=("https://test.com/404.jpg", None, "HTTP 404")):
+        response = await service.analyze_photos(
+            PhotoAnalysisRequest(listing_id="prop_corrupt", photos=["https://test.com/404.jpg"])
+        )
+        assert response.recommended_cover_photo is None
+        assert response.photos[0].is_recommended_cover is False
+        assert response.photos[0].flags.is_non_property is True
+        assert response.photos[0].room_type is None
+        assert response.photos[0].scores is None
+
+
+@pytest.mark.asyncio
+async def test_bathroom_and_non_property_yield_none_cover() -> None:
+    """Validates that when only bathroom and non-property photos exist, no cover photo is forced."""
+    service = PhotoService()
+    img_bytes_1 = _create_synthetic_image(pattern="sharp")
+    img_bytes_2 = _create_synthetic_image(pattern="sharp_lines")
+
+    mock_bathroom = PhotoAIAnalysis(
+        room_type="Bathroom",
+        is_relevant_property_photo=True,
+        lighting_score=8,
+        composition_score=8,
+        feedback_tips=[],
+    )
+    mock_teddy = PhotoAIAnalysis(
+        room_type="Other",
+        is_relevant_property_photo=False,
+        lighting_score=4,
+        composition_score=4,
+        feedback_tips=[],
+    )
+
+    with patch.object(service, "_download_single_image", side_effect=lambda c, u, s: (
+        (u, img_bytes_1, None) if "bathroom" in u else (u, img_bytes_2, None)
+    )), patch.object(service, "_evaluate_vision", side_effect=[mock_bathroom, mock_teddy]):
+        response = await service.analyze_photos(
+            PhotoAnalysisRequest(
+                listing_id="prop_mix",
+                photos=["https://test.com/bathroom.jpg", "https://test.com/teddy.jpg"],
+            )
+        )
+        # Neither bathroom nor teddy bear qualifies as cover photo
+        assert response.recommended_cover_photo is None
+        assert response.photos[0].is_recommended_cover is False
+        assert response.photos[1].is_recommended_cover is False
+        assert response.photos[1].room_type is None
+        assert response.photos[1].scores is None
+        assert "Other" not in response.room_assignments
+
+
+@pytest.mark.asyncio
+async def test_bedroom_chosen_over_bathroom_for_cover() -> None:
+    """Validates that a legitimate bedroom photo is preferred over a bathroom photo for cover."""
+    service = PhotoService()
+    img_bytes_1 = _create_synthetic_image(pattern="sharp")
+    img_bytes_2 = _create_synthetic_image(pattern="sharp_lines")
+
+    mock_bathroom = PhotoAIAnalysis(
+        room_type="Bathroom",
+        is_relevant_property_photo=True,
+        lighting_score=8,
+        composition_score=8,
+        feedback_tips=[],
+    )
+    mock_bedroom = PhotoAIAnalysis(
+        room_type="Bedroom",
+        is_relevant_property_photo=True,
+        lighting_score=8,
+        composition_score=8,
+        feedback_tips=[],
+    )
+
+    with patch.object(service, "_download_single_image", side_effect=lambda c, u, s: (
+        (u, img_bytes_1, None) if "bathroom" in u else (u, img_bytes_2, None)
+    )), patch.object(service, "_evaluate_vision", side_effect=[mock_bathroom, mock_bedroom]):
+        response = await service.analyze_photos(
+            PhotoAnalysisRequest(
+                listing_id="prop_bed_bath",
+                photos=["https://test.com/bathroom.jpg", "https://test.com/bedroom.jpg"],
+            )
+        )
+        assert response.recommended_cover_photo == "https://test.com/bedroom.jpg"
+        assert response.photos[0].is_recommended_cover is False
+        assert response.photos[1].is_recommended_cover is True
+
+
+def test_extreme_aspect_ratio_warning() -> None:
+    """Validates warning tip generated for extreme panoramic or vertical strips."""
+    panoramic_bytes = _create_synthetic_image(width=1200, height=400, pattern="sharp")
+    res = _compute_local_image_metrics("https://test.com/pano.jpg", panoramic_bytes)
+    assert any("Extreme aspect ratio" in tip for tip in res.feedback_tips)
+

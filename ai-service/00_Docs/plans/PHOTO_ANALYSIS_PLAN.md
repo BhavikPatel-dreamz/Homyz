@@ -201,14 +201,14 @@ When the client approves the preview and provides their paid OpenAI API key:
 
 ## 5. Smart Cover Photo Selection Hierarchy
 
-The marketplace cover image must be the most visually appealing, high-impact photo:
-1. **Rule 1 (Strict Exclusion)**: Never select photos flagged as `is_blurry = True`, `is_duplicate = True`, `is_non_property = True`, or `poor_quality = True`.
-2. **Rule 2 (Anti-Bathroom Rule)**: Bathrooms are explicitly deprioritized from being cover images (guests dislike seeing a bathroom/toilet as the primary search result thumbnail).
+The marketplace cover image is an AI recommendation and is **not mandatory** (returns `None` / `null` if no uploaded photo qualifies):
+1. **Rule 1 (Strict Exclusion)**: Never select photos flagged as `is_blurry = True`, `is_duplicate = True`, `is_non_property = True`, `poor_quality = True`, or `room_type in ("Bathroom", "Other", None)`.
+2. **Rule 2 (Anti-Bathroom Rule)**: Bathrooms are strictly excluded from being cover images (guests dislike seeing a bathroom/toilet as the primary search result thumbnail).
 3. **Rule 3 (Room Priority Hierarchy)**:
    * **Tier 1 (Preferred)**: `Living Room` or `Exterior/Entrance` with $\text{overall\_aesthetic} \ge 7.0$.
-   * **Tier 2 (Secondary)**: `Bedroom` or `Amenities/Pool` with high aesthetic score ($\ge 7.0$).
-   * **Tier 3 (Tertiary)**: Any non-bathroom room with the highest composite score.
-   * **Tier 4 (Fallback)**: If all photos in the batch fail quality thresholds, fallback to the single highest-scoring photo in the batch.
+   * **Tier 2 (Secondary)**: `Bedroom`, `Balcony/Patio`, or `Amenities/Pool` with high aesthetic score ($\ge 7.0$).
+   * **Tier 3 (Tertiary)**: Any qualified, non-bathroom, non-blurry, good-quality property space with the highest composite score.
+   * **No Forced Fallback**: If no photo in the batch satisfies quality gates, `recommended_cover_photo` returns `null` and `is_recommended_cover: false` for all photos.
 
 ---
 
@@ -219,11 +219,13 @@ The marketplace cover image must be the most visually appealing, high-impact pho
 | **Input Validation** | Empty photo list (`"photos": []`) | Zero-division / index crash | Pydantic validation: `Field(..., min_length=1, max_length=50)`. Returns `422`. |
 | **Input Validation** | Duplicate URLs in input (`["url1", "url1"]`) | Redundant network downloads & duplicate AI calls | Deduplicate input list upfront preserving order: `list(dict.fromkeys(req.photos))`. |
 | **Security / DoS** | Decompression Bomb (e.g. 50,000 x 50,000 px) | Server Out-of-Memory (OOM) | Enforce `Image.MAX_IMAGE_PIXELS = 50_000_000` and stream download limit $\le 15\text{MB}$. |
-| **Security / DoS** | Non-image payload (e.g. PDF/HTML renamed to `.jpg`) | Corrupt byte decode errors | Inspect magic bytes and MIME header. Mark photo as `poor_quality=True, feedback_tips=["Invalid or unreadable image file"]`. |
-| **Network Resilience** | Photo CDN 404, 500, or connection timeout | Stalled request | `httpx.AsyncClient` with `timeout=8.0`, SSL fallback, and per-photo isolated `try/except`. One failed photo does not fail the batch. |
-| **Local Check** | Pitch-black image (lens cap on / pitch black) | Laplacian variance is `0.0`, skews AI | Mean brightness check ($\mu < 15.0$) flags image as pitch-black, assigning lighting score `1/10` and skipping Vision API. |
+| **Security / DoS** | Non-image payload (e.g. PDF/HTML renamed to `.jpg`) | Corrupt byte decode errors | Inspect magic bytes and MIME header. Mark photo as `is_non_property=True, scores=None, room_type=None, poor_quality=True`. |
+| **Network Resilience** | Photo CDN 404, 500, or connection timeout | Stalled request | `httpx.AsyncClient` with `timeout=8.0`, SSL fallback, and per-photo isolated `try/except`. Returns `scores=None, room_type=None, poor_quality=True`. |
+| **Local Check** | Pitch-black image (lens cap on / pitch black) | Laplacian variance is `0.0`, skews AI | Mean brightness check ($\mu < 15.0$) flags image as pitch-black, setting `scores=None, room_type=None, poor_quality=True` and skipping Vision API ($0 AI Cost). |
 | **Local Check** | Tiny icons / thumbnails (e.g. 64x64 px) | Looks blurry on high-DPI displays | Dimensions check: `width < 400` or `height < 400` flags `poor_quality=True`. |
+| **Local Check** | Extreme aspect ratios (< 0.4 or > 2.5) | Awkward panoramic or ribbon display | Generates host feedback tip recommending standard landscape (4:3 or 16:9). |
 | **Concurrency** | Batch of 30 high-res images processed simultaneously | Memory spikes & provider rate limits | Controlled worker pool using `asyncio.Semaphore(5)` for downloads and analysis. |
-| **AI Cost Control** | Sending confirmed duplicates to AI Vision | Wastes unnecessary AI calls per redundant photo | Skip Vision call for images already confirmed as duplicates by `phash` ($\le 5$). |
+| **AI Cost Control** | Sending confirmed duplicates to AI Vision | Wastes unnecessary AI calls per redundant photo | Skip Vision call for images already confirmed as duplicates by `phash` ($\le 5$). Sets `scores=None, room_type=None`. |
 | **Vision Schema** | LLM outputs non-standard category (e.g. `"Gym"`) | Breaks client UI tabs | Strict mapping into `VALID_ROOM_TYPES` (`Living Room`, `Bedroom`, `Bathroom`, `Kitchen`, `Balcony/Patio`, `Dining Room`, `Exterior/Entrance`, `Amenities/Pool`, `Other`). |
-| **Smart Cover** | All photos in listing are blurry/poor quality | No cover photo selected | Graceful fallback: selects the highest-scoring available photo to guarantee `recommended_cover_photo` is always populated. |
+| **Non-Property Media** | Memes, receipts, documents, selfies, teddy bears | Meaningless aesthetic ratings & polluted room catalog | Flagged with `is_non_property=True`, `scores=None`, `room_type=None`, and excluded from `room_assignments`. |
+| **Smart Cover** | All photos in listing are blurry, poor quality, or bathroom | Bad or inappropriate thumbnail shown to guests | Cover photo is optional; returns `recommended_cover_photo: null` when no photo qualifies. |

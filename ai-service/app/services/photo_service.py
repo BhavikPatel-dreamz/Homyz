@@ -97,7 +97,14 @@ def _compute_local_image_metrics(url: str, raw_bytes: bytes) -> LocalCheckResult
             "Upload higher resolution photos for crisp display."
         )
 
-    # 3. Brightness & Exposure check
+    # 3. Aspect ratio validation (warns on extreme panoramic or vertical strips)
+    aspect_ratio = result.width / max(1, result.height)
+    if aspect_ratio < 0.4 or aspect_ratio > 2.5:
+        result.feedback_tips.append(
+            f"Extreme aspect ratio ({aspect_ratio:.2f}) detected. Consider uploading standard landscape (4:3 or 16:9) photos."
+        )
+
+    # 4. Brightness & Exposure check
     result.mean_brightness = float(np.mean(gray_matrix))
     if result.mean_brightness < BRIGHTNESS_PITCH_BLACK:
         result.is_pitch_black = True
@@ -221,26 +228,32 @@ class PhotoService:
 
     def _select_smart_cover_photo(self, photos: list[PhotoItemResult]) -> Optional[str]:
         """Chooses the single best primary cover photo based on aesthetic hierarchy and anti-bathroom rules.
+        Cover photo is not mandatory; returns None if no photo meets quality and room qualification standards.
 
         Hierarchy:
-        1. Preferred: Non-blurry, distinct, non-bathroom, non-poor Living Room / Exterior >= 7.0
-        2. Secondary: Bedroom / Amenities >= 7.0
-        3. Tertiary: Any non-bathroom with highest aesthetic score
-        4. Fallback: Single highest scoring photo in batch
+        1. Tier 1: Living Room or Exterior/Entrance with overall aesthetic >= 7.0
+        2. Tier 2: Bedroom, Balcony/Patio, or Amenities/Pool with overall aesthetic >= 7.0
+        3. Tier 3: Any qualified property space (non-blurry, good quality, non-bathroom, non-other)
+        If no photo qualifies, returns None (cover photo can be empty).
         """
         if not photos:
             return None
 
-        # Filter strictly qualified candidates
+        # Qualification gate: Photo must be a legitimate, non-duplicate, non-blurry, good-quality property space
+        # Excludes: Bathrooms, "Other" (non-property or miscellaneous), blurry, and poor quality photos.
         qualified = [
             p
             for p in photos
-            if not p.flags.is_blurry
+            if not p.flags.is_non_property
             and not p.flags.is_duplicate
-            and not p.flags.is_non_property
+            and not p.flags.is_blurry
             and not p.flags.poor_quality
-            and p.room_type != "Bathroom"
+            and p.room_type is not None
+            and p.room_type not in ("Bathroom", "Other")
+            and p.scores is not None
         ]
+        if not qualified:
+            return None
 
         # Tier 1: Living Room or Exterior with aesthetic >= 7.0
         tier1 = [p for p in qualified if p.room_type in ("Living Room", "Exterior/Entrance") and p.scores.overall_aesthetic >= 7.0]
@@ -248,26 +261,15 @@ class PhotoService:
             tier1.sort(key=lambda p: p.scores.overall_aesthetic, reverse=True)
             return tier1[0].url
 
-        # Tier 2: Bedroom or Amenities with aesthetic >= 7.0
-        tier2 = [p for p in qualified if p.room_type in ("Bedroom", "Amenities/Pool") and p.scores.overall_aesthetic >= 7.0]
+        # Tier 2: Bedroom, Balcony/Patio, or Amenities/Pool with aesthetic >= 7.0
+        tier2 = [p for p in qualified if p.room_type in ("Bedroom", "Balcony/Patio", "Amenities/Pool") and p.scores.overall_aesthetic >= 7.0]
         if tier2:
             tier2.sort(key=lambda p: p.scores.overall_aesthetic, reverse=True)
             return tier2[0].url
 
-        # Tier 3: Any qualified non-bathroom photo with highest score
-        if qualified:
-            qualified.sort(key=lambda p: p.scores.overall_aesthetic, reverse=True)
-            return qualified[0].url
-
-        # Tier 4 Fallback: If all photos failed quality gates, find the best non-bathroom, non-property photo
-        fallbacks = [p for p in photos if p.room_type != "Bathroom" and not p.flags.is_non_property and not p.flags.is_duplicate]
-        if fallbacks:
-            fallbacks.sort(key=lambda p: p.scores.overall_aesthetic, reverse=True)
-            return fallbacks[0].url
-
-        # Ultimate fallback: Highest overall aesthetic in the whole batch
-        sorted_all = sorted(photos, key=lambda p: p.scores.overall_aesthetic, reverse=True)
-        return sorted_all[0].url
+        # Tier 3: Any qualified property space with highest aesthetic score
+        qualified.sort(key=lambda p: p.scores.overall_aesthetic, reverse=True)
+        return qualified[0].url
 
     async def analyze_photos(self, request: PhotoAnalysisRequest) -> PhotoAnalysisResponse:
         """Executes full analysis pipeline: download, local pre-checks, Gemini Vision AI, and smart cover selection."""
@@ -325,13 +327,13 @@ class PhotoService:
         photo_item_tasks = []
         for local in local_results:
             if not local.is_valid:
-                # Corrupt or download failure: short-circuit LLM
+                # Corrupt or download failure: short-circuit LLM ($0 AI Cost)
                 item = PhotoItemResult(
                     url=local.url,
-                    room_type="Other",
+                    room_type=None,
                     is_recommended_cover=False,
-                    scores=PhotoScores(lighting=1, composition=1, overall_aesthetic=1.0),
-                    flags=PhotoFlags(poor_quality=True),
+                    scores=None,
+                    flags=PhotoFlags(is_non_property=True, poor_quality=True),
                     feedback_tips=local.feedback_tips,
                 )
                 photo_item_tasks.append(asyncio.sleep(0, result=item))
@@ -339,9 +341,9 @@ class PhotoService:
                 # Near-duplicate: short-circuit LLM ($0 AI Cost)
                 item = PhotoItemResult(
                     url=local.url,
-                    room_type="Other",
+                    room_type=None,
                     is_recommended_cover=False,
-                    scores=PhotoScores(lighting=1, composition=1, overall_aesthetic=1.0),
+                    scores=None,
                     flags=PhotoFlags(
                         is_blurry=local.is_blurry,
                         is_duplicate=True,
@@ -355,9 +357,9 @@ class PhotoService:
                 # Pitch black: short-circuit LLM ($0 AI Cost)
                 item = PhotoItemResult(
                     url=local.url,
-                    room_type="Other",
+                    room_type=None,
                     is_recommended_cover=False,
-                    scores=PhotoScores(lighting=1, composition=1, overall_aesthetic=1.0),
+                    scores=None,
                     flags=PhotoFlags(
                         is_blurry=local.is_blurry,
                         poor_quality=True,
@@ -379,11 +381,11 @@ class PhotoService:
                     p.is_recommended_cover = True
                     break
 
-        # 7. Group room assignments
+        # 7. Group room assignments (strictly genuine accommodation spaces)
         room_assignments: dict[str, list[str]] = {}
         for p in photo_results:
-            category = p.room_type if p.room_type in VALID_ROOM_TYPES else "Other"
-            room_assignments.setdefault(category, []).append(p.url)
+            if p.room_type and not p.flags.is_non_property and p.room_type in VALID_ROOM_TYPES:
+                room_assignments.setdefault(p.room_type, []).append(p.url)
 
         return PhotoAnalysisResponse(
             listing_id=request.listing_id,
@@ -430,10 +432,23 @@ class PhotoService:
             matched = next((r for r in VALID_ROOM_TYPES if r.lower() == room_type.lower()), "Other")
             room_type = matched
 
-        # Non-property detection
-        is_non_property = not ai_output.is_relevant_property_photo
-        if is_non_property:
-            room_type = "Other"
+        # Non-property detection: omit scores and room categorization for non-accommodation photos
+        if not ai_output.is_relevant_property_photo:
+            doc_tip = "This photo does not appear to portray accommodation spaces or amenities. Please upload genuine property photos."
+            return PhotoItemResult(
+                url=local.url,
+                room_type=None,
+                is_recommended_cover=False,
+                scores=None,
+                flags=PhotoFlags(
+                    is_blurry=local.is_blurry,
+                    is_duplicate=False,
+                    duplicate_of=None,
+                    is_non_property=True,
+                    poor_quality=True,
+                ),
+                feedback_tips=[doc_tip],
+            )
 
         # Calculate composite aesthetic score (1.0 to 10.0)
         base_aesthetic = (ai_output.lighting_score * 0.5) + (ai_output.composition_score * 0.5)
@@ -448,8 +463,7 @@ class PhotoService:
 
         # Determine overall poor quality flag
         poor_quality = (
-            is_non_property
-            or local.is_blurry
+            local.is_blurry
             or local.is_pitch_black
             or clamped_aesthetic < 5.0
             or (local.width < MIN_IMAGE_DIMENSION or local.height < MIN_IMAGE_DIMENSION)
@@ -462,15 +476,10 @@ class PhotoService:
             if clean and clean not in all_tips:
                 all_tips.append(clean)
 
-        if is_non_property:
-            doc_tip = "Please upload genuine accommodation photos showing the property, rooms, or amenities."
-            if doc_tip not in all_tips:
-                all_tips.insert(0, doc_tip)
-        else:
-            for tip in ai_output.feedback_tips:
-                clean = tip.strip()
-                if clean and clean not in all_tips:
-                    all_tips.append(clean)
+        for tip in ai_output.feedback_tips:
+            clean = tip.strip()
+            if clean and clean not in all_tips:
+                all_tips.append(clean)
 
         return PhotoItemResult(
             url=local.url,
@@ -485,7 +494,7 @@ class PhotoService:
                 is_blurry=local.is_blurry,
                 is_duplicate=False,
                 duplicate_of=None,
-                is_non_property=is_non_property,
+                is_non_property=False,
                 poor_quality=poor_quality,
             ),
             feedback_tips=all_tips,

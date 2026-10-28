@@ -179,7 +179,7 @@ All error responses return standard JSON:
 ```json
 {
   "listing_id": "string",
-  "processed_count": 2,
+  "processed_count": 3,
   "recommended_cover_photo": "https://storage.domain.com/photos/image_1.jpg",
   "room_assignments": {
     "Living Room": ["https://storage.domain.com/photos/image_1.jpg"],
@@ -217,16 +217,34 @@ All error responses return standard JSON:
         "is_blurry": true,
         "is_duplicate": false,
         "duplicate_of": null,
+        "is_non_property": false,
         "poor_quality": true
       },
       "feedback_tips": [
         "Photo is out of focus or motion-blurred.",
         "Lighting is dim. Consider retaking with natural daylight."
       ]
+    },
+    {
+      "url": "https://storage.domain.com/photos/non_property.jpg",
+      "room_type": null,
+      "is_recommended_cover": false,
+      "scores": null,
+      "flags": {
+        "is_blurry": false,
+        "is_duplicate": false,
+        "duplicate_of": null,
+        "is_non_property": true,
+        "poor_quality": true
+      },
+      "feedback_tips": [
+        "This photo does not appear to portray accommodation spaces or amenities. Please upload genuine property photos."
+      ]
     }
   ]
 }
 ```
+*(Notes: `recommended_cover_photo` is optional and returns `null` if no uploaded photo qualifies. For non-property, duplicate, pitch-black, or corrupt images, `scores` and `room_type` are `null` to avoid misleading ratings and prevent non-property media from polluting `room_assignments`).*
 
 ---
 

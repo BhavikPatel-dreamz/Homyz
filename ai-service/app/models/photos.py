@@ -37,9 +37,15 @@ class PhotoItemResult(BaseModel):
     """Analysis result for a single photo URL."""
 
     url: str = Field(..., description="Image URL")
-    room_type: str = Field(..., description="Categorized room or space type")
+    room_type: Optional[str] = Field(
+        default=None,
+        description="Categorized room or space type, or None if non-property or corrupt",
+    )
     is_recommended_cover: bool = Field(default=False, description="True if selected as best cover photo")
-    scores: PhotoScores
+    scores: Optional[PhotoScores] = Field(
+        default=None,
+        description="Quality and aesthetic ratings, or None if non-property, corrupt, or duplicate",
+    )
     flags: PhotoFlags
     feedback_tips: list[str] = Field(default_factory=list, description="Actionable improvement tips for the host")
 
