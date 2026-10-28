@@ -1,6 +1,9 @@
 from typing import Optional
 from qdrant_client import AsyncQdrantClient
 from core.config import Settings, get_settings
+from utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 class QdrantService:
@@ -12,6 +15,7 @@ class QdrantService:
             url=self.settings.QDRANT_URL,
             api_key=self.settings.QDRANT_API_KEY or None,
             timeout=5.0,
+            check_compatibility=False,
         )
 
     async def check_connection(self) -> dict[str, str]:
@@ -21,11 +25,13 @@ class QdrantService:
 
         try:
             await self.client.get_collections()
+            logger.info("Qdrant connection verified successfully (mode=%s)", mode)
             return {
                 "status": "connected",
                 "mode": mode,
             }
         except Exception as exc:
+            logger.warning("Failed to connect to Qdrant (%s mode): %s", mode, exc)
             return {
                 "status": "disconnected",
                 "mode": mode,

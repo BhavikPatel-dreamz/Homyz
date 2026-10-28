@@ -17,16 +17,29 @@ from core.exceptions import (
     NotFoundError,
 )
 from services.qdrant_service import get_qdrant_service
+from utils.logger import get_logger, setup_logging
 
 settings = get_settings()
+
+# 1. Initialize logging at module import
+setup_logging(settings.LOG_LEVEL)
+logger = get_logger(__name__)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Manages application startup and shutdown lifecycle events."""
-    # Startup: ensure services are ready
+    # 2. Re-verify and ensure worker processes inherit logging configuration
+    setup_logging(settings.LOG_LEVEL)
+    logger.info(
+        "Starting %s [env=%s, log_level=%s]",
+        settings.PROJECT_NAME,
+        settings.ENVIRONMENT,
+        settings.LOG_LEVEL,
+    )
     yield
     # Shutdown: clean up connections
+    logger.info("Shutting down %s...", settings.PROJECT_NAME)
     qdrant_service = get_qdrant_service()
     await qdrant_service.close()
 
@@ -54,6 +67,7 @@ app.add_middleware(
 @app.exception_handler(AppException)
 async def app_exception_handler(request: Request, exc: AppException) -> JSONResponse:
     """Interceptors domain exceptions and returns structured JSON responses."""
+    logger.warning("Domain exception [%s]: %s", exc.code, exc.detail)
     status_code = status.HTTP_400_BAD_REQUEST
     if isinstance(exc, AuthenticationError):
         status_code = status.HTTP_401_UNAUTHORIZED
@@ -93,6 +107,7 @@ async def validation_exception_handler(
 @app.exception_handler(Exception)
 async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:
     """Catches unhandled exceptions and returns a generic 500 error."""
+    logger.error("Unhandled server exception: %s", exc, exc_info=True)
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={

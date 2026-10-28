@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     ENVIRONMENT: str = "development"
     DEBUG: bool = True
     PORT: int = 8000
+    LOG_LEVEL: str = "INFO"
     API_KEY_SECRET: str = "dev-secret-internal-key-123"
 
     # Vector DB (Qdrant Cloud or Local)
