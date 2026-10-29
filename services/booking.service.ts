@@ -21,6 +21,7 @@ import { recordConfirmedBookingAnalyticsEvent } from "./listing-analytics.servic
 import {
   enqueueAchievementEventProcessing,
   recordBookingConfirmedEvent,
+  recordStayCompletionCandidateEvent,
 } from "./achievement-event.service";
 
 import { Prisma } from "@/generated/prisma/client";
@@ -40,6 +41,7 @@ import {
 import { getCurrencyForCountry } from "@/lib/currency";
 import {
   computeBookingStatus,
+  getEffectiveDateTime,
   getBookingAvailableActions,
   getBookingStatusTimeline,
   type BookingStatusDetails,
@@ -604,6 +606,7 @@ async function create(
   }
 
   let createdBookingAchievementEventId: string | null = null;
+  let createdBookingCompletionEventId: string | null = null;
   const booking = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     if (input.requestSubmissionId) {
       await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${input.requestSubmissionId}))`;
@@ -787,6 +790,8 @@ async function create(
     if (automaticallyApprove) {
       const event = await recordBookingConfirmedEvent(tx, createdBooking);
       createdBookingAchievementEventId = event.id;
+      const completionEvent = await recordStayCompletionCandidateEvent(tx, createdBooking);
+      createdBookingCompletionEventId = completionEvent.id;
     }
 
     return createdBooking;
@@ -795,6 +800,14 @@ async function create(
   if (createdBookingAchievementEventId) {
     void enqueueAchievementEventProcessing(createdBookingAchievementEventId).catch((error) =>
       console.warn("[booking.service] Achievement event queued for reconciliation:", error),
+    );
+  }
+  if (createdBookingCompletionEventId) {
+    void enqueueAchievementEventProcessing(
+      createdBookingCompletionEventId,
+      getEffectiveDateTime(booking.endDate, listing.checkOutTime, 11, 0),
+    ).catch((error) =>
+      console.warn("[booking.service] Stay-completion event queued for reconciliation:", error),
     );
   }
 
@@ -1158,6 +1171,8 @@ async function acceptBookingRequest(
   const policy = getPaymentPolicy();
 
   let acceptedBookingAchievementEventId: string | null = null;
+  let acceptedBookingCompletionEventId: string | null = null;
+  let acceptedBookingCompletionRunAt: Date | null = null;
   const confirmedBooking = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${id}))`;
 
@@ -1316,6 +1331,9 @@ async function acceptBookingRequest(
 
     const event = await recordBookingConfirmedEvent(tx, updated);
     acceptedBookingAchievementEventId = event.id;
+    const completionEvent = await recordStayCompletionCandidateEvent(tx, updated);
+    acceptedBookingCompletionEventId = completionEvent.id;
+    acceptedBookingCompletionRunAt = getEffectiveDateTime(updated.endDate, booking.listing.checkOutTime, 11, 0);
 
     return { ...updated, listing: booking.listing, user: booking.user };
   });
@@ -1323,6 +1341,14 @@ async function acceptBookingRequest(
   if (acceptedBookingAchievementEventId) {
     void enqueueAchievementEventProcessing(acceptedBookingAchievementEventId).catch((error) =>
       console.warn("[booking.service] Achievement event queued for reconciliation:", error),
+    );
+  }
+  if (acceptedBookingCompletionEventId) {
+    void enqueueAchievementEventProcessing(
+      acceptedBookingCompletionEventId,
+      acceptedBookingCompletionRunAt ?? undefined,
+    ).catch((error) =>
+      console.warn("[booking.service] Stay-completion event queued for reconciliation:", error),
     );
   }
 

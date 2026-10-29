@@ -206,6 +206,7 @@ export async function verifyUserBookings(userId: string): Promise<{
           city: true,
           latitude: true,
           longitude: true,
+          checkOutTime: true,
         },
       },
     },
@@ -219,6 +220,7 @@ export async function verifyUserBookings(userId: string): Promise<{
       dbStatus: b.status,
       startDate: b.startDate,
       endDate: b.endDate,
+      checkOutTime: b.listing.checkOutTime,
       now,
     }),
   );

@@ -47,13 +47,31 @@ export async function invalidateBookingCache(
 
   if (userId) {
     deletes.push(deleteCacheByPattern(`homyz:bookings:user:${userId}:*`));
-    // Invalidate guest stats so trip counts stay accurate
+    // Invalidate guest stats and profile so trip counts stay accurate
+    deletes.push(deleteCache(CACHE_KEYS.USER_STATS(userId)));
+    deletes.push(deleteCache(CACHE_KEYS.USER_PROFILE(userId)));
+    // Also explicitly delete common user booking cache keys for instant invalidation
+    deletes.push(deleteCache(CACHE_KEYS.BOOKINGS_USER(userId, "all", 0, 50)));
+    deletes.push(deleteCache(CACHE_KEYS.BOOKINGS_USER(userId, "upcoming", 0, 50)));
+    deletes.push(deleteCache(CACHE_KEYS.BOOKINGS_USER(userId, "all", 0, 20)));
+    deletes.push(deleteCache(CACHE_KEYS.BOOKINGS_USER(userId, "upcoming", 0, 20)));
+    deletes.push(deleteCache(CACHE_KEYS.BOOKINGS_USER(userId, "all", 0, 100)));
+    deletes.push(deleteCache(CACHE_KEYS.BOOKINGS_USER(userId, "upcoming", 0, 100)));
   }
   if (hostId) {
     deletes.push(deleteCacheByPattern(`homyz:bookings:host:${hostId}:*`));
+    deletes.push(deleteCache(CACHE_KEYS.HOST_LISTINGS(hostId)));
   }
 
   await Promise.all(deletes);
+
+  // Bust Next.js App Router RSC cache across guest, host, and admin pages
+  try {
+    const { revalidateBookingPaths } = await import("@/lib/booking/booking-cache-revalidate");
+    revalidateBookingPaths(bookingId);
+  } catch {
+    // Expected when running outside Next.js request context (e.g. tests or background workers)
+  }
 }
 
 /** Invalidate administrative dashboard metrics */

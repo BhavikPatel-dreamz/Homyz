@@ -74,6 +74,9 @@ export function EnhancedCancelModal({
       }
 
       if (onCancelled) onCancelled();
+      try {
+        window.dispatchEvent(new CustomEvent("homyz:reservations-updated", { detail: { bookingId } }));
+      } catch {}
       onClose();
       router.refresh();
     } catch (err) {

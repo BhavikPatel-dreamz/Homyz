@@ -260,6 +260,14 @@ export function ProfileClient({
     return () => window.removeEventListener("homyz:profile-updated", onProfileUpdated);
   }, []);
 
+  useEffect(() => {
+    const onReservationsUpdated = () => {
+      router.refresh();
+    };
+    window.addEventListener("homyz:reservations-updated", onReservationsUpdated);
+    return () => window.removeEventListener("homyz:reservations-updated", onReservationsUpdated);
+  }, [router]);
+
   const route = extractProfileRoute({ pathname: pathname ?? undefined, searchParams });
   const activeTab = pathname ? route.tab : normalizeTabId(initialTab);
   const activeSubTab = pathname ? route.subTab : initialSubTab || route.subTab;

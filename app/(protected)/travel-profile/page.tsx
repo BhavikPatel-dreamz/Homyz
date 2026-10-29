@@ -12,6 +12,9 @@ import { getPaginatedTravelerStamps } from "@/services/travel-stamp.service";
 import { getTravelerDestinationStats } from "@/services/travel-destination.service";
 import { TravelProfileView } from "@/components/travel/travel-profile-view";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export const metadata = {
   title: "My Travel Profile — Homyz",
   description:

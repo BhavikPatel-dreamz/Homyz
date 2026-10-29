@@ -25,9 +25,9 @@ export function CartoTileLayer(props?: Partial<TileLayerProps>) {
 
   if (!TileComponent) return null;
 
-  const rawKey = process.env.NEXT_PUBLIC_CARTO_API_KEY ?? "cb1_3pm0_1_c6dfead671deb20f865779db";
+  const rawKey = process.env.NEXT_PUBLIC_CARTO_API_KEY ?? "";
   const apiKey = rawKey.trim().replace(/^["']|["']$/g, "");
-  const tileUrl = `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png?key=${apiKey}`;
+  const tileUrl = `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png${apiKey ? `?key=${encodeURIComponent(apiKey)}` : ""}`;
 
   return (
     <TileComponent
@@ -39,4 +39,3 @@ export function CartoTileLayer(props?: Partial<TileLayerProps>) {
     />
   );
 }
-

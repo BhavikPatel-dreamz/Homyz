@@ -4,6 +4,7 @@ import { ok } from "@/lib/api/response";
 import { requireApiRole } from "@/lib/permissions/guards";
 import { Role } from "@/generated/prisma/enums";
 import { bookingService } from "@/services/booking.service";
+import { revalidateBookingPaths } from "@/lib/booking/booking-cache-revalidate";
 
 const rejectSchema = z
   .object({
@@ -25,6 +26,7 @@ export const POST = apiHandler(async (req, { params }) => {
   const input = rejectSchema.parse(body);
 
   const result = await bookingService.rejectBookingRequest(actor, id, input?.reason);
+  revalidateBookingPaths(id);
   return ok(result);
 });
 

@@ -796,6 +796,10 @@ export function BookingCheckoutClient({
           window.sessionStorage.removeItem(draftStorageKey);
         } catch {}
         setBookingResult({ id: data.data.id, status: data.data.status });
+        try {
+          window.dispatchEvent(new CustomEvent("homyz:reservations-updated", { detail: { bookingId: data.data.id } }));
+          router.refresh();
+        } catch {}
       }
     } catch {
       setSubmitError("An unexpected network error occurred. Please try again.");

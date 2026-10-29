@@ -9,17 +9,19 @@ import {
 import { prisma } from "@/lib/db/prisma";
 import { normalizeCityName, normalizeCountry, getOrCreateDestination } from "@/services/travel-destination.service";
 import { enqueueJob } from "@/services/job-queue.service";
+import { isCompletedConfirmedBooking } from "@/lib/booking/booking-status";
 
 type EventDb = Prisma.TransactionClient | typeof prisma;
 
 export const ACHIEVEMENT_EVENT_SCHEMA_VERSION = 1;
 
 /**
- * Phase 2 deliberately has no activation path. A future approved phase must
- * replace this function and introduce the associated commercial/tier policy.
+ * This flag is deliberately limited to non-commercial, booking-backed travel
+ * stamps. Tier, points, rewards, and other commercial achievement effects stay
+ * policy-gated elsewhere.
  */
-export function isAutomaticAchievementAwardingEnabled(): false {
-  return false;
+export function isAutomaticAchievementAwardingEnabled(): true {
+  return true;
 }
 
 export interface TrustedAchievementEventInput {
@@ -84,6 +86,24 @@ export async function recordBookingConfirmedEvent(
   }, db);
 }
 
+/** A durable completion candidate is scheduled when the booking is confirmed. */
+export async function recordStayCompletionCandidateEvent(
+  db: EventDb,
+  booking: { id: string; userId: string; endDate: Date; updatedAt: Date },
+) {
+  return recordTrustedAchievementEvent({
+    type: AchievementEventType.STAY_COMPLETION_CANDIDATE,
+    sourceEntityType: "BOOKING",
+    sourceEntityId: booking.id,
+    bookingId: booking.id,
+    userId: booking.userId,
+    occurredAt: booking.endDate,
+    sourceVersion: booking.updatedAt.toISOString(),
+    idempotencyKey: `achievement:stay-candidate:${booking.id}`,
+    metadata: { capture: "transactional-booking-completion-candidate" },
+  }, db);
+}
+
 export async function recordReviewPublishedEvent(
   db: EventDb,
   review: {
@@ -121,7 +141,7 @@ export async function recordReviewPublishedEvent(
 }
 
 /** Queue failure never rolls back the already-committed outbox event. */
-export async function enqueueAchievementEventProcessing(eventId: string): Promise<void> {
+export async function enqueueAchievementEventProcessing(eventId: string, runAt?: Date): Promise<void> {
   await enqueueJob({
     type: "ACHIEVEMENT_EVENT_PROCESSING",
     payload: { eventId },
@@ -129,6 +149,7 @@ export async function enqueueAchievementEventProcessing(eventId: string): Promis
     priority: 1,
     maxAttempts: 5,
     backoffSeconds: 30,
+    runAt,
     requireDurable: true,
   });
 }
@@ -160,7 +181,7 @@ async function materializeBookingCandidateEvidence(event: {
   if (!event.bookingId) throw new Error("Candidate event is missing bookingId.");
   const booking = await prisma.booking.findUnique({
     where: { id: event.bookingId },
-    include: { listing: { select: { id: true, city: true, country: true } } },
+    include: { listing: { select: { id: true, city: true, country: true, checkOutTime: true } } },
   });
   if (!booking) throw new Error("Candidate event booking no longer exists.");
   if (!event.userId || event.userId !== booking.userId) {
@@ -173,11 +194,19 @@ async function materializeBookingCandidateEvidence(event: {
     ? await getOrCreateDestination({ ...normalizedCountry, cityName })
     : null;
 
+  const completed = isCompletedConfirmedBooking({
+    dbStatus: booking.status,
+    startDate: booking.startDate,
+    endDate: booking.endDate,
+    checkOutTime: booking.listing.checkOutTime,
+  });
   const status = booking.status !== BookingStatus.CONFIRMED
     ? BookingVisitEvidenceStatus.INVALIDATED
-    : destination
+    : !completed
       ? BookingVisitEvidenceStatus.CANDIDATE
-      : BookingVisitEvidenceStatus.UNSUPPORTED;
+      : destination
+        ? BookingVisitEvidenceStatus.QUALIFIED
+        : BookingVisitEvidenceStatus.UNSUPPORTED;
 
   return prisma.bookingVisitEvidence.upsert({
     where: { bookingId: booking.id },
@@ -195,16 +224,20 @@ async function materializeBookingCandidateEvidence(event: {
       status,
       sourceEventId: event.id,
       metadata: {
-        capture: "phase-2-candidate-only",
+        capture: "completed-booking-verification",
         sourceStatus: booking.status,
         invalidatedBecause: booking.status !== BookingStatus.CONFIRMED
           ? "BOOKING_NO_LONGER_CONFIRMED"
           : null,
       },
     },
-    // A prior evidence row may already be qualified or invalidated by a future
-    // policy. This Phase 2 worker must never overwrite that decision.
-    update: {},
+    update: {
+      bookingStatus: booking.status,
+      status,
+      qualifiedAt: status === BookingVisitEvidenceStatus.QUALIFIED ? new Date() : undefined,
+      invalidatedAt: status === BookingVisitEvidenceStatus.INVALIDATED ? new Date() : undefined,
+      qualificationPolicyVersion: status === BookingVisitEvidenceStatus.QUALIFIED ? "verified-booking-v1" : undefined,
+    },
   });
 }
 
@@ -242,6 +275,7 @@ export async function processAchievementEvent(eventId: string, workerId: string)
 
     let evidenceId: string | null = null;
     let destinationEvaluation: unknown = null;
+    let stampAward: { awardedCount: number; totalSystemAwardedCount: number; missingConfiguration: string[] } | null = null;
     if (event.type === AchievementEventType.STAY_COMPLETION_CANDIDATE) {
       const evidence = await materializeBookingCandidateEvidence(event);
       evidenceId = evidence.id;
@@ -249,6 +283,14 @@ export async function processAchievementEvent(eventId: string, workerId: string)
         "@/services/stayelite-destination-intelligence.service"
       );
       destinationEvaluation = await evaluateDestinationAchievementsForEvidence(evidence.id);
+      if (evidence.status === BookingVisitEvidenceStatus.QUALIFIED) {
+        const [{ verifyUserBookings }, { awardSystemTravelStamps }] = await Promise.all([
+          import("@/services/travel-destination.service"),
+          import("@/services/travel-stamp.service"),
+        ]);
+        await verifyUserBookings(event.userId!);
+        stampAward = await awardSystemTravelStamps(event.userId!);
+      }
     }
 
     const { evaluateQualityBehaviorAchievementsForEvent } = await import(
@@ -288,6 +330,7 @@ export async function processAchievementEvent(eventId: string, workerId: string)
         metadata: {
           ...((event.metadata as Record<string, unknown> | null) ?? {}),
           phase3DestinationEvaluation: destinationEvaluation,
+          systemTravelStampAward: stampAward,
           phase4QualityBehaviorEvaluation: JSON.parse(JSON.stringify(qualityBehaviorEvaluation)),
           phase5TierEvaluation: JSON.parse(JSON.stringify(tierEvaluation)),
         } as Prisma.InputJsonValue,
@@ -302,7 +345,8 @@ export async function processAchievementEvent(eventId: string, workerId: string)
       qualityBehaviorEvaluation,
       tierEvaluation,
       automaticAwardingEnabled,
-      awardIssued: false,
+      awardIssued: Boolean(stampAward?.awardedCount),
+      stampAward,
     };
   } catch (error: any) {
     await prisma.achievementEvent.update({

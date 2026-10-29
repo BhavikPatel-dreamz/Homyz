@@ -42,17 +42,19 @@ export type CartoLayer =
 
 /**
  * Builds the CARTO basemap tile URL with the API key properly appended.
- * Appends ?key=${process.env.NEXT_PUBLIC_CARTO_API_KEY} to eliminate "API KEY REQUIRED" watermarks.
+ * Appends a configured CARTO key when one is available. No key is embedded in
+ * client code; deployments that require an authenticated tile plan must provide
+ * NEXT_PUBLIC_CARTO_API_KEY through their approved environment configuration.
  * Supports standard CARTO layers: voyager, voyager_nolabels, voyager_only_labels, light_all.
  */
 export function getCartoTileUrl(
   layer: CartoLayer = "voyager",
   options?: { retina?: boolean }
 ): string {
-  const rawKey = process.env.NEXT_PUBLIC_CARTO_API_KEY ?? "cb1_3pm0_1_c6dfead671deb20f865779db";
+  const rawKey = process.env.NEXT_PUBLIC_CARTO_API_KEY ?? "";
   const key = rawKey.trim().replace(/^["']|["']$/g, "");
   const retinaSuffix = options?.retina ? "{r}" : "";
-  return `https://{s}.basemaps.cartocdn.com/rastertiles/${layer}/{z}/{x}/{y}${retinaSuffix}.png?key=${key}`;
+  return `https://{s}.basemaps.cartocdn.com/rastertiles/${layer}/{z}/{x}/{y}${retinaSuffix}.png${key ? `?key=${encodeURIComponent(key)}` : ""}`;
 }
 
 export const CARTO_ATTRIBUTION =

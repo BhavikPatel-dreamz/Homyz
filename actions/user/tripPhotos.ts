@@ -107,9 +107,16 @@ export async function updateTripPhotoAction(
   return runAction(async () => {
     const actor = await getSessionUser();
     if (!actor) throw AppError.unauthorized();
-    // The shared service upgrades edited legacy rows when necessary and keeps
-    // current photos, profile views, and discovery metadata in sync.
-    const updated = await updateTravelPhotoMetadata(actor.id, photoId, input);
+    // Keep legacy tags in their original record, while using the shared travel
+    // metadata service for new TravelPhoto records. This makes the management
+    // and travel-profile editors operate on the same persisted photo.
+    const legacy = await prisma.tripPhoto.findUnique({
+      where: { id: photoId },
+      select: { id: true, userId: true },
+    });
+    const updated = legacy
+      ? await userService.updateTripPhoto(actor.id, photoId, input as any)
+      : await updateTravelPhotoMetadata(actor.id, photoId, input);
     revalidateTravelViews();
     return updated;
   });

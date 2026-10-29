@@ -9,8 +9,16 @@ import {
 } from "@/services/travel-privacy.service";
 import path from "node:path";
 import { nanoid } from "nanoid";
-import { getOrCreateDestination } from "@/services/travel-destination.service";
-import { TravelProfileVisibility, type Prisma } from "@/generated/prisma/client";
+import {
+  getOrCreateDestination,
+  normalizeCountry,
+} from "@/services/travel-destination.service";
+import { isCompletedConfirmedBooking } from "@/lib/booking/booking-status";
+import {
+  BookingStatus,
+  TravelProfileVisibility,
+  type Prisma,
+} from "@/generated/prisma/client";
 
 import type {
   TravelPhotoDTO,
@@ -1470,18 +1478,50 @@ export async function getCountryHighlights(
 
   // Created trips and verified stays are useful owner-only history, but neither
   // may reveal a country to a profile viewer without a visible photo.
-  const trips = isOwner
-    ? await prisma.travelTrip.findMany({
-        where: { userId, destinationId: { not: null } },
-        select: { destinationId: true },
+  const [trips, verifiedUserDests, confirmedBookings] = await Promise.all([
+    isOwner
+      ? prisma.travelTrip.findMany({
+          where: { userId, destinationId: { not: null } },
+          select: { destinationId: true },
+        })
+      : Promise.resolve([]),
+    isOwner
+      ? prisma.userDestination.findMany({
+          where: { userId, verificationStatus: "VERIFIED" },
+          include: { destination: true },
+        })
+      : Promise.resolve([]),
+    // Do not require a separate reconciliation write before a completed stay
+    // appears on its owner's profile. This also includes bookings created
+    // before UserDestination records were introduced.
+    isOwner
+      ? prisma.booking.findMany({
+          where: { userId, status: BookingStatus.CONFIRMED },
+          select: {
+            status: true,
+            startDate: true,
+            endDate: true,
+            listing: { select: { country: true, checkOutTime: true } },
+          },
+        })
+      : Promise.resolve([]),
+  ]);
+
+  const completedBookingCountries = confirmedBookings.flatMap((booking) => {
+    if (
+      !isCompletedConfirmedBooking({
+        dbStatus: booking.status,
+        startDate: booking.startDate,
+        endDate: booking.endDate,
+        checkOutTime: booking.listing.checkOutTime,
       })
-    : [];
-  const verifiedUserDests = isOwner
-    ? await prisma.userDestination.findMany({
-        where: { userId, verificationStatus: "VERIFIED" },
-        include: { destination: true },
-      })
-    : [];
+    ) {
+      return [];
+    }
+
+    const country = normalizeCountry(booking.listing.country);
+    return country ? [country] : [];
+  });
 
   const destinationIds = [
     ...new Set(
@@ -1564,6 +1604,11 @@ export async function getCountryHighlights(
     }
   }
 
+  for (const country of completedBookingCountries) {
+    verifiedCountryNames.add(country.countryName.toLowerCase());
+    verifiedCountryCodes.add(country.countryCode.toUpperCase());
+  }
+
   // Also include verified countries if they are not already in memories
   for (const ud of verifiedUserDests) {
     if (!ud.destination || ud.destination.cityName) continue;
@@ -1579,6 +1624,22 @@ export async function getCountryHighlights(
         // marker instead of a misleading stock image.
         coverUrl: null,
         sampleLocation: name,
+      });
+    }
+  }
+
+  // Legacy completed stays can exist before their UserDestination projection
+  // has been reconciled. Project those stays into the owner's carousel at
+  // read time, without mutating booking or destination history.
+  for (const country of completedBookingCountries) {
+    const normalizedKey = country.countryName.toLocaleLowerCase();
+    if (!countryMap.has(normalizedKey)) {
+      countryMap.set(normalizedKey, {
+        country: country.countryName,
+        countryCode: country.countryCode,
+        photoCount: 0,
+        coverUrl: null,
+        sampleLocation: country.countryName,
       });
     }
   }

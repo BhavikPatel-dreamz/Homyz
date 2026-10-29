@@ -574,6 +574,11 @@ model User {
   stayEliteEvaluations            StayEliteTierEvaluation[]    @relation("StayEliteEvaluationGuest")
   stayEliteTierChanges            StayEliteTierHistory[]       @relation("StayEliteTierHistoryGuest")
   authorizedStayEliteTierChanges  StayEliteTierHistory[]       @relation("StayEliteTierHistoryActor")
+  pointsAccount                   PointsAccount?
+  pointsLedgerEntries             PointsLedgerEntry[]          @relation("PointsLedgerOwner")
+  authorizedPointsLedgerEntries   PointsLedgerEntry[]          @relation("PointsLedgerActor")
+  rewardRedemptions               RewardRedemption[]
+  createdLoyaltyCampaigns         LoyaltyCampaign[]            @relation("LoyaltyCampaignCreatedBy")
   travelFollowers                 TravelFollow[]               @relation("TravelFollowers")
   travelFollowing                 TravelFollow[]               @relation("TravelFollowing")
   blockedUsers                    UserBlock[]                  @relation("UserBlockedUsers")
@@ -3114,6 +3119,44 @@ enum SystemAwardStatus {
   REVOKED
 }
 
+// Point balances are projections of immutable ledger entries. No earning or
+// redemption policy is enabled merely by introducing these storage types.
+enum PointsLedgerEntryType {
+  PENDING_EARN
+  EARN
+  REDEEM_RESERVE
+  REDEEM_COMMIT
+  REDEEM_RELEASE
+  EXPIRE
+  REVERSE
+  ADMIN_ADJUSTMENT
+}
+
+enum RewardDefinitionStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  ARCHIVED
+}
+
+enum RewardRedemptionStatus {
+  ISSUED
+  AVAILABLE
+  RESERVED
+  REDEEMED
+  EXPIRED
+  REVERSED
+  CANCELLED
+}
+
+enum LoyaltyCampaignStatus {
+  DRAFT
+  SCHEDULED
+  ACTIVE
+  PAUSED
+  ARCHIVED
+}
+
 model Destination {
   id              String   @id @default(cuid())
   countryName     String
@@ -3293,7 +3336,10 @@ model UserTravelStamp {
   stamp       TravelStamp       @relation(fields: [stampId], references: [id], onDelete: Cascade)
   systemAward AchievementAward? @relation("SystemAwardStamp", fields: [systemAwardId], references: [id], onDelete: SetNull)
 
-  @@unique([userId, stampId])
+  // A traveler may keep a personal selection and separately earn the same
+  // catalog artwork from a verified stay. Their provenance must never be
+  // merged, otherwise a manual selection could be misrepresented as an award.
+  @@unique([userId, stampId, ownership])
   @@index([userId, isPinned])
   @@index([stampId])
 }
@@ -3609,6 +3655,122 @@ model StayEliteTierHistory {
   @@index([membershipId, occurredAt])
   @@index([userId, occurredAt])
   @@index([sourceEventId])
+}
+
+// Phase 6 foundation. Accounts start at zero and can only change together with
+// a corresponding immutable ledger entry.
+model PointsAccount {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  availableBalance Int      @default(0)
+  pendingBalance   Int      @default(0)
+  reservedBalance  Int      @default(0)
+  version          Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user          User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ledgerEntries PointsLedgerEntry[]
+
+  @@index([availableBalance])
+}
+
+model PointsLedgerEntry {
+  id                   String                @id @default(cuid())
+  accountId            String
+  userId               String
+  type                 PointsLedgerEntryType
+  amount               Int
+  availableDelta       Int                   @default(0)
+  pendingDelta         Int                   @default(0)
+  reservedDelta        Int                   @default(0)
+  sourceType           String
+  sourceReference      String
+  idempotencyKey       String                @unique
+  policyVersion        String?
+  reason               String?
+  metadata             Json?
+  reversalOfEntryId    String?               @unique
+  createdById          String?
+  createdAt            DateTime              @default(now())
+
+  account               PointsAccount      @relation(fields: [accountId], references: [id], onDelete: Restrict)
+  user                  User               @relation("PointsLedgerOwner", fields: [userId], references: [id], onDelete: Cascade)
+  createdBy             User?              @relation("PointsLedgerActor", fields: [createdById], references: [id], onDelete: SetNull)
+  reservationRedemption RewardRedemption?  @relation("RewardReservationLedger")
+
+  @@index([accountId, createdAt])
+  @@index([userId, createdAt])
+  @@index([sourceType, sourceReference])
+}
+
+// Catalog records are configuration only. No definition is seeded or activated
+// by this migration because prices and fulfilment policies remain unapproved.
+model RewardDefinition {
+  id                String                 @id @default(cuid())
+  code              String                 @unique
+  displayName       String
+  description       String                 @db.Text
+  status            RewardDefinitionStatus @default(DRAFT)
+  pointsCost        Int?
+  policyVersion     String?
+  fulfillmentConfig Json?
+  startsAt          DateTime?
+  endsAt            DateTime?
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+
+  redemptions RewardRedemption[]
+
+  @@index([status, startsAt, endsAt])
+}
+
+model RewardRedemption {
+  id                       String                 @id @default(cuid())
+  userId                   String
+  rewardDefinitionId       String
+  status                   RewardRedemptionStatus @default(ISSUED)
+  pointsCostSnapshot       Int
+  policyVersion            String?
+  reservationLedgerEntryId String?                @unique
+  idempotencyKey           String                 @unique
+  fulfillmentReference     String?
+  failureReason            String?                @db.Text
+  expiresAt                DateTime?
+  reservedAt               DateTime?
+  redeemedAt               DateTime?
+  cancelledAt              DateTime?
+  createdAt                DateTime               @default(now())
+  updatedAt                DateTime               @updatedAt
+
+  user                   User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rewardDefinition       RewardDefinition   @relation(fields: [rewardDefinitionId], references: [id], onDelete: Restrict)
+  reservationLedgerEntry PointsLedgerEntry? @relation("RewardReservationLedger", fields: [reservationLedgerEntryId], references: [id], onDelete: SetNull)
+
+  @@index([userId, status, createdAt])
+  @@index([rewardDefinitionId, status])
+}
+
+// Campaign configuration is retained separately from pricing or award logic.
+model LoyaltyCampaign {
+  id                String                @id @default(cuid())
+  code              String                @unique
+  displayName       String
+  status            LoyaltyCampaignStatus @default(DRAFT)
+  eligibilityConfig Json
+  benefitConfig     Json
+  policyVersion     String?
+  startsAt          DateTime?
+  endsAt            DateTime?
+  createdById       String?
+  publishedAt       DateTime?
+  archivedAt        DateTime?
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+
+  createdBy User? @relation("LoyaltyCampaignCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([status, startsAt, endsAt])
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

@@ -115,7 +115,7 @@ export function TravelStampDetailModal({
           <div className="flex items-center justify-between">
             <span className="text-zinc-400">Stamp Origin</span>
             <span className="font-semibold text-zinc-700 flex items-center gap-1">
-              Admin-curated passport design
+              {userStamp.isSystemAwarded ? "Verified completed stay" : userStamp.isManual ? "Personal declaration" : "Traveler selection"}
             </span>
           </div>
           <div className="flex items-center justify-between">

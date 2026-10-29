@@ -36,7 +36,7 @@ function StatusBadge({ status }: { status?: string }) {
   const s = (status || "PENDING").toUpperCase();
   if (s === "CONFIRMED" || s === "CURRENT_STAY") {
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-full bg-white/95 backdrop-blur-xs px-2.5 py-1 text-xs font-semibold text-emerald-800 border border-emerald-200/90 shadow-2xs">
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-white/95 backdrop-blur-xs px-2.5 py-1 text-xs font-medium text-emerald-800 border border-emerald-200/90 shadow-2xs">
         <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
         {t("dashboard_status_confirmed", "Confirmed")}
       </span>
@@ -75,7 +75,7 @@ function StatusBadge({ status }: { status?: string }) {
     );
   }
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full bg-white/95 backdrop-blur-xs px-2.5 py-1 text-xs font-semibold text-amber-800 border border-amber-200/90 shadow-2xs">
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-white/95 backdrop-blur-xs px-2.5 py-1 text-xs font-medium text-amber-800 border border-amber-200/90 shadow-2xs">
       <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
       {t("dashboard_status_pending", "Pending")}
     </span>
@@ -149,7 +149,7 @@ export function ReservationCard({
         <div className={isCompactVariant ? "mt-3 flex flex-col" : "mt-3.5"}>
           <p className={isCompactVariant
             ? "order-2 mt-1 text-sm leading-6 text-[#727272]"
-            : "text-[11px] font-semibold uppercase tracking-[0.04em] text-slate-500"}
+            : "text-[11px] font-medium uppercase tracking-[0.04em] text-slate-500"}
           >
             {formatBookingDateRange(data.startDate, data.endDate)}
           </p>

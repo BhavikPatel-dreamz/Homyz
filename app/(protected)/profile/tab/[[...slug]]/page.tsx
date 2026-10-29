@@ -3,6 +3,9 @@ import { extractProfileRoute } from "@/lib/profile/tab-utils";
 import { loadProfilePageData } from "@/lib/profile/profile-loader";
 import { ProfileClient } from "../../profile-client";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function ProfileTabPage({
   params,
   searchParams,

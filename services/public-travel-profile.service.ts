@@ -113,7 +113,7 @@ async function getPublicTravelProfile(
   for (const highlight of highlights) if (highlight.photoCount === 0 && !safeHighlightMap.has(highlight.country.toLowerCase())) safeHighlightMap.set(highlight.country.toLowerCase(), highlight);
 
   const safeHighlights = [...safeHighlightMap.values()];
-  const publicStamps: PublicTravelStampDTO[] = stamps.map((stamp) => ({ id: stamp.id, slug: stamp.stamp.slug, displayName: stamp.stamp.displayName, description: stamp.stamp.description, iconUrl: stamp.stamp.iconUrl, category: stamp.stamp.category, awardedAt: stamp.awardedAt, isPinned: stamp.isPinned, isPublic: stamp.isPublic, isManual: stamp.isManual }));
+  const publicStamps: PublicTravelStampDTO[] = stamps.map((stamp) => ({ id: stamp.id, slug: stamp.stamp.slug, displayName: stamp.stamp.displayName, description: stamp.stamp.description, iconUrl: stamp.stamp.iconUrl, category: stamp.stamp.category, awardedAt: stamp.awardedAt, isPinned: stamp.isPinned, isPublic: stamp.isPublic, isManual: stamp.isManual, isSystemAwarded: stamp.isSystemAwarded }));
   return { ...shell, bio: profile.bio, homeLocation: profile.homeLocation, coverUrl: profile.coverUrl, showStamps: profile.showStamps, canViewContent: true, restrictionReason: null, photos, highlights: safeHighlights, stamps: publicStamps };
 }
 

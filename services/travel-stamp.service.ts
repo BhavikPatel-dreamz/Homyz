@@ -15,6 +15,7 @@ import {
   normalizeCityName,
   normalizeCountry,
 } from "./travel-destination.service";
+import { isCompletedConfirmedBooking } from "@/lib/booking/booking-status";
 
 import type {
   AdminTravelStampDTO,
@@ -304,115 +305,155 @@ export async function ensureStampCatalog(): Promise<void> {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Automatic Stamp Qualification
+// Automatic, booking-backed stamp qualification
 // ─────────────────────────────────────────────────────────────────────────────
 
-export async function evaluateAndAwardStamps(userId: string): Promise<{
+type QualifyingStay = {
+  id: string;
+  startDate: Date;
+  endDate: Date;
+  listing: { country: string | null; city: string | null; checkOutTime: string | null };
+};
+
+function configuredCitiesForStamp(stamp: { slug: string; city: string | null }) {
+  const definition = DEFAULT_STAMP_CATALOG.find((candidate) => candidate.slug === stamp.slug);
+  // City is the authoritative admin configuration. The legacy static catalog
+  // provides a compatibility mapping only for its named records (for example
+  // stamp-paris); we never infer a city from arbitrary marketing copy.
+  return (stamp.city ? [stamp.city] : definition?.qualifyingCities ?? [])
+    .map(normalizeCityName)
+    .filter((city): city is string => Boolean(city));
+}
+
+/**
+ * Awards only catalog rules satisfied by completed, confirmed booking/listing
+ * data. It intentionally does not read profile locations, manual stamps, or
+ * photos. The unique system-owned projection makes retries and concurrent
+ * workers idempotent while preserving any separately user-managed selection.
+ */
+export async function awardSystemTravelStamps(userId: string, now = new Date()): Promise<{
   awardedCount: number;
-  totalStampsCount: number;
+  totalSystemAwardedCount: number;
+  missingConfiguration: string[];
 }> {
   if (!userId) throw AppError.badRequest("userId is required");
 
-  // Ensure catalog exists
-  await ensureStampCatalog();
+  const [bookings, stamps] = await Promise.all([
+    prisma.booking.findMany({
+      where: { userId, status: "CONFIRMED" },
+      select: {
+        id: true,
+        startDate: true,
+        endDate: true,
+        listing: { select: { country: true, city: true, checkOutTime: true } },
+      },
+    }),
+    prisma.travelStamp.findMany({ where: { isActive: true, isCustom: false } }),
+  ]);
 
-  // Gather verified evidence for this traveler
-  const [stats, visitedCountries, allStamps, existingUserStamps] =
-    await Promise.all([
-      getTravelerDestinationStats(userId),
-      getTravelerVisitedDestinations(userId),
-      prisma.travelStamp.findMany({ where: { isActive: true } }),
-      prisma.userTravelStamp.findMany({ where: { userId } }),
-    ]);
+  const stays = (bookings as QualifyingStay[]).flatMap((booking) => {
+    if (!isCompletedConfirmedBooking({
+      dbStatus: "CONFIRMED",
+      startDate: booking.startDate,
+      endDate: booking.endDate,
+      checkOutTime: booking.listing.checkOutTime,
+      now,
+    })) return [];
+    const country = normalizeCountry(booking.listing.country);
+    if (!country) return [];
+    return [{ ...booking, country, city: normalizeCityName(booking.listing.city) }];
+  });
 
-  const existingStampIds = new Set(existingUserStamps.map((us) => us.stampId));
-  const visitedCountryCodes = new Set(
-    visitedCountries.map((c) => c.countryCode.toUpperCase()),
+  const missingConfiguration = new Set<string>();
+  // France/Paris are existing catalog concepts, not implicit business rules.
+  // If a completed stay reaches either destination but its enabled catalog rule
+  // is absent, surface that fact to the worker/reconciliation report instead
+  // of creating a replacement definition.
+  const hasCountryRule = (countryCode: string) => stamps.some((stamp) =>
+    stamp.eligibilityRule.trim().toUpperCase() === "VISIT_COUNTRY" &&
+    stamp.countryCode?.trim().toUpperCase() === countryCode,
   );
-  const visitedCities = new Map<string, Set<string>>();
-  for (const c of visitedCountries) {
-    const cities =
-      visitedCities.get(c.countryCode.toUpperCase()) ?? new Set<string>();
-    for (const city of c.cities) {
-      cities.add(city.toLowerCase());
-    }
-    visitedCities.set(c.countryCode.toUpperCase(), cities);
+  const hasCityRule = (countryCode: string, cityName: string) => stamps.some((stamp) =>
+    stamp.eligibilityRule.trim().toUpperCase() === "VISIT_CITY" &&
+    stamp.countryCode?.trim().toUpperCase() === countryCode &&
+    configuredCitiesForStamp(stamp).some((city) => city.toLocaleLowerCase() === cityName.toLocaleLowerCase()),
+  );
+  if (stays.some((stay) => stay.country.countryCode === "FR") && !hasCountryRule("FR")) {
+    missingConfiguration.add("No active VISIT_COUNTRY France travel stamp is configured.");
   }
-
+  if (stays.some((stay) => stay.country.countryCode === "FR" && stay.city?.toLocaleLowerCase() === "paris") && !hasCityRule("FR", "Paris")) {
+    missingConfiguration.add("No active VISIT_CITY Paris, France travel stamp is configured.");
+  }
   let awardedCount = 0;
 
-  for (const stamp of allStamps) {
-    if (existingStampIds.has(stamp.id)) continue;
-
-    let qualifies = false;
-
-    switch (stamp.eligibilityRule) {
-      case "COMPLETED_STAYS":
-        qualifies = stats.completedStaysCount >= stamp.ruleThreshold;
-        break;
-
-      case "VISIT_COUNTRY":
-        if (stamp.countryCode) {
-          qualifies = visitedCountryCodes.has(stamp.countryCode.toUpperCase());
-        }
-        break;
-
-      case "VISIT_CITY":
-        // City labels such as “Parisian Pulse” are marketing names. Match only
-        // the curated normalized city/country pair, never a photo caption.
-        const definition = DEFAULT_STAMP_CATALOG.find(
-          (candidate) => candidate.slug === stamp.slug,
-        );
-        const allowedCountries =
-          definition?.qualifyingCountryCodes ??
-          (stamp.countryCode ? [stamp.countryCode] : []);
-        const allowedCities = definition?.qualifyingCities ?? [
-          stamp.displayName,
-        ];
-        qualifies = allowedCountries.some((countryCode) => {
-          const cities = visitedCities.get(countryCode.toUpperCase());
-          return Boolean(
-            cities &&
-            allowedCities.some((city) => cities.has(city.toLowerCase())),
-          );
-        });
-        break;
-
-      default:
-        qualifies = false;
-        break;
+  for (const stamp of stamps) {
+    const rule = stamp.eligibilityRule.trim().toUpperCase();
+    let qualifyingStay: (typeof stays)[number] | undefined;
+    if (rule === "VISIT_COUNTRY") {
+      if (!stamp.countryCode?.trim()) {
+        missingConfiguration.add(`Stamp ${stamp.slug} uses VISIT_COUNTRY without countryCode.`);
+        continue;
+      }
+      qualifyingStay = stays.find((stay) => stay.country.countryCode === stamp.countryCode!.trim().toUpperCase());
+    } else if (rule === "VISIT_CITY") {
+      const cities = configuredCitiesForStamp(stamp);
+      if (!stamp.countryCode?.trim() || !cities.length) {
+        missingConfiguration.add(`Stamp ${stamp.slug} uses VISIT_CITY without an explicit countryCode and city mapping.`);
+        continue;
+      }
+      const normalizedCities = new Set(cities.map((city) => city.toLocaleLowerCase()));
+      qualifyingStay = stays.find((stay) =>
+        stay.country.countryCode === stamp.countryCode!.trim().toUpperCase() &&
+        Boolean(stay.city && normalizedCities.has(stay.city.toLocaleLowerCase())),
+      );
+    } else if (rule === "COMPLETED_STAYS") {
+      const threshold = Math.max(1, stamp.ruleThreshold || 1);
+      if (stays.length >= threshold) qualifyingStay = stays[threshold - 1];
+    } else {
+      continue;
     }
 
-    if (qualifies) {
-      try {
-        await prisma.userTravelStamp.create({
-          data: {
-            userId,
-            stampId: stamp.id,
-            awardedAt: new Date(),
-            isPinned: false,
-            displayOrder: 0,
-            evidenceMetadata: {
-              rule: stamp.eligibilityRule,
-              evaluatedAt: new Date().toISOString(),
-            },
-          },
-        });
-        awardedCount++;
-        existingStampIds.add(stamp.id);
-      } catch (err: unknown) {
-        // Handle concurrent insert duplicate safely
-        if ((err as { code?: string }).code !== "P2002") {
-          throw err;
-        }
-      }
+    if (!qualifyingStay) continue;
+    const evidenceMetadata: Prisma.InputJsonValue = {
+      source: "VERIFIED_BOOKING",
+      isPublic: true,
+      bookingId: qualifyingStay.id,
+      rule,
+      countryCode: qualifyingStay.country.countryCode,
+      cityName: qualifyingStay.city,
+      awardedAt: now.toISOString(),
+    };
+    try {
+      await prisma.userTravelStamp.create({
+        data: {
+          userId,
+          stampId: stamp.id,
+          ownership: TravelStampOwnership.SYSTEM_AWARDED,
+          awardedAt: now,
+          evidenceMetadata,
+        },
+      });
+      awardedCount += 1;
+    } catch (error: unknown) {
+      // Parallel completion/reconciliation workers converge on the single
+      // system projection. Do not mask unrelated database failures.
+      if ((error as { code?: string }).code !== "P2002") throw error;
     }
   }
 
   return {
     awardedCount,
-    totalStampsCount: existingStampIds.size,
+    totalSystemAwardedCount: await prisma.userTravelStamp.count({
+      where: { userId, ownership: TravelStampOwnership.SYSTEM_AWARDED, revokedAt: null },
+    }),
+    missingConfiguration: [...missingConfiguration],
   };
+}
+
+/** Backwards-compatible entry point used by older reconciliation callers. */
+export async function evaluateAndAwardStamps(userId: string) {
+  const result = await awardSystemTravelStamps(userId);
+  return { awardedCount: result.awardedCount, totalStampsCount: result.totalSystemAwardedCount };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -420,7 +461,7 @@ export async function evaluateAndAwardStamps(userId: string): Promise<{
 // ─────────────────────────────────────────────────────────────────────────────
 
 type StampEvidence = {
-  source?: "MANUAL_DECLARATION" | "VERIFIED_BOOKING" | string;
+  source?: "MANUAL_DECLARATION" | "USER_SELECTED" | "VERIFIED_BOOKING" | string;
   isPublic?: boolean;
   visitDate?: string | null;
   personalDescription?: string | null;
@@ -440,6 +481,7 @@ function toUserTravelStampDTO(record: {
   isPinned: boolean;
   displayOrder: number;
   evidenceMetadata: Prisma.JsonValue | null;
+  ownership: TravelStampOwnership;
   stamp: {
     id: string;
     slug: string;
@@ -486,6 +528,7 @@ function toUserTravelStampDTO(record: {
     displayOrder: record.displayOrder,
     isPublic: evidence.isPublic !== false,
     isManual: evidence.source === "MANUAL_DECLARATION",
+    isSystemAwarded: record.ownership === TravelStampOwnership.SYSTEM_AWARDED,
     visitDate: evidence.visitDate || null,
     personalDescription: evidence.personalDescription || null,
   };
@@ -496,7 +539,7 @@ export async function getTravelerStamps(
   options?: { publicOnly?: boolean },
 ): Promise<UserTravelStampDTO[]> {
   const records = await prisma.userTravelStamp.findMany({
-    where: { userId },
+    where: { userId, revokedAt: null },
     include: {
       stamp: true,
     },
@@ -523,9 +566,9 @@ export async function getPaginatedTravelerStamps(
 }> {
   const limit = Math.min(48, Math.max(1, Math.floor(options.limit || 12)));
   const [totalCount, records] = await Promise.all([
-    prisma.userTravelStamp.count({ where: { userId } }),
+    prisma.userTravelStamp.count({ where: { userId, revokedAt: null } }),
     prisma.userTravelStamp.findMany({
-      where: { userId },
+      where: { userId, revokedAt: null },
       include: { stamp: true },
       orderBy: [
         { isPinned: "desc" },
@@ -560,6 +603,9 @@ export async function toggleStampPinned(
 
   if (!userStamp || userStamp.userId !== userId) {
     throw AppError.notFound("Travel stamp not found or unauthorized");
+  }
+  if (userStamp.ownership === TravelStampOwnership.SYSTEM_AWARDED) {
+    throw AppError.forbidden("System-awarded stamps cannot be modified.");
   }
 
   const willBePinned = !userStamp.isPinned;
@@ -986,13 +1032,13 @@ export async function addTravelStampSelections(
   }
 
   const existing = await prisma.userTravelStamp.findMany({
-    where: { userId },
+    where: { userId, ownership: TravelStampOwnership.USER_MANAGED },
     select: { stampId: true },
   });
   const existingStampIds = new Set(existing.map((item) => item.stampId));
 
   const currentCount = await prisma.userTravelStamp.count({
-    where: { userId },
+    where: { userId, revokedAt: null },
   });
   let order = currentCount;
 
@@ -1099,7 +1145,13 @@ export async function createCustomTravelStamp(
       },
     });
     return tx.userTravelStamp.upsert({
-      where: { userId_stampId: { userId, stampId: stamp.id } },
+      where: {
+        userId_stampId_ownership: {
+          userId,
+          stampId: stamp.id,
+          ownership: TravelStampOwnership.USER_MANAGED,
+        },
+      },
       update: {},
       create: {
         userId,

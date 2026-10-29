@@ -70,6 +70,16 @@ export async function POST(req: Request) {
       maxAttempts: 3,
       backoffSeconds: 60,
     }),
+    // Backfill missed completion events safely. The worker derives eligibility
+    // from confirmed, checked-out booking/listing data and is idempotent.
+    jobQueueService.enqueueJob({
+      type: "ACHIEVEMENT_RECONCILIATION",
+      payload: { mode: "TRAVEL_STAMP_AWARDS", limit: 100 },
+      idempotencyKey: `cron_travel_stamp_awards_${currentHourKey}`,
+      priority: 4,
+      maxAttempts: 3,
+      backoffSeconds: 60,
+    }),
   ]);
 
   // 2. Process batch of due jobs, CMS actions, and Saudi licence expiry.

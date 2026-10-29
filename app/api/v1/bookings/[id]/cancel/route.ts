@@ -2,6 +2,7 @@ import { apiHandler } from "@/lib/api/handler";
 import { ok } from "@/lib/api/response";
 import { requireApiAuth } from "@/lib/permissions/guards";
 import { bookingService } from "@/services/booking.service";
+import { revalidateBookingPaths } from "@/lib/booking/booking-cache-revalidate";
 import { refundService } from "@/services/refund.service";
 
 type Ctx = { params: Promise<{ id: string }> };
@@ -41,5 +42,6 @@ export const POST = apiHandler(async (req, ctx: Ctx) => {
   const actor = await requireApiAuth(req);
   const { id } = await ctx.params;
   const booking = await bookingService.cancelBookingByGuest(actor, id);
+  revalidateBookingPaths(booking.id);
   return ok(booking);
 });

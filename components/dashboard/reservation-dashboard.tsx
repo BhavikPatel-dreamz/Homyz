@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { ReservationCard, ReservationCardData } from "./reservation-card";
 import { FilterBar, FilterOptions } from "./filter-bar";
@@ -46,14 +46,22 @@ export function ReservationDashboard({
     ? "grid grid-cols-1 items-start gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
     : "grid grid-cols-1 items-start gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4";
 
+  // Sync local reservations state whenever initialReservations prop updates
   useEffect(() => {
-    if (initialReservations !== undefined) return;
+    if (initialReservations !== undefined) {
+      setReservations(initialReservations);
+    }
+  }, [initialReservations]);
 
-    const controller = new AbortController();
+  const refreshReservations = useCallback((silent = false) => {
+    if (!silent) setLoading(true);
+    setError(null);
 
-    fetch("/api/v1/bookings?limit=50", {
-      signal: controller.signal,
-      headers: { "Cache-Control": "no-cache" },
+    return fetch(`/api/v1/bookings?limit=50&_t=${Date.now()}`, {
+      headers: {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        Pragma: "no-cache",
+      },
     })
       .then(async (res) => {
         if (!res.ok) {
@@ -78,9 +86,26 @@ export function ReservationDashboard({
       .finally(() => {
         setLoading(false);
       });
+  }, [t]);
 
-    return () => controller.abort();
-  }, [initialReservations]);
+  // Initial fetch if no initialReservations provided
+  useEffect(() => {
+    if (initialReservations !== undefined) return;
+    void refreshReservations(false);
+  }, [initialReservations, refreshReservations]);
+
+  // Listen for real-time booking mutations and tab focus to bust client cache immediately
+  useEffect(() => {
+    const handleUpdate = () => {
+      void refreshReservations(true);
+    };
+    window.addEventListener("homyz:reservations-updated", handleUpdate);
+    window.addEventListener("focus", handleUpdate);
+    return () => {
+      window.removeEventListener("homyz:reservations-updated", handleUpdate);
+      window.removeEventListener("focus", handleUpdate);
+    };
+  }, [refreshReservations]);
 
   const filteredItems = useMemo(() => {
     const todayMidnight = bookingDateEpoch(new Date());
@@ -223,7 +248,7 @@ export function ReservationDashboard({
         <div className="flex flex-col gap-10 sm:gap-12">
           {upcomingGroups.pending.length > 0 && (
             <section aria-labelledby="pending-requests-heading">
-              <h2 id="pending-requests-heading" className="mb-5 text-xl font-semibold leading-7 text-[#1F1F1F] sm:text-2xl">
+              <h2 id="pending-requests-heading" className="mb-5 text-xl font-medium leading-7 text-[#1F1F1F] sm:text-2xl">
                 {t("dashboard_pending_requests", { count: upcomingGroups.pending.length }, `Pending requests (${upcomingGroups.pending.length})`)}
               </h2>
               <div className="grid grid-cols-1 items-start gap-5 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
@@ -236,7 +261,7 @@ export function ReservationDashboard({
 
           {upcomingGroups.confirmed.length > 0 && (
             <section aria-labelledby="confirmed-trips-heading">
-              <h2 id="confirmed-trips-heading" className="mb-5 text-xl font-semibold leading-7 text-[#1F1F1F] sm:text-2xl">
+              <h2 id="confirmed-trips-heading" className="mb-5 text-xl font-medium leading-7 text-[#1F1F1F] sm:text-2xl">
                 {t("dashboard_confirmed_trips", { count: upcomingGroups.confirmed.length }, `Confirmed trips (${upcomingGroups.confirmed.length})`)}
               </h2>
               <div className="grid grid-cols-1 items-start gap-5 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
@@ -252,7 +277,7 @@ export function ReservationDashboard({
           <div className="flex flex-col gap-12 sm:gap-14">
             {pastYearGroups.map(({ year, items }) => (
               <section key={year} aria-labelledby={`bookings-year-${year}`}>
-                <h2 id={`bookings-year-${year}`} className="text-xl font-semibold leading-7 text-[#1F1F1F] mb-5 sm:text-2xl">
+                <h2 id={`bookings-year-${year}`} className="text-xl font-medium leading-7 text-[#1F1F1F] mb-5 sm:text-2xl">
                   {year}
                 </h2>
                 <div className={reservationGridClassName}>

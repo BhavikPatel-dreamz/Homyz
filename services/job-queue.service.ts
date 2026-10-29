@@ -890,9 +890,14 @@ registerJobHandler("ACHIEVEMENT_EVENT_PROCESSING", async (job) => {
   return processAchievementEvent(eventId, `job:${job.id}`);
 });
 
-// 6. ACHIEVEMENT_RECONCILIATION is evidence-only and requires an explicit
-// payload flag before it is allowed to persist any candidate rows.
+// 6. Reconciliation is bounded and idempotent. Verified travel-stamp awards
+// use authoritative completed bookings; legacy evidence backfill remains
+// explicitly gated.
 registerJobHandler("ACHIEVEMENT_RECONCILIATION", async (job) => {
+  if (job.payload?.mode === "TRAVEL_STAMP_AWARDS") {
+    const { reconcileBatchTravelers } = await import("@/services/travel-reconciliation.service");
+    return reconcileBatchTravelers(Math.min(200, Math.max(1, Number(job.payload?.limit) || 50)));
+  }
   const { reconcileAchievementEvidence } = await import("@/services/achievement-reconciliation.service");
   return reconcileAchievementEvidence({
     limit: Number(job.payload?.limit) || 50,
