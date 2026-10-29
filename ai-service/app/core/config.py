@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     # Google Gemini Settings & Models
     GOOGLE_API_KEY: str = ""
     GEMINI_MODEL: str = "gemini-3.5-flash-lite"
-    GEMINI_EMBEDDING_MODEL: str = "models/text-embedding-004"
+    GEMINI_EMBEDDING_MODEL: str = "models/gemini-embedding-001"
 
     # Search Defaults
     DEFAULT_SEARCH_RADIUS_KM: float = 15.0

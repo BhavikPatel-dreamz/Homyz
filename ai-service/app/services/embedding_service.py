@@ -25,10 +25,14 @@ class EmbeddingService:
                 raise AIProviderError("GOOGLE_API_KEY is not configured")
             from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
-            self._embeddings = GoogleGenerativeAIEmbeddings(
-                model=self.settings.GEMINI_EMBEDDING_MODEL,
-                google_api_key=self.settings.GOOGLE_API_KEY,
-            )
+            kwargs: dict[str, Any] = {
+                "model": self.settings.GEMINI_EMBEDDING_MODEL,
+                "google_api_key": self.settings.GOOGLE_API_KEY,
+            }
+            if self.settings.VECTOR_SIZE:
+                kwargs["output_dimensionality"] = self.settings.VECTOR_SIZE
+
+            self._embeddings = GoogleGenerativeAIEmbeddings(**kwargs)
         return self._embeddings
 
     async def get_embedding(self, text: str) -> list[float]:

@@ -46,8 +46,8 @@ To switch to OpenAI, update `app/core/config.py`:
 # --- CURRENT (Google Gemini) ---
 GOOGLE_API_KEY: str = ""
 GEMINI_MODEL: str = "gemini-3.5-flash-lite"
-GEMINI_EMBEDDING_MODEL: str = "models/text-embedding-004"
-VECTOR_SIZE: int = 768
+GEMINI_EMBEDDING_MODEL: str = "models/gemini-embedding-001"
+VECTOR_SIZE: int = 1536  # or 768 via Matryoshka output_dimensionality
 
 # --- OPENAI ALTERNATIVE ---
 OPENAI_API_KEY: str = ""

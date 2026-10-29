@@ -10,7 +10,7 @@ To make local development as simple and fast as possible without requiring local
 
 * **Development Phase (Current)**:
   * **Vector Database**: **Qdrant Cloud Free Tier** at [cloud.qdrant.io](https://cloud.qdrant.io). Free 1GB managed cluster with zero memory overhead, no local setup, and a built-in web dashboard.
-  * **AI Provider**: **Google Gemini Free Tier** (`gemini-3.5-flash-lite` for multimodal vision, `models/text-embedding-004` 768-dim for vector embeddings) via Google AI Studio at [aistudio.google.com](https://aistudio.google.com). Free $0 API tier.
+  * **AI Provider**: **Google Gemini Free Tier** (`gemini-3.5-flash-lite` for multimodal vision, `models/gemini-embedding-001` with configurable 768/1536-dim for vector embeddings) via Google AI Studio at [aistudio.google.com](https://aistudio.google.com). Free $0 API tier.
 * **Production Deployment Phase (Post-Approval)**:
   * **Vector Database**: Shifting to a **Local / Self-Hosted Qdrant container** running directly on the VPS/host.
   * **AI Provider**: Transitions to **OpenAI** (`gpt-4o-mini`, `text-embedding-3-small` configured at 768-dim) once the client provides their paid OpenAI API key. See [PROVIDER_MIGRATION_GUIDE.md](file:///home/ubuntu/AHEMAD/Homyz/ai-service/00_Docs/PROVIDER_MIGRATION_GUIDE.md) for code diffs and configuration instructions.
@@ -115,7 +115,7 @@ VECTOR_SIZE=768
 # Google Gemini Settings & Models (Free Tier)
 GOOGLE_API_KEY=AIzaSyYourRealKeyHere
 GEMINI_MODEL=gemini-3.5-flash-lite
-GEMINI_EMBEDDING_MODEL=models/text-embedding-004
+GEMINI_EMBEDDING_MODEL=models/gemini-embedding-001
 ```
 
 ---
