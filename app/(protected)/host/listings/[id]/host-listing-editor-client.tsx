@@ -2247,7 +2247,7 @@ export function HostListingEditorClient({
                 </div>
                 <div className="space-y-0.5">
                   <h4 className="font-medium text-base text-[#1F1F1F]">{t("host_booking_consideration_1_title") || "Guests may experience slower confirmation"}</h4>
-                  <p className="text-xs text-[#727272] leading-relaxed font-normal">
+                  <p className="text-sm text-[#727272] leading-relaxed font-normal">
                     {t("host_booking_consideration_1_desc") || "Guests will wait for your approval instead of receiving an immediate booking confirmation."}
                   </p>
                 </div>
@@ -2262,7 +2262,7 @@ export function HostListingEditorClient({
                 </div>
                 <div className="space-y-0.5">
                   <h4 className="font-medium text-base text-[#1F1F1F]">{t("host_booking_consideration_2_title") || "Review every booking request"}</h4>
-                  <p className="text-xs text-[#727272] leading-relaxed font-normal">
+                  <p className="text-sm text-[#727272] leading-relaxed font-normal">
                     {t("host_booking_consideration_2_desc") || "All booking requests will need your review before they are confirmed."}
                   </p>
                 </div>
@@ -2277,7 +2277,7 @@ export function HostListingEditorClient({
                 </div>
                 <div className="space-y-0.5">
                   <h4 className="font-medium text-base text-[#1F1F1F]">{t("host_booking_consideration_3_title") || "Respond within 24 hours"}</h4>
-                  <p className="text-xs text-[#727272] leading-relaxed font-normal">
+                  <p className="text-sm text-[#727272] leading-relaxed font-normal">
                     {t("host_booking_consideration_3_desc") || "Unanswered requests expire automatically after 24 hours and affect your host response rate."}
                   </p>
                 </div>

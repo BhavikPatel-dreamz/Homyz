@@ -19,13 +19,14 @@ interface PropertySelectorProps {
   onSelect: (listingId: string | null) => void;
   disabled?: boolean;
   className?: string;
+  align?: "left" | "right";
 }
 
 /* ─── Robust Thumbnail with Graceful SVG Fallback ────────────────────────── */
 function SafeListingThumbnail({
   src,
   size = "size-10",
-  rounded = "rounded-xl",
+  rounded = "rounded-lg",
 }: {
   src?: string | null;
   size?: string;
@@ -78,11 +79,13 @@ export function PropertySelector({
   onSelect,
   disabled = false,
   className = "",
+  align = "left",
 }: PropertySelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState("");
   const containerRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const popoverAlignClass = align === "right" ? "right-0 sm:right-0 sm:left-auto" : "left-0 sm:left-0 sm:right-auto";
 
   const selectedListing = useMemo(
     () => listings.find((l) => l.id === selectedListingId) || null,
@@ -140,11 +143,10 @@ export function PropertySelector({
         onClick={() => setIsOpen((prev) => !prev)}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
-        className={`group flex h-11 sm:h-12 w-full sm:w-auto sm:min-w-[190px] sm:max-w-[250px] lg:min-w-[220px] lg:max-w-[300px] shrink-0 items-center justify-between gap-2.5 sm:gap-3 rounded-full border bg-white px-3 sm:px-3.5 text-left text-xs sm:text-sm font-medium transition-all shadow-2xs cursor-pointer ${
-          isOpen
+        className={`group flex h-11 sm:h-12 w-full sm:w-auto sm:min-w-[190px] lg:min-w-[220px] lg:max-w-[300px] shrink-0 items-center justify-between gap-2.5 sm:gap-3 rounded-full border bg-white px-3 sm:px-3.5 text-left text-xs sm:text-sm font-medium transition-all shadow-2xs cursor-pointer ${isOpen
             ? "border-[#1F1F1F] ring-2 ring-[#1F1F1F]/5"
             : "border-[#D7D7D7] hover:border-[#1F1F1F]"
-        } disabled:cursor-not-allowed disabled:opacity-50`}
+          } disabled:cursor-not-allowed disabled:opacity-50`}
       >
         <div className="flex min-w-0 items-center gap-2 sm:gap-2.5">
           {/* Thumbnail / Portfolio Icon */}
@@ -173,10 +175,10 @@ export function PropertySelector({
           )}
 
           <div className="min-w-0 flex-1 truncate">
-            <p className="truncate text-xs sm:text-sm font-medium text-[#1F1F1F] lg:max-w-[170px]">
+            <p className="truncate text-sm font-normal text-[#1F1F1F] lg:max-w-[170px]">
               {selectedListing ? selectedListing.title : "All listings"}
             </p>
-            <p className="truncate text-xs text-[#727272] lg:max-w-[170px]">
+            <p className="truncate text-xs font-normal text-[#727272] lg:max-w-[170px]">
               {selectedListing
                 ? [selectedListing.city, selectedListing.country].filter(Boolean).join(", ") || "Selected property"
                 : `${listings.length} ${listings.length === 1 ? "property" : "properties"} total`}
@@ -198,7 +200,9 @@ export function PropertySelector({
 
       {/* Popover Menu (Desktop) */}
       {isOpen && (
-        <div className="absolute left-0 z-50 mt-2.5 hidden w-[420px] max-w-[calc(100vw-32px)] rounded-3xl border border-[#E5E5E5] bg-white p-3.5 shadow-2xl shadow-black/10 sm:block animate-in fade-in-0 zoom-in-95 duration-150">
+        <div
+          className={`absolute z-50 mt-2.5 hidden w-[min(420px,calc(100vw-32px))] rounded-3xl border border-[#E5E5E5] bg-white p-3.5 shadow-2xl shadow-black/10 sm:block animate-in fade-in-0 zoom-in-95 duration-150 ${popoverAlignClass}`}
+        >
           {/* Search Header */}
           <div className="relative mb-3">
             <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[#727272]">
@@ -239,15 +243,15 @@ export function PropertySelector({
               type="button"
               onClick={() => handleSelect(null)}
               className={`group flex w-full items-center justify-between rounded-2xl px-3 py-2.5 text-left transition-all cursor-pointer ${selectedListingId === null
-                  ? "bg-[#1F1F1F] text-white shadow-xs"
-                  : "hover:bg-[#F7F7F8] text-[#1F1F1F]"
+                ? "bg-[#FCDF9C] text-[#1f1f1f]"
+                : "hover:bg-[#F7F7F8] text-[#1F1F1F]"
                 }`}
             >
               <div className="flex min-w-0 items-center gap-3">
                 <div
                   className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors ${selectedListingId === null
-                      ? "bg-white text-[#1F1F1F]"
-                      : "bg-[#F3F4F5] text-[#1F1F1F]"
+                    ? "bg-white text-[#1F1F1F]"
+                    : "bg-[#F3F4F5] text-[#1F1F1F] hover:bg-[#1f1f1f] hover:text-white"
                     }`}
                 >
                   <svg
@@ -267,22 +271,22 @@ export function PropertySelector({
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <p
-                      className={`text-sm font-medium truncate ${selectedListingId === null ? "text-white" : "text-[#1F1F1F]"
+                      className={`text-sm font-medium truncate ${selectedListingId === null ? "text-[#1F1F1F]" : "text-[#1F1F1F]"
                         }`}
                     >
                       All listings
                     </p>
                     <span
-                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ${selectedListingId === null
-                          ? "bg-white/30 text-white"
-                          : "bg-[#F3F4F5] text-[#727272]"
+                      className={`inline-flex items-center justify-center rounded-full min-w-6 min-h-6 text-[10px] font-medium ${selectedListingId === null
+                        ? "bg-[#1f1f1f] text-white"
+                        : "bg-[#F3F4F5] text-[#727272]"
                         }`}
                     >
                       {listings.length}
                     </span>
                   </div>
                   <p
-                    className={`text-xs truncate ${selectedListingId === null ? "text-zinc-300" : "text-[#727272]"
+                    className={`text-xs truncate ${selectedListingId === null ? "text-[#727272]" : "text-[#727272]"
                       }`}
                   >
                     Consolidated entire portfolio
@@ -335,7 +339,7 @@ export function PropertySelector({
                   onClick={() => handleSelect(listing.id)}
                   className={`group flex w-full items-center justify-between rounded-2xl px-3 py-2 text-left transition-all cursor-pointer ${isSelected
                     ? "bg-[#FCDF9C] border border-amber-200/80 text-[#1F1F1F]"
-                      : "hover:bg-[#F7F7F8] text-[#1F1F1F] border border-transparent"
+                    : "hover:bg-[#F7F7F8] text-[#1F1F1F] border border-transparent"
                     }`}
                 >
                   <div className="flex min-w-0 items-center gap-3">
@@ -353,7 +357,7 @@ export function PropertySelector({
                     </div>
                   </div>
                   {isSelected && (
-                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#1F1F1F] text-white ml-2">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[#1F1F1F] bg-white ml-2">
                       <svg
                         className="h-3 w-3"
                         viewBox="0 0 24 24"
@@ -499,7 +503,7 @@ export function PropertySelector({
                       </div>
                     </div>
                     {isSelected && (
-                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#1F1F1F] text-white ml-2">
+                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[#1F1F1F] bg-white ml-2">
                         <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
                           <polyline points="20 6 9 17 4 12" />
                         </svg>

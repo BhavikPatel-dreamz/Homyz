@@ -5,5 +5,6 @@ export interface ContainerProps extends HTMLAttributes<HTMLElement> {
 }
 
 export function Container({ as: Component = "div", className = "", ...props }: ContainerProps) {
-  return <Component className={`mx-auto box-border w-full max-w-[1600px] px-6 ${className}`.trim()} {...props} />;
+  const defaultPadding = className.includes("px-") ? "" : "px-6";
+  return <Component className={`mx-auto box-border w-full max-w-[1600px] ${defaultPadding} ${className}`.trim()} {...props} />;
 }

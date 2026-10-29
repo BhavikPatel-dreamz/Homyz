@@ -4,7 +4,7 @@ import { getAuthContext } from "@/lib/auth/context";
 import { AppError } from "@/lib/api/errors";
 import { deletePhotoComment, updatePhotoComment } from "@/services/travel-social.service";
 
-export async function PATCH(req: NextRequest, ctx: RouteContext<"/api/v1/travel-media/comments/[id]">) {
+export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   try {
     const actor = await getAuthContext(req);
     if (!actor?.id) return NextResponse.json({ error: "Authentication required" }, { status: 401 });
@@ -17,7 +17,7 @@ export async function PATCH(req: NextRequest, ctx: RouteContext<"/api/v1/travel-
   }
 }
 
-export async function DELETE(req: NextRequest, ctx: RouteContext<"/api/v1/travel-media/comments/[id]">) {
+export async function DELETE(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   try {
     const actor = await getAuthContext(req);
     if (!actor?.id) return NextResponse.json({ error: "Authentication required" }, { status: 401 });

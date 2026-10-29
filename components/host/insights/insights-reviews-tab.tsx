@@ -123,7 +123,7 @@ export function InsightsReviewsTab({
       <div className="grid gap-8 lg:grid-cols-2">
         {/* Left: Overall Rating & Distribution */}
         <section className="rounded-3xl border border-[#E5E5E5] bg-white p-6 shadow-sm sm:p-8">
-          <p className="text-xs font-medium  text-[#727272]">Overall Rating</p>
+          <p className="text-sm font-medium  text-[#727272]">Overall Rating</p>
           <div className="mt-3 flex items-baseline gap-3">
             <span className="text-5xl font-medium tracking-tight text-[#1F1F1F] sm:text-6xl">
               {overallRating !== null ? overallRating.toFixed(2) : "—"}
@@ -155,11 +155,11 @@ export function InsightsReviewsTab({
                   <span className="w-12 text-left text-[#727272] font-medium">{stars} stars</span>
                   <div className="h-2 flex-1 rounded-full bg-[#F3F4F5] overflow-hidden">
                     <div
-                      className="h-full rounded-full bg-[#1F1F1F] transition-all duration-500"
+                      className="h-full rounded-full bg-[#FCDF9C] transition-all duration-500"
                       style={{ width: `${pct}%` }}
                     />
                   </div>
-                  <span className="w-10 text-right text-[#727272] font-mono">{count}</span>
+                  <span className="w-10 text-right text-[#727272]">{count}</span>
                 </button>
               );
             })}
@@ -170,8 +170,8 @@ export function InsightsReviewsTab({
         <section className="rounded-3xl border border-[#E5E5E5] bg-white p-6 shadow-sm sm:p-8">
           <div className="flex items-baseline justify-between border-b border-[#EDEDED] pb-4">
             <div>
-              <p className="text-xs font-medium  text-[#727272]">Category ratings</p>
-              <h2 className="text-lg font-medium text-[#1F1F1F]">Guest feedback by category</h2>
+              <p className="text-sm font-medium  text-[#727272]">Category ratings</p>
+              <h2 className="text-xl font-medium text-[#1F1F1F]">Guest feedback by category</h2>
             </div>
             <span className="text-xs text-[#727272]">Scale 1.0 – 5.0</span>
           </div>
@@ -187,7 +187,7 @@ export function InsightsReviewsTab({
                       style={{ width: `${cat.rating ? (cat.rating / 5) * 100 : 0}%` }}
                     />
                   </div>
-                  <span className="w-8 text-right text-sm font-medium text-[#1F1F1F] font-mono">
+                  <span className="w-8 text-right text-sm font-medium text-[#1F1F1F] ">
                     {cat.rating !== null ? cat.rating.toFixed(1) : "—"}
                   </span>
                 </div>
@@ -202,8 +202,8 @@ export function InsightsReviewsTab({
         <div className="grid gap-8 lg:grid-cols-2">
           {/* Quality Strengths & Improvements */}
           <section className="rounded-3xl border border-[#E5E5E5] bg-white p-6 shadow-sm sm:p-8">
-            <h2 className="text-base font-medium text-[#1F1F1F]">Review Quality Summary</h2>
-            <p className="text-xs text-[#727272] mt-0.5">Authoritative guest feedback signals across your listings</p>
+            <h2 className="text-xl font-medium text-[#1F1F1F]">Review Quality Summary</h2>
+            <p className="text-sm text-[#727272] mt-0.5">Authoritative guest feedback signals across your listings</p>
 
             <div className="mt-6 space-y-4">
               {qualitySummary.strengths.length > 0 && (
@@ -224,7 +224,7 @@ export function InsightsReviewsTab({
 
               {qualitySummary.areasForImprovement.length > 0 && (
                 <div>
-                  <p className="text-xs font-medium  text-amber-900">Areas for Improvement (&lt;4.5 ★)</p>
+                  <p className="text-base font-medium  text-[#1f1f1f] mb-3">Areas for Improvement (&lt;4.5 ★)</p>
                   <div className="mt-2 flex flex-wrap gap-2">
                     {qualitySummary.areasForImprovement.map((area) => (
                       <span
@@ -239,7 +239,7 @@ export function InsightsReviewsTab({
               )}
 
               {qualitySummary.unansweredCount > 0 && (
-                <div className="flex items-center justify-between rounded-2xl border border-[#FCDF9C] bg-[#FEF9EE] p-4 text-xs">
+                <div className="flex items-center justify-between rounded-2xl border border-[#FCDF9C] bg-[#FEF9EE] p-4 text-sm">
                   <div className="flex items-center gap-2.5">
                     <span className="text-amber-600 font-medium text-sm">💬</span>
                     <span className="font-medium text-[#1F1F1F]">
@@ -252,7 +252,7 @@ export function InsightsReviewsTab({
                       setSelectedRepliedStatus("unreplied");
                       setCurrentPage(1);
                     }}
-                    className="font-medium text-[#1F1F1F] underline hover:text-[#D97706] cursor-pointer"
+                    className="font-medium text-[#1F1F1F] underline hover:text-[#727272] cursor-pointer"
                   >
                     View
                   </button>
@@ -264,17 +264,17 @@ export function InsightsReviewsTab({
           {/* 12-Month Trends */}
           {trends && trends.length > 0 && (
             <section className="rounded-3xl border border-[#E5E5E5] bg-white p-6 shadow-sm sm:p-8">
-              <h2 className="text-base font-medium text-[#1F1F1F]">12-Month Review Trends</h2>
-              <p className="text-xs text-[#727272] mt-0.5">Average ratings and volume over the past year</p>
+              <h2 className="text-xl font-medium text-[#1F1F1F]">12-Month Review Trends</h2>
+              <p className="text-sm text-[#727272] mt-0.5">Average ratings and volume over the past year</p>
 
               <div className="mt-6 grid grid-cols-3 gap-2.5 sm:grid-cols-6">
                 {trends.slice(-6).map((t) => (
                   <div key={t.monthKey} className="rounded-2xl border border-[#E5E5E5] bg-[#F9F9F9] p-3 text-center transition hover:border-[#1F1F1F]">
-                    <p className="text-[10px] font-medium uppercase text-[#727272]">{t.label.split(" ")[0]}</p>
-                    <p className="mt-1 text-sm font-medium text-[#1F1F1F] font-mono">
+                    <p className="text-xs font-medium text-[#727272]">{t.label.split(" ")[0]}</p>
+                    <p className="mt-2 text-base font-medium text-[#1F1F1F]">
                       {t.averageRating !== null ? `${t.averageRating.toFixed(1)} ★` : "—"}
                     </p>
-                    <p className="mt-0.5 text-[10px] text-[#727272]">
+                    <p className="mt-0.5 text-xs text-[#727272]">
                       {t.reviewCount} {t.reviewCount === 1 ? "rev" : "revs"}
                     </p>
                   </div>
@@ -294,7 +294,7 @@ export function InsightsReviewsTab({
         <div className="flex flex-col gap-4 border-b border-[#EDEDED] pb-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-xl font-medium text-[#1F1F1F]">All Guest Reviews</h2>
-            <p className="text-xs text-[#727272]">Filter, search, and respond to verified guest feedback from {periodLabel}</p>
+            <p className="text-sm text-[#727272]">Filter, search, and respond to verified guest feedback from {periodLabel}</p>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-xs font-medium text-[#727272]">
@@ -306,13 +306,13 @@ export function InsightsReviewsTab({
         {/* Filter Controls Row */}
         <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           {/* Search Box */}
-          <div className="relative">
-            <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[#727272]">
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <div className="relative flex items-center w-full">
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-[#727272]">
+              <svg className="size-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <circle cx="11" cy="11" r="8" />
                 <path d="m21 21-4.3-4.3" />
               </svg>
-            </span>
+            </div>
             <input
               type="text"
               placeholder="Search comments or guests..."
@@ -321,7 +321,7 @@ export function InsightsReviewsTab({
                 setSearchTerm(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full rounded-full border border-[#D7D7D7] bg-[#F9F9F9] pl-10 pr-4 py-2 text-xs text-[#1F1F1F] placeholder:text-[#A0A0A0] transition hover:border-[#1F1F1F] focus:border-[#1F1F1F] focus:bg-white focus:outline-none"
+              className="w-full rounded-full border border-[#D7D7D7] bg-[#F9F9F9] pl-10 pr-4 py-2 text-sm font-normal text-[#1F1F1F] placeholder:text-[#A0A0A0] transition hover:border-[#1F1F1F] focus:border-[#1F1F1F] focus:bg-white focus:outline-none"
             />
           </div>
 
@@ -334,7 +334,7 @@ export function InsightsReviewsTab({
                 setSelectedCategory(e.target.value as typeof selectedCategory);
                 setCurrentPage(1);
               }}
-              className="w-full appearance-none cursor-pointer rounded-full border border-[#D7D7D7] bg-white pl-3.5 pr-8.5 py-2 text-xs font-normal text-[#1F1F1F] transition hover:border-[#1F1F1F] focus:border-[#1F1F1F] focus:outline-none"
+              className="w-full appearance-none cursor-pointer rounded-full border border-[#D7D7D7] bg-white pl-3.5 pr-8.5 py-2 text-sm font-normal text-[#1F1F1F] transition hover:border-[#1F1F1F] focus:border-[#1F1F1F] focus:outline-none"
             >
               <option value="all">All Categories</option>
               <option value="cleanliness">Cleanliness</option>
@@ -360,7 +360,7 @@ export function InsightsReviewsTab({
                 setSelectedRating(e.target.value === "all" ? "all" : Number(e.target.value));
                 setCurrentPage(1);
               }}
-              className="w-full appearance-none cursor-pointer rounded-full border border-[#D7D7D7] bg-white pl-3.5 pr-8.5 py-2 text-xs font-normal text-[#1F1F1F] transition hover:border-[#1F1F1F] focus:border-[#1F1F1F] focus:outline-none"
+              className="w-full appearance-none cursor-pointer rounded-full border border-[#D7D7D7] bg-white pl-3.5 pr-8.5 py-2 text-sm font-normal text-[#1F1F1F] transition hover:border-[#1F1F1F] focus:border-[#1F1F1F] focus:outline-none"
             >
               <option value="all">All Star Ratings</option>
               <option value="5">5 Stars only</option>
@@ -385,7 +385,7 @@ export function InsightsReviewsTab({
                 setSelectedRepliedStatus(e.target.value as "all" | "replied" | "unreplied");
                 setCurrentPage(1);
               }}
-              className="w-full appearance-none cursor-pointer rounded-full border border-[#D7D7D7] bg-white pl-3.5 pr-8.5 py-2 text-xs font-normal text-[#1F1F1F] transition hover:border-[#1F1F1F] focus:border-[#1F1F1F] focus:outline-none"
+              className="w-full appearance-none cursor-pointer rounded-full border border-[#D7D7D7] bg-white pl-3.5 pr-8.5 py-2 text-sm font-normal text-[#1F1F1F] transition hover:border-[#1F1F1F] focus:border-[#1F1F1F] focus:outline-none"
             >
               <option value="all">All Response Statuses</option>
               <option value="unreplied">Needs response (Unreplied)</option>
@@ -407,7 +407,7 @@ export function InsightsReviewsTab({
                 setSelectedSort(e.target.value as "recent" | "oldest" | "highest" | "lowest");
                 setCurrentPage(1);
               }}
-              className="w-full appearance-none cursor-pointer rounded-full border border-[#D7D7D7] bg-white pl-3.5 pr-8.5 py-2 text-xs font-normal text-[#1F1F1F] transition hover:border-[#1F1F1F] focus:border-[#1F1F1F] focus:outline-none"
+              className="w-full appearance-none cursor-pointer rounded-full border border-[#D7D7D7] bg-white pl-3.5 pr-8.5 py-2 text-sm font-normal text-[#1F1F1F] transition hover:border-[#1F1F1F] focus:border-[#1F1F1F] focus:outline-none"
             >
               <option value="recent">Most recent</option>
               <option value="oldest">Oldest first</option>
@@ -469,7 +469,7 @@ export function InsightsReviewsTab({
                           className="h-10 w-10 rounded-full object-cover ring-1 ring-[#EDEDED]"
                         />
                       ) : (
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1F1F1F] font-medium text-white text-sm">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1F1F1F] font-medium text-white text-base">
                           {rev.author.name.charAt(0).toUpperCase()}
                         </div>
                       )}
@@ -482,15 +482,16 @@ export function InsightsReviewsTab({
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <div className="flex items-center gap-1 rounded-full bg-[#FEF9EE] border border-[#FCDF9C] px-3 py-1 text-xs font-medium text-[#1F1F1F]">
+                      <div className="flex items-center gap-1 rounded-full bg-[#FEF9EE] border border-[#FCDF9C] px-3 py-1 text-sm font-medium text-[#1F1F1F]">
                         <span>{rev.rating}</span>
                         <span className="text-amber-500">★</span>
                       </div>
                       <Link
                         href={`/host/insights/reviews/${rev.id}?returnTo=${encodeURIComponent(`/host/insights?tab=reviews${selectedListingId ? `&propertyId=${selectedListingId}` : ""}${selectedPeriod ? `&period=${selectedPeriod}` : ""}${startDate ? `&startDate=${startDate}` : ""}${endDate ? `&endDate=${endDate}` : ""}`)}`}
-                        className="inline-flex rounded-full border border-[#D7D7D7] bg-white px-3.5 py-1 text-xs font-medium text-[#1F1F1F] shadow-2xs transition hover:border-[#1F1F1F] hover:bg-[#F3F4F5]"
+                        aria-label="View Details →"
+                        className="group inline-flex items-center gap-1.5 rounded-full border border-[#D7D7D7] bg-white hover:bg-[#1f1f1f] px-3.5 py-1.5 text-sm font-medium text-[#1F1F1F] hover:text-white hover:border-[#1F1F1F] transition-all duration-200"
                       >
-                        View Details →
+                        <span>View Details</span>
                       </Link>
                     </div>
                   </div>
@@ -501,7 +502,7 @@ export function InsightsReviewsTab({
                   </p>
 
                   {/* Subrating chips */}
-                  <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-[#727272]">
+                  <div className="mt-3 flex flex-wrap gap-2 text-xs text-[#727272]">
                     {rev.cleanlinessRating && (
                       <span className="rounded-full bg-[#F3F4F5] border border-[#EDEDED] px-2.5 py-0.5 font-medium">
                         Cleanliness: {rev.cleanlinessRating} ★
@@ -539,8 +540,8 @@ export function InsightsReviewsTab({
                     {rev.response ? (
                       <div className="rounded-2xl border border-[#E5E5E5] bg-[#F9F9F9] p-4 text-xs">
                         <div className="flex items-center justify-between">
-                          <span className="font-medium text-[#1F1F1F]">Your response</span>
-                          <span className="text-[10px] text-[#727272]">
+                          <span className="font-medium text-[#1F1F1F] text-sm">Your response</span>
+                          <span className="text-xs text-[#727272]">
                             {new Date(rev.response.createdAt).toLocaleDateString("en-US", {
                               month: "short",
                               day: "numeric",
@@ -551,11 +552,11 @@ export function InsightsReviewsTab({
                         <p className="mt-1.5 text-[#1F1F1F] leading-relaxed line-clamp-2">{rev.response.comment}</p>
                       </div>
                     ) : (
-                      <div className="flex items-center justify-between rounded-2xl border border-dashed border-[#D7D7D7] bg-[#FAFAFA] p-3.5 text-xs">
+                      <div className="flex items-center justify-between rounded-2xl border border-dashed border-[#D7D7D7] bg-[#FAFAFA] p-3.5 text-sm">
                         <span className="text-[#727272]">No response posted yet</span>
                         <Link
                           href={`/host/insights/reviews/${rev.id}?returnTo=${encodeURIComponent(`/host/insights?tab=reviews${selectedListingId ? `&propertyId=${selectedListingId}` : ""}${selectedPeriod ? `&period=${selectedPeriod}` : ""}${startDate ? `&startDate=${startDate}` : ""}${endDate ? `&endDate=${endDate}` : ""}`)}`}
-                          className="font-medium text-[#1F1F1F] underline hover:text-[#727272]"
+                          className="font-medium text-[#1F1F1F] underline underline-offset-2 hover:text-[#727272] transition-all duration-200"
                         >
                           Write a response
                         </Link>
@@ -587,20 +588,46 @@ export function InsightsReviewsTab({
               type="button"
               disabled={pagination.page <= 1 || isLoading}
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              className="inline-flex rounded-full border border-[#D7D7D7] bg-white px-4 py-2 font-medium text-[#1F1F1F] shadow-2xs transition hover:border-[#1F1F1F] disabled:cursor-not-allowed disabled:opacity-40"
+              className="inline-flex items-center gap-1.5 rounded-full border border-[#D7D7D7] bg-white px-4 py-2 font-medium text-[#1F1F1F] shadow-2xs transition hover:border-[#1F1F1F] disabled:cursor-not-allowed disabled:opacity-40"
             >
-              ← Previous
+              <svg
+                className="size-3.5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M19 12H5" />
+                <path d="m12 19-7-7 7-7" />
+              </svg>
+              <span>Previous</span>
             </button>
-            <span className="font-mono text-[#727272]">
+            <span className=" text-[#727272]">
               Page {pagination.page} of {pagination.totalPages}
             </span>
             <button
               type="button"
               disabled={pagination.page >= pagination.totalPages || isLoading}
               onClick={() => setCurrentPage((p) => Math.min(pagination.totalPages, p + 1))}
-              className="inline-flex rounded-full border border-[#D7D7D7] bg-white px-4 py-2 font-medium text-[#1F1F1F] shadow-2xs transition hover:border-[#1F1F1F] disabled:cursor-not-allowed disabled:opacity-40"
+              className="inline-flex items-center gap-1.5 rounded-full border border-[#D7D7D7] bg-white px-4 py-2 font-medium text-[#1F1F1F] shadow-2xs transition hover:border-[#1F1F1F] disabled:cursor-not-allowed disabled:opacity-40"
             >
-              Next →
+              <span>Next</span>
+              <svg
+                className="size-3.5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M5 12h14" />
+                <path d="m12 5 7 7-7 7" />
+              </svg>
             </button>
           </div>
         )}

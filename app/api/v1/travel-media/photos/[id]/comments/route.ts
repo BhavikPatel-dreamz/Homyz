@@ -4,7 +4,7 @@ import { getAuthContext } from "@/lib/auth/context";
 import { AppError } from "@/lib/api/errors";
 import { createPhotoComment, getPhotoComments } from "@/services/travel-social.service";
 
-export async function GET(req: NextRequest, ctx: RouteContext<"/api/v1/travel-media/photos/[id]/comments">) {
+export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   try {
     const actor = await getAuthContext(req);
     const { id } = await ctx.params;
@@ -20,7 +20,7 @@ export async function GET(req: NextRequest, ctx: RouteContext<"/api/v1/travel-me
   }
 }
 
-export async function POST(req: NextRequest, ctx: RouteContext<"/api/v1/travel-media/photos/[id]/comments">) {
+export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   try {
     const actor = await getAuthContext(req);
     if (!actor?.id) return NextResponse.json({ error: "Authentication required" }, { status: 401 });

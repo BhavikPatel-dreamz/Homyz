@@ -136,10 +136,10 @@ export function HostEarningsReportsClient({
             aria-label="Back to Earnings"
           />
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+            <p className="text-xs font-medium uppercase tracking-wider text-[#727272]">
               Host Finances
             </p>
-            <h1 className="text-2xl font-bold tracking-tight text-zinc-950 sm:text-3xl">
+            <h1 className="text-2xl font-medium tracking-tight text-[#1f1f1f] sm:text-3xl">
               Earnings reports
             </h1>
           </div>
@@ -149,12 +149,12 @@ export function HostEarningsReportsClient({
         <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-wrap items-center gap-3">
             {/* Year Selector */}
-            <div className="group relative inline-flex items-center rounded-xl border border-zinc-300 bg-white pl-3 pr-7 py-1.5 text-sm font-semibold text-zinc-900 transition hover:border-zinc-950">
-              <span className="text-xs text-zinc-500 mr-1.5">Year:</span>
+            <div className="group relative inline-flex items-center rounded-xl border border-zinc-300 bg-white pl-3 pr-7 py-1.5 text-sm font-medium text-[#1f1f1f] transition hover:border-zinc-950">
+              <span className="text-xs text-[#727272] mr-1.5">Year:</span>
               <select
                 value={data.selectedYear}
                 onChange={(e) => update({ year: e.target.value })}
-                className="appearance-none cursor-pointer bg-transparent font-semibold focus:outline-none"
+                className="appearance-none cursor-pointer bg-transparent font-medium focus:outline-none"
               >
                 {availableYears.map((yr) => (
                   <option key={yr} value={yr}>
@@ -162,7 +162,7 @@ export function HostEarningsReportsClient({
                   </option>
                 ))}
               </select>
-              <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-500 transition-colors group-hover:text-zinc-900">
+              <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[#727272] transition-colors group-hover:text-[#1f1f1f]">
                 <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d="m6 9 6 6 6-6" />
                 </svg>
@@ -170,12 +170,12 @@ export function HostEarningsReportsClient({
             </div>
 
             {/* Listing Filter */}
-            <div className="group relative inline-flex items-center rounded-xl border border-zinc-300 bg-white pl-3 pr-7 py-1.5 text-sm font-semibold text-zinc-900 transition hover:border-zinc-950">
-              <span className="text-xs text-zinc-500 mr-1.5">Listing:</span>
+            <div className="group relative inline-flex items-center rounded-xl border border-zinc-300 bg-white pl-3 pr-7 py-1.5 text-sm font-medium text-[#1f1f1f] transition hover:border-zinc-950">
+              <span className="text-xs text-[#727272] mr-1.5">Listing:</span>
               <select
                 value={data?.selectedListingId || ""}
                 onChange={(e) => update({ propertyId: e.target.value || null })}
-                className="max-w-[180px] truncate appearance-none cursor-pointer bg-transparent font-semibold focus:outline-none"
+                className="max-w-[180px] truncate appearance-none cursor-pointer bg-transparent font-medium focus:outline-none"
               >
                 <option value="">All listings</option>
                 {listings.map((item) => (
@@ -184,7 +184,7 @@ export function HostEarningsReportsClient({
                   </option>
                 ))}
               </select>
-              <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-500 transition-colors group-hover:text-zinc-900">
+              <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[#727272] transition-colors group-hover:text-[#1f1f1f]">
                 <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d="m6 9 6 6 6-6" />
                 </svg>
@@ -193,12 +193,12 @@ export function HostEarningsReportsClient({
 
             {/* Currency Filter if multiple */}
             {currencies.length > 1 && (
-              <div className="group relative inline-flex items-center rounded-xl border border-zinc-300 bg-white pl-3 pr-7 py-1.5 text-sm font-semibold text-zinc-900 transition hover:border-zinc-950">
-                <span className="text-xs text-zinc-500 mr-1.5">Currency:</span>
+              <div className="group relative inline-flex items-center rounded-xl border border-zinc-300 bg-white pl-3 pr-7 py-1.5 text-sm font-medium text-[#1f1f1f] transition hover:border-zinc-950">
+                <span className="text-xs text-[#727272] mr-1.5">Currency:</span>
                 <select
                   value={currency}
                   onChange={(e) => update({ currency: e.target.value || null })}
-                  className="appearance-none cursor-pointer bg-transparent font-semibold focus:outline-none"
+                  className="appearance-none cursor-pointer bg-transparent font-medium focus:outline-none"
                 >
                   {currencies.map((curr) => (
                     <option key={curr} value={curr}>
@@ -206,7 +206,7 @@ export function HostEarningsReportsClient({
                     </option>
                   ))}
                 </select>
-                <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-500 transition-colors group-hover:text-zinc-900">
+                <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[#727272] transition-colors group-hover:text-[#1f1f1f]">
                   <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                     <path d="m6 9 6 6 6-6" />
                   </svg>
@@ -220,12 +220,12 @@ export function HostEarningsReportsClient({
             <button
               type="button"
               onClick={() => setShowGenerateModal(true)}
-              className="rounded-full bg-zinc-950 px-4 py-2 text-sm font-semibold text-white shadow-xs transition-colors hover:bg-zinc-800"
+              className="rounded-full bg-zinc-950 px-4 py-2 text-sm font-medium text-white shadow-xs transition-colors hover:bg-zinc-800"
             >
               Generate report
             </button>
 
-            <div className="flex rounded-full border border-zinc-300 p-0.5 text-xs font-semibold">
+            <div className="flex rounded-full border border-zinc-300 p-0.5 text-xs font-medium">
               <button
                 type="button"
                 disabled={downloadingType !== null}
@@ -255,17 +255,17 @@ export function HostEarningsReportsClient({
         <section className="relative overflow-hidden rounded-3xl border border-zinc-200 bg-gradient-to-br from-zinc-50 to-white p-6 shadow-xs sm:p-8">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-baseline sm:justify-between">
             <div>
-              <span className="inline-flex rounded-full bg-zinc-900 px-3 py-1 text-xs font-semibold text-white">
+              <span className="inline-flex rounded-full bg-[#1f1f1f] px-3 py-1 text-xs font-medium text-white">
                 {data.selectedYear} Annual Summary
               </span>
-              <p className="mt-4 text-xs font-medium uppercase tracking-wider text-zinc-500">
+              <p className="mt-4 text-xs font-medium uppercase tracking-wider text-[#727272]">
                 Net host earnings
               </p>
-              <h2 className="mt-1 text-4xl font-bold tracking-tight text-zinc-950 sm:text-5xl">
+              <h2 className="mt-1 text-4xl font-medium tracking-tight text-[#1f1f1f] sm:text-4xl">
                 {formatNative(yearly.netEarnings, currency)}
               </h2>
               {!hasYearlyActivity && (
-                <p className="mt-3 max-w-md text-sm text-zinc-600">
+                <p className="mt-3 max-w-md text-sm text-[#727272]">
                   No completed stays with a recorded payout snapshot match this
                   year and filter scope.
                 </p>
@@ -276,7 +276,7 @@ export function HostEarningsReportsClient({
               href={`/host/earnings/reports/yearly/${data.selectedYear}${
                 query.toString() ? `?${query.toString()}` : ""
               }`}
-              className="inline-flex items-center gap-1 text-sm font-semibold text-zinc-900 underline underline-offset-4 hover:text-zinc-600"
+              className="inline-flex items-center gap-1 text-sm font-medium text-[#1f1f1f] underline underline-offset-4 hover:text-[#727272]"
             >
               View yearly report →
             </Link>
@@ -284,26 +284,26 @@ export function HostEarningsReportsClient({
 
           <div className="mt-8 grid grid-cols-2 gap-4 border-t border-zinc-200 pt-6 sm:grid-cols-4">
             <div>
-              <p className="text-xs text-zinc-500">Gross earnings</p>
-              <p className="mt-1 text-lg font-semibold text-zinc-900">
+              <p className="text-xs text-[#727272]">Gross earnings</p>
+              <p className="mt-1 text-lg font-medium text-[#1f1f1f]">
                 {formatNative(yearly.grossEarnings, currency)}
               </p>
             </div>
             <div>
-              <p className="text-xs text-zinc-500">Host service fee</p>
-              <p className="mt-1 text-lg font-semibold text-zinc-700">
+              <p className="text-xs text-[#727272]">Host service fee</p>
+              <p className="mt-1 text-lg font-medium text-zinc-700">
                 −{formatNative(yearly.platformFee, currency)}
               </p>
             </div>
             <div>
-              <p className="text-xs text-zinc-500">Paid disbursements</p>
-              <p className="mt-1 text-lg font-semibold text-emerald-700">
+              <p className="text-xs text-[#727272]">Paid disbursements</p>
+              <p className="mt-1 text-lg font-medium text-emerald-700">
                 {formatNative(yearly.paidPayouts, currency)}
               </p>
             </div>
             <div>
-              <p className="text-xs text-zinc-500">Upcoming payouts</p>
-              <p className="mt-1 text-lg font-semibold text-zinc-900">
+              <p className="text-xs text-[#727272]">Upcoming payouts</p>
+              <p className="mt-1 text-lg font-medium text-[#1f1f1f]">
                 {formatNative(yearly.upcomingPayouts, currency)}
               </p>
             </div>
@@ -314,15 +314,15 @@ export function HostEarningsReportsClient({
         <section>
           <div className="flex items-baseline justify-between border-b border-zinc-200 pb-3">
             <div>
-              <h2 className="text-lg font-bold text-zinc-950">
+              <h2 className="text-lg font-medium text-[#1f1f1f]">
                 Monthly reports
               </h2>
-              <p className="text-xs text-zinc-500">
+              <p className="text-xs text-[#727272]">
                 Select a month to inspect detailed financial breakdowns and
                 transactions
               </p>
             </div>
-            <span className="text-xs font-semibold text-zinc-500">
+            <span className="text-xs font-medium text-[#727272]">
               {data.selectedYear}
             </span>
           </div>
@@ -341,16 +341,16 @@ export function HostEarningsReportsClient({
                 >
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2.5">
-                      <p className="font-semibold text-zinc-900 group-hover:text-black">
+                      <p className="font-medium text-[#1f1f1f] group-hover:text-black">
                         {report.monthName} {report.year}
                       </p>
                       <span
-                        className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+                        className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${
                           report.status === "COMPLETED"
                             ? "bg-emerald-50 text-emerald-700"
                             : report.status === "IN_PROGRESS"
                               ? "bg-sky-50 text-sky-700"
-                              : "bg-zinc-100 text-zinc-500"
+                              : "bg-zinc-100 text-[#727272]"
                         }`}
                       >
                         {report.status === "COMPLETED"
@@ -361,7 +361,7 @@ export function HostEarningsReportsClient({
                       </span>
                     </div>
 
-                    <p className="mt-1 text-xs text-zinc-500">
+                    <p className="mt-1 text-xs text-[#727272]">
                       {report.transactionCount}{" "}
                       {report.transactionCount === 1 ? "booking" : "bookings"}
                       {report.adjustments !== 0 && " · Adjustments recorded"}
@@ -370,12 +370,12 @@ export function HostEarningsReportsClient({
 
                   <div className="flex items-center gap-4 text-right">
                     <div>
-                      <p className="text-base font-bold text-zinc-950 sm:text-lg">
+                      <p className="text-base font-medium text-[#1f1f1f] sm:text-lg">
                         {formatNative(report.netEarnings, report.currency)}
                       </p>
-                      <p className="text-[11px] text-zinc-400">Net payout</p>
+                      <p className="text-[11px] text-[#727272]">Net payout</p>
                     </div>
-                    <span className="text-xl text-zinc-400 transition-transform group-hover:translate-x-0.5 group-hover:text-zinc-950">
+                    <span className="text-xl text-[#727272] transition-transform group-hover:translate-x-0.5 group-hover:text-[#1f1f1f]">
                       ›
                     </span>
                   </div>

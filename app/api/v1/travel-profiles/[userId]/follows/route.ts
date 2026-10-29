@@ -4,7 +4,7 @@ import { getAuthContext } from "@/lib/auth/context";
 import { AppError } from "@/lib/api/errors";
 import { getTravelFollowList } from "@/services/travel-privacy.service";
 
-export async function GET(req: NextRequest, ctx: RouteContext<"/api/v1/travel-profiles/[userId]/follows">) {
+export async function GET(req: NextRequest, ctx: { params: Promise<{ userId: string }> }) {
   try {
     const actor = await getAuthContext(req);
     const { userId } = await ctx.params;

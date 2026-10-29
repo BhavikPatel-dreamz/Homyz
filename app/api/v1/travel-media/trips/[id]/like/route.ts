@@ -6,7 +6,7 @@ import { prisma } from "@/lib/db/prisma";
 import { getTripLikeStatus, toggleTripLike } from "@/services/travel-social.service";
 import { getTravelProfileStats } from "@/services/travel-profile.service";
 
-export async function GET(req: NextRequest, ctx: RouteContext<"/api/v1/travel-media/trips/[id]/like">) {
+export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   try {
     const actor = await getAuthContext(req);
     const { id } = await ctx.params;
@@ -17,7 +17,7 @@ export async function GET(req: NextRequest, ctx: RouteContext<"/api/v1/travel-me
   }
 }
 
-export async function POST(req: NextRequest, ctx: RouteContext<"/api/v1/travel-media/trips/[id]/like">) {
+export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   try {
     const actor = await getAuthContext(req);
     if (!actor?.id) return NextResponse.json({ error: "Authentication required" }, { status: 401 });

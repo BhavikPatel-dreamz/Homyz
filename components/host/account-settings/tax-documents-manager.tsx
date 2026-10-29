@@ -152,7 +152,7 @@ export function TaxDocumentsManager({
       <div className="rounded-3xl border border-zinc-200/90 bg-white p-6 shadow-xs sm:p-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-xl font-bold tracking-tight text-zinc-950">
+            <h2 className="text-xl font-medium tracking-tight text-[#1f1f1f]">
               Tax Documents & Statements
             </h2>
             <p className="mt-1 text-sm text-zinc-500">

@@ -6,6 +6,10 @@ import { Container } from "@/components/ui";
 import { requirePageRole } from "@/lib/permissions/page-guards";
 import { hostReviewsInsightsService } from "@/services/host-reviews-insights.service";
 import { HostReviewDetailsClient } from "./host-review-details-client";
+import {
+  HOST_REPORTING_CONTAINER_CLASS,
+  HOST_REPORTING_MAIN_CLASS,
+} from "@/components/host/dashboard/host-reporting-layout";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -31,10 +35,10 @@ export default async function HostReviewDetailsPage({
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-zinc-50/60 pb-[calc(110px+env(safe-area-inset-bottom))] font-sans text-[#1F1F1F] selection:bg-[#FCDF9C] sm:pb-0">
+    <div className="flex min-h-screen flex-col bg-[#F9FAFB] pb-[calc(110px+env(safe-area-inset-bottom))] font-sans text-[#1F1F1F] selection:bg-[#FCDF9C] sm:pb-0">
       <HostHeader />
-      <main className="w-full min-w-0 flex-1 pb-16 pt-8 sm:pb-24 sm:pt-10">
-        <Container className="max-w-5xl px-4 sm:px-6">
+      <main className={HOST_REPORTING_MAIN_CLASS}>
+        <Container className={HOST_REPORTING_CONTAINER_CLASS}>
           <HostReviewDetailsClient review={review} returnTo={returnTo} />
         </Container>
       </main>

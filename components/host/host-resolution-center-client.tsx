@@ -196,7 +196,7 @@ export function HostResolutionCenterClient({ data, listings }: Props) {
               "host_res_center_search_placeholder",
               "Search case #, booking #, or property title..."
             )}
-            className="min-h-11 w-full sm:rounded-xl rounded-lg border border-zinc-300 bg-white px-4 text-sm outline-none focus:border-zinc-900"
+            className="min-h-11 w-full rounded-full border border-zinc-300 bg-white px-4 text-sm outline-none focus:border-zinc-900"
           />
         </label>
 
@@ -210,7 +210,7 @@ export function HostResolutionCenterClient({ data, listings }: Props) {
             onChange={(e) =>
               navigate({ propertyId: e.target.value || undefined })
             }
-            className="min-h-11 w-full appearance-none sm:rounded-xl rounded-lg border border-zinc-300 bg-white pl-3.5 pr-10 text-sm text-[#1F1F1F] outline-none transition focus:border-zinc-900 cursor-pointer"
+            className="min-h-11 w-full appearance-none rounded-full border border-zinc-300 bg-white pl-3.5 pr-10 text-sm text-[#1F1F1F] outline-none transition focus:border-zinc-900 cursor-pointer"
           >
             <option value="">
               {t("host_res_center_all_properties", "All Properties")}
@@ -247,7 +247,7 @@ export function HostResolutionCenterClient({ data, listings }: Props) {
             onChange={(e) =>
               navigate({ status: e.target.value || undefined })
             }
-            className="min-h-11 w-full appearance-none sm:rounded-xl rounded-lg border border-zinc-300 bg-white pl-3.5 pr-10 text-sm text-[#1F1F1F] outline-none transition focus:border-zinc-900 cursor-pointer"
+            className="min-h-11 w-full appearance-none rounded-full border border-zinc-300 bg-white pl-3.5 pr-10 text-sm text-[#1F1F1F] outline-none transition focus:border-zinc-900 cursor-pointer"
           >
             <option value="">
               {t("host_res_center_all_statuses", "All Statuses")}

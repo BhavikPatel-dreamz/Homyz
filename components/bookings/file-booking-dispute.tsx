@@ -79,39 +79,104 @@ export function FileBookingDispute({ bookingId, variant = "guest" }: FileBooking
       </button>
 
       {open && (
-        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/50 p-4">
-          <div className="max-h-[calc(100dvh-2rem)] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-5 text-[#1F1F1F] shadow-2xl sm:p-6">
-            <div className="flex items-start justify-between gap-4 border-b border-zinc-200 pb-3">
+        <ModalOverlay className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+          <div className="max-h-[calc(100dvh-2rem)] w-full max-w-lg overflow-y-auto rounded-3xl bg-white p-5 text-[#1F1F1F] shadow-2xl sm:p-7">
+            <div className="flex items-start justify-between gap-4 border-b border-zinc-100 pb-4">
               <div>
-                <h2 className="text-lg font-semibold">{t("booking_dispute_modal_title", "Report a reservation issue")}</h2>
-                <p className="mt-1 text-sm text-zinc-600">{t("booking_dispute_modal_subtitle", "Your report is shared with Homyz Support for review.")}</p>
+                <h2 className="text-xl font-medium tracking-tight text-[#1F1F1F]">{t("booking_dispute_modal_title", "Report a reservation issue")}</h2>
+                <p className="mt-1 text-xs sm:text-sm text-[#727272]">{t("booking_dispute_modal_subtitle", "Your report is shared with Homyz Support for review.")}</p>
               </div>
-              <button type="button" onClick={close} className="min-h-11 min-w-11 text-lg font-bold" aria-label={t("booking_dispute_close_aria", "Close report form")}>×</button>
+              <button
+                type="button"
+                onClick={close}
+                className="flex size-8 shrink-0 items-center justify-center rounded-full text-[#727272] hover:bg-[#F3F4F5] hover:text-[#1F1F1F] transition-colors cursor-pointer"
+                aria-label={t("booking_dispute_close_aria", "Close report form")}
+              >
+                ✕
+              </button>
             </div>
 
             {submitted ? (
               <div className="py-6">
-                <p className="font-semibold text-emerald-800">{t("booking_dispute_submitted_title", "Your report has been submitted.")}</p>
-                <p className="mt-1 text-sm text-zinc-600">{t("booking_dispute_submitted_desc", "We will review the case and may contact you for more information.")}</p>
-                <button type="button" onClick={close} className="mt-5 rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-semibold text-white">{t("booking_dispute_btn_done", "Done")}</button>
+                <div className="inline-flex size-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 font-semibold mb-3">✓</div>
+                <p className="text-base font-medium text-emerald-800">{t("booking_dispute_submitted_title", "Your report has been submitted.")}</p>
+                <p className="mt-1 text-sm text-[#727272]">{t("booking_dispute_submitted_desc", "We will review the case and may contact you for more information.")}</p>
+                <button
+                  type="button"
+                  onClick={close}
+                  className="mt-6 inline-flex h-11 items-center justify-center rounded-full bg-[#1F1F1F] px-6 text-sm font-medium text-white transition-all duration-300 hover:bg-[#FCDF9C] hover:text-[#1F1F1F] cursor-pointer"
+                >
+                  {t("booking_dispute_btn_done", "Done")}
+                </button>
               </div>
             ) : (
               <form onSubmit={submit} className="space-y-4 pt-4">
-                {error && <p className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>}
-                <label className="block text-sm font-semibold">
+                {error && <p className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+                <label className="block text-sm font-medium text-[#1F1F1F]">
                   {t("booking_dispute_what_happened", "What happened?")}
-                  <select value={category} onChange={(event) => setCategory(event.target.value as typeof category)} className="mt-1.5 block w-full rounded-lg border border-zinc-300 bg-white p-2.5 text-sm font-normal">
-                    {CATEGORIES.map(([value, key, label]) => <option key={value} value={value}>{t(key, label)}</option>)}
-                  </select>
+                  <div className="relative mt-1.5">
+                    <select
+                      value={category}
+                      onChange={(event) => setCategory(event.target.value as typeof category)}
+                      className="block w-full appearance-none rounded-xl border border-zinc-300 bg-white py-2.5 pl-3.5 pr-10 text-sm font-normal text-[#1F1F1F] transition-all focus:border-[#1F1F1F] focus:outline-hidden cursor-pointer"
+                    >
+                      {CATEGORIES.map(([value, key, label]) => <option key={value} value={value}>{t(key, label)}</option>)}
+                    </select>
+                    <div className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-[#727272]">
+                      <svg
+                        className="size-4"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path d="m6 9 6 6 6-6" />
+                      </svg>
+                    </div>
+                  </div>
                 </label>
-                <label className="block text-sm font-semibold">
+                <label className="block text-sm font-medium text-[#1F1F1F]">
                   {t("booking_dispute_describe_issue", "Describe the issue")}
-                  <textarea value={description} onChange={(event) => setDescription(event.target.value)} rows={5} maxLength={4000} required placeholder={t("booking_dispute_placeholder", { reporter }, `Tell us what happened with the ${reporter} and when.`)} className="mt-1.5 block w-full rounded-lg border border-zinc-300 p-2.5 text-sm font-normal" />
+                  <textarea
+                    value={description}
+                    onChange={(event) => setDescription(event.target.value)}
+                    rows={5}
+                    maxLength={4000}
+                    required
+                    placeholder={t("booking_dispute_placeholder", { reporter }, `Tell us what happened with the ${reporter} and when.`)}
+                    className="mt-1.5 block w-full rounded-xl border border-zinc-300 p-3 text-sm font-normal text-[#1F1F1F] placeholder:text-[#727272] focus:border-[#1F1F1F] focus:outline-hidden transition-all resize-none"
+                  />
                 </label>
-                <p className="text-xs leading-relaxed text-zinc-500">{t("booking_dispute_security_notice", "Do not include payment-card details or access codes. Evidence upload is not available in this form yet.")}</p>
-                <div className="flex flex-col-reverse gap-2 border-t border-zinc-200 pt-4 sm:flex-row sm:justify-end">
-                  <button type="button" onClick={close} disabled={submitting} className="min-h-11 rounded-lg border border-zinc-300 px-4 py-2 text-sm font-semibold">{t("booking_dispute_btn_cancel", "Cancel")}</button>
-                  <button type="submit" disabled={submitting || !description.trim()} className="min-h-11 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">{submitting ? t("booking_dispute_submitting", "Submitting…") : t("booking_dispute_btn_submit", "Submit report")}</button>
+                <p className="text-xs leading-relaxed text-[#727272]">{t("booking_dispute_security_notice", "Do not include payment-card details or access codes. Evidence upload is not available in this form yet.")}</p>
+                <div className="flex flex-col-reverse gap-3 border-t border-zinc-100 pt-5 sm:flex-row sm:justify-end">
+                  <button
+                    type="button"
+                    onClick={close}
+                    disabled={submitting}
+                    className="flex min-h-11 items-center justify-center rounded-full border border-[#1F1F1F] bg-white px-6 text-sm font-medium text-[#1F1F1F] transition-all duration-300 hover:bg-[#1F1F1F] hover:text-white disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
+                  >
+                    {t("booking_dispute_btn_cancel", "Cancel")}
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={submitting || !description.trim()}
+                    className="flex min-h-11 items-center justify-center gap-2 rounded-full border border-transparent bg-[#FCDF9C] px-6 text-sm font-medium text-[#1F1F1F] shadow-xs transition-all duration-300 hover:bg-[#1F1F1F] hover:text-white hover:border-[#1F1F1F] disabled:cursor-not-allowed disabled:bg-zinc-200 disabled:text-zinc-400 disabled:border-transparent disabled:opacity-70 cursor-pointer"
+                  >
+                    {submitting ? (
+                      <>
+                        <svg className="size-4 animate-spin text-current" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        </svg>
+                        <span>{t("booking_dispute_submitting", "Submitting…")}</span>
+                      </>
+                    ) : (
+                      <span>{t("booking_dispute_btn_submit", "Submit report")}</span>
+                    )}
+                  </button>
                 </div>
               </form>
             )}

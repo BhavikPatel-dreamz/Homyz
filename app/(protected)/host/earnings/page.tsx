@@ -54,7 +54,7 @@ export default async function HostEarningsPage({
   ]);
 
   return (
-    <div className="flex min-h-screen flex-col bg-white pb-[calc(110px+env(safe-area-inset-bottom))] font-sans text-[#1F1F1F] selection:bg-[#FCDF9C] sm:pb-0">
+    <div className="flex min-h-screen flex-col overflow-x-clip bg-white pb-[calc(110px+env(safe-area-inset-bottom))] font-sans text-[#1F1F1F] selection:bg-[#FCDF9C] sm:pb-0">
       <HostHeader />
       <main className={HOST_REPORTING_MAIN_CLASS}>
         <Container className={HOST_REPORTING_CONTAINER_CLASS}>

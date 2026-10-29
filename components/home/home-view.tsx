@@ -502,7 +502,7 @@ export function HomeView({
           )}
 
 
-       
+
           {/* Recently Viewed Client Section */}
           {recentlyViewedCards.length > 0 && !propertySections.some((s) => s.id === "recently-viewed") && (
             <section className="mt-8 sm:mt-[92px]">
@@ -522,118 +522,118 @@ export function HomeView({
             <HomepageLoadingState />
           ) : (
             <div className="mt-8 sm:mt-[92px] space-y-10 sm:space-y-[78px]">
-            {propertySections.length === 0 ? (
-              <div className="py-16 text-center space-y-4 max-w-lg mx-auto bg-zinc-50/80 rounded-3xl border border-zinc-200 p-8">
-                <div className="w-14 h-14 bg-amber-100/70 rounded-full flex items-center justify-center mx-auto text-2xl">
-                  🏡
-                </div>
-                <div className="space-y-1">
-                  <h3 className="text-lg font-semibold text-[#1F1F1F]">
-                    {mode === "SEARCH"
-                      ? t("home_no_stays_found_in", { location: searchContext?.displayName ?? t("home_this_location", "this location") })
-                      : t("home_discover_handpicked_stays", "Discover hand-picked stays on Homyz")}
-                  </h3>
-                  <p className="text-xs text-[#727272] leading-relaxed font-normal">
-                    {mode === "SEARCH"
-                      ? t("home_try_expanding_date_range", "Try expanding your date range, adjusting guest count, or exploring nearby destinations.")
-                      : t("home_search_destinations_above", "Search destinations, check-in dates, and guest capacity above to browse available vacation rentals and accommodations.")}
-                  </p>
-                </div>
-                <div className="pt-2 flex items-center justify-center gap-3">
-                  {mode === "SEARCH" ? (
-                    <button
-                      type="button"
-                      onClick={handleClearSearch}
-                      className="rounded-full bg-zinc-900 hover:bg-zinc-800 text-white font-semibold text-xs px-6 py-2.5 transition-all cursor-pointer"
-                    >
-                      {t("home_clear_search", "Clear search")}
-                    </button>
-                  ) : (
+              {propertySections.length === 0 ? (
+                <div className="py-16 text-center space-y-4 max-w-lg mx-auto bg-[#F3F4F5] shadow-[0_2px_4px_0px_#00000040] rounded-3xl border border-white p-8">
+                  <div className="w-14 h-14 bg-amber-100/70 rounded-full flex items-center justify-center mx-auto text-2xl">
+                    🏡
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="text-lg font-semibold text-[#1F1F1F]">
+                      {mode === "SEARCH"
+                        ? t("home_no_stays_found_in", { location: searchContext?.displayName ?? t("home_this_location", "this location") })
+                        : t("home_discover_handpicked_stays", "Discover hand-picked stays on Homyz")}
+                    </h3>
+                    <p className="text-sm text-[#727272] leading-relaxed font-normal">
+                      {mode === "SEARCH"
+                        ? t("home_try_expanding_date_range", "Try expanding your date range, adjusting guest count, or exploring nearby destinations.")
+                        : t("home_search_destinations_above", "Search destinations, check-in dates, and guest capacity above to browse available vacation rentals and accommodations.")}
+                    </p>
+                  </div>
+                  <div className="pt-2 flex items-center justify-center gap-3">
+                    {mode === "SEARCH" ? (
+                      <button
+                        type="button"
+                        onClick={handleClearSearch}
+                        className="rounded-full bg-[#1f1f1f] hover:bg-[#FCDF9C] text-white hover:text-[#1f1f1f] font-medium text-sm px-6 py-2.5 transition-all duration-300 cursor-pointer"
+                      >
+                        {t("home_clear_search", "Clear search")}
+                      </button>
+                    ) : (
+                      <Link
+                        href="/listings"
+                        className="rounded-full hover:bg-[#1f1f1f] bg-[#FCDF9C] hover:text-white text-[#1f1f1f] font-medium text-sm px-6 py-2.5 transition-all duration-300"
+                      >
+                        {t("home_browse_all_stays", "Browse all stays")}
+                      </Link>
+                    )}
                     <Link
-                      href="/listings"
-                      className="rounded-full bg-zinc-900 hover:bg-zinc-800 text-white font-semibold text-xs px-6 py-2.5 transition-all"
+                      href="/become-a-host"
+                      className="rounded-full bg-amber-200 hover:bg-amber-300 text-amber-950 hover:text-[#1f1f1f] font-medium text-sm px-6 py-2.5 transition-all duration-300"
                     >
-                      {t("home_browse_all_stays", "Browse all stays")}
+                      {t("header_become_a_host", "Become a host")}
                     </Link>
-                  )}
-                  <Link
-                    href="/become-a-host"
-                    className="rounded-full bg-amber-200 hover:bg-amber-300 text-amber-950 font-semibold text-xs px-6 py-2.5 transition-all"
-                  >
-                    {t("header_become_a_host", "Become a host")}
-                  </Link>
+                  </div>
                 </div>
-              </div>
-            ) : mode === "SEARCH" ? (
-              <>
-                {/* 1. Latest searched location: 2-3 sections of that destination ONLY */}
-                {searchLocationSections.map((section, idx) => (
-                  <LazySection
-                    key={section.id}
-                    priority={idx < 2}
-                    section={section}
-                    initialCards={section.cards}
-                    activeContext={activeContext}
-                    canFavorite={canFavorite}
-                  />
-                ))}
-
-                {/* 2. Last-to-last search rows (1 row each for previous searches) */}
-                {uniquePastSections.map((section) => (
-                  <LazySection
-                    key={section.id}
-                    priority={false}
-                    section={section}
-                    initialCards={section.cards}
-                    activeContext={activeContext}
-                    canFavorite={canFavorite}
-                  />
-                ))}
-
-                {/* 3. Others (Trending stays, etc.) */}
-                {otherSections.map((section) => (
-                  <LazySection
-                    key={section.id}
-                    priority={false}
-                    section={section}
-                    initialCards={section.cards}
-                    activeContext={activeContext}
-                    canFavorite={canFavorite}
-                  />
-                ))}
-              </>
-            ) : (
-              <>
-                {/* 1. Client activity rows (previous searches / suggestions based on user activity) always on top */}
-                {uniquePastSections.map((section, idx) => (
-                  <LazySection
-                    key={section.id}
-                    priority={idx === 0}
-                    section={section}
-                    initialCards={section.cards}
-                    activeContext={activeContext}
-                    canFavorite={canFavorite}
-                  />
-                ))}
-
-                {/* 2. Latest discovery rows (Popular homes, Villas, Top-rated, etc.) at the bottom of previous suggestion rows */}
-                {propertySections.map((section, idx) => {
-                  const isPriority = uniquePastSections.length === 0 ? idx < 2 : idx === 0 && uniquePastSections.length === 1;
-                  return (
+              ) : mode === "SEARCH" ? (
+                <>
+                  {/* 1. Latest searched location: 2-3 sections of that destination ONLY */}
+                  {searchLocationSections.map((section, idx) => (
                     <LazySection
                       key={section.id}
-                      priority={isPriority}
+                      priority={idx < 2}
                       section={section}
                       initialCards={section.cards}
                       activeContext={activeContext}
                       canFavorite={canFavorite}
                     />
-                  );
-                })}
-              </>
-            )}
-          </div>
-        )}
+                  ))}
+
+                  {/* 2. Last-to-last search rows (1 row each for previous searches) */}
+                  {uniquePastSections.map((section) => (
+                    <LazySection
+                      key={section.id}
+                      priority={false}
+                      section={section}
+                      initialCards={section.cards}
+                      activeContext={activeContext}
+                      canFavorite={canFavorite}
+                    />
+                  ))}
+
+                  {/* 3. Others (Trending stays, etc.) */}
+                  {otherSections.map((section) => (
+                    <LazySection
+                      key={section.id}
+                      priority={false}
+                      section={section}
+                      initialCards={section.cards}
+                      activeContext={activeContext}
+                      canFavorite={canFavorite}
+                    />
+                  ))}
+                </>
+              ) : (
+                <>
+                  {/* 1. Client activity rows (previous searches / suggestions based on user activity) always on top */}
+                  {uniquePastSections.map((section, idx) => (
+                    <LazySection
+                      key={section.id}
+                      priority={idx === 0}
+                      section={section}
+                      initialCards={section.cards}
+                      activeContext={activeContext}
+                      canFavorite={canFavorite}
+                    />
+                  ))}
+
+                  {/* 2. Latest discovery rows (Popular homes, Villas, Top-rated, etc.) at the bottom of previous suggestion rows */}
+                  {propertySections.map((section, idx) => {
+                    const isPriority = uniquePastSections.length === 0 ? idx < 2 : idx === 0 && uniquePastSections.length === 1;
+                    return (
+                      <LazySection
+                        key={section.id}
+                        priority={isPriority}
+                        section={section}
+                        initialCards={section.cards}
+                        activeContext={activeContext}
+                        canFavorite={canFavorite}
+                      />
+                    );
+                  })}
+                </>
+              )}
+            </div>
+          )}
 
           {/* Trending Locations Destination Cards */}
           {trendingLocations.length > 0 && (

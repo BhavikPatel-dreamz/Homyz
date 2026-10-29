@@ -38,20 +38,20 @@ export function InsightsTabNav({
               role="tab"
               aria-selected={isActive}
               onClick={() => onTabChange(tab.id)}
-              className={`group relative flex items-center gap-2 pb-4 pt-2 text-sm font-semibold transition-colors focus:outline-none cursor-pointer ${
+              className={`group relative flex items-center gap-2 pb-4 pt-2 text-sm font-medium transition-colors focus:outline-none cursor-pointer ${
                 isActive ? "text-[#1F1F1F]" : "text-[#727272] hover:text-[#1F1F1F]"
               }`}
             >
               <span>{tab.label}</span>
               {tab.id === "reviews" && reviewCount !== undefined && reviewCount > 0 && (
-                <span className="rounded-full bg-[#F3F4F5] px-2 py-0.5 text-xs text-[#1F1F1F] font-medium">
+                <span className="rounded-full bg-[#e1e1e1] px-2 py-0.5 text-xs text-[#1F1F1F] font-medium">
                   {reviewCount}
                 </span>
               )}
               {tab.id === "opportunities" &&
                 opportunitiesCount !== undefined &&
                 opportunitiesCount > 0 && (
-                  <span className="rounded-full bg-[#FEF9EE] border border-[#FCDF9C] px-2 py-0.5 text-xs text-[#D97706] font-semibold">
+                  <span className="rounded-full bg-[#FEF9EE] border border-[#FCDF9C] px-2 py-0.5 text-xs text-[#D97706] font-medium">
                     {opportunitiesCount}
                   </span>
                 )}

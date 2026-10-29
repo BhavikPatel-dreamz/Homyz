@@ -189,7 +189,7 @@ export function GenerateReportModal({
       <div className="max-h-[calc(100dvh-2rem)] w-full overflow-y-auto rounded-t-3xl bg-white p-6 shadow-2xl sm:max-w-2xl sm:rounded-3xl">
         <div className="flex items-center justify-between border-b border-zinc-200 pb-4">
           <div>
-            <h2 id="report-modal-title" className="text-xl font-bold tracking-tight text-zinc-950">
+            <h2 id="report-modal-title" className="text-xl font-medium tracking-tight text-[#1f1f1f]">
               Generate earnings report
             </h2>
             <p className="mt-1 text-xs text-zinc-500">

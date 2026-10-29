@@ -144,7 +144,7 @@ export function HostInsightsClient({ initialData }: HostInsightsClientProps) {
           <button
             type="button"
             onClick={() => void loadData(query)}
-            className="cursor-pointer rounded-full bg-[#1F1F1F] px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-[#FCDF9C] hover:text-[#1F1F1F]"
+            className="cursor-pointer rounded-full bg-[#1F1F1F] px-4 py-1.5 text-xs font-medium text-white transition hover:bg-[#FCDF9C] hover:text-[#1F1F1F]"
           >
             Retry
           </button>
@@ -193,15 +193,118 @@ export function HostInsightsClient({ initialData }: HostInsightsClientProps) {
 
 function InsightsContentSkeleton({ tab }: { tab: InsightsTab }) {
   if (tab === "stats") {
-    return <div className="space-y-10 animate-pulse" aria-label="Loading statistics">
-      <section><div className="h-5 w-40 rounded bg-[#F3F4F5]" /><div className="mt-5 grid grid-cols-2 gap-px bg-[#E5E5E5] sm:grid-cols-3">{Array.from({ length: 6 }, (_, index) => <div key={index} className="min-h-36 bg-white p-5"><div className="h-3 w-20 rounded bg-[#F3F4F5]" /><div className="mt-5 h-8 w-24 rounded bg-[#F3F4F5]" /><div className="mt-3 h-3 w-32 rounded bg-[#F9F9F9]" /></div>)}</div></section>
-      <section><div className="h-5 w-56 rounded bg-[#F3F4F5]" /><div className="mt-5 grid gap-5 lg:grid-cols-3">{Array.from({ length: 3 }, (_, index) => <div key={index} className="h-64 rounded-3xl border border-[#E5E5E5] bg-white p-5"><div className="h-4 w-24 rounded bg-[#F3F4F5]" /><div className="mt-8 h-32 rounded bg-[#F9F9F9]" /></div>)}</div></section>
-      <section><div className="h-5 w-44 rounded bg-[#F3F4F5]" /><div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{Array.from({ length: 6 }, (_, index) => <div key={index} className="h-32 border-b border-[#E5E5E5]"><div className="h-3 w-24 rounded bg-[#F3F4F5]" /><div className="mt-4 h-7 w-20 rounded bg-[#F3F4F5]" /></div>)}</div></section>
-    </div>;
+    return (
+      <div className="space-y-8 sm:space-y-10 animate-pulse" aria-label="Loading statistics">
+        <section>
+          <div className="h-5 w-40 rounded bg-[#F3F4F5]" />
+          <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }, (_, index) => (
+              <div key={index} className="h-36 rounded-2xl border border-white bg-[#F3F4F5] p-5 shadow-[0_2px_4px_0px_#00000040]">
+                <div className="h-3 w-20 rounded bg-white" />
+                <div className="mt-5 h-8 w-24 rounded bg-white" />
+                <div className="mt-3 h-3 w-32 rounded bg-white/70" />
+              </div>
+            ))}
+          </div>
+        </section>
+        <section>
+          <div className="h-5 w-56 rounded bg-[#F3F4F5]" />
+          <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 3 }, (_, index) => (
+              <div
+                key={index}
+                className={`h-64 rounded-3xl border border-[#E5E5E5] bg-white p-5 sm:p-6 shadow-2xs ${
+                  index === 2 ? "sm:col-span-2 lg:col-span-1" : ""
+                }`}
+              >
+                <div className="h-4 w-24 rounded bg-[#F3F4F5]" />
+                <div className="mt-8 h-32 rounded bg-[#FAFAFA]" />
+              </div>
+            ))}
+          </div>
+        </section>
+        <section>
+          <div className="h-5 w-44 rounded bg-[#F3F4F5]" />
+          <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }, (_, index) => (
+              <div key={index} className="h-32 rounded-2xl border border-white bg-[#F3F4F5] p-5 shadow-[0_2px_4px_0px_#00000040]">
+                <div className="h-3 w-24 rounded bg-white" />
+                <div className="mt-4 h-7 w-20 rounded bg-white" />
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
+    );
   }
 
-  return <div className="space-y-5 animate-pulse" aria-label="Loading insights">
-    <div className="h-8 w-52 rounded bg-[#F3F4F5]" />
-    {Array.from({ length: 4 }, (_, index) => <div key={index} className="h-28 rounded-2xl border border-[#E5E5E5] bg-[#F9F9F9]" />)}
-  </div>;
+  if (tab === "opportunities") {
+    return (
+      <div className="space-y-8 sm:space-y-10 animate-pulse" aria-label="Loading opportunities">
+        <section>
+          <div className="h-5 w-44 rounded bg-[#F3F4F5]" />
+          <div className="mt-5 grid grid-cols-2 gap-4 lg:grid-cols-4">
+            {Array.from({ length: 4 }, (_, index) => (
+              <div key={index} className="h-32 rounded-2xl border border-white bg-[#F3F4F5] p-5 shadow-[0_2px_4px_0px_#00000040]">
+                <div className="flex justify-between items-start">
+                  <div className="h-3 w-20 rounded bg-white" />
+                  <div className="size-7 rounded-full bg-white" />
+                </div>
+                <div className="mt-4 h-8 w-16 rounded bg-white" />
+                <div className="mt-2 h-3 w-28 rounded bg-white/70" />
+              </div>
+            ))}
+          </div>
+        </section>
+        <section>
+          <div className="h-5 w-48 rounded bg-[#F3F4F5]" />
+          <div className="mt-5 h-24 rounded-3xl border border-white bg-[#F3F4F5] shadow-[0_2px_4px_0px_#00000040]" />
+          <div className="mt-5 overflow-hidden rounded-3xl border border-[#E5E5E5] bg-white shadow-2xs divide-y divide-[#EDEDED]">
+            {Array.from({ length: 3 }, (_, index) => (
+              <div key={index} className="p-6 space-y-3">
+                <div className="flex gap-2">
+                  <div className="h-5 w-16 rounded-full bg-[#F3F4F5]" />
+                  <div className="h-5 w-24 rounded-full bg-[#F3F4F5]" />
+                </div>
+                <div className="h-5 w-1/3 rounded bg-[#F3F4F5]" />
+                <div className="h-4 w-2/3 rounded bg-[#FAFAFA]" />
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  if (tab === "superhost") {
+    return (
+      <div className="space-y-8 sm:space-y-10 animate-pulse" aria-label="Loading Superhost details">
+        <section className="h-44 sm:h-48 rounded-3xl border border-white bg-[#F3F4F5] p-6 shadow-[0_2px_4px_0px_#00000040]" />
+        <section>
+          <div className="h-5 w-48 rounded bg-[#F3F4F5]" />
+          <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+            {Array.from({ length: 6 }, (_, index) => (
+              <div key={index} className="h-56 rounded-3xl border border-[#E5E5E5] bg-white p-5 sm:p-6 shadow-2xs">
+                <div className="flex justify-between items-start">
+                  <div className="h-4 w-32 rounded bg-[#F3F4F5]" />
+                  <div className="h-5 w-16 rounded-full bg-[#F3F4F5]" />
+                </div>
+                <div className="mt-3 h-3 w-48 rounded bg-[#FAFAFA]" />
+                <div className="mt-8 h-16 rounded-2xl bg-[#F9F9F9]" />
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-5 animate-pulse" aria-label="Loading insights">
+      <div className="h-8 w-52 rounded bg-[#F3F4F5]" />
+      {Array.from({ length: 4 }, (_, index) => (
+        <div key={index} className="h-28 rounded-2xl border border-[#E5E5E5] bg-white shadow-2xs" />
+      ))}
+    </div>
+  );
 }

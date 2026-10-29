@@ -4,7 +4,7 @@ import { getAuthContext } from "@/lib/auth/context";
 import { AppError } from "@/lib/api/errors";
 import { getTravelTripDetails } from "@/services/travel-social.service";
 
-export async function GET(req: NextRequest, ctx: RouteContext<"/api/v1/travel-media/trips/[id]/public">) {
+export async function GET(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   try {
     const actor = await getAuthContext(req);
     const { id } = await ctx.params;
