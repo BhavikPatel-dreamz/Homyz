@@ -27,7 +27,8 @@ All application code, configuration, tests, and dependencies must live strictly 
 │   ├── PROJECT_OVERVIEW.md    # High-level architecture & requirements
 │   ├── API_DOCUMENTATION.md   # Endpoint contracts & payload schemas
 │   ├── CODING_STANDARDS.md    # Coding guidelines & architecture patterns
-│   └── LOCAL_SETUP_GUIDE.md   # Local Docker & Python setup instructions
+│   ├── LOCAL_SETUP_GUIDE.md   # Local Docker & Python setup instructions
+│   └── PROVIDER_MIGRATION_GUIDE.md # LLM Provider Switching (Gemini <-> OpenAI)
 ├── app/                       # Self-Contained Application Root
 │   ├── .venv/                 # Local Python virtual environment (strictly inside app/)
 │   ├── main.py                # Main application entry point & middleware

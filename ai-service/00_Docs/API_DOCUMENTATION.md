@@ -252,21 +252,48 @@ All error responses return standard JSON:
 
 ### 5.1 Moderate Review
 * **Path**: `POST /reviews/moderate`
-* **Description**: Scans review for abuse, hate speech, contact info solicitation, and extortion.
+* **Description**: Real-time safety audit for guest and host reviews. Checks for personal attacks, hate speech, severe profanity, violence, physical security disclosures (door keypad codes, lockbox combos), off-platform contact solicitation (phone numbers, WhatsApp, emails, external payment handles, social handles), and review extortion / blackmail.
+* **Cost Optimization ($0 AI Cost)**:
+  * **Empty / Star-Only Reviews**: Submissions with empty comments (`comment: ""`) immediately return an unflagged verdict without calling the LLM.
+  * **Deterministic Regex Pre-Filter**: Obvious phone, email, WhatsApp, or lockbox pattern hits are rejected immediately before LLM invocation.
+* **Safety Filter Fault-Tolerance**: If extreme violations trigger upstream Gemini safety blocks (`FinishReason.SAFETY`), the service gracefully captures the event and returns a definitive flagged verdict instead of a 500 server error.
 
 #### Request Body
 ```json
 {
-  "review_id": "string",
-  "listing_id": "string",
-  "comment": "string"
+  "review_id": "rev_clx001",
+  "listing_id": "list_9901",
+  "comment": "Spotless and cozy! Host was super fast to reply.",
+  "direction": "GUEST_TO_PROPERTY"
+}
+```
+*(Notes: `comment` has a hard limit of **1,000 characters maximum**. An empty string `""` is allowed for rating-only reviews. `direction` defaults to `"GUEST_TO_PROPERTY"`).*
+
+#### Response (`200 OK` - Clean Review)
+```json
+{
+  "review_id": "rev_clx001",
+  "is_flagged": false,
+  "confidence_score": 0.99,
+  "rejection_reason": null,
+  "moderation_notes": null,
+  "toxicity_categories": {
+    "harassment": false,
+    "hate_speech": false,
+    "profanity": false,
+    "sexual": false,
+    "violence": false,
+    "security_violation": false
+  },
+  "contains_contact_info": false,
+  "is_extortion": false
 }
 ```
 
-#### Response (`200 OK`)
+#### Response (`200 OK` - Flagged Violation Example)
 ```json
 {
-  "review_id": "string",
+  "review_id": "rev_clx002",
   "is_flagged": true,
   "confidence_score": 0.98,
   "rejection_reason": "Off-platform contact solicitation",
@@ -276,7 +303,8 @@ All error responses return standard JSON:
     "hate_speech": false,
     "profanity": false,
     "sexual": false,
-    "violence": false
+    "violence": false,
+    "security_violation": false
   },
   "contains_contact_info": true,
   "is_extortion": false
@@ -287,41 +315,99 @@ All error responses return standard JSON:
 
 ### 5.2 Summarize Listing Reviews
 * **Path**: `POST /reviews/summarize`
-* **Description**: Extracts 1–10 aspect ratings and generates a 3-sentence summary for a listing.
+* **Description**: Extracts ratings across the 6 standard Airbnb dimensions on a **1.0 to 5.0 scale** (strictly matching Homyz Next.js Prisma & React UI schema) and synthesizes an objective review summary.
+* **Adaptive Summarization**:
+  * **Ultra-Sparse Reviews (1–2 reviews)**: Produces a concise factual summary and strictly extracted highlights without hallucinating unmentioned amenities.
+  * **Standard Reviews (3–50 reviews)**: Produces an objective 3-sentence narrative synthesis, 2–3 positive highlights, and constructive considerations (or empty `[]` if flawless).
 
 #### Request Body
 ```json
 {
-  "listing_id": "string",
+  "listing_id": "list_9901",
   "reviews": [
     "Spotless apartment! The bed was very comfortable and check-in was seamless.",
     "Host responded in under 5 minutes when we had a question about wifi. Great location near subway."
-  ]
+  ],
+  "language": "en"
 }
 ```
+*(Notes: `reviews` accepts 1 to 50 items. Each review comment must not exceed **1,000 characters**. `language` is optional and defaults to `"en"`).*
 
 #### Response (`200 OK`)
 ```json
 {
-  "listing_id": "string",
+  "listing_id": "list_9901",
   "total_reviews_analyzed": 2,
   "aspect_ratings": {
-    "cleanliness": 9.8,
-    "accuracy": 9.6,
-    "check_in": 9.9,
-    "communication": 10.0,
-    "location": 9.2,
-    "value": 9.4
+    "cleanliness": 4.9,
+    "accuracy": 4.8,
+    "check_in": 5.0,
+    "communication": 5.0,
+    "location": 4.7,
+    "value": 4.8
   },
-  "summary": "Guests consistently praise the pristine cleanliness, exceptionally responsive host, and seamless check-in. The location offers easy transit access.",
+  "summary": "Guests consistently praise the pristine cleanliness, exceptionally responsive host, and seamless check-in. The location offers convenient transit access.",
   "highlights": [
     "Spotless cleanliness and comfortable bedding",
     "Host responds in under 5 minutes",
     "Convenient transit access"
   ],
-  "considerations": [
-    "Mild weekend street noise"
-  ]
+  "considerations": []
+}
+```
+*(Notes: `aspect_ratings` supports both snake_case `check_in` and camelCase `checkIn` aliases for seamless client interoperability. All aspect ratings are calibrated strictly between **1.0 and 5.0**).*
+
+#### TypeScript DTOs
+```typescript
+export interface ReviewModerationRequest {
+  review_id: string;
+  listing_id: string;
+  comment?: string; // Max 1,000 characters; empty string allowed
+  direction?: "GUEST_TO_PROPERTY" | "HOST_TO_GUEST";
+}
+
+export interface ReviewToxicityCategories {
+  harassment: boolean;
+  hate_speech: boolean;
+  profanity: boolean;
+  sexual: boolean;
+  violence: boolean;
+  security_violation: boolean;
+}
+
+export interface ReviewModerationResponse {
+  review_id: string;
+  is_flagged: boolean;
+  confidence_score: number; // 0.0 - 1.0
+  rejection_reason: string | null;
+  moderation_notes: string | null;
+  toxicity_categories: ReviewToxicityCategories;
+  contains_contact_info: boolean;
+  is_extortion: boolean;
+}
+
+export interface ReviewSummarizeRequest {
+  listing_id: string;
+  reviews: string[]; // 1 to 50 items, max 1,000 chars per item
+  language?: string;
+}
+
+export interface ReviewAspectRatings {
+  cleanliness: number; // 1.0 - 5.0
+  accuracy: number;    // 1.0 - 5.0
+  check_in: number;    // 1.0 - 5.0 (also aliased as checkIn)
+  communication: number; // 1.0 - 5.0
+  location: number;    // 1.0 - 5.0
+  value: number;       // 1.0 - 5.0
+}
+
+export interface ReviewSummarizeResponse {
+  listing_id: string;
+  total_reviews_analyzed: number;
+  aspect_ratings: ReviewAspectRatings;
+  summary: string;
+  highlights: string[];
+  considerations: string[];
 }
 ```
 

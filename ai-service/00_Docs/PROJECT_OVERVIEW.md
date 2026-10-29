@@ -21,20 +21,20 @@ The client platform's primary database (users, bookings, payments, properties), 
 * **AI Model Provider (Demo vs. Production)**:
   * **Demo / Preview Phase (Current)**: To enable a full working preview for client approval before they purchase API keys, the entire AI engine runs on **Google Gemini Free Tier via `langchain-google-genai`** at **$0 cost**:
     * **Embeddings**: Google **`text-embedding-004`** (**768 dimensions**).
-    * **Vision / LLM**: Google **`gemini-3.5-flash`** (multimodal vision, categorization, tips).
+    * **Vision / LLM**: Google **`gemini-3.5-flash-lite`** (multimodal vision, categorization, tips).
     * **Vector Size**: Qdrant collection is configured with `VECTOR_SIZE = 768`.
   * **Production Phase (Post-Approval)**: Once the client approves the preview and provides their paid OpenAI API key, the engine transitions to **OpenAI**:
     * **Embeddings**: OpenAI **`text-embedding-3-small`** (**1536 dimensions**).
     * **Vision / LLM**: OpenAI **`gpt-4o-mini`**.
     * **Vector Size**: `VECTOR_SIZE = 1536` (Qdrant collection is re-synced).
-  * **Unified Architecture**: LangChain provides identical interfaces (`GoogleGenerativeAIEmbeddings` $\leftrightarrow$ `OpenAIEmbeddings`, `ChatGoogleGenerativeAI` $\leftrightarrow$ `ChatOpenAI`), ensuring a clean transition with zero rewrite of business logic.
+  * **Unified Architecture**: LangChain provides identical interfaces (`GoogleGenerativeAIEmbeddings` $\leftrightarrow$ `OpenAIEmbeddings`, `ChatGoogleGenerativeAI` $\leftrightarrow$ `ChatOpenAI`), ensuring a clean transition with zero rewrite of business logic. See [PROVIDER_MIGRATION_GUIDE.md](file:///home/ubuntu/AHEMAD/Homyz/ai-service/00_Docs/PROVIDER_MIGRATION_GUIDE.md) for code diffs, configuration instructions, and the 768-dimension parity configuration.
 
 | Capability | Demo Model (Google Free Tier) | Production Model (OpenAI) |
 | :--- | :--- | :--- |
 | **Embeddings (Search & Sync)** | `text-embedding-004` (**768 dim**) | `text-embedding-3-small` (**1536 dim**) |
-| **Vision (Photo Categorization)** | `gemini-3.5-flash` | `gpt-4o-mini` |
-| **Moderation & Extraction** | `gemini-3.5-flash` | `omni-moderation-latest` + `gpt-4o-mini` |
-| **Guest Chatbot (RAG)** | `gemini-3.5-flash` | `gpt-4o-mini` |
+| **Vision (Photo Categorization)** | `gemini-3.5-flash-lite` | `gpt-4o-mini` |
+| **Moderation & Extraction** | `gemini-3.5-flash-lite` | `omni-moderation-latest` + `gpt-4o-mini` |
+| **Guest Chatbot (RAG)** | `gemini-3.5-flash-lite` | `gpt-4o-mini` |
 | **Qdrant Vector Size** | `768` | `1536` |
 
 ---
@@ -82,15 +82,15 @@ The client platform's primary database (users, bookings, payments, properties), 
   * **Smart Cover Photo**: Automatically nominates the single highest-scoring, well-lit living room or exterior photo as the recommended cover image.
 
 ### 2.3 Module 3: Review Filtering & Summarization
-* **Automated Moderation Gate**: Uses OpenAI `omni-moderation-latest` (100% Free) to detect toxicity, hate speech, harassment, and profanity, plus `gpt-4o-mini` to detect off-platform solicitation (phone numbers, WhatsApp) and extortion.
-* **Aspect-Based Sentiment Extraction**: Once a listing has reviews, AI extracts 1–10 scores across the standard 6 Airbnb dimensions:
+* **Automated Moderation Gate**: Multi-layer safety gate detecting toxicity, hate speech, harassment, physical security disclosures (door keypad codes, lockboxes), off-platform solicitation (phone, WhatsApp, external payment, social handles), and review extortion / retaliation. Pre-screens empty comments and contact regex patterns ($0 AI cost); gracefully handles upstream AI safety blocks.
+* **Aspect-Based Sentiment Extraction**: Once a listing has reviews (1 to 50 reviews, max 1,000 characters per review), AI extracts **1.0–5.0** scores across the standard 6 Airbnb dimensions (matching the Homyz Next.js 5-star rating schema):
   1. Cleanliness
   2. Accuracy of Description
-  3. Check-in Experience
+  3. Check-in Experience (`checkIn`)
   4. Host Communication
   5. Location & Neighborhood
   6. Value for Money
-* **Concise 3-Sentence Summary**: Generates a balanced summary highlighting top praises and caveats at the top of the listing page.
+* **Adaptive Narrative Summary**: Generates a balanced narrative summary (concise for sparse reviews; 3-sentence synthesis for standard batches) highlighting grounded highlights and constructive considerations without hallucinating unmentioned amenities.
 
 ### 2.4 Module 4: Streaming Guest Support Chatbot
 * **Unified Single Endpoint (`POST /chat`)**: Eliminates the need for separate help article sync or search endpoints.
