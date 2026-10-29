@@ -51,14 +51,14 @@
 ---
 
 ## Phase 4: Module 4 — Guest Support Chatbot
-- [ ] Define Pydantic schemas for chat request/response in `app/models/chat.py`
-- [ ] Implement context-aware guest chatbot service in `app/services/chat_service.py`:
+- [x] Define Pydantic schemas for chat request/response in `app/models/chat.py`
+- [x] Implement context-aware guest chatbot service in `app/services/chat_service.py`:
   - Pulls listing house rules and amenities directly from Qdrant by `listing_id` (if provided)
   - Answers platform FAQs directly (if `listing_id` is omitted)
   - Enforces safety guardrails (never makes unauthorized refund promises)
-- [ ] Implement Server-Sent Events (SSE) streaming endpoint (`POST /chat`) using FastAPI `StreamingResponse`
-- [ ] Create thin route controller in `app/api/v1/chat.py`
-- [ ] Write unit/integration tests for chat streaming in `app/tests/test_chat.py`
+- [x] Implement Server-Sent Events (SSE) streaming endpoint (`POST /chat`) using FastAPI `StreamingResponse`
+- [x] Create thin route controller in `app/api/v1/chat.py`
+- [x] Write unit/integration tests for chat streaming in `app/tests/test_chat.py`
 
 ---
 

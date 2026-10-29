@@ -449,6 +449,29 @@ data: {"token": "Yes, you can park your SUV—there is 1 free dedicated space th
 data: {"done": true, "suggested_quick_replies": ["Where is the nearest grocery store?", "What is the wifi password?"]}
 ```
 
+#### TypeScript DTOs
+```typescript
+export interface ChatMessage {
+  role: "user" | "assistant";
+  content: string; // Max 2,000 characters
+}
+
+export interface ChatRequest {
+  message: string; // Max 2,000 characters
+  listing_id?: string | null;
+  conversation_history?: ChatMessage[];
+}
+
+export interface ChatStreamTokenEvent {
+  token: string;
+}
+
+export interface ChatStreamDoneEvent {
+  done: true;
+  suggested_quick_replies: string[];
+}
+```
+
 ---
 
 ## 7. Fake Listing & Risk Audit Endpoints
