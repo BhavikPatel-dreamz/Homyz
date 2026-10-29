@@ -474,45 +474,154 @@ export interface ChatStreamDoneEvent {
 
 ---
 
-## 7. Fake Listing & Risk Audit Endpoints
+## 7. Fake Listing & Risk Audit Endpoints (Module 5)
 
-### 7.1 Audit Listing for Fraud
-* **Path**: `POST /risk/audit-listing`
-* **Description**: Scans listing pricing against neighborhood median and checks text for scam patterns.
+### 7.1 Audit Listing for Fraud & Scams
+* **Path**: `POST /api/v1/risk/audit-listing`
+* **Method**: `POST`
+* **Security**: `X-API-Key` required
+* **Description**: Multi-tier risk and fraud assessment engine evaluating spatial price honeypots (5km radius in Qdrant with capacity slicing), deterministic regex scanners ($0 cost off-platform payment/contact solicitation), and AI contextual scam classification.
 
-#### Request Body
+#### Request Body (`application/json`)
 ```json
 {
   "listing_id": "string",
   "title": "string",
   "description": "string",
   "price": 3500,
-  "capacity": 6,
   "city": "Miami",
+  "country": "USA",
   "latitude": 25.7617,
-  "longitude": -80.1918
+  "longitude": -80.1918,
+  "guests": 4,
+  "bedrooms": 2,
+  "beds": 2,
+  "bathrooms": 2.0,
+  "property_type": "Villa",
+  "listing_type": "Entire place",
+  "amenities": ["Fast Wifi", "Pool", "Dedicated workspace"],
+  "house_rules": "No parties or loud noise after 10 PM."
 }
 ```
+
+| Field | Type | Required | Constraints | Description |
+| :--- | :--- | :---: | :--- | :--- |
+| `listing_id` | `string` | **Yes** | Min 1 char | Unique listing identifier |
+| `title` | `string` | **Yes** | 1–500 chars | Public listing title |
+| `description` | `string` | **Yes** | 1–15,000 chars | Full listing description |
+| `price` | `integer` | **Yes** | `> 0` | Nightly price in minor units (cents) |
+| `city` | `string` | **Yes** | 1–200 chars | City name |
+| `country` | `string` | No | Max 200 chars | Country name |
+| `latitude` | `float` | **Yes** | `-90.0` to `90.0` | Spatial latitude coordinate |
+| `longitude` | `float` | **Yes** | `-180.0` to `180.0` | Spatial longitude coordinate |
+| `guests` | `integer` | No | `1–100` (default 1) | Maximum guest capacity |
+| `bedrooms` | `integer` | No | `ge=0` (default 1) | Number of bedrooms |
+| `beds` | `integer` | No | `ge=0` (default 1) | Number of beds |
+| `bathrooms` | `float` | No | `ge=0.0` (default 1.0) | Number of bathrooms |
+| `property_type` | `string` | No | Default "Apartment" | Property category (e.g. Villa, Apartment) |
+| `listing_type` | `string` | No | Default "Entire place" | Space type (Entire place, Private room, etc.) |
+| `amenities` | `string[]` | No | Default `[]` | List of amenities provided |
+| `house_rules` | `string \| object` | No | Optional string/dict | House rules text (scanned for hidden off-platform payment/contact terms) |
 
 #### Response (`200 OK`)
 ```json
 {
-  "listing_id": "string",
-  "risk_score": 95,
+  "listing_id": "prop_miami_001",
+  "risk_score": 85,
   "verdict": "FLAG_FOR_MANUAL_AUDIT",
   "is_flagged": true,
   "signals": [
     {
-      "signal_type": "PRICE_ANOMALY",
-      "severity": "HIGH",
-      "details": "Price is 82% below neighborhood median for this capacity."
+      "signal_type": "EXTREME_PRICE_HONEYPOT",
+      "severity": "CRITICAL",
+      "score_impact": 60,
+      "details": "Nightly rate (35.00) is 78% below the neighborhood_5km median (160.00) for capacity 4."
     },
     {
-      "signal_type": "OFF_PLATFORM_SOLICITATION",
-      "severity": "CRITICAL",
-      "details": "Description explicitly requests off-platform communication and direct wire transfer."
+      "signal_type": "OFF_PLATFORM_CONTACT",
+      "severity": "HIGH",
+      "score_impact": 40,
+      "details": "Detected direct contact solicitation: 'wa.me/15551234567'."
     }
   ],
-  "recommendation": "Block publishing until host completes identity verification and manual review."
+  "recommendation": "Quarantine listing from public search. Flag for manual Trust & Safety audit due to high-risk payment/contact solicitation or severe price anomaly.",
+  "median_neighborhood_price": 16000,
+  "neighborhood_listing_count": 8
+}
+```
+
+#### Verdict Levels & Score Thresholds
+
+| Risk Score | Verdict | `is_flagged` | Operational Meaning |
+| :---: | :--- | :---: | :--- |
+| **0 – 39** | `AUTO_APPROVE` | `false` | Complies with safety rules and fair market pricing. Immediate publish. |
+| **40 – 69** | `WARNING_LOW_CONFIDENCE` | `false` | Moderate anomaly (e.g. single pricing discount or contact string). Published with elevated monitoring. |
+| **70 – 100** | `FLAG_FOR_MANUAL_AUDIT` | `true` | Compound scam or severe price bait-and-switch. Quarantined from search; held for manual review. |
+
+#### Signal Types & Score Impacts
+
+| `signal_type` | Severity | Impact | Description |
+| :--- | :--- | :---: | :--- |
+| `EXTREME_PRICE_HONEYPOT` | `CRITICAL` | **+75** | Price is `< 25%` of local 5km / city median. |
+| `OFF_PLATFORM_PAYMENT` | `CRITICAL` | **+75** | Wire transfer, Western Union, Zelle, CashApp, Bitcoin/Crypto detected. |
+| `COURIER_OR_THIRD_PARTY_STORY` | `CRITICAL` | **+75** | AI flagged remote host claiming keys mailed via DHL/FedEx upon deposit. |
+| `PRICE_HONEYPOT` | `HIGH` | **+40** | Price is `< 50%` of local 5km / city median. |
+| `OFF_PLATFORM_CONTACT` | `HIGH` | **+40** | Obfuscated WhatsApp (`wa.me`, `w-h-a-t-s-a-p-p`), direct phone, or email bypass. |
+| `URGENCY_TACTIC` | `HIGH` | **+40** | AI flagged psychological pressure (*"wire deposit in 2 hours or forfeit"*). |
+| `SUSPICIOUS_HIGH_PRICE` | `MEDIUM` | **+20** | Price is `> 10x` local median (test or fraudulent placeholder). |
+| `CONTRADICTORY_CLAIMS` | `MEDIUM` | **+20** | Impossible geographical or property claims. |
+
+#### TypeScript DTOs
+```typescript
+export type RiskVerdict = "AUTO_APPROVE" | "WARNING_LOW_CONFIDENCE" | "FLAG_FOR_MANUAL_AUDIT";
+
+export type RiskSeverity = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+
+export type RiskSignalType =
+  | "PRICE_HONEYPOT"
+  | "EXTREME_PRICE_HONEYPOT"
+  | "SUSPICIOUS_HIGH_PRICE"
+  | "OFF_PLATFORM_PAYMENT"
+  | "OFF_PLATFORM_CONTACT"
+  | "URGENCY_TACTIC"
+  | "COURIER_OR_THIRD_PARTY_STORY"
+  | "CONTRADICTORY_CLAIMS"
+  | "INSUFFICIENT_LOCAL_DATA";
+
+export interface RiskSignalDTO {
+  signal_type: RiskSignalType;
+  severity: RiskSeverity;
+  score_impact: number;
+  details: string;
+}
+
+export interface RiskAuditRequestDTO {
+  listing_id: string;
+  title: string;
+  description: string;
+  price: number; // in cents
+  city: string;
+  country?: string;
+  latitude: number;
+  longitude: number;
+  guests?: number;
+  bedrooms?: number;
+  beds?: number;
+  bathrooms?: number;
+  property_type?: string;
+  listing_type?: string;
+  amenities?: string[];
+  house_rules?: string | Record<string, any>;
+}
+
+export interface RiskAuditResponseDTO {
+  listing_id: string;
+  risk_score: number; // 0 to 100
+  verdict: RiskVerdict;
+  is_flagged: boolean;
+  signals: RiskSignalDTO[];
+  recommendation: string;
+  median_neighborhood_price: number | null; // in cents
+  neighborhood_listing_count: number;
 }
 ```

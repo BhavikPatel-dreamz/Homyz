@@ -236,6 +236,108 @@ class QdrantService:
             logger.error("Failed to delete listing '%s' from Qdrant: %s", listing_id, exc)
             raise AIProviderError(f"Vector deletion failed: {exc}") from exc
 
+    async def get_neighborhood_prices(
+        self,
+        latitude: float,
+        longitude: float,
+        capacity: int,
+        city: str,
+        radius_km: float = 5.0,
+        exclude_listing_id: Optional[str] = None,
+    ) -> tuple[list[int], str]:
+        """Queries Qdrant for active listing prices within a spatial radius and capacity bracket.
+
+        Returns:
+            Tuple of (list_of_prices_in_cents, benchmark_level)
+            benchmark_level is 'neighborhood_5km', 'city', or 'insufficient_data'.
+        """
+        try:
+            await self.ensure_collection_exists()
+            collection_name = self.settings.QDRANT_COLLECTION_LISTINGS
+
+            must_not_conditions: list[models.Condition] = []
+            if exclude_listing_id:
+                exclude_point_id = listing_id_to_point_id(exclude_listing_id)
+                must_not_conditions.append(
+                    models.HasIdCondition(has_id=[exclude_point_id])
+                )
+
+            # 1. First attempt: 5km radius with matching capacity (±2 guests)
+            geo_filter = models.Filter(
+                must=[
+                    models.FieldCondition(
+                        key="location",
+                        geo_radius=models.GeoRadius(
+                            center=models.GeoPoint(lat=latitude, lon=longitude),
+                            radius=radius_km * 1000.0,
+                        ),
+                    ),
+                    models.FieldCondition(
+                        key="guests",
+                        range=models.Range(
+                            gte=max(1, capacity - 2),
+                            lte=capacity + 2,
+                        ),
+                    ),
+                ],
+                must_not=must_not_conditions if must_not_conditions else None,
+            )
+
+            records, _ = await self.client.scroll(
+                collection_name=collection_name,
+                scroll_filter=geo_filter,
+                limit=50,
+                with_payload=["price"],
+                with_vectors=False,
+            )
+            local_prices = [
+                int(r.payload["price"])
+                for r in records
+                if r.payload and "price" in r.payload and isinstance(r.payload["price"], (int, float))
+            ]
+
+            if len(local_prices) >= 3:
+                return local_prices, "neighborhood_5km"
+
+            # 2. Fallback attempt: City-wide benchmark with matching capacity
+            if city:
+                city_filter = models.Filter(
+                    must=[
+                        models.FieldCondition(
+                            key="city",
+                            match=models.MatchValue(value=city),
+                        ),
+                        models.FieldCondition(
+                            key="guests",
+                            range=models.Range(
+                                gte=max(1, capacity - 2),
+                                lte=capacity + 2,
+                            ),
+                        ),
+                    ],
+                    must_not=must_not_conditions if must_not_conditions else None,
+                )
+                city_records, _ = await self.client.scroll(
+                    collection_name=collection_name,
+                    scroll_filter=city_filter,
+                    limit=50,
+                    with_payload=["price"],
+                    with_vectors=False,
+                )
+                city_prices = [
+                    int(r.payload["price"])
+                    for r in city_records
+                    if r.payload and "price" in r.payload and isinstance(r.payload["price"], (int, float))
+                ]
+                if len(city_prices) >= 3:
+                    return city_prices, "city"
+
+            return local_prices, "insufficient_data"
+
+        except Exception as exc:
+            logger.warning("Spatial neighborhood price query encountered an error: %s", exc)
+            return [], "insufficient_data"
+
     async def close(self) -> None:
         """Closes the underlying client connection."""
         await self.client.close()

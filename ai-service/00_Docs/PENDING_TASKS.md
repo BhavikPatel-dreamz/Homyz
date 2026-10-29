@@ -63,12 +63,12 @@
 ---
 
 ## Phase 5: Module 5 — Fake Listing & Scam Detection
-- [ ] Define Pydantic schemas for listing risk audit in `app/models/risk.py`
-- [ ] Implement price anomaly detector (queries Qdrant for 5km neighborhood median price; flags listings >50% below median)
-- [ ] Implement scam text pattern scanner via `gpt-4o-mini` (detects disguised contact info, wire transfer, crypto)
-- [ ] Connect risk audit into listing sync service (runs automatically upon listing publish)
-- [ ] Create standalone on-demand audit route in `app/api/v1/risk.py`
-- [ ] Write unit/integration tests with scam fixtures in `app/tests/test_risk.py`
+- [x] Define Pydantic schemas for listing risk audit in `app/models/risk.py`
+- [x] Implement price anomaly detector (queries Qdrant for 5km neighborhood median price; flags listings >50% below median)
+- [x] Implement scam text pattern scanner via `gpt-4o-mini` (detects disguised contact info, wire transfer, crypto)
+- [x] Connect risk audit into listing sync service (runs automatically upon listing publish)
+- [x] Create standalone on-demand audit route in `app/api/v1/risk.py`
+- [x] Write unit/integration tests with scam fixtures in `app/tests/test_risk.py`
 
 ---
 

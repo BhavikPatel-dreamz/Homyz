@@ -3,6 +3,7 @@ from api.v1.chat import router as chat_router
 from api.v1.listings import router as listings_router
 from api.v1.photos import router as photos_router
 from api.v1.reviews import router as reviews_router
+from api.v1.risk import router as risk_router
 from api.v1.search import router as search_router
 
 api_v1_router = APIRouter()
@@ -22,5 +23,5 @@ api_v1_router.include_router(reviews_router, prefix="/reviews")
 # Module 4: Guest Support Chatbot
 api_v1_router.include_router(chat_router, prefix="/chat")
 
-# Sub-routers for Phase 5 will be registered here:
-# api_v1_router.include_router(risk_router, tags=["Risk & Fraud"])
+# Module 5: Fake Listing & Scam Detection
+api_v1_router.include_router(risk_router, prefix="/risk")
