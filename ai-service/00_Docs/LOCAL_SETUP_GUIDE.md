@@ -1,28 +1,34 @@
 # Local Setup & Development Guide
 
-This guide walks you through setting up and running the **Homyz AI Engine**.
+This guide walks you through setting up and running the **Homyz AI Engine** (`homyz-ai-backend`).
 
 ---
 
-## 1. Database Strategy: Cloud Development $\rightarrow$ Local Deployment
+## 1. Architecture Strategy: Cloud Development $\rightarrow$ Local Deployment
 
-To make local development as simple and fast as possible without needing Docker on your machine:
+To make local development as simple and fast as possible without requiring local Docker containers:
 
-* **During Development (Current Phase)**:
-  * We use **Qdrant Cloud (Free Tier)** at [cloud.qdrant.io](https://cloud.qdrant.io).
-  * It provides a free 1GB cluster in the cloud with zero local setup, zero memory overhead, and a built-in web dashboard.
-* **During Deployment (Production Phase)**:
-  * We will shift to a **Local / Self-Hosted Qdrant container** running on the host/VPS.
-* **Zero Code Changes**:
-  * The Python application uses `qdrant-client`, which connects to both cloud and local instances identically. 
-  * Switching between Qdrant Cloud and Local Qdrant only requires changing two environment variables in `app/.env` (`QDRANT_URL` and `QDRANT_API_KEY`).
+* **Development Phase (Current)**:
+  * **Vector Database**: **Qdrant Cloud Free Tier** at [cloud.qdrant.io](https://cloud.qdrant.io). Free 1GB managed cluster with zero memory overhead, no local setup, and a built-in web dashboard.
+  * **AI Provider**: **Google Gemini Free Tier** (`gemini-3.5-flash-lite` for multimodal vision, `models/text-embedding-004` 768-dim for vector embeddings) via Google AI Studio at [aistudio.google.com](https://aistudio.google.com). Free $0 API tier.
+* **Production Deployment Phase (Post-Approval)**:
+  * **Vector Database**: Shifting to a **Local / Self-Hosted Qdrant container** running directly on the VPS/host.
+  * **AI Provider**: Transitions to **OpenAI** (`gpt-4o-mini`, `text-embedding-3-small` configured at 768-dim) once the client provides their paid OpenAI API key. See [PROVIDER_MIGRATION_GUIDE.md](file:///home/ubuntu/AHEMAD/Homyz/ai-service/00_Docs/PROVIDER_MIGRATION_GUIDE.md) for code diffs and configuration instructions.
+* **Zero Disruption Transition**:
+  * Switching Qdrant from Cloud to Local only requires changing `QDRANT_URL` and `QDRANT_API_KEY` in `app/.env`.
+  * Switching AI providers is fully documented with code snippets in [PROVIDER_MIGRATION_GUIDE.md](file:///home/ubuntu/AHEMAD/Homyz/ai-service/00_Docs/PROVIDER_MIGRATION_GUIDE.md).
 
 ---
 
 ## 2. Prerequisites
-* **Python 3.10+**
-* **1 OpenAI API Key** (`sk-...`)
-* **1 Qdrant Cloud Free Account** (for development)
+
+* **Python 3.11+** *(Important: Python 3.10 is deprecated by `google.api_core` and produces runtime deprecation warnings).*
+* **1 Google AI Studio API Key** (Free at [aistudio.google.com](https://aistudio.google.com)).
+* **1 Qdrant Cloud Free Tier Cluster** (Free at [cloud.qdrant.io](https://cloud.qdrant.io)).
+* *(Linux headless only)* System graphics libraries for OpenCV:
+  ```bash
+  sudo apt-get update && sudo apt-get install -y libgl1 libglib2.0-0
+  ```
 
 ---
 
@@ -30,44 +36,54 @@ To make local development as simple and fast as possible without needing Docker 
 
 ### Step 1: Navigate to the AI Service Directory
 > [!IMPORTANT]
-> Always navigate into the `ai-service/` directory first before running any Python or setup commands. Never run Python virtualenv or pip commands in the root of the main `Homyz` Next.js repository.
+> Always navigate into the `ai-service/` directory first before running Python, virtualenv, or pip commands. Never run Python commands in the root Next.js repository.
 
 ```bash
-cd ai-service
+cd /path/to/Homyz/ai-service
 ```
 
 ---
 
 ### Step 2: Set Up Qdrant Cloud (Development)
 1. Go to [cloud.qdrant.io](https://cloud.qdrant.io) and sign up for a free account.
-2. Create a **Free Tier Cluster** (select any region close to you).
-3. Under **Data Access Controls**, create an **API Key**.
+2. Click **Create Cluster** and select the **Free Tier** (choose any cloud region close to you).
+3. Under **Data Access Controls**, click **Create API Key**.
 4. Copy your:
    * **Cluster URL** (e.g., `https://xxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.us-east4-0.gcp.cloud.qdrant.io:6333`)
    * **API Key** (e.g., `eyJhbGciOi...`)
 
 ---
 
-### Step 3: Set Up Python Virtual Environment (`app/.venv`)
-Everything related to application code, dependencies, and runtime lives strictly inside the `app/` directory:
+### Step 3: Get a Free Google Gemini API Key
+1. Go to [Google AI Studio](https://aistudio.google.com).
+2. Sign in with your Google account.
+3. Click **Get API Key** $\rightarrow$ **Create API Key**.
+4. Copy the generated key string (`AIzaSy...`).
+
+---
+
+### Step 4: Set Up the Python 3.11 Virtual Environment (`app/.venv`)
+All application code, virtual environments, and dependencies live strictly inside the `app/` directory:
 
 ```bash
 # 1. Navigate to the app directory inside ai-service
 cd app
 
-# 2. Create the hidden virtual environment inside app/
-python3 -m venv .venv
+# 2. Create the virtual environment using Python 3.11
+python3.11 -m venv .venv
+# (or 'python3 -m venv .venv' if your default python3 is 3.11+)
 
-# 3. Activate on Linux/macOS
+# 3. Activate the virtual environment
 source .venv/bin/activate
 
-# 4. Install application dependencies
+# 4. Upgrade pip and install dependencies
+pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
 ---
 
-### Step 4: Configure Environment Variables
+### Step 5: Configure Environment Variables
 Copy the template to create your local `.env` file inside `app/`:
 
 ```bash
@@ -75,57 +91,102 @@ Copy the template to create your local `.env` file inside `app/`:
 cp .example.env .env
 ```
 
-Open `app/.env` and paste your Qdrant Cloud credentials and OpenAI key:
+Open `app/.env` and fill in your Qdrant credentials and Google Gemini API key:
 
 ```env
 # Application Settings
+PROJECT_NAME="homyz-ai-engine"
 ENVIRONMENT=development
 DEBUG=True
 PORT=8000
+LOG_LEVEL=INFO
 API_KEY_SECRET=dev-secret-internal-key-123
 
 # Vector DB: Current Phase (Qdrant Cloud Free Tier)
 QDRANT_URL=https://your-cluster-id.us-east4-0.gcp.cloud.qdrant.io:6333
 QDRANT_API_KEY=your-qdrant-cloud-api-key
+QDRANT_COLLECTION_LISTINGS=listings
+VECTOR_SIZE=768
 
 # Vector DB: Future Production Deployment (Local / Self-Hosted)
 # QDRANT_URL=http://localhost:6333
 # QDRANT_API_KEY=
 
-# OpenAI Settings
-OPENAI_API_KEY=sk-your-real-openai-api-key-here
+# Google Gemini Settings & Models (Free Tier)
+GOOGLE_API_KEY=AIzaSyYourRealKeyHere
+GEMINI_MODEL=gemini-3.5-flash-lite
+GEMINI_EMBEDDING_MODEL=models/text-embedding-004
 ```
 
 ---
 
-### Step 5: Run the FastAPI Development Server
-From inside `ai-service/app`:
+### Step 6: Run the Test Suite
+Ensure all unit and integration tests pass before starting the server:
 
 ```bash
-uvicorn main:app --reload --port 8000
+# From inside ai-service/app/ with .venv activated:
+pytest app/tests
+# Or directly using the venv binary from ai-service/:
+# app/.venv/bin/pytest app/tests
 ```
+Expected output: **34 passed in ~3s**.
+
+---
+
+### Step 7: Start the FastAPI Development Server
+From inside `ai-service/app/`:
+
+```bash
+python main.py
+```
+
+The application will start with hot-reloading at `http://localhost:8000`.
 
 ---
 
 ## 4. Verifying the Setup
 
-| Service | URL | Expected Response |
+| Service / Tool | URL | Expected Response / Purpose |
 | :--- | :--- | :--- |
 | **API Health Check** | `http://localhost:8000/healthz` | `{"status": "healthy", "qdrant": "connected", "mode": "cloud"}` |
-| **Interactive API Docs** | `http://localhost:8000/docs` | Swagger UI listing all endpoints |
-| **Qdrant Cloud Dashboard** | `https://cloud.qdrant.io` | Visual collection manager, vectors, and usage |
+| **Interactive OpenAPI Docs** | `http://localhost:8000/docs` | Swagger UI listing all endpoints and testing payloads |
+| **Alternative API Docs** | `http://localhost:8000/redoc` | ReDoc formatted API documentation |
+| **Qdrant Cloud Dashboard** | `https://cloud.qdrant.io` | Visual collection manager, vectors, and cluster health |
+
+### Quick Smoke Test (Photo Categorization API)
+In a separate terminal, test the photo analysis endpoint:
+
+```bash
+curl -X POST "http://localhost:8000/api/v1/photos/analyze" \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: dev-secret-internal-key-123" \
+  -d '{
+    "listing_id": "test_listing_1",
+    "photos": [
+      "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800"
+    ]
+  }'
+```
 
 ---
 
-## 5. Future Shift to Local Qdrant (Deployment Reference)
-When moving to production or shifting to a self-hosted local Qdrant instance:
-1. Run local Qdrant via Docker:
+## 5. Future Shift to Local Qdrant (Production Deployment Reference)
+
+When moving to production or shifting to self-hosted local Qdrant:
+
+1. **Run Local Qdrant via Docker**:
    ```bash
-   docker run -d -p 6333:6333 -v ./qdrant_storage:/qdrant/storage qdrant/qdrant
+   docker run -d \
+     --name homyz-qdrant \
+     -p 6333:6333 \
+     -v $(pwd)/qdrant_storage:/qdrant/storage \
+     qdrant/qdrant
    ```
-2. Update `app/.env`:
+
+2. **Update `app/.env`**:
    ```env
    QDRANT_URL=http://localhost:6333
    QDRANT_API_KEY=
    ```
-3. That is all. Zero Python code needs to be modified.
+
+3. Restart the FastAPI service. Zero code changes required.
