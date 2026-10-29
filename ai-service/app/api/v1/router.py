@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 from api.v1.listings import router as listings_router
 from api.v1.photos import router as photos_router
+from api.v1.reviews import router as reviews_router
 from api.v1.search import router as search_router
 
 api_v1_router = APIRouter()
@@ -14,7 +15,9 @@ api_v1_router.include_router(search_router)
 # Module 2: Photo Categorization & Quality Scoring
 api_v1_router.include_router(photos_router, prefix="/photos")
 
-# Sub-routers for Phase 3-5 will be registered here:
-# api_v1_router.include_router(reviews_router, tags=["Reviews"])
+# Module 3: Review Filtering & Summarization
+api_v1_router.include_router(reviews_router, prefix="/reviews")
+
+# Sub-routers for Phase 4-5 will be registered here:
 # api_v1_router.include_router(chat_router, tags=["Chatbot"])
 # api_v1_router.include_router(risk_router, tags=["Risk & Fraud"])

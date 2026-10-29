@@ -43,6 +43,29 @@ ASPECT_DIMENSIONS: Final[tuple[str, ...]] = (
     "value",
 )
 
+# Review Analysis & Moderation Constants
+MAX_REVIEWS_PER_BATCH: Final[int] = 50
+MAX_REVIEW_COMMENT_LENGTH: Final[int] = 1000
+MAX_BATCH_TOTAL_CHARACTERS: Final[int] = 30_000
+
+# Deterministic Safety & Policy Regex Patterns
+REGEX_PHONE_NUMBER: Final[str] = (
+    r"(?:(?:\+|00)\d{1,3}[-.\s]?)?(?:\(?\d{3}\)?[-.\s]?)?\d{3}[-.\s]?\d{4}\b"
+)
+REGEX_CONTACT_KEYWORDS: Final[str] = (
+    r"\b(?:whatsapp|wa\.me|t\.me|telegram|viber|signal|cashapp|venmo|zelle|paypal|wechat)\b"
+)
+REGEX_SOCIAL_HANDLES: Final[str] = (
+    r"(?:instagram|insta|snapchat|snap|tiktok|facebook)\s*[:@-]?\s*@?[\w.-]{3,30}\b"
+)
+REGEX_EMAIL: Final[str] = (
+    r"\b[A-Za-z0-9._%+-]+(?:\s*@\s*|\s*\[at\]\s*|\s*\(at\)\s*)[A-Za-z0-9.-]+(?:\s*\.\s*|\s*\[dot\]\s*|\s*\(dot\)\s*)[A-Za-z]{2,}\b"
+)
+REGEX_DOOR_CODE: Final[str] = (
+    r"\b(?:(?:door|gate|lockbox|keypad|alarm|entry|lock)\s+(?:code|pin|combination|password|key)|"
+    r"(?:code|pin|combination|password)\s+(?:for|to)\s+(?:the\s+)?(?:door|gate|lockbox|keypad|entry|lock|house|flat|apartment))\s*(?:is|was|:|=)?\s*\d{3,8}\b"
+)
+
 # Fraud / Risk Detection
 PRICE_ANOMALY_PERCENTAGE_THRESHOLD: Final[float] = 0.50  # 50% below median
 NEIGHBORHOOD_RADIUS_KM: Final[float] = 5.0

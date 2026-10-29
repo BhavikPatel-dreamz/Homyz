@@ -41,12 +41,12 @@
 ---
 
 ## Phase 3: Module 3 — Review Filtering & Summarization
-- [ ] Define Pydantic schemas for review moderation and summarization in `app/models/reviews.py`
-- [ ] Implement free toxicity/abuse moderation gate via OpenAI `omni-moderation-latest`
-- [ ] Implement policy check for off-platform contact info (WhatsApp/phone/email) and extortion via `gpt-4o-mini`
-- [ ] Implement aspect-based rating extraction (Cleanliness, Host, Location, etc.) and 3-sentence summary generator
-- [ ] Create thin route controllers in `app/api/v1/reviews.py`
-- [ ] Write unit/integration tests in `app/tests/test_reviews.py`
+- [x] Define Pydantic schemas for review moderation and summarization (1–5 scale, 1k char limits, `security_violation` flag) in `app/models/reviews.py`
+- [x] Implement deterministic regex contact and door code pre-screening ($0 AI cost) & empty review comment bypass in `app/services/review_service.py`
+- [x] Implement AI review moderation gate with upstream safety block interception and anti-censorship enforcement
+- [x] Implement aspect-based rating extraction (1.0–5.0 scale) and adaptive summarization (sparse vs full synthesis)
+- [x] Create thin route controllers in `app/api/v1/reviews.py` and register with `app/api/v1/router.py`
+- [x] Write unit/integration tests covering all 10 edge cases in `app/tests/test_reviews.py`
 
 ---
 
