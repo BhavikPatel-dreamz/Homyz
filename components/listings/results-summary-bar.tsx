@@ -2,12 +2,16 @@
 
 import React from "react";
 import { useLanguage } from "@/lib/i18n/language-context";
+import { formatFlexibleStaySummary } from "@/lib/search/flexible-stays";
 
 export interface ResultsSummaryBarProps {
   total: number;
   locationContextName?: string;
   checkIn?: string;
   checkOut?: string;
+  dateMode?: string;
+  flexibleDuration?: string;
+  flexibleMonths?: string[];
   guests?: number;
   pets?: number;
   isPending?: boolean;
@@ -30,6 +34,9 @@ export function ResultsSummaryBar({
   locationContextName,
   checkIn,
   checkOut,
+  dateMode,
+  flexibleDuration,
+  flexibleMonths = [],
   guests,
   pets,
   isPending = false,
@@ -58,7 +65,14 @@ export function ResultsSummaryBar({
     countLabel = total.toLocaleString();
   }
 
-  const headline = locationContextName
+  const flexibleSummary = dateMode === "flexible" && flexibleDuration
+    ? formatFlexibleStaySummary(flexibleDuration, flexibleMonths)
+    : null;
+  const headline = flexibleSummary
+    ? locationContextName
+      ? `${countLabel} ${total === 1 ? "home" : "homes"} available for ${flexibleSummary.toLowerCase()} in ${locationContextName}`
+      : `${countLabel} ${total === 1 ? "home" : "homes"} available for ${flexibleSummary.toLowerCase()}`
+    : locationContextName
     ? total === 1
       ? t("listings_mapped_single_in", { count: countLabel, location: locationContextName }, `${countLabel} home mapped in ${locationContextName} just for you`)
       : t("listings_mapped_in", { count: countLabel, location: locationContextName }, `${countLabel} homes mapped in ${locationContextName} just for you`)
@@ -68,7 +82,9 @@ export function ResultsSummaryBar({
 
   // Subtitle with date range and guest counts
   const subtitleParts: string[] = [];
-  if (checkIn && checkOut) {
+  if (flexibleSummary) {
+    subtitleParts.push(`Flexible dates · ${flexibleSummary}`);
+  } else if (checkIn && checkOut) {
     subtitleParts.push(t("listings_date_to_date", { checkIn: formatShortDate(checkIn), checkOut: formatShortDate(checkOut) }, `${formatShortDate(checkIn)} to ${formatShortDate(checkOut)}`));
   } else if (checkIn) {
     subtitleParts.push(t("listings_from_date", { date: formatShortDate(checkIn) }, `From ${formatShortDate(checkIn)}`));
@@ -102,4 +118,3 @@ export function ResultsSummaryBar({
     </div>
   );
 }
-

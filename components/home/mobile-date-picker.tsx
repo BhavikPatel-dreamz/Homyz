@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useId, useRef, useState } from "react";
 import { useLanguage } from "@/lib/i18n/language-context";
+import { formatFlexibleStaySummary } from "@/lib/search/flexible-stays";
 
 export interface DatePreferences {
   mode: "dates" | "months" | "flexible";
@@ -17,6 +18,11 @@ export const initialDatePreferences: DatePreferences = {
   stay: "Weekend",
   months: [],
 };
+
+/** A single display contract for the merged desktop “When” field. */
+export function formatFlexibleDateSummary(preferences: DatePreferences, locale = "en-US"): string {
+  return formatFlexibleStaySummary(preferences.stay, preferences.months, locale);
+}
 
 const dateKey = (date: Date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
@@ -118,12 +124,12 @@ export function MobileDatePicker({
     <div className={desktop ? "mx-auto w-full max-w-[664px]" : ""}>
       <div
         className={`mx-auto mb-5 flex w-full overflow-hidden rounded-full ${
-          desktop ? "max-w-[346px] bg-white" : "bg-white"
+          desktop ? "max-w-[286px] bg-[#dedede] p-1" : "bg-white"
         }`}
         role="tablist"
         aria-label="Date selection"
       >
-        {(["dates", "months", "flexible"] as const).map((mode) => (
+        {(["dates", "flexible"] as const).map((mode) => (
           <button
             key={mode}
             id={`${pickerId}-tab-${mode}`}
@@ -131,9 +137,17 @@ export function MobileDatePicker({
             role="tab"
             aria-selected={preferences.mode === mode}
             aria-controls={`${pickerId}-panel`}
-            onClick={() => update({ mode })}
+            onClick={() => update({
+              mode,
+              // A Flexible search is incomplete without an explicit month.
+              // Seed the first available month while preserving a deliberate
+              // multi-month selection when the user returns to this tab.
+              ...(mode === "flexible" && preferences.months.length === 0
+                ? { months: [dateKey(today).slice(0, 7)] }
+                : {}),
+            })}
             className={`flex h-9 min-w-0 flex-1 items-center justify-center rounded-full px-3 text-[14px] font-normal leading-none capitalize text-[#1f1f1f] transition-colors duration-300 cursor-pointer ${
-              preferences.mode === mode ? "bg-[#DDDDDE]" : "hover:bg-[#DDDDDE]"
+              preferences.mode === mode ? "bg-white shadow-sm" : "hover:bg-white/60"
             }`}
           >
             {t(tabKeys[mode])}
@@ -144,7 +158,7 @@ export function MobileDatePicker({
         id={`${pickerId}-panel`}
         role="tabpanel"
         aria-labelledby={`${pickerId}-tab-${preferences.mode}`}
-        className={`bg-white ${desktop ? "rounded-[22px] px-5 py-4" : "rounded-[22px] px-3 py-4"}`}
+        className={`bg-white ${desktop ? "rounded-[22px] px-8 py-5 shadow-[0_1px_0_rgba(0,0,0,0.02)]" : "rounded-[22px] px-3 py-4"}`}
       >
         {preferences.mode === "dates" ? (
           <>
@@ -241,7 +255,7 @@ export function MobileDatePicker({
           <>
             {preferences.mode === "flexible" && (
               <>
-                <h4 className="mb-4 mt-1 text-center text-[16px] font-medium">{t("home_when_how_stay")}</h4>
+                <h4 className="mb-4 mt-0.5 text-center text-[16px] font-medium">{t("home_when_how_stay", "How would you like to stay?")}</h4>
                 <div className="flex justify-center gap-2">
                   {stayOptions.map(({ key, labelKey }) => (
                     <button
@@ -250,7 +264,7 @@ export function MobileDatePicker({
                       aria-pressed={preferences.stay === key}
                       onClick={() => update({ stay: key })}
                       className={`${pill} ${
-                        preferences.stay === key ? "border-[#777] bg-[#f3f4f5]" : "border-[#aaa]"
+                        preferences.stay === key ? "border-[#1f1f1f] bg-white shadow-sm" : "border-[#d4d4d4] bg-white hover:border-[#727272]"
                       }`}
                     >
                       {t(labelKey)}
@@ -260,7 +274,7 @@ export function MobileDatePicker({
               </>
             )}
             <h4 className="mb-4 mt-7 text-center text-[16px] font-medium">
-              {preferences.mode === "flexible" ? t("home_when_go_anytime") : t("home_when_which_months")}
+              {preferences.mode === "flexible" ? t("home_when_go_anytime", "Go anytime") : t("home_when_which_months")}
             </h4>
             <div className="flex items-center gap-2">
               {desktop && (
@@ -270,7 +284,7 @@ export function MobileDatePicker({
                   aria-controls={`${pickerId}-months`}
                   disabled={sliderEdges.start}
                   onClick={() => slideMonths(-1)}
-                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#aaa] hover:bg-[#f3f4f5] disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#d4d4d4] bg-white hover:bg-[#f3f4f5] disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
                 >
                   <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" className="h-4 w-4">
                     <path d="m14 5-7 7 7 7" />
@@ -293,9 +307,9 @@ export function MobileDatePicker({
                       aria-label={monthLabel(month)}
                       aria-pressed={preferences.months.includes(key)}
                       onClick={() => toggleMonth(key)}
-                      className={`flex min-w-0 shrink-0 snap-start flex-col items-center rounded-[22px] border px-0.5 py-4 cursor-pointer ${
+                      className={`flex min-w-0 shrink-0 snap-start flex-col items-center rounded-[20px] border px-2 py-3.5 font-medium cursor-pointer transition-colors ${
                         desktop ? "basis-[calc((100%-2rem)/5)] text-[10px] lg:text-xs" : "basis-[calc((100%-1rem)/2.8)] text-xs"
-                      } ${preferences.months.includes(key) ? "border-[#1f1f1f] bg-[#fcdf9c]" : "border-[#aaa]"}`}
+                      } ${preferences.months.includes(key) ? "border-[#1f1f1f] bg-[#fcdf9c] shadow-sm" : "border-[#dedede] bg-white hover:border-[#727272]"}`}
                     >
                       <Image src="/images/icons/date-picker-icon.svg" alt="" width={28} height={28} className="mb-1 h-7 w-7" style={{ width: "auto", height: "auto" }} />
                       <span className="max-w-full truncate">
@@ -313,7 +327,7 @@ export function MobileDatePicker({
                   aria-controls={`${pickerId}-months`}
                   disabled={sliderEdges.end}
                   onClick={() => slideMonths(1)}
-                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#aaa] hover:bg-[#f3f4f5] disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#d4d4d4] bg-white hover:bg-[#f3f4f5] disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
                 >
                   <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" className="h-4 w-4">
                     <path d="m10 5 7 7-7 7" />

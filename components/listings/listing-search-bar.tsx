@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import { useRouter, useSearchParams } from "next/navigation";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 import { CustomScrollContainer } from "@/components/ui/custom-scroll-container";
-import { MobileDatePicker, initialDatePreferences, type DatePreferences } from "@/components/home/mobile-date-picker";
+import { formatFlexibleDateSummary, MobileDatePicker, initialDatePreferences, type DatePreferences } from "@/components/home/mobile-date-picker";
 import { useLanguage } from "@/lib/i18n/language-context";
 import {
   saveRecentSearchContext,
@@ -234,6 +234,11 @@ export function ListingSearchBar() {
   const urlPlaceId = searchParams.get("placeId") || undefined;
   const urlLocationType = searchParams.get("locationType") || undefined;
   const urlCountry = searchParams.get("country") || "";
+  const urlDateMode = searchParams.get("dateMode") === "months" ? "flexible" : searchParams.get("dateMode");
+  const urlDateFlexibility = Number(searchParams.get("dateFlex") || searchParams.get("dateFlexibility") || 0);
+  const urlFlexibleDuration = searchParams.get("stay") || searchParams.get("flexibleDuration") || "weekend";
+  const urlFlexibleMonths = (searchParams.get("months") || searchParams.get("flexibleMonths") || "")
+    .split(",").map((month) => month.trim()).filter(Boolean);
 
   // Search State
   const [destination, setDestination] = useState(urlDest);
@@ -253,7 +258,12 @@ export function ListingSearchBar() {
   );
   const [checkIn, setCheckIn] = useState(urlCheckIn);
   const [checkOut, setCheckOut] = useState(urlCheckOut);
-  const [datePreferences, setDatePreferences] = useState<DatePreferences>(initialDatePreferences);
+  const [datePreferences, setDatePreferences] = useState<DatePreferences>(() => ({
+    mode: urlDateMode === "flexible" ? "flexible" : "dates",
+    tolerance: [0, 1, 2, 3, 7, 14].includes(urlDateFlexibility) ? urlDateFlexibility : 0,
+    stay: urlFlexibleDuration === "week" ? "Week" : urlFlexibleDuration === "month" ? "Month" : "Weekend",
+    months: urlFlexibleMonths,
+  }));
   const [mobileGuests, setMobileGuests] = useState({
     adults: urlAdults > 0 ? urlAdults : urlGuests > 0 ? urlGuests : 0,
     children: urlChildren > 0 ? urlChildren : 0,
@@ -288,6 +298,12 @@ export function ListingSearchBar() {
     setDestination(urlDest);
     setCheckIn(urlCheckIn);
     setCheckOut(urlCheckOut);
+    setDatePreferences({
+      mode: urlDateMode === "flexible" ? "flexible" : "dates",
+      tolerance: [0, 1, 2, 3, 7, 14].includes(urlDateFlexibility) ? urlDateFlexibility : 0,
+      stay: urlFlexibleDuration === "week" ? "Week" : urlFlexibleDuration === "month" ? "Month" : "Weekend",
+      months: urlFlexibleMonths,
+    });
     setMobileGuests({
       adults: urlAdults > 0 ? urlAdults : urlGuests > 0 ? urlGuests : 0,
       children: urlChildren > 0 ? urlChildren : 0,
@@ -308,7 +324,7 @@ export function ListingSearchBar() {
     } else if (!urlDest) {
       setSelectedLocation(null);
     }
-  }, [urlDest, urlCheckIn, urlCheckOut, urlAdults, urlChildren, urlInfants, urlPets, urlGuests, urlLat, urlLng, urlRadius, urlPlaceId, urlLocationType, urlCountry, searchParams]);
+  }, [urlDest, urlCheckIn, urlCheckOut, urlAdults, urlChildren, urlInfants, urlPets, urlGuests, urlLat, urlLng, urlRadius, urlPlaceId, urlLocationType, urlCountry, urlDateMode, urlDateFlexibility, urlFlexibleDuration, urlFlexibleMonths.join(","), searchParams]);
 
   // Load recent searches on mount
   useEffect(() => {
@@ -428,8 +444,8 @@ export function ListingSearchBar() {
         setSelectedLocation(loc);
         setDestination(placeName);
         setIsLocating(false);
-        setActiveStep("when");
-        if (!isMobileSearchOpen) setDesktopPanel("checkIn");
+        setDesktopPanel(null);
+        if (isMobileSearchOpen) setIsMobileSearchOpen(false);
       },
       () => {
         setIsLocating(false);
@@ -506,7 +522,9 @@ export function ListingSearchBar() {
     }
     setSuggestions({ primaryCity: null, places: [], districts: [], cities: [], properties: [] });
     setSuggestIndex(-1);
-  }, [allSuggestItems]);
+    setDesktopPanel(null);
+    if (isMobileSearchOpen) setIsMobileSearchOpen(false);
+  }, [allSuggestItems, isMobileSearchOpen]);
 
   // Guest calculations
   const mobileGuestCount = mobileGuests.adults + mobileGuests.children;
@@ -521,6 +539,10 @@ export function ListingSearchBar() {
       ? t(mobileGuests.pets === 1 ? "home_pet_one" : "home_pet_many", { count: mobileGuests.pets }, `${mobileGuests.pets} pet${mobileGuests.pets > 1 ? "s" : ""}`)
       : "",
   ].filter(Boolean).join(", ");
+  const flexibleWhenSummary = formatFlexibleDateSummary(
+    datePreferences,
+    language === "ar" ? "ar-EG" : language === "hi" ? "hi-IN" : language,
+  );
 
   // Form submission & URL routing
   const executeSearch = () => {
@@ -641,6 +663,19 @@ export function ListingSearchBar() {
     } else {
       sp.delete("checkout");
       sp.delete("checkOut");
+    }
+    if (datePreferences.mode !== "dates") {
+      sp.set("dateMode", "flexible");
+      sp.set("stay", datePreferences.stay.toLowerCase());
+      if (datePreferences.months.length) sp.set("months", datePreferences.months.join(","));
+      else sp.delete("months");
+      sp.delete("dateFlex");
+    } else {
+      sp.set("dateMode", "exact");
+      if (datePreferences.tolerance) sp.set("dateFlex", String(datePreferences.tolerance));
+      else sp.delete("dateFlex");
+      sp.delete("stay");
+      sp.delete("months");
     }
 
     // Guests
@@ -767,8 +802,7 @@ export function ListingSearchBar() {
                 type="button"
                 onClick={() => {
                   selectSuggestion(term);
-                  setActiveStep("when");
-                  if (!isMobileSearchOpen) setDesktopPanel("checkIn");
+                  setDesktopPanel(null);
                 }}
                 className="flex w-full items-center gap-3 text-left rounded-2xl p-2.5 transition-colors hover:bg-zinc-100/80 cursor-pointer"
               >
@@ -795,8 +829,7 @@ export function ListingSearchBar() {
             type="button"
             onClick={() => {
               selectSuggestion(primaryCity);
-              setActiveStep("when");
-              if (!isMobileSearchOpen) setDesktopPanel("checkIn");
+              setDesktopPanel(null);
             }}
             className="flex w-full items-center justify-between gap-3 text-left rounded-2xl p-2.5 transition-all cursor-pointer hover:bg-amber-50/70 border border-amber-200/60 bg-amber-50/20"
           >
@@ -831,8 +864,7 @@ export function ListingSearchBar() {
                 type="button"
                 onClick={() => {
                   selectSuggestion(p);
-                  setActiveStep("when");
-                  if (!isMobileSearchOpen) setDesktopPanel("checkIn");
+                  setDesktopPanel(null);
                 }}
                 className={`flex w-full items-center justify-between gap-3 text-left rounded-2xl p-2.5 transition-all cursor-pointer group ${
                   suggestIndex === idx ? "bg-[#fcdf9c]/40 ring-1 ring-[#fcdf9c]" : "hover:bg-zinc-100/80"
@@ -869,8 +901,7 @@ export function ListingSearchBar() {
                 type="button"
                 onClick={() => {
                   selectSuggestion(d);
-                  setActiveStep("when");
-                  if (!isMobileSearchOpen) setDesktopPanel("checkIn");
+                  setDesktopPanel(null);
                 }}
                 className="flex w-full items-center justify-between gap-3 text-left rounded-2xl p-2.5 transition-all cursor-pointer hover:bg-[#F3F4F5] group"
               >
@@ -901,8 +932,7 @@ export function ListingSearchBar() {
               type="button"
               onClick={() => {
                 selectSuggestion(c);
-                setActiveStep("when");
-                if (!isMobileSearchOpen) setDesktopPanel("checkIn");
+                setDesktopPanel(null);
               }}
               className="flex w-full items-center justify-between gap-3 text-left rounded-2xl p-2.5 transition-all cursor-pointer hover:bg-[#F3F4F5] group"
             >
@@ -1062,10 +1092,10 @@ export function ListingSearchBar() {
                       const itm = allSuggestItems[suggestIndex];
                       if (itm.raw) selectSuggestion(itm.raw);
                       else selectSuggestion(itm.label);
-                      setDesktopPanel("checkIn");
+                      setDesktopPanel(null);
                     } else if (cities.length > 0) {
                       selectSuggestion(cities[0]);
-                      setDesktopPanel("checkIn");
+                      setDesktopPanel(null);
                     } else {
                       executeSearch();
                     }
@@ -1092,53 +1122,48 @@ export function ListingSearchBar() {
             }`}
           />
 
-          {/* Segment 2: Check In */}
-          <button
-            type="button"
-            aria-expanded={desktopPanel === "checkIn"}
-            aria-controls="listing-search-panel"
-            onClick={() => setDesktopPanel(desktopPanel === "checkIn" ? null : "checkIn")}
-            className={`flex h-full min-w-0 flex-1 flex-col justify-center rounded-full px-5 text-left transition-colors duration-300 cursor-pointer ${
-              desktopPanel === "checkIn" ? "bg-[#F3F4F5]" : "hover:bg-[#fcdf9c]"
-            }`}
-          >
-            <span className="block text-base font-normal text-[#1f1f1f] cursor-pointer">
-              {t("home_check_in", "Check in")}
-            </span>
-            <span className="block truncate text-sm font-normal text-[#727272]">
-              {datePreferences.mode !== "dates" ? t("home_when_tab_flexible", "Flexible") : formatShortDate(checkIn) || t("home_search_add_dates", undefined, "Add dates")}
-            </span>
-          </button>
-
-          <div
-            className={`h-7 w-px shrink-0 bg-zinc-200/90 transition-opacity duration-300 ${
-              desktopPanel === "checkIn" || desktopPanel === "checkOut" ? "opacity-0" : "opacity-100"
-            }`}
-          />
-
-          {/* Segment 3: Check Out */}
-          <button
-            type="button"
-            aria-expanded={desktopPanel === "checkOut"}
-            aria-controls="listing-search-panel"
-            onClick={() => setDesktopPanel(desktopPanel === "checkOut" ? null : "checkOut")}
-            className={`flex h-full min-w-0 flex-1 flex-col justify-center rounded-full px-5 text-left transition-colors duration-300 cursor-pointer ${
-              desktopPanel === "checkOut" ? "bg-[#F3F4F5]" : "hover:bg-[#fcdf9c]"
-            }`}
-          >
-            <span className="block text-base font-normal text-[#1f1f1f] cursor-pointer">
-              {t("home_check_out", "Check out")}
-            </span>
-            <span className="block truncate text-sm font-normal text-[#727272]">
-              {datePreferences.mode !== "dates" ? t("home_when_tab_flexible", "Flexible") : formatShortDate(checkOut) || t("home_search_add_dates", undefined, "Add dates")}
-            </span>
-          </button>
-
-          <div
-            className={`h-7 w-px shrink-0 bg-zinc-200/90 transition-opacity duration-300 ${
-              desktopPanel === "checkOut" || desktopPanel === "who" ? "opacity-0" : "opacity-100"
-            }`}
-          />
+          {datePreferences.mode === "flexible" ? (
+            <>
+              <button
+                type="button"
+                aria-expanded={desktopPanel === "checkIn"}
+                aria-controls="listing-search-panel"
+                onClick={() => setDesktopPanel(desktopPanel === "checkIn" ? null : "checkIn")}
+                className={`flex h-full min-w-0 flex-[2] flex-col justify-center rounded-full px-6 text-left transition-[flex,background-color] duration-300 cursor-pointer ${desktopPanel === "checkIn" ? "bg-[#F3F4F5]" : "hover:bg-[#fcdf9c]"}`}
+              >
+                <span className="block text-base font-normal text-[#1f1f1f]">{t("home_search_when", undefined, "When")}</span>
+                <span className="block truncate text-sm font-normal text-[#1f1f1f]">{flexibleWhenSummary}</span>
+              </button>
+              <div className={`h-7 w-px shrink-0 bg-zinc-200/90 transition-opacity duration-300 ${desktopPanel === "checkIn" || desktopPanel === "who" ? "opacity-0" : "opacity-100"}`} />
+            </>
+          ) : (
+            <>
+              {/* Segment 2: Check In */}
+              <button
+                type="button"
+                aria-expanded={desktopPanel === "checkIn"}
+                aria-controls="listing-search-panel"
+                onClick={() => setDesktopPanel(desktopPanel === "checkIn" ? null : "checkIn")}
+                className={`flex h-full min-w-0 flex-1 flex-col justify-center rounded-full px-5 text-left transition-colors duration-300 cursor-pointer ${desktopPanel === "checkIn" ? "bg-[#F3F4F5]" : "hover:bg-[#fcdf9c]"}`}
+              >
+                <span className="block text-base font-normal text-[#1f1f1f]">{t("home_check_in", "Check in")}</span>
+                <span className="block truncate text-sm font-normal text-[#727272]">{formatShortDate(checkIn) || t("home_search_add_dates", undefined, "Add dates")}</span>
+              </button>
+              <div className={`h-7 w-px shrink-0 bg-zinc-200/90 transition-opacity duration-300 ${desktopPanel === "checkIn" || desktopPanel === "checkOut" ? "opacity-0" : "opacity-100"}`} />
+              {/* Segment 3: Check Out */}
+              <button
+                type="button"
+                aria-expanded={desktopPanel === "checkOut"}
+                aria-controls="listing-search-panel"
+                onClick={() => setDesktopPanel(desktopPanel === "checkOut" ? null : "checkOut")}
+                className={`flex h-full min-w-0 flex-1 flex-col justify-center rounded-full px-5 text-left transition-colors duration-300 cursor-pointer ${desktopPanel === "checkOut" ? "bg-[#F3F4F5]" : "hover:bg-[#fcdf9c]"}`}
+              >
+                <span className="block text-base font-normal text-[#1f1f1f]">{t("home_check_out", "Check out")}</span>
+                <span className="block truncate text-sm font-normal text-[#727272]">{formatShortDate(checkOut) || t("home_search_add_dates", undefined, "Add dates")}</span>
+              </button>
+              <div className={`h-7 w-px shrink-0 bg-zinc-200/90 transition-opacity duration-300 ${desktopPanel === "checkOut" || desktopPanel === "who" ? "opacity-0" : "opacity-100"}`} />
+            </>
+          )}
 
           {/* Segment 4: Who & Search Button */}
           <div className="flex h-full min-w-0 flex-[1.3] items-center pr-2">
@@ -1217,7 +1242,12 @@ export function ListingSearchBar() {
                     if (start && !end) setDesktopPanel("checkOut");
                   }}
                   preferences={datePreferences}
-                  onPreferencesChange={setDatePreferences}
+                  onPreferencesChange={(nextPreferences) => {
+                    setDatePreferences(nextPreferences);
+                    if (nextPreferences.mode === "flexible" && desktopPanel === "checkOut") {
+                      setDesktopPanel("checkIn");
+                    }
+                  }}
                 />
               )}
             </div>
@@ -1296,7 +1326,7 @@ export function ListingSearchBar() {
                           const itm = allSuggestItems[0];
                           if (itm.raw) selectSuggestion(itm.raw);
                           else selectSuggestion(itm.label);
-                          setActiveStep("when");
+                          setActiveStep("where");
                         } else {
                           executeSearch();
                         }

@@ -107,6 +107,10 @@ export interface ListingCardProps {
   checkIn?: string;
   /** Optional check-out date from search filters */
   checkOut?: string;
+  /** Flexible availability is an intent, not a fixed payable stay. */
+  dateMode?: string;
+  flexibleDuration?: string;
+  flexibleMonths?: string[];
   /** Optional guest count from search filters */
   guests?: number;
   /** Optional adults count */
@@ -135,6 +139,9 @@ export function ListingCard({
   priority = false,
   checkIn,
   checkOut,
+  dateMode,
+  flexibleDuration,
+  flexibleMonths = [],
   guests,
   adults,
   children,
@@ -318,7 +325,11 @@ export function ListingCard({
   const dateRangeString =
     formatDateRange(checkIn, checkOut) || (listing as any).alternativeDates || null;
 
-  // Nights calculation (defaults to 2 nights like the Airbnb reference image)
+  const isFlexibleSearch = dateMode === "flexible" && Boolean(flexibleDuration);
+
+  // Only calculate a total for an exact, completed date range. Flexible results
+  // intentionally show a starting nightly price because no matching candidate
+  // should be fabricated as the guest's eventual reservation.
   const nights = (() => {
     if (checkIn && checkOut) {
       const inDate = new Date(checkIn);
@@ -326,7 +337,7 @@ export function ListingCard({
       const diff = Math.round((outDate.getTime() - inDate.getTime()) / (1000 * 60 * 60 * 24));
       if (diff > 0) return diff;
     }
-    return 2;
+    return 1;
   })();
 
   const totalPrice = (discountedPrice ?? basePrice) * nights;
@@ -360,7 +371,7 @@ export function ListingCard({
   }));
 
   useEffect(() => {
-    if (checkIn || checkOut || guests) {
+    if (checkIn || checkOut || guests || isFlexibleSearch) {
       setActiveContext({
         checkIn: checkIn || undefined,
         checkOut: checkOut || undefined,
@@ -386,9 +397,19 @@ export function ListingCard({
         });
       }
     }
-  }, [checkIn, checkOut, guests, adults, children, infants, pets, country]);
+  }, [checkIn, checkOut, guests, adults, children, infants, pets, country, isFlexibleSearch]);
 
-  const targetHref = buildListingDetailUrl(targetIdOrSlug, activeContext);
+  const targetHref = buildListingDetailUrl(
+    targetIdOrSlug,
+    activeContext,
+    isFlexibleSearch
+      ? {
+          dateMode: "flexible",
+          stay: flexibleDuration,
+          months: flexibleMonths.join(","),
+        }
+      : undefined,
+  );
   const isSearchGridCard = variant === "search-grid";
 
   // ── Favorite Action ─────────────────────────────────────────────────────────
@@ -698,16 +719,16 @@ export function ListingCard({
             {/* Row 4: Price & Nights & Rating */}
             <div className="flex items-center gap-1 text-xs leading-4 text-[#1F1F1F] pt-0.5 flex-nowrap min-w-0">
               <span className="inline-flex items-center gap-1 shrink-0">
-                {discountedPrice != null && (
+                {!isFlexibleSearch && discountedPrice != null && (
                   <span className="line-through text-[#727272] text-[11px] font-normal">
-                    {formatPrice(baseTotalPrice, currency)}
+                  {formatPrice(baseTotalPrice, currency)}
                   </span>
                 )}
                 <span className="font-semibold underline">
-                  {formatPrice(totalPrice, currency)}
+                  {isFlexibleSearch ? `From ${formatPrice(discountedPrice ?? basePrice, currency)}` : formatPrice(totalPrice, currency)}
                 </span>
                 <span className="text-[#1f1f1f]">
-                  for {nights} {nights === 1 ? "night" : "nights"}
+                  {isFlexibleSearch ? "/ night" : `for ${nights} ${nights === 1 ? "night" : "nights"}`}
                 </span>
               </span>
 
@@ -803,13 +824,13 @@ export function ListingCard({
                   {formattedBasePrice}
                 </span>
                 <span className="font-medium text-[#1f1f1f] text-sm">
-                  {formattedDiscountedPrice}
+                  {isFlexibleSearch ? `From ${formattedDiscountedPrice}` : formattedDiscountedPrice}
                     <span className="text-[#727272] font-normal text-sm ml-0.5">{t("listings_per_night", "/ night")}</span>
                 </span>
               </>
             ) : (
               <div className="flex items-baseline gap-1">
-                <span className="font-medium text-[#1f1f1f] text-sm">{formattedBasePrice}</span>
+                <span className="font-medium text-[#1f1f1f] text-sm">{isFlexibleSearch ? `From ${formattedBasePrice}` : formattedBasePrice}</span>
                     <span className="text-[#727272] font-normal text-sm">{t("listings_per_night", "/ night")}</span>
               </div>
             )}

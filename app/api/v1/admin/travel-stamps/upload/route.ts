@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getAuthContext } from "@/lib/auth/context";
+import { hasPermission, PERMISSIONS } from "@/lib/permissions/permissions";
 import { savePublicMedia } from "@/lib/storage/media";
 
 const ALLOWED_MIME_TYPES = new Set([
@@ -22,8 +23,8 @@ const EXTENSION_BY_MIME: Record<string, string> = {
 export async function POST(req: NextRequest) {
   try {
     const actor = await getAuthContext(req);
-    if (!actor || actor.role !== "ADMIN") {
-      return NextResponse.json({ error: "Unauthorized. Admin access required." }, { status: 403 });
+    if (!actor || !hasPermission(actor, PERMISSIONS.LOYALTY_ACHIEVEMENTS_MANAGE)) {
+      return NextResponse.json({ error: "Unauthorized. Achievement-management access required." }, { status: 403 });
     }
 
     const formData = await req.formData();

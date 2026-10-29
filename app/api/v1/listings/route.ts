@@ -51,6 +51,15 @@ export const GET = apiHandler(async (req) => {
   const maxPrice = numberParam("maxPrice");
   const checkIn = firstQueryValue("checkIn", "checkin", "startDate") ?? undefined;
   const checkOut = firstQueryValue("checkOut", "checkout", "endDate") ?? undefined;
+  const rawDateMode = sp.get("dateMode");
+  // `months` was emitted by an earlier search bar; retain its shared links.
+  const dateMode = rawDateMode === "months" ? "flexible" : rawDateMode || undefined;
+  const dateFlexibility = numberParam("dateFlex") ?? numberParam("dateFlexibility");
+  const flexibleDuration = sp.get("stay") || sp.get("flexibleDuration") || undefined;
+  const flexibleMonthsParam = sp.get("months") || sp.get("flexibleMonths");
+  const flexibleMonths = flexibleMonthsParam
+    ? flexibleMonthsParam.split(",").map((value) => value.trim()).filter(Boolean)
+    : undefined;
   const amenitiesParam = sp.get("amenities");
   const amenities = amenitiesParam ? amenitiesParam.split(",").map((s) => s.trim()).filter(Boolean) : undefined;
   // Extended filters
@@ -109,6 +118,10 @@ export const GET = apiHandler(async (req) => {
     maxPrice,
     checkIn,
     checkOut,
+    dateMode,
+    dateFlexibility,
+    flexibleDuration,
+    flexibleMonths,
     amenities,
     accessibilityFeatures,
     languages,
@@ -125,7 +138,7 @@ export const GET = apiHandler(async (req) => {
 
   const hasFilters = Boolean(
     countOnly || validated.city || validated.country || destination || placeName || lat !== undefined || lng !== undefined || guests || adults || children || infants || propertyType || propertyTypes?.length || listingType || minPrice || maxPrice ||
-    checkIn || checkOut || amenities || bedrooms || bathrooms || beds ||
+    checkIn || checkOut || dateMode || dateFlexibility !== undefined || flexibleDuration || flexibleMonths?.length || amenities || bedrooms || bathrooms || beds ||
     instantBook || featured || pets || accessibilityFeatures || languages ||
     sortBy || mapBounds,
   );

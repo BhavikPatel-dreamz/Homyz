@@ -48,6 +48,7 @@ const ROUTE_NAV_KEY: Array<{ prefix: string; key: string; exact?: boolean }> = [
   { prefix: "/admin/hosts",                  key: "hosts" },
   { prefix: "/admin/guests",                 key: "guests" },
   { prefix: "/admin/referrals",              key: "referrals" },
+  { prefix: "/admin/loyalty",                key: "loyalty" },
   { prefix: "/admin/travel-stamps",          key: "travel-stamps" },
   { prefix: "/admin/admins",                 key: "admins" },
   { prefix: "/admin/activity-logs",          key: "audit-logs" },
@@ -310,6 +311,15 @@ export function AdminSidebar({
             <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
             </svg>
+          ),
+        },
+        {
+          key: "loyalty",
+          label: "StayElite",
+          href: "/admin/loyalty",
+          requiredPermission: PERMISSIONS.LOYALTY_OVERVIEW_VIEW,
+          icon: (
+            <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 3l2.5 5.5 5.5.7-4 4 1 5.8-5-2.8-5 2.8 1-5.8-4-4 5.5-.7L12 3z" /></svg>
           ),
         },
         {

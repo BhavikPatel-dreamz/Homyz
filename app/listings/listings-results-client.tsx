@@ -48,6 +48,10 @@ interface ListingsResultsClientProps {
     locationType?: string;
     checkIn?: string;
     checkOut?: string;
+    dateMode?: string;
+    dateFlexibility?: number;
+    flexibleDuration?: string;
+    flexibleMonths?: string[];
     guests?: number;
     adults?: number;
     children?: number;
@@ -171,6 +175,9 @@ function SelectedPreviewCard({
   infants,
   pets,
   country,
+  dateMode,
+  flexibleDuration,
+  flexibleMonths,
 }: {
   listing: PublicListingCardDTO;
   onClose: () => void;
@@ -182,6 +189,9 @@ function SelectedPreviewCard({
   infants?: number;
   pets?: number;
   country?: string;
+  dateMode?: string;
+  flexibleDuration?: string;
+  flexibleMonths?: string[];
 }) {
   const { formatPrice } = useCurrency();
   const { t } = useLanguage();
@@ -198,7 +208,8 @@ function SelectedPreviewCard({
   const effectiveNightlyPrice = listing.pricing?.discountedDisplayPrice
     ?? listing.pricing?.baseDisplayPrice
     ?? listing.price;
-  const formattedPrice = formatPrice(effectiveNightlyPrice * selectedStayNights, currency);
+  const isFlexibleSearch = dateMode === "flexible" && Boolean(flexibleDuration);
+  const formattedPrice = formatPrice(effectiveNightlyPrice * (isFlexibleSearch ? 1 : selectedStayNights), currency);
   const showGuestFavorite = listing.isGuestFavorite === true;
   const showSuperhost = listing.isSuperhost === true;
 
@@ -215,7 +226,11 @@ function SelectedPreviewCard({
           infants,
           pets,
           country,
-        })}
+        }, isFlexibleSearch ? {
+          dateMode: "flexible",
+          stay: flexibleDuration,
+          months: flexibleMonths?.join(","),
+        } : undefined)}
         className="flex items-center gap-3 flex-1 min-w-0 group"
       >
         <div className="relative h-16 w-20 shrink-0 rounded-xl overflow-hidden bg-zinc-100">
@@ -265,9 +280,9 @@ function SelectedPreviewCard({
             {typeof listing.distanceKm === "number" ? t("listings_km_away", { distance: listing.distanceKm }, ` · ${listing.distanceKm} km away`) : ""}
           </p>
           <div className="text-xs font-bold text-zinc-950 mt-0.5">
-            {formattedPrice}
+            {isFlexibleSearch ? `From ${formattedPrice}` : formattedPrice}
             <span className="text-[10px] font-normal text-[#727272]">
-              {selectedStayNights === 1 ? t("listings_per_night", " / night") : t("listings_for_nights", { count: selectedStayNights }, ` for ${selectedStayNights} nights`)}
+              {isFlexibleSearch || selectedStayNights === 1 ? t("listings_per_night", " / night") : t("listings_for_nights", { count: selectedStayNights }, ` for ${selectedStayNights} nights`)}
             </span>
           </div>
         </div>
@@ -348,6 +363,7 @@ export function buildNormalizedSearchKey(params: URLSearchParams | string): stri
   const keysToInclude = [
     "destination", "location", "city", "country", "placeName", "lat", "lng", "radius",
     "checkIn", "checkin", "startDate", "checkOut", "checkout", "endDate",
+    "dateMode", "dateFlex", "dateFlexibility", "stay", "flexibleDuration", "months", "flexibleMonths",
     "guests", "adults", "children", "infants", "pets",
     "propertyType", "propertyTypes", "listingType",
     "minPrice", "maxPrice", "amenities", "accessibility", "languages",
@@ -1204,6 +1220,9 @@ export function ListingsResultsClient({
         locationContextName={locationContextName || currentFilters.placeName || currentFilters.city}
         checkIn={currentFilters.checkIn}
         checkOut={currentFilters.checkOut}
+        dateMode={currentFilters.dateMode}
+        flexibleDuration={currentFilters.flexibleDuration}
+        flexibleMonths={currentFilters.flexibleMonths}
         guests={currentFilters.guests}
         pets={currentFilters.pets}
         isPending={isPending}
@@ -1219,6 +1238,8 @@ export function ListingsResultsClient({
             onMarkerClick={handleMarkerClick}
             checkIn={currentFilters.checkIn}
             checkOut={currentFilters.checkOut}
+            dateMode={currentFilters.dateMode}
+            flexibleDuration={currentFilters.flexibleDuration}
             guests={currentFilters.guests}
             center={mapCenter}
             zoom={mapZoom}
@@ -1252,6 +1273,9 @@ export function ListingsResultsClient({
                 infants={currentFilters.infants}
                 pets={currentFilters.pets}
                 country={currentFilters.country}
+                dateMode={currentFilters.dateMode}
+                flexibleDuration={currentFilters.flexibleDuration}
+                flexibleMonths={currentFilters.flexibleMonths}
               />
             </div>
           )}
@@ -1271,7 +1295,14 @@ export function ListingsResultsClient({
                 : "border-[#1F1F1F] bg-white text-[#1F1F1F] hover:border-[#1F1F1F]"
               }`}
           >
-            <Image src="/images/icons/filter-icon.svg" alt="filter-icon.svg" className="brightness-0 invert" width={15} height={15} />
+            <Image
+              src="/images/icons/filter-icon.svg"
+              alt=""
+              aria-hidden="true"
+              className={activeFilterCount > 0 ? "brightness-0 invert" : ""}
+              width={16}
+              height={16}
+            />
             <span>{t("listings_filters", "Filters")}</span>
             {activeFilterCount > 0 && (
               <span className="flex h-4 w-4 items-center justify-center rounded-full bg-white text-xs font-normal text-[#1F1F1F] ml-0.5">
@@ -1516,6 +1547,9 @@ export function ListingsResultsClient({
                       priority={index < (isDesktop ? 4 : 2)}
                       checkIn={currentFilters.checkIn}
                       checkOut={currentFilters.checkOut}
+                      dateMode={currentFilters.dateMode}
+                      flexibleDuration={currentFilters.flexibleDuration}
+                      flexibleMonths={currentFilters.flexibleMonths}
                       guests={currentFilters.guests}
                       adults={currentFilters.adults}
                       children={currentFilters.children}
@@ -1554,6 +1588,8 @@ export function ListingsResultsClient({
               onMarkerClick={handleMarkerClick}
               checkIn={currentFilters.checkIn}
               checkOut={currentFilters.checkOut}
+              dateMode={currentFilters.dateMode}
+              flexibleDuration={currentFilters.flexibleDuration}
               guests={currentFilters.guests}
               center={mapCenter}
               zoom={mapZoom}
@@ -1574,6 +1610,9 @@ export function ListingsResultsClient({
                   infants={currentFilters.infants}
                   pets={currentFilters.pets}
                   country={currentFilters.country}
+                  dateMode={currentFilters.dateMode}
+                  flexibleDuration={currentFilters.flexibleDuration}
+                  flexibleMonths={currentFilters.flexibleMonths}
                 />
               </div>
             )}
@@ -1618,6 +1657,8 @@ export function ListingsResultsClient({
               onMarkerClick={handleMarkerClick}
               checkIn={currentFilters.checkIn}
               checkOut={currentFilters.checkOut}
+              dateMode={currentFilters.dateMode}
+              flexibleDuration={currentFilters.flexibleDuration}
               guests={currentFilters.guests}
               center={mapCenter}
               zoom={mapZoom}
@@ -1653,6 +1694,9 @@ export function ListingsResultsClient({
                   infants={currentFilters.infants}
                   pets={currentFilters.pets}
                   country={currentFilters.country}
+                  dateMode={currentFilters.dateMode}
+                  flexibleDuration={currentFilters.flexibleDuration}
+                  flexibleMonths={currentFilters.flexibleMonths}
                 />
               </div>
             )}

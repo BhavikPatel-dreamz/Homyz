@@ -223,10 +223,13 @@ export function HomeView({
       sp.set("checkOut", params.checkOut);
     }
     if (params.datePreferences && params.datePreferences.mode !== "dates") {
-      sp.set("dateMode", params.datePreferences.mode);
+      // The legacy Months tab and the current Flexible tab use the same
+      // validated contract: duration plus one or more travel months.
+      sp.set("dateMode", "flexible");
       sp.set("stay", params.datePreferences.stay.toLowerCase());
       if (params.datePreferences.months.length) sp.set("months", params.datePreferences.months.join(","));
     } else if (params.datePreferences?.tolerance) {
+      sp.set("dateMode", "exact");
       sp.set("dateFlex", String(params.datePreferences.tolerance));
     }
 

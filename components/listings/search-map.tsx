@@ -130,6 +130,8 @@ export interface SearchMapProps {
   onMarkerClick?: (listingId: string) => void;
   checkIn?: string;
   checkOut?: string;
+  dateMode?: string;
+  flexibleDuration?: string;
   guests?: number;
   className?: string;
   center?: [number, number];
@@ -269,6 +271,8 @@ export function SearchMap({
   onMarkerClick,
   checkIn,
   checkOut,
+  dateMode,
+  flexibleDuration,
   guests,
   className = "w-full h-full",
   center,
@@ -297,6 +301,7 @@ export function SearchMap({
   const [hasMoved, setHasMoved] = useState(false);
   const [searchAsMove, setSearchAsMove] = useState(false);
   const selectedStayNights = getSelectedStayNights(checkIn, checkOut);
+  const isFlexibleSearch = dateMode === "flexible" && Boolean(flexibleDuration);
 
   // ── Stable callbacks ────────────────────────────────────────────────────────
   const buildDetailUrl = useCallback(
@@ -308,11 +313,15 @@ export function SearchMap({
       if (checkOut) {
         params.set("checkOut", checkOut);
       }
+      if (dateMode === "flexible" && flexibleDuration) {
+        params.set("dateMode", "flexible");
+        params.set("stay", flexibleDuration);
+      }
       if (guests && guests >= 1) params.set("guests", String(guests));
       const qs = params.toString();
       return `/listings/${listingId}${qs ? `?${qs}` : ""}`;
     },
-    [checkIn, checkOut, guests],
+    [checkIn, checkOut, guests, dateMode, flexibleDuration],
   );
 
   const triggerBoundsSearch = useCallback(() => {
@@ -468,7 +477,7 @@ export function SearchMap({
           cardPricing.hasDiscount && cardPricing.discountedDisplayPrice != null
             ? cardPricing.discountedDisplayPrice
             : cardPricing.baseDisplayPrice;
-        const priceLabel = formatPrice(activeNightlyPrice * selectedStayNights, currency);
+        const priceLabel = `${isFlexibleSearch ? "From " : ""}${formatPrice(activeNightlyPrice * (isFlexibleSearch ? 1 : selectedStayNights), currency)}`;
 
 
         const icon = L.divIcon({
@@ -522,7 +531,7 @@ export function SearchMap({
       isMounted = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mapInstance, listings, buildDetailUrl, onMarkerClick, formatPrice, selectedStayNights, checkIn, checkOut]);
+  }, [mapInstance, listings, buildDetailUrl, onMarkerClick, formatPrice, selectedStayNights, checkIn, checkOut, isFlexibleSearch]);
 
 
   // ── Effect 4: In-place highlight update — no marker rebuild ──────────────

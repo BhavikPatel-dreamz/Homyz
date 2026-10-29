@@ -5,6 +5,7 @@ import {
   Prisma,
   TravelEvidenceSource,
   TravelStampCategory,
+  TravelStampOwnership,
   TravelVerificationStatus,
 } from "@/generated/prisma/client";
 import {
@@ -192,18 +193,6 @@ export const DEFAULT_STAMP_CATALOG: StampCatalogDefinition[] = [
       "Awarded for a verified completed stay in New York, United States.",
     countryCode: "US",
     qualifyingCities: ["New York"],
-    category: TravelStampCategory.CITY,
-    eligibilityRule: "VISIT_CITY",
-    ruleThreshold: 1,
-    iconUrl:
-      "/images/icons/streamline-freehand/office-stamp-document--Streamline-Freehand.svg",
-  },
-  {
-    slug: "stamp-tokyo-lights",
-    displayName: "Tokyo Lights",
-    description: "Awarded for a verified completed stay in Tokyo, Japan.",
-    countryCode: "JP",
-    qualifyingCities: ["Tokyo"],
     category: TravelStampCategory.CITY,
     eligibilityRule: "VISIT_CITY",
     ruleThreshold: 1,
@@ -938,6 +927,7 @@ export async function getTravelStampPickerCountries(userId: string): Promise<str
     prisma.travelStamp.findMany({
       where: {
         isActive: true,
+        isUserSelectable: true,
         country: { not: null },
         OR: [{ isCustom: false }, { ownerId: userId }],
       },
@@ -984,6 +974,7 @@ export async function addTravelStampSelections(
     where: {
       id: { in: requestedIds },
       isActive: true,
+      isUserSelectable: true,
       OR: [{ isCustom: false }, { ownerId: userId }],
     },
   });
@@ -1137,7 +1128,12 @@ export async function updateCustomTravelStamp(
   },
 ): Promise<UserTravelStampDTO> {
   const current = await prisma.userTravelStamp.findFirst({
-    where: { userId, stampId, stamp: { is: { isCustom: true, ownerId: userId } } },
+    where: {
+      userId,
+      stampId,
+      ownership: TravelStampOwnership.USER_MANAGED,
+      stamp: { is: { isCustom: true, ownerId: userId } },
+    },
     include: { stamp: true },
   });
   if (!current) throw AppError.notFound("Custom stamp not found.");
@@ -1163,7 +1159,14 @@ export async function updateCustomTravelStamp(
 }
 
 export async function deleteCustomTravelStamp(userId: string, stampId: string): Promise<void> {
-  const stamp = await prisma.travelStamp.findFirst({ where: { id: stampId, ownerId: userId, isCustom: true } });
+  const stamp = await prisma.travelStamp.findFirst({
+    where: {
+      id: stampId,
+      ownerId: userId,
+      isCustom: true,
+      userStamps: { none: { ownership: TravelStampOwnership.SYSTEM_AWARDED } },
+    },
+  });
   if (!stamp) throw AppError.notFound("Custom stamp not found.");
   await prisma.travelStamp.delete({ where: { id: stamp.id } });
   if (isOwnedCustomArtwork(stamp.iconUrl, userId)) {
@@ -1254,6 +1257,9 @@ export async function updateManualTravelStamp(
     include: { stamp: true },
   });
   if (!current) throw AppError.notFound("Travel stamp not found.");
+  if (current.ownership !== TravelStampOwnership.USER_MANAGED) {
+    throw AppError.forbidden("System-awarded stamps cannot be edited.");
+  }
   if (
     readStampEvidence(current.evidenceMetadata).source !== "MANUAL_DECLARATION"
   )
@@ -1288,9 +1294,20 @@ export async function removeTravelStamp(
   userStampId: string,
 ): Promise<void> {
   const result = await prisma.userTravelStamp.deleteMany({
-    where: { id: userStampId, userId },
+    where: {
+      id: userStampId,
+      userId,
+      ownership: TravelStampOwnership.USER_MANAGED,
+    },
   });
-  if (!result.count) throw AppError.notFound("Travel stamp not found.");
+  if (!result.count) {
+    const exists = await prisma.userTravelStamp.findFirst({
+      where: { id: userStampId, userId },
+      select: { id: true },
+    });
+    if (exists) throw AppError.forbidden("System-awarded stamps cannot be removed.");
+    throw AppError.notFound("Travel stamp not found.");
+  }
 }
 
 export async function setStampPublic(
@@ -1397,6 +1414,7 @@ export async function listAdminTravelStamps(filters: {
     city: s.city,
     country: s.country,
     countryCode: s.countryCode,
+    destinationId: s.destinationId,
     description: s.description,
     iconUrl: s.iconUrl,
     imageUrl: s.imageUrl,
@@ -1418,6 +1436,10 @@ export async function createAdminTravelStamp(input: {
   description?: string | null;
   category?: string;
   iconUrl: string;
+  imageUrl?: string | null;
+  destinationId?: string | null;
+  eligibilityRule?: string;
+  ruleThreshold?: number;
   displayOrder?: number;
   isActive?: boolean;
 }): Promise<TravelStampDTO> {
@@ -1425,6 +1447,10 @@ export async function createAdminTravelStamp(input: {
   if (!name) throw AppError.badRequest("Stamp name is required.");
   if (!input.iconUrl?.trim())
     throw AppError.badRequest("Stamp image/design is required.");
+  if (input.destinationId) {
+    const destination = await prisma.destination.findUnique({ where: { id: input.destinationId }, select: { id: true } });
+    if (!destination) throw AppError.validation("Canonical destination mapping was not found.");
+  }
 
   const baseSlug =
     "stamp-" +
@@ -1449,6 +1475,10 @@ export async function createAdminTravelStamp(input: {
       description: input.description?.trim() || null,
       category: input.category?.trim() || "DESTINATION",
       iconUrl: input.iconUrl.trim(),
+      imageUrl: input.imageUrl?.trim() || null,
+      destinationId: input.destinationId ?? null,
+      eligibilityRule: input.eligibilityRule?.trim() || "COMPLETED_STAYS",
+      ruleThreshold: input.ruleThreshold ?? 1,
       displayOrder: input.displayOrder ?? 0,
       isActive: input.isActive ?? true,
     },
@@ -1462,6 +1492,7 @@ export async function createAdminTravelStamp(input: {
     city: created.city,
     country: created.country,
     countryCode: created.countryCode,
+    destinationId: created.destinationId,
     description: created.description,
     iconUrl: created.iconUrl,
     category: created.category,
@@ -1483,12 +1514,20 @@ export async function updateAdminTravelStamp(
     description?: string | null;
     category?: string;
     iconUrl?: string;
+    imageUrl?: string | null;
+    destinationId?: string | null;
+    eligibilityRule?: string;
+    ruleThreshold?: number;
     displayOrder?: number;
     isActive?: boolean;
   },
 ): Promise<TravelStampDTO> {
   const existing = await prisma.travelStamp.findUnique({ where: { id } });
   if (!existing) throw AppError.notFound("Travel stamp not found.");
+  if (input.destinationId) {
+    const destination = await prisma.destination.findUnique({ where: { id: input.destinationId }, select: { id: true } });
+    if (!destination) throw AppError.validation("Canonical destination mapping was not found.");
+  }
 
   const updated = await prisma.travelStamp.update({
     where: { id },
@@ -1509,6 +1548,10 @@ export async function updateAdminTravelStamp(
         : {}),
       ...(input.category ? { category: input.category.trim() } : {}),
       ...(input.iconUrl ? { iconUrl: input.iconUrl.trim() } : {}),
+      ...(input.imageUrl !== undefined ? { imageUrl: input.imageUrl?.trim() || null } : {}),
+      ...(input.destinationId !== undefined ? { destinationId: input.destinationId || null } : {}),
+      ...(input.eligibilityRule ? { eligibilityRule: input.eligibilityRule.trim() } : {}),
+      ...(input.ruleThreshold !== undefined ? { ruleThreshold: input.ruleThreshold } : {}),
       ...(input.displayOrder !== undefined
         ? { displayOrder: input.displayOrder }
         : {}),
@@ -1524,6 +1567,7 @@ export async function updateAdminTravelStamp(
     city: updated.city,
     country: updated.country,
     countryCode: updated.countryCode,
+    destinationId: updated.destinationId,
     description: updated.description,
     iconUrl: updated.iconUrl,
     category: updated.category,
@@ -1553,6 +1597,7 @@ export async function toggleAdminTravelStampActive(
     city: updated.city,
     country: updated.country,
     countryCode: updated.countryCode,
+    destinationId: updated.destinationId,
     description: updated.description,
     iconUrl: updated.iconUrl,
     category: updated.category,

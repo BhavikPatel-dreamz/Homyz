@@ -49,6 +49,11 @@ export function AdminNav() {
       permission: PERMISSIONS.REFERRALS_VIEW,
     },
     {
+      href: "/admin/loyalty",
+      label: "StayElite",
+      permission: PERMISSIONS.LOYALTY_OVERVIEW_VIEW,
+    },
+    {
       href: "/admin/security",
       label: "Security",
       permission: PERMISSIONS.SECURITY_LOGS_VIEW,

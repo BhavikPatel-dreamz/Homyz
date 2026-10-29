@@ -165,6 +165,8 @@ export interface TravelStampDTO {
   country?: string | null;
   description: string | null;
   countryCode: string | null;
+  /** Canonical destination mapping, when this catalog stamp is taxonomy-backed. */
+  destinationId?: string | null;
   iconUrl: string | null;
   imageUrl?: string | null;
   category: string;
@@ -184,6 +186,7 @@ export interface AdminTravelStampDTO {
   city: string | null;
   country: string | null;
   countryCode: string | null;
+  destinationId?: string | null;
   description: string | null;
   iconUrl: string | null;
   imageUrl: string | null;

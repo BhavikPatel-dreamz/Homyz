@@ -3,6 +3,7 @@ import { ok } from "@/lib/api/response";
 import { quoteBookingSchema } from "@/lib/validation/booking";
 import { bookingService } from "@/services/booking.service";
 import { getAuthContext } from "@/lib/auth/context";
+import { getStayEliteCheckoutEligibility } from "@/services/stayelite-checkout-eligibility.service";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -16,7 +17,7 @@ export const GET = apiHandler(async (req, ctx: Ctx) => {
   // round-trip to every date change. Special offers still require the caller
   // context because their guest/host authorization is validated server-side.
   const specialOfferId = searchParams.get("specialOfferId") || undefined;
-  const actor = specialOfferId ? await getAuthContext(req) : undefined;
+  const actor = await getAuthContext(req);
 
   const parsed = quoteBookingSchema.parse({
     listingId: id,
@@ -39,5 +40,8 @@ export const GET = apiHandler(async (req, ctx: Ctx) => {
     actor: actor || undefined,
   });
 
-  return ok(quote);
+  // Eligibility metadata is intentionally non-financial while commercial
+  // decisions remain blocked; quote totals always remain pricing-service only.
+  const stayElite = actor ? await getStayEliteCheckoutEligibility(actor.id, quote.nights) : undefined;
+  return ok({ ...quote, ...(stayElite ? { stayElite } : {}) });
 });
