@@ -182,12 +182,31 @@ async function create(data: {
   entityType?: string | null;
   link?: string | null;
   metadata?: Prisma.InputJsonValue;
+  deduplicationKey?: string | null;
 }): Promise<NotificationDTO> {
   if (!data.userId) {
     throw AppError.badRequest("Cannot create notification without target userId");
   }
 
-  // Idempotency check: prevent duplicate notifications for the same user and entity/event
+  // Durable idempotency for new producers. Legacy producers continue using the
+  // prior entity-based compatibility path until they are migrated.
+  if (data.deduplicationKey) {
+    const existing = await prisma.notification.findUnique({ where: { deduplicationKey: data.deduplicationKey } });
+    if (existing) return toDTO(existing);
+    try {
+      const created = await prisma.notification.create({ data: { userId: data.userId, type: data.type, title: data.title, message: data.message, entityId: data.entityId || null, entityType: data.entityType || null, link: data.link || null, metadata: data.metadata ?? undefined, deduplicationKey: data.deduplicationKey } });
+      await invalidateUserNotifications(data.userId);
+      return toDTO(created);
+    } catch (error: any) {
+      if (error?.code === "P2002") {
+        const raced = await prisma.notification.findUnique({ where: { deduplicationKey: data.deduplicationKey } });
+        if (raced) return toDTO(raced);
+      }
+      throw error;
+    }
+  }
+
+  // Compatibility idempotency for older notification producers.
   if (data.entityId) {
     const existing = await prisma.notification.findFirst({
       where: {

@@ -19,7 +19,9 @@ export type BackgroundJobType =
   | "MODERATION_NOTIFICATION_DELIVERY"
   | "AUDIT_LOG_ARCHIVE"
   | "HOST_EARNINGS_RECONCILIATION"
-  | "SYSTEM_MAINTENANCE";
+  | "SYSTEM_MAINTENANCE"
+  | "ACHIEVEMENT_EVENT_PROCESSING"
+  | "ACHIEVEMENT_RECONCILIATION";
 
 export interface BackgroundJobDTO {
   id: string;
@@ -50,6 +52,8 @@ export interface EnqueueJobInput {
   priority?: number;
   maxAttempts?: number;
   backoffSeconds?: number;
+  /** Durable outbox callers must never silently fall back to process memory. */
+  requireDurable?: boolean;
 }
 
 export type JobHandler = (job: BackgroundJobDTO) => Promise<any>;
@@ -167,8 +171,15 @@ export async function enqueueJob(input: EnqueueJobInput): Promise<BackgroundJobD
         });
         if (existing) return toJobDTO(existing);
       }
+      if (input.requireDurable) {
+        throw new Error(`Durable job enqueue failed: ${err?.message || err}`);
+      }
       console.warn("[job-queue.service] DB enqueue failed, using fallback:", err?.message || err);
     }
+  }
+
+  if (input.requireDurable) {
+    throw new Error("Durable job enqueue requires an available database.");
   }
 
   // In-memory fallback
@@ -786,8 +797,10 @@ export async function enqueueNotificationDelivery(payload: {
   entityType?: string | null;
   link?: string | null;
   metadata?: Record<string, any>;
+  idempotencyKey?: string;
+  loyaltyActivity?: { type: string; eventKey: string; summary: string; sourceType: string; sourceId: string; occurredAt: string };
 }): Promise<BackgroundJobDTO> {
-  const idempotencyKey = `notif_${payload.userId}_${payload.entityType || "general"}_${payload.entityId || Date.now()}`;
+  const idempotencyKey = payload.idempotencyKey ?? `notif_${payload.userId}_${payload.entityType || "general"}_${payload.entityId || Date.now()}`;
   return enqueueJob({
     type: "MODERATION_NOTIFICATION_DELIVERY",
     payload,
@@ -831,7 +844,19 @@ registerJobHandler("MODERATION_NOTIFICATION_DELIVERY", async (job) => {
     entityType: p.entityType || null,
     link: p.link || null,
     metadata: p.metadata || {},
+    deduplicationKey: typeof p.deduplicationKey === "string" ? p.deduplicationKey : undefined,
   });
+
+  if (p.loyaltyActivity) {
+    const { recordLoyaltyActivity } = await import("@/services/loyalty-activity.service");
+    await recordLoyaltyActivity({
+      userId: p.userId, type: p.loyaltyActivity.type, eventKey: p.loyaltyActivity.eventKey,
+      summary: p.loyaltyActivity.summary, sourceType: p.loyaltyActivity.sourceType,
+      sourceId: p.loyaltyActivity.sourceId, link: p.link || null,
+      metadata: { notificationId: notif.id, loyaltyEvent: p.metadata?.loyaltyEvent ?? null },
+      occurredAt: new Date(p.loyaltyActivity.occurredAt),
+    });
+  }
 
   return { notificationId: notif.id, deliveredTo: p.userId };
 });
@@ -854,7 +879,31 @@ registerJobHandler("HOST_EARNINGS_RECONCILIATION", async (job) => {
   };
 });
 
-// 5. AUDIT_LOG_ARCHIVE / SYSTEM_MAINTENANCE
+// 5. ACHIEVEMENT_EVENT_PROCESSING. The handler is loaded lazily to keep the
+// durable outbox independent from the queue's startup imports.
+registerJobHandler("ACHIEVEMENT_EVENT_PROCESSING", async (job) => {
+  const eventId = job.payload?.eventId;
+  if (typeof eventId !== "string" || !eventId) {
+    throw new Error("Achievement event job is missing eventId.");
+  }
+  const { processAchievementEvent } = await import("@/services/achievement-event.service");
+  return processAchievementEvent(eventId, `job:${job.id}`);
+});
+
+// 6. ACHIEVEMENT_RECONCILIATION is evidence-only and requires an explicit
+// payload flag before it is allowed to persist any candidate rows.
+registerJobHandler("ACHIEVEMENT_RECONCILIATION", async (job) => {
+  const { reconcileAchievementEvidence } = await import("@/services/achievement-reconciliation.service");
+  return reconcileAchievementEvidence({
+    limit: Number(job.payload?.limit) || 50,
+    cursor: typeof job.payload?.cursor === "string" ? job.payload.cursor : undefined,
+    dryRun: job.payload?.dryRun !== false,
+    persistEvidence: job.payload?.persistEvidence === true,
+    checkpointScope: typeof job.payload?.checkpointScope === "string" ? job.payload.checkpointScope : undefined,
+  });
+});
+
+// 7. AUDIT_LOG_ARCHIVE / SYSTEM_MAINTENANCE
 registerJobHandler("SYSTEM_MAINTENANCE", async (job) => {
   // Clean up completed jobs older than 14 days
   const cutoff = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
@@ -908,4 +957,3 @@ export const jobQueueService = {
   registerJobHandler,
   enqueueNotificationDelivery,
 };
-

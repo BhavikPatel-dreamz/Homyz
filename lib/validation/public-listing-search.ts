@@ -11,6 +11,8 @@ export const MAX_PUBLIC_SEARCH_LIMIT = 100;
 export const MAX_PUBLIC_SEARCH_SKIP = 1_000_000;
 export const MAX_PUBLIC_SEARCH_RADIUS_KM = 500;
 export const MAX_PUBLIC_SEARCH_STAY_NIGHTS = 366;
+export const FLEXIBLE_SEARCH_DURATIONS = ["weekend", "week", "month"] as const;
+export const FLEXIBLE_SEARCH_TOLERANCES = [0, 1, 2, 3, 7, 14] as const;
 
 const optionalText = z.string().trim().min(1).max(160).optional();
 const optionalNonNegativeInteger = z.number().finite().int().min(0).optional();
@@ -31,6 +33,10 @@ export const publicListingSearchFiltersSchema = z
     lat: z.number().finite().min(-90).max(90).optional(),
     lng: z.number().finite().min(-180).max(180).optional(),
     radiusKm: z.number().finite().positive().max(MAX_PUBLIC_SEARCH_RADIUS_KM).optional(),
+    dateMode: z.enum(["exact", "flexible", "none"]).optional(),
+    dateFlexibility: z.number().int().refine((value) => FLEXIBLE_SEARCH_TOLERANCES.includes(value as typeof FLEXIBLE_SEARCH_TOLERANCES[number])).optional(),
+    flexibleDuration: z.enum(FLEXIBLE_SEARCH_DURATIONS).optional(),
+    flexibleMonths: z.array(z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/)).min(1).max(12).optional(),
     checkIn: z.union([z.string().trim().min(1).max(32), z.date()]).optional(),
     checkOut: z.union([z.string().trim().min(1).max(32), z.date()]).optional(),
     guests: z.number().finite().int().min(1).max(50).optional(),
@@ -93,6 +99,29 @@ export const publicListingSearchFiltersSchema = z
           message: `Stays cannot exceed ${MAX_PUBLIC_SEARCH_STAY_NIGHTS} nights.`,
         });
       }
+    }
+
+    const isFlexible = value.dateMode === "flexible";
+    if (isFlexible && (!value.flexibleDuration || !value.flexibleMonths?.length)) {
+      ctx.addIssue({
+        code: "custom",
+        path: [!value.flexibleDuration ? "flexibleDuration" : "flexibleMonths"],
+        message: "Flexible searches need a duration and at least one travel month.",
+      });
+    }
+    if (!isFlexible && (value.flexibleDuration || value.flexibleMonths?.length)) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["dateMode"],
+        message: "Flexible dates must use flexible date mode.",
+      });
+    }
+    if (isFlexible && (hasCheckIn || hasCheckOut)) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["dateMode"],
+        message: "Exact dates and flexible dates cannot be searched together.",
+      });
     }
 
     if ((value.lat === undefined) !== (value.lng === undefined)) {

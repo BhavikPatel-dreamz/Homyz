@@ -40,6 +40,46 @@ enum NotificationType {
   SYSTEM
 }
 
+// Loyalty activity is an append-only, presentation-safe projection of trusted
+// achievement, tier, and referral outcomes. It is not a reward ledger.
+enum LoyaltyActivityType {
+  ACHIEVEMENT_EARNED
+  ACHIEVEMENT_REVOKED
+  TIER_CHANGED
+  TIER_CORRECTED
+  REFERRAL_REWARD_PENDING
+  REFERRAL_REWARD_APPROVED
+  REFERRAL_REWARD_REJECTED
+}
+
+// A durable operational record for bounded StayElite reconciliation. It is
+// deliberately separate from business evidence, awards, memberships and any
+// future ledger: a reconciliation run describes an inspection, not a result.
+enum StayEliteReconciliationDomain {
+  BOOKING_EVIDENCE
+  ACHIEVEMENT_INTELLIGENCE
+  TIER_MEMBERSHIP
+  REFERRAL
+  NOTIFICATION_ACTIVITY
+  ANALYTICS
+  POINTS_LEDGER
+  REWARD_REDEMPTION
+}
+
+enum StayEliteReconciliationMode {
+  DRY_RUN
+  EVIDENCE_ONLY
+}
+
+enum StayEliteReconciliationStatus {
+  CREATED
+  RUNNING
+  COMPLETED
+  COMPLETED_WITH_ISSUES
+  FAILED
+  CANCELLED
+}
+
 // Lifecycle state for a host-controlled opportunity. Rule evaluation itself is
 // deterministic and read-only; these records retain only explicit host actions
 // and completed history.
@@ -398,6 +438,8 @@ enum BackgroundJobType {
   MODERATION_NOTIFICATION_DELIVERY
   AUDIT_LOG_ARCHIVE
   SYSTEM_MAINTENANCE
+  ACHIEVEMENT_EVENT_PROCESSING
+  ACHIEVEMENT_RECONCILIATION
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -438,95 +480,104 @@ model User {
   sessions                        Session[]
   listings                        Listing[]
   bookings                        Booking[]
-  cleaningTasks                   CleaningTask[]           @relation("HostCleaningTasks")
-  maintenanceRecords              MaintenanceRecord[]      @relation("HostMaintenanceRecords")
-  operatingExpenses               OperatingExpense[]       @relation("HostOperatingExpenses")
+  cleaningTasks                   CleaningTask[]               @relation("HostCleaningTasks")
+  maintenanceRecords              MaintenanceRecord[]          @relation("HostMaintenanceRecords")
+  operatingExpenses               OperatingExpense[]           @relation("HostOperatingExpenses")
   favoriteListings                ListingFavorite[]
   refreshTokens                   RefreshToken[]
   passwordResetTokens             PasswordResetToken[]
-  adminRole                       AdminRole?                 @relation(fields: [adminRoleId], references: [id], onDelete: SetNull)
+  adminRole                       AdminRole?                   @relation(fields: [adminRoleId], references: [id], onDelete: SetNull)
   auditLogs                       AuditLog[]
-  hostPermissionOverrides         HostPermissionOverride[]   @relation("HostOverrides")
-  createdHostOverrides            HostPermissionOverride[]   @relation("HostOverridesCreated")
-  hostEntitlementGrants           HostEntitlementGrant[]     @relation("HostEntitlementGrants")
-  grantedHostEntitlements         HostEntitlementGrant[]     @relation("GrantedHostEntitlements")
-  revokedHostEntitlements         HostEntitlementGrant[]     @relation("RevokedHostEntitlements")
-  adminPermissionOverrides        AdminPermissionOverride[]  @relation("AdminOverrides")
-  createdAdminOverrides           AdminPermissionOverride[]  @relation("AdminOverridesCreated")
-  sentInvitations                 AdminInvitation[]          @relation("InvitedByAdmins")
-  assignedHostRegistrations       HostRegistrationRequest[]  @relation("AssignedRegistrations")
-  reviewedHostRegistrations       HostRegistrationRequest[]  @relation("ReviewedRegistrations")
-  hostRegistrations               HostRegistrationRequest[]  @relation("HostRegistrations")
-  verifiedHostDocuments           HostRegistrationDocument[] @relation("VerifiedDocuments")
-  rejectedHostDocuments           HostRegistrationDocument[] @relation("RejectedDocuments")
-  createdRegistrationNotes        HostRegistrationNote[]     @relation("CreatedRegistrationNotes")
-  complianceReviewedRegistrations HostRegistrationRequest[]  @relation("ComplianceReviewedRegistrations")
-  approvedRegistrations           HostRegistrationRequest[]  @relation("ApprovedRegistrations")
-  reopenedRegistrations           HostRegistrationRequest[]  @relation("ReopenedRegistrations")
-  completedComplianceChecks       HostComplianceCheck[]      @relation("CompletedComplianceChecks")
-  createdComplianceIssues         HostComplianceIssue[]      @relation("CreatedComplianceIssues")
-  resolvedComplianceIssues        HostComplianceIssue[]      @relation("ResolvedComplianceIssues")
-  createdInfoRequests             HostInfoRequest[]          @relation("CreatedInfoRequests")
+  hostPermissionOverrides         HostPermissionOverride[]     @relation("HostOverrides")
+  createdHostOverrides            HostPermissionOverride[]     @relation("HostOverridesCreated")
+  hostEntitlementGrants           HostEntitlementGrant[]       @relation("HostEntitlementGrants")
+  grantedHostEntitlements         HostEntitlementGrant[]       @relation("GrantedHostEntitlements")
+  revokedHostEntitlements         HostEntitlementGrant[]       @relation("RevokedHostEntitlements")
+  adminPermissionOverrides        AdminPermissionOverride[]    @relation("AdminOverrides")
+  createdAdminOverrides           AdminPermissionOverride[]    @relation("AdminOverridesCreated")
+  sentInvitations                 AdminInvitation[]            @relation("InvitedByAdmins")
+  assignedHostRegistrations       HostRegistrationRequest[]    @relation("AssignedRegistrations")
+  reviewedHostRegistrations       HostRegistrationRequest[]    @relation("ReviewedRegistrations")
+  hostRegistrations               HostRegistrationRequest[]    @relation("HostRegistrations")
+  verifiedHostDocuments           HostRegistrationDocument[]   @relation("VerifiedDocuments")
+  rejectedHostDocuments           HostRegistrationDocument[]   @relation("RejectedDocuments")
+  createdRegistrationNotes        HostRegistrationNote[]       @relation("CreatedRegistrationNotes")
+  complianceReviewedRegistrations HostRegistrationRequest[]    @relation("ComplianceReviewedRegistrations")
+  approvedRegistrations           HostRegistrationRequest[]    @relation("ApprovedRegistrations")
+  reopenedRegistrations           HostRegistrationRequest[]    @relation("ReopenedRegistrations")
+  completedComplianceChecks       HostComplianceCheck[]        @relation("CompletedComplianceChecks")
+  createdComplianceIssues         HostComplianceIssue[]        @relation("CreatedComplianceIssues")
+  resolvedComplianceIssues        HostComplianceIssue[]        @relation("ResolvedComplianceIssues")
+  createdInfoRequests             HostInfoRequest[]            @relation("CreatedInfoRequests")
   tripPhotos                      TripPhoto[]
-  coHostInvitationsSent           ListingCoHost[]            @relation("ListingCoHostInviter")
-  coHostAssignments               ListingCoHost[]            @relation("ListingCoHostUser")
+  coHostInvitationsSent           ListingCoHost[]              @relation("ListingCoHostInviter")
+  coHostAssignments               ListingCoHost[]              @relation("ListingCoHostUser")
   guidebooks                      Guidebook[]
   taxRegistrations                TaxRegistration[]
   taxAuditLogs                    TaxAuditLog[]
   listingRemovalFeedbacks         ListingRemovalFeedback[]
-  authoredReviews                 Review[]                   @relation("AuthoredReviews")
-  receivedReviews                 Review[]                   @relation("ReceivedReviews")
-  moderatedReviews                Review[]                   @relation("ModeratedReviews")
-  authoredReviewResponses         ReviewResponse[]           @relation("AuthoredReviewResponses")
-  referredBy                      User?                      @relation("GuestReferrals", fields: [referredById], references: [id], onDelete: SetNull)
-  referredGuests                  User[]                     @relation("GuestReferrals")
-  referralRewards                 ReferralReward[]           @relation("ReferralRewardInviter")
-  referralRewardEarnedFor         ReferralReward?            @relation("ReferralRewardReferredGuest")
-  reviewedReferralRewards         ReferralReward[]           @relation("ReferralRewardReviewer")
+  authoredReviews                 Review[]                     @relation("AuthoredReviews")
+  receivedReviews                 Review[]                     @relation("ReceivedReviews")
+  moderatedReviews                Review[]                     @relation("ModeratedReviews")
+  authoredReviewResponses         ReviewResponse[]             @relation("AuthoredReviewResponses")
+  referredBy                      User?                        @relation("GuestReferrals", fields: [referredById], references: [id], onDelete: SetNull)
+  referredGuests                  User[]                       @relation("GuestReferrals")
+  referralRewards                 ReferralReward[]             @relation("ReferralRewardInviter")
+  referralRewardEarnedFor         ReferralReward?              @relation("ReferralRewardReferredGuest")
+  reviewedReferralRewards         ReferralReward[]             @relation("ReferralRewardReviewer")
   notifications                   Notification[]
-  guestConversations              Conversation[]             @relation("GuestConversations")
-  hostConversations               Conversation[]             @relation("HostConversations")
-  sentMessages                    Message[]                  @relation("SentMessages")
-  guestSpecialOffers              SpecialOffer[]             @relation("GuestSpecialOffers")
-  hostSpecialOffers               SpecialOffer[]             @relation("HostSpecialOffers")
+  loyaltyActivities               LoyaltyActivity[]
+  initiatedStayEliteReconciliationRuns StayEliteReconciliationRun[] @relation("StayEliteReconciliationInitiator")
+  guestConversations              Conversation[]               @relation("GuestConversations")
+  hostConversations               Conversation[]               @relation("HostConversations")
+  sentMessages                    Message[]                    @relation("SentMessages")
+  guestSpecialOffers              SpecialOffer[]               @relation("GuestSpecialOffers")
+  hostSpecialOffers               SpecialOffer[]               @relation("HostSpecialOffers")
   superhostEvaluations            SuperhostEvaluation[]
-  reportedQualityIncidents        ListingQualityIncident[]   @relation("ReportedQualityIncidents")
-  submittedModerationReports      ModerationReport[]         @relation("SubmittedModerationReports")
-  assignedModerationCases         ModerationCase[]           @relation("AssignedModerationCases")
-  submittedModerationEvidence     ModerationEvidence[]       @relation("SubmittedModerationEvidence")
-  moderationActivities            ModerationActivity[]       @relation("ModerationActivityActors")
-  createdCmsContents              CmsContent[]               @relation("CmsContentCreated")
-  updatedCmsContents              CmsContent[]               @relation("CmsContentUpdated")
-  authoredCmsVersions             CmsContentVersion[]        @relation("CmsVersionCreated")
-  publishedCmsPublications        CmsPublication[]           @relation("CmsPublishedBy")
-  uploadedCmsMedia                CmsMediaAsset[]            @relation("CmsMediaUploaded")
-  createdCmsScheduledActions      CmsScheduledAction[]       @relation("CmsScheduleCreated")
-  licenseOwnerships               LicenseOwnership[]         @relation("LicenseOwnershipHost")
-  verifiedLicenseOwnerships       LicenseOwnership[]         @relation("LicenseOwnershipVerifier")
+  reportedQualityIncidents        ListingQualityIncident[]     @relation("ReportedQualityIncidents")
+  submittedModerationReports      ModerationReport[]           @relation("SubmittedModerationReports")
+  assignedModerationCases         ModerationCase[]             @relation("AssignedModerationCases")
+  submittedModerationEvidence     ModerationEvidence[]         @relation("SubmittedModerationEvidence")
+  moderationActivities            ModerationActivity[]         @relation("ModerationActivityActors")
+  createdCmsContents              CmsContent[]                 @relation("CmsContentCreated")
+  updatedCmsContents              CmsContent[]                 @relation("CmsContentUpdated")
+  authoredCmsVersions             CmsContentVersion[]          @relation("CmsVersionCreated")
+  publishedCmsPublications        CmsPublication[]             @relation("CmsPublishedBy")
+  uploadedCmsMedia                CmsMediaAsset[]              @relation("CmsMediaUploaded")
+  createdCmsScheduledActions      CmsScheduledAction[]         @relation("CmsScheduleCreated")
+  licenseOwnerships               LicenseOwnership[]           @relation("LicenseOwnershipHost")
+  verifiedLicenseOwnerships       LicenseOwnership[]           @relation("LicenseOwnershipVerifier")
   licenseVerificationHistory      LicenseVerificationHistory[] @relation("LicenseVerificationHost")
   opportunityStates               HostOpportunity[]
-  payoutMethods                   HostPayoutMethod[]         @relation("HostPayoutMethods")
-  hostRoutingRules                PayoutRoutingRule[]        @relation("HostRoutingRules")
-  recipientRoutingRules           PayoutRoutingRule[]        @relation("RecipientRoutingRules")
-  recipientDistributions          BookingPayoutDistribution[] @relation("RecipientDistributions")
-  taxpayerProfile                 HostTaxpayerProfile?        @relation("UserTaxpayerProfile")
-  taxDocuments                    HostTaxDocument[]           @relation("UserTaxDocuments")
+  payoutMethods                   HostPayoutMethod[]           @relation("HostPayoutMethods")
+  hostRoutingRules                PayoutRoutingRule[]          @relation("HostRoutingRules")
+  recipientRoutingRules           PayoutRoutingRule[]          @relation("RecipientRoutingRules")
+  recipientDistributions          BookingPayoutDistribution[]  @relation("RecipientDistributions")
+  taxpayerProfile                 HostTaxpayerProfile?         @relation("UserTaxpayerProfile")
+  taxDocuments                    HostTaxDocument[]            @relation("UserTaxDocuments")
   travelProfile                   TravelProfile?
-  profileLikesGiven               ProfileLike[]              @relation("ProfileLikesGiven")
-  profileLikesReceived            ProfileLike[]              @relation("ProfileLikesReceived")
-  travelTrips                     TravelTrip[]               @relation("UserTravelTrips")
-  travelPhotos                    TravelPhoto[]              @relation("UserTravelPhotos")
-  taggedTravelPhotos              TravelPhotoPersonTag[]     @relation("TaggedTravelPhotoUser")
+  profileLikesGiven               ProfileLike[]                @relation("ProfileLikesGiven")
+  profileLikesReceived            ProfileLike[]                @relation("ProfileLikesReceived")
+  travelTrips                     TravelTrip[]                 @relation("UserTravelTrips")
+  travelPhotos                    TravelPhoto[]                @relation("UserTravelPhotos")
+  taggedTravelPhotos              TravelPhotoPersonTag[]       @relation("TaggedTravelPhotoUser")
   travelTripLikes                 TravelTripLike[]
   travelPhotoComments             TravelPhotoComment[]
-  userDestinations                UserDestination[]          @relation("UserDestinations")
-  userTravelStamps                UserTravelStamp[]          @relation("UserTravelStamps")
-  customTravelStamps              TravelStamp[]              @relation("CustomTravelStamps")
-  userTravelAchievements          UserTravelAchievement[]    @relation("UserTravelAchievements")
-  travelFollowers                 TravelFollow[]             @relation("TravelFollowers")
-  travelFollowing                 TravelFollow[]             @relation("TravelFollowing")
-  blockedUsers                    UserBlock[]                @relation("UserBlockedUsers")
-  blockedByUsers                  UserBlock[]                @relation("UserBlockedByUsers")
+  userDestinations                UserDestination[]            @relation("UserDestinations")
+  userTravelStamps                UserTravelStamp[]            @relation("UserTravelStamps")
+  customTravelStamps              TravelStamp[]                @relation("CustomTravelStamps")
+  userTravelAchievements          UserTravelAchievement[]      @relation("UserTravelAchievements")
+  achievementEvents               AchievementEvent[]           @relation("AchievementEventUsers")
+  bookingVisitEvidence            BookingVisitEvidence[]
+  achievementAwards               AchievementAward[]
+  stayEliteMembership             StayEliteMembership?
+  stayEliteEvaluations            StayEliteTierEvaluation[]    @relation("StayEliteEvaluationGuest")
+  stayEliteTierChanges            StayEliteTierHistory[]       @relation("StayEliteTierHistoryGuest")
+  authorizedStayEliteTierChanges  StayEliteTierHistory[]       @relation("StayEliteTierHistoryActor")
+  travelFollowers                 TravelFollow[]               @relation("TravelFollowers")
+  travelFollowing                 TravelFollow[]               @relation("TravelFollowing")
+  blockedUsers                    UserBlock[]                  @relation("UserBlockedUsers")
+  blockedByUsers                  UserBlock[]                  @relation("UserBlockedByUsers")
 
   @@index([role])
   @@index([adminRoleId])
@@ -575,6 +626,9 @@ model Notification {
   entityType String?
   link       String?
   metadata   Json?
+  // Optional because existing notification producers predate durable source
+  // identities. New StayElite producers always provide this unique key.
+  deduplicationKey String?        @unique
   createdAt  DateTime         @default(now())
   updatedAt  DateTime         @updatedAt
 
@@ -585,24 +639,45 @@ model Notification {
   @@index([userId, type, entityId, entityType])
 }
 
+model LoyaltyActivity {
+  id          String              @id @default(cuid())
+  userId      String
+  type        LoyaltyActivityType
+  eventKey    String
+  summary     String
+  sourceType  String
+  sourceId    String
+  link        String?
+  metadata    Json?
+  occurredAt  DateTime
+  createdAt   DateTime            @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, eventKey])
+  @@index([userId, occurredAt])
+  @@index([userId, type, occurredAt])
+  @@index([sourceType, sourceId])
+}
+
 model HostOpportunity {
-  id                 String                @id @default(cuid())
-  hostId             String
-  listingId          String
-  ruleKey            String
-  deduplicationKey   String
-  status             HostOpportunityStatus @default(ACTIVE)
+  id                  String                @id @default(cuid())
+  hostId              String
+  listingId           String
+  ruleKey             String
+  deduplicationKey    String
+  status              HostOpportunityStatus @default(ACTIVE)
   evidenceFingerprint String
-  evidenceSnapshot   Json?
-  actionHref         String?
-  detectedAt         DateTime              @default(now())
-  lastEvaluatedAt    DateTime              @default(now())
-  snoozedUntil       DateTime?
-  dismissedAt        DateTime?
-  resolvedAt         DateTime?
-  expiresAt          DateTime?
-  createdAt          DateTime              @default(now())
-  updatedAt          DateTime              @updatedAt
+  evidenceSnapshot    Json?
+  actionHref          String?
+  detectedAt          DateTime              @default(now())
+  lastEvaluatedAt     DateTime              @default(now())
+  snoozedUntil        DateTime?
+  dismissedAt         DateTime?
+  resolvedAt          DateTime?
+  expiresAt           DateTime?
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
 
   host    User    @relation(fields: [hostId], references: [id], onDelete: Cascade)
   listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
@@ -893,7 +968,7 @@ model Listing {
   licenseEligibilityStatus ListingLicenseEligibilityStatus @default(NOT_REQUIRED)
   approvalMethod           ListingApprovalMethod?
   licenseUnlistedAt        DateTime?
-  licenseUnlistingReason   String? @db.Text
+  licenseUnlistingReason   String?                         @db.Text
 
   deletedAt     DateTime?
   removalReason Json?
@@ -901,30 +976,31 @@ model Listing {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  host                     User                      @relation(fields: [hostId], references: [id], onDelete: Cascade)
-  bookings                 Booking[]
-  favorites                ListingFavorite[]
-  coHosts                  ListingCoHost[]
-  guidebookListings        GuidebookListing[]
-  taxes                    ListingTax[]
-  taxAuditLogs             TaxAuditLog[]
-  reviews                  Review[]                  @relation("ListingReviews")
-  conversations            Conversation[]
-  specialOffers            SpecialOffer[]
-  guestFavoriteEvaluations GuestFavoriteEvaluation[]
-  qualityIncidents         ListingQualityIncident[]
-  searchRankingObservations ListingSearchRankingObservation[]
-  analyticsEvents          ListingAnalyticsEvent[]
-  cleaningTasks            CleaningTask[]
-  maintenanceRecords       MaintenanceRecord[]
-  operatingExpenses        OperatingExpense[]
-  comparableSourceObservations ComparablePriceObservation[] @relation("ComparableSourceListing")
-  comparableTargetObservations ComparablePriceObservation[] @relation("ComparableTargetListing")
-  opportunityStates       HostOpportunity[]
-  propertyLicenseLink      PropertyLicenseLink?
-  licenseVerificationHistory LicenseVerificationHistory[]
-  routingRules            PayoutRoutingRule[]          @relation("ListingRoutingRules")
-  bookingDistributions    BookingPayoutDistribution[]  @relation("ListingDistributions")
+  host                         User                              @relation(fields: [hostId], references: [id], onDelete: Cascade)
+  bookings                     Booking[]
+  favorites                    ListingFavorite[]
+  coHosts                      ListingCoHost[]
+  guidebookListings            GuidebookListing[]
+  taxes                        ListingTax[]
+  taxAuditLogs                 TaxAuditLog[]
+  reviews                      Review[]                          @relation("ListingReviews")
+  conversations                Conversation[]
+  specialOffers                SpecialOffer[]
+  guestFavoriteEvaluations     GuestFavoriteEvaluation[]
+  qualityIncidents             ListingQualityIncident[]
+  searchRankingObservations    ListingSearchRankingObservation[]
+  analyticsEvents              ListingAnalyticsEvent[]
+  cleaningTasks                CleaningTask[]
+  maintenanceRecords           MaintenanceRecord[]
+  operatingExpenses            OperatingExpense[]
+  comparableSourceObservations ComparablePriceObservation[]      @relation("ComparableSourceListing")
+  comparableTargetObservations ComparablePriceObservation[]      @relation("ComparableTargetListing")
+  opportunityStates            HostOpportunity[]
+  destinationClassifications   DestinationClassification[]
+  propertyLicenseLink          PropertyLicenseLink?
+  licenseVerificationHistory   LicenseVerificationHistory[]
+  routingRules                 PayoutRoutingRule[]               @relation("ListingRoutingRules")
+  bookingDistributions         BookingPayoutDistribution[]       @relation("ListingDistributions")
 
   @@index([hostId])
   @@index([published])
@@ -987,23 +1063,23 @@ model ListingAnalyticsEvent {
 }
 
 model PropertyLicense {
-  id                  String                    @id @default(cuid())
-  licenseNumber       String
-  countryCode         String                    @default("SA")
-  licenseCategory     String?
-  facilityName        String?
-  verifiedEntity      String?
-  status              PropertyLicenseStatus     @default(PENDING)
-  issueDate           DateTime?                 @db.Date
-  expiryDate          DateTime?                 @db.Date
-  verificationSource  LicenseVerificationSource
-  verificationMethod  String?
-  lastVerifiedAt      DateTime?
-  lastAttemptedAt     DateTime?
-  nextVerificationAt  DateTime?
-  verificationError   String?                   @db.Text
-  createdAt           DateTime                  @default(now())
-  updatedAt           DateTime                  @updatedAt
+  id                 String                    @id @default(cuid())
+  licenseNumber      String
+  countryCode        String                    @default("SA")
+  licenseCategory    String?
+  facilityName       String?
+  verifiedEntity     String?
+  status             PropertyLicenseStatus     @default(PENDING)
+  issueDate          DateTime?                 @db.Date
+  expiryDate         DateTime?                 @db.Date
+  verificationSource LicenseVerificationSource
+  verificationMethod String?
+  lastVerifiedAt     DateTime?
+  lastAttemptedAt    DateTime?
+  nextVerificationAt DateTime?
+  verificationError  String?                   @db.Text
+  createdAt          DateTime                  @default(now())
+  updatedAt          DateTime                  @updatedAt
 
   ownerships          LicenseOwnership[]
   listingLinks        PropertyLicenseLink[]
@@ -1027,44 +1103,44 @@ model LicenseOwnership {
   createdAt           DateTime                   @default(now())
   updatedAt           DateTime                   @updatedAt
 
-  license             PropertyLicense @relation(fields: [licenseId], references: [id], onDelete: Cascade)
-  host                User            @relation("LicenseOwnershipHost", fields: [hostId], references: [id], onDelete: Cascade)
-  verifiedBy          User?           @relation("LicenseOwnershipVerifier", fields: [verifiedById], references: [id], onDelete: SetNull)
+  license    PropertyLicense @relation(fields: [licenseId], references: [id], onDelete: Cascade)
+  host       User            @relation("LicenseOwnershipHost", fields: [hostId], references: [id], onDelete: Cascade)
+  verifiedBy User?           @relation("LicenseOwnershipVerifier", fields: [verifiedById], references: [id], onDelete: SetNull)
 
   @@unique([licenseId, hostId])
   @@index([hostId, authorizationStatus])
 }
 
 model PropertyLicenseLink {
-  id                String                           @id @default(cuid())
-  listingId         String                           @unique
+  id                String                          @id @default(cuid())
+  listingId         String                          @unique
   licenseId         String
   eligibilityStatus ListingLicenseEligibilityStatus @default(PENDING)
-  linkedAt          DateTime                         @default(now())
-  updatedAt         DateTime                         @updatedAt
+  linkedAt          DateTime                        @default(now())
+  updatedAt         DateTime                        @updatedAt
 
-  listing           Listing         @relation(fields: [listingId], references: [id], onDelete: Cascade)
-  license           PropertyLicense @relation(fields: [licenseId], references: [id], onDelete: Restrict)
+  listing Listing         @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  license PropertyLicense @relation(fields: [licenseId], references: [id], onDelete: Restrict)
 
   @@index([licenseId, eligibilityStatus])
 }
 
 model LicenseVerificationHistory {
-  id                     String                    @id @default(cuid())
+  id                     String                 @id @default(cuid())
   licenseId              String
   hostId                 String
   listingId              String?
   previousStatus         PropertyLicenseStatus?
   newStatus              PropertyLicenseStatus
   providerResultCategory String
-  errorReason            String?                   @db.Text
+  errorReason            String?                @db.Text
   requestId              String?
   metadata               Json?
-  createdAt              DateTime                  @default(now())
+  createdAt              DateTime               @default(now())
 
-  license                PropertyLicense @relation(fields: [licenseId], references: [id], onDelete: Cascade)
-  host                   User            @relation("LicenseVerificationHost", fields: [hostId], references: [id], onDelete: Cascade)
-  listing                Listing?        @relation(fields: [listingId], references: [id], onDelete: SetNull)
+  license PropertyLicense @relation(fields: [licenseId], references: [id], onDelete: Cascade)
+  host    User            @relation("LicenseVerificationHost", fields: [hostId], references: [id], onDelete: Cascade)
+  listing Listing?        @relation(fields: [listingId], references: [id], onDelete: SetNull)
 
   @@index([licenseId, createdAt])
   @@index([hostId, createdAt])
@@ -1138,44 +1214,46 @@ model ListingCoHost {
 }
 
 model Booking {
-  id                 String        @id @default(cuid())
-  submissionId       String?       @unique
-  userId             String
-  listingId          String
-  status             BookingStatus @default(PENDING)
-  startDate          DateTime      @db.Date
-  endDate            DateTime      @db.Date
-  guests             Int           @default(1)
-  totalPrice         Int? // Minor units / cents
-  nightlyPrice       Int? // Minor units / cents
-  cleaningFee        Int? // Minor units / cents
-  currency           String        @default("SAR")
-  priceBreakdown     Json? // Structured snapshot of nights, rates, discounts
-  cancellationPolicy String? // Applicable listing policy snapshot at booking time
-  isNonRefundable    Boolean       @default(false) // Immutable guest-selected booking term
+  id                          String        @id @default(cuid())
+  submissionId                String?       @unique
+  userId                      String
+  listingId                   String
+  status                      BookingStatus @default(PENDING)
+  startDate                   DateTime      @db.Date
+  endDate                     DateTime      @db.Date
+  guests                      Int           @default(1)
+  totalPrice                  Int? // Minor units / cents
+  nightlyPrice                Int? // Minor units / cents
+  cleaningFee                 Int? // Minor units / cents
+  currency                    String        @default("SAR")
+  priceBreakdown              Json? // Structured snapshot of nights, rates, discounts
+  cancellationPolicy          String? // Applicable listing policy snapshot at booking time
+  isNonRefundable             Boolean       @default(false) // Immutable guest-selected booking term
   // Guest-selected only; null represents historic/unknown purpose.
-  tripPurpose        TripPurpose?
+  tripPurpose                 TripPurpose?
   // First verified guest access to the listing's check-in instructions. This is an
   // analytics event, not a source of truth for arrival access itself.
   checkInInstructionsViewedAt DateTime?
-  createdAt          DateTime      @default(now())
-  updatedAt          DateTime      @updatedAt
+  createdAt                   DateTime      @default(now())
+  updatedAt                   DateTime      @updatedAt
 
-  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  listing        Listing          @relation(fields: [listingId], references: [id], onDelete: Restrict)
-  taxes          ReservationTax[]
-  reviews        Review[]
-  referralReward ReferralReward?
-  conversations  Conversation[]
-  qualityIncidents ListingQualityIncident[]
-  payments       BookingPayment[]
-  refunds        BookingRefund[]
-  moderationReports ModerationReport[]
-  cleaningTasks     CleaningTask[]
-  operatingExpenses OperatingExpense[]
+  user                User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listing             Listing                     @relation(fields: [listingId], references: [id], onDelete: Restrict)
+  taxes               ReservationTax[]
+  reviews             Review[]
+  referralReward      ReferralReward?
+  conversations       Conversation[]
+  qualityIncidents    ListingQualityIncident[]
+  payments            BookingPayment[]
+  refunds             BookingRefund[]
+  moderationReports   ModerationReport[]
+  cleaningTasks       CleaningTask[]
+  operatingExpenses   OperatingExpense[]
   payoutDistributions BookingPayoutDistribution[] @relation("BookingDistributions")
-  taxDocuments      HostTaxDocument[]           @relation("BookingTaxDocuments")
-  userDestinations  UserDestination[]
+  taxDocuments        HostTaxDocument[]           @relation("BookingTaxDocuments")
+  userDestinations    UserDestination[]
+  achievementEvents   AchievementEvent[]
+  visitEvidence       BookingVisitEvidence?
 
   @@index([userId, createdAt])
   @@index([listingId])
@@ -1244,22 +1322,22 @@ model MaintenanceRecord {
 // Amounts use the application's established integer minor-unit convention.
 // A void preserves audit history instead of deleting financial data.
 model OperatingExpense {
-  id                 String                   @id @default(cuid())
-  hostId             String
-  listingId          String
-  bookingId          String?
-  category           OperatingExpenseCategory
-  status             OperatingExpenseStatus   @default(ACTIVE)
-  amountCents        Int
-  currency           String                   @default("SAR")
-  expenseDate        DateTime                 @db.Date
-  description        String?                  @db.Text
-  sourceReference    String?
-  idempotencyKey     String?                  @unique
-  voidedAt           DateTime?
-  voidReason         String?                  @db.Text
-  createdAt          DateTime                 @default(now())
-  updatedAt          DateTime                 @updatedAt
+  id              String                   @id @default(cuid())
+  hostId          String
+  listingId       String
+  bookingId       String?
+  category        OperatingExpenseCategory
+  status          OperatingExpenseStatus   @default(ACTIVE)
+  amountCents     Int
+  currency        String                   @default("SAR")
+  expenseDate     DateTime                 @db.Date
+  description     String?                  @db.Text
+  sourceReference String?
+  idempotencyKey  String?                  @unique
+  voidedAt        DateTime?
+  voidReason      String?                  @db.Text
+  createdAt       DateTime                 @default(now())
+  updatedAt       DateTime                 @updatedAt
 
   host    User     @relation("HostOperatingExpenses", fields: [hostId], references: [id], onDelete: Restrict)
   listing Listing  @relation(fields: [listingId], references: [id], onDelete: Restrict)
@@ -1420,7 +1498,7 @@ model BookingPayment {
   idempotencyKey       String?         @unique
   status               PaymentStatus   @default(PENDING)
   currency             String          @default("SAR")
-  amount               Int             // Minor units / cents
+  amount               Int // Minor units / cents
   capturedAmount       Int             @default(0)
   refundedAmount       Int             @default(0)
   paymentMethod        String?
@@ -1434,8 +1512,8 @@ model BookingPayment {
   createdAt            DateTime        @default(now())
   updatedAt            DateTime        @updatedAt
 
-  booking              Booking         @relation(fields: [bookingId], references: [id], onDelete: Restrict)
-  refunds              BookingRefund[]
+  booking Booking         @relation(fields: [bookingId], references: [id], onDelete: Restrict)
+  refunds BookingRefund[]
 
   @@index([bookingId])
   @@index([status])
@@ -1444,15 +1522,15 @@ model BookingPayment {
 }
 
 model BookingRefund {
-  id               String          @id @default(cuid())
+  id               String       @id @default(cuid())
   bookingId        String
   paymentId        String?
-  refundReference  String?         @unique
-  providerRefundId String?         @unique
-  idempotencyKey   String?         @unique
-  status           RefundStatus    @default(PENDING)
-  currency         String          @default("SAR")
-  amount           Int             // Minor units / cents
+  refundReference  String?      @unique
+  providerRefundId String?      @unique
+  idempotencyKey   String?      @unique
+  status           RefundStatus @default(PENDING)
+  currency         String       @default("SAR")
+  amount           Int // Minor units / cents
   reason           String?
   adminNotes       String?
   requestedById    String?
@@ -1462,11 +1540,11 @@ model BookingRefund {
   failedAt         DateTime?
   failureReason    String?
   metadata         Json?
-  createdAt        DateTime        @default(now())
-  updatedAt        DateTime        @updatedAt
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
 
-  booking          Booking         @relation(fields: [bookingId], references: [id], onDelete: Restrict)
-  payment          BookingPayment? @relation(fields: [paymentId], references: [id], onDelete: Restrict)
+  booking Booking         @relation(fields: [bookingId], references: [id], onDelete: Restrict)
+  payment BookingPayment? @relation(fields: [paymentId], references: [id], onDelete: Restrict)
 
   @@index([bookingId])
   @@index([paymentId])
@@ -1514,7 +1592,7 @@ model Review {
   valueRating         Int?
   houseRulesRating    Int?
   comment             String          @db.Text // Empty string allowed for rating-only reviews
-  privateNoteToHost   String          @db.Text @default("") // Private feedback only visible to host and guest
+  privateNoteToHost   String          @default("") @db.Text // Private feedback only visible to host and guest
   privateNoteToGuest  String?         @db.Text
   topics              String[]        @default([])
   recommendGuest      Boolean?
@@ -1525,22 +1603,23 @@ model Review {
   editDeadline        DateTime?
 
   // Moderation
-  moderatedAt         DateTime?
-  moderatedById       String?
-  rejectionReason     String?
-  moderationNotes     String?
-  moderationCaseId    String?
+  moderatedAt      DateTime?
+  moderatedById    String?
+  rejectionReason  String?
+  moderationNotes  String?
+  moderationCaseId String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  listing        Listing?        @relation("ListingReviews", fields: [listingId], references: [id], onDelete: Cascade)
-  booking        Booking?        @relation(fields: [bookingId], references: [id], onDelete: SetNull)
-  author         User            @relation("AuthoredReviews", fields: [authorId], references: [id], onDelete: Cascade)
-  targetUser     User?           @relation("ReceivedReviews", fields: [targetUserId], references: [id], onDelete: SetNull)
-  moderator      User?           @relation("ModeratedReviews", fields: [moderatedById], references: [id], onDelete: SetNull)
-  moderationCase ModerationCase? @relation(fields: [moderationCaseId], references: [id], onDelete: SetNull)
-  response       ReviewResponse?
+  listing           Listing?           @relation("ListingReviews", fields: [listingId], references: [id], onDelete: Cascade)
+  booking           Booking?           @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  author            User               @relation("AuthoredReviews", fields: [authorId], references: [id], onDelete: Cascade)
+  targetUser        User?              @relation("ReceivedReviews", fields: [targetUserId], references: [id], onDelete: SetNull)
+  moderator         User?              @relation("ModeratedReviews", fields: [moderatedById], references: [id], onDelete: SetNull)
+  moderationCase    ModerationCase?    @relation(fields: [moderationCaseId], references: [id], onDelete: SetNull)
+  response          ReviewResponse?
+  achievementEvents AchievementEvent[]
 
   @@unique([bookingId, direction])
   @@index([listingId])
@@ -1824,7 +1903,6 @@ model HostRegistrationDocument {
   @@index([status])
 }
 
-
 model HostRegistrationNote {
   id        String                  @id @default(cuid())
   requestId String
@@ -2049,8 +2127,8 @@ model TaxJurisdiction {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  rules         TaxRule[]
-  registrations TaxRegistration[]
+  rules            TaxRule[]
+  registrations    TaxRegistration[]
   taxpayerProfiles HostTaxpayerProfile[]
 
   @@index([country])
@@ -2250,7 +2328,6 @@ model Conversation {
   @@index([status])
 }
 
-
 model Message {
   id             String      @id @default(cuid())
   conversationId String
@@ -2319,19 +2396,19 @@ model MessageAttachment {
 }
 
 model ListingQualityIncident {
-  id              String                  @id @default(cuid())
+  id              String                   @id @default(cuid())
   listingId       String
   bookingId       String?
   reportedById    String?
   category        QualityIncidentCategory
-  status          QualityIncidentStatus   @default(PENDING)
+  status          QualityIncidentStatus    @default(PENDING)
   severity        QualityIncidentSeverity?
-  description     String?                 @db.Text
-  resolutionNotes String?                 @db.Text
+  description     String?                  @db.Text
+  resolutionNotes String?                  @db.Text
   metadata        Json?
-  createdAt       DateTime                @default(now())
+  createdAt       DateTime                 @default(now())
   resolvedAt      DateTime?
-  updatedAt       DateTime                @updatedAt
+  updatedAt       DateTime                 @updatedAt
 
   listing    Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
   booking    Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
@@ -2399,11 +2476,11 @@ model CmsContent {
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
 
-  createdBy          User?              @relation("CmsContentCreated", fields: [createdById], references: [id], onDelete: SetNull)
-  updatedBy          User?              @relation("CmsContentUpdated", fields: [updatedById], references: [id], onDelete: SetNull)
-  versions           CmsContentVersion[]
-  publication        CmsPublication?
-  scheduledActions   CmsScheduledAction[]
+  createdBy        User?                @relation("CmsContentCreated", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy        User?                @relation("CmsContentUpdated", fields: [updatedById], references: [id], onDelete: SetNull)
+  versions         CmsContentVersion[]
+  publication      CmsPublication?
+  scheduledActions CmsScheduledAction[]
 
   @@index([type, status])
   @@index([status])
@@ -2414,21 +2491,21 @@ model CmsContent {
 }
 
 model CmsContentVersion {
-  id               String               @id @default(cuid())
-  contentId        String
-  versionNumber    Int
-  title            String
-  slug             String?
-  locale           String               @default("en")
-  payload          Json
-  changeSummary    String?
-  createdById      String?
-  createdAt        DateTime             @default(now())
+  id            String   @id @default(cuid())
+  contentId     String
+  versionNumber Int
+  title         String
+  slug          String?
+  locale        String   @default("en")
+  payload       Json
+  changeSummary String?
+  createdById   String?
+  createdAt     DateTime @default(now())
 
-  content          CmsContent           @relation(fields: [contentId], references: [id], onDelete: Cascade)
-  createdBy        User?                @relation("CmsVersionCreated", fields: [createdById], references: [id], onDelete: SetNull)
-  publications     CmsPublication[]
-  mediaReferences  CmsMediaReference[]
+  content         CmsContent          @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  createdBy       User?               @relation("CmsVersionCreated", fields: [createdById], references: [id], onDelete: SetNull)
+  publications    CmsPublication[]
+  mediaReferences CmsMediaReference[]
 
   @@unique([contentId, versionNumber])
   @@index([contentId])
@@ -2437,16 +2514,16 @@ model CmsContentVersion {
 }
 
 model CmsPublication {
-  id            String            @id @default(cuid())
-  contentId     String            @unique
+  id            String    @id @default(cuid())
+  contentId     String    @unique
   versionId     String
   publishedById String?
-  publishedAt   DateTime          @default(now())
+  publishedAt   DateTime  @default(now())
   unpublishAt   DateTime?
 
-  content       CmsContent        @relation(fields: [contentId], references: [id], onDelete: Cascade)
-  version       CmsContentVersion @relation(fields: [versionId], references: [id], onDelete: Restrict)
-  publishedBy   User?             @relation("CmsPublishedBy", fields: [publishedById], references: [id], onDelete: SetNull)
+  content     CmsContent        @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  version     CmsContentVersion @relation(fields: [versionId], references: [id], onDelete: Restrict)
+  publishedBy User?             @relation("CmsPublishedBy", fields: [publishedById], references: [id], onDelete: SetNull)
 
   @@index([contentId])
   @@index([versionId])
@@ -2455,8 +2532,8 @@ model CmsPublication {
 }
 
 model CmsMediaAsset {
-  id               String              @id @default(cuid())
-  key              String              @unique
+  id               String   @id @default(cuid())
+  key              String   @unique
   url              String
   originalFilename String
   mimeType         String
@@ -2466,14 +2543,14 @@ model CmsMediaAsset {
   title            String?
   altText          String?
   uploaderId       String?
-  status           String              @default("READY")
+  status           String   @default("READY")
   metadata         Json?
-  createdAt        DateTime            @default(now())
-  updatedAt        DateTime            @updatedAt
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
-  uploader         User?               @relation("CmsMediaUploaded", fields: [uploaderId], references: [id], onDelete: SetNull)
-  variants         CmsMediaVariant[]
-  references       CmsMediaReference[]
+  uploader   User?               @relation("CmsMediaUploaded", fields: [uploaderId], references: [id], onDelete: SetNull)
+  variants   CmsMediaVariant[]
+  references CmsMediaReference[]
 
   @@index([mimeType])
   @@index([uploaderId])
@@ -2481,7 +2558,7 @@ model CmsMediaAsset {
 }
 
 model CmsMediaVariant {
-  id           String        @id @default(cuid())
+  id           String   @id @default(cuid())
   mediaAssetId String
   variantName  String
   key          String
@@ -2490,23 +2567,23 @@ model CmsMediaVariant {
   width        Int
   height       Int
   size         Int
-  createdAt    DateTime      @default(now())
+  createdAt    DateTime @default(now())
 
-  mediaAsset   CmsMediaAsset @relation(fields: [mediaAssetId], references: [id], onDelete: Cascade)
+  mediaAsset CmsMediaAsset @relation(fields: [mediaAssetId], references: [id], onDelete: Cascade)
 
   @@unique([mediaAssetId, variantName])
   @@index([mediaAssetId])
 }
 
 model CmsMediaReference {
-  id           String            @id @default(cuid())
+  id           String   @id @default(cuid())
   mediaAssetId String
   versionId    String
   fieldPath    String
-  createdAt    DateTime          @default(now())
+  createdAt    DateTime @default(now())
 
-  mediaAsset   CmsMediaAsset     @relation(fields: [mediaAssetId], references: [id], onDelete: Restrict)
-  version      CmsContentVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  mediaAsset CmsMediaAsset     @relation(fields: [mediaAssetId], references: [id], onDelete: Restrict)
+  version    CmsContentVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
 
   @@unique([mediaAssetId, versionId, fieldPath])
   @@index([mediaAssetId])
@@ -2514,22 +2591,22 @@ model CmsMediaReference {
 }
 
 model CmsScheduledAction {
-  id          String                 @id @default(cuid())
-  contentId   String
-  versionId   String?
-  actionType  CmsScheduledActionType
+  id           String                 @id @default(cuid())
+  contentId    String
+  versionId    String?
+  actionType   CmsScheduledActionType
   scheduledFor DateTime
-  status      CmsScheduledStatus     @default(PENDING)
-  lockedAt    DateTime?
-  lockedBy    String?
-  executedAt  DateTime?
-  lastError   String?
-  createdById String?
-  createdAt   DateTime               @default(now())
-  updatedAt   DateTime               @updatedAt
+  status       CmsScheduledStatus     @default(PENDING)
+  lockedAt     DateTime?
+  lockedBy     String?
+  executedAt   DateTime?
+  lastError    String?
+  createdById  String?
+  createdAt    DateTime               @default(now())
+  updatedAt    DateTime               @updatedAt
 
-  content     CmsContent             @relation(fields: [contentId], references: [id], onDelete: Cascade)
-  createdBy   User?                  @relation("CmsScheduleCreated", fields: [createdById], references: [id], onDelete: SetNull)
+  content   CmsContent @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  createdBy User?      @relation("CmsScheduleCreated", fields: [createdById], references: [id], onDelete: SetNull)
 
   @@index([status, scheduledFor])
   @@index([contentId])
@@ -2564,9 +2641,9 @@ model HostPayoutMethod {
   updatedAt                 DateTime               @updatedAt
   disabledAt                DateTime?
 
-  host                      User                   @relation("HostPayoutMethods", fields: [hostId], references: [id], onDelete: Cascade)
-  routingRules              PayoutRoutingRule[]    @relation("MethodRoutingRules")
-  bookingDistributions      BookingPayoutDistribution[] @relation("MethodDistributions")
+  host                 User                        @relation("HostPayoutMethods", fields: [hostId], references: [id], onDelete: Cascade)
+  routingRules         PayoutRoutingRule[]         @relation("MethodRoutingRules")
+  bookingDistributions BookingPayoutDistribution[] @relation("MethodDistributions")
 
   @@unique([hostId, accountFingerprint])
   @@index([hostId, isDefault])
@@ -2580,12 +2657,12 @@ model HostPayoutMethod {
 
 model PayoutRoutingRule {
   id                   String            @id @default(cuid())
-  hostId               String            // Primary host / owner
-  listingId            String            // Listing this rule governs
-  recipientUserId      String            // Primary host or co-host receiving the split
-  payoutMethodId       String            // The payout method of the recipient
+  hostId               String // Primary host / owner
+  listingId            String // Listing this rule governs
+  recipientUserId      String // Primary host or co-host receiving the split
+  payoutMethodId       String // The payout method of the recipient
   ruleType             RoutingRuleType   @default(PERCENTAGE_SPLIT)
-  allocationPercentage Float             // e.g. 80.0 for 80% (must total 100% for the listing)
+  allocationPercentage Float // e.g. 80.0 for 80% (must total 100% for the listing)
   status               RoutingRuleStatus @default(ACTIVE)
   effectiveFrom        DateTime          @default(now())
   effectiveUntil       DateTime?
@@ -2594,10 +2671,10 @@ model PayoutRoutingRule {
   createdAt            DateTime          @default(now())
   updatedAt            DateTime          @updatedAt
 
-  host                 User              @relation("HostRoutingRules", fields: [hostId], references: [id], onDelete: Cascade)
-  listing              Listing           @relation("ListingRoutingRules", fields: [listingId], references: [id], onDelete: Cascade)
-  recipientUser        User              @relation("RecipientRoutingRules", fields: [recipientUserId], references: [id], onDelete: Cascade)
-  payoutMethod         HostPayoutMethod  @relation("MethodRoutingRules", fields: [payoutMethodId], references: [id], onDelete: Restrict)
+  host                 User                        @relation("HostRoutingRules", fields: [hostId], references: [id], onDelete: Cascade)
+  listing              Listing                     @relation("ListingRoutingRules", fields: [listingId], references: [id], onDelete: Cascade)
+  recipientUser        User                        @relation("RecipientRoutingRules", fields: [recipientUserId], references: [id], onDelete: Cascade)
+  payoutMethod         HostPayoutMethod            @relation("MethodRoutingRules", fields: [payoutMethodId], references: [id], onDelete: Restrict)
   bookingDistributions BookingPayoutDistribution[] @relation("RuleDistributions")
 
   @@index([hostId, listingId])
@@ -2607,34 +2684,34 @@ model PayoutRoutingRule {
 }
 
 model BookingPayoutDistribution {
-  id                   String             @id @default(cuid())
-  bookingId            String
-  listingId            String
-  recipientUserId      String
-  payoutMethodId       String
-  routingRuleId        String?
-  amountCents          Int                // Allocated amount in minor units (halalas)
-  currency             String             @default("SAR")
-  percentage           Float              // Snapshot percentage
-  status               DistributionStatus @default(SCHEDULED)
-  isHeld               Boolean            @default(false)
-  holdType             String?
-  holdReason           String?            @db.Text
-  heldAt               DateTime?
-  heldBy               String?
-  batchReference       String?            // Batch / SARIE settlement export reference
-  settlementReference  String?            // Bank reference
-  exportedAt           DateTime?
-  paidAt               DateTime?
-  failureReason        String?            @db.Text
-  createdAt            DateTime           @default(now())
-  updatedAt            DateTime           @updatedAt
+  id                  String             @id @default(cuid())
+  bookingId           String
+  listingId           String
+  recipientUserId     String
+  payoutMethodId      String
+  routingRuleId       String?
+  amountCents         Int // Allocated amount in minor units (halalas)
+  currency            String             @default("SAR")
+  percentage          Float // Snapshot percentage
+  status              DistributionStatus @default(SCHEDULED)
+  isHeld              Boolean            @default(false)
+  holdType            String?
+  holdReason          String?            @db.Text
+  heldAt              DateTime?
+  heldBy              String?
+  batchReference      String? // Batch / SARIE settlement export reference
+  settlementReference String? // Bank reference
+  exportedAt          DateTime?
+  paidAt              DateTime?
+  failureReason       String?            @db.Text
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
 
-  booking              Booking            @relation("BookingDistributions", fields: [bookingId], references: [id], onDelete: Cascade)
-  listing              Listing            @relation("ListingDistributions", fields: [listingId], references: [id], onDelete: Cascade)
-  recipientUser        User               @relation("RecipientDistributions", fields: [recipientUserId], references: [id], onDelete: Cascade)
-  payoutMethod         HostPayoutMethod   @relation("MethodDistributions", fields: [payoutMethodId], references: [id], onDelete: Restrict)
-  routingRule          PayoutRoutingRule? @relation("RuleDistributions", fields: [routingRuleId], references: [id], onDelete: SetNull)
+  booking       Booking            @relation("BookingDistributions", fields: [bookingId], references: [id], onDelete: Cascade)
+  listing       Listing            @relation("ListingDistributions", fields: [listingId], references: [id], onDelete: Cascade)
+  recipientUser User               @relation("RecipientDistributions", fields: [recipientUserId], references: [id], onDelete: Cascade)
+  payoutMethod  HostPayoutMethod   @relation("MethodDistributions", fields: [payoutMethodId], references: [id], onDelete: Restrict)
+  routingRule   PayoutRoutingRule? @relation("RuleDistributions", fields: [routingRuleId], references: [id], onDelete: SetNull)
 
   @@index([bookingId])
   @@index([recipientUserId, status])
@@ -2667,35 +2744,35 @@ enum HostTaxDocumentType {
 }
 
 model HostTaxpayerProfile {
-  id                          String                     @id @default(cuid())
-  hostId                      String                     @unique
-  taxpayerType                TaxpayerType               @default(INDIVIDUAL)
-  legalName                   String
-  businessName                String?
-  businessRegistrationNumber  String?
-  countryCode                 String                     @default("SA")
-  taxIdentifierType           String                     @default("NIN") // "NIN", "IQAMA", "TIN", "CR", "OTHER"
-  encryptedTaxIdentifier      String                     @db.Text
-  maskedTaxIdentifier         String
-  taxIdentifierLast4          String
-  addressLine1                String?
-  addressLine2                String?
-  city                        String?
-  region                      String?
-  postalCode                  String?
-  jurisdictionId              String?
-  status                      TaxpayerVerificationStatus @default(PENDING_VERIFICATION)
-  verifiedAt                  DateTime?
-  verifiedById                String?
-  rejectionReason             String?                    @db.Text
-  notes                       String?                    @db.Text
-  createdAt                   DateTime                   @default(now())
-  updatedAt                   DateTime                   @updatedAt
+  id                         String                     @id @default(cuid())
+  hostId                     String                     @unique
+  taxpayerType               TaxpayerType               @default(INDIVIDUAL)
+  legalName                  String
+  businessName               String?
+  businessRegistrationNumber String?
+  countryCode                String                     @default("SA")
+  taxIdentifierType          String                     @default("NIN") // "NIN", "IQAMA", "TIN", "CR", "OTHER"
+  encryptedTaxIdentifier     String                     @db.Text
+  maskedTaxIdentifier        String
+  taxIdentifierLast4         String
+  addressLine1               String?
+  addressLine2               String?
+  city                       String?
+  region                     String?
+  postalCode                 String?
+  jurisdictionId             String?
+  status                     TaxpayerVerificationStatus @default(PENDING_VERIFICATION)
+  verifiedAt                 DateTime?
+  verifiedById               String?
+  rejectionReason            String?                    @db.Text
+  notes                      String?                    @db.Text
+  createdAt                  DateTime                   @default(now())
+  updatedAt                  DateTime                   @updatedAt
 
-  host                        User                       @relation("UserTaxpayerProfile", fields: [hostId], references: [id], onDelete: Cascade)
-  jurisdiction                TaxJurisdiction?           @relation(fields: [jurisdictionId], references: [id], onDelete: SetNull)
-  taxRegistrations            TaxRegistration[]          @relation("ProfileTaxRegistrations")
-  taxDocuments                HostTaxDocument[]          @relation("ProfileTaxDocuments")
+  host             User              @relation("UserTaxpayerProfile", fields: [hostId], references: [id], onDelete: Cascade)
+  jurisdiction     TaxJurisdiction?  @relation(fields: [jurisdictionId], references: [id], onDelete: SetNull)
+  taxRegistrations TaxRegistration[] @relation("ProfileTaxRegistrations")
+  taxDocuments     HostTaxDocument[] @relation("ProfileTaxDocuments")
 
   @@index([hostId])
   @@index([status])
@@ -2703,29 +2780,29 @@ model HostTaxpayerProfile {
 }
 
 model HostTaxDocument {
-  id                  String              @id @default(cuid())
-  hostId              String
-  taxpayerProfileId   String?
-  taxRegistrationId   String?
-  bookingId           String?
-  documentType        HostTaxDocumentType
-  title               String
-  description         String?
-  taxYear             Int
-  taxPeriod           String?             @default("ANNUAL") // "ANNUAL", "Q1", "Q2", "Q3", "Q4", "MONTHLY"
-  fileFormat          String              @default("PDF")    // "PDF", "CSV"
-  fileSize            Int?
-  storageReference    String              @db.Text
-  status              String              @default("READY")  // "READY", "GENERATING", "FAILED"
-  documentVersion     Int                 @default(1)
-  generatedAt         DateTime            @default(now())
-  createdAt           DateTime            @default(now())
-  updatedAt           DateTime            @updatedAt
+  id                String              @id @default(cuid())
+  hostId            String
+  taxpayerProfileId String?
+  taxRegistrationId String?
+  bookingId         String?
+  documentType      HostTaxDocumentType
+  title             String
+  description       String?
+  taxYear           Int
+  taxPeriod         String?             @default("ANNUAL") // "ANNUAL", "Q1", "Q2", "Q3", "Q4", "MONTHLY"
+  fileFormat        String              @default("PDF") // "PDF", "CSV"
+  fileSize          Int?
+  storageReference  String              @db.Text
+  status            String              @default("READY") // "READY", "GENERATING", "FAILED"
+  documentVersion   Int                 @default(1)
+  generatedAt       DateTime            @default(now())
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
 
-  host                User                 @relation("UserTaxDocuments", fields: [hostId], references: [id], onDelete: Cascade)
-  taxpayerProfile     HostTaxpayerProfile? @relation("ProfileTaxDocuments", fields: [taxpayerProfileId], references: [id], onDelete: SetNull)
-  taxRegistration     TaxRegistration?     @relation("RegistrationTaxDocuments", fields: [taxRegistrationId], references: [id], onDelete: SetNull)
-  booking             Booking?             @relation("BookingTaxDocuments", fields: [bookingId], references: [id], onDelete: SetNull)
+  host            User                 @relation("UserTaxDocuments", fields: [hostId], references: [id], onDelete: Cascade)
+  taxpayerProfile HostTaxpayerProfile? @relation("ProfileTaxDocuments", fields: [taxpayerProfileId], references: [id], onDelete: SetNull)
+  taxRegistration TaxRegistration?     @relation("RegistrationTaxDocuments", fields: [taxRegistrationId], references: [id], onDelete: SetNull)
+  booking         Booking?             @relation("BookingTaxDocuments", fields: [bookingId], references: [id], onDelete: SetNull)
 
   @@index([hostId, taxYear])
   @@index([hostId, documentType])
@@ -2744,24 +2821,24 @@ enum TravelProfileVisibility {
 }
 
 model TravelProfile {
-  id            String                  @id @default(cuid())
-  userId        String                  @unique
+  id           String                  @id @default(cuid())
+  userId       String                  @unique
   /// Immutable, opaque identifier used in every public Travel Profile URL.
   /// The PostgreSQL default also covers direct Prisma creates outside the
   /// application services (including existing maintenance tooling).
-  publicId      String                  @unique @default(dbgenerated("('trv_'::text || substr(md5(random()::text || clock_timestamp()::text), 1, 16)"))
-  handle        String?                 @unique
-  displayName   String?
-  bio           String?                 @db.Text
-  homeLocation  String?
-  coverUrl      String?
-  coverMediaId  String?
-  visibility    TravelProfileVisibility @default(PUBLIC)
-  showStamps    Boolean                 @default(true)
-  createdAt     DateTime                @default(now())
-  updatedAt     DateTime                @updatedAt
+  publicId     String                  @unique @default(dbgenerated("('trv_'::text || substr(md5(random()::text || clock_timestamp()::text), 1, 16)"))
+  handle       String?                 @unique
+  displayName  String?
+  bio          String?                 @db.Text
+  homeLocation String?
+  coverUrl     String?
+  coverMediaId String?
+  visibility   TravelProfileVisibility @default(PUBLIC)
+  showStamps   Boolean                 @default(true)
+  createdAt    DateTime                @default(now())
+  updatedAt    DateTime                @updatedAt
 
-  user          User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([handle])
   @@index([publicId])
@@ -2774,8 +2851,8 @@ model ProfileLike {
   targetUserId String
   createdAt    DateTime @default(now())
 
-  actor        User     @relation("ProfileLikesGiven", fields: [actorId], references: [id], onDelete: Cascade)
-  targetUser   User     @relation("ProfileLikesReceived", fields: [targetUserId], references: [id], onDelete: Cascade)
+  actor      User @relation("ProfileLikesGiven", fields: [actorId], references: [id], onDelete: Cascade)
+  targetUser User @relation("ProfileLikesReceived", fields: [targetUserId], references: [id], onDelete: Cascade)
 
   @@unique([actorId, targetUserId])
   @@index([targetUserId])
@@ -2801,9 +2878,9 @@ model TravelTrip {
   createdAt     DateTime                @default(now())
   updatedAt     DateTime                @updatedAt
 
-  user          User                    @relation("UserTravelTrips", fields: [userId], references: [id], onDelete: Cascade)
-  photos        TravelPhoto[]
-  likes         TravelTripLike[]
+  user   User             @relation("UserTravelTrips", fields: [userId], references: [id], onDelete: Cascade)
+  photos TravelPhoto[]
+  likes  TravelTripLike[]
 
   @@index([userId, status])
   @@index([createdAt])
@@ -2824,11 +2901,11 @@ model TravelPhoto {
   createdAt     DateTime                @default(now())
   updatedAt     DateTime                @updatedAt
 
-  user          User                    @relation("UserTravelPhotos", fields: [userId], references: [id], onDelete: Cascade)
-  trip          TravelTrip?             @relation(fields: [tripId], references: [id], onDelete: SetNull)
-  likes         TravelPhotoLike[]
-  comments      TravelPhotoComment[]
-  personTags    TravelPhotoPersonTag[]
+  user       User                   @relation("UserTravelPhotos", fields: [userId], references: [id], onDelete: Cascade)
+  trip       TravelTrip?            @relation(fields: [tripId], references: [id], onDelete: SetNull)
+  likes      TravelPhotoLike[]
+  comments   TravelPhotoComment[]
+  personTags TravelPhotoPersonTag[]
 
   @@index([userId, createdAt])
   @@index([tripId])
@@ -2837,27 +2914,27 @@ model TravelPhoto {
 /// A real, photo-scoped people tag.  This replaces the legacy string-array
 /// tags on TripPhoto for all current TravelPhoto records.
 model TravelPhotoPersonTag {
-  id           String      @id @default(cuid())
+  id           String   @id @default(cuid())
   photoId      String
   taggedUserId String
-  createdAt    DateTime    @default(now())
+  createdAt    DateTime @default(now())
 
-  photo        TravelPhoto @relation(fields: [photoId], references: [id], onDelete: Cascade)
-  taggedUser   User        @relation("TaggedTravelPhotoUser", fields: [taggedUserId], references: [id], onDelete: Cascade)
+  photo      TravelPhoto @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  taggedUser User        @relation("TaggedTravelPhotoUser", fields: [taggedUserId], references: [id], onDelete: Cascade)
 
   @@unique([photoId, taggedUserId])
   @@index([taggedUserId])
 }
 
 model TravelPhotoLike {
-  id        String      @id @default(cuid())
+  id        String   @id @default(cuid())
   actorId   String
   // Legacy installations retain this required column; it mirrors actorId.
   userId    String
   photoId   String
-  createdAt DateTime    @default(now())
+  createdAt DateTime @default(now())
 
-  photo     TravelPhoto @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  photo TravelPhoto @relation(fields: [photoId], references: [id], onDelete: Cascade)
 
   @@unique([actorId, photoId])
   @@index([photoId])
@@ -2865,10 +2942,10 @@ model TravelPhotoLike {
 }
 
 model TravelTripLike {
-  id        String      @id @default(cuid())
+  id        String   @id @default(cuid())
   actorId   String
   tripId    String
-  createdAt DateTime    @default(now())
+  createdAt DateTime @default(now())
 
   actor User       @relation(fields: [actorId], references: [id], onDelete: Cascade)
   trip  TravelTrip @relation(fields: [tripId], references: [id], onDelete: Cascade)
@@ -2879,12 +2956,12 @@ model TravelTripLike {
 }
 
 model TravelPhotoComment {
-  id        String      @id @default(cuid())
+  id        String   @id @default(cuid())
   photoId   String
   userId    String
-  content   String      @db.Text
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   photo TravelPhoto @relation(fields: [photoId], references: [id], onDelete: Cascade)
   user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -2927,30 +3004,214 @@ enum TravelAchievementCategory {
 enum TravelAchievementStatus {
   LOCKED
   IN_PROGRESS
+  ELIGIBLE
   UNLOCKED
+  REVOKED
+}
+
+enum DestinationClassificationSubject {
+  DESTINATION
+  LISTING
+  COUNTRY
+}
+
+enum DestinationClassificationType {
+  BEACH
+  MOUNTAIN
+  METROPOLITAN
+  NATURE
+  CULTURAL
+  CONTINENT
+}
+
+enum TaxonomyRecordStatus {
+  ACTIVE
+  INACTIVE
+  RETIRED
+}
+
+enum CountryLanguageKind {
+  PRIMARY_NATIVE
+  NATIVE
+  OFFICIAL
+}
+
+// Ownership determines whether an ordinary traveler action may alter a stamp.
+// Existing rows deliberately default to USER_MANAGED for backwards compatibility.
+enum TravelStampOwnership {
+  USER_MANAGED
+  SYSTEM_AWARDED
+}
+
+enum TravelAchievementDefinitionStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum AchievementEventType {
+  BOOKING_CONFIRMED
+  BOOKING_CANCELLED
+  STAY_COMPLETION_CANDIDATE
+  BOOKING_REFUNDED
+  REVIEW_PUBLISHED
+  HOST_RATING_PUBLISHED
+  REFERRAL_QUALIFICATION_CANDIDATE
+}
+
+enum AchievementEventStatus {
+  PENDING
+  PROCESSING
+  PROCESSED
+  RETRY_SCHEDULED
+  FAILED
+}
+
+enum BookingVisitEvidenceStatus {
+  CANDIDATE
+  QUALIFIED
+  INVALIDATED
+  UNSUPPORTED
+}
+
+// StayElite tiers are server-evaluated membership projections. They are not
+// wallet balances and deliberately carry no checkout/reward state.
+enum StayEliteTierCode {
+  TRAVELER
+  AMBASSADOR
+  ICON
+}
+
+enum StayEliteMembershipStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+}
+
+enum StayEliteQualificationStatus {
+  NOT_ELIGIBLE
+  IN_PROGRESS
+  QUALIFIED
+  POLICY_BLOCKED
+}
+
+enum StayEliteTierChangeType {
+  INITIAL
+  PROMOTION
+  DOWNGRADE
+  ADMIN_CORRECTION
+  POLICY_REEVALUATION
+}
+
+enum StayEliteTierChangeDisposition {
+  PROPOSED
+  APPLIED
+  BLOCKED
+}
+
+enum SystemAwardStatus {
+  ACTIVE
+  REVOKED
 }
 
 model Destination {
-  id              String      @id @default(cuid())
+  id              String   @id @default(cuid())
   countryName     String
-  countryCode     String      // ISO-3166-1 alpha-2 uppercase, e.g. "FR", "US", "SA"
+  countryCode     String // ISO-3166-1 alpha-2 uppercase, e.g. "FR", "US", "SA"
   cityName        String?
-  slug            String      @unique // e.g. "country-fr" or "city-fr-paris"
+  slug            String   @unique // e.g. "country-fr" or "city-fr-paris"
   latitude        Float?
   longitude       Float?
   parentCountryId String?
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
-  parentCountry    Destination?      @relation("CountryCities", fields: [parentCountryId], references: [id], onDelete: SetNull)
-  cities           Destination[]     @relation("CountryCities")
-  userDestinations UserDestination[]
-  stamps           TravelStamp[]
+  parentCountry        Destination?                @relation("CountryCities", fields: [parentCountryId], references: [id], onDelete: SetNull)
+  cities               Destination[]               @relation("CountryCities")
+  userDestinations     UserDestination[]
+  bookingVisitEvidence BookingVisitEvidence[]
+  aliases              DestinationAlias[]
+  classifications      DestinationClassification[]
+  stamps               TravelStamp[]
 
   @@index([countryCode])
   @@index([countryName])
   @@index([cityName])
   @@index([parentCountryId])
+}
+
+// City aliases are country-scoped to prevent a city name alone becoming a
+// globally authoritative match.
+model DestinationAlias {
+  id              String               @id @default(cuid())
+  destinationId   String
+  countryCode     String
+  alias           String
+  normalizedAlias String
+  locale          String?
+  datasetVersion  String
+  sourceReference String
+  status          TaxonomyRecordStatus @default(ACTIVE)
+  effectiveFrom   DateTime             @default(now())
+  effectiveTo     DateTime?
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
+  destination Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+
+  @@unique([countryCode, normalizedAlias, datasetVersion])
+  @@index([countryCode, normalizedAlias, status])
+  @@index([destinationId, status])
+}
+
+// Curated, versioned taxonomy. The service validates that precisely one
+// subject is populated: canonical destination, listing, or country.
+model DestinationClassification {
+  id                  String                           @id @default(cuid())
+  subject             DestinationClassificationSubject
+  destinationId       String?
+  listingId           String?
+  countryCode         String?
+  classificationType  DestinationClassificationType
+  classificationValue String?
+  datasetVersion      String
+  sourceReference     String
+  status              TaxonomyRecordStatus             @default(ACTIVE)
+  effectiveFrom       DateTime                         @default(now())
+  effectiveTo         DateTime?
+  revisionKey         String                           @unique
+  createdAt           DateTime                         @default(now())
+  updatedAt           DateTime                         @updatedAt
+
+  destination Destination? @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+  listing     Listing?     @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@index([subject, classificationType, status])
+  @@index([destinationId, classificationType, status])
+  @@index([listingId, classificationType, status])
+  @@index([countryCode, classificationType, status])
+  @@index([datasetVersion, status])
+}
+
+// Language source data is separate from award policy. A later Language Leaper
+// evaluator must explicitly select an approved PRIMARY_NATIVE mapping.
+model CountryLanguageMapping {
+  id              String               @id @default(cuid())
+  countryCode     String
+  languageCode    String
+  languageName    String
+  kind            CountryLanguageKind
+  datasetVersion  String
+  sourceReference String
+  status          TaxonomyRecordStatus @default(ACTIVE)
+  effectiveFrom   DateTime             @default(now())
+  effectiveTo     DateTime?
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
+  @@unique([countryCode, languageCode, kind, datasetVersion])
+  @@index([countryCode, kind, status])
+  @@index([datasetVersion, status])
 }
 
 model UserDestination {
@@ -2977,53 +3238,60 @@ model UserDestination {
 }
 
 model TravelStamp {
-  id              String            @id @default(cuid())
-  slug            String            @unique
-  displayName     String
-  title           String?
-  city            String?
-  country         String?
-  description     String?           @db.Text
-  countryCode     String?
-  destinationId   String?
-  ownerId         String?
-  isCustom        Boolean           @default(false)
-  iconUrl         String?
-  imageUrl        String?
-  category        String            @default("DESTINATION")
-  eligibilityRule String            @default("COMPLETED_STAYS")
-  ruleThreshold   Int               @default(1)
-  isActive        Boolean           @default(true)
-  displayOrder    Int               @default(0)
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
+  id               String   @id @default(cuid())
+  slug             String   @unique
+  displayName      String
+  title            String?
+  city             String?
+  country          String?
+  description      String?  @db.Text
+  countryCode      String?
+  destinationId    String?
+  ownerId          String?
+  isCustom         Boolean  @default(false)
+  iconUrl          String?
+  imageUrl         String?
+  category         String   @default("DESTINATION")
+  eligibilityRule  String   @default("COMPLETED_STAYS")
+  ruleThreshold    Int      @default(1)
+  isActive         Boolean  @default(true)
+  // A catalog stamp can be selected manually only when explicitly permitted.
+  isUserSelectable Boolean  @default(true)
+  displayOrder     Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   destination Destination?      @relation(fields: [destinationId], references: [id], onDelete: SetNull)
   owner       User?             @relation("CustomTravelStamps", fields: [ownerId], references: [id], onDelete: Cascade)
   userStamps  UserTravelStamp[]
 
+  @@unique([ownerId, displayName, iconUrl])
   @@index([slug])
   @@index([category])
   @@index([countryCode])
   @@index([destinationId])
   @@index([ownerId, isCustom])
-  @@unique([ownerId, displayName, iconUrl])
   @@index([displayOrder])
 }
 
 model UserTravelStamp {
-  id               String   @id @default(cuid())
+  id               String               @id @default(cuid())
   userId           String
   stampId          String
-  awardedAt        DateTime @default(now())
-  isPinned         Boolean  @default(false)
-  displayOrder     Int      @default(0)
+  awardedAt        DateTime             @default(now())
+  isPinned         Boolean              @default(false)
+  displayOrder     Int                  @default(0)
   evidenceMetadata Json?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  ownership        TravelStampOwnership @default(USER_MANAGED)
+  systemAwardId    String?              @unique
+  revokedAt        DateTime?
+  revocationReason String?              @db.Text
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
 
-  user  User        @relation("UserTravelStamps", fields: [userId], references: [id], onDelete: Cascade)
-  stamp TravelStamp @relation(fields: [stampId], references: [id], onDelete: Cascade)
+  user        User              @relation("UserTravelStamps", fields: [userId], references: [id], onDelete: Cascade)
+  stamp       TravelStamp       @relation(fields: [stampId], references: [id], onDelete: Cascade)
+  systemAward AchievementAward? @relation("SystemAwardStamp", fields: [systemAwardId], references: [id], onDelete: SetNull)
 
   @@unique([userId, stampId])
   @@index([userId, isPinned])
@@ -3031,41 +3299,316 @@ model UserTravelStamp {
 }
 
 model TravelAchievement {
-  id              String                    @id @default(cuid())
-  key             String                    @unique // e.g. "FIRST_JOURNEY", "CITY_EXPLORER", "WORLD_TRAVELER", "STAMP_COLLECTOR"
-  name            String
-  description     String                    @db.Text
-  icon            String?
-  category        TravelAchievementCategory @default(STAYS)
-  eligibilityRule String                    // e.g. "COMPLETED_STAYS", "VERIFIED_CITIES", "VERIFIED_COUNTRIES", "EARNED_STAMPS"
-  threshold       Int                       @default(1)
-  isActive        Boolean                   @default(true)
-  createdAt       DateTime                  @default(now())
-  updatedAt       DateTime                  @updatedAt
+  id                  String                            @id @default(cuid())
+  key                 String                            @unique // e.g. "FIRST_JOURNEY", "CITY_EXPLORER", "WORLD_TRAVELER", "STAMP_COLLECTOR"
+  name                String
+  description         String                            @db.Text
+  icon                String?
+  category            TravelAchievementCategory         @default(STAYS)
+  eligibilityRule     String // e.g. "COMPLETED_STAYS", "VERIFIED_CITIES", "VERIFIED_COUNTRIES", "EARNED_STAMPS"
+  threshold           Int                               @default(1)
+  isActive            Boolean                           @default(true)
+  definitionStatus    TravelAchievementDefinitionStatus @default(DRAFT)
+  ruleVersion         Int                               @default(1)
+  eligibilityMetadata Json?
+  awardEnabled        Boolean                           @default(false)
+  publishedAt         DateTime?
+  archivedAt          DateTime?
+  createdAt           DateTime                          @default(now())
+  updatedAt           DateTime                          @updatedAt
 
   userAchievements UserTravelAchievement[]
+  awards           AchievementAward[]
 
   @@index([key])
   @@index([category])
 }
 
 model UserTravelAchievement {
-  id            String                  @id @default(cuid())
-  userId        String
-  achievementId String
-  awardedAt     DateTime?
-  progress      Int                     @default(0)
-  status        TravelAchievementStatus @default(IN_PROGRESS)
-  auditMetadata Json?
-  createdAt     DateTime                @default(now())
-  updatedAt     DateTime                @updatedAt
+  id               String                  @id @default(cuid())
+  userId           String
+  achievementId    String
+  awardedAt        DateTime?
+  progress         Int                     @default(0)
+  status           TravelAchievementStatus @default(IN_PROGRESS)
+  auditMetadata    Json?
+  ruleVersion      Int                     @default(1)
+  lastEvaluatedAt  DateTime?
+  revokedAt        DateTime?
+  revocationReason String?                 @db.Text
+  createdAt        DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
 
-  user        User              @relation("UserTravelAchievements", fields: [userId], references: [id], onDelete: Cascade)
-  achievement TravelAchievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  user         User               @relation("UserTravelAchievements", fields: [userId], references: [id], onDelete: Cascade)
+  achievement  TravelAchievement  @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  awardHistory AchievementAward[]
 
   @@unique([userId, achievementId])
   @@index([userId, status])
   @@index([achievementId])
+}
+
+// Durable, backend-only outbox. The source aggregate is represented explicitly
+// so a worker never needs to trust client-provided achievement instructions.
+model AchievementEvent {
+  id                String                 @id @default(cuid())
+  type              AchievementEventType
+  status            AchievementEventStatus @default(PENDING)
+  sourceEntityType  String
+  sourceEntityId    String
+  userId            String?
+  bookingId         String?
+  reviewId          String?
+  occurredAt        DateTime
+  schemaVersion     Int                    @default(1)
+  sourceVersion     String?
+  idempotencyKey    String                 @unique
+  evidenceReference String?
+  metadata          Json?
+  attempts          Int                    @default(0)
+  availableAt       DateTime               @default(now())
+  lockedAt          DateTime?
+  lockedBy          String?
+  processedAt       DateTime?
+  failedAt          DateTime?
+  lastError         String?                @db.Text
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+
+  user            User?                 @relation("AchievementEventUsers", fields: [userId], references: [id], onDelete: SetNull)
+  booking         Booking?              @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  review          Review?               @relation(fields: [reviewId], references: [id], onDelete: SetNull)
+  bookingEvidence BookingVisitEvidence? @relation("EvidenceSourceEvent")
+  awards          AchievementAward[]    @relation("AwardSourceEvent")
+
+  @@index([status, availableAt])
+  @@index([userId, occurredAt])
+  @@index([sourceEntityType, sourceEntityId])
+  @@index([bookingId])
+  @@index([reviewId])
+}
+
+// A booking can yield one durable candidate. CANDIDATE is deliberately not a
+// policy-qualified stay; later approved rules may consume or invalidate it.
+model BookingVisitEvidence {
+  id                         String                     @id @default(cuid())
+  userId                     String
+  bookingId                  String                     @unique
+  listingId                  String
+  destinationId              String?
+  countryCode                String?
+  countryName                String?
+  cityName                   String?
+  checkInDate                DateTime                   @db.Date
+  checkOutDate               DateTime                   @db.Date
+  bookingStatus              BookingStatus
+  status                     BookingVisitEvidenceStatus @default(CANDIDATE)
+  sourceEventId              String?                    @unique
+  qualificationPolicyVersion String?
+  qualifiedAt                DateTime?
+  invalidatedAt              DateTime?
+  metadata                   Json?
+  createdAt                  DateTime                   @default(now())
+  updatedAt                  DateTime                   @updatedAt
+
+  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  booking     Booking            @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  destination Destination?       @relation(fields: [destinationId], references: [id], onDelete: SetNull)
+  sourceEvent AchievementEvent?  @relation("EvidenceSourceEvent", fields: [sourceEventId], references: [id], onDelete: SetNull)
+  awards      AchievementAward[]
+
+  @@index([userId, status])
+  @@index([destinationId, status])
+  @@index([listingId])
+}
+
+// Immutable-ish award provenance. This phase records the shape but does not
+// activate issuance; a later approved policy version can create these records.
+model AchievementAward {
+  id                String            @id @default(cuid())
+  userId            String
+  achievementId     String
+  userAchievementId String?
+  sourceEventId     String?
+  bookingEvidenceId String?
+  ruleVersion       Int
+  status            SystemAwardStatus @default(ACTIVE)
+  awardedAt         DateTime          @default(now())
+  revokedAt         DateTime?
+  revocationReason  String?           @db.Text
+  revokedByUserId   String?
+  evidenceSnapshot  Json?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  user            User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement     TravelAchievement      @relation(fields: [achievementId], references: [id], onDelete: Restrict)
+  userAchievement UserTravelAchievement? @relation(fields: [userAchievementId], references: [id], onDelete: SetNull)
+  sourceEvent     AchievementEvent?      @relation("AwardSourceEvent", fields: [sourceEventId], references: [id], onDelete: SetNull)
+  bookingEvidence BookingVisitEvidence?  @relation(fields: [bookingEvidenceId], references: [id], onDelete: SetNull)
+  stampProjection UserTravelStamp?       @relation("SystemAwardStamp")
+
+  @@unique([userId, achievementId, ruleVersion])
+  @@index([userId, status])
+  @@index([achievementId, status])
+  @@index([sourceEventId])
+  @@index([bookingEvidenceId])
+}
+
+// A resumable cursor for bounded, evidence-only reconciliation. Dry runs do
+// not create or change this record.
+model AchievementReconciliationCheckpoint {
+  id               String    @id @default(cuid())
+  scope            String    @unique
+  cursor           String?
+  scannedCount     Int       @default(0)
+  candidateCount   Int       @default(0)
+  unsupportedCount Int       @default(0)
+  duplicateCount   Int       @default(0)
+  lastRunAt        DateTime?
+  summary          Json?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+// Checkpointed, auditable reconciliation job. Reports contain aggregate counts
+// and bounded source references only; they never become a second source of
+// truth for booking, award, referral, membership, points or reward data.
+model StayEliteReconciliationRun {
+  id                   String                         @id @default(cuid())
+  domain               StayEliteReconciliationDomain
+  mode                 StayEliteReconciliationMode    @default(DRY_RUN)
+  status               StayEliteReconciliationStatus  @default(CREATED)
+  scope                Json?
+  correlationId        String                         @unique
+  idempotencyKey       String                         @unique
+  initiatedById        String?
+  cursor               String?
+  batchSize            Int                            @default(50)
+  scannedCount         Int                            @default(0)
+  matchingCount        Int                            @default(0)
+  missingCount         Int                            @default(0)
+  inconsistentCount    Int                            @default(0)
+  blockedCount         Int                            @default(0)
+  correctedCount       Int                            @default(0)
+  errorCount           Int                            @default(0)
+  report               Json?
+  lastError            String?                        @db.Text
+  startedAt            DateTime?
+  completedAt          DateTime?
+  createdAt            DateTime                       @default(now())
+  updatedAt            DateTime                       @updatedAt
+
+  initiatedBy User? @relation("StayEliteReconciliationInitiator", fields: [initiatedById], references: [id], onDelete: SetNull)
+
+  @@index([domain, status, createdAt])
+  @@index([initiatedById, createdAt])
+}
+
+// Definitions are managed only by trusted server/admin workflows. The Phase 5
+// migration intentionally does not seed memberships or make benefits active.
+model StayEliteTierDefinition {
+  id                  String            @id @default(cuid())
+  code                StayEliteTierCode @unique
+  displayName         String
+  displayOrder        Int               @unique
+  enabled             Boolean           @default(true)
+  qualificationConfig Json
+  policyVersion       String
+  benefitMetadata     Json
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  @@index([enabled, displayOrder])
+}
+
+// Exactly one membership projection may exist for a guest. Users who have
+// registered but not met Traveler remain PENDING with a null current tier.
+model StayEliteMembership {
+  id                   String                       @id @default(cuid())
+  userId               String                       @unique
+  currentTier          StayEliteTierCode?
+  status               StayEliteMembershipStatus    @default(PENDING)
+  qualificationStatus  StayEliteQualificationStatus @default(NOT_ELIGIBLE)
+  policyVersion        String
+  lastEvaluatedAt      DateTime?
+  lastQualifiedAt      DateTime?
+  lastEvaluationReason String?
+  progressSnapshot     Json?
+  tierPubliclyVisible  Boolean                      @default(false)
+  createdAt            DateTime                     @default(now())
+  updatedAt            DateTime                     @updatedAt
+
+  user        User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  evaluations StayEliteTierEvaluation[]
+  history     StayEliteTierHistory[]
+
+  @@index([currentTier, status])
+  @@index([qualificationStatus, lastEvaluatedAt])
+}
+
+// A durable calculation record stores source identifiers and a privacy-safe
+// result snapshot; it never copies booking, review, or referral contents.
+model StayEliteTierEvaluation {
+  id                      String                       @id @default(cuid())
+  membershipId            String?
+  userId                  String
+  sourceEventId           String?
+  sourceType              String
+  sourceReference         String?
+  idempotencyKey          String                       @unique
+  policyVersion           String
+  qualificationStatus     StayEliteQualificationStatus
+  evaluatedTier           StayEliteTierCode?
+  proposedTier            StayEliteTierCode?
+  completedStayCount      Int
+  eligibleReviewCount     Int
+  averageGuestRating      Decimal?                     @db.Decimal(4, 3)
+  qualifyingReferralCount Int
+  policyBlockers          String[]                     @default([])
+  missingConditions       String[]                     @default([])
+  evidenceSnapshot        Json
+  resultSnapshot          Json
+  evaluatedAt             DateTime                     @default(now())
+  createdAt               DateTime                     @default(now())
+
+  membership StayEliteMembership?   @relation(fields: [membershipId], references: [id], onDelete: SetNull)
+  user       User                   @relation("StayEliteEvaluationGuest", fields: [userId], references: [id], onDelete: Cascade)
+  history    StayEliteTierHistory[]
+
+  @@index([userId, evaluatedAt])
+  @@index([membershipId, evaluatedAt])
+  @@index([sourceEventId])
+}
+
+// History is append-only by application policy. Proposed and blocked changes
+// are retained separately from an applied current-tier projection.
+model StayEliteTierHistory {
+  id             String                         @id @default(cuid())
+  membershipId   String
+  userId         String
+  evaluationId   String?
+  previousTier   StayEliteTierCode?
+  newTier        StayEliteTierCode?
+  changeType     StayEliteTierChangeType
+  disposition    StayEliteTierChangeDisposition
+  policyVersion  String
+  sourceEventId  String?
+  idempotencyKey String                         @unique
+  reason         String?
+  authorizedById String?
+  snapshot       Json
+  occurredAt     DateTime                       @default(now())
+  createdAt      DateTime                       @default(now())
+
+  membership   StayEliteMembership      @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  user         User                     @relation("StayEliteTierHistoryGuest", fields: [userId], references: [id], onDelete: Cascade)
+  evaluation   StayEliteTierEvaluation? @relation(fields: [evaluationId], references: [id], onDelete: SetNull)
+  authorizedBy User?                    @relation("StayEliteTierHistoryActor", fields: [authorizedById], references: [id], onDelete: SetNull)
+
+  @@index([membershipId, occurredAt])
+  @@index([userId, occurredAt])
+  @@index([sourceEventId])
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

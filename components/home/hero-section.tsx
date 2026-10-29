@@ -5,7 +5,7 @@ import { CustomScrollContainer } from "@/components/ui/custom-scroll-container";
 import React, { useEffect, useLayoutEffect, useRef, useState, useCallback, useMemo } from "react";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
-import { MobileDatePicker, initialDatePreferences, type DatePreferences } from "./mobile-date-picker";
+import { formatFlexibleDateSummary, MobileDatePicker, initialDatePreferences, type DatePreferences } from "./mobile-date-picker";
 import { useLanguage } from "@/lib/i18n/language-context";
 
 const emptyMobileGuests = { adults: 0, children: 0, infants: 0, pets: 0 };
@@ -274,6 +274,11 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
   }
 
   const searchParams = useSearchParams();
+  const urlDateMode = searchParams?.get("dateMode") === "months" ? "flexible" : searchParams?.get("dateMode");
+  const urlDateFlexibility = Number(searchParams?.get("dateFlex") || searchParams?.get("dateFlexibility") || 0);
+  const urlFlexibleDuration = searchParams?.get("stay") || searchParams?.get("flexibleDuration") || "weekend";
+  const urlFlexibleMonths = (searchParams?.get("months") || searchParams?.get("flexibleMonths") || "")
+    .split(",").map((month) => month.trim()).filter(Boolean);
 
   const [destination, setDestination] = useState(
     () => searchParams?.get("destination") || searchParams?.get("city") || searchParams?.get("placeName") || "",
@@ -281,12 +286,19 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
   const [selectedLocation, setSelectedLocation] = useState<SelectedLocationData | null>(null);
   const [checkIn, setCheckIn] = useState(() => searchParams?.get("checkIn") || "");
   const [checkOut, setCheckOut] = useState(() => searchParams?.get("checkOut") || "");
+  const [datePreferences, setDatePreferences] = useState<DatePreferences>(() => ({
+    mode: urlDateMode === "flexible" ? "flexible" : "dates",
+    tolerance: [0, 1, 2, 3, 7, 14].includes(urlDateFlexibility) ? urlDateFlexibility : 0,
+    stay: urlFlexibleDuration === "week" ? "Week" : urlFlexibleDuration === "month" ? "Month" : "Weekend",
+    months: urlFlexibleMonths,
+  }));
   const [desktopPanel, setDesktopPanel] = useState<"where" | "checkIn" | "checkOut" | "who" | null>(null);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(
     () => searchParams?.has("searchModal") ?? false,
   );
   const [activeStep, setActiveStep] = useState<"where" | "when" | "who">("where");
   const desktopSearchRef = useRef<HTMLFormElement>(null);
+  const pendingNearbySearchRef = useRef(false);
   const desktopActivePillRef = useRef<HTMLDivElement>(null);
   const desktopFieldRefs = useRef<Record<NonNullable<typeof desktopPanel>, HTMLElement | null>>({
     where: null,
@@ -311,6 +323,12 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
     if (urlIn) setCheckIn(urlIn);
     const urlOut = searchParams?.get("checkOut");
     if (urlOut) setCheckOut(urlOut);
+    setDatePreferences({
+      mode: urlDateMode === "flexible" ? "flexible" : "dates",
+      tolerance: [0, 1, 2, 3, 7, 14].includes(urlDateFlexibility) ? urlDateFlexibility : 0,
+      stay: urlFlexibleDuration === "week" ? "Week" : urlFlexibleDuration === "month" ? "Month" : "Weekend",
+      months: urlFlexibleMonths,
+    });
   }
 
   // One shared pill moves between fields, which makes tab changes feel continuous
@@ -465,11 +483,15 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
         } catch { }
 
         setIsLocating(false);
-        setActiveStep("when");
-        if (!isMobileSearchOpen) setDesktopPanel("checkIn");
+        setDesktopPanel(null);
+        if (isMobileSearchOpen) setIsMobileSearchOpen(false);
       },
       (err) => {
         setIsLocating(false);
+        if (pendingNearbySearchRef.current) {
+          pendingNearbySearchRef.current = false;
+          setInternalIsSearching(false);
+        }
         if (err.code === 1 /* PERMISSION_DENIED */) {
           setLocationError("Location permission was denied. Please type your destination.");
         } else {
@@ -523,7 +545,10 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
       ? t(mobileGuests.pets === 1 ? "home_pet_one" : "home_pet_many", { count: mobileGuests.pets })
       : "",
   ].filter(Boolean).join(", ");
-  const [datePreferences, setDatePreferences] = useState<DatePreferences>(initialDatePreferences);
+  const flexibleWhenSummary = formatFlexibleDateSummary(
+    datePreferences,
+    language === "ar" ? "ar-EG" : language === "hi" ? "hi-IN" : language,
+  );
   const destinationListRef = useRef<HTMLDivElement>(null);
 
   // Close mobile search with Escape; ModalOverlay owns background scroll locking.
@@ -629,11 +654,21 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
     }
     setSuggestions({ primaryCity: null, places: [], districts: [], cities: [], properties: [] });
     setSuggestIndex(-1);
-  }, [allSuggestItems]);
+    setDesktopPanel(null);
+    if (isMobileSearchOpen) setIsMobileSearchOpen(false);
+  }, [allSuggestItems, isMobileSearchOpen]);
 
   const handleMobileSubmit = () => {
     setInternalIsSearching(true);
     const destinationValue = destination.trim() || selectedLocation?.city || selectedLocation?.name || "";
+    // An empty Where field means Nearby, never an unbounded worldwide query.
+    // Search itself is a user gesture, so it is an appropriate moment to ask
+    // the browser for location permission.
+    if (!destinationValue && !selectedLocation) {
+      pendingNearbySearchRef.current = true;
+      handleUseCurrentLocation();
+      return;
+    }
     if (destinationValue) saveRecentSearch(destinationValue);
     // Auto-resolve best location match if user typed destination without clicking suggestion
     const effectiveLoc = selectedLocation || (
@@ -712,6 +747,15 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
     }
     setIsMobileSearchOpen(false);
   };
+  useEffect(() => {
+    if (!pendingNearbySearchRef.current || !selectedLocation) return;
+    pendingNearbySearchRef.current = false;
+    handleMobileSubmit();
+    // `selectedLocation` is the completion signal from the user-initiated GPS
+    // request. Keeping this effect scoped to that signal prevents a rerender
+    // from reopening an unrelated popup.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedLocation]);
 
   const handleMobileNext = () => {
     if (activeStep === "where") {
@@ -775,8 +819,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                 type="button"
                 onClick={() => {
                   selectSuggestion(primaryCity);
-                  setActiveStep("when");
-                  if (!isMobileSearchOpen) setDesktopPanel("checkIn");
+                  setDesktopPanel(null);
                 }}
                 className={`flex w-full items-center justify-between gap-3 text-left rounded-2xl p-2.5 transition-all cursor-pointer ${suggestIndex === getIndexForLabel(primaryCity.name || primaryCity.city)
                   ? "bg-[#fcdf9c]/40 ring-1 ring-[#fcdf9c]"
@@ -815,8 +858,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                       type="button"
                       onClick={() => {
                         selectSuggestion(p);
-                        setActiveStep("when");
-                        if (!isMobileSearchOpen) setDesktopPanel("checkIn");
+                        setDesktopPanel(null);
                       }}
                       className={`flex w-full items-center justify-between gap-3 text-left rounded-2xl p-2.5 transition-all cursor-pointer ${suggestIndex === idx ? "bg-[#fcdf9c]/40 ring-1 ring-[#fcdf9c]" : "hover:bg-zinc-100/80"
                         }`}
@@ -856,8 +898,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                       type="button"
                       onClick={() => {
                         selectSuggestion(d);
-                        setActiveStep("when");
-                        if (!isMobileSearchOpen) setDesktopPanel("checkIn");
+                        setDesktopPanel(null);
                       }}
                       className={`flex w-full items-center justify-between gap-3 text-left rounded-2xl p-2.5 transition-all cursor-pointer ${suggestIndex === idx ? "bg-[#fcdf9c]/40 ring-1 ring-[#fcdf9c]" : "hover:bg-zinc-100/80"
                         }`}
@@ -894,8 +935,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                     type="button"
                     onClick={() => {
                       selectSuggestion(c);
-                      setActiveStep("when");
-                      if (!isMobileSearchOpen) setDesktopPanel("checkIn");
+                      setDesktopPanel(null);
                     }}
                     className={`flex w-full items-center justify-between gap-3 text-left rounded-2xl p-2.5 transition-all cursor-pointer ${suggestIndex === idx ? "bg-[#fcdf9c]/40 ring-1 ring-[#fcdf9c]" : "hover:bg-zinc-100/80"
                       }`}
@@ -939,8 +979,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                       type="button"
                       onClick={() => {
                         selectSuggestion(p.title);
-                        setActiveStep("when");
-                        if (!isMobileSearchOpen) setDesktopPanel("checkIn");
+                        setDesktopPanel(null);
                       }}
                       className={`flex w-full items-center justify-between gap-3 text-left rounded-2xl p-2.5 transition-all cursor-pointer ${suggestIndex === idx ? "bg-[#fcdf9c]/40 ring-1 ring-[#fcdf9c]" : "hover:bg-zinc-100/80"
                         }`}
@@ -1009,8 +1048,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                   type="button"
                   onClick={() => {
                     selectSuggestion(term);
-                    setActiveStep("when");
-                    if (!isMobileSearchOpen) setDesktopPanel("checkIn");
+                    setDesktopPanel(null);
                   }}
                   className="flex w-full items-center gap-3 text-left rounded-2xl p-2.5 transition-colors hover:bg-zinc-100/80 cursor-pointer"
                 >
@@ -1038,8 +1076,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                     type="button"
                     onClick={() => {
                       selectSuggestion(d);
-                      setActiveStep("when");
-                      if (!isMobileSearchOpen) setDesktopPanel("checkIn");
+                      setDesktopPanel(null);
                     }}
                     className="flex w-full items-center justify-between gap-3 text-left rounded-2xl p-2.5 transition-colors hover:bg-zinc-100/80 cursor-pointer"
                   >
@@ -1271,10 +1308,10 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                         const itm = allSuggestItems[suggestIndex];
                         if (itm.raw) selectSuggestion(itm.raw);
                         else selectSuggestion(itm.label);
-                        setDesktopPanel("checkIn");
+                        setDesktopPanel(null);
                       } else if (cities.length > 0) {
                         selectSuggestion(cities[0]);
-                        setDesktopPanel("checkIn");
+                        setDesktopPanel(null);
                       } else {
                         handleSearchSubmit(event);
                       }
@@ -1300,47 +1337,51 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                 }`}
             />
 
-            {/* Check In */}
-            <button
-              type="button"
-              aria-expanded={desktopPanel === "checkIn"}
-              aria-controls="desktop-search-panel"
-              onClick={() => setDesktopPanel(desktopPanel === "checkIn" ? null : "checkIn")}
-              ref={(element) => { desktopFieldRefs.current.checkIn = element; }}
-              className={`relative z-10 flex h-full min-w-0 flex-1 flex-col justify-center rounded-full px-5 text-left transition-colors duration-200 cursor-pointer ${desktopPanel === "checkIn" ? "" : "hover:bg-[#fcdf9c]"
-                }`}
-            >
-              <span className="block text-base font-normal text-[#1f1f1f] cursor-pointer">{t("home_check_in", "Check in")}</span>
-              <span className="block truncate text-sm font-normal text-[#727272]">
-                {datePreferences.mode !== "dates" ? t("home_when_tab_flexible") : checkIn || t("home_search_add_dates")}
-              </span>
-            </button>
-
-            <div
-              className={`relative z-10 h-7 w-px shrink-0 bg-zinc-200/90 transition-opacity duration-300 ${desktopPanel === "checkIn" || desktopPanel === "checkOut" ? "opacity-0" : "opacity-100"
-                }`}
-            />
-
-            {/* Check Out */}
-            <button
-              type="button"
-              aria-expanded={desktopPanel === "checkOut"}
-              aria-controls="desktop-search-panel"
-              onClick={() => setDesktopPanel(desktopPanel === "checkOut" ? null : "checkOut")}
-              ref={(element) => { desktopFieldRefs.current.checkOut = element; }}
-              className={`relative z-10 flex h-full min-w-0 flex-1 flex-col justify-center rounded-full px-5 text-left transition-colors duration-200 cursor-pointer ${desktopPanel === "checkOut" ? "" : "hover:bg-[#fcdf9c]"
-                }`}
-            >
-              <span className="block text-base font-normal text-[#1f1f1f] cursor-pointer">{t("home_check_out", "Check out")}</span>
-              <span className="block truncate text-sm font-normal text-[#727272]">
-                {datePreferences.mode !== "dates" ? t("home_when_tab_flexible") : checkOut || t("home_search_add_dates")}
-              </span>
-            </button>
-
-            <div
-              className={`relative z-10 h-7 w-px shrink-0 bg-zinc-200/90 transition-opacity duration-300 ${desktopPanel === "checkOut" || desktopPanel === "who" ? "opacity-0" : "opacity-100"
-                }`}
-            />
+            {datePreferences.mode === "flexible" ? (
+              <>
+                <button
+                  type="button"
+                  aria-expanded={desktopPanel === "checkIn"}
+                  aria-controls="desktop-search-panel"
+                  onClick={() => setDesktopPanel(desktopPanel === "checkIn" ? null : "checkIn")}
+                  ref={(element) => { desktopFieldRefs.current.checkIn = element; }}
+                  className={`relative z-10 flex h-full min-w-0 flex-[2] flex-col justify-center rounded-full px-6 text-left transition-[flex,background-color] duration-200 cursor-pointer ${desktopPanel === "checkIn" ? "" : "hover:bg-[#fcdf9c]"}`}
+                >
+                  <span className="block text-base font-normal text-[#1f1f1f]">{t("home_search_when", "When")}</span>
+                  <span className="block truncate text-sm font-normal text-[#1f1f1f]">{flexibleWhenSummary}</span>
+                </button>
+                <div className={`relative z-10 h-7 w-px shrink-0 bg-zinc-200/90 transition-opacity duration-300 ${desktopPanel === "checkIn" || desktopPanel === "who" ? "opacity-0" : "opacity-100"}`} />
+              </>
+            ) : (
+              <>
+                {/* Check In */}
+                <button
+                  type="button"
+                  aria-expanded={desktopPanel === "checkIn"}
+                  aria-controls="desktop-search-panel"
+                  onClick={() => setDesktopPanel(desktopPanel === "checkIn" ? null : "checkIn")}
+                  ref={(element) => { desktopFieldRefs.current.checkIn = element; }}
+                  className={`relative z-10 flex h-full min-w-0 flex-1 flex-col justify-center rounded-full px-5 text-left transition-colors duration-200 cursor-pointer ${desktopPanel === "checkIn" ? "" : "hover:bg-[#fcdf9c]"}`}
+                >
+                  <span className="block text-base font-normal text-[#1f1f1f]">{t("home_check_in", "Check in")}</span>
+                  <span className="block truncate text-sm font-normal text-[#727272]">{checkIn || t("home_search_add_dates")}</span>
+                </button>
+                <div className={`relative z-10 h-7 w-px shrink-0 bg-zinc-200/90 transition-opacity duration-300 ${desktopPanel === "checkIn" || desktopPanel === "checkOut" ? "opacity-0" : "opacity-100"}`} />
+                {/* Check Out */}
+                <button
+                  type="button"
+                  aria-expanded={desktopPanel === "checkOut"}
+                  aria-controls="desktop-search-panel"
+                  onClick={() => setDesktopPanel(desktopPanel === "checkOut" ? null : "checkOut")}
+                  ref={(element) => { desktopFieldRefs.current.checkOut = element; }}
+                  className={`relative z-10 flex h-full min-w-0 flex-1 flex-col justify-center rounded-full px-5 text-left transition-colors duration-200 cursor-pointer ${desktopPanel === "checkOut" ? "" : "hover:bg-[#fcdf9c]"}`}
+                >
+                  <span className="block text-base font-normal text-[#1f1f1f]">{t("home_check_out", "Check out")}</span>
+                  <span className="block truncate text-sm font-normal text-[#727272]">{checkOut || t("home_search_add_dates")}</span>
+                </button>
+                <div className={`relative z-10 h-7 w-px shrink-0 bg-zinc-200/90 transition-opacity duration-300 ${desktopPanel === "checkOut" || desktopPanel === "who" ? "opacity-0" : "opacity-100"}`} />
+              </>
+            )}
 
             {/* Who & Search Button */}
             <div className="relative z-10 flex h-full min-w-0 flex-[1.3] items-center pr-2">
@@ -1417,7 +1458,12 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                         if (start && !end) setDesktopPanel("checkOut");
                       }}
                       preferences={datePreferences}
-                      onPreferencesChange={setDatePreferences}
+                      onPreferencesChange={(nextPreferences) => {
+                        setDatePreferences(nextPreferences);
+                        if (nextPreferences.mode === "flexible" && desktopPanel === "checkOut") {
+                          setDesktopPanel("checkIn");
+                        }
+                      }}
                     />
                   )}
                 </div>
@@ -1494,7 +1540,7 @@ export function HeroSection({ onSearch, isSearching: externalIsSearching = false
                           const itm = allSuggestItems[0];
                           if (itm.raw) selectSuggestion(itm.raw);
                           else selectSuggestion(itm.label);
-                          setActiveStep("when");
+                          setActiveStep("where");
                         } else {
                           handleMobileSubmit();
                         }

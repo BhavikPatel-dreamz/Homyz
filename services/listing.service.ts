@@ -27,6 +27,11 @@ import { Prisma, type Listing } from "@/generated/prisma/client";
 import { getExpiryThresholdDate, isBookingRequestExpired } from "@/lib/booking/booking-expiry";
 import { validateStayAvailability } from "@/lib/booking/availability";
 import { validatePublicListingSearchFilters } from "@/lib/validation/public-listing-search";
+import {
+  flexibleSearchWindow,
+  generateFlexibleCandidateStays,
+  type FlexibleDuration,
+} from "@/lib/search/flexible-stays";
 
 import { auditService } from "./audit.service";
 import { qualificationService } from "./qualification.service";
@@ -358,6 +363,10 @@ export type PublicSearchFilters = {
   locationType?: string;
   checkIn?: Date | string;
   checkOut?: Date | string;
+  dateMode?: "exact" | "flexible" | "none";
+  dateFlexibility?: number;
+  flexibleDuration?: FlexibleDuration;
+  flexibleMonths?: string[];
   guests?: number;
   adults?: number;
   children?: number;
@@ -442,6 +451,20 @@ async function searchPublicListings(
   // degrade into date-free browsing through a non-API caller.
   filters = validatePublicListingSearchFilters(filters) as PublicSearchFilters;
   let requestedStay: { checkIn: string; checkOut: string } | null = null;
+  const monthFlexibleCandidates = filters.dateMode === "flexible" && filters.flexibleDuration && filters.flexibleMonths
+    ? generateFlexibleCandidateStays(filters.flexibleMonths, filters.flexibleDuration)
+    : [];
+  const exactTolerance = filters.dateMode !== "flexible" ? filters.dateFlexibility ?? 0 : 0;
+  const dateFlexibleCandidates = filters.checkIn && filters.checkOut && exactTolerance > 0
+    ? Array.from({ length: exactTolerance * 2 + 1 }, (_, index) => {
+        const offset = index - exactTolerance;
+        return {
+          checkIn: shiftBookingDateKey(bookingDateKey(filters.checkIn!), offset),
+          checkOut: shiftBookingDateKey(bookingDateKey(filters.checkOut!), offset),
+        };
+      })
+    : [];
+  const flexibleCandidates = [...monthFlexibleCandidates, ...dateFlexibleCandidates];
   let effectiveLat = typeof filters.lat === "number" && !isNaN(filters.lat) ? filters.lat : undefined;
   let effectiveLng = typeof filters.lng === "number" && !isNaN(filters.lng) ? filters.lng : undefined;
   let effectivePlaceName = filters.placeName || filters.destination || filters.city;
@@ -619,7 +642,7 @@ async function searchPublicListings(
   }
 
   // Availability: exclude listings with overlapping bookings + blockedDates
-  if (filters.checkIn && filters.checkOut) {
+  if (filters.checkIn && filters.checkOut && exactTolerance === 0) {
     const cIn = parseBookingDate(filters.checkIn);
     const cOut = parseBookingDate(filters.checkOut);
     if (!isNaN(cIn.getTime()) && !isNaN(cOut.getTime()) && cOut > cIn) {
@@ -762,6 +785,63 @@ async function searchPublicListings(
     andClauses.push({ id: { in: eligibleIds } });
   }
 
+  // Flexible stays use the same policy engine as an exact booking. Fetching
+  // overlapping reservations once for all narrowed listings prevents the N+1
+  // query pattern while ensuring every returned property has at least one
+  // demonstrably bookable candidate stay.
+  if (flexibleCandidates.length > 0) {
+    const window = flexibleSearchWindow(flexibleCandidates);
+    if (window) {
+      const candidateListings = await prisma.listing.findMany({
+        where: { AND: andClauses },
+        select: {
+          id: true,
+          guests: true,
+          minNights: true,
+          maxNights: true,
+          advanceNotice: true,
+          sameDayCutoff: true,
+          allowSameDayRequests: true,
+          blockedDates: true,
+          discounts: true,
+        },
+      });
+      const expiryThreshold = getExpiryThresholdDate();
+      const reservations = candidateListings.length
+        ? await prisma.booking.findMany({
+            where: {
+              listingId: { in: candidateListings.map((listing) => listing.id) },
+              startDate: { lt: parseBookingDate(window.end) },
+              endDate: { gt: parseBookingDate(window.start) },
+              OR: [
+                { status: BookingStatus.CONFIRMED },
+                { status: BookingStatus.PENDING, createdAt: { gt: expiryThreshold } },
+              ],
+            },
+            select: { listingId: true, startDate: true, endDate: true },
+          })
+        : [];
+      const reservationsByListing = new Map<string, Array<{ start: Date; end: Date }>>();
+      for (const reservation of reservations) {
+        const ranges = reservationsByListing.get(reservation.listingId) ?? [];
+        ranges.push({ start: reservation.startDate, end: reservation.endDate });
+        reservationsByListing.set(reservation.listingId, ranges);
+      }
+      const now = new Date();
+      const eligibleIds = candidateListings
+        .filter((listing) => flexibleCandidates.some((candidate) => validateStayAvailability({
+          listing,
+          checkIn: candidate.checkIn,
+          checkOut: candidate.checkOut,
+          guests: totalGuests || 1,
+          now,
+          unavailableRanges: reservationsByListing.get(listing.id),
+        }).available))
+        .map((listing) => listing.id);
+      andClauses.push({ id: { in: eligibleIds } });
+    }
+  }
+
   const where: Prisma.ListingWhereInput = { AND: andClauses };
   const availablePriceWhere: Prisma.ListingWhereInput = {
     AND: priceClauses.length
@@ -876,6 +956,10 @@ async function searchPublicListings(
     country: filters.country ?? "",
     checkIn: filters.checkIn ?? "",
     checkOut: filters.checkOut ?? "",
+    dateMode: filters.dateMode ?? "",
+    dateFlexibility: filters.dateFlexibility ?? 0,
+    flexibleDuration: filters.flexibleDuration ?? "",
+    flexibleMonths: (filters.flexibleMonths ?? []).slice().sort().join(","),
     guests: totalGuests,
     pets: filters.pets ?? 0,
     propertyType: filters.propertyType ?? "",

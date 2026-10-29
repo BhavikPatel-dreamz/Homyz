@@ -45,6 +45,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: StayElite regression suite (non-destructive)
+        env:
+          # No migrations run here. Database-backed tests explicitly report a
+          # skipped state until CI is given an isolated migrated database.
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/homyz
+        run: pnpm test:stayelite
+
       - name: Build
         env:
           DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/homyz

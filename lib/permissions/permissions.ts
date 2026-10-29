@@ -180,6 +180,21 @@ export const PERMISSIONS = {
   CMS_ROLLBACK: "cms.rollback",
   CMS_AUDIT_VIEW: "cms.audit.view",
   CMS_MANAGE: "cms.manage",
+
+  // StayElite achievement, badge and travel-sticker administration (Phase 9)
+  LOYALTY_ACHIEVEMENTS_VIEW: "loyalty_achievements.view",
+  LOYALTY_ACHIEVEMENTS_MANAGE: "loyalty_achievements.manage",
+  LOYALTY_ACHIEVEMENTS_PUBLISH: "loyalty_achievements.publish",
+  LOYALTY_ACHIEVEMENTS_OVERRIDE: "loyalty_achievements.override",
+  LOYALTY_OVERVIEW_VIEW: "loyalty_overview.view",
+  LOYALTY_TIERS_VIEW: "loyalty_tiers.view",
+  LOYALTY_TIERS_MANAGE: "loyalty_tiers.manage",
+  LOYALTY_BENEFITS_VIEW: "loyalty_benefits.view",
+  LOYALTY_REFERRALS_MANAGE: "loyalty_referrals.manage",
+  LOYALTY_ANALYTICS_VIEW: "loyalty_analytics.view",
+  LOYALTY_RECONCILIATION_VIEW: "loyalty_reconciliation.view",
+  LOYALTY_RECONCILIATION_RUN: "loyalty_reconciliation.run",
+  LOYALTY_RECONCILIATION_EVIDENCE_BACKFILL: "loyalty_reconciliation.evidence_backfill",
 } as const;
 
 export type PermissionSlug = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
@@ -323,6 +338,21 @@ export const ALL_PERMISSIONS: PermissionDefinition[] = [
   { slug: PERMISSIONS.CMS_ROLLBACK, module: "CMS", action: "Rollback Version", description: "Restore historical revisions as new draft/published versions" },
   { slug: PERMISSIONS.CMS_AUDIT_VIEW, module: "CMS", action: "View Audit Log", description: "View CMS administrative activity log" },
   { slug: PERMISSIONS.CMS_MANAGE, module: "CMS", action: "Manage CMS", description: "Configure CMS settings and section registries" },
+
+  // StayElite achievement administration (Phase 9)
+  { slug: PERMISSIONS.LOYALTY_ACHIEVEMENTS_VIEW, module: "StayElite", action: "View Definitions", description: "View achievement, badge, and sticker definitions" },
+  { slug: PERMISSIONS.LOYALTY_ACHIEVEMENTS_MANAGE, module: "StayElite", action: "Manage Definitions", description: "Create, edit, pause, and archive draft achievement definitions" },
+  { slug: PERMISSIONS.LOYALTY_ACHIEVEMENTS_PUBLISH, module: "StayElite", action: "Publish Definitions", description: "Publish approved achievement definition versions" },
+  { slug: PERMISSIONS.LOYALTY_ACHIEVEMENTS_OVERRIDE, module: "StayElite", action: "Override Awards", description: "Apply or revoke audited manual achievement awards" },
+  { slug: PERMISSIONS.LOYALTY_OVERVIEW_VIEW, module: "StayElite", action: "View Overview", description: "View privacy-safe loyalty operational metrics" },
+  { slug: PERMISSIONS.LOYALTY_TIERS_VIEW, module: "StayElite", action: "View Tiers", description: "View tier definitions, evaluations, and membership history" },
+  { slug: PERMISSIONS.LOYALTY_TIERS_MANAGE, module: "StayElite", action: "Manage Tiers", description: "Preview approved tier configuration changes without direct membership assignment" },
+  { slug: PERMISSIONS.LOYALTY_BENEFITS_VIEW, module: "StayElite", action: "View Benefits", description: "View tier and achievement benefit eligibility metadata" },
+  { slug: PERMISSIONS.LOYALTY_REFERRALS_MANAGE, module: "StayElite", action: "Manage Referrals", description: "Review referral qualification cases through the authoritative queue" },
+  { slug: PERMISSIONS.LOYALTY_ANALYTICS_VIEW, module: "StayElite", action: "View Analytics", description: "View loyalty reporting and delivery diagnostics" },
+  { slug: PERMISSIONS.LOYALTY_RECONCILIATION_VIEW, module: "StayElite", action: "View Reconciliation", description: "View bounded StayElite reconciliation reports" },
+  { slug: PERMISSIONS.LOYALTY_RECONCILIATION_RUN, module: "StayElite", action: "Run Reconciliation", description: "Start and resume dry-run StayElite reconciliation" },
+  { slug: PERMISSIONS.LOYALTY_RECONCILIATION_EVIDENCE_BACKFILL, module: "StayElite", action: "Backfill Evidence", description: "Run explicitly enabled source-backed booking evidence backfill" },
 ];
 
 /** Helper function to calculate whether user is Super Admin */
@@ -421,6 +451,15 @@ export const PERMISSION_DEPENDENCIES: Record<string, string[]> = {
   [PERMISSIONS.CMS_ROLLBACK]: [PERMISSIONS.CMS_VIEW, PERMISSIONS.CMS_HISTORY],
   [PERMISSIONS.CMS_AUDIT_VIEW]: [PERMISSIONS.CMS_VIEW],
   [PERMISSIONS.CMS_MANAGE]: [PERMISSIONS.CMS_VIEW],
+
+  // StayElite achievement administration
+  [PERMISSIONS.LOYALTY_ACHIEVEMENTS_MANAGE]: [PERMISSIONS.LOYALTY_ACHIEVEMENTS_VIEW],
+  [PERMISSIONS.LOYALTY_ACHIEVEMENTS_PUBLISH]: [PERMISSIONS.LOYALTY_ACHIEVEMENTS_VIEW, PERMISSIONS.LOYALTY_ACHIEVEMENTS_MANAGE],
+  [PERMISSIONS.LOYALTY_ACHIEVEMENTS_OVERRIDE]: [PERMISSIONS.LOYALTY_ACHIEVEMENTS_VIEW],
+  [PERMISSIONS.LOYALTY_TIERS_MANAGE]: [PERMISSIONS.LOYALTY_TIERS_VIEW],
+  [PERMISSIONS.LOYALTY_REFERRALS_MANAGE]: [PERMISSIONS.REFERRALS_VIEW, PERMISSIONS.REFERRALS_REVIEW],
+  [PERMISSIONS.LOYALTY_RECONCILIATION_RUN]: [PERMISSIONS.LOYALTY_RECONCILIATION_VIEW],
+  [PERMISSIONS.LOYALTY_RECONCILIATION_EVIDENCE_BACKFILL]: [PERMISSIONS.LOYALTY_RECONCILIATION_VIEW, PERMISSIONS.LOYALTY_RECONCILIATION_RUN],
 };
 
 /** Get any parent permissions required by the specified permission slug */

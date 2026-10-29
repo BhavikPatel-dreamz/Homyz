@@ -40,6 +40,13 @@ interface SearchPageProps {
     checkout?: string;
     checkOut?: string;
     endDate?: string;
+    dateMode?: string;
+    dateFlex?: string;
+    dateFlexibility?: string;
+    stay?: string;
+    flexibleDuration?: string;
+    months?: string;
+    flexibleMonths?: string;
     guests?: string;
     adults?: string;
     children?: string;
@@ -101,6 +108,11 @@ export default async function ListingsSearchPage({ searchParams }: SearchPagePro
   const explicitCheckOut = firstPresent(sp.checkOut, sp.checkout, sp.endDate);
   const checkIn = explicitCheckIn !== undefined ? explicitCheckIn : serverLastSearch?.checkIn || undefined;
   const checkOut = explicitCheckOut !== undefined ? explicitCheckOut : serverLastSearch?.checkOut || undefined;
+  const dateMode = sp.dateMode === "months" ? "flexible" : sp.dateMode || undefined;
+  const dateFlexibility = numberParam(firstPresent(sp.dateFlex, sp.dateFlexibility));
+  const flexibleDuration = firstPresent(sp.stay, sp.flexibleDuration);
+  const flexibleMonthsRaw = firstPresent(sp.months, sp.flexibleMonths);
+  const flexibleMonths = flexibleMonthsRaw?.split(",").map((month) => month.trim()).filter(Boolean);
   const guests = sp.guests !== undefined ? numberParam(sp.guests) : serverLastSearch?.guests || undefined;
   const adults = sp.adults !== undefined ? numberParam(sp.adults) : serverLastSearch?.adults || undefined;
   const children = sp.children !== undefined ? numberParam(sp.children) : serverLastSearch?.children || undefined;
@@ -164,6 +176,10 @@ export default async function ListingsSearchPage({ searchParams }: SearchPagePro
     placeName,
     checkIn,
     checkOut,
+    dateMode,
+    dateFlexibility,
+    flexibleDuration,
+    flexibleMonths,
     guests,
     adults,
     children,
@@ -232,6 +248,10 @@ export default async function ListingsSearchPage({ searchParams }: SearchPagePro
     locationType,
     checkIn,
     checkOut,
+    dateMode,
+    dateFlexibility,
+    flexibleDuration,
+    flexibleMonths,
     guests,
     adults,
     children,

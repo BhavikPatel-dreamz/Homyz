@@ -12,6 +12,10 @@ import {
 } from "@/lib/booking/review-eligibility";
 import { invalidateListingCache } from "@/lib/redis/invalidation";
 import { revivePublicReviewDTO, toPublicReviewDTO, toReviewDTO, type PublicReviewDTO, type ReviewDTO } from "./mappers";
+import {
+  enqueueAchievementEventProcessing,
+  recordReviewPublishedEvent,
+} from "./achievement-event.service";
 
 const REVIEWS_PAGE_SIZE = 6;
 const PUBLIC_REVIEW_PAGE_CACHE_TTL_SECONDS = 120;
@@ -619,7 +623,8 @@ export const reviewService = {
     const initialStatus = shouldPublishImmediately ? ReviewStatus.PUBLISHED : ReviewStatus.PRIVATE;
     const publishedAt = shouldPublishImmediately ? now : null;
 
-    const review = await prisma.$transaction(async (tx: any) => {
+    const publication = await prisma.$transaction(async (tx: any) => {
+      const eventIds: string[] = [];
       const created = await tx.review.create({
         data: {
           listingId: effectiveListingId,
@@ -651,8 +656,13 @@ export const reviewService = {
         },
       });
 
+      if (shouldPublishImmediately) {
+        const event = await recordReviewPublishedEvent(tx, created);
+        eventIds.push(event.id);
+      }
+
       if (shouldPublishImmediately && reciprocalReview && reciprocalReview.status === ReviewStatus.PRIVATE) {
-        await tx.review.update({
+        const reciprocalPublished = await tx.review.update({
           where: { id: reciprocalReview.id },
           data: {
             status: ReviewStatus.PUBLISHED,
@@ -660,10 +670,21 @@ export const reviewService = {
             editDeadline: now,
           },
         });
+        const event = await recordReviewPublishedEvent(tx, reciprocalPublished);
+        eventIds.push(event.id);
       }
 
-      return created;
+      return { review: created, eventIds };
     });
+    const review = publication.review;
+
+    if (publication.eventIds.length) {
+      void Promise.all(
+        publication.eventIds.map((eventId) => enqueueAchievementEventProcessing(eventId)),
+      ).catch((error) =>
+        console.warn("[review.service] Achievement event queued for reconciliation:", error),
+      );
+    }
 
     // A host submission can publish an already-written guest review too, so
     // invalidate public review data for either reciprocal completion order.
@@ -802,25 +823,50 @@ export const reviewService = {
 
   /** Automatically publish private reviews whose 14-day window has expired. */
   async publishExpiredReviews(now = new Date()): Promise<number> {
-    const expiredReviews = await prisma.review.findMany({
-      where: {
-        status: ReviewStatus.PRIVATE,
-        reviewDeadline: { lte: now },
-      },
-      select: { id: true, listingId: true, direction: true },
+    const publication = await prisma.$transaction(async (tx) => {
+      const expiredReviews = await tx.review.findMany({
+        where: {
+          status: ReviewStatus.PRIVATE,
+          reviewDeadline: { lte: now },
+        },
+        select: { id: true, listingId: true, direction: true, authorId: true, targetUserId: true, bookingId: true },
+      });
+
+      if (expiredReviews.length === 0) return { expiredReviews, eventIds: [] as string[] };
+
+      await tx.review.updateMany({
+        where: {
+          id: { in: expiredReviews.map((r) => r.id) },
+        },
+        data: {
+          status: ReviewStatus.PUBLISHED,
+          publishedAt: now,
+          editDeadline: now,
+        },
+      });
+
+      const eventIds: string[] = [];
+      for (const review of expiredReviews) {
+        const event = await recordReviewPublishedEvent(tx, {
+          ...review,
+          publishedAt: now,
+          updatedAt: now,
+        });
+        eventIds.push(event.id);
+      }
+      return { expiredReviews, eventIds };
     });
 
+    const expiredReviews = publication.expiredReviews;
     if (expiredReviews.length === 0) return 0;
 
-    await prisma.review.updateMany({
-      where: {
-        id: { in: expiredReviews.map((r: any) => r.id) },
-      },
-      data: {
-        status: ReviewStatus.PUBLISHED,
-        publishedAt: now,
-      },
-    });
+    if (publication.eventIds.length) {
+      void Promise.all(
+        publication.eventIds.map((eventId) => enqueueAchievementEventProcessing(eventId)),
+      ).catch((error) =>
+        console.warn("[review.service] Expired review event queued for reconciliation:", error),
+      );
+    }
 
     const affectedListingIds: string[] = Array.from(
       new Set(
@@ -1132,7 +1178,7 @@ export const reviewService = {
     }
 
     const now = new Date();
-    const updated = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    const moderation = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const moderatedReview = await tx.review.update({
         where: { id: input.reviewId },
         data: {
@@ -1167,14 +1213,22 @@ export const reviewService = {
         },
       });
 
-      return moderatedReview;
+      // A hide, delete, or restore can change guest-rating and Traveler-review
+      // eligibility. Emit a revision event; the tier evaluator reads the
+      // current review state and therefore naturally handles compensations.
+      const event = await recordReviewPublishedEvent(tx, moderatedReview);
+      return { moderatedReview, eventId: event.id };
     });
+
+    void enqueueAchievementEventProcessing(moderation.eventId).catch((error) =>
+      console.warn("[review.service] Moderation evaluation event queued for reconciliation:", error),
+    );
 
     if (review.listingId && review.direction === ReviewDirection.GUEST_TO_PROPERTY) {
       await invalidateListingCache(review.listingId);
       await triggerGuestFavoriteReevaluation(review.listingId);
     }
 
-    return updated;
+    return moderation.moderatedReview;
   },
 };

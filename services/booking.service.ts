@@ -18,6 +18,10 @@ import { notificationService } from "./notification.service";
 import { messagingService } from "./messaging.service";
 import { auditService } from "./audit.service";
 import { recordConfirmedBookingAnalyticsEvent } from "./listing-analytics.service";
+import {
+  enqueueAchievementEventProcessing,
+  recordBookingConfirmedEvent,
+} from "./achievement-event.service";
 
 import { Prisma } from "@/generated/prisma/client";
 import { calculateRefundEligibility } from "@/lib/refund/policy-engine";
@@ -599,6 +603,7 @@ async function create(
     }
   }
 
+  let createdBookingAchievementEventId: string | null = null;
   const booking = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     if (input.requestSubmissionId) {
       await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${input.requestSubmissionId}))`;
@@ -779,8 +784,19 @@ async function create(
       db: tx,
     });
 
+    if (automaticallyApprove) {
+      const event = await recordBookingConfirmedEvent(tx, createdBooking);
+      createdBookingAchievementEventId = event.id;
+    }
+
     return createdBooking;
   });
+
+  if (createdBookingAchievementEventId) {
+    void enqueueAchievementEventProcessing(createdBookingAchievementEventId).catch((error) =>
+      console.warn("[booking.service] Achievement event queued for reconciliation:", error),
+    );
+  }
 
   // Invalidate booking caches after creation
   await invalidateBookingCache(booking.id, actor.id, listing.hostId);
@@ -1141,6 +1157,7 @@ async function acceptBookingRequest(
   // Dispatches BOOKING_CONFIRMED notification via notificationService.create to guest upon host acceptance
   const policy = getPaymentPolicy();
 
+  let acceptedBookingAchievementEventId: string | null = null;
   const confirmedBooking = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${id}))`;
 
@@ -1297,8 +1314,17 @@ async function acceptBookingRequest(
       },
     });
 
+    const event = await recordBookingConfirmedEvent(tx, updated);
+    acceptedBookingAchievementEventId = event.id;
+
     return { ...updated, listing: booking.listing, user: booking.user };
   });
+
+  if (acceptedBookingAchievementEventId) {
+    void enqueueAchievementEventProcessing(acceptedBookingAchievementEventId).catch((error) =>
+      console.warn("[booking.service] Achievement event queued for reconciliation:", error),
+    );
+  }
 
   await invalidateBookingCache(confirmedBooking.id, confirmedBooking.userId, confirmedBooking.listing.hostId);
   // A host-approved request does not have a browser session available here.
