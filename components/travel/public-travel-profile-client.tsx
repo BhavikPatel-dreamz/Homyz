@@ -236,7 +236,7 @@ export function PublicTravelProfileClient({
   const handleCountrySelect = (country: string) => setStoryCountry(country);
 
   return (
-    <div className="mx-auto w-full max-w-[1180px] px-4 pb-16 font-sans sm:px-6 lg:px-8">
+    <div className="mx-auto w-full max-w-[1261px] px-4 pb-16 font-sans sm:px-6 lg:px-8">
       <header className="relative mb-8">
         <div className="relative h-44 w-full overflow-hidden rounded-3xl border border-zinc-200/60 bg-zinc-100 shadow-md sm:h-56 md:h-72">
           {profile.coverUrl ? (
@@ -246,7 +246,7 @@ export function PublicTravelProfileClient({
               fill
               priority
               className="object-cover"
-              sizes="(max-width: 1200px) 100vw, 1180px"
+              sizes="(max-width: 1261px) 100vw, 1261px"
             />
           ) : (
             <div className="flex h-full items-center justify-center bg-gradient-to-tr from-amber-900/40 via-zinc-800 to-zinc-900 text-4xl text-white/20">
@@ -254,49 +254,59 @@ export function PublicTravelProfileClient({
             </div>
           )}
         </div>
-        <div className="relative px-2 sm:px-6">
-          <div className="flex flex-col items-center justify-between gap-4 -mt-14 text-center sm:flex-row sm:items-end sm:text-left md:-mt-20">
-            <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-end sm:gap-6">
-              <div className="relative size-28 shrink-0 overflow-hidden rounded-full bg-white p-1 shadow-lg sm:size-32 md:size-36">
-                <div className="relative size-full overflow-hidden rounded-full bg-zinc-200">
-                  {profile.avatarUrl ? (
-                    <Image
-                      src={profile.avatarUrl}
-                      alt={profile.displayName}
-                      fill
-                      className="object-cover"
-                    />
-                  ) : (
-                    <div className="flex size-full items-center justify-center bg-amber-100 text-3xl font-bold text-amber-800">
-                      {profile.displayName.charAt(0).toUpperCase()}
-                    </div>
-                  )}
+        <div className="relative px-4 sm:px-8 lg:pl-[118px] lg:pr-8">
+          <div className="pt-0 lg:pt-[32px] flex flex-col lg:flex-row lg:items-center justify-between gap-4 lg:gap-6">
+            {/* Left: Avatar + (Name, Surname & Town, Country) */}
+            <div className="flex flex-col lg:flex-row items-center gap-4 lg:gap-6 text-center lg:text-left min-w-0">
+              <div className="relative -mt-[110px] lg:mt-0 w-[220px] h-[220px] lg:h-[48px] shrink-0 mx-auto lg:mx-0">
+                <div className="relative lg:absolute lg:bottom-0 lg:left-0 size-[220px] w-[220px] h-[220px] rounded-full border-[10px] border-white bg-white shadow-md z-10 flex items-center justify-center">
+                  <div className="relative size-[200px] w-[200px] h-[200px] rounded-full border-2 border-[#1f1f1f] overflow-hidden bg-zinc-200">
+                    {profile.avatarUrl ? (
+                      <Image
+                        src={profile.avatarUrl}
+                        alt={profile.displayName}
+                        fill
+                        className="object-cover"
+                        sizes="200px"
+                      />
+                    ) : (
+                      <div className="flex size-full items-center justify-center bg-amber-100 text-4xl font-medium text-amber-800">
+                        {profile.displayName.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-              <div className="mb-1">
-                <h1 className="text-xl font-bold tracking-tight text-zinc-900 sm:text-2xl md:text-3xl">
-                  {profile.displayName}
-                </h1>
-                <p className="text-xs font-medium text-zinc-500 sm:text-sm">
-                  @{profile.handle}
-                  {profile.homeLocation && (
-                    <span> • {profile.homeLocation}</span>
+
+              <div className="min-w-0 flex flex-col justify-center items-center lg:items-start">
+                <div className="flex flex-wrap items-baseline justify-center lg:justify-start gap-x-2">
+                  <h1 className="not-italic font-medium text-[18px] leading-[23px] text-[#1F1F1F] whitespace-nowrap">
+                    {profile.displayName}
+                  </h1>
+                  {profile.handle && (
+                    <span className="shrink-0 text-xs font-normal text-[#727272]">
+                      @{profile.handle}
+                    </span>
                   )}
+                </div>
+                <p className="truncate font-normal text-[16px] leading-[24px] text-[#1F1F1F]">
+                  {profile.homeLocation || "Town, Country"}
                 </p>
-                {profile.bio && (
-                  <p className="mt-1 max-w-md text-xs text-zinc-600 sm:text-sm">
-                    {profile.bio}
-                  </p>
-                )}
               </div>
             </div>
-            <div className="mb-2 flex items-center gap-2">
+
+            {/* Right: Actions (Follow & Share) */}
+            <div className="flex items-center justify-center lg:justify-end gap-3 sm:gap-4 shrink-0 mt-2 lg:mt-0">
               {!isOwner && (
                 <button
                   type="button"
                   disabled={isFollowLoading}
                   onClick={handleFollowToggle}
-                  className={`rounded-full px-4 py-2 text-xs font-bold shadow-xs transition disabled:opacity-60 ${isFollowing ? "border border-zinc-200 bg-zinc-100 text-zinc-700 hover:bg-zinc-200" : "bg-amber-500 text-white hover:bg-amber-600"}`}
+                  className={`flex flex-row items-center justify-center px-5 py-3 gap-2 w-auto min-w-[120px] sm:w-[172px] h-[48px] rounded-[30px] font-medium text-sm transition cursor-pointer shrink-0 disabled:opacity-60 ${
+                    isFollowing
+                      ? "bg-[#F3F4F5] hover:bg-[#EAEAEA] text-[#1F1F1F]"
+                      : "bg-[#1F1F1F] text-white hover:bg-black"
+                  }`}
                 >
                   {isFollowing ? "Following" : "+ Follow"}
                 </button>
@@ -304,30 +314,53 @@ export function PublicTravelProfileClient({
               <button
                 type="button"
                 onClick={() => setIsShareModalOpen(true)}
-                className="flex items-center gap-1.5 rounded-full border border-zinc-200/80 bg-zinc-100 px-4 py-2 text-xs font-semibold text-zinc-700 shadow-2xs transition hover:bg-zinc-200"
+                className="flex flex-row items-center justify-center px-5 py-3 gap-2 w-auto min-w-[140px] sm:w-[172px] h-[48px] bg-[#F3F4F5] hover:bg-[#EAEAEA] rounded-[30px] font-medium text-sm text-[#1F1F1F] transition cursor-pointer shrink-0"
               >
                 <span>↗</span> Share profile
               </button>
             </div>
           </div>
-          <div className="mt-6 flex items-center justify-center gap-4 border-t border-zinc-100 pt-4 sm:justify-start sm:gap-6 sm:pt-4">
-            <button type="button" onClick={() => setFollowListKind("followers")} className="flex min-w-[70px] flex-col items-center"><span className="inline-flex items-center justify-center rounded-full border border-[#D8BC74]/40 bg-[#E4C882]/35 px-4 py-1 text-xs font-bold text-zinc-800 shadow-2xs sm:text-sm">{followersCount}</span><span className="mt-1 text-[11px] font-medium text-zinc-500 sm:text-xs">Followers</span></button>
-            <button type="button" onClick={() => setFollowListKind("following")} className="flex min-w-[70px] flex-col items-center"><span className="inline-flex items-center justify-center rounded-full border border-[#D8BC74]/40 bg-[#E4C882]/35 px-4 py-1 text-xs font-bold text-zinc-800 shadow-2xs sm:text-sm">{profile.followingCount || 0}</span><span className="mt-1 text-[11px] font-medium text-zinc-500 sm:text-xs">Following</span></button>
+
+          <div className="flex items-center justify-center gap-8 sm:gap-[48px] mt-6 sm:mt-[44px] mb-8 sm:mb-[64px]">
+            <button
+              type="button"
+              onClick={() => setFollowListKind("followers")}
+              className="group flex flex-col items-center cursor-pointer transition focus:outline-none"
+            >
+              <span className="min-w-14 sm:min-w-16 px-4 py-0.5 rounded-full bg-[#FCDF9C] text-center font-medium text-sm sm:text-base text-[#1F1F1F] shadow-2xs group-hover:scale-105 transition-transform">
+                {followersCount}
+              </span>
+              <span className="sm:font-medium font-normal text-lg sm:text-[20px] leading-[28px] text-[#1F1F1F] mt-2 group-hover:opacity-80 transition-opacity">
+                Followers
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setFollowListKind("following")}
+              className="group flex flex-col items-center cursor-pointer transition focus:outline-none"
+            >
+              <span className="min-w-14 sm:min-w-16 px-4 py-0.5 rounded-full bg-[#FCDF9C] text-center font-medium text-sm sm:text-base text-[#1F1F1F] shadow-2xs group-hover:scale-105 transition-transform">
+                {profile.followingCount || 0}
+              </span>
+              <span className="sm:font-medium font-normal text-lg sm:text-[20px] leading-[28px] text-[#1F1F1F] mt-2 group-hover:opacity-80 transition-opacity">
+                Following
+              </span>
+            </button>
             {(
               [
                 [profile.stats.trips, "Trips"],
-                [profileLikes, "Likes"],
+                [profileLikes, "Likes", profile.stats.likes],
                 [profile.stats.reviews, "Reviews"],
               ] as const
             ).map(([value, label]) => (
               <div
                 key={label}
-                className="flex min-w-[70px] flex-col items-center"
+                className="flex flex-col items-center"
               >
-                <span className="inline-flex items-center justify-center rounded-full border border-[#D8BC74]/40 bg-[#E4C882]/35 px-4 py-1 text-xs font-bold text-zinc-800 shadow-2xs sm:text-sm">
+                <span className="min-w-14 sm:min-w-16 px-4 py-0.5 rounded-full bg-[#FCDF9C] bg-[#E4C882]/35 text-center font-medium text-sm sm:text-base text-[#1F1F1F] shadow-2xs">
                   {value}
                 </span>
-                <span className="mt-1 text-[11px] font-medium text-zinc-500 sm:text-xs">
+                <span className="font-medium text-[20px] leading-[28px] text-[#1F1F1F] mt-2">
                   {label}
                 </span>
               </div>
@@ -341,7 +374,7 @@ export function PublicTravelProfileClient({
           <div className="mx-auto mb-3 flex size-16 items-center justify-center rounded-full bg-amber-100 text-3xl">
             🔒
           </div>
-          <h2 className="text-base font-bold text-zinc-900">
+          <h2 className="text-base font-medium text-zinc-900">
             {profile.restrictionReason === "FOLLOWERS_ONLY"
               ? "Followers only profile"
               : "Private travel profile"}
@@ -356,7 +389,7 @@ export function PublicTravelProfileClient({
               type="button"
               disabled={isFollowLoading}
               onClick={handleFollowToggle}
-              className="mt-5 rounded-full bg-amber-500 px-6 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-amber-600"
+              className="mt-5 rounded-full bg-amber-500 px-6 py-2.5 text-xs font-medium text-white shadow-sm transition hover:bg-amber-600"
             >
               {isFollowing ? "Request sent" : "Follow to view"}
             </button>
@@ -377,7 +410,7 @@ export function PublicTravelProfileClient({
             <div className="mb-5">
               <h2
                 id="public-trip-photo-gallery-heading"
-                className="text-lg font-bold text-zinc-900 sm:text-xl"
+                className="text-lg font-medium text-zinc-900 sm:text-xl"
               >
                 Trip photo gallery
               </h2>
@@ -386,27 +419,52 @@ export function PublicTravelProfileClient({
               </p>
             </div>
             {publicPhotos.length > 0 ? (
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5 lg:gap-2 justify-items-center">
                 {publicPhotos.map((photo) => (
                   <div
                     key={photo.id}
-                    className="group relative aspect-square overflow-hidden rounded-2xl border border-zinc-200/80 bg-zinc-100 text-left shadow-2xs transition hover:shadow-md"
+                    className="group relative aspect-square aspect-[233/246] w-full max-w-[233px] lg:w-[233px] lg:h-[246px] overflow-hidden rounded-[10px] border border-zinc-200/80 bg-zinc-100 text-left shadow-2xs transition hover:shadow-md"
                   >
                     <button type="button" onClick={() => setActivePhotoId(photo.id)} aria-label={`Open ${photo.caption || "travel photo"}`} className="absolute inset-0">
-                    <Image
-                      src={photo.thumbnailUrl || photo.mediumUrl || photo.url}
-                      alt={photo.caption || "Travel photo"}
-                      fill
-                      className="object-cover transition-transform duration-300 group-hover:scale-105"
-                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw"
-                    />
-                    <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-3 pb-2 pt-8 text-[11px] font-semibold text-white opacity-0 transition-opacity group-hover:opacity-100">
-                      {photo.location
-                        ? `📍 ${photo.location}`
-                        : `♥ ${photo.likesCount}`}
-                    </span>
+                      <Image
+                        src={photo.thumbnailUrl || photo.mediumUrl || photo.url}
+                        alt={photo.caption || "Travel photo"}
+                        fill
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw"
+                      />
+                      {/* Action icons bar with 20% black blur background (Figma matching) */}
+                      <div className="absolute inset-x-0 bottom-0 flex h-[40px] items-center justify-between rounded-b-[10px] bg-black/20 px-6 py-[6px] backdrop-blur-[3.5px]">
+                        <span className="flex items-center justify-center transition-transform hover:scale-110">
+                          <Image
+                            src="/images/icons/heart-fill.svg"
+                            alt="Like"
+                            width={16}
+                            height={14}
+                            className="size-4 object-contain drop-shadow-xs"
+                          />
+                        </span>
+                        <span className="flex items-center justify-center transition-transform hover:scale-110">
+                          <Image
+                            src="/images/icons/message-fill.svg"
+                            alt="Comment"
+                            width={16}
+                            height={15}
+                            className="size-4 object-contain drop-shadow-xs"
+                          />
+                        </span>
+                        <span className="flex items-center justify-center transition-transform hover:scale-110">
+                          <Image
+                            src="/images/icons/share-fill.svg"
+                            alt="Share"
+                            width={17}
+                            height={17}
+                            className="size-4 object-contain drop-shadow-xs"
+                          />
+                        </span>
+                      </div>
                     </button>
-                    <button type="button" aria-label={photo.isLiked ? "Unlike photo" : "Like photo"} onClick={(event) => { event.stopPropagation(); void toggleGalleryLike(photo.id); }} disabled={pendingPhotoLikeIds.has(photo.id)} className={`absolute right-2 top-2 rounded-full px-2 py-1 text-[11px] font-bold shadow transition-transform active:scale-90 disabled:cursor-not-allowed disabled:opacity-60 ${photo.isLiked ? "bg-rose-500 text-white" : "bg-white/90 text-zinc-700"}`}>♥ {photo.likesCount}</button>
+                    <button type="button" aria-label={photo.isLiked ? "Unlike photo" : "Like photo"} onClick={(event) => { event.stopPropagation(); void toggleGalleryLike(photo.id); }} disabled={pendingPhotoLikeIds.has(photo.id)} className={`absolute right-2 top-2 rounded-full px-2 py-1 text-[11px] font-medium shadow transition-transform active:scale-90 disabled:cursor-not-allowed disabled:opacity-60 ${photo.isLiked ? "bg-rose-500 text-white" : "bg-white/90 text-zinc-700"}`}>♥ {photo.likesCount}</button>
                   </div>
                 ))}
               </div>

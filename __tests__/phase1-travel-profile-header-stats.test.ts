@@ -194,7 +194,7 @@ test("Profile Header: Renders cover banner, overlapping avatar, action buttons, 
   assert.doesNotMatch(headerCode, /TravelCoverUploadModal/);
 
   // Overlapping avatar with white border ring
-  assert.match(headerCode, /rounded-full border-4 border-white/);
+  assert.match(headerCode, /rounded-full (?:border-4|border-\[10px\]) border-white/);
 
   // 3 Header Action Pill Buttons
   assert.match(headerCode, /Edit Profile/);

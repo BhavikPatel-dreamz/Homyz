@@ -248,7 +248,8 @@ export function InsightsSuperhostTab({ data }: Props) {
                         strokeWidth="2"
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        aria-hidden="true"
+                        aria-hidden="true"    
+                       
                       >
                         <path d="M5 12h14" />
                         <path d="m12 5 7 7-7 7" />

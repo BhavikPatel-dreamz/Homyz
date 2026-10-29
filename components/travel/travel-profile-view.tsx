@@ -4,50 +4,47 @@ import React, { useCallback, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-const Grid3X3 = ({ className }: { className?: string }) => (
-  <svg
-    className={className}
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-  >
-    <rect x="3" y="3" width="7" height="7"></rect>
-    <rect x="14" y="3" width="7" height="7"></rect>
-    <rect x="14" y="14" width="7" height="7"></rect>
-    <rect x="3" y="14" width="7" height="7"></rect>
+const TabGridIcon = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <rect x="2.5" y="3.5" width="19" height="5" rx="1.5" />
+    <rect x="2.5" y="11" width="11" height="9.5" rx="1.5" />
+    <rect x="15.5" y="11" width="6" height="9.5" rx="1.5" />
   </svg>
 );
-const Film = ({ className }: { className?: string }) => (
+const TabFilmIcon = ({ className }: { className?: string }) => (
   <svg
     className={className}
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
-    strokeWidth="2"
+    strokeWidth="1.8"
   >
-    <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect>
-    <line x1="7" y1="2" x2="7" y2="22"></line>
-    <line x1="17" y1="2" x2="17" y2="22"></line>
-    <line x1="2" y1="12" x2="22" y2="12"></line>
-    <line x1="2" y1="7" x2="7" y2="7"></line>
-    <line x1="2" y1="17" x2="7" y2="17"></line>
-    <line x1="17" y1="17" x2="22" y2="17"></line>
-    <line x1="17" y1="7" x2="22" y2="7"></line>
+    <rect x="3" y="2.5" width="18" height="19" rx="2" />
+    <line x1="7.5" y1="2.5" x2="7.5" y2="21.5" />
+    <line x1="16.5" y1="2.5" x2="16.5" y2="21.5" />
+    <line x1="3" y1="7.5" x2="7.5" y2="7.5" />
+    <line x1="16.5" y1="7.5" x2="21" y2="7.5" />
+    <line x1="3" y1="12" x2="21" y2="12" />
+    <line x1="3" y1="16.5" x2="7.5" y2="16.5" />
+    <line x1="16.5" y1="16.5" x2="21" y2="16.5" />
   </svg>
 );
-const Users = ({ className }: { className?: string }) => (
+const TabUsersIcon = ({ className }: { className?: string }) => (
   <svg
     className={className}
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
-    strokeWidth="2"
+    strokeWidth="1.8"
+    strokeLinecap="round"
+    strokeLinejoin="round"
   >
-    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-    <circle cx="9" cy="7" r="4"></circle>
-    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+    <circle cx="12" cy="7" r="3" />
+    <path d="M7 21v-2a5 5 0 0 1 10 0v2" />
+    <circle cx="4.5" cy="10" r="2" />
+    <path d="M1 21v-1.5a3.5 3.5 0 0 1 4.5-3.3" />
+    <circle cx="19.5" cy="10" r="2" />
+    <path d="M18.5 16.2a3.5 3.5 0 0 1 4.5 3.3v1.5" />
   </svg>
 );
 import type {
@@ -148,6 +145,7 @@ export function TravelProfileView({
   const [activeTab, setActiveTab] = useState<"photos" | "trips" | "likes">(
     "photos",
   );
+  const [failedPhotoIds, setFailedPhotoIds] = useState<Set<string>>(new Set());
   const [storyCountry, setStoryCountry] = useState<string | null>(null);
   const [uploadDestinationCountry, setUploadDestinationCountry] = useState<
     string | null
@@ -384,13 +382,19 @@ export function TravelProfileView({
   };
 
   return (
-    <div className="w-full max-w-[1180px] mx-auto pb-16 px-4 sm:px-6 lg:px-8 font-sans">
+    <div className="w-full max-w-[1261px] mx-auto pb-16 font-sans">
       <TravelProfileHeader
         key={`${initialProfile.updatedAt}-${initialProfile.coverUrl}-${initialProfile.displayName}`}
         profile={initialProfile}
         stats={initialStats}
         isOwner={isOwner}
         onPhotosUploaded={handlePhotosUploaded}
+        activeTab={activeTab}
+        onSelectTab={(tab) => {
+          if (tab === "trips" || tab === "likes" || tab === "photos") {
+            setActiveTab(tab);
+          }
+        }}
       />
 
       <TravelCountryCarousel
@@ -398,77 +402,121 @@ export function TravelProfileView({
         onSelectCountry={handleCountrySelection}
       />
 
-      <section className="mt-6 mb-10">
-        <div className="flex items-center justify-center gap-8 border-b border-zinc-200">
+      <section className="mt-8 mb-10">
+        <div className="flex items-center justify-center gap-10">
           <button
             type="button"
             onClick={() => setActiveTab("photos")}
-            className={`flex items-center gap-2 pb-2 text-xs font-semibold transition ${activeTab === "photos" ? "border-b-2 border-zinc-900 text-zinc-900" : "text-zinc-500 hover:text-zinc-900"}`}
+            aria-label="Photos"
+            title="Photos"
+            className={`group relative flex flex-col items-center cursor-pointer transition ${
+              activeTab === "photos"
+                ? "text-[#1F1F1F]"
+                : "text-zinc-400 hover:text-zinc-700"
+            }`}
           >
-            <Grid3X3 className="w-4 h-4" />
-            <span>Photos</span>
+            <TabGridIcon className="size-7" />
+            <span
+              className={`mt-2.5 h-[2px] w-10 sm:w-12 rounded-full transition-all ${
+                activeTab === "photos" ? "bg-[#1F1F1F]" : "bg-transparent"
+              }`}
+            />
           </button>
           <button
             type="button"
             onClick={() => setActiveTab("trips")}
-            className={`flex items-center gap-2 pb-2 text-xs font-semibold transition ${activeTab === "trips" ? "border-b-2 border-zinc-900 text-zinc-900" : "text-zinc-500 hover:text-zinc-900"}`}
+            aria-label="Trips"
+            title="Trips"
+            className={`group relative flex flex-col items-center cursor-pointer transition ${
+              activeTab === "trips"
+                ? "text-[#1F1F1F]"
+                : "text-zinc-400 hover:text-zinc-700"
+            }`}
           >
-            <Film className="w-4 h-4" />
-            <span>Trips</span>
+            <TabFilmIcon className="size-7" />
+            <span
+              className={`mt-2.5 h-[2px] w-10 sm:w-12 rounded-full transition-all ${
+                activeTab === "trips" ? "bg-[#1F1F1F]" : "bg-transparent"
+              }`}
+            />
           </button>
           <button
             type="button"
             onClick={() => setActiveTab("likes")}
-            className={`flex items-center gap-2 pb-2 text-xs font-semibold transition ${activeTab === "likes" ? "border-b-2 border-zinc-900 text-zinc-900" : "text-zinc-500 hover:text-zinc-900"}`}
+            aria-label="Likes"
+            title="Likes"
+            className={`group relative flex flex-col items-center cursor-pointer transition ${
+              activeTab === "likes"
+                ? "text-[#1F1F1F]"
+                : "text-zinc-400 hover:text-zinc-700"
+            }`}
           >
-            <Users className="w-4 h-4" />
-            <span>Likes</span>
+            <TabUsersIcon className="size-7" />
+            <span
+              className={`mt-2.5 h-[2px] w-10 sm:w-12 rounded-full transition-all ${
+                activeTab === "likes" ? "bg-[#1F1F1F]" : "bg-transparent"
+              }`}
+            />
           </button>
         </div>
       </section>
 
       {activeTab === "photos" && (
-        <section className="mb-12" aria-labelledby="trip-photo-gallery-heading">
-          <div className="mb-5 flex items-end justify-between gap-4">
-            <div>
-              <h2
-                id="trip-photo-gallery-heading"
-                className="text-lg font-bold text-zinc-900 sm:text-xl"
-              >
-                Trip photo gallery
-              </h2>
-              <p className="mt-0.5 text-xs text-zinc-500">
-                Memories shared from verified journeys and trips.
-              </p>
-            </div>
-            {isOwner && (
-              <button
-                type="button"
-                onClick={() => setIsUploadModalOpen(true)}
-                className="shrink-0 rounded-full bg-zinc-900 px-4 py-2 text-xs font-semibold text-white transition hover:bg-black"
-              >
-                Upload photos
-              </button>
-            )}
-          </div>
-
+        <section className="mb-12" aria-label="Trip photo gallery">
           {photos.length > 0 ? (
             <div className="space-y-8">
-              <div className="grid grid-cols-2 gap-1 sm:grid-cols-3 sm:gap-1 md:grid-cols-4 lg:grid-cols-5">
+              <div className="grid grid-cols-2 gap-1 sm:grid-cols-3 sm:gap-1 md:grid-cols-4 lg:grid-cols-5 lg:gap-2 justify-items-center">
                 {photos.map((photo) => (
                   <button
                     key={photo.id}
                     type="button"
                     onClick={() => setActivePhotoId(photo.id)}
-                    className="group relative aspect-square overflow-hidden bg-zinc-100 text-left"
+                    className="group relative aspect-square aspect-[233/246] w-full max-w-[233px] lg:w-[233px] lg:h-[246px] overflow-hidden rounded-[10px] bg-zinc-100 text-left shadow-2xs transition-all duration-200 hover:shadow-md cursor-pointer"
                   >
                     <Image
-                      src={photo.thumbnailUrl || photo.mediumUrl || photo.url}
+                      src={
+                        failedPhotoIds.has(photo.id)
+                          ? "/images/auth-traveler-water.jpg"
+                          : photo.thumbnailUrl || photo.mediumUrl || photo.url
+                      }
                       alt={photo.caption || "Travel photo"}
                       fill
-                      className="object-cover"
+                      className="object-cover transition-transform duration-300 group-hover:scale-105"
                       sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw"
+                      onError={() => {
+                        setFailedPhotoIds((prev) => new Set(prev).add(photo.id));
+                      }}
                     />
+                    {/* Action icons bar with 20% black blur background (Figma matching) */}
+                    <div className="absolute inset-x-0 bottom-0 flex h-[38px] sm:h-[40px] items-center justify-between rounded-b-[10px] bg-black/20 px-3 sm:px-6 py-[6px] backdrop-blur-[3.5px]">
+                      <span className="flex items-center justify-center transition-transform hover:scale-110">
+                        <Image
+                          src="/images/icons/heart-fill.svg"
+                          alt="Like"
+                          width={16}
+                          height={14}
+                          className="size-4 object-contain drop-shadow-xs"
+                        />
+                      </span>
+                      <span className="flex items-center justify-center transition-transform hover:scale-110">
+                        <Image
+                          src="/images/icons/message-fill.svg"
+                          alt="Comment"
+                          width={16}
+                          height={15}
+                          className="size-4 object-contain drop-shadow-xs"
+                        />
+                      </span>
+                      <span className="flex items-center justify-center transition-transform hover:scale-110">
+                        <Image
+                          src="/images/icons/share-fill.svg"
+                          alt="Share"
+                          width={17}
+                          height={17}
+                          className="size-4 object-contain drop-shadow-xs"
+                        />
+                      </span>
+                    </div>
                   </button>
                 ))}
               </div>
@@ -478,7 +526,7 @@ export function TravelProfileView({
                     type="button"
                     onClick={handleLoadMorePhotos}
                     disabled={loadingMorePhotos}
-                    className="rounded-full border border-zinc-300 bg-white px-6 py-2.5 text-xs font-semibold text-zinc-800 shadow-2xs transition hover:bg-zinc-100 disabled:opacity-50"
+                    className="rounded-full border border-zinc-300 bg-white px-6 py-2.5 text-xs font-medium text-zinc-800 shadow-2xs transition hover:bg-zinc-100 disabled:opacity-50"
                   >
                     {loadingMorePhotos
                       ? "Loading more memories..."
@@ -489,7 +537,7 @@ export function TravelProfileView({
             </div>
           ) : (
             <div className="rounded-3xl border border-dashed border-zinc-200 bg-zinc-50/70 p-10 text-center sm:p-14">
-              <h3 className="text-base font-semibold text-zinc-900">
+              <h3 className="text-base font-medium text-zinc-900">
                 No travel photos yet
               </h3>
               <p className="mx-auto mt-1 max-w-md text-xs leading-relaxed text-zinc-500">
@@ -500,7 +548,7 @@ export function TravelProfileView({
                   <button
                     type="button"
                     onClick={() => setIsUploadModalOpen(true)}
-                    className="rounded-full bg-zinc-900 px-5 py-2 text-xs font-semibold text-white transition hover:bg-black"
+                    className="rounded-full bg-zinc-900 px-5 py-2 text-xs font-medium text-white transition hover:bg-black"
                   >
                     Upload photos
                   </button>
@@ -508,7 +556,7 @@ export function TravelProfileView({
                 {isOwner && (
                   <Link
                     href="/profile/tab/profile_management/trip_photos?travelTab=trips"
-                    className="rounded-full border border-zinc-300 bg-white px-5 py-2 text-xs font-semibold text-zinc-800 transition hover:bg-zinc-100"
+                    className="rounded-full border border-zinc-300 bg-white px-5 py-2 text-xs font-medium text-zinc-800 transition hover:bg-zinc-100"
                   >
                     Manage trip photos
                   </Link>
@@ -525,13 +573,29 @@ export function TravelProfileView({
             Your Trips
           </h2>
           {loadingTrips && !tripsLoaded ? (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-label="Loading trips">
-              {[0, 1, 2].map((index) => <div key={index} className="aspect-square animate-pulse rounded-2xl bg-zinc-100" />)}
+            <div
+              className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+              aria-label="Loading trips"
+            >
+              {[0, 1, 2].map((index) => (
+                <div
+                  key={index}
+                  className="aspect-square animate-pulse rounded-2xl bg-zinc-100"
+                />
+              ))}
             </div>
           ) : tripsError ? (
             <div className="rounded-3xl border border-rose-100 bg-rose-50/50 p-8 text-center">
-              <p className="text-sm font-semibold text-zinc-900">Couldn&apos;t load trips</p>
-              <button type="button" onClick={() => void loadTrips()} className="mt-3 rounded-full border border-zinc-300 bg-white px-4 py-2 text-xs font-semibold text-zinc-800">Try again</button>
+              <p className="text-sm font-medium text-zinc-900">
+                Couldn&apos;t load trips
+              </p>
+              <button
+                type="button"
+                onClick={() => void loadTrips()}
+                className="mt-3 rounded-full border border-zinc-300 bg-white px-4 py-2 text-xs font-medium text-zinc-800"
+              >
+                Try again
+              </button>
             </div>
           ) : trips.length > 0 ? (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -545,47 +609,47 @@ export function TravelProfileView({
                     onClick={() => setActiveTripSlider(trip)}
                     className="block w-full text-left"
                   >
-                  <div className="aspect-square relative overflow-hidden bg-zinc-100">
-                    {trip.coverUrl ? (
-                      <Image
-                        src={trip.coverUrl}
-                        alt={trip.title}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-300"
-                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center text-4xl">
-                        ✈️
-                      </div>
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </div>
-                  <div className="p-4">
-                    <h3 className="font-semibold text-zinc-900 truncate">
-                      {trip.title}
-                    </h3>
-                    <p className="mt-1 text-xs text-zinc-500">
-                      {trip.photoCount || 0} photo
-                      {trip.photoCount === 1 ? "" : "s"} ·{" "}
-                      {trip.remainingCapacity ?? 5} slot
-                      {trip.remainingCapacity === 1 ? "" : "s"} left
-                    </p>
-                    {(trip.photos?.find((photo) => photo.location)?.location ||
-                      trip.startDate ||
-                      trip.endDate) && (
-                      <p className="mt-1 truncate text-[11px] text-zinc-400">
-                        {trip.photos?.find((photo) => photo.location)
-                          ?.location || "Destination"}
-                        {trip.startDate
-                          ? ` · ${new Date(trip.startDate).toLocaleDateString()}`
-                          : ""}
-                        {trip.endDate
-                          ? ` – ${new Date(trip.endDate).toLocaleDateString()}`
-                          : ""}
+                    <div className="aspect-square relative overflow-hidden bg-zinc-100">
+                      {trip.coverUrl ? (
+                        <Image
+                          src={trip.coverUrl}
+                          alt={trip.title}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-300"
+                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-4xl">
+                          ✈️
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
+                    <div className="p-4">
+                      <h3 className="font-medium text-zinc-900 truncate">
+                        {trip.title}
+                      </h3>
+                      <p className="mt-1 text-xs text-zinc-500">
+                        {trip.photoCount || 0} photo
+                        {trip.photoCount === 1 ? "" : "s"} ·{" "}
+                        {trip.remainingCapacity ?? 5} slot
+                        {trip.remainingCapacity === 1 ? "" : "s"} left
                       </p>
-                    )}
-                  </div>
+                      {(trip.photos?.find((photo) => photo.location)?.location ||
+                        trip.startDate ||
+                        trip.endDate) && (
+                        <p className="mt-1 truncate text-[11px] text-zinc-400">
+                          {trip.photos?.find((photo) => photo.location)
+                            ?.location || "Destination"}
+                          {trip.startDate
+                            ? ` · ${new Date(trip.startDate).toLocaleDateString()}`
+                            : ""}
+                          {trip.endDate
+                            ? ` – ${new Date(trip.endDate).toLocaleDateString()}`
+                            : ""}
+                        </p>
+                      )}
+                    </div>
                   </button>
                   {isOwner && (
                     <div className="absolute right-3 top-3">
@@ -593,16 +657,50 @@ export function TravelProfileView({
                         type="button"
                         aria-label={`Manage ${trip.title}`}
                         aria-expanded={openTripMenuId === trip.id}
-                        onClick={() => setOpenTripMenuId((current) => current === trip.id ? null : trip.id)}
-                        className="flex size-8 items-center justify-center rounded-full bg-black/55 text-lg font-bold text-white shadow-sm backdrop-blur-sm transition hover:bg-black/75"
+                        onClick={() =>
+                          setOpenTripMenuId((current) =>
+                            current === trip.id ? null : trip.id,
+                          )
+                        }
+                        className="flex size-8 items-center justify-center rounded-full bg-black/55 text-lg font-medium text-white shadow-sm backdrop-blur-sm transition hover:bg-black/75"
                       >
                         ⋯
                       </button>
                       {openTripMenuId === trip.id && (
                         <div className="absolute right-0 top-10 z-20 w-40 rounded-xl border border-zinc-200 bg-white p-1.5 text-xs shadow-xl">
-                          <button type="button" onClick={() => { setOpenTripMenuId(null); setManageTripDelete(false); setTripToManage(trip); }} className="w-full rounded-lg px-3 py-2 text-left font-medium text-zinc-700 hover:bg-zinc-100">Edit trip</button>
-                          <button type="button" onClick={() => { setOpenTripMenuId(null); setManageTripDelete(false); setTripToManage(trip); }} className="w-full rounded-lg px-3 py-2 text-left font-medium text-zinc-700 hover:bg-zinc-100">Manage photos</button>
-                          <button type="button" onClick={() => { setOpenTripMenuId(null); setManageTripDelete(true); setTripToManage(trip); }} className="w-full rounded-lg px-3 py-2 text-left font-medium text-rose-600 hover:bg-rose-50">Delete trip</button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setOpenTripMenuId(null);
+                              setManageTripDelete(false);
+                              setTripToManage(trip);
+                            }}
+                            className="w-full rounded-lg px-3 py-2 text-left font-medium text-zinc-700 hover:bg-zinc-100"
+                          >
+                            Edit trip
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setOpenTripMenuId(null);
+                              setManageTripDelete(false);
+                              setTripToManage(trip);
+                            }}
+                            className="w-full rounded-lg px-3 py-2 text-left font-medium text-zinc-700 hover:bg-zinc-100"
+                          >
+                            Manage photos
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setOpenTripMenuId(null);
+                              setManageTripDelete(true);
+                              setTripToManage(trip);
+                            }}
+                            className="w-full rounded-lg px-3 py-2 text-left font-medium text-rose-600 hover:bg-rose-50"
+                          >
+                            Delete trip
+                          </button>
                         </div>
                       )}
                     </div>
@@ -612,7 +710,7 @@ export function TravelProfileView({
             </div>
           ) : (
             <div className="rounded-3xl border border-dashed border-zinc-200 bg-zinc-50/70 p-10 text-center sm:p-14">
-              <h3 className="text-base font-semibold text-zinc-900">
+              <h3 className="text-base font-medium text-zinc-900">
                 No trips yet
               </h3>
               <p className="mt-1 text-xs leading-relaxed text-zinc-500">
@@ -622,7 +720,7 @@ export function TravelProfileView({
                 <button
                   type="button"
                   onClick={() => setIsUploadModalOpen(true)}
-                  className="mt-5 rounded-full bg-zinc-900 px-5 py-2 text-xs font-semibold text-white transition hover:bg-black"
+                  className="mt-5 rounded-full bg-zinc-900 px-5 py-2 text-xs font-medium text-white transition hover:bg-black"
                 >
                   Upload photos
                 </button>
@@ -638,31 +736,84 @@ export function TravelProfileView({
             Photos that received likes
           </h2>
           {loadingLikes && !likesLoaded ? (
-            <div className="grid grid-cols-2 gap-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5" aria-label="Loading liked photos">
-              {Array.from({ length: 10 }, (_, index) => <div key={index} className="aspect-square animate-pulse bg-zinc-100" />)}
+            <div
+              className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-3.5 md:grid-cols-4 lg:grid-cols-5"
+              aria-label="Loading liked photos"
+            >
+              {Array.from({ length: 10 }, (_, index) => (
+                <div
+                  key={index}
+                  className="aspect-[4/5] animate-pulse rounded-[20px] bg-zinc-100"
+                />
+              ))}
             </div>
           ) : likesError ? (
             <div className="rounded-3xl border border-rose-100 bg-rose-50/50 p-8 text-center">
-              <p className="text-sm font-semibold text-zinc-900">Couldn&apos;t load liked photos</p>
-              <button type="button" onClick={() => void loadLikes()} className="mt-3 rounded-full border border-zinc-300 bg-white px-4 py-2 text-xs font-semibold text-zinc-800">Try again</button>
+              <p className="text-sm font-medium text-zinc-900">
+                Couldn&apos;t load liked photos
+              </p>
+              <button
+                type="button"
+                onClick={() => void loadLikes()}
+                className="mt-3 rounded-full border border-zinc-300 bg-white px-4 py-2 text-xs font-medium text-zinc-800"
+              >
+                Try again
+              </button>
             </div>
           ) : likedPhotos.length > 0 ? (
             <>
-              <div className="grid grid-cols-2 gap-1 sm:grid-cols-3 sm:gap-1 md:grid-cols-4 lg:grid-cols-5">
+              <div className="grid grid-cols-2 gap-1 sm:grid-cols-3 sm:gap-1 md:grid-cols-4 lg:grid-cols-5 lg:gap-2 justify-items-center">
                 {likedPhotos.map((photo) => (
                   <button
                     key={photo.id}
                     type="button"
                     onClick={() => setActivePhotoId(photo.id)}
-                    className="group relative aspect-square overflow-hidden bg-zinc-100 text-left"
+                    className="group relative aspect-square aspect-[233/246] w-full max-w-[233px] lg:w-[233px] lg:h-[246px] overflow-hidden rounded-[10px] bg-zinc-100 text-left shadow-2xs transition-all duration-200 hover:shadow-md cursor-pointer"
                   >
                     <Image
-                      src={photo.thumbnailUrl || photo.mediumUrl || photo.url}
+                      src={
+                        failedPhotoIds.has(photo.id)
+                          ? "/images/auth-traveler-water.jpg"
+                          : photo.thumbnailUrl || photo.mediumUrl || photo.url
+                      }
                       alt={photo.caption || "Photo that received likes"}
                       fill
-                      className="object-cover"
+                      className="object-cover transition-transform duration-300 group-hover:scale-105"
                       sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw"
+                      onError={() => {
+                        setFailedPhotoIds((prev) => new Set(prev).add(photo.id));
+                      }}
                     />
+                    {/* Action icons bar with 20% black blur background (Figma matching) */}
+                    <div className="absolute inset-x-0 bottom-0 flex h-[38px] sm:h-[40px] items-center justify-between rounded-b-[10px] bg-black/20 px-3 sm:px-6 py-[6px] backdrop-blur-[3.5px]">
+                      <span className="flex items-center justify-center transition-transform hover:scale-110">
+                        <Image
+                          src="/images/icons/heart-fill.svg"
+                          alt="Like"
+                          width={16}
+                          height={14}
+                          className="size-4 object-contain drop-shadow-xs"
+                        />
+                      </span>
+                      <span className="flex items-center justify-center transition-transform hover:scale-110">
+                        <Image
+                          src="/images/icons/message-fill.svg"
+                          alt="Comment"
+                          width={16}
+                          height={15}
+                          className="size-4 object-contain drop-shadow-xs"
+                        />
+                      </span>
+                      <span className="flex items-center justify-center transition-transform hover:scale-110">
+                        <Image
+                          src="/images/icons/share-fill.svg"
+                          alt="Share"
+                          width={17}
+                          height={17}
+                          className="size-4 object-contain drop-shadow-xs"
+                        />
+                      </span>
+                    </div>
                   </button>
                 ))}
               </div>
@@ -672,7 +823,7 @@ export function TravelProfileView({
                     type="button"
                     onClick={handleLoadMoreLikes}
                     disabled={loadingMoreLikes}
-                    className="rounded-full border border-zinc-300 bg-white px-6 py-2.5 text-xs font-semibold text-zinc-800 transition hover:bg-zinc-100 disabled:opacity-50"
+                    className="rounded-full border border-zinc-300 bg-white px-6 py-2.5 text-xs font-medium text-zinc-800 transition hover:bg-zinc-100 disabled:opacity-50"
                   >
                     {loadingMoreLikes
                       ? "Loading more likes..."
@@ -683,7 +834,7 @@ export function TravelProfileView({
             </>
           ) : (
             <div className="rounded-3xl border border-dashed border-zinc-200 bg-zinc-50/70 p-10 text-center sm:p-14">
-              <h3 className="text-base font-semibold text-zinc-900">
+              <h3 className="text-base font-medium text-zinc-900">
                 No likes on your photos yet
               </h3>
               <p className="mt-1 text-xs leading-relaxed text-zinc-500">

@@ -324,7 +324,7 @@ export function TravelPhotoDetailModal({
                   />
                 </div>
                 <div>
-                  <h4 className="text-xs sm:text-sm font-semibold text-zinc-900 leading-tight">
+                  <h4 className="text-xs sm:text-sm font-medium text-zinc-900 leading-tight">
                     {photo?.author?.name || "Traveler"}
                   </h4>
                   {photo?.tripTitle && (
@@ -340,7 +340,7 @@ export function TravelPhotoDetailModal({
             {isEditing ? (
               <div className="space-y-3 mb-4">
                 <div>
-                  <label className="text-[11px] font-semibold text-zinc-700 block mb-1">
+                  <label className="text-[11px] font-medium text-zinc-700 block mb-1">
                     Location
                   </label>
                   <input
@@ -352,7 +352,7 @@ export function TravelPhotoDetailModal({
                   />
                 </div>
                 <div>
-                  <label className="text-[11px] font-semibold text-zinc-700 block mb-1">
+                  <label className="text-[11px] font-medium text-zinc-700 block mb-1">
                     Caption
                   </label>
                   <textarea
@@ -367,7 +367,7 @@ export function TravelPhotoDetailModal({
                   <button
                     type="button"
                     onClick={() => setIsEditing(false)}
-                    className="px-3 py-1 rounded-full border border-zinc-300 text-xs font-semibold text-zinc-700 hover:bg-zinc-100"
+                    className="px-3 py-1 rounded-full border border-zinc-300 text-xs font-medium text-zinc-700 hover:bg-zinc-100"
                   >
                     Cancel
                   </button>
@@ -375,7 +375,7 @@ export function TravelPhotoDetailModal({
                     type="button"
                     onClick={handleSaveEdit}
                     disabled={isSavingEdit}
-                    className="px-4 py-1 rounded-full bg-zinc-900 hover:bg-black text-white text-xs font-semibold disabled:opacity-50"
+                    className="px-4 py-1 rounded-full bg-zinc-900 hover:bg-black text-white text-xs font-medium disabled:opacity-50"
                   >
                     {isSavingEdit ? "Saving..." : "Save"}
                   </button>
@@ -446,7 +446,7 @@ export function TravelPhotoDetailModal({
                     />
                   </svg>
                 </div>
-                <span className="text-xs sm:text-sm font-semibold text-zinc-800">
+                <span className="text-xs sm:text-sm font-medium text-zinc-800">
                   {photo?.likesCount ?? 0} {photo?.likesCount === 1 ? "like" : "likes"}
                 </span>
               </button>
@@ -455,7 +455,7 @@ export function TravelPhotoDetailModal({
                 {photo?.isLiked ? "You liked this" : isOwner ? "Your photo" : "Click to like"}
               </span>
             </div>
-            {shareUrl && photo?.visibility === "PUBLIC" && <button type="button" onClick={() => void handleShare()} className="mb-3 rounded-full border border-zinc-200 px-3 py-1.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-50">Share photo</button>}
+            {shareUrl && photo?.visibility === "PUBLIC" && <button type="button" onClick={() => void handleShare()} className="mb-3 rounded-full border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-700 hover:bg-zinc-50">Share photo</button>}
             {photo && <TravelPhotoComments key={photo.id} photoId={photo.id} onCountChange={handleCommentsCountChange} />}
           </div>
 
@@ -466,7 +466,7 @@ export function TravelPhotoDetailModal({
                 <button
                   type="button"
                   onClick={() => setIsEditing(true)}
-                  className="w-full py-1.5 px-3 rounded-full border border-zinc-300 hover:bg-zinc-100 text-xs font-semibold text-zinc-700 transition cursor-pointer text-center"
+                  className="w-full py-1.5 px-3 rounded-full border border-zinc-300 hover:bg-zinc-100 text-xs font-medium text-zinc-700 transition cursor-pointer text-center"
                 >
                   Edit Caption
                 </button>
@@ -476,7 +476,7 @@ export function TravelPhotoDetailModal({
                     onRequestReplace?.(photo);
                     onClose();
                   }}
-                  className="w-full py-1.5 px-3 rounded-full border border-zinc-300 hover:bg-zinc-100 text-xs font-semibold text-zinc-700 transition cursor-pointer text-center"
+                  className="w-full py-1.5 px-3 rounded-full border border-zinc-300 hover:bg-zinc-100 text-xs font-medium text-zinc-700 transition cursor-pointer text-center"
                 >
                   Replace Photo
                 </button>
@@ -486,7 +486,7 @@ export function TravelPhotoDetailModal({
                 <button
                   type="button"
                   onClick={handleSetCover}
-                  className="w-full py-1.5 px-3 rounded-full bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs font-semibold transition cursor-pointer text-center"
+                  className="w-full py-1.5 px-3 rounded-full bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs font-medium transition cursor-pointer text-center"
                 >
                   Set as Album Cover
                 </button>
@@ -496,7 +496,7 @@ export function TravelPhotoDetailModal({
                 type="button"
                 onClick={handleDelete}
                 disabled={isDeleting}
-                className="w-full py-1.5 px-3 rounded-full border border-rose-200 hover:bg-rose-50 text-rose-600 text-xs font-semibold transition cursor-pointer text-center disabled:opacity-50"
+                className="w-full py-1.5 px-3 rounded-full border border-rose-200 hover:bg-rose-50 text-rose-600 text-xs font-medium transition cursor-pointer text-center disabled:opacity-50"
               >
                 {isDeleting ? "Deleting..." : "Delete Photo"}
               </button>

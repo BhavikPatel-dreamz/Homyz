@@ -76,7 +76,7 @@ export function TravelStampDetailModal({
           {userStamp.isPinned && (
             <span
               title="Pinned Featured Stamp"
-              className="absolute -top-1 -right-1 size-7 rounded-full bg-amber-400 text-white flex items-center justify-center shadow text-xs font-bold"
+              className="absolute -top-1 -right-1 size-7 rounded-full bg-amber-400 text-white flex items-center justify-center shadow text-xs font-medium"
             >
               ★
             </span>
@@ -84,14 +84,14 @@ export function TravelStampDetailModal({
         </div>
 
         {/* Category Pill */}
-        <span className="mt-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-100 text-amber-800 uppercase tracking-wider">
+        <span className="mt-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-amber-100 text-amber-800 uppercase tracking-wider">
           {stamp.category} Stamp
         </span>
 
         {/* Stamp Title */}
         <h3
           id="stamp-modal-title"
-          className="mt-2 text-xl font-bold text-zinc-900 tracking-tight"
+          className="mt-2 text-xl font-medium text-zinc-900 tracking-tight"
         >
           {stamp.title || stamp.displayName}
         </h3>
@@ -114,7 +114,7 @@ export function TravelStampDetailModal({
           </div>
           <div className="flex items-center justify-between">
             <span className="text-zinc-400">Stamp Origin</span>
-            <span className="font-semibold text-zinc-700 flex items-center gap-1">
+            <span className="font-medium text-zinc-700 flex items-center gap-1">
               Admin-curated passport design
             </span>
           </div>
@@ -133,7 +133,7 @@ export function TravelStampDetailModal({
               type="button"
               disabled={isPinning}
               onClick={() => onTogglePin(userStamp.id)}
-              className={`w-full py-2.5 px-4 rounded-xl text-sm font-semibold transition cursor-pointer flex items-center justify-center gap-2 ${
+              className={`w-full py-2.5 px-4 rounded-xl text-sm font-medium transition cursor-pointer flex items-center justify-center gap-2 ${
                 userStamp.isPinned
                   ? "bg-zinc-100 hover:bg-zinc-200 text-zinc-700"
                   : "bg-amber-500 hover:bg-amber-600 text-white shadow-sm"

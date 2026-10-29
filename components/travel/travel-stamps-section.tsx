@@ -154,25 +154,54 @@ export function TravelStampsSection({
   }
 
   return (
-    <section className="border-t border-zinc-200/80 pt-8 sm:pt-10 my-8">
+    <section className="pt-8 sm:pt-10 my-8">
       {/* Header & Visibility Switch (Matching Figma Screenshot 1 & Image 2) */}
-      <div className="flex items-center justify-between gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 max-w-[748px]">
         <div>
-          <h2 className="text-lg sm:text-xl font-bold text-zinc-900 tracking-tight">
+          <h2 className="text-lg font-medium text-[#1F1F1F] tracking-tight">
             Where I&apos;ve been
           </h2>
           <p className="text-xs sm:text-sm text-zinc-500 mt-0.5">
             Pick the stamps you want other people to see on your profile.
           </p>
+          {/* Mobile toggle switch & add stamp button */}
+          {isOwner && (
+            <div className="flex sm:hidden items-center gap-3 mt-3">
+              <button
+                type="button"
+                role="switch"
+                aria-checked={isVisible}
+                disabled={isTogglingVisibility}
+                onClick={handleToggleVisibility}
+                className={`relative inline-flex h-4.75 w-10.75 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                  isVisible ? "bg-[#DF4557]" : "bg-[#DDDDDE]"
+                }`}
+              >
+                <span
+                  aria-hidden="true"
+                  className={`pointer-events-none inline-block size-3.75 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                    isVisible ? "translate-x-6" : "translate-x-0"
+                  }`}
+                />
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsManagerOpen(true)}
+                className="rounded-full border hover:border-zinc-300 border-[#1f1f1f] hover:bg-[#FCDF9C] bg-[#1f1f1f] hover:text-[#1F1F1F] text-white px-3 py-1 text-xs font-medium transition duration-300 cursor-pointer"
+              >
+                Add travel stamp
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* Action button & Visibility Toggle Switch */}
+        {/* Action button & Visibility Toggle Switch (Desktop) */}
         {isOwner && (
-          <div className="flex items-center gap-3">
+          <div className="hidden sm:flex items-center gap-3">
             <button
               type="button"
               onClick={() => setIsManagerOpen(true)}
-              className="rounded-full bg-zinc-900 px-4 py-2 text-xs font-semibold text-white shadow-2xs transition hover:bg-black cursor-pointer"
+              className="rounded-full border hover:border-zinc-300 border-[#1f1f1f] hover:bg-[#FCDF9C] bg-[#1f1f1f] hover:text-[#1F1F1F] text-white px-4 py-1.5 text-sm font-medium transition duration-300 cursor-pointer"
             >
               Add travel stamp
             </button>
@@ -182,14 +211,14 @@ export function TravelStampsSection({
               aria-checked={isVisible}
               disabled={isTogglingVisibility}
               onClick={handleToggleVisibility}
-              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 ${
-                isVisible ? "bg-red-500" : "bg-zinc-200"
+              className={`relative inline-flex h-4.75 w-10.75 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                isVisible ? "bg-[#DF4557]" : "bg-[#DDDDDE]"
               }`}
             >
               <span
                 aria-hidden="true"
-                className={`pointer-events-none inline-block size-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                  isVisible ? "translate-x-5" : "translate-x-0"
+                className={`pointer-events-none inline-block size-3.75 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                  isVisible ? "translate-x-6" : "translate-x-0"
                 }`}
               />
             </button>
@@ -199,8 +228,8 @@ export function TravelStampsSection({
 
       {/* When Owner toggled visibility off, show subtle notice */}
       {!isVisible && isOwner && (
-        <div className="mb-6 p-3 rounded-2xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-500 flex items-center gap-2">
-          <span className="size-2 rounded-full bg-amber-400 shrink-0" />
+        <div className="mb-6 p-3 rounded-lg bg-amber-400/20 border border-amber-400 text-xs text-[#1f1f1f] flex items-center gap-2">
+          <span className="size-2 rounded-full bg-amber-500 shrink-0" />
           <span>
             This section is currently hidden from your public travel profile.
             Only you can see it.
@@ -211,35 +240,38 @@ export function TravelStampsSection({
       {/* Stamp Collection Display (Matching Figma Screenshot 1 / Target Image 2) */}
       {localStamps.length > 0 ? (
         <>
-          <div className="flex flex-wrap items-start gap-6 sm:gap-8 py-3">
+          <div className="grid grid-cols-2 gap-4 sm:flex sm:flex-wrap sm:items-start sm:gap-12 justify-items-center py-3">
             {(isExpanded ? localStamps : localStamps.slice(0, 12)).map(
               (userStamp) => {
                 const stamp = userStamp.stamp;
+                const hasEmbeddedText = Boolean(
+                  stamp.iconUrl?.includes("/images/travel/stamps/"),
+                );
                 return (
                   <div
                     key={userStamp.id}
-                    className="group relative flex w-24 flex-col items-center sm:w-28"
+                    className="group relative flex w-full max-w-[160px] sm:w-44 flex-col items-center"
                   >
                     <button
                       type="button"
                       onClick={() => setSelectedStamp(userStamp)}
                       className="flex flex-col items-center focus:outline-none transition-transform hover:scale-105 focus-visible:scale-105"
                     >
-                      <div className="relative size-24 rounded-full border border-dashed border-zinc-300 bg-zinc-50/80 p-2 shadow-2xs transition group-hover:border-amber-400 group-hover:bg-amber-50/50 sm:size-28">
+                      <div className="relative h-40 w-32 sm:h-52 sm:w-44 transition flex items-center justify-center">
                         {stamp.iconUrl ? (
                           <Image
                             src={stamp.iconUrl}
                             alt={stamp.displayName}
-                            width={84}
-                            height={84}
+                            width={160}
+                            height={192}
                             loading="lazy"
                             unoptimized={Boolean(
                               stamp.iconUrl.endsWith(".svg"),
                             )}
-                            className="size-full object-contain"
+                            className="size-full object-contain drop-shadow-2xs"
                           />
                         ) : (
-                          <span className="flex size-full items-center justify-center text-3xl">
+                          <span className="flex size-full items-center justify-center text-4xl">
                             🏛️
                           </span>
                         )}
@@ -247,19 +279,21 @@ export function TravelStampsSection({
                         {userStamp.isPinned && (
                           <span
                             title="Featured Stamp"
-                            className="absolute -top-1 -right-1 flex size-5 items-center justify-center rounded-full bg-amber-400 text-[10px] font-bold text-white shadow"
+                            className="absolute top-2 right-2 flex size-5 items-center justify-center rounded-full bg-amber-400 text-[10px] font-medium text-white shadow"
                           >
                             ★
                           </span>
                         )}
                       </div>
 
-                      <span className="mt-2 line-clamp-2 text-center text-xs font-medium text-zinc-800 transition group-hover:text-amber-900 sm:text-sm">
-                        {stamp.displayName}
-                      </span>
+                      {!hasEmbeddedText && (
+                        <span className="mt-2 line-clamp-2 text-center text-xs sm:text-sm font-medium text-[#1F1F1F] transition">
+                          {stamp.displayName}
+                        </span>
+                      )}
                     </button>
                     {isOwner && (
-                      <div className="absolute right-0 top-0 flex gap-1 sm:opacity-0 sm:transition sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
+                      <div className="absolute right-0 top-0 flex gap-1 opacity-0 transition group-hover:opacity-100 group-focus-within:opacity-100">
                         {stamp.isCustom && (
                           <button
                             type="button"
@@ -269,7 +303,7 @@ export function TravelStampsSection({
                             }}
                             aria-label={`Edit ${stamp.displayName}`}
                             title={`Edit ${stamp.displayName}`}
-                            className="flex size-8 items-center justify-center rounded-full border border-white bg-white text-xs text-zinc-800 shadow-sm transition hover:bg-amber-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600"
+                            className="flex size-8 items-center justify-center rounded-full border border-white bg-white text-xs text-zinc-800 shadow-sm transition hover:bg-amber-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-600 cursor-pointer"
                           >
                             ✎
                           </button>
@@ -279,14 +313,14 @@ export function TravelStampsSection({
                           onClick={() => setStampPendingRemoval(userStamp)}
                           aria-label={`Remove ${stamp.displayName} from your travel profile`}
                           title={`Remove ${stamp.displayName}`}
-                          className="flex size-8 items-center justify-center rounded-full border border-white bg-zinc-900 text-base leading-none text-white shadow-sm transition hover:bg-rose-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600"
+                          className="flex size-8 items-center justify-center rounded-full border border-white bg-zinc-900 text-base leading-none text-white shadow-sm transition hover:bg-rose-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600 cursor-pointer"
                         >
                           ×
                         </button>
                       </div>
                     )}
                     {stamp.isCustom && (
-                      <span className="mt-1 rounded-full bg-amber-100 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-amber-800">
+                      <span className="mt-1 rounded-full bg-amber-100 px-2 py-0.5 text-[9px] font-medium uppercase tracking-wide text-amber-800">
                         Personal
                       </span>
                     )}
@@ -300,7 +334,7 @@ export function TravelStampsSection({
               <button
                 type="button"
                 onClick={() => setIsExpanded((value) => !value)}
-                className="rounded-full border border-zinc-200 px-4 py-2 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-50"
+                className="rounded-full border border-zinc-200 px-4 py-2 text-xs font-medium text-zinc-700 transition hover:bg-zinc-50"
               >
                 {isExpanded
                   ? "Show less"
@@ -311,7 +345,7 @@ export function TravelStampsSection({
                   type="button"
                   onClick={handleLoadMore}
                   disabled={isLoadingMore}
-                  className="rounded-full border border-zinc-200 px-4 py-2 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-50 disabled:opacity-50"
+                  className="rounded-full border border-zinc-200 px-4 py-2 text-xs font-medium text-zinc-700 transition hover:bg-zinc-50 disabled:opacity-50"
                 >
                   {isLoadingMore ? "Loading…" : "Load more"}
                 </button>
@@ -325,7 +359,7 @@ export function TravelStampsSection({
           <div className="size-14 mx-auto mb-3 rounded-full bg-amber-100 flex items-center justify-center text-2xl">
             🛂
           </div>
-          <h4 className="text-base font-bold text-zinc-900">
+          <h4 className="text-base font-medium text-zinc-900">
             Choose or Add Travel Stamps
           </h4>
           <p className="text-xs text-zinc-500 max-w-sm mx-auto mt-1">
@@ -335,9 +369,9 @@ export function TravelStampsSection({
             <button
               type="button"
               onClick={() => setIsManagerOpen(true)}
-              className="mt-4 rounded-full bg-zinc-900 px-5 py-2.5 text-xs font-semibold text-white shadow hover:bg-black transition cursor-pointer"
+                className="mt-4 rounded-full bg-[#FCDF9C] px-5 py-2.5 text-base font-normal text-[#1f1f1f] hover:bg-[#1f1f1f] hover:text-white transition duration-300 cursor-pointer"
             >
-              Choose or Add Travel Stamps
+              Add Travel Stamps
             </button>
           )}
         </div>
@@ -382,7 +416,7 @@ export function TravelStampsSection({
           >
             <h3
               id="remove-stamp-title"
-              className="text-lg font-bold text-zinc-900"
+              className="text-lg font-medium text-zinc-900"
             >
               Remove Travel Stamp?
             </h3>
@@ -395,7 +429,7 @@ export function TravelStampsSection({
                 type="button"
                 onClick={() => setStampPendingRemoval(null)}
                 disabled={isRemoving}
-                className="rounded-full border border-zinc-200 px-4 py-2 text-xs font-semibold text-zinc-700 transition hover:bg-zinc-50"
+                className="rounded-full border border-zinc-200 px-4 py-2 text-xs font-medium text-zinc-700 transition hover:bg-zinc-50"
               >
                 Cancel
               </button>
@@ -403,7 +437,7 @@ export function TravelStampsSection({
                 type="button"
                 onClick={handleRemoveStamp}
                 disabled={isRemoving}
-                className="rounded-full bg-rose-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-rose-700 disabled:opacity-50"
+                className="rounded-full bg-rose-600 px-4 py-2 text-xs font-medium text-white transition hover:bg-rose-700 disabled:opacity-50"
               >
                 {isRemoving ? "Removing…" : "Remove"}
               </button>
