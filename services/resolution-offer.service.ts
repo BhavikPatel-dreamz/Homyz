@@ -33,7 +33,7 @@ async function resolutionCaseLink(tx: Prisma.TransactionClient, userId: string, 
   const recipient = await tx.user.findUnique({ where: { id: userId }, select: { role: true } });
   return recipient?.role === Role.HOST
     ? `/host/support?view=direct&caseId=${encodeURIComponent(caseId)}`
-    : `/profile/resolution-center?caseId=${encodeURIComponent(caseId)}`;
+    : `/profile/tab/support?view=direct&caseId=${encodeURIComponent(caseId)}`;
 }
 
 async function resolutionReviewers(tx: Prisma.TransactionClient, actorId: string) {

@@ -251,7 +251,7 @@ async function enqueueCaseParticipantNotification(
       link: directResolution
         ? user.role === Role.HOST
           ? `/host/resolution-center/direct?caseId=${encodeURIComponent(options.caseId)}`
-          : `/profile/resolution-center?caseId=${encodeURIComponent(options.caseId)}`
+          : `/profile/tab/support?view=direct&caseId=${encodeURIComponent(options.caseId)}`
         : user.role === Role.HOST
           ? `/host/support?caseId=${encodeURIComponent(options.caseId)}`
           : `/profile/tab/support?caseId=${encodeURIComponent(options.caseId)}`,

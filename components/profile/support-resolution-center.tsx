@@ -2,7 +2,6 @@
 
 import { FormEvent, useCallback, useEffect, useId, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
 import Image from "next/image";
 import { ModalOverlay } from "@/components/ui/modal-overlay";
 
@@ -72,6 +71,35 @@ type CaseEvent = {
   } | null;
 };
 
+type OfferType = "MONETARY_COMPENSATION" | "PROPERTY_DAMAGE" | "NON_FINANCIAL" | "AMENITY_ISSUE" | "OTHER";
+
+type Offer = {
+  id: string;
+  offerType: OfferType;
+  amount: number | null;
+  currency: string;
+  description: string;
+  status: string;
+  version: number;
+  expiresAt: string | null;
+  createdAt?: string;
+  proposer: { id: string; name: string | null };
+  recipient: { id: string; name: string | null };
+};
+
+const offerTypeLabels: Record<OfferType, string> = {
+  MONETARY_COMPENSATION: "Monetary compensation",
+  PROPERTY_DAMAGE: "Property damage",
+  NON_FINANCIAL: "Non-financial resolution",
+  AMENITY_ISSUE: "Amenity issue",
+  OTHER: "Other resolution",
+};
+
+function formatCurrency(amount: number | null, currency = "SAR") {
+  if (amount === null || amount === undefined) return "Non-financial";
+  return new Intl.NumberFormat(undefined, { style: "currency", currency }).format(amount / 100);
+}
+
 type Case = {
   id: string;
   caseNumber: string;
@@ -81,6 +109,7 @@ type Case = {
   description?: string | null;
   status: Status;
   priority: string;
+  version?: number;
   createdAt: string;
   updatedAt: string;
   unreadCount?: number;
@@ -100,6 +129,8 @@ type Case = {
   messages?: CaseMessage[];
   evidence?: CaseEvidence[];
   events?: CaseEvent[];
+  resolutionOffers?: Offer[];
+  viewer?: { id: string; isAdmin: boolean; role?: string | null };
 };
 
 type Booking = {
@@ -164,7 +195,15 @@ function formatBytes(value: number) {
 }
 
 async function api<T>(url: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(url, { cache: "no-store", ...init });
+  const headers = new Headers(init?.headers);
+  if (!headers.has("Cache-Control")) {
+    headers.set("Cache-Control", "no-cache, no-store, must-revalidate");
+  }
+  if (!headers.has("Pragma")) {
+    headers.set("Pragma", "no-cache");
+  }
+
+  const response = await fetch(url, { cache: "no-store", ...init, headers });
   const payload = await response.json().catch(() => null);
   if (!response.ok || !payload?.success) {
     throw new Error(payload?.error?.message || "Support service is temporarily unavailable.");
@@ -224,6 +263,20 @@ function humanEventDescription(eventType: string, description: string | null) {
       return "Case closed";
     case "CASE_REOPENED":
       return "Case reopened";
+    case "RESOLUTION_REQUESTED":
+      return "Direct resolution requested";
+    case "RESOLUTION_OFFER_CREATED":
+      return "Resolution offer proposed";
+    case "RESOLUTION_COUNTEROFFERED":
+      return "Counteroffer proposed";
+    case "RESOLUTION_OFFER_ACCEPTED":
+      return "Resolution offer accepted";
+    case "RESOLUTION_OFFER_REJECTED":
+      return "Resolution offer rejected";
+    case "RESOLUTION_OFFER_WITHDRAWN":
+      return "Resolution offer withdrawn";
+    case "MEDIATION_REQUESTED":
+      return "Support mediation requested";
     default:
       return eventType.toLowerCase().replaceAll("_", " ").replace(/^\w/, (c) => c.toUpperCase());
   }
@@ -231,21 +284,32 @@ function humanEventDescription(eventType: string, description: string | null) {
 
 /**
  * GuestCaseDetailPanel
- * Full-width detail view for the selected support case, housing dedicated tab panels
- * for Conversation, Evidence, and Activity history.
+ * Full-width detail view for the selected support case or direct resolution, housing dedicated tab panels
+ * for Conversation, Offers & Negotiation, Evidence, Activity, and Mediation.
  */
 export function GuestCaseDetailPanel({
   caseData,
   onBack,
   onRefresh,
   onMessageSent,
+  onCaseMutated,
+  isDirectView = false,
 }: {
   caseData: Case;
   onBack: () => void;
   onRefresh: () => Promise<void>;
   onMessageSent?: () => void;
+  onCaseMutated?: (updatedFields?: Partial<Case>) => void;
+  isDirectView?: boolean;
 }) {
-  const [detailTab, setDetailTab] = useState<"conversation" | "evidence" | "activity">("conversation");
+  const isDirectResolution =
+    isDirectView ||
+    Boolean(caseData.resolutionOffers && caseData.resolutionOffers.length > 0) ||
+    caseData.category === "DIRECT_RESOLUTION" ||
+    caseData.category === "BOOKING_DISPUTE";
+
+  type DetailTab = "conversation" | "offers" | "evidence" | "activity" | "mediation";
+  const [detailTab, setDetailTab] = useState<DetailTab>("conversation");
   const [replyText, setReplyText] = useState("");
   const [stagedAttachment, setStagedAttachment] = useState<File | null>(null);
   const [sendingReply, setSendingReply] = useState(false);
@@ -257,9 +321,45 @@ export function GuestCaseDetailPanel({
   const composerFileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Negotiation & Offer states
+  const [offerActionLoading, setOfferActionLoading] = useState(false);
+  const [counteringOffer, setCounteringOffer] = useState<Offer | null>(null);
+  const [offerForm, setOfferForm] = useState({
+    offerType: "MONETARY_COMPENSATION" as OfferType,
+    amount: "",
+    description: "",
+    expiresAt: "",
+  });
+  const [submittingOffer, setSubmittingOffer] = useState(false);
+
+  // Mediation state
+  const [mediationReason, setMediationReason] = useState("");
+  const [requestingMediation, setRequestingMediation] = useState(false);
+
   const isCaseMutable = mutableStatuses.has(caseData.status);
 
   const getNextActionMessage = () => {
+    if (isDirectResolution) {
+      if (caseData.status === "RESOLVED") {
+        return "An agreement has been recorded. This resolution case is completed.";
+      }
+      if (caseData.status === "CLOSED") {
+        return "This resolution case has been closed.";
+      }
+      if (caseData.status === "ESCALATED") {
+        return "Mediation has been requested. StayElite Support is reviewing the negotiation and evidence.";
+      }
+      const activePendingOffer = caseData.resolutionOffers?.find((o) => o.status === "PENDING");
+      if (activePendingOffer) {
+        const isRecipient = caseData.viewer ? activePendingOffer.recipient.id === caseData.viewer.id : false;
+        if (isRecipient) {
+          return `Action needed: ${activePendingOffer.proposer.name || "The host"} proposed a resolution offer for you to review.`;
+        }
+        return `Your resolution offer is awaiting review by ${activePendingOffer.recipient.name || "the host"}.`;
+      }
+      return "Direct negotiation is open. You may discuss terms and propose a settlement offer.";
+    }
+
     switch (caseData.status) {
       case "WAITING_FOR_GUEST":
         return "Support needs additional information or evidence from you to proceed with this request.";
@@ -289,7 +389,6 @@ export function GuestCaseDetailPanel({
     replyKey.current ??= globalThis.crypto?.randomUUID?.() || `reply-${Date.now()}-${Math.random()}`;
 
     try {
-      // If a file is staged with the message, upload it as case evidence first
       if (stagedAttachment) {
         const formData = new FormData();
         formData.set("file", stagedAttachment);
@@ -318,6 +417,7 @@ export function GuestCaseDetailPanel({
       setReplyText("");
       setStagedAttachment(null);
       await onRefresh();
+      onCaseMutated?.({ updatedAt: new Date().toISOString() });
       onMessageSent?.();
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     } catch (err) {
@@ -342,6 +442,7 @@ export function GuestCaseDetailPanel({
       });
 
       await onRefresh();
+      onCaseMutated?.({ updatedAt: new Date().toISOString() });
     } catch (err) {
       setActionError(err instanceof Error ? err.message : "Unable to upload evidence document.");
     } finally {
@@ -350,8 +451,91 @@ export function GuestCaseDetailPanel({
     }
   }
 
+  async function handleOfferAction(offer: Offer, action: "ACCEPT" | "REJECT" | "WITHDRAW") {
+    const actionVerb = action === "ACCEPT" ? "accept" : action === "REJECT" ? "reject" : "withdraw";
+    if (!window.confirm(`Are you sure you want to ${actionVerb} this resolution offer?`)) return;
+    setOfferActionLoading(true);
+    setActionError(null);
+    try {
+      await api(`/api/v1/support/resolution-offers/${offer.id}/action`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action, expectedVersion: offer.version }),
+      });
+      await onRefresh();
+      onCaseMutated?.({
+        status: action === "ACCEPT" ? "RESOLVED" : caseData.status,
+        updatedAt: new Date().toISOString(),
+      });
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : `Unable to ${actionVerb} resolution offer.`);
+    } finally {
+      setOfferActionLoading(false);
+    }
+  }
+
+  async function handleSubmitOffer(e: FormEvent) {
+    e.preventDefault();
+    if (!offerForm.description.trim() || submittingOffer) return;
+    setSubmittingOffer(true);
+    setActionError(null);
+    try {
+      const isMonetary = offerForm.offerType === "MONETARY_COMPENSATION" || offerForm.offerType === "PROPERTY_DAMAGE";
+      const amountMinor = isMonetary && offerForm.amount ? Math.round(Number(offerForm.amount) * 100) : undefined;
+      await api(`/api/v1/support/cases/${caseData.id}/resolution-offers`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          offerType: offerForm.offerType,
+          amount: amountMinor,
+          description: offerForm.description.trim(),
+          expiresAt: offerForm.expiresAt || undefined,
+          parentOfferId: counteringOffer?.id,
+          idempotencyKey: globalThis.crypto?.randomUUID?.() || `offer-${Date.now()}`,
+        }),
+      });
+      setOfferForm({ offerType: "MONETARY_COMPENSATION", amount: "", description: "", expiresAt: "" });
+      setCounteringOffer(null);
+      await onRefresh();
+      onCaseMutated?.({ updatedAt: new Date().toISOString() });
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "Unable to submit resolution offer.");
+    } finally {
+      setSubmittingOffer(false);
+    }
+  }
+
+  async function handleRequestMediation(e: FormEvent) {
+    e.preventDefault();
+    if (!mediationReason.trim() || requestingMediation) return;
+    setRequestingMediation(true);
+    setActionError(null);
+    try {
+      await api(`/api/v1/support/cases/${caseData.id}/mediation`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          expectedVersion: caseData.version || 1,
+          reason: mediationReason.trim(),
+        }),
+      });
+      setMediationReason("");
+      await onRefresh();
+      onCaseMutated?.({ status: "ESCALATED", updatedAt: new Date().toISOString() });
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "Unable to request mediation.");
+    } finally {
+      setRequestingMediation(false);
+    }
+  }
+
   const events = caseData.events || [];
   const visibleEvents = events.slice(0, visibleEventsCount);
+  const activeOffers = caseData.resolutionOffers || [];
+  const activePendingOffer = activeOffers.find((o) => o.status === "PENDING") || activeOffers.at(-1);
+  const isRecipient = caseData.viewer && activePendingOffer ? activePendingOffer.recipient.id === caseData.viewer.id : false;
+  const isProposer = caseData.viewer && activePendingOffer ? activePendingOffer.proposer.id === caseData.viewer.id : false;
+  const isMediationActive = caseData.status === "ESCALATED" || events.some((e) => e.eventType === "MEDIATION_REQUESTED");
 
   return (
     <article className="w-full space-y-6 animate-in fade-in duration-300">
@@ -365,10 +549,15 @@ export function GuestCaseDetailPanel({
           <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
-          Back to requests
+          {isDirectResolution ? "Back to direct resolutions" : "Back to requests"}
         </button>
 
         <div className="flex items-center gap-2">
+          {isDirectResolution && (
+            <span className="rounded-md border border-violet-200 bg-violet-50 px-2 py-0.5 text-xs font-medium text-violet-800">
+              Direct resolution
+            </span>
+          )}
           <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${getStatusBadge(caseData.status)}`}>
             {labels[caseData.status] || caseData.status}
           </span>
@@ -404,7 +593,9 @@ export function GuestCaseDetailPanel({
         {/* Case Description */}
         {caseData.description && (
           <div className="space-y-1.5">
-            <h3 className="text-xs font-medium text-zinc-500">Original issue description</h3>
+            <h3 className="text-xs font-medium text-zinc-500">
+              {isDirectResolution ? "Original dispute explanation" : "Original issue description"}
+            </h3>
             <p className="whitespace-pre-wrap rounded-xl bg-zinc-50 p-4 text-xs sm:text-sm font-normal text-zinc-800 leading-relaxed border border-zinc-100">
               {caseData.description}
             </p>
@@ -439,16 +630,11 @@ export function GuestCaseDetailPanel({
             </div>
             <p className="mt-1 text-xs sm:text-sm font-medium text-zinc-900 truncate">
               {caseData.booking?.id ? (
-                <span className="text-blue-600 hover:underline inline-flex items-center gap-0.5">
+                <span className="text-blue-600 inline-flex items-center gap-0.5">
                   #{caseData.booking.submissionId || caseData.booking.id.slice(0, 10)}
-                  <svg className="size-3 inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                    <polyline points="15 3 21 3 21 9" />
-                    <line x1="10" y1="14" x2="21" y2="3" />
-                  </svg>
                 </span>
               ) : (
-                <span className="text-zinc-500 font-normal">Not linked</span>
+                "Not linked to booking"
               )}
             </p>
           </div>
@@ -481,11 +667,7 @@ export function GuestCaseDetailPanel({
       <div className="rounded-2xl border border-zinc-200/80 bg-white shadow-2xs overflow-hidden">
         {/* Tabs Row */}
         <div className="border-b border-zinc-200 px-5 sm:px-7 bg-zinc-50/50">
-          <nav
-            role="tablist"
-            aria-label="Support Case Detail Tabs"
-            className="-mb-px flex gap-8 text-sm font-medium"
-          >
+          <nav role="tablist" aria-label="Support Case Detail Tabs" className="-mb-px flex flex-wrap gap-4 sm:gap-8 text-sm font-medium">
             <button
               id="tab-conversation"
               type="button"
@@ -505,6 +687,28 @@ export function GuestCaseDetailPanel({
               Conversation ({caseData.messages?.length || 0})
             </button>
 
+            {isDirectResolution && (
+              <button
+                id="tab-offers"
+                type="button"
+                role="tab"
+                aria-selected={detailTab === "offers"}
+                aria-controls="tabpanel-offers"
+                onClick={() => setDetailTab("offers")}
+                className={`flex items-center gap-2 border-b-2 py-3.5 text-xs sm:text-sm font-medium transition-colors ${
+                  detailTab === "offers"
+                    ? "border-zinc-950 text-zinc-950"
+                    : "border-transparent text-zinc-500 hover:border-zinc-300 hover:text-zinc-800"
+                }`}
+              >
+                <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="2" y="4" width="20" height="16" rx="2" />
+                  <path d="M7 15h0M2 9.5h20" />
+                </svg>
+                Offers &amp; Negotiation ({activeOffers.length})
+              </button>
+            )}
+
             <button
               id="tab-evidence"
               type="button"
@@ -519,7 +723,8 @@ export function GuestCaseDetailPanel({
               }`}
             >
               <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
               </svg>
               Evidence ({caseData.evidence?.length || 0})
             </button>
@@ -539,335 +744,519 @@ export function GuestCaseDetailPanel({
             >
               <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="12" cy="12" r="10" />
-                <polyline points="12 6 12 12 16 14" />
+                <polyline points="12 6 12 12 14 10" />
               </svg>
               Activity
             </button>
+
+            {isDirectResolution && (
+              <button
+                id="tab-mediation"
+                type="button"
+                role="tab"
+                aria-selected={detailTab === "mediation"}
+                aria-controls="tabpanel-mediation"
+                onClick={() => setDetailTab("mediation")}
+                className={`flex items-center gap-2 border-b-2 py-3.5 text-xs sm:text-sm font-medium transition-colors ${
+                  detailTab === "mediation"
+                    ? "border-zinc-950 text-zinc-950"
+                    : "border-transparent text-zinc-500 hover:border-zinc-300 hover:text-zinc-800"
+                }`}
+              >
+                <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                </svg>
+                Mediation
+              </button>
+            )}
           </nav>
         </div>
 
-        {/* Dedicated Tab Panels (Mutually exclusive: Only one tab panel active at a time) */}
-        <div className="p-5 sm:p-7">
-          {/* TAB 1: CONVERSATION */}
-          {detailTab === "conversation" && (
-            <div
-              id="tabpanel-conversation"
-              role="tabpanel"
-              aria-labelledby="tab-conversation"
-              className="space-y-5 max-w-4xl"
-            >
-              <div className="flex flex-col space-y-4 max-h-[560px] overflow-y-auto pr-1">
-                {(!caseData.messages || caseData.messages.length === 0) ? (
-                  <div className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50/60 p-12 text-center space-y-2">
-                    <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-zinc-100 text-zinc-400">
-                      <svg className="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                      </svg>
-                    </div>
-                    <p className="text-sm font-medium text-zinc-900">No messages yet</p>
-                    <p className="text-xs text-zinc-500 font-normal max-w-sm mx-auto">
-                      Support replies and follow-ups will appear here. Type a reply below if you have questions or updates.
-                    </p>
-                  </div>
-                ) : (
-                  caseData.messages.map((msg) => {
-                    const isSupport = msg.sender.role === "ADMIN" || msg.sender.name === "StayElite Support";
-                    const senderName = isSupport ? "StayElite Support" : msg.sender.name || "Guest";
+        {/* TAB 1: CONVERSATION */}
+        {detailTab === "conversation" && (
+          <div id="tabpanel-conversation" role="tabpanel" aria-labelledby="tab-conversation" className="flex flex-col">
+            <div className="p-5 sm:p-7 space-y-4 min-h-[280px] max-h-[500px] overflow-y-auto">
+              {caseData.messages && caseData.messages.length > 0 ? (
+                caseData.messages.map((msg) => {
+                  const isViewer = Boolean(caseData.viewer && msg.sender.id === caseData.viewer.id);
+                  const roleLabel = msg.sender.role
+                    ? msg.sender.role === "ADMIN"
+                      ? "Support Specialist"
+                      : msg.sender.role.toLowerCase().replace(/^\w/, (c) => c.toUpperCase())
+                    : isViewer
+                      ? "You"
+                      : "Host / Participant";
 
-                    return (
-                      <div key={msg.id} className="flex items-start gap-3.5">
+                  return (
+                    <div key={msg.id} className={`flex items-start gap-3 ${isViewer ? "flex-row-reverse" : "flex-row"}`}>
+                      <div className="size-9 rounded-full bg-zinc-200 text-zinc-700 flex items-center justify-center text-xs font-medium shrink-0">
+                        {getInitials(msg.sender?.name, isViewer ? "ME" : "U")}
+                      </div>
+                      <div className={`max-w-[85%] sm:max-w-[75%] space-y-1.5 ${isViewer ? "items-end text-right" : "items-start text-left"}`}>
+                        <div className="flex items-center gap-2 text-xs text-zinc-500">
+                          <span className="font-medium text-zinc-900">{isViewer ? "You" : msg.sender?.name || "Participant"}</span>
+                          <span>·</span>
+                          <span className="rounded bg-zinc-100 px-1.5 py-0.5 text-[10px] text-zinc-600 font-normal">{roleLabel}</span>
+                          <span>·</span>
+                          <span className="font-normal">{formatCaseDate(msg.createdAt)}</span>
+                        </div>
                         <div
-                          className={`size-9 shrink-0 rounded-full flex items-center justify-center text-xs font-medium ${
-                            isSupport
-                              ? "bg-zinc-900 text-white"
-                              : "bg-zinc-200 text-zinc-800"
+                          className={`rounded-2xl p-4 text-xs sm:text-sm font-normal leading-relaxed whitespace-pre-wrap shadow-2xs ${
+                            isViewer
+                              ? "bg-zinc-900 text-white rounded-tr-xs"
+                              : "bg-zinc-100 text-zinc-900 rounded-tl-xs"
                           }`}
                         >
-                          {isSupport ? "S" : getInitials(senderName, "G")}
-                        </div>
-                        <div className="flex-1 space-y-1">
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs font-medium text-zinc-900">
-                              {senderName}
-                              {!isSupport && " (Guest)"}
-                            </span>
-                            <span className="text-[11px] font-normal text-zinc-500">
-                              {formatCaseDate(msg.createdAt)}
-                            </span>
-                          </div>
-                          <div
-                            className={`rounded-2xl p-4 text-xs sm:text-sm font-normal leading-relaxed ${
-                              isSupport
-                                ? "bg-blue-50/80 text-zinc-900 rounded-tl-none border border-blue-100"
-                                : "bg-zinc-100 text-zinc-900 rounded-tl-none"
-                            }`}
-                          >
-                            <p className="whitespace-pre-wrap">{msg.content}</p>
-                          </div>
+                          {msg.content}
                         </div>
                       </div>
-                    );
-                  })
-                )}
-                <div ref={messagesEndRef} />
-              </div>
-
-              {/* Message Composer */}
-              {isCaseMutable ? (
-                <form onSubmit={handleSendReply} className="mt-4 rounded-2xl border border-zinc-200 bg-white p-3.5 shadow-2xs space-y-3">
-                  {stagedAttachment && (
-                    <div className="flex items-center justify-between rounded-xl border border-zinc-200 bg-zinc-50 p-2.5 text-xs text-zinc-700">
-                      <div className="flex items-center gap-2 truncate">
-                        <svg className="size-4 shrink-0 text-zinc-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
-                        </svg>
-                        <span className="truncate font-medium">{stagedAttachment.name}</span>
-                        <span className="text-zinc-500 font-normal">({formatBytes(stagedAttachment.size)})</span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setStagedAttachment(null)}
-                        className="rounded-full p-1 text-zinc-400 hover:bg-zinc-200 hover:text-zinc-700 transition-colors"
-                        title="Remove attachment"
-                      >
-                        <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <line x1="18" y1="6" x2="6" y2="18" />
-                          <line x1="6" y1="6" x2="18" y2="18" />
-                        </svg>
-                      </button>
                     </div>
-                  )}
-
-                  <textarea
-                    value={replyText}
-                    onChange={(e) => setReplyText(e.target.value)}
-                    placeholder="Type your message or reply..."
-                    rows={3}
-                    maxLength={10000}
-                    className="w-full resize-none border-0 bg-transparent p-1 text-xs sm:text-sm font-normal text-zinc-900 placeholder:text-zinc-400 focus:outline-none"
-                  />
-                  <div className="flex items-center justify-between border-t border-zinc-100 pt-2.5">
-                    <div>
-                      <input
-                        ref={composerFileInputRef}
-                        type="file"
-                        accept="image/jpeg,image/png,image/webp,application/pdf"
-                        className="hidden"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) setStagedAttachment(file);
-                        }}
-                      />
-                      <button
-                        type="button"
-                        disabled={sendingReply}
-                        onClick={() => composerFileInputRef.current?.click()}
-                        className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 transition-colors disabled:opacity-50"
-                        title="Attach file (JPEG, PNG, WebP, PDF up to 15MB)"
-                      >
-                        <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
-                        </svg>
-                        <span>Attach file</span>
-                      </button>
-                    </div>
-
-                    <button
-                      type="submit"
-                      disabled={sendingReply || (!replyText.trim() && !stagedAttachment)}
-                      className="inline-flex min-h-9 items-center justify-center rounded-full bg-zinc-900 px-5 text-xs sm:text-sm font-medium text-white transition-colors hover:bg-black disabled:opacity-40"
-                    >
-                      {sendingReply ? "Sending..." : "Send message"}
-                    </button>
-                  </div>
-                </form>
+                  );
+                })
               ) : (
-                <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-center text-xs font-normal text-zinc-600">
-                  This case is {labels[caseData.status].toLowerCase()}. Replies and evidence can no longer be added.
+                <div className="py-12 text-center space-y-2">
+                  <p className="text-sm font-medium text-zinc-700">No messages in this case yet.</p>
+                  <p className="text-xs text-zinc-500">Send a message below to communicate directly.</p>
                 </div>
               )}
+              <div ref={messagesEndRef} />
             </div>
-          )}
 
-          {/* TAB 2: EVIDENCE */}
-          {detailTab === "evidence" && (
-            <div
-              id="tabpanel-evidence"
-              role="tabpanel"
-              aria-labelledby="tab-evidence"
-              className="space-y-6"
-            >
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-100 pb-4">
-                <div>
-                  <h3 className="text-sm sm:text-base font-medium text-zinc-950">Evidence &amp; Documents</h3>
-                  <p className="mt-0.5 text-xs font-normal text-zinc-500">
-                    Files, screenshots, and receipts attached to this case. Formats: JPEG, PNG, WebP, PDF (up to 15 MB).
-                  </p>
-                </div>
+            {/* Message Composer */}
+            {isCaseMutable ? (
+              <form onSubmit={handleSendReply} className="border-t border-zinc-200 p-4 sm:p-5 bg-zinc-50/70 space-y-3">
+                {stagedAttachment && (
+                  <div className="flex items-center justify-between rounded-xl border border-zinc-200 bg-white px-3.5 py-2 text-xs font-medium text-zinc-800">
+                    <span className="truncate">Attached: {stagedAttachment.name} ({formatBytes(stagedAttachment.size)})</span>
+                    <button type="button" onClick={() => setStagedAttachment(null)} className="text-zinc-400 hover:text-zinc-700 ml-2">✕</button>
+                  </div>
+                )}
 
-                {isCaseMutable && (
-                  <div>
+                <div className="relative">
+                  <textarea
+                    rows={3}
+                    maxLength={10000}
+                    value={replyText}
+                    onChange={(e) => setReplyText(e.target.value)}
+                    placeholder="Type your message here..."
+                    className="w-full rounded-xl border border-zinc-200 bg-white p-3.5 pr-24 text-xs sm:text-sm font-normal text-zinc-900 focus:border-zinc-950 focus:outline-none"
+                  />
+                  <div className="absolute bottom-3 right-3 flex items-center gap-2">
                     <input
-                      ref={fileInputRef}
+                      ref={composerFileInputRef}
                       type="file"
-                      accept="image/jpeg,image/png,image/webp,application/pdf"
+                      accept=".jpg,.jpeg,.png,.webp,.pdf"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) setStagedAttachment(file);
+                        e.currentTarget.value = "";
+                      }}
                       className="hidden"
-                      onChange={(e) => void handleEvidenceUpload(e.target.files?.[0])}
                     />
                     <button
                       type="button"
-                      disabled={uploadingEvidence}
-                      onClick={() => fileInputRef.current?.click()}
-                      className="inline-flex items-center gap-1.5 rounded-full bg-zinc-900 px-4 py-2 text-xs font-medium text-white hover:bg-black transition-colors disabled:opacity-50 shadow-2xs"
+                      title="Attach file"
+                      onClick={() => composerFileInputRef.current?.click()}
+                      className="size-8 rounded-full border border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-100 flex items-center justify-center transition-colors"
                     >
-                      <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <line x1="12" y1="5" x2="12" y2="19" />
-                        <line x1="5" y1="12" x2="19" y2="12" />
+                      <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
                       </svg>
-                      {uploadingEvidence ? "Uploading securely..." : "Upload evidence"}
                     </button>
+                    <button
+                      type="submit"
+                      disabled={sendingReply || (!replyText.trim() && !stagedAttachment)}
+                      className="rounded-full bg-zinc-900 px-4 py-1.5 text-xs font-medium text-white hover:bg-black transition-colors disabled:opacity-50"
+                    >
+                      {sendingReply ? "Sending..." : "Send"}
+                    </button>
+                  </div>
+                </div>
+              </form>
+            ) : (
+              <div className="border-t border-zinc-200 p-4 text-center text-xs text-zinc-500 bg-zinc-50">
+                This case has been resolved or closed. Replies can no longer be added.
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TAB 2: OFFERS & NEGOTIATION (DIRECT RESOLUTION ONLY) */}
+        {detailTab === "offers" && isDirectResolution && (
+          <div id="tabpanel-offers" role="tabpanel" aria-labelledby="tab-offers" className="p-5 sm:p-7 space-y-6">
+            {/* Active / Current Offer Card */}
+            {activePendingOffer ? (
+              <div className="rounded-2xl border border-zinc-200 bg-zinc-50/70 p-5 sm:p-6 space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-200/80 pb-3">
+                  <div>
+                    <span className="rounded-md border border-zinc-200 bg-white px-2 py-0.5 text-xs font-medium text-zinc-800">
+                      {offerTypeLabels[activePendingOffer.offerType] || activePendingOffer.offerType}
+                    </span>
+                    <h3 className="text-xl font-medium text-zinc-950 mt-1">
+                      {formatCurrency(activePendingOffer.amount, activePendingOffer.currency)}
+                    </h3>
+                  </div>
+                  <span className={`rounded-full px-3 py-1 text-xs font-medium ${
+                    activePendingOffer.status === "PENDING"
+                      ? "bg-blue-50 text-blue-800 border border-blue-200"
+                      : activePendingOffer.status === "ACCEPTED"
+                        ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                        : "bg-zinc-100 text-zinc-700 border border-zinc-200"
+                  }`}>
+                    {activePendingOffer.status}
+                  </span>
+                </div>
+
+                <div className="text-xs sm:text-sm text-zinc-600 space-y-1">
+                  <p>
+                    <span className="font-medium text-zinc-900">From: </span>
+                    {activePendingOffer.proposer.name || "Participant"} → <span className="font-medium text-zinc-900">To: </span>
+                    {activePendingOffer.recipient.name || "Participant"}
+                  </p>
+                  {activePendingOffer.expiresAt && (
+                    <p className="text-xs text-zinc-500">
+                      Expires: {formatCaseDate(activePendingOffer.expiresAt)}
+                    </p>
+                  )}
+                </div>
+
+                <div className="rounded-xl bg-white p-4 text-xs sm:text-sm font-normal text-zinc-800 border border-zinc-200/80">
+                  {activePendingOffer.description}
+                </div>
+
+                {/* Offer Action Buttons */}
+                {activePendingOffer.status === "PENDING" && isCaseMutable && (
+                  <div className="flex flex-wrap items-center gap-3 pt-2">
+                    {isRecipient && (
+                      <>
+                        <button
+                          type="button"
+                          disabled={offerActionLoading}
+                          onClick={() => handleOfferAction(activePendingOffer, "ACCEPT")}
+                          className="rounded-full bg-emerald-600 px-5 py-2 text-xs sm:text-sm font-medium text-white hover:bg-emerald-700 transition-colors disabled:opacity-50"
+                        >
+                          Accept offer
+                        </button>
+                        <button
+                          type="button"
+                          disabled={offerActionLoading}
+                          onClick={() => handleOfferAction(activePendingOffer, "REJECT")}
+                          className="rounded-full border border-rose-200 bg-rose-50 px-5 py-2 text-xs sm:text-sm font-medium text-rose-700 hover:bg-rose-100 transition-colors disabled:opacity-50"
+                        >
+                          Reject offer
+                        </button>
+                        <button
+                          type="button"
+                          disabled={offerActionLoading}
+                          onClick={() => {
+                            setCounteringOffer(activePendingOffer);
+                            setOfferForm({
+                              offerType: activePendingOffer.offerType,
+                              amount: activePendingOffer.amount ? String(activePendingOffer.amount / 100) : "",
+                              description: "",
+                              expiresAt: "",
+                            });
+                          }}
+                          className="rounded-full border border-zinc-300 bg-white px-5 py-2 text-xs sm:text-sm font-medium text-zinc-800 hover:bg-zinc-50 transition-colors disabled:opacity-50"
+                        >
+                          Counteroffer
+                        </button>
+                      </>
+                    )}
+                    {isProposer && (
+                      <button
+                        type="button"
+                        disabled={offerActionLoading}
+                        onClick={() => handleOfferAction(activePendingOffer, "WITHDRAW")}
+                        className="rounded-full border border-zinc-300 bg-white px-5 py-2 text-xs sm:text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors disabled:opacity-50"
+                      >
+                        Withdraw offer
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
+            ) : (
+              <div className="rounded-2xl border border-dashed border-zinc-200 p-8 text-center text-xs sm:text-sm text-zinc-500">
+                No active offer is pending. You can propose a new offer below.
+              </div>
+            )}
 
-              {uploadingEvidence && (
-                <div className="rounded-xl border border-blue-200 bg-blue-50/80 p-3.5 text-xs font-normal text-blue-800 flex items-center gap-2">
-                  <div className="size-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
-                  <span>Uploading evidence and verifying scan status...</span>
-                </div>
-              )}
-
-              {(!caseData.evidence || caseData.evidence.length === 0) ? (
-                <div className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50/50 p-14 text-center space-y-3">
-                  <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-zinc-100 text-zinc-400">
-                    <svg className="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                      <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
-                    </svg>
-                  </div>
-                  <h4 className="text-sm font-medium text-zinc-950">No evidence or documents have been uploaded.</h4>
-                  <p className="text-xs font-normal text-zinc-500 max-w-sm mx-auto">
-                    You can upload photos, receipts, or documentation to help support review your request.
-                  </p>
-                  {isCaseMutable && (
-                    <div className="pt-2">
-                      <button
-                        type="button"
-                        disabled={uploadingEvidence}
-                        onClick={() => fileInputRef.current?.click()}
-                        className="rounded-full bg-zinc-900 px-4 py-2 text-xs font-medium text-white hover:bg-black transition-colors"
-                      >
-                        Upload evidence
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {caseData.evidence.map((entry) => (
-                    <div
-                      key={entry.id}
-                      className="flex items-center justify-between gap-3 rounded-2xl border border-zinc-200/80 bg-white p-3.5 shadow-2xs hover:border-zinc-300 transition-colors"
-                    >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className="size-11 shrink-0 rounded-xl bg-zinc-100 border border-zinc-200/60 flex items-center justify-center text-zinc-500">
-                          <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                            <polyline points="14 2 14 8 20 8" />
-                          </svg>
-                        </div>
-                        <div className="min-w-0">
-                          <p className="truncate text-xs sm:text-sm font-medium text-zinc-900" title={entry.originalName}>
-                            {entry.originalName}
-                          </p>
-                          <p className="text-[11px] font-normal text-zinc-500 mt-0.5">
-                            {formatBytes(entry.sizeBytes)} · {formatCaseDate(entry.createdAt)}
-                          </p>
-                          {entry.uploader?.name && (
-                            <p className="text-[10px] font-normal text-zinc-400 mt-0.5">
-                              Uploaded by {entry.uploader.name}
-                            </p>
-                          )}
-                        </div>
+            {/* Negotiation History */}
+            {activeOffers.length > 1 && (
+              <div className="space-y-3 pt-2">
+                <h4 className="text-sm font-medium text-zinc-950">Negotiation history ({activeOffers.length})</h4>
+                <div className="space-y-3">
+                  {activeOffers.map((offer) => (
+                    <div key={offer.id} className="rounded-xl border border-zinc-200 bg-white p-4 space-y-2 text-xs sm:text-sm">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium text-zinc-900">{offerTypeLabels[offer.offerType] || offer.offerType} · {formatCurrency(offer.amount, offer.currency)}</span>
+                        <span className="rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs text-zinc-600 font-medium">{offer.status}</span>
                       </div>
-
-                      <a
-                        href={`/api/v1/support/cases/${caseData.id}/evidence/${entry.id}?download=true`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-zinc-200 text-zinc-700 hover:bg-zinc-100 hover:text-zinc-950 transition-colors shadow-2xs"
-                        title="Download evidence"
-                      >
-                        <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                          <polyline points="7 10 12 15 17 10" />
-                          <line x1="12" y1="15" x2="12" y2="3" />
-                        </svg>
-                      </a>
+                      <p className="text-xs text-zinc-500 font-normal">
+                        {offer.proposer.name || "Participant"} → {offer.recipient.name || "Participant"}
+                      </p>
+                      <p className="text-zinc-700 font-normal">{offer.description}</p>
                     </div>
                   ))}
                 </div>
-              )}
-            </div>
-          )}
+              </div>
+            )}
 
-          {/* TAB 3: ACTIVITY */}
-          {detailTab === "activity" && (
-            <div
-              id="tabpanel-activity"
-              role="tabpanel"
-              aria-labelledby="tab-activity"
-              className="space-y-6 max-w-4xl"
-            >
-              <div className="border-b border-zinc-100 pb-4">
-                <h3 className="text-sm sm:text-base font-medium text-zinc-950">Case Activity Timeline</h3>
-                <p className="mt-0.5 text-xs font-normal text-zinc-500">
-                  Chronological audit history of support case creation, participant messages, and review updates.
+            {/* Propose a New Offer Form */}
+            {isCaseMutable && (!activePendingOffer || activePendingOffer.status !== "PENDING" || counteringOffer) && (
+              <form onSubmit={handleSubmitOffer} className="rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6 space-y-4">
+                <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
+                  <h4 className="text-base font-medium text-zinc-950">
+                    {counteringOffer ? "Submit a counteroffer" : "Propose a new resolution offer"}
+                  </h4>
+                  {counteringOffer && (
+                    <button type="button" onClick={() => setCounteringOffer(null)} className="text-xs font-medium text-zinc-500 hover:text-zinc-800 underline">
+                      Cancel counteroffer
+                    </button>
+                  )}
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <label className="block text-xs font-medium text-zinc-800">
+                    Offer type
+                    <select
+                      value={offerForm.offerType}
+                      onChange={(e) => setOfferForm({ ...offerForm, offerType: e.target.value as OfferType })}
+                      className="mt-1.5 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs sm:text-sm font-normal text-zinc-900 focus:border-zinc-950 focus:outline-none"
+                    >
+                      <option value="MONETARY_COMPENSATION">Monetary compensation</option>
+                      <option value="PROPERTY_DAMAGE">Property damage compensation</option>
+                      <option value="NON_FINANCIAL">Non-financial agreement</option>
+                      <option value="AMENITY_ISSUE">Amenity issue resolution</option>
+                      <option value="OTHER">Other resolution</option>
+                    </select>
+                  </label>
+
+                  {(offerForm.offerType === "MONETARY_COMPENSATION" || offerForm.offerType === "PROPERTY_DAMAGE") && (
+                    <label className="block text-xs font-medium text-zinc-800">
+                      Amount (SAR)
+                      <input
+                        type="number"
+                        min="1"
+                        step="any"
+                        required
+                        value={offerForm.amount}
+                        onChange={(e) => setOfferForm({ ...offerForm, amount: e.target.value })}
+                        placeholder="e.g. 250"
+                        className="mt-1.5 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs sm:text-sm font-normal text-zinc-900 focus:border-zinc-950 focus:outline-none"
+                      />
+                    </label>
+                  )}
+                </div>
+
+                <label className="block text-xs font-medium text-zinc-800">
+                  Explanation / Settlement terms
+                  <textarea
+                    required
+                    rows={3}
+                    maxLength={4000}
+                    value={offerForm.description}
+                    onChange={(e) => setOfferForm({ ...offerForm, description: e.target.value })}
+                    placeholder="Describe the terms you propose to resolve this dispute..."
+                    className="mt-1.5 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs sm:text-sm font-normal text-zinc-900 focus:border-zinc-950 focus:outline-none"
+                  />
+                </label>
+
+                <div className="flex items-center justify-end pt-2">
+                  <button
+                    type="submit"
+                    disabled={submittingOffer || !offerForm.description.trim()}
+                    className="rounded-full bg-zinc-900 px-5 py-2 text-xs sm:text-sm font-medium text-white hover:bg-black transition-colors disabled:opacity-50"
+                  >
+                    {submittingOffer ? "Submitting..." : counteringOffer ? "Send counteroffer" : "Send resolution offer"}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        )}
+
+        {/* TAB 3: EVIDENCE & DOCUMENTS */}
+        {detailTab === "evidence" && (
+          <div id="tabpanel-evidence" role="tabpanel" aria-labelledby="tab-evidence" className="p-5 sm:p-7 space-y-6">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-zinc-100 pb-4">
+              <div>
+                <h3 className="text-base font-medium text-zinc-950">Supporting evidence &amp; documents</h3>
+                <p className="text-xs text-zinc-500 font-normal">
+                  JPG, PNG, WEBP, or PDF files. Maximum size: 15 MB per file.
                 </p>
               </div>
 
-              {events.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50/50 p-12 text-center text-xs font-normal text-zinc-500">
-                  No activity recorded yet.
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <ol className="relative ml-3 space-y-5 border-l-2 border-zinc-200 pl-6 text-xs">
-                    {visibleEvents.map((event) => (
-                      <li key={event.id} className="space-y-1 relative">
-                        <span className="absolute -left-[31px] top-1 size-3.5 rounded-full bg-blue-600 ring-4 ring-white" />
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                          <p className="text-xs sm:text-sm font-medium text-zinc-900">
-                            {humanEventDescription(event.eventType, event.description)}
-                          </p>
-                          <time className="text-[11px] font-normal text-zinc-500">
-                            {formatCaseDate(event.createdAt)}
-                          </time>
-                        </div>
-                        {event.actor?.name && (
-                          <p className="text-[11px] font-normal text-zinc-500">
-                            By {event.actor.name}
-                          </p>
-                        )}
-                      </li>
-                    ))}
-                  </ol>
-
-                  {events.length > visibleEventsCount && (
-                    <div className="pt-2 text-center">
-                      <button
-                        type="button"
-                        onClick={() => setVisibleEventsCount((c) => c + 10)}
-                        className="rounded-full border border-zinc-200 bg-white px-5 py-2 text-xs font-medium text-zinc-700 shadow-2xs hover:bg-zinc-50 transition-colors"
-                      >
-                        Load older activity ({events.length - visibleEventsCount} remaining)
-                      </button>
-                    </div>
-                  )}
+              {isCaseMutable && (
+                <div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".jpg,.jpeg,.png,.webp,.pdf"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) void handleEvidenceUpload(file);
+                    }}
+                    className="hidden"
+                  />
+                  <button
+                    type="button"
+                    disabled={uploadingEvidence}
+                    onClick={() => fileInputRef.current?.click()}
+                    className="inline-flex items-center gap-2 rounded-full bg-zinc-900 px-4 py-2 text-xs sm:text-sm font-medium text-white hover:bg-black transition-colors disabled:opacity-50"
+                  >
+                    <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                      <polyline points="17 8 12 3 7 8" />
+                      <line x1="12" y1="3" x2="12" y2="15" />
+                    </svg>
+                    {uploadingEvidence ? "Uploading..." : "Upload evidence"}
+                  </button>
                 </div>
               )}
             </div>
-          )}
-        </div>
+
+            {/* Evidence List */}
+            {caseData.evidence && caseData.evidence.length > 0 ? (
+              <div className="grid gap-3 sm:grid-cols-2">
+                {caseData.evidence.map((entry) => (
+                  <div key={entry.id} className="flex items-center justify-between rounded-xl border border-zinc-200/90 bg-white p-3.5 shadow-2xs hover:border-zinc-300 transition-colors">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="size-10 rounded-lg bg-zinc-100 text-zinc-500 flex items-center justify-center shrink-0">
+                        <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                          <polyline points="14 2 14 8 20 8" />
+                        </svg>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="truncate text-xs sm:text-sm font-medium text-zinc-900">{entry.originalName}</p>
+                        <p className="text-[11px] text-zinc-500 font-normal">
+                          {formatBytes(entry.sizeBytes)} · {formatCaseDate(entry.createdAt)}
+                        </p>
+                      </div>
+                    </div>
+                    <a
+                      href={`/api/v1/support/cases/${caseData.id}/evidence/${entry.id}?download=true`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex size-8 items-center justify-center rounded-full border border-zinc-200 text-zinc-600 hover:bg-zinc-100 transition-colors shrink-0 ml-2"
+                      title="Download file"
+                    >
+                      <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="7 10 12 15 17 10" />
+                        <line x1="12" y1="15" x2="12" y2="3" />
+                      </svg>
+                    </a>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-xl border border-dashed border-zinc-200 bg-zinc-50/50 p-8 text-center text-xs sm:text-sm text-zinc-500">
+                No evidence or documents have been uploaded for this case yet.
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TAB 4: CASE ACTIVITY */}
+        {detailTab === "activity" && (
+          <div id="tabpanel-activity" role="tabpanel" aria-labelledby="tab-activity" className="p-5 sm:p-7 space-y-6">
+            <h3 className="text-base font-medium text-zinc-950">Activity timeline</h3>
+            {events.length > 0 ? (
+              <div className="relative pl-6 space-y-6 border-l-2 border-zinc-200 ml-2">
+                {visibleEvents.map((evt) => (
+                  <div key={evt.id} className="relative">
+                    <span className="absolute -left-[31px] top-1 size-3 rounded-full bg-zinc-900 ring-4 ring-white" />
+                    <div className="space-y-0.5">
+                      <p className="text-xs sm:text-sm font-medium text-zinc-900">
+                        {humanEventDescription(evt.eventType, evt.description)}
+                      </p>
+                      <div className="flex items-center gap-2 text-[11px] text-zinc-500 font-normal">
+                        <span>{formatCaseDate(evt.createdAt)}</span>
+                        {evt.actor?.name && <span>· by {evt.actor.name}</span>}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                {events.length > visibleEventsCount && (
+                  <button
+                    type="button"
+                    onClick={() => setVisibleEventsCount((prev) => prev + 10)}
+                    className="text-xs font-medium text-zinc-600 hover:text-zinc-900 underline"
+                  >
+                    Show more events ({events.length - visibleEventsCount} remaining)
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="rounded-xl border border-dashed border-zinc-200 bg-zinc-50/50 p-8 text-center text-xs sm:text-sm text-zinc-500">
+                No activity history recorded for this case yet.
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TAB 5: MEDIATION (DIRECT RESOLUTION ONLY) */}
+        {detailTab === "mediation" && isDirectResolution && (
+          <div id="tabpanel-mediation" role="tabpanel" aria-labelledby="tab-mediation" className="p-5 sm:p-7 space-y-6">
+            {isMediationActive ? (
+              <div className="rounded-2xl border border-amber-200 bg-amber-50/70 p-6 space-y-3">
+                <div className="flex items-center gap-2.5">
+                  <span className="flex size-8 items-center justify-center rounded-full bg-amber-100 text-amber-700">
+                    <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                    </svg>
+                  </span>
+                  <h4 className="text-base font-medium text-amber-950">Mediation is active</h4>
+                </div>
+                <p className="text-xs sm:text-sm font-normal text-amber-900/90 leading-relaxed">
+                  StayElite Support has been notified and is currently reviewing this dispute. A neutral support specialist will review messages, offers, and evidence, and communicate with both parties here.
+                </p>
+                <p className="text-xs text-amber-800 font-normal">
+                  No duplicate mediation request is necessary. You will be notified as soon as an administrator responds.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-5">
+                <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-5 space-y-2">
+                  <h4 className="text-sm font-medium text-zinc-950">Need neutral assistance?</h4>
+                  <p className="text-xs sm:text-sm font-normal text-zinc-600 leading-relaxed">
+                    If you and the host are unable to reach an agreement directly, you can request an authorized StayElite administrator to review the dispute. Both parties will be assisted through official support mediation.
+                  </p>
+                </div>
+
+                {isCaseMutable ? (
+                  <form onSubmit={handleRequestMediation} className="space-y-4 max-w-xl">
+                    <label className="block text-xs font-medium text-zinc-800">
+                      Reason for requesting administrator mediation
+                      <textarea
+                        required
+                        rows={4}
+                        maxLength={2000}
+                        value={mediationReason}
+                        onChange={(e) => setMediationReason(e.target.value)}
+                        placeholder="Explain what terms could not be resolved directly with the host..."
+                        className="mt-1.5 w-full rounded-xl border border-zinc-200 bg-white px-3.5 py-2.5 text-xs sm:text-sm font-normal text-zinc-900 focus:border-zinc-950 focus:outline-none"
+                      />
+                    </label>
+                    <button
+                      type="submit"
+                      disabled={requestingMediation || !mediationReason.trim()}
+                      className="rounded-full bg-zinc-900 px-5 py-2.5 text-xs sm:text-sm font-medium text-white hover:bg-black transition-colors disabled:opacity-50"
+                    >
+                      {requestingMediation ? "Submitting request..." : "Request mediation"}
+                    </button>
+                  </form>
+                ) : (
+                  <p className="text-xs text-zinc-500">This case is resolved or closed; mediation is no longer available.</p>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </article>
   );
@@ -875,8 +1264,7 @@ export function GuestCaseDetailPanel({
 
 /**
  * Main SupportResolutionCenter
- * Single-View Guest Help & Support Dashboard with two mutually exclusive screens:
- * Screen 1: Full-Width Support Request Listing
+ * Screen 1: Mutually Exclusive Support Request List / Direct Resolutions List
  * Screen 2: Full-Width Support Case Details
  * // Layout contract: full-width mutually exclusive views (legacy reference: xl:grid-cols-[minmax(280px,40%)_minmax(0,1fr)])
  */
@@ -887,6 +1275,7 @@ export function SupportResolutionCenter() {
   const statusSelectId = useId();
   const searchInputId = useId();
 
+  const currentView = searchParams.get("view") === "direct" ? "direct" : "support";
   const caseIdFromUrl = searchParams.get("caseId");
   const tabFromUrl = searchParams.get("tab");
 
@@ -905,7 +1294,10 @@ export function SupportResolutionCenter() {
   const [loading, setLoading] = useState(true);
   const [detailLoading, setDetailLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+
+  // Modal states
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showDirectCreateModal, setShowDirectCreateModal] = useState(false);
 
   // Summary Metrics
   const [metrics, setMetrics] = useState<SupportMetrics>({
@@ -915,7 +1307,7 @@ export function SupportResolutionCenter() {
     resolved: 0,
   });
 
-  // Create form state
+  // Create support request form state
   const [form, setForm] = useState({
     category: "",
     issueType: "",
@@ -924,84 +1316,120 @@ export function SupportResolutionCenter() {
     description: "",
   });
   const [submitting, setSubmitting] = useState(false);
+
+  // Create direct resolution request form state
+  const [directForm, setDirectForm] = useState({
+    bookingId: "",
+    subject: "",
+    offerType: "MONETARY_COMPENSATION" as OfferType,
+    amount: "",
+    description: "",
+    expiresAt: "",
+  });
+  const [submittingDirect, setSubmittingDirect] = useState(false);
+
   const createKey = useRef<string | null>(null);
   const activeRequestIdRef = useRef<string | null>(null);
+  const casesReqSeqRef = useRef(0);
+  const caseDetailReqSeqRef = useRef(0);
 
   // Load summary metrics from real database endpoints
   const loadMetrics = useCallback(async () => {
     try {
+      const resOnly = currentView === "direct" ? "&resolutionOnly=true" : "";
+      const t = `&_t=${Date.now()}`;
       const [allRes, actionRes, reviewRes, resolvedRes] = await Promise.all([
-        api<{ pagination: { total: number } }>("/api/v1/support/cases?page=1&limit=1"),
-        api<{ pagination: { total: number } }>("/api/v1/support/cases?page=1&limit=1&status=WAITING_FOR_GUEST"),
-        api<{ pagination: { total: number } }>("/api/v1/support/cases?page=1&limit=1&status=IN_REVIEW"),
-        api<{ pagination: { total: number } }>("/api/v1/support/cases?page=1&limit=1&status=RESOLVED"),
+        api<{ pagination: { total: number } }>(`/api/v1/support/cases?page=1&limit=1${resOnly}${t}`),
+        api<{ pagination: { total: number } }>(`/api/v1/support/cases?page=1&limit=1&status=WAITING_FOR_GUEST${resOnly}${t}`),
+        api<{ pagination: { total: number } }>(`/api/v1/support/cases?page=1&limit=1&status=IN_REVIEW${resOnly}${t}`),
+        api<{ pagination: { total: number } }>(`/api/v1/support/cases?page=1&limit=1&status=RESOLVED${resOnly}${t}`),
       ]);
 
       setMetrics({
-        all: allRes.pagination?.total || 0,
-        actionNeeded: actionRes.pagination?.total || 0,
-        underReview: reviewRes.pagination?.total || 0,
-        resolved: resolvedRes.pagination?.total || 0,
+        all: allRes.pagination.total,
+        actionNeeded: actionRes.pagination.total,
+        underReview: reviewRes.pagination.total,
+        resolved: resolvedRes.pagination.total,
       });
     } catch {
-      // Non-critical background metric fetch error
+      // Keep existing metric counters on soft failure
     }
-  }, []);
+  }, [currentView]);
 
-  // Load support cases listing
+  // Load support requests with real search, filtering, and race condition prevention
   const loadCases = useCallback(
-    async (targetPage = page) => {
+    async (targetPage = 1, forceFresh = false) => {
+      const reqSeq = ++casesReqSeqRef.current;
       setLoading(true);
       setMessage(null);
-      try {
-        const query = new URLSearchParams({
-          page: String(targetPage),
-          limit: "10",
-        });
-        if (filters.status) query.set("status", filters.status);
-        if (filters.category) query.set("category", filters.category);
-        if (filters.search.trim()) query.set("search", filters.search.trim());
 
-        const result = await api<{ cases: Case[]; pagination: { page: number; total: number; totalPages: number } }>(
-          `/api/v1/support/cases?${query.toString()}`
+      try {
+        const params = new URLSearchParams();
+        params.set("page", String(targetPage));
+        params.set("limit", "20");
+        if (currentView === "direct") {
+          params.set("resolutionOnly", "true");
+        }
+        if (filters.status) params.set("status", filters.status);
+        if (filters.category) params.set("category", filters.category);
+        if (filters.search.trim()) params.set("search", filters.search.trim());
+        if (forceFresh) {
+          params.set("_t", String(Date.now()));
+        }
+
+        const data = await api<{ cases: Case[]; pagination: { page: number; total: number; totalPages: number } }>(
+          `/api/v1/support/cases?${params.toString()}`
         );
 
-        setItems(result.cases);
-        setPages(result.pagination);
-      } catch (error) {
-        setMessage(error instanceof Error ? error.message : "Unable to load support requests.");
+        if (reqSeq !== casesReqSeqRef.current) {
+          return;
+        }
+
+        setItems(data.cases || []);
+        setPages(data.pagination || { page: targetPage, total: 0, totalPages: 1 });
+      } catch (err) {
+        if (reqSeq !== casesReqSeqRef.current) return;
+        setMessage(err instanceof Error ? err.message : "Unable to load support requests.");
+        setItems([]);
       } finally {
-        setLoading(false);
+        if (reqSeq === casesReqSeqRef.current) {
+          setLoading(false);
+        }
       }
     },
-    [filters, page]
+    [currentView, filters]
   );
 
   // Open a specific support case details
-  const openCase = useCallback(async (id: string) => {
+  const openCase = useCallback(async (id: string, initialCaseData?: Case) => {
     activeRequestIdRef.current = id;
-    setDetailLoading(true);
+    const reqSeq = ++caseDetailReqSeqRef.current;
+
+    if (initialCaseData) {
+      setActive(initialCaseData);
+    } else {
+      setDetailLoading(true);
+    }
     setMessage(null);
 
     try {
-      const caseDetails = await api<Case>(`/api/v1/support/cases/${encodeURIComponent(id)}`);
-      // Discard stale response if another case was clicked rapidly
-      if (activeRequestIdRef.current === id) {
+      const caseDetails = await api<Case>(`/api/v1/support/cases/${encodeURIComponent(id)}?_t=${Date.now()}`);
+      if (activeRequestIdRef.current === id && reqSeq === caseDetailReqSeqRef.current) {
         setActive(caseDetails);
       }
     } catch (error) {
-      if (activeRequestIdRef.current === id) {
+      if (activeRequestIdRef.current === id && reqSeq === caseDetailReqSeqRef.current) {
         setMessage(error instanceof Error ? error.message : "Unable to open this support request or you do not have permission.");
         setActive(null);
       }
     } finally {
-      if (activeRequestIdRef.current === id) {
+      if (activeRequestIdRef.current === id && reqSeq === caseDetailReqSeqRef.current) {
         setDetailLoading(false);
       }
     }
   }, []);
 
-  // Initial mount: load taxonomy, bookings, metrics, and handle URL caseId
+  // Initial mount: load taxonomy, bookings, metrics
   useEffect(() => {
     void Promise.all([
       api<{ categories: Taxonomy[] }>("/api/v1/support/case-taxonomy"),
@@ -1023,15 +1451,18 @@ export function SupportResolutionCenter() {
   useEffect(() => {
     const timer = window.setTimeout(() => {
       if (caseIdFromUrl) {
-        void openCase(caseIdFromUrl);
+        if (active?.id !== caseIdFromUrl) {
+          const cached = items.find((item) => item.id === caseIdFromUrl);
+          void openCase(caseIdFromUrl, cached);
+        }
       } else {
         setActive(null);
       }
     }, 0);
     return () => window.clearTimeout(timer);
-  }, [caseIdFromUrl, openCase]);
+  }, [caseIdFromUrl, openCase, active?.id, items]);
 
-  // Trigger load when filters or page changes
+  // Trigger load when view, filters, or page changes
   useEffect(() => {
     const timer = window.setTimeout(() => {
       void loadCases(page);
@@ -1040,21 +1471,53 @@ export function SupportResolutionCenter() {
   }, [loadCases, page]);
 
   // Handle selecting a case card -> Switches to Screen 2 (Case Details)
-  function handleSelectCase(id: string) {
+  function handleSelectCase(id: string, initialData?: Case) {
     const query = new URLSearchParams(window.location.search);
     query.set("caseId", id);
     router.push(`/profile/tab/support?${query.toString()}`, { scroll: false });
-    void openCase(id);
+    void openCase(id, initialData);
   }
 
   // Handle deselecting case / Back to requests -> Returns to Screen 1 (Case List)
   function handleDeselectCase() {
+    activeRequestIdRef.current = null;
     const query = new URLSearchParams(window.location.search);
     query.delete("caseId");
     const searchStr = query.toString();
     router.push(searchStr ? `/profile/tab/support?${searchStr}` : "/profile/tab/support", { scroll: false });
     setActive(null);
     setMessage(null);
+    void loadCases(page, true);
+    void loadMetrics();
+  }
+
+  // Handle Case Mutated: updates active case and listing item immediately
+  function handleCaseMutated(updatedFields?: Partial<Case>) {
+    if (updatedFields && active) {
+      setActive((prev) => (prev ? { ...prev, ...updatedFields } : null));
+      setItems((prev) =>
+        prev.map((item) => (item.id === active.id ? { ...item, ...updatedFields } : item))
+      );
+    }
+    void loadMetrics();
+    router.refresh();
+  }
+
+  // Handle switching primary view between Support Requests and Direct Resolutions
+  function switchPrimaryView(view: "support" | "direct") {
+    const query = new URLSearchParams();
+    if (view === "direct") {
+      query.set("view", "direct");
+    }
+    router.push(query.toString() ? `/profile/tab/support?${query.toString()}` : "/profile/tab/support", { scroll: false });
+    activeRequestIdRef.current = null;
+    setActive(null);
+    setMessage(null);
+    setPage(1);
+    setActiveTab("all");
+    setFilters({ status: "", category: "", search: "" });
+    setItems([]);
+    setLoading(true);
   }
 
   // Handle Tab Switch on Screen 1
@@ -1065,543 +1528,605 @@ export function SupportResolutionCenter() {
       status: tabStatus(tab),
     }));
     setPage(1);
-
-    const query = new URLSearchParams(window.location.search);
-    if (tab === "all") {
-      query.delete("tab");
-    } else {
-      query.set("tab", tab);
-    }
-    const searchStr = query.toString();
-    router.push(searchStr ? `/profile/tab/support?${searchStr}` : "/profile/tab/support", { scroll: false });
   }
 
-  // Handle creating a support case
+  // Handle Form Submission for Regular Support Request
   async function handleCreateCase(e: FormEvent) {
     e.preventDefault();
-    setMessage(null);
-
-    if (!form.category || !form.issueType || !form.subject.trim() || !form.description.trim()) {
-      setMessage("Please fill out category, issue type, subject, and description.");
+    if (!form.category || !form.subject.trim() || !form.description.trim()) {
+      setMessage("Please fill out category, subject, and description.");
       return;
     }
 
     setSubmitting(true);
-    createKey.current ??= globalThis.crypto?.randomUUID?.() || `case-${Date.now()}-${Math.random()}`;
+    setMessage(null);
+
+    createKey.current ??= globalThis.crypto?.randomUUID?.() || `req-${Date.now()}-${Math.random()}`;
 
     try {
-      const created = await api<Case>("/api/v1/support/cases", {
+      const createdCase = await api<Case>("/api/v1/support/cases", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           category: form.category,
-          issueType: form.issueType,
+          issueType: form.issueType || undefined,
           bookingId: form.bookingId || undefined,
           subject: form.subject.trim(),
           description: form.description.trim(),
+          priority: "MEDIUM",
           idempotencyKey: createKey.current,
         }),
       });
 
       createKey.current = null;
-      setForm({ category: "", issueType: "", bookingId: "", subject: "", description: "" });
       setShowCreateModal(false);
+      setForm({ category: "", issueType: "", bookingId: "", subject: "", description: "" });
 
-      // Refresh metrics and cases list, then select newly created case
-      void loadMetrics();
-      void loadCases(1);
-      handleSelectCase(created.id);
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Unable to create support request.");
+      // Reset filters so the new case is visible immediately
+      setActiveTab("all");
+      setFilters({ status: "", category: "", search: "" });
+      setPage(1);
+
+      // Optimistically prepend to listing
+      setItems((prev) => [createdCase, ...prev.filter((c) => c.id !== createdCase.id)]);
+      setPages((p) => ({ ...p, page: 1, total: p.total + 1 }));
+
+      // Refresh metrics immediately
+      await loadMetrics();
+
+      // Invalidate server cache
+      router.refresh();
+
+      // Trigger fresh fetch in background
+      void loadCases(1, true);
+
+      // Open new case
+      handleSelectCase(createdCase.id, createdCase);
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : "Unable to create support request.");
     } finally {
       setSubmitting(false);
     }
   }
 
+  // Handle Form Submission for Direct Resolution Request
+  async function handleCreateDirectResolution(e: FormEvent) {
+    e.preventDefault();
+    if (!directForm.bookingId || !directForm.subject.trim() || !directForm.description.trim()) {
+      setMessage("Please choose a booking and provide a subject and explanation.");
+      return;
+    }
+
+    setSubmittingDirect(true);
+    setMessage(null);
+
+    const directKey = globalThis.crypto?.randomUUID?.() || `direct-res-${Date.now()}`;
+
+    try {
+      const isMonetary = directForm.offerType === "MONETARY_COMPENSATION" || directForm.offerType === "PROPERTY_DAMAGE";
+      const amountMinor = isMonetary && directForm.amount ? Math.round(Number(directForm.amount) * 100) : undefined;
+
+      const result = await api<{ supportCaseId: string }>("/api/v1/support/resolutions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          bookingId: directForm.bookingId,
+          subject: directForm.subject.trim(),
+          offerType: directForm.offerType,
+          amount: amountMinor,
+          description: directForm.description.trim(),
+          expiresAt: directForm.expiresAt || undefined,
+          idempotencyKey: directKey,
+        }),
+      });
+
+      setShowDirectCreateModal(false);
+      setDirectForm({
+        bookingId: "",
+        subject: "",
+        offerType: "MONETARY_COMPENSATION",
+        amount: "",
+        description: "",
+        expiresAt: "",
+      });
+
+      // Ensure view is direct
+      if (currentView !== "direct") {
+        const query = new URLSearchParams();
+        query.set("view", "direct");
+        query.set("caseId", result.supportCaseId);
+        router.push(`/profile/tab/support?${query.toString()}`, { scroll: false });
+      }
+
+      // Reset filters so newly created direct resolution is visible
+      setActiveTab("all");
+      setFilters({ status: "", category: "", search: "" });
+      setPage(1);
+
+      // Fetch the newly created case immediately to get full data and prepend to listing
+      const createdCase = await api<Case>(`/api/v1/support/cases/${encodeURIComponent(result.supportCaseId)}?_t=${Date.now()}`);
+      setItems((prev) => [createdCase, ...prev.filter((c) => c.id !== createdCase.id)]);
+      setPages((p) => ({ ...p, page: 1, total: p.total + 1 }));
+
+      // Refresh metrics from DB and server cache
+      await loadMetrics();
+      router.refresh();
+
+      // Background fresh fetch of listing
+      void loadCases(1, true);
+
+      // Select case
+      handleSelectCase(result.supportCaseId, createdCase);
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : "Unable to create direct resolution request.");
+    } finally {
+      setSubmittingDirect(false);
+    }
+  }
+
   const selectedCategoryObj = taxonomy.find((c) => c.value === form.category);
 
-  // Determine which screen to render:
-  // SCREEN 2: A case is selected (caseId is in URL or active case is loaded)
-  // SCREEN 1: No case is selected
-  const isTicketDetailsScreen = Boolean(caseIdFromUrl || active);
-
   return (
-    <section className="animate-in fade-in duration-300 font-sans text-zinc-900 space-y-6">
-      {/* ─────────────────────────────────────────────────────────────
-          SCREEN 2: MUTUALLY EXCLUSIVE SUPPORT TICKET DETAILS
-          When a case is selected, HIDE listing, cards, filters, and pagination.
-          SHOW ONLY THE FULL-WIDTH SELECTED CASE DETAILS.
-         ───────────────────────────────────────────────────────────── */}
-      {isTicketDetailsScreen ? (
-        <div className="w-full">
-          {message && !active && (
-            <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-4 text-xs sm:text-sm font-normal text-red-800 flex items-center justify-between gap-4">
-              <p>{message}</p>
-              <button
-                type="button"
-                onClick={handleDeselectCase}
-                className="rounded-lg bg-red-800 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-900 transition-colors"
-              >
-                Return to requests
-              </button>
+    <section aria-label="Guest Help & Support Center" className="w-full">
+      {detailLoading && !active ? (
+        <div aria-label="Loading selected support request" role="status" className="w-full space-y-6 animate-pulse">
+          <div className="flex items-center justify-between border-b border-zinc-200 pb-4">
+            <div className="h-9 w-40 rounded-full bg-zinc-200" />
+            <div className="h-7 w-24 rounded-full bg-zinc-200" />
+          </div>
+          <div className="rounded-2xl border border-zinc-200/80 bg-white p-5 sm:p-7 space-y-4">
+            <div className="h-4 w-28 rounded bg-zinc-200" />
+            <div className="h-8 w-2/3 rounded-lg bg-zinc-200" />
+            <div className="h-16 w-full rounded-xl bg-zinc-100" />
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4 pt-2">
+              {[1, 2, 3, 4].map((n) => (
+                <div key={n} className="h-20 rounded-xl bg-zinc-100" />
+              ))}
             </div>
-          )}
-
-          {detailLoading && !active ? (
-            <div className="w-full space-y-6 animate-pulse">
-              <div className="flex items-center justify-between border-b border-zinc-200 pb-4">
-                <div className="h-9 w-36 rounded-full bg-zinc-200 skeleton-shimmer" />
-                <div className="h-7 w-24 rounded-full bg-zinc-100 skeleton-shimmer" />
-              </div>
-              <div className="rounded-2xl border border-zinc-200/80 bg-white p-6 space-y-4">
-                <div className="h-4 w-32 rounded bg-zinc-200 skeleton-shimmer" />
-                <div className="h-8 w-2/3 rounded bg-zinc-200 skeleton-shimmer" />
-                <div className="h-16 w-full rounded-xl bg-zinc-100 skeleton-shimmer" />
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                  {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className="h-16 rounded-xl bg-zinc-50 border border-zinc-100 p-3 skeleton-shimmer" />
-                  ))}
-                </div>
-              </div>
-              <div className="rounded-2xl border border-zinc-200/80 bg-white p-6 h-96 skeleton-shimmer" />
-            </div>
-          ) : active ? (
-            <GuestCaseDetailPanel
-              caseData={active}
-              onBack={handleDeselectCase}
-              onRefresh={() => openCase(active.id)}
-              onMessageSent={() => {
-                void loadMetrics();
-                void loadCases(page);
-              }}
-            />
-          ) : null}
+          </div>
+          <div className="h-96 rounded-2xl border border-zinc-200/80 bg-white" />
         </div>
+      ) : active ? (
+        /* ─────────────────────────────────────────────────────────────
+           SCREEN 2: MUTUALLY EXCLUSIVE SUPPORT CASE DETAILS
+           When a case is selected, listing is completely hidden.
+           ───────────────────────────────────────────────────────────── */
+        <GuestCaseDetailPanel
+          caseData={active}
+          onBack={handleDeselectCase}
+          onRefresh={() => openCase(active.id)}
+          onCaseMutated={handleCaseMutated}
+          isDirectView={currentView === "direct"}
+        />
       ) : (
         /* ─────────────────────────────────────────────────────────────
-           SCREEN 1: MUTUALLY EXCLUSIVE SUPPORT REQUEST LIST
-           When no case is selected, display header, metrics, filters,
-           and full-width request cards.
+           SCREEN 1: MUTUALLY EXCLUSIVE CASE LISTING
+           Support Requests / Direct Resolutions
            ───────────────────────────────────────────────────────────── */
         <div className="w-full space-y-6">
           {/* Header */}
-          <header className="flex flex-col gap-4 border-b border-zinc-200 pb-5 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <h1 className="text-2xl font-medium tracking-tight text-zinc-950 sm:text-3xl">Help &amp; Support</h1>
+          <header className="flex flex-col gap-4 border-b border-zinc-200 pb-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-medium tracking-tight text-zinc-950 sm:text-3xl">Help &amp; Support</h1>
+                {currentView === "direct" && (
+                  <span className="rounded-md border border-violet-200 bg-violet-50 px-2 py-0.5 text-xs font-medium text-violet-800">
+                    Direct Resolutions
+                  </span>
+                )}
+              </div>
               <p className="mt-1 max-w-2xl text-xs sm:text-sm font-normal text-zinc-500">
-                Manage your support requests, track updates, and communicate with StayElite Support.
+                {currentView === "direct"
+                  ? "Work directly with the host to resolve booking issues, agree on settlements, and track negotiations."
+                  : "Manage your support requests, track updates, and communicate with StayElite Support."}
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3">
-              <Link
-                href="/profile/resolution-center"
-                className="inline-flex min-h-10 items-center justify-center rounded-full border border-zinc-300 bg-white px-5 text-xs sm:text-sm font-medium text-zinc-800 shadow-2xs hover:bg-zinc-50 transition-colors"
-              >
-                Resolution Center
-              </Link>
-              <button
-                type="button"
-                onClick={() => {
-                  setShowCreateModal(true);
-                  setMessage(null);
-                }}
-                className="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-full bg-zinc-900 px-5 text-xs sm:text-sm font-medium text-white shadow-2xs hover:bg-black transition-colors"
-              >
-                <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <line x1="12" y1="5" x2="12" y2="19" />
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                </svg>
-                Create support request
-              </button>
+            <div className="flex items-center gap-3 shrink-0 flex-nowrap">
+              {currentView === "direct" ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => switchPrimaryView("support")}
+                    className="inline-flex min-h-10 items-center justify-center whitespace-nowrap rounded-full border border-zinc-300 bg-white px-4 sm:px-5 text-xs sm:text-sm font-medium text-zinc-800 shadow-2xs hover:bg-zinc-50 transition-colors shrink-0"
+                  >
+                    ← Support Requests
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowDirectCreateModal(true);
+                      setMessage(null);
+                    }}
+                    className="inline-flex min-h-10 items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-zinc-900 px-4 sm:px-5 text-xs sm:text-sm font-medium text-white shadow-2xs hover:bg-black transition-colors shrink-0"
+                  >
+                    <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <line x1="12" y1="5" x2="12" y2="19" />
+                      <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                    New resolution request
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => switchPrimaryView("direct")}
+                    className="inline-flex min-h-10 items-center justify-center whitespace-nowrap rounded-full border border-zinc-300 bg-white px-4 sm:px-5 text-xs sm:text-sm font-medium text-zinc-800 shadow-2xs hover:bg-zinc-50 transition-colors shrink-0"
+                  >
+                    Direct Resolutions
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowCreateModal(true);
+                      setMessage(null);
+                    }}
+                    className="inline-flex min-h-10 items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-zinc-900 px-4 sm:px-5 text-xs sm:text-sm font-medium text-white shadow-2xs hover:bg-black transition-colors shrink-0"
+                  >
+                    <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <line x1="12" y1="5" x2="12" y2="19" />
+                      <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                    Create support request
+                  </button>
+                </>
+              )}
             </div>
           </header>
 
-          {message && (
-            <div
-              role="alert"
-              className="rounded-xl border border-red-200 bg-red-50 p-4 text-xs sm:text-sm font-normal text-red-800"
+          {/* Primary View Switcher Tabs: Support Requests | Direct Resolutions */}
+          <nav aria-label="Support workspace views" className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => switchPrimaryView("support")}
+              className={`rounded-full px-5 py-2 text-xs sm:text-sm font-medium transition-colors ${
+                currentView === "support"
+                  ? "bg-zinc-900 text-white shadow-2xs"
+                  : "border border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50"
+              }`}
             >
+              Support Requests
+            </button>
+            <button
+              type="button"
+              onClick={() => switchPrimaryView("direct")}
+              className={`rounded-full px-5 py-2 text-xs sm:text-sm font-medium transition-colors ${
+                currentView === "direct"
+                  ? "bg-zinc-900 text-white shadow-2xs"
+                  : "border border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50"
+              }`}
+            >
+              Direct Resolutions
+            </button>
+          </nav>
+
+          {message && (
+            <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-xs sm:text-sm font-normal text-red-800">
               {message}
             </div>
           )}
 
-          {/* 4 Summary Cards */}
-          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-            {/* Total requests */}
-            <button
-              type="button"
-              onClick={() => handleTabChange("all")}
-              className={`flex items-center gap-3.5 rounded-2xl border p-4 text-left transition-colors shadow-2xs ${
-                activeTab === "all" ? "border-zinc-900 bg-zinc-50/70" : "border-zinc-200/80 bg-white hover:border-zinc-300"
-              }`}
-            >
-              <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
-                <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                  <polyline points="14 2 14 8 20 8" />
-                  <line x1="16" y1="13" x2="8" y2="13" />
-                  <line x1="16" y1="17" x2="8" y2="17" />
-                  <polyline points="10 9 9 9 8 9" />
-                </svg>
+          {/* 4 Summary Statistic Cards */}
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+            <div className="rounded-2xl border border-zinc-200/80 bg-white p-4 sm:p-5 shadow-2xs">
+              <div className="flex items-center gap-2 text-xs font-normal text-zinc-500">
+                <span className="flex size-7 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                  <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                  </svg>
+                </span>
+                <span>{currentView === "direct" ? "Total resolutions" : "Total requests"}</span>
               </div>
-              <div>
-                <p className="text-xl sm:text-2xl font-medium tracking-tight text-zinc-950">{metrics.all}</p>
-                <p className="text-xs font-normal text-zinc-500">Total requests</p>
-              </div>
-            </button>
+              <p className="mt-3 text-2xl font-medium tracking-tight text-zinc-950 sm:text-3xl">{metrics.all}</p>
+            </div>
 
-            {/* Action needed */}
-            <button
-              type="button"
-              onClick={() => handleTabChange("action_needed")}
-              className={`flex items-center gap-3.5 rounded-2xl border p-4 text-left transition-colors shadow-2xs ${
-                activeTab === "action_needed" ? "border-zinc-900 bg-rose-50/40" : "border-zinc-200/80 bg-white hover:border-zinc-300"
-              }`}
-            >
-              <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-rose-50 text-rose-600">
-                <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-                  <line x1="12" y1="9" x2="12" y2="13" />
-                  <line x1="12" y1="17" x2="12.01" y2="17" />
-                </svg>
+            <div className="rounded-2xl border border-zinc-200/80 bg-white p-4 sm:p-5 shadow-2xs">
+              <div className="flex items-center gap-2 text-xs font-normal text-zinc-500">
+                <span className="flex size-7 items-center justify-center rounded-lg bg-rose-50 text-rose-600">
+                  <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="8" x2="12" y2="12" />
+                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                  </svg>
+                </span>
+                <span>Action needed</span>
               </div>
-              <div>
-                <p className="text-xl sm:text-2xl font-medium tracking-tight text-zinc-950">{metrics.actionNeeded}</p>
-                <p className="text-xs font-normal text-zinc-500">Action needed</p>
-              </div>
-            </button>
+              <p className="mt-3 text-2xl font-medium tracking-tight text-zinc-950 sm:text-3xl">{metrics.actionNeeded}</p>
+            </div>
 
-            {/* Under review */}
-            <button
-              type="button"
-              onClick={() => handleTabChange("under_review")}
-              className={`flex items-center gap-3.5 rounded-2xl border p-4 text-left transition-colors shadow-2xs ${
-                activeTab === "under_review" ? "border-zinc-900 bg-blue-50/40" : "border-zinc-200/80 bg-white hover:border-zinc-300"
-              }`}
-            >
-              <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
-                <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="10" />
-                  <polyline points="12 6 12 12 16 14" />
-                </svg>
+            <div className="rounded-2xl border border-zinc-200/80 bg-white p-4 sm:p-5 shadow-2xs">
+              <div className="flex items-center gap-2 text-xs font-normal text-zinc-500">
+                <span className="flex size-7 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
+                  <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 6 12 12 14 10" />
+                  </svg>
+                </span>
+                <span>{currentView === "direct" ? "In negotiation" : "Under review"}</span>
               </div>
-              <div>
-                <p className="text-xl sm:text-2xl font-medium tracking-tight text-zinc-950">{metrics.underReview}</p>
-                <p className="text-xs font-normal text-zinc-500">Under review</p>
-              </div>
-            </button>
+              <p className="mt-3 text-2xl font-medium tracking-tight text-zinc-950 sm:text-3xl">{metrics.underReview}</p>
+            </div>
 
-            {/* Resolved */}
-            <button
-              type="button"
-              onClick={() => handleTabChange("resolved")}
-              className={`flex items-center gap-3.5 rounded-2xl border p-4 text-left transition-colors shadow-2xs ${
-                activeTab === "resolved" ? "border-zinc-900 bg-emerald-50/40" : "border-zinc-200/80 bg-white hover:border-zinc-300"
-              }`}
-            >
-              <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
-                <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                  <polyline points="22 4 12 14.01 9 11.01" />
-                </svg>
+            <div className="rounded-2xl border border-zinc-200/80 bg-white p-4 sm:p-5 shadow-2xs">
+              <div className="flex items-center gap-2 text-xs font-normal text-zinc-500">
+                <span className="flex size-7 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
+                  <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                    <polyline points="22 4 12 14.01 9 11.01" />
+                  </svg>
+                </span>
+                <span>Resolved</span>
               </div>
-              <div>
-                <p className="text-xl sm:text-2xl font-medium tracking-tight text-zinc-950">{metrics.resolved}</p>
-                <p className="text-xs font-normal text-zinc-500">Resolved</p>
-              </div>
-            </button>
+              <p className="mt-3 text-2xl font-medium tracking-tight text-zinc-950 sm:text-3xl">{metrics.resolved}</p>
+            </div>
           </div>
 
-          {/* Filter Tabs (Pill style) */}
+          {/* Filter Status Tabs */}
           <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
               onClick={() => handleTabChange("all")}
               className={`rounded-full px-4 py-2 text-xs sm:text-sm font-medium transition-colors ${
                 activeTab === "all"
-                  ? "bg-zinc-900 text-white"
-                  : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200"
+                  ? "bg-zinc-900 text-white shadow-2xs"
+                  : "border border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50"
               }`}
             >
-              All requests ({metrics.all})
+              {currentView === "direct" ? "All resolutions" : "All requests"} ({metrics.all})
             </button>
-
             <button
               type="button"
               onClick={() => handleTabChange("action_needed")}
               className={`rounded-full px-4 py-2 text-xs sm:text-sm font-medium transition-colors ${
                 activeTab === "action_needed"
-                  ? "bg-zinc-900 text-white"
-                  : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200"
+                  ? "bg-zinc-900 text-white shadow-2xs"
+                  : "border border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50"
               }`}
             >
               Action needed ({metrics.actionNeeded})
             </button>
-
             <button
               type="button"
               onClick={() => handleTabChange("under_review")}
               className={`rounded-full px-4 py-2 text-xs sm:text-sm font-medium transition-colors ${
                 activeTab === "under_review"
-                  ? "bg-zinc-900 text-white"
-                  : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200"
+                  ? "bg-zinc-900 text-white shadow-2xs"
+                  : "border border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50"
               }`}
             >
-              Under review ({metrics.underReview})
+              {currentView === "direct" ? "In negotiation" : "Under review"} ({metrics.underReview})
             </button>
-
             <button
               type="button"
               onClick={() => handleTabChange("resolved")}
               className={`rounded-full px-4 py-2 text-xs sm:text-sm font-medium transition-colors ${
                 activeTab === "resolved"
-                  ? "bg-zinc-900 text-white"
-                  : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200"
+                  ? "bg-zinc-900 text-white shadow-2xs"
+                  : "border border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50"
               }`}
             >
               Resolved ({metrics.resolved})
             </button>
           </div>
 
-          {/* Search and Dropdown Filters Bar */}
-          <div className="grid gap-3 sm:grid-cols-3">
-            {/* Search */}
-            <div className="relative">
-              <label htmlFor={searchInputId} className="sr-only">
-                Search case #, subject, or booking...
-              </label>
-              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-zinc-400">
-                <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="11" cy="11" r="8" />
-                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                </svg>
-              </div>
+          {/* Search and Filters Bar */}
+          <div className="flex flex-col gap-3 rounded-2xl border border-zinc-200/80 bg-white p-3.5 sm:flex-row sm:items-center sm:gap-4">
+            <div className="relative flex-1">
+              <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+              <label htmlFor={searchInputId} className="sr-only">Search</label>
               <input
                 id={searchInputId}
+                type="search"
                 value={filters.search}
-                onChange={(e) => setFilters((prev) => ({ ...prev, search: e.target.value }))}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    setPage(1);
-                    void loadCases(1);
-                  }
+                onChange={(e) => {
+                  setFilters({ ...filters, search: e.target.value });
+                  setPage(1);
                 }}
-                placeholder="Search case #, subject, or booking..."
-                className="w-full rounded-xl border border-zinc-200 bg-white py-2.5 pl-9 pr-3 text-xs sm:text-sm font-normal text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-950 focus:outline-none"
+                placeholder={currentView === "direct" ? "Search case #, subject, or property..." : "Search case #, subject, or booking..."}
+                className="w-full rounded-xl border border-zinc-200 bg-zinc-50/50 py-2 pl-9 pr-4 text-xs sm:text-sm font-normal text-zinc-900 placeholder:text-zinc-400 focus:border-zinc-950 focus:bg-white focus:outline-none"
               />
             </div>
 
-            {/* Category Dropdown */}
-            <div>
-              <label htmlFor={categorySelectId} className="sr-only">
-                Filter by category
-              </label>
-              <select
-                id={categorySelectId}
-                value={filters.category}
-                onChange={(e) => {
-                  setFilters((prev) => ({ ...prev, category: e.target.value }));
-                  setPage(1);
-                }}
-                className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-xs sm:text-sm font-normal text-zinc-900 focus:border-zinc-950 focus:outline-none"
-              >
-                <option value="">All categories</option>
-                {taxonomy.map((cat) => (
-                  <option key={cat.value} value={cat.value}>
-                    {cat.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {currentView !== "direct" && (
+              <div className="w-full sm:w-48">
+                <label htmlFor={categorySelectId} className="sr-only">Filter by category</label>
+                <select
+                  id={categorySelectId}
+                  value={filters.category}
+                  onChange={(e) => {
+                    setFilters({ ...filters, category: e.target.value });
+                    setPage(1);
+                  }}
+                  className="w-full rounded-xl border border-zinc-200 bg-zinc-50/50 px-3 py-2 text-xs sm:text-sm font-normal text-zinc-800 focus:border-zinc-950 focus:bg-white focus:outline-none"
+                >
+                  <option value="">All categories</option>
+                  {taxonomy.map((c) => (
+                    <option key={c.value} value={c.value}>{c.label}</option>
+                  ))}
+                </select>
+              </div>
+            )}
 
-            {/* Status Dropdown */}
-            <div>
-              <label htmlFor={statusSelectId} className="sr-only">
-                Filter by status
-              </label>
+            <div className="w-full sm:w-44">
+              <label htmlFor={statusSelectId} className="sr-only">Filter by status</label>
               <select
                 id={statusSelectId}
                 value={filters.status}
                 onChange={(e) => {
-                  setFilters((prev) => ({ ...prev, status: e.target.value }));
+                  setFilters({ ...filters, status: e.target.value });
                   setPage(1);
                 }}
-                className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-xs sm:text-sm font-normal text-zinc-900 focus:border-zinc-950 focus:outline-none"
+                className="w-full rounded-xl border border-zinc-200 bg-zinc-50/50 px-3 py-2 text-xs sm:text-sm font-normal text-zinc-800 focus:border-zinc-950 focus:bg-white focus:outline-none"
               >
                 <option value="">All statuses</option>
-                {Object.entries(labels).map(([key, label]) => (
-                  <option key={key} value={key}>
-                    {label}
-                  </option>
-                ))}
+                <option value="OPEN">Open</option>
+                <option value="WAITING_FOR_GUEST">Waiting for you</option>
+                <option value="WAITING_FOR_HOST">Waiting for host</option>
+                <option value="IN_REVIEW">Under review</option>
+                <option value="ESCALATED">Escalated</option>
+                <option value="RESOLVED">Resolved</option>
+                <option value="CLOSED">Closed</option>
               </select>
             </div>
           </div>
 
           {/* Full-Width Case Listing */}
-          <div className="w-full space-y-3">
-            {loading ? (
-              <div role="status" aria-label="Loading cases" className="space-y-3">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="flex gap-4 rounded-2xl border border-zinc-200/80 bg-white p-4 sm:p-5 shadow-2xs animate-pulse">
-                    <div className="size-16 sm:size-20 shrink-0 rounded-xl bg-zinc-100 skeleton-shimmer" />
-                    <div className="flex-1 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="h-3.5 w-24 rounded bg-zinc-200 skeleton-shimmer" />
-                        <div className="h-5 w-20 rounded-full bg-zinc-100 skeleton-shimmer" />
+          {loading ? (
+            <div className="space-y-3" role="status" aria-label="Loading support cases">
+              {[1, 2, 3, 4].map((i) => (
+                <div
+                  key={i}
+                  className="w-full rounded-2xl border border-zinc-200/80 bg-white p-4 sm:p-5 shadow-2xs animate-pulse flex items-center justify-between gap-4"
+                >
+                  <div className="flex items-center gap-4 min-w-0 flex-1">
+                    <div className="size-14 sm:size-16 rounded-xl bg-zinc-200 shrink-0" />
+                    <div className="space-y-2 flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <div className="h-4 w-24 rounded bg-zinc-200" />
+                        <div className="h-4 w-32 rounded bg-zinc-100" />
                       </div>
-                      <div className="h-4 w-3/4 rounded bg-zinc-200 skeleton-shimmer" />
-                      <div className="h-3 w-1/2 rounded bg-zinc-100 skeleton-shimmer" />
-                      <div className="h-2.5 w-36 rounded bg-zinc-100 skeleton-shimmer" />
+                      <div className="h-5 w-3/4 rounded bg-zinc-200" />
+                      <div className="h-3 w-1/2 rounded bg-zinc-100" />
                     </div>
                   </div>
-                ))}
-              </div>
-            ) : items.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50/50 p-10 text-center space-y-3">
-                <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-zinc-100 text-zinc-400">
-                  <svg className="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                    <polyline points="14 2 14 8 20 8" />
-                  </svg>
+                  <div className="flex items-center gap-3 shrink-0">
+                    <div className="h-6 w-20 rounded-full bg-zinc-200" />
+                  </div>
                 </div>
-                <h3 className="text-sm font-medium text-zinc-950">No support requests found</h3>
-                <p className="text-xs font-normal text-zinc-500 max-w-sm mx-auto">
-                  {filters.status || filters.category || filters.search
-                    ? "Try adjusting your filters or search query to find your support case."
-                    : "You do not have any open support requests at this time."}
-                </p>
-                <div className="pt-2 flex justify-center gap-2">
-                  {(filters.status || filters.category || filters.search) && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setFilters({ status: "", category: "", search: "" });
-                        setActiveTab("all");
-                        setPage(1);
-                      }}
-                      className="rounded-full border border-zinc-300 bg-white px-4 py-2 text-xs font-medium text-zinc-800 hover:bg-zinc-50 transition-colors"
-                    >
-                      Clear filters
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => setShowCreateModal(true)}
-                    className="rounded-full bg-zinc-900 px-4 py-2 text-xs font-medium text-white hover:bg-black transition-colors"
-                  >
-                    Create request
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {items.map((item) => {
-                  const photoUrl = item.listing?.photos?.[0];
+              ))}
+            </div>
+          ) : items.length > 0 ? (
+            <div className="space-y-3">
+              {items.map((c) => {
+                const listingPhoto = c.listing?.photos?.[0];
+                const isDirectItem = currentView === "direct" || c.category === "DIRECT_RESOLUTION" || c.category === "BOOKING_DISPUTE";
 
-                  return (
-                    <button
-                      type="button"
-                      key={item.id}
-                      onClick={() => handleSelectCase(item.id)}
-                      className="w-full rounded-2xl border border-zinc-200/80 bg-white p-4 sm:p-5 text-left transition-all shadow-2xs flex items-center justify-between gap-4 hover:border-zinc-300 hover:shadow-xs"
-                    >
-                      <div className="flex items-start gap-4 min-w-0 flex-1">
-                        {/* Property or Category Thumbnail */}
-                        <div className="size-16 sm:size-20 shrink-0 overflow-hidden rounded-xl bg-zinc-100 border border-zinc-200/60 relative flex items-center justify-center">
-                          {photoUrl ? (
-                            <Image
-                              src={photoUrl}
-                              alt=""
-                              fill
-                              sizes="80px"
-                              className="object-cover"
-                            />
-                          ) : (
-                            <svg className="size-7 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                return (
+                  <button
+                    key={c.id}
+                    type="button"
+                    onClick={() => handleSelectCase(c.id, c)}
+                    className="w-full rounded-2xl border border-zinc-200/80 bg-white p-4 sm:p-5 shadow-2xs hover:border-zinc-400 hover:shadow-xs transition-all text-left flex items-start sm:items-center justify-between gap-4 group cursor-pointer"
+                  >
+                    <div className="flex items-start gap-4 min-w-0">
+                      <div className="relative size-14 sm:size-16 rounded-xl bg-zinc-100 border border-zinc-200/60 overflow-hidden shrink-0">
+                        {listingPhoto ? (
+                          <Image src={listingPhoto} alt="" fill sizes="64px" className="object-cover" />
+                        ) : (
+                          <div className="flex size-full items-center justify-center text-zinc-400">
+                            <svg className="size-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                               <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
                               <polyline points="9 22 9 12 15 12 15 22" />
                             </svg>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="space-y-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="font-mono text-xs font-medium text-zinc-500">#{c.caseNumber}</span>
+                          {isDirectItem && (
+                            <span className="rounded-md border border-violet-200 bg-violet-50 px-1.5 py-0.5 text-[10px] font-medium text-violet-800">
+                              Direct resolution
+                            </span>
+                          )}
+                          {c.booking && (
+                            <span className="text-xs text-blue-600 font-normal">
+                              Booking · {c.listing?.title || "Reservation"} #{c.booking.submissionId || c.booking.id.slice(0, 8)}
+                            </span>
                           )}
                         </div>
-
-                        {/* Card Content */}
-                        <div className="min-w-0 flex-1 space-y-1.5">
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="font-mono text-xs font-medium text-zinc-500">
-                              #{item.caseNumber}
-                            </span>
-                            <div className="flex items-center gap-2 shrink-0">
-                              <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium ${getStatusBadge(item.status)}`}>
-                                {labels[item.status] || item.status}
-                              </span>
-                              {item.unreadCount !== undefined && item.unreadCount > 0 && (
-                                <span className="flex size-4.5 items-center justify-center rounded-full bg-rose-600 text-[10px] font-medium text-white">
-                                  {item.unreadCount}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-
-                          <h3 className="truncate text-sm sm:text-base font-medium text-zinc-950">
-                            {item.subject}
-                          </h3>
-
-                          <p className="truncate text-xs font-normal text-zinc-500">
-                            {item.category.replaceAll("_", " ")}
-                            {item.listing?.title ? ` · ${item.listing.title}` : ""}
-                            {item.booking?.submissionId ? ` · #${item.booking.submissionId}` : item.booking?.id ? ` · #${item.booking.id.slice(0, 10)}` : ""}
-                          </p>
-
-                          <p className="text-[11px] font-normal text-zinc-400 pt-0.5">
-                            Created {formatCaseDate(item.createdAt)} · Last activity {formatCaseDate(item.updatedAt)}
-                          </p>
-                        </div>
+                        <h3 className="text-base font-medium text-zinc-950 truncate group-hover:text-black">
+                          {c.subject}
+                        </h3>
+                        <p className="text-xs font-normal text-zinc-500 truncate">
+                          Created {formatCaseDate(c.createdAt)} · Last activity {formatCaseDate(c.updatedAt)}
+                        </p>
                       </div>
-
-                      <div className="text-zinc-400 shrink-0">
-                        <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <polyline points="9 18 15 12 9 6" />
-                        </svg>
-                      </div>
-                    </button>
-                  );
-                })}
-
-                {/* Server-Side Pagination */}
-                {pages.totalPages > 1 && (
-                  <nav aria-label="Support cases pagination" className="mt-5 flex items-center justify-between border-t border-zinc-100 pt-4 text-xs font-normal text-zinc-600">
-                    <span>
-                      Showing {Math.min(1 + (page - 1) * 10, pages.total)}-{Math.min(page * 10, pages.total)} of {pages.total}
-                    </span>
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        disabled={page <= 1}
-                        onClick={() => setPage((p) => Math.max(1, p - 1))}
-                        className="rounded-lg border border-zinc-200 bg-white px-3.5 py-1.5 font-medium text-zinc-700 shadow-2xs hover:bg-zinc-50 disabled:opacity-40 transition-colors"
-                      >
-                        Previous
-                      </button>
-                      <button
-                        type="button"
-                        disabled={page >= pages.totalPages}
-                        onClick={() => setPage((p) => p + 1)}
-                        className="rounded-lg border border-zinc-200 bg-white px-3.5 py-1.5 font-medium text-zinc-700 shadow-2xs hover:bg-zinc-50 disabled:opacity-40 transition-colors"
-                      >
-                        Next
-                      </button>
                     </div>
-                  </nav>
-                )}
+
+                    <div className="flex flex-col sm:flex-row items-end sm:items-center gap-3 shrink-0">
+                      {Boolean(c.unreadCount && c.unreadCount > 0) && (
+                        <span className="inline-flex size-5 items-center justify-center rounded-full bg-rose-600 text-[10px] font-medium text-white">
+                          {c.unreadCount}
+                        </span>
+                      )}
+                      <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${getStatusBadge(c.status)}`}>
+                        {labels[c.status] || c.status}
+                      </span>
+                      <svg className="size-4 text-zinc-400 group-hover:text-zinc-700 transition-colors hidden sm:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <polyline points="9 18 15 12 9 6" />
+                      </svg>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-dashed border-zinc-200 bg-zinc-50/50 p-12 text-center space-y-3">
+              <p className="text-base font-medium text-zinc-800">
+                {currentView === "direct" ? "No direct resolution requests match these filters" : "No support requests match these filters"}
+              </p>
+              <p className="text-xs sm:text-sm text-zinc-500 max-w-md mx-auto">
+                {currentView === "direct"
+                  ? "You have not created or received any direct resolution requests matching the active filter criteria."
+                  : "You have not submitted any support tickets matching the active search or category filters."}
+              </p>
+              {currentView === "direct" ? (
+                <button
+                  type="button"
+                  onClick={() => setShowDirectCreateModal(true)}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-zinc-900 px-5 py-2 text-xs sm:text-sm font-medium text-white hover:bg-black transition-colors"
+                >
+                  New resolution request
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setShowCreateModal(true)}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-zinc-900 px-5 py-2 text-xs sm:text-sm font-medium text-white hover:bg-black transition-colors"
+                >
+                  Create support request
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Pagination Controls */}
+          {pages.totalPages > 1 && (
+            <div className="flex items-center justify-between border-t border-zinc-200 pt-4 text-xs sm:text-sm">
+              <p className="text-zinc-500 font-normal">
+                Showing page <span className="font-medium text-zinc-900">{pages.page}</span> of <span className="font-medium text-zinc-900">{pages.totalPages}</span> ({pages.total} total)
+              </p>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  disabled={pages.page <= 1}
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  className="rounded-full border border-zinc-200 bg-white px-4 py-1.5 text-xs font-medium text-zinc-700 hover:bg-zinc-50 transition-colors disabled:opacity-40"
+                >
+                  Previous
+                </button>
+                <button
+                  type="button"
+                  disabled={pages.page >= pages.totalPages}
+                  onClick={() => setPage((p) => Math.min(pages.totalPages, p + 1))}
+                  className="rounded-full border border-zinc-200 bg-white px-4 py-1.5 text-xs font-medium text-zinc-700 hover:bg-zinc-50 transition-colors disabled:opacity-40"
+                >
+                  Next
+                </button>
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       )}
 
-      {/* Create Support Request Modal */}
+      {/* Regular Create Support Request Modal */}
       {showCreateModal && (
         <ModalOverlay
           className="fixed inset-0 z-9999 z-[9999] flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs animate-in fade-in"
@@ -1646,9 +2171,7 @@ export function SupportResolutionCenter() {
                   >
                     <option value="">Choose a category</option>
                     {taxonomy.map((entry) => (
-                      <option key={entry.value} value={entry.value}>
-                        {entry.label}
-                      </option>
+                      <option key={entry.value} value={entry.value}>{entry.label}</option>
                     ))}
                   </select>
                 </label>
@@ -1664,9 +2187,7 @@ export function SupportResolutionCenter() {
                   >
                     <option value="">Choose an issue type</option>
                     {selectedCategoryObj?.issueTypes.map((entry) => (
-                      <option key={entry.value} value={entry.value}>
-                        {entry.label}
-                      </option>
+                      <option key={entry.value} value={entry.value}>{entry.label}</option>
                     ))}
                   </select>
                 </label>
@@ -1727,6 +2248,136 @@ export function SupportResolutionCenter() {
                   className="rounded-full bg-zinc-900 px-5 py-2 text-xs sm:text-sm font-medium text-white hover:bg-black transition-colors disabled:opacity-50"
                 >
                   {submitting ? "Creating..." : "Submit request"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </ModalOverlay>
+      )}
+
+      {/* New Direct Resolution Request Modal */}
+      {showDirectCreateModal && (
+        <ModalOverlay
+          className="fixed inset-0 z-9999 z-[9999] flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs animate-in fade-in"
+          onClose={() => setShowDirectCreateModal(false)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="create-direct-modal-title"
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-2xl rounded-2xl border border-zinc-200 bg-white p-5 sm:p-7 shadow-xl space-y-5"
+          >
+            <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
+              <div>
+                <h2 id="create-direct-modal-title" className="text-lg font-medium text-zinc-950">New resolution request</h2>
+                <p className="text-xs font-normal text-zinc-500">
+                  Negotiate directly with the host to settle booking, property, or amenity issues.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowDirectCreateModal(false)}
+                className="size-8 rounded-full flex items-center justify-center text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 transition-colors"
+                aria-label="Close modal"
+              >
+                <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateDirectResolution} className="space-y-4">
+              <label className="block text-xs font-medium text-zinc-800">
+                Select booking
+                <select
+                  required
+                  value={directForm.bookingId}
+                  onChange={(e) => setDirectForm({ ...directForm, bookingId: e.target.value })}
+                  className="mt-1.5 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs sm:text-sm font-normal text-zinc-900 focus:border-zinc-950 focus:outline-none"
+                >
+                  <option value="">Choose your reservation</option>
+                  {bookings.map((b) => (
+                    <option key={b.id} value={b.id}>
+                      {b.listing?.title || "Reservation"} · {new Date(b.startDate).toLocaleDateString()}–{new Date(b.endDate).toLocaleDateString()}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label className="block text-xs font-medium text-zinc-800">
+                  Initial offer type
+                  <select
+                    value={directForm.offerType}
+                    onChange={(e) => setDirectForm({ ...directForm, offerType: e.target.value as OfferType })}
+                    className="mt-1.5 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs sm:text-sm font-normal text-zinc-900 focus:border-zinc-950 focus:outline-none"
+                  >
+                    <option value="MONETARY_COMPENSATION">Monetary compensation</option>
+                    <option value="PROPERTY_DAMAGE">Property damage compensation</option>
+                    <option value="NON_FINANCIAL">Non-financial agreement</option>
+                    <option value="AMENITY_ISSUE">Amenity issue resolution</option>
+                    <option value="OTHER">Other resolution</option>
+                  </select>
+                </label>
+
+                {(directForm.offerType === "MONETARY_COMPENSATION" || directForm.offerType === "PROPERTY_DAMAGE") && (
+                  <label className="block text-xs font-medium text-zinc-800">
+                    Amount (SAR)
+                    <input
+                      type="number"
+                      min="1"
+                      step="any"
+                      required
+                      value={directForm.amount}
+                      onChange={(e) => setDirectForm({ ...directForm, amount: e.target.value })}
+                      placeholder="e.g. 300"
+                      className="mt-1.5 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs sm:text-sm font-normal text-zinc-900 focus:border-zinc-950 focus:outline-none"
+                    />
+                  </label>
+                )}
+              </div>
+
+              <label className="block text-xs font-medium text-zinc-800">
+                Subject
+                <input
+                  required
+                  maxLength={160}
+                  value={directForm.subject}
+                  onChange={(e) => setDirectForm({ ...directForm, subject: e.target.value })}
+                  placeholder="Summary of dispute (e.g. Broken AC compensation)..."
+                  className="mt-1.5 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs sm:text-sm font-normal text-zinc-900 focus:border-zinc-950 focus:outline-none"
+                />
+              </label>
+
+              <label className="block text-xs font-medium text-zinc-800">
+                Explanation &amp; Settlement proposal
+                <textarea
+                  required
+                  maxLength={4000}
+                  rows={4}
+                  value={directForm.description}
+                  onChange={(e) => setDirectForm({ ...directForm, description: e.target.value })}
+                  placeholder="Explain what occurred and how you propose to settle this issue..."
+                  className="mt-1.5 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs sm:text-sm font-normal text-zinc-900 focus:border-zinc-950 focus:outline-none"
+                />
+              </label>
+
+              <div className="flex items-center justify-end gap-2.5 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowDirectCreateModal(false)}
+                  className="rounded-full border border-zinc-200 bg-white px-4 py-2 text-xs sm:text-sm font-medium text-zinc-700 hover:bg-zinc-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={submittingDirect}
+                  className="rounded-full bg-zinc-900 px-5 py-2 text-xs sm:text-sm font-medium text-white hover:bg-black transition-colors disabled:opacity-50"
+                >
+                  {submittingDirect ? "Submitting..." : "Send resolution request"}
                 </button>
               </div>
             </form>
